@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
@@ -71,7 +72,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->saveCallbackResponse($content);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -149,6 +150,39 @@ class Gateway extends Base\Gateway
         return $decryptedString;
     }
 
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+                                    $input['payment']['id'],
+                                    Payment\Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, We just return.
+        if (($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getStatus() === Status::SUCCESS))
+        {
+            return true;
+        }
+
+        if (empty($input['gateway']['gateway_payment_id']) === true)
+        {
+            throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING,
+                        null,
+                        $input);
+        }
+
+        $attrs = [
+            Base\Entity::STATUS          => Status::SUCCESS,
+            Base\Entity::BANK_PAYMENT_ID => $input['gateway']['gateway_payment_id'],
+        ];
+
+        $gatewayPayment->fill($attrs);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
+    }
+
     protected function getNetbankingEntityAttributes(array $input): array
     {
         $entityAttributes = [
@@ -193,7 +227,7 @@ class Gateway extends Base\Gateway
 
         // date has to be of format DDMMYYYY-24HHMMSS
         $date = Carbon::createFromTimestamp($input['payment'][Payment\Entity::CREATED_AT],
-                                           'Asia/Kolkata')
+                                           Timezone::IST)
                                            ->format('dmY-His');
 
         $paymentId = $input['payment']['id'];

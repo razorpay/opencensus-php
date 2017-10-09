@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
+use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 
 class Entity extends Base\PublicEntity
@@ -77,6 +78,7 @@ class Entity extends Base\PublicEntity
     const NULLABLE_ATTRIBUTES = [
         self::GROUP,
         self::FILTER_TYPE,
+        self::GATEWAY,
         self::METHOD_TYPE,
         self::NETWORK,
         self::ISSUER,
@@ -363,7 +365,7 @@ class Entity extends Base\PublicEntity
      * @param  Terminal\Entity $terminal Terminal entity to compare against
      * @return bool whether rule matches terminal
      */
-    public function matches(Terminal\Entity $terminal): bool
+    public function matches(Terminal\Entity $terminal, Merchant\Entity $merchant): bool
     {
         foreach (self::COMPARISON_ATTRIBUTES as $key)
         {
@@ -375,7 +377,7 @@ class Entity extends Base\PublicEntity
                 continue;
             }
 
-            if ($this->compare($key, $terminal) === false)
+            if ($this->compare($key, $terminal, $merchant) === false)
             {
                 return false;
             }
@@ -384,13 +386,13 @@ class Entity extends Base\PublicEntity
         return true;
     }
 
-    protected function compare(string $key, Terminal\Entity $terminal): bool
+    protected function compare(string $key, Terminal\Entity $terminal, Merchant\Entity $merchant): bool
     {
         $compareFunc = 'compare' . studly_case($key);
 
         if (method_exists($this, $compareFunc) === true)
         {
-            return $this->$compareFunc($terminal);
+            return $this->$compareFunc($terminal, $merchant);
         }
 
         return ($this->getAttribute($key) === $terminal->getAttribute($key));
@@ -422,10 +424,36 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function compareSharedTerminal(Terminal\Entity $terminal): bool
+    /**
+     * Compares international property of rue with terminal.
+     * If international is true then terminal should have international enabled
+     * If international is false then terminal should have card enabled
+     *
+     * @param  Terminal\Entity $terminal Terminal to check against
+     * @return bool                      Comparison result
+     */
+    protected function compareInternational(Terminal\Entity $terminal): bool
+    {
+        return ($this->isInternational() === true) ?
+                $terminal->isInternational() :
+                $terminal->isDomestic();
+    }
+
+    /**
+     * Checks if a terminal is shared / direct against against what the rule
+     * specifies. The cases for the same are listed below
+     * - Shared terminal, with a submerchant assigned as given merchant
+     * - Terminal directly assigned to merchant
+     * - Terminal assigned to some other merchant with given merchant as a submerchant
+     *
+     * @param  Terminal\Entity $terminal Terminal to check against
+     * @param  Merchant\Entity $merchant Merchant making the payment
+     * @return bool                      Comparison result
+     */
+    protected function compareSharedTerminal(Terminal\Entity $terminal, Merchant\Entity $merchant): bool
     {
         $isApplicableForSharedTerminal = $this->getAttribute(self::SHARED_TERMINAL);
 
-        return ($isApplicableForSharedTerminal === $terminal->isShared()) ? true : false;
+        return ($isApplicableForSharedTerminal !== $terminal->isDirectForMerchant($merchant)) ? true : false;
     }
 }

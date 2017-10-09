@@ -133,6 +133,7 @@ class InvoiceReport extends BaseReport
             self::SUMMARY       => [self::SUMMARY_TITLE => [self::ROWS => []]],
             'invoice_number'    => $this->invoiceNo,
             'invoice_date'      => $this->invoiceDate,
+            'gstin'             => $this->gstin,
             self::PAGES         => [
                 self::TAX_INVOICE       => [],
                 self::TAX_CREDIT_NOTE   => [],
@@ -150,9 +151,9 @@ class InvoiceReport extends BaseReport
         {
             $type = $entity->getType();
 
-            $tax = abs($entity->getTax() / 100);
+            $tax = abs($entity->getTax());
 
-            $amount = abs($entity->getAmount() / 100);
+            $amount = abs($entity->getAmount());
 
             // Current row
             $row = $this->getNewRow();
@@ -224,7 +225,7 @@ class InvoiceReport extends BaseReport
             self::AMOUNT            => $amount,
         ];
 
-        if ($pageType === self::TAX_DEBIT_NOTE)
+        if ($pageType === self::TAX_CREDIT_NOTE)
         {
             $summaryAmount -= $amount;
         }

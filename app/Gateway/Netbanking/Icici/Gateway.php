@@ -78,7 +78,9 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($attrs, $content);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $this->assertAmount($input, $content);
+
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -348,6 +350,18 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    protected function assertAmount($input, $content)
+    {
+        $actualAmount = number_format($content['AMT'], 2, '.', '');
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+
+        if ($actualAmount !== $expectedAmount)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED);
+        }
+    }
+
     protected function checkCallbackStatus(array $attrs, array $content)
     {
         if ((isset($attrs[ResponseFields::LC_STATUS]) === false) or
@@ -399,7 +413,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->isCorporateBanking() === true)
         {
-            return  [
+            return [
                 Status::Y,
                 ResponseFields::PAYMENTID,
             ];
@@ -540,6 +554,6 @@ class Gateway extends Base\Gateway
 
     protected function getUrlType()
     {
-        return $this->getBankingType() . '_QUERY' ;
+        return $this->getBankingType() . '_QUERY';
     }
 }

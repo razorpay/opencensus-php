@@ -13,8 +13,10 @@ class MaxLengthRule extends Base
         $this->maxLength = $maxLength;
     }
 
-    public function validate($admin, $password)
+    public function validate($admin, array $data)
     {
+        $password = $data['password'] ?? '';
+
         if (strlen($password) > $this->maxLength)
         {
             throw new Exception\BadRequestValidationFailureException(

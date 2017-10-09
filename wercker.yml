@@ -40,6 +40,8 @@ build:
           code: >
               export DB_TEST_HOST="$MYSQL_PORT_3306_TCP_ADDR"
               export DB_TEST_PORT="$MYSQL_PORT_3306_TCP_PORT"
+              export DB_AUTH_HOST="$MYSQL_PORT_3306_TCP_ADDR"
+              export DB_AUTH_PORT="$MYSQL_PORT_3306_TCP_PORT"
       - script:
           name: Export wercker Redis env var to API environment variables
           code: >
@@ -76,7 +78,7 @@ build:
               mkdir -p /opt/razorpay/certs/first_data
       - script:
           name: Run unit tests
-          code: php -d memory_limit=5G vendor/phpunit/phpunit/phpunit --debug --verbose
+          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose
       - script:
           name: List directory
           code: ls -lah

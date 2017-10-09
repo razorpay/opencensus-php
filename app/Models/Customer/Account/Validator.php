@@ -14,7 +14,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::CONTACT             => 'sometimes|contact_syntax',
-        Entity::NAME                => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50|nullable',
+        Entity::NAME                => 'sometimes|regex:(^[a-zA-Z. 0-9\'()]+$)|max:50|nullable',
         Entity::EMAIL               => 'sometimes|email',
         Entity::NOTES               => 'sometimes|notes',
         Entity::SHIPPING_ADDRESS    => 'sometimes',
@@ -23,7 +23,7 @@ class Validator extends Base\Validator
 
     protected static $editRules = array(
         Entity::CONTACT         => 'sometimes|contact_syntax',
-        Entity::NAME            => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50',
+        Entity::NAME            => 'sometimes|regex:(^[a-zA-Z. 0-9\'()]+$)|max:50',
         Entity::ACTIVE          => 'sometimes|in:0,1',
         Entity::EMAIL           => 'sometimes|email',
     );
@@ -51,20 +51,45 @@ class Validator extends Base\Validator
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
     ];
 
-    public static function validateAndParseContact($contact)
+    /**
+     * - Validates given contact string using contact rules
+     * - Parses and returns standard format(E164) string value
+     *
+     * @param string $contact
+     *
+     * @return string
+     */
+    public static function validateAndParseContact(string $contact): string
     {
-        (new static)->validateInput('contact', ['contact' => $contact]);
+        $input = [Entity::CONTACT => $contact];
 
-        $app = App::getFacadeRoot();
+        $input = self::validateAndParseContactInInput($input);
 
-        $phoneNumberLib = $app['libphonenumber'];
+        return $input[Entity::CONTACT];
+    }
 
-        // Second argument is a default country code
-        $phoneNumber = $phoneNumberLib->parse($contact, 'IN');
+    /**
+     * - Validates contact of given input array against contact rules
+     * - Returns input array which contains parsed and formatted value
+     *   of contact key.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public static function validateAndParseContactInInput(array $input): array
+    {
+        (new static)->validateInput('contact', array_only($input, [Entity::CONTACT]));
 
-        $contact = $phoneNumberLib->format($phoneNumber, PhoneNumberFormat::E164);
+        $lib = App::getFacadeRoot()['libphonenumber'];
 
-        return $contact;
+        $contact = & $input[Entity::CONTACT];
+
+        $parsed = $lib->parse($contact, 'IN');
+
+        $contact = $lib->format($parsed, PhoneNumberFormat::E164);
+
+        return $input;
     }
 
     /**

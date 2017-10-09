@@ -62,7 +62,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($reversal);
 
-        $this->traceSuccess($reversal);
+        $this->traceSuccess(TraceCode::TRANSFER_REVERSAL_SUCCESS, $reversal);
 
         return $reversal;
     }
@@ -77,7 +77,7 @@ class Core extends Base\Core
      * @return Entity
      * @throws Exception\LogicException
      */
-    public function reverse(Transfer\Entity $transfer, array $input, Merchant\Entity $merchant) : Entity
+    public function reverseForTransfer(Transfer\Entity $transfer, array $input, Merchant\Entity $merchant) : Entity
     {
         // Reversals not handled yet for customer wallet - transfer refunds
         // @todo: Change flow to create reversals for both customer/account transfers
@@ -99,7 +99,7 @@ class Core extends Base\Core
                     $reversal = (new Payment\Processor\Processor($merchant))
                                     ->refundPaymentAndReverseTransfer($transfer, $input);
 
-                    $this->traceSuccess($reversal);
+                    $this->traceSuccess(TraceCode::DISPUTE_TRANSFER_SUCCESS, $reversal);
 
                     return $reversal;
                 });
@@ -115,7 +115,7 @@ class Core extends Base\Core
         return $reversal;
     }
 
-    protected function traceSuccess(Entity $reversal)
+    protected function traceSuccess(string $code, Entity $reversal)
     {
         $traceMessage = [
             'entity_type'       => $reversal->getEntityType(),
@@ -124,6 +124,6 @@ class Core extends Base\Core
             'refund_amount'     => $reversal->getAmount()
         ];
 
-        $this->trace->info(TraceCode::TRANSFER_REVERSAL_SUCCESS, $traceMessage);
+        $this->trace->info($code, $traceMessage);
     }
 }

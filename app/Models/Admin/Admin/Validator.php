@@ -11,15 +11,15 @@ use RZP\Models\Admin\Action;
 
 class Validator extends Base\Validator
 {
-    const TOKEN = 'token';
+    const TOKEN              = 'token';
     const RESET_PASSWORD_URL = 'reset_password_url';
 
-    const SUSPENDED     = 'suspended';
-    const ARCHIVED      = 'archived';
-    const ACTIVATED     = 'activated';
-    const PENDING       = 'pending';
-    const DEAD          = 'dead';
-    const SUB_ACCOUNTS  = 'sub_accounts';
+    const SUSPENDED          = 'suspended';
+    const ARCHIVED           = 'archived';
+    const ACTIVATED          = 'activated';
+    const PENDING            = 'pending';
+    const DEAD               = 'dead';
+    const SUB_ACCOUNTS       = 'sub_accounts';
 
     protected static $createRules = [
         // The unique validation on email will run only on rows that have deleted_at = NULL
@@ -94,6 +94,9 @@ class Validator extends Base\Validator
         Entity::OLD_PASSWORD          => 'required|string',
     ];
 
+    /**
+     * @deprecated Ref: #4216
+     */
     protected static $filterRules = [
         self::SUSPENDED         => 'sometimes|boolean',
         self::ARCHIVED          => 'sometimes|boolean',
@@ -108,6 +111,14 @@ class Validator extends Base\Validator
     ];
 
     protected static $editValidators = [
+        Entity::PASSWORD
+    ];
+
+    protected static $changeValidators = [
+        Entity::PASSWORD
+    ];
+
+    protected static $resetValidators = [
         Entity::PASSWORD
     ];
 
@@ -137,7 +148,7 @@ class Validator extends Base\Validator
         {
             $admin = $this->entity;
 
-            (new AuthPolicy\Service)->validate($admin, $input[Entity::PASSWORD]);
+            (new AuthPolicy\Service)->validatePasswordCreate($admin, ['password' => $input[Entity::PASSWORD]]);
         }
     }
 

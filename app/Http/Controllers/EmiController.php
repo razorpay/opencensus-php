@@ -4,36 +4,39 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
+
 use RZP\Models\Emi;
 
 class EmiController extends Controller
 {
+    protected $service = Emi\Service::class;
+
     public function addEmiPlan()
     {
         $input = Request::all();
 
-        $data = (new Emi\Service)->addEmiPlan($input);
+        $data = $this->service()->addEmiPlan($input);
 
         return ApiResponse::json($data);
     }
 
     public function fetchEmiPlans()
     {
-        $data = (new Emi\Service)->all();
+        $data = $this->service()->all();
 
         return ApiResponse::json($data);
     }
 
     public function fetchEmiPlanById($id)
     {
-        $data = (new Emi\Service)->fetch($id);
+        $data = $this->service()->fetch($id);
 
         return ApiResponse::json($data);
     }
 
     public function deleteEmiPlan($id)
     {
-        $data = (new Emi\Service)->deleteEmiPlan($id);
+        $data = $this->service()->deleteEmiPlan($id);
 
         return ApiResponse::json($data);
     }
@@ -42,7 +45,7 @@ class EmiController extends Controller
     {
         $input = Request::all();
 
-        $emiExcel = (new Emi\Service)->getEmiFiles($input);
+        $emiExcel = $this->service()->getEmiFiles($input);
 
         return ApiResponse::json($emiExcel);
     }

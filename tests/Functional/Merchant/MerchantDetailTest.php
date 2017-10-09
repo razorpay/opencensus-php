@@ -3,11 +3,12 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
-use Mockery;
-use Carbon\Carbon;
+
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+
 
 class MerchantDetailTest extends TestCase
 {
@@ -44,6 +45,21 @@ class MerchantDetailTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
 
         $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
+    public function testSubmitAutoActivate()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->fixtures->edit('merchant', $merchantId, ['linked_account_kyc' => 0, 'parent_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
     }
@@ -255,5 +271,23 @@ class MerchantDetailTest extends TestCase
         ];
 
         $this->doS2sRecurringPayment($payment, $requestServer);
+    }
+
+    public function testMerchantDetailsFetch()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '10000000000002',
+                                                         'email' => 'razorpay@razorpay.com']);
+
+        $this->fixtures->create('merchant:add_payment_banks', ['merchant_id' => '10000000000002']);
+
+        $this->fixtures->merchant->enableInternational('10000000000002');
+
+        $admin = $this->ba->getAdmin();
+
+        $merchant->admins()->attach($admin);
+
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
+        $this->startTest();
     }
 }

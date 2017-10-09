@@ -1,9 +1,11 @@
 <?php
 
-use RZP\Constants\Table;
-use RZP\Models\User\Entity as User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+
+use RZP\Models\Invoice;
+use RZP\Constants\Table;
+use RZP\Models\User\Entity as User;
 
 class CreateUsersTable extends Migration
 {
@@ -36,6 +38,14 @@ class CreateUsersTable extends Migration
 
             $table->integer(User::UPDATED_AT);
         });
+
+        Schema::table(Table::INVOICE, function(Blueprint $table)
+        {
+            $table->foreign(Invoice\Entity::USER_ID)
+                  ->references(User::ID)
+                  ->on(Table::USER)
+                  ->on_delete('restrict');
+        });
     }
 
     /**
@@ -45,6 +55,15 @@ class CreateUsersTable extends Migration
      */
     public function down()
     {
+
+        Schema::table(Table::INVOICE, function($table)
+        {
+            $table->dropForeign
+            (
+                Table::INVOICE . '_' . Invoice\Entity::USER_ID . '_foreign'
+            );
+        });
+
         Schema::drop(Table::USER);
     }
 }

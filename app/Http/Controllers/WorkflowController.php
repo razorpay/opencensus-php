@@ -6,11 +6,8 @@ use App;
 use Request;
 use ApiResponse;
 
-use RZP\Models\Workflow;
-use RZP\Models\Workflow\Action;
+use RZP\Constants\Entity as E;
 use RZP\Models\Workflow\Action\Differ;
-use RZP\Models\Workflow\Action\Comment;
-use RZP\Models\Workflow\Action\Checker;
 
 class WorkflowController extends Controller
 {
@@ -25,21 +22,21 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Action\Service)->fetchMultiple($input);
+        $data = $this->service(E::WORKFLOW_ACTION)->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
 
     public function getActionDetails(string $id)
     {
-        $data = (new Action\Service)->getActionDetails($id);
+        $data = $this->service(E::WORKFLOW_ACTION)->getActionDetails($id);
 
         return ApiResponse::json($data);
     }
 
     public function postExecuteAction(string $id)
     {
-        $response = (new Action\Service)->executeAction($id);
+        $response = $this->service(E::WORKFLOW_ACTION)->executeAction($id);
 
         return $this->getActionDetails($id);
     }
@@ -48,14 +45,14 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Checker\Service)->create($id, $input);
+        $data = $this->service(E::ACTION_CHECKER)->create($id, $input);
 
         return $this->getActionDetails($id);
     }
 
     public function closeWorkflowAction(string $id)
     {
-        $data = (new Action\Service)->closeAction($id);
+        $data = $this->service(E::WORKFLOW_ACTION)->closeAction($id);
 
         return $this->getActionDetails($id);
     }
@@ -64,7 +61,7 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Action\Service)->updateWorkflowAction($id, $input);
+        $data = $this->service(E::WORKFLOW_ACTION)->updateWorkflowAction($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -73,7 +70,7 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Workflow\Service)->create($input);
+        $data = $this->service()->create($input);
 
         return ApiResponse::json($data);
     }
@@ -86,16 +83,20 @@ class WorkflowController extends Controller
                       ->getAdmin()
                       ->getPublicOrgId();
 
-        $data = (new Workflow\Service)->fetch($orgId, $id);
+        $data = $this->service()->fetch($orgId, $id);
 
         return ApiResponse::json($data);
     }
 
-    public function getWorkflowMultiple(string $orgId)
+    public function getWorkflowMultiple()
     {
         $input = Request::all();
 
-        $data = (new Workflow\Service)->fetchMultiple($orgId, $input);
+        $orgId = $this->ba
+                      ->getAdmin()
+                      ->getPublicOrgId();
+
+        $data = $this->service()->fetchMultiple($orgId, $input);
 
         return ApiResponse::json($data);
     }
@@ -104,14 +105,14 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Workflow\Service)->update($id, $input);
+        $data = $this->service()->update($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function deleteWorkflow(string $id)
     {
-        $data = (new Workflow\Service)->delete($id);
+        $data = $this->service()->delete($id);
 
         return ApiResponse::json($data);
     }
@@ -120,7 +121,7 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $result = (new Comment\Service)->create($actionId, $input);
+        $result = $this->service(E::ACTION_COMMENT)->create($actionId, $input);
 
         return ApiResponse::json($result);
     }

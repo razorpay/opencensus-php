@@ -12,13 +12,18 @@ class MerchantDetail extends Base
         $defaultValues =  [
                 'merchant_id'   => $merchant['id'],
                 'contact_email' => $merchant['email']
-            ];
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
         $merchantDetail = $this->createEntityInTestAndLive('merchant_detail', $attributes);
 
         return $merchantDetail;
+    }
+
+    public function createSane(array $attributes = [])
+    {
+        return parent::create($attributes);
     }
 
     public function createValidFields(array $attributes = array())

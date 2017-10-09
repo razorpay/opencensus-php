@@ -80,6 +80,11 @@ class Service extends Base\Service
                 unset($gateways[IFSC::UTIB]);
                 unset($gateways[IFSC::FDRL]);
                 unset($gateways[IFSC::RATN]);
+
+                // These banks refund files have been moved to gateway_file, so
+                // unsetting it here
+                unset($gateways[IFSC::HDFC]);
+                unset($gateways[IFSC::ICIC]);
                 break;
 
             case Payment\Method::WALLET:
@@ -203,17 +208,16 @@ class Service extends Base\Service
 
         $gateway = $terminal->getGateway();
 
-        $action = 'generateRefunds';
-
-        $file = $this->app['gateway']->call($gateway, $action, $input, $this->mode);
+        $file = $this->app['gateway']->call($gateway, Payment\Action::GENERATE_REFUNDS, $input, $this->mode);
 
         return ['file' => $file, 'count' => $count];
     }
 
     protected function getTimestamps($input)
     {
-        $from = Carbon::yesterday(Timezone::IST)->timestamp;
-        $to = Carbon::today(Timezone::IST)->timestamp - 1;
+        $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
+        $to = Carbon::today(Timezone::IST)->getTimestamp() - 1;
+
         $frequency = 'daily';
 
         if (isset($input['frequency']))
@@ -227,15 +231,15 @@ class Service extends Base\Service
             {
                 $dt = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST);
 
-                $from = $dt->startOfMonth()->timestamp;
-                $to   = $dt->endOfMonth()->addDay()->timestamp - 1;
+                $from = $dt->startOfMonth()->getTimestamp();
+                $to   = $dt->endOfMonth()->addDay()->getTimestamp() - 1;
             }
             else
             {
                 $dt = Carbon::yesterday(Timezone::IST);
 
-                $from = $dt->startOfMonth()->timestamp;
-                $to   = $dt->endOfMonth()->addDay()->timestamp - 1;
+                $from = $dt->startOfMonth()->getTimestamp();
+                $to   = $dt->endOfMonth()->addDay()->getTimestamp() - 1;
             }
         }
         else
@@ -244,9 +248,9 @@ class Service extends Base\Service
             {
                 $from = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST)->setTime(0,0,0);
 
-                $fromTimeStamp = $from->timestamp;
+                $fromTimeStamp = $from->getTimestamp();
 
-                $to = $from->addDay()->timestamp - 1;
+                $to = $from->addDay()->getTimestamp() - 1;
 
                 $from = $fromTimeStamp;
             }

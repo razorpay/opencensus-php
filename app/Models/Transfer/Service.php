@@ -18,11 +18,11 @@ class Service extends Base\Service
         $this->core = new Core();
     }
 
-    public function fetch(string $id): array
+    public function fetch(string $id, array $input): array
     {
         $transfer =  $this->repo
                           ->transfer
-                          ->findByPublicIdAndMerchant($id, $this->merchant);
+                          ->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
         return $transfer->toArrayPublic();
     }
@@ -88,7 +88,7 @@ class Service extends Base\Service
                           ->transfer
                           ->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $reversal = (new Reversal\Core)->reverse($transfer, $input, $this->merchant);
+        $reversal = (new Reversal\Core)->reverseForTransfer($transfer, $input, $this->merchant);
 
         return $reversal->toArrayPublic();
     }

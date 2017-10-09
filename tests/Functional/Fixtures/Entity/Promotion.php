@@ -25,9 +25,9 @@ class Promotion extends Base
 
     public function createRecurring(array $attributes = [])
     {
-        $day = Carbon::now(Timezone::IST);
+        $currentTime = Carbon::now(Timezone::IST);
 
-        $anchor = $day->{Anchor::CHECKS[Period::MONTHLY]};
+        $anchor = Anchor::getAnchor(Period::MONTHLY, $currentTime);
 
         $scheduleAttributes = [
             'period' => Period::MONTHLY,

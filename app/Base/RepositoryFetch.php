@@ -3,13 +3,13 @@
 namespace RZP\Base;
 
 use RZP\Constants;
+use RZP\Constants\Es;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
-use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicEntity;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
@@ -118,6 +118,7 @@ trait RepositoryFetch
      */
     public function fetch(array $params, string $merchantId = null): PublicCollection
     {
+        // Process params (sanitization, validation, modification, etc.)
         $this->processFetchParams($params);
 
         $expands = $this->getExpandsForQueryFromInput($params);
@@ -188,10 +189,13 @@ trait RepositoryFetch
                                 $commonFetchKeys));
 
         //
-        // Get the keys send as part of $params.
-        // This is filtered list (defaults and common keys removed).
-        // Now this list has to be subset of MySQL keys or Es Keys exclusively,
-        // otherwise raises error.
+        // Get input params which are not a part of the:
+        // - Default param rules (see $fetchParamRules definition above), plus
+        // - Common keys defined in EsRepo.
+        //
+        // The remainder/filtered list has to be a subset of either MySQL or ES keys
+        // exclusively, otherwise an error will be raised. Hence both MySQL and
+        // ES cannot be searched together in a single fetch operation.
         //
 
         $filteredParamsKeys = array_values(array_diff(
@@ -201,10 +205,12 @@ trait RepositoryFetch
 
         if (empty(array_diff($filteredParamsKeys, $mysqlFetchKeys)) === true)
         {
+            // First value is MySQL params, so fetch will happen via MySQL
             return [$params, []];
         }
         else if (empty(array_diff($filteredParamsKeys, $esFetchKeys)) === true)
         {
+            // Second value is Es params, so fetch will happen via Es
             return [[], $params];
         }
         else
@@ -239,19 +245,28 @@ trait RepositoryFetch
         string $merchantId = null,
         array $expands): PublicCollection
     {
-        $entity = $this->entity;
+        $response = $this->esRepo->buildQueryAndSearch($params, $merchantId);
 
-        // Build query and get es response
-        $result = $this->esRepo->buildQueryAndSearch($params, $merchantId);
+        //
+        // Extract results from ES response: If hit has _source get that else
+        // just the document id.
+        //
+        $result = array_map(
+                    function ($res)
+                    {
+                        return $res[ES::_SOURCE] ?? [Common::ID => $res[ES::_ID]];
+                    },
+                    $response[ES::HITS][ES::HITS]);
 
-        // If no results from es, return empty collection
         if (count($result) === 0)
         {
             return new PublicCollection;
         }
 
+        //
         // If callee expects only es data (no mysql queries) then hydrate
         // the es array result into model and return the collection.
+        //
         $esHitsOnly = boolval(($params[EsRepository::SEARCH_HITS]) ?? false);
 
         if ($esHitsOnly)
@@ -259,15 +274,17 @@ trait RepositoryFetch
             return $this->hydrate($result);
         }
 
+        //
         // Else extract the matched ids and return collection by making a mysql
         // query on found ids.
+        //
         $ids = array_column($result, 'id');
 
         $entities = $this->newQuery()
                          ->with($expands)
                          ->findMany($ids, ['*']);
 
-        // If the not all the ids from es are found in mysql, just raise an error.
+        // If the not all the ids from es are found in MySQL, just raise an error.
         if (count($ids) !== $entities->count())
         {
             $this->trace->critical(TraceCode::ES_MYSQL_RESULTS_MISMATCH, ['ids' => $ids]);
@@ -389,6 +406,16 @@ trait RepositoryFetch
                           ->validate();
     }
 
+    /**
+     * Do a bunch of processing on the fetch param rules:
+     * - Unset all the empty params (w/o any value)
+     * - Add default params (internal [count] and user-defined)
+     *   to the params list.
+     * - Validate all the params basis auth as well ($appFetchParamRules,
+     *   $proxyFetchParamRules, $adminFetchParamRules, etc.)
+     *
+     * @param  array $params Input params
+     */
     protected function processFetchParams(array & $params)
     {
         $params = $this->unsetEmptyParams($params);
@@ -501,13 +528,19 @@ trait RepositoryFetch
         return $rules;
     }
 
-    protected function unsetEmptyParams(array $params)
+    /**
+     * Get rid of empty input params
+     *
+     * @param  array  $params   Input params
+     * @return array            Sanitizied input params
+     */
+    protected function unsetEmptyParams(array $params): array
     {
         $newParams = [];
 
         foreach ($params as $key => $value)
         {
-            if (($params[$key]) !== '')
+            if ($params[$key] !== '')
             {
                 $newParams[$key] = $value;
             }
@@ -628,6 +661,13 @@ trait RepositoryFetch
         }
     }
 
+    /**
+     * Filter fetch operation by merchantId. Super important for
+     * private auth calls.
+     *
+     * @param BuilderEx $query
+     * @param string    $merchantId
+     */
     protected function addCommonQueryParamMerchantId($query, $merchantId)
     {
         // For admins, merchant ID may not be required.
@@ -680,10 +720,18 @@ trait RepositoryFetch
         $query->skip($params['skip']);
     }
 
+    /**
+     * Add default params to the param list required
+     * for fetch operation.
+     *
+     * @param array $params
+     */
     protected function addDefaultParams(array & $params)
     {
+        // Add `count`
         $this->addDefaultParamCount($params);
 
+        // Add other default params
         if (isset($this->defaultFetchParams))
         {
             foreach ($this->defaultFetchParams as $key => $value)
@@ -698,22 +746,28 @@ trait RepositoryFetch
         $query->merchantId($params[Common::MERCHANT_ID]);
     }
 
+    /**
+     * Add `count` param specifying number of
+     * records to fetch.
+     *
+     * @param array $params
+     */
     protected function addDefaultParamCount(array & $params)
     {
         if ($this->auth->isAdminAuth() === true)
         {
-            $max = 1000;
-            $count = 1000;
+            $max    = 1000;
+            $count  = 1000;
         }
         else if ($this->auth->isPrivilegeAuth() === false)
         {
-            $max = 100;
-            $count = 10;
+            $max    = 100;
+            $count  = 10;
         }
         else
         {
-            $max = 1000;
-            $count = 1000;
+            $max    = 1000;
+            $count  = 1000;
         }
 
         $this->fetchParamRules['count'] .= '|max:'.$max;

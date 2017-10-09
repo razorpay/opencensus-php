@@ -15,4 +15,15 @@ class Service extends Base\Service
     {
         (new Core)->createMulitpleInvoiceEntities($input);
     }
+
+    public function updateGstin(string $merchantId, array $input): array
+    {
+        (new Validator)->validateInput('edit_gstin', $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $count = (new Core)->updateGstinForInvoice($input, $merchant);
+
+        return ['count' => $count];
+    }
 }

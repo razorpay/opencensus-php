@@ -12,6 +12,9 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity;
+use RZP\Models\Payment;
+use Razorpay\Trace\Logger as Trace;
 
 trait SettlementTrait
 {
@@ -39,6 +42,26 @@ trait SettlementTrait
 
                     $this->repo->saveOrFail($txn);
 
+                    continue;
+                }
+            }
+
+            // DSP wants settlements only between 10 am and 3 pm ¯\_(ツ)_/¯
+            //
+            // TODO : Move this to schedules
+            // https://github.com/razorpay/api/issues/5347
+            //
+            if ($txn->getMerchantId() === '7thBRSDflu7NHL')
+            {
+                $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+                $tenAm = Carbon::today(Timezone::IST)->hour(10)->getTimestamp();
+
+                $threePm = Carbon::today(Timezone::IST)->hour(15)->minute(10)->getTimestamp();
+
+                if (($now < $tenAm) or
+                    ($now > $threePm))
+                {
                     continue;
                 }
             }
@@ -94,6 +117,8 @@ trait SettlementTrait
             $setlAttempts->push($bankTransferAtpt);
         }
 
+        $this->updateSettlementIdInTransfer($txns);
+
         return [$settlements, $txnsSettledCount, $setlAttempts];
     }
 
@@ -126,6 +151,60 @@ trait SettlementTrait
         }
 
         return [$setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $setlGatewayFee];
+    }
+
+    /**
+     * [Marketplace] Updates the recipient's settlement id in the transfer entity.
+     *
+     *  When the transactions for the internal payments (payments triggered by the transfer
+     *  from master merchant to the linked account) are settled, the settlement_id of those
+     *  transactions will be updated for the transfer entity that initiated these payments.
+     *
+     * @param Base\PublicCollection $txns
+     */
+    protected function updateSettlementIdInTransfer(Base\PublicCollection $txns)
+    {
+        $filteredTxnIds = [];
+        foreach ($txns as $txn)
+        {
+            if (($txn->isTypePayment() === true) and ($txn->merchant->isLinkedAccount() === true))
+            {
+                $filteredTxnIds[] = $txn->getId();
+            }
+        }
+
+        if (empty($filteredTxnIds) === true)
+        {
+            return;
+        }
+
+        try
+        {
+            $relations = ['source', 'source.transfer'];
+            $filteredTxns = $this->repo->transaction->findManyWithRelations($filteredTxnIds, $relations);
+
+            foreach ($filteredTxns as $txn)
+            {
+                $settlementId = $txn->getSettlementId();
+
+                if ($settlementId === null)
+                {
+                    continue;
+                }
+
+                $transfer = $txn->source->transfer;
+
+                $transfer->setRecipientSettlementId($settlementId);
+
+                $this->repo->saveOrFail($transfer);
+            }
+
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex, Trace::CRITICAL, TraceCode::TRANSFER_UPDATE_SETTLEMENT_ID_FAILED, $filteredTxnIds);
+        }
     }
 
     protected function settleForMerchant(
@@ -202,7 +281,7 @@ trait SettlementTrait
         }
 
         if (($this->env !== 'testing') and
-            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
+            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->getTimestamp()))
         {
             $shouldSettle = false;
         }

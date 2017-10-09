@@ -45,7 +45,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is unsetso default root is used with default handle
-        $this->assertRegexp("/RAZORPAY[A-Z0-9]{10}$/", $vba['account_number']);
+        $this->assertRegexp("/RAZORPAY[A-Z0-9]{9}$/", $vba['account_number']);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -62,6 +62,32 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals("RZRPHANDDESC1234", $vba['account_number']);
     }
 
+    public function testCreateVirtualAccountDescriptorLengths()
+    {
+        $this->fixtures->merchant->setHandle('hand');
+
+        $this->createVirtualAccount(['descriptor' => '9chardesc']);
+
+        $vba = $this->getLastEntity('bank_account', true);
+        $this->assertEquals("RZRPHAND9CHARDESC", $vba['account_number']);
+
+        // Only upto nine chars allows in descriptor
+        $data = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($data, function() {
+            $this->createVirtualAccount(['descriptor' => '10chardesc']);
+        });
+
+        // Shortening handle to 3 characters
+        $this->fixtures->merchant->setHandle('han');
+
+        // Now 10 characters are allows
+        $this->createVirtualAccount(['descriptor' => '10chardesc']);
+
+        $vba = $this->getLastEntity('bank_account', true);
+        // Handle is set so standard root is used with given handle
+        $this->assertEquals("RZRPHAN10CHARDESC", $vba['account_number']);
+    }
+
     public function testCreateVirtualAccountWithIdenticalDescriptor()
     {
         $this->fixtures->merchant->setHandle('hand');
@@ -73,6 +99,17 @@ class VirtualAccountTest extends TestCase
         $this->runRequestResponseFlow($data, function() {
             $this->createVirtualAccount(['descriptor' => 'samedesc']);
         });
+    }
+
+    public function testCreateVirtualAccountWithIdenticalDescriptorAfterClosing()
+    {
+        $this->fixtures->merchant->setHandle('hand');
+
+        $virtualAccount = $this->createVirtualAccount(['descriptor' => 'samedesc']);
+
+        $this->closeVirtualAccount($virtualAccount['id']);
+
+        $this->createVirtualAccount(['descriptor' => 'samedesc']);
     }
 
     public function testFetchVirtualAccount()

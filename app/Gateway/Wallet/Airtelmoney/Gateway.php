@@ -110,7 +110,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->xmlToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, ['response' => $content]);
 
         $refundData = $this->getRefundWalletEntityData($input);
 
@@ -516,7 +516,7 @@ class Gateway extends Base\Gateway
 
     protected function getEpochTime($date, $format)
     {
-        return Carbon::createFromFormat($format, (string) $date)->timestamp;
+        return Carbon::createFromFormat($format, (string) $date)->getTimestamp();
     }
 
     protected function handleRequestFailure($content)

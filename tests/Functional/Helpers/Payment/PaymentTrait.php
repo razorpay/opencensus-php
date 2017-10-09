@@ -3,7 +3,6 @@
 namespace RZP\Tests\Functional\Helpers\Payment;
 
 use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Exception\BaseException;
 use RZP\Exception;
 use Mockery;
 use Requests;
@@ -30,6 +29,8 @@ trait PaymentTrait
     use PaymentSharpTrait;
     use PaymentMobikwikTrait;
     use PaymentCybersourceTrait;
+    use PaymentHitachiTrait;
+    use PaymentBladeTrait;
     use PaymentFirstDataTrait;
     use PaymentEbsTrait;
     use PaymentCreationTrait;
@@ -397,6 +398,24 @@ trait PaymentTrait
         $this->ba->publicAuth();
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function getWalletFormViaCreateRoute($payment)
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments',
+            'content' => $payment
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $response->assertViewIs('gateway.gatewayWalletForm');
+        $response->assertHeader('content-type', 'text/html; charset=UTF-8');
+
+        return $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
     }
 
     protected function makeOtpCallback($url)
@@ -1013,6 +1032,8 @@ trait PaymentTrait
         $payment['method'] = 'wallet';
         $payment['wallet'] = $wallet;
 
+        unset($payment['card'], $payment['bank']);
+
         return $payment;
     }
 
@@ -1300,37 +1321,57 @@ trait PaymentTrait
         $this->assertTrue($this->isResponseInstanceType($response, $type));
     }
 
-    protected function mockServerContentFunction($closure)
+    protected function mockServerContentFunction($closure, $gateway = null)
     {
-        $server = $this->mockServer()
+        $server = $this->mockServer($gateway)
                        ->shouldReceive('content')
                        ->andReturnUsing($closure)
                        ->mock();
 
-        $this->setMockServer($server);
+        $this->setMockServer($server, $gateway);
 
         return $server;
     }
 
-    protected function mockServer()
+    protected function mockServerRequestFunction($closure, $gateway = null)
     {
-        $class = $this->app['gateway']->getServerClass($this->gateway);
+        $server = $this->mockServer($gateway)
+                       ->shouldReceive('request')
+                       ->andReturnUsing($closure)
+                       ->mock();
+
+        $this->setMockServer($server, $gateway);
+
+        return $server;
+    }
+
+    protected function mockServer($gateway = null)
+    {
+        $gateway = $gateway ?: $this->gateway;
+
+        $class = $this->app['gateway']->getServerClass($gateway);
 
         return Mockery::mock($class, [])->makePartial();
     }
 
-    protected function setMockServer($server)
+    protected function setMockServer($server, $gateway = null)
     {
-         return $this->app['gateway']->setServer($this->gateway, $server);
+        $gateway = $gateway ?: $this->gateway;
+
+        return $this->app['gateway']->setServer($gateway, $server);
     }
 
-    protected function resetMockServer()
+    protected function resetMockServer($gateway = null)
     {
+        $gateway = $gateway ?: $this->gateway;
+
         return $this->app['gateway']->resetServer($this->gateway);
     }
 
-    protected function resetGatewayDriver()
+    protected function resetGatewayDriver($gateway = null)
     {
+        $gateway = $gateway ?: $this->gateway;
+
         return $this->app['gateway']->resetDriver($this->gateway);
     }
 

@@ -43,7 +43,7 @@ class Validator extends Base\Validator
         if (Type::isValid($input[Entity::TYPE]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Not a valid commision type: ', $input[Entity::TYPE]);
+                'Not a valid commission type: ', $input[Entity::TYPE]);
         }
     }
 }

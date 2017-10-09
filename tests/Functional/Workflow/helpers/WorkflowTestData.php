@@ -3,6 +3,8 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 
+use RZP\Tests\Functional\Fixtures\Entity\Workflow;
+
 return [
     'testCreateWorkflow' => [
         'request' => [
@@ -131,5 +133,23 @@ return [
                 ],
             ],
         ],
+    ],
+    'testWorkflowGetMultiple' => [
+        'request' => [
+            'method'    => 'GET',
+            'url'       => '/workflows',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     => [
+                    [
+                        'id'    => 'workflow_' . Workflow::DEFAULT_WORKFLOW_ID
+                    ]
+                ]
+            ]
+        ]
     ],
 ];

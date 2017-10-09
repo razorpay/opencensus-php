@@ -36,7 +36,7 @@ class WorkflowRequestListingTest extends TestCase
      */
     public function testWorkflowCheckerRequests()
     {
-        $this->ba->adminAuth('test', Org::CHECKER_TOKEN, 'org_' . Org::RZP_ORG);
+        $this->ba->adminAuth('test', Org::CHECKER_ADMIN_TOKEN, 'org_' . Org::RZP_ORG);
 
         $this->startTest();
     }
@@ -47,7 +47,7 @@ class WorkflowRequestListingTest extends TestCase
 
         $this->startTest();
 
-        $this->ba->adminAuth('test', Org::CHECKER_TOKEN, 'org_' . Org::RZP_ORG);
+        $this->ba->adminAuth('test', Org::CHECKER_ADMIN_TOKEN, 'org_' . Org::RZP_ORG);
 
         $this->testData[__FUNCTION__]['response']['content'] = [
             "entity" => "collection",
@@ -84,11 +84,29 @@ class WorkflowRequestListingTest extends TestCase
      */
     public function testAdminCheckedRequests()
     {
-        $workflow = $this->editAdmin('org_' . Org::RZP_ORG, 'admin_' . Org::SUPER_ADMIN);
+        $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::SUPER_ADMIN_SIGNED);
 
-        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
 
         $this->approveWorkflowAction($workflow['id']);
+
+        $this->startTest();
+    }
+
+    public function testWorkflowSuperAdminAllRequests()
+    {
+        $this->ba->adminAuth('test');
+
+        $this->fixtures->create('workflow_action:closed_workflow_action');
+
+        $this->startTest();
+    }
+
+    public function testWorkflowSuperAdminOpenRequests()
+    {
+        $this->ba->adminAuth('test');
+
+        $this->fixtures->create('workflow_action:closed_workflow_action');
 
         $this->startTest();
     }

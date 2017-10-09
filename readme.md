@@ -63,7 +63,7 @@
 
 ### Common Test Setup Instructions
 
-* Create two seperate databases for testing (separate from the development ones). (sample names: `api_testing_live`, `api_testing_test`)
+* Create three separate databases for testing (separate from the development ones). (sample names: `api_testing_live`, `api_testing_test`, `auth_test`)
 * Copy over `environment/.env.sample` to `.env.testing` and provide the database information
 * For above step, if you have sqlite set-up. Google how to do that with laravel.
 * Install php unit `sudo apt-get install phpunit`

@@ -16,7 +16,7 @@ class Repository extends Base\Repository
         Entity::REFUND_ID              => 'sometimes|string|max:19',
         Entity::ACTION                 => 'sometimes|alpha|max:10',
         Entity::CAPS_PAYMENT_ID        => 'sometimes|alpha_num|size:14',
-        Entity::GATEWAY_TRANSACTION_ID => 'sometimes|integer|max:20',
+        Entity::GATEWAY_TRANSACTION_ID => 'sometimes|digits_between:1,20',
     ];
 
     protected $signedIds = [
@@ -74,11 +74,14 @@ class Repository extends Base\Repository
 
     public function findSuccessfulRefundByRefundId(string $refundId)
     {
-        $actions = [Base\Action::REFUND, Base\Action::REVERSE];
+        $refundActions = [Base\Action::REFUND, Base\Action::REVERSE];
+
+        $failStates = [Status::FAILED, Status::VOIDED];
 
         $refundEntities =  $this->newQuery()
                                 ->where(Entity::REFUND_ID, '=', $refundId)
-                                ->whereIn(Entity::ACTION, $actions)
+                                ->whereIn(Entity::ACTION, $refundActions)
+                                ->whereNotIn(Entity::STATUS, $failStates)
                                 ->get();
         //
         // There should never be more than one successful gateway refund entity

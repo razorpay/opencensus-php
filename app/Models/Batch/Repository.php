@@ -9,13 +9,18 @@ class Repository extends Base\Repository
     protected $entity = 'batch';
 
     protected $proxyFetchParamRules = [
-        Entity::TYPE        => 'sometimes|in:refund,payment_link',
+        Entity::TYPE        => 'sometimes|string|custom',
     ];
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
         Entity::STATUS      => 'sometimes|in:created,processing,processed',
     ];
+
+    protected function validateType($attribute, $value)
+    {
+        Type::validateType($value);
+    }
 
     /**
      * Finds unprocessed batches to be processed via CRON.
@@ -32,7 +37,7 @@ class Repository extends Base\Repository
         $status = [Status::CREATED, Status::PROCESSING];
 
         return $this->newQuery()
-                    ->whereIn(Entity::TYPE, Type::CRON_GROUP)
+                    ->whereIn(Entity::TYPE, Type::$cronGroup)
                     ->whereIn(Entity::STATUS, $status)
                     ->oldest()
                     ->limit($limit)

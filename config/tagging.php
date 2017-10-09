@@ -9,7 +9,9 @@ return [
     'normalizer' => '\Conner\Tagging\Util::slug',
 
     // Display value of tags are passed through (for front end display)
-    'displayer' => '\Illuminate\Support\Str::title',
+    // We changed the value of displayer from '\Illuminate\Support\Str::title' to ucfirst
+    // because it was transforming our `ref-mid` tags leaving them unusable.
+    'displayer' => 'ucfirst',
 
     // Database connection for Conner\Taggable\Tag model to use
     // 'connection' => 'mysql',

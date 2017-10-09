@@ -15,6 +15,7 @@ class MailTags
     const KOTAK_PAYOUT_SUMMARY             = 'kotak_payout_summary';
 
     const ICICI_SETTLEMENT_FILES           = 'icici_settlement_files';
+    const AXIS_SETTLEMENT_FILES            = 'axis_settlement_files';
 
     const SETTLEMENT_FAILURE_EMAIL         = 'settlement_failure_email';
 
@@ -40,6 +41,15 @@ class MailTags
 
     const INVOICE                          = 'invoice';
     const ECOD                             = 'ecod';
+
+    const SUBSCRIPTION_AUTHENTICATED       = 'subscription_authenticated';
+    const SUBSCRIPTION_CHARGED             = 'subscription_charged';
+    const SUBSCRIPTION_PENDING             = 'subscription_pending';
+    const SUBSCRIPTION_HALTED              = 'subscription_halted';
+    const SUBSCRIPTION_CANCELLED           = 'subscription_cancelled';
+    const SUBSCRIPTION_CARD_CHANGED        = 'subscription_card_changed';
+    const SUBSCRIPTION_COMPLETED           = 'subscription_completed';
+    const SUBSCRIPTION_INVOICE_CHARGED     = 'subscription_invoice_charged';
 
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
@@ -68,6 +78,12 @@ class MailTags
     // Merchant Activation Email Tags
     const NOTIFY_ACTIVATION_SUBMISSION     = 'notify_activation_submission';
     const CONFIRM_ACTIVATION_SUBMISSION    = 'confirm_activation_submission';
+
+    // OAuth email tags
+    const OAUTH_APP_AUTHORIZED             = 'oauth_app_authorized';
+
+    // Merchant feature tags
+    const FEATURE_ENABLED                  = 'feature_enabled';
 
     /**
      * Email tags that should respond to the mailgun failure webhook

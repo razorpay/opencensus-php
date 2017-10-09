@@ -5,10 +5,13 @@ namespace RZP\Models\Dispute;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 
 class Entity extends Base\PublicEntity
 {
+    use Base\Traits\RevisionableTrait;
+
     const MERCHANT_ID             = 'merchant_id';
     const PAYMENT_ID              = 'payment_id';
     const TRANSACTION_ID          = 'transaction_id';
@@ -36,6 +39,10 @@ class Entity extends Base\PublicEntity
     protected $entity = 'dispute';
 
     protected $generateIdOnCreate = true;
+
+    protected $revisionCreationsEnabled = true;
+
+    protected $revisionEnabled = true;
 
     protected $fillable = [
         self::ID,
@@ -185,8 +192,8 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::CURRENCY);
     }
-    
-    protected function getStatus()
+
+    public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
     }
@@ -237,6 +244,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Reason\Entity::class);
     }
 
+    public function adjustments()
+    {
+        return $this->morphMany(Adjustment\Entity::class, 'entity');
+    }
+
     // --------------- Relation to other entity section ends --------------------
 
     public function isClosed(): bool
@@ -247,5 +259,10 @@ class Entity extends Base\PublicEntity
     public function isLost(): bool
     {
         return ($this->getStatus() === Status::LOST);
+    }
+
+    public function isWon(): bool
+    {
+        return ($this->getStatus() === Status::WON);
     }
 }

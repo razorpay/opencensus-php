@@ -2,6 +2,9 @@
 
 namespace RZP\Gateway\Base;
 
+use Crypt;
+use Cache;
+use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -35,11 +38,19 @@ class Gateway
     const OTP_ATTEMPTS_LIMIT = 3;
 
     /**
+     * Number of minutes that the cache key will be stored
+     * @var integer
+     */
+    const CACHE_TTL = 15;
+
+    /**
      * In gateway responses one particular field contains
      * hash or checksum. This variable will contain that field
      * name.
      */
     const CHECKSUM_ATTRIBUTE = '';
+
+    const CACHE_KEY = 'base_%s_card_details';
 
     /**
      * The application instance.
@@ -322,6 +333,22 @@ class Gateway
         }
     }
 
+    protected function getAcquirerData($input, $gatewayPayment)
+    {
+        $acquirer = [];
+
+        switch ($input['payment']['method'])
+        {
+            case Payment\Method::CARD:
+                $acquirer['acquirer'] = [
+                    Payment\Entity::REFERENCE2 => $gatewayPayment->getAuthCode(),
+                ];
+                break;
+        }
+
+        return $acquirer;
+    }
+
     protected function getCallbackResponseData(array $input, $response = [])
     {
         $response[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::PASSED;
@@ -548,6 +575,18 @@ class Gateway
             throw new Exception\PaymentVerificationException(
                 $verify->getDataToTrace(),
                 $verify);
+        }
+
+        if (($verify->amountMismatch === true) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\RuntimeException(
+                'Payment amount verification failed.',
+                [
+                    'payment_id' => $this->input['payment']['id'],
+                    'gateway'    => $this->gateway
+                ]
+            );
         }
 
         return $verify->getDataToTrace();
@@ -913,7 +952,7 @@ class Gateway
         {
             $res = simplexml_load_string($xml);
 
-            return (array) $res;
+            return json_decode(json_encode($res), true);
         }
         catch (\Exception $e)
         {
@@ -923,6 +962,16 @@ class Gateway
                 'Failed to convert xml to array',
                 ['xml' => $xml],
                 $e);
+        }
+    }
+
+    protected function failIfRequired(array $input)
+    {
+        if ((isset($input['test_success']) === true) and
+            ($input['test_success'] === false))
+        {
+            throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_SCHEDULED_FAILURE);
         }
     }
 
@@ -950,5 +999,29 @@ class Gateway
                     'Failed to convert json to array',
                     ['json' => $json]);
         }
+    }
+
+    /*
+     * Updates the gateway payment entity
+     *
+     * @param gatewayPayment Gateway\Base\Entity      Gateway Payment Entity
+     * @param attributes     array
+     * @param mapped         boolean                 If the attrs are mapped to gateway codes
+     */
+    protected function updateGatewayPaymentEntity(
+        Entity $gatewayPayment,
+        array $attributes,
+        bool $mapped = true)
+    {
+        if ($mapped === true)
+        {
+            $attributes = $this->getMappedAttributes($attributes);
+        }
+
+        $gatewayPayment->fill($attributes);
+
+        $this->getRepository()->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
     }
 }

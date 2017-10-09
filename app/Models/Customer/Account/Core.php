@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer;
 
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Address;
@@ -160,7 +161,7 @@ class Core extends Base\Core
 
     public function sendOtp($input, $merchant)
     {
-        $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact($input[Entity::CONTACT]);
+        $input = Customer\Validator::validateAndParseContactInInput($input);
 
         $data = (new Customer\Raven)->sendOtp($input, $merchant);
 
@@ -173,7 +174,7 @@ class Core extends Base\Core
         Customer\Validator::validateGlobalCustomerCreateInput($input);
 
         // Parse contact
-        $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact($input[Entity::CONTACT]);
+        $input = Customer\Validator::validateAndParseContactInInput($input);
 
         // Verify the otp with raven service
         $this->verifyRavenOtp($input, $merchant);
@@ -224,7 +225,7 @@ class Core extends Base\Core
     {
         Customer\Validator::validateWalletAppCustomerCreateInput($input);
 
-        $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact($input[Entity::CONTACT]);
+        $input = Customer\Validator::validateAndParseContactInInput($input);
 
         (new Customer\Validator)->validateIndianContact($input[Entity::CONTACT]);
 
@@ -384,10 +385,19 @@ class Core extends Base\Core
 
         $ba = $this->app['basicauth'];
 
-        if ($ba->isPrivilegeAuth() === true)
+        //
+        // In case of internal auth/ crons,
+        // there will not be any app_token.
+        // Also, in case of subscriptions, we have a charge route (in test mode)
+        // (which is generally used by our crons)
+        // which is hit from the dashboard. We do not expect to
+        // have app_token here just like how we don't expect in
+        // privilege (cron) auth.
+        //
+        if ((($ba->isProxyAuth() === true) and
+             ($this->mode === Mode::TEST)) or
+            ($ba->isPrivilegeAuth() === true))
         {
-            // In case of internal auth/ crons,
-            // there will not be any app_token.
             return [$customer, null];
         }
 

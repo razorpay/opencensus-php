@@ -12,7 +12,9 @@ class Type
 
     public static function isTypeValid($type)
     {
-        return (defined(__CLASS__ . '::' . strtoupper($type)));
+        $key = __CLASS__ . '::' . strtoupper($type);
+
+        return ((defined($key) === true) and (constant($key) === $type));
     }
 
     public static function checkType($type)

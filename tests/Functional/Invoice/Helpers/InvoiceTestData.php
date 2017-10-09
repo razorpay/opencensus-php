@@ -29,7 +29,6 @@ return [
                         'amount'        => 100000,
                     ]
                 ],
-                'user_id'  => 'abcdefghij1234',
             ],
         ],
         'response' => [
@@ -46,6 +45,7 @@ return [
                         'description' => 'Some item description',
                         'amount'      => 100000,
                         'quantity'    => 1,
+                        'type'        => 'invoice',
                     ]
                 ],
                 'status'       => 'issued',
@@ -81,15 +81,15 @@ return [
                 ],
                 'line_items'    => [
                     [
-                        'name'          => 'Some item name',
-                        'description'   => 'Some item description',
-                        'amount'        => 100000,
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'type'        => 'invoice',
                     ]
                 ],
                 'currency' => 'INR',
                 'date' => null,
                 'type' => 'ecod',
-                'user_id'  => 'abcdefghij1234',
             ],
         ],
         'response' => [
@@ -117,6 +117,7 @@ return [
                         'description' => 'Some item description',
                         'amount'      => 100000,
                         'quantity'    => 1,
+                        'type'        => 'invoice',
                     ]
                 ],
                 'status'       => 'issued',
@@ -410,6 +411,41 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_ITEM_INACTIVE,
+        ],
+    ],
+
+    'testCreateInvoiceWithItemOfTypeNonInvoice' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'line_items'  => [
+                    [
+                        'item_id'       => 'item_1000000000item',
+                        'quantity'      => 5,
+                    ],
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                    ],
+                ],
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Can only reuse an item of the same item type',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE,
         ],
     ],
 
@@ -1768,7 +1804,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The line items may not have more than 20 items in total.',
+                    'description' => 'The invoice may not have more than 20 items in total.',
                 ],
             ],
             'status_code' => 400,
@@ -1933,7 +1969,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The selected currency is invalid.',
+                    'description' => 'Currency of all items should be the same as of the invoice.',
                 ],
             ],
             'status_code' => 400,
@@ -2226,6 +2262,19 @@ return [
         ],
     ],
 
+    'testSendNotificationWithEmailModeByPrivateAuthRoute' => [
+        'request' => [
+            'url'     => '/invoices/inv_1000000invoice/notify_by/email',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ],
+    ],
+
     // ------------------------------------------------------------
     // Get invoice
     // ------------------------------------------------------------
@@ -2382,6 +2431,83 @@ return [
                             'error_description' => null,
                             'acquirer_data'     => [],
                             'tax'               => 0,
+                        ],
+                    ],
+                ],
+                'status'         => 'paid',
+                'amount'         => 100000,
+                'amount_paid'    => 100000,
+                'amount_due'     => 0,
+                'currency'       => 'INR',
+                'type'           => 'invoice',
+            ],
+        ],
+    ],
+
+    'testGetInvoiceWithPaymentsCard' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice',
+            'method'  => 'get',
+            'content' => [
+                'expand'   => [
+                    'payments.card',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'             => 'inv_1000000invoice',
+                'entity'         => 'invoice',
+                'customer_id'    => 'cust_100000customer',
+                'customer_details' => [
+                    'name'            => 'test',
+                    'email'           => 'test@razorpay.com',
+                    'contact'         => '1234567890',
+                    'billing_address' => null,
+                ],
+                'order_id'       => 'order_100000000order',
+                'line_items'     => [],
+                'payments'       => [
+                    'entity' => 'collection',
+                    'count'  => 1,
+                    'items'  => [
+                        [
+                            'entity'            => 'payment',
+                            'amount'            => 100000,
+                            'currency'          => 'INR',
+                            'status'            => 'captured',
+                            'order_id'          => 'order_100000000order',
+                            'invoice_id'        => 'inv_1000000invoice',
+                            'international'     => false,
+                            'method'            => 'card',
+                            'amount_refunded'   => 0,
+                            'refund_status'     => null,
+                            'captured'          => true,
+                            'description'       => 'random description',
+                            'bank'              => null,
+                            'wallet'            => null,
+                            'vpa'               => null,
+                            'email'             => 'a@b.com',
+                            'contact'           => '+919918899029',
+                            'notes'             => [
+                                'merchant_order_id' => 'random order id',
+                            ],
+                            'fee'               => 2000,
+                            'service_tax'       => 0,
+                            'error_code'        => null,
+                            'error_description' => null,
+                            'acquirer_data'     => [],
+                            'tax'               => 0,
+                            'card' => [
+                                'entity'        => 'card',
+                                'name'          => 'Harshil',
+                                'last4'         => '3335',
+                                'network'       => 'Visa',
+                                'type'          => 'credit',
+                                'issuer'        => 'HDFC',
+                                'international' => false,
+                                'emi'           => true
+                            ]
                         ],
                     ],
                 ],
@@ -2995,12 +3121,354 @@ return [
         ],
     ],
 
+    'testInvoiceExpiredWebhook' => [
+        'request' => [
+            'url'     => '/invoices/expire',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'total_invoices_count' => 1,
+                'failed_invoice_ids'   => [],
+                // 'time_taken'           => '1 secs',
+            ],
+        ],
+    ],
+
+    'testInvoiceExpiredWebhookEventData' => [
+        'entity'   => 'event',
+        'event'    => 'invoice.expired',
+        'contains' => [
+            'invoice',
+        ],
+        'payload'  => [
+            'invoice' => [
+                'entity' => [
+                    'id'               => 'inv_1000000invoice',
+                    'entity'           => 'invoice',
+                    'receipt'          => null,
+                    'invoice_number'   => null,
+                    'customer_id'      => 'cust_100000customer',
+                    'customer_details' => [
+                        'name'             => 'test',
+                        'email'            => 'test@razorpay.com',
+                        'contact'          => '1234567890',
+                        'billing_address'  => null,
+                        'customer_name'    => 'test',
+                        'customer_email'   => 'test@razorpay.com',
+                        'customer_contact' => '1234567890',
+                    ],
+                    'order_id'              => 'order_100000000order',
+                    'payment_id'            => null,
+                    'status'                => 'expired',
+                    // 'expire_by'             => 1505201091,
+                    // 'issued_at'             => 1505088000,
+                    'paid_at'               => null,
+                    'cancelled_at'          => null,
+                    // 'expired_at'            => 1505201092,
+                    'sms_status'            => 'sent',
+                    'email_status'          => 'sent',
+                    'date'                  => null,
+                    'terms'                 => null,
+                    'partial_payment'       => false,
+                    'gross_amount'          => null,
+                    'tax_amount'            => null,
+                    'amount'                => 100000,
+                    'amount_paid'           => 0,
+                    'amount_due'            => 100000,
+                    'currency'              => 'INR',
+                    'description'           => null,
+                    'notes'                 => [],
+                    'comment'               => null,
+                    'short_url'             => 'http://bitly.dev/2eZ11Vn',
+                    'view_less'             => true,
+                    'billing_start'         => null,
+                    'billing_end'           => null,
+                    'type'                  => 'invoice',
+                    'group_taxes_discounts' => false,
+                    'user_id'               => null,
+                    // 'created_at'            => 1505201092,
+                ],
+            ],
+        ],
+        // 'created_at' => 1505201092,
+    ],
+
+    'testInvoicePartiallyPaidWebhookEventData' => [
+        'entity'   => 'event',
+        'event'    => 'invoice.partially_paid',
+        'contains' => [
+            'payment',
+            'order',
+            'invoice',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 60000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'order_id'   => 'order_100000000order',
+                    'invoice_id' => 'inv_1000000invoice',
+                    'captured'   => true,
+                ],
+            ],
+            'order' => [
+                'entity' => [
+                    'id'          => 'order_100000000order',
+                    'entity'      => 'order',
+                    'amount'      => 100000,
+                    'amount_paid' => 60000,
+                    'amount_due'  => 40000,
+                    'currency'    => 'INR',
+                    'status'      => 'attempted',
+                    'attempts'    => 1,
+                ],
+            ],
+            'invoice' => [
+                'entity' => [
+                    'id'              => 'inv_1000000invoice',
+                    'entity'          => 'invoice',
+                    'order_id'        => 'order_100000000order',
+                    'status'          => 'partially_paid',
+                    'partial_payment' => true,
+                    'gross_amount'    => null,
+                    'tax_amount'      => null,
+                    'amount'          => 100000,
+                    'amount_paid'     => 60000,
+                    'amount_due'      => 40000,
+                    'currency'        => 'INR',
+                ],
+            ],
+        ],
+    ],
+
+    'testInvoiceMultiplePartiallyPaidWebhooksEventData1' => [
+        'entity'   => 'event',
+        'event'    => 'invoice.partially_paid',
+        'contains' => [
+            'payment',
+            'order',
+            'invoice',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 60000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'order_id'   => 'order_100000000order',
+                    'invoice_id' => 'inv_1000000invoice',
+                    'captured'   => true,
+                ],
+            ],
+            'order' => [
+                'entity' => [
+                    'id'          => 'order_100000000order',
+                    'entity'      => 'order',
+                    'amount'      => 100000,
+                    'amount_paid' => 60000,
+                    'amount_due'  => 40000,
+                    'currency'    => 'INR',
+                    'status'      => 'attempted',
+                    'attempts'    => 1,
+                ],
+            ],
+            'invoice' => [
+                'entity' => [
+                    'id'              => 'inv_1000000invoice',
+                    'entity'          => 'invoice',
+                    'order_id'        => 'order_100000000order',
+                    'status'          => 'partially_paid',
+                    'partial_payment' => true,
+                    'gross_amount'    => null,
+                    'tax_amount'      => null,
+                    'amount'          => 100000,
+                    'amount_paid'     => 60000,
+                    'amount_due'      => 40000,
+                    'currency'        => 'INR',
+                ],
+            ],
+        ],
+    ],
+
+    'testInvoiceMultiplePartiallyPaidWebhooksEventData2' => [
+        'entity'   => 'event',
+        'event'    => 'order.paid',
+        'contains' => [
+            'payment',
+            'order',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 40000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'order_id'   => 'order_100000000order',
+                    'invoice_id' => 'inv_1000000invoice',
+                    'captured'   => true,
+                ],
+            ],
+            'order' => [
+                'entity' => [
+                    'id'          => 'order_100000000order',
+                    'entity'      => 'order',
+                    'amount'      => 100000,
+                    'amount_paid' => 100000,
+                    'amount_due'  => 0,
+                    'currency'    => 'INR',
+                    'status'      => 'paid',
+                    'attempts'    => 2,
+                ],
+            ],
+        ],
+    ],
+
+    'testInvoiceMultiplePartiallyPaidWebhooksEventData3' => [
+        'entity'   => 'event',
+        'event'    => 'invoice.paid',
+        'contains' => [
+            'payment',
+            'order',
+            'invoice',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 40000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'order_id'   => 'order_100000000order',
+                    'invoice_id' => 'inv_1000000invoice',
+                    'captured'   => true,
+                ],
+            ],
+            'order' => [
+                'entity' => [
+                    'id'          => 'order_100000000order',
+                    'entity'      => 'order',
+                    'amount'      => 100000,
+                    'amount_paid' => 100000,
+                    'amount_due'  => 0,
+                    'currency'    => 'INR',
+                    'status'      => 'paid',
+                    'attempts'    => 2,
+                ],
+            ],
+            'invoice' => [
+                'entity' => [
+                    'id'              => 'inv_1000000invoice',
+                    'entity'          => 'invoice',
+                    'order_id'        => 'order_100000000order',
+                    'status'          => 'paid',
+                    'partial_payment' => true,
+                    'gross_amount'    => null,
+                    'tax_amount'      => null,
+                    'amount'          => 100000,
+                    'amount_paid'     => 100000,
+                    'amount_due'      => 0,
+                    'currency'        => 'INR',
+                ],
+            ],
+        ],
+    ],
+
+    'testInvoicePaidAndOrderPaidWebhooksEventData1' => [
+        'entity'   => 'event',
+        'event'    => 'order.paid',
+        'contains' => [
+            'payment',
+            'order',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 100000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'order_id'   => 'order_100000000order',
+                    'invoice_id' => 'inv_1000000invoice',
+                    'captured'   => true,
+                ],
+            ],
+            'order' => [
+                'entity' => [
+                    'id'          => 'order_100000000order',
+                    'entity'      => 'order',
+                    'amount'      => 100000,
+                    'amount_paid' => 100000,
+                    'amount_due'  => 0,
+                    'currency'    => 'INR',
+                    'status'      => 'paid',
+                    'attempts'    => 1,
+                ],
+            ],
+        ],
+    ],
+
+    'testInvoicePaidAndOrderPaidWebhooksEventData2' => [
+        'entity'   => 'event',
+        'event'    => 'invoice.paid',
+        'contains' => [
+            'payment',
+            'order',
+            'invoice',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 100000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'order_id'   => 'order_100000000order',
+                    'invoice_id' => 'inv_1000000invoice',
+                    'captured'   => true,
+                ],
+            ],
+            'order' => [
+                'entity' => [
+                    'id'          => 'order_100000000order',
+                    'entity'      => 'order',
+                    'amount'      => 100000,
+                    'amount_paid' => 100000,
+                    'amount_due'  => 0,
+                    'currency'    => 'INR',
+                    'status'      => 'paid',
+                    'attempts'    => 1,
+                ],
+            ],
+            'invoice' => [
+                'entity' => [
+                    'id'              => 'inv_1000000invoice',
+                    'entity'          => 'invoice',
+                    'order_id'        => 'order_100000000order',
+                    'status'          => 'paid',
+                    'partial_payment' => false,
+                    'gross_amount'    => null,
+                    'tax_amount'      => null,
+                    'amount'          => 100000,
+                    'amount_paid'     => 100000,
+                    'amount_due'      => 0,
+                    'currency'        => 'INR',
+                ],
+            ],
+        ],
+    ],
+
     // ----------------------------------------------------------------------
     // Expectations for ES
 
     'testGetInvoiceByReceiptExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -3011,8 +3479,9 @@ return [
                         [
                             'match' => [
                                 'receipt' => [
-                                    'query' =>'00000000000002',
-                                    'boost' => 2,
+                                    'query'                =>'00000000000002',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
@@ -3054,8 +3523,8 @@ return [
     ],
 
     'testGetMultipleInvoicesOnlyEsFieldsExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -3066,17 +3535,19 @@ return [
                         [
                             'match' => [
                                 'customer_name' => [
-                                    'query' =>'tes',
-                                    'boost' => 2,
+                                    'query'                =>'tes',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
                         [
                             'multi_match' => [
-                                'query'  => 'info',
-                                'type'   => 'best_fields',
-                                'fields' => 'notes.*',
-                                'boost'  => 2,
+                                'query'                => 'info',
+                                'type'                 => 'best_fields',
+                                'fields'               => 'notes.*',
+                                'boost'                => 2,
+                                'minimum_should_match' => '75%',
                             ],
                         ]
                     ],
@@ -3120,8 +3591,8 @@ return [
     ],
 
     'testGetMultipleInvoicesByQExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 10,
@@ -3142,7 +3613,8 @@ return [
                                     'terms',
                                     'notes.*',
                                 ],
-                                'boost'  => 1,
+                                'boost'                => 1,
+                                'minimum_should_match' => '75%',
                             ],
                         ]
                     ],
@@ -3183,8 +3655,8 @@ return [
     ],
 
     'testGetMultipleInvoicesSearchHitsOnlyExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => true,
             'from'    => 0,
@@ -3195,8 +3667,9 @@ return [
                         [
                             'match' => [
                                 'customer_name' => [
-                                    'query' =>'tes',
-                                    'boost' => 2,
+                                    'query'                =>'tes',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
@@ -3245,8 +3718,8 @@ return [
     ],
 
     'testGetMultipleInvoicesByEsFeildAndFromExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 20,
@@ -3257,8 +3730,9 @@ return [
                         [
                             'match' => [
                                 'receipt' => [
-                                    'query' =>'rec',
-                                    'boost' => 2,
+                                    'query'                =>'rec',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
@@ -3303,8 +3777,8 @@ return [
     ],
 
     'testGetMultipleInvoicesByEsFeildFromAndToExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 20,
@@ -3315,8 +3789,9 @@ return [
                         [
                             'match' => [
                                 'receipt' => [
-                                    'query' =>'rec',
-                                    'boost' => 2,
+                                    'query'                =>'rec',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
@@ -3362,8 +3837,8 @@ return [
     ],
 
     'testGetMultipleInvoicesByCommonAndEsFieldsExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -3401,8 +3876,9 @@ return [
                         [
                             'match' => [
                                 'receipt' => [
-                                    'query' =>'xyz',
-                                    'boost' => 2,
+                                    'query'                =>'xyz',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
@@ -3434,8 +3910,8 @@ return [
         'body' => [
             [
                 'index' => [
-                    '_index' => 'invoice_test',
-                    '_type'  => 'invoice_test',
+                    '_index' => 'testing_invoice_test',
+                    '_type'  => 'testing_invoice_test',
                     // '_id'    => '7KoRT3qkc1KGFb',
                 ],
             ],

@@ -27,4 +27,9 @@ class Service extends Base\Service
 
         return $dispute->toArrayPublic();
     }
+
+    public function migrateOldAdjustments($file): array
+    {
+        return $this->core()->migrateOldAdjustments($file);
+    }
 }

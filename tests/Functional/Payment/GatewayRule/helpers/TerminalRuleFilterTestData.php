@@ -634,15 +634,6 @@ return [
                 [
                     'method'      => Method::CARD,
                     'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
-                    'gateway'     => 'hdfc',
-                    'type'        => 'filter',
-                    'filter_type' => 'select',
-                    'group'       => 'method_filter',
-                ],
-                [
-                    'method'      => Method::CARD,
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
-                    'gateway'     => 'first_data',
                     'type'        => 'filter',
                     'filter_type' => 'select',
                     'group'       => 'method_filter',
@@ -650,7 +641,6 @@ return [
                 [
                     'method'        => Method::CARD,
                     'merchant_id'   => Merchant\Account::SHARED_ACCOUNT,
-                    'gateway'       => 'first_data',
                     'type'          => 'filter',
                     'filter_type'   => 'select',
                     'group'         => 'international_filter',
@@ -687,6 +677,34 @@ return [
             'expected_terminal_ids' => [
                 '1000HdfcShared',
             ]
+        ]
+    ],
+
+    'testDomesticPaymentFilter' => [
+        'payment_options' => [
+            'method' => Method::CARD,
+        ],
+        'fixtures' => [
+            [
+                'method'      => Method::CARD,
+                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'type'        => 'filter',
+                'filter_type' => 'select',
+                'group'       => 'method_filter',
+            ],
+            [
+                'method'        => Method::CARD,
+                'merchant_id'   => Merchant\Account::SHARED_ACCOUNT,
+                'type'          => 'filter',
+                'filter_type'   => 'select',
+                'group'         => 'domestic_filter',
+                'international' => '0',
+                'currency'      => 'INR',
+            ],
+        ],
+        'expected_terminal_ids' => [
+            '1000HdfcShared',
+            '1000FrstDataTl'
         ]
     ],
 

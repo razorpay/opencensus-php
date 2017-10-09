@@ -16,7 +16,7 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'Kotak';
 
-    const TYPE = FileStore\Type::KOTAK_EMI_FILE;
+    protected $type = FileStore\Type::KOTAK_EMI_FILE;
 
     protected function getEmiData($input)
     {

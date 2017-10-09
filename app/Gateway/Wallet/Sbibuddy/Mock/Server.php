@@ -53,8 +53,6 @@ class Server extends Base\Mock\Server
 
         $content = $this->prepareVerifyResponse($data, $input[RequestFields::MERCHANT_ID]);
 
-        $this->content($content, 'verify');
-
         $content = http_build_query($content);
 
         return $this->makeResponse($content);
@@ -94,6 +92,8 @@ class Server extends Base\Mock\Server
     {
         $content = $this->getVerifyResponseContent($input[RequestFields::ORDER_ID]);
 
+        $this->content($content, 'verify');
+
         $encryptedData = $this->getGatewayInstance()->getEncryptedStringFromData($content);
 
         return [
@@ -114,7 +114,9 @@ class Server extends Base\Mock\Server
             ResponseFields::TRACKING_ID             => 123,
             ResponseFields::AMOUNT                  => $amount,
             ResponseFields::FEE                     => "0.00",
-            ResponseFields::STATUS_CODE             => ResponseCodeMap::SUCCESS_CODE
+            ResponseFields::STATUS_CODE             => ResponseCodeMap::SUCCESS_CODE,
+            ResponseFields::REFUND_ID               => "123,234,345",
+            ResponseFields::REFUNDED_AMOUNT         => "80.00",
         ];
 
         return $content;

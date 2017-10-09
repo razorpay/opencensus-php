@@ -119,6 +119,11 @@ class Core extends Base\Core
         return $org->toArrayDeleted();
     }
 
+    /**
+     * Adds permission to Org in both live and test.
+     * @param Permission\Entity $permission
+     * @param Entity $org
+     */
     public function addPermissionToOrg(
         Permission\Entity $permission,
         Entity $org)
@@ -132,6 +137,7 @@ class Core extends Base\Core
             $role = $this->repo->role
                                ->getSuperAdminRoleByOrgId($org->getId());
 
+            // attach newly added permission to superadmin.
             $this->repo->attach($role, 'permissions', [$permId]);
         });
     }
@@ -142,6 +148,7 @@ class Core extends Base\Core
     {
         $this->repo->transactionOnLiveAndTest(function() use($permission, $org)
         {
+
             $permId = $permission->getId();
             $orgId = $org->getId();
 

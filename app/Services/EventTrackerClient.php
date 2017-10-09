@@ -30,6 +30,8 @@ class EventTrackerClient extends AbstractEventClient
 
     const TRACK_EVENT_URL_PATTERN = 'track';
 
+    const SNS_CLIENT = 'lumberjack';
+
     const CONTEXT_KEYS = [
         Analytics::IP,
         Analytics::CHECKOUT_ID,
@@ -235,7 +237,7 @@ class EventTrackerClient extends AbstractEventClient
                 'gateway'   => $terminal->getGateway(),
                 'acquirer'  => $terminal->getGatewayAcquirer(),
                 'category'  => $terminal->getCategory(),
-                'shared'    => $terminal->getShared(),
+                'shared'    => $terminal->isShared(),
                 'type'      => $terminal->getType(),
                 'mode'      => $terminal->getMode(),
             ];
@@ -331,17 +333,6 @@ class EventTrackerClient extends AbstractEventClient
     }
 
     /**
-     * Get HMAC message
-     *
-     * @param string $message
-     * @return string $key
-     */
-    protected function getHmacMessage(string $message)
-    {
-        return $this->config['key'];
-    }
-
-    /**
      * Track a payment through lumberjack
      *
      * @param Payment\Entity $payment
@@ -383,26 +374,13 @@ class EventTrackerClient extends AbstractEventClient
     {
         try
         {
-            //
-            // Enable it for demo merchant only for testing
-            //
-            if (empty($eventData['events'][0]['properties']['merchant_id']) === false)
-            {
-                $merchantId = $eventData['events'][0]['properties']['merchant_id'];
-
-                if ($merchantId === Account::DEMO_PAGE_ACCOUNT)
-                {
-                    $this->sns->publish(json_encode($eventData), 'lumberjack');
-
-                    return;
-                }
-            }
+            $this->sns->publish(json_encode($eventData), self::SNS_CLIENT);
         }
         catch (\Throwable $e)
         {
             $this->trace->error(TraceCode::LUMBERJACK_ASYNC_REQUEST_FAILED, $eventData);
-        }
 
-        parent::sendEventRequest($headers, $url, $eventData);
+            parent::sendEventRequest($headers, $url, $eventData);
+        }
     }
 }

@@ -9,6 +9,7 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Models\Adjustment;
 use RZP\Base\JitValidator;
 use RZP\Constants\Entity as E;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
@@ -37,18 +38,26 @@ class BasicEntityReport extends BaseReport
                 E::PAYMENT . '.' . E::CARD,
                 E::PAYMENT . '.' . E::ORDER,
             ],
-            E::DISPUTE => [
-                E::PAYMENT,
-                E::PAYMENT . '.' . E::CARD,
-                E::PAYMENT . '.' . E::ORDER,
+            E::ADJUSTMENT   => [
+                Adjustment\Entity::ENTITY,
+                Adjustment\Entity::ENTITY . '.' . E::PAYMENT,
+                Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::CARD,
+                Adjustment\Entity::ENTITY . '.' . E::PAYMENT . '.' . E::ORDER,
             ],
+        ],
+        E::DISPUTE => [
+            E::PAYMENT,
+            E::PAYMENT . '.' . E::CARD,
+            E::PAYMENT . '.' . E::ORDER,
         ],
         E::MERCHANT     => [],
         E::PAYMENT      => [E::CARD],
         E::REFUND       => [E::PAYMENT],
         E::ORDER        => [],
         E::SETTLEMENT   => [],
-        E::TRANSFER     => [],
+        E::TRANSFER     => [
+            'recipientSettlement'
+        ],
         E::REVERSAL     => [],
         E::INVOICE      => [E::ORDER],
     ];

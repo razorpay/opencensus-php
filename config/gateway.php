@@ -15,7 +15,9 @@ return [
         'axis_genius',
         'axis_migs',
         'billdesk',
+        'blade',
         'cybersource',
+        'hitachi',
         'first_data',
         'ebs',
         'hdfc',
@@ -23,6 +25,7 @@ return [
         'mobikwik',
         'paytm',
         'netbanking_hdfc',
+        'netbanking_corporation',
         'netbanking_kotak',
         'netbanking_icici',
         'netbanking_airtel',
@@ -33,7 +36,6 @@ return [
         'netbanking_pnb',
         'sharp',
         'wallet_olamoney',
-        'upi_idfc',
         'upi_icici',
         'upi_mindgate',
         'upi_npci',
@@ -48,42 +50,44 @@ return [
         'wallet_mpesa',
     ],
 
-    'mock_amex'                => env('AMEX_MOCK'),
-    'mock_hdfc'                => env('HDFC_MOCK'),
-    'mock_cybersource'         => env('CYBERSOURCE_MOCK'),
-    'mock_first_data'          => env('FIRST_DATA_MOCK'),
-    'mock_atom'                => env('ATOM_MOCK'),
-    'mock_axis_migs'           => env('AXIS_MIGS_MOCK'),
-    'mock_axis_genius'         => env('AXIS_GENIUS_MOCK'),
-    'mock_kotak'               => env('KOTAK_MOCK'),
-    'mock_mobikwik'            => env('MOBIKWIK_MOCK'),
-    'mock_paytm'               => env('PAYTM_MOCK'),
-    'mock_netbanking_hdfc'     => env('NETBANKING_HDFC_MOCK'),
-    'mock_netbanking_kotak'    => env('NETBANKING_KOTAK_MOCK'),
-    'mock_netbanking_icici'    => env('NETBANKING_ICICI_MOCK'),
-    'mock_netbanking_airtel'   => env('NETBANKING_AIRTEL_MOCK'),
-    'mock_netbanking_axis'     => env('NETBANKING_AXIS_MOCK'),
-    'mock_netbanking_federal'  => env('NETBANKING_FEDERAL_MOCK'),
-    'mock_netbanking_rbl'      => env('NETBANKING_RBL_MOCK'),
-    'mock_netbanking_indusind' => env('NETBANKING_INDUSIND_MOCK'),
-    'mock_netbanking_pnb'      => env('NETBANKING_PNB_MOCK'),
-    'mock_billdesk'            => env('BILLDESK_MOCK'),
-    'mock_ebs'                 => env('EBS_MOCK'),
-    'mock_wallet_olamoney'     => env('OLAMONEY_MOCK'),
-    'mock_wallet_payzapp'      => env('PAYZAPP_MOCK'),
-    'mock_wallet_payumoney'    => env('PAYUMONEY_MOCK'),
-    'mock_wallet_airtelmoney'  => env('AIRTELMONEY_MOCK'),
-    'mock_wallet_jiomoney'     => env('JIOMONEY_MOCK'),
-    'mock_wallet_sbibuddy'     => env('SBIBUDDY_MOCK'),
-    'mock_upi_mindgate'        => env('UPI_MINDGATE_MOCK'),
-    'mock_upi_icici'           => env('UPI_ICICI_MOCK'),
-    'mock_upi_idfc'            => env('UPI_IDFC_MOCK'),
-    'mock_upi_npci'            => env('UPI_NPCI_MOCK'),
-    'mock_aeps_icici'          => env('AEPS_ICICI_MOCK'),
-    'mock_wallet_freecharge'   => env('FREECHARGE_MOCK'),
-    'mock_wallet_mpesa'        => env('MPESA_MOCK'),
+    'mock_amex'                   => env('AMEX_MOCK'),
+    'mock_hdfc'                   => env('HDFC_MOCK'),
+    'mock_cybersource'            => env('CYBERSOURCE_MOCK'),
+    'mock_first_data'             => env('FIRST_DATA_MOCK'),
+    'mock_atom'                   => env('ATOM_MOCK'),
+    'mock_hitachi'                => env('HITACHI_MOCK'),
+    'mock_axis_migs'              => env('AXIS_MIGS_MOCK'),
+    'mock_axis_genius'            => env('AXIS_GENIUS_MOCK'),
+    'mock_kotak'                  => env('KOTAK_MOCK'),
+    'mock_mobikwik'               => env('MOBIKWIK_MOCK'),
+    'mock_paytm'                  => env('PAYTM_MOCK'),
+    'mock_netbanking_hdfc'        => env('NETBANKING_HDFC_MOCK'),
+    'mock_netbanking_corporation' => env('NETBANKING_CORPORATION_MOCK'),
+    'mock_netbanking_kotak'       => env('NETBANKING_KOTAK_MOCK'),
+    'mock_netbanking_icici'       => env('NETBANKING_ICICI_MOCK'),
+    'mock_netbanking_airtel'      => env('NETBANKING_AIRTEL_MOCK'),
+    'mock_netbanking_axis'        => env('NETBANKING_AXIS_MOCK'),
+    'mock_netbanking_federal'     => env('NETBANKING_FEDERAL_MOCK'),
+    'mock_netbanking_rbl'         => env('NETBANKING_RBL_MOCK'),
+    'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
+    'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
+    'mock_billdesk'               => env('BILLDESK_MOCK'),
+    'mock_blade'                  => env('BLADE_MOCK'),
+    'mock_ebs'                    => env('EBS_MOCK'),
+    'mock_wallet_olamoney'        => env('OLAMONEY_MOCK'),
+    'mock_wallet_payzapp'         => env('PAYZAPP_MOCK'),
+    'mock_wallet_payumoney'       => env('PAYUMONEY_MOCK'),
+    'mock_wallet_airtelmoney'     => env('AIRTELMONEY_MOCK'),
+    'mock_wallet_jiomoney'        => env('JIOMONEY_MOCK'),
+    'mock_wallet_sbibuddy'        => env('SBIBUDDY_MOCK'),
+    'mock_upi_mindgate'           => env('UPI_MINDGATE_MOCK'),
+    'mock_upi_icici'              => env('UPI_ICICI_MOCK'),
+    'mock_upi_npci'               => env('UPI_NPCI_MOCK'),
+    'mock_aeps_icici'             => env('AEPS_ICICI_MOCK'),
+    'mock_wallet_freecharge'      => env('FREECHARGE_MOCK'),
+    'mock_wallet_mpesa'           => env('MPESA_MOCK'),
 
-    'certificate_path'         => env('CERTIFICATE_DIR_PATH'),
+    'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
     'hdfc' => [
         'test_terminal_id'  => env('HDFC_GATEWAY_TEST_TERMINAL_ID'),
@@ -96,6 +100,12 @@ return [
         'test_password'         => env('CYBERSOURCE_GATEWAY_TEST_ACCESS_CODE'),
         'test_merchant_id'      => env('CYBERSOURCE_GATEWAY_TEST_USERNAME', 'cybersource_id'),
         'test_merchant_secret'  => env('CYBERSOURCE_GATEWAY_TEST_SECRET', 'cybersource_secret'),
+    ],
+
+    'hitachi' => [
+        'test_merchant_id'  => env('HITACHI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'  => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
+        'test_hash_secret2' => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
     ],
 
     'first_data' => [
@@ -151,6 +161,24 @@ return [
         'live_access_code_sec'  => env('BILLDESK_GATEWAY_SECURITIES_LIVE_ACCESS_CODE'),
     ],
 
+    'blade' => [
+        //TODO add all env variables
+        'cert_dir_name'                  => env('BLADE_CERT_DIR_NAME'),
+        'live_visa_certificate'          => env('BLADE_LIVE_VISA_CERTIFICATE'),
+        'live_visa_pem'                  => env('BLADE_LIVE_VISA_PEM'),
+        'live_mastercard_certificate'    => env('BLADE_LIVE_MASTERCARD_CERTIFICATE'),
+        'live_mastercard_pem'            => env('BLADE_LIVE_MASTERCARD_PEM'),
+        'gateway_access_code'            => env('BLADE_TEST_ACCESS_CODE'),
+        'gateway_merchant_id2'           => env('BLADE_TEST_MERCHANT_ID2'),
+        'gateway_terminal_password'      => env('BLADE_TEST_TERMINAL_PASSWORD'),
+        'live_mastercard_acq_bin'        => env('BLADE_LIVE_MASTERCARD_ACQ_BIN'),
+        'live_visa_acq_bin'              => env('BLADE_LIVE_VISA_ACQ_BIN'),
+        'test_acq_bin'                   => env('BLADE_TEST_ACQ_BIN'),
+        'live_mastercard_merchant_id'    => env('BLADE_LIVE_MASTERCARD_MERCHANT_ID2'),
+        'live_visa_merchant_id'          => env('BLADE_LIVE_VISA_MERCHANT_ID'),
+        'test_merchant_id'               => env('BLADE_TEST_MERCHANT_ID'),
+    ],
+
     'ebs' => [
         'test_merchant_id' => env('EBS_GATEWAY_TEST_MERCHANT_ID', 'random'),
         'test_hash_secret' => env('EBS_GATEWAY_TEST_HASH_SECRET', 'secret'),
@@ -178,14 +206,6 @@ return [
 
     'aeps_icici' => [
         'terminal_id'           => env('AEPS_TERMINAL_ID'),
-    ],
-
-    'upi_idfc' => [
-    ],
-
-    'upi_idfc'  => [
-        'test_kek'               => env('UPI_IDFC_TEST_KEK'),
-        'test_password'          => env('UPI_IDFC_TEST_PASSWORD'),
     ],
 
     'upi_npci' => [
@@ -256,6 +276,7 @@ return [
         'test_password'     => env('MPESA_WALLET_TEST_PASSWORD'),
         'live_user_id'      => env('MPESA_WALLET_LIVE_USER_ID'),
         'live_password'     => env('MPESA_WALLET_LIVE_PASSWORD'),
+        'live_hash_secret'  => env('MPESA_WALLET_LIVE_HASH_SECRET'),
     ],
 
     'netbanking_hdfc' => [
@@ -264,6 +285,11 @@ return [
         // tpv
         'live_hash_secret_tpv' => env('NETBANKING_HDFC_GATEWAY_CUG_LIVE_HASH_SECRET'),
         'test_hash_secret_tpv' => '12345',
+    ],
+
+    'netbanking_corporation' => [
+        'test_merchant_id'  => env('NETBANKING_CORPORATION_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'  => env('NETBANKING_CORPORATION_GATEWAY_TEST_HASH_SECRET'),
     ],
 
     'netbanking_kotak' => [

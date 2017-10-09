@@ -16,10 +16,46 @@ return [
 
         'analysis' => [
             'analyzer' => [
+
+                //
+                // Refs:
+                // - https://www.elastic.co/guide/en/elasticsearch/reference/1.4/analysis-custom-analyzer.html
+                // - https://www.elastic.co/guide/en/elasticsearch/reference/1.4/analysis-edgengram-tokenizer.html
+                //
+                // For many of the text field we store their edge ngrams in index.
+                //
+
                 'edge_ngram_analyzer' => [
+                    'type'      => 'custom',
                     'tokenizer' => 'edge_ngram_tokenizer',
                     'filter'    => [
-                        'lowercase_filter',
+                        'lowercase',
+                    ],
+                ],
+
+                //
+                // Generally index analysis and search analysis should be same.
+                // But for better match against combination of query, we decided
+                // we will index using edge ngram but search using standard.
+                //
+                // Now edge ngram tokenized terms on any punctuation. But standard
+                // does not tokenized for a set of punctuation(set 1). So we use custom
+                // standard_analyzer where it's same as standard but also replaces
+                // those set 1 punctuation to '-' which will get used as word break
+                // char in normal standard anaylzer.
+                //
+                //  This way, both index and search time analysis is consistent.
+                //
+
+                'standard_custom' => [
+                    'type'        => 'custom',
+                    'char_filter' => [
+                        'punctuation_remap',
+                    ],
+                    'tokenizer'   => 'standard',
+                    'filter'      => [
+                        'standard',
+                        'lowercase',
                     ],
                 ],
             ],
@@ -35,8 +71,15 @@ return [
                 ],
             ],
             'filter' => [
-                'lowercase_filter' => [
-                    'type' => 'lowercase',
+            ],
+            'char_filter' => [
+                'punctuation_remap' => [
+                    'type'     => 'mapping',
+                    'mappings' => [
+                        '. => -',
+                        ': => -',
+                        '\' => -',
+                    ],
                 ],
             ],
         ]
@@ -85,7 +128,7 @@ return [
                     'mapping'    => [
                         'type'            => 'text',
                         'analyzer'        => 'edge_ngram_analyzer',
-                        'search_analyzer' => 'standard',
+                        'search_analyzer' => 'standard_custom',
                         'index_options'   => 'offsets',
                     ],
                 ],
@@ -108,37 +151,37 @@ return [
             'receipt' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
-                'search_analyzer' => 'standard',
+                'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
             'customer_name' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
-                'search_analyzer' => 'standard',
+                'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
             'customer_contact' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
-                'search_analyzer' => 'standard',
+                'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
             'customer_email' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
-                'search_analyzer' => 'standard',
+                'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
             'description' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
-                'search_analyzer' => 'standard',
+                'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
             'terms' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
-                'search_analyzer' => 'standard',
+                'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
         ],
@@ -155,4 +198,113 @@ return [
     'transfer_mapping'        => [],
 
     'virtual_account_mapping' => [],
+
+    'merchant_mapping'        => [
+        '_all' => [
+            'enabled' => false
+        ],
+        'properties' => [
+            'id' => [
+                'type' => 'keyword',
+            ],
+            'org_id' => [
+                'type'  => 'keyword',
+            ],
+            'name' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
+            ],
+            'email' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
+            ],
+            'billing_label' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
+            ],
+            'website' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
+            ],
+            'tag_list' => [
+                'type'            => 'text',
+                'analyzer'        => 'standard',
+                'search_analyzer' => 'standard',
+            ],
+            'parent_id' => [
+                'type' => 'keyword',
+            ],
+            'activated' => [
+                'type' => 'boolean',
+            ],
+            'activated_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'archived_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'suspended_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'created_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'updated_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'merchant_details' => [
+                'properties' => [
+                    'merchant_id' => [
+                        'type'  => 'keyword',
+                        'index' => false,
+                    ],
+                    'steps_finished' => [
+                        'type'  => 'keyword',
+                        'index' => false,
+                    ],
+                    'activation_progress' => [
+                        'type' => 'byte',
+                    ],
+                    'submitted_at' => [
+                        'type'   => 'date',
+                        'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+                        'index'  => false,
+                    ],
+                    'updated_at' => [
+                        'type'   => 'date',
+                        'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+                        'index'  => false,
+                    ],
+                ],
+            ],
+            'admins' => [
+                'type' => 'keyword',
+            ],
+            'groups' => [
+                'type' => 'keyword',
+            ],
+            'is_marketplace' => [
+                'type'  => 'boolean',
+                'index' => false,
+            ],
+            'referrer' => [
+                'type'            => 'text',
+                'analyzer'        => 'standard',
+                'search_analyzer' => 'standard',
+            ],
+        ],
+    ],
 ];

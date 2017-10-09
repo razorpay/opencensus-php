@@ -80,9 +80,9 @@ class ReturnTest extends TestCase
             ],
             'response' => [
                 'content' => [
-                    'error[code]' => 'BAD_REQUEST_ERROR',
+                    'error[code]'        => 'BAD_REQUEST_ERROR',
                     'error[description]' => 'The number is invalid.',
-                    'error[field]' => 'number',
+                    'error[field]'       => 'number',
                 ],
                 'status_code' => 200,
             ]

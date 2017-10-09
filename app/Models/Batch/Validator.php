@@ -8,12 +8,14 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::FILE                 => 'required|file|mimes:xlsx,application/zip,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/octet-stream|max:1024',
-        Entity::TYPE                 => 'required|string|max:14|custom',
+        Entity::FILE                 => 'required|file|mimes:xlsx,application/zip,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/octet-stream,txt|max:1024',
+        Entity::TYPE                 => 'required|string|max:25|custom',
+        Entity::MERCHANT_ID          => 'sometimes|string',
 
         //
         // Type:payment_link specific input parameters
@@ -196,5 +198,38 @@ class Validator extends Base\Validator
                     'merchant_id'   => $merchant->getId(),
                 ]);
         }
+    }
+
+    protected function validateIrctcRefundEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    {
+
+    }
+
+    protected function validateIrctcSettlementEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    {
+
+    }
+
+    protected function validateLinkedAccountEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    {
+        //
+        // Batch creation for linked account should only be allowed for
+        // marketplace merchant accounts.
+        //
+        if ($merchant->isMarketplace() === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Linked account creation not allowed for merchant',
+                null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+
+        //
+        // TODO:
+        // - Probably should rename these methods to validate<BatchType>Input() as
+        //   it now does more than validating just the input entries.
+        //
     }
 }

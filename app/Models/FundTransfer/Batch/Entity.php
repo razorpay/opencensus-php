@@ -126,7 +126,7 @@ class Entity extends Base\PublicEntity
 
     protected function generateDate($input)
     {
-        $timestamp = Carbon::today(Timezone::IST)->timestamp;
+        $timestamp = Carbon::today(Timezone::IST)->getTimestamp();
 
         $this->setAttribute(self::DATE, $timestamp);
     }

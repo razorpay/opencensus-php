@@ -365,6 +365,11 @@ class Service extends Base\Service
     {
         $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
+        if ($payment->hasCard() === false)
+        {
+            throw new Exception\BadRequestException(Error\ErrorCode::BAD_REQUEST_NOT_CARD_PAYMENT);
+        }
+
         $card = $this->repo->card->fetchForPayment($payment);
 
         return $card->toArrayPublic();
@@ -759,7 +764,7 @@ class Service extends Base\Service
         $seconds = Merchant\Entity::AUTO_REFUND_DELAY_DEFAULT;
 
         $date = Carbon::today(Timezone::IST);
-        $ts = $date->subSeconds($seconds)->timestamp;
+        $ts = $date->subSeconds($seconds)->getTimestamp();
 
         $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts, false);
 
@@ -866,7 +871,7 @@ class Service extends Base\Service
     public function notifyAuthorizedPayments()
     {
         $date = Carbon::yesterday(Timezone::IST);
-        $timestamp = $date->timestamp;
+        $timestamp = $date->getTimestamp();
 
         $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp(
                             $timestamp);
@@ -963,8 +968,8 @@ class Service extends Base\Service
 
     public function deliverAutoCaptureEmail()
     {
-        $timeLowerLimit = Carbon::yesterday(Timezone::IST)->timestamp;
-        $timeUpperLimit = Carbon::today(Timezone::IST)->timestamp;
+        $timeLowerLimit = Carbon::yesterday(Timezone::IST)->getTimestamp();
+        $timeUpperLimit = Carbon::today(Timezone::IST)->getTimestamp();
 
         $payments = $this->repo->payment->getAutoCapturedPaymentsBetweenTimestamps(
                                                         $timeLowerLimit, $timeUpperLimit);
@@ -1035,8 +1040,8 @@ class Service extends Base\Service
         $start = Carbon::today(Timezone::IST)->subDays($day);
         $end   = Carbon::today(Timezone::IST)->subDays($day)->addDays(1);
 
-        $to = $end->timestamp;
-        $from = $start->timestamp;
+        $to = $end->getTimestamp();
+        $from = $start->getTimestamp();
 
         $result['from'] = (string) $start;
         $result['to']   = (string) $end;
@@ -1089,9 +1094,9 @@ class Service extends Base\Service
      * @param array $input
      * @return array
      */
-    public function updateOnHold(array $input) : array
+    public function updateOnHold(array $input): array
     {
-        $timestamp = Carbon::today(Timezone::IST)->timestamp;
+        $timestamp = Carbon::today(Timezone::IST)->getTimestamp();
 
         $paymentsToUpdate = $this->repo->payment->getPaymentsOnHoldBeforeTimestamp($timestamp);
 

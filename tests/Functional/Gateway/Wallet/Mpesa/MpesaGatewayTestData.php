@@ -55,7 +55,7 @@ return [
         'action'               => 'authorize',
         'received'             => true,
         'wallet'               => 'mpesa',
-        'amount'               => 500,
+        'amount'               => '500',
         'response_code'        => '100',
         'response_description' => 'SUCCESS'
     ],
@@ -64,7 +64,7 @@ return [
         'action'               => 'authorize',
         'received'             => true,
         'wallet'               => 'mpesa',
-        'amount'               => 500.5,
+        'amount'               => '500.5',
         'response_code'        => '100',
         'response_description' => 'SUCCESS'
     ],
@@ -210,6 +210,22 @@ return [
         'exception' => [
             'class'                 => RZP\Exception\GatewayErrorException::class,
             'internal_error_code'   => ErrorCode::GATEWAY_ERROR_SOAP_ERROR,
+        ],
+    ],
+
+    'testSoapSslError' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\PaymentVerificationException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
 ];

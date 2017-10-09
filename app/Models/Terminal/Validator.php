@@ -32,11 +32,10 @@ class Validator extends Base\Validator
         Entity::UPI                         => 'sometimes|boolean',
         Entity::AEPS                        => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
-        Entity::SHARED                      => 'sometimes|boolean',
-        Entity::TYPE                        => 'sometimes|integer|max:7',
+        Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|in:1,2,3',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
-        Entity::TPV                         => 'sometimes_if:netbanking,1|boolean',
+        Entity::TPV                         => 'sometimes_if:netbanking,1|in:0,1,2',
         Entity::CORPORATE                   => 'sometimes_if:netbanking,1|boolean',
         Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
@@ -63,248 +62,254 @@ class Validator extends Base\Validator
     ];
 
     protected static $reassignRules = [
-        Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
+        Entity::MERCHANT_ID                => 'required|alpha_num|size:14',
     ];
 
     protected static $hdfcTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:hdfc',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|integer|digits_between:5,8',
-        Entity::GATEWAY_TERMINAL_ID         => 'required|integer|digits:8',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|max:15',
-        Entity::EMI                         => 'sometimes|boolean',
-        Entity::INTERNATIONAL               => 'sometimes|boolean',
-        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
-        Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
-        Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
+        Entity::GATEWAY                    => 'required|in:hdfc',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|integer|digits_between:5,8',
+        Entity::GATEWAY_TERMINAL_ID        => 'required|integer|digits:8',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string|max:15',
+        Entity::EMI                        => 'sometimes|boolean',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::EMI_DURATION               => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
+        Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
+        Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::CURRENCY                   => 'sometimes|alpha|size:3',
     ];
 
     protected static $aepsIciciTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:aeps_icici',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num',
+        Entity::GATEWAY                    => 'required|in:aeps_icici',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num',
     ];
 
     protected static $billdeskTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:billdesk',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:2',
+        Entity::GATEWAY                    => 'required|in:billdesk',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num|min:2',
     ];
 
     protected static $ebsTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:ebs',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|max:5',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|max:32',
+        Entity::GATEWAY                    => 'required|in:ebs',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num|max:5',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|alpha_num|max:32',
     ];
 
     protected static $axisGeniusTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:axis_genius',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|size:15',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|size:32',
-        Entity::GATEWAY_ACCESS_CODE         => 'required|alhpa_num|size:8',
+        Entity::GATEWAY                    => 'required|in:axis_genius',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num|size:15',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|alpha_num|size:32',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|alhpa_num|size:8',
     ];
 
     protected static $firstDataTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:first_data',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:5',
-        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string|min:5',
-        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string|min:5',
-        Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string|min:5',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string|min:5',
-        Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes|min:20',
-        Entity::TYPE                        => 'sometimes|integer|max:7',
-        Entity::MODE                        => 'sometimes|integer|in:2,3',
-        Entity::INTERNATIONAL               => 'sometimes|boolean',
-        Entity::EMI                         => 'sometimes|boolean',
-        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
-        Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
-        Entity::CURRENCY                    => 'sometimes|alpha|size:3',
+        Entity::GATEWAY                    => 'required|in:first_data',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num|min:5',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string|min:5',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string|min:5',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string|min:5',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string|min:5',
+        Entity::GATEWAY_CLIENT_CERTIFICATE => 'sometimes|min:20',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::MODE                       => 'sometimes|integer|in:2,3',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::EMI                        => 'sometimes|boolean',
+        Entity::EMI_DURATION               => 'required_only_if:emi,1|integer|in:3,6,9,12',
+        Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
+        Entity::CURRENCY                   => 'sometimes|alpha|size:3',
     ];
 
     protected static $amexTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:amex',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:8',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|size:32',
-        Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|size:8',
-        Entity::GATEWAY_TERMINAL_ID         => 'required',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
-        Entity::EMI                         => 'sometimes|boolean',
-        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
-        Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
-        Entity::INTERNATIONAL               => 'sometimes|boolean',
+        Entity::GATEWAY                    => 'required|in:amex',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num|min:8',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|alpha_num|size:32',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|alpha_num|size:8',
+        Entity::GATEWAY_TERMINAL_ID        => 'required',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required',
+        Entity::EMI                        => 'sometimes|boolean',
+        Entity::EMI_DURATION               => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
+        Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
     ];
 
     protected static $axisMigsTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:axis_migs',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:6',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|size:32',
-        Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|size:8',
-        Entity::GATEWAY_TERMINAL_ID         => 'required',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
-        Entity::INTERNATIONAL               => 'sometimes|boolean',
+        Entity::GATEWAY                    => 'required|in:axis_migs',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num|min:6',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|alpha_num|size:32',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|alpha_num|size:8',
+        Entity::GATEWAY_TERMINAL_ID        => 'required',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $cybersourceTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:cybersource',
-        Entity::GATEWAY_TERMINAL_ID         => 'required|string|min:10',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|min:50',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:20',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
-        Entity::TYPE                        => 'sometimes|integer|max:7',
-        Entity::INTERNATIONAL               => 'sometimes|boolean',
-        Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
+        Entity::GATEWAY                    => 'required|in:cybersource',
+        Entity::GATEWAY_TERMINAL_ID        => 'required|string|min:10',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string|min:50',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string|max:20',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
     ];
 
     protected static $axisMigsEditTerminalRules = [
-        Entity::GATEWAY                     => 'sometimes|in:axis_migs',
-        Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
-        Entity::CARD                        => 'sometimes|boolean|in:1',
-        Entity::TYPE                        => 'sometimes|integer|in:1,6',
-        Entity::INTERNATIONAL               => 'sometimes|boolean',
+        Entity::GATEWAY                    => 'sometimes|in:axis_migs',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes',
+        Entity::CARD                       => 'sometimes|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
     ];
 
     protected static $billdeskEditTerminalRules = [
-        Entity::GATEWAY                     => 'sometimes|in:billdesk',
-        Entity::TPV                         => 'sometimes|boolean|in:0,1',
-        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
+        Entity::GATEWAY                    => 'sometimes|in:billdesk',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
     protected static $hdfcEditTerminalRules = [
-        Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
-        Entity::GATEWAY                     => 'sometimes|in:hdfc',
-        Entity::CARD                        => 'sometimes|boolean|in:1',
-        Entity::INTERNATIONAL               => 'sometimes|boolean',
+        Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
+        Entity::GATEWAY                    => 'sometimes|in:hdfc',
+        Entity::CARD                       => 'sometimes|boolean|in:1',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $firstDataEditTerminalRules = [
-        Entity::INTERNATIONAL => 'sometimes|boolean',
-        Entity::TYPE          => 'sometimes|integer|max:7',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $cybersourceEditTerminalRules = [
-        Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
-        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
-        Entity::GATEWAY                     => 'sometimes|in:cybersource',
-        Entity::CARD                        => 'sometimes|boolean|in:1',
-        Entity::INTERNATIONAL               => 'sometimes|boolean',
+        Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY                    => 'sometimes|in:cybersource',
+        Entity::CARD                       => 'sometimes|boolean|in:1',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $upiIciciEditTerminalRules = [
-        Entity::GATEWAY                     => 'sometimes|in:upi_icici',
-        Entity::UPI                         => 'sometimes|boolean|in:1',
-        Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
+        Entity::GATEWAY                    => 'sometimes|in:upi_icici',
+        Entity::UPI                        => 'sometimes|boolean|in:1',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
     ];
 
     protected static $walletPayzappTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:wallet_payzapp',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string|size:21',
-        Entity::GATEWAY_MERCHANT_ID2        => 'required|integer|digits:8',
-        Entity::GATEWAY_TERMINAL_ID         => 'required|integer|digits:8',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string|size:21',
-        Entity::GATEWAY_ACCESS_CODE         => 'required|integer|digits:4',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|alpha_num|size:16',
+        Entity::GATEWAY                    => 'required|in:wallet_payzapp',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string|size:21',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|integer|digits:8',
+        Entity::GATEWAY_TERMINAL_ID        => 'required|integer|digits:8',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string|size:21',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|integer|digits:4',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|alpha_num|size:16',
     ];
 
     protected static $walletPayumoneyTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:wallet_payumoney',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
-        Entity::GATEWAY_ACCESS_CODE         => 'required|string',
+        Entity::GATEWAY                    => 'required|in:wallet_payumoney',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
     ];
 
     protected static $walletOlamoneyTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:wallet_olamoney',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
-        Entity::GATEWAY_ACCESS_CODE         => 'required|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY                    => 'required|in:wallet_olamoney',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
     ];
 
     protected static $walletAirtelmoneyTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:wallet_airtelmoney',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY                    => 'required|in:wallet_airtelmoney',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
     ];
 
     protected static $walletFreechargeTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:wallet_freecharge',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY                    => 'required|in:wallet_freecharge',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
     ];
 
     protected static $netbankingIciciTerminalRules = [
-        Entity::GATEWAY              => 'required|in:netbanking_icici',
-        Entity::GATEWAY_MERCHANT_ID  => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID2 => 'required|string',
+        Entity::GATEWAY                    => 'required|in:netbanking_icici',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
     ];
 
     protected static $walletJiomoneyTerminalRules = [
-        Entity::GATEWAY                   => 'required|in:wallet_jiomoney',
-        Entity::GATEWAY_MERCHANT_ID       => 'required|string',
-        Entity::GATEWAY_ACCESS_CODE       => 'required|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD => 'required|string',
+        Entity::GATEWAY                    => 'required|in:wallet_jiomoney',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
     ];
 
     protected static $walletSbibuddyTerminalRules = [
-        Entity::GATEWAY                   => 'required|in:wallet_sbibuddy',
-        Entity::GATEWAY_MERCHANT_ID       => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET     => 'required|string',
+        Entity::GATEWAY                    => 'required|in:wallet_sbibuddy',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
     ];
 
     protected static $walletMpesaTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:wallet_mpesa',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY                    => 'required|in:wallet_mpesa',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
     ];
 
     protected static $upiMindgateTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:upi_mindgate',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
-        Entity::UPI                         => 'sometimes|boolean|in:1',
+        Entity::GATEWAY                    => 'required|in:upi_mindgate',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::UPI                        => 'sometimes|boolean|in:1',
     ];
 
     protected static $netbankingAirtelTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:netbanking_airtel',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY                    => 'required|in:netbanking_airtel',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
     ];
 
     protected static $netbankingAxisTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:netbanking_axis',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string'
+        Entity::GATEWAY                    => 'required|in:netbanking_axis',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string'
     ];
 
     protected static $netbankingFederalTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:netbanking_federal',
+        Entity::GATEWAY                    => 'required|in:netbanking_federal',
     ];
 
     protected static $netbankingRblTerminalRules = [
-        Entity::GATEWAY                      => 'required|in:netbanking_rbl',
-        Entity::GATEWAY_MERCHANT_ID          => 'required|string',
-        Entity::GATEWAY_ACCESS_CODE          => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET        => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID2         => 'required|string',
+        Entity::GATEWAY                    => 'required|in:netbanking_rbl',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
     ];
 
     protected static $netbankingIndusindTerminalRules = [
-        Entity::GATEWAY                       => 'required|in:netbanking_indusind',
-        Entity::GATEWAY_MERCHANT_ID           => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET         => 'required|string',
+        Entity::GATEWAY                    => 'required|in:netbanking_indusind',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
     ];
 
     protected static $netbankingPnbTerminalRules = [
-        Entity::GATEWAY                     => 'required|in:netbanking_pnb',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY                    => 'required|in:netbanking_pnb',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+    ];
+
+    protected static $netbankingCorporationTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:netbanking_corporation',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string|size:3',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|max:32',
     ];
 
     protected function validateGateway($input)
     {
-        if (Payment\Gateway::isValidGateway($input['gateway']) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Not a valid gateway: ' . $input['gateway'],
-                Entity::GATEWAY);
-        }
+        Payment\Gateway::validateGateway($input['gateway']);
 
         unset(
             $input[Entity::TPV],
@@ -316,8 +321,7 @@ class Validator extends Base\Validator
             $input[Entity::MERCHANT_ID],
             $input[Entity::NETWORK_CATEGORY],
             $input[Entity::GATEWAY_ACQUIRER],
-            $input[Entity::MODE],
-            $input[Entity::TYPE]);
+            $input[Entity::MODE]);
 
         $op = $input['gateway'] . '_terminal';
 
@@ -349,7 +353,7 @@ class Validator extends Base\Validator
         // FirstData N3DS terminals are always in purchase mode
         //
         $isFirstDataNon3DS = (($gateway === Gateway::FIRST_DATA) and
-                              (Type::isApplicable($type, Type::RECURRING_NON_3DS)));
+                              (Type::isApplicableType($type, Type::RECURRING_NON_3DS)));
 
         // Most non-card gateways have terminals only in purchase mode
         //
@@ -416,8 +420,8 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        if ((isset($input[Entity::SHARED]) === false) or
-            ($input[Entity::SHARED] !== '1'))
+        if ((isset($input[Entity::MERCHANT_ID]) === false) or
+            ($input[Entity::MERCHANT_ID] !== Merchant\Account::SHARED_ACCOUNT))
         {
             throw new Exception\LogicException(
                 'EMI Terminals must be shared terminals',

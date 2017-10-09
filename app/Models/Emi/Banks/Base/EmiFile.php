@@ -7,12 +7,14 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Constants\MailTags;
 use RZP\Mail\Emi as EmiMail;
+use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Emi\Banks\Base\EmiMode;
 use RZP\Models\FileStore;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base;
-use RZP\Constants\MailTags;
+use RZP\Encryption\Type;
 
 class EmiFile extends Base\Core
 {
@@ -20,6 +22,12 @@ class EmiFile extends Base\Core
     protected $emiFilePassword;
 
     protected $shouldCompress = true;
+
+    protected $shouldEncrypt = false;
+
+    protected $transferMode = EmiMode::MAIL;
+
+    protected $encryptionType = Type::PGP_ENCRYPTION;
 
     const EMI_FILE_PASSWORD_LENGTH = 7;
 
@@ -42,7 +50,10 @@ class EmiFile extends Base\Core
 
         $this->trace->info(
             TraceCode::EMI_FILE_SENT,
-            ['bank' => $this->bankName, 'payment_ids' => $input->getIds()]
+            [
+                'bank' => $this->bankName,
+                'payment_ids' => $input->getIds()
+            ]
         );
 
         return $fileData['signed_url'];
@@ -60,8 +71,13 @@ class EmiFile extends Base\Core
                 ->content($emiData)
                 ->name($fileName)
                 ->store($store)
-                ->type(static::TYPE)
+                ->type($this->type)
                 ->metadata($metadata);
+
+        if ($this->shouldEncrypt === true)
+        {
+            $creator->encrypt($this->encryptionType, $this->getEncryptionParams());
+        }
 
         if ($this->shouldCompress === true)
         {
@@ -90,9 +106,15 @@ class EmiFile extends Base\Core
 
     protected function resetEmail($email)
     {
+        // if email is specified, set email id list
+        // Mode should be mail only and file must be compressed
         if (empty($email) === false)
         {
             $this->emailIdsToSendTo = [$email];
+
+            $this->transferMode = EmiMode::MAIL;
+
+            $this->shouldCompress = true;
         }
     }
 
@@ -133,12 +155,9 @@ class EmiFile extends Base\Core
 
     protected function fetchAndSendPassword()
     {
-        // skip the password mail if email id list is empty
-        if ((empty($this->emailIdsToSendTo) === true) or
-            ($this->shouldCompress === false))
+        // skip password generation and sending for sftp
+        if ($this->transferMode === EmiMode::SFTP)
         {
-            $this->emiFilePassword = null;
-
             return;
         }
 
@@ -170,18 +189,13 @@ class EmiFile extends Base\Core
         return floor($num / $den);
     }
 
-    protected function sendEmiFile(array $fileData)
+    protected function sendEmiFile(array $fileData, $data = null)
     {
-        // skip the emi file mail if email id list is empty
-        if (empty($this->emailIdsToSendTo) === true)
-        {
-            return;
-        }
-
         $emiFileMail = new EmiMail\File(
             $this->bankName,
             $fileData,
-            $this->emailIdsToSendTo);
+            $this->emailIdsToSendTo,
+            $data);
 
         Mail::queue($emiFileMail);
     }
@@ -194,5 +208,11 @@ class EmiFile extends Base\Core
             $this->emailIdsToSendTo);
 
         Mail::queue($emiPasswordMail);
+    }
+
+    //Should be implemented in child class
+    protected function getEncryptionParams()
+    {
+        return [];
     }
 }

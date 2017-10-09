@@ -24,7 +24,12 @@ trait RepositoryUpdateTestAndLive
         }
 
         $this->validateInstanceIsOfCurrentEntity($entity);
+
         $this->validateIdGenerated($entity);
+
+        $action = $entity->exists ? EsRepository::UPDATE : EsRepository::CREATE;
+
+        $dirty  = $entity->getDirty();
 
         $liveEntity = $this->repo->transactionOnLiveAndTest(
             function () use ($entity, $options)
@@ -48,6 +53,7 @@ trait RepositoryUpdateTestAndLive
 
                 // Persist the entity in both live and test databases.
                 $liveEntity->saveOrFail($options);
+
                 $testEntity->saveOrFail($options);
 
                 $this->validateEntitiesMatch($liveEntity, $testEntity);
@@ -55,11 +61,17 @@ trait RepositoryUpdateTestAndLive
                 return $liveEntity;
             });
 
+        //
         // Now that the entity has been updated in both live and test databases,
         // update the entity (in-memory) passed as argument in this function
+        //
         $attributes = $liveEntity->getAttributes();
+
         $entity->setRawAttributes($attributes, true);
+
         $entity->exists = true;
+
+        $this->syncToEsLiveAndTest($entity, $action, $dirty);
     }
 
     public function sync($entity, $relation, $ids = [], bool $detaching = true)
@@ -69,7 +81,7 @@ trait RepositoryUpdateTestAndLive
             return parent::sync($entity, $relation, $ids);
         }
 
-        return $this->repo->transactionOnLiveAndTest(
+        $changes = $this->repo->transactionOnLiveAndTest(
             function () use ($entity, $relation, $ids, $detaching)
             {
                 $changes = [];
@@ -95,6 +107,10 @@ trait RepositoryUpdateTestAndLive
 
                 return $changes;
             });
+
+        $this->syncToEsLiveAndTest($entity, EsRepository::UPDATE);
+
+        return $changes;
     }
 
     public function detach($entity, $relation, $ids = [])
@@ -161,7 +177,7 @@ trait RepositoryUpdateTestAndLive
             return parent::delete($entity);
         }
 
-        return $this->repo->transactionOnLiveAndTest(function () use ($entity)
+        $res = $this->repo->transactionOnLiveAndTest(function () use ($entity)
         {
             list($liveEntity, $testEntity) = $this->cloneEntity($entity);
 
@@ -172,6 +188,10 @@ trait RepositoryUpdateTestAndLive
 
             return $res1;
         });
+
+        $this->syncToEsLiveAndTest($entity, EsRepository::DELETE);
+
+        return $res;
     }
 
     public function deleteOrFail($entity)
@@ -295,7 +315,7 @@ trait RepositoryUpdateTestAndLive
     *   `boolean`
     *   Example: `Schedule\Repository::shouldSync()`
     *
-    * @param PublicEntity $entity
+    * @param  PublicEntity   $entity
     * @return bool
     */
     protected function entityShouldSync($entity) : bool

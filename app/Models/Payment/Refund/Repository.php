@@ -32,7 +32,8 @@ class Repository extends Base\Repository
         Entity::BATCH_ID        => 'sometimes|alpha_dash|min:14|max:20',
         Entity::NOTES           => 'sometimes|notes_fetch',
         Entity::STATUS          => 'sometimes|string|max:30',
-        Payment\Entity::GATEWAY => 'sometimes|string|max:30'
+        Payment\Entity::GATEWAY => 'sometimes|string|max:30',
+        Payment\Entity::METHOD  => 'sometimes|string|max:30',
     );
 
     protected $signedIds = [
@@ -50,6 +51,19 @@ class Repository extends Base\Repository
         $this->joinQueryPayment($query);
 
         $query->where(Payment\Entity::GATEWAY, '=', $gateway);
+
+        $query->select($query->getModel()->getTable().'.*');
+    }
+
+    protected function addQueryParamMethod($query, $params)
+    {
+        $method = $params[Payment\Entity::METHOD];
+
+        Payment\Method::validateMethod($method);
+
+        $this->joinQueryPayment($query);
+
+        $query->where(Payment\Entity::METHOD, '=', $method);
 
         $query->select($query->getModel()->getTable().'.*');
     }
@@ -421,7 +435,7 @@ class Repository extends Base\Repository
         $pId = $pRepo->dbColumn(Payment\Entity::ID);
         $pGateway = $pRepo->dbColumn(Payment\Entity::GATEWAY);
 
-        $timeLimit = Carbon::now(Timezone::IST)->subMinutes(30)->timestamp;
+        $timeLimit = Carbon::now(Timezone::IST)->subMinutes(30)->getTimestamp();
 
         // TODO: If the number of gateways exceeds by half of total,
         // inverse the `whereIn` condition.
@@ -461,5 +475,24 @@ class Repository extends Base\Repository
                     ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$from, $to])
                     ->with(['payment','payment.terminal'])
                     ->get();
+    }
+
+    public function fetchByMerchantBetweenTimestamps(string $merchantId, int $from, int $to, $receipt = null)
+    {
+        $query = $this->newQuery()
+                      ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
+                      ->where(Refund\Entity::CREATED_AT, '>=', $from)
+                      ->where(Refund\Entity::CREATED_AT, '<=', $to);
+
+        if (empty($receipt) === true)
+        {
+            $query->whereNull(Refund\Entity::RECEIPT);
+        }
+        else
+        {
+            $query->where(Refund\Entity::RECEIPT, '=', $receipt);
+        }
+
+        return $query->get();
     }
 }

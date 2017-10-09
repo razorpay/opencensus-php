@@ -146,7 +146,7 @@ return [
 
     'txnDataAfterDisputingPayment' => [
         'entity'          => 'transaction',
-        'type'            => 'dispute',
+        'type'            => 'adjustment',
         'amount'          => 1000000,
         'currency'        => 'INR',
         'debit'           => 1000000,

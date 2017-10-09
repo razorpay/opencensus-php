@@ -10,12 +10,9 @@ abstract class Base
     public function __construct()
     {
         $app = App::getFacadeRoot();
+
         $this->repo = $app['repo'];
     }
 
-    public function validate($admin, $password)
-    {
-        throw new Exception\RuntimeException(
-            'Validate function not implemented');
-    }
+    abstract public function validate($admin, array $data);
 }

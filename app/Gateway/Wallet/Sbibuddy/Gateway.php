@@ -92,22 +92,42 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
+        $paymentId = $input['payment']['id'];
+
+        $wallet = $this->repo->fetchWalletByPaymentId($paymentId);
 
         $request = $this->getRefundRequestArray($input, $wallet);
 
-        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
+        list($content, $response) = $this->sendRequest($request, $paymentId);
 
-        list($content, $response) = $this->sendRequest($request);
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'payment_id' => $paymentId,
+                'refund_id'  => $input['refund']['id'],
+                'content'    => $content,
+                'response'   => $response
+            ]
+        );
 
-        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
+        $this->handleRefundResponse($content, $input, $wallet);
 
-        $this->createWalletEntityFromRefundResponse($content, $input, $wallet);
-
-        if ($this->isStatusCodeSuccess($content) !== true)
+        if (($this->isStatusCodeSuccess($content) === false) and
+            ($this->isAlreadyRefunded($content) === false)
+        )
         {
             $this->handleFailure($content);
         }
+    }
+
+    // Here, we mark all the verify refund requests as failed and thus forcing
+    // the retry of refunds which are marked as failed.
+    // If a duplicate refund request is sent, the gateway would throw a duplicate
+    // transaction code and then we mark the corresponding refund as success.
+    public function verifyRefund(array $input)
+    {
+        return false;
     }
 
     //----------------Auth helper methods----------------------
@@ -223,23 +243,73 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_REQUEST,
+            [
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'refund_id'  => $input['refund']['id'],
+                'content'    => $data,
+                'request'    => $request
+            ]
+        );
+
         return $request;
     }
 
-    protected function createWalletEntityFromRefundResponse(array $data, array $input, $wallet)
+    protected function handleRefundResponse(array $content, array $input, Entity $wallet)
     {
-        $refundAttributes = $this->getGatewayRefundEntityData($data, $input, $wallet);
+        $refundId = $input['refund']['id'];
 
-        $this->createGatewayRefundEntity($refundAttributes);
+        $walletAttributes = $this->getGatewayRefundEntityData(
+            $content,
+            $input,
+            $wallet
+        );
+
+        $this->updateOrCreateRefundEntity($walletAttributes, $refundId);
     }
 
-    protected function getGatewayRefundEntityData(array $data, array $input, $wallet): array
+    protected function updateOrCreateRefundEntity(array $refundFields, string $refundId)
     {
-        // They return all the refund ids comma separated in every
-        // refund request. So, we're taking the last one out of those
-        // and associate that with the current refund request.
-        $refundIds = explode(',', $data[ResponseFields::REFUND_ID]);
-        $refundId = end($refundIds);
+        $gatewayRefundEntity = $this->repo->findByRefundId($refundId);
+
+        if ($gatewayRefundEntity === null)
+        {
+            $gatewayRefundEntity = $this->getNewGatewayPaymentEntity();
+
+            $gatewayRefundEntity->setAction(Action::REFUND);
+        }
+
+        $gatewayRefundEntity->fill($refundFields);
+
+        $this->repo->saveOrFail($gatewayRefundEntity);
+    }
+
+    protected function isAlreadyRefunded(array $content): bool
+    {
+        if ($content[ResponseFields::STATUS_CODE] === ResponseCodeMap::DUPLICATE_TRANSACTION)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function getGatewayRefundEntityData(array $content, array $input, Entity $wallet): array
+    {
+        $gatewayRefundId = null;
+
+        // Only if refund is success would the refund id be returned from gateway
+        if (isset($content[ResponseFields::REFUND_ID]) === true)
+        {
+            // They return all the refund ids comma separated in every
+            // refund request. So, we're taking the last one out of those
+            // and associate that with the current refund request.
+            $gatewayRefundIds = explode(',', $content[ResponseFields::REFUND_ID]);
+
+            $gatewayRefundId = end($gatewayRefundIds);
+        }
 
         $contentToSave = [
             Entity::PAYMENT_ID          => $input['payment']['id'],
@@ -250,10 +320,10 @@ class Gateway extends Base\Gateway
             Entity::CONTACT             => $this->getFormattedContact($input['payment']['contact']),
             Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
             Entity::GATEWAY_PAYMENT_ID  => $wallet[Entity::GATEWAY_PAYMENT_ID],
-            Entity::GATEWAY_REFUND_ID   => $refundId,
-            Entity::STATUS_CODE         => $data[ResponseFields::STATUS_CODE],
+            Entity::GATEWAY_REFUND_ID   => $gatewayRefundId,
+            Entity::STATUS_CODE         => $content[ResponseFields::STATUS_CODE],
             Entity::REFUND_ID           => $input['refund']['id'],
-            Entity::ERROR_MESSAGE       => $data[ResponseFields::ERROR_DESCRIPTION] ?? null,
+            Entity::ERROR_MESSAGE       => $content[ResponseFields::ERROR_DESCRIPTION] ?? null,
         ];
 
         return $contentToSave;
@@ -266,7 +336,16 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getVerifyRequestArray($verify);
 
-        list($content, $response) = $this->sendRequest($request);
+        list($content, $response) = $this->sendRequest($request, $verify->input['payment'][Payment::ID]);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT,
+            [
+                'gateway'    => $this->gateway,
+                'payment_id' => $verify->input['payment']['id'],
+                'content'    => $content
+            ]
+        );
 
         $verify->verifyResponseBody = $response;
 
@@ -279,11 +358,10 @@ class Gateway extends Base\Gateway
     {
         $payment = $verify->input['payment'];
 
-        $wallet = $verify->payment;
-
+        // Don't need to sent transaction id here, since we might not always have it
+        // Like in cases where we do not receive a callback for auth request
         $data = [
-            RequestFields::ORDER_ID         => $payment[Payment::ID],
-            RequestFields::TRANSACTION_ID   => $wallet[Entity::GATEWAY_PAYMENT_ID]
+            RequestFields::ORDER_ID => $payment[Payment::ID]
         ];
 
         $encrypted = $this->getEncryptedStringFromData($data);
@@ -294,6 +372,16 @@ class Gateway extends Base\Gateway
         ];
 
         $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'gateway'    => $this->gateway,
+                'request'    => $request,
+                'content'    => $data,
+                'payment_id' => $payment[Payment::ID]
+            ]
+        );
 
         return $request;
     }
@@ -316,6 +404,15 @@ class Gateway extends Base\Gateway
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        // If the verify status is success, we need to check the amount from verify response
+        // And if the amount from verify does not match the amount in our payment entity,
+        // we should throw amount mismatch critical error
+        if (($verify->gatewaySuccess === true) and
+            ($this->formatAmount($input['payment'][Payment::AMOUNT]) !== $content[ResponseFields::AMOUNT]))
+        {
+            $verify->amountMismatch = true;
+        }
 
         $this->saveVerifyContentIfNeeded($gatewayPayment, $input['payment']);
     }
@@ -400,13 +497,13 @@ class Gateway extends Base\Gateway
         throw new Exception\GatewayErrorException(
             ResponseCodeMap::getApiErrorCode($content[ResponseFields::STATUS_CODE]),
             $content[ResponseFields::STATUS_CODE],
-            $content[ResponseFields::ERROR_DESCRIPTION]
+            $content[ResponseFields::ERROR_DESCRIPTION] ?? null
         );
     }
 
-    protected function isStatusCodeSuccess(array $data): bool
+    protected function isStatusCodeSuccess(array $content): bool
     {
-        return in_array($data[ResponseFields::STATUS_CODE], ResponseCodeMap::$successCodes, true);
+        return in_array($content[ResponseFields::STATUS_CODE], ResponseCodeMap::$successCodes, true);
     }
 
     protected function decryptResponse(array $input): array
@@ -438,15 +535,16 @@ class Gateway extends Base\Gateway
         return $this->terminal['gateway_merchant_id'];
     }
 
-    protected function sendRequest($request)
+    protected function sendRequest(array $request, string $paymentId)
     {
         $response = $this->sendGatewayRequest($request);
 
         $this->trace->info(
             TraceCode::GATEWAY_SUPPORT_RESPONSE,
             [
-                'content' => $response->body,
-                'gateway' => 'wallet_sbibuddy'
+                'content'    => $response->body,
+                'gateway'    => $this->gateway,
+                'payment_id' => $paymentId
             ]);
 
         $responseContent = [];

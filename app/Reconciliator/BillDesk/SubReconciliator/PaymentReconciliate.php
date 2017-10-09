@@ -93,7 +93,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                                         $row[self::COLUMN_SETTLED_AT],
                                         Timezone::IST);
 
-            $gatewaySettledAt = $gatewaySettledAt->timestamp;
+            $gatewaySettledAt = $gatewaySettledAt->getTimestamp();
         }
         catch (\Exception $ex)
         {

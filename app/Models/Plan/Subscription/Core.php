@@ -2,20 +2,24 @@
 
 namespace RZP\Models\Plan\Subscription;
 
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
-use RZP\Exception\LogicException;
-use RZP\Listeners\ApiEventSubscriber;
-use RZP\Models\Base;
-use RZP\Models\Invoice;
-use RZP\Models\Merchant;
-use RZP\Models\Plan;
-use RZP\Models\Customer;
-use RZP\Models\Payment;
+use Carbon\Carbon;
+
 use RZP\Constants;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use Illuminate\Foundation\Bus\DispatchesJobs;
+use RZP\Models\Base;
+use RZP\Models\Plan;
+use RZP\Models\Invoice;
+use RZP\Models\Payment;
+use RZP\Models\Customer;
+use RZP\Models\Merchant;
+use RZP\Models\Schedule;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\Plan\ChargeSubscription;
+use RZP\Exception\LogicException;
+use RZP\Exception\BadRequestException;
+
+use Illuminate\Foundation\Bus\DispatchesJobs;
 
 class Core extends Base\Core
 {
@@ -48,16 +52,24 @@ class Core extends Base\Core
      */
     public function create(array $input, Plan\Entity $plan, Customer\Entity $customer = null): Entity
     {
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_CREATE_REQUEST,
+            [
+                'input'       => $input
+            ]);
+
         return (new Creator)->create($input, $plan, $customer);
     }
 
-    public function retry(Entity $subscription, string $errorStatus)
+    public function retry(Entity $subscription, array $options = [])
     {
+        $errorStatus = $subscription->getErrorStatus();
+
         $invoice = $this->repo->invoice->fetchIssuedAndNotHaltedInvoiceForSubscription($subscription);
 
         if ($errorStatus === Status::AUTH_FAILURE)
         {
-            $this->charge($subscription, $invoice);
+            $this->charge($subscription, $invoice, $options);
         }
         else if ($errorStatus === Status::CAPTURE_FAILURE)
         {
@@ -70,45 +82,9 @@ class Core extends Base\Core
                 null,
                 [
                     'subscription_id' => $subscription->getId(),
-                    'invoice_id' => $invoice->getId(),
+                    'invoice_id'      => $invoice->getId(),
                 ]);
         }
-    }
-
-    public function fillScheduleDetailsForNewSubscription(Entity $subscription)
-    {
-        //
-        // We don't have to update the next_run_at here
-        // because `handleCaptureSuccess` will take care of that.
-        // When the task was first created, the start_at of subscription
-        // would have been null, which means that the next_run_at
-        // would have got set to the midnight of subscription creation
-        // date (default).
-        // It will not get picked up by the cron also because of the
-        // subscription status being in created state.
-        // Now, since we set `anchor` here, the next_run_at of the task
-        // will automatically get set to the correct next_run
-        // according to the anchor.
-        //
-
-        if ($subscription->isAuthenticated() === false)
-        {
-            throw new LogicException(
-                'Subscription is not in authenticated state. This function should not have been called',
-                null,
-                [
-                    'subscription_id' => $subscription->getId(),
-                    'status' => $subscription->getStatus(),
-                ]);
-        }
-
-        $schedule = $subscription->schedule;
-
-        $anchor = $subscription->getAnchorForSchedule();
-
-        $schedule->setAnchor($anchor);
-
-        $this->repo->saveOrFail($schedule);
     }
 
     public function expireSubscription(Entity $subscription)
@@ -136,6 +112,57 @@ class Core extends Base\Core
         $subscription->setStatus(Status::EXPIRED);
 
         $this->repo->saveOrFail($subscription);
+    }
+
+    public function testCharge(Entity $subscription, $input)
+    {
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_TEST_CHARGE_REQUEST,
+            [
+                'subscription_id' => $subscription->getId(),
+                'status'          => $subscription->getStatus(),
+                'input'           => $input,
+            ]);
+
+        if ($this->mode !== Constants\Mode::TEST)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_OPERATION_NOT_ALLOWED_IN_LIVE,
+                null,
+                [
+                    'operation'         => 'subscription_charge',
+                    'subscription_id'   => $subscription->getId(),
+                ]);
+        }
+
+        $subscription->getValidator()->validateInput('manual_test_charge', $input);
+
+        $input['queue'] = false;
+
+        $subscription->getValidator()->validateTestSubscriptionChargeable();
+
+        //
+        // If subscription is in pending state, the only charge the merchant can attempt
+        // here is a retry charge. This flow thus simulates the work of the retry cron.
+        // For any other (valid) status, we actually create a new invoice and update the
+        // subscription, thus simulating the work of the charge cron.
+        //
+        if ($subscription->getStatus() === Status::PENDING)
+        {
+            $this->retry($subscription, $input);
+        }
+        else
+        {
+            (new Biller)->createInvoiceAndCharge($subscription, $input);
+        }
+
+        // Subscription is charged by passing a payload of reference ids
+        // to a helper class (Charge). We use a payload, because for cron
+        // charges, we queue the job. We don't for manual though, so
+        // reloading at this stage ensures that updated values are returned.
+        $this->repo->reload($subscription);
+
+        return $subscription;
     }
 
     /**
@@ -182,19 +209,20 @@ class Core extends Base\Core
     /**
      * Get subscription data for the checkout preferences route
      *
-     * @param Merchant\Entity $merchant
-     * @param string          $subscriptionId
+     * @param Entity $subscription
+     * @param bool                $cardChange
      *
      * @return array
      */
-    public function getFormattedSubscriptionData(Merchant\Entity $merchant, string $subscriptionId): array
+    public function getFormattedSubscriptionData(
+        Entity $subscription,
+        bool $cardChange): array
     {
-        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $merchant);
-
-        $authAmount = $this->getAuthTransactionAmount($subscription);
+        $authAmount = $this->getAuthTransactionAmount($subscription, $cardChange);
 
         return [
             'amount' => $authAmount,
+            'type'   => $subscription->getType(),
         ];
     }
 
@@ -211,11 +239,12 @@ class Core extends Base\Core
      *
      * @param Entity $subscription
      *
+     * @param bool   $cardChange
+     *
      * @return int
      * @throws BadRequestException
-     * @throws LogicException
      */
-    public function getAuthTransactionAmount(Entity $subscription): int
+    public function getAuthTransactionAmount(Entity $subscription, bool $cardChange = false): int
     {
         //
         // Currently, we allow a 2FA txn to be done only if
@@ -227,9 +256,9 @@ class Core extends Base\Core
         // card and the subscription is in active state.
         //
 
-        if ($subscription->isChangeCardStatus() === true)
+        if ($cardChange === true)
         {
-            $authAmount = $this->getAuthTransactionAmountForRetry();
+            $authAmount = $this->getAuthTransactionAmountForCardChange($subscription);
         }
         else if ($subscription->isCreated() === true)
         {
@@ -250,11 +279,43 @@ class Core extends Base\Core
         return $authAmount;
     }
 
+    public function getAuthTransactionAmountForCardChange(Entity $subscription): int
+    {
+        if ($subscription->isPending() === true)
+        {
+            $invoice = $this->repo->invoice->fetchLatestInvoiceOfPendingSubscription($subscription);
+
+            return $invoice->getAmount();
+        }
+        else
+        {
+            return Entity::DEFAULT_AUTH_AMOUNT;
+        }
+    }
+
     public function fireWebhookForStatusUpdate(Entity $subscription, string $status, Payment\Entity $payment = null)
     {
         if (array_key_exists($status, Status::$webhookStatuses) === false)
         {
             return;
+        }
+
+        //
+        // TODO: This should go in some class where every
+        // webhook passes through. Even in tests.
+        // This is applicable for all webhooks and
+        // not just subscription webhooks.
+        // An issue in API has been created for this.
+        //
+        if ($this->repo->isTransactionActive() === true)
+        {
+            throw new LogicException(
+                'Webhook fired inside a transaction',
+                ErrorCode::SERVER_ERROR_WEBHOOK_IN_TRANSACTION,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'status'            => $status
+                ]);
         }
 
         $event = Status::$webhookStatuses[$status];
@@ -271,7 +332,6 @@ class Core extends Base\Core
         // {
         //     $eventPayload[ApiEventSubscriber::WITH] = [Constants\Entity::PAYMENT => $payment];
         // }
-
         $this->app['events']->fire('api.' . $event, $eventPayload);
     }
 
@@ -301,14 +361,17 @@ class Core extends Base\Core
      *
      * @param Entity         $subscription
      * @param Invoice\Entity $invoice
-     * @param bool           $manual
+     * @param array          $options   List of options for use by merchant, that alter the flow of charge.
+     *                                  - manual: Leaves auth_attempts, pending status unchanged
+     *                                  - queue: Charges in queue, rather than in sync
+     *                                  - success: For test charge, allows testing failures
      *
      * @return bool
      * @throws LogicException
      */
-    public function charge(Entity $subscription, Invoice\Entity $invoice, bool $manual = false)
+    public function charge(Entity $subscription, Invoice\Entity $invoice, array $options = [])
     {
-        $recurringPayload = $this->constructRecurringPayload($subscription, $invoice);
+        $recurringPayload = $this->constructRecurringPayload($subscription, $invoice, $options);
 
         $queuePayload = [
             'recurring_payload' => $recurringPayload,
@@ -319,7 +382,7 @@ class Core extends Base\Core
             // functions mostly work on the key. Hence, sending the key
             // across rather than the mode.
             'key_id'            => $this->app['basicauth']->getPublicKey(),
-            'manual'            => $manual,
+            'manual'            => boolval($options['manual'] ?? false),
         ];
 
         $this->trace->info(
@@ -327,11 +390,10 @@ class Core extends Base\Core
             $queuePayload);
 
         //
-        // If the status is in created state, this means that the token has not
-        // been associated with it yet. An authorized payment for this subscription
-        // has not been done.
+        // If the subscription has not been authenticated yet, we won't have any token
+        // to charge this with. Ideally, should never reach this stage though.
         //
-        if ($subscription->getStatus() === Status::CREATED)
+        if ($subscription->hasBeenAuthenticated() === false)
         {
             throw new LogicException(
                 'Should not have reached here. The subscription is not ' .
@@ -343,7 +405,9 @@ class Core extends Base\Core
                 ]);
         }
 
-        if ($manual === false)
+        $queue  = boolval($options['queue'] ?? true);
+
+        if ($queue === true)
         {
             return (new Charge)->fireCharge($queuePayload);
 
@@ -361,8 +425,10 @@ class Core extends Base\Core
         }
     }
 
-    public function retryCapture(Entity $subscription, Invoice\Entity $invoice, bool $manual = false)
+    public function retryCapture(Entity $subscription, Invoice\Entity $invoice, array $options = [])
     {
+        $manual = boolval($options['manual'] ?? false);
+
         $payments = $invoice->payments;
 
         $authorizedPayments = $payments->where(Payment\Entity::STATUS, '=', Payment\Status::AUTHORIZED);
@@ -375,7 +441,7 @@ class Core extends Base\Core
         }
         else if ($authorizedPaymentsCount === 0)
         {
-            return;
+            return false;
         }
         else
         {
@@ -414,6 +480,8 @@ class Core extends Base\Core
 
             // Might want to move this to a queue later.
             $capturedPayment = $processor->capture($authorizedPayment, $capturePayload);
+
+            $captured = true;
         }
         catch (\Exception $ex)
         {
@@ -424,45 +492,338 @@ class Core extends Base\Core
                 (new Charge)->handleAuthorizationOrCaptureFailure($subscription, $invoice, $authorizedPayment, true);
             }
 
-            return;
+            $captured = false;
         }
 
-        (new Charge)->handleCaptureSuccess($subscription, $capturedPayment, $invoice);
+        //
+        // This is required here because we don't run handleCaptureSuccess in the normal capture flow.
+        // TODO: We should add this in the normal capture flow after checking for some conditions
+        // so that if a merchant manually captures an authorized payment from the dashboard, everything
+        // would still work fine. This retry route allows the merchant to retry an invoice. But there's
+        // nothing stopping him from trying capture the actual payment itself. We should update the subscription
+        // like in the retry flow itself!
+        //
+
+        if ($captured === true)
+        {
+            (new Charge)->handleCaptureSuccess($subscription, $capturedPayment, $invoice);
+        }
+
+        $notifyOptions = [
+            Event::PAYMENT => $capturedPayment,
+        ];
+
+        $this->triggerSubscriptionNotification($subscription, Event::CHARGED, $notifyOptions);
+
+        return $captured;
     }
 
-    public function cancel(Entity $subscription)
+    /**
+     * This function would handle emails for all failures.
+     * The status would become either pending, halted or completed.
+     * It calls the different events based on the statuses.
+     *
+     * @param Entity $subscription
+     *
+     * @throws LogicException
+     */
+    public function triggerSubscriptionFailureNotification(Entity $subscription)
+    {
+        if (in_array($subscription->getStatus(), Status::$failingStatuses, true) === false)
+        {
+            throw new LogicException(
+                'Should have never reached here. Should only be called for a subscription fail status',
+                ErrorCode::SERVER_ERROR_SUBSCRIPTION_INVOICE_BAD_STATUS,
+                [
+                    'subscription_id'       => $subscription->getId(),
+                    'subscription_status'   => $subscription->getStatus(),
+                ]);
+        }
+
+        $notifyOptions = [];
+
+        //
+        // Completed notification has options, it can be
+        // triggered by charge success as well as failure.
+        //
+        if ($subscription->isCompleted() === true)
+        {
+            $notifyOptions[Event::CHARGE_SUCCESS] = false;
+        }
+
+        $status = $subscription->getStatus();
+
+        $event = constant(Event::class . '::' . strtoupper($status));
+
+        $this->triggerSubscriptionNotification($subscription, $event, $notifyOptions);
+    }
+
+    public function cancel(Entity $subscription, array $input): Entity
     {
         $this->trace->info(
-            TraceCode::SUBSCRIPTION_CANCEL,
+            TraceCode::SUBSCRIPTION_CANCEL_REQUEST,
             [
-                'subscription_id' => $subscription->getId()
+                'subscription_id'   => $subscription->getId(),
+                'input'             => $input,
             ]);
 
-        $subscription->getValidator()->validateSubscriptionCancellable();
+        $validator = $subscription->getValidator();
 
-        return $this->mutex->acquireAndRelease(
+        $validator->validateSubscriptionCancellable();
+
+        $validator->validateInput(Validator::CANCEL, $input);
+
+        $subscription = $this->mutex->acquireAndRelease(
             $subscription->getId(),
-            function () use ($subscription)
+            function () use ($subscription, $input)
             {
-                $subscription->setStatus(Status::CANCELLED);
+                if ((isset($input[Entity::CANCEL_AT_CYCLE_END]) === true) and
+                    ($input[Entity::CANCEL_AT_CYCLE_END] = true))
+                {
+                    $this->setupCancelAtCycleEnd($subscription);
+                }
+                else
+                {
+                    //
+                    // If we first received cancel_at_cycle_end and then we received
+                    // cancel immediately, then we reset everything that was set as
+                    // part of the earlier request. We override the earlier request
+                    // with the current request.
+                    //
+                    if ($subscription->getCancelAtCycleEnd() === true)
+                    {
+                        $subscription->setCancelAt(null);
+                        $subscription->setCancelledAt(null);
+                    }
 
-                $this->setFieldsOnCancel($subscription);
-
-                $this->repo->saveOrFail($subscription);
-
-                $this->fireWebhookForStatusUpdate($subscription, Status::CANCELLED);
+                    $this->cancelImmediately($subscription);
+                }
 
                 return $subscription;
             },
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_SUBSCRIPTION_ANOTHER_OPERATION_IN_PROGRESS
         );
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_CANCELLED,
+            [
+                'subscription_id'   => $subscription->getId(),
+                'input'             => $input,
+            ]);
+
+        return $subscription;
+    }
+
+    public function triggerSubscriptionAuthenticatedNotification(
+        Payment\Entity $payment,
+        Entity $subscription)
+    {
+        $willBeRefunded = true;
+
+        if (($subscription->hadUpfrontAmount() === true) or
+            ($subscription->wasImmediate() === true))
+        {
+            $willBeRefunded = false;
+        }
+
+        $options = [
+            Event::AUTO_REFUND => $willBeRefunded,
+            Event::IMMEDIATE   => $subscription->wasImmediate(),
+            Event::PAYMENT     => $payment,
+        ];
+
+        $this->triggerSubscriptionNotification(
+            $subscription, Event::AUTHENTICATED, $options);
+    }
+
+    public function triggerSubscriptionAlreadyAuthenticatedNotification(
+        Entity $subscription,
+        string $oldStatus,
+        array $options)
+    {
+        $event = Event::CHARGED;
+
+        //
+        // If new status is completed, then that _might_ be the mail we have to send
+        //
+        if ($subscription->isCompleted() === true)
+        {
+            //
+            // If old status was halted, we would never have reached here. A manual charge on an older
+            // invoice can take a subscription from halted to active, but not from halted to completed.
+            //
+            // The only way there is for a subscription to go from halted to completed
+            // state is via the handleNoSubscriptionChargeAtInvoiceCreation flow.
+            //
+            if ($oldStatus === Status::HALTED)
+            {
+                throw new LogicException(
+                    'Subscription cannot be in halted state here',
+                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVALID_STATUS,
+                    [
+                        'subscription_id'       => $subscription->getId(),
+                        'subscription_status'   => $subscription->getStatus(),
+                        'old_status'            => $oldStatus
+                    ]);
+            }
+
+            //
+            // If old status was pending, actual movement was pending->active->completed
+            // In that case sending a completed mail is fine. Same for active.
+            //
+            // If subscription is already completed, there is not need to send another
+            // such notification. Sending a charge email would be more appropriate.
+            //
+            if ($oldStatus !== Status::COMPLETED)
+            {
+                $event = Event::COMPLETED;
+
+                //
+                // Completed mails can come via a charge failure as well
+                //
+                $options[Event::CHARGE_SUCCESS] = true;
+            }
+        }
+
+        $payment = $options[Event::PAYMENT];
+
+        //
+        // If the charge is on an older invoice, mention this in the mail
+        //
+        if ($subscription->isLatestInvoiceForSubscription($payment->invoice) === false)
+        {
+            $options[Event::PAST_INVOICE] = true;
+        }
+
+        //
+        // Mention that the subscription has been reactivated.
+        //
+        if ($oldStatus !== Status::ACTIVE)
+        {
+            $options[Event::REACTIVATED] = true;
+        }
+
+        $this->triggerSubscriptionNotification($subscription, $event, $options);
+    }
+
+    public function triggerSubscriptionNotification(
+        Entity $subscription,
+        string $event,
+        array $options = [])
+    {
+        assert ($this->repo->isTransactionActive() === false);
+
+        $notifier = new Notify($subscription, $options);
+
+        $notifier->trigger($event);
+    }
+
+    protected function setupCancelAtCycleEnd(Entity $subscription)
+    {
+        //
+        // TODO: Handle race conditions here.
+        // If the subscription is picked up by
+        // the cron to cancel it and the status is
+        // changed to false here, don't allow it.
+        //
+
+        $currentCycleEnd = $subscription->getCurrentEnd();
+
+        //
+        // If the subscription is in created or authenticated state
+        // and a cancel at cycle end request is sent
+        //
+        if ($currentCycleEnd === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CYCLE_NOT_RUNNING,
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'start_at'          => $subscription->getStartAt(),
+                    'charge_at'         => $subscription->getChargeAt(),
+                ]);
+        }
+
+        //
+        // This would ideally never happen since the subscription would
+        // be in completed state if this condition has to be true. If it
+        // is in completed state, we fail the validation before itself.
+        //
+        if ($currentCycleEnd === $subscription->getEndAt())
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_LAST_CYCLE_CANNOT_CANCEL,
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'start_at'          => $subscription->getStartAt(),
+                    'current_cycle_end' => $currentCycleEnd,
+                ]);
+        }
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        if ($currentCycleEnd < $currentTime)
+        {
+            throw new LogicException(
+                'Current cycle\'s cannot be lesser than the current time!',
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'current_time'      => $currentTime,
+                    'current_cycle_end' => $currentCycleEnd,
+                    'charge_at'         => $subscription->getChargeAt(),
+                ]);
+        }
+
+        $oldStatus = $subscription->getStatus();
+
+        $subscription->setCancelAt($currentCycleEnd);
+
+        $subscription->setCancelledAt($currentTime);
+
+        $this->repo->saveOrFail($subscription);
+
+        $options = [
+            Event::FUTURE_CANCEL => true,
+        ];
+
+        $this->triggerSubscriptionCancelledNotification($subscription, $oldStatus, $options);
+    }
+
+    public function cancelImmediately(Entity $subscription)
+    {
+        $oldStatus = $subscription->getStatus();
+
+        $subscription->setStatus(Status::CANCELLED);
+
+        $this->setFieldsOnCancel($subscription);
+
+        $this->repo->saveOrFail($subscription);
+
+        $this->fireWebhookForStatusUpdate($subscription, Status::CANCELLED);
+
+        $this->triggerSubscriptionCancelledNotification($subscription, $oldStatus);
+    }
+
+    protected function triggerSubscriptionCancelledNotification(
+        Entity $subscription,
+        string $oldStatus,
+        array $options = [])
+    {
+        if (($oldStatus !== Status::HALTED) and
+            ($oldStatus !== Status::CREATED))
+        {
+            // TODO: Add a subscription setting flag to send cancel emails
+
+            $this->triggerSubscriptionNotification($subscription, Event::CANCELLED, $options);
+        }
     }
 
     protected function setFieldsOnCancel(Entity $subscription)
     {
-        $subscription->setChargeAt(null);
-
         $subscription->resetAuthAttempts();
 
         $subscription->setEndedAt($subscription->getCancelledAt());
@@ -470,38 +831,35 @@ class Core extends Base\Core
 
     protected function getAuthTransactionAmountForNewSubscription(Entity $subscription): int
     {
-        $invoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
-
-        $invoicesCount = $invoices->count();
-
-        if ($invoicesCount === 0)
+        if ($subscription->isFutureNotUpfront() === true)
         {
             $authAmount = Entity::DEFAULT_AUTH_AMOUNT;
         }
-        else if ($invoicesCount === 1)
-        {
-            $authAmount = $invoices->first()->getAmount();
-        }
         else
         {
-            throw new LogicException(
-                'Number of invoices found for subscription does not match 1',
-                ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
-                [
-                    'count'             => $invoicesCount,
-                    'subscription_id'   => $subscription->getId(),
-                ]);
+            $invoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
+
+            if ($invoices->count() !== 1)
+            {
+                throw new LogicException(
+                    'Number of invoices found for subscription does not match 1',
+                    ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
+                    [
+                        'count'             => $invoices->count(),
+                        'subscription_id'   => $subscription->getId(),
+                    ]);
+            }
+
+            $authAmount = $invoices->first()->getAmount();
         }
 
         return $authAmount;
     }
 
-    protected function getAuthTransactionAmountForRetry(): int
-    {
-        return Entity::DEFAULT_AUTH_AMOUNT;
-    }
-
-    protected function constructRecurringPayload(Entity $subscription, Invoice\Entity $invoice): array
+    protected function constructRecurringPayload(
+        Entity $subscription,
+        Invoice\Entity $invoice,
+        array $options): array
     {
         //
         // Ensure that invoice amount is taken always because
@@ -527,6 +885,22 @@ class Core extends Base\Core
             Payment\Entity::DESCRIPTION     => 'Recurring Payment via Subscription',
         ];
 
+        $this->addTestChargeOptions($recurringPayload, $options);
+
         return $recurringPayload;
+    }
+
+    protected function addTestChargeOptions(array & $recurringPayload, array $options)
+    {
+        if (($this->mode === Constants\Mode::TEST) and
+            (isset($options['success']) === true))
+        {
+            $recurringPayload['test_success'] = boolval($options['success']);
+
+            if ($recurringPayload['test_success'] === false)
+            {
+                $recurringPayload['description'] = 'Failed Recurring Payment via Subscription';
+            }
+        }
     }
 }

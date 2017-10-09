@@ -3,16 +3,27 @@
 namespace RZP\Models\Feature;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
+use RZP\Constants\Entity as E;
 
 class Entity extends Base\PublicEntity
 {
-    const NAME             = 'name';
-    const ENTITY_ID        = 'entity_id';
-    const ENTITY_TYPE      = 'entity_type';
+    const NAME        = 'name';
+    const ENTITY_ID   = 'entity_id';
+    const ENTITY_TYPE = 'entity_type';
 
-    protected $table = \RZP\Constants\Table::FEATURE;
+    // Input request keys, not part of actual entity
+    const NAMES       = 'names';
+    const SHOULD_SYNC = 'should_sync';
 
-    protected $entity = 'feature';
+    // Keys used for tracing requests
+    const OLD_FEATURES = 'old_features';
+    const NEW_FEATURE  = 'new_feature';
+    const FEATURE      = 'feature';
+
+    protected $table = Table::FEATURE;
+
+    protected $entity = E::FEATURE;
 
     // We are explicitly generating Id so that same Id gets stored in live and test db
     protected $generateIdOnCreate = false;
@@ -55,12 +66,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::ENTITY_TYPE);
     }
-
-    /**
-     * Creates a polymorphic relation with entities
-     * implementing a morphMany association on the
-     * 'entity' key
-     */
+    
     public function entity()
     {
         return $this->morphTo();
@@ -72,5 +78,16 @@ class Entity extends Base\PublicEntity
         {
             $input[self::NAME] = strtolower($input[self::NAME]);
         }
+    }
+
+    /**
+     * Returns true if a feature belongs to the list of features for
+     * which the merchant should be notified.
+     *
+     * @return bool
+     */
+    public function isNotifyFeature(): bool
+    {
+        return (in_array($this->getName(), Constants::$notifyFeatures) === true);
     }
 }

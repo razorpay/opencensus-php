@@ -110,15 +110,15 @@ class CreateTransactions extends Migration
             $table->integer(Transaction::SETTLED_AT)
                   ->nullable();
 
+            $table->integer(Transaction::GATEWAY_SETTLED_AT)
+                ->nullable();
+
             // This is a foreign key. The foreign key part is defined
             // in Settlement migration file
             $table->char(Transaction::SETTLEMENT_ID, Transaction::ID_LENGTH)
                   ->nullable();
 
             $table->integer(Transaction::RECONCILED_AT)
-                  ->nullable();
-
-            $table->integer(Transaction::GATEWAY_SETTLED_AT)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
@@ -144,6 +144,8 @@ class CreateTransactions extends Migration
             $table->index(Transaction::GRATIS);
 
             $table->index(Transaction::CREATED_AT);
+
+            $table->index(Transaction::UPDATED_AT);
 
             $table->foreign(Transaction::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

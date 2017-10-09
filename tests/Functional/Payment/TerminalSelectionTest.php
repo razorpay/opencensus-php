@@ -379,6 +379,18 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:shared_amex_terminal');
         $this->fixtures->create('terminal:shared_amex_category_terminals');
 
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'card',
+            'merchant_id'      => '100000Razorpay',
+            'category2'        => 'govt_education',
+            'gateway'          => 'amex',
+            'network'          => 'AMEX',
+            'network_category' => 'education',
+            'type'             => 'filter',
+            'filter_type'      => 'select',
+            'group'            => 'category_filter',
+        ]);
+
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '341111111111111';
         $payment['card']['cvv'] = '8888';
@@ -407,6 +419,27 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:shared_amex_terminal');
         $this->fixtures->create('terminal:shared_amex_category_terminals');
 
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'card',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'amex',
+            'network'          => 'AMEX',
+            'network_category' => 'retail_services',
+            'type'             => 'filter',
+            'filter_type'      => 'select',
+            'group'            => 'category_filter',
+        ]);
+
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'card',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'amex',
+            'network'          => 'AMEX',
+            'type'             => 'filter',
+            'filter_type'      => 'select',
+            'group'            => 'category_filter',
+        ]);
+
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '341111111111111';
         $payment['card']['cvv'] = '8888';
@@ -423,7 +456,6 @@ class TerminalSelectionTest extends TestCase
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
 
-        // Payment should have been made through amex education services terminal
         $this->assertEquals('ShRetailSvcsTl', $payment['terminal_id']);
     }
 
@@ -675,7 +707,7 @@ class TerminalSelectionTest extends TestCase
             [
                 'id'          => 'DrctNbBdkTmnl1',
                 'merchant_id' => Merchant\Account::TEST_ACCOUNT,
-                'tpv'         => 1,
+                'tpv'         => 0,
                 'shared'      => 0
             ]);
 
@@ -684,7 +716,7 @@ class TerminalSelectionTest extends TestCase
                 'id'               => 'DrctNbBdkTmnl2',
                 'merchant_id'      => Merchant\Account::TEST_ACCOUNT,
                 'network_category' => 'ecommerce',
-                'tpv'              => 1,
+                'tpv'              => 0,
                 'shared'           => 0
             ]);
 
@@ -758,12 +790,14 @@ class TerminalSelectionTest extends TestCase
              ['id' => 'DrctNbKtkTmnl3',
               'merchant_id' => Merchant\Account::TEST_ACCOUNT,
               'network_category' => 'securities',
-              'shared' => 0]);
+              'shared' => 0,
+              'tpv'    => 1]);
 
         $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
              ['id' => 'SharNbKtkTmnl1',
               'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
-              'network_category' => 'securities']);
+              'network_category' => 'securities',
+              'tpv'    => 1]);
 
         $this->fixtures->create('gateway_rule', [
             'method'           => 'netbanking',
@@ -1135,22 +1169,5 @@ class TerminalSelectionTest extends TestCase
         $payment1 = $this->getLastEntity('payment', true);
 
         $this->assertEquals('ShrdNbBdkHouse', $payment1['terminal_id']);
-    }
-
-    public function testSharedTerminalFilter()
-    {
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->fixtures->create('terminal:shared_hdfc_terminal');
-
-        Merchant\Preferences::$merchantSharedTerminalsBlackList[] = '10000000000000';
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function()
-        {
-           $this->doAuthPayment();
-        });
-
-        array_pop(Merchant\Preferences::$merchantSharedTerminalsBlackList);
     }
 }

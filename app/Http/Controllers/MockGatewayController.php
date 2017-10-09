@@ -168,7 +168,9 @@ class MockGatewayController extends Controller
 
         $server = $this->gateway->server('billdesk');
 
-        return $server->authorize($input);
+        $data = $server->bank($input);
+
+        return View::make('gateway.bankRedirection')->with('data', $data);
     }
 
     public function postEbsPayment()

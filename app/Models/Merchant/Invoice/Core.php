@@ -5,6 +5,8 @@ namespace RZP\Models\Merchant\Invoice;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
 use RZP\Models\Adjustment;
@@ -21,6 +23,8 @@ class Core extends Base\Core
         $invoiceEntity->merchant()->associate($merchant);
 
         $invoiceEntity->build($input);
+
+        $invoiceEntity->generateInvoiceNumber($input['month'], $input['year']);
 
         $this->repo->saveOrFail($invoiceEntity);
 
@@ -100,17 +104,6 @@ class Core extends Base\Core
         }
     }
 
-    public function updateGstin(string $merchantId, array $input)
-    {
-        (new Validator)->validateInput('edit_gstin', $input);
-
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $currentGstin = $merchant->getGstin();
-
-        $this->repo->merchant_invoice->updateGstin($merchantId, $input[Entity::INVOICE_NUMBER], $currentGstin);
-    }
-
     public function createMulitpleInvoiceEntities(array $input)
     {
         (new Validator)->validateInput('bulk_create', $input);
@@ -127,5 +120,41 @@ class Core extends Base\Core
 
             $this->create($row, $merchant);
         }
+    }
+
+    public function updateGstinForInvoice(array $input, Merchant\Entity $merchant): int
+    {
+        $currentGstin = $merchant->getGstin();
+
+        $invoiceNumber = trim($input[Entity::INVOICE_NUMBER]);
+
+        $merchantId = $merchant->getId();
+
+        $entities = $this->repo->merchant_invoice->fetchByInvoiceNumber($merchantId, $invoiceNumber);
+
+        $count = $entities->count();
+
+        if ($count === 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_MERCHANT_INVOICE_NUMBER,
+                null,
+                [
+                    'merchant_id' => $merchantId,
+                    'invoice_number' => $invoiceNumber
+                ]);
+        }
+
+        $this->repo->transaction(function() use ($entities, $currentGstin)
+        {
+            foreach ($entities as $entity)
+            {
+                $entity->setGstin($currentGstin);
+
+                $this->repo->saveOrFail($entity);
+            }
+        });
+
+        return $count;
     }
 }

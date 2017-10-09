@@ -71,6 +71,11 @@ class Entity extends Base\Entity
         self::ID,
     ];
 
+    protected $embeddedRelations = [
+        self::ORGS,
+        self::WORKFLOW_ORGS,
+    ];
+
     protected static function boot()
     {
         parent::boot();

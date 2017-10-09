@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use App;
 use Request;
+use RZP\Base\RepositoryManager;
 use Session;
 
 use RZP\Error\ErrorCode;
@@ -25,17 +26,25 @@ use RZP\Trace\TraceCode;
 
 class Checkout
 {
-    const CHECKOUT_LOGO_SIZE = 'medium';
-    const CHECKOUT_DEFAULT_THEME_COLOR = '#3594E2';
+    const CHECKOUT_LOGO_SIZE            = 'medium';
+    const CHECKOUT_DEFAULT_THEME_COLOR  = '#3594E2';
 
-    const SUBSCRIPTION_ID    = 'subscription_id';
+    const SUBSCRIPTION_ID               = 'subscription_id';
 
     protected $app;
     /**
      * @var Trace
      */
     protected $trace;
+    /**
+     * @var RepositoryManager
+     */
     protected $repo;
+
+    /**
+     * @var Subscription\Entity
+     */
+    protected $subscription;
 
     public function __construct()
     {
@@ -62,6 +71,8 @@ class Checkout
 
         $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
 
+        // This should be after `checkAndFillSavedTokens` because this expects
+        // `$this->subscription` to be set.
         $this->checkAndAddDetailsForSubscription($input, $merchant, $data);
 
         $this->checkAndFillOfferDetails($merchant, $input, $data);
@@ -133,9 +144,42 @@ class Checkout
             return;
         }
 
-        $subscriptionId = $input[self::SUBSCRIPTION_ID];
+        $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
 
-        $data['subscription'] = (new Subscription\Core)->getFormattedSubscriptionData($merchant, $subscriptionId);
+        $subscription = $this->getSubscription($input[self::SUBSCRIPTION_ID], $merchant);
+
+        //
+        // If the subscription has already been authenticated, there's no reason for
+        // the checkout to hit the preferences route. UNLESS it's a card change flow.
+        //
+        if (($cardChange === false) and
+            ($subscription->hasBeenAuthenticated() === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_ALREADY_AUTHENTICATED,
+                null,
+                [
+                    self::SUBSCRIPTION_ID   => $input[self::SUBSCRIPTION_ID],
+                    'merchant_id'           => $merchant->getId(),
+                    'card_change'           => $cardChange
+                ]);
+        }
+
+        if (($cardChange === true) and
+            ($subscription->isCardChangeStatus() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CARD_CHANGE_NOT_ALLOWED,
+                null,
+                [
+                    'subscription_id'       => $input[self::SUBSCRIPTION_ID],
+                    'subscription_status'   => $subscription->getStatus(),
+                    'merchant_id'           => $merchant->getId(),
+                    'card_change'           => $cardChange
+                ]);
+        }
+
+        $data['subscription'] = (new Subscription\Core)->getFormattedSubscriptionData($subscription, $cardChange);
     }
 
     protected function tracePreferencesRequest(Entity $merchant, $mode, array $input)
@@ -357,8 +401,7 @@ class Checkout
                 $input);
         }
 
-        $subscription = $this->repo->subscription->findByPublicIdAndMerchant(
-            $input[Payment\Entity::SUBSCRIPTION_ID], $merchant);
+        $subscription = $this->setSubscription($input[Payment\Entity::SUBSCRIPTION_ID], $merchant);
 
         //
         // If a customer is not associated with the subscription already,
@@ -397,6 +440,25 @@ class Checkout
                 $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
             }
         }
+    }
+
+    protected function setSubscription($subscriptionId, Merchant\Entity $merchant)
+    {
+        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $merchant);
+
+        $this->subscription = $subscription;
+
+        return $subscription;
+    }
+
+    protected function getSubscription(string $subscriptionId, Merchant\Entity $merchant)
+    {
+        if (isset($this->subscription) === true)
+        {
+            return $this->subscription;
+        }
+
+        return $this->setSubscription($subscriptionId, $merchant);
     }
 
     protected function getMerchantPreferencesData(Entity $merchant, $mode)
@@ -481,6 +543,12 @@ class Checkout
     {
         $method = $offer->getPaymentMethod();
 
+        // If offer method is empty we do not update methods in response
+        if (empty($method) === true)
+        {
+            return ;
+        }
+
         $enabledBanks = $data['methods']['netbanking'];
 
         $enabledWallets = $data['methods']['wallet'];
@@ -505,9 +573,9 @@ class Checkout
                 $data['methods']['netbanking'] = $enabledBanks;
 
                 // Only allow payment through specific bank if network is specified
-                if ($offer->getPaymentNetwork() !== null)
+                if ($offer->getIssuer() !== null)
                 {
-                    $bankCode = $offer->getPaymentNetwork();
+                    $bankCode = $offer->getIssuer();
 
                     $bankName = Netbanking::getName($bankCode);
 
@@ -524,9 +592,9 @@ class Checkout
                 $data['methods']['wallet'] = $enabledWallets;
 
                 // For wallet offers if network is specified, lock method to only that wallet
-                if ($offer->getPaymentNetwork() !== null)
+                if ($offer->getIssuer() !== null)
                 {
-                    $wallet = $offer->getPaymentNetwork();
+                    $wallet = $offer->getIssuer();
 
                     $data['methods']['wallet'] = [
                         $wallet
@@ -550,7 +618,7 @@ class Checkout
         {
             if ($merchant->isFeatureEnabled(Feature\Constants::HIDE_DOWNTIMES) === false)
             {
-                $downtimeData = (new Downtime\Core)->getFormattedGatewayDowntimeCheckoutData($merchant);
+                $downtimeData = (new Downtime\Service)->getPublicGatewayDowntimeData();
 
                 if (empty($downtimeData) === false)
                 {

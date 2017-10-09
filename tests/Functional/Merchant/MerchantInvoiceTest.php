@@ -60,6 +60,8 @@ class MerchantInvoiceTest extends TestCase
         $entities = $this->getEntities('merchant_invoice', [], true);
 
         $this->assertEquals(2, $entities['count']);
+
+        $this->assertEquals(substr($entities['items'][0]['invoice_number'], -4), '0817');
     }
 
     public function testEditGstin()
@@ -71,7 +73,7 @@ class MerchantInvoiceTest extends TestCase
                 'gstin'         => '29kjsngjk213900',
             ]);
 
-        $invoiceNumber = '10000000000000/08/2017';
+        $invoiceNumber = '100820171111';
 
         $this->fixtures->create('merchant_invoice',
             [
@@ -103,6 +105,39 @@ class MerchantInvoiceTest extends TestCase
         }
     }
 
+    public function testEditGstinFailure()
+    {
+        $md1 = $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'   => '10000000000000',
+                'gstin'         => '29kjsngjk213900',
+            ]);
+
+        $invoiceNumber = '100820171111';
+
+        $this->fixtures->create('merchant_invoice',
+            [
+                Invoice\Entity::TYPE => Invoice\Type::CARD_LTE_2K,
+                Invoice\Entity::INVOICE_NUMBER => $invoiceNumber
+            ]);
+
+        $this->ba->adminAuth();
+
+        $request = [
+            'url'     => '/merchants/10000000000000/invoice/gstin',
+            'method'  => 'PUT',
+            'content' => ['invoice_number' => '1234'],
+        ];
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($request)
+        {
+            $this->makeRequestAndGetContent($request);
+        });
+    }
+
     public function testInvoiceEntityCreateForPrevMonth()
     {
         $this->createData();
@@ -122,7 +157,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(3, $entities['count']);
+        $this->assertEquals(15, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -141,6 +176,15 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['non_card'], $data['non_card']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
+
+        $dateString = Carbon::createFromDate(
+                            $entities[0]['year'],
+                            $entities[0]['month'],
+                            1,
+                            Timezone::IST
+                        )->format('my');
+
+        $this->assertEquals(substr($entities[0]['invoice_number'], -4), $dateString);
 
         Carbon::setTestNow();
     }
@@ -167,7 +211,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(3, $entities['count']);
+        $this->assertEquals(15, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -233,7 +277,14 @@ class MerchantInvoiceTest extends TestCase
 
         $this->assertTestResponse($merchantInvoice);
 
-        $this->assertNotNull($merchantInvoice[Invoice\Entity::INVOICE_NUMBER]);
+        $dateString = Carbon::createFromDate(
+                            $merchantInvoice['year'],
+                            $merchantInvoice['month'],
+                            1,
+                            Timezone::IST
+                        )->format('my');
+
+        $this->assertEquals(substr($merchantInvoice[Invoice\Entity::INVOICE_NUMBER], -4), $dateString);
     }
 
     public function testInvoiceEntityCreateForGivenMerchant()
@@ -284,6 +335,7 @@ class MerchantInvoiceTest extends TestCase
         $this->fixtures->edit('merchant', '10000000000000', [
                                 'activated' => 1,
                                 'activated_at' => Carbon::now(Timezone::IST)->timestamp,
+                                'invoice_code' => 'hello1234567',
                             ]);
 
         $md1 = $this->fixtures->create(

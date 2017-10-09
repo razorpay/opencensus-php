@@ -37,7 +37,7 @@ return [
     'testPaymentWalletEntity' => [
         'action'               => 'authorize',
         // They give the response in Rupees
-        'amount'               => 50000,
+        'amount'               => '50000',
         'wallet'               => 'sbibuddy',
         'received'             => true,
         'email'                => 'a@b.com',
@@ -50,7 +50,7 @@ return [
         'action'               => 'refund',
         'wallet'               => 'sbibuddy',
         'email'                => 'a@b.com',
-        'amount'               => 50000,
+        'amount'               => '50000',
         'contact'              => '9918899029',
         'gateway_merchant_id'  => 'random_id',
         'status_code'          => ResponseCodeMap::SUCCESS_CODE,
@@ -61,7 +61,7 @@ return [
         'action'               => 'refund',
         'wallet'               => 'sbibuddy',
         'email'                => 'a@b.com',
-        'amount'               => 25000,
+        'amount'               => '25000',
         'contact'              => '9918899029',
         'gateway_merchant_id'  => 'random_id',
         'gateway_payment_id'   => '987654321',
@@ -87,7 +87,7 @@ return [
 
     'testFailedPaymentWalletEntity' => [
         'action'               => 'authorize',
-        'amount'               => 50000,
+        'amount'               => '50000',
         'wallet'               => 'sbibuddy',
         'received'             => true,
         'email'                => 'a@b.com',
@@ -119,7 +119,7 @@ return [
         'action'               => 'refund',
         'wallet'               => 'sbibuddy',
         'email'                => 'a@b.com',
-        'amount'               => 50000,
+        'amount'               => '50000',
         'contact'              => '9918899029',
         'gateway_merchant_id'  => 'random_id',
         'status_code'          => ResponseCodeMap::GENERAL_ERROR,
@@ -127,7 +127,7 @@ return [
         'entity'               => 'wallet'
     ],
 
-    'testVerifyFailedPayment'   => [
+    'testAuthFailedVerifySuccessPayment' => [
         'response' => [
             'content' => [
                 'error' => [
@@ -142,4 +142,26 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED
         ],
     ],
+
+    'testAmountMismatchVerifyFailure' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\RuntimeException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR
+        ],
+    ],
+
+    'testAuthFailedVerifyFailurePayment' => [
+        'status'        => 'failed',
+        'wallet'        => 'sbibuddy',
+        'gateway'       => 'wallet_sbibuddy'
+    ]
 ];

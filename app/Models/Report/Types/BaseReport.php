@@ -53,8 +53,8 @@ class BaseReport extends Base\Core
             $date = Carbon::createFromDate($year, $month, $day, Timezone::IST)
                           ->startOfDay();
 
-            $from = $date->timestamp;
-            $to = $date->addDay()->timestamp - 1;
+            $from = $date->getTimestamp();
+            $to = $date->addDay()->getTimestamp() - 1;
         }
         else if (isset($input['month']))
         {
@@ -65,11 +65,11 @@ class BaseReport extends Base\Core
 
             $from = Carbon::createFromDate($year, $month, 1, Timezone::IST)
                           ->startOfDay()
-                          ->timestamp;
+                          ->getTimestamp();
 
             $to = Carbon::createFromDate($year, $month, 1, Timezone::IST)
                         ->endOfMonth()
-                        ->timestamp;
+                        ->getTimestamp();
         }
 
         return [$from, $to];
@@ -78,9 +78,6 @@ class BaseReport extends Base\Core
     /**
      * 1. increase system limits
      * 2. Sets timezone
-     *
-     * @param $input array
-     *        expected : 'day', 'month', 'year'
      */
     protected function setDefaults()
     {

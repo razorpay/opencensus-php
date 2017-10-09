@@ -62,6 +62,31 @@ return [
         ],
     ],
 
+    'testSubmitAutoActivate' => [
+        'request' => [
+            'content' => [
+                'bank_account_name' => 'Test',
+                'bank_account_number' => '111000',
+                'bank_branch_ifsc' => 'SBIN0007105',
+                'bank_account_type' => 'savings',
+                'business_name' => 'Test',
+                'business_type' => 1,
+                'submit' => true
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'submitted' => true,
+                'verification' => [
+                    'status' => 'pending'
+                ],
+                'can_submit' => true,
+            ],
+        ],
+    ],
+
     'testSubmitWithInvalidFields' => [
         'request' => [
             'content' => [
@@ -341,6 +366,57 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testMerchantDetailsFetch' => [
+        'request' => [
+            'url'       => '/merchants/details',
+            'method'    => 'GET',
+            'content'   => [],
+            'server' => [
+                'HTTP_' . \RZP\Http\BasicAuth\BasicAuth::ACCOUNT_HEADER_KEY => '10000000000002',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'                        => '10000000000002',
+                'entity'                    => 'merchant',
+                'activated'                 => false,
+                'live'                      => false,
+                'methods'                   => [
+                    'merchant_id'   => '10000000000002',
+                    'amex'          => false,
+                ],
+
+                'convert_currency'          => null,
+                'org_id'                    => \RZP\Tests\Functional\Fixtures\Entity\Org::RZP_ORG,
+                'groups'                    => [],
+                'admins'                    => [],
+                'transaction_report_email'  => [],
+                'tags'                      => [],
+                'confirmed'                 => false,
+                'logo_url'                  => null,
+                'merchant_details'          => [
+                    'contact_email'         => 'razorpay@razorpay.com',
+                    'gstin'                 => null,
+                    'p_gstin'               => null,
+                    'activation_progress'   => 0,
+                    'can_submit'            => false,
+                    'steps_finished'        => [],
+                    'activated'             => 0,
+                    'verification'          => [
+                        'status'                => 'disabled',
+                        'disabled_reason'       => 'required_fields',
+                        'activation_progress'   => 3,
+                    ],
+                ],
+                'auto_capture_late_auth'    => false,
+                'fee_bearer'                => 'platform',
+                'fee_model'                 => 'prepaid',
+                'international'             => true,
+                'max_payment_amount'        => 50000000,
+                'suspended_at'              => null,
+            ],
         ],
     ],
 ];

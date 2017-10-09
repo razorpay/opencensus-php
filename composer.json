@@ -40,7 +40,9 @@
         "laravel/tinker": "1.0.1",
         "graham-campbell/throttle": "^5.3",
         "rtconner/laravel-tagging": "~2.2",
-        "razorpay/trace": "~2.0"
+        "razorpay/trace": "~2.0",
+        "anlutro/l4-settings": "^0.5.0",
+        "razorpay/oauth": "dev-master"
     },
     "repositories": [
         {
@@ -54,18 +56,22 @@
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/trace.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:razorpay/oauth.git"
         }
     ],
     "require-dev": {
         "kint-php/kint": "1.*",
-        "phpunit/phpunit": "^5.4",
         "laracasts/testdummy": "2.*",
         "mockery/mockery": "*",
         "codacy/coverage": "dev-master",
         "tijsverkoyen/css-to-inline-styles": "2.*",
         "orchestra/testbench": "3.*",
         "php-http/mock-client": "^0.3.3",
-        "symfony/dom-crawler": "3.*"
+        "symfony/dom-crawler": "3.*",
+        "phpunit/phpunit": "^6.2"
     },
     "autoload": {
         "classmap": [

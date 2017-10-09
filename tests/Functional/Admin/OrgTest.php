@@ -62,11 +62,17 @@ class OrgTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
 
+        $workflowPermissions = $this->getPermissionsByIds('workflow');
+
+        $newWorkflowPerms = array_slice($workflowPermissions, 0, 2);
+
         $permissions = $this->getPermissionsByIds('assignable');
 
         $newPermissions = array_slice($permissions, 0, 3);
 
         $this->testData[__FUNCTION__]['request']['content']['permissions'] = $newPermissions;
+
+        $this->testData[__FUNCTION__]['request']['content']['workflow_permissions'] = $newWorkflowPerms;
 
         $result = $this->startTest();
 
@@ -75,6 +81,8 @@ class OrgTest extends TestCase
         $role = $this->ba->getAdmin()->roles()->get()[0];
 
         $rolePermissions = $role->permissions()->allRelatedIds()->toArray();
+
+        $this->assertEquals(2, count($result['workflow_permissions']));
 
         $this->assertEquals(3, count($rolePermissions));
     }

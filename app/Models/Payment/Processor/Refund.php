@@ -55,6 +55,11 @@ trait Refund
         $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount);
     }
 
+    public function createRefundFromMerchantFile(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
+    {
+        return $this->refund($payment, $input, $batch);
+    }
+
     public function createRefundOnApiForCancelledBilldeskRefund(
         Payment\Entity $payment,
         string $refundId,
@@ -782,9 +787,6 @@ trait Refund
             return Payment\Refund\Status::PROCESSED;
         }
 
-        $this->refund->incrementAttempts();
-        $this->repo->saveOrFail($this->refund);
-
         // true  if refunded
         // false if not refunded
         $refundedOnGateway = $this->verifyRefund($refund);
@@ -804,6 +806,8 @@ trait Refund
         }
 
         $this->refund->setGatewayRefunded($refundedOnGateway);
+
+        $this->refund->incrementAttempts();
 
         $this->repo->saveOrFail($this->refund);
 
@@ -1003,6 +1007,12 @@ trait Refund
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
         }
+
+        // Some bank transfer payments cannot be refunded.
+        if ($payment->isBankTransfer() === true)
+        {
+            (new BankTransfer\Validator)->validatePaymentForRefund($payment);
+        }
     }
 
     protected function setPaymentAndRefundInfo($refund, $payment)
@@ -1025,14 +1035,13 @@ trait Refund
      * - EMails (to both customer and merchant)
      *
      * @param  Payment\Entity $payment Payment Entity
-     *
-     * @return null
      */
     protected function sendRefundNotification(Payment\Entity $payment)
     {
         //
         // Analytics is on dashboard side for now
         //
+
         $notifier = new Notify($payment);
         $notifier->addRefund($this->refund);
         $notifier->trigger(Payment\Event::REFUNDED);
@@ -1113,7 +1122,7 @@ trait Refund
 
         try
         {
-            (new BankTransfer\Core)->refund($data, $this->merchant);
+            (new BankTransfer\Core)->refund($data);
 
             $this->refund->setStatus(Payment\Refund\Status::CREATED);
 

@@ -49,6 +49,23 @@ return [
         ],
     ],
 
+    'testApplicationErrorOccurred'     => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        ],
+    ],
+
+
     'testPaymentWithOtpAttempts' => [
         'merchant_id'       => '10000000000000',
         'amount'            => 50000,
@@ -187,7 +204,7 @@ return [
 
     'testPaymentWalletEntity' => [
         'action'                => 'authorize',
-        'amount'                => 50000,
+        'amount'                => '50000',
         'wallet'                => 'freecharge',
         'received'              => true,
         'email'                 => 'a@b.com',
@@ -200,7 +217,7 @@ return [
 
     'testFailedPaymentWalletEntity' => [
         'action'                => 'authorize',
-        'amount'                => 19999,
+        'amount'                => '19999',
         'wallet'                => 'freecharge',
         'received'              => false,
         'email'                 => 'a@b.com',
@@ -211,7 +228,7 @@ return [
 
     'testTopupPayment'               => [
         'action'                => 'authorize',
-        'amount'                => 100000,
+        'amount'                => '100000',
         'wallet'                => 'freecharge',
         'received'              => true,
         'email'                 => 'a@b.com',
@@ -259,7 +276,7 @@ return [
         'action'                => 'refund',
         'wallet'                => 'freecharge',
         'email'                 => 'a@b.com',
-        'amount'                => 50000,
+        'amount'                => '50000',
         'contact'               => '9918899029',
         'gateway_merchant_id'   => 'random_id',
         'status_code'           => 'SUCCESS',
@@ -270,7 +287,7 @@ return [
         'action'                => 'refund',
         'wallet'                => 'freecharge',
         'email'                 => 'a@b.com',
-        'amount'                => 25000,
+        'amount'                => '25000',
         'contact'               => '9918899029',
         'gateway_merchant_id'   => 'random_id',
         'status_code'           => 'SUCCESS',

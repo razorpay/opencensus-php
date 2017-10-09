@@ -122,7 +122,7 @@ return [
     ],
     'testPaymentPayzappEntity' => [
         'action'               => 'authorize',
-        'amount'               => 50000,
+        'amount'               => '50000',
         'wallet'               => 'payzapp',
         'received'             => true,
         'email'                => 'a@b.com',
@@ -170,7 +170,7 @@ return [
     ],
     'testPaymentPayzappEntityAfterRefund' => [
           'action'                  => 'refund',
-          'amount'                  => 50000,
+          'amount'                  => '50000',
           'wallet'                  => 'payzapp',
           'received'                => true,
           'email'                   => 'a@b.com',

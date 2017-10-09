@@ -78,7 +78,7 @@ class Gateway extends Base\Gateway
         // If callback status was a success, we verify the payment immediately
         $this->verifyCallback($input, $gatewayPayment);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }

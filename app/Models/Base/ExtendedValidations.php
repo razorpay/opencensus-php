@@ -11,6 +11,9 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 {
+    const EPOCH_DEFAULT_MIN = 946684800;  // Sat Jan  1 05:30:00 IST 2000
+    const EPOCH_DEFAULT_MAX = 2147483647; // Tue Jan 19 08:44:07 IST 2038, *MySQL max for Signed Int
+
     protected function validatePublicId($attribute, $id)
     {
         $match = preg_match('/\b[a-z]{0,5}_[a-zA-Z0-9]{14}\b/', $id);
@@ -274,8 +277,8 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
                 $v = intval($v);
             });
 
-        $min = $parameters[0] ?? 946684800;  // 01 January 2000 GMT
-        $max = $parameters[1] ?? 4102444800; // 01 January 2100 GMT
+        $min = $parameters[0] ?? self::EPOCH_DEFAULT_MIN;
+        $max = $parameters[1] ?? self::EPOCH_DEFAULT_MAX;
 
         $isValid = (($value >= $min) and ($value <= $max));
 

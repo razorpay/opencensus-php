@@ -26,7 +26,7 @@ class CreateMerchantInvoices extends Migration
 
             $table->char(Invoice::MERCHANT_ID, Merchant::ID_LENGTH);
 
-            $table->string(Invoice::INVOICE_NUMBER);
+            $table->char(Invoice::INVOICE_NUMBER, 16);
 
             $table->integer(Invoice::MONTH)
                   ->unsigned();

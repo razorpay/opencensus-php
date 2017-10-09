@@ -35,6 +35,7 @@ class Netbanking
     protected static $self = [
         IFSC::ICIC,
         IFSC::HDFC,
+        IFSC::CORP,
         IFSC::UTIB,
         IFSC::KKBK,
         IFSC::AIRP,
@@ -240,6 +241,11 @@ class Netbanking
         */
     );
 
+    protected static $defaultDisabled = [
+        IFSC::AIRP,
+        IFSC::PUNB
+    ];
+
     protected static $ebsTPV = [];
 
     public static function isSupportedBank($bank)
@@ -247,6 +253,11 @@ class Netbanking
         return (in_array($bank, self::getAllBanks()));
     }
 
+    /**
+     * Returns any unsupported bank from the passed list
+     * @param $banks
+     * @return array
+     */
     public static function findUnsupportedBanks($banks)
     {
         return array_diff($banks, self::getAllBanks());
@@ -261,20 +272,26 @@ class Netbanking
         return array_unique(array_merge(self::$paytm, self::$billdesk, self::$ebs, self::$self));
     }
 
-    public static function getDisabledBanks($banks)
+    public static function enableDefaultBanks(array $banks)
     {
-        return array_diff(self::getAllBanks(), $banks);
+        self::$defaultDisabled = array_diff(self::$defaultDisabled, $banks);
+
+        return true;
     }
 
-    public static function getDisabledBanksForCategory(string $category2)
+    public static function getDefaultDisabledBanks()
     {
-        return isset(Category::DISABLED[Method::NETBANKING][$category2]) ?
-                Category::DISABLED[Method::NETBANKING][$category2] : [];
+        return self::$defaultDisabled;
     }
 
-    public static function getEnabledBanks()
+    public static function getDisabledBanks(array $enabled)
     {
-        return self::getAllBanks();
+        return array_diff(self::getAllBanks(), $enabled);
+    }
+
+    public static function getEnabledBanks(array $disabled = [])
+    {
+        return array_diff(self::getAllBanks(), $disabled);
     }
 
     public static function getNames($codes)
@@ -325,7 +342,7 @@ class Netbanking
     /**
      * Gets supported banks for a merchant.
      * Checks for TPV merchants and any bank disabled by category
-     * */
+     */
     public static function getSupportedBanks($merchant = null)
     {
         $banks = self::getSupportedBanksInLiveMode();
@@ -336,15 +353,12 @@ class Netbanking
             $banks = self::getSupportedBanksForTPV();
         }
 
-        if ((isset($merchant) === true) and
-            (empty($merchant->getCategory2()) === false))
-        {
-            $disabledBanks = self::getDisabledBanksForCategory($merchant->getCategory2());
-
-            $banks = array_diff($banks, $disabledBanks);
-        }
-
         return array_unique($banks);
+    }
+
+    public static function removeDefaultDisableBanks(array $banks)
+    {
+        return array_diff($banks, self::getDefaultDisabledBanks());
     }
 
     public static function getSupportedBanksInLiveMode()

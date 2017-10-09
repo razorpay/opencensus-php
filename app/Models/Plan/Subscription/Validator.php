@@ -2,12 +2,15 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use App;
 use Carbon\Carbon;
 
 use RZP\Base;
+use RZP\Exception;
+use RZP\Exception\BadRequestValidationFailureException;
+
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\Plan\Cycle;
 
@@ -21,6 +24,11 @@ class Validator extends Base\Validator
 
     const SECONDS_IN_ONE_YEAR = 31536000;
 
+    /**
+     * Used for getting the operation cancel to run the cancel rules.
+     */
+    const CANCEL = 'cancel';
+
     protected static $createRules = [
         Entity::CUSTOMER_ID     => 'sometimes|string|size:19|public_id|nullable',
         Entity::PLAN_ID         => 'required|string|size:19|public_id',
@@ -29,15 +37,26 @@ class Validator extends Base\Validator
         Entity::TOTAL_COUNT     => 'required_without:end_at|integer|min:1',
         Entity::START_AT        => 'sometimes|integer|custom|nullable',
         Entity::END_AT          => 'required_without:total_count|epoch',
-        // This is just for backward compatibility. Later, we are going to make `1` as
-        // default. Hence, making it compulsory for the merchant to send this as 0 now.
-        Entity::CUSTOMER_NOTIFY => 'required|in:0',
+        Entity::CUSTOMER_NOTIFY => 'sometimes|boolean',
         Entity::ADDONS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_ADDONS,
+    ];
+
+    protected static $cancelRules = [
+        Entity::CANCEL_AT_CYCLE_END => 'filled|bool',
     ];
 
     protected static $createValidators = [
         Entity::TOTAL_COUNT,
         Entity::END_AT,
+    ];
+
+    protected static $manualTestChargeRules = [
+        // Enforcing this because it makes things easier in constructRecurringPayload
+        // of Subscription\Core. There, when deciding whether or not to send the
+        // test_success flag, we can just use the fact that test_success is set in
+        // the input. If we have a default value, it will need to be handled so as
+        // to NOT send that default value in the usual charge cron payloads.
+        'success' => 'required|boolean',
     ];
 
     public function validateEndAtAfterGenerating()
@@ -107,7 +126,7 @@ class Validator extends Base\Validator
 
         $currentStatus = $subscription->getStatus();
 
-        if (in_array($currentStatus, Status::$nonCancellableStatuses, true) === true)
+        if ($subscription->isTerminalStatus() === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Subscription is not cancellable in ' . $currentStatus . ' status.',
@@ -130,7 +149,7 @@ class Validator extends Base\Validator
         //
         $traceCode = '';
 
-        if (in_array($subscription->getStatus(), Status::$nonChargeableStatuses, true) === true)
+        if (($subscription->isTerminalStatus() === true) and ($manual === false))
         {
             $traceCode = TraceCode::SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE;
 
@@ -163,6 +182,23 @@ class Validator extends Base\Validator
         }
 
         return [$valid, $traceCode];
+    }
+
+    public function validateTestSubscriptionChargeable()
+    {
+        $subscription = $this->entity;
+
+        if (($subscription->hasEnded() === true) or
+            ($subscription->isManualTestChargeableStatus() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_TEST_CHARGEABLE,
+                'status',
+                [
+                    'subscription_id'       => $subscription->getId(),
+                    'subscription_status'   => $subscription->getStatus(),
+                ]);
+        }
     }
 
     protected function validateEndAtWithStartAt(int $startAt, int $endAt)
@@ -295,6 +331,18 @@ class Validator extends Base\Validator
                     'max_allowed'   => $maxAllowedTotalCount,
                     'input'         => $input,
                 ]);
+        }
+    }
+
+    public function validateSubscriptionViewable()
+    {
+        $subscription = $this->entity;
+
+        $id = $subscription->getPublicId();
+
+        if ($subscription->hasBeenAuthenticated() === false)
+        {
+            throw new BadRequestValidationFailureException("Subscription with id $id is not authenticated yet");
         }
     }
 }

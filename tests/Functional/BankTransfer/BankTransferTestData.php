@@ -41,15 +41,98 @@ return [
         ],
     ],
 
+    'testBankTransferImps' => [
+        'url'     => '/ecollect/validate',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '9876543210123456789',
+            'payer_ifsc'     => 'HDB9876543210',
+            'mode'           => 'imps',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 50000,
+            'description'    => 'IMPS payment of 50,000 rupees',
+        ],
+    ],
+
+    'testBankTransferSpecialCharsInAccNumber' => [
+        'url'     => '/ecollect/validate',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '123-123-123',
+            'payer_ifsc'     => 'XYZ987654321',
+            'mode'           => 'imps',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 50000,
+            'description'    => 'IMPS payment of 50,000 rupees, with a stupid account number',
+        ],
+    ],
+
+    'testBankTransferImpsUpmappedBankCode' => [
+        'url'     => '/ecollect/validate',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '9876543210123456789',
+            'payer_ifsc'     => 'XYZ987654321',
+            'mode'           => 'imps',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 50000,
+            'description'    => 'IMPS payment of 50,000 rupees, with a stupid bank code',
+        ],
+    ],
+
+    'testBankTransferImpsFromRogueBank' => [
+        'url'     => '/ecollect/validate',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '',
+            'payer_ifsc'     => '',
+            'mode'           => 'imps',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 50000,
+            'description'    => 'IMPS payment of 50,000 rupees, with no account number',
+        ],
+    ],
+
+    'bankTransferImpsFailedRefund' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Refund is currently not supported for this payment method',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+        ],
+    ],
+
     'testBankTransferProcessFailure' => [
         'request' => [
             'url' => '/ecollect/validate',
             'method' => 'post',
             'content' => [
-                'payee_account'  => 'RZP1234567890',
                 'payee_ifsc'     => 'IFSC0009876',
                 'payer_account'  => '765432346787812',
-                'payee_ifsc'     => 'HDFC0000001',
+                'payer_ifsc'     => 'HDFC0000001',
                 'mode'           => 'neft',
                 'transaction_id' => 'vba_4567',
                 'time'           => 148415544000,

@@ -27,8 +27,6 @@ class RuleFilter extends Terminal\Filter
             // Temporarily setting verbosity to true for this filter
             $verbose = true;
 
-            $merchant = $this->input['merchant'];
-
             if ($this->rules->isEmpty() === true)
             {
                 return $terminals;
@@ -83,7 +81,7 @@ class RuleFilter extends Terminal\Filter
         {
             foreach ($rules as $rule)
             {
-                $match = $rule->matches($terminal);
+                $match = $rule->matches($terminal, $this->input['merchant']);
 
                 if ($match === true)
                 {
@@ -204,10 +202,8 @@ class RuleFilter extends Terminal\Filter
             return true;
         }
 
-        $filterProperty = $this->options->getFilterPropertyForRuleGroup($group);
+        $globallyApplicableRuleGroups = $this->options->getGloballyApplicableRuleGroups();
 
-        $globalSkippedFilters = $this->options->getGlobalSkippedFilters();
-
-        return (in_array($filterProperty, $globalSkippedFilters, true) === true);
+        return (in_array($group, $globallyApplicableRuleGroups, true) === true);
     }
 }

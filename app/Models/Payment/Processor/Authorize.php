@@ -3,44 +3,47 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
-use Carbon\Carbon;
-use Config;
-use Crypt;
-use Lib\PhoneBook;
 use Mail;
-use RZP\Constants\Mode;
-use RZP\Http\BasicAuth;
-use RZP\Listeners\ApiEventSubscriber;
-use RZP\Models\Plan\Subscription;
+use Crypt;
+use Config;
+use Carbon\Carbon;
+use Lib\PhoneBook;
+
 use RZP\Error;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\Admin;
-use RZP\Models\Card;
-use RZP\Models\Card\IIN;
-use RZP\Models\Customer;
-use RZP\Models\Customer\Token;
+use RZP\Models\Upi;
 use RZP\Models\Emi;
-use RZP\Models\Currency;
-use RZP\Models\Feature;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Methods;
+use RZP\Models\Risk;
+use RZP\Models\Card;
+use RZP\Models\Admin;
 use RZP\Models\Offer;
 use RZP\Models\Order;
-use RZP\Models\Payment;
-use RZP\Models\Payment\Action;
-use RZP\Models\Payment\Analytics;
-use RZP\Models\Payment\Method;
-use RZP\Models\Payment\TwoFactorAuth;
-use RZP\Models\Payment\TerminalAnalytics;
+use RZP\Constants\TLD;
+use RZP\Http\BasicAuth;
 use RZP\Models\Pricing;
-use RZP\Models\Risk;
-use RZP\Models\Terminal;
-use RZP\Models\Transaction;
-use RZP\Models\Customer\GatewayToken;
-use RZP\Models\Upi;
+use RZP\Constants\Mode;
+use RZP\Models\Payment;
+use RZP\Models\Invoice;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Terminal;
+use RZP\Models\Currency;
+use RZP\Models\Merchant;
+use RZP\Models\Customer;
+use RZP\Models\Card\IIN;
+use RZP\Models\Transaction;
+use RZP\Models\Payment\Action;
+use RZP\Models\Payment\Method;
+use RZP\Models\Customer\Token;
+use RZP\Models\Merchant\Methods;
+use RZP\Models\Plan\Subscription;
+use RZP\Models\Payment\Analytics;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Payment\TwoFactorAuth;
+use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\Customer\GatewayToken;
+use RZP\Models\Payment\TerminalAnalytics;
 
 trait Authorize
 {
@@ -194,11 +197,7 @@ trait Authorize
 
                 $internalErrorCode = $payment->getInternalErrorCode();
 
-                // TODO: Remove this after testing on prod
-                if ($payment->getMerchantId() === Merchant\Account::DEMO_PAGE_ACCOUNT)
-                {
-                    $this->logRiskFailureForGateway($payment, $internalErrorCode);
-                }
+                $this->logRiskFailureForGateway($payment, $internalErrorCode);
 
                 throw $e;
             }
@@ -453,7 +452,7 @@ trait Authorize
         {
             $data = array('payment' => $payment->toArray(), 'gateway' => $input);
 
-            $flag = $this->callGatewayFunction('forceAuthorizeFailed', $data);
+            $flag = $this->callGatewayFunction(Action::FORCE_AUTHORIZE_FAILED, $data);
 
             if ($flag === false)
             {
@@ -488,7 +487,7 @@ trait Authorize
 
         $this->validateS2SIfApplicable($payment);
 
-        $this->validateSubscriptionInputIfPresent($payment);
+        $this->validateSubscriptionInputIfPresent($payment, $input);
 
         $this->verifyPaymentMethodEnabled($payment);
 
@@ -499,7 +498,7 @@ trait Authorize
         $this->runFraudChecks($payment);
     }
 
-    protected function validateSubscriptionInputIfPresent(Payment\Entity $payment)
+    protected function validateSubscriptionInputIfPresent(Payment\Entity $payment, $input)
     {
         //
         // Subscription association to payment happens in pre-process
@@ -522,16 +521,19 @@ trait Authorize
 
         $subscription = $payment->subscription;
 
-        $subscriptionStatus = $subscription->getStatus();
-
-        if (in_array($subscriptionStatus, Subscription\Status::$nonChargeableStatuses, true) === true)
+        //
+        // Allow manual charge of older invoices, even when subscription is in terminal state
+        // TODO: Rethink, won't work for S2S payments which are always in private auth
+        //
+        if (($subscription->isTerminalStatus() === true) and
+            ($this->app['basicauth']->isPrivateAuth() === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_EXPIRED_OR_CANCELLED,
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_IN_TERMINAL_STATE,
                 null,
                 [
                     'subscription_id'   => $subscription->getId(),
-                    'status'            => $subscriptionStatus
+                    'status'            => $subscription->getStatus()
                 ]);
         }
 
@@ -541,7 +543,7 @@ trait Authorize
         }
         else if ($subscription->hasBeenAuthenticated() === true)
         {
-            $this->validateAuthenticatedSubscription($subscription, $payment);
+            $this->validateAuthenticatedSubscription($subscription, $payment, $input);
         }
         else
         {
@@ -557,29 +559,69 @@ trait Authorize
 
     protected function validateAuthenticatedSubscription(
         Subscription\Entity $subscription,
-        Payment\Entity $payment)
+        Payment\Entity $payment,
+        array $input)
     {
-        $publicAuth = $this->ba->isPublicAuth();
+        $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
 
-        if (($publicAuth === true) and
-            ($subscription->isChangeCardStatus() === false))
+        if ($cardChange === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CHANGE_CARD_NOT_ALLOWED,
-                null,
-                [
-                    'subscription_id' => $subscription->getId(),
-                    'status' => $subscription->getStatus(),
-                ]);
+            if ($subscription->isCardChangeStatus() === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_CARD_CHANGE_NOT_ALLOWED,
+                    null,
+                    [
+                        'subscription_id'   => $subscription->getId(),
+                        'status'            => $subscription->getStatus(),
+                    ]);
+            }
+
+            if (($subscription->isGlobal() === true) and
+                (empty($input[Payment\Entity::APP_TOKEN]) === true))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_APP_TOKEN_ABSENT,
+                    null,
+                    [
+                        'subscription_id'   => $subscription->getId(),
+                        'card_change'       => true,
+                    ]);
+            }
+        }
+        else
+        {
+            $subscriptionPublicTokenId = Token\Entity::getSignedId($subscription->getTokenId());
+
+            //
+            // For an authenticated subscription, if it's not a card change flow,
+            // there should be no card details in the input.
+            // Token would be there in the input for recurring charge. But, it would
+            // be the same as the token associated with the subscription.
+            //
+            if ((empty($input[Payment\Entity::CARD]) === false) or
+                ((isset($input[Payment\Entity::TOKEN]) === true) and
+                 ($subscriptionPublicTokenId !== $input[Payment\Entity::TOKEN])))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_ALREADY_AUTHENTICATED,
+                    null,
+                    [
+                        'subscription_id'       => $subscription->getId(),
+                        'card_details'          => (empty($input[Payment\Entity::CARD]) === false),
+                        'subscription_token_id' => $subscription->getTokenId(),
+                    ]);
+            }
         }
 
         //
-        // Public auth when subscription is already authenticated means
-        // that it is in retry flow. In retry flow, token is expected
-        // to be already present, and hence we don't throw an exception.
+        // For an already authenticated subscription, we should always have
+        // a token present. If the token is not present, we throw an exception.
         //
-        if (($publicAuth === false) and
-            ($subscription->hasToken() === false))
+        // This flow can reach from either public auth (card change) or
+        // privilege auth (charge/retry cron).
+        //
+        if ($subscription->hasToken() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_TOKEN_NOT_ASSOCIATED,
@@ -610,10 +652,9 @@ trait Authorize
         // The customer would be trying to change his card
         // here. Hence, it would be on public auth.
         //
-        if (($subscription->isChangeCardStatus() === true) and
-            ($publicAuth === true))
+        if ($cardChange === true)
         {
-            $this->validateSubscriptionAmount($subscription, $payment->getAmount());
+            $this->validateSubscriptionAmount($subscription, $payment->getAmount(), true);
         }
     }
 
@@ -641,9 +682,12 @@ trait Authorize
         }
     }
 
-    protected function validateSubscriptionAmount(Subscription\Entity $subscription, int $paymentAmount)
+    protected function validateSubscriptionAmount(
+        Subscription\Entity $subscription,
+        int $paymentAmount,
+        $cardChange = false)
     {
-        $expectedAmount = (new Subscription\Core)->getAuthTransactionAmount($subscription);
+        $expectedAmount = (new Subscription\Core)->getAuthTransactionAmount($subscription, $cardChange);
 
         //
         // Adding `intval` because it's failing otherwise in wercker.
@@ -652,7 +696,7 @@ trait Authorize
         if (intval($paymentAmount) !== intval($expectedAmount))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_AUTH_TRANSACTION_AMOUNT,
+                ErrorCode::BAD_REQUEST_INVALID_TRANSACTION_AMOUNT,
                 null,
                 [
                     'subscription_id' => $subscription->getId(),
@@ -972,9 +1016,24 @@ trait Authorize
     {
         if ($payment->shouldRunFraudChecks() === true)
         {
+            $this->validateEmailTld($payment);
+
             $this->validateFraudDetection($payment, $this->merchant);
 
             $this->validateBlockedCard($payment);
+        }
+    }
+
+    protected function validateEmailTld(Payment\Entity $payment)
+    {
+        $email = $payment->getEmail();
+
+        $tld = last(explode('.', $email));
+
+        if (TLD::isValid($tld) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The email must be a valid email address.', 'email');
         }
     }
 
@@ -1034,7 +1093,7 @@ trait Authorize
                 $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
             }
 
-            $flag = $this->callGatewayFunction('authorizeFailed', $data);
+            $flag = $this->callGatewayFunction(Action::AUTHORIZE_FAILED, $data);
 
             if ($flag === false)
             {
@@ -1166,6 +1225,8 @@ trait Authorize
             $this->associateSubscriptionToPayment($payment, $input);
 
             $this->addCustomerIdToSubscriptionInput($payment->subscription, $input);
+
+            $this->addTestSuccessFlagToGatewayInput($input, $gatewayInput);
         }
 
         // First fetch the relevant customer (global or local)
@@ -1229,6 +1290,21 @@ trait Authorize
         }
 
         $payment->setInternational();
+    }
+
+    protected function addTestSuccessFlagToGatewayInput(array $input, array & $gatewayInput)
+    {
+        if (isset($input['test_success']) === false)
+        {
+            return;
+        }
+
+        if (($this->mode === MODE::TEST) and
+            ($this->ba->isProxyAuth() === true) and
+            (isset($input[Payment\Entity::TOKEN]) === true))
+        {
+            $gatewayInput['test_success'] = $input['test_success'];
+        }
     }
 
     protected function associateLocalCustomerToSubscription(
@@ -1305,10 +1381,11 @@ trait Authorize
             // second 2FA (change card). In the subsequent charges flow,
             // app_token won't be present anyway, since it's internal.
             //
-            if($subscription->customer->globalCustomer !== null)
+            if($subscription->isGlobal() === true)
             {
-                if ((($this->ba->isPublicAuth() === true) and
-                     ($subscription->isChangeCardStatus() === true)) and
+                $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
+
+                if (($cardChange === true) and
                     (empty($input[Payment\Entity::APP_TOKEN]) === true))
                 {
                     throw new Exception\BadRequestException(
@@ -1427,11 +1504,11 @@ trait Authorize
         // have an app_token. In all other cases, we should have
         // an app_token when we are processing 2FA.
         //
-        if (($this->ba->isPrivilegeAuth() === false) and
+        if (($this->ba->isProxyOrPrivilegeAuth() === false) and
             ($customerApp === null))
         {
             throw new Exception\LogicException(
-                'Not privilege auth and no app_token. Should not have reached here at all.',
+                'Not privilege/proxy auth and no app_token. Should not have reached here at all.',
                 ErrorCode::SERVER_ERROR_APP_TOKEN_NOT_PRESENT,
                 [
                     'customer_id' => $customer->getId(),
@@ -1875,8 +1952,22 @@ trait Authorize
 
             $token->incrementUsedCount();
 
+            //
+            // For subscriptions, we always create and set terminal in
+            // gateway token, irrespective of whether the token is already
+            // recurring or not.
+            // If an existing recurring token is used for another subscription,
+            // we create another gateway token, since these two subscriptions
+            // can have different terminals.
+            // In case of charge-at-will, we don't have any way to know whether
+            // it's a different subscription that is being done with an existing
+            // recurring token. We cannot use public_auth check since we can
+            // get the request from private_auth also.
+            //
             if (($payment->isCard() === true) and
-                ($payment->isRecurring() === true))
+                ($payment->isRecurring() === true) and
+                (($token->isRecurring() === false) or
+                 ($payment->hasSubscription() === true)))
             {
                 $token->setRecurring(true);
 
@@ -2004,6 +2095,12 @@ trait Authorize
             // after capture, we should not roll back the capture status and other
             // operations that we would have done as part of capture.
             //
+            // We have lot of logic around when to auto-capture and when not to.
+            // This is difficult to write in the current auto-capture function.
+            // Based on whether to auto-capture or not, we also do auto-refund.
+            // In the normal flow, we throw an exception if capture fails for
+            // any reason. But, here, we catch the exception.
+            //
 
             if ($payment->hasSubscription() === false)
             {
@@ -2084,35 +2181,115 @@ trait Authorize
                 ]);
         }
 
-        //
-        // This means that it's a change card flow
-        //
-        if (($this->ba->isPublicAuth() === true) and
-            ($subscription->isChangeCardStatus() === true))
+        if ($this->isCardChangeFlow($subscription, $payment) === true)
         {
-            $this->processChangeCardForSubscription($subscription, $payment);
+            $this->processCardChangeForSubscription($subscription, $payment);
 
             return;
         }
 
-        if ($this->shouldAutoCaptureAlreadyAuthenticatedSubscription($payment) === true)
+        $oldStatus = $subscription->getStatus();
+
+        $this->captureSubscriptionPayment($subscription, $payment);
+
+        $options = [
+            Subscription\Event::PAYMENT => $payment,
+        ];
+
+        (new Subscription\Core)->triggerSubscriptionAlreadyAuthenticatedNotification(
+                                                                            $subscription,
+                                                                            $oldStatus,
+                                                                            $options);
+    }
+
+    /**
+     * TODO: This needs to be fixed!!!!!
+     *
+     * @param Subscription\Entity $subscription
+     * @param Payment\Entity      $payment
+     *
+     * @return bool
+     */
+    protected function isCardChangeFlow(Subscription\Entity $subscription, Payment\Entity $payment)
+    {
+        if ($subscription->hasBeenAuthenticated() === false)
         {
-            $this->autoCapturePayment($payment);
+            return false;
+        }
 
-            $invoice = $payment->invoice;
+        if ($subscription->isCardChangeStatus() === false)
+        {
+            return false;
+        }
 
-            (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice);
+        //
+        // If it's not skipped, we know for sure that the customer was involved in this.
+        // TODO: This is not a very robust check. Should figure out a good way.
+        // Also, this won't work when we create invoices and then after an hour, we charge.
+        // In these cases, the customer can make a payment on the latest invoice generated
+        // via public auth (two fa not skipped). The customer can pay with NB also then.
+        //
+        // We can remove this once we add recurring_type in the payment entity!
+        //
+        // if ($payment->getTwoFactorAuth() === TwoFactorAuth::SKIPPED)
+        // {
+        //     return false;
+        // }
+        // else
+        // {
+        //     return true;
+        // }
+
+        // NOTE: 2FA WILL NOT WORK FOR INTERNATIONAL. TRUST ME.
+
+        // TODO: Public auth check does not work!!!! Use redis or something here. FIX ASAP!
+        if ($this->ba->isPublicAuth() === true)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
-    protected function processChangeCardForSubscription(
+    protected function processCardChangeForSubscription(
         Subscription\Entity $subscription,
-        Payment\Entity $payment): bool
+        Payment\Entity $payment)
     {
+        $this->updateSubscriptionToken($subscription, $payment);
+
+        $core = (new Subscription\Core);
+
+        //
+        // We would have charged the last invoice also.
+        // This becomes more or less the same as normal retry success.
+        // The only difference is that we update the token.
+        //
+        if ($subscription->isPending() === true)
+        {
+            $this->captureSubscriptionPayment($subscription, $payment);
+
+            $options = [
+                Subscription\Event::PAYMENT         => $payment,
+                Subscription\Event::INVOICE_CHARGED => true,
+                Subscription\Event::REACTIVATED     => true,
+            ];
+
+            $core->triggerSubscriptionNotification($subscription, Subscription\Event::CARD_CHANGED, $options);
+
+            return;
+        }
+
         //
         // We need this to fire a webhook later.
         //
         $activated = false;
+
+        $notifyOptions = [
+            Subscription\Event::PAYMENT         => $payment,
+            Subscription\Event::INVOICE_CHARGED => false,
+        ];
 
         $oldStatus = $subscription->getStatus();
 
@@ -2120,21 +2297,49 @@ trait Authorize
         {
             $subscription->setStatus(Subscription\Status::ACTIVE);
 
-            $activated = true;
-        }
+            //
+            // If old status is anything but active, that means card is being changed
+            // on a failing subscription. Since payment has succeeded, the error fields
+            // can now be reset. These fields would have been reset in another flow
+            // if the charge had succeeded without card change anyway.
+            //
+            $subscription->resetErrorFields();
 
-        $this->updateSubscriptionToken($subscription, $payment);
+            $activated = true;
+
+            $notifyOptions[Subscription\Event::REACTIVATED] = true;
+        }
 
         $this->refundAuthorizedPayment($payment);
 
         $this->repo->saveOrFail($subscription);
 
+        $core->triggerSubscriptionNotification($subscription, Subscription\Event::CARD_CHANGED, $notifyOptions);
+
         if ($activated === true)
         {
-            (new Subscription\Core)->fireWebhookForStatusUpdate($subscription, Subscription\Status::ACTIVE, $payment);
+            $core->fireWebhookForStatusUpdate($subscription, Subscription\Status::ACTIVE, $payment);
         }
+    }
 
-        return $activated;
+    protected function captureSubscriptionPayment(Subscription\Entity $subscription, Payment\Entity $payment)
+    {
+        if ($this->shouldAutoCaptureAlreadyAuthenticatedSubscription($payment) === true)
+        {
+            $this->autoCapturePayment($payment);
+
+            $invoice = $payment->invoice;
+
+            //
+            // Currently manual charge of pending invoices is not allowed, but it should be.
+            // When we do allow that, handleCaptureSuccess will be used to set time fields.
+            //
+            // We don't set any time fields when the subscription is moved to pending.
+            // We do that only when the subscription is moved to halted, and the cron
+            // keeps making invoices and moving the subscription to the next period.
+            //
+            (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice);
+        }
     }
 
     protected function processNewSubscription(Subscription\Entity $subscription, Payment\Entity $payment)
@@ -2182,32 +2387,14 @@ trait Authorize
                     ]);
             }
 
-            //
-            // If this is auth txn charge, it means that start_at was null. This,
-            // in turn, means that some fields were not filled when the subscription
-            // was created. We fill those fields here.
-            //
-            $this->updateSubscriptionDetails($subscription, $payment);
-
             $invoice = $payment->invoice;
 
-            (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice);
+            (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice, true);
         }
 
         $this->autoRefundAuthTransactionIfApplicable($payment, $subscription);
-    }
 
-    protected function updateSubscriptionDetails(Subscription\Entity $subscription, Payment\Entity $payment)
-    {
-        $plan = $subscription->plan;
-
-        $subscription->setStartAt($payment->getCreatedAt());
-
-        $subscriptionCore = new Subscription\Core;
-
-        $subscriptionCore->fillScheduleDetailsForNewSubscription($subscription);
-
-        (new Subscription\Creator)->fillEndAtAndTotalCount($subscription, $plan);
+        (new Subscription\Core)->triggerSubscriptionAuthenticatedNotification($payment, $subscription);
     }
 
     protected function autoRefundAuthTransactionIfApplicable(Payment\Entity $payment, Subscription\Entity $subscription)
@@ -2366,8 +2553,11 @@ trait Authorize
         // The cron key is set in scope.
         // A hacky way to do this would be to override the cron auth
         // with merchant auth. This might cause other issues though.
+        // Proxy auth means the payment is being made from dashboard,
+        // typically for a test charge. In this case as well, we cannot
+        // and should not add the signature to the response.
         //
-        if ($this->app['basicauth']->isPrivilegeAuth() === false)
+        if ($this->app['basicauth']->isProxyOrPrivilegeAuth() === false)
         {
             if ($payment->hasSubscription() === true)
             {
@@ -2440,35 +2630,33 @@ trait Authorize
     protected function notifyAuthorized(bool $wasFailed)
     {
         // Trigger notification events for authorization
-        $notifier = new Notify($this->payment);
 
-        $hasInvoiceAndNotSubscription = (
-            ($this->payment->hasInvoice() === true) and
-            ($this->payment->hasSubscription() === false));
-
-        if ($wasFailed)
+        if ($this->payment->hasSubscription() === true)
         {
+            return;
+        }
+
+        $event = Payment\Event::AUTHORIZED;
+
+        if ($wasFailed === true)
+        {
+            $event = Payment\Event::FAILED_TO_AUTHORIZED;
+
             $currentTime = Carbon::now()->getTimestamp();
 
-            // If a payment has been authorized 15 minutes after the creation, we do not send a notification.
-
+            // If a payment has been authorized 15 minutes after the creation, we do notsend a notification.
             if (($this->payment->getCreatedAt() - $currentTime) > self::FAILED_TO_AUTHORIZED_NOTIFY_DURATION)
             {
                 return;
             }
-
-            $trigger = $hasInvoiceAndNotSubscription ?
-                        Payment\Event::INVOICE_PAYMENT_AUTHORIZED :
-                        Payment\Event::FAILED_TO_AUTHORIZED;
         }
-        else
+
+        if ($this->payment->hasInvoice() === true)
         {
-            $trigger = $hasInvoiceAndNotSubscription ?
-                            Payment\Event::INVOICE_PAYMENT_AUTHORIZED :
-                            Payment\Event::AUTHORIZED;
+            $event = Payment\Event::INVOICE_PAYMENT_AUTHORIZED;
         }
 
-        $notifier->trigger($trigger);
+        (new Notify($this->payment))->trigger($event);
     }
 
     protected function notifyIfCardSaved()
@@ -2796,7 +2984,7 @@ trait Authorize
 
         $merchantMethods = (new Methods\Core)->getMethods($merchant);
 
-        $merchantBanks = ($merchantMethods === null) ? [] : $merchantMethods->getBanks();
+        $merchantBanks = ($merchantMethods === null) ? [] : $merchantMethods->getSupportedBanks();
 
         $paymentBank = $payment->getBank();
 

@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use Carbon\Carbon;
+use RZP\Base\RepositoryManager;
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
 use RZP\Error\ErrorCode;
@@ -18,6 +19,8 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Plan\Subscription;
+use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
@@ -92,6 +95,9 @@ class Processor
     protected $terminal;
     protected $selectedTerminals;
     protected $mode;
+    /**
+     * @var RepositoryManager
+     */
     protected $repo;
     protected $orderRepo;
     protected $paymentRepo;
@@ -168,9 +174,18 @@ class Processor
                 Payment\Entity::METHOD);
         }
 
-        $this->repo->transaction(function() use ($input)
+        $payment = $this->buildPaymentEntity($input);
+
+        $ret = $this->preProcessPaymentInputs($input, $payment);
+
+        if ($ret !== null)
         {
-            $this->createPaymentEntity($input);
+            return $ret;
+        }
+
+        $this->repo->transaction(function() use ($input, $payment)
+        {
+            $this->createPaymentEntity($input, $payment);
         });
 
         $payment = $this->payment;
@@ -179,6 +194,42 @@ class Processor
         $this->checkSignature($input, $payment);
 
         return $this->authorize($payment, $input);
+    }
+
+    protected function preProcessPaymentInputs(array $input, $payment)
+    {
+        $coproto = null;
+
+        if (($payment->isWallet() === true) and
+            ((($payment->merchant->isPhoneOptional() === true) and
+              ($payment->getContact() === Payment\Entity::DUMMY_PHONE)) or
+             (($payment->merchant->isEmailOptional() === true) and
+              ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL))))
+        {
+            $coproto = [
+                'type'    => 'wallet',
+                'request' => [
+                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                    'method'  => 'POST',
+                    'content' => $input,
+                ],
+                'version' => '1',
+            ];
+
+            if ($payment->getContact() === Payment\Entity::DUMMY_PHONE)
+            {
+                $coproto['missing'][] = 'contact';
+                unset($coproto['request']['content']['contact']);
+            }
+
+            if ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL)
+            {
+                $coproto['missing'][] = 'email';
+                unset($coproto['request']['content']['email']);
+            }
+        }
+
+        return $coproto;
     }
 
     public function processAndReturnFees(array & $input)
@@ -199,7 +250,7 @@ class Processor
         // of pre-calculating fees and returning it.
         // It's not going to be saved in the database.
         //
-        $payment = $this->createDummyPaymentEntity($input);
+        $payment = $this->buildPaymentEntity($input);
 
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
@@ -737,22 +788,40 @@ class Processor
             $this->segment->trackPayment($this->payment, $eventCode, ['action' => $action]);
         }
 
-        return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
+        // Wrapping all gateway call, We can take actions on Exception here.
+        try
+        {
+            return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
+        }
+        catch (Exception\GatewayErrorException $ex)
+        {
+            $error = $ex->getError();
+
+            /*
+             * If error is because of invalid terminal and terminal
+             * used is direct, we can disable the terminal
+             */
+            if (($error->isInvalidTerminalError() === true) and
+                ($terminal->isShared() === false))
+            {
+                $this->disableTerminal($terminal);
+            }
+
+            throw $ex;
+        }
+
     }
 
-    protected function createPaymentEntity(array $input): Payment\Entity
+    protected function createPaymentEntity(array $input, Payment\Entity $payment = null): Payment\Entity
     {
-        $payment = new Payment\Entity;
-
-        $payment->generateId();
-
         $this->tracePaymentNewRequest($input);
 
-        $payment->merchant()->associate($this->merchant);
+        if ($payment == null)
+        {
+            $payment = $this->buildPaymentEntity($input);
+        }
 
         // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
-
-        $payment->build($input);
 
         if ($this->merchant->isFeeBearerCustomer())
         {
@@ -797,7 +866,7 @@ class Processor
      * @param array          $input
      * @param Payment\Entity $payment
      *
-     * @throws Exception\LogicException
+     * @throws Exception\BadRequestException
      */
     protected function addOrderIdToInputForSubscriptionIfApplicable(array & $input, Payment\Entity $payment)
     {
@@ -816,11 +885,41 @@ class Processor
         // 1. It would already be present if it's automated charge.
         // 2. Change card flow is being done. Hence, no invoice and stuff.
         //
-        if ($subscription->isCreated() === false)
+        if ($subscription->isCreated() === true)
         {
-            return;
+            $this->addOrderIdToInputForCreatedSubscription($subscription, $input);
         }
+        else
+        {
+            $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
 
+            if ($cardChange === true)
+            {
+                if ($subscription->isCardChangeStatus() === false)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_SUBSCRIPTION_CARD_CHANGE_NOT_ALLOWED,
+                        null,
+                        [
+                            'subscription_id'       => $subscription->getId(),
+                            'subscription_status'   => $subscription->getStatus(),
+                        ]);
+                }
+
+                //
+                // We do this because we are going to attempt to charge the invoice
+                // directly along with card change.
+                //
+                if ($subscription->isPending() === true)
+                {
+                    $this->addOrderIdToInputForPendingSubscription($subscription, $input);
+                }
+            }
+        }
+    }
+
+    protected function addOrderIdToInputForCreatedSubscription(Subscription\Entity $subscription, array & $input)
+    {
         //
         // Invoice would have been created if:
         // - First charge needs to be done as part of authentication with or without addons
@@ -828,40 +927,43 @@ class Processor
         //
         $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
 
-        if ($subscriptionInvoices->count() === 0)
+        $subscriptionInvoicesCount = $subscriptionInvoices->count();
+
+        if ($subscriptionInvoicesCount === 0)
         {
-            //
-            // Since the subscription is in created state at this point,
-            // the only addons that will be present will be of `upfront_amount`.
-            //
-            $addons = $this->repo->addon->getAllAddonsOfSubscription($subscription);
-
-            if ($addons->count() === 0)
-            {
-                return;
-            }
-            else
-            {
-                throw new Exception\LogicException(
-                    'There should have been one invoice created for a newly created subscription',
-                    ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
-                    [
-                        'invoices_count'    => $subscriptionInvoices->count(),
-                        'subscription_id'   => $subscriptionId,
-                        'payment_id'        => $payment->getId(),
-                        'addons_count'      => $addons->count(),
-                    ]);
-            }
+            return;
         }
+        else if ($subscriptionInvoicesCount === 1)
+        {
+            $subscriptionInvoice = $subscriptionInvoices->first();
 
-        $subscriptionInvoice = $subscriptionInvoices->first();
+            $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($subscriptionInvoice->getOrderId());
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'We should not have more than 1 issued invoice at this stage!',
+                ErrorCode::SERVER_ERROR_TOO_MANY_SUBSCRIPTION_INVOICES_FOUND,
+                [
+                    'count'             => $subscriptionInvoicesCount,
+                    'subscription_id'   => $subscription->getId(),
+                    'invoices'          => $subscriptionInvoices->toArrayPublic()
+                ]);
+        }
+    }
+
+    protected function addOrderIdToInputForPendingSubscription(Subscription\Entity $subscription, array & $input)
+    {
+        $subscriptionInvoice = $this->repo->invoice->fetchLatestInvoiceOfPendingSubscription($subscription);
 
         $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($subscriptionInvoice->getOrderId());
     }
 
-    protected function createDummyPaymentEntity(array $input): Payment\Entity
+    protected function buildPaymentEntity(array $input): Payment\Entity
     {
         $payment = new Payment\Entity;
+
+        $payment->generateId();
 
         $payment->merchant()->associate($this->merchant);
 
@@ -1509,5 +1611,20 @@ class Processor
         }
 
         return true;
+    }
+
+    protected function disableTerminal(Terminal\Entity $terminal)
+    {
+        $this->trace->error(
+            TraceCode::TERMINAL_AUTO_DISABLE,
+            [
+                'merchant_id'           => $terminal->getMerchantId(),
+                'terminal_id'           => $terminal->getId(),
+            ]
+        );
+
+        $terminal->setEnabled(false);
+
+        $this->repo->saveOrFail($terminal);
     }
 }

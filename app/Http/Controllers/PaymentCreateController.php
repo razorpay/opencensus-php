@@ -3,15 +3,14 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Models\Payment;
-use RZP\Models\Card;
-use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
 use Redirect;
 use Response;
 use Request;
 use App;
 use View;
+
+use RZP\Constants\Entity as E;
+use RZP\Trace\TraceCode;
 
 class PaymentCreateController extends Controller
 {
@@ -92,10 +91,10 @@ class PaymentCreateController extends Controller
 
         if ($this->app['basicauth']->isPrivateAuth())
         {
-            $input = (new Payment\Analytics\Service)->setMetadataForS2SPayment($input);
+            $input = $this->service(E::PAYMENT_ANALYTICS)->setMetadataForS2SPayment($input);
         }
 
-        $data = $this->service('payment')->process($input);
+        $data = $this->service(E::PAYMENT)->process($input);
 
         return $this->processCoprotoData($data);
     }
@@ -114,7 +113,7 @@ class PaymentCreateController extends Controller
         // when cache is set to false. See jQuery docs for details
         unset($input['_']);
 
-        $data = $this->service('payment')->process($input);
+        $data = $this->service(E::PAYMENT)->process($input);
 
         return ApiResponse::json($data);
     }
@@ -131,7 +130,7 @@ class PaymentCreateController extends Controller
 
         unset($input['callback']);
 
-        $data = $this->service('payment')->process($input);
+        $data = $this->service(E::PAYMENT)->process($input);
 
         return ApiResponse::json($data);
     }
@@ -143,7 +142,7 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('payment')->processWallet($input);
+        $data = $this->service(E::PAYMENT)->processWallet($input);
 
         if (isset($data['request']))
         {
@@ -167,7 +166,7 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('payment')->processUpi($input);
+        $data = $this->service(E::PAYMENT)->processUpi($input);
 
         $response = ['razorpay_payment_id' => $data['payment_id']];
 
@@ -196,7 +195,7 @@ class PaymentCreateController extends Controller
             $retJson = true;
         }
 
-        $data = $this->service('payment')->processAndReturnFees($input);
+        $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
 
         if ($retJson)
         {
@@ -215,7 +214,7 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        $payment = $this->service('payment')->otpResend($id, $input);
+        $payment = $this->service(E::PAYMENT)->otpResend($id, $input);
 
         return ApiResponse::json($payment);
     }
@@ -227,7 +226,7 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('payment')->topup($id, $input);
+        $data = $this->service(E::PAYMENT)->topup($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -239,7 +238,7 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('payment')->topup($id, $input);
+        $data = $this->service(E::PAYMENT)->topup($id, $input);
 
         return $this->processCoprotoData($data);
     }
@@ -256,7 +255,7 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('payment')->callback($id, $hash, $input);
+        $data = $this->service(E::PAYMENT)->callback($id, $hash, $input);
 
         return $this->returnCallbackResponse($data);
     }
@@ -268,14 +267,14 @@ class PaymentCreateController extends Controller
         // Type should be OTP since it's an OTP callback
         $input['type'] = 'otp';
 
-        $data = $this->service('payment')->callback($id, $hash, $input);
+        $data = $this->service(E::PAYMENT)->callback($id, $hash, $input);
 
         return ApiResponse::json($data);
     }
 
     public function postRedirectCallback($id)
     {
-        $data = $this->service('payment')->redirectCallback($id);
+        $data = $this->service(E::PAYMENT)->redirectCallback($id);
 
         return $this->returnCallbackResponse($data);
     }
@@ -342,6 +341,11 @@ class PaymentCreateController extends Controller
             else if ($data['type'] === 'async')
             {
                 return View::make('gateway.gatewayAsyncForm')
+                           ->with('data', $data);
+            }
+            else if ($data['type'] === 'wallet')
+            {
+                return View::make('gateway.gatewayWalletForm')
                            ->with('data', $data);
             }
             else

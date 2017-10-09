@@ -24,25 +24,31 @@ use RZP\Jobs\Invoice\BatchIssue as InvoiceBatchIssueJob;
 
 class Core extends Base\Core
 {
+    const QUEUE_JOB_DELAY              = 5; // In seconds
     const MAX_ALLOWED_PDF_GEN_ATTEMPTS = 2;
+
+    //
+    // When someone requests pdf version of invoice we use this factor
+    // to determine if we should create new latest pdf in sync or use already
+    // created one. Whenever invoice gets updated we update pdf version over queue.
+    //
     const MAX_EXPECTED_QUEUE_DELAY     = 360; // In seconds (= 6 minutes)
 
     protected $lineItemCore;
     protected $pdfGenerator;
     protected $slack;
     protected $slackTechLogsChannel;
+    protected $eventService;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->lineItemCore = new LineItem\Core;
-
-        $this->pdfGenerator = null;
-
-        $this->slack = $this->app['slack'];
-
+        $this->lineItemCore         = new LineItem\Core;
+        $this->pdfGenerator         = null;
+        $this->slack                = $this->app['slack'];
         $this->slackTechLogsChannel = Config::get('slack.channels.tech_logs');
+        $this->eventService         = $this->app['events'];
     }
 
     public function setPdfGenerator(Entity $invoice)
@@ -68,10 +74,7 @@ class Core extends Base\Core
         Subscription\Entity $subscription = null,
         Batch\Entity $batch = null): Entity
     {
-        $this->trace->info(
-            TraceCode::INVOICE_CREATE_REQUEST,
-            $input
-        );
+        $this->trace->info(TraceCode::INVOICE_CREATE_REQUEST, $input);
 
         $this->modifyInputToHandleRenamedAttributes($input);
 
@@ -86,10 +89,18 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $job = new InvoiceJob(
-                        $this->mode,
-                        InvoiceJob::ISSUED,
-                        $invoice->getId());
+            $job = new InvoiceJob($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+
+            //
+            // In cases we push job over queue with delay factor of 2 seconds.
+            // This is done because some methods of this Core gets called internally
+            // by other products (eg. subscriptions) and in their core they finish few
+            // other stuffs as well before commiting DB transactions.
+            //
+            if ($subscription !== null)
+            {
+                $job->delay(self::QUEUE_JOB_DELAY);
+            }
 
             (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
         }
@@ -445,7 +456,10 @@ class Core extends Base\Core
                         InvoiceJob::EXPIRED,
                         $invoice->getId());
 
+        // Sends expiration mails to customer asynchronously
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+
+        $this->eventService->fire('api.invoice.expired', [$invoice]);
     }
 
     public function fetchStatus(Entity $invoice): array

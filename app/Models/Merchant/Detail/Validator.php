@@ -3,11 +3,9 @@
 namespace RZP\Models\Merchant\Detail;
 
 use RZP\Base;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Merchant\Detail\FileType as FileType;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -205,6 +203,14 @@ class Validator extends Base\Validator
     public function validateFileType($file)
     {
         $extension = strtolower($file->getClientOriginalExtension());
+
+        /**
+         * Guess extension from mime type if getClientOriginalExtension does not exist
+         */
+        if (empty($extension) === true)
+        {
+            $extension = strtolower($file->guessExtension());
+        }
 
         $mime = $file->getMimeType();
 

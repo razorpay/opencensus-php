@@ -5,16 +5,20 @@ namespace RZP\Models\Merchant;
 use Closure;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Base\Common;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Balance;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
+
+    const SUB_ACCOUNTS_ONLY_VALUE = '1';
 
     protected $entity = 'merchant';
 
@@ -38,7 +42,26 @@ class Repository extends Base\Repository
         Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
     ];
 
-    public function fetchActivatedMerchantsBeforeTimestamp(int $limit, int $skip, int $end, array $merchantIds = [])
+    protected $adminFetchParamRules = [
+        EsRepository::SEARCH_HITS       => 'filled|boolean',
+        EsRepository::QUERY             => 'filled|string|min:2|max:100',
+        Entity::ORG_ID                  => 'sometimes|string|size:14',
+        Entity::ACCOUNT_STATUS          => 'filled|string|in:all,suspended,archived,activated,pending,dead',
+        Entity::SUB_ACCOUNTS            => 'filled|custom',
+        Entity::GROUPS                  => 'sometimes|array',
+        Entity::ADMINS                  => 'sometimes|array|min:1|max:1',
+    ];
+
+    protected function validateSubAccounts($attribute, $value)
+    {
+        ($value === self::SUB_ACCOUNTS_ONLY_VALUE) or Entity::verifyIdAndStripSign($value);
+    }
+
+    public function fetchActivatedMerchantsBeforeTimestamp(
+      int $limit,
+      int $skip,
+      int $end,
+      array $merchantIds = []): Base\PublicCollection
     {
         $query = $this->newQuery()
                     ->where(Entity::ACTIVATED, '=', 1)
@@ -97,9 +120,9 @@ class Repository extends Base\Repository
     public function fetchRecentMerchants()
     {
         // 00:00 Today
-        $today = \Carbon\Carbon::today("Asia/Kolkata")->timestamp;
+        $today = \Carbon\Carbon::today(Timezone::IST)->getTimestamp();
 
-        $start = \Carbon\Carbon::today("Asia/Kolkata")->subWeeks(3);
+        $start = \Carbon\Carbon::today(Timezone::IST)->subWeeks(3);
 
         return $this->newQuery()->whereBetween(Entity::CREATED_AT, [$start, $today]);
     }
@@ -142,12 +165,8 @@ class Repository extends Base\Repository
 
                 foreach ($methods as $method => $value)
                 {
-                    $queryValue = null;
-
-                    if ($value === 'true')
-                        $queryValue = '1';
-                    else if ($value === 'false')
-                        $queryValue = '0';
+                    // Filter can accept 'true'/'false' along with 0/1 & true/false
+                    $queryValue = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 
                     $join->where($method, '=', $queryValue);
                 }
@@ -239,17 +258,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    /**
-     * Fetches the merchants with its relations (admin, groups)
-     */
-    public function findManyByIdsWithRelations(array $merchantIds)
-    {
-        return $this->newQuery()
-                    ->whereIn(Entity::ID, $merchantIds)
-                    ->with(['admins'])
-                    ->get();
-    }
-
     public function fetchMerchantsByOrgId($orgId)
     {
         return $this->newQuery()
@@ -273,6 +281,9 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * @deprecated Ref: #4216
+     */
     public function fetchMerchantsByFilter(array $merchantIds, array $input)
     {
         $merchantCreatedAt = $this->repo->merchant->dbColumn(Entity::CREATED_AT);
@@ -385,6 +396,9 @@ class Repository extends Base\Repository
                      ->get();
     }
 
+    /**
+     * @deprecated Ref: #4216
+     */
     protected function modifyQuery($query, array $input)
     {
         $submittedAt = $this->repo
@@ -426,5 +440,124 @@ class Repository extends Base\Repository
                                ->whereNull(Entity::SUSPENDED_AT);
                 break;
         }
+    }
+
+    /**
+     * Modifies query to eager load details, admins, groups and features.
+     * Also projects to find only needed attributes.
+     *
+     * @param \RZP\Base\BuilderEx $query
+     *
+     */
+    protected function modifyQueryForIndexing(\RZP\Base\BuilderEx $query)
+    {
+        $detailSelector = function ($query)
+                          {
+                              $fields = $this->esRepo->getMerchantDetailIndexedFields();
+
+                              $query->select($fields);
+                          };
+
+        $groupSelector = function ($query)
+                         {
+                              $fields = $this->esRepo->getGroupIndexedFields();
+
+                              $query->select($fields);
+                         };
+
+        $adminSelector = function ($query)
+                         {
+                              $fields = $this->esRepo->getAdminIndexedFields();
+
+                              $query->select($fields);
+                         };
+
+        $with = [
+            camel_case(Entity::MERCHANT_DETAIL) => $detailSelector,
+            Entity::GROUPS                      => $groupSelector,
+            Entity::ADMINS                      => $adminSelector,
+            Entity::FEATURES                    => function () {},
+        ];
+
+        //
+        // Following 5 queries are run in total (dumps from indexing command):
+        //
+        // - SELECT * FROM merchants
+        //
+        // - SELECT <fields> FROM merchant_details
+        //   WHERE merchant_details.merchant_id IN (?)
+        //
+        // - SELECT <fields> FROM groups
+        //   INNER JOIN merchant_map
+        //   ON groups.id = merchant_map.entity_id
+        //   WHERE merchant_map.merchant_id IN (?)
+        //      AND merchant_map.entity_type = ?
+        //      AND groups.deleted_at IS NULL
+        //
+        // - SELECT <fields> FROM admins
+        //   INNER JOIN merchant_map
+        //   ON admins.id = merchant_map.entity_id
+        //   WHERE merchant_map.merchant_id IN (?)
+        //      AND merchant_map.entity_type = ?
+        //      AND admins.deleted_at IS NULL
+        //
+        // - SELECT * FROM features
+        //   WHERE features.entity_id IN (?)
+        //      AND features.entity_type = ?
+        //
+
+        $query->with($with);
+    }
+
+    /**
+     * Overrides method to fill in formatted data in merchant index against
+     * given merchant entity. Merchant entity has some relations and so this
+     * handling.
+     *
+     * @param Base\PublicEntity $entity
+     *
+     * @return array
+     */
+    protected function serializeForIndexing(Base\PublicEntity $entity): array
+    {
+        $serialized = parent::serializeForIndexing($entity);
+
+        //
+        // The serialized merchant document in ES contains following
+        // additional values:
+        // - List of tag names
+        // - List of admins who have access to this merchant,
+        // - List of groups which this merchant belongs to as well as their
+        //   recursive parents hierarchy.
+        // - Few additional attributes consumed by clients.
+        //
+
+        $serialized[Entity::TAG_LIST]        = $entity->tagNames();
+        $serialized[Entity::MERCHANT_DETAIL] = $entity->merchantDetail ? $entity->merchantDetail->toArray() : [];
+        $serialized[Entity::ADMINS]          = $entity->admins->pluck(Common::ID)->all();
+
+        $groups = $this->repo->group->getParentsRecursively($entity->groups, true);
+
+        $serialized[Entity::GROUPS]         = $groups->pluck(Common::ID)->all();
+        $serialized[Entity::IS_MARKETPLACE] = $entity->isMarketplace();
+
+        $firstAdmin = $entity->admins->first();
+
+        $serialized[Entity::REFERRER] = empty($firstAdmin) ? null : $firstAdmin->getName();
+
+        return $serialized;
+    }
+
+    protected function postProcessForHydration(Base\PublicEntity $model, array & $item)
+    {
+        $attributes = $item[Entity::MERCHANT_DETAIL];
+
+        $merchantDetail = (new Detail\Entity)->newFromBuilder($attributes);
+
+        $model->setRelation('merchantDetail', $merchantDetail);
+
+        $model->__unset(Entity::GROUPS);
+        $model->__unset(Entity::ADMINS);
+        $model->__unset(Entity::MERCHANT_DETAIL);
     }
 }

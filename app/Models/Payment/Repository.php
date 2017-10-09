@@ -41,7 +41,8 @@ class Repository extends Base\Repository
         Entity::EMAIL              => 'sometimes',
         Entity::STATUS             => 'sometimes|string',
         Entity::NOTES              => 'sometimes|string|max:500',
-        Entity::INVOICE_ID         => 'sometimes|string|max:18',
+        Entity::INVOICE_ID         => 'sometimes|string|min:14|max:18',
+        Entity::SUBSCRIPTION_ID    => 'sometimes|string|min:14|max:18',
     ];
 
     // These are admin allowed params to search on.
@@ -75,6 +76,7 @@ class Repository extends Base\Repository
     protected $signedIds = [
         Entity::ORDER_ID,
         Entity::INVOICE_ID,
+        Entity::SUBSCRIPTION_ID,
     ];
 
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
@@ -258,7 +260,7 @@ class Repository extends Base\Repository
         $paymentCreatedAt = $this->dbColumn(Entity::CREATED_AT);
         $merchantId       = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
-        $minCreatedAt = Carbon::now()->subSeconds(Merchant\Entity::MIN_AUTO_REFUND_DELAY)->timestamp;
+        $minCreatedAt = Carbon::now()->subSeconds(Merchant\Entity::MIN_AUTO_REFUND_DELAY)->getTimestamp();
 
         $rawCondition = '(' . time() . ' - ' . $paymentCreatedAt . ') > ' . Merchant\Entity::AUTO_REFUND_DELAY;
 
@@ -686,16 +688,16 @@ class Repository extends Base\Repository
 
     public function getYesterdayVolume()
     {
-        $yesterday = Carbon::yesterday(Timezone::IST)->timestamp;
-        $today = Carbon::today(Timezone::IST)->timestamp;
+        $yesterday = Carbon::yesterday(Timezone::IST)->getTimestamp();
+        $today = Carbon::today(Timezone::IST)->getTimestamp();
 
         return $this->getPaymentVolumeBetweenTimestamp($yesterday, $today);
     }
 
     public function getCurrentMonthVolume()
     {
-        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->timestamp;
-        $to = Carbon::today(Timezone::IST)->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->getTimestamp();
+        $to = Carbon::today(Timezone::IST)->getTimestamp();
 
         return $this->getPaymentVolumeBetweenTimestamp($from, $to);
     }
@@ -721,8 +723,8 @@ class Repository extends Base\Repository
 
     public function getYesterdayTopMerchantVolumeWise()
     {
-        $from = Carbon::yesterday(Timezone::IST)->timestamp;
-        $to = Carbon::today(Timezone::IST)->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
+        $to = Carbon::today(Timezone::IST)->getTimestamp();
 
         $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
         $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
@@ -748,8 +750,8 @@ class Repository extends Base\Repository
 
     public function getMonthTopMerchantVolumeWise()
     {
-        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->timestamp;
-        $to = Carbon::today(Timezone::IST)->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->getTimestamp();
+        $to = Carbon::today(Timezone::IST)->getTimestamp();
 
         $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
         $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
@@ -903,7 +905,7 @@ class Repository extends Base\Repository
         // For optimization purposes we only pick payments in last 10 days. This picked
         // '10 days' is sufficient filter logically.
 
-        $nowMinus10Days = Carbon::today(Timezone::IST)->subDays(10)->timestamp;
+        $nowMinus10Days = Carbon::today(Timezone::IST)->subDays(10)->getTimestamp();
 
         $results = $this->newQuery()
                         ->join($orderTable, $orderId, '=', $paymentOrderId)
@@ -925,6 +927,7 @@ class Repository extends Base\Repository
                     ->statusSuccess()
                     ->selectRaw('SUM(' . Entity::AMOUNT . ') AS amount' . ','.
                        'COUNT(*) AS count')
+                    ->where(Entity::METHOD, '!=', Method::TRANSFER)
                     ->first();
 
         return $vol;

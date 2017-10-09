@@ -27,6 +27,12 @@ class CreateAdjustments extends Migration {
 
             $table->char(Adjustment::MERCHANT_ID, Adjustment::ID_LENGTH);
 
+            $table->string(Adjustment::ENTITY_TYPE, 100)
+                ->nullable();
+
+            $table->char(Adjustment::ENTITY_ID, Adjustment::ID_LENGTH)
+                ->nullable();
+
             $table->integer(Adjustment::AMOUNT);
 
             $table->char(Adjustment::CURRENCY, 3);
@@ -60,6 +66,8 @@ class CreateAdjustments extends Migration {
                   ->on_delete('restrict');
 
             $table->index(Adjustment::CHANNEL);
+            $table->index(Adjustment::ENTITY_ID);
+            $table->index(Adjustment::ENTITY_TYPE);
         });
     }
 

@@ -390,7 +390,7 @@ class Gateway extends Base\Gateway
 
         // We have confirmed with acquirer banks that these refunds have
         // not been processed.
-        $unprocessedRefundIds = ['85VhjZuf8juCfZ'];
+        $unprocessedRefundIds = ['87eSYBPtCyTapi'];
 
         if (in_array($input['refund']['id'], $unprocessedRefundIds) === true)
         {
@@ -427,7 +427,7 @@ class Gateway extends Base\Gateway
         //    retried
         if ($content['vpc_DRExists'] === 'N')
         {
-            if ($input['refund']['created_at'] > Carbon::now(Timezone::IST)->subDays(5)->timestamp)
+            if ($input['refund']['created_at'] > Carbon::now(Timezone::IST)->subDays(5)->getTimestamp())
             {
                 return false;
             }
@@ -437,7 +437,7 @@ class Gateway extends Base\Gateway
         }
 
         if (($content['vpc_FoundMultipleDRs'] === 'N') and
-            ($content['vpc_RefundedAmount'] === $input['refund']['base_amount']))
+            (((int) $content['vpc_RefundedAmount']) === $input['refund']['base_amount']))
         {
             return true;
         }
@@ -972,7 +972,7 @@ class Gateway extends Base\Gateway
             // then we need to block the transaction on the international card.
             //
 
-            $acquirerData = $this->getAcquirerData($gatewayPayment);
+            $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
             $authStatus = ThreeDSecureStatus::getThreeDSstatus($threeDSstatus);
 
@@ -1005,16 +1005,6 @@ class Gateway extends Base\Gateway
         }
 
         $this->throwException($apiErrorCode, $txnResponseCode, $message, $threeDSstatus);
-    }
-
-    protected function getAcquirerData($gatewayPayment)
-    {
-        return [
-            'acquirer' => [
-                Payment\Entity::APPROVAL_CODE => $gatewayPayment->getAuthCode(),
-                Payment\Entity::REFERENCE1    => $gatewayPayment->getReceiptNo()
-            ]
-        ];
     }
 
     protected function getCallbackResponseData(array $input, $response = [])

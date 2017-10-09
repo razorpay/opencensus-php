@@ -156,7 +156,7 @@ class TerminalTest extends TestCase
 
         $tid = $terminal['id'];
 
-        $data = array('gateway_terminal_id' => 'random', 'gateway_terminal_password' => 'random');
+        $data = ['gateway_terminal_id' => 'random', 'gateway_terminal_password' => 'random'];
 
         $content = $this->editTerminal($tid, $data);
 
@@ -170,7 +170,7 @@ class TerminalTest extends TestCase
 
         $tid = $terminal['id'];
 
-        $data = array('gateway_recon_password' => 'random');
+        $data = ['gateway_recon_password' => 'random'];
 
         $content = $this->editTerminal($tid, $data);
 
@@ -256,13 +256,77 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
-    public function startTest($testDataToReplace = [])
+    public function testTerminalTypeRecurringNon3DS()
     {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        $name = $trace[1]['function'];
+        $this->startTest();
+    }
 
-        $testData = $this->testData[$name];
+    public function testTerminalTypeRecurring3DS()
+    {
+        $this->startTest();
+    }
 
-        return $this->runRequestResponseFlow($testData);
+    public function testTerminalTypeRecurringBoth()
+    {
+        $this->startTest();
+    }
+
+    public function testTerminalTypeIvr()
+    {
+        $this->startTest();
+    }
+
+    public function testEditTerminalTypeRecurringBoth()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_hdfc_terminal', ['used' => 1]);
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'type' => [
+                'non_recurring'     => '0',
+                'recurring_3ds'     => '1',
+                'recurring_non_3ds' => '1',
+            ]
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $types = [
+            'recurring_3ds',
+            'recurring_non_3ds'
+        ];
+
+        $this->assertEquals($types, $content['type']);
+    }
+
+    public function testTerminalCheckAutoDisable()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal = $this->fixtures->create(
+                        'terminal:shared_hdfc_terminal',
+                        [
+                            'id'          => '12HDFCTerminal',
+                            'merchant_id' => '10000000000000'
+                        ]);
+
+        $this->mockServerContentFunction(function(&$content, $action)
+        {
+            if ($action === 'authorize')
+            {
+                $content['result'] = 'GW00154';
+            }
+        }, 'hdfc');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->defaultAuthPayment();
+        });
+
+        $this->assertFalse($terminal->reload()->isEnabled());
     }
 }

@@ -124,19 +124,9 @@ class Gateway extends Base\Gateway
 
         $this->checkApprovalCode($gatewayPayment);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
-    }
-
-    protected function getAcquirerData($gatewayPayment)
-    {
-        return [
-            'acquirer' => [
-                Payment\Entity::APPROVAL_CODE => $gatewayPayment->getAuthCode(),
-                Payment\Entity::REFERENCE1    => $gatewayPayment->getEndpointTransactionId()
-            ]
-        ];
     }
 
     protected function runCallbackVerify(array $input)
@@ -154,12 +144,14 @@ class Gateway extends Base\Gateway
         if (($verify->gatewaySuccess === false) and
             ($this->approval === true))
         {
+            $verifyStatus = $verify->payment->getStatus();
+
             // Callback verify is failing, but possibly only
             // because verify status has not been updated.
             //
             // This should still be considered a failure,
             // but not a case of data tampering.
-            if ($verify->payment->getStatus() === Status::WAITING)
+            if (in_array($verifyStatus, Status::WAITING_STATES, true) === true)
             {
                 throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
             }
@@ -330,7 +322,7 @@ class Gateway extends Base\Gateway
 
         $refundGatewayStatus = (string) $verifyRefundResponse->children('a1', true)->TransactionState;
 
-        return in_array($refundGatewayStatus, Status::VALID_REFUND_STATES, true);
+        return in_array($refundGatewayStatus, Status::SUCCESSFUL_REFUND_STATES, true);
     }
 
     protected function updateOrCreateRefundEntity(array $refundFields, array $input)
@@ -522,7 +514,7 @@ class Gateway extends Base\Gateway
         {
             $attributes[Entity::STATUS]    = Status::AUTHORIZED;
 
-            $attributes[Entity::AUTH_CODE] = $callbackBody[ConnectResponseFields::PROCESSOR_RESPONSE_CODE];
+            $attributes[Entity::AUTH_CODE] = $this->getAuthCodeFromCallback($callbackBody);
 
             $attributes[Entity::TDATE]     = $callbackBody[ConnectResponseFields::TDATE];
         }
@@ -535,6 +527,9 @@ class Gateway extends Base\Gateway
     protected function getPurchaseFields(array $response, array $input)
     {
         $attributes = $this->getCommonResponseFields($response, $input);
+
+        $this->setFieldIfPresent($attributes, Entity::AUTH_CODE,
+            ApiResponseFields::PROCESSOR_APPROVAL_CODE, $response);
 
         return $attributes;
     }
@@ -701,11 +696,12 @@ class Gateway extends Base\Gateway
             // reason. Either way, this is equivalent to gateway success being false.
             $verify->gatewaySuccess = false;
 
-            $authTdate              = null;
-
-            $authGatewayPaymntId    = null;
-
-            $authGatewayStatus      = Status::FAILED;
+            $verifyContent = [
+                Entity::TDATE               => null,
+                Entity::GATEWAY_PAYMENT_ID  => null,
+                Entity::STATUS              => Status::FAILED,
+                Entity::AUTH_CODE           => null
+            ];
         }
         else
         {
@@ -747,13 +743,21 @@ class Gateway extends Base\Gateway
             //
             // As tdate, order_ID and state are structed under different
             // namespaces, their parsing logic is also distinct.
-            $authTdate = (string) $verifyAuthResponse->children('v1', true)->TransactionDetails->TDate;
+            $verifyContent = [
+                Entity::TDATE               => (string) $verifyAuthResponse->children('v1', true)
+                                                                           ->TransactionDetails->TDate,
+                Entity::GATEWAY_PAYMENT_ID  => (string) $verifyAuthResponse->children('v1', true)
+                                                                           ->TransactionDetails->OrderId,
+                Entity::STATUS              => (string) $verifyAuthResponse->children('a1', true)
+                                                                           ->TransactionState,
+                Entity::AUTH_CODE           => (string) $verifyAuthResponse->children('ipgapi', true)
+                                                                           ->IPGApiOrderResponse
+                                                                           ->ProcessorApprovalCode
+            ];
 
-            $authGatewayPaymntId = (string) $verifyAuthResponse->children('v1', true)->TransactionDetails->OrderId;
-
-            $authGatewayStatus = (string) $verifyAuthResponse->children('a1', true)->TransactionState;
-
-            $verify->gatewaySuccess = in_array($authGatewayStatus, [Status::AUTHORIZED, Status::CAPTURED], true);
+            $verify->gatewaySuccess = (in_array($verifyContent[Entity::STATUS],
+                                                Status::SUCCESSFUL_AUTH_STATES,
+                                                true) === true);
         }
 
         $verify->apiSuccess = $this->getVerifyApiStatus($gatewayPayment, $input['payment']);
@@ -763,8 +767,7 @@ class Gateway extends Base\Gateway
             $verify->status = VerifyResult::STATUS_MISMATCH;
         }
 
-        $verify->payment = $this->saveVerifyContent($gatewayPayment, $authGatewayPaymntId,
-                                                    $authGatewayStatus, $authTdate);
+        $verify->payment = $this->saveVerifyContent($gatewayPayment, $verifyContent);
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
@@ -831,13 +834,9 @@ class Gateway extends Base\Gateway
         return $apiStatus;
     }
 
-    protected function saveVerifyContent(Entity $gatewayPayment, $gatewayPaymentId, string $status, $tdate)
+    protected function saveVerifyContent(Entity $gatewayPayment, array $verifyContent)
     {
-        $gatewayPayment->setStatus($status);
-
-        $gatewayPayment->setTdate($tdate);
-
-        $gatewayPayment->setGatewayPaymentId($gatewayPaymentId);
+        $gatewayPayment->fill($verifyContent);
 
         $this->repo->saveOrFail($gatewayPayment);
 
@@ -1487,5 +1486,21 @@ class Gateway extends Base\Gateway
         // have a merchantId2 value of their own.
 
         return ($this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2] === null);
+    }
+
+    protected function getAuthCodeFromCallback($callbackBody)
+    {
+        $authCode = null;
+
+        $approvalCodeArray = explode(':', $callbackBody[ConnectResponseFields::APPROVAL_CODE]);
+
+        // Only when call had succeed, we get authCode in approvalCode
+        if (($approvalCodeArray[0] === 'Y') and
+            (isset($approvalCodeArray[1]) === true))
+        {
+            $authCode = $approvalCodeArray[1];
+        }
+
+        return $authCode;
     }
 }

@@ -659,7 +659,7 @@ class Gateway extends Base\Gateway
 
         $expiryTime = $content[ResponseFields::ACCESS_TOKEN_EXPIRY];
         $expiryTime = Carbon::createFromFormat('Y-m-d\TH:i:s', $expiryTime)
-                        ->timestamp;
+                            ->getTimestamp();
 
         $attributes = array(
             Token\Entity::METHOD           => 'wallet',
