@@ -21,20 +21,23 @@ export default class DocumentsUploadForm extends Component {
                   </label>
                   <div class="col-md-9">
                     <span class="help-block">
-                      Upload scan of following:
+                      Upload scan of the following:
                       <ul>
                         <li>
-                          Sales Tax/Service Tax or Shop Act Registration
-                          (Mandatory, if Partnership/Proprietership firm)
+                          Sales Tax/Service Tax or Shop Act Registration or GST
+                          Certificate (mandatory, if Proprietorship firm)
                         </li>
                         <li>
-                          Partnership Deed (Mandatory, if Partnership firm)
+                          Partnership Deed (mandatory, if Partnership firm)
                         </li>
                         <li>
-                          Certificate of Incorporation (Mandatory if private
-                          limited)
+                          Certificate of Incorporation (mandatory, if Private
+                          Limited or LLP)
                         </li>
-                        <li>Trust/Society/NGO etc. registration proof</li>
+                        <li>
+                          Registration Proof or Certificate (Trust/Society/NGO
+                          etc.)
+                        </li>
                       </ul>
                     </span>
                     <FileUploadInputButton
@@ -55,7 +58,7 @@ export default class DocumentsUploadForm extends Component {
                   <div class="col-md-9">
                     <span class="help-block">
                       Company/Partnership/LLP PAN Card (Sole Proprietor can use
-                      personal PAN)
+                      their personal PAN)
                     </span>
                     <FileUploadInputButton
                       accept="image/jpeg,image/png,application/pdf,application/x-pdf"
@@ -78,9 +81,9 @@ export default class DocumentsUploadForm extends Component {
                 Upload following:
                 <ul>
                   <li>
-                    Bank Account Statement (of last three months or since
-                    opening of account, whichever is earlier) OR cancelled
-                    cheque in the name of the registered business
+                    Bank Account Statement (last three months or since opening
+                    of account) OR cancelled cheque in the name of the
+                    registered business
                   </li>
                 </ul>
               </span>
@@ -115,11 +118,11 @@ export default class DocumentsUploadForm extends Component {
               </div>
             : <div class="form-group">
                 <label class="col-md-3 control-label label-required">
-                  Authorised Signatory Address Proof
+                  Authorised Signatory's Address Proof
                 </label>
                 <div class="col-md-9">
                   <span class="help-block">
-                    Kindly upload both sides of a government issued photo ID
+                    Upload both sides of the government issued photo ID
                     (Passport/AADHAR/Driving License/Election Card)
                   </span>
                   <FileUploadInputButton
