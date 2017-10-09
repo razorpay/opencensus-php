@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
 use RZP\Models\Admin\AdminLead;
+use RZP\Mail\User;
 
 class Service extends Base\Service
 {
@@ -91,8 +92,6 @@ class Service extends Base\Service
 
             (new Invitation\Service)->action($invitation['id'], $invitationAcceptInput);
 
-            // Session::put('current_merchant_id', $invitation['merchant_id']);
-
             $this->confirm($user['id']);
 
             // $this->subscribeToMailingList($user);
@@ -103,7 +102,7 @@ class Service extends Base\Service
         {
             $merchantInputData = [
                 'email' => $user['email'],
-                'name'  => $input['business_name'] ?? ''
+                'name'  => $input['business_name'] ?? '',
             ];
 
             $merchantData = (new Merchant\Service)->create($merchantInputData);
@@ -124,9 +123,26 @@ class Service extends Base\Service
             ];
 
             $this->updateUserMerchantMapping($user['id'], $userMerchantMappingInputData);
+
+            $this->sendConfirmationMail($user);
         }
 
         return $user;
+    }
+
+    private function sendConfirmationMail($userId)
+    {
+        $user = $this->repo->user->findOrFailPublic($userId);
+
+        // Only send the confirmation email if the user isn't already confirmed
+        if ($user->getConfirmedAttribute() === false)
+        {
+            $user->token = $user->getConfirmToken();
+
+            $orgId = $this->auth->getOrgId();
+
+            $this->repo->org->findByPublicId($orgId);
+        }
     }
 
     public function create(array $input): array

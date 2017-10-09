@@ -32,22 +32,22 @@ class Entity extends Base\PublicEntity
     protected $entity = 'user';
 
     protected $fillable = [
-    	self::ID,
-    	self::NAME,
-    	self::EMAIL,
-    	self::PASSWORD,
-    	self::CONTACT_MOBILE,
-    	self::REMEMBER_TOKEN,
-    	self::CONFIRM_TOKEN
+        self::ID,
+        self::NAME,
+        self::EMAIL,
+        self::PASSWORD,
+        self::CONTACT_MOBILE,
+        self::REMEMBER_TOKEN,
+        self::CONFIRM_TOKEN
     ];
 
     protected $public = [
-    	self::ID,
-    	self::NAME,
-    	self::EMAIL,
-    	self::CONTACT_MOBILE,
+        self::ID,
+        self::NAME,
+        self::EMAIL,
+        self::CONTACT_MOBILE,
         self::CONFIRMED,
-    	self::CREATED_AT,
+        self::CREATED_AT,
     ];
 
     protected $hidden = [
@@ -105,6 +105,11 @@ class Entity extends Base\PublicEntity
     public function getPassword()
     {
         return $this->getAttribute(self::PASSWORD);
+    }
+
+    public function getConfirmToken()
+    {
+        return $this->getAttribute(self::CONFIRM_TOKEN);
     }
 
     public function getConfirmedAttribute()
