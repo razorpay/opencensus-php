@@ -849,30 +849,36 @@ class FeaturesTest extends TestCase
 
     public function testUpdateOnboardingRequestStatus()
     {
+        $this->createMerchantDetailsOnLive();
+
         $this->createMarketplaceOnboardingResponse();
 
         $this->ba->adminAuth('live', null, 'org_100000razorpay');
 
-        $this->updateMarketplaceOnboardingResponseStatus('pending');
-
         $this->updateMarketplaceOnboardingResponseStatus('rejected');
 
-        $this->addFeature(Mode::LIVE, false);
+        $this->addFeatures(Mode::LIVE, false, [Constants::MARKETPLACE], '10000000001017');
+
+        $this->ba->adminAuth('live', null, 'org_100000razorpay');
 
         $this->updateMarketplaceOnboardingResponseStatus('approved');
     }
 
     public function testApproveOnboardingRequestWithoutEnablingFeature()
     {
+        $this->createMerchantDetailsOnLive();
+
         $this->createMarketplaceOnboardingResponse();
 
         $this->ba->adminAuth('live', null, 'org_100000razorpay');
 
-        $this->updateMarketplaceOnboardingResponseStatus('pending');
-
         $this->updateMarketplaceOnboardingResponseStatus('rejected');
 
-        $this->addFeature(Mode::LIVE, false);
+        $this->updateMarketplaceOnboardingResponseStatus('pending');
+
+        $this->addFeatures(Mode::LIVE, false, [Constants::MARKETPLACE], '10000000001017');
+
+        $this->ba->adminAuth('live', null, 'org_100000razorpay');
 
         $this->updateMarketplaceOnboardingResponseStatus('approved');
 

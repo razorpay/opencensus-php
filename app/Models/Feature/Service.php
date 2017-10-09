@@ -418,7 +418,6 @@ class Service extends Base\Service
                         $featureName,
                         $status
                     );
-        s($status);
 
         return $status;
     }
