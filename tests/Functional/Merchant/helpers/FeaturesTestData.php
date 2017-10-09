@@ -301,7 +301,7 @@ return [
                     Constants::VIRTUAL_ACCOUNTS
                 ]
             ],
-            'url'     => '/feature/onboarding',
+            'url'     => '/onboarding/features/all/questions',
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -359,7 +359,7 @@ return [
                 Constants::USE_CASE    => 'Some default use case',
                 Constants::SETTLING_TO => 'Someone'
             ],
-            'url'     => '/feature/onboarding/marketplace',
+            'url'     => '/onboarding/features/' . Constants::MARKETPLACE . '/responses',
             'method'  => 'POST',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -371,7 +371,7 @@ return [
     'getOnboardingResponses'      => [
         'request'  => [
             'content' => [],
-            'url'     => '/feature/onboarding/' . Constants::MARKETPLACE . '/responses',
+            'url'     => '/onboarding/features/' . Constants::MARKETPLACE . '/responses',
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -389,7 +389,7 @@ return [
     'addNotifyFeatures' => [
         'request'  => [
             'content' => [
-                'names'       => ['dummy', 'marketplace'],
+                'names'       => ['dummy', Constants::MARKETPLACE],
                 'entity_type' => 'merchant',
                 'entity_id'   => '10000000000000'
             ],
@@ -403,12 +403,12 @@ return [
         'response' => [
             'content' => [
                 [
-                    'name'        => 'dummy',
+                    'name'        => Constants::DUMMY,
                     'entity_id'   => '10000000000000',
                     'entity_type' => 'merchant'
                 ],
                 [
-                    'name'        => 'marketplace',
+                    'name'        => Constants::MARKETPLACE,
                     'entity_id'   => '10000000000000',
                     'entity_type' => 'merchant'
                 ]
@@ -496,6 +496,66 @@ return [
         ],
     ],
 
+    'testUpdateOnboardingResponses' => [
+        'request'  => [
+            'content' => [],
+            'url'     => '/onboarding/features/' . Constants::MARKETPLACE . '/responses',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                Constants::USE_CASE    => 'Use case updated',
+                Constants::SETTLING_TO => 'Someone else'
+            ]
+        ]
+    ],
+    'createMarketplaceOnboardingResponse'  => [
+        'request'  => [
+            'content' => [
+                Constants::USE_CASE    => 'Some default use case',
+                Constants::SETTLING_TO => 'Someone'
+            ],
+            'url'     => '/onboarding/features/' . Constants::MARKETPLACE . '/responses',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ]
+    ],
+    'updateMarketplaceOnboardingResponse'  => [
+        'request'  => [
+            'content' => [
+                Constants::USE_CASE    => 'Use case updated',
+                Constants::SETTLING_TO => 'Someone else',
+                'merchant_id'          => '10000000000000'
+            ],
+            'url'     => '/onboarding/features/admin/' . Constants::MARKETPLACE . '/responses',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ]
+    ],
+    'updateMarketplaceOnboardingResponseStatus'  => [
+        'request'  => [
+            'content' => [
+                'merchant_id'          => '10000000001017'
+            ],
+            'url'     => '/onboarding/features/' . Constants::MARKETPLACE . '/update_status',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ]
+    ],
+
     'testAddMerchantEditableFeaturesOnTest' => [
         'request' => [
             'content' => [
@@ -536,6 +596,28 @@ return [
                 ]
             ],
             'status_code' => 200
+        ]
+    ],
+
+
+    'verifyMarketplaceOnboardingResponseApproval' => [
+        'request'  => [
+            'content' => [],
+            'url'     => '/onboarding/features/all/responses/by/approved',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    "merchant_id"                        => "10000000000000",
+                    "contact_name"                       => "Test Account",
+                    "marketplace_activation_status"      => "approved"
+                ]
+            ]
         ]
     ],
 ];

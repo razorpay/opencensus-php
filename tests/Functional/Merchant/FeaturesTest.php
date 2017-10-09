@@ -12,6 +12,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 
 class FeaturesTest extends TestCase
@@ -551,7 +552,7 @@ class FeaturesTest extends TestCase
      */
     public function testpostOnboardingResponses()
     {
-        $this->ba->proxyAuth();
+        $this->createMerchantDetailsOnLive();
 
         $url = storage_path("files/" . Constants::ONBOARDING .  "/" . Constants::VENDOR_AGREEMENT . ".pdf");
 
@@ -799,4 +800,169 @@ class FeaturesTest extends TestCase
                 $input[4]);
         }
     }
+
+    public function testUpdateOnboardingResponses()
+    {
+        $this->createMerchantDetailsOnLive();
+
+        $this->createMarketplaceOnboardingResponse();
+
+        $this->ba->adminAuth('test', null, 'org_100000razorpay');
+
+        $this->updateMarketplaceOnboardingResponse();
+
+//        $this->ba->proxyAuthLive();
+        $id = '10000000001017';
+        $this->ba->proxyAuth('rzp_live_' . $id);
+
+        $this->startTest();
+    }
+
+//    public function testResendOnboardingResponses()
+//    {
+//        $this->createMerchantDetailsOnLive();
+//
+//        $this->createMarketplaceOnboardingResponse();
+//
+//        $this->createMarketplaceOnboardingResponse(true);
+//    }
+
+    public function testGetAllOnboardingResponsesByStatus()
+    {
+        $this->createMerchantDetailsOnLive();
+
+        $this->createMarketplaceOnboardingResponse();
+
+
+
+        $this->ba->adminAuth('live', null, 'org_100000razorpay');
+
+        $this->addFeatures('live', true, [Constants::MARKETPLACE]);
+        
+        $this->updateMarketplaceOnboardingResponseStatus('approved');
+
+//        s
+//        $this->verifyMarketplaceOnboardingResponseApproval();
+    }
+
+    public function testUpdateOnboardingRequestStatus()
+    {
+        $this->createMarketplaceOnboardingResponse();
+
+        $this->ba->adminAuth('live', null, 'org_100000razorpay');
+
+        $this->updateMarketplaceOnboardingResponseStatus('pending');
+
+        $this->updateMarketplaceOnboardingResponseStatus('rejected');
+
+        $this->addFeature(Mode::LIVE, false);
+
+        $this->updateMarketplaceOnboardingResponseStatus('approved');
+    }
+
+    public function testApproveOnboardingRequestWithoutEnablingFeature()
+    {
+        $this->createMarketplaceOnboardingResponse();
+
+        $this->ba->adminAuth('live', null, 'org_100000razorpay');
+
+        $this->updateMarketplaceOnboardingResponseStatus('pending');
+
+        $this->updateMarketplaceOnboardingResponseStatus('rejected');
+
+        $this->addFeature(Mode::LIVE, false);
+
+        $this->updateMarketplaceOnboardingResponseStatus('approved');
+
+    }
+
+    public function createMarketplaceOnboardingResponse(bool $expectError = false)
+    {
+        $id = '10000000001017';
+
+        $this->ba->proxyAuth('rzp_live_' . $id);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if ($expectError === true)
+        {
+            $testData['response'] = [
+                'content' => [
+                    'error' => [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => PublicErrorDescription::BAD_REQUEST_CANNOT_RESEND_FEATURE_ONBOARDING_RESPONSES
+                    ],
+                ],
+                'status_code' => 400,
+            ];
+
+            $testData['exception'] = [
+                'class' => 'RZP\Exception\BadRequestException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_CANNOT_RESEND_FEATURE_ONBOARDING_RESPONSES,
+            ];
+
+            $this->startTest($testData);
+        }
+        else
+        {
+            $testData['response'] = [
+                'content' => true
+            ];
+
+            $response = $this->makeRequestAndGetContent($testData['request']);
+
+            $this->assertTrue($response);
+        }
+    }
+
+    public function updateMarketplaceOnboardingResponse()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response);
+    }
+
+    public function verifyMarketplaceOnboardingResponseApproval()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response);
+    }
+
+    public function updateMarketplaceOnboardingResponseStatus(string $status)
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['status'] = $status;
+
+        $request = $testData['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response);
+    }
+
+    private function createMerchantDetailsOnLive()
+    {
+        $id = '10000000001017';
+
+        $attributes = ['id' => $id, 'org_id' => Org::RZP_ORG];
+
+        $detailsAttributes = ['merchant_id' => $id];
+
+        $merchant = $this->fixtures->on('live')->create('merchant', $attributes);
+
+        $this->fixtures->on('live')->create('merchant_detail:sane', $detailsAttributes);
+
+        $this->ba->proxyAuth('rzp_live_' . $id);
+    }
+
 }

@@ -432,6 +432,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED                         = 'The given feature is already assigned to the merchant';
     const BAD_REQUEST_MERCHANT_FEATURE_ONBOARDING_STATUS_NOT_RECOGNIZED         = 'The product onboarding status provided could not be recognized';
     const BAD_REQUEST_CANNOT_APPROVE_MERCHANT_FEATURE_NOT_ASSIGNED              = 'Please enable the feature in Live mode before approving the product onboarding request';
+    const BAD_REQUEST_CANNOT_RESEND_FEATURE_ONBOARDING_RESPONSES                = 'The product activation form is already submitted.';
 
     const BAD_REQUEST_INVALID_ADMIN_EMAIL                                       = 'Email provided is not a valid email';
     const BAD_REQUEST_INVALID_ADMIN_EMAIL_HOSTNAME                              = 'Email provided does not have the correct hostname';

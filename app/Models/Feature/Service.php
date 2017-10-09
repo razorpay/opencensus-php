@@ -182,6 +182,8 @@ class Service extends Base\Service
      */
     public function postOnboardingResponses(array $input, string $feature): bool
     {
+        // TODO: Prevent the merchant from re-submitting
+
         $data[$feature] = $input;
 
         $saved = false;
@@ -200,12 +202,10 @@ class Service extends Base\Service
                     ->upsert($data)
                     ->save();
 
-            $this->repo->merchant_detail->updateFeatureActivationStatus(
-                $this->merchant,
-                $feature,
-                Merchant\Detail\Entity::PENDING);
-
-            $saved = true;
+            $saved = $this->repo->merchant_detail->updateFeatureActivationStatus(
+                        $this->merchant,
+                        $feature,
+                        Merchant\Detail\Entity::PENDING);
         }
         catch (\Throwable $exception)
         {
@@ -218,12 +218,14 @@ class Service extends Base\Service
             (new Core)->notifyOnboardingResponseCreationOnSlack($feature);
         }
 
-
         return $saved;
     }
 
     public function updateOnboardingResponses(array $input, string $feature): bool
     {
+
+        // TODO: Delete old file if file has been received.
+
         $merchantId = $input['merchant_id'];
 
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
@@ -263,7 +265,7 @@ class Service extends Base\Service
 
         return $saved;
     }
-
+//update `merchant_details` set `marketplace_activation_status` = 'pending', `updated_at` = 1507130751 where `merchant_id` = '10000000000000'
 
     /**
      * Returns the merchant responses to the onboarding questions of
@@ -403,7 +405,7 @@ class Service extends Base\Service
         return $merchantDetails;
     }
 
-    public function updateFeatureActivationStatus(string $featureName, array $input)
+    public function updateFeatureActivationStatus(string $featureName, array $input): bool
     {
         $status = $input['status'];
 
@@ -411,11 +413,14 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
 
-        return $this->repo->merchant_detail->updateFeatureActivationStatus(
-            $merchant,
-            $featureName,
-            $status
-        );
+        $status =  $this->repo->merchant_detail->updateFeatureActivationStatus(
+                        $merchant,
+                        $featureName,
+                        $status
+                    );
+        s($status);
+
+        return $status;
     }
 }
 
