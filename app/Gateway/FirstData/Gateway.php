@@ -1076,7 +1076,7 @@ class Gateway extends Base\Gateway
             ConnectRequestFields::RESPONSE_SUCCESS_URL      => $input['callbackUrl'],
             ConnectRequestFields::RESPONSE_FAIL_URL         => $input['callbackUrl'],
             ConnectRequestFields::TXN_TYPE                  => $txnType,
-            ConnectRequestFields::PAYMENT_METHOD            => PaymentMethod::METHOD_MAP[$method],
+            ConnectRequestFields::PAYMENT_METHOD            => PaymentMethod::METHOD_MAP[$networkCode],
         ];
 
         if ($this->isFirstRecurringPayment($input) === true)
