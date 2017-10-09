@@ -4,6 +4,7 @@ import Table from 'ui/Table';
 import Field from 'ui/Field';
 import Collection from 'util/collection';
 import { adminFetch } from 'util/fetch';
+import { openPricingEntity } from './entity';
 
 export default class PlanList extends Component {
   collection = new Collection({
@@ -22,7 +23,11 @@ export default class PlanList extends Component {
             <Field name="q" label="Search" />
           </Form>
         </div>
-        <Table model={this.collection} fields={pricingFields} />
+        <Table
+          model={this.collection}
+          fields={pricingFields}
+          onClick={openPricingEntity}
+        />
       </div>
     );
   }

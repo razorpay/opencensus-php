@@ -9,14 +9,19 @@ const defaultFilters = {
 export default class Collection {
   @observable items = [];
 
-  constructor({ fetchRoute, fetchFn, filters }) {
+  constructor({ fetchRoute, fetchFn, filters, items }) {
     this.fetchRoute = fetchRoute;
     this.fetchFn = fetchFn;
 
     this.pending = observable.box();
     this.filters = observable.box(Object.assign(defaultFilters, filters));
 
-    this.fetch();
+    // fetch if not pre-populated
+    if (items) {
+      this.items.replace(items);
+    } else {
+      this.fetch();
+    }
   }
 
   fetch() {

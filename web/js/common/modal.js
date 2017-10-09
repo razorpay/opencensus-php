@@ -13,6 +13,7 @@ class ModalStore {
   openModal = modal => this.modals.push(modal);
   closeModal = _ => this.modals.clear();
 
+  replaceSlider = slider => this.sliders.replace([slider]);
   openSlider = slider => this.sliders.push(slider);
   closeSlider = _ => this.sliders.clear();
 
@@ -42,8 +43,18 @@ export default class ModalContainer extends Component {
           {store.sliders.length && (
             <CSSTransition classNames="slider" timeout={animObj}>
               <div id="slider-container">
-                {store.sliders.map((s, index) => (
-                  <Slider key={index} slider={s} />
+                {store.sliders.map((slider, index) => (
+                  <div class="slider" key={index}>
+                    <div
+                      class="slider-close"
+                      onClick={_ => {
+                        store.sliders.remove(slider);
+                      }}
+                    >
+                      &times;
+                    </div>
+                    {slider}
+                  </div>
                 ))}
               </div>
             </CSSTransition>
@@ -95,24 +106,11 @@ const Modal = ({ modal }) => (
   </div>
 );
 
-const Slider = ({ slider }) => (
-  <div class="slider">
-    <div
-      class="slider-close"
-      onClick={_ => {
-        store.sliders.remove(slider);
-      }}
-    >
-      &times;
-    </div>
-    {slider.component}
-  </div>
-);
-
 export const {
   openModal,
   closeModal,
   openSlider,
+  replaceSlider,
   closeSlider,
   notify,
   notifyError,

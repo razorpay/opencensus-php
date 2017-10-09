@@ -5,10 +5,11 @@ import Form from 'ui/Form';
 @observer
 export default class Table extends Component {
   render() {
-    let { fields, model, onSubmit } = this.props;
+    let { fields, model, onSubmit, onClick } = this.props;
     let { pending, items, filters } = model;
 
     let Tr = onSubmit ? Form : 'div';
+    let trClass = onClick ? 'tr clickable' : 'tr';
 
     pending = pending.get();
     filters = filters.get();
@@ -32,7 +33,12 @@ export default class Table extends Component {
                 </div>
                 {items.map((item, index) => {
                   return (
-                    <Tr class="tr" key={index} onSubmit={onSubmit}>
+                    <Tr
+                      class={trClass}
+                      key={index}
+                      onSubmit={onSubmit && item::onSubmit}
+                      onClick={onClick && item::onClick}
+                    >
                       {fields.map((field, index) => (
                         <div class="td" key={index}>
                           {field[1](item)}
