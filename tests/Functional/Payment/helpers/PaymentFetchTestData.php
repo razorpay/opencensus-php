@@ -2,10 +2,9 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
 
 return [
-    'testFetchRulesForAdminAuth' => [
+    'testFetchRuleCascadingForAdminAuth' => [
         'request' => [
             'url' => '/admin/payment',
             'method' => 'get',
@@ -20,7 +19,7 @@ return [
         ],
     ],
 
-    'testErrorFetchRulesForPrivateAuth' => [
+    'testFetchRulesForPrivateWithExtraFieldsError' => [
         'request' => [
             'url' => '/payments',
             'method' => 'get',
@@ -42,7 +41,7 @@ return [
         ],
     ],
 
-    'testFetchRulesForProxyAuth' => [
+    'testFetchRulesCascadingForProxyAuth' => [
         'request' => [
             'url' => '/payments',
             'method' => 'get',
@@ -79,22 +78,7 @@ return [
         ],
     ],
 
-    'testEsRepositoryForProxyAuth' => [
-        'request' => [
-            'url' => '/payments',
-            'method' => 'get',
-            'content' => [
-                'notes' => 1000000
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'count' => 1,
-            ],
-        ],
-    ],
-
-    'testFetchWithSignedIdForPrivateAuth' => [
+    'testFetchRulesWithSignedIdForPrivateAuth' => [
         'request' => [
             'url' => '/payments',
             'method' => 'get',
@@ -109,34 +93,12 @@ return [
         ],
     ],
 
-    'testErrorFetchWithMaxCountForPrivateAuth' => [
+    'testFetchWithExpandsForProxyAuth' => [
         'request' => [
             'url' => '/payments',
             'method' => 'get',
             'content' => [
-                'count' => 1000
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testFetchWithExpandsTrueForPrivateAuth' => [
-        'request' => [
-            'url' => '/payments',
-            'method' => 'get',
-            'content' => [
-                'expand' => ['card']
+                'expand'  => ['card'],
             ],
         ],
         'response' => [
@@ -153,7 +115,7 @@ return [
         ],
     ],
 
-    'testFindWithExpandForPrivateAuth' => [
+    'testFindWithExpandsForPrivateAuth' => [
         'request' => [
             'url' => '/payments/',
             'method' => 'get',
@@ -170,7 +132,7 @@ return [
         ],
     ],
 
-    'testErrorFindWithExpandForPrivateAuth' => [
+    'testFetchWithExpandsForPrivateAuthWithInvalidExpand' => [
         'request' => [
             'url' => '/payments/',
             'method' => 'get',
@@ -190,5 +152,5 @@ return [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
-    ]
+    ],
 ];
