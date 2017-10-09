@@ -55,7 +55,7 @@ trait EmandateTrait
 
     protected function checkEmandatePaymentResponseStatus(array $content)
     {
-        if ($content[ResponseFields::STATUS_CODE] !== ResponseCodeMap::SUCCESS)
+        if (StatusCode::isStatusCodeSuccess($content[ResponseFields::STATUS_CODE]) !== true)
         {
             $this->trace->error(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
