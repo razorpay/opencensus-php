@@ -13,9 +13,9 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class IrctcRefund extends Base
 {
-    protected static $fileToWriteName = 'deltarefund_RZRPAY_';
+    const FILE_TO_WRITE_NAME        = 'deltarefund_RZRPAY_';
 
-    protected static $fileToWriteNameInUAT = 'deltarefund_WUATRZRPAY_';
+    const FILE_TO_WRITE_NAME_IN_UAT = 'deltarefund_WUATRZRPAY_';
 
     protected function processEntry(array & $entry)
     {
@@ -114,16 +114,22 @@ class IrctcRefund extends Base
         $this->batch->setProcessedAmount($processedAmount);
     }
 
-    protected function getFileName(string $ext = null)
+    /**
+     * File name format/example: deltarefund_RZRPAY_20171212_V1
+     *
+     * @param string|null $ext
+     *
+     * @return string
+     */
+    protected function getFileName(string $ext = null): string
     {
-        //same name deltarefund_RZRPAY_20171212_V1
         $time = Carbon::now(Timezone::IST)->format('Ymd');
 
-        $prefix = static::$fileToWriteName;
+        $prefix = self::FILE_TO_WRITE_NAME;
 
         if ($this->mode === Mode::TEST)
         {
-            $prefix = static::$fileToWriteNameInUAT;
+            $prefix = self::FILE_TO_WRITE_NAME_IN_UAT;
         }
 
         $name = $prefix . $time . '_V1';

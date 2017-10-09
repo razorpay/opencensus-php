@@ -361,7 +361,7 @@ class Base extends BaseModel\Core
         }
     }
 
-    protected function getFileName(string $ext = null)
+    protected function getFileName(string $ext = null): string
     {
         if (empty($ext) === true)
         {
