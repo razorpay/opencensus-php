@@ -25,66 +25,7 @@ use phpseclib\Crypt\AES;
 
 trait EmandateTrait
 {
-    public function handleEmandateCallback(array $input) : array
-    {
-        $content = $input['gateway'];
-
-        $content = $this->getDecryptedData($content[ResponseFields::DATA]);
-
-        $this->assertPaymentId($input['payment']['id'],
-            $content[ResponseFields::TRANS_REF_NO]);
-
-        $this->validateCallbackChecksum($content);
-
-        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
-
-        $attributes = $this->getEmandateCallbackAttributes($content);
-
-        $gatewayEntity->fill($attributes);
-
-        $this->repo->saveOrFail($gatewayEntity);
-
-        // We check the status of the payment, and not the SI registration here
-        $this->checkEmandatePaymentResponseStatus($content);
-
-        $acquirerData = $this->getEmandateAcquirerData($gatewayEntity);
-
-        return $this->getCallbackResponseData($input, $acquirerData);
-    }
-
-    protected function checkEmandatePaymentResponseStatus(array $content)
-    {
-        if (StatusCode::isStatusCodeSuccess($content[ResponseFields::STATUS_CODE]) !== true)
-        {
-            $this->trace->error(
-                TraceCode::PAYMENT_CALLBACK_FAILURE,
-                ['content' => $content]);
-
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-    }
-
-    protected function getEmandateAcquirerData(Netbanking\Entity $gatewayPayment) : array
-    {
-        $siStatus = $gatewayPayment->getSIStatus();
-
-        $recurringStatus = ($siStatus === StatusCode::SUCCESS) ?
-                            (Token\RecurringStatus::CONFIRMED) :
-                            (Token\RecurringStatus::REJECTED);
-
-        $recurringFailureReason = $gatewayPayment->getSIMessage();
-
-        return [
-            'acquirer' => [
-                Payment\Entity::REFERENCE1         => $gatewayPayment->getBankPaymentId(),
-            ],
-            Token\Entity::GATEWAY_TOKEN            => $gatewayPayment->getSIToken(),
-            Token\Entity::RECURRING_STATUS         => $recurringStatus,
-            Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason,
-        ];
-    }
+    //-----------------------Auth request helpers------------------------
 
     /**
      * This method creates the recurring payment request data
@@ -100,10 +41,11 @@ trait EmandateTrait
             'max',
             Constants::FREQUENCY_ADHOC,
             '123123123',
-            Carbon::now(Timezone::IST)->format('m/d/y'),
-            Carbon::now(Timezone::IST)->addYears(30)->format('m/d/y'),
+            Carbon::now(Timezone::IST)->format('m/d/Y'),
+            Carbon::now(Timezone::IST)->addYears(30)->format('m/d/Y'),
             $this->formatAmount($input['payment']['amount']),
         ];
+        // sd($ppiArray);
 
         $data = [
             RequestFields::VERSION         => Constants::VERSION,
@@ -116,10 +58,10 @@ trait EmandateTrait
             RequestFields::RETURN_URL      => $input['callbackUrl'],
             RequestFields::PRE_POP_INFO    => implode('|', $ppiArray),
             RequestFields::RESERVE_FIELD_1 => AxisConstants::NO_MODIFICATION,
-            RequestFields::RESERVE_FIELD_2 => AxisConstants::NO_MODIFICATION,
-            RequestFields::RESERVE_FIELD_3 => AxisConstants::NO_MODIFICATION,
-            RequestFields::RESERVE_FIELD_4 => AxisConstants::NO_MODIFICATION,
-            RequestFields::RESERVE_FIELD_5 => AxisConstants::NO_MODIFICATION,
+            RequestFields::RESERVE_FIELD_2 => '',
+            RequestFields::RESERVE_FIELD_3 => '',
+            RequestFields::RESERVE_FIELD_4 => '',
+            RequestFields::RESERVE_FIELD_5 => '',
         ];
 
         $data[RequestFields::CHECKSUM] = $this->getChecksum($data);
@@ -140,6 +82,147 @@ trait EmandateTrait
         return $content;
     }
 
+    //-----------------------Auth request helpers end---------------------
+
+    //-----------------------Callback request helpers---------------------
+
+    public function handleEmandateCallback(array $input) : array
+    {
+        $content = $input['gateway'];
+
+        $gatewayEntity = $this->handleEmandateResponse($input, $content);
+
+        $acquirerData = $this->getEmandateAcquirerData($gatewayEntity);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    public function handleEmandateResponse($input, $content)
+    {
+        $content = $this->getDecryptedData($content[ResponseFields::DATA]);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'gateway'            => $this->gateway,
+                'decrypted_response' => $content,
+                'payment_id'         => $input['payment']['id']
+            ]
+        );
+
+        $this->assertPaymentId($input['payment']['id'],
+            $content[ResponseFields::REQUEST_ID]);
+
+        $this->validateCallbackChecksum($content);
+
+        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $attributes = $this->getEmandateCallbackAttributes($content);
+
+        $gatewayEntity->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayEntity);
+
+        // We check the status of the payment, and not the SI registration here
+        $this->checkEmandatePaymentResponseStatus($content);
+
+        return $gatewayEntity;
+    }
+
+    protected function getEmandateCallbackAttributes(array $content) : array
+    {
+        return [
+            Netbanking\Entity::RECEIVED        => true,
+            Netbanking\Entity::STATUS          => $content[ResponseFields::STATUS_CODE],
+            Netbanking\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REF_NO],
+            Netbanking\Entity::REFERENCE1      => $content[ResponseFields::MANDATE_NUMBER],
+
+            // SI registration specific callback attributes
+            Netbanking\Entity::SI_TOKEN        => $content[ResponseFields::CUSTOMER_REF_NO], // TODO: Confirm this
+            Netbanking\Entity::SI_STATUS       => $content[ResponseFields::STATUS_CODE], // TODO: Confirm this
+            Netbanking\Entity::SI_MSG          => $content[ResponseFields::REMARKS],
+        ];
+    }
+
+    protected function checkEmandatePaymentResponseStatus(array $content)
+    {
+        if (StatusCode::isStatusCodeSuccess($content[ResponseFields::STATUS_CODE]) !== true)
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                ['content' => $content]
+            );
+
+            throw new GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+            );
+        }
+    }
+
+    protected function getEmandateAcquirerData(Netbanking\Entity $gatewayPayment) : array
+    {
+        $recurringStatus = (StatusCode::isEmandateRegistrationSuccess($gatewayPayment[Netbanking\Entity::REFERENCE1])) ?
+                            (Token\RecurringStatus::CONFIRMED) :
+                            (Token\RecurringStatus::REJECTED);
+
+        $recurringFailureReason = $gatewayPayment->getSIMessage();
+
+        return [
+            'acquirer' => [
+                Payment\Entity::REFERENCE1         => $gatewayPayment->getBankPaymentId(),
+            ],
+            Token\Entity::GATEWAY_TOKEN            => $gatewayPayment->getSIToken(),
+            Token\Entity::RECURRING_STATUS         => $recurringStatus,
+            Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason,
+        ];
+    }
+
+    //---------------Callback request helpers end-----------------
+
+    //---------------Second auth request helpers------------------
+
+    protected function authorizeSecondRecurring(array $input)
+    {
+        if (empty($input['token']->getGatewayToken()) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_GATEWAY_TOKEN_EMPTY,
+                Token\Entity::GATEWAY_TOKEN,
+                [
+                    'payment' => $input['payment'],
+                    'token'   => $input['token']->toArray(),
+                ]
+            );
+        }
+
+        $entity = $this->getEmandateEntityAttributes($input);
+
+        $this->createGatewayPaymentEntity($entity);
+
+        $requestData = $this->getRecurringPaymentData($input);
+
+        $request = $this->getStandardRequestArray($requestData);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_RECURRING_DEBIT_REQUEST,
+            [
+                'payment_id' => $input['payment']['id'],
+                'token_id'   => $input['token']->getId(),
+                'request'    => $request,
+                'gateway'    => $this->gateway
+            ]
+        );
+
+        $response = $this->sendGatewayRequest($request);
+        sd($response->body);
+
+        $this->handleEmandateResponse($input, $response);
+    }
+
+    //---------------Second auth request helpers end------------------
+
+    //----------------------General helpers---------------------------
     public function getEncryptedData(array $data): string
     {
         return base64_encode(
@@ -174,19 +257,7 @@ trait EmandateTrait
         ];
     }
 
-    protected function getEmandateCallbackAttributes(array $content) : array
-    {
-        return [
-            Netbanking\Entity::RECEIVED        => true,
-            Netbanking\Entity::STATUS          => $content[ResponseFields::STATUS_CODE],
-            Netbanking\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REF_NO],
 
-            // SI registration specific callback attributes
-            Netbanking\Entity::SI_TOKEN        => $content[ResponseFields::MANDATE_NUMBER], // TODO: Confirm this
-            Netbanking\Entity::SI_STATUS       => $content[ResponseFields::STATUS_CODE], // TODO: Confirm this
-            Netbanking\Entity::SI_MSG          => $content[ResponseFields::REMARKS],
-        ];
-    }
 
     protected function getHashOfString($str) : string
     {
@@ -214,7 +285,9 @@ trait EmandateTrait
                     'content'    => $content,
                     'payment_id' => $this->input['payment']['id'],
                     'action'     => $this->action,
-                ]);
+                    'gateway'    => $this->gateway,
+                ]
+            );
         }
     }
 

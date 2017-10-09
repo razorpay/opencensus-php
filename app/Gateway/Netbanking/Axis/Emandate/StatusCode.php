@@ -8,8 +8,15 @@ class StatusCode
     const PENDING = '101';
     const FAILED  = '111';
 
+    const EMANDATE_FAILURE = '0';
+
     public static function isStatusCodeSuccess(string $statusCode)
     {
         return ($statusCode === self::SUCCESS);
+    }
+
+    public static function isEmandateRegistrationSuccess(string $statusCode)
+    {
+        return ($statusCode !== self::EMANDATE_FAILURE);
     }
 }
