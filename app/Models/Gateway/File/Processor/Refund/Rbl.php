@@ -19,27 +19,11 @@ class Rbl extends Base
     const GATEWAY_CODE           = IFSC::RATN;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
-    const HEADERS = [
-        RefundFields::SERIAL_NO,
-        RefundFields::REFUND_ID,
-        RefundFields::BANK_ID,
-        RefundFields::MERCHANT_NAME,
-        RefundFields::TRANSACTION_DATE,
-        RefundFields::REFUND_DATE,
-        RefundFields::MERCHANT_ID,
-        RefundFields::BANK_REFERENCE,
-        RefundFields::PGI_REFERENCE,
-        RefundFields::TRANSACTION_AMOUNT,
-        RefundFields::REFUND_AMOUNT,
-    ];
-
     protected $type = Payment\Entity::BANK;
 
     protected function formatDataForFile()
     {
         $formattedData = [];
-
-        $formattedData[] = static::HEADERS;
 
         foreach ($this->data as $index => $row)
         {
