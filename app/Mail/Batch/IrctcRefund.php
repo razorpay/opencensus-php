@@ -11,19 +11,9 @@ class IrctcRefund extends Base
 {
     protected static $mailTag     = MailTags::BATCH_IRCTC_REFUNDS_FILE;
 
-    protected static $sender      = Constants::REFUNDS;
+    protected static $sender      = Constants::IRCTC;
 
     protected static $subjectLine = "Razorpay | IRCTC Refunds File";
 
     protected static $body        = 'Please upload IRCTC refund file on portal';
-
-
-    protected function addRecipients()
-    {
-        $emails =  ['irctc.refunds@razorpay.com'];
-
-        $this->to($emails);
-
-        return $this;
-    }
 }

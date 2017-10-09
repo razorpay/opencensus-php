@@ -4,8 +4,8 @@ namespace RZP\Models\Batch\Processor;
 
 use Carbon\Carbon;
 
-use RZP\Constants\Mode;
 use RZP\Models\Batch;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
@@ -13,6 +13,10 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class IrctcRefund extends Base
 {
+    protected static $fileToWriteName = 'deltarefund_RZRPAY_';
+
+    protected static $fileToWriteNameInUAT = 'deltarefund_WUATRZRPAY_';
+
     protected function processEntry(array & $entry)
     {
         $paymentId = trim($entry[Batch\Header::PAYMENT_ID]);
@@ -110,15 +114,16 @@ class IrctcRefund extends Base
         $this->batch->setProcessedAmount($processedAmount);
     }
 
-    protected function getFileName($ext)
+    protected function getFileName(string $ext = null)
     {
+        //same name deltarefund_RZRPAY_20171212_V1
         $time = Carbon::now(Timezone::IST)->format('Ymd');
 
-        $prefix = 'deltarefund_RZRPAY_';
+        $prefix = static::$fileToWriteName;
 
         if ($this->mode === Mode::TEST)
         {
-            $prefix = 'deltarefund_WUATRZRPAY_';
+            $prefix = static::$fileToWriteNameInUAT;
         }
 
         $name = $prefix . $time . '_V1';

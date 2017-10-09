@@ -361,7 +361,7 @@ class Base extends BaseModel\Core
         }
     }
 
-    protected function getFileName($ext)
+    protected function getFileName(string $ext = null)
     {
         if (empty($ext) === true)
         {
@@ -489,7 +489,7 @@ class Base extends BaseModel\Core
     {
         $ext = pathinfo($filePath, PATHINFO_EXTENSION);
 
-        $name = $this->batch->getFilePrefix() . $this->getFileName('');
+        $name = $this->batch->getFilePrefix() . $this->getFileName();
 
         return (new FileStore\Creator)
                     ->localFilePath($filePath)
