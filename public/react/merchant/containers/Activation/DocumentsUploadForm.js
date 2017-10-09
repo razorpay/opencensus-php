@@ -24,10 +24,15 @@ export default class DocumentsUploadForm extends Component {
                       Upload scan of following:
                       <ul>
                         <li>
-                          Sales Tax/Service Tax or Shop Act Registration (Mandatory, if Partnership/Proprietership firm)
+                          Sales Tax/Service Tax or Shop Act Registration
+                          (Mandatory, if Partnership/Proprietership firm)
                         </li>
                         <li>
-                          Certificate of Incorporation (Mandatory if private limited)
+                          Partnership Deed (Mandatory, if Partnership firm)
+                        </li>
+                        <li>
+                          Certificate of Incorporation (Mandatory if private
+                          limited)
                         </li>
                         <li>Trust/Society/NGO etc. registration proof</li>
                       </ul>
@@ -49,7 +54,8 @@ export default class DocumentsUploadForm extends Component {
                   </label>
                   <div class="col-md-9">
                     <span class="help-block">
-                      Company/Partnership/LLP PAN Card (Sole Proprietor can use personal PAN)
+                      Company/Partnership/LLP PAN Card (Sole Proprietor can use
+                      personal PAN)
                     </span>
                     <FileUploadInputButton
                       accept="image/jpeg,image/png,application/pdf,application/x-pdf"
@@ -72,7 +78,9 @@ export default class DocumentsUploadForm extends Component {
                 Upload following:
                 <ul>
                   <li>
-                    Bank Account Statement (of last three months or since opening of account, whichever is earlier)
+                    Bank Account Statement (of last three months or since
+                    opening of account, whichever is earlier) OR cancelled
+                    cheque in the name of the registered business
                   </li>
                 </ul>
               </span>
@@ -94,9 +102,7 @@ export default class DocumentsUploadForm extends Component {
                   PAN Card
                 </label>
                 <div class="col-md-9">
-                  <span class="help-block">
-                    Promoter/Individual PAN Card.
-                  </span>
+                  <span class="help-block">Promoter/Individual PAN Card.</span>
                   <FileUploadInputButton
                     accept="image/jpeg,image/png,application/pdf,application/x-pdf"
                     uploadedFileName={files.promoter_pan_proof}
@@ -113,8 +119,8 @@ export default class DocumentsUploadForm extends Component {
                 </label>
                 <div class="col-md-9">
                   <span class="help-block">
-                    Upload address proof (preferably scanned copy of passport) of at least one authorised signatory.
-                    In case of sole proprietership, upload your personal address proof.
+                    Kindly upload both sides of a government issued photo ID
+                    (Passport/AADHAR/Driving License/Election Card)
                   </span>
                   <FileUploadInputButton
                     accept="image/jpeg,image/png,application/pdf,application/x-pdf"
