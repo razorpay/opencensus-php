@@ -17,9 +17,7 @@ class MerchantController extends Controller
 {
     public function postResendConfirmation()
     {
-        $input = Input::all();
-
-        list($error, $data) = (new Merchant\Service)->resendConfirmation($input);
+        list($error, $data) = (new Merchant\Service)->resendConfirmation();
 
         return AppResponse::jsonResponse($error);
     }

@@ -33,7 +33,6 @@ Route::group(['middleware' => ['web']], function () {
     {
         Route::post('/signin', 'UserController@postSignin'); // ePOS
         Route::post('/register', 'UserController@postRegister'); // ePOS
-        Route::post('/resend', 'MerchantController@postResendConfirmation');
         Route::post('/password/reset', 'PasswordController@postRemind');
         Route::post('/password/reset/{token}', 'PasswordController@postReset');
         Route::get('/invitations/token/{token}', 'InvitationsController@fetchByToken');
@@ -46,6 +45,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
     {
         Route::post('/pre_signup', 'MerchantController@postSignup');
+        Route::post('/resend', 'MerchantController@postResendConfirmation');
         Route::get('/keepalive', 'UserController@getKeepAlive');
         Route::get('/logout', 'UserController@getLogout');
         // This returns all the needed information

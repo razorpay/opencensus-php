@@ -669,9 +669,6 @@ app
           method: 'post',
           url: '/user/resend',
           transformRequest: transformRequestAsFormPost,
-          data: {
-            email: $scope.signup.data.email || $scope.login.data.email,
-          },
         };
 
         var request = $http(payload);

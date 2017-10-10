@@ -605,6 +605,8 @@ return [
         'user_login'                        => 'users/login',
         // Confirm User
         'user_confirm_by_data'              => 'users/confirm_user_by_data',
+        // Resend Verification
+        'user_resend_verification'          => 'users/resend-verification',
 
         // Admin Routes
         // Pricing

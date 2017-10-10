@@ -434,33 +434,41 @@ class Service extends Base\Service
         return $merchantApiData;
     }
 
-    public function resendConfirmation(array $input)
+    public function resendConfirmation()
     {
-        if (isset($input['email']) === false)
+        $authUser = Auth::user();
+
+        $authUserId = $authUser->id;
+
+        $data = [
+            'user_id' => $authUserId
+        ];
+
+        $resendConfirmation = [
+            'route_name' => 'user_resend_verification',
+            'body'       => $data
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('POST', $resendConfirmation);
+
+        if (empty($error) === false)
         {
-            return [[static::INVALID_EMAIL_OR_PASSWORD], []];
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                $error[0],
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
         }
 
-        $email = $input['email'];
-
-        $user = (new User\Entity)->where('users.email', $email)
-                                 ->first();
-        if ($user === null)
-        {
-            return [[static::INVALID_EMAIL_OR_PASSWORD], []];
-        }
-
-        if ($user->getConfirmToken() === null)
+        if (empty($data['confirm']) === false)
         {
             return [['User already confirmed. You can login ' .
                     '<a href="'.\URL::to('#/access/signin').'">here</a>'], null];
         }
 
-        $user->token = $user->getConfirmToken();
-
-        (new UserMailer($user))->accountVerification()->queueAndDeliver();
-
-        return [[], []];
+        return [$error, $data];
     }
 
     public function fetch($merchantId)
