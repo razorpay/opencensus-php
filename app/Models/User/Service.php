@@ -109,29 +109,44 @@ class Service extends Base\Service
                 'name'  => $input['business_name'] ?? '',
             ];
 
-            $merchantData = (new Merchant\Service)->create($merchantInputData);
+            $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer);
+        }
 
-            if ($referrer)
-            {
-                $tagInputData = [
-                    'tags' => ['ref-'.$referrer],
-                ];
+        return $data;
+    }
 
-                (new Merchant\Service)->addTags($merchantData['id'], $tagInputData);
-            }
+    /**
+     * Creates Merchant for user.
+     * @param array  $merchantInputData
+     * @param array  $userData
+     * @param string $referrer
+     *
+     * @return array
+     */
+    protected function createMerchantFromUser(array $merchantInputData, array $userData, string $referrer = '')
+    {
+        $merchantData = (new Merchant\Service)->create($merchantInputData);
 
-            $userMerchantMappingInputData = [
-                'action' => 'attach',
-                'role' => 'owner',
-                'merchant_id' => $merchantData['id']
+        if (empty($referrer) === false)
+        {
+            $tagInputData = [
+                'tags' => ['ref-'.$referrer],
             ];
 
-            $this->updateUserMerchantMapping($user['id'], $userMerchantMappingInputData);
-
-            $this->sendConfirmationMail($user['id']);
-
-            $data = $this->postSortingHat($user, $merchantData, $referrer);
+            (new Merchant\Service)->addTags($merchantData['id'], $tagInputData);
         }
+
+        $userMerchantMappingInputData = [
+            'action' => 'attach',
+            'role' => 'owner',
+            'merchant_id' => $merchantData['id']
+        ];
+
+        $this->updateUserMerchantMapping($userData['id'], $userMerchantMappingInputData);
+
+        $this->sendConfirmationMail($userData['id']);
+
+        $data = $this->postSortingHat($userData, $merchantData, $referrer);
 
         return $data;
     }
@@ -140,7 +155,9 @@ class Service extends Base\Service
      * Posts data to sorting Hat.
      * @param array  $user
      * @param array  $merchantData
-     * @param string $referer
+     * @param string $referrer
+     *
+     * @return array
      */
     private function postSortingHat(array $user, array $merchantData, string $referrer)
     {
@@ -268,5 +285,27 @@ class Service extends Base\Service
         $response = (new Core)->get($user);
 
         return $response;
+    }
+
+    /**
+     * Upgrades given user to merchant.
+     * @param array $input
+     *
+     * @return array
+     */
+    public function upgradeUserToMerchant(array $input)
+    {
+        $userId = $input['user_id'];
+
+        $user = $this->repo->user->findOrFailPublic($userId)->toArrayPublic();
+
+        $merchantData = [
+            'name'  => $input['business_name'],
+            'email' => $user['email'],
+        ];
+
+        $data = $this->createMerchantFromUser($merchantData, $user);
+
+        return $data;
     }
 }

@@ -226,8 +226,8 @@ class Core extends Base\Core
     public function subscribeToMailingList($user)
     {
         $data = [
-            'name'  => $user->name,
-            'email' => $user->email,
+            'name'  => $user['name'],
+            'email' => $user['email'],
         ];
 
         $job = new MailChimpSubscribe($data);

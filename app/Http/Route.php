@@ -564,6 +564,7 @@ final class Route
         'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
 
         'user_register'                           => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
+        'user_merchant_upgrade'                   => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
         'user_create'                             => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                              => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_confirm_by_data'                    => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
@@ -1053,6 +1054,7 @@ final class Route
         'settings_fetch',
         'settings_upsert',
         'settings_delete',
+        'user_merchant_upgrade',
     ];
 
     public static $proxy = [
