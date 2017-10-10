@@ -17,7 +17,7 @@ class Service extends Base\Service
     {
         $data = [];
 
-        $referrer = $input['ref'] ?? null;
+        $referrer = $input['ref'] ?? '';
 
         $invitationToken = $input['invitation'] ?? null;
 
@@ -177,7 +177,7 @@ class Service extends Base\Service
 
     private function getSortingHatData(array $user, array $merchantData, string $referrer)
     {
-        $phoneNumber = $user[Entity::CONTACT_MOBILE];
+        $phoneNumber = $user[Entity::CONTACT_MOBILE] ?? '';
 
         $orgHostName = $this->auth->getOrgHostName();
 
