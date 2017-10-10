@@ -4,13 +4,13 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 return [
-    'testNetbankingIciciRefundFile' => [
+    'testGenerateCombinedFile' => [
         'request' => [
             'content' => [
-                'type'    => 'refund',
-                'targets' => ['icici'],
-                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
-                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+                'type'    => 'combined',
+                'targets' => ['rbl'],
+                'begin'    => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'      => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -27,13 +27,13 @@ return [
                         'partially_processed' => false,
                         'attempts'            => 1,
                         'sender'              => 'refunds@razorpay.com',
-                        'type'                => 'refund',
-                        'target'              => 'icici',
+                        'type'                => 'combined',
+                        'target'              => 'rbl',
                         'entity'              => 'gateway_file',
                         'admin'               => true
                     ],
-                ],
-            ],
+                ]
+            ]
         ],
-    ],
+    ]
 ];

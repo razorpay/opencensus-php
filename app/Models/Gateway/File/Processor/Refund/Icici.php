@@ -9,10 +9,8 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor;
 
-class Icici extends Processor\Base
+class Icici extends Base
 {
-    use GenerateRefundFile;
-
     const FILE_NAME              = 'Icici_Netbanking_Refunds';
     const EXTENSION              = FileStore\Format::XLSX;
     const FILE_TYPE              = FileStore\Type::ICICI_NETBANKING_REFUND;

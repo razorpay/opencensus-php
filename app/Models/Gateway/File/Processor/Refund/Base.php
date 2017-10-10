@@ -16,20 +16,36 @@ use RZP\Exception\GatewayFileException;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
-trait GenerateRefundFile
+class Base extends BaseProcessor
 {
     public function fetchEntities(): PublicCollection
     {
-        $begin = $this->gatewayFile->getbegin();
+        $begin = $this->gatewayFile->getBegin();
         $end = $this->gatewayFile->getEnd();
 
-        $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
-                        static::PAYMENT_TYPE_ATTRIBUTE,
-                        static::GATEWAY_CODE,
-                        $begin,
-                        $end,
-                        static::GATEWAY
-                    );
+        $tpv = $this->gatewayFile->getTpv();
+
+        if ($tpv === null)
+        {
+            $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
+                            static::PAYMENT_TYPE_ATTRIBUTE,
+                            static::GATEWAY_CODE,
+                            $begin,
+                            $end,
+                            static::GATEWAY
+                        );
+        }
+        else
+        {
+            $refunds = $this->repo->refund->fetchRefundsForTpvBetweenTimestamps(
+                            static::PAYMENT_TYPE_ATTRIBUTE,
+                            static::GATEWAY_CODE,
+                            $begin,
+                            $end,
+                            static::GATEWAY,
+                            $tpv
+                        );
+        }
 
         return $refunds;
     }
@@ -91,7 +107,7 @@ trait GenerateRefundFile
     public function createFile()
     {
         // Don't process further if file is already generated
-        if ($this->isRefundFileGenerated() === true)
+        if ($this->isFileGenerated() === true)
         {
             return;
         }
@@ -179,37 +195,7 @@ trait GenerateRefundFile
      *
      * @return bool Whether gateway_file entity can be processed again or not
      */
-    protected function canRetry(): bool
-    {
-        if ($this->gatewayFile->isAcknowledged() === true)
-        {
-            return false;
-        }
 
-        if ($this->gatewayFile->isFailed() === true)
-        {
-            $errorCode = $this->gatewayFile->getErrorCode();
-
-            return ($errorCode !== ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
-        }
-
-        return true;
-    }
-
-    protected function isRefundFileGenerated(): bool
-    {
-        if ($this->gatewayFile->isFileGenerated() === true)
-        {
-            $refundFile = $this->gatewayFile
-                               ->files()
-                               ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-                               ->first();
-
-            return $refundFile !== null;
-        }
-
-        return false;
-    }
 
     protected function getFileToWriteNameWithoutExt()
     {
