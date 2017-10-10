@@ -1,5 +1,7 @@
 'use strict';
 
+// this is a test comment, will be removed in next commit
+
 const path = require('path');
 const fs = require('fs');
 const execSync = require('child_process').execSync;
