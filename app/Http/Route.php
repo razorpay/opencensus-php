@@ -606,7 +606,8 @@ final class Route
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
-        'dispute_migrate_adjustments'             => ['post',     'disputes/migrate_old_adjustments',               'DisputeController@migrateOldAdjustments'                                          ],
+        'dispute_migrate_adjustments'             => ['post',     'disputes/migrate_old_adjustments',               'DisputeController@migrateOldAdjustments'                           ],
+        'dispute_reason_create'                   => ['post',     'disputes/reasons',                               'DisputeController@createReason'                                    ],
 
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
 
@@ -1031,6 +1032,7 @@ final class Route
         'payment_dispute_create',
         'dispute_edit',
         'dispute_migrate_adjustments',
+        'dispute_reason_create',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
         'risk_create',
@@ -1341,6 +1343,7 @@ final class Route
         'settings_delete'                  => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'               => '*',
         'merchant_activation_files'        => '*',
+        'dispute_reason_create'            => '*',
     ];
 
     public static $direct = [
