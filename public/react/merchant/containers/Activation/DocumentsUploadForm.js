@@ -82,7 +82,7 @@ export default class DocumentsUploadForm extends Component {
                 <ul>
                   <li>
                     Bank Account Statement (last three months or since opening
-                    of account) OR cancelled cheque in the name of the
+                    of account) OR cancelled cheque issued in the name of the
                     registered business
                   </li>
                 </ul>
