@@ -11,8 +11,7 @@ return [
             'tax' => 0,
             'fee_components' => [
                 'payment' => 20,
-                'cgst' => 0,
-                'sgst' => 0,
+                'tax' => 0,
             ],
         ],
         [
@@ -22,8 +21,7 @@ return [
             'tax' => 180,
             'fee_components' => [
                 'payment' => 1000,
-                'cgst' => 90,
-                'sgst' => 90,
+                'tax' => 180,
             ]
         ]
     ],
@@ -36,7 +34,7 @@ return [
             'tax' => 0,
             'fee_components' => [
                 'payment' => 20,
-                'igst' => 0,
+                'tax' => 0,
             ],
         ],
         [
@@ -46,7 +44,7 @@ return [
             'tax' => 180,
             'fee_components' => [
                 'payment' => 1000,
-                'igst' => 180,
+                'tax' => 180,
             ]
         ]
     ],
@@ -58,8 +56,7 @@ return [
             'tax' => 324,
             'fee_components' => [
                 'payment' => 1800,
-                'cgst' => 162,
-                'sgst' => 162,
+                'tax' => 324,
             ]
         ],
         // For amounts greater that 66667 fee will remain constant
@@ -71,8 +68,7 @@ return [
             'tax' => 360,
             'fee_components' => [
                 'payment' => 2000,
-                'cgst' => 180,
-                'sgst' => 180,
+                'tax' => 360,
             ]
         ],
         [
@@ -81,8 +77,7 @@ return [
             'tax' => 360,
             'fee_components' => [
                 'payment' => 2000,
-                'cgst' => 180,
-                'sgst' => 180,
+                'tax' => 360,
             ]
         ],
         [
@@ -91,8 +86,7 @@ return [
             'tax' => 360,
             'fee_components' => [
                 'payment' => 2000,
-                'cgst' => 180,
-                'sgst' => 180,
+                'tax' => 360,
             ]
         ],
     ],

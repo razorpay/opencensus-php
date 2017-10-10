@@ -58,7 +58,13 @@ class Core extends Base\Core
                 'input'       => $input
             ]);
 
-        return (new Creator)->create($input, $plan, $customer);
+        $subscription = (new Creator)->create($input, $plan, $customer);
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_CREATED,
+            $subscription->toArrayPublic());
+
+        return $subscription;
     }
 
     public function retry(Entity $subscription, array $options = [])
@@ -868,8 +874,8 @@ class Core extends Base\Core
         $subscriptionAmount = $invoice->getAmount();
 
         $customer = $subscription->customer;
-        $tokenId = $subscription->token->getPublicId();
-        $order = $invoice->order;
+        $tokenId  = $subscription->token->getPublicId();
+        $order    = $invoice->order;
 
         $recurringPayload = [
             Payment\Entity::AMOUNT          => $subscriptionAmount,
@@ -880,8 +886,8 @@ class Core extends Base\Core
             // Payment\Entity::CUSTOMER_ID     => $customer->getPublicId(),
             Payment\Entity::ORDER_ID        => $order->getPublicId(),
             // TODO: These fields should not be required to be sent.
-            Payment\Entity::EMAIL           => $customer->getEmail(),
-            Payment\Entity::CONTACT         => $customer->getContact(),
+            Payment\Entity::EMAIL           => $customer->getEmail() ?: Payment\Entity::DUMMY_EMAIL,
+            Payment\Entity::CONTACT         => $customer->getContact() ?: Payment\Entity::DUMMY_PHONE,
             Payment\Entity::DESCRIPTION     => 'Recurring Payment via Subscription',
         ];
 
