@@ -115,7 +115,7 @@ class Gateway extends Base\Gateway
         }
 
         $this->assertPaymentId($input['payment']['id'], $content['CustomerID']);
-        $this->assertAmount($input['payment']['amount'], ((int) $content['TxnAmount'] * 100));
+        $this->assertAmount($input['payment']['amount'], (int) ($content['TxnAmount'] * 100));
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
