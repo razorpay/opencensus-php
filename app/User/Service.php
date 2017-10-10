@@ -529,14 +529,24 @@ class Service extends Base\Service
         $authUser = Auth::user();
 
         $data = [
-            'business_name' =>  $input['business_name']
+            'business_name' =>  $input['business_name'],
+            'user_id'       =>  $authUser->id,
         ];
 
-        // Hit generic call to API.
+        $loginOnApi = [
+            'route_name'    => 'user_merchant_upgrade',
+            'body'          => $data,
+        ];
+
+        $genericService = new Generic\Service;
+
+        $genericUser = null;
+
+        list($error, $data) = $genericService->call('POST', $loginOnApi);
 
         if (empty($error) === true)
         {
-            list($error, $genericUser) = $this->getUserFromApi($user->id);
+            list($error, $genericUser) = $this->getUserFromApi($authUser->id);
 
             if (empty($error) === true)
             {

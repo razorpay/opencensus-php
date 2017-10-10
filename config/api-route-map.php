@@ -656,6 +656,8 @@ return [
         'admin_oauth_authenticate'          => 'admin/oauth_login',
         'admin_edit_app_auth'               => 'admin-app-auth/{id}',
         'admin_get_app_auth'                => 'current_admin',
+
+        'user_merchant_upgrade'             => 'users/upgrade-merchant',
     ],
 
     // auth
