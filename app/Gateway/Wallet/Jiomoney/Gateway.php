@@ -116,8 +116,7 @@ class Gateway extends Base\Gateway
             return $this->callbackAuthFailureFlow($input);
         }
 
-        $this->assertPaymentId($input['payment']['id'], $input['gateway'][ResponseFields::PAYMENT_ID]);
-        $this->assertAmount($input['payment']['amount'], (int) ($input['gateway']['amount'] * 100));
+        $this->assertGatewayResponse($input);
 
         $this->callbackAuthSuccessFlow($input);
 
@@ -361,6 +360,22 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::RESPONSE_CODE],
             $content[ResponseFields::RESPONSE_DESCRIPTION]
         );
+    }
+
+    /**
+     * Performs required assertion on response received from gateway
+
+     * @param  array  $input input containing payment data and gateway response
+     */
+    protected function assertGatewayResponse(array $input)
+    {
+        $this->assertPaymentId(
+                $input['payment']['id'],
+                $input['gateway'][ResponseFields::PAYMENT_ID]);
+
+        $this->assertAmount(
+                $input['payment']['amount'],
+                (int) ($input['gateway'][ResponseFields::AMOUNT] * 100));
     }
 
     //-------------------------------Callback helper methods end----------------------------------
