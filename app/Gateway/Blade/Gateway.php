@@ -557,7 +557,7 @@ class Gateway extends Base\Gateway
                         // 'password' => $creds['password'],
                     ],
                     VEReq::BROWSER    => [
-                        VEReq::DEVICE_CATEGORY => DeviceCategory::DESKTOP,
+                        VEReq::DEVICE_CATEGORY => DeviceCategory::getDeviceCategory(DeviceCategory::DESKTOP),
                         VEReq::DEVICE_ACCEPT   => $accept,
                         VEReq::DEVICE_UA       => $userAgent,
                     ]
