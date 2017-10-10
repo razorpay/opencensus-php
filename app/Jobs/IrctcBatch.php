@@ -59,8 +59,6 @@ class IrctcBatch extends Job implements ShouldQueue
 
                 $batch = $this->repoManager->batch->findOrFail($batchId);
 
-                $batch->getValidator()->validateNotProcessedAlready();
-
                 $timeStarted = microtime(true);
 
                 BatchModel\Processor\Base::get($batch)->process();
