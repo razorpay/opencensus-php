@@ -16,6 +16,9 @@ class Service extends Base\Service
     protected $mutex;
     protected $core;
 
+    // Seconds in 15 minutes
+    const FIFTEEN_MINUTES = 900;
+
     /**
      * Service constructor. Sets provider from app auth, and
      * sets request IP for use in validation of providers.
@@ -125,7 +128,7 @@ class Service extends Base\Service
             {
                 return $this->core->retryBankTransferRefund($input);
             },
-            900,
+            self::FIFTEEN_MINUTES,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         $this->trace->info(

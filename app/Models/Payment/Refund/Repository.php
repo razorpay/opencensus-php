@@ -470,10 +470,9 @@ class Repository extends Base\Repository
                        ->select($this->dbColumn('*'))
                        ->join(Table::PAYMENT, $refundPaymentId, '=', $paymentId)
                        ->where($refundStatus, '=', Status::FAILED)
-                       ->where($paymentMethod, '=', Payment\Method::BANK_TRANSFER)
+                       ->where($paymentMethod, '=', $method)
                        ->with(['payment','payment.terminal'])
-                       ->limit(50)
-                       ->inRandomOrder();
+                       ->limit(50);
 
         return $query->get();
     }

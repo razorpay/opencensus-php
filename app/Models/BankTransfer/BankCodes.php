@@ -11,6 +11,8 @@ class BankCodes
     const IFSC_ANDB = 'ANDB0001334';
     const IFSC_BARB = 'BARB0MAINOF';
     const IFSC_CNRB = 'CNRB0000002';
+    const IFSC_FDRL = 'FDRL0000121';
+    const IFSC_GSCB = 'GSCB0000001';
     const IFSC_HDFC = 'HDFC0000001';
     const IFSC_IBKL = 'IBKL0000001';
     const IFSC_ICIC = 'ICIC0002445';
@@ -37,6 +39,8 @@ class BankCodes
         'AXB'   => self::IFSC_UTIB,
         'BOB'   => self::IFSC_BARB,
         'CNB'   => self::IFSC_CNRB,
+        'FBL'   => self::IFSC_FDRL,
+        'GSC'   => self::IFSC_GSCB,
         'HDB'   => self::IFSC_HDFC,
         'ICI'   => self::IFSC_ICIC,
         'IDB'   => self::IFSC_IBKL,
@@ -51,6 +55,9 @@ class BankCodes
         'SYB'   => self::IFSC_SYNB,
         'UCO'   => self::IFSC_UCBA,
         'VJBN1' => self::IFSC_VIJB,
+        'VJBN2' => self::IFSC_VIJB,
+        'VJBN3' => self::IFSC_VIJB,
+        'VJBN4' => self::IFSC_VIJB,
         'YBL'   => self::IFSC_YESB,
     ];
 

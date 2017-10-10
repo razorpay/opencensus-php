@@ -175,7 +175,7 @@ class Core extends Base\Core
             // If refund was marked as failed after creating a fund
             // transfer attempt then that means this failure was result
             // of payout file recon. We aren't handling these just now.
-            if ($refund->fundTransferAttempts->count() !== 0)
+            if ($refund->fundTransferAttempts->isNotEmpty() === true)
             {
                 $this->trace->info(
                     TraceCode::REFUND_RETRY_SKIPPED,
@@ -199,7 +199,7 @@ class Core extends Base\Core
             {
                 $this->trace->traceException(
                     $e,
-                    Trace::DEBUG,
+                    Trace::INFO,
                     TraceCode::PAYMENT_VERIFY_REFUND_EXCEPTION,
                     [
                         'refund_id'       => $refund->getPublicId(),
