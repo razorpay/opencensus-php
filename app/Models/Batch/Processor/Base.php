@@ -336,6 +336,11 @@ class Base extends BaseModel\Core
                 $this->outputFileLocalPath = $this->createTxtFile($this->batch->getId() . '.' . $ext, $txt);
                 return;
 
+            case FileStore\Format::CSV:
+                $txt = $this->generateText($entries, ',');
+                $this->outputFileLocalPath = $this->createTxtFile($this->batch->getId() . '.' . $ext, $txt);
+                return;
+
             case FileStore\Format::XLSX:
                 $fileMeta = $this->createExcelObject(
                                     $entries,
@@ -419,6 +424,9 @@ class Base extends BaseModel\Core
                 // can be made configurable. But for now it's ok.
                 //
                 return $this->parseTextFile($filePath, '|');
+
+            case FileStore\Format::CSV:
+                return $this->parseTextFile($filePath, ',');
 
             default:
                 throw new LogicException("Extension not handled: {$ext}");

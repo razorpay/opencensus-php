@@ -76,6 +76,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::CURRENCY                   => 'sometimes|alpha|size:3',
     ];
 
     protected static $aepsIciciTerminalRules = [
@@ -237,6 +238,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:netbanking_icici',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $walletJiomoneyTerminalRules = [

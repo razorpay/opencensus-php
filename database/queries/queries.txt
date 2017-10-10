@@ -2428,6 +2428,11 @@ ALTER TABLE merchant_invoice
 ALTER TABLE merchants
     ADD COLUMN invoice_code CHAR(12) DEFAULT NULL AFTER category2;
 
+ALTER TABLE tokens
+   ADD COLUMN recurring_status VARCHAR(32) AFTER recurring,
+   ADD COLUMN recurring_failure_reason TEXT AFTER recurring_status,
+   ADD COLUMN max_amount INTEGER AFTER recurring_failure_reason;
+
 # Adding index on settlements.updated_at, refunds.updated_at, transactions.updated_at
 # Useful for Merchant analytics queries
 ALTER TABLE settlements
@@ -2444,6 +2449,14 @@ ALTER TABLE transfers
     ADD COLUMN recipient_settlement_id CHAR(14) AFTER transaction_id,
     ADD CONSTRAINT transfers_recipient_settlement_id_foreign FOREIGN KEY(recipient_settlement_id)
     REFERENCES settlements(id) ON DELETE RESTRICT;
+
+ALTER TABLE netbanking
+    ADD COLUMN si_token VARCHAR(255) DEFAULT NULL AFTER caps_payment_id,
+    ADD COLUMN si_status VARCHAR(255) DEFAULT NULL AFTER si_token,
+    ADD COLUMN si_message VARCHAR(255) DEFAULT NULL AFTER si_status;
+
+ALTER TABLE payments
+    ADD COLUMN recurring_type VARCHAR(255) DEFAULT NULL AFTER updated_at;
 
 ALTER TABLE subscriptions
     ADD COLUMN type TINYINT(1) UNSIGNED DEFAULT 0 AFTER customer_notify;
@@ -2494,9 +2507,33 @@ ALTER TABLE adjustment
     ADD COLUMN entity_type VARCHAR(100) AFTER merchant_id,
     ADD COLUMN entity_id CHAR(14) AFTER entity_type;
 
+INSERT INTO dispute_reasons
+    (id, network, gateway_code, gateway_description, code, description, created_at, updated_at)
+    VALUES
+        ('NotAvailable00', 'RZP', 'RZP00', 'Not Available', 'not_available', 'Not Available', 1506415644, 1506415644);
+
 ALTER TABLE batches
     MODIFY COLUMN `type` CHAR(25);
 
 # Marketplace auto-activate
 ALTER TABLE merchants
     ADD COLUMN linked_account_kyc TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_model;
+
+ALTER TABLE merchants
+    MODIFY COLUMN invoice_code CHAR(12) NOT NULL AFTER category2;
+
+# Data correction for test bank_transfer payment made in live mode
+DELETE FROM payments
+    WHERE id='8i1eFM9BkOB8Ze';
+DELETE FROM transactions
+    WHERE entity_id='8i1eFM9BkOB8Ze';
+DELETE FROM refunds
+    WHERE id='8iQEuts9RhZTvI';
+DELETE FROM transactions
+    WHERE entity_id='8iQEuts9RhZTvI';
+DELETE FROM bank_transfers
+    WHERE payment_id='8i1eFM9BkOB8Ze';
+
+# Makes invoices.user_id refer to users.id
+ALTER TABLE invoices
+    ADD CONSTRAINT invoices_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT;

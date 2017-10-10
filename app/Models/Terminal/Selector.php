@@ -113,7 +113,6 @@ class Selector extends Base\Core
         // filtered list of terminals is used to further filter upon using the other
         // filter classes.
         //
-
         $filteredTerminals = $terminals;
 
         foreach (self::$filters as $filter)

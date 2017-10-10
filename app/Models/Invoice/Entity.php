@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\Item;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -146,6 +147,7 @@ class Entity extends Base\PublicEntity
 
     const ORDER                    = 'order';
     const PAYMENTS                 = 'payments';
+    const USER                     = 'user';
 
     // ------------------------ Other constants ----------------------
 
@@ -251,7 +253,6 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::BILLING_START,
         self::BILLING_END,
-        self::USER_ID,
         self::EXPIRE_BY,
         self::CALLBACK_URL,
         self::CALLBACK_METHOD,
@@ -347,6 +348,7 @@ class Entity extends Base\PublicEntity
         self::GROUP_TAXES_DISCOUNTS,
         self::SUBSCRIPTION_STATUS,
         self::USER_ID,
+        self::USER,
         self::CREATED_AT,
     ];
 
@@ -876,6 +878,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
+    public function setUserId(string $userId)
+    {
+        $this->setAttribute(self::USER_ID, $userId);
+    }
+
     /**
      * Sets all amounts field to null.
      * Used when all line items of draft invoice are removed.
@@ -1031,20 +1038,6 @@ class Entity extends Base\PublicEntity
         else
         {
             unset($array[Entity::SUBSCRIPTION_ID]);
-        }
-    }
-
-    protected function setPublicUserIdAttribute(array & $array)
-    {
-        $type = $this->getAttribute(self::TYPE);
-
-        if ($type === Type::ECOD)
-        {
-            $array[self::USER_ID] = $this->getAttribute(self::USER_ID);
-        }
-        else
-        {
-            unset($array[self::USER_ID]);
         }
     }
 
@@ -1205,6 +1198,11 @@ class Entity extends Base\PublicEntity
     public function files()
     {
         return $this->morphMany('RZP\Models\FileStore\Entity', 'entity');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User\Entity::class);
     }
 
     /**

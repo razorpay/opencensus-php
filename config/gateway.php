@@ -301,8 +301,10 @@ return [
     'netbanking_icici' => [
         //retail netbanking
         'test_hash_secret'       => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
+        'test_hash_secret_rec'   => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET_REC'),
         'test_merchant_id'       => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID'),
         'test_merchant_id2'      => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2'),
+        'test_merchant_id2_rec'  => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2_REC'),
 
         'live_hash_secret'       => env('NETBANKING_ICICI_LIVE_HASH_SECRET'),
         'live_merchant_id2'      => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID'),

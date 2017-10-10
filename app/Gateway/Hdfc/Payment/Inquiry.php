@@ -37,8 +37,11 @@ trait Inquiry
         }
         else if (($response['data']['result'] === 'FAILURE(SUSPECT)') and
                  ($response['data']['trackid'] === $input['refund']['id']) and
-                 ((int) ($response['data']['amt'] * 100) === $input['refund']['amount']))
+                 ((int) ($response['data']['amt'] * 100) === $input['refund']['amount']) and
+                 (empty($response['data']['authRespCode']) === true) and
+                 (empty($response['data']['auth']) === false))
         {
+            // Changing the result to `CAPTURED` as FSS returns `FAILURE(SUSPECT)`
             $response['data']['result'] = 'CAPTURED';
 
             $refund = $this->repo->findByRefundId($input['refund']['id']);
@@ -412,7 +415,7 @@ trait Inquiry
         $inquiryResponse = $this->inquiryResponse;
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
             [
                 'payment_id' => $input['payment']['id'],
                 'xml' => $inquiryResponse['xml'],

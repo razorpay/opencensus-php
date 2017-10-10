@@ -27,9 +27,24 @@ class Entity extends Base\Entity
     const INT_PAYMENT_ID        = 'int_payment_id';
     const CAPS_PAYMENT_ID       = 'caps_payment_id';
 
+    //
+    // Recurring specific fields
+    //
+
+    const SI_TOKEN              = 'si_token';
+    const SI_STATUS             = 'si_status';
+    const SI_MSG                = 'si_message';
+
+    /**
+     * Number of years from now to set for end_date.
+     * For charge at will payments, we don't know off hand
+     * how long the merchant wants the subscription to go on
+     */
+    const MAX_RECURRING_END_YEARS = 30;
+
     protected $entity = 'netbanking';
 
-    protected $fields = array(
+    protected $fields = [
         self::ID,
         self::PAYMENT_ID,
         self::BANK,
@@ -48,9 +63,9 @@ class Entity extends Base\Entity
         self::ACCOUNT_NUMBER,
         self::INT_PAYMENT_ID,
         self::CAPS_PAYMENT_ID,
-    );
+    ];
 
-    protected $fillable = array(
+    protected $fillable = [
         self::BANK,
         self::AMOUNT,
         self::RECEIVED,
@@ -66,7 +81,10 @@ class Entity extends Base\Entity
         self::REFERENCE1,
         self::ACCOUNT_NUMBER,
         self::INT_PAYMENT_ID,
-    );
+        self::SI_TOKEN,
+        self::SI_STATUS,
+        self::SI_MSG,
+    ];
 
     public function setBank($bank)
     {
@@ -160,5 +178,20 @@ class Entity extends Base\Entity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getSIToken()
+    {
+        return $this->getAttribute(self::SI_TOKEN);
+    }
+
+    public function getSIStatus()
+    {
+        return $this->getAttribute(self::SI_STATUS);
+    }
+
+    public function getSIMessage()
+    {
+        return $this->getAttribute(self::SI_MSG);
     }
 }

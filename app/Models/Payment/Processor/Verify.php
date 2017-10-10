@@ -39,6 +39,12 @@ trait Verify
             $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
         }
 
+        // So that verification calls can be made with the relevant token related information
+        if ($payment->getGlobalOrLocalTokenEntity())
+        {
+            $data['token'] = $payment->getGlobalOrLocalTokenEntity();
+        }
+
         try
         {
             $data['gateway'] = $this->callGatewayFunction(Payment\Action::VERIFY, $data);

@@ -202,7 +202,6 @@ final class Route
         'merchant_activation_migrate'             => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'merchant_batches'                        => ['post',     'merchant/{id}/batches',                          'MerchantController@createBatches'                                  ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
-        'pricing_upload_plan'                     => ['post',     'pricing/upload',                                 'PricingController@postUploadPricingPlan'                           ],
         'pricing_get_plans'                       => ['get',      'pricing',                                        'PricingController@getPricingPlans'                                 ],
         'pricing_get_merchant_plans'              => ['get',      'pricing/merchants',                              'PricingController@getMerchantPricingPlans'                         ],
         'pricing_get_gateway_plans'               => ['get',      'pricing/gateways',                               'PricingController@getGatewayPricingPlans'                          ],
@@ -606,8 +605,9 @@ final class Route
 
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
-
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
+        'dispute_migrate_adjustments'             => ['post',     'disputes/migrate_old_adjustments',               'DisputeController@migrateOldAdjustments'                                          ],
+
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
 
         // Settings routes
@@ -877,7 +877,6 @@ final class Route
         'get_config_keys',
         'key_fetch_by_id',
         'key_fetch_multiple',
-        'pricing_upload_plan',
         'pricing_get_plans',
         'pricing_get_merchant_plans',
         'pricing_get_gateway_plans',
@@ -1031,6 +1030,7 @@ final class Route
         'mock_generate_reconciliation',
         'payment_dispute_create',
         'dispute_edit',
+        'dispute_migrate_adjustments',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
         'risk_create',
