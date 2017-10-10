@@ -182,64 +182,60 @@ export default class RefundModal extends Component {
                 <div>Partial Refund</div>
               </label>
               <div class="col-sm-8">
-                <div class="checkbox">
-                  <label class="i-checks">
+                <div class="checkbox rzpCheckbox">
+                  <Field
+                    name="partial"
+                    id="partial"
+                    component="input"
+                    type="checkbox"
+                    class="form-control"
+                  />
+                  <label for="partial" />
+                </div>
+              </div>
+            </div>
+            {this.props.partial ? (
+              <div class="form-group">
+                <label class="col-sm-4 control-label">
+                  <div>Amount</div>
+                  <small>(in INR)</small>
+                </label>
+                <div class="col-sm-8">
+                  <Field
+                    name="amount"
+                    component={InputField}
+                    class="form-control"
+                    validate={amountValidation}
+                    placeholder="Enter the refund amount"
+                  />
+                  <i />
+                </div>
+              </div>
+            ) : null}
+            {transfers.items.length > 0 ? (
+              <div class="form-group">
+                <label class="col-sm-4 control-label">
+                  <div>
+                    Reverse All{' '}
+                    <a href="https://razorpay.com/docs/route/operations/#reversals">
+                      Route Transfers
+                    </a>
+                  </div>
+                </label>
+                <div class="col-sm-8">
+                  <div class="checkbox rzpCheckbox">
                     <Field
-                      name="partial"
-                      id="partial"
+                      name="reverse_all"
+                      id="reverse_all"
                       component="input"
                       type="checkbox"
                       class="form-control"
                     />
-                    <i />
-                  </label>
+                    <label for="reverse_all" />
+                  </div>
                 </div>
               </div>
-            </div>
-            {this.props.partial
-              ? <div class="form-group">
-                  <label class="col-sm-4 control-label">
-                    <div>Amount</div>
-                    <small>(in INR)</small>
-                  </label>
-                  <div class="col-sm-8">
-                    <Field
-                      name="amount"
-                      component={InputField}
-                      class="form-control"
-                      validate={amountValidation}
-                      placeholder="Enter the refund amount"
-                    />
-                    <i />
-                  </div>
-                </div>
-              : null}
-            {transfers.items.length > 0
-              ? <div class="form-group">
-                  <label class="col-sm-4 control-label">
-                    <div>
-                      Reverse All{' '}
-                      <a href="https://razorpay.com/docs/route/operations/#reversals">
-                        Route Transfers
-                      </a>
-                    </div>
-                  </label>
-                  <div class="col-sm-8">
-                    <div class="checkbox">
-                      <label class="i-checks">
-                        <Field
-                          name="reverse_all"
-                          id="reverse_all"
-                          component="input"
-                          type="checkbox"
-                          class="form-control"
-                        />
-                        <i />
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              : null}
+            ) : null}
 
             <div class="form-group">
               <label class="col-sm-4 control-label">
