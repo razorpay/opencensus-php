@@ -70,13 +70,7 @@ class Gateway extends Base\Gateway
                            ['gateway_response' => $input['gateway'],
                             'payment_id'       => $input['payment']['id']]);
 
-        // Response parameters are different for callback received via browser redirect
-        // as opposed to those received from server. This is being resolved using the param
-        // received from server.
-
-        // One possible change is to set a param for the response received via
-        // S2S callback and change approporiately here.
-        if (isset($input['gateway'][ResponseFields::TRAN_DATE_TIME]) === true)
+        if ((isset($input['s2s']) === true) and ($input['s2s'] === true))
         {
             $content = $input['gateway'];
         }
@@ -86,8 +80,8 @@ class Gateway extends Base\Gateway
         }
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
-                           ['content' => $content,
-                            'payment_id'       => $input['payment']['id']]);
+                            ['content'        => $content,
+                             'payment_id'     => $input['payment']['id']]);
 
         $this->assertPaymentId($input['payment']['id'],
              $content[RequestFields::MERCHANT_REFERENCE]);
@@ -153,7 +147,6 @@ class Gateway extends Base\Gateway
                 $verify->getDataToTrace(),
                 $verify,
                 Payment\Verify\Action::FINISH);
-
         }
     }
 
@@ -332,8 +325,6 @@ class Gateway extends Base\Gateway
         $decryptedString = $crypto->decryptString($encryptedString);
 
         parse_str($decryptedString, $response);
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, ['response' => $response]);
 
         $this->checkDecryptionFailure($encryptedString, $response, $input);
 

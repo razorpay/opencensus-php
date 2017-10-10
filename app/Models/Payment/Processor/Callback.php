@@ -110,7 +110,9 @@ trait Callback
                         ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
                 }
 
-                $this->processPaymentCallback($payment, $gatewayInput);
+                $isS2sCallback = true;
+
+                $this->processPaymentCallback($payment, $gatewayInput, $isS2sCallback);
 
                 $this->autoCapturePaymentIfApplicable($payment);
             },
@@ -173,7 +175,7 @@ trait Callback
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
     }
 
-    protected function processPaymentCallback($payment, $gatewayInput)
+    protected function processPaymentCallback($payment, $gatewayInput, $s2sCallback = false)
     {
         $input['payment'] = $payment->toArrayGateway();
         $input['gateway'] = $gatewayInput;
@@ -194,6 +196,13 @@ trait Callback
             $card = $this->repo->card->fetchForPayment($payment);
 
             $input['card'] = $card->toArray();
+        }
+
+        // In case of axis corporate payments, the s2s call back return unencrypted
+        // data, however, the normal callback return parameters which are encrypted.
+        if ($s2sCallback === true)
+        {
+            $input['s2s'] = true;
         }
 
         try
