@@ -285,5 +285,11 @@ return array(
     'sorting_hat' => [
         'token' => env('SORTING_HAT_TOKEN', ''),
         'url'   => env('SORTING_HAT_URL', 'https://sorting-hat-slack.herokuapp.com/')
+    ],
+
+    'mailchimp' => [
+        'list_id'   => env('MAILCHIMP_LIST_ID', 'random_id'),
+        'api_key'   => env('MAILCHIMP_API_TOKEN', 'mailchimp_token'),
+        'mock'      => env('MAILCHIMP_MOCK', false),
     ]
 );
