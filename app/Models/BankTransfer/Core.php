@@ -332,7 +332,7 @@ class Core extends Base\Core
 
     protected function updateOriginalVirtualAccount(Entity $bankTransfer)
     {
-        $originalVirtualAccount = $bankTransfer->virtualAccount();
+        $originalVirtualAccount = $bankTransfer->virtualAccount;
 
         $this->repo->deleteOrFail($originalVirtualAccount);
     }
@@ -342,7 +342,7 @@ class Core extends Base\Core
         Merchant\Entity $targetMerchant,
         VirtualAccount\Entity $targetVirtualAccount)
     {
-        $payerBankAccount = $bankTransfer->payerBankAccount();
+        $payerBankAccount = $bankTransfer->payerBankAccount;
 
         $payerBankAccount->merchant()->associate($targetMerchant);
 
@@ -400,5 +400,7 @@ class Core extends Base\Core
         $virtualAccount = $this->repo
                                ->virtual_account
                                ->getActiveVirtualAccountFromBankAccountId($bankAccount->getId());
+
+        return $virtualAccount;
     }
 }

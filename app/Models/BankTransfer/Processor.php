@@ -316,7 +316,7 @@ class Processor extends Base\Core
     {
         $defaultMerchantId = Merchant\Account::DEMO_PAGE_ACCOUNT;
 
-        $env = App::getFacadeRoot()['env'];
+        $env = App::getFacadeRoot()->environment();
 
         if ($env !== 'production')
         {

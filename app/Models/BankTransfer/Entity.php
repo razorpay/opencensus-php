@@ -217,11 +217,6 @@ class Entity extends Base\PublicEntity
 
     // -------------------------- Getters --------------------------------------
 
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
-    }
-
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
