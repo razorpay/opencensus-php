@@ -72,6 +72,9 @@ class Gateway extends Base\Gateway
 
         if ((isset($input['s2s']) === true) and ($input['s2s'] === true))
         {
+            // Should occur only in corporate payments.
+            assert($this->isCorporateBanking() === true);
+
             $content = $input['gateway'];
         }
         else
