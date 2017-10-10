@@ -45,7 +45,6 @@ trait EmandateTrait
             Carbon::now(Timezone::IST)->addYears(30)->format('m/d/Y'),
             $this->formatAmount($input['payment']['amount']),
         ];
-        // sd($ppiArray);
 
         $data = [
             RequestFields::VERSION         => Constants::VERSION,
@@ -215,9 +214,10 @@ trait EmandateTrait
         );
 
         $response = $this->sendGatewayRequest($request);
-        sd($response->body);
 
-        $this->handleEmandateResponse($input, $response);
+        parse_str($response->body, $content);
+
+        $this->handleEmandateResponse($input, $content);
     }
 
     //---------------Second auth request helpers end------------------
