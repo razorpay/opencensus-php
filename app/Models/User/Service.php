@@ -15,6 +15,8 @@ class Service extends Base\Service
 {
     public function register(array $input): array
     {
+        $data = [];
+
         $referrer = $input['ref'] ?? null;
 
         $invitationToken = $input['invitation'] ?? null;
@@ -96,9 +98,9 @@ class Service extends Base\Service
 
             $this->confirm($user['id']);
 
-            // $this->subscribeToMailingList($user);
+            (new Core)->subscribeToMailingList($user);
 
-            // $data['login'] = true;
+             $data['login'] = true;
         }
         else
         {
@@ -128,10 +130,10 @@ class Service extends Base\Service
 
             $this->sendConfirmationMail($user['id']);
 
-            $this->postSortingHat($user, $merchantData, $referrer);
+            $data = $this->postSortingHat($user, $merchantData, $referrer);
         }
 
-        return $user;
+        return $data;
     }
 
     /**

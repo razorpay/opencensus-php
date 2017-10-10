@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
+use RZP\Jobs\MailChimpSubscribe;
 use RZP\Constants\Timezone;
 
 class Core extends Base\Core
@@ -218,6 +219,18 @@ class Core extends Base\Core
         ];
 
         $job = new RequestJob($request);
+
+        $this->dispatch($job);
+    }
+
+    public function subscribeToMailingList($user)
+    {
+        $data = [
+            'name'  => $user->name,
+            'email' => $user->email,
+        ];
+
+        $job = new MailChimpSubscribe($data);
 
         $this->dispatch($job);
     }
