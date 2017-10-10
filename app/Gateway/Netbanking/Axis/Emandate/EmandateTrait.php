@@ -40,7 +40,7 @@ trait EmandateTrait
             $input['payment']['id'],
             'max',
             Constants::FREQUENCY_ADHOC,
-            '123123123',
+            '914010009305862', // TODO: Fetch the correct account number later
             Carbon::now(Timezone::IST)->format('m/d/Y'),
             Carbon::now(Timezone::IST)->addYears(30)->format('m/d/Y'),
             $this->formatAmount($input['payment']['amount']),
