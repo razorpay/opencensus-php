@@ -15,6 +15,8 @@ class NetbankingAxisEMandateTest extends TestCase
 
     public function setUp()
     {
+        $this->gateway = 'netbanking_axis';
+
         $this->testDataFilePath = __DIR__.'/NetbankingAxisEMandateTestData.php';
 
         parent::setUp();
@@ -49,6 +51,8 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $this->doAuthPayment($payment);
 
+
+
         $paymentEntity = $this->getLastEntity('payment', true);
         $tokenEntity   = $this->getLastEntity('token', true);
 
@@ -57,6 +61,14 @@ class NetbankingAxisEMandateTest extends TestCase
         //
         // Second auth payment for the recurring product
         //
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if($action === 'second_payment')
+            {
+                $content = true;
+            }
+        });
+
         $this->doS2SRecurringPayment($payment);
 
         $this->assertEMandateEntities(false);
