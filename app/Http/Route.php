@@ -1056,6 +1056,7 @@ final class Route
         'settings_upsert',
         'settings_delete',
         'user_merchant_upgrade',
+        'user_resend_verification',
     ];
 
     public static $proxy = [
