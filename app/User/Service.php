@@ -264,35 +264,6 @@ class Service extends Base\Service
         return [null, ['email' => $user->email]];
     }
 
-    /**
-     * This function is used to confirm a user by token.
-     * @param string $token
-     */
-    public function confirm($token)
-    {
-        $confirm_data = ['confirm_token' => $token];
-
-        list($error, $response) = $this->confirmUserByDataOnApi($confirm_data);
-
-        if (empty($error) === false)
-        {
-            return [[static::INVALID_CONFIRMATION_TOKEN], []];
-        }
-
-        $user = User\Entity::getUserForConfirmation($token);
-
-        if (empty($user) === true)
-        {
-            return [[static::INVALID_CONFIRMATION_TOKEN], []];
-        }
-
-        $user->confirm();
-
-        $this->subscribeToMailingList($user);
-
-        return [null, ['email' => $user->email]];
-    }
-
     public function confirmUserByDataOnApi($data)
     {
         $this->setApiCredentials();
@@ -420,7 +391,7 @@ class Service extends Base\Service
 
         return $user;
     }
-    
+
     /**
      * @param  array  $input [description]
      */

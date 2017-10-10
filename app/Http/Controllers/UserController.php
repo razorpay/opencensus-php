@@ -117,19 +117,6 @@ class UserController extends Controller
     }
 
     /**
-     * Confirms the user.
-     *
-     * @param string $token
-     * @return \Illuminate\Http\Response
-     */
-    public function getConfirm($token)
-    {
-        list($error, $data) = (new User\Service)->confirm($token);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    /**
      * Log out the currently suthenticated user.
      *
      * @return \Illuminate\Http\Response

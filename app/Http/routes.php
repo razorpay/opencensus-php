@@ -31,7 +31,6 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::group(['prefix' => 'user'], function()
     {
-        Route::get('/confirm/{token}', 'UserController@getConfirm');
         Route::post('/signin', 'UserController@postSignin'); // ePOS
         Route::post('/register', 'UserController@postRegister'); // ePOS
         Route::post('/resend', 'MerchantController@postResendConfirmation');

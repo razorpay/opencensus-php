@@ -328,11 +328,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
         $this->attributes['email'] = mb_strtolower($value);
     }
 
-    public static function getUserForConfirmation($token)
-    {
-        return self::where('confirm_token', '=', $token)->first();
-    }
-
     public function getConfirmedAttribute()
     {
         return ($this->confirm_token === null);
