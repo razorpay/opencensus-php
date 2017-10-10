@@ -93,4 +93,13 @@ class UserController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postResendVerificationMail()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->resendVerificationMail($input);
+
+        return $data;
+    }
 }

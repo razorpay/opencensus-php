@@ -565,6 +565,7 @@ final class Route
 
         'user_register'                           => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
         'user_merchant_upgrade'                   => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
+        'user_resend_verification'                => ['post',     'users/resend-verification',                      'UserController@postResendVerificationMail'                         ],
         'user_create'                             => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                              => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_confirm_by_data'                    => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],

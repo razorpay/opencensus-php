@@ -204,6 +204,11 @@ class Service extends Base\Service
         ];
     }
 
+    /**
+     * @param $userId
+     *
+     * @return array
+     */
     private function sendConfirmationMail($userId)
     {
         $user = $this->repo->user->findOrFailPublic($userId);
@@ -221,6 +226,8 @@ class Service extends Base\Service
 
             Mail::queue($confirmationMail);
         }
+
+        return ['success' => true];
     }
 
     public function create(array $input): array
@@ -305,6 +312,15 @@ class Service extends Base\Service
         ];
 
         $data = $this->createMerchantFromUser($merchantData, $user);
+
+        return $data;
+    }
+
+    public function resendVerificationMail(array $input)
+    {
+        $userId = $input['user_id'];
+
+        $data = $this->sendConfirmationMail($userId);
 
         return $data;
     }
