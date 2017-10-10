@@ -12,8 +12,12 @@ use Carbon\Carbon;
 
 trait EmandateTrait
 {
-    protected function handleEmandateFlow(array $input) : string
+    protected function handleEmandateFlow(array $input)
     {
+        $secondPayment = false;
+
+        $this->content($secondPayment, 'second_payment');
+
         $this->validateActionInput($input, 'emandateauthrequest');
 
         $data = $this->getGatewayInstance()->getDecryptedData($input[RequestFields::DATA]);
@@ -21,6 +25,14 @@ trait EmandateTrait
         $this->validateActionInput($data, 'emandateauth');
 
         $response = $this->createEmandateResponse($data);
+
+        if ($secondPayment === true)
+        {
+            // Debit steps are handled in the method below
+            $response = http_build_query($response);
+
+            return $this->makeResponse($response);
+        }
 
         $callbackUrl = $data[RequestFields::RETURN_URL] . '?' . http_build_query($response);
 
