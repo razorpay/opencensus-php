@@ -346,7 +346,7 @@ class Gateway
         if ($expectedAmount !== $actualAmount)
         {
             throw new Exception\LogicException(
-                'Data tampering found.', null, [
+                'Amount tampering found.', null, [
                     'expected' => $expectedAmount,
                     'actual'   => $actualAmount
                 ]);
