@@ -67,9 +67,11 @@ class IciciGatewayTest extends TestCase
 
     public function testPaymentWithXmlResponse()
     {
-        $this->mockServerContentFunction(function (& $content)
+        $this->mockServerContentFunction(function (& $content, $action)
         {
-            $content = <<<EOT
+            if ($action === 'authorize')
+            {
+                $content = <<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
     <soapenv:Body>
@@ -84,6 +86,7 @@ class IciciGatewayTest extends TestCase
     </soapenv:Body>
 </soapenv:Envelope>
 EOT;
+            }
         });
 
         $payment = $this->getDefaultUpiPaymentArray();
@@ -327,6 +330,44 @@ EOT;
 
         $this->mockServerContentFunction(function(& $content, $action)
         {
+            if ($action === 'refund')
+            {
+                $content['status'] = 'SUCCESS';
+            }
+        });
+
+        $refund = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals($refund['status'], 'processed');
+    }
+
+    public function testRetryRefundWithNoTxnFound()
+    {
+        $payment = $this->testPaymentWithS2S();
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $refundAmount = 30000;
+
+        $this->mockServerContentFunction(function(& $content, $action)
+        {
+            if ($action === 'refund')
+            {
+                $content['status'] = 'FAILURE';
+            }
+        });
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->mockServerContentFunction(function(& $content, $action)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = '';
+
+                $content['message'] = 'original record not found';
+            }
+
             if ($action === 'refund')
             {
                 $content['status'] = 'SUCCESS';

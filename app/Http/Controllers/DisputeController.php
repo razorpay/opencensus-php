@@ -35,4 +35,13 @@ class DisputeController extends Controller
         return ApiResponse::json($data);
 
     }
+
+    public function createReason()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createReason($input);
+
+        return ApiResponse::json($data);
+    }
 }

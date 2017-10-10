@@ -273,9 +273,8 @@ class FirstDataGatewayTest extends TestCase
 
         $paymentRes = $this->getLastPayment(true);
 
-        // FirstData is preferred over Sharp, but does not get selected
-        // as ICICI cards are disabled on FirstData
-        $this->assertNotEquals('first_data', $paymentRes['gateway']);
+        // FirstData now should get selected
+        $this->assertEquals('first_data', $paymentRes['gateway']);
 
         $payment['card']['number'] = '5109591717594888';
 

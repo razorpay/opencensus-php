@@ -266,7 +266,7 @@ return [
         ],
     ],
 
-    'testDisputeEditClose' => [
+    'testDisputeEditWon' => [
         'request' => [
             'method'  => 'patch',
             'content' => [
@@ -282,6 +282,26 @@ return [
                 'currency'    => 'INR',
                 'phase'       => 'chargeback',
                 'status'      => 'won'
+            ],
+        ],
+    ],
+
+    'testDisputeEditClose' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'                 => 'closed',
+                'expires_on'             => '1912162918',
+                'gateway_dispute_status' => 'processing'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'amount'      => 1000000,
+                'currency'    => 'INR',
+                'phase'       => 'chargeback',
+                'status'      => 'closed'
             ],
         ],
     ],

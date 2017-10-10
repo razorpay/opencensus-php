@@ -49,7 +49,7 @@ class Validator extends Base\Validator
         'app_token'               => 'sometimes',
         'token'                   => 'sometimes',
         'save'                    => 'sometimes|in:0,1',
-        'recurring'               => 'sometimes_if:method,card|in:0,1',
+        'recurring'               => 'sometimes_if:method,card,netbanking|in:0,1',
         'fee'                     => 'sometimes|filled|integer|max:50000000',
         Entity::SERVICE_TAX       => 'sometimes|filled|integer|max:50000000',
         Entity::TAX               => 'sometimes|filled|integer|max:50000000',
@@ -116,7 +116,7 @@ class Validator extends Base\Validator
     protected function validateEmail(array $input)
     {
         $allowedPaymentMethods = [
-            'aeps',
+            Payment\Method::AEPS,
             Payment\Method::TRANSFER,
             Payment\Method::BANK_TRANSFER,
         ];
@@ -327,7 +327,7 @@ class Validator extends Base\Validator
     protected function validateContact($input)
     {
         $allowedPaymentMethods = [
-            'aeps',
+            Payment\Method::AEPS,
             Payment\Method::TRANSFER,
             Payment\Method::BANK_TRANSFER,
         ];

@@ -61,7 +61,7 @@ class Server extends Base\Mock\Server
 
         $dontEncrypt = ($this->input['payerVa'] === 'dontencrypt@icici');
 
-        $this->content($content);
+        $this->content($content, 'authorize');
 
         return $this->makeResponse($content, $dontEncrypt);
     }
@@ -143,6 +143,8 @@ class Server extends Base\Mock\Server
             'OriginalBankRRN'   => (string) random_int(1111111111, 9999999999),
             'status'            => $status
         ];
+
+        $this->content($response, 'verify');
 
         $encrypt = (isset($payment['notes']['encrypt']) and ($payment['notes']['encrypt'] === 'true'));
 

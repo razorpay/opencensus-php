@@ -708,7 +708,7 @@ class Service extends Base\Service
         {
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLWOED);
+                ErrorCode::BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED);
         }
 
         $this->core()->updatePassword($admin, $input, false, 'change');

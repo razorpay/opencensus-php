@@ -679,7 +679,6 @@ UPDATE offers SET payment_network = NULL WHERE payment_method != 'card';
 UPDATE terminals SET tpv = '2' WHERE gateway = 'netbanking_federal' AND
     id = '7j1qFPcYQhXbsk';
 
-
 UPDATE refunds SET status = "processed", gateway_refunded = 1, updated_at = UNIX_TIMESTAMP() WHERE id IN ("8OCaLQWlQ2GU6F", "8GZxnX7qNUCxbn", "8DBuziIXL80sg9", "8Ey3S0es6jh7le", "8K8LtVTtE4CoW1", "8Hw9ZMV0M8fGyc", "8VEqpr2nTL7PDx", "8LmidpwWQQ1Jqr", "8J0wJyY71kYNTJ", "8KTHDD6btnGfBR", "8MIFtJdjZJFHQd", "8KFO379X6apUhF", "8ODs9H0wb2VKdq", "8LotddEjtS9f0q", "8LpEkQtQ2zNMWz", "8MDQiaqNAeWjud", "8MYeL7b2W3GzT4", "8OCuOfFs5RR3oD", "8MzVt9AiUhFLL0", "8MYxxASJPrexG3", "8ST4UF0gzizsZu", "8NPx5jBPbrKftl", "8ODujr2rC8eiMT", "8P2eTvsq3fsKUO", "8PSXudK8pLpzEP", "8UTgUD8gxzu0M1", "8R2dlPROxKZ7x5", "8PjItVSxB7NixX", "8R2eiC6pluCOdI", "8R2ecJoh2T08m2", "8PLqghEWnPWpvR", "8RR9GmOXvOQiax", "8Te3HOySmsJirk", "8RRA0VAchw3hKk", "8PjqxNfFDVQggm", "8QaifjpT5bwKbw", "8Q4lHbGwkqyawW", "8RQFxPz3TNYLyZ", "8QoLF80vcFcx0T", "8R4unvMopuQ1GA", "8T1I2fs0gHpLAP", "8T1JAXwfVu0pW4", "8RPuBGD3pqyCZq", "8QzbBD25Fbd5wq", "8RicDRaOyD5wGY", "8RbjFD9tIXWq5S", "8SUmQM6YqHlfI8", "8TgfB4owKaZ0Qh", "8TgfG2AswpuXd2", "8UbRQWs7mf7dj4", "8TbFuL6YLu9dLr", "8Vn2Bln7dQSjTi", "8WBZW6StSh6g1a", "8VnC3bt91TTltD", "8USDSC4alQuGOd", "8WBYcTEkHapJH0", "8Wa7jNZ60OZCHX", "8UuyCDTWxoVOKb", "8VhPfdEwqFfoZK", "8WuFa4R0ejk2i7", "8WaBP5ZBV9nEFZ", "8Z8wN35MU5p6Wj", "8YNb3r7rZfMkgc", "8ZAV55LzoD7Sz5", "8Z9SJg7kldhZoL", "8YV9jckgh5s24T", "8Z6BAb6h8HeHW7") AND status = "failed";
 
 # Data correction for merchant_users mapping
@@ -875,3 +874,16 @@ WHERE
 
 UPDATE merchant_banks
     SET bank_transfer=1;
+
+UPDATE invoices
+    SET user_id = NULL WHERE id = '8K7Wt4J7XF559F' LIMIT 1;
+
+#Create only 1 entry for tax in fee_breakup
+UPDATE fees_breakup set name='tax' where name='igst';
+
+UPDATE fees_breakup set name='tax' and percentage=percentage*2 and amount=amount*2 where name='sgst';
+
+DELETE from fees_breakup where name='cgst';
+
+# MiGS failed refund. Failed because flyrobe terminal was purchase instead of auth capture
+UPDATE refunds SET gateway_refunded = "0", status = "failed" WHERE id = "87eT5BJpNL8uPb" and status = "processed";

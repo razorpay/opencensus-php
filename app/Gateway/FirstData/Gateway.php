@@ -31,7 +31,7 @@ class Gateway extends Base\Gateway
     const PROCESSING                 = 'PROCESSING';
     const SERVICES                   = 'SERVICES';
 
-    const CHECKSUM_ATTRIBUTE = ConnectResponseFields::RESPONSE_HASH;
+    const CHECKSUM_ATTRIBUTE         = ConnectResponseFields::RESPONSE_HASH;
 
     protected $gateway = Constants\Entity::FIRST_DATA;
 
@@ -1038,13 +1038,15 @@ class Gateway extends Base\Gateway
 
         $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
 
-        $method = $input['card'][Card\Entity::NETWORK_CODE];
+        $networkCode = $input['card'][Card\Entity::NETWORK_CODE];
 
         $requestHash = $this->getRequestHash($txnDateTime, $chargeTotal, $currencyCode);
 
         $txnType = TxnType::AUTH;
 
-        if (Payment\Gateway::supportsAuthAndCapture($this->gateway, $method) === false)
+        if ((Payment\Gateway::supportsAuthAndCapture($this->gateway, $networkCode) === false) or
+            (($input['card'][Card\Entity::ISSUER] === Card\Issuer::ICIC) and
+             ($input['card'][Card\Entity::TYPE] === Card\Type::DEBIT)))
         {
             $txnType = TxnType::SALE;
         }
@@ -1074,7 +1076,7 @@ class Gateway extends Base\Gateway
             ConnectRequestFields::RESPONSE_SUCCESS_URL      => $input['callbackUrl'],
             ConnectRequestFields::RESPONSE_FAIL_URL         => $input['callbackUrl'],
             ConnectRequestFields::TXN_TYPE                  => $txnType,
-            ConnectRequestFields::PAYMENT_METHOD            => PaymentMethod::METHOD_MAP[$method],
+            ConnectRequestFields::PAYMENT_METHOD            => PaymentMethod::METHOD_MAP[$networkCode],
         ];
 
         if ($this->isFirstRecurringPayment($input) === true)

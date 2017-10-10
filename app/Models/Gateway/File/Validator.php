@@ -16,6 +16,7 @@ class Validator extends Base\Validator
         Entity::TYPE              => 'required|string|max:20|custom',
         Entity::TARGET            => 'required|string|max:50',
         Entity::SENDER            => 'filled|email|max:100',
+        Entity::TPV               => 'filled|boolean',
         Entity::RECIPIENTS        => 'filled|array',
         Entity::RECIPIENTS . '.*' => 'email',
         Entity::BEGIN             => 'required|epoch',
