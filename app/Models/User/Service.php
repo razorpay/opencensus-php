@@ -226,6 +226,11 @@ class Service extends Base\Service
 
             Mail::queue($confirmationMail);
         }
+        else
+        {
+            // if user is already confirmed then sending confirm as true.
+            return ['confirm' => true];
+        }
 
         return ['success' => true];
     }
@@ -316,6 +321,12 @@ class Service extends Base\Service
         return $data;
     }
 
+    /**
+     * Resend verification mail for not confirmed user.
+     * @param array $input
+     *
+     * @return array
+     */
     public function resendVerificationMail(array $input)
     {
         $userId = $input['user_id'];
