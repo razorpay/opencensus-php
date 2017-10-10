@@ -457,6 +457,27 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchFailedRefundsByMethod(string $method)
+    {
+        $refundPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
+        $refundStatus    = $this->dbColumn(Refund\Entity::STATUS);
+
+        $paymentId      = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+        $paymentMethod  = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $query =  $this->newQuery()
+                       ->select($this->dbColumn('*'))
+                       ->join(Table::PAYMENT, $refundPaymentId, '=', $paymentId)
+                       ->where($refundStatus, '=', Status::FAILED)
+                       ->where($paymentMethod, '=', Payment\Method::BANK_TRANSFER)
+                       ->with(['payment','payment.terminal'])
+                       ->limit(50)
+                       ->inRandomOrder();
+
+        return $query->get();
+    }
+
     public function fetchRefundsForPnbClaims($from, $to, $gateway)
     {
         $pId = $this->repo->payment->dbColumn(Payment\Entity::ID);
