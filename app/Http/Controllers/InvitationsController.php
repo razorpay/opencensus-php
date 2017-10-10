@@ -27,12 +27,4 @@ class InvitationsController extends Controller
 
         return AppResponse::jsonResponse($error);
     }
-
-    public function fetchByToken($token)
-    {
-        list($error, $invitation) = $this->service->getInvitationByTokenFromApi($token);
-
-        return AppResponse::jsonResponse($error, $invitation);
-    }
-
 }

@@ -51,27 +51,6 @@ class Service extends Base\Service
         }
     }
 
-    public function getInvitationByTokenFromApi(string $token)
-    {
-        $error = $response = [];
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api
-                             ->invitation
-                             ->fetchByToken($token)
-                             ->toArray();
-        }
-        catch(\Razorpay\Api\Errors\Error $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $response];
-    }
-
     public function acceptInvitationOnApi(string $id, $userId)
     {
         $error = $response = [];

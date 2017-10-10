@@ -10,6 +10,8 @@ return [
     'guest' => [
         // Confirm User
         'user_confirm_by_data',
+        // Invitation fetch by token
+        'invitation_fetch_by_token',
     ],
 
     // auth
@@ -650,6 +652,8 @@ return [
 
         // Accept/Reject Invitation
         'invitation_action'                 => 'invitations/{id}/{action}',
+        // Invitation fetch by token
+        'invitation_fetch_by_token'         => 'invitations/token/{token}',
 
         // Make test payment for Virtual Account
         'bank_transfer_process'             => 'ecollect/validate',

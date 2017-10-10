@@ -140,10 +140,16 @@ app
         $scope.signup.data.invitation = $location.search().invitation;
 
         // Get invitation details
-        $http({
-          url: '/user/invitations/token/' + $scope.signup.data.invitation,
-          method: 'GET',
-        })
+        var data = {
+          route_name: 'invitation_fetch_by_token',
+          url_params: {
+            '{token}': $scope.signup.data.invitation,
+          },
+        };
+        var request = $http.get('/guest/generic', {
+          params: data,
+        });
+        request
           .success(function(data) {
             if (data.success) {
               $scope.signup.data.email = data.data.email;
