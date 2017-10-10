@@ -38,19 +38,19 @@ class Kernel extends HttpKernel {
      * @var array
      */
     protected $routeMiddleware = [
-        'cors'           => 'App\Http\Middleware\Cors',
-        'auth'           => 'App\Http\Middleware\Authenticate',
-        'auth.basic'     => 'Illuminate\Auth\Middleware\AuthenticateWithBasicAuth',
-        'auth.internal'  => 'App\Http\Middleware\InternalAuth',
-        'auth.cron'      => 'App\Http\Middleware\CronAuth',
-        'guest'          => 'App\Http\Middleware\RedirectIfAuthenticated',
-        'admin'          => 'App\Http\Middleware\AuthenticateAdmin',
-        'superadmin'     => 'App\Http\Middleware\AuthenticateSuperAdmin',
-        'slack'          => 'App\Http\Middleware\Slack',
-        'admin_access'   => 'App\Http\Middleware\AdminAccess',
-        'verified'       => 'App\Http\Middleware\Verified',
-        'auth.oauth'     => 'App\Http\Middleware\OAuth',
-        'generic.noauth' => 'App\Http\Middleware\GenericNoAuth',
+        'cors'          => 'App\Http\Middleware\Cors',
+        'auth'          => 'App\Http\Middleware\Authenticate',
+        'auth.basic'    => 'Illuminate\Auth\Middleware\AuthenticateWithBasicAuth',
+        'auth.internal' => 'App\Http\Middleware\InternalAuth',
+        'auth.cron'     => 'App\Http\Middleware\CronAuth',
+        'guest'         => 'App\Http\Middleware\RedirectIfAuthenticated',
+        'admin'         => 'App\Http\Middleware\AuthenticateAdmin',
+        'superadmin'    => 'App\Http\Middleware\AuthenticateSuperAdmin',
+        'slack'         => 'App\Http\Middleware\Slack',
+        'admin_access'  => 'App\Http\Middleware\AdminAccess',
+        'verified'      => 'App\Http\Middleware\Verified',
+        'auth.oauth'    => 'App\Http\Middleware\OAuth',
+        'guest.generic' => 'App\Http\Middleware\GuestGeneric',
     ];
 
 }

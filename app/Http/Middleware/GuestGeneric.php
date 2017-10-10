@@ -3,12 +3,11 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Auth;
 use Response;
 use Input;
 use Config;
 
-class GenericNoAuth {
+class GuestGeneric {
     /**
      * Handle an incoming request.
      *
@@ -23,8 +22,8 @@ class GenericNoAuth {
 
         $routeMap = Config::get('api-route-map');
 
-        // Check if routeName does not exists in api-route-map['noauth']
-        if (in_array($routeName, $routeMap['noauth']) === false)
+        // Check if routeName does not exists in api-route-map['guest']
+        if (in_array($routeName, $routeMap['guest']) === false)
         {
             $response = [
                 'success' => false,

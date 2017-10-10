@@ -6,8 +6,8 @@
 return [
     // NoAuth
     // For routes which are being hit without authentication, entry should be in
-    // both noauth and also the respective auth
-    'noauth' => [
+    // both guest and also the respective auth
+    'guest' => [
         // Confirm User
         'user_confirm_by_data',
     ],

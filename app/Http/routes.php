@@ -54,9 +54,10 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/details', 'UserController@getUserDetailsV2');
     });
 
-    Route::group(['middleware' => ['generic.noauth']], function()
+    // Generic guest route with no authentication
+    Route::group(['middleware' => ['guest.generic']], function()
     {
-        Route::any('/generic', 'GenericController@handle');
+        Route::any('/guest/generic', 'GenericController@handle');
     });
 
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()

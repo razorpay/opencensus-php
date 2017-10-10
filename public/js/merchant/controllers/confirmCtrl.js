@@ -45,7 +45,7 @@ app.controller('ConfirmCtrl', [
 
     var request = $http({
       method: 'put',
-      url: '/generic',
+      url: '/guest/generic',
       data: data,
     });
 
