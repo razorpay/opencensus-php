@@ -6,6 +6,8 @@ use Config;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use DrewM\MailChimp\MailChimp;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 /**
  * Class MailChimp
@@ -111,7 +113,7 @@ class MailChimpSubscribe extends Job implements ShouldQueue
         $this->trace->traceException(
             $e,
             Trace::ERROR,
-            TraceCode::DASHBOARD_JOB_ERROR,
+            TraceCode::MAILCHIMP_JOB_ERROR,
             ['job_action' => $jobAction]);
     }
 }

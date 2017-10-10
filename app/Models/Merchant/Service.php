@@ -46,7 +46,7 @@ class Service extends Base\Service
      * Creates a merchant and saves in database
      *
      * @param  array            $input
-     * @return Merchant\Entity
+     * @return array
      */
     public function create(array $input)
     {
