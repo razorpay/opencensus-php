@@ -161,8 +161,8 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function splitAdjustments($file): array
+    public function splitAdjustments(array $input): array
     {
-        return $this->core()->splitAdjustments($file);
+        return $this->core()->splitAdjustments($input);
     }
 }

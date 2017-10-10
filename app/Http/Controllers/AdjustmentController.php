@@ -62,16 +62,9 @@ class AdjustmentController extends Controller
 
     public function splitAdjustments()
     {
-        if (Request::hasFile('file') === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Input does not contain the excel file to be processed'
-            );
-        }
+        $input = Request::all();
 
-        $file = Request::file('file');
-
-        $data = $this->service()->splitAdjustments($file);
+        $data = $this->service()->splitAdjustments($input);
 
         return ApiResponse::json($data);
     }

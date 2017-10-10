@@ -126,6 +126,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CHANNEL, $channel);
     }
 
+    public function setCreatedAt($createdAt)
+    {
+        $this->setAttribute(self::CREATED_AT, $createdAt);
+    }
+
+    public function setUpdatedAt($updatedAt)
+    {
+        $this->setAttribute(self::UPDATED_AT, $updatedAt);
+    }
+
     public function entity()
     {
         return $this->morphTo();
