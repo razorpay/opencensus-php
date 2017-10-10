@@ -10,6 +10,7 @@ class Status
     const CREATED    = 'created';
     const PROCESSING = 'processing';
     const PROCESSED  = 'processed';
+    const FAILED     = 'failed';
 
     //
     // Additional constants used as values of STATUS
@@ -17,4 +18,13 @@ class Status
     //
     const SUCCESS = 'success';
     const FAILURE = 'failure';
+
+    /**
+     * Terminal states for batch processing, Batch cannot be retried
+     * once iit has these statuses
+     */
+    const TERMINAL_STATUSES = [
+        self::PROCESSED,
+        self::FAILED
+    ];
 }

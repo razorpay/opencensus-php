@@ -18,36 +18,24 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
-        if (isset($input['merchant_id']) === true)
+        if (isset($input[Entity::MERCHANT_ID]) === true)
         {
-            $this->merchant = $this->repo->merchant->findOrFailPublic($input['merchant_id']);
+            $this->merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
+
+            unset($input[Entity::MERCHANT_ID]);
         }
 
         $batch = (new Entity)->build($input);
 
         $batch->merchant()->associate($this->merchant);
 
-        //
-        // Does following inside transaction:
-        // - Uploads file to s3 and gets FileStore\Entity created
-        // - Validates the file
-        // - Updates batch entity with aggregate details of file (if applicable)
-        // - Saves batch entity
-        //
-        $this->repo->transaction(function () use ($batch, $input)
-        {
-            $processor = Processor\Base::get($batch);
+        $processor = Processor\Base::get($batch);
 
-            $inputFile = $input[Entity::FILE];
+        $inputFile = $input[Entity::FILE];
 
-            $file = $processor->saveInputFile($inputFile);
-
-            $entries = $processor->parseInputFileAndValidate($file->getPathname(), $input);
-
-            $this->fillBatchEntityWithInputFileDetails($batch, $entries);
-
-            $this->repo->saveOrFail($batch);
-        });
+        // We upload the input file to S3 create a filestore entity for the input file via UFH
+        // We then update the batch entity with file metadata if available
+        $processor->updateBatchWithInputFileDetails($input);
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
 
@@ -66,7 +54,7 @@ class Core extends Base\Core
      */
     public function retryBatch(Entity $batch)
     {
-        $batch->getValidator()->validateNotProcessedAlready();
+        $batch->getValidator()->validateIfProcessable();
 
         $batch->setStatus(Status::PROCESSING);
 
@@ -179,9 +167,11 @@ class Core extends Base\Core
     {
         try
         {
-            $batch->getValidator()->validateNotProcessedAlready();
+            $batch->setStatus(Status::PROCESSING);
 
-            Processor\Base::get($batch)->process();
+            $this->repo->saveOrFail($batch);
+
+            $this->retryBatchProcessing($batch);
         }
         catch (\Throwable $e)
         {
@@ -207,26 +197,6 @@ class Core extends Base\Core
         }
 
         return $batch;
-    }
-
-    /**
-     * Fills Batch entity with details extracted from the input file.
-     * Eg.
-     * - Total row count
-     * - Aggregate sum of amount field
-     *
-     * @param Entity $batch
-     * @param array $entries
-     */
-    protected function fillBatchEntityWithInputFileDetails(
-        Entity $batch,
-        array $entries)
-    {
-        $totalAmount = array_sum(array_column($entries, Header::AMOUNT));
-        $totalCount  = count($entries);
-
-        $batch->setAmount($totalAmount);
-        $batch->setTotalCount($totalCount);
     }
 
     /**
@@ -271,6 +241,25 @@ class Core extends Base\Core
         // later we might have a new queue for this purpose only.
 
         $job = new BatchJob($this->mode, $batch->getId(), $input);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
+    }
+
+    /**
+     * Retrues the batch processing in sync or enqueues it for processing if applicable
+     *
+     * @param  Entity $batch Batch entiy to be retried
+     */
+    protected function retryBatchProcessing(Entity $batch)
+    {
+        if (Type::isQueueGroup($batch->getType()) === false)
+        {
+            Processor\Base::get($batch)->process();
+
+            return;
+        }
+
+        $job = new BatchJob($this->mode, $batch->getId());
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
     }

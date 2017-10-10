@@ -26,6 +26,9 @@ class Entity extends Base\PublicEntity
     const COMMENT                   = 'comment';
     const PROCESSED_AT              = 'processed_at';
     const TYPE                      = 'type';
+    const GATEWAY                   = 'gateway';
+    const FAILURE_REASON            = 'failure_reason';
+    const RECONCILIATION_TYPE       = 'reconciliation_type';
 
     /**
      * Constants used in migration file.
@@ -60,6 +63,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::TYPE,
+        self::GATEWAY,
     ];
 
     protected $public = [
@@ -78,15 +82,19 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::ATTEMPTS          => 0,
-        self::STATUS            => Status::CREATED,
-        self::DOWNLOAD_FILE_URL => null,
-        self::SUCCESS_COUNT     => null,
-        self::FAILURE_COUNT     => null,
-        self::AMOUNT            => null,
-        self::PROCESSED_AMOUNT  => 0,
-        self::COMMENT           => null,
-        self::PROCESSED_AT      => null,
+        self::ATTEMPTS            => 0,
+        self::STATUS              => Status::CREATED,
+        self::DOWNLOAD_FILE_URL   => null,
+        self::TOTAL_COUNT         => 0,
+        self::SUCCESS_COUNT       => null,
+        self::FAILURE_COUNT       => null,
+        self::AMOUNT              => null,
+        self::PROCESSED_AMOUNT    => 0,
+        self::GATEWAY             => null,
+        self::FAILURE_REASON      => null,
+        self::RECONCILIATION_TYPE => null,
+        self::COMMENT             => null,
+        self::PROCESSED_AT        => null,
     ];
 
     protected $casts = [
@@ -154,6 +162,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getGateway()
+    {
+        return $this->getAttribute(self::GATEWAY);
+    }
+
     public function isProcessed(): bool
     {
         return ($this->getStatus() === Status::PROCESSED);
@@ -162,6 +175,11 @@ class Entity extends Base\PublicEntity
     public function isPaymentLinkType()
     {
         return ($this->getType() === Type::PAYMENT_LINK);
+    }
+
+    public function isFailed()
+    {
+        return ($this->getStatus() === Status::FAILED);
     }
 
     /**
@@ -241,6 +259,11 @@ class Entity extends Base\PublicEntity
         return $this->getLocalSaveDir($status) . $this->getFileKeyWithExt();
     }
 
+    public function isInProcessableState()
+    {
+        return (in_array($this->getStatus(), Status::TERMINAL_STATUSES, true) === false);
+    }
+
     // ----------------------- End  Getters --------------------------
 
     // ----------------------- Setters -------------------------------
@@ -303,6 +326,16 @@ class Entity extends Base\PublicEntity
     public function incrementAttempts()
     {
         $this->increment(self::ATTEMPTS);
+    }
+
+    public function setFailureReason(string $failureReason)
+    {
+        $this->setAttribute(self::FAILURE_REASON, $failureReason);
+    }
+
+    public function setReconciliationType(string $reconciliationType)
+    {
+        $this->setAttribute(self::RECONCILIATION_TYPE, $reconciliationType);
     }
 
     // ----------------------- End Setters ---------------------------

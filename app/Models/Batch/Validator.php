@@ -14,6 +14,28 @@ use RZP\Models\Feature\Constants as Feature;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
+        Entity::FILE                 => 'sometimes',
+        Entity::TYPE                 => 'required|string|max:25',
+        Entity::GATEWAY              => 'sometimes',
+        Invoice\Entity::DRAFT        => 'sometimes',
+        Invoice\Entity::SMS_NOTIFY   => 'sometimes',
+        Invoice\Entity::EMAIL_NOTIFY => 'sometimes',
+    ];
+
+    protected static $refundBatchRules = [
+        Entity::TYPE => 'required|in:refund',
+        Entity::FILE => 'required|file|max:1024|mime_types:'
+                        . 'application/zip,'
+                        . 'application/vnd.ms-excel,'
+                        . 'application/vnd.oasis.opendocument.spreadsheet,'
+                        . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
+                        . 'application/octet-stream,'
+                        . 'text/csv,'
+                        . 'text/plain',
+    ];
+
+    protected static $paymentLinkBatchRules = [
+        Entity::TYPE                 => 'required|in:payment_link',
         Entity::FILE                 => 'required|file|max:1024|mime_types:'
                                         . 'application/zip,'
                                         . 'application/vnd.ms-excel,'
@@ -22,24 +44,61 @@ class Validator extends Base\Validator
                                         . 'application/octet-stream,'
                                         . 'text/csv,'
                                         . 'text/plain',
-        Entity::TYPE                 => 'required|string|max:25|custom',
-        Entity::MERCHANT_ID          => 'sometimes|string',
-
-        //
-        // Type:payment_link specific input parameters
-        // With current approach extra input would be ignored
-        // but it's fine as this is proxy route.
-        //
-
-        // @todo:  We should enhance it to do per type input validations later.
-
         Invoice\Entity::DRAFT        => 'filled|in:0,1',
         Invoice\Entity::SMS_NOTIFY   => 'filled|in:0,1',
         Invoice\Entity::EMAIL_NOTIFY => 'filled|in:0,1',
     ];
 
-    protected function validateType(string $attribute, string $type)
+    protected static $irctcRefundBatchRules = [
+        Entity::TYPE => 'required|in:irctc_refund',
+        Entity::FILE => 'required|file|max:1024|mime_types:'
+                        . 'application/zip,'
+                        . 'application/vnd.ms-excel,'
+                        . 'application/vnd.oasis.opendocument.spreadsheet,'
+                        . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
+                        . 'application/octet-stream,'
+                        . 'text/csv,'
+                        . 'text/plain',
+    ];
+
+    protected static $irctcSettlementBatchRules = [
+        Entity::TYPE => 'required|in:irctc_settlement',
+        Entity::FILE => 'required|file|max:1024|mime_types:'
+                        . 'application/zip,'
+                        . 'application/vnd.ms-excel,'
+                        . 'application/vnd.oasis.opendocument.spreadsheet,'
+                        . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
+                        . 'application/octet-stream,'
+                        . 'text/csv,'
+                        . 'text/plain',
+    ];
+
+    protected static $linkedAccountBatchRules = [
+        Entity::TYPE => 'required|in:linked_account',
+        Entity::FILE => 'required|file|max:1024|mime_types:'
+                        . 'application/zip,'
+                        . 'application/vnd.ms-excel,'
+                        . 'application/vnd.oasis.opendocument.spreadsheet,'
+                        . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
+                        . 'application/octet-stream,'
+                        . 'text/csv,'
+                        . 'text/plain',
+    ];
+
+    protected static $reconciliationBatchRules = [
+        Entity::TYPE    => 'required|in:reconciliation',
+        Entity::GATEWAY => 'required|string|max:30',
+        Entity::FILE    => 'required|array'
+    ];
+
+    protected static $createValidators = [
+        Entity::TYPE,
+    ];
+
+    protected function validateType(array $input)
     {
+        $type = $input[Entity::TYPE];
+
         if (Type::exists($type) === false)
         {
             throw new BadRequestException(
@@ -49,14 +108,18 @@ class Validator extends Base\Validator
                             Entity::TYPE => $type,
                         ]);
         }
+
+        $op = $type . '_batch';
+
+        $this->validateInput($op, $input);
     }
 
     /**
-     * Throws error if batch is already processed.
+     * Throws error if batch is not in a state which can be processed
      */
-    public function validateNotProcessedAlready()
+    public function validateIfProcessable()
     {
-        if ($this->entity->getStatus() === Status::PROCESSED)
+        if ($this->entity->isInProcessableState() === false)
         {
             throw new BadRequestException(
                         ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED,

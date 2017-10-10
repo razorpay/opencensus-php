@@ -2,12 +2,12 @@
 
 namespace RZP\Jobs;
 
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
-
 use RZP\Trace\TraceCode;
+use RZP\Models\Batch\Status;
 use RZP\Models\Batch as BatchModel;
 use Razorpay\Trace\Logger as Trace;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
 /**
  * Represents asynchronous Batch job.
@@ -49,6 +49,12 @@ class Batch extends Job implements ShouldQueue
         {
             $batch = $this->repoManager->batch->findOrFail($this->id);
 
+            // Earlier we used to again validate if the batch is in a retriable state
+            // I think this is not rquired and once a batch is here, we should set
+            // the status to PROCESSING to maintain state consistency
+            // TBD- Need to discuss this with reviewers
+            $batch->setStatus(Status::PROCESSING);
+
             $timeStarted = microtime(true);
 
             $this->trace->debug(
@@ -56,8 +62,6 @@ class Batch extends Job implements ShouldQueue
                             [
                                 BatchModel\Entity::ID => $this->id,
                             ]);
-
-            $batch->getValidator()->validateNotProcessedAlready();
 
             BatchModel\Processor\Base::get($batch)
                                      ->setParams($this->params)

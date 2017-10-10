@@ -99,11 +99,54 @@ class Base extends BaseModel\Core
         return $this;
     }
 
+    /**
+    * Does following inside transaction:
+    *  - Uploads file to s3 and gets FileStore\Entity created
+    *  - Validates the file
+    *  - Updates batch entity with aggregate details of file (if applicable)
+    *  - Saves batch entity
+    * @param  array  $input batch creation params
+    */
+    public function updateBatchWithInputFileDetails(array $input)
+    {
+        $this->repo->transaction(function () use ($input)
+        {
+            $inputFile = $input[Batch\Entity::FILE];
+
+            $file = $this->saveInputFile($inputFile);
+
+            $entries = $this->parseInputFileAndValidate($file->getPathname(), $input);
+
+            $this->fillBatchEntityWithInputFileDetails($entries);
+
+            $this->repo->saveOrFail($this->batch);
+        });
+    }
+
+    /**
+     * Fills Batch entity with details extracted from the input file.
+     * Eg.
+     * - Total row count
+     * - Aggregate sum of amount field
+     *
+     * @param Entity $batch
+     * @param array $entries
+     */
+    protected function fillBatchEntityWithInputFileDetails(
+        array $entries)
+    {
+        $totalAmount = array_sum(array_column($entries, Batch\Header::AMOUNT));
+        $totalCount  = count($entries);
+
+        $this->batch->setAmount($totalAmount);
+        $this->batch->setTotalCount($totalCount);
+    }
+
     public function process()
     {
         $this->trace->info(TraceCode::BATCH_FILE_PROCESSING, $this->batch->toArray());
 
-        $this->batch->getValidator()->validateNotProcessedAlready();
+        $this->batch->getValidator()->validateIfProcessable();
 
         $this->batch->incrementAttempts();
 

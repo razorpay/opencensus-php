@@ -18,6 +18,7 @@ class Type
 
     // Virtual Account Bulk Creation
     const VIRTUAL_BANK_ACCOUNT = 'virtual_bank_account';
+    const RECONCILIATION   = 'reconciliation';
 
     /**
      * Following batch types get processed via CRON job, CRON currently runs
@@ -38,7 +39,11 @@ class Type
     public static $queueGroup = [
         self::PAYMENT_LINK,
         self::LINKED_ACCOUNT,
+<<<<<<< HEAD
         self::VIRTUAL_BANK_ACCOUNT,
+=======
+        self::RECONCILIATION,
+>>>>>>> [batch] adds entity and core changes in batch processor for recon
     ];
 
     public static function exists(string $type)
