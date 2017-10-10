@@ -13,32 +13,16 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
-class Processor extends Base\Core
+class Processor extends VirtualAccount\Processor
 {
     const RANDOM_CARD_PADDING = '12345';
-
-    protected $virtualAccount;
-    protected $provider;
-    protected $merchant;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->validator = new Validator;
-
-        // These flows are initiated by the provider bank hitting
-        // our APIs. Provider banks are currently authenticated by
-        // registering them as apps, and using AppAuth.
-        $this->provider = $this->app['basicauth']->getInternalApp();
-    }
 
     /**
      * @param Entity $bankTransfer
      *
      * @return Entity|null
      */
-    public function process(Entity $qr)
+    public function process($qr)
     {
         $isPaymentExpected = $this->isPaymentExpected($qr);
 
@@ -92,38 +76,10 @@ class Processor extends Base\Core
 
             $this->repo->saveOrFail($qr);
 
-            $this->updateVirtualAccount((int) (100 * $qr->getAmount()));
+            $this->updateVirtualAccount($qr);
 
             $paymentProcessor->autoCapturePayment($payment);
         });
-    }
-
-     /**
-     * Post-processing, VA amount fields are to be updated.
-     * Status change is done inside incrementAmountPaid.
-     *
-     * @param Entity $bankTransfer
-     */
-    protected function updateVirtualAccount(int $amount)
-    {
-        $this->virtualAccount->incrementAmountPaid($amount);
-
-        $this->virtualAccount->incrementAmountReceived($amount);
-
-        $this->repo->saveOrFail($this->virtualAccount);
-    }
-
-
-    protected function isPaymentExpected(Entity $qr): bool
-    {
-        $this->setVirtualAccount($qr);
-
-        return true;
-    }
-
-    protected function setVirtualAccount(Entity $qr)
-    {
-        $this->virtualAccount = $this->getVirtualAccountFromQr($qr);
     }
 
     protected function setMerchant()
@@ -140,39 +96,7 @@ class Processor extends Base\Core
         $this->repo->saveOrFail($this->virtualAccount);
     }
 
-    /**
-     * For unexpected bank transfer, we set the merchant to
-     * the demo merchant. A new VA is created specifically
-     * for this payment, to be closed immediately afterwards.
-     *
-     * @param Entity $bankTransfer
-     */
-    protected function preProcessUnexpectedQrPayment(Entity $qr)
-    {
-        $qr->setExpected(false);
-
-        $this->setDefaultMerchant();
-
-        $this->createAndSetVirtualAccount($qr->getAmount());
-    }
-
-    /**
-     * For unexpected payments, we use the demo page merchant. This merchant only
-     * exists on prod. For other envs, we use the test merchant, i.e. '10000000000000'.
-     */
-    protected function setDefaultMerchant()
-    {
-        $defaultMerchantId = Merchant\Account::DEMO_PAGE_ACCOUNT;
-
-        if ($this->env !== 'production')
-        {
-            $defaultMerchantId = Merchant\Account::TEST_ACCOUNT;
-        }
-
-        $this->merchant = $this->repo->merchant->findByPublicId($defaultMerchantId);
-    }
-
-    protected function getVirtualAccountFromQr(Entity $qr)
+    protected function getVirtualAccountFromEntity($qr)
     {
         $bharatQrId = $qr->getMerchantReference();
 

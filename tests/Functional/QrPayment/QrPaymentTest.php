@@ -37,6 +37,7 @@ class QrPaymentTest extends TestCase
         //Created Qr Entity As Expected
         $qr = $this->getLastEntity('qr', true);
     }
+
     protected function createVirtualAccount()
     {
         $this->ba->privateAuth();
