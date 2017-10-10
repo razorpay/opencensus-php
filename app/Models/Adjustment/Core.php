@@ -29,9 +29,10 @@ class Core extends Base\Core
 
         $adjInput = $input;
 
+        // Either amount is expected, or tax-and-fees, throwing exception if all are present
         if (isset($input[Entity::AMOUNT]) === true and
             isset($input[MerchantInvoice\Entity::TAX]) === true and
-            isset($input[Transfer\Entity::FEES]) === true)
+            isset($input['fees']) === true)
         {
             throw new Exception\BadRequestValidationFailureException('Either amount OR tax/fees should be passed');
         }
@@ -60,6 +61,10 @@ class Core extends Base\Core
         }
         else
         {
+            $adjInput[MerchantInvoice\Entity::TAX] = $tax;
+
+            $adjInput[Entity::AMOUNT] = $fees;
+
             $adjustment = $this->repo->transaction(function () use ($adj, $merchant, $adjInput)
             {
                 $adjustment = $this->createAdjInTransaction($adj, $merchant);

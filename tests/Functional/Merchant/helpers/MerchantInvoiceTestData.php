@@ -46,8 +46,8 @@ return [
         'merchant_id'   => '10000000000000',
         'gstin'         => '29kjsngjk213922',
         'type'          => 'adjustment',
-        'amount'        => -1177,
-        'tax'           => 0,
+        'amount'        => -1300,
+        'tax'           => 123,
     ],
 
     'testFeeAdjustmentFailure'  => [
