@@ -12,32 +12,12 @@ use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
-class Processor extends Base\Core
+class Processor extends VirtualAccount\Processor
 {
-    /**
-     * @var VirtualAccount\Entity
-     */
-    protected $virtualAccount;
-    protected $provider;
-    protected $merchant;
-    protected $validator;
-
     const DEFAULT_BANK_TRANSFER_ARRAY = [
         Payment\Entity::CURRENCY => Currency::INR,
         Payment\Entity::METHOD   => Payment\Method::BANK_TRANSFER,
     ];
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->validator = new Validator;
-
-        // These flows are initiated by the provider bank hitting
-        // our APIs. Provider banks are currently authenticated by
-        // registering them as apps, and using AppAuth.
-        $this->provider = $this->app['basicauth']->getInternalApp();
-    }
 
     /**
      * Entry point for bank transfer process flow.
@@ -60,27 +40,27 @@ class Processor extends Base\Core
      *
      * @return Entity|null
      */
-    public function process(Entity $bankTransfer)
+    public function process($bankTransfer)
     {
         $this->setUtrInTestMode($bankTransfer);
 
-        $isTransferExpected = $this->isTransferExpected($bankTransfer);
+        $isPaymentExpected = $this->isPaymentExpected($bankTransfer);
 
         if (($this->utrCheck($bankTransfer) === true) and
-            ($isTransferExpected === true))
+            ($isPaymentExpected === true))
         {
             $bankTransfer->setExpected(true);
 
             $this->setMerchant();
         }
-        else if ($isTransferExpected === false)
+        else if ($isPaymentExpected === false)
         {
             if ($this->checkReservedAccount($bankTransfer) === true)
             {
                 return null;
             }
 
-            $this->preProcessUnexpectedBankTransfer($bankTransfer);
+            $this->preProcessUnexpectedPayment($bankTransfer);
         }
         else
         {
@@ -151,22 +131,6 @@ class Processor extends Base\Core
     }
 
     /**
-     * For unexpected bank transfer, we set the merchant to
-     * the demo merchant. A new VA is created specifically
-     * for this payment, to be closed immediately afterwards.
-     *
-     * @param Entity $bankTransfer
-     */
-    protected function preProcessUnexpectedBankTransfer(Entity $bankTransfer)
-    {
-        $bankTransfer->setExpected(false);
-
-        $this->setDefaultMerchant();
-
-        $this->createAndSetVirtualAccount($bankTransfer->getAmount());
-    }
-
-    /**
      * A UTR is required processing, but test providers like dashboard
      * do not give a UTR. In this case, we use a mocked UTR instead.
      *
@@ -234,45 +198,6 @@ class Processor extends Base\Core
     }
 
     /**
-     * A bank transfer is expected if there exists an active VA
-     * to receive it. If such a VA does not exist, or exists but
-     * has been closed/paid, the payment is to be refunded.
-     *
-     * @param Entity $bankTransfer
-     *
-     * @return bool
-     */
-    protected function isTransferExpected(Entity $bankTransfer): bool
-    {
-        $this->setVirtualAccount($bankTransfer);
-
-        if ($this->virtualAccount === null)
-        {
-            $this->trace->info(
-                TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
-                [
-                    'message'      => 'Invalid account number',
-                    'bankTransfer' => $bankTransfer->toArray(),
-                ]
-            );
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Set the VA for future processing.
-     *
-     * @param Entity $bankTransfer
-     */
-    protected function setVirtualAccount(Entity $bankTransfer)
-    {
-        $this->virtualAccount = $this->getVirtualAccountFromBankTransfer($bankTransfer);
-    }
-
-    /**
      * Set the merchant for future processing.
      * Use the owner of the VA for this.
      */
@@ -281,51 +206,6 @@ class Processor extends Base\Core
         $this->merchant = $this->virtualAccount->merchant;
     }
 
-    /**
-     * For unexpected payments, we use the demo page merchant. This merchant only
-     * exists on prod. For other envs, we use the test merchant, i.e. '10000000000000'.
-     */
-    protected function setDefaultMerchant()
-    {
-        $defaultMerchantId = Merchant\Account::DEMO_PAGE_ACCOUNT;
-
-        if ($this->env !== 'production')
-        {
-            $defaultMerchantId = Merchant\Account::TEST_ACCOUNT;
-        }
-
-        $this->merchant = $this->repo->merchant->findByPublicId($defaultMerchantId);
-    }
-
-    /**
-     * A throwaway VA is to be created for the default merchant. Create it use the amount
-     * being paid as the expected amount, so that it is closed after the payment is processed.
-     *
-     * @param int $amount
-     */
-    protected function createAndSetVirtualAccount(int $amount)
-    {
-        $data = $this->virtualAccountCreationArray($amount);
-
-        $virtualAccount = (new VirtualAccount\Core)->create($data, $this->merchant);
-
-        $this->virtualAccount = $virtualAccount;
-    }
-
-    /**
-     * Post-processing, VA amount fields are to be updated.
-     * Status change is done inside incrementAmountPaid.
-     *
-     * @param Entity $bankTransfer
-     */
-    protected function updateVirtualAccount(Entity $bankTransfer)
-    {
-        $this->virtualAccount->incrementAmountPaid($bankTransfer->getAmount());
-
-        $this->virtualAccount->incrementAmountReceived($bankTransfer->getAmount());
-
-        $this->repo->saveOrFail($this->virtualAccount);
-    }
 
     /**
      * Certain roots are reserved for Razorpay's own usage, eg. for inter-nodal transfers.
@@ -361,9 +241,10 @@ class Processor extends Base\Core
      *
      * @return VirtualAccount\Entity|null
      */
-    protected function getVirtualAccountFromBankTransfer(Entity $bankTransfer)
+    protected function getVirtualAccountFromEntity($entity)
     {
-        $accountNumber = $bankTransfer->getPayeeAccount();
+        //@todo Put assert on entity type
+        $accountNumber = $entity->getPayeeAccount();
 
         $bankAccount = $this->getBankAccountFromNumber($accountNumber);
 
@@ -398,19 +279,6 @@ class Processor extends Base\Core
         return $bankAccount;
     }
 
-    /**
-     * Throwaway VAs for unexpected bank transfers don't need much to be created.
-     *
-     * @param int $amount
-     *
-     * @return array
-     */
-    protected function virtualAccountCreationArray(int $amount): array
-    {
-        return [
-            VirtualAccount\Entity::AMOUNT_EXPECTED => $amount,
-        ];
-    }
 
     /**
      * A payer bank account entity is created as well, at the time of payment itself.

@@ -78,7 +78,6 @@ class Core extends Base\Core
         }
         catch (Exception\BadRequestValidationFailureException $ex)
         {
-            sd($ex->getMessage());
             $this->trace->traceException(
                 $ex, Trace::ERROR, TraceCode::QR_PAYMENT_PROCESSING_FAILED, $input);
 
