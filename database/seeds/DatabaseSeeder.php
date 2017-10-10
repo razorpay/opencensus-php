@@ -171,6 +171,39 @@ class DatabaseSeeder extends Seeder
                     )
                 );
 
+            DB::table(Table::FEATURE)->insert(
+                array(
+                    'id'            => 'feature_101010',
+                    'name'          => 'charge_at_will',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime
+                )
+            );
+
+            DB::table(Table::FEATURE)->insert(
+                array(
+                    'id'            => 'feature_202020',
+                    'name'          => 'recurring',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime
+                )
+            );
+
+            DB::table(Table::FEATURE)->insert(
+                array(
+                    'id'            => 'feature_303030',
+                    'name'          => 'e_mandate',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime
+                )
+            );
+
             DB::table(Table::MERCHANT_DETAIL)->insert(
                 array(
                     'merchant_id'   => Account::NODAL_ACCOUNT,
@@ -1371,9 +1404,25 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'       => 'test_merchant_netbanking_icici',
                 'gateway_merchant_id2'      => 'test_submerchant_netbanking_icici',
                 'gateway_secure_secret'     => Crypt::encrypt('test_netbanking_master_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            ]
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => Terminal\Shared::NETBANKING_ICICI_REC_TERMINAL,
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NETBANKING_ICICI,
+                'card'                      => '0',
+                'netbanking'                => '1',
+                'gateway_merchant_id'       => 'test_merchant_netbanking_icici_recurring',
+                // 'gateway_merchant_id2'      => 'test_submerchant_netbanking_icici',
+                // 'gateway_secure_secret'     => Crypt::encrypt('test_netbanking_master_terminal_pass'),
                 'recurring'                 => 1,
                 'created_at'                => time(),
                 'updated_at'                => time(),
+                'type'                      => 6,
             ]
         );
     }

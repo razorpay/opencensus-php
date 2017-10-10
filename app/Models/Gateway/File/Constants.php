@@ -51,6 +51,13 @@ class Constants
         Type::REFUND => [
             self::HDFC  => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
-        ]
+        ],
+        Type::COMBINED => [
+            self::AXIS     => ['axis.netbanking.refunds@razorpay.com'],
+            self::KOTAK    => ['settlements@razorpay.com'],
+            self::RBL      => ['rbl.netbanking.refunds@razorpay.com'],
+            self::FEDERAL  => ['federal.netbanking.refunds@razorpay.com'],
+            self::INDUSIND => ['indusind.netbanking.refunds@razorpay.com'],
+        ],
     ];
 }

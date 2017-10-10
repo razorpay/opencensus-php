@@ -45,6 +45,9 @@ class CreateTokens extends Migration {
             $table->string(Token::BANK, 6)
                   ->nullable();
 
+            $table->integer(Token::MAX_AMOUNT)
+                  ->nullable();
+
             $table->string(Token::WALLET, 15)
                   ->nullable();
 
@@ -56,6 +59,12 @@ class CreateTokens extends Migration {
 
             $table->boolean(Token::RECURRING)
                   ->default(0);
+
+            $table->string(Token::RECURRING_STATUS, 32)
+                  ->nullable();
+
+            $table->text(Token::RECURRING_FAILURE_REASON)
+                  ->nullable();
 
             $table->integer(Token::USED_COUNT)
                   ->default(0);
