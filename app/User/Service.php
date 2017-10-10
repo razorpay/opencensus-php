@@ -420,103 +420,7 @@ class Service extends Base\Service
 
         return $user;
     }
-
-    /**
-     * Create a merchant entity from a user entity
-     * @param  Models\User\Entity $user
-     * @param  string $businessName business name
-     * @param  string $referer      Could be false as well
-     * @return array containing some minor details
-     */
-    protected function createMerchantFromUser(User\Entity $user, array $data, $referer = false)
-    {
-        list($error, $merchant) = Merchant\Service::register($user, $data, $referer);
-
-        if (! empty($error))
-        {
-            return [$error, null];
-        }
-
-        $user->merchants()->attach($merchant, ['role' => 'owner']);
-
-        // Only send the confirmation email if the user isn't already confirmed
-        if ($user->getConfirmToken() != NULL)
-        {
-            $user->token = $user->getConfirmToken();
-
-            (new UserMailer($user))->accountVerification()->queueAndDeliver();
-        }
-
-        return [null, $this->signupPost($merchant, $user, $referer)];
-    }
-
-    /**
-     * Makes a call to sorting hat to post on Slack that a new merchant
-     * signed up
-     */
-    protected function signupPost($merchant, $user, $referer = '')
-    {
-        $phoneNumber = Input::get('contact_mobile', null);
-        $sortingHatData = $this->getSortingHatData($merchant, $user, $referer, $phoneNumber);
-        // We want to keep environment conditional checks as late as possible
-
-        if (config('slack.enable'))
-        {
-            Queue::push('App\User\Service@postToSortingHat', $sortingHatData);
-        }
-
-        // These are displayed on the frontend
-        return [
-            'id'    =>  $merchant->id,
-            'name'  =>  $merchant->name,
-            'email' =>  $user->email
-        ];
-    }
-
-    protected function getSortingHatData($merchant, $user, $referer, $phoneNumber)
-    {
-        $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$merchant->id}/detail";
-        $message = "[New Signup]($merchantLink) as {$user->name}";
-
-        if ($referer)
-        {
-            $message .= " | REF: $referer";
-        }
-
-        if ($phoneNumber)
-        {
-            $message .= " | [Call - {$phoneNumber}](tel:$phoneNumber)";
-        }
-
-        return [
-            'id'            => $merchant->id,
-            'email'         => $user->email,
-            'name'          => $merchant->name,
-            'message'       => $message,
-            'token'         => Config::get('razorpay.sorting_hat.token')
-        ];
-    }
-
-    /**
-     * This method needs to be public because it's called
-     * on a Queue
-     * @param  array $data data to send to Sorting Hat
-     */
-    public function postToSortingHat($job, $data)
-    {
-        $url = Config::get('razorpay.sorting_hat.url');
-
-        $headers = [];
-
-        $options = [
-            'timeout'   =>  30
-        ];
-
-        Requests::post($url, $headers, $data, $options);
-
-        $job->delete();
-    }
-
+    
     /**
      * @param  array  $input [description]
      */
@@ -653,37 +557,14 @@ class Service extends Base\Service
     {
         $authUser = Auth::user();
 
-        $error = (new User\Validator)->validateInput('upgrade', $input)->messages();
-
-        if (empty($error) === false)
-        {
-            return [$error, null];
-        }
-
         $data = [
             'business_name' =>  $input['business_name']
         ];
 
-        $user = Entity::findOrFail($authUser->id);
-
-        // We don't have a referrer for the upgrade
-        list($error, $data) = $this->createMerchantFromUser($user, $data);
+        // Hit generic call to API.
 
         if (empty($error) === true)
         {
-            // $data['id'] is the newly created merchant Id
-            // This confirmation creates the Merchant Account on the API Side
-            // Make sure that the id is not submitted ever by the user
-            (new Merchant\Service)->createMerchantOnApi($data['id']);
-
-            $user->confirm();
-
-            $this->confirmUserOnApi($user->id);
-
-            $this->attachMerchantUserOnApi($user->id, $data['id'], 'owner');
-
-            $this->subscribeToMailingList($user);
-
             list($error, $genericUser) = $this->getUserFromApi($user->id);
 
             if (empty($error) === true)

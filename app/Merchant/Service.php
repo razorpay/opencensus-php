@@ -38,33 +38,6 @@ class Service extends Base\Service
         $this->currentUser = Auth::user();
     }
 
-    public static function register(User\Entity $user, array $data, $referer = false)
-    {
-        $merchantData = [
-            'name'  =>  $data['business_name'],
-            'email' =>  $user->email,
-        ];
-
-        $error = (new Merchant\Validator)->validateInput('create', $merchantData)->messages();
-
-        $merchant = null;
-
-        // This makes sure that the User and Merchant entities are in sync for now
-        // We can drop the extra fields sometime since they aren't really used
-        if (empty($error))
-        {
-            $merchant = Entity::createFromUser($user, $data);
-
-            // This is called for certain special email addresses
-            $merchant->setCustomId();
-
-            $merchant->save();
-        }
-
-        return [$error, $merchant];
-
-    }
-
     /**
      * Registers a sub-merchant account and associates it both ways:
      * 1. Marks the original user as the referral
