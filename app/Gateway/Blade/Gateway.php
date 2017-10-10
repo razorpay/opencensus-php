@@ -554,7 +554,8 @@ class Gateway extends Base\Gateway
                     VEReq::MERCHANT   => [
                         VEReq::ACQBIN       => $this->getAcquirerBin($input),
                         VEReq::MERCHANT_ID  => $this->getMerchantId($input),
-                        // 'password' => $creds['password'],
+                        // TODO add for VISA only
+                        'password' => 'Pit@1234',
                     ],
                     VEReq::BROWSER    => [
                         VEReq::DEVICE_CATEGORY => DeviceCategory::getDeviceCategory(DeviceCategory::DESKTOP),
@@ -594,16 +595,16 @@ class Gateway extends Base\Gateway
 
     protected function getAcquirerBin(array $input)
     {
-        $certName = '';
+        $acquirerBin = '';
 
         switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
-                $certName = $this->config['live_mastercard_acq_bin'];
+                $acquirerBin = $this->config['live_mastercard_acq_bin'];
                 break;
 
             case Card\Network::VISA:
-                $certName = $this->config['live_visa_acq_bin'];
+                $acquirerBin = $this->config['live_visa_acq_bin'];
                 break;
 
             default:
@@ -617,7 +618,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_acq_bin'];
         }
 
-        return $certName;
+        return $acquirerBin;
     }
 
     protected function getMerchantId(array $input)

@@ -173,10 +173,10 @@ return [
         'gateway_terminal_password'      => env('BLADE_TEST_TERMINAL_PASSWORD'),
         'live_mastercard_acq_bin'        => env('BLADE_LIVE_MASTERCARD_ACQ_BIN'),
         'live_visa_acq_bin'              => env('BLADE_LIVE_VISA_ACQ_BIN'),
-        'test_acq_bin'                   => env('BLADE_TEST_ACQ_BIN'),
+        'test_acq_bin'                   => '411075', //TODO revert after testing
         'live_mastercard_merchant_id'    => env('BLADE_LIVE_MASTERCARD_MERCHANT_ID2'),
         'live_visa_merchant_id'          => env('BLADE_LIVE_VISA_MERCHANT_ID'),
-        'test_merchant_id'               => env('BLADE_TEST_MERCHANT_ID'),
+        'test_merchant_id'               => 'razorpay',
     ],
 
     'ebs' => [
