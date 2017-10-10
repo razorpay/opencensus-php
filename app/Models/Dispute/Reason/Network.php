@@ -4,20 +4,26 @@ namespace RZP\Models\Dispute\Reason;
 
 class Network
 {
-    const VISA       = 'Visa';
-    const MASTERCARD = 'Mastercard';
-    const JCB        = 'JCB';
-    const DISCOVER   = 'Discover';
-    const AMEX       = 'Amex';
     const RZP        = 'RZP';
+    const JCB        = 'JCB';
+    const AMEX       = 'Amex';
+    const VISA       = 'Visa';
+    const RUPAY      = 'RuPay';
+    const MAESTRO    = 'Maestro';
+    const DISCOVER   = 'Discover';
+    const UNIONPAY   = 'Unionpay';
+    const MASTERCARD = 'Mastercard';
 
     protected static $networksList = [
-        self::VISA,
-        self::MASTERCARD,
-        self::JCB,
-        self::DISCOVER,
-        self::AMEX,
         self::RZP,
+        self::JCB,
+        self::AMEX,
+        self::VISA,
+        self::RUPAY,
+        self::MAESTRO,
+        self::DISCOVER,
+        self::UNIONPAY,
+        self::MASTERCARD,
     ];
 
     public static function exists(string $network): bool
