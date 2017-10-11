@@ -539,6 +539,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ADMIN_TOKEN_MISMATCH                                      = 'Admin Token Mismatch';
 
     const BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE                                = 'This gateway file generation attempt is not retriable';
+    const BAD_REQUEST_INTERNATIONAL_RECURRING_PAYMENTS_NOT_ALLOWED_FOR_MERCHANT = 'Recurring payments on International cards not supported for merchant.';
 
     const SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND                               = 'No data present for gateway file processing in the given time period';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE                       = 'Error occurred trying to create file';

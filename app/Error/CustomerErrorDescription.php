@@ -43,6 +43,7 @@ class CustomerErrorDescription
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                          = 'Payment failed. Please contact site admin';
 
     const BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL                       = 'Payment cancelled due to clicking the cancel button on 3dSecure page';
+    const BAD_REQUEST_INTERNATIONAL_RECURRING_PAYMENTS_NOT_ALLOWED_FOR_MERCHANT = 'Recurring payments on International cards not supported for merchant.';
 
     const BAD_REQUEST_SUBSCRIPTION_CUSTOMER_ID_SENT_IN_INPUT                    = 'Payment failed';
     const BAD_REQUEST_SUBSCRIPTION_SAVE_CARD_DISABLED                           = 'Please contact the merchant for further assistance.';
