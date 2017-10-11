@@ -105,10 +105,6 @@ class Repository extends Base\Repository
                 [$featureName, $status]);
         }
 
-        s($this->newQueryWithConnection(Mode::LIVE)
-            ->where(Entity::MERCHANT_ID, $merchant->getId())
-            ->toSql());
-
         return $this->newQueryWithConnection(Mode::LIVE)
                     ->where(Entity::MERCHANT_ID, $merchant->getId())
                     ->update([$attributeName => $status]);

@@ -216,11 +216,7 @@ class Service extends Base\Service
 
         $data[$feature] = $input;
 
-        $this->trace->info(
-            TraceCode::FEATURE_ONBOARDING_RESPONSE_REQUEST,
-            [$input, $feature]);
-
-        return $this->processOnboardingResponses($data, $this->merchant, $feature);
+        return $this->processOnboardingResponses('create', $data, $this->merchant, $feature);
     }
 
     /**
@@ -241,16 +237,28 @@ class Service extends Base\Service
 
         $data[$feature] = $input;
 
-        $this->trace->info(
-            TraceCode::FEATURE_ONBOARDING_RESPONSE_REQUEST,
-            [$input, $feature, 'admin' => true]);
-
-        return $this->processOnboardingResponses($data, $merchant, $feature);
+        return $this->processOnboardingResponses('update', $data, $merchant, $feature);
     }
 
-    private function processOnboardingResponses(array $data, Merchant\Entity $merchant, string $feature)
+    /**
+     * @param string          $action
+     * @param array           $data
+     * @param Merchant\Entity $merchant
+     * @param string          $feature
+     *
+     * @return bool
+     */
+    private function processOnboardingResponses(
+        string $action,
+        array $data,
+        Merchant\Entity $merchant,
+        string $feature)
     {
         $saved = false;
+
+        $this->trace->info(
+            TraceCode::FEATURE_ONBOARDING_RESPONSE_REQUEST,
+            [$action, $data, $merchant->getId(), $feature]);
 
         (new Validator)->validateInput(Constants::ONBOARDING, $data);
 

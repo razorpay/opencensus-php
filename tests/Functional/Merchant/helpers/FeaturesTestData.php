@@ -536,7 +536,7 @@ return [
             'content' => [
                 Constants::USE_CASE    => 'Use case updated',
                 Constants::SETTLING_TO => 'Someone else',
-                'merchant_id'          => '10000000000000'
+                'merchant_id'          => '10000000001017'
             ],
             'url'     => '/onboarding/features/' . Constants::MARKETPLACE,
             'method'  => 'PUT',
