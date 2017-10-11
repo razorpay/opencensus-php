@@ -84,6 +84,20 @@ class FeatureController extends Controller
         return ApiResponse::json($response);
     }
 
+    /**
+     * Deprecated. Added for BC. Remove after dashboard changes.
+     *
+     * @param string|null $feature
+     *
+     * @return mixed
+     */
+    public function getOnboardingResponsesDeprecated(string $feature = null)
+    {
+        $response = $this->service()->getOnboardingResponses($feature);
+
+        return ApiResponse::json($response);
+    }
+
     public function getFeatureActivationRequests()
     {
         $input = Request::all();

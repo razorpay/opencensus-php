@@ -638,6 +638,11 @@ final class Route
         'onboarding_features_update'              => ['put',      'onboarding/features/{feature}',                  'FeatureController@updateOnboardingResponses',                      ],
         'onboarding_features_fetch_responses'     => ['get',      'onboarding/features/responses', 'FeatureController@getFeatureActivationRequests'                    ],
         'onboarding_features_update_status'       => ['put',      'onboarding/features/{feature}/status', 'FeatureController@updateFeatureActivationStatus'                   ],
+
+        // Deprecated routes - maintaining for BC - Remove after dashboard changes
+        'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                  'FeatureController@postOnboardingResponses',                         ],
+        'feature_onboarding_fetch_responses'      => ['get',      'feature/onboarding/{feature}/responses',        'FeatureController@getOnboardingResponsesDeprecated',                ],
+        'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                  'FeatureController@getOnboardingResponsesDeprecated',                ],
     ];
 
     public static $public = [
@@ -692,7 +697,10 @@ final class Route
         'otp_verify',
         'otp_verify_app',
         'device_create',
-        'merchant_methods_downtime'
+        'merchant_methods_downtime',
+        'feature_onboarding_create',
+        'feature_onboarding_fetch_responses',
+        'feature_onboarding_fetch_all_responses'
     ];
 
     public static $device = [
