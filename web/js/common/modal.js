@@ -30,7 +30,7 @@ class ModalStore {
 
   replaceSlider = slider => this.sliders.replace([slider]);
   openSlider = slider => this.sliders.push(slider);
-  closeSlider = _ => this.sliders.clear();
+  closeSlider = _ => this.sliders.pop();
 
   notify = toast => {
     var len = this.toasts.push(toast);
@@ -50,6 +50,22 @@ const store = new ModalStore();
 
 @observer
 export default class ModalContainer extends Component {
+  componentDidMount() {
+    document.addEventListener('keydown', this.escapePress, false);
+  }
+
+  componentWillUnMount() {
+    document.removeEventListener('keydown', this.escapePress, false);
+  }
+
+  // Remove last modal on click of escape
+  escapePress = evt => {
+    evt = evt || window.event;
+    if (evt.keyCode == 27) {
+      store.modals.pop();
+    }
+  };
+
   render() {
     let numToasts = store.toasts.length;
     return (
