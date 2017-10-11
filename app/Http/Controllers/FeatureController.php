@@ -54,9 +54,7 @@ class FeatureController extends Controller
     {
         $input = Request::all();
 
-        $response['questions'] = $this->service()->getOnboardingQuestions($input);
-
-        $response['responses'] = $this->service()->getOnboardingResponses();
+        $response = $this->service()->getOnboardingDetails($input);
 
         return ApiResponse::json($response);
     }

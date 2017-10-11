@@ -155,6 +155,22 @@ class Service extends Base\Service
      *
      * @return array
      */
+    public function getOnboardingDetails(array $input): array
+    {
+        $response['questions'] = $this->getOnboardingQuestions($input);
+
+        $response['responses'] = $this->getOnboardingResponses();
+
+        return $response;
+    }
+
+    /**
+     * Returns all the questions required for onboarding features
+     *
+     * @param  array $input
+     *
+     * @return array
+     */
     public function getOnboardingQuestions(array $input): array
     {
         $features = $input[Constants::FEATURES];
@@ -200,39 +216,11 @@ class Service extends Base\Service
 
         $data[$feature] = $input;
 
-        $saved = false;
-
         $this->trace->info(
             TraceCode::FEATURE_ONBOARDING_RESPONSE_REQUEST,
             [$input, $feature]);
 
-        (new Validator)->validateInput(Constants::ONBOARDING, $data);
-
-        try
-        {
-            $this->processFiles($data, $this->merchant);
-
-            Accessor::for($this->merchant, Constants::ONBOARDING)
-                    ->upsert($data)
-                    ->save();
-
-            $saved = $this->repo->merchant_detail->updateFeatureActivationStatus(
-                        $this->merchant,
-                        $feature,
-                        Merchant\Detail\Entity::PENDING);
-        }
-        catch (\Throwable $exception)
-        {
-            $this->trace->traceException(
-                $exception, Trace::CRITICAL, TraceCode::FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED);
-        }
-
-        if ($this->auth->isAdminAuth() === false)
-        {
-            (new Core)->notifyOnboardingResponseCreationOnSlack($feature);
-        }
-
-        return $saved;
+        return $this->processOnboardingResponses($data, $this->merchant, $feature);
     }
 
     /**
@@ -253,34 +241,43 @@ class Service extends Base\Service
 
         $data[$feature] = $input;
 
-        $saved = false;
-
         $this->trace->info(
             TraceCode::FEATURE_ONBOARDING_RESPONSE_REQUEST,
             [$input, $feature, 'admin' => true]);
+
+        return $this->processOnboardingResponses($data, $merchant, $feature);
+    }
+
+    private function processOnboardingResponses(array $data, Merchant\Entity $merchant, string $feature)
+    {
+        $saved = false;
 
         (new Validator)->validateInput(Constants::ONBOARDING, $data);
 
         try
         {
-            // The file gets overwritten, so no need to delete the old one
+            // While updating the responses, the file gets overwritten,
+            // so no need to delete the old file.
             $this->processFiles($data, $merchant);
 
             Accessor::for($merchant, Constants::ONBOARDING)
                 ->upsert($data)
                 ->save();
 
-            $this->repo->merchant_detail->updateFeatureActivationStatus(
-                $merchant,
-                $feature,
-                Merchant\Detail\Entity::PENDING);
+            $saved = $this->repo->merchant_detail->updateFeatureActivationStatus(
+                        $merchant,
+                        $feature,
+                        Merchant\Detail\Entity::PENDING);
 
-            $saved = true;
+            if ($this->auth->isAdminAuth() === false)
+            {
+                (new Core)->notifyOnboardingResponseCreationOnSlack($feature);
+            }
         }
         catch (\Throwable $exception)
         {
             $this->trace->traceException(
-                $exception, Trace::CRITICAL, TraceCode::FEATURE_ONBOARDING_RESPONSE_UPDATE_FAILED);
+                $exception, Trace::CRITICAL, TraceCode::FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED);
         }
 
         return $saved;

@@ -89,7 +89,7 @@ class Repository extends Base\Repository
 
         $attributeName = constant(Entity::class . '::' . strtoupper($attributeName));
 
-        if (in_array($status, Constants::$onboardingStatuses) === false)
+        if (in_array($status, Constants::$onboardingStatuses, true) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ONBOARDING_STATUS_NOT_RECOGNIZED,
@@ -104,6 +104,10 @@ class Repository extends Base\Repository
                 $attributeName,
                 [$featureName, $status]);
         }
+
+        s($this->newQueryWithConnection(Mode::LIVE)
+            ->where(Entity::MERCHANT_ID, $merchant->getId())
+            ->toSql());
 
         return $this->newQueryWithConnection(Mode::LIVE)
                     ->where(Entity::MERCHANT_ID, $merchant->getId())

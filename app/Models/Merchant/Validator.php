@@ -147,10 +147,12 @@ class Validator extends Base\Validator
 
         $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
 
-        $uneditableFeatures = array_values(array_intersect($requestedFeatures, Feature\Constants::$featuresUneditableOnLive));
+        $uneditableFeatures = array_values(
+            array_intersect($requestedFeatures, Feature\Constants::$featuresUneditableOnLive));
 
         if ((count($uneditableFeatures) > 0) and (
-            ($this->isLiveMode() === true) or ($shouldSync === true)))
+            ($this->isLiveMode() === true) or
+            ($shouldSync === true)))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
