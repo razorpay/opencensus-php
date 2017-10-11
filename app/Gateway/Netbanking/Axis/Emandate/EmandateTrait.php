@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\GatewayErrorException;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\AESCrypto;
+use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Axis\Constants as AxisConstants;
 use RZP\Gateway\Netbanking\Base as Netbanking;
 use RZP\Models\Currency\Currency;
@@ -180,7 +181,7 @@ trait EmandateTrait
     //---------------Callback request helpers end-----------------
 
     //---------------Second auth request helpers------------------
-
+    // TODO:  These are file based. Would have to change it now.
     protected function authorizeSecondRecurring(array $input)
     {
         if (empty($input['token']->getGatewayToken()) === true)
@@ -215,12 +216,60 @@ trait EmandateTrait
 
         $response = $this->sendGatewayRequest($request);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_RECURRING_DEBIT_RESPONSE,
+            [
+                'gateway'            => $this->gateway,
+                'response'           => $response->body,
+                'payment_id'         => $input['payment']['id']
+            ]
+        );
+
         parse_str($response->body, $content);
 
         $this->handleEmandateResponse($input, $content);
     }
 
     //---------------Second auth request helpers end------------------
+
+    //-------------- Verify request helpers --------------------------
+
+    public function getEmandatePaymentVerifyData(Verify $verify)
+    {
+        $input = $verify->input;
+
+        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $data = [
+            RequestFields::VERSION         => Constants::VERSION,
+            RequestFields::CORP_ID         => $this->getMerchantId(),
+            RequestFields::TYPE            => AxisConstants::TYPE,
+            RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
+            RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
+            RequestFields::BANK_REF_NO     => $gatewayEntity[Netbanking\Entity::BANK_PAYMENT_ID]
+        ];
+
+        $data[RequestFields::CHECKSUM] = $this->getChecksum($data);
+
+        $content = [
+            RequestFields::DATA => $this->getEncryptedData($data)
+        ];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'gateway'                => $this->gateway,
+                'payment_id'             => $input['payment']['id'],
+                'data_before_encryption' => $data,
+                'request'                => $content,
+            ]
+        );
+
+        return $content;
+    }
+
+    //---------------Verify request helpers end-----------------------
 
     //----------------------General helpers---------------------------
     public function getEncryptedData(array $data): string
