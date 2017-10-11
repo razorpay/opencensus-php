@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
 
     const MERCHANT_ID             = 'merchant_id';
     const PAYMENT_ID              = 'payment_id';
+    const PARENT_ID               = 'parent_id';
     const TRANSACTION_ID          = 'transaction_id';
     const AMOUNT                  = 'amount';
     const AMOUNT_DEDUCTED         = 'amount_deducted';
@@ -46,6 +47,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::ID,
+        self::PARENT_ID,
         self::AMOUNT,
         self::CURRENCY,
         self::GATEWAY_DISPUTE_ID,
@@ -66,6 +68,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::PAYMENT_ID,
+        self::PARENT_ID,
         self::REASON_ID,
         self::TRANSACTION_ID,
         self::AMOUNT,
@@ -90,6 +93,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::PAYMENT_ID,
+        self::PARENT_ID,
         self::AMOUNT,
         self::CURRENCY,
         self::REASON_CODE,
@@ -218,6 +222,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DEDUCT_AT_ONSET);
     }
 
+    public function isChildDispute(): bool
+    {
+        return $this->isAttributeNotNull(self::PARENT_ID);
+    }
+
     // ----------------------- Getters Ends-------------------------------------
 
     // Add toArrayAdmin, toArrayReport
@@ -232,6 +241,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo('RZP\Models\Dispute\Entity', self::PARENT_ID, self::ID);
     }
 
     public function transaction()
