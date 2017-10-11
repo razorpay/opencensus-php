@@ -10,6 +10,7 @@ import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 
 import MerchantList from 'admin/merchants/list';
 import PlanList from 'admin/plans/list';
+import EntityList from 'admin/entities/list';
 
 import MerchantEntity from 'admin/merchants/entity';
 
@@ -31,6 +32,7 @@ export default class App extends Component {
             <Switch location={this.location}>
               <Route path="/merchants" component={MerchantList} />
               <Route path="/plans" component={PlanList} />
+              <Route path="/entities" component={EntityList} />
             </Switch>
           )) ||
             null}

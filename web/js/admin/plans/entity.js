@@ -43,3 +43,28 @@ const fields = [
 export function openPricingEntity() {
   replaceSlider(<PlanEntity model={this} />);
 }
+
+/*{
+    "id": "1b03fh9jXGH34f",
+    "plan_id": "2atGxLIYLyHWg7",
+    "plan_name": "Startup Plan",
+    "feature": "payment",
+    "gateway": null,
+    "payment_method": "wallet",
+    "payment_method_type": null,
+    "payment_network": null,
+    "payment_issuer": null,
+    "emi_duration": null,
+    "international": false,
+    "amount_range_active": false,
+    "amount_range_min": null,
+    "amount_range_max": null,
+    "percent_rate": 250,
+    "fixed_rate": 0,
+    "min_fee": 0,
+    "max_fee": null,
+    "created_at": 1505747346,
+    "updated_at": 1505747346,
+    "deleted_at": null,
+    "expired_at": null
+}*/

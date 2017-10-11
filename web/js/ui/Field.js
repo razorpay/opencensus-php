@@ -8,35 +8,29 @@ function clickPrev(e) {
   e.target.previousElementSibling.click();
 }
 
-export default function Field(props) {
+export default function Field({ label, ...props }) {
   return (
     <div class="field">
-      <label onClick={focusNext}>{props.label}</label>
+      <label onClick={focusNext}>{label}</label>
       <input {...props} />
     </div>
   );
 }
 
-export function CheckField(props) {
+export function CheckField({ label, ...props }) {
   return (
     <div class="field">
       <input {...props} type="checkbox" />
-      <label onClick={clickPrev}>{props.label}</label>
+      <label onClick={clickPrev}>{label}</label>
     </div>
   );
 }
 
-export function SelectField(props) {
+export function SelectField({ label, children, ...props }) {
   return (
     <div class="field select-field">
-      <label onClick={focusNext}>{props.label}</label>
-      <select
-        defaultValue={props.defaultValue}
-        required={props.required}
-        name={props.name}
-      >
-        {props.children}
-      </select>
+      <label onClick={focusNext}>{label}</label>
+      <select {...props}>{children}</select>
     </div>
   );
 }
