@@ -982,4 +982,29 @@ class Repository extends Base\Repository
                         ->with(['localToken', 'globalToken', 'token.customer'])
                         ->get();
     }
+
+    public function fetchPendingEMandateDebit(string $gateway, $from, $to)
+    {
+        $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
+
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Token\Entity::RECURRING);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $payments = $this->newQuery()
+                         ->join(function ($join)
+                         {
+                            $join->on(Entity::TOKEN_ID, '=', Token\Entity::ID);
+                            $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', Token\Entity::ID);
+                         })
+                        ->where(Entity::RECURRING_TYPE, '=', RecurringType::AUTO)
+                        ->where($paymentRecurringColumn, '=', 1)
+                        ->where(Entity::METHOD, '=', Method::NETBANKING)
+                        ->where(Entity::GATEWAY, '=', $gateway)
+                        ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                        ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::CONFIRMED)
+                        ->where($tokenRecurringColumn, '=', 1)
+                        ->with(['localToken', 'globalToken'])
+                        ->get();
+    }
 }
