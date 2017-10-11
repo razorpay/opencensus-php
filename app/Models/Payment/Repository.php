@@ -998,6 +998,7 @@ class Repository extends Base\Repository
                             $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', Token\Entity::ID);
                          })
                         ->where(Entity::RECURRING_TYPE, '=', RecurringType::AUTO)
+                        ->where(Entity::STATUS, '=', Status::CREATED)
                         ->where($paymentRecurringColumn, '=', 1)
                         ->where(Entity::METHOD, '=', Method::NETBANKING)
                         ->where(Entity::GATEWAY, '=', $gateway)
