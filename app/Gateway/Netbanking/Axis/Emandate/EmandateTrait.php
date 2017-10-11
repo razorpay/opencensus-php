@@ -76,7 +76,7 @@ trait EmandateTrait
         );
 
         $content = [
-            RequestFields::DATA => $this->getEncryptedData($data)
+            RequestFields::DATA => $this->getEmandateEncryptedData($data)
         ];
 
         return $content;
@@ -99,7 +99,7 @@ trait EmandateTrait
 
     public function handleEmandateResponse($input, $content)
     {
-        $content = $this->getDecryptedData($content[ResponseFields::DATA]);
+        $content = $this->getEmandateDecryptedData($content[ResponseFields::DATA]);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -253,7 +253,7 @@ trait EmandateTrait
         $data[RequestFields::CHECKSUM] = $this->getChecksum($data);
 
         $content = [
-            RequestFields::DATA => $this->getEncryptedData($data)
+            RequestFields::DATA => $this->getEmandateEncryptedData($data)
         ];
 
         $this->trace->info(
@@ -269,10 +269,20 @@ trait EmandateTrait
         return $content;
     }
 
+    protected function isEmandateGatewaySuccess($data)
+    {
+        if ($data[ResponseFields::STATUS_CODE] === StatusCode::SUCCESS)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     //---------------Verify request helpers end-----------------------
 
     //----------------------General helpers---------------------------
-    public function getEncryptedData(array $data): string
+    public function getEmandateEncryptedData(array $data): string
     {
         return base64_encode(
             $this->getEncryptor()->encryptString(
@@ -281,7 +291,7 @@ trait EmandateTrait
         );
     }
 
-    public function getDecryptedData(string $input): array
+    public function getEmandateDecryptedData(string $input): array
     {
         $decrypted = $this->getEncryptor()->decryptString(base64_decode($input));
 
@@ -348,18 +358,27 @@ trait EmandateTrait
      */
     protected function getChecksum(array $data) : string
     {
-        $arrayToBeHashed = [
-            $data[RequestFields::CORP_ID],
-            $data[RequestFields::REQUEST_ID],
-            $data[RequestFields::CUSTOMER_REF_NO],
-            $data[RequestFields::AMOUNT],
-            $this->getRecSecret(),
-        ];
+        $arrayToBeHashed = [];
 
         // Amount is not part of the hash for verify
         if ($this->action === Action::VERIFY)
         {
-            unset($arrayToBeHashed[3]);
+            $arrayToBeHashed = [
+                $data[RequestFields::CORP_ID],
+                $data[RequestFields::REQUEST_ID],
+                $data[RequestFields::CUSTOMER_REF_NO],
+                $this->getRecSecret(),
+            ];
+        }
+        else
+        {
+            $arrayToBeHashed = [
+                $data[RequestFields::CORP_ID],
+                $data[RequestFields::REQUEST_ID],
+                $data[RequestFields::CUSTOMER_REF_NO],
+                $data[RequestFields::AMOUNT],
+                $this->getRecSecret(),
+            ];
         }
 
         return $this->generateHash($arrayToBeHashed);

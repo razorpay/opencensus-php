@@ -143,7 +143,14 @@ class Gateway extends Base\Gateway
                 'status_code'   => $response->status_code
             ]);
 
-        $verify->verifyResponseContent = $this->parseResponseXml($response->body);
+        if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
+        {
+            $verify->verifyResponseContent = $this->getEmandateDecryptedData($response->body);
+        }
+        else
+        {
+            $verify->verifyResponseContent = $this->parseResponseXml($response->body);
+        }
     }
 
     public function verifyPayment(Verify $verify)
@@ -185,10 +192,20 @@ class Gateway extends Base\Gateway
                 Payment\Verify\Action::RETRY);
         }
 
-        if ((isset($response[ResponseFields::PAYMENT_STATUS]) === true) and
-            ($response[ResponseFields::PAYMENT_STATUS] === Status::SUCCESS))
+        if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
         {
-            $verify->gatewaySuccess = true;
+            if ($this->isEmandateGatewaySuccess($response))
+            {
+                $verify->gatewaySuccess = true;
+            }
+        }
+        else
+        {
+            if ((isset($response[ResponseFields::PAYMENT_STATUS]) === true) and
+                ($response[ResponseFields::PAYMENT_STATUS] === Status::SUCCESS))
+            {
+                $verify->gatewaySuccess = true;
+            }
         }
     }
 
