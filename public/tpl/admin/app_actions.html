@@ -82,6 +82,10 @@
            dynamic-tooltip-pos="top" dynamic-tooltip="edit_merchant_invoice_gstin">
           Edit Merchant Invoice GSTIN
         </a>
+        <a href class="list-group-item" ng-click="openDisputeReasonAdd()"
+           dynamic-tooltip-pos="top" dynamic-tooltip="create_dispute_reason">
+          Add Dispute Reason
+        </a>
       </div>
     </div>
   </div>
@@ -815,5 +819,59 @@
   <div class="modal-footer">
     <button class="btn btn-default" ng-click="cancel()">Cancel</button>
     <button class="btn btn-primary modal-ok" ng-click="ok(merchantId, invoiceNumber, mode)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="addDisputeReason.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Add Dispute Reason</h3>
+  </div>
+  <div class="modal-body dispute-reason">
+    <form class="form-horizontal" ng-init="dispute_reason={}">
+      <div class="form-group">
+        <label for="network" class="col-lg-2 control-label">Network:</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="network" ng-model="dispute_reason.network">
+            <option value="Amex">American Express</option>
+            <option value="RZP">RZP</option>
+            <option value="Discover">Discover</option>
+            <option value="JCB">JCB</option>
+            <option value="Maestro">Maestro</option>
+            <option value="Mastercard">MasterCard</option>
+            <option value="RuPay">RuPay</option>
+            <option value="Visa">Visa</option>
+            <option value="Unionpay">Union Pay</option>
+            <option value="Unknown">Unknown</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="code" class="col-lg-2 control-label">Code:</label>
+        <div class="col-lg-10" >
+          <input class="form-control m-b" name="code" length="255" ng-model="dispute_reason.code" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="description" class="col-lg-2 control-label">Description:</label>
+        <div class="col-lg-10" >
+          <input class="form-control m-b" name="description" length="255" ng-model="dispute_reason.description" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_code" class="col-lg-2 control-label">Gateway Code:</label>
+        <div class="col-lg-10" >
+          <input class="form-control m-b" name="gateway_code" length="50" ng-model="dispute_reason.gateway_code" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="gateway_description" class="col-lg-2 control-label">Gateway Description:</label>
+        <div class="col-lg-10" >
+          <input class="form-control m-b" name="gateway_description" length="255" ng-model="dispute_reason.gateway_description" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok(dispute_reason)">OK</button>
   </div>
 </script>
