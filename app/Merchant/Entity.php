@@ -74,23 +74,6 @@ class Entity extends Base\Entity
     );
 
     /**
-     * Generate the user instance from the merchant instance
-     *
-     * @param Models\User\Entity $user
-     * @return App\Merchant\Entity $merchant
-     */
-    public static function createFromUser(User\Entity $user, $data)
-    {
-        $merchant = new static();
-
-        $merchant->id = Uuid::generate();
-        $merchant->name = $data['business_name'];
-        $merchant->email = $user->email;
-
-        return $merchant;
-    }
-
-    /**
      * Create sub-merchant accounts
      * @param  App\Merchant\Entity $aggregator Aggregator Merchant Entity
      * @param  string          $businessName   Merchant Business Name
@@ -139,23 +122,6 @@ class Entity extends Base\Entity
     }
 
     /**
-     * Get all of the merchants for the user.
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function getAllMerchantsForUser($user)
-    {
-        $merchants = $user->merchants()->with('owner')->get();
-
-        foreach ($merchants as $merchant)
-        {
-            $merchant->owner->setVisible(['name']);
-        }
-
-        return $merchants;
-    }
-
-    /**
      * Get all of the users that belong to the merchant.
      * @return \Illuminate\Database\Eloquent\Collection
      */
@@ -164,22 +130,6 @@ class Entity extends Base\Entity
         return $this->belongsToMany(
             User\Entity::class, 'merchant_users', 'merchant_id', 'user_id'
         )->withPivot('role');
-    }
-
-    /**
-     * Attach a user to a given merchant based on their invitation.
-     *
-     * @param  App\Invitation\Entity  $invitation
-     * @param  Models\User\Entity  $user
-     * @return void
-     */
-    public static function attachUserToMerchantByInvitation(Invitation\Entity $invitation, User\Entity $user)
-    {
-        $user->joinMerchantByIdWithRole($invitation->merchant->id, $invitation->role);
-
-        $user->switchToMerchant($invitation->merchant);
-
-        $invitation->delete();
     }
 
     /**
@@ -198,21 +148,6 @@ class Entity extends Base\Entity
         {
             $removedUser->refreshCurrentMerchant();
         }
-    }
-
-    /**
-     * Generates UUid ID
-     */
-    public function generateId()
-    {
-        $this->setAttribute('id', Uuid::generate());
-    }
-
-    public function transactions()
-    {
-        return $this->hasMany(
-            __NAMESPACE__.'\Transaction'
-        );
     }
 
     public static function getAggregations($data, $mode)
@@ -344,86 +279,8 @@ class Entity extends Base\Entity
             ->update($obj);
     }
 
-    /**
-     * Get the unique identifier for the user.
-     *
-     * @return mixed
-     */
-    public function getAuthIdentifier()
-    {
-        return $this->getKey();
-    }
-
-    /**
-     * Get the token value for the "remember me" session.
-     *
-     * @return string
-     */
-    public function getRememberToken()
-    {
-        return $this->getAttribute('remember_token');
-    }
-
-    /**
-     * Set the token value for the "remember me" session.
-     *
-     * @param  string  $value
-     * @return void
-     */
-    public function setRememberToken($value)
-    {
-        $this->setAttribute('remember_token', $value);
-    }
-
-    /**
-     * Get the column name for the "remember me" token.
-     *
-     * @return string
-     */
-    public function getRememberTokenName()
-    {
-        return 'remember_token';
-    }
-
-    /**
-     * Get the e-mail address where password reminders are sent.
-     *
-     * @return string
-     */
-    public function getReminderEmail()
-    {
-        return $this->email;
-    }
-
     public function isTestAccount()
     {
         return in_array($this->id, static::$test_merchant_ids);
-    }
-
-    public function isActive()
-    {
-        return ((int)$this->activated === 1);
-    }
-
-    public function setCustomId()
-    {
-        switch ($this->email)
-        {
-            case 'shk@razorpay.com':
-                $this->setAttribute('id', '100000Razorpay');
-                break;
-        }
-    }
-
-    public function archive()
-    {
-        $this->archived_at = time();
-        $this->save();
-    }
-
-    public function suspend()
-    {
-        $this->suspended_at = time();
-        $this->save();
     }
 }

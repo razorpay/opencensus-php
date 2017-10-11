@@ -76,9 +76,10 @@ app.controller('ConfirmCtrl', [
             });
           }, 3000);
         } else {
-          angular.forEach(data.errors, function(error, key) {
-            $scope.alerts.addAlert('danger', error);
-          });
+          $scope.alerts.addAlert(
+            'danger',
+            'Invalid confirmation token or the merchant is already confirmed.'
+          );
         }
       })
       .error(function() {

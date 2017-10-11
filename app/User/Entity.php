@@ -57,14 +57,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     protected $appends = ['confirmed'];
 
     /**
-     * Generates Uuid ID
-     */
-    public function generateId()
-    {
-        $this->setAttribute('id', Uuid::generate());
-    }
-
-    /**
      * Determine if the user is a member of any merchants.
      *
      * @return bool
@@ -101,16 +93,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
         $this->merchants()->attach([$merchantId], ['role' => $role]);
     }
 
-    /**
-     * Accessor for the currentMerchant method.
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function getCurrentMerchantAttribute()
-    {
-        return $this->currentMerchant();
-    }
-
     public function getConfirmToken()
     {
         return $this->confirm_token;
@@ -140,24 +122,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     }
 
     /**
-     * Get the id of the merchant that user is currently viewing.
-     *
-     * @param  void
-     * @return integer
-     */
-    public function getCurrentMerchantId()
-    {
-        if ($this->currentMerchant)
-        {
-            return $this->currentMerchant->id;
-        }
-        else
-        {
-            return null;
-        }
-    }
-
-    /**
      * Switch the current merchant for the user.
      *
      * @param  \App\Merchant\Entity  $merchant
@@ -183,41 +147,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     public function changePassword($input)
     {
         return $this->edit($input, 'changePassword');
-    }
-
-    /**
-     * Get the user's role on a given merchant.
-     *
-     * @param  \App\Merchant\Entity  $merchant
-     * @return string
-     */
-    public function getMerchantRole($merchant)
-    {
-        $merchant = $this->merchants->find($merchant->id);
-
-        if($merchant)
-        {
-            return $merchant->pivot->role;
-        }
-    }
-
-    /**
-     * Generates a one time use token of the given length
-     */
-    protected function generateOneTimeUseToken($length)
-    {
-        $bytes = random_bytes($length/2);
-        $token = bin2hex($bytes);
-
-        return $token;
-    }
-
-    /**
-     * Generates Confirmation token
-     */
-    protected function generateConfirmToken()
-    {
-        $this->setAttribute('confirm_token',$this->generateOneTimeUseToken(32));
     }
 
     /**
@@ -251,37 +180,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     }
 
     /**
-     * Set the token value for the "remember me" session.
-     *
-     * @param  string  $value
-     * @return void
-     */
-    public function setRememberToken($value)
-    {
-        $this->setAttribute('remember_token', $value);
-    }
-
-    /**
-     * Get the column name for the "remember me" token.
-     *
-     * @return string
-     */
-    public function getRememberTokenName()
-    {
-        return 'remember_token';
-    }
-
-    /**
-     * Get the e-mail address where password reminders are sent.
-     *
-     * @return string
-     */
-    public function getReminderEmail()
-    {
-        return $this->email;
-    }
-
-    /**
      * Confirm a user account
      * @return self
      */
@@ -294,27 +192,8 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
         return $this;
     }
 
-    public function getUserRoleWithCurrentMerchant()
-    {
-        $user = Auth::guard('user')->user();
-
-        $currentMerchant = $user->currentMerchant;
-
-        return $currentMerchant->pivot->role;
-    }
-
     public static function getUserWithEmail($email)
     {
         return self::where('email', $email)->first();
-    }
-
-    public function setEmailAttribute($value)
-    {
-        $this->attributes['email'] = mb_strtolower($value);
-    }
-
-    public function getConfirmedAttribute()
-    {
-        return ($this->confirm_token === null);
     }
 }

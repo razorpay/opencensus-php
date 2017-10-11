@@ -30,13 +30,10 @@ use Illuminate\Foundation\Application;
 
 class Service extends Base\Service
 {
-    const INVALID_CONFIRMATION_TOKEN = 'Invalid confirmation token or the merchant is already confirmed.';
-    const ACCOUNT_ALREADY_EXISTS     = 'You already have an account. Log in and accept the invite in you account settings page.';
     const OAUTH_SESSION_TOKEN         = 'oauth_session_token';
 
     // Users who signed up before this date
     // are not exposed to the pre signup flow
-
     const PRE_SIGNUP_TIMESTAMP = 1488306600;
 
     /**
@@ -56,20 +53,6 @@ class Service extends Base\Service
         $this->app = $app;
 
         $this->cache = $app['cache'];
-    }
-
-    protected function getRef(array &$input)
-    {
-        $referer = false;
-
-        // Unset because we fail the build step otherwise
-        if (isset($input['ref']))
-        {
-            $referer = $input['ref'];
-            unset($input['ref']);
-        }
-
-        return $referer;
     }
 
     /**
@@ -438,54 +421,6 @@ class Service extends Base\Service
         }
 
         return ["Couldn't find the merchant you are looking for."];
-    }
-
-    /**
-     * Get all the merchants for the given user.
-     *
-     * @param  User\Entity  $user
-     * @return Merchant\Entity[]
-     */
-    public function getAllMerchantsForUser(User\Entity $user)
-    {
-        $error = array();
-
-        $merchants = $user->merchants()->get();
-
-        if($merchants->count() < 0)
-        {
-            $merchants = [];
-        }
-        else
-        {
-            $currentMerchantId = $user->getCurrentMerchantId();
-
-            foreach ($merchants as $merchant)
-            {
-                // Set current to a boolean
-                $merchant->current = ($merchant->id == $currentMerchantId);
-                $merchant->setVisible(['id','name','email','current']);
-            }
-        }
-
-        return $merchants;
-    }
-
-    /**
-     * Get the current merchant for the authenticated user.
-     *
-     * @param  User\Entity  $user
-     * @return \Illuminate\Http\Response
-     */
-    public function getOwnedMerchantForUser(User\Entity $user)
-    {
-        if ($user->currentMerchant->pivot->role !== 'owner')
-        {
-            $error = ["We couldn't find the merchant you are looking for."];
-            return [$error, null];
-        }
-
-        return array(null, $user->currentMerchant);
     }
 
     public function upgradeUserToMerchant($input)
