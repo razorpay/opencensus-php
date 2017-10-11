@@ -22,6 +22,12 @@ export const isDeepLink = url => {
   return urlRegExp.test(url);
 };
 
+export const isAmount = amount => {
+  amount = amount || '';
+  let amountRexExp = /^\d+(\.\d{1,2})?$/;
+  return amountRexExp.test(amount);
+};
+
 export const isPhone = phone => {
   phone = phone || '';
   let phoneRegExp = new RegExp(/^$|\+?[0-9]{8,15}$/);
@@ -84,3 +90,4 @@ export const email = makeValidator(isEmail, 'Invalid Email');
 export const phone = makeValidator(isPhone, 'Invalid Contact');
 export const url = makeValidator(isUrl, 'Invalid Url');
 export const deepLink = makeValidator(isDeepLink, 'Invalid Link');
+export const amount = makeValidator(isAmount, 'Invalid amount');
