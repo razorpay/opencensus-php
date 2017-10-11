@@ -632,12 +632,12 @@ final class Route
         'merchant_analytics'                      => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
 
         // Feature onboarding routes
-        'onboarding_features_details'              => ['get',      'onboarding/features',                            'FeatureController@getOnboardingDetails',                           ],
-        'onboarding_features_fetch_responses'      => ['get',      'onboarding/features/{feature}',        'FeatureController@getOnboardingResponses',                         ],
-        'onboarding_features_create'               => ['post',     'onboarding/features/{feature}',                  'FeatureController@postOnboardingResponses',                        ],
-        'onboarding_features_update'               => ['put',      'onboarding/features/{feature}',                  'FeatureController@updateOnboardingResponses',                      ],
-        'onboarding_features_responses'            => ['get',      'onboarding/features/responses', 'FeatureController@getFeatureActivationRequests'                    ],
-        'onboarding_features_update_status'        => ['put',      'onboarding/features/{feature}/status', 'FeatureController@updateFeatureActivationStatus'                   ],
+        'onboarding_features_fetch_details'       => ['get',      'onboarding/features',                            'FeatureController@getOnboardingDetails',                           ],
+        'onboarding_features_fetch_response'      => ['get',      'onboarding/features/{feature}',        'FeatureController@getOnboardingResponses',                         ],
+        'onboarding_features_create'              => ['post',     'onboarding/features/{feature}',                  'FeatureController@postOnboardingResponses',                        ],
+        'onboarding_features_update'              => ['put',      'onboarding/features/{feature}',                  'FeatureController@updateOnboardingResponses',                      ],
+        'onboarding_features_fetch_responses'     => ['get',      'onboarding/features/responses', 'FeatureController@getFeatureActivationRequests'                    ],
+        'onboarding_features_update_status'       => ['put',      'onboarding/features/{feature}/status', 'FeatureController@updateFeatureActivationStatus'                   ],
     ];
 
     public static $public = [
@@ -1127,9 +1127,9 @@ final class Route
         'oauth_application_update',
         'merchant_analytics',
         'reports_refund_irctc',
-        'onboarding_features_details',
+        'onboarding_features_fetch_details',
         'onboarding_features_create',
-        'onboarding_features_fetch_responses',
+        'onboarding_features_fetch_response',
     ];
 
     // These will run on internal auth with the assurance
@@ -1214,7 +1214,7 @@ final class Route
         'setl_retry',
         'merchant_activation_files',
         'merchant_batches',
-        'onboarding_features_responses',
+        'onboarding_features_fetch_responses',
         'onboarding_features_update_status',
         'onboarding_features_update'
     ];
@@ -1350,7 +1350,7 @@ final class Route
         'merchant_analytics'               => '*',
         'merchant_activation_files'        => '*',
         'dispute_reason_create'            => '*',
-        'onboarding_features_responses'     => '*',
+        'onboarding_features_fetch_responses'     => '*',
         'onboarding_features_update_status' => '*',
         'onboarding_features_update'        => '*'
     ];
