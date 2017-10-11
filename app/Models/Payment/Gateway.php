@@ -450,11 +450,22 @@ class Gateway
         Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS,
         Gateway::HDFC,
-        Gateway::NETBANKING_ICICI
+        Gateway::NETBANKING_ICICI,
+        Gateway::NETBANKING_HDFC,
     ];
 
     public static $eMandateBanks = [
-        IFSC::ICIC
+        IFSC::ICIC,
+        IFSC::HDFC,
+    ];
+
+    /**
+     * List of netbanking gateways that file based recurring payments
+     *
+     * @var array
+     */
+    public static $fileBasedEMandateBanks = [
+        IFSC::HDFC => Gateway::NETBANKING_HDFC,
     ];
 
     /**
@@ -626,9 +637,20 @@ class Gateway
         return $gatewayToBankMap[$gateway];
     }
 
-    public static function isRecurringGateway($gateway)
+    public static function isRecurringGateway($gateway): bool
     {
         return in_array($gateway, self::$recurringGateways, true);
+    }
+
+    public static function isFileBasedEMandateBank($bank): bool
+    {
+        if (empty($bank) === true)
+        {
+            return false;
+        }
+
+        return ((self::isRecurringSupportedOnBank($bank)) and
+                (array_key_exists($bank, self::$fileBasedEMandateBanks)));
     }
 
     /**

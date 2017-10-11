@@ -1818,8 +1818,10 @@ trait Authorize
         }
         else if ($payment->isNetbanking() === true)
         {
+            $accountNumber = $input['account_number'] ?? null;
+
             // save netbanking bank locally for local customer
-            $token = $this->savePaymentMethod($customer, $payment);
+            $token = $this->savePaymentMethod($customer, $payment, $accountNumber);
         }
 
         if ($token !== null)
@@ -1855,8 +1857,10 @@ trait Authorize
         }
         else if ($payment->isNetbanking() === true)
         {
+            $accountNumber = $input['account_number'] ?? null;
+
             // save netbanking bank token globally for global customer
-            $token = $this->savePaymentMethod($customer, $payment);
+            $token = $this->savePaymentMethod($customer, $payment, $accountNumber);
         }
 
         if ($token !== null)
@@ -1866,17 +1870,17 @@ trait Authorize
     }
 
     protected function savePaymentMethod(
-        Customer\Entity $customer, Payment\Entity $payment, $savedCardId = null): Token\Entity
+        Customer\Entity $customer, Payment\Entity $payment, $instrumentId = null): Token\Entity
     {
         $this->trace->info(
             TraceCode::PAYMENT_SAVE_METHOD,
             [
-                'method'      => $payment->getMethod(),
-                'payment_id'  => $payment->getId(),
-                'merchant_id' => $payment->merchant->getId(),
-                'customer_id' => $customer->getId(),
-                'local'       => $customer->isLocal(),
-                'card_id'     => $savedCardId
+                'method'            => $payment->getMethod(),
+                'payment_id'        => $payment->getId(),
+                'merchant_id'       => $payment->merchant->getId(),
+                'customer_id'       => $customer->getId(),
+                'local'             => $customer->isLocal(),
+                'instrument_id'     => $instrumentId,
             ]);
 
         $saveMethodInput = [
@@ -1889,12 +1893,14 @@ trait Authorize
 
             $saveMethodInput[Token\Entity::CARD_ID] = $savedCardId;
         }
-        else if ($payment->isMethod(Payment\Method::NETBANKING))
+        else if ($payment->isNetbanking() === true)
         {
             $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
 
             // TODO: We need to get this from user input - hard coding for now
             $saveMethodInput[Token\Entity::MAX_AMOUNT] = Token\Entity::DEFAULT_MAX_AMOUNT;
+
+            $saveMethodInput[Token\Entity::ACCOUNT_NUMBER] = $instrumentId;
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
@@ -2199,7 +2205,7 @@ trait Authorize
         }
         else if ($payment->isNetbanking() === true)
         {
-            $this->updateTokenOnAuthorizedForNetbankingRecurring($token, $data);
+            $this->updateTokenOnAuthorizedForNetbankingRecurring($token, $data, $payment);
         }
 
         //
@@ -2236,7 +2242,8 @@ trait Authorize
      * @param Token\Entity $token
      * @param array        $gatewayData
      */
-    protected function updateTokenOnAuthorizedForNetbankingRecurring(Token\Entity $token, array $gatewayData)
+    protected function updateTokenOnAuthorizedForNetbankingRecurring(
+        Token\Entity $token, array $gatewayData, Payment\Entity $payment)
     {
         //
         // This should trace a critical error because this method is called
@@ -2256,6 +2263,17 @@ trait Authorize
                     'token'        => $token->toArray(),
                     'gateway_data' => $gatewayData
                 ]);
+
+            return;
+        }
+
+        // Set the token recurring_status to initiated for Netbanking file-based emandate payments
+        if (($token->getMethod() === Payment\Method::NETBANKING) and
+            ($token->isRecurring() === false) and
+            ($payment->isFileEmandatePayment() === true) and
+            ($payment->getRecurringType() === Payment\RecurringType::INITIAL))
+        {
+            $token->setRecurringStatus(Token\RecurringStatus::INITIATED);
 
             return;
         }
