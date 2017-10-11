@@ -370,26 +370,6 @@ class Service extends Base\Service
         }
     }
 
-    /**
-     * take care when calling this function
-     * This is only called from the admin service
-     * @param  string $id    Merchant Id
-     * @param  array $input  Array with new Merchant Name
-     */
-    public static function changeName($id, $name)
-    {
-        $merchant = Merchant\Entity::findorfail($id);
-
-        if ($merchant->isTestAccount())
-        {
-            return [static::NAME_CHANGE_FORBIDDEN];
-        }
-
-        $merchant->changeName($name);
-
-        $merchant->save();
-    }
-
     public function resendConfirmation()
     {
         $authUser = Auth::user();

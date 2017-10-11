@@ -423,11 +423,6 @@ class Service extends Base\Service
                 $error = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
             }
 
-            if (isset($input['name']))
-            {
-                $error = Merchant\Service::changeName($id, $input['name']);
-            }
-
             if ((isset($input['fee_bearer'])) and ($input['fee_bearer'] === 'customer'))
             {
                 $currentTags = (new Merchant\Service)->getMerchantTags($id);

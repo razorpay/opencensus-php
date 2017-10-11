@@ -101,17 +101,6 @@ class Entity extends Base\Entity
     }
 
     /**
-     * Take care while calling this method
-     * @param array $input array with new name
-     */
-    public function changeName($name)
-    {
-        return $this->edit([
-            'name' => $name
-        ], 'changeName');
-    }
-
-    /**
      * Determine if the merchant has any users.
      *
      * @return bool

@@ -21,7 +21,6 @@ use App\User\Helper;
 use App\MerchantDetails;
 use App\Mailers\UserMailer;
 use App\Providers\GenericUser;
-use DrewM\MailChimp\MailChimp;
 use App\Session as SessionTable;
 use Illuminate\Hashing\BcryptHasher;
 use Illuminate\Contracts\Cache\Store;
@@ -209,23 +208,6 @@ class Service extends Base\Service
         unset($user->token);
 
         return $user;
-    }
-
-    public function confirmUserByDataOnApi($data)
-    {
-        $this->setApiCredentials();
-
-        $error = $response = [];
-        try
-        {
-            $response = $this->api->user->confirmByData($data);
-        }
-        catch (\Exception $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $response];
     }
 
     /**

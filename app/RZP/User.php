@@ -51,13 +51,6 @@ class User extends Entity
         return $this->request('PUT', $relativeUrl, $params);
     }
 
-    public function confirmByData($params)
-    {
-        $relativeUrl = $this->getEntityUrl().'confirm_user_by_data';
-
-        return $this->request('PUT', $relativeUrl, $params);
-    }
-
     public function changePassword($userId, array $params)
     {
         $relativeUrl = $this->getEntityUrl().$userId.'/password';
