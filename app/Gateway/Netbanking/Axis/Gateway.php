@@ -192,7 +192,8 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $verify->amountMismatch = ($paymentAmount !== $verify->verifyResponseContent[ResponseFields::AMOUNT]);
+            $verify->amountMismatch =
+                ($paymentAmount !== $verify->verifyResponseContent[ResponseFields::VERIFY_RESPONSE_AMT]);
         }
     }
 
