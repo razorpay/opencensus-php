@@ -12,13 +12,13 @@ export default class Table extends Component {
     let trClass = onClick ? 'tr clickable' : 'tr';
 
     pending = pending.get();
-    filters = filters.get();
 
     return (
       <div>
         {(pending && <div class="table-pending" />) ||
           ((items.length && (
             <div class="box">
+              <Pagination model={model} />
               <div class="table-info">
                 {items.length} Results ({filters.skip + 1} &ndash;{' '}
                 {filters.skip + items.length})
@@ -50,6 +50,36 @@ export default class Table extends Component {
               </div>
             </div>
           )) || <div class="table-empty" />)}
+      </div>
+    );
+  }
+}
+
+class Pagination extends Component {
+  prev() {
+    this.skip -= this.count;
+  }
+
+  next() {
+    this.skip += this.count;
+  }
+
+  render() {
+    let { filters, items } = this.props.model;
+    return (
+      <div class="pagination">
+        {(filters.skip && (
+          <div class="prev" onClick={filters::this.prev}>
+            ← Previous
+          </div>
+        )) ||
+          null}
+        {(filters.count === items.length && (
+          <div class="next" onClick={filters::this.next}>
+            Next →
+          </div>
+        )) ||
+          null}
       </div>
     );
   }

@@ -7,20 +7,19 @@ const defaultFilters = {
 };
 
 export default class Collection {
-  @observable items = [];
-
   constructor({ fetchRoute, fetchFn, filters, items, urlParams }) {
     this.fetchRoute = fetchRoute;
     this.fetchFn = fetchFn;
     this.urlParams = urlParams;
 
     this.pending = observable.box();
-    this.filters = observable.box(Object.assign(defaultFilters, filters));
+    this.filters = observable.shallowObject(
+      Object.assign(defaultFilters, filters)
+    );
 
     // fetch if not pre-populated
-    if (items) {
-      this.items.replace(items);
-    } else {
+    this.items = observable.shallowArray(items || []);
+    if (!items) {
       this.fetch();
     }
   }
