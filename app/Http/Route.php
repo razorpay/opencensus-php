@@ -1059,6 +1059,9 @@ final class Route
         'settings_upsert',
         'settings_delete',
         'emandate_registration_initiate',
+        'emandate_registration_reconcile',
+        'emandate_debit_initiate',
+        'emandate_debit_reconcile',
     ];
 
     public static $proxy = [
@@ -1452,6 +1455,9 @@ final class Route
             'gateway_file_create',
             'reports_refund_irctc',
             'emandate_registration_initiate',
+            'emandate_registration_reconcile',
+            'emandate_debit_initiate',
+            'emandate_debit_reconcile',
         ],
 
         'kotak' => [
