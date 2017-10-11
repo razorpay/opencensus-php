@@ -1891,7 +1891,7 @@ trait Authorize
         {
             $saveMethodInput[Token\Entity::METHOD] = Payment\Method::CARD;
 
-            $saveMethodInput[Token\Entity::CARD_ID] = $savedCardId;
+            $saveMethodInput[Token\Entity::CARD_ID] = $instrumentId;
         }
         else if ($payment->isNetbanking() === true)
         {
