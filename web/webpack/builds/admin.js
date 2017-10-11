@@ -35,7 +35,7 @@ module.exports = {
 
   plugins: [
     new webpack.DllReferencePlugin({
-      manifest: path.resolve(__dirname, '/../../public/dist/manifest.json'),
+      manifest: path.resolve(__dirname + '/../../../public/dist/manifest.json'),
     }),
     new webpack.optimize.CommonsChunkPlugin({
       names: ['libs', 'manifest'],
