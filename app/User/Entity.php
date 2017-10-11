@@ -179,19 +179,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
         return $this->getAttribute('remember_token');
     }
 
-    /**
-     * Confirm a user account
-     * @return self
-     */
-    public function confirm()
-    {
-        $this->confirm_token = null;
-
-        $this->save();
-
-        return $this;
-    }
-
     public static function getUserWithEmail($email)
     {
         return self::where('email', $email)->first();

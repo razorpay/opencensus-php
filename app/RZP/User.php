@@ -51,13 +51,6 @@ class User extends Entity
         return $this->request('PUT', $relativeUrl, $params);
     }
 
-    public function confirm($userId)
-    {
-        $relativeUrl = $this->getEntityUrl().$userId.'/confirm';
-
-        return $this->request('PUT', $relativeUrl);
-    }
-
     public function confirmByData($params)
     {
         $relativeUrl = $this->getEntityUrl().'confirm_user_by_data';
