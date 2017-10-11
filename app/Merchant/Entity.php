@@ -345,18 +345,6 @@ class Entity extends Base\Entity
     }
 
     /**
-     * Generates data required for merchant registration with the API
-     */
-    public function generateApiData()
-    {
-        return array(
-            'id'    => $this->id,
-            'name'  => $this->name,
-            'email' => $this->email
-        );
-    }
-
-    /**
      * Get the unique identifier for the user.
      *
      * @return mixed

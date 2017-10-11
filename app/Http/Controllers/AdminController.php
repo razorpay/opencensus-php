@@ -364,18 +364,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    /**
-     * Confirm a user account manually
-     */
-    public function postConfirmUser()
-    {
-        $input = Input::all();
-
-        list($error, $data) = $response = (new Admin\Service)->confirmUser($input['email']);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
     public function postSlackQuery()
     {
         $input = Input::all();

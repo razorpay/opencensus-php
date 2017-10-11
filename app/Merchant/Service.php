@@ -393,47 +393,6 @@ class Service extends Base\Service
         $merchant->save();
     }
 
-    public function createMerchantOnApi($merchantId, $adminId = null)
-    {
-        $merchant = Merchant\Entity::findOrFail($merchantId);
-
-        $merchantApiData = $this->getMerchantApiData($merchant, $adminId);
-
-        // This is internal auth as of now
-        // We need to shift this to some other auth
-        $this->setApiCredentials();
-
-        $merchantOnApi = $this->fetchApiEntityIfExists('merchant', $merchantApiData['id']);
-
-        // Only create the merchant if it doesn't exist on the API
-        if ($merchantOnApi === null)
-        {
-            $response = $this->api->merchant->create($merchantApiData);
-        }
-
-        return $merchant;
-    }
-
-    public function getMerchantApiData($merchant, $adminId)
-    {
-        $merchantApiData = $merchant->generateApiData();
-
-        if (! empty($adminId))
-        {
-            $merchantApiData['admins'] = [ $adminId ];
-        }
-
-        // Fetch org by hostname and set the orgId in the input
-        // so that the merchant can be tagged to the Org
-        $domain = \Request::server('SERVER_NAME');
-
-        list($error, $org) = (new Admin\Service)->getOrg($domain);
-
-        $merchantApiData['org_id'] = $org['id'];
-
-        return $merchantApiData;
-    }
-
     public function resendConfirmation()
     {
         $authUser = Auth::user();

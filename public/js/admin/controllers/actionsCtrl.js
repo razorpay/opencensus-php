@@ -336,12 +336,16 @@ app
           modalInstance.result.then($scope.addEMI, $.noop);
         };
         $scope.confirmUser = function(email) {
-          var request = $http({
-            method: 'post',
-            url: '/admin/users/confirm',
-            data: {
+          var data = {
+            route_name: 'user_confirm_by_data',
+            body: {
               email: email,
             },
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: data,
           });
           request
             .success(function(data) {

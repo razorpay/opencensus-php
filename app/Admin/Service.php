@@ -1032,13 +1032,6 @@ class Service extends Base\Service
         return $featureNames;
     }
 
-    public function confirmUser($email)
-    {
-        list($error, $data) = (new User\Service)->confirmUserByEmail($email);
-
-        return [$error, $data];
-    }
-
     /**
      * See the data params at
      * https://razorpay.slack.com/services/20502106306?updated=1#service_setup

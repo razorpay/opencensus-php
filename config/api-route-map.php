@@ -605,8 +605,6 @@ return [
         'user_register'                     => 'users/register',
         // User Login
         'user_login'                        => 'users/login',
-        // Confirm User
-        'user_confirm_by_data'              => 'users/confirm_user_by_data',
         // Resend Verification
         'user_resend_verification'          => 'users/resend-verification',
 
@@ -697,6 +695,9 @@ return [
         'admin_fetch_entity_by_id'          => 'admin/{type}/{id}',
         'admin_fetch_terminal_by_id'        => 'admin/terminal/{id}',
         'admin_fetch_entity_multiple'       => 'admin/{type}',
+
+        // Confirm User
+        'user_confirm_by_data'              => 'users/confirm_user_by_data',
 
         // Toggle Terminal
         'terminal_toggle'                   => 'terminals/{id}/toggle',

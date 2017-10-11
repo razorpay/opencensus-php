@@ -158,21 +158,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     }
 
     /**
-     * Returns the first merchant owned by this user
-     * @return Merchant\Entity
-     */
-    public function getOwnerMerchant()
-    {
-        $merchant = $this->merchants()
-                         ->where('user_id', $this->id)
-                         ->where('merchant_id', $this->currentMerchant()->id)
-                         ->where('role', 'owner')
-                         ->first();
-
-        return $merchant;
-    }
-
-    /**
      * Switch the current merchant for the user.
      *
      * @param  \App\Merchant\Entity  $merchant

@@ -228,42 +228,6 @@ class Service extends Base\Service
         return $user;
     }
 
-    /**
-     * This function is used to confirm a user by email.
-     * @param string $email
-     */
-    public function confirmUserByEmail($email)
-    {
-        $confirm_data = ['email' => $email];
-
-        list($error, $response) = $this->confirmUserByDataOnApi($confirm_data);
-
-        if (empty($error) === false)
-        {
-            return [['Email is invalid.'], []];
-        }
-
-        $user = User\Entity::where('email', $email)->first();
-
-        $user->confirm();
-
-        $this->subscribeToMailingList($user);
-
-        /*
-         * For handling the old code.
-         * For all those users who have registered earlier using old code and have not confirmed yet.
-         * [For them, on dashboard side we have created data. Creating data on Api side]
-         */
-        $merchant = $user->getOwnerMerchant();
-
-        if ($merchant !== null)
-        {
-            (new Merchant\Service)->createMerchantOnApi($merchant->id);
-        }
-
-        return [null, ['email' => $user->email]];
-    }
-
     public function confirmUserByDataOnApi($data)
     {
         $this->setApiCredentials();
