@@ -264,7 +264,11 @@ class Service extends Base\Service
     {
         $user = (new Core)->confirmUserByData($input);
 
-        return $user->toArrayPublic();
+        $data = $user->toArrayPublic();
+
+        (new Core)->subscribeToMailingList($data);
+
+        return $data;
     }
 
     public function changePassword(string $id, array $input): array

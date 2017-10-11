@@ -1353,6 +1353,7 @@ final class Route
         'settings_delete'                  => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'               => '*',
         'merchant_activation_files'        => '*',
+        'user_confirm_by_data'             => '*',
     ];
 
     public static $direct = [
