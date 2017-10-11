@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Constants\Table;
+use RZP\Models\Customer\Token;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
@@ -960,5 +961,25 @@ class Repository extends Base\Repository
                     ->whereNotNull(Entity::SERVICE_TAX)
                     ->limit($limit)
                     ->update([Entity::TAX => DB::raw(Entity::SERVICE_TAX)]);
+    }
+
+    public function fetchPendingEMandateRegistration(string $gateway, int $from, int $to)
+    {
+        $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
+
+        $payments = $this->newQuery()
+                         ->join(function ($join)
+                         {
+                            $join->on(Entity::TOKEN_ID, '=', Token\Entity::ID);
+                            $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', Token\Entity::ID);
+                         })
+                        ->where(Entity::RECURRING_TYPE, '=', RecurringType::INITIAL)
+                        ->where(Entity::RECURRING, '=', 1)
+                        ->where(Entity::METHOD, '=', Method::NETBANKING)
+                        ->where(Entity::GATEWAY, '=', $gateway)
+                        ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                        ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
+                        ->with(['localToken', 'globalToken', 'token.customer'])
+                        ->get();
     }
 }
