@@ -299,11 +299,11 @@ class Service extends Base\Service
      *
      * @return Dictionary|string
      */
-    public function getOnboardingResponses(string $feature = 'all')
+    public function getOnboardingResponses(string $feature = null)
     {
         $settings = Accessor::for($this->merchant, Constants::ONBOARDING);
 
-        $settings = ($feature === 'all') ? $settings->all() : $settings->get($feature);
+        $settings = ($feature === null) ? $settings->all() : $settings->get($feature);
 
         $settings = $this->addFileUrlInResponseIfApplicable($settings);
 
