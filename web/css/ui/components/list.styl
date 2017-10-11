@@ -5,11 +5,18 @@
   .filters
     padding: 10px 5px
     display: flex
+    flex-wrap: wrap
+    align-content: flex-start
     background: #fafbfc
     border-top: 1px solid #eee
     border-bottom: @border-top
     button
       margin-left: auto
+  .more-filters-following ~ .field
+    label
+      display: block
+      margin: 2px 0
+      text-transform: capitalize
 
 .table-empty
   text-align: center

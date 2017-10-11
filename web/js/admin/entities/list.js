@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Table from 'ui/Table';
-import Field, { SelectField } from 'ui/Field';
+import Field, { SelectField, SwitchField } from 'ui/Field';
 import Collection from 'util/collection';
 import { adminFetch } from 'util/fetch';
 
@@ -44,6 +44,27 @@ export default class EntityList extends Component {
                 </option>
               ))}
             </SelectField>
+            <SwitchField
+              disabledValue="test"
+              value="live"
+              mode="mode"
+              label="Live Mode"
+            />
+            <Field
+              label="Count"
+              class="small"
+              name="count"
+              type="number"
+              defaultValue="20"
+              min="10"
+              max="1000"
+              step="10"
+            />
+            <Field label="From" type="datetime-local" name="from" />
+            <Field label="To" type="datetime-local" name="to" />
+            <Field label="ID" name="entity.id" />
+
+            <div class="more-filters-following" />
             {filters &&
               Object.keys(filters).map((filterName, index) => {
                 let filterValue = filters[filterName];
@@ -62,6 +83,7 @@ export default class EntityList extends Component {
                   </SelectField>
                 );
               })}
+            <button>Go</button>
           </Form>
         </div>
       </div>

@@ -16,9 +16,12 @@ input, select, textarea, button, .btn
 textarea
   min-height: 100px
 
-input, textarea
+input, textarea, select
   width: 200px
   box-shadow: inset 0 1px 2px rgba(10, 10, 10, 0.1)
+
+.small
+  width: 80px
 
 input
   &[type=checkbox],&[type=radio]
@@ -27,8 +30,8 @@ input
     margin: 0
 
 label
-  display: inline-block
-  vertical-align: middle
+  line-height: 18px
+  white-space: nowrap
   margin: 0 6px
 
 button, .btn
@@ -44,8 +47,52 @@ button, .btn
   margin: 10px
 
 .field
+  flex: 1
   margin: 10px
+
+.switch-field
+  label
+    line-height: 38px
+    padding-right: 40px
+    position: relative
+    cursor: pointer
+  input
+    display: none
+
+.switch-knob
+  pointer-events: none
+  margin-left: -36px
+  position: absolute
+  height: 38px
+  width: 34px
   display: inline-block
+  vertical-align: middle
+  &:before
+    content: ''
+    display: block
+    border-radius: 10px
+    margin-top: 9px
+    height: 20px
+    width: 100%
+    background: #9E9E9E
+  &:after
+    left: 0
+    top: 9px
+    position: absolute
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.18)
+    content: ''
+    background: #fff
+    border-radius: 50%
+    width: 19px
+    height: @width
+    transition: .2s
+
+:checked+.switch-knob
+  &:before
+    background: linear-gradient(to bottom, #4CD964, #4BD863);
+  &:after
+    transform: translateX(15px)
+
 
 form
   &.pending

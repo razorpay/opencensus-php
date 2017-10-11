@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { adminFetch as fetch } from 'util/fetch';
+import { notifyError } from 'common/modal';
 
 export default class Form extends Component {
   state = {
@@ -45,7 +46,7 @@ export default class Form extends Component {
       function(data, el) {
         var { name, value } = el;
         if (el.type === 'checkbox') {
-          value = el.checked ? 1 : 0;
+          value = el.checked ? el.value || 1 : 0;
         }
         if (value) {
           // item[foo] → item.foo
