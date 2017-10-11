@@ -184,7 +184,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function validateSignatureAndInflatePares($paresXml)
+    protected function validateSignatureAndInflatePares($pares)
     {
         $paresXml = gzinflate(substr($pares, 2));
 
@@ -736,6 +736,8 @@ class Gateway extends Base\Gateway
             'Accept'       => $this->app['request']->header('Accept'),
             'User-Agent'   => $this->app['request']->header('User-Agent')
         ];
+
+        $request['options'] = $options;
 
         $request['options']['timeout'] = 10;
         $request['options']['connect_timeout'] = 10;
