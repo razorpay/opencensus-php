@@ -584,7 +584,7 @@ class Core extends Base\Core
             function () use ($subscription, $input)
             {
                 if ((isset($input[Entity::CANCEL_AT_CYCLE_END]) === true) and
-                    ($input[Entity::CANCEL_AT_CYCLE_END] = true))
+                    (boolval($input[Entity::CANCEL_AT_CYCLE_END]) === true))
                 {
                     $this->setupCancelAtCycleEnd($subscription);
                 }
