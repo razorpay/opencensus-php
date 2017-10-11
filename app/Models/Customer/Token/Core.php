@@ -9,6 +9,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -152,6 +153,71 @@ class Core extends Base\Core
         }
 
         return $tokens;
+    }
+
+    public function updateTokenFromNetbankingGatewayData(Entity $token, array $gatewayData): Entity
+    {
+        if (empty($gatewayData[Entity::RECURRING_STATUS]) === false)
+        {
+            $gatewayRecurringStatus = $gatewayData[Entity::RECURRING_STATUS];
+
+            $token->setRecurringStatus($gatewayRecurringStatus);
+        }
+        else
+        {
+            //
+            // The recurring status should always be set for token update.
+            //
+            $this->trace->critical(
+                TraceCode::GATEWAY_RECURRING_STATUS_NOT_SET,
+                [
+                    'token'        => $token->toArray(),
+                    'gateway_data' => $gatewayData
+                ]);
+
+            return;
+        }
+
+        if ($gatewayRecurringStatus === RecurringStatus::CONFIRMED)
+        {
+            $token->setRecurring(true);
+
+            //
+            // Not all netbanking recurring have a gateway token.
+            // However, if a second recurring payment is attempted without a gateway token,
+            // we throw an exception or handle the case appropriately in the child gateway class.
+            //
+            if (empty($gatewayData[Entity::GATEWAY_TOKEN]) === false)
+            {
+                $gatewayToken = $gatewayData[Entity::GATEWAY_TOKEN];
+
+                $token->setGatewayToken($gatewayToken);
+            }
+        }
+        else if ($gatewayRecurringStatus === RecurringStatus::REJECTED)
+        {
+            if (empty($gatewayData[Entity::RECURRING_FAILURE_REASON]) === true)
+            {
+                //
+                // If it's rejected, there must always be a reason.
+                //
+
+                $this->trace->critical(
+                    TraceCode::GATEWAY_RECURRING_REJECTED_WITHOUT_REASON,
+                    [
+                        'token'        => $token->toArray(),
+                        'gateway_data' => $gatewayData
+                    ]);
+
+                return;
+            }
+
+            $token->setRecurringFailureReason($gatewayData[Entity::RECURRING_FAILURE_REASON]);
+        }
+
+        $this->repo->saveOrFail($token);
+
+        return $token;
     }
 
     protected function validateExistingToken($token)
