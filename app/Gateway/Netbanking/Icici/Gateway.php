@@ -214,7 +214,9 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($attrs, $callbackData);
 
-        $this->assertAmount($input, $callbackData);
+        $actualAmount = (int) ($callbackData['AMT'] * 100);
+
+        $this->assertAmount($input['payment']['amount'], $actualAmount);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -642,13 +644,6 @@ class Gateway extends Base\Gateway
         ];
 
         return array_merge($data, $recurringData);
-    }
-
-    protected function assertAmount($input, $content)
-    {
-        $actualAmount = (int) ($content['AMT'] * 100);
-
-        parent::assertAmount($input['payment']['amount'], $actualAmount);
     }
 
     protected function checkCallbackStatus(array $attrs, array $content)
