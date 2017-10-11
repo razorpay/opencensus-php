@@ -35,7 +35,7 @@ class FirstServiceProvider extends ServiceProvider
 
     /**
      * Registers getId macro on request to get a new request id to identify
-     * the given request in trace logs. Generates a new rquest id if not already set
+     * the given request in trace logs. Generates a new request id if not already set
      */
     protected function registerRequestGetIdMacro()
     {
