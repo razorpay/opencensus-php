@@ -125,6 +125,12 @@ class Gateway extends Base\Gateway
     {
         $attributes = [];
 
+        if (isset($response[VERes::MESSAGE]['Error']) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
+        }
+
         $ch = $response[VERes::MESSAGE][VERes::VERES][VERes::CH];
 
         $attributes = [
