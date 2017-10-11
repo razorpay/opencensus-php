@@ -49,11 +49,11 @@ class Batch extends Job implements ShouldQueue
         {
             $batch = $this->repoManager->batch->findOrFail($this->id);
 
-            // Earlier we used to again validate if the batch is in a retriable state
-            // I think this is not rquired and once a batch is here, we should set
-            // the status to PROCESSING to maintain state consistency
-            // TBD- Need to discuss this with reviewers
-            $batch->setStatus(Status::PROCESSING);
+            $batch->getValidator()->validateIfProcessable();
+
+            $batch->setProcessing(true);
+
+            $this->repo->saveOrFail($batch);
 
             $timeStarted = microtime(true);
 
@@ -78,6 +78,9 @@ class Batch extends Job implements ShouldQueue
         }
         catch (\Throwable $e)
         {
+            // At this stage if any exception is thrown, then we just trace it and don't
+            // update the batch, as all the error handling is done in the processor class itself
+            // and any exception thrown should be ideally handled before this itself.
             $this->trace->traceException(
                             $e,
                             null,

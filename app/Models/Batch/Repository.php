@@ -34,11 +34,10 @@ class Repository extends Base\Repository
      */
     public function fetchUnprocessedForCron($limit = 10): Base\PublicCollection
     {
-        $status = [Status::CREATED, Status::PROCESSING];
-
         return $this->newQuery()
                     ->whereIn(Entity::TYPE, Type::$cronGroup)
-                    ->whereIn(Entity::STATUS, $status)
+                    ->where(Entity::STATUS, '!=', Status::PROCESSED)
+                    ->where(Entity::PROCESSING, 0)
                     ->oldest()
                     ->limit($limit)
                     ->get();

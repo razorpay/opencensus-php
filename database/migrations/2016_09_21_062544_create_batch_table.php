@@ -35,16 +35,19 @@ class CreateBatchTable extends Migration
 
             $table->char(Batch::TYPE, 25);
 
-            $table->string(Batch::GATEWAY, 25)
+            $table->string(Batch::SUB_TYPE, 20)
                   ->nullable();
 
-            $table->string(Batch::RECONCILIATION_TYPE, 20)
+            $table->string(Batch::GATEWAY, 25)
                   ->nullable();
 
             $table->text(Batch::FAILURE_REASON)
                   ->nullable();
 
             $table->char(Batch::STATUS, Batch::STATUS_LENGTH);
+
+            $table->tinyInteger(Batch::PROCESSING)
+                  ->default(0);
 
             $table->integer(Batch::TOTAL_COUNT);
 

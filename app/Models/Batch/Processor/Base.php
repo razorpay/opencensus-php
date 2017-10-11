@@ -4,20 +4,20 @@ namespace RZP\Models\Batch\Processor;
 
 use Mail;
 use Carbon\Carbon;
-
 use RZP\Models\Batch;
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Models\Batch\Status;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Exception\BadRequestValidationFailureException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Base extends BaseModel\Core
 {
@@ -144,34 +144,45 @@ class Base extends BaseModel\Core
 
     public function process()
     {
-        $this->trace->info(TraceCode::BATCH_FILE_PROCESSING, $this->batch->toArray());
+        try
+        {
+            $this->trace->info(TraceCode::BATCH_FILE_PROCESSING, $this->batch->toArray());
 
-        $this->batch->getValidator()->validateIfProcessable();
+            $this->batch->getValidator()->validateIfProcessable();
 
-        $this->batch->incrementAttempts();
+            $this->batch->incrementAttempts();
 
-        $this->downloadAndSetInputFile();
+            $this->downloadAndSetInputFile();
 
-        $entries = $this->parseFile($this->inputFileLocalPath);
+            $entries = $this->parseFile($this->inputFileLocalPath);
 
-        $this->mutex->acquireAndRelease(
-            $this->batch->getId(),
-            function () use ($entries)
-            {
-                $this->processEntries($entries);
+            $this->mutex->acquireAndRelease(
+                $this->batch->getId(),
+                function () use ($entries)
+                {
+                    $this->processEntries($entries);
 
-                $this->postProcessEntries($entries);
+                    $this->postProcessEntries($entries);
 
-                $this->createSetOutputFileAndSave($entries);
+                    $this->createSetOutputFileAndSave($entries);
+                },
+                self::MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS);
 
-                $this->repo->saveOrFail($this->batch);
-            },
-            self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS);
+            $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArray());
 
-        $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArray());
+            $this->postProcess();
+        }
+        catch (\Throwable $ex)
+        {
+            $this->handleBatchProcessingException($ex);
+        }
+        finally
+        {
+            $this->batch->setProcessing(false);
 
-        $this->postProcess();
+            $this->repo->saveOrFail($this->batch);
+        }
     }
 
     /**
@@ -278,7 +289,34 @@ class Base extends BaseModel\Core
 
         $this->batch->setProcessedAt($now);
 
-        $this->batch->setStatus(Batch\Status::PROCESSED);
+        $this->updateBatchStatus();
+    }
+
+    /**
+     * Updates the status of the batch as per the processing
+     * @return [type] [description]
+     */
+    protected function updateBatchStatus()
+    {
+        if ($this->batch->getFailureCount() > 0)
+        {
+            $status = ($this->shouldMarkProcessed() === true) ?
+                        Status::PROCESSED :
+                        Status::PARTIALLY_PROCESSED;
+        }
+        else
+        {
+            $status = Status::PROCESSED;
+        }
+
+        // If in the current run the batch has been processed, we reset the failure
+        // reason to maintain consistency
+        if ($status === Status::PROCESSED)
+        {
+            $this->batch->unsetFailureReason();
+        }
+
+        $this->batch->setStatus($status);
     }
 
     /**
@@ -299,6 +337,11 @@ class Base extends BaseModel\Core
         $this->deleteFile($this->outputFileLocalPath);
 
         $this->deleteFile($this->inputFileLocalPath);
+
+        // Setting processing to false here. Need to discuss if this is the right place
+        $this->batch->setProcessing(false);
+
+        $this->repo->saveOrFail($this->batch);
     }
 
     protected function createSetOutputFileAndSave(array & $entries)
@@ -668,5 +711,26 @@ class Base extends BaseModel\Core
             throw new BadRequestValidationFailureException(
                         'Operation not allowed: Batch already has output file created.');
         }
+    }
+
+    protected function handleBatchProcessingException(\Throwable $ex)
+    {
+        $this->trace->traceException(
+                            $ex,
+                            Trace::ERROR,
+                            TraceCode::BATCH_FILE_PROCESSING_ERROR,
+                            [
+                                Batch\Entity::ID => $this->batch->getId()
+                            ]);
+
+        // If the batch was previously partially processed, then even in case of unhandled
+        // exception in this run the batch should not get marked as FAILED as it was partially_processed
+        // earlier.
+        if ($this->batch->isPartiallyProcessed() === false)
+        {
+            $this->batch->setStatus(Status::FAILED);
+        }
+
+        $this->batch->setFailureReason($ex->getMessage());
     }
 }

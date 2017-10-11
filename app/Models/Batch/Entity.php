@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const DOWNLOAD_FILE_URL         = 'download_file_url';
 
     const STATUS                    = 'status';
+    const PROCESSING                = 'processing';
     const TOTAL_COUNT               = 'total_count';
     const SUCCESS_COUNT             = 'success_count';
     const FAILURE_COUNT             = 'failure_count';
@@ -26,9 +27,9 @@ class Entity extends Base\PublicEntity
     const COMMENT                   = 'comment';
     const PROCESSED_AT              = 'processed_at';
     const TYPE                      = 'type';
+    const SUB_TYPE                  = 'sub_type';
     const GATEWAY                   = 'gateway';
     const FAILURE_REASON            = 'failure_reason';
-    const RECONCILIATION_TYPE       = 'reconciliation_type';
 
     /**
      * Constants used in migration file.
@@ -84,6 +85,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::ATTEMPTS            => 0,
         self::STATUS              => Status::CREATED,
+        self::PROCESSING          => 0,
         self::DOWNLOAD_FILE_URL   => null,
         self::TOTAL_COUNT         => 0,
         self::SUCCESS_COUNT       => null,
@@ -104,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT           => 'int',
         self::PROCESSED_AMOUNT => 'int',
         self::ATTEMPTS         => 'int',
+        self::PROCESSING       => 'bool',
     ];
 
     // Relations
@@ -167,19 +170,39 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY);
     }
 
-    public function isProcessed(): bool
+    public function isProcessed()
     {
         return ($this->getStatus() === Status::PROCESSED);
     }
 
-    public function isPaymentLinkType()
+    public function isPartiallyProcessed()
     {
-        return ($this->getType() === Type::PAYMENT_LINK);
+        return ($this->getStatus() === Status::PARTIALLY_PROCESSED);
     }
 
     public function isFailed()
     {
         return ($this->getStatus() === Status::FAILED);
+    }
+
+    public function isProcessing()
+    {
+        return $this->getAttribute(self::PROCESSING);
+    }
+
+    public function isProcessable()
+    {
+        return (($this->isProcessing() === false) and ($this->isProcessed() === false));
+    }
+
+    public function getFailureCount()
+    {
+        return $this->getAttribute(self::FAILURE_COUNT);
+    }
+
+    public function isPaymentLinkType()
+    {
+        return ($this->getType() === Type::PAYMENT_LINK);
     }
 
     /**
@@ -303,6 +326,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setProcessing($value)
+    {
+        $this->setProcessing(self::PROCESSING, $value);
+    }
+
     public function setAttempts($attempts)
     {
         $this->setAttribute(self::ATTEMPTS, $attempts);
@@ -333,9 +361,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FAILURE_REASON, $failureReason);
     }
 
-    public function setReconciliationType(string $reconciliationType)
+    public function unsetFailureReason()
     {
-        $this->setAttribute(self::RECONCILIATION_TYPE, $reconciliationType);
+        $this->setAttribute(self::FAILURE_REASON, null);
+    }
+
+    public function setSubType(string $subType)
+    {
+        $this->setAttribute(self::SUB_TYPE, $subType);
     }
 
     // ----------------------- End Setters ---------------------------

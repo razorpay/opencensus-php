@@ -5,8 +5,8 @@ namespace RZP\Models\Batch;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
-use RZP\Jobs\DispatchRouter;
 use RZP\Base\RuntimeManager;
+use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
@@ -55,8 +55,6 @@ class Core extends Base\Core
     public function retryBatch(Entity $batch)
     {
         $batch->getValidator()->validateIfProcessable();
-
-        $batch->setStatus(Status::PROCESSING);
 
         $this->repo->saveOrFail($batch);
 
@@ -133,7 +131,10 @@ class Core extends Base\Core
 
         foreach ($batches as $batch)
         {
-            $this->processBatch($batch);
+            if ($batch->isProcessable() === true)
+            {
+                $this->processBatch($batch);
+            }
         }
 
         return $batches;
@@ -148,7 +149,9 @@ class Core extends Base\Core
      */
     public function processBatchViaApi(Entity $batch)
     {
-        return $this->processBatch($batch, true);
+        $batch->getValidator()->validateIfProcessable();
+
+        return $this->processBatch($batch);
     }
 
     /**
@@ -163,40 +166,13 @@ class Core extends Base\Core
      * @return Entity
      * @throws \Throwable
      */
-    public function processBatch(Entity $batch, bool $bubbleEx = false): Entity
+    public function processBatch(Entity $batch): Entity
     {
-        try
-        {
-            $batch->setStatus(Status::PROCESSING);
+        $batch->setProcessing(true);
 
-            $this->repo->saveOrFail($batch);
+        $this->repo->saveOrFail($batch);
 
-            $this->retryBatchProcessing($batch);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::BATCH_PROCESSING_ERROR,
-                [
-                    'batch' => $batch->toArray(),
-                ]);
-
-            // Even if there is any error during processing of batch
-            // we for now still set the status as PROCESSED.
-
-            $batch->setStatus(Status::PROCESSED);
-
-            $this->repo->saveOrFail($batch);
-
-            if ($bubbleEx === true)
-            {
-                throw $e;
-            }
-        }
-
-        return $batch;
+        $this->retryBatchProcessing($batch);
     }
 
     /**
@@ -218,6 +194,19 @@ class Core extends Base\Core
         RuntimeManager::setMemoryLimit('1024M');
 
         RuntimeManager::setTimeLimit(1000);
+    }
+
+    /**
+     * Sets the state of the batch to processing to indicate that the batch is
+     * currently under processing or will be picked for processing in the future
+     *
+     * @param  Entity $batch batch entity to be processed
+     */
+    protected function updateBatchForProcessing(Entity $batch)
+    {
+        $batch->setStatus(Status::PROCESSING);
+
+        $this->repo->saveOrFail($batch);
     }
 
     /**
@@ -252,13 +241,6 @@ class Core extends Base\Core
      */
     protected function retryBatchProcessing(Entity $batch)
     {
-        if (Type::isQueueGroup($batch->getType()) === false)
-        {
-            Processor\Base::get($batch)->process();
-
-            return;
-        }
-
         $job = new BatchJob($this->mode, $batch->getId());
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);

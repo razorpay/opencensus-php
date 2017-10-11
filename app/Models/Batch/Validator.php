@@ -119,10 +119,17 @@ class Validator extends Base\Validator
      */
     public function validateIfProcessable()
     {
-        if ($this->entity->isInProcessableState() === false)
+        if ($this->entity->isProcessed() === true)
         {
             throw new BadRequestException(
                         ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED,
+                        Entity::STATUS,
+                        $this->entity->toArray());
+        }
+        else if ($this->entity->isProcessing() === true)
+        {
+            throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING,
                         Entity::STATUS,
                         $this->entity->toArray());
         }
