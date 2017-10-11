@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width"/>
+  </head>
+
+  <body>
+
+    @php
+        $createdDate = date('d-m-Y', $dispute['created_at']);
+        $expiryDate = date('d-m-Y', $dispute['expires_on']);
+    @endphp
+
+    <link rel="stylesheet" type="text/css" href="ink.css">
+        <link rel="stylesheet" type="text/css" href="welcome.css">
+        <table class="row">
+          <tr>
+            <td class="wrapper">
+
+              <table class="four columns">
+                <tr>
+                  <td class="center">
+                    <img class="center" src="https://cdn.razorpay.com/logo.svg">
+                  </td>
+                  <td class="expander"></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        <table class="container">
+          <tr>
+            <td>
+              <table class="row">
+                <tr>
+                  <td class="wrapper offset-by-one">
+                        <!-- Mail content here -->
+                        <div>
+
+                          Hi {{ $merchant['name'] }}, <br>
+                          We have received a chargeback against the below mentioned payment. <br>
+                          <br>
+
+                          <table border="1" style="font-size:10px">
+                            <tr>
+                                <td>Payment ID</td>
+                                <td>Date of Chargeback</td>
+                                <td>Amount</td>
+                                <td>Chargeback Reference Number</td>
+                                <td>Deadline of Resolution</td>
+                            </tr>
+                            <tr>
+                                <td>{{ $dispute['payment_id'] }}</td>
+                                <td>{{ $createdDate }}</td>
+                                <td>{{ $dispute['amount'] }}</td>
+                                <td>{{ $dispute['id'] }}</td>
+                                <td>{{ $expiryDate }}</td>
+                            </tr>
+                          </table>
+
+                          <br>
+                          <strong> Chargeback Reason Code:  {{ $dispute['reason_code'] }}. Reason :  {{ $dispute['reason_description'] }} </strong>
+
+                          <br><br>
+                          Please share all proofs (invoices, proof of delivery of product/service, any relevant screenshots) pertaining to each transaction in a consolidated Zip archive named as the payment ID.
+
+                          <br><br>
+                          Note: Disputed transactions should not be refunded. Kindly provide the requested details in the required format on or before due date, failing which we would lose the case and the corresponding amount would be debited from the current balance.
+
+                          <br><br>
+                          Want to know more about Chargebacks? Please refer to our
+                          <a href="https://razorpay.com/chargeback/">Chargeback Guide.</a>
+
+                        </div>
+
+                        <br>
+                        Team Razorpay
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+    </link>
+
+    <table class="row footer">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="twelve columns">
+            <tr>
+              <td class="center">
+                <center>
+                  <hr>
+                  <a href="https://razorpay.com/terms/">Terms &amp; Conditions</a>
+                  |
+                  <a href="https://razorpay.com/privacy/">Privacy Policy</a>
+                  |
+                  <a href="https://razorpay.com/refund/">Refund Policy</a>
+                </center>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+    <table class="row footer">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="three columns offset-by-six">
+            <tr>
+              <td class="center">
+                <center>
+                  <a href="https://facebook.com/razorpay" class="logo">
+                    <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/facebook.png" alt="Facebook Icon" title="Razorpay on Facebook"/>
+                  </a>
+                  <a href="https://twitter.com/razorpay" class="logo">
+                    <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/twitter.png" alt="Twitter Icon" title="Razorpay on Twitter"/>
+                  </a>
+                  <a href="https://github.com/razorpay" class="logo">
+                    <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/github.png" alt="GitHub Icon" title="Razorpay on GitHub"/>
+                  </a>
+                </center>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+    <table class="row footer">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="seven columns">
+            <tr>
+              <td class="center">
+                <center>
+                  Reach out to us by replying
+                  to this email or at <a href="mailto:support@razorpay.com">
+                  support@razorpay.com</a>
+                </center>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+
+</html>
