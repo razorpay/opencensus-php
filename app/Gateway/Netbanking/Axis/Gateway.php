@@ -135,14 +135,6 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            [
-                'response_body' => $response->body,
-                'payment_id'    => $verify->input['payment']['id'],
-                'status_code'   => $response->status_code
-            ]);
-
         if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
         {
             $verify->verifyResponseContent = $this->getEmandateDecryptedData($response->body);
@@ -151,6 +143,15 @@ class Gateway extends Base\Gateway
         {
             $verify->verifyResponseContent = $this->parseResponseXml($response->body);
         }
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'response_body' => $response->body,
+                'content'       => $verify->verifyResponseContent,
+                'payment_id'    => $verify->input['payment']['id'],
+                'status_code'   => $response->status_code
+            ]);
     }
 
     public function verifyPayment(Verify $verify)

@@ -21,7 +21,7 @@ class Server extends Base\Mock\Server
 
         if (isset($input[Emandate\RequestFields::DATA]) === true)
         {
-            return $this->handleEmandateFlow($input);
+            return $this->handleEmandateAuthFlow($input);
         }
 
         $this->validateAuthorizeInput($input);
@@ -51,6 +51,11 @@ class Server extends Base\Mock\Server
     public function verify($input)
     {
         parent::verify($input);
+
+        if (isset($input[Emandate\RequestFields::DATA]) === true)
+        {
+            return $this->handleEmandateVerifyFlow($input);
+        }
 
         $this->validateActionInput($input);
 

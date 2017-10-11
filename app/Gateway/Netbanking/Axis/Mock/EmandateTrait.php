@@ -3,28 +3,30 @@
 namespace RZP\Gateway\Netbanking\Axis\Mock;
 
 use RZP\Constants\Timezone;
+use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Axis\Emandate\Constants;
 use RZP\Gateway\Netbanking\Axis\Emandate\RequestFields;
 use RZP\Gateway\Netbanking\Axis\Emandate\ResponseFields;
 use RZP\Gateway\Netbanking\Axis\Emandate\StatusCode;
+use RZP\Models\Currency\Currency;
 
 use Carbon\Carbon;
 
 trait EmandateTrait
 {
-    protected function handleEmandateFlow(array $input)
+    protected function handleEmandateAuthFlow(array $input)
     {
         $secondPayment = false;
 
         $this->content($secondPayment, 'second_payment');
 
-        $this->validateActionInput($input, 'emandateauthrequest');
+        $this->validateActionInput($input, 'emandaterequest');
 
         $data = $this->getGatewayInstance()->getEmandateDecryptedData($input[RequestFields::DATA]);
 
         $this->validateActionInput($data, 'emandateauth');
 
-        $response = $this->createEmandateResponse($data);
+        $response = $this->createEmandateAuthResponse($data);
 
         if ($secondPayment === true)
         {
@@ -39,7 +41,7 @@ trait EmandateTrait
         return $callbackUrl;
     }
 
-    protected function createEmandateResponse(array $input) : array
+    protected function createEmandateAuthResponse(array $input) : array
     {
         $data = [
             ResponseFields::VERSION         => $input[RequestFields::VERSION],
@@ -70,5 +72,45 @@ trait EmandateTrait
         ];
 
         return $content;
+    }
+
+    protected function handleEmandateVerifyFlow($input)
+    {
+        $this->validateActionInput($input, 'emandaterequest');
+
+        $data = $this->getGatewayInstance()->getEmandateDecryptedData($input[RequestFields::DATA]);
+
+        $response = $this->createEmandateVerifyResponse($data);
+
+        return $this->makeResponse($response);
+    }
+
+    protected function createEmandateVerifyResponse($input)
+    {
+        $date = Carbon::now(Timezone::IST)->format('d-M-y');
+
+        $gatewayEntity = $this->repo->netbanking->findByPaymentIdAndActionOrFail(
+            $input[RequestFields::REQUEST_ID],
+            Action::AUTHORIZE
+        );
+
+        $data = [
+            ResponseFields::VERSION         => $input[RequestFields::VERSION],
+            ResponseFields::REQUEST_ID      => $input[RequestFields::REQUEST_ID],
+            ResponseFields::CORP_ID         => $input[RequestFields::CORP_ID],
+            ResponseFields::TYPE            => $input[RequestFields::TYPE],
+            ResponseFields::CUSTOMER_REF_NO => $input[RequestFields::CUSTOMER_REF_NO],
+            ResponseFields::BANK_REF_NO     => 9999999999,
+            ResponseFields::CURRENCY        => Currency::INR,
+            ResponseFields::AMOUNT          => $gatewayEntity['amount'],
+            ResponseFields::STATUS_CODE     => StatusCode::SUCCESS,
+            ResponseFields::REMARKS         => 'Success',
+            ResponseFields::TRANS_REF_NO    => 101714472,
+            ResponseFields::TRANS_EXEC_TIME => $date,
+            ResponseFields::PAYMENT_MODE    => Constants::PMD,
+            ResponseFields::CHECKSUM        => $input[RequestFields::CHECKSUM]
+        ];
+
+        return $this->getGatewayInstance()->getEmandateEncryptedData($data);
     }
 }
