@@ -697,10 +697,7 @@ final class Route
         'otp_verify',
         'otp_verify_app',
         'device_create',
-        'merchant_methods_downtime',
-        'feature_onboarding_create',
-        'feature_onboarding_fetch_responses',
-        'feature_onboarding_fetch_all_responses'
+        'merchant_methods_downtime'
     ];
 
     public static $device = [
@@ -1135,6 +1132,9 @@ final class Route
         'oauth_application_update',
         'merchant_analytics',
         'reports_refund_irctc',
+        'feature_onboarding_create',
+        'feature_onboarding_fetch_responses',
+        'feature_onboarding_fetch_all_responses',
         'onboarding_features_fetch_details',
         'onboarding_features_create',
         'onboarding_features_fetch_response',
