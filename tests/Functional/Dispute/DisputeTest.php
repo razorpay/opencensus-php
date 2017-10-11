@@ -3,9 +3,9 @@
 namespace RZP\Tests\Functional\Dispute;
 
 use Mail;
-use RZP\Mail\Dispute\Creation as DisputeCreationMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Mail\Dispute\Creation as DisputeCreationMail;
 
 class DisputeTest extends TestCase
 {

@@ -75,17 +75,7 @@ class Core extends Base\Core
             return $dispute;
         });
 
-        // Send mail to merchant
-
-        $data = [
-            'merchant' => [
-                'name'      => $merchant->getName(),
-                'email'     => $merchant->getEmail(),
-            ],
-            'dispute' => $dispute->toArrayPublic(),
-        ];
-
-        Mail::send(new DisputeMailer\Creation($data));
+        $this->sendDisputeMailToMerchant($dispute, $merchant);
 
         return $dispute;
     }
@@ -287,5 +277,18 @@ class Core extends Base\Core
         ];
 
         (new Adjustment\Core)->createDisputeAdjustment($input, $dispute);
+    }
+
+    protected function sendDisputeMailToMerchant(Entity $dispute, Merchant\Entity $merchant)
+    {
+        $data = [
+            'merchant' => [
+                'name'      => $merchant->getName(),
+                'email'     => $merchant->getEmail(),
+            ],
+            'dispute' => $dispute->toArrayPublic(),
+        ];
+
+        Mail::send(new DisputeMailer\Creation($data));
     }
 }
