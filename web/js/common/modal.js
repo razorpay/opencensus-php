@@ -11,7 +11,22 @@ class ModalStore {
   @observable sliders = [];
 
   openModal = modal => this.modals.push(modal);
-  closeModal = _ => this.modals.clear();
+  closeModal = _ => this.modals.pop();
+
+  confirm = (message, onAction, confirmLabel = 'Yes', rejectLabel = 'Cancel') =>
+    this.modals.push(
+      <div class="confirm-modal">
+        <div key="message">{message}</div>
+        <div key="action-buttons">
+          <button onClick={onAction} key="btn-confirm">
+            {confirmLabel}
+          </button>
+          <button onClick={this.closeModal} key="btn-reject">
+            {rejectLabel}
+          </button>
+        </div>
+      </div>
+    );
 
   replaceSlider = slider => this.sliders.replace([slider]);
   openSlider = slider => this.sliders.push(slider);
@@ -102,12 +117,13 @@ const Modal = ({ modal }) => (
     >
       &times;
     </div>
-    {modal.component}
+    {modal}
   </div>
 );
 
 export const {
   openModal,
+  confirm,
   closeModal,
   openSlider,
   replaceSlider,
