@@ -88,6 +88,28 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->assertEquals($gatewayPayment['status'], Emandate\StatusCode::SUCCESS);
     }
 
+    public function testPaymentVerifyFailure()
+    {
+        $payment = $this->doAuthPayment($this->payment);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if($action === 'verify_emandate')
+            {
+                $content[Emandate\ResponseFields::STATUS_CODE] = Emandate\StatusCode::FAILED;
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->verifyPayment($payment['razorpay_payment_id']);
+        });
+
+    }
+
+
     protected function assertEMandateEntities()
     {
         $netbanking = $this->getLastEntity('netbanking', true);

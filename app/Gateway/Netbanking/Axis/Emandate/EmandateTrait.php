@@ -1,9 +1,5 @@
 <?php
 
-/*
-| This trait adds E Mandate functionality to the Axis Gateway
-*/
-
 namespace RZP\Gateway\Netbanking\Axis\Emandate;
 
 use RZP\Constants\HashAlgo;

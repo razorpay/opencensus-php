@@ -111,6 +111,8 @@ trait EmandateTrait
             ResponseFields::CHECKSUM        => $input[RequestFields::CHECKSUM]
         ];
 
+        $this->content($data, 'verify_emandate');
+
         return $this->getGatewayInstance()->getEmandateEncryptedData($data);
     }
 }
