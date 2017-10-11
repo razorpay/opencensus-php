@@ -85,6 +85,9 @@ class MailTags
     // Merchant feature tags
     const FEATURE_ENABLED                  = 'feature_enabled';
 
+    // Dispute tags
+    const DISPUTE_CREATED_MAIL             = 'dispute_created_mail';
+
     /**
      * Email tags that should respond to the mailgun failure webhook
      * @var array Email tags
