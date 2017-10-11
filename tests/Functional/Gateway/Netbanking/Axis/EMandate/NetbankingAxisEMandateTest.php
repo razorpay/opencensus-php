@@ -4,8 +4,9 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Axis\EMandate;
 
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
-use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Netbanking\Axis\Emandate;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
 
 use Carbon\Carbon;
 
@@ -58,9 +59,7 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $payment['token'] = $paymentEntity['token_id'];
 
-        //
         // Second auth payment for the recurring product
-        //
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
             if($action === 'second_payment')
@@ -72,6 +71,21 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->doS2SRecurringPayment($payment);
 
         $this->assertEMandateEntities(false);
+    }
+
+    public function testPaymentVerify()
+    {
+        $payment = $this->doAuthPayment($this->payment);
+
+        $verify = $this->verifyPayment($payment['razorpay_payment_id']);
+
+        assert($verify['payment']['verified'] === 1);
+
+        $verifyResponseContent = $verify['gateway']['verifyResponseContent'];
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($gatewayPayment['status'], Emandate\StatusCode::SUCCESS);
     }
 
     protected function assertEMandateEntities()
