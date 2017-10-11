@@ -116,7 +116,16 @@ class Gateway extends Base\Gateway
 
     public function sendPaymentVerifyRequest(Verify $verify)
     {
-        $content = $this->getPaymentVerifyData($verify);
+        $content = [];
+
+        if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
+        {
+            $content = $this->getEmandatePaymentVerifyData($verify);
+        }
+        else
+        {
+            $content = $this->getPaymentVerifyData($verify);
+        }
 
         $request = $this->getStandardRequestArray($content);
 
