@@ -9,6 +9,7 @@ class RequestFields
     const TYPE            = 'TYP';
     const REQUEST_ID      = 'RID';
     const CUSTOMER_REF_NO = 'CRN';
+    const BANK_REF_NO     = 'BRN';
     const CURRENCY        = 'CNY';
     const AMOUNT          = 'AMT';
     const RETURN_URL      = 'RTU';
