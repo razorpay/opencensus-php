@@ -5,13 +5,15 @@ var filename = _.htmlWebpackPlugin.options.vars.filename;
 
 @include('partials/header')
 
+<script src="`=cdnUrl`/`=filename(_, 'vendor')`" defer></script>
+<script src="`=cdnUrl`/admin/`=filename(_, 'libs')`" defer></script>
+<script src="`=cdnUrl`/admin/`=filename(_, 'admin')`" defer></script>
 <link rel='stylesheet' href="`=cdnUrl`/admin.css" type='text/css' />
 </head>
 <body>
   <div id="react-root" class="react-root"></div>
+  `=_.htmlWebpackPlugin.files.webpackManifest`
 </body>
 </html>
-<script src="`=cdnUrl`/`=filename(_, 'vendor')`"></script>
-<script src="`=cdnUrl`/`=filename(_, 'admin')`"></script>
 
 @include('partials/footer')

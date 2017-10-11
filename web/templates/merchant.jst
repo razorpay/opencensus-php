@@ -9,9 +9,15 @@ var filename = _.htmlWebpackPlugin.options.vars.filename;
   <link rel='stylesheet' href="`=cdnUrl`/style.css" type='text/css' />
 @endunless
 <link rel='stylesheet' href="`=cdnUrl`/merchant.css" type='text/css' />
+
+<script src="`=cdnUrl`/`=filename(_, 'vendor')`" defer></script>
+<script src="`=cdnUrl`/merchant/`=filename(_, 'libs')`" defer></script>
+<script src="`=cdnUrl`/merchant/`=filename(_, 'merchant')`" defer></script>
+
 </head>
 <body>
   <div id="react-root" class="react-root"></div>
+  `=_.htmlWebpackPlugin.files.webpackManifest`
 </body>
 </html>
 
@@ -20,9 +26,6 @@ var filename = _.htmlWebpackPlugin.options.vars.filename;
     window.rzp_user = {!! $user !!};
     window.rzp_org = {!! $org !!};
   </script>
-
-  <script src="`=cdnUrl`/`=filename(_, 'vendor')`"></script>
-  <script src="`=cdnUrl`/`=filename(_, 'merchant')`"></script>
 
 @else
 
