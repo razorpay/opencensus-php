@@ -9,9 +9,10 @@ const defaultFilters = {
 export default class Collection {
   @observable items = [];
 
-  constructor({ fetchRoute, fetchFn, filters, items }) {
+  constructor({ fetchRoute, fetchFn, filters, items, urlParams }) {
     this.fetchRoute = fetchRoute;
     this.fetchFn = fetchFn;
+    this.urlParams = urlParams;
 
     this.pending = observable.box();
     this.filters = observable.box(Object.assign(defaultFilters, filters));
@@ -25,7 +26,14 @@ export default class Collection {
   }
 
   fetch() {
-    return this.request('fetch', this.get(this.fetchRoute, this.filters));
+    return this.request(
+      'fetch',
+      this.fetchFn({
+        route: this.fetchRoute,
+        queryParams: this.filters,
+        urlParams: this.urlParams,
+      })
+    );
   }
 
   request(name, promise) {
@@ -42,12 +50,5 @@ export default class Collection {
       .then(_ => {
         this.pending.set(false);
       });
-  }
-
-  get(route, queryParams = {}) {
-    return this.fetchFn({
-      route,
-      queryParams,
-    });
   }
 }
