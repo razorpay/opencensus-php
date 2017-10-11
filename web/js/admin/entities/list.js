@@ -15,7 +15,7 @@ export default class EntityList extends Component {
     entity_type: 'payment',
   };
 
-  onSubmit = filters => this.collection.filters.set(filters);
+  onSubmit = filters => this.collection.setFilters(filters);
 
   changeFilters({ target }) {
     this.setState({

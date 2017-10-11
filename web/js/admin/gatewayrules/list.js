@@ -6,7 +6,7 @@ import Collection from 'util/collection';
 import { adminFetch } from 'util/fetch';
 import { replaceSlider } from 'common/modal';
 
-export default class PlanList extends Component {
+export default class GatewayRuleList extends Component {
   collection = new Collection({
     fetchRoute: 'admin_fetch_entity_multiple',
     fetchFn: adminFetch,
@@ -15,7 +15,7 @@ export default class PlanList extends Component {
     },
   });
 
-  onSubmit = filters => this.collection.filters.set(filters);
+  onSubmit = filters => this.collection.setFilters(filters);
 
   render() {
     var filters = this.collection.filters;

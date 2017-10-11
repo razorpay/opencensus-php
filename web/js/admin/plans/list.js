@@ -12,7 +12,7 @@ export default class PlanList extends Component {
     fetchFn: adminFetch,
   });
 
-  onSubmit = filters => this.collection.filters.set(filters);
+  onSubmit = filters => this.collection.setFilters(filters);
 
   render() {
     return (
