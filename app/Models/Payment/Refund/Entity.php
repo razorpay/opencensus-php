@@ -152,6 +152,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Batch\Entity', self::BATCH_ID);
     }
 
+    public function fundTransferAttempts()
+    {
+        return $this->morphMany('RZP\Models\FundTransfer\Attempt\Entity', 'source');
+    }
+
     public function batchFundTransfer()
     {
         return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
@@ -396,7 +401,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECEIPT, $value);
     }
 
-    public function setUtr(string $value)
+    public function setUtr($value)
     {
         $this->setAttribute(self::REFERENCE1, $value);
     }

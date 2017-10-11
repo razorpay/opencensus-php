@@ -35,8 +35,6 @@ class Anchor
     {
         Period::validatePeriod($period);
 
-        $check = self::$checks[$period];
-
         if ($startTime === null)
         {
             $startTime = Carbon::now(Timezone::IST);
@@ -48,6 +46,8 @@ class Anchor
         }
         else
         {
+            $check = self::$checks[$period];
+
             $anchor = $startTime->$check;
         }
 

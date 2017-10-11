@@ -7,16 +7,22 @@ use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\BankTransfer;
+use RZP\Constants\Timezone;
 use RZP\Models\VirtualAccount\Provider;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
     const COLUMN_UTR           = 'txn_ref_no';
     const COLUMN_AMOUNT        = 'amount';
-    const COLUMN_PAYER_NAME    = 'send_cust_acname';
-    const COLUMN_PAYEE_ACCOUNT = 'e_coll_ac_no';
-    const COLUMN_PAYER_ACCOUNT = 'send_cust_ac_no';
-    const COLUMN_PAYER_IFSC    = 'snd_brn_ifsc';
+    const COLUMN_PAYER_NAME    = 'payer_name';
+    const COLUMN_PAYEE_ACCOUNT = 'payee_account';
+    const COLUMN_PAYER_ACCOUNT = 'payer_account';
+    const COLUMN_PAYER_IFSC    = 'payer_ifsc';
+    const COLUMN_MODE          = 'mode';
+    const COLUMN_DATE          = 'date';
+    const COLUMN_TIME          = 'time';
+
+    const TIME_FORMAT = 'd/m/Y H:i:s';
 
     /**
      * Identify the bank transfer using UTR, and thus find payment
@@ -49,16 +55,22 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         // Bank Transfer will not be found in two cases:
         // 1) Payment was made to a reserved acc, in which case we can ignore it
-        // 2) Kotak did not inform us of the payment via API, in which case we
-        //    create a payment now
+        // 2) Kotak did not inform us of the payment via API, in which
+        //    case we raise an alert, and handle it some other way.
         if ($bankTransfer === null)
         {
-            if ($this->isPaymentToReservedAccount($row) === true)
+            if ($this->isPaymentToReservedAccount($row) === false)
             {
-                return null;
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code'    => TraceCode::RECON_ALERT,
+                        'message'       => 'Unexpected bank transfer',
+                        'row'           => $row,
+                        'gateway'       => get_called_class()
+                    ]);
             }
 
-            $bankTransfer = $this->createBankTransferPayment($row);
+            return null;
         }
 
         return $bankTransfer->getPaymentId();
@@ -159,45 +171,5 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return false;
-    }
-
-    /**
-     * An unexpected bank transfer is present in the MIS file.
-     * one which is not present in the DB, because Kotak failed
-     * to hit the bank_transfer_process API for a payment.
-     *
-     * This is a problem, as Kotak ought to be retrying, but we
-     * can handle it here by creating the payment now.
-     *
-     * @param  array  $row
-     * @return BankTransfer\Entity
-     */
-    protected function createBankTransferPayment(array $row)
-    {
-        $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
-                    'message'       => 'Unexpected bank transfer',
-                    'row'           => $row,
-                    'gateway'       => get_called_class()
-                ]);
-
-        $payeeIfsc = Provider::DEFAULT_DETAILS[Provider::KOTAK]['ifsc_code'];
-        $time      = Carbon::now()->getTimestamp();
-
-        $data = [
-            BankTransfer\Entity::PAYER_NAME     => $row[self::COLUMN_PAYER_NAME],
-            BankTransfer\Entity::PAYER_ACCOUNT  => $row[self::COLUMN_PAYER_ACCOUNT],
-            BankTransfer\Entity::PAYER_IFSC     => $row[self::COLUMN_PAYER_IFSC],
-            BankTransfer\Entity::AMOUNT         => $row[self::COLUMN_AMOUNT],
-            BankTransfer\Entity::REQ_UTR        => $row[self::COLUMN_UTR],
-            BankTransfer\Entity::PAYEE_ACCOUNT  => $row[self::COLUMN_PAYEE_ACCOUNT],
-            BankTransfer\Entity::PAYEE_IFSC     => $payeeIfsc,
-            BankTransfer\Entity::TIME           => $time,
-            // Hack, until mode is added to the recon files
-            BankTransfer\Entity::MODE           => 'neft',
-        ];
-
-        return (new BankTransfer\Core)->process($data);
     }
 }

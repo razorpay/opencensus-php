@@ -2,23 +2,31 @@
 
 namespace RZP\Gateway\Netbanking\Icici\Mock;
 
+use Razorpay\Api\Request;
 use RZP\Exception;
 use RZP\Gateway\Base;
 
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Netbanking\Icici\Status;
+use RZP\Gateway\Netbanking\Icici\Mode;
 use RZP\Gateway\Netbanking\Icici\Confirmation;
-use RZP\Gateway\Netbanking\Base as Netbanking;
 use RZP\Gateway\Netbanking\Icici\RequestFields;
 use RZP\Gateway\Netbanking\Icici\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
+    const BANK_PAYMENT_ID = 9999999999;
+
     public function authorize($input)
     {
         parent::authorize($input);
 
         $this->validateAuthorizeInput($input);
+
+        if ($this->isSecondRecurring($input))
+        {
+            return $this->handleSecondRecurring($input);
+        }
 
         $decryptedData = $this->decryptData($input);
 
@@ -26,7 +34,7 @@ class Server extends Base\Mock\Server
 
         $postData = $this->createPostData($decryptedData);
 
-        $this->content($postData);
+        $this->content($postData, 'auth');
 
         $content = $this->formatResponseData($postData, $input);
 
@@ -35,9 +43,52 @@ class Server extends Base\Mock\Server
         return $callbackUrl;
     }
 
-    public function getBankingType($input)
+    protected function handleSecondRecurring(array $input)
     {
-        return ($input['PID'] === 'random_pid_corp') ? 'corporate' : 'retail';
+        $responseArray = [
+            ResponseFields::ITEM_CODE       => $input[RequestFields::ITEM_CODE],
+            ResponseFields::PAYMENT_ID      => $input[RequestFields::PAYMENT_ID],
+            ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
+            ResponseFields::CURRENCY        => $input[RequestFields::CURRENCY_CODE],
+            ResponseFields::SI_REFERENCE_ID => $input[RequestFields::SI_REFERENCE_NUMBER],
+            ResponseFields::PAYMENT_DATE    => $input[RequestFields::SI_DEBIT_PAYMENT_DATE],
+            ResponseFields::BANK_PAYMENT_ID => self::BANK_PAYMENT_ID,
+            ResponseFields::PAID            => Confirmation::YES,
+            ResponseFields::STATUS          => Status::SI_SUCCESS
+        ];
+
+        $this->content($responseArray, 'second_recurring');
+
+        $response = $this->createXmlResponse($responseArray);
+
+        $this->content($response, 'second_recurring_xml');
+
+        return $this->makeResponse($response);
+    }
+
+    protected function isSecondRecurring(array $content)
+    {
+        return ($content[RequestFields::MODE] === Mode::STANDING_INSTRUCTIONS);
+    }
+
+    public function getBankingType($input) : string
+    {
+        switch ($input[RequestFields::PAYEE_ID])
+        {
+            case 'random_pid_corp':
+                $bankingType = 'corporate';
+                break;
+
+            case 'random_payee_id_rec':
+                $bankingType = 'recurring';
+                break;
+
+            default:
+                $bankingType = 'retail';
+                break;
+        }
+
+        return $bankingType;
     }
 
     public function verify($input)
@@ -47,6 +98,18 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input);
 
         $responseArray = $this->createResponseArray($input);
+
+        //
+        // Sending back the SI reference numbers in the response
+        //
+        if (empty($input[RequestFields::SI_REFERENCE_NUMBER]) === false)
+        {
+            $responseArray[ResponseFields::SI_REFERENCE_ID] = $input[RequestFields::SI_REFERENCE_NUMBER];
+        }
+        if (empty($input[RequestFields::SI_AUTO_PAY_AMOUNT]) === false)
+        {
+            $responseArray[ResponseFields::SI_AUTO_PAY_AMOUNT] = $input[RequestFields::SI_AUTO_PAY_AMOUNT];
+        }
 
         $response = $this->createXmlResponse($responseArray);
 
@@ -66,6 +129,14 @@ class Server extends Base\Mock\Server
         if ($input[RequestFields::CONFIRMATION] === Confirmation::YES)
         {
             $response[ResponseFields::BANK_PAYMENT_ID] = 9999999999;
+        }
+
+        if ((isset($input[RequestFields::SI]) === true) and
+            ($input[RequestFields::SI] === Confirmation::YES))
+        {
+            $response[ResponseFields::SI_SCHEDULE_ID] = uniqid();
+            $response[ResponseFields::SI_STATUS]      = Confirmation::YES;
+            $response[ResponseFields::SI_MESSAGE]     = 'SUC';
         }
 
         return $response;

@@ -147,6 +147,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_ENTITIES_COUNT_UNEXPECTED             = 'GATEWAY_ENTITIES_COUNT_UNEXPECTED';
     const GATEWAY_ENTITY_UNEXPECTED_ACTION              = 'GATEWAY_ENTITY_UNEXPECTED_ACTION';
     const CHANGING_FILE_PERMISSION                      = 'CHANGING_FILE_PERMISSION';
+    const GATEWAY_FIRST_RECURRING                       = 'GATEWAY_FIRST_RECURRING';
+    const GATEWAY_RECURRING_DEBIT_REQUEST               = 'GATEWAY_RECURRING_DEBIT_REQUEST';
+    const GATEWAY_RECURRING_DEBIT_RESPONSE              = 'GATEWAY_RECURRING_DEBIT_RESPONSE';
+    const FUND_TRANSFER_ATTEMPT_CREATED                 = 'FUND_TRANSFER_ATTEMPT_CREATED';
 
     const MPESA_GATEWAY_PARAM_ARRAY                     = 'MPESA_GATEWAY_PARAM_ARRAY';
 
@@ -170,6 +174,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MISSING_BILLDESK_CANCELLED_REFUNDS            = 'MISSING_BILLDESK_CANCELLED_REFUNDS';
     const REFUND_RETRY_INITIATED                        = 'REFUND_RETRY_INITIATED';
     const REFUND_RETRY_RESULT                           = 'REFUND_RETRY_RESULT';
+    const REFUND_RETRY_SKIPPED                          = 'REFUND_RETRY_SKIPPED';
 
     const REQUESTS_JOB_REQUEST                          = 'REQUESTS_JOB_REQUEST';
     const REQUESTS_JOB_RESPONSE                         = 'REQUESTS_JOB_RESPONSE';
@@ -186,6 +191,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_EDIT                                 = 'TERMINAL_EDIT';
     const TERMINAL_ENABLE                               = 'TERMINAL_ENABLE';
     const TERMINAL_DISABLE                              = 'TERMINAL_DISABLE';
+    const TERMINAL_AUTO_DISABLE                         = 'TERMINAL_AUTO_DISABLE';
     const TERMINAL_FAIL_SORT                            = 'TERMINAL_FAIL_SORT';
     const TERMINAL_BOOST_INVALID                        = 'TERMINAL_BOOST_INVALID';
     const TERMINAL_USED_BEFORE                          = 'TERMINAL_USED_BEFORE';
@@ -197,7 +203,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_NUMBER_SCRUBBED                          = 'CARD_NUMBER_SCRUBBED';
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS            = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
     const REFUND_EXCEPTION                              = 'REFUND_EXCEPTION';
-    const GATEWAY_TOKEN_ALREADY_PRESENT                 = 'GATEWAY_TOKEN_ALREADY_PRESENT';
+    const GATEWAY_TOKEN_TOO_MANY_PRESENT                = 'GATEWAY_TOKEN_TOO_MANY_PRESENT';
 
     const CANCEL_INVOICE                                = 'CANCEL_INVOICE';
     const INVOICE_EXPIRE_VIA_CRON_FAILED                = 'INVOICE_EXPIRE_VIA_CRON_FAILED';
@@ -260,6 +266,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_SENT        = 'SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_SENT';
     const SUBSCRIPTION_TEST_CHARGE_REQUEST              = 'SUBSCRIPTION_TEST_CHARGE_REQUEST';
     const SUBSCRIPTION_CREATE_REQUEST                   = 'SUBSCRIPTION_CREATE_REQUEST';
+    const SUBSCRIPTION_CREATED                          = 'SUBSCRIPTION_CREATED';
     const SUBSCRIPTION_NOTIFY_FAILED                    = 'SUBSCRIPTION_NOTIFY_FAILED';
     const PLAN_CREATE_REQUEST                           = 'PLAN_CREATE_REQUEST';
     const ADDON_CREATE_REQUEST                          = 'ADDON_CREATE_REQUEST';
@@ -343,6 +350,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKEN_MIGRATE_TO_GATEWAY_TOKEN_FAILED         = 'TOKEN_MIGRATE_TO_GATEWAY_TOKEN_FAILED';
     const TOKEN_BEING_MIGRATED                          = 'TOKEN_BEING_MIGRATED';
     const GATEWAY_TOKEN_MIGRATED                        = 'GATEWAY_TOKEN_MIGRATED';
+    const TOKEN_RECURRING_STATUS_ALREADY_SET            = 'TOKEN_RECURRING_STATUS_ALREADY_SET';
+    const GATEWAY_RECURRING_STATUS_NOT_SET              = 'GATEWAY_RECURRING_STATUS_NOT_SET';
+    const GATEWAY_RECURRING_REJECTED_WITHOUT_REASON     = 'GATEWAY_RECURRING_REJECTED_WITHOUT_REASON';
 
     //Pricing
     const PRICING_RULE_SELECTION                        = 'PRICING_RULE_SELECTION';
@@ -837,7 +847,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_TRANSFER_SUCCESS                      = 'DISPUTE_TRANSFER_SUCCESS';
     const DISPUTE_ADJUSTMENT_MIGRATE_REQUEST            = 'DISPUTE_ADJUSTMENT_MIGRATE_REQUEST';
     const DISPUTE_ADJUSTMENT_MIGRATE_ERROR              = 'DISPUTE_ADJUSTMENT_MIGRATE_ERROR';
-
+    const DISPUTE_REASON_CREATE                         = 'DISPUTE_REASON_CREATE';
+    
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';

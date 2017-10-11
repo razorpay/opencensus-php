@@ -9,7 +9,7 @@ class PublicErrorDescription
     // Serialization is a problem when using these characters where signing is involved.
     // Because the other side may read the backslashes as escape characters and ignore
     // them while generating the signature.
-    // As per JSON spec these need escpaing -
+    // As per JSON spec these need escaping -
     //        %x22 /          ; "    quotation mark  U+0022
     //        %x5C /          ; \    reverse solidus U+005C
     //        %x2F /          ; /    solidus         U+002F
@@ -34,7 +34,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST                                = 'Duplicate Refund Request';
 
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
-    const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLWOED                               = 'Password Change is not allowed for this Org';
+    const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED                               = 'Password Change is not allowed for this Org';
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
     const BAD_REQUEST_ROUTE_DISABLED                                            = 'The requested route is disabled.';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                        = 'Razorpay API is only available over HTTPS.';
@@ -60,6 +60,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_CAPTURED               = 'The payout amount provided is greater than the payment amount captured';
     const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING                = 'The payout amount provided is greater than the payout amount pending for the payment';
     const BAD_REQUEST_PAYMENT_FULLY_PAIDOUT                                     = 'The payment has been fully paidout already';
+    const BAD_REQUEST_GATEWAY_TOKEN_EMPTY                                       = 'Invalid token has been passed for recurring payment';
+    const BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING                           = 'Invalid token has been passed for recurring payment';
     const BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS                     = 'Request failed because another payment operation is in progress';
     const BAD_REQUEST_PAYMENT_FULLY_REFUNDED                                    = 'The payment has been fully refunded already';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED               = 'The refund amount provided is greater than amount captured';
@@ -116,6 +118,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED                    = 'International card is not allowed.';
     const BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_INVALID                       = 'Card authentication failed due to invalid response from gateway. Please retry or use another payment method';
     const BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED                      = 'Recurring is not supported on this card';
+    const BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED                      = 'Recurring is not supported on this bank';
+    const BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_TOKEN_MAX_AMOUNT              = 'Payment amount exceeds the maximum amount allowed.';
     const BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD                              = 'Payment was blocked because of fraud';
     const BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED                    = 'Payment processing failed because session expired due to taking too much time. Please try the payment again.';
     const BAD_REQUEST_PAYMENT_TIMED_OUT                                         = 'Payment was not completed on time.';
@@ -199,11 +203,10 @@ class PublicErrorDescription
     const BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID                          = 'The OAuth token used in the request was invalid or had expired';
     const BAD_REQUEST_UNAUTHORIZED_OAUTH_SCOPE_INVALID                          = 'The OAuth token used does not have sufficient permissions for this request';
     const BAD_REQUEST_PRICING_ID_REQURED                                        = 'Pricing plan id is required';
-    const BAD_REQUEST_PRICING_PLAN_ALREADY_EXISTS                               = 'Pricing plan name already exists. Are you trying a pricing plan rule instead?';
     const BAD_REQUEST_PRICING_RATE_NOT_DEFINED                                  = 'One of percent_rate and fixed_rate must be present';
     const BAD_REQUEST_PRICING_GATEWAY_REQUIRED                                  = 'This plan has a gateway set. Please provide it in input';
     const BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED                              = 'The new rule matches with an active existing rule';
-    const BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS                        = 'Pricing plan name already exists. Are you trying a pricing plan rule instead?';
+    const BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS                        = 'Pricing plan name already exists. Please try another name';
     const BAD_REQUEST_PRICING_NOT_DEFINED_FOR_MERCHANT                          = 'The merchant does not have pricing assigned';
     const BAD_REQUEST_PRICING_FIELD_NOT_REQUIRED_FOR_NB                         = 'The field should be null for net-banking';
     const BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT                         = 'Amex pricing rule not present for merchant';
@@ -287,6 +290,8 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                 = 'Error occurred because of invalid data';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                 = 'Hash Data is invalid.';
+    const BAD_REQUEST_NB_TOKEN_PASSED_IN_FIRST_RECURRING                        = 'Token should not be passed in first netbanking recurring payment';
+    const BAD_REQUEST_NB_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING           = 'Token is not confirmed for recurring payments';
 
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                     = 'Refund not done on the gateway side.';
     const BAD_REQUEST_INVALID_GATEWAY                                           = 'Invalid gateway provided for the request';
@@ -307,6 +312,7 @@ class PublicErrorDescription
     const BAD_REQUEST_SUBSCRIPTION_SAVE_CARD_DISABLED                           = 'Subscription payment cannot be made with Flash Checkout disabled';
     const BAD_REQUEST_SUBSCRIPTION_PAYMENT_WITHOUT_SAVING                       = 'Subscription payment cannot be made without saving the card';
     const BAD_REQUEST_SUBSCRIPTION_ANOTHER_OPERATION_IN_PROGRESS                = 'Request failed because another subscription operation is in progress';
+
     const BAD_REQUEST_SUBSCRIPTION_INVALID_STATUS                               = 'Invalid status passed in the query params';
     const BAD_REQUEST_SUBSCRIPTION_SCHEDULED_FAILURE                            = 'Subscription charge underwent an expected failure.';
     const BAD_REQUEST_SUBSCRIPTION_CYCLE_NOT_RUNNING                            = 'Subscription cannot be cancelled since no billing cycle is going on';
@@ -541,4 +547,5 @@ class PublicErrorDescription
     const SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND                               = 'No data present for gateway file processing in the given time period';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE                       = 'Error occurred trying to create file';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE                          = 'Error occurred while sending file';
+    const SERVER_ERROR_GATEWAY_FILE_CLAIMS_LESSER_THAN_REFUNDS                  = 'Combined file not sent as claims is lesser than refunds';
 }

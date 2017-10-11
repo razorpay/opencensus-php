@@ -101,6 +101,25 @@ class PaymentCreateTest extends TestCase
         $id = $payment['razorpay_payment_id'];
     }
 
+    public function testWalletPostFormViaPaymentCreate()
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
+        $this->fixtures->merchant->addFeatures(['email_optional', 'contact_optional']);
+
+        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+
+        unset($payment['email'], $payment['contact'], $payment['notes']);
+
+        $response = $this->getWalletFormViaCreateRoute($payment);
+        $content = $response['content'];
+        $content['contact'] = '+919999999998';
+        $content['email'] = 'test@razorpay.com';
+
+        $payment = $this->doAuthPayment($content, ['CONTENT_TYPE' => 'application/x-www-form-urlencoded']);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $payment);
+    }
+
     public function testInternationalPayment()
     {
         $this->fixtures->merchant->enableInternational();

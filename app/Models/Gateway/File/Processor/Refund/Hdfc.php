@@ -7,12 +7,9 @@ use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\Gateway\File\Processor;
 
-class Hdfc extends Processor\Base
+class Hdfc extends Base
 {
-    use GenerateRefundFile;
-
     const FILE_NAME              = 'HDFC_Netbanking_Refunds';
     const EXTENSION              = FileStore\Format::XLSX;
     const FILE_TYPE              = FileStore\Type::HDFC_NETBANKING_REFUND;

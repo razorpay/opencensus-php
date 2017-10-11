@@ -390,7 +390,7 @@ class Gateway extends Base\Gateway
 
         // We have confirmed with acquirer banks that these refunds have
         // not been processed.
-        $unprocessedRefundIds = ['87eSYBPtCyTapi'];
+        $unprocessedRefundIds = ['87eT5BJpNL8uPb'];
 
         if (in_array($input['refund']['id'], $unprocessedRefundIds) === true)
         {
