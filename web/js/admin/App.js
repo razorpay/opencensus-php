@@ -32,6 +32,7 @@ export default class App extends Component {
           {(this.location && (
             <Switch location={this.location}>
               <Route path="/merchants" component={MerchantList} />
+              <Route path="/merchant/:id" component={MerchantEntity} />
               <Route path="/pricing-plans" component={PlanList} />
               <Route path="/gateway-rules" component={GatewayRulesList} />
               <Route path="/entities" component={EntityList} />
@@ -74,6 +75,4 @@ export default class App extends Component {
   }
 }
 
-const entityRoutes = {
-  '/merchants/:id': MerchantEntity,
-};
+const entityRoutes = {};
