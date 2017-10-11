@@ -32,8 +32,12 @@ class EMandateFileProcessor
 
         $parsedData = $this->parseFile($input);
 
+        // Fetch relevant entities using data from file
+        // $entities must be of type PublicCollection
+        $entities = $this->fetchData($parsedData);
+
         // Create $response
-        $response = $this->processFileData();
+        $response = $this->updateEntities($entities);
 
         return $response;
     }
