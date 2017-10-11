@@ -554,8 +554,7 @@ class Gateway extends Base\Gateway
                     VEReq::MERCHANT   => [
                         VEReq::ACQBIN       => $this->getAcquirerBin($input),
                         VEReq::MERCHANT_ID  => $this->getMerchantId($input),
-                        // TODO add for VISA only
-                        'password' => 'Pit@1234',
+                        //'password' => '',
                     ],
                     VEReq::BROWSER    => [
                         VEReq::DEVICE_CATEGORY => DeviceCategory::getDeviceCategory(DeviceCategory::DESKTOP),
