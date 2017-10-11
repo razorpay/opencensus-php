@@ -37,7 +37,7 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->mockTokenex();
     }
 
-    public function testEMandateInitialPayment()
+    public function testEmandateInitialPayment()
     {
         $payment = $this->payment;
 
@@ -46,13 +46,11 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->assertEMandateEntities();
     }
 
-    public function testEMandateScheduledPayment()
+    public function testEmandateScheduledPayment()
     {
         $payment = $this->payment;
 
         $this->doAuthPayment($payment);
-
-
 
         $paymentEntity = $this->getLastEntity('payment', true);
         $tokenEntity   = $this->getLastEntity('token', true);
@@ -106,11 +104,31 @@ class NetbankingAxisEMandateTest extends TestCase
         {
             $this->verifyPayment($payment['razorpay_payment_id']);
         });
+    }
 
+    public function testPaymentVerifyAmountMismatch()
+    {
+        $payment = $this->doAuthPayment($this->payment);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if($action === 'verify_emandate')
+            {
+                // Don't need to change status code, since status code would be success from gateway
+                $content[Emandate\ResponseFields::AMOUNT] = 12;
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->verifyPayment($payment['razorpay_payment_id']);
+        });
     }
 
 
-    protected function assertEMandateEntities()
+    protected function assertEmandateEntities()
     {
         $netbanking = $this->getLastEntity('netbanking', true);
 

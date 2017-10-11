@@ -177,6 +177,23 @@ class Gateway extends Base\Gateway
         $verify->status = $status;
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
+
+        $this->setVerifyAmountMismatch($verify);
+    }
+
+    protected function setVerifyAmountMismatch($verify)
+    {
+        $paymentAmount = $this->formatAmount($verify->input['payment'][Payment\Entity::AMOUNT]);
+
+        if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
+        {
+            $verify->amountMismatch =
+                ($paymentAmount !== $verify->verifyResponseContent[Emandate\ResponseFields::AMOUNT]);
+        }
+        else
+        {
+            $verify->amountMismatch = ($paymentAmount !== $verify->verifyResponseContent[ResponseFields::AMOUNT]);
+        }
     }
 
     protected function checkGatewaySuccess(Verify $verify)
