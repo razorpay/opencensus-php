@@ -14,12 +14,9 @@ use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class Core extends Base\Core
 {
-    use FileHandlerTrait;
-
     public function createAdjustment(array $input, $merchant): Entity
     {
         $this->trace->info(
@@ -98,17 +95,15 @@ class Core extends Base\Core
         return $adjustment;
     }
 
-    public function splitAdjustments(array $input): array
+    public function splitAdjustments(array $adjustment): array
     {
         $this->trace->info(
             TraceCode::ADJUSTMENT_SPLIT_REQUEST,
             [
-                'input' => $input
+                'input' => $adjustment
             ]);
 
-        (new Validator)->validateInput('split_adjustment', $input);
-
-        $adjustment = $input;
+        (new Validator)->validateInput('split_adjustment', $adjustment);
 
         $count = 1;
 
@@ -122,7 +117,6 @@ class Core extends Base\Core
         {
             $this->repo->transaction(function () use ($data, $count, $adjustment)
             {
-
                 $originalAmount = $adjustment[Entity::AMOUNT];
 
                 $txn = $this->repo->transaction->findOrFail($adjustment[Entity::TRANSACTION_ID]);
