@@ -16,7 +16,7 @@ export default class MerchantList extends Component {
     filters: defaultFilters,
   });
 
-  onSubmit = filters => this.collection.filters.set(filters);
+  onSubmit = filters => this.collection.setFilters(filters);
 
   render() {
     return (

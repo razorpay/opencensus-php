@@ -41,7 +41,7 @@
     "webpack": "^3.6.0"
   },
   "scripts": {
-    "start": "stylus -w ./web/css/*.styl --out public/dist & webpack -w --config web/webpack/webpack.index; kill -9 $!",
+    "start": "mkdir -p public/dist; stylus -w ./web/css/*.styl --out public/dist & webpack -w --config web/webpack/webpack.index; kill -9 $!",
     "precommit": "lint-staged",
     "prettier": "prettier"
   },

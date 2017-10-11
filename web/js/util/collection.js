@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, observe } from 'mobx';
 import { notifyError } from 'common/modal';
 
 const defaultFilters = {
@@ -7,6 +7,11 @@ const defaultFilters = {
 };
 
 export default class Collection {
+  setFilters(filters) {
+    Object.assign(this.filters, filters);
+    return this.fetch();
+  }
+
   constructor({ fetchRoute, fetchFn, filters, items, urlParams }) {
     this.fetchRoute = fetchRoute;
     this.fetchFn = fetchFn;
@@ -17,6 +22,7 @@ export default class Collection {
       Object.assign(defaultFilters, filters)
     );
 
+    // load initial values
     // fetch if not pre-populated
     this.items = observable.shallowArray(items || []);
     if (!items) {

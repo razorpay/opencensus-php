@@ -57,25 +57,29 @@ export default class Table extends Component {
 
 class Pagination extends Component {
   prev() {
-    this.skip -= this.count;
+    this.setFilters({
+      skip: this.filters.skip - this.filters.count,
+    });
   }
 
   next() {
-    this.skip += this.count;
+    this.setFilters({
+      skip: this.filters.skip + this.filters.count,
+    });
   }
 
   render() {
-    let { filters, items } = this.props.model;
+    let model = this.props.model;
     return (
       <div class="pagination">
-        {(filters.skip && (
-          <div class="prev" onClick={filters::this.prev}>
+        {(model.filters.skip && (
+          <div class="prev" onClick={model::this.prev}>
             ← Previous
           </div>
         )) ||
           null}
-        {(filters.count === items.length && (
-          <div class="next" onClick={filters::this.next}>
+        {(model.filters.count === model.items.length && (
+          <div class="next" onClick={model::this.next}>
             Next →
           </div>
         )) ||
