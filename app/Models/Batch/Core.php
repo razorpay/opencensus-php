@@ -56,6 +56,8 @@ class Core extends Base\Core
     {
         $batch->getValidator()->validateIfProcessable();
 
+        $batch->setProcessing(true);
+
         $this->repo->saveOrFail($batch);
 
         $this->trace->info(TraceCode::BATCH_RETRY, $batch->toArrayPublic());
@@ -241,6 +243,7 @@ class Core extends Base\Core
      */
     protected function retryBatchProcessing(Entity $batch)
     {
+        // TBD - Need to discuss once if all batch types can be retried.
         $job = new BatchJob($this->mode, $batch->getId());
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);

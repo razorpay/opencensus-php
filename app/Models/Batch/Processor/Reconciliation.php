@@ -52,35 +52,6 @@ class Reconciliation extends Base
         });
     }
 
-    public function process()
-    {
-        $this->trace->info(TraceCode::BATCH_FILE_PROCESSING, $this->batch->toArray());
-
-        $this->batch->getValidator()->validateIfProcessable();
-
-        $this->setGatewayReconciliatorObject();
-
-        $this->batch->incrementAttempts();
-
-        //
-        // These steps are perfomed inside the queue job
-        // - parse file and get all contents in an array
-        // - call gateway reconciliator to perform the reconciliation
-        // - Update batch entity with processing result for this run
-        //
-
-        $this->mutex->acquireAndRelease(
-            $this->batch->getId(),
-            function ()
-            {
-                $this->processReconciliationForBatch();
-            },
-            self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS);
-
-        $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArray());
-    }
-
     protected function uploadReconFile(array $inputFileDetails)
     {
         $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArray());
@@ -120,6 +91,15 @@ class Reconciliation extends Base
         $this->trace->info(TraceCode::BATCH_UPLOAD_FILE, $ufhFile->toArrayPublic());
     }
 
+    protected function performPreProcessingActions()
+    {
+        $this->batch->getValidator()->validateIfProcessable();
+
+        $this->setGatewayReconciliatorObject();
+
+        $this->batch->incrementAttempts();
+    }
+
     protected function setGatewayReconciliatorObject()
     {
         $gateway = $this->batch->getGateway();
@@ -134,31 +114,38 @@ class Reconciliation extends Base
      * We then process the contents of the recon file by calling the gateway recon class.
      * Any unhandled exceptions in the reconciliator is being handled here.
      */
-    protected function processReconciliationForBatch()
+    protected function parseAndProcessBatchData()
     {
-        try
-        {
-            $fileContents = $this->parseInputFileContents();
+        $fileContents = $this->parseInputFileContents();
 
-            $this->gatewayReconciliator->startReconciliationV2($fileContents, $this->batch);
+        // We first update thr total count of the batch, and then proceed further
+        // as the batch status update post procesiing depends on this. For recon batches
+        // even if we were able to process no rows, we still want to mark the batch as partially processed
+        // as the file parsing was successful
+        $this->updateBatchTotalCount($fileContents);
 
-            $this->batch->setStatus(Batch\Status::PROCESSED);
-        }
-        catch (\Exception $ex)
-        {
-            // In most cases the gateway reconciliator handles most exceptions while
-            // processing the recon file. However some exceptions are still thrown, which
-            // most likely indicate something criticaly wrong with the file. In these cases
-            // we halt the reconciliation process alltogether and mark the batch as failed.
-            // Failed batches cannot be retried.
-            $this->handleReconProcessingFailure($ex);
-        }
-        finally
-        {
-            $this->updateBatchPostProcessing();
+        $this->gatewayReconciliator->startReconciliationV2($fileContents, $this->batch);
 
-            $this->repo->saveOrFail($this->batch);
+        $this->updateBatchStatus();
+    }
+
+    protected function updateBatchTotalCount(array $fileContents)
+    {
+        $totalCount = 0;
+
+        foreach ($fileContents as $data)
+        {
+            unset($data[self::EXTRA_DETAILS]);
+
+            $totalCount += count($data);
         }
+
+        $this->batch->setTotalCount($totalCount);
+    }
+
+    protected function shouldMarkProcessed(): bool
+    {
+        return false;
     }
 
     protected function handleReconProcessingFailure(\Exception $ex)
@@ -314,5 +301,35 @@ class Reconciliation extends Base
             FileProcessor::FILE_PATH => $filePath,
             FileProcessor::FILE_TYPE => $fileType,
         ];
+    }
+
+    /**
+     * Un case of unhandled exceptions in case of recon, we still mark the batch
+     * as partially processed if we were able to process some rows and abort on a
+     * particular row. Basically we mark it as partially processed if we were able
+     * to get the total number of rows
+     *
+     * @param  \Throwable $ex Exception which was thrown
+     */
+    protected function handleBatchProcessingException(\Throwable $ex)
+    {
+        $this->trace->traceException(
+                            $ex,
+                            Trace::ERROR,
+                            TraceCode::BATCH_FILE_PROCESSING_ERROR,
+                            [
+                                Batch\Entity::ID => $this->batch->getId()
+                            ]);
+
+        if ($this->batch->getTotalCount() > 0)
+        {
+            $this->batch->setStatus(Status::PARTIALLY_PROCESSED);
+        }
+        else if ($this->batch->isPartiallyProcessed() === false)
+        {
+            $this->batch->setStatus(Status::FAILED);
+        }
+
+        $this->batch->setFailureReason($ex->getMessage());
     }
 }

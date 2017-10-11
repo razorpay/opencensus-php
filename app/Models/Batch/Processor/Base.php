@@ -148,25 +148,15 @@ class Base extends BaseModel\Core
         {
             $this->trace->info(TraceCode::BATCH_FILE_PROCESSING, $this->batch->toArray());
 
-            $this->batch->getValidator()->validateIfProcessable();
-
-            $this->batch->incrementAttempts();
-
-            $this->downloadAndSetInputFile();
-
-            $entries = $this->parseFile($this->inputFileLocalPath);
+            $this->performPreProcessingActions();
 
             $this->mutex->acquireAndRelease(
                 $this->batch->getId(),
-                function () use ($entries)
+                function ()
                 {
-                    $this->processEntries($entries);
-
-                    $this->postProcessEntries($entries);
-
-                    $this->createSetOutputFileAndSave($entries);
+                    $this->parseAndProcessBatchData();
                 },
-                self::MUTEX_LOCK_TIMEOUT,
+                static::MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS);
 
             $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArray());
@@ -183,6 +173,24 @@ class Base extends BaseModel\Core
 
             $this->repo->saveOrFail($this->batch);
         }
+    }
+
+    protected function performPreProcessingActions()
+    {
+        $this->batch->incrementAttempts();
+
+        $this->downloadAndSetInputFile();
+    }
+
+    protected function parseAndProcessBatchData()
+    {
+        $entries = $this->parseFile($this->inputFileLocalPath);
+
+        $this->processEntries($entries);
+
+        $this->postProcessEntries($entries);
+
+        $this->createSetOutputFileAndSave($entries);
     }
 
     /**
@@ -294,11 +302,10 @@ class Base extends BaseModel\Core
 
     /**
      * Updates the status of the batch as per the processing
-     * @return [type] [description]
      */
     protected function updateBatchStatus()
     {
-        if ($this->batch->getFailureCount() > 0)
+        if (($this->batch->getTotalCount() > 0) and ($this->batch->getFailureCount() >= 0))
         {
             $status = ($this->shouldMarkProcessed() === true) ?
                         Status::PROCESSED :

@@ -94,7 +94,7 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AMOUNT    => 0,
         self::GATEWAY             => null,
         self::FAILURE_REASON      => null,
-        self::RECONCILIATION_TYPE => null,
+        self::SUB_TYPE            => null,
         self::COMMENT             => null,
         self::PROCESSED_AT        => null,
     ];
@@ -198,6 +198,11 @@ class Entity extends Base\PublicEntity
     public function getFailureCount()
     {
         return $this->getAttribute(self::FAILURE_COUNT);
+    }
+
+    public function getTotalCount()
+    {
+        return $this->getAttribute(self::TOTAL_COUNT);
     }
 
     public function isPaymentLinkType()
