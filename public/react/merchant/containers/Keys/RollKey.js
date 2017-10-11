@@ -9,6 +9,7 @@ import { isBlank } from 'rzp/utils/rzp-utils';
 import { generateKey } from 'merchant/modules/keys';
 import { required, phone, email } from 'rzp/utils/validators';
 import { closeModal } from 'rzp/modules/modals';
+import RadioButton from 'rzp/ui/Forms/RadioButton';
 
 @connect(state => state.session, { closeModal })
 @reduxForm({
@@ -48,29 +49,21 @@ export default class RollKey extends Component {
           <div class="modal-body">
             <Alert type="error" message={this.state.errors} />
 
-            <div class="radio">
-              <label class="i-checks">
-                <Field
-                  component="input"
-                  name="delay_roll"
-                  type="radio"
-                  value="0"
-                />
-                <i />
-                De-activate Old Key Immediately
-              </label>
+            <div class="radio rollkey">
+              <Field
+                component={RadioButton}
+                name="delay_roll"
+                htmlValue="0"
+                label={() => <span>De-activate Old Key Immediately</span>}
+              />
             </div>
             <div class="radio">
-              <label class="i-checks">
-                <Field
-                  component="input"
-                  name="delay_roll"
-                  type="radio"
-                  value="1"
-                />
-                <i />
-                De-activate old key in 24 hours
-              </label>
+              <Field
+                component={RadioButton}
+                name="delay_roll"
+                htmlValue="1"
+                label={() => <span>De-activate old key in 24 hours</span>}
+              />
             </div>
           </div>
 
