@@ -12,7 +12,7 @@ export const fetchTransfer = id => {
 
   return {
     type: TRANSFER_FETCH,
-    payload: transfer.fetch(id, { expand: ['recipient_settlement'] }),
+    payload: transfer.fetch(id, {}, { expand: ['recipient_settlement'] }),
   };
 };
 

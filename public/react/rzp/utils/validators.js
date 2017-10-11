@@ -28,6 +28,28 @@ export const isPhone = phone => {
   return phoneRegExp.test(phone);
 };
 
+// Use required validator if the field is mandatory. This fn. only check whether value if present is valid or not
+export function validatePincodeLength(value) {
+  return !value || /^[0-9]{6}$/.test(value)
+    ? undefined
+    : 'Pin Code must be 6 digits';
+}
+
+// Use required validator if the field is mandatory. This fn. only check whether value if present is valid or not
+export function validatePANCard(value) {
+  return !value ||
+    (value.length === 10 && /^[a-zA-z]{5}\d{4}[a-zA-Z]{1}$/.test(value))
+    ? undefined
+    : 'Invalid PAN card';
+}
+
+// Use required validator if the field is mandatory. This fn. only check whether value if present is valid or not
+export function validateCIN(value) {
+  return value && value.length != 21
+    ? 'CIN length must be 21 characters'
+    : undefined;
+}
+
 // Parse Object recursively and trims off extra spaces in strings
 export const trimDeep = params => {
   let temp = Object.assign({}, params);

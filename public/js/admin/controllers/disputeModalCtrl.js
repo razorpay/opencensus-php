@@ -28,13 +28,13 @@ app.controller('DisputeModalCtrl', [
     // Date options for Raised date
     $scope.dateRaised = dateFactory.getHandler($scope);
     $scope.dateRaised.dateOptions['showWeeks'] = false;
-    $scope.dateRaised.dateOptions['minDate'] = moment().subtract(2, 'years'); // Avoid selection of date before today
+    $scope.dateRaised.dateOptions['minDate'] = moment().subtract(2, 'years'); // Avoid selection of date before 2 years back
     $scope.dateRaised.dateOptions['maxDate'] = moment(); // Avoid selection of date after today
 
     // Date options for Expire date
     $scope.date = dateFactory.getHandler($scope);
     $scope.date.dateOptions['showWeeks'] = false;
-    $scope.date.dateOptions['minDate'] = moment(); // Avoid selection of date before today
+    $scope.date.dateOptions['minDate'] = moment().subtract(1, 'months'); // Avoid selection of date before today (Adding 1 month back temporarily)
 
     // Get offers of merchant to display in the list
     function getReasonId() {

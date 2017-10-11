@@ -24,7 +24,7 @@ services:
      DB_MYSQL_USERNAME: dashboard_user
      DB_MYSQL_PASSWORD: 123
      REDIS_HOST: dashboard_cache
-     BASE_URL: http://dashboard.razorpay.test:38080
+     BASE_URL: http://dashboard.razorpay.in:38080
      API_URL: "http://razorpay-api/v1/"
      APP_CONTEXT: dev
   dashboard_db:

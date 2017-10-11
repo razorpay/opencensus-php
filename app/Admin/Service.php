@@ -319,7 +319,7 @@ class Service extends Base\Service
             try
             {
                 $cmd = $s3->getCommand('GetObject', [
-                    'Bucket' => env('AWS_ACTIVATION_BUCKET'),
+                    'Bucket' => config('aws.activation_bucket'),
                     'Key'    => $id.'/'.$key.'.'.$extension
                 ]);
 
@@ -507,17 +507,6 @@ class Service extends Base\Service
         {
             unset($array[$key]);
         }
-    }
-
-    public function lockMerchant($id)
-    {
-        $error = $merchantDetails = [];
-
-        $params = ['locked' => true];
-
-        list($error, $merchantDetails) = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
-
-        return $error;
     }
 
     public function postMerchantTerminal($id, $input)
@@ -740,8 +729,6 @@ class Service extends Base\Service
     {
         $merchant->activated = 1;
         $merchant->save();
-
-        $this->lockMerchant($merchant->id);
 
         return array();
     }

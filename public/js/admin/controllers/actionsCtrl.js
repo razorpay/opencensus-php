@@ -453,6 +453,36 @@ app
             });
         };
       });
+      $scope.addDisputeReason = function(dispute_reason) {
+        var data = {
+          route_name: 'dispute_reason_create',
+          body: dispute_reason,
+        };
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: data,
+        });
+        request
+          .success(function(data) {
+            if (data.success) {
+              $scope.alerts.addAlert(
+                'success',
+                'Dispute Reason added successfully. Response: ' +
+                  JSON.stringify(data.data),
+                true
+              );
+            } else {
+              $scope.alerts.resetAlerts();
+              angular.forEach(data.errors, function(value, key) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.addAlert('danger', null, true);
+          });
+      };
       $scope.openConfirmUser = function() {
         var modalInstance = $modal.open({
           templateUrl: 'confirmUserModal.html',
@@ -519,6 +549,13 @@ app
             controller: 'updateGSTINController',
           })
           .result.then($scope.updateGSTIN, $.noop);
+      };
+      $scope.openDisputeReasonAdd = function() {
+        var modalInstance = $modal.open({
+          templateUrl: 'addDisputeReason.html',
+          controller: 'addDisputeReasonCtrl',
+        });
+        modalInstance.result.then($scope.addDisputeReason, $.noop);
       };
     },
   ])
@@ -844,6 +881,18 @@ app
         });
       };
 
+      $scope.cancel = function() {
+        $modalInstance.dismiss('cancel');
+      };
+    },
+  ])
+  .controller('addDisputeReasonCtrl', [
+    '$scope',
+    '$modalInstance',
+    function($scope, $modalInstance) {
+      $scope.ok = function(dispute_reason) {
+        $modalInstance.close(dispute_reason);
+      };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');
       };

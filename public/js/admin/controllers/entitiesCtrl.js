@@ -214,7 +214,7 @@ app.controller('EntitiesCtrl', [
         ],
       },
       batch_fund_transfer: {
-        type: ['all', 'settlement', 'payout'],
+        type: ['all', 'settlement', 'payout', 'refund'],
         date: ['Date'],
       },
       billdesk: {
@@ -312,7 +312,7 @@ app.controller('EntitiesCtrl', [
       },
       fund_transfer_attempt: {
         batch_fund_transfer_id: ['Batch Fund Transfer Id'],
-        source_type: ['all', 'settlement', 'payout'],
+        source_type: ['all', 'settlement', 'payout', 'refund'],
         source_id: ['Source Id'],
         merchant_id: ['Merchant Id'],
         status: ['all', 'created', 'initiated', 'failed', 'processed'],
@@ -515,6 +515,7 @@ app.controller('EntitiesCtrl', [
         batch_id: ['Batch Id'],
         gateway: gatewayList,
         merchant_id: ['Merchant Id'],
+        method: methodList,
         payment_id: ['Payment Id'],
         status: ['all', 'created', 'failed', 'processed'],
         transaction_id: ['Transaction Id'],

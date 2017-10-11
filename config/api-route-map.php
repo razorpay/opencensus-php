@@ -117,6 +117,9 @@ return [
         'merchant_invoice_update_gstin'     => 'merchants/{id}/invoice/gstin',
 
         'merchant_activation_files'         => 'merchant/activation/{id}/files',
+
+        // Add new dispute reason
+        'dispute_reason_create'             => 'disputes/reasons',
     ],
 
     // auth
