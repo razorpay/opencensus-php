@@ -4,6 +4,7 @@ import Table from 'ui/Table';
 import Field, { SelectField, CheckField } from 'ui/Field';
 import Collection from 'util/collection';
 import { adminFetch } from 'util/fetch';
+import { openMerchantEntity } from './entity';
 
 const defaultFilters = {
   account_status: 'activated',
@@ -38,7 +39,11 @@ export default class MerchantList extends Component {
             <button>Apply</button>
           </Form>
         </div>
-        <Table model={this.collection} fields={fields} />
+        <Table
+          model={this.collection}
+          fields={fields}
+          onClick={openMerchantEntity}
+        />
       </div>
     );
   }
