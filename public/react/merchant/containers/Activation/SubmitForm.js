@@ -16,22 +16,21 @@ export default class SubmitForm extends Component {
         <Fieldset disabled={locked}>
           <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
-              <div class="checkbox submit-form">
-                <label class="i-checks">
-                  <Field
-                    name="agree_terms"
-                    component="input"
-                    type="checkbox"
-                    validate={value => {
-                      if (!value) {
-                        return 'Required';
-                      }
-                    }}
-                  />
-                  <i />
+              <div class="checkbox rzpCheckbox submit-form">
+                <Field
+                  name="agree_terms"
+                  id="agree_terms"
+                  component="input"
+                  type="checkbox"
+                  validate={value => {
+                    if (!value) {
+                      return 'Required';
+                    }
+                  }}
+                />
+                <label for="agree_terms">
                   <div class="submit-label">
-                    I have read and understood the
-                    {' '}
+                    I have read and understood the{' '}
                     <a
                       href="https://razorpay.com/terms/"
                       target="_blank"
@@ -39,9 +38,7 @@ export default class SubmitForm extends Component {
                     >
                       terms and conditions
                     </a>
-                    ,
-                    the
-                    {' '}
+                    , the{' '}
                     <a
                       href="https://razorpay.com/agreement/"
                       target="_blank"
@@ -49,17 +46,14 @@ export default class SubmitForm extends Component {
                     >
                       merchant agreement
                     </a>
-                    ,
-                    and the
-                    {' '}
+                    , and the{' '}
                     <a
                       href="https://razorpay.com/privacy/"
                       target="_blank"
                       class="highlight"
                     >
                       privacy policy
-                    </a>
-                    {' '}
+                    </a>{' '}
                     and agree to abide by them at all times.
                   </div>
                 </label>
@@ -67,17 +61,16 @@ export default class SubmitForm extends Component {
             </div>
           </div>
 
-          {this.props.session.org.custom_code === 'hdfc'
-            ? <div class="form-group">
-                <div class="col-md-offset-3 col-md-9">
-                  <strong>Note:</strong>
-                  {' '}
-                  This solution is a joint initiative between HDFC Bank Ltd. and Razorpay.
-                  <br />
-                  Your primary relationship will be maintained with HDFC Bank Ltd.
-                </div>
+          {this.props.session.org.custom_code === 'hdfc' ? (
+            <div class="form-group">
+              <div class="col-md-offset-3 col-md-9">
+                <strong>Note:</strong> This solution is a joint initiative
+                between HDFC Bank Ltd. and Razorpay.
+                <br />
+                Your primary relationship will be maintained with HDFC Bank Ltd.
               </div>
-            : null}
+            </div>
+          ) : null}
 
           <div class="form-group">
             <div class="col-md-offset-3 col-md-9">

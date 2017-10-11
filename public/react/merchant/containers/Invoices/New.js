@@ -210,7 +210,7 @@ export default class InvoicesNewContainer extends Component {
 
       this.setState({
         merchantLogoUrl: logoUrl,
-        merchantName: merchant.name,
+        merchantAltBillingLabel: merchant.billing_label || merchant.name,
       });
     });
   }
@@ -522,7 +522,7 @@ export default class InvoicesNewContainer extends Component {
                           </div>}
                         <InvoiceLogo
                           logo={this.state.merchantLogoUrl}
-                          name={this.state.merchantName}
+                          name={this.state.merchantAltBillingLabel}
                         />
 
                         <div class="row">
@@ -705,7 +705,7 @@ export default class InvoicesNewContainer extends Component {
 
                         <div class="inv__Footer">
                           <div class="inv__Footer__merchantName">
-                            {this.state.merchantName}
+                            {this.state.merchantAltBillingLabel}
                           </div>
                           <div class="inv__Footer__merchantAddress">
                             {
