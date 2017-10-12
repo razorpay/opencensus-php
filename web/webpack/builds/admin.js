@@ -30,7 +30,7 @@ module.exports = {
   },
   output: {
     path: __dirname + '/../../../public/dist/admin',
-    filename: isProd ? '[name]-[hash].js' : '[name].js',
+    filename: '[name].js',
   },
 
   plugins: [

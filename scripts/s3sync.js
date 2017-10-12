@@ -2,7 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var s3 = require('s3');
 var aws = require('aws-sdk');
-var glob = require('multi-glob').glob;
+var glob = require('glob');
 var ENV = process.env;
 
 var s3sdk = new aws.S3({
@@ -39,38 +39,31 @@ var params = {
   },
 };
 
-glob(
-  [
-    'public/s3/dist/*',
-    'public/s3/js/generated/*',
-    'public/s3/css/generated/*',
-    'public/s3/css/fonts/*',
-  ],
-  {},
-  function(error, files) {
-    files.forEach(function(f) {
-      if (fs.lstatSync(f).isFile()) {
-        var ext = /[^\.]+$/.exec(f);
-        ext = ext[0];
-        if (ext && ext !== 'map') {
-          // ignore mapfiles
-          var fileParams = JSON.parse(JSON.stringify(params));
-          fileParams.localFile = f;
-          if (ext == 'css' || ext == 'js') {
-            fileParams.s3Params.ContentEncoding = 'gzip';
-          }
-          fileParams.s3Params.Key = f.replace(/^public\/s3\//, 'dashboard/');
-          console.log(fileParams);
-          var uploader = client.uploadFile(fileParams);
-          uploader.on('error', function(err) {
-            console.error('unable to sync:', err.stack);
-            throw err;
-          });
-          uploader.on('end', function(data) {
-            console.log(f);
-          });
+const prefixLen = ENV.TARGET_DIR.length + 1;
+
+glob(ENV.TARGET_DIR + '/**', {}, function(error, files) {
+  files.forEach(function(f) {
+    if (fs.lstatSync(f).isFile()) {
+      var ext = /[^\.]+$/.exec(f);
+      ext = ext[0];
+      if (ext && ext !== 'map') {
+        // ignore mapfiles
+        var fileParams = JSON.parse(JSON.stringify(params));
+        fileParams.localFile = f;
+        if (ext == 'css' || ext == 'js') {
+          fileParams.s3Params.ContentEncoding = 'gzip';
         }
+        fileParams.s3Params.Key = f;
+        console.log(fileParams);
+        var uploader = client.uploadFile(fileParams);
+        uploader.on('error', function(err) {
+          console.error('unable to sync:', err.stack);
+          throw err;
+        });
+        uploader.on('end', function(data) {
+          console.log(f);
+        });
       }
-    });
-  }
-);
+    }
+  });
+});
