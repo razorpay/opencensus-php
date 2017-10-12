@@ -68,23 +68,21 @@ trait GatewayTrait
         }
         else if ($request['method'] === 'get')
         {
+            $url = $request['url'];
+
+            $parts = parse_url($url);
+
+            if (isset($parts['query']) === true)
+            {
+                parse_str($parts['query'], $input);
+            }
+
             // We can either pass the query params in URL or via the request's
             // content field.
-            if (isset($request['content']) === true and
-                empty($request['content']) === false)
+            if ((isset($request['content']) === true) and
+                (empty($request['content']) === false))
             {
-                $input = $request['content'];
-            }
-            else
-            {
-                $url = $request['url'];
-
-                $parts = parse_url($url);
-
-                if (isset($parts['query']))
-                {
-                    parse_str($parts['query'], $input);
-                }
+                $input = array_merge($input, $request['content']);
             }
         }
 
