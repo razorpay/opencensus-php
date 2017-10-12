@@ -233,7 +233,7 @@ class Gateway extends Base\Gateway
         // Initially assume gatewaySuccess is false
         $verify->gatewaySuccess = false;
 
-        if ($this->isStatusCodeSuccess($verify->verifyResponseContent) === true)
+        if (Status::isStatusCodeSuccess($verify->verifyResponseContent) === true)
         {
             $verify->gatewaySuccess = true;
         }
@@ -256,11 +256,6 @@ class Gateway extends Base\Gateway
         }
 
         return $this->getLiveMerchantId();
-    }
-
-    protected function isStatusCodeSuccess($content): bool
-    {
-        return ($content[NetbankingEntity::STATUS] === Status::SUCCESS);
     }
 
     protected function updateGatewayPaymentEntity(
