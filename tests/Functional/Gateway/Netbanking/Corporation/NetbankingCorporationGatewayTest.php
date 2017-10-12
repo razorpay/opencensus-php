@@ -196,6 +196,8 @@ class NetbankingCorporationGatewayTest extends TestCase
         $this->assertEquals($data['netbanking_corporation']['count'], 3);
 
         $this->assertTrue(file_exists($data['netbanking_corporation']['file']));
+
+        unlink($data['netbanking_corporation']['file']);
     }
 
     protected function doNetbankingCorporationAuthAndCapturePayment($order = [])
