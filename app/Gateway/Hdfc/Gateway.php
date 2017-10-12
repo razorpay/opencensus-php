@@ -377,12 +377,17 @@ class Gateway extends Base\Gateway
 
             $this->verifyAuthResponse($authResponse);
 
+            $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+            $actualAmount = number_format($input['gateway']['amt'], 2, '.', '');
+
+            $this->assertAmount($expectedAmount, $actualAmount);
+
             return $this->getCallbackResponseData($input);
         }
 
         $this->validateCallbackGatewayFields($input, $network);
 
-        $this->validateParesStatusIfApplicable($input);
+        $this->validatePares($input);
 
         $this->id = $input['payment']['id'];
 
@@ -847,7 +852,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function validateParesStatusIfApplicable(array $input)
+    protected function validatePares(array $input)
     {
         if (isset($input['gateway']['PaRes']) === false)
         {
@@ -872,6 +877,33 @@ class Gateway extends Base\Gateway
             return;
         }
 
+        $this->checkForErrorInPares($PaRes, $input);
+
+        $this->checkValidParesStatus($PaRes);
+    }
+
+    protected function checkForErrorInPares(array $PaRes, array $input)
+    {
+        if (empty($PaRes['Message']['Error']['errorCode']) === false)
+        {
+            $code = $PaRes['Message']['Error']['errorCode'];
+
+            $desc = $PaRes['Message']['Error']['errorMessage'] ?? '';
+
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,
+                $code,
+                $desc,
+                [
+                    'issuer' => $input['card']['issuer'],
+                    'iin'    => $input['card']['iin']
+                ]
+            );
+        }
+    }
+
+    protected function checkValidParesStatus(array $PaRes)
+    {
         // We are doing this only for N right now as Y, A and U
         // depends on the processor
         if ((isset($PaRes['Message']['PARes']['TX']['status']) === true) and

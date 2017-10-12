@@ -70,6 +70,21 @@ class AxisGatewayTest extends TestCase
             $this->testData['testPaymentAxisMigsCaptureEntity'], $migs);
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['vpc_Amount'] = '100';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $this->doAuthPayment();
+        });
+    }
+
     public function testMasterCardPayment()
     {
         $payment = $this->getDefaultPaymentArray();

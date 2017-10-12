@@ -26,6 +26,19 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function fetchSettlementSchedules()
+    {
+        // TODO: It looks ugly because it must. There is
+        // no type in schedules, but we name them all pretty
+        // consistently. Will think of a cleaner solution later.
+
+        return $this->newQuery()
+                    ->whereRaw(
+                        Entity::NAME . " LIKE 'Hourly%' OR " .
+                        Entity::NAME . " LIKE 'Basic%'")
+                    ->get();
+    }
+
     protected function addQueryParamDeleted($query, $params)
     {
         if ($params[self::WITH_TRASHED] === '1')

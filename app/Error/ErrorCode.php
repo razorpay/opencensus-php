@@ -111,6 +111,8 @@ class ErrorCode
     const GATEWAY_ERROR_PREMATURE_SI_EXECUTION                                      = 'GATEWAY_ERROR_PREMATURE_SI_EXECUTION';
     const GATEWAY_ERROR_SI_EXECUTION_ALREADY_DONE                                   = 'GATEWAY_ERROR_SI_EXECUTION_ALREADY_DONE';
 
+    const GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE                                   = 'GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE';
+
     // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
     const BAD_REQUEST_INVALID_IDS                                                   = 'BAD_REQUEST_INVALID_IDS';
@@ -492,6 +494,7 @@ class ErrorCode
     const SERVER_ERROR_INVALID_ARGUMENT                                             = 'SERVER_ERROR_INVALID_ARGUMENT';
     const SERVER_ERROR_DB_QUERY_FAILED                                              = 'SERVER_ERROR_DB_QUERY_FAILED';
     const SERVER_ERROR_LOGICAL_ERROR                                                = 'SERVER_ERROR_LOGICAL_ERROR';
+    const SERVER_ERROR_AMOUNT_TAMPERED                                              = 'SERVER_ERROR_AMOUNT_TAMPERED';
     const SERVER_ERROR_INTEGRATION_ERROR                                            = 'SERVER_ERROR_INTEGRATION_ERROR';
     const SERVER_ERROR_SETTLEMENTS_FAILED                                           = 'SERVER_ERROR_SETTLEMENTS_FAILED';
     const SERVER_ERROR_RUNTIME_ERROR                                                = 'SERVER_ERROR_RUNTIME_ERROR';
