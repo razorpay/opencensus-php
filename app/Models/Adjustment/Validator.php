@@ -26,8 +26,6 @@ class Validator extends Base\Validator
     // that add up to the adjustment amount
     protected static $splitAdjustmentRules = [
         Entity::ID                => 'required|alpha_num|size:14',
-        Entity::AMOUNT            => 'required|integer',
-        Entity::TRANSACTION_ID    => 'required|alpha_num|size:14',
         DisputeEntity::PAYMENT_ID => 'required|string',
     ];
 }

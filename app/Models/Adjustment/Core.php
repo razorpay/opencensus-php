@@ -105,9 +105,11 @@ class Core extends Base\Core
 
         (new Validator)->validateInput('split_adjustment', $adjustment);
 
+        $adj = $this->repo->adjustment->findOrFail($adjustment[Entity::ID]);
+
         $count = 1;
 
-        list($valid, $data) = $this->verifyAmountsToSplit($adjustment);
+        list($valid, $data) = $this->verifyAmountsToSplit($adj, $adjustment[Dispute\Entity::PAYMENT_ID]);
 
         if ($valid === false)
         {
@@ -115,11 +117,11 @@ class Core extends Base\Core
         }
         try
         {
-            $this->repo->transaction(function () use ($data, $count, $adjustment)
+            $this->repo->transaction(function () use ($data, $count, $adj)
             {
-                $originalAmount = $adjustment[Entity::AMOUNT];
+                $originalAmount = $adj->getAmount();
 
-                $txn = $this->repo->transaction->findOrFail($adjustment[Entity::TRANSACTION_ID]);
+                $txn = $this->repo->transaction->findOrFail($adj->getTransactionId());
 
                 $setlDetails = $this->repo->settlement_details->fetch([
                     Settlement\Details\Entity::SETTLEMENT_ID => $txn->getSettlementId(),
@@ -130,7 +132,7 @@ class Core extends Base\Core
 
                 $balance = 0;
 
-                $adjId = $adjustment[Entity::ID];
+                $adjId = $adj->getId();
 
                 $txnId = $txn->getId();
 
@@ -138,8 +140,6 @@ class Core extends Base\Core
                 {
                     if ($count === 1)
                     {
-                        $adj = $this->repo->adjustment->findOrFail($adjId);
-
                         $adj->update([Entity::AMOUNT => 0 - $amount]);
 
                         $this->updateTransactionAmountAndBalance($txn, $amount, $originalAmount);
@@ -186,17 +186,17 @@ class Core extends Base\Core
         return ['success' => true];
     }
 
-    protected function verifyAmountsToSplit(array $adjustment): array
+    protected function verifyAmountsToSplit(Entity $adjustment, string $paymentIds): array
     {
-        $paymentIds = explode(',', trim($adjustment[Dispute\Entity::PAYMENT_ID]));
+        $paymentIds = explode(',', $paymentIds);
 
         $data = [];
 
         $amount = 0;
 
-        $adjId = $adjustment[Entity::ID];
+        $adjId = $adjustment->getId();
 
-        if (($adjustment[Entity::AMOUNT] >= 0) === true)
+        if (($adjustment->getAmount() >= 0) === true)
         {
             $this->trace->info(
                 TraceCode::ADJUSTMENT_SPLIT_ERROR,
@@ -219,7 +219,7 @@ class Core extends Base\Core
             $data[$paymentId] = $payment[Payment\Entity::AMOUNT];
         }
 
-        if ($amount !== (int) abs($adjustment[Entity::AMOUNT]))
+        if ($amount !== (int) abs($adjustment->getAmount()))
         {
             $this->trace->debug(
                 TraceCode::ADJUSTMENT_SPLIT_ERROR,
@@ -294,7 +294,7 @@ class Core extends Base\Core
 
         $newAdj->setId($newAdjId);
 
-        $newAdj->save();
+        $newAdj->saveOrFail();
 
         return $newAdj;
     }
@@ -322,7 +322,7 @@ class Core extends Base\Core
 
         $newTxn->source()->associate($newAdj);
 
-        $newTxn->save();
+        $newTxn->saveOrFail();
 
         return $newTxn;
     }
