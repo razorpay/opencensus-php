@@ -120,32 +120,6 @@ class Service extends Base\Service
     }
 
     /**
-     * Reassigns a bank_transfer payment, earlier made to the
-     * default merchant, to another, given merchant and given VA.
-     *
-     * @param string $id
-     * @param array $input
-     *
-     * @return array
-     */
-    public function reassign(string $id, array $input): array
-    {
-        $this->trace->info(
-            TraceCode::BANK_TRANSFER_REASSIGN_REQUEST,
-            [
-                'id'    => $id,
-                'input' => $input,
-            ]
-        );
-
-        $bankTransfer = $this->repo->bank_transfer->findOrFailPublic($id);
-
-        $bankTransfer = $this->core->reassign($bankTransfer, $input);
-
-        return $bankTransfer->toArrayPublic();
-    }
-
-    /**
      * This is used by the payment_bank_transfer_fetch route. Bank transfer
      * public entity contains payer bank account info for use by the merchant.
      *

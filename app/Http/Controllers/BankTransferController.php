@@ -51,13 +51,4 @@ class BankTransferController extends Controller
 
         return ApiResponse::json($response);
     }
-
-    public function reassignBankTransfer(string $id)
-    {
-        $input = Request::all();
-
-        $response = $this->service()->reassign($id, $input);
-
-        return ApiResponse::json($response);
-    }
 }

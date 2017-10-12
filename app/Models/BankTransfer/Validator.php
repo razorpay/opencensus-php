@@ -6,9 +6,6 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
-use RZP\Models\VirtualAccount;
-use RZP\Models\Feature\Constants as Feature;
 
 class Validator extends Base\Validator
 {
@@ -89,69 +86,6 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
                     $bankTransfer);
             }
-        }
-    }
-
-    public function validateReassignment(
-        Merchant\Entity $merchant,
-        string $provider)
-    {
-        $bankTransfer = $this->entity;
-
-        if (($bankTransfer->payment->isAuthorized() === false) or
-            ($bankTransfer->payment->hasTransaction() === true))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Payment must be in authorized state',
-                'status',
-                [
-                    'bank_transfer_id' => $bankTransfer->getPublicId(),
-                    'status'           => $bankTransfer->payment->getStatus(),
-                    'transaction_id'   => $bankTransfer->payment->getTransactionId(),
-                ]);
-        }
-
-        $defaultMerchantId = Processor::getDefaultMerchantId();
-
-        if ($bankTransfer->getMerchantId() !== $defaultMerchantId)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Only payments made to demo merchant can be reassigned',
-                'merchant_id',
-                [
-                    'bank_transfer_id'    => $bankTransfer->getPublicId(),
-                    'merchant_id'         => $bankTransfer->getMerchantId(),
-                    'default_merchant_id' => $defaultMerchantId,
-                ]);
-        }
-
-    }
-
-    public function validateReassignmentTarget(
-        Merchant\Entity $merchant,
-        VirtualAccount\Entity $virtualAccount)
-    {
-        if ($merchant->isFeatureEnabled(Feature::VIRTUAL_ACCOUNTS) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Target merchant does not have virtual accounts enabled',
-                'merchant_id',
-                [
-                    'merchant_id'         => $merchant->getPublicId(),
-                    'virtual_account_id'  => $virtualAccount->getPublicId(),
-                ]);
-        }
-
-        if (($virtualAccount === null) or
-            ($virtualAccount->getMerchantId() !== $merchant->getPublicId()))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Merchant does not have a virtual account to receive the payment',
-                'merchant_id',
-                [
-                    'merchant_id'         => $merchant->getPublicId(),
-                    'virtual_account_id'  => $virtualAccount->getPublicId(),
-                ]);
         }
     }
 }
