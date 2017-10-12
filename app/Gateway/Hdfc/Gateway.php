@@ -885,14 +885,9 @@ class Gateway extends Base\Gateway
     {
         if (empty($PaRes['Message']['Error']['errorCode']) === false)
         {
-            $desc = '';
-
-            if (empty($PaRes['Message']['Error']['errorMessage']) === false)
-            {
-                $desc = $PaRes['Message']['Error']['errorMessage'];
-            }
-
             $code = $PaRes['Message']['Error']['errorCode'];
+
+            $desc = $PaRes['Message']['Error']['errorMessage'] ?? '';
 
             throw new Exception\GatewayErrorException(
                 Error\ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,
