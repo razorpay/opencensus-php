@@ -1,0 +1,38 @@
+.dual-container
+  min-height: 640px
+  aside
+    position: fixed
+    top: 50px
+    width: 256px
+    bottom: 0
+    background: #fff
+    box-shadow: 1px 2px 9px rgba(0,0,0,.1)
+    padding: 0 16px
+    label
+      text-transform: uppercase
+      font-size: 12px
+      font-weight: bold
+      margin: 16px 0 4px
+      color: #777
+      display: block
+  main
+    padding-top: 1px
+    padding-left: 256px
+    min-height: 640px
+    background: repeating-linear-gradient(0deg, transparent, transparent 12px, rgba(0, 0, 0, .12) 1px, transparent 13px), repeating-linear-gradient(90deg, transparent, transparent 12px, rgba(0, 0, 0, .12) 1px, transparent 13px)
+    background-attachment: fixed
+  .box
+    padding: 30px
+    border: 1px solid transparent
+    border-radius: 2px
+    transition: .2s
+    font-size: 40px
+    text-align: center
+    header
+      margin: -30px -30px 30px
+      padding: 16px 20px
+      border-bottom: 2px solid #eee
+      font-size: 20px
+      text-align: left
+    &.selected
+      border-color: rgba(52, 152, 219, .8)

@@ -1,4 +1,4 @@
-import { observable, observe } from 'mobx';
+import { observable } from 'mobx';
 import { notifyError } from 'common/modal';
 
 const defaultFilters = {
@@ -19,7 +19,7 @@ export default class Collection {
 
     this.pending = observable.box();
     this.filters = observable.shallowObject(
-      Object.assign(defaultFilters, filters)
+      Object.assign({}, defaultFilters, filters)
     );
 
     // load initial values

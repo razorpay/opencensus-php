@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Table from 'ui/Table';
-import Field, { SelectField, SwitchField } from 'ui/Field';
+import Field, { SelectField, SwitchField, DateTimeField } from 'ui/Field';
 import Collection from 'util/collection';
 import { adminFetch } from 'util/fetch';
 
@@ -60,8 +60,8 @@ export default class EntityList extends Component {
               max="1000"
               step="10"
             />
-            <Field label="From" type="datetime-local" name="from" />
-            <Field label="To" type="datetime-local" name="to" />
+            <DateTimeField label="From" name="from" />
+            <DateTimeField label="To" name="to" />
             <Field label="ID" name="entity.id" />
 
             <div class="more-filters-following" />

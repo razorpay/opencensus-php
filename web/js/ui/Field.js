@@ -18,6 +18,12 @@ export default function Field({ label, ...props }) {
   );
 }
 
+export const DateTimeField = props => (
+  <Field {...props} type="datetime-local" />
+);
+export const FromField = _ => <DateTimeField name="from" label="From" />;
+export const ToField = _ => <DateTimeField labele="to" label="To" />;
+
 export function CheckField({ label, ...props }) {
   return (
     <div class="field">
