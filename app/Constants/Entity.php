@@ -393,7 +393,7 @@ class Entity
     {
         $class = self::getEntityNamespace($entity) . '\\' . 'Fetch';
 
-        if (class_exists($class))
+        if (class_exists($class) === true)
         {
             return new $class;
         }

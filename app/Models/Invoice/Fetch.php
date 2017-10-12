@@ -82,6 +82,8 @@ class Fetch extends BaseFetch
         Entity::MERCHANT_ID,
     ];
 
+    protected $enabled = true;
+
     // ---------------------- Custom validation methods --------------
 
     protected function validateType($attribute, $value)

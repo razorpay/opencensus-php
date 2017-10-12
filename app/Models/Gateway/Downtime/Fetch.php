@@ -30,4 +30,6 @@ class Fetch extends BaseFetch
             Entity::SOURCE,
         ],
     ];
+
+    protected $enabled = true;
 }

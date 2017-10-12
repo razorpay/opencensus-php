@@ -176,7 +176,7 @@ trait RepositoryFetch
      */
     protected function getMysqlAndEsParams(array $params): array
     {
-        if ($this->hasEntityFetch())
+        if ($this->hasEntityFetch() === true)
         {
             return $this->entityFetch->groupMysqlAndEsParams($params);
         }
@@ -430,7 +430,7 @@ trait RepositoryFetch
      */
     protected function processFetchParams(array & $params)
     {
-        if ($this->hasEntityFetch())
+        if ($this->hasEntityFetch() === true)
         {
             return $this->entityFetch->processFetchParams($params);
         }
@@ -621,7 +621,7 @@ trait RepositoryFetch
         Merchant\Entity $merchant,
         array $params = []): PublicEntity
     {
-        if ($this->hasEntityFetch())
+        if ($this->hasEntityFetch() === true)
         {
             $this->entityFetch->processFindParams($params);
         }

@@ -117,11 +117,11 @@ class Fetch
 
     /**
      * This class is being experimented with few entities for now. If enabled is
-     * false (set dynamically or committed in code) the old flow will be used.
+     * true (set dynamically or committed in code) the new flow will be used.
      *
      * @var boolean
      */
-    protected $enabled = true;
+    protected $enabled = false;
 
     /**
      * Cached value for rules
@@ -250,7 +250,7 @@ class Fetch
 
     protected function addDefaultParamCountByAuth(array & $params)
     {
-        if (array_key_exists(self::COUNT, $params) === true)
+        if (isset($params[self::COUNT]) === true)
         {
             return;
         }
@@ -290,7 +290,7 @@ class Fetch
     {
         $fetchParamRules = $this->getAllFetchRules();
 
-        $findParamRules = array_intersect_key($fetchParamRules, array_flip(self::RULES_KEYS_FIND_ROUTE));
+        $findParamRules = array_only($fetchParamRules, self::RULES_KEYS_FIND_ROUTE);
 
         (new JitValidator)->rules($findParamRules)
                           ->caller($this)
