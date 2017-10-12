@@ -77,6 +77,21 @@ class MpesaGatewayTest extends TestCase
         $this->assertEmpty($wallet['gateway_payment_id_2']);
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['txnAmt'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
     /**
      * The purpose of this test to ensure that
      * float payments don't cause an issue when

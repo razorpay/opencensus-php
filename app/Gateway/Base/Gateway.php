@@ -346,7 +346,8 @@ class Gateway
         if ($expectedAmount !== $actualAmount)
         {
             throw new Exception\LogicException(
-                'Amount tampering found.', null, [
+                'Amount tampering found.',
+                ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED, [
                     'expected' => $expectedAmount,
                     'actual'   => $actualAmount
                 ]);
