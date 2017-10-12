@@ -94,7 +94,10 @@ class Gateway extends Base\Gateway
         $this->validateCallbackChecksum($input);
 
         $this->assertPaymentId($input['payment']['id'], $input['gateway']['MerchRefNo']);
-        $this->assertAmount($input['payment']['amount'], (int) ($input['gateway']['TxnAmount'] * 100));
+
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($input['gateway']['TxnAmount'], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         unset($input['gateway']['CheckSum']);
 

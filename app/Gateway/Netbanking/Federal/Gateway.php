@@ -77,9 +77,9 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::PAYMENT_ID]
         );
 
-        $this->assertAmount(
-            $input['payment']['amount'],
-            (int) ($content[ResponseFields::AMOUNT] * 100));
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $this->checkCallbackStatus($content);
 

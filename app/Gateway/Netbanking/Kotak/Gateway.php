@@ -98,7 +98,10 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $this->assertPaymentId((string) $gatewayPayment->getIntPaymentId(), $content['TraceNumber']);
-        $this->assertAmount($input['payment']['amount'], (int) ($content['Amount'] * 100));
+
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($content['Amount'], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $attrs['received'] = true;
         $attrs['status'] = $content['AuthorizationStatus'];

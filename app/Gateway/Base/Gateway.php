@@ -341,7 +341,7 @@ class Gateway
         }
     }
 
-    protected function assertAmount(int $expectedAmount, int $actualAmount)
+    protected function assertAmount($expectedAmount, $actualAmount)
     {
         if ($expectedAmount !== $actualAmount)
         {

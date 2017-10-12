@@ -377,9 +377,10 @@ class Gateway extends Base\Gateway
 
             $this->verifyAuthResponse($authResponse);
 
-            $this->assertAmount(
-                $input['payment']['amount'],
-                (int) ($input['gateway']['amt'] * 100));
+            $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+            $actualAmount = number_format($input['gateway']['amt'], 2, '.', '');
+
+            $this->assertAmount($expectedAmount, $actualAmount);
 
             return $this->getCallbackResponseData($input);
         }
