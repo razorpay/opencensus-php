@@ -10,6 +10,8 @@ use RZP\Models\Batch;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Base\RuntimeManager;
+use RZP\Models\Batch\Status;
 use RZP\Reconciliator\Converter;
 use RZP\Reconciliator\FileProcessor;
 
@@ -93,8 +95,6 @@ class Reconciliation extends Base
 
     protected function performPreProcessingActions()
     {
-        $this->batch->getValidator()->validateIfProcessable();
-
         $this->setGatewayReconciliatorObject();
 
         $this->batch->incrementAttempts();
@@ -309,5 +309,21 @@ class Reconciliation extends Base
         }
 
         $this->batch->setFailureReason($ex->getMessage());
+    }
+
+    protected function postProcess()
+    {
+        $this->batch->setProcessing(0);
+
+        $this->repo->saveOrFail($this->batch);
+    }
+
+    /**
+     * The reconciliation can run for a long time.
+     * Hence, changing the system's execution time limit to 1 hour.
+     */
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setTimeLimit(3600);
     }
 }

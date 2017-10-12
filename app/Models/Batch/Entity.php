@@ -129,8 +129,12 @@ class Entity extends Base\PublicEntity
      */
     public function inputFile()
     {
+        $fileStoreType = ($this->getType() === Type::RECONCILIATION) ?
+                            FileStore\Type::BATCH_RECON_INPUT :
+                            FileStore\Type::BATCH_INPUT;
+
         return $this->files()
-                    ->where(FileStore\Entity::TYPE, FileStore\Type::BATCH_INPUT)
+                    ->where(FileStore\Entity::TYPE, $fileStoreType)
                     ->latest()
                     ->first();
     }

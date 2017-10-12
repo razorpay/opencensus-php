@@ -306,12 +306,16 @@ class Base extends BaseModel\Core
      */
     protected function updateBatchStatus()
     {
-        if (($this->batch->getTotalCount() > 0) and ($this->batch->getFailureCount() >= 0))
+        // If we were able to process the file, but there were failures, we mark it
+        // as partially_processed or processed depending on the type of the file
+        if (($this->batch->getTotalCount() > 0) and ($this->batch->getFailureCount() > 0))
         {
             $status = ($this->shouldMarkProcessed() === true) ?
                         Status::PROCESSED :
                         Status::PARTIALLY_PROCESSED;
         }
+        // In all other cases, we update the status as processed, as there will be no failure count
+        // and unhandled exceptions are handled elsewhere in which case we mark the status as FAILED.
         else
         {
             $status = Status::PROCESSED;
