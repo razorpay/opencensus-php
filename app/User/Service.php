@@ -331,7 +331,7 @@ class Service extends Base\Service
             'user_id'       =>  $authUser->id,
         ];
 
-        $loginOnApi = [
+        $upgradeUserToMerchant = [
             'route_name'    => 'user_merchant_upgrade',
             'body'          => $data,
         ];
@@ -340,7 +340,7 @@ class Service extends Base\Service
 
         $genericUser = null;
 
-        list($error, $data) = $genericService->call('POST', $loginOnApi);
+        list($error, $data) = $genericService->call('POST', $upgradeUserToMerchant);
 
         if (empty($error) === true)
         {

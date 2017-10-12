@@ -653,6 +653,9 @@ return [
         // Invitation fetch by token
         'invitation_fetch_by_token'         => 'invitations/token/{token}',
 
+        // User Merchant Mapping Action
+        'user_merchant_mapping_action'      => 'users/{id}/{action}',
+
         // Make test payment for Virtual Account
         'bank_transfer_process'             => 'ecollect/validate',
 

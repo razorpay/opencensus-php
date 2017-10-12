@@ -681,12 +681,20 @@ class Service extends Base\Service
 
         $currentMerchant = $this->currentUser->currentMerchant();
 
-        list($error, $response) = (new User\Service)->detachMerchantUserOnApi($userId, $this->currentUser->currentMerchant()->id);
+        $removeTeamMemberForOwner = [
+            'route_name' => 'user_merchant_mapping_action',
+            'url_params' => [
+                '{id}'     => $userId,
+                '{action}' => 'detach'
+            ],
+            'body'       => [
+                'merchant_id' => $currentMerchant->id
+            ]
+        ];
 
-        if (empty($error) === true)
-        {
-            Merchant\Entity::find($currentMerchant->id)->users()->detach($userId);
-        }
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('PUT', $removeTeamMemberForOwner);
 
         return $error;
     }
