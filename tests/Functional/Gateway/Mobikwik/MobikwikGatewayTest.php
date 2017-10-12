@@ -46,6 +46,21 @@ class MobikwikGatewayTest extends TestCase
             $this->testData['testMobikwikWalletEntity'], $this->payment);
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['amount'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
     public function testPowerWalletPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('mobikwik');

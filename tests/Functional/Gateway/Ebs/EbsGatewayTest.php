@@ -19,7 +19,6 @@ class EbsGatewayTest extends TestCase
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal');
 
-
         $this->gateway = 'ebs';
     }
 
@@ -49,6 +48,25 @@ class EbsGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentEbsEntity'], $payment);
+    }
+
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['Amount'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'ANDB';
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testPaymentForBankWith302Redirect()

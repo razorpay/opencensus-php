@@ -110,13 +110,13 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($input['gateway']);
 
-        $this->assertPaymentId($input['payment']['id'], $input['gateway'][ResponseFields::PAYMENT_ID]);
-
         if (($input['gateway'][ResponseFields::STATUS_CODE] !== StatusCode::SUCCESS) and
             ($input['gateway'][ResponseFields::RESPONSE_CODE] !== ResponseCode::SUCCESS))
         {
             return $this->callbackAuthFailureFlow($input);
         }
+
+        $this->assertGatewayResponse($input);
 
         $this->callbackAuthSuccessFlow($input);
 
@@ -360,6 +360,22 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::RESPONSE_CODE],
             $content[ResponseFields::RESPONSE_DESCRIPTION]
         );
+    }
+
+    /**
+     * Performs required assertion on response received from gateway
+
+     * @param  array  $input input containing payment data and gateway response
+     */
+    protected function assertGatewayResponse(array $input)
+    {
+        $this->assertPaymentId(
+                $input['payment']['id'],
+                $input['gateway'][ResponseFields::PAYMENT_ID]);
+
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($input['gateway'][ResponseFields::AMOUNT], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
     }
 
     //-------------------------------Callback helper methods end----------------------------------

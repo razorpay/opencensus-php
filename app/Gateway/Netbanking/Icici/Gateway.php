@@ -214,7 +214,10 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($attrs, $callbackData);
 
-        $this->assertAmount($input, $callbackData);
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($callbackData['AMT'], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -642,18 +645,6 @@ class Gateway extends Base\Gateway
         ];
 
         return array_merge($data, $recurringData);
-    }
-
-    protected function assertAmount($input, $content)
-    {
-        $actualAmount = number_format($content['AMT'], 2, '.', '');
-        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-
-        if ($actualAmount !== $expectedAmount)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED);
-        }
     }
 
     protected function checkCallbackStatus(array $attrs, array $content)
