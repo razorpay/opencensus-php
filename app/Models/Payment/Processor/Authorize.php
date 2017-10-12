@@ -2267,10 +2267,10 @@ trait Authorize
             return;
         }
 
-        // Set the token recurring_status to initiated for Netbanking file-based emandate payments
+        // Set the token recurring_status to initiated for Netbanking file-based emandate registration banks
         if (($token->getMethod() === Payment\Method::NETBANKING) and
             ($token->isRecurring() === false) and
-            ($payment->isFileEmandatePayment() === true) and
+            (Payment\Gateway::isFileBasedEMandateRegsitrationBank($payment->getBank()) === true) and
             ($payment->getRecurringType() === Payment\RecurringType::INITIAL))
         {
             $token->setRecurringStatus(Token\RecurringStatus::INITIATED);
