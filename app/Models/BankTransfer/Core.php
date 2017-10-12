@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Refund as PaymentRefund;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
@@ -171,11 +172,16 @@ class Core extends Base\Core
 
         foreach ($refunds as $refund)
         {
-
+            //
             // If refund was marked as failed after creating a fund
             // transfer attempt then that means this failure was result
             // of payout file recon. We aren't handling these just now.
-            if ($refund->fundTransferAttempts->isNotEmpty() === true)
+            //
+            // Reusing the same route for manual retries. If refund is being
+            // retried manually, then we don't check for this condition.
+            //
+            if (($refund->fundTransferAttempts->isNotEmpty() === true) and
+                ($this->isManualRetry($refund, $input) === false))
             {
                 $this->trace->info(
                     TraceCode::REFUND_RETRY_SKIPPED,
@@ -214,6 +220,17 @@ class Core extends Base\Core
             'failure'       => $failure,
             'status'        => $status,
         ];
+    }
+
+    protected function isManualRetry(PaymentRefund\Entity $refund, array $input)
+    {
+        if ((isset($input['ids']) === true) and
+            (in_array($refund->getPublicId(), $input['ids'], true) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
