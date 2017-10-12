@@ -57,16 +57,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     protected $appends = ['confirmed'];
 
     /**
-     * Determine if the user is a member of any merchants.
-     *
-     * @return bool
-     */
-    public function hasMerchants()
-    {
-        return count($this->merchants) > 0;
-    }
-
-    /**
      * Get all of the merchants that the user belongs to.
      */
     public function merchants($suspendedAlso = false)
@@ -96,40 +86,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     public function getConfirmToken()
     {
         return $this->confirm_token;
-    }
-
-    /**
-     * Get the merchant that user is currently viewing.
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function currentMerchant()
-    {
-        $currentMerchantId = Session::get('current_merchant_id');
-
-        if (is_null($currentMerchantId) && $this->hasMerchants())
-        {
-            $this->switchToMerchant($this->merchants->first());
-
-            return $this->currentMerchant();
-        }
-        else if (is_null($currentMerchantId) === false)
-        {
-            $currentMerchant = $this->merchants->find($currentMerchantId);
-
-            return $currentMerchant ?: $this->refreshCurrentMerchant();
-        }
-    }
-
-    /**
-     * Switch the current merchant for the user.
-     *
-     * @param  \App\Merchant\Entity  $merchant
-     * @return void
-     */
-    public function switchToMerchant($merchant)
-    {
-        Session::put('current_merchant_id',$merchant->id);
     }
 
     /**
