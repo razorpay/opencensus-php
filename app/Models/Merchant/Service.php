@@ -84,16 +84,16 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
-        $currentMerchantTags = $merchant->tagNames();
+        $linkedAccount = (bool) $input['account'] ?? false;
 
-        if (in_array(Feature\Constants::AGGREGATOR, $currentMerchantTags) === false)
+        if (($linkedAccount === false) and
+            ($merchant->isFeatureEnabled(Feature\Constants::AGGREGATOR) === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PRICING_ID_REQURED);
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_AGGREGRATOR);
         }
-        $ownerId = $input['user_id'];
 
-        $linkedAccount = $input['account'] ?? false;
+        $ownerId = $input['user_id'];
 
         unset($input['user_id']);
 
