@@ -10,14 +10,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_INTERNATIONAL_RECURRING_PAYMENTS_NOT_ALLOWED_FOR_MERCHANT,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNATIONAL_RECURRING_PAYMENTS_NOT_ALLOWED_FOR_MERCHANT,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT,
         ],
     ],
     'testRecurringPaymentCreateFeatureDisabled' => [
