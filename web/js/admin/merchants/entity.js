@@ -102,6 +102,7 @@ export default class MerchantEntity extends Component {
 
     return (
       <aside class="">
+        <div class="heading">Actions</div>
         <Link to={`/merchant/${merchantId}/login`} target="_blank">
           Login as Merchant
         </Link>
@@ -184,14 +185,16 @@ export default class MerchantEntity extends Component {
         <div onClick={this.captureScreenshot}>Capture Screenshots</div>
         <div onClick={actions.AddCredits}>Add Credits</div>
 
-        <div onClick={this.downloadReports}>Download Report</div>
+        <div class="btn-primary" onClick={this.downloadReports}>
+          Download Report
+        </div>
       </aside>
     );
   }
 
   render() {
     return (
-      <div class="entity-container merchant">
+      <div class="entity-container merchant box">
         {/* Content */}
         <main class="" />
 
