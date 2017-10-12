@@ -8,26 +8,44 @@
   text-align: center
 
 .entity-container.merchant
+  display: flex;
   width 75%
   min-width: 800px
   margin: 30px auto
 
-  aside
+  main, aside
     display: flex
     flex-direction: column
+    padding: 16px
+
+    .heading
+      background-color: #f6f8f8
+      margin-bottom: 28px
+
+    > div, > a
+      padding: 12px 8px
+      border: 1px solid #edf1f2
+      margin-bottom: -1px
+      cursor: pointer
+
+
+
+  aside
     width: 30%
     max-width: 350px
     min-width: 200px
-    padding: 16px
+
     border-right: 1px solid #edf1f2 // TODO: Take from theme variable file
 
     > div, > a
       padding: 12px 8px
       border: 1px solid #edf1f2
-      margin-top: -1px;
+      margin-bottom: -1px
+      cursor: pointer
 
-    .heading
-      background-color: #edf1f2
-      margin-bottom: 28px
+      &:hover
+        background-color: #f6f8f8
 
-
+  main
+    width: 70%
+    border-left: 1px solid #edf1f2 // TODO: Take from theme variable file

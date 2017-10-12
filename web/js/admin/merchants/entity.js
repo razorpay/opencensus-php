@@ -192,14 +192,26 @@ export default class MerchantEntity extends Component {
     );
   }
 
+  getMainContent() {
+    return (
+      <main class="">
+        <div class="heading">
+          Merchant: <b>{merchantId}</b> (View as Entity)
+        </div>
+      </main>
+    );
+  }
+
   render() {
+    const merchantId = this.props.match.params.id;
+
     return (
       <div class="entity-container merchant box">
-        {/* Content */}
-        <main class="" />
-
         {/* Sidebar Action List */}
         {this.getActionList()}
+
+        {/* Content */}
+        {this.getMainContent()}
       </div>
     );
   }
