@@ -54,7 +54,7 @@ class Batch extends Job implements ShouldQueue
 
             $batch->setProcessing(true);
 
-            $this->repo->saveOrFail($batch);
+            $this->repoManager->saveOrFail($batch);
 
             $timeStarted = microtime(true);
 

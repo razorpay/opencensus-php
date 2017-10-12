@@ -175,7 +175,16 @@ class Core extends Base\Core
         // TBD - Need to discuss once if all batch types can be retried.
         $job = new BatchJob($this->mode, $batch->getId());
 
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
+        if (Type::isQueueGroup($batch->getType()) === false)
+        {
+            Processor\Base::get($batch)->process();
+        }
+        else
+        {
+            (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
+        }
+
+        return $batch;
     }
 
     /**
@@ -222,14 +231,5 @@ class Core extends Base\Core
         $job = new BatchJob($this->mode, $batch->getId(), $input);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
-    }
-
-    /**
-     * Retrues the batch processing in sync or enqueues it for processing if applicable
-     *
-     * @param  Entity $batch Batch entiy to be retried
-     */
-    protected function retryBatchProcessing(Entity $batch)
-    {
     }
 }
