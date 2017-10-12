@@ -73,7 +73,7 @@ class Gateway extends Base\Gateway
 
     // -------------------- Auth helper methods-------------------------
 
-    protected function getAuthorizeRequest($input)
+    protected function getAuthorizeRequest($input): array
     {
         $payment = $input['payment'];
 
@@ -106,7 +106,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getContentToSave($payment)
+    protected function getContentToSave($payment): array
     {
         return [
             RequestFields::MERCHANT_ID => $this->getMerchantId(),
@@ -203,7 +203,7 @@ class Gateway extends Base\Gateway
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
     }
 
-    protected function getVerifyRequestData($verify)
+    protected function getVerifyRequestData($verify): array
     {
         $content = [
             RequestFields::PAYMENT_ID => $verify->input['payment']['id']
@@ -212,7 +212,7 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function parseVerifyResponse($body)
+    protected function parseVerifyResponse($body): array
     {
         $pairs = explode(Constants::VERIFY_PAIR_SEPARATOR, $body);
 
@@ -248,7 +248,7 @@ class Gateway extends Base\Gateway
         return ($content[ResponseFields::STATUS] === Status::SUCCESS);
     }
 
-    protected function getMerchantId()
+    protected function getMerchantId(): string
     {
         if ($this->mode === Mode::TEST)
         {
@@ -258,7 +258,7 @@ class Gateway extends Base\Gateway
         return $this->getLiveMerchantId();
     }
 
-    protected function isStatusCodeSuccess($content)
+    protected function isStatusCodeSuccess($content): bool
     {
         return ($content[NetbankingEntity::STATUS] === Status::SUCCESS);
     }
