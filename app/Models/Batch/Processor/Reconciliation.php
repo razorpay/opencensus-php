@@ -3,15 +3,15 @@
 namespace RZP\Models\Batch\Processor;
 
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
+use Symfony\Component\HttpFoundation\File\File;
+
 use RZP\Models\Batch;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
-use RZP\Models\FileStore\Format;
 use RZP\Reconciliator\Converter;
 use RZP\Reconciliator\FileProcessor;
-use Razorpay\Trace\Logger as Trace;
-use Symfony\Component\HttpFoundation\File\File;
 
 class Reconciliation extends Base
 {
@@ -40,7 +40,7 @@ class Reconciliation extends Base
      *
      * @param  array  $input batch creation params
      */
-    public function updateBatchWithInputFileDetails(array $input)
+    public function createInputFileAndUpdateBatch(array $input)
     {
         $this->repo->transaction(function () use ($input)
         {
@@ -61,7 +61,7 @@ class Reconciliation extends Base
         $fileNameWithExt = $inputFileDetails[FileProcessor::FILE_NAME];
 
         // Here we get the original filename without the extension and prepend
-        // the batch/upload prefix to indicate it is an uploaded file for batch
+        // the batch/upload prefix to indicate it is an input file for batch
         // We use the original filename here instead of the batch id as it s required
         // by the reconciliator classes to determine the type of reconciliation
         $fileName = pathinfo($fileNameWithExt, PATHINFO_FILENAME);
@@ -118,48 +118,14 @@ class Reconciliation extends Base
     {
         $fileContents = $this->parseInputFileContents();
 
-        // We first update thr total count of the batch, and then proceed further
-        // as the batch status update post procesiing depends on this. For recon batches
-        // even if we were able to process no rows, we still want to mark the batch as partially processed
-        // as the file parsing was successful
-        $this->updateBatchTotalCount($fileContents);
-
         $this->gatewayReconciliator->startReconciliationV2($fileContents, $this->batch);
 
         $this->updateBatchStatus();
     }
 
-    protected function updateBatchTotalCount(array $fileContents)
-    {
-        $totalCount = 0;
-
-        foreach ($fileContents as $data)
-        {
-            unset($data[self::EXTRA_DETAILS]);
-
-            $totalCount += count($data);
-        }
-
-        $this->batch->setTotalCount($totalCount);
-    }
-
     protected function shouldMarkProcessed(): bool
     {
         return false;
-    }
-
-    protected function handleReconProcessingFailure(\Exception $ex)
-    {
-        $this->trace->traceException($ex,
-                Trace::ERROR,
-                TraceCode::RECON_BATCH_PROCESSING_FATAL_ERROR,
-                [
-                    'batch_id' => $this->batch->getId()
-                ]);
-
-        $this->batch->setStatus(Batch\Status::FAILED);
-
-        $this->batch->setFailureReason($ex->getMessage());
     }
 
     /**
@@ -202,6 +168,8 @@ class Reconciliation extends Base
     protected function parseExcelContent(array $inputFileDetails): array
     {
         $fileContents = [];
+
+        $totalCount = 0;
         //
         // Gets the sheet names which need to be collected for the given gateway.
         // Returns empty if there is no restriction on which sheets to collect.
@@ -219,16 +187,22 @@ class Reconciliation extends Base
         {
             $inputFileDetails[FileProcessor::SHEET_NAME] = $sheetName;
 
+            $totalCount += count($sheetData);
+
             $this->setExtraDetails($sheetData, $inputFileDetails);
 
             $fileContents[] = $sheetData;
         }
+
+        $this->batch->setTotalCount($totalCount);
 
         return $fileContents;
     }
 
     protected function parseCsvContent(array $fileDetails)
     {
+        $totalCount = 0;
+
         $fileContents = [];
 
         $columnHeaders = $this->getColumnHeadersForGatewayIfApplicable($fileDetails);
@@ -239,7 +213,11 @@ class Reconciliation extends Base
 
         $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip, $delimiter);
 
+        $totalCount += count($csvArray);
+
         $this->setExtraDetails($csvArray, $fileDetails);
+
+        $this->batch->setTotalCount($totalCount);
 
         $fileContents[] = $csvArray;
 
@@ -305,11 +283,11 @@ class Reconciliation extends Base
 
     /**
      * Un case of unhandled exceptions in case of recon, we still mark the batch
-     * as partially processed if we were able to process some rows and abort on a
+     * as partially processed if we were able to process some rows and had abort on a
      * particular row. Basically we mark it as partially processed if we were able
      * to get the total number of rows
      *
-     * @param  \Throwable $ex Exception which was thrown
+     * @param  \Throwable $ex Exception thrown while processing the batch
      */
     protected function handleBatchProcessingException(\Throwable $ex)
     {

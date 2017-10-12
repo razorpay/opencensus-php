@@ -4,6 +4,9 @@ namespace RZP\Models\Batch\Processor;
 
 use Mail;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 use RZP\Models\Batch;
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
@@ -14,10 +17,8 @@ use RZP\Models\Batch\Status;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Exception\BadRequestValidationFailureException;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Base extends BaseModel\Core
 {
@@ -101,13 +102,13 @@ class Base extends BaseModel\Core
 
     /**
     * Does following inside transaction:
-    *  - Uploads file to s3 and gets FileStore\Entity created
-    *  - Validates the file
-    *  - Updates batch entity with aggregate details of file (if applicable)
-    *  - Saves batch entity
+    * - Uploads file to s3 and gets FileStore\Entity created
+    * - Validates the file
+    * - Updates batch entity with aggregate details of file (if applicable)
+    * - Saves batch entity
     * @param  array  $input batch creation params
     */
-    public function updateBatchWithInputFileDetails(array $input)
+    public function createInputFileAndUpdateBatch(array $input)
     {
         $this->repo->transaction(function () use ($input)
         {
@@ -159,8 +160,6 @@ class Base extends BaseModel\Core
                 static::MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS);
 
-            $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArray());
-
             $this->postProcess();
         }
         catch (\Throwable $ex)
@@ -170,6 +169,8 @@ class Base extends BaseModel\Core
         finally
         {
             $this->batch->setProcessing(false);
+
+            $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArray());
 
             $this->repo->saveOrFail($this->batch);
         }
@@ -324,6 +325,16 @@ class Base extends BaseModel\Core
         }
 
         $this->batch->setStatus($status);
+    }
+
+    /**
+     * Indicates if a batch should be marked as processed in all cases, i.e even when
+     * processing failed for certain rows
+     * @return bool
+     */
+    protected function shouldMarkProcessed(): bool
+    {
+        return true;
     }
 
     /**
@@ -720,6 +731,12 @@ class Base extends BaseModel\Core
         }
     }
 
+    /**
+     * Handles any exception while processing the batch, and updates the batch status accordingly.
+     * Should be overrideen by respective processors for any special handling
+     *
+     * @param  \Throwable $ex  Exception encountered while processing the batch
+     */
     protected function handleBatchProcessingException(\Throwable $ex)
     {
         $this->trace->traceException(

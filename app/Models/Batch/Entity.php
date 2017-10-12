@@ -190,6 +190,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PROCESSING);
     }
 
+    /**
+     * Indicates if the batch is currently available for processing or has not
+     * been processed already
+     */
     public function isProcessable()
     {
         return (($this->isProcessing() === false) and ($this->isProcessed() === false));
@@ -287,11 +291,6 @@ class Entity extends Base\PublicEntity
         return $this->getLocalSaveDir($status) . $this->getFileKeyWithExt();
     }
 
-    public function isInProcessableState()
-    {
-        return (in_array($this->getStatus(), Status::TERMINAL_STATUSES, true) === false);
-    }
-
     // ----------------------- End  Getters --------------------------
 
     // ----------------------- Setters -------------------------------
@@ -333,7 +332,7 @@ class Entity extends Base\PublicEntity
 
     public function setProcessing($value)
     {
-        $this->setProcessing(self::PROCESSING, $value);
+        $this->setAttribute(self::PROCESSING, $value);
     }
 
     public function setAttempts($attempts)

@@ -31,11 +31,9 @@ class Core extends Base\Core
 
         $processor = Processor\Base::get($batch);
 
-        $inputFile = $input[Entity::FILE];
-
         // We upload the input file to S3 create a filestore entity for the input file via UFH
         // We then update the batch entity with file metadata if available
-        $processor->updateBatchWithInputFileDetails($input);
+        $processor->createInputFileAndUpdateBatch($input);
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
 
@@ -174,7 +172,10 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($batch);
 
-        $this->retryBatchProcessing($batch);
+        // TBD - Need to discuss once if all batch types can be retried.
+        $job = new BatchJob($this->mode, $batch->getId());
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
     }
 
     /**
@@ -196,19 +197,6 @@ class Core extends Base\Core
         RuntimeManager::setMemoryLimit('1024M');
 
         RuntimeManager::setTimeLimit(1000);
-    }
-
-    /**
-     * Sets the state of the batch to processing to indicate that the batch is
-     * currently under processing or will be picked for processing in the future
-     *
-     * @param  Entity $batch batch entity to be processed
-     */
-    protected function updateBatchForProcessing(Entity $batch)
-    {
-        $batch->setStatus(Status::PROCESSING);
-
-        $this->repo->saveOrFail($batch);
     }
 
     /**
@@ -243,9 +231,5 @@ class Core extends Base\Core
      */
     protected function retryBatchProcessing(Entity $batch)
     {
-        // TBD - Need to discuss once if all batch types can be retried.
-        $job = new BatchJob($this->mode, $batch->getId());
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
     }
 }
