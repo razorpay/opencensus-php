@@ -13,21 +13,22 @@ export default class EntityList extends Component {
 
   state = {
     entityList: [],
-    selectedEntity: 'payment',
   };
 
   constructor(props) {
     super(props);
 
     this.changeFilters = this.changeFilters.bind(this);
+    this.onSubmit = this.onSubmit.bind(this);
   }
 
-  onSubmit = filters => this.collection.setFilters(filters);
+  onSubmit = filters => {
+    const { entityType, mode, count, from, to, entityId, ...rest } = filters;
+    return this.props.onSearch(rest);
+  };
 
   changeFilters({ target }) {
-    this.setState({
-      selectedEntity: target.value,
-    });
+    this.props.onEntityChange(target.value);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -41,9 +42,7 @@ export default class EntityList extends Component {
   }
 
   render() {
-    const entities = this.props.entities,
-      fields = this.props.fields,
-      selectedEntity = this.state.selectedEntity,
+    const { entities, fields, selectedEntity } = this.props,
       filters = entities && entities[selectedEntity];
 
     return (
@@ -55,10 +54,10 @@ export default class EntityList extends Component {
           ) : (
             <Form onSubmit={this.onSubmit} class="filters">
               <SelectField
-                name="entity_type"
+                name="entityType"
                 label="Entity"
                 onChange={this.changeFilters}
-                defaultValue={this.state.selectedEntity}
+                defaultValue={this.props.selectedEntity}
               >
                 {this.state.entityList.map((entity, index) => (
                   <option key={index} value={entity}>
@@ -68,7 +67,8 @@ export default class EntityList extends Component {
               </SelectField>
               <SwitchField
                 disabledValue="test"
-                value="live"
+                value={this.props.selectedMode}
+                onChange={this.props.onModeChange}
                 mode="mode"
                 label="Live Mode"
               />
@@ -82,9 +82,26 @@ export default class EntityList extends Component {
                 max="1000"
                 step="10"
               />
-              <Field label="From" type="datetime-local" name="from" />
-              <Field label="To" type="datetime-local" name="to" />
-              <Field label="ID" name="entity.id" />
+              <Field
+                label="From"
+                type="datetime-local"
+                name="from"
+                value={this.props.selectedFrom}
+                onChange={this.props.onSetSelectedFrom}
+              />
+              <Field
+                label="To"
+                type="datetime-local"
+                name="to"
+                value={this.props.selectedTo}
+                onChange={this.props.onSetSelectedTo}
+              />
+              <Field
+                label="ID"
+                name="entityId"
+                value={this.props.searchEntity}
+                onChange={this.props.onSearchEntityChange}
+              />
 
               <div class="more-filters-following" />
               {filters &&
@@ -117,6 +134,13 @@ export default class EntityList extends Component {
             </Form>
           )}
         </div>
+        {this.props.searchErrors.length > 0 && (
+          <div className="text-danger">
+            {this.props.searchErrors.map((error, index) => {
+              return <span key={index}>{error}</span>;
+            })}
+          </div>
+        )}
       </div>
     );
   }
