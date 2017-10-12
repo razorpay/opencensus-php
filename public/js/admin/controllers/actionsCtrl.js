@@ -7,13 +7,17 @@ app
     'transformRequestAsFormPost',
     '$modal',
     'admin',
+    'utils',
+    '$state',
     function(
       $scope,
       $http,
       alertsFactory,
       transformRequestAsFormPost,
       $modal,
-      admin
+      admin,
+      utils,
+      $state
     ) {
       admin.identity().then(function(data) {
         $scope.admin = data;
@@ -439,6 +443,12 @@ app
             })
             .success(function onUpdateGSTINSuccess(data) {
               if (data.success) {
+                if (utils.isWorkflow(data.data)) {
+                  $state.go('app.workflows.actions.detail', {
+                    action_id: data.data.id,
+                  });
+                  return;
+                }
                 $scope.alerts.addAlert(
                   'success',
                   'Update GSTIN Successfull',
