@@ -83,7 +83,10 @@ class Repository extends Base\Repository
             ->get();
     }
 
-    public function updateFeatureActivationStatus(Merchant\Entity $merchant, string $featureName, string $status): bool
+    public function updateFeatureActivationStatus(
+        Merchant\Entity $merchant,
+        string $featureName,
+        string $status): bool
     {
         $attributeName = $featureName . '_activation_status';
 
@@ -97,7 +100,8 @@ class Repository extends Base\Repository
                 [$featureName, $status]);
         }
 
-        if (($status === Entity::APPROVED) and ($merchant->isFeatureEnabled($featureName) === false))
+        if (($status === Entity::APPROVED) and
+            ($merchant->isFeatureEnabled($featureName) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CANNOT_APPROVE_MERCHANT_FEATURE_NOT_ASSIGNED,

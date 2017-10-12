@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Feature;
 
-use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -216,7 +216,7 @@ class Service extends Base\Service
 
         $data[$feature] = $input;
 
-        return $this->processOnboardingResponses('create', $data, $this->merchant, $feature);
+        return $this->processOnboardingResponses('create', $data, $this->merchant);
     }
 
     /**
@@ -237,28 +237,28 @@ class Service extends Base\Service
 
         $data[$feature] = $input;
 
-        return $this->processOnboardingResponses('update', $data, $merchant, $feature);
+        return $this->processOnboardingResponses('update', $data, $merchant);
     }
 
     /**
      * @param string          $action
      * @param array           $data
      * @param Merchant\Entity $merchant
-     * @param string          $feature
      *
      * @return bool
      */
     private function processOnboardingResponses(
         string $action,
         array $data,
-        Merchant\Entity $merchant,
-        string $feature)
+        Merchant\Entity $merchant): bool
     {
-        $saved = false;
+        $saved = true;
 
         $this->trace->info(
             TraceCode::FEATURE_ONBOARDING_RESPONSE_REQUEST,
-            [$action, $data, $merchant->getId(), $feature]);
+            [$action, $data, $merchant->getId()]);
+
+        $feature = array_keys($data)[0] ?? "";
 
         (new Validator)->validateInput(Constants::ONBOARDING, $data);
 
@@ -272,18 +272,23 @@ class Service extends Base\Service
                 ->upsert($data)
                 ->save();
 
-            $saved = $this->repo->merchant_detail->updateFeatureActivationStatus(
-                        $merchant,
-                        $feature,
-                        Merchant\Detail\Entity::PENDING);
+            if ($action === 'create')
+            {
+                $saved = $this->repo->merchant_detail->updateFeatureActivationStatus(
+                    $merchant,
+                    $feature,
+                    Merchant\Detail\Entity::PENDING);
+            }
 
             if ($this->auth->isAdminAuth() === false)
             {
-                (new Core)->notifyOnboardingResponseCreationOnSlack($feature);
+                (new Core)->notifyFeatureOnboardingFormSubmitOnSlack($feature);
             }
         }
         catch (\Throwable $exception)
         {
+            $saved = false;
+
             $this->trace->traceException(
                 $exception, Trace::CRITICAL, TraceCode::FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED);
         }
@@ -315,9 +320,9 @@ class Service extends Base\Service
      *
      * @param $settings
      *
-     * @return mixed
+     * @return Dictionary
      */
-    protected function addFileUrlInResponseIfApplicable($settings)
+    protected function addFileUrlInResponseIfApplicable($settings): Dictionary
     {
         if (isset($settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT]) === true)
         {

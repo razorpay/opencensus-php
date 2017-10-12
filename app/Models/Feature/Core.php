@@ -128,7 +128,7 @@ class Core extends Base\Core
      *
      * @param string $productName
      */
-    public function notifyOnboardingResponseCreationOnSlack(string $productName)
+    public function notifyFeatureOnboardingFormSubmitOnSlack(string $productName)
     {
         $merchant = $this->merchant;
 
