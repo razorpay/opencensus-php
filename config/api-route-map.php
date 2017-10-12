@@ -99,6 +99,8 @@ return [
         // Fetch Merchants from ES
         'admin_fetch_merchants_new'         => 'admins/merchants',
 
+        'admin_fetch_all_entities'          => 'admin/entities/all',
+
         // Admin Payment Actions
         // Refund Authorized Payment
         'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
