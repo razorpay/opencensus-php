@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { openModal, confirm } from 'common/modal';
 
 import * as entityModals from './entityModals';
+import { getDetails } from './entity-resources';
+import EntityRow from 'ui/EntityRow';
 
 let parentProps;
 const actions = {};
@@ -194,12 +196,22 @@ export default class MerchantEntity extends Component {
 
   getMainContent() {
     const merchantId = this.props.match.params.id;
+    const detailsMap = getDetails({ merchantDetails: {} });
 
     return (
       <main class="">
         <div class="heading">
           Merchant: <b>{merchantId}</b> (View as Entity)
         </div>
+
+        {detailsMap.map(item => {
+          if (typeof item.value === 'function') {
+            //TODO: Display the value directly (That value is to be something like ListViewToggler)
+            <EntityRow label={item.label} value={item.value} />;
+          } else {
+            return <EntityRow label={item.label} value={item.value} />;
+          }
+        })}
       </main>
     );
   }

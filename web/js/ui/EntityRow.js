@@ -6,7 +6,7 @@ export default ({ label, value, children, ...otherProps }) => {
   }
 
   return (
-    <div class="row-item clearfix" {...otherProps}>
+    <div class="row-item" {...otherProps}>
       {typeof label === 'function' ? (
         label()
       ) : (
