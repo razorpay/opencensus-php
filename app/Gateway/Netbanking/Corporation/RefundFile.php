@@ -120,7 +120,7 @@ class RefundFile extends Base\RefundFile
     )
     {
         $date = Carbon::createFromTimestamp($date, Timezone::IST)
-            ->format('Ymd');
+                        ->format('Ymd');
 
         $data = [
             $accountBrCode,
@@ -145,7 +145,7 @@ class RefundFile extends Base\RefundFile
         if ($firstLine === true)
         {
             $date = Carbon::createFromTimestamp($date)
-                ->format('d.m.Y');
+                            ->format('d.m.Y');
 
             $lastString = ' Dt: ' . $date;
         }
