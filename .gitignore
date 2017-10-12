@@ -37,3 +37,4 @@ public/js/themes/*.js
 public/react/dist/
 public/dist/
 yarn-error.log
+.idea
