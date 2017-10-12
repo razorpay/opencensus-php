@@ -97,6 +97,8 @@ class Service extends Base\Service
 
         unset($input['user_id']);
 
+        unset($input['account']);
+
         $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant);
 
         // This goes out to the aggregator
