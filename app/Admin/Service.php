@@ -255,13 +255,6 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function getMerchantIdsToList(string $orgId, string $adminId)
-    {
-        $this->setAdminCredentials();
-
-        return $this->api->admin->fetchMerchantIds($orgId, $adminId);
-    }
-
     public function getAdminActivity($id)
     {
         $sessionsCollection = (new SessionTable\Entity)->getAllSessionsForAdmin($id);
@@ -1246,24 +1239,6 @@ class Service extends Base\Service
         {
             $this->cache->put($cacheKey, $org['id'], 10);
         }
-    }
-
-    protected function getOrgFromCache($domain)
-    {
-        list($error, $data) = $this->getOrg($domain);
-
-        return $data;
-
-        // Disabling cache for now
-
-        // $cacheKey = $domain;
-        //
-        // if ($this->cache->has($cacheKey) === false)
-        // {
-        //     $this->getOrg($domain);
-        // }
-        //
-        // return $this->cache->get($cacheKey);
     }
 
     public function getAdminData($admin)
