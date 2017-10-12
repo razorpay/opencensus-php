@@ -54,7 +54,7 @@ class Core extends Base\Core
     {
         $batch->getValidator()->validateIfProcessable();
 
-        $batch->setProcessing(true);
+        $batch->setProcessing(1);
 
         $this->repo->saveOrFail($batch);
 
@@ -168,7 +168,7 @@ class Core extends Base\Core
      */
     public function processBatch(Entity $batch): Entity
     {
-        $batch->setProcessing(true);
+        $batch->setProcessing(1);
 
         $this->repo->saveOrFail($batch);
 

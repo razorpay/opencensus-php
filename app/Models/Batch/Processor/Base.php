@@ -168,7 +168,7 @@ class Base extends BaseModel\Core
         }
         finally
         {
-            $this->batch->setProcessing(false);
+            $this->batch->setProcessing(0);
 
             $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArray());
 
@@ -357,7 +357,7 @@ class Base extends BaseModel\Core
         $this->deleteFile($this->inputFileLocalPath);
 
         // Setting processing to false here. Need to discuss if this is the right place
-        $this->batch->setProcessing(false);
+        $this->batch->setProcessing(0);
 
         $this->repo->saveOrFail($this->batch);
     }

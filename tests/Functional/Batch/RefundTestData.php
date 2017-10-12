@@ -320,7 +320,8 @@ return [
         'response' => [
             'content' => [
                         'entity'            => 'batch',
-                        'status'            => 'processing',
+                        'status'            => 'partially_processed',
+                        'processing'        => 1,
                         'amount'            =>  4000,
                         'processed_amount'  =>  0,
                         'success_count'     =>  0,

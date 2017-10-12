@@ -52,7 +52,7 @@ class Batch extends Job implements ShouldQueue
 
             $batch->getValidator()->validateIfProcessable();
 
-            $batch->setProcessing(true);
+            $batch->setProcessing(1);
 
             $this->repoManager->saveOrFail($batch);
 
