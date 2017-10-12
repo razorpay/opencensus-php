@@ -84,7 +84,7 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
-        $linkedAccount = (bool) $input['account'] ?? false;
+        $linkedAccount = (bool) ($input['account'] ?? false);
 
         if (($linkedAccount === false) and
             ($merchant->isFeatureEnabled(Feature\Constants::AGGREGATOR) === false))
