@@ -122,16 +122,14 @@ class Reconciliator extends Base\RefundFile
 
     protected function generateHeaders($data, $totalAmount)
     {
-        $output = [$this->header1];
-
-        $output[] = [
-            self::$fileToWriteName . ".txt",
-            count($data),
-            $totalAmount
+        return [
+            $this->header1,
+            [
+                self::$fileToWriteName . ".txt",
+                count($data),
+                $totalAmount
+            ],
+            $this->header2
         ];
-
-        $output[] = $this->header2;
-
-        return $output;
     }
 }

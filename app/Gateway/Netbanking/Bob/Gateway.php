@@ -212,7 +212,11 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function parseVerifyResponse($body): array
+    /**
+     * @param string $body Body of the response
+     * @return array
+     */
+    protected function parseVerifyResponse(string $body): array
     {
         $pairs = explode(Constants::VERIFY_PAIR_SEPARATOR, $body);
 
