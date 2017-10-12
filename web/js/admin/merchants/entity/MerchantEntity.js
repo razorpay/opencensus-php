@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { openModal, confirm } from 'common/modal';
+import { observer } from 'mobx-react';
+import { toJS } from 'mobx';
 
+import { adminFetch } from 'util/fetch';
+import { openModal, confirm } from 'common/modal';
 import * as entityModals from './entityModals';
-import { getDetails } from './entity-resources';
+import { getDetailsViewMap } from './entity-resources';
 import EntityRow from 'ui/EntityRow';
+import Model from './model';
 
 let parentProps;
 const actions = {};
@@ -17,10 +21,22 @@ Object.keys(entityModals).map(key => {
   };
 });
 
+@observer
 export default class MerchantEntity extends Component {
   constructor(props) {
     super();
     parentProps = props;
+
+    this.merchantId = props.match.params.id;
+
+    this.model = new Model({
+      fetchRoute: 'merchant_details_fetch',
+      fetchFn: adminFetch,
+      urlParams: {
+        account_id: this.merchantId,
+        merchant_id: this.merchantId,
+      },
+    });
   }
 
   downloadReports = () => {
@@ -98,21 +114,20 @@ export default class MerchantEntity extends Component {
   };
 
   getActionList() {
-    const merchantId = this.props.match.params.id;
     let { merchant } = this.props;
     merchant = { details: {} }; // Dummy
 
     return (
       <aside class="">
         <div class="heading">Actions</div>
-        <Link to={`/merchant/${merchantId}/login`} target="_blank">
+        <Link to={`/merchant/${this.merchantId}/login`} target="_blank">
           Login as Merchant
         </Link>
-        <Link to={`/merchants/${merchantId}/activation`}>
+        <Link to={`/merchants/${this.merchantId}/activation`}>
           See Activation Form Details
         </Link>
-        <Link to={`/merchants/${merchantId}/team`}>See Team Details</Link>
-        <Link to={`/merchants/${merchantId}/stats`}>
+        <Link to={`/merchants/${this.merchantId}/team`}>See Team Details</Link>
+        <Link to={`/merchants/${this.merchantId}/stats`}>
           See Merchant Analytics Stats
         </Link>
 
@@ -195,21 +210,32 @@ export default class MerchantEntity extends Component {
   }
 
   getMainContent() {
-    const merchantId = this.props.match.params.id;
-    const detailsMap = getDetails({ merchantDetails: {} });
+    const detailsMap = getDetailsViewMap(toJS(this.model.merchant));
 
     return (
       <main class="">
         <div class="heading">
-          Merchant: <b>{merchantId}</b> (View as Entity)
+          Merchant: <b>{this.merchantId}</b> (View as Entity)
         </div>
 
         {detailsMap.map(item => {
           if (typeof item.value === 'function') {
             //TODO: Display the value directly (That value is to be something like ListViewToggler)
-            <EntityRow label={item.label} value={item.value} />;
+            return (
+              <EntityRow
+                key={item.label}
+                label={item.label}
+                value={item.value}
+              />
+            );
           } else {
-            return <EntityRow label={item.label} value={item.value} />;
+            return (
+              <EntityRow
+                key={item.label}
+                label={item.label}
+                value={item.value}
+              />
+            );
           }
         })}
       </main>
