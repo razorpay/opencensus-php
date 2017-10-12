@@ -3522,10 +3522,10 @@ trait Authorize
      * */
     protected function validateInternationalRecurringPaymentsAllowed(Payment\Entity $payment)
     {
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::BLOCK_INTERNATIONAL_RECURRING) === true)
+        if (($payment->isRecurring() === true) and
+            ($payment->isInternational() === true))
         {
-            if (($payment->isInternational() === true) and
-                ($payment->isRecurring() === true))
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::BLOCK_INTERNATIONAL_RECURRING) === true)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INTERNATIONAL_RECURRING_PAYMENTS_NOT_ALLOWED_FOR_MERCHANT);
