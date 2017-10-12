@@ -180,8 +180,8 @@ class Core extends Base\Core
             // Reusing the same route for manual retries. If refund is being
             // retried manually, then we don't check for this condition.
             //
-            if (($refund->fundTransferAttempts->isNotEmpty() === true) and
-                ($this->isManualRetry($refund, $input) === false))
+            if (($this->isManualRetry($refund, $input) === false) and
+                ($refund->fundTransferAttempts->isNotEmpty() === true))
             {
                 $this->trace->info(
                     TraceCode::REFUND_RETRY_SKIPPED,
@@ -222,7 +222,16 @@ class Core extends Base\Core
         ];
     }
 
-    protected function isManualRetry(PaymentRefund\Entity $refund, array $input)
+    /**
+     * If ids were given in input, this is a manual retry.
+     * We skip certain checks in this case.
+     *
+     * @param PaymentRefund\Entity $refund
+     * @param array                $input
+     *
+     * @return bool
+     */
+    protected function isManualRetry(PaymentRefund\Entity $refund, array $input): bool
     {
         if ((isset($input['ids']) === true) and
             (in_array($refund->getPublicId(), $input['ids'], true) === true))
