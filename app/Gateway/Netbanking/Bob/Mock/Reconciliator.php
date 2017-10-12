@@ -100,11 +100,11 @@ class Reconciliator extends Base\RefundFile
             $amount = $this->getFormattedAmount($row['payment']['amount']);
 
             $data[] = [
-                'sr_no' => $index++,
-                'merchant_code' => 'razorpay',
-                'date' => $date,
-                'payment_id' => $row['payment']['id'],
-                'amount' => $amount,
+                'sr_no'           => $index++,
+                'merchant_code'   => 'razorpay',
+                'date'            => $date,
+                'payment_id'      => $row['payment']['id'],
+                'amount'          => $amount,
                 'bank_ref_number' => self::BANK_REF_NUMBER,
                 'bank_acc_number' => self::BANK_ACC_NUMBER,
             ];
