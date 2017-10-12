@@ -8,12 +8,12 @@ import {
 } from 'react-router-dom';
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 
-import MerchantList from 'admin/merchants/list';
+import MerchantList from 'admin/merchants/MerchantList';
 import PlanList from 'admin/plans/list';
 import GatewayRulesList from 'admin/gatewayrules/list';
 import EntityList from 'admin/entities/list';
 
-import MerchantEntity from 'admin/merchants/entity';
+import MerchantEntity from 'admin/merchants/entity/MerchantEntity';
 
 @withRouter
 export default class App extends Component {
@@ -31,8 +31,8 @@ export default class App extends Component {
         <main>
           {(this.location && (
             <Switch location={this.location}>
+              <Route path="/merchants/:id" component={MerchantEntity} />
               <Route path="/merchants" component={MerchantList} />
-              <Route path="/merchant/:id" component={MerchantEntity} />
               <Route path="/pricing-plans" component={PlanList} />
               <Route path="/gateway-rules" component={GatewayRulesList} />
               <Route path="/entities" component={EntityList} />

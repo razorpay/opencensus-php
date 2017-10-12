@@ -4,7 +4,7 @@ import Table from 'ui/Table';
 import Field, { SelectField, CheckField } from 'ui/Field';
 import Collection from 'util/collection';
 import { adminFetch } from 'util/fetch';
-import { openMerchantEntity } from './entity';
+import { openMerchantEntity } from './entity/entity-resources';
 
 const defaultFilters = {
   account_status: 'activated',

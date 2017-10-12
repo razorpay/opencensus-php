@@ -106,11 +106,11 @@ export default class MerchantEntity extends Component {
         <Link to={`/merchant/${merchantId}/login`} target="_blank">
           Login as Merchant
         </Link>
-        <Link to={`/merchant/${merchantId}/activation`}>
+        <Link to={`/merchants/${merchantId}/activation`}>
           See Activation Form Details
         </Link>
-        <Link to={`/merchant/${merchantId}/team`}>See Team Details</Link>
-        <Link to={`/merchant/${merchantId}/stats`}>
+        <Link to={`/merchants/${merchantId}/team`}>See Team Details</Link>
+        <Link to={`/merchants/${merchantId}/stats`}>
           See Merchant Analytics Stats
         </Link>
 
@@ -193,6 +193,8 @@ export default class MerchantEntity extends Component {
   }
 
   getMainContent() {
+    const merchantId = this.props.match.params.id;
+
     return (
       <main class="">
         <div class="heading">
@@ -203,8 +205,6 @@ export default class MerchantEntity extends Component {
   }
 
   render() {
-    const merchantId = this.props.match.params.id;
-
     return (
       <div class="entity-container merchant box">
         {/* Sidebar Action List */}
@@ -215,24 +215,4 @@ export default class MerchantEntity extends Component {
       </div>
     );
   }
-}
-
-/* RESOURCE UTILS */
-
-const fields = [
-  ['Merchant ID', item => item.id],
-  ['Name', item => item.name],
-  ['Email', item => item.email],
-  ['Referrer', item => item.referrer],
-  ['Marketplace Owner', item => item.parent_id],
-  ['Status', item => item.count],
-  ['Registered At', item => item.created_at],
-  ['Submitted At', item => item.merchant_detail.submitted_at],
-  ['Tags', item => item.tag_list.join()],
-];
-
-export function openMerchantEntity() {
-  const url = window.location.href + '/' + this.id;
-  console.log('MERCHANT ENTITY..', this.id, window.location.href);
-  window.open(url);
 }
