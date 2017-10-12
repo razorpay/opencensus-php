@@ -84,7 +84,7 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
-        $linkedAccount = (bool) $input['account'] ?? false;
+        $linkedAccount = (bool) ($input['account'] ?? false);
 
         if (($linkedAccount === false) and
             ($merchant->isFeatureEnabled(Feature\Constants::AGGREGATOR) === false))
@@ -96,6 +96,8 @@ class Service extends Base\Service
         $ownerId = $input['user_id'];
 
         unset($input['user_id']);
+
+        unset($input['account']);
 
         $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant);
 
