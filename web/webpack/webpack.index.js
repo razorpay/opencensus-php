@@ -9,7 +9,14 @@ const common = require('./builds/common');
 module.exports = [
   {
     name: 'vendor',
-    entry: ['react', 'react-dom', 'react-router-dom', 'mobx', 'mobx-react'],
+    entry: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'mobx',
+      'mobx-react',
+      'axios',
+    ],
     output: {
       path: __dirname + '/../../public/dist',
       filename: 'vendor.js',

@@ -1,11 +1,10 @@
 import axios from 'axios';
 
 export function adminFetch(params) {
-  return axios.get('/admin/generic', parseParams(params));
+  return axios.get('/admin/generic', { params: parseParams(params) });
 }
 
 export function adminPost(params) {
-  return axios.get('/mock/1.json');
   return axios.post('/admin/generic', parseParams(params));
 }
 
