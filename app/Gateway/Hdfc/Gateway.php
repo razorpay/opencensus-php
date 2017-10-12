@@ -876,17 +876,33 @@ class Gateway extends Base\Gateway
             return;
         }
 
-        $this->checkForErrorInPares($PaRes);
+        $this->checkForErrorInPares($PaRes, $input);
 
         $this->checkValidParesStatus($PaRes);
     }
 
-    protected function checkForErrorInPares(array $PaRes)
+    protected function checkForErrorInPares(array $PaRes, array $input)
     {
-        if (empty($PaRes['Message']['Error']['errorCode']) === true)
+        if (empty($PaRes['Message']['Error']['errorCode']) === false)
         {
+            $desc = '';
+
+            if (empty($PaRes['Message']['Error']['errorMessage']) === false)
+            {
+                $desc = $PaRes['Message']['Error']['errorMessage'];
+            }
+
+            $code = $PaRes['Message']['Error']['errorCode'];
+
             throw new Exception\GatewayErrorException(
-                Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED);
+                Error\ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,
+                $code,
+                $desc,
+                [
+                    'issuer' => $input['card']['issuer'],
+                    'iin'    => $input['card']['iin']
+                ]
+            );
         }
     }
 
