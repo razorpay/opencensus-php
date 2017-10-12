@@ -11,22 +11,14 @@ import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
 import Definition from 'rzp/ui/Definition';
 
 // Customer component
-const getCustomerDetail = customer =>
+const getCustomerDetail = customer => (
   <Definition placeholder="--">
     {customer.name}
-    {customer.email &&
-      <span>
-        {customer.email}
-      </span>}
-    {customer.contact &&
-      <span>
-        {customer.contact}
-      </span>}
-    {customer.id &&
-      <code>
-        {customer.id}
-      </code>}
-  </Definition>;
+    {customer.email && <span>{customer.email}</span>}
+    {customer.contact && <span>{customer.contact}</span>}
+    {customer.id && <code>{customer.id}</code>}
+  </Definition>
+);
 
 // Get plan description
 const getDescription = (interval, period) => {
@@ -65,158 +57,175 @@ export default ({
       (subscription.status === 'created' &&
         (subscription.type === 0 || subscription.type === 2)));
 
+  const testModeMsg = {};
+  if (showTestChargeBtn) {
+    switch (subscription.status) {
+      case 'halted':
+        testModeMsg.btnLabel = 'Issue invoice';
+        testModeMsg.infoMsg = ' Issue next scheduled invoice now. ';
+        break;
+      case 'pending':
+        testModeMsg.btnLabel = 'Attempt Retry';
+        testModeMsg.infoMsg =
+          ' Attempt scheduled retry now for last issued invoice. ';
+        break;
+
+      default:
+        testModeMsg.btnLabel = 'Charge this now';
+        testModeMsg.infoMsg =
+          ' Attempt charge now for next scheduled invoice. ';
+    }
+  }
+
   return (
     <div class="content-wrapper content-sm txn-details">
-      {isLoading
-        ? <div class="page-spinner-container">
-            <Spinner />
+      {isLoading ? (
+        <div class="page-spinner-container">
+          <Spinner />
+        </div>
+      ) : (
+        <div class="panel panel-default SliderPanel">
+          <div class="panel-heading">
+            <i class="icon icon-refresh text-main icon--formal" />{' '}
+            <strong>{subscription.id}</strong>
           </div>
-        : <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">
-              <i class="icon icon-refresh text-main icon--formal" />{' '}
-              <strong>{subscription.id}</strong>
-            </div>
 
-            <div class="SliderPanel__Body">
-              <div class="panel-body">
-                <Alert type={statusMsg.type} message={statusMsg.message} />
+          <div class="SliderPanel__Body">
+            <div class="panel-body">
+              <Alert type={statusMsg.type} message={statusMsg.message} />
 
-                <EntityDetailRow label="Customer">
-                  {getCustomerDetail(customer)}
-                </EntityDetailRow>
+              <EntityDetailRow label="Customer">
+                {getCustomerDetail(customer)}
+              </EntityDetailRow>
 
-                <EntityDetailRow
-                  label="Plan"
-                  value={() =>
-                    <div>
-                      <Link to={`/plans/${subscription.plan_id}`}>
-                        {subscription.plan_id}
-                      </Link>
-                      <div style={{ marginTop: '4px' }}>
-                        <div class="label--primary">
-                          {plan.item.name}
-                        </div>
-                        <div class="label--secondary">
-                          {plan.item.description}
-                        </div>
-                        <div class="label--secondary">
-                          {getDescription(plan.interval, plan.period)}
-                        </div>
+              <EntityDetailRow
+                label="Plan"
+                value={() => (
+                  <div>
+                    <Link to={`/plans/${subscription.plan_id}`}>
+                      {subscription.plan_id}
+                    </Link>
+                    <div style={{ marginTop: '4px' }}>
+                      <div class="label--primary">{plan.item.name}</div>
+                      <div class="label--secondary">
+                        {plan.item.description}
                       </div>
-                    </div>}
-                />
-
-                <EntityDetailRow
-                  label="Recurring Billing"
-                  value={() =>
-                    <div>
-                      <div class="label--primary">
-                        <Amount
-                          currency={plan.item.currency}
-                          value={subscription.quantity * plan.item.unit_amount}
-                        />
+                      <div class="label--secondary">
+                        {getDescription(plan.interval, plan.period)}
                       </div>
-                      <small class="label--secondary">
-                        {subscription.quantity} x{' '}
-                        <Amount
-                          currency={plan.item.currency}
-                          value={plan.item.unit_amount}
-                        />{' '}
-                        per unit
-                      </small>
-                    </div>}
-                />
+                    </div>
+                  </div>
+                )}
+              />
 
-                <EntityDetailRow
-                  label="Status"
-                  value={() =>
-                    <div>
-                      <SubscriptionStatusLabel status={subscription.status} />
+              <EntityDetailRow
+                label="Recurring Billing"
+                value={() => (
+                  <div>
+                    <div class="label--primary">
+                      <Amount
+                        currency={plan.item.currency}
+                        value={subscription.quantity * plan.item.unit_amount}
+                      />
+                    </div>
+                    <small class="label--secondary">
+                      {subscription.quantity} x{' '}
+                      <Amount
+                        currency={plan.item.currency}
+                        value={plan.item.unit_amount}
+                      />{' '}
+                      per unit
+                    </small>
+                  </div>
+                )}
+              />
 
-                      <span>
-                        {['cancelled', 'completed', 'expired'].indexOf(
-                          subscription.status
-                        ) === -1
-                          ? <button class="btn-link" onClick={onCancelClick}>
-                              Cancel Subscription
-                            </button>
-                          : null}
-                      </span>
-                    </div>}
-                />
+              <EntityDetailRow
+                label="Status"
+                value={() => (
+                  <div>
+                    <SubscriptionStatusLabel status={subscription.status} />
 
-                <EntityDetailRow
-                  label="Created At"
-                  value={() =>
-                    <Time
-                      value={subscription.created_at}
-                      format="DD MMM YYYY, hh:mm:ss a"
-                    />}
-                />
+                    <span>
+                      {['cancelled', 'completed', 'expired'].indexOf(
+                        subscription.status
+                      ) === -1 ? (
+                        <button class="btn-link" onClick={onCancelClick}>
+                          Cancel Subscription
+                        </button>
+                      ) : null}
+                    </span>
+                  </div>
+                )}
+              />
 
-                {showTestChargeBtn
-                  ? <EntityDetailRow
-                      label="Next Due on"
-                      value={() =>
-                        <div class="pair-label custom-item">
-                          <Time value={subscription.charge_at} />
-                          <div class="group-items">
-                            <button
-                              class="btn btn-default"
-                              onClick={() =>
-                                onTestChargeAttempt(subscription.id)}
-                            >
-                              {subscription.status === 'halted'
-                                ? 'Issue upcoming invoice'
-                                : 'Charge this now'}
-                            </button>
-                            <div style={{ color: 'red' }}>
-                              This is just for test mode integrations.
-                            </div>
-                            <a
-                              href="https://razorpay.com/docs/subscriptions/routes/#subscription"
-                              target="_blank"
-                            >
-                              View docs
-                            </a>{' '}
-                            to understand how it works.
-                          </div>
-                        </div>}
-                    />
-                  : <EntityDetailRow
-                      label="Next Due on"
-                      value={() => <Time value={subscription.charge_at} />}
-                    />}
+              <EntityDetailRow
+                label="Created At"
+                value={() => (
+                  <Time
+                    value={subscription.created_at}
+                    format="DD MMM YYYY, hh:mm:ss a"
+                  />
+                )}
+              />
+              <EntityDetailRow
+                label="Next Due on"
+                value={() => <Time value={subscription.charge_at} />}
+              />
 
-                <EntityDetailList
-                  mode={mode}
-                  title="Invoices detail"
-                  goToLink={goToLink}
-                  subTitle={
-                    subscription.total_count &&
-                    `${subscription.paid_count} of ${subscription.total_count} invoices charged`
-                  }
-                  moreAfterlimit={3}
-                  error={invoices.error}
-                  items={invoices.items}
-                  activeSecEntityId={activeSecEntityId}
-                  loading={invoices.loading}
-                  onManualAttempt={onManualAttempt}
-                  subscriptionStatus={subscription.status}
-                  subscriptionType={subscription.type}
-                  subscriptionchargeAt={subscription.charge_at}
-                  authAttempts={subscription.auth_attempts}
-                />
+              {showTestChargeBtn && (
+                <div
+                  class={`alert alert-warning custom-banner ${subscription.status !==
+                  'halted'
+                    ? 'arrow-up'
+                    : ''}`}
+                >
+                  <button
+                    class="btn btn-default"
+                    onClick={() => onTestChargeAttempt(subscription.id)}
+                  >
+                    {testModeMsg.btnLabel}
+                  </button>
+                  <div class="info">
+                    <b>Test Mode:</b>
+                    {testModeMsg.infoMsg}
+                    <a
+                      href="https://razorpay.com/docs/subscriptions/routes/#subscription"
+                      target="_blank"
+                    >
+                      View docs >
+                    </a>{' '}
+                  </div>
+                </div>
+              )}
 
-                <NestedEntityDetailRow
-                  label="Notes"
-                  value={subscription.notes}
-                />
+              <EntityDetailList
+                mode={mode}
+                title="Invoices detail"
+                goToLink={goToLink}
+                subTitle={
+                  subscription.total_count &&
+                  `${subscription.paid_count} of ${subscription.total_count} invoices charged`
+                }
+                moreAfterlimit={3}
+                error={invoices.error}
+                items={invoices.items}
+                activeSecEntityId={activeSecEntityId}
+                loading={invoices.loading}
+                onManualAttempt={onManualAttempt}
+                subscriptionStatus={subscription.status}
+                subscriptionType={subscription.type}
+                subscriptionchargeAt={subscription.charge_at}
+                authAttempts={subscription.auth_attempts}
+              />
 
-                <hr />
-              </div>
+              <NestedEntityDetailRow label="Notes" value={subscription.notes} />
+
+              <hr />
             </div>
-          </div>}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
