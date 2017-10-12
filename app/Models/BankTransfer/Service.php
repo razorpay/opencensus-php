@@ -4,6 +4,7 @@ namespace RZP\Models\BankTransfer;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\VirtualAccount\Provider;
@@ -108,7 +109,10 @@ class Service extends Base\Service
             ]
         );
 
-        Provider::validateLiveProvider($provider);
+        if ($this->mode === Mode::LIVE)
+        {
+            Provider::validateLiveProvider($provider);
+        }
 
         $valid = $this->core->process($input, $provider);
 
