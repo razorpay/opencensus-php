@@ -112,7 +112,7 @@ export default props => {
                 )}
               </span>
             ) : (
-              'Upcoming Payment'
+              'Upcoming Invoice'
             )}
           </div>
           <div class="row-element right">
