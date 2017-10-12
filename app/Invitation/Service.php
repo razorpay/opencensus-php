@@ -24,7 +24,7 @@ class Service extends Base\Service
      * Accept the given merchant invitation.
      *
      * @param  string  $inviteId
-     * @param  \Models\User\Entity  $user
+     * @param  $user
      * @return \Illuminate\Http\Response
      */
     public function acceptInvitationForUser($inviteId, $user)

@@ -42,15 +42,8 @@ class Service extends Base\Service
 {
     // 15 minutes
     const TIMEOUT = 900;
-    const ALREADY_ARCHIVED = 'Merchant already archived.';
-    const ALREADY_SUSPENDED = 'Merchant already suspended.';
-    const CANT_ARCHIVE_LIVE = 'Live merchants can not be archived.';
-    const CANT_ARCHIVE_MERCHANT = 'Merchant should have submitted the form, form should be locked and account should not be activated to archive a merchant';
-    const INVALID_CREDENTIALS = 'Username or password is invalid.';
     const PRIMARY_LOGIN_ERROR = "There is no user associated with this account.";
     const PAGE_SIZE = 1000;
-
-    const SELF_INVITE_NOT_ALLOWED = "You can't invite yourself";
 
     // This is the Admin\Logger trait
     use Logger;
@@ -294,44 +287,6 @@ class Service extends Base\Service
         $sessionId = Crypt::decrypt($sessionId);
 
         (new SessionTable\Entity)->deleteOneSessionForAdmin($sessionId);
-    }
-
-    public function fetchMerchantActivationDetails($id)
-    {
-        $merchantDetails =  MerchantDetails\Entity::findorfail($id);
-
-        $response = $merchantDetails->filterDetails();
-
-        $files = [];
-
-        foreach ($response['files'] as $key => &$file)
-        {
-            $extension_position = strrpos($file, '.', -1);
-            $extension  = substr($file, $extension_position + 1);
-
-            $s3 = $this->getS3Client();
-
-            try
-            {
-                $cmd = $s3->getCommand('GetObject', [
-                    'Bucket' => config('aws.activation_bucket'),
-                    'Key'    => $id.'/'.$key.'.'.$extension
-                ]);
-
-                $request = $s3->createPresignedRequest($cmd, '+60 minutes');
-
-                $file = (string) $request->getUri();
-            }
-            catch (\Exception $e)
-            {
-                $file = 'ERROR: ' . $e->getMessage();
-            }
-
-            $files[$key] = $file;
-        }
-
-        $fileResponse['files'] = $files;
-        return $fileResponse;
     }
 
     public function fetchMerchantDetails($id)
