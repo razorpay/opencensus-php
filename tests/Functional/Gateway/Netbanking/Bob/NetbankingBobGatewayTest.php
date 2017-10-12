@@ -19,6 +19,10 @@ class NetbankingBobGatewayTest extends TestCase
 
     const CUSTOMER_ACCOUNT_NUMBER = '10430200000843';
 
+    protected $bank = null;
+
+    protected $payment = null;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/NetbankingBobGatewayTestData.php';
