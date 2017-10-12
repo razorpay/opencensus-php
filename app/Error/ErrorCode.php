@@ -111,6 +111,8 @@ class ErrorCode
     const GATEWAY_ERROR_PREMATURE_SI_EXECUTION                                      = 'GATEWAY_ERROR_PREMATURE_SI_EXECUTION';
     const GATEWAY_ERROR_SI_EXECUTION_ALREADY_DONE                                   = 'GATEWAY_ERROR_SI_EXECUTION_ALREADY_DONE';
 
+    const GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE                                   = 'GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE';
+
     // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
     const BAD_REQUEST_INVALID_IDS                                                   = 'BAD_REQUEST_INVALID_IDS';
