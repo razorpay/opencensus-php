@@ -44,13 +44,6 @@ class User extends Entity
         return $this->request('PUT', $relativeUrl, $params);
     }
 
-    public function updateMapping($userId, array $params)
-    {
-        $relativeUrl = $this->getEntityUrl().$userId.'/update';
-
-        return $this->request('PUT', $relativeUrl, $params);
-    }
-
     public function changePassword($userId, array $params)
     {
         $relativeUrl = $this->getEntityUrl().$userId.'/password';

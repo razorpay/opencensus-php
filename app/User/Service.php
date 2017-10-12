@@ -135,26 +135,6 @@ class Service extends Base\Service
         return [$error, $response];
     }
 
-    public function updateMerchantUserMappingOnApi($userId, $merchantId, $role)
-    {
-        $this->setApiCredentials();
-
-        $error = $response = [];
-
-        try
-        {
-            $data = ['role' => $role, 'merchant_id' => $merchantId];
-
-            $response = $this->api->user->updateMapping($userId, $data);
-        }
-        catch (\Exception $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $response];
-    }
-
     public function detachMerchantUserOnApi($userId, $merchantId)
     {
         $this->setApiCredentials();

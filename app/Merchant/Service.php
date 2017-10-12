@@ -717,7 +717,7 @@ class Service extends Base\Service
             return [$error, null];
         }
 
-        $validator = (new Merchant\Entity)->validateInput('updateTeamMember',$input);
+        $validator = (new Merchant\Entity)->validateInput('updateTeamMember', $input);
 
         if ($validator->fails())
         {
@@ -726,10 +726,11 @@ class Service extends Base\Service
             return [$error, null];
         }
 
-        list($error, $users) = $this->getUsersOfMerchantFromApi($this->currentUser->currentMerchant()->id);
+        $currentMerchant = $this->currentUser->currentMerchant();
 
-        $updatedUser = $users->where('id', $userId)
-                             ->first();
+        list($error, $users) = $this->getUsersOfMerchantFromApi($currentMerchant->id);
+
+        $updatedUser = $users->where('id', $userId)->first();
 
         if ($updatedUser === null)
         {
@@ -738,22 +739,23 @@ class Service extends Base\Service
             return [$error, null];
         }
 
-        $newRole = $input['role'];
+        $updateTeamMemberForOwner = [
+            'route_name' => 'user_merchant_mapping_action',
+            'url_params' => [
+                '{id}'     => $userId,
+                '{action}' => 'update'
+            ],
+            'body'       => [
+                'role'        => $input['role'],
+                'merchant_id' => $currentMerchant->id
+            ]
+        ];
 
-        list($error, $response) = (new User\Service)->updateMerchantUserMappingOnApi(
-                                                        $userId,
-                                                        $this->currentUser->currentMerchant()->id,
-                                                        $newRole);
-        if (empty($error) === true)
-        {
-            User\Entity::find($userId)
-                        ->merchants()
-                        ->updateExistingPivot(
-                            $this->currentUser->currentMerchant()->id,
-                            ['role' => $newRole]);
-        }
+        $genericService = new Generic\Service;
 
-        return [$error, null];
+        list($error, $data) = $genericService->call('PUT', $updateTeamMemberForOwner);
+
+        return [$error, $data];
     }
 
     public function savePreSignupDetails($input)
@@ -818,21 +820,22 @@ class Service extends Base\Service
 
     public function getUsersOfMerchantFromApi($merchantId)
     {
-        $error = [];
-
         $genericUsers = new PublicCollection;
 
-        $this->setApiCredentials();
+        $getUsersOfMerchantFromApi = [
+            'route_name' => 'merchant_fetch_users',
+            'url_params' => [
+                '{id}' => $merchantId,
+            ]
+        ];
 
-        try
-        {
-            $response = $this->api->merchant->getUsers($merchantId)->toArray();
+        $genericService = new Generic\Service;
 
-            $genericUsers = (new Helper)->createGenericUsers($response);
-        }
-        catch(\Razorpay\Api\Errors\Error $e)
+        list($error, $data) = $genericService->call('GET', $getUsersOfMerchantFromApi);
+
+        if (empty($error) === true)
         {
-            $error[] = $e->getMessage();
+            $genericUsers = (new Helper)->createGenericUsers($data);
         }
 
         return [$error, $genericUsers];
