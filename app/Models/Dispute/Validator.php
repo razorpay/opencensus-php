@@ -18,12 +18,14 @@ class Validator extends Base\Validator
         Entity::REASON_ID              => 'required|alpha_num|size:14',
         Entity::AMOUNT                 => 'required|integer|min:100',
         Entity::DEDUCT_AT_ONSET        => 'sometimes|boolean',
+        Entity::PARENT_ID              => 'sometimes|alpha_num|size:14',
     ];
 
     protected static $editRules = [
         Entity::GATEWAY_DISPUTE_STATUS => 'sometimes|string',
         Entity::STATUS                 => 'sometimes|string|custom',
         Entity::EXPIRES_ON             => 'sometimes|epoch',
+        Entity::PARENT_ID              => 'sometimes|alpha_num|size:14',
     ];
 
     protected function validatePhase(string $attribute, string $value)
@@ -77,6 +79,26 @@ class Validator extends Base\Validator
                 'reason_id should be sent in the request to create a dispute.',
                 Entity::REASON_ID,
                 $input);
+        }
+    }
+
+    public function validateParentDispute(Entity $disputeParent)
+    {
+        if($disputeParent->child !== null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The parent dispute is linked to another dispute entity.',
+                Entity::PARENT_ID);
+        }
+    }
+
+    public function validateParentDisputeWithExistingParent(Entity $dispute, array $input)
+    {
+        if(($dispute->isChildDispute() === true) and ($dispute->parent->getId() === $input['parent_id']))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The dispute is already linked with this parent dispute.',
+                Entity::PARENT_ID);
         }
     }
 }

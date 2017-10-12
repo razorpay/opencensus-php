@@ -41,6 +41,8 @@ class Core extends Base\Core
 
         (new Validator)->validatePaymentForDispute($input, $payment);
 
+        $this->checkParentDispute(null, $input);
+
         $dispute = (new Entity)->build($input);
 
         $this->setRelationsAndDerivedAttributes($dispute, $payment, $reason);
@@ -87,6 +89,8 @@ class Core extends Base\Core
             TraceCode::DISPUTE_EDIT_REQUEST,
             array_merge($input, [Entity::ID => $dispute->getId()])
         );
+
+        $this->checkParentDispute($dispute, $input);
 
         $dispute->edit($input);
 
@@ -273,5 +277,22 @@ class Core extends Base\Core
         ];
 
         (new Adjustment\Core)->createDisputeAdjustment($input, $dispute);
+    }
+
+    protected function checkParentDispute(Entity $dispute = null, array $input)
+    {
+        if(isset($input['parent_id']) === true)
+        {
+            $validator = new Validator();
+
+            if($dispute !== null)
+            {
+                $validator->validateParentDisputeWithExistingParent($dispute, $input);
+            }
+
+            $disputeParent = $this->repo->dispute->findOrFailPublic($input['parent_id']);
+
+            $validator->validateParentDispute($disputeParent);
+        }
     }
 }

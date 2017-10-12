@@ -177,6 +177,11 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Getters -----------------------------------------
 
+    public function getParentId()
+    {
+        return $this->getAttribute(self::PARENT_ID);
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -246,6 +251,11 @@ class Entity extends Base\PublicEntity
     public function parent()
     {
         return $this->belongsTo('RZP\Models\Dispute\Entity', self::PARENT_ID, self::ID);
+    }
+
+    public function child()
+    {
+        return $this->hasOne('RZP\Models\Dispute\Entity', self::PARENT_ID, self::ID);
     }
 
     public function transaction()
