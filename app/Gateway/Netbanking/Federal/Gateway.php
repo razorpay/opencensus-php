@@ -77,6 +77,10 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::PAYMENT_ID]
         );
 
+        $this->assertAmount(
+            $input['payment']['amount'],
+            (int) ($content[ResponseFields::AMOUNT] * 100));
+
         $this->checkCallbackStatus($content);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(

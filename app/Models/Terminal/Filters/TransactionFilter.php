@@ -96,21 +96,6 @@ class TransactionFilter extends Terminal\Filter
 
             return in_array($terminalGateway, $gateways);
         }
-        else if ($this->input['payment']->isCard())
-        {
-            $issuer = $this->input['payment']->card->getIssuer();
-            $type = $this->input['payment']->card->getType();
-
-            if (($issuer === Issuer::ICIC) and
-                ($type !== Type::CREDIT) and
-                ($terminal->getGateway() === Gateway::FIRST_DATA) and
-                (in_array($this->input['merchant']->getId(), ['5ubLZpACTmD8D4', '10000000000000']) === false))
-            {
-                // ICICI debit cards currently don't work on FirstData
-                // This allows transactions only on test merchant
-                return false;
-            }
-        }
 
         return true;
     }

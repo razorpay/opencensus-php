@@ -39,6 +39,13 @@ class ScheduleController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getSettlementSchedules()
+    {
+        $data = $this->service()->getSettlementSchedules();
+
+        return ApiResponse::json($data);
+    }
+
     public function putSchedule($id)
     {
         $input = Request::all();

@@ -30,6 +30,8 @@ class Server extends Base\Mock\Server
             'fldSessionNbr' => '5',
         );
 
+        $this->content($content);
+
         $content['CheckSum'] = $this->getCallbackChecksum($content);
 
         $url = $input['DynamicUrl'];

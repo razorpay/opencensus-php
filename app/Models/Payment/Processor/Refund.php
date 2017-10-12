@@ -199,6 +199,11 @@ trait Refund
     {
         $payment = $refund->payment;
 
+        if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
         $this->setPaymentAndRefundInfo($refund, $payment);
 
         $gateway = $payment->getGateway();
@@ -797,7 +802,7 @@ trait Refund
                 $payment->getId(),
                 function() use ($data, $payment)
                 {
-                    return $this->callGatewayRefundFunction($payment, $data);
+                    return $this->callRefundFunction($payment, $data);
                 });
         }
         else

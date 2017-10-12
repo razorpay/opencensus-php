@@ -16,7 +16,7 @@ class Server extends Base\Mock\Server
         unset($content[7]);
 
         $input['msg'] = implode('|',$content);
-        $input = $this->getContentFromInput($input);
+        $input = $this->getContentFromInput($input, 'authorize');
 
         parent::authorize($input);
 
@@ -31,6 +31,8 @@ class Server extends Base\Mock\Server
             'AuthorizationStatus' => 'Y',
             'BankReference'       => random_integer(6),
         );
+
+        $this->content($content);
 
         $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
 
@@ -72,12 +74,15 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($content);
     }
 
-    protected function getContentFromInput($input)
+    protected function getContentFromInput($input, $action = null)
     {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        $name = $trace[1]['function'];
+        if ($action === null)
+        {
+            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+            $action = $trace[1]['function'];
+        }
 
-        $fields = $this->getGatewayInstance()->getFields($name, 'request');
+        $fields = $this->getGatewayInstance()->getFields($action, 'request');
 
         $content = explode('|', $input['msg']);
         $input = array_combine($fields, $content);

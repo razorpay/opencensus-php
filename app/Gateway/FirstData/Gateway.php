@@ -104,8 +104,6 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA);
         }
 
-        $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
-
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['gateway'][ConnectResponseFields::ORDER_ID],
             Action::AUTHORIZE);
@@ -113,6 +111,12 @@ class Gateway extends Base\Gateway
         $this->verifySecureHash($input['gateway']);
 
         $this->mockApprovalCodeIfNeeded($input['gateway']);
+
+        $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
+
+        $this->assertAmount(
+            $input['payment']['amount'],
+            (int) ($input['gateway'][ConnectResponseFields::CHARGE_TOTAL] * 100));
 
         $attributes = $this->getCallbackFields($input['gateway']);
 

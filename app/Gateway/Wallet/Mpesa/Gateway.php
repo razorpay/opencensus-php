@@ -63,6 +63,8 @@ class Gateway extends Base\Gateway
         $this->assertPaymentId($input['payment']['id'],
                                $content[ResponseFields::TRANSACTION_REFERENCE]);
 
+        $this->assertAmount($input['payment']['amount'], (int) ($input['gateway']['txnAmt'] * 100));
+
         $wallet = $this->repo->findByPaymentIdAndAction(
                     $input['payment']['id'],
                     Action::AUTHORIZE);

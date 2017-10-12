@@ -150,6 +150,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_FIRST_RECURRING                       = 'GATEWAY_FIRST_RECURRING';
     const GATEWAY_RECURRING_DEBIT_REQUEST               = 'GATEWAY_RECURRING_DEBIT_REQUEST';
     const GATEWAY_RECURRING_DEBIT_RESPONSE              = 'GATEWAY_RECURRING_DEBIT_RESPONSE';
+    const FUND_TRANSFER_ATTEMPT_CREATED                 = 'FUND_TRANSFER_ATTEMPT_CREATED';
 
     const MPESA_GATEWAY_PARAM_ARRAY                     = 'MPESA_GATEWAY_PARAM_ARRAY';
 
@@ -173,6 +174,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MISSING_BILLDESK_CANCELLED_REFUNDS            = 'MISSING_BILLDESK_CANCELLED_REFUNDS';
     const REFUND_RETRY_INITIATED                        = 'REFUND_RETRY_INITIATED';
     const REFUND_RETRY_RESULT                           = 'REFUND_RETRY_RESULT';
+    const REFUND_RETRY_SKIPPED                          = 'REFUND_RETRY_SKIPPED';
 
     const REQUESTS_JOB_REQUEST                          = 'REQUESTS_JOB_REQUEST';
     const REQUESTS_JOB_RESPONSE                         = 'REQUESTS_JOB_RESPONSE';
@@ -845,7 +847,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_TRANSFER_SUCCESS                      = 'DISPUTE_TRANSFER_SUCCESS';
     const DISPUTE_ADJUSTMENT_MIGRATE_REQUEST            = 'DISPUTE_ADJUSTMENT_MIGRATE_REQUEST';
     const DISPUTE_ADJUSTMENT_MIGRATE_ERROR              = 'DISPUTE_ADJUSTMENT_MIGRATE_ERROR';
-
+    const DISPUTE_REASON_CREATE                         = 'DISPUTE_REASON_CREATE';
+    
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';

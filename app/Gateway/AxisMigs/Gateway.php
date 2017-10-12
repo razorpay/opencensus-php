@@ -92,6 +92,8 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $input['gateway']['vpc_MerchTxnRef']);
 
+        $this->assertAmount($input['payment']['amount'], (int) $input['gateway']['vpc_Amount']);
+
         $gatewayPayment = $this->repo->findByMerchantTxnRefAndCommand(
             $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
 
@@ -390,7 +392,7 @@ class Gateway extends Base\Gateway
 
         // We have confirmed with acquirer banks that these refunds have
         // not been processed.
-        $unprocessedRefundIds = ['87eSYBPtCyTapi'];
+        $unprocessedRefundIds = ['87eT5BJpNL8uPb'];
 
         if (in_array($input['refund']['id'], $unprocessedRefundIds) === true)
         {

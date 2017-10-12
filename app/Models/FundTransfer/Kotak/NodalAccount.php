@@ -359,7 +359,10 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $data = compact('amounts', 'count');
 
-        $data['file'] = $this->getFullFilePath($fileName);
+        $data['file_data'] = [
+            'file_path'  => $this->getFullFilePath($fileName),
+            'file_name'  => $fileName,
+        ];
 
         $kotakPayoutMail = new SettlementMail\KotakPayout($data);
 

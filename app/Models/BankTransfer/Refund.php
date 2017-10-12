@@ -3,6 +3,7 @@
 namespace RZP\Models\BankTransfer;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Transaction\Channel;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
@@ -58,12 +59,14 @@ class Refund extends Base\Core
     {
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
-        $fundTransferAttempt->fillAndGenerateId([
+        $data = [
             FundTransferAttempt\Entity::CHANNEL   => Channel::KOTAK,
             FundTransferAttempt\Entity::VERSION   => FundTransferAttempt\Version::V3,
             FundTransferAttempt\Entity::STATUS    => FundTransferAttempt\Status::CREATED,
             FundTransferAttempt\Entity::NARRATION => $this->getNarration($bankTransfer),
-        ]);
+        ];
+
+        $fundTransferAttempt->fillAndGenerateId($data);
 
         $fundTransferAttempt->setSourceType(FundTransferAttempt\Type::REFUND);
         $fundTransferAttempt->setSourceId($input['refund']['id']);
@@ -73,6 +76,16 @@ class Refund extends Base\Core
         $fundTransferAttempt->bankAccount()->associate($bankTransfer->payerBankAccount);
 
         $this->repo->saveOrFail($fundTransferAttempt);
+
+        $this->trace->info(
+            TraceCode::FUND_TRANSFER_ATTEMPT_CREATED,
+            [
+                'id'              => $fundTransferAttempt->getId(),
+                'data'            => $data,
+                'source_id'       => $input['refund']['id'],
+                'merchant_id'     => $bankTransfer->merchant->getId(),
+                'bank_account_id' => $bankTransfer->payerBankAccount->getId(),
+            ]);
 
         return $fundTransferAttempt;
     }

@@ -452,7 +452,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'plan_id should be sent in the request to create a subscription.',
+                    'description' => 'The plan id field is required.',
                 ],
             ],
             'status_code' => 400,

@@ -671,6 +671,7 @@ class Core extends Base\Core
      * @param array        $input
      *
      * @return array
+     * @throws BadRequestException
      */
     public function issueInvoicesOfBatch(Batch\Entity $batch, array $input): array
     {

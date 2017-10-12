@@ -397,6 +397,7 @@ class AdminFetch
                         'chargeback',
                         'pre_arbitration',
                         'arbitration',
+                        'retrieval',
                     ],
                 ],
                 'amount' => [

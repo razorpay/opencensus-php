@@ -306,6 +306,21 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals(1, $payment['verified']);
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['chargetotal'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $this->doAuthPayment();
+        });
+    }
+
     public function testPaymentRefund()
     {
         $this->doAuthAndCapturePayment($this->payment);
