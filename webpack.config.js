@@ -1,5 +1,5 @@
 const webpack = require('webpack');
-const isProd = require('process').env.NODE_ENV === 'production';
+const isProd = require('process').env.NODE_ENV === 'prod';
 const path = require('path');
 
 // generated bladefiles

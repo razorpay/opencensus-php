@@ -3,7 +3,7 @@ const InlineManifestWebpackPlugin = require('inline-manifest-webpack-plugin');
 const path = require('path');
 
 const isProd = require('process').env.NODE_ENV === 'production';
-const commonConfig = require('./common');
+const common = require('./common');
 
 // generated bladefiles
 const htmlPlugins = require('../html')(
@@ -47,5 +47,5 @@ module.exports = {
     })
   ),
 
-  ...commonConfig,
+  ...common.config,
 };

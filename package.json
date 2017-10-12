@@ -3,7 +3,6 @@
   "author": "Team Razorpay",
   "private": true,
   "devDependencies": {
-    "aws-sdk": "2.128.0",
     "chart.js": "^2.7.0",
     "husky": "^0.14.3",
     "isomorphic-fetch": "^2.2.1",
@@ -19,6 +18,7 @@
     "react-time": "^4.3.0"
   },
   "dependencies": {
+    "aws-sdk": "^2.5.3",
     "axios": "^0.16.2",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
@@ -39,10 +39,12 @@
     "react-router-dom": "^4.2.2",
     "react-transition-group": "^2.2.1",
     "stylus": "^0.54.5",
+    "uglifyjs-webpack-plugin": "^1.0.0-beta.3",
     "webpack": "^3.6.0"
   },
   "scripts": {
     "start": "mkdir -p public/dist; stylus -w ./web/css/*.styl --out public/dist & webpack -w --config web/webpack/webpack.index; kill -9 $!",
+    "build": "mkdir -p public/dist; stylus -c ./web/css/*.styl --out public/dist; NODE_ENV=prod webpack --config web/webpack/webpack.index",
     "precommit": "lint-staged",
     "prettier": "prettier"
   },

@@ -1,12 +1,13 @@
 /*
   All Common configurations in admin and merchant build config
 */
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
 
-const isProd = require('process').env.NODE_ENV === 'production';
+const isProd = require('process').env.NODE_ENV === 'prod';
 
-module.exports = {
+const config = {
   dependencies: ['vendor'],
   resolve: {
     modules: ['node_modules', 'web/js'],
@@ -47,4 +48,29 @@ module.exports = {
       },
     ],
   },
+};
+
+let plugins = [];
+const prodPlugins = [
+  new webpack.LoaderOptionsPlugin({
+    minimize: true,
+    debug: false,
+  }),
+  new UglifyJSPlugin({
+    uglifyOptions: {
+      beautify: false,
+      ecma: 6,
+      compress: true,
+      comments: false,
+    },
+  }),
+];
+
+if (isProd) {
+  plugins = plugins.concat(prodPlugins);
+}
+
+module.exports = {
+  config,
+  plugins,
 };
