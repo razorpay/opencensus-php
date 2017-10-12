@@ -214,9 +214,10 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($attrs, $callbackData);
 
-        $actualAmount = (int) ($callbackData['AMT'] * 100);
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($callbackData['AMT'], 2, '.', '');
 
-        $this->assertAmount($input['payment']['amount'], $actualAmount);
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 

@@ -114,9 +114,10 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
 
-        $this->assertAmount(
-            $input['payment']['amount'],
-            (int) ($input['gateway'][ConnectResponseFields::CHARGE_TOTAL] * 100));
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($input['gateway'][ConnectResponseFields::CHARGE_TOTAL], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $attributes = $this->getCallbackFields($input['gateway']);
 

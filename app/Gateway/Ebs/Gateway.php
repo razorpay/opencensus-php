@@ -128,7 +128,9 @@ class Gateway extends Base\Gateway
         $this->verifySecureHash($input['gateway']);
 
         $this->assertPaymentId($input['payment']['id'], $input['gateway'][Resp::MERCHANT_REF_NO]);
-        $this->assertAmount($input['payment']['amount'], (int) ($input['gateway'][Resp::AMOUNT] * 100));
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($input['gateway'][Resp::AMOUNT], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);

@@ -519,7 +519,7 @@ class Processor extends Base\Core
             return null;
         }
 
-        return preg_replace('/[^a-zA-Z0-9 ]+/', '', $account);
+        return preg_replace('/[^a-zA-Z0-9]+/', '', $account);
     }
 
     /**

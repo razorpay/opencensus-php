@@ -575,7 +575,9 @@ class Gateway extends Base\Gateway
         $this->verifySecureHash($hashContent);
 
         $this->assertPaymentId($input['payment']['id'], $content[ResponseFields::TXN_REF_NO]);
-        $this->assertAmount($input['payment']['amount'], (int) ($content[ResponseFields::TRAN_AMT] * 100));
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($content[ResponseFields::TRAN_AMT], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $date = $this->getEpochTime(
             $content[ResponseFields::TRAN_DATE],
