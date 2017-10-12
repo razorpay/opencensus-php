@@ -2,6 +2,7 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use RZP\Exception;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Constants\Mode;
 
@@ -15,6 +16,11 @@ class Provider
     // Also used when merchant makes a test
     // payment to a virtual account.
     const DASHBOARD = 'dashboard';
+
+    const LIVE_PROVIDERS = [
+        self::YESBANK,
+        self::KOTAK,
+    ];
 
     const TEST_PROVIDERS = [
         self::DASHBOARD,
@@ -95,6 +101,15 @@ class Provider
         $ifsc = self::DEFAULT_DETAILS[$provider][BankAccount::IFSC_CODE];
 
         return substr($ifsc, 0, 4);
+    }
+
+    public static function validateLiveProvider(string $provider)
+    {
+        if (in_array($provider, self::LIVE_PROVIDERS, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid provider:'. $provider);
+        }
     }
 
     // Checks if request is originating from known IP for the given provider

@@ -49,12 +49,14 @@ class Core extends Base\Core
      *
      * @return bool
      */
-    public function process(array $input)
+    public function process(array $input, string $provider = null)
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PROCESSING,
             $input
         );
+
+        $processor = new Processor($provider);
 
         try
         {
@@ -62,9 +64,9 @@ class Core extends Base\Core
 
             $this->mutex->acquireAndRelease(
                 $input[Entity::PAYEE_ACCOUNT],
-                function() use ($bankTransfer)
+                function() use ($processor, $bankTransfer)
                 {
-                    (new Processor)->process($bankTransfer);
+                    $processor->process($bankTransfer);
                 },
                 60,
                 ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);

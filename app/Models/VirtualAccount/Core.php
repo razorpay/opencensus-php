@@ -59,7 +59,12 @@ class Core extends Base\Core
         if ($existingVirtualAccounts->count() > 0)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_IDENTICAL_DESCRIPTOR);
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_IDENTICAL_DESCRIPTOR,
+                'descriptor',
+                [
+                    'existing_ids' => $existingVirtualAccounts->getIds(),
+                    'descriptor'   => $virtualAccount->getDescriptor(),
+                ]);
         }
     }
 }

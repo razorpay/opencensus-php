@@ -401,7 +401,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECEIPT, $value);
     }
 
-    public function setUtr($value)
+    public function setUtr(string $value = null)
     {
         $this->setAttribute(self::REFERENCE1, $value);
     }
