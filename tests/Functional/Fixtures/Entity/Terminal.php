@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Shared;
 use RZP\Models\Terminal\Mode;
 use RZP\Models\Terminal\Type;
@@ -1269,6 +1270,27 @@ class Terminal extends Base
             'gateway_terminal_password' => 'razorpay_password',
             'upi'                       => 1,
             'gateway_acquirer'          => 'hdfc',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedUpiMindgateSbiTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_MINDGATE_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => Gateway::UPI_MINDGATE_SBI,
+            'gateway_merchant_id'       => 'razorpay upi mindgate sbi',
+            'gateway_terminal_id'       => 'nodal account upi sbi',
+            'gateway_merchant_id2'      => 'razorpay@sbibank',
+            'gateway_terminal_password' => 'razorpay_password',
+            'upi'                       => 1,
+            'gateway_acquirer'          => 'sbi',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

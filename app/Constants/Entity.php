@@ -132,6 +132,7 @@ class Entity
     const CYBERSOURCE            = 'cybersource';
     const AEPS_ICICI             = 'aeps_icici';
     const UPI_MINDGATE           = 'upi_mindgate';
+    const UPI_MINDGATE_SBI       = 'upi_mindgate_sbi';
     const UPI_ICICI              = 'upi_icici';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
@@ -224,6 +225,7 @@ class Entity
         self::MOBIKWIK               => \RZP\Gateway\Mobikwik::class,
         self::UPI_NPCI               => \RZP\Gateway\Upi\Npci::class,
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Mindgate::class,
+        self::UPI_MINDGATE_SBI       => \RZP\Gateway\Upi\Sbi::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Icici::class,
         self::AEPS                   => \RZP\Gateway\Aeps\Base::class,
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Icici::class,
@@ -286,6 +288,7 @@ class Entity
         self::NETBANKING_PNB         => \RZP\Gateway\Netbanking\Base::class,
 
         self::UPI_MINDGATE          => \RZP\Gateway\Upi\Base::class,
+        self::UPI_MINDGATE_SBI      => \RZP\Gateway\Upi\Base::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Base::class,
         self::UPI_NPCI              => \RZP\Gateway\Upi\Base::class,
 

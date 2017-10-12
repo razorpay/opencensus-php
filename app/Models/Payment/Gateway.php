@@ -42,6 +42,7 @@ class Gateway
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
+    const UPI_MINDGATE_SBI       = 'upi_mindgate_sbi';
     const UPI_ICICI              = 'upi_icici';
     const AEPS_ICICI             = 'aeps_icici';
 

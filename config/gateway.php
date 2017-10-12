@@ -38,6 +38,7 @@ return [
         'wallet_olamoney',
         'upi_icici',
         'upi_mindgate',
+        'upi_mindgate_sbi',
         'upi_npci',
         'aeps_icici',
         'wallet_payzapp',
