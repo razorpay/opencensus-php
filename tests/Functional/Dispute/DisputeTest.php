@@ -138,6 +138,34 @@ class DisputeTest extends TestCase
         $this->startTest();
     }
 
+    public function testDisputeCreateWithParent()
+    {
+        $disputeParent = $this->fixtures->create('dispute');
+
+        $testData = $this->updateCreateTestData();
+
+        $testData['request']['content']['parent_id'] = $disputeParent->getId();
+
+        $this->runRequestResponseFlow($testData);
+
+        $disputeChild = $this->getLastEntity('dispute', true);
+
+        $this->assertEquals($disputeParent->getId(), $disputeChild['parent_id']);
+    }
+
+    public function testDisputeCreateWithDuplicateParent()
+    {
+        $disputeParent = $this->fixtures->create('dispute');
+
+        $this->fixtures->create('dispute', ['parent_id' => $disputeParent->getId()]);
+
+        $testData = $this->updateCreateTestData();
+
+        $testData['request']['content']['parent_id'] = $disputeParent->getId();
+
+        $this->startTest($testData);
+    }
+
     public function testDisputeEdit()
     {
         $this->updateEditTestData();
@@ -302,6 +330,58 @@ class DisputeTest extends TestCase
         $this->assertEquals($input['amount'], $dispute['amount_deducted']);
         $this->assertEquals(0, $dispute['amount_reversed']);
         $this->assertEquals('adjustment', $txn['type']);
+    }
+
+    public function testDisputeEditForNoInitialParent()
+    {
+        $disputeParent = $this->fixtures->create('dispute');
+
+        $testData = $this->updateEditTestData();
+
+        $testData['request']['content']['parent_id'] = $disputeParent->getId();
+        $testData['response']['content']['parent_id'] = $disputeParent->getId();
+
+        $this->startTest($testData);
+    }
+
+    public function testDisputeEditWithExistingParent()
+    {
+        $disputeParent = $this->fixtures->create('dispute');
+
+        $testData = $this->updateEditTestData(['parent_id' => $disputeParent->getId()]);
+
+        $testData['request']['content']['parent_id'] = $disputeParent->getId();
+
+        $this->startTest($testData);
+    }
+
+    public function testDisputeEditReplaceParent()
+    {
+        $disputeParent = $this->fixtures->create('dispute');
+
+        $disputeNewParent = $this->fixtures->create('dispute');
+
+        $testData = $this->updateEditTestData(['parent_id' => $disputeParent->getId()]);
+
+        $testData['request']['content']['parent_id'] = $disputeNewParent->getId();
+        $testData['response']['content']['parent_id'] = $disputeNewParent->getId();
+
+        $this->startTest($testData);
+    }
+
+    public function testDisputeEditReplaceParentWithAlreadyLinkedParent()
+    {
+        $disputeOtherParent = $this->fixtures->create('dispute');
+
+        $this->fixtures->create('dispute', ['parent_id' => $disputeOtherParent->getId()]);
+
+        $disputeParent = $this->fixtures->create('dispute');
+
+        $testData = $this->updateEditTestData(['parent_id' => $disputeParent->getId()]);
+
+        $testData['request']['content']['parent_id'] = $disputeOtherParent->getId();
+
+        $this->startTest($testData);
     }
 
     // ---------------------------- helper methods-------------------------------
