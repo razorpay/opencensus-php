@@ -122,7 +122,7 @@ class BilldeskGatewayTest extends TestCase
 
         // Change created_at to allow payments to be picked up,
         // Allow verify to pick up payment
-        $this->fixtures->edit('payment', $payment['id'], ['created_at' => $time-150]);
+        $this->fixtures->edit('payment', $payment['id'], ['created_at' => $time - 150]);
 
         $this->runVerify('payments_failed');
 
@@ -167,7 +167,7 @@ class BilldeskGatewayTest extends TestCase
 
         // Change created_at to allow payments to be picked up,
         // Allow verify to pick up payment
-        $this->fixtures->edit('payment', $payment['id'], ['created_at' => $time-150]);
+        $this->fixtures->edit('payment', $payment['id'], ['created_at' => $time - 150]);
 
         $this->runVerify();
 
@@ -233,7 +233,7 @@ class BilldeskGatewayTest extends TestCase
 
         // Change created_at to allow payments to be picked up,
         // Allow verify to pick up payment
-        $this->fixtures->edit('payment', $payment['id'], ['created_at' => $time-150]);
+        $this->fixtures->edit('payment', $payment['id'], ['created_at' => $time - 150]);
 
         $this->runVerify();
 
@@ -291,7 +291,28 @@ class BilldeskGatewayTest extends TestCase
         {
             $this->verifyPayment($payment['id']);
         });
+    }
 
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'bank_preprocess')
+            {
+                $content['TxnAmount'] = '1';
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'ANDB';
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testPaymentRefund()
@@ -358,22 +379,24 @@ class BilldeskGatewayTest extends TestCase
     {
         $server = $this->mockServer()
                         ->shouldReceive('content')
-                        ->andReturnUsing(function (& $content)
+                        ->andReturnUsing(function (& $content, $action = null)
                         {
-                            $request = array(
-                                'content' => $content,
-                                'url' => '/callback/billdesk',
-                                'method' => 'post');
+                            if ($action === 'bank')
+                            {
+                                $request = array(
+                                    'content' => $content,
+                                    'url' => '/callback/billdesk',
+                                    'method' => 'post');
 
-                            // Fire s2s callback request
-                            $response = $this->makeRequestAndGetContent($request);
+                                // Fire s2s callback request
+                                $response = $this->makeRequestAndGetContent($request);
 
-                            $this->assertEquals($response['success'], true);
+                                $this->assertEquals($response['success'], true);
 
-                            // Stop the progress here.
-                            throw new Exception\RuntimeException(
-                                'Stop here.');
-
+                                // Stop the progress here.
+                                throw new Exception\RuntimeException(
+                                    'Stop here.');
+                            }
                         })->mock();
 
         $this->setMockServer($server);
@@ -488,14 +511,9 @@ class BilldeskGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function (& $content)
         {
-            $override = [
-                'AuthStatus'        => '0399',
-                'ErrorStatus'       => 'NA',
-                'ErrorDescription'  => 'Insufficient-funds'
-            ];
-            $msg = $this->getCallbackErrorMsg($override, $content['msg']);
-
-            $content['msg'] = $msg;
+            $content['AuthStatus']        = '0399';
+            $content['ErrorStatus']       = 'NA';
+            $content['ErrorDescription']  = 'Insufficient-funds';
         });
 
         $data = $this->testData[__FUNCTION__];

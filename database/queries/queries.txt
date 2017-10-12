@@ -2537,3 +2537,6 @@ DELETE FROM bank_transfers
 # Makes invoices.user_id refer to users.id
 ALTER TABLE invoices
     ADD CONSTRAINT invoices_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT;
+
+ALTER TABLE schedules
+    MODIFY COLUMN `anchor` int(11);

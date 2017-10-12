@@ -362,10 +362,11 @@ class Gateway
         ],
         self::CYBERSOURCE => [
             Network::MC,
-            Network::VISA
+            Network::VISA,
         ],
         self::HITACHI => [
             Network::MC,
+            Network::VISA,
         ],
         self::FIRST_DATA => [
             Network::MC,

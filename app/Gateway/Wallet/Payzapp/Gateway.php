@@ -109,6 +109,9 @@ class Gateway extends Base\Gateway
 
         $serverData = $this->pickupData($input);
 
+        // TODO: Fix this
+        // $this->assertAmount($input['payment']['amount'], $serverData['data']['txnAmt']);
+
         $this->verifyPaymentCallbackResponse($serverData);
 
         $attrs['gateway_payment_id_2'] = $serverData['data']['pgTxnId'];

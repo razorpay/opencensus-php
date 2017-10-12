@@ -885,3 +885,5 @@ UPDATE fees_breakup set name='tax' and percentage=percentage*2 and amount=amount
 
 DELETE from fees_breakup where name='cgst';
 
+# MiGS failed refund. Failed because flyrobe terminal was purchase instead of auth capture
+UPDATE refunds SET gateway_refunded = "0", status = "failed" WHERE id = "87eT5BJpNL8uPb" and status = "processed";

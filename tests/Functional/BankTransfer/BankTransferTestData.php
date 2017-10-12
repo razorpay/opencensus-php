@@ -66,7 +66,7 @@ return [
             'payee_ifsc'     => null,
             'payer_name'     => 'Name of account holder',
             'payer_account'  => '123-123-123',
-            'payer_ifsc'     => 'XYZ987654321',
+            'payer_ifsc'     => 'XYZ9876543210',
             'mode'           => 'imps',
             'transaction_id' => strtoupper(random_alphanum_string(22)),
             'time'           => 148415544000,
@@ -75,7 +75,7 @@ return [
         ],
     ],
 
-    'testBankTransferImpsUpmappedBankCode' => [
+    'testBankTransferImpsUnmappedBankCode' => [
         'url'     => '/ecollect/validate',
         'method'  => 'post',
         'content' => [
@@ -83,7 +83,24 @@ return [
             'payee_ifsc'     => null,
             'payer_name'     => 'Name of account holder',
             'payer_account'  => '9876543210123456789',
-            'payer_ifsc'     => 'XYZ987654321',
+            'payer_ifsc'     => 'XYZ9876543210',
+            'mode'           => 'imps',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 50000,
+            'description'    => 'IMPS payment of 50,000 rupees, with a stupid bank code',
+        ],
+    ],
+
+    'testBankTransferRefundRetry' => [
+        'url'     => '/ecollect/validate',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '9876543210123456789',
+            'payer_ifsc'     => 'XYZ9876543210',
             'mode'           => 'imps',
             'transaction_id' => strtoupper(random_alphanum_string(22)),
             'time'           => 148415544000,

@@ -52,11 +52,7 @@ class Core extends Base\Core
      */
     public function create(array $input, Plan\Entity $plan, Customer\Entity $customer = null): Entity
     {
-        $this->trace->info(
-            TraceCode::SUBSCRIPTION_CREATE_REQUEST,
-            [
-                'input'       => $input
-            ]);
+        $this->trace->info(TraceCode::SUBSCRIPTION_CREATE_REQUEST, $input);
 
         $subscription = (new Creator)->create($input, $plan, $customer);
 
@@ -584,7 +580,7 @@ class Core extends Base\Core
             function () use ($subscription, $input)
             {
                 if ((isset($input[Entity::CANCEL_AT_CYCLE_END]) === true) and
-                    ($input[Entity::CANCEL_AT_CYCLE_END] = true))
+                    (boolval($input[Entity::CANCEL_AT_CYCLE_END]) === true))
                 {
                     $this->setupCancelAtCycleEnd($subscription);
                 }

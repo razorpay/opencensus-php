@@ -5,6 +5,7 @@ namespace RZP\Models\BankTransfer;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
@@ -143,5 +144,116 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($bankTransfer);
         }
+    }
+
+    /**
+     * Processes refund retries, but skips those
+     * with fund_transfer_attempt already created.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function retryBankTransferRefund(array $input)
+    {
+        $refunds = $this->getRefundsToRetry($input);
+
+        $this->trace->info(
+            TraceCode::REFUND_RETRY_INITIATED,
+            [
+                'input'      => $input,
+                'refund_ids' => $refunds->getIds()
+            ]);
+
+        $status  = [];
+        $success = 0;
+        $failure = 0;
+
+        foreach ($refunds as $refund)
+        {
+
+            // If refund was marked as failed after creating a fund
+            // transfer attempt then that means this failure was result
+            // of payout file recon. We aren't handling these just now.
+            if ($refund->fundTransferAttempts->isNotEmpty() === true)
+            {
+                $this->trace->info(
+                    TraceCode::REFUND_RETRY_SKIPPED,
+                    [
+                        'refund_id'                 => $refund->getPublicId(),
+                        'fund_transfer_attempt_ids' => $refund->fundTransferAttempts->getIds(),
+                    ]);
+
+                continue;
+            }
+
+            try
+            {
+                $processor = $this->getNewProcessor($refund->merchant);
+
+                $status[$refund->getPublicId()] = $processor->processRefundRetry($refund);
+
+                $success++;
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::INFO,
+                    TraceCode::PAYMENT_VERIFY_REFUND_EXCEPTION,
+                    [
+                        'refund_id'       => $refund->getPublicId(),
+                    ]);
+
+                $failure++;
+            }
+        }
+
+        return [
+            'successful'    => $success,
+            'failure'       => $failure,
+            'status'        => $status,
+        ];
+    }
+
+    /**
+     * New processor instance for retrying refund
+     *
+     * @param $merchant
+     *
+     * @return Payment\Processor\Processor
+     */
+    protected function getNewProcessor($merchant)
+    {
+        $processor = new Payment\Processor\Processor($merchant);
+
+        return $processor;
+    }
+
+    /**
+     * Fetches failed refunds to retry, or takes from input
+     *
+     * @param array $input
+     *
+     * @return mixed
+     */
+    protected function getRefundsToRetry(array $input)
+    {
+        if (isset($input['ids']) === true)
+        {
+            $refunds = $this->repo
+                            ->refund
+                            ->findManyByPublicIds($input['ids']);
+        }
+        else
+        {
+            $method = Payment\Method::BANK_TRANSFER;
+
+            $refunds = $this->repo
+                            ->refund
+                            ->fetchFailedRefundsByMethod($method);
+        }
+
+        return $refunds;
     }
 }

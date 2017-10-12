@@ -216,6 +216,24 @@ class HdfcGatewayTest extends TestCase
         $this->refundPayment($payment['id']);
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['amt'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '6073849700004947';
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testHdfcEntityAfterPaymentRefund()
     {
         $payment = $this->doAuthAndCapturePayment();
