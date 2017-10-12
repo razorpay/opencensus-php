@@ -41,7 +41,7 @@ class Core extends Base\Core
 
         (new Validator)->validatePaymentForDispute($input, $payment);
 
-        $this->checkParentDispute(null, $input);
+        $this->checkParentDispute($input);
 
         $dispute = (new Entity)->build($input);
 
@@ -90,7 +90,7 @@ class Core extends Base\Core
             array_merge($input, [Entity::ID => $dispute->getId()])
         );
 
-        $this->checkParentDispute($dispute, $input);
+        $this->checkParentDispute($input, $dispute);
 
         $dispute->edit($input);
 
@@ -279,7 +279,7 @@ class Core extends Base\Core
         (new Adjustment\Core)->createDisputeAdjustment($input, $dispute);
     }
 
-    protected function checkParentDispute(Entity $dispute = null, array $input)
+    protected function checkParentDispute(array $input, Entity $dispute = null)
     {
         if(isset($input['parent_id']) === true)
         {
