@@ -1,102 +1,101 @@
-ui-form
-  input, select, textarea, button, .btn
-    display: inline-block
-    height: 38px
-    line-height: 20px
-    border-radius: 3px
-    padding: 7px 12px
-    font-size: 14px
-    font-family: inherit
-    border: 1px solid #dbdbdb
-    background: #fff
-    vertical-align: middle
-    transition: .2s
-    &:hover, &:focus
-      border-color: #b5b5b5
+input, select, textarea, button, .btn
+  display: inline-block
+  height: 38px
+  line-height: 20px
+  border-radius: 3px
+  padding: 7px 12px
+  font-size: 14px
+  font-family: inherit
+  border: 1px solid #dbdbdb
+  background: #fff
+  vertical-align: middle
+  transition: .2s
+  &:hover, &:focus
+    border-color: #b5b5b5
 
-  textarea
-    min-height: 100px
+textarea
+  min-height: 100px
 
-  input, textarea, select
-    width: 200px
-    box-shadow: inset 0 1px 2px rgba(10, 10, 10, 0.1)
+input, textarea, select
+  width: 200px
+  box-shadow: inset 0 1px 2px rgba(10, 10, 10, 0.1)
 
-  .small
-    width: 80px
+.small
+  width: 80px
 
-  input
-    &[type=checkbox],&[type=radio]
-      width: auto
-      box-shadow: none
-      margin: 0
+input
+  &[type=checkbox],&[type=radio]
+    width: auto
+    box-shadow: none
+    margin: 0
 
+label
+  line-height: 18px
+  white-space: nowrap
+  margin: 0 6px
+
+button, .btn
+  line-height: 38px
+  white-space: nowrap
+  border: 0
+  cursor: pointer
+  box-shadow: 0 3px 13px rgba(0,0,0,0.09), 0 1px 5px 0 rgba(0,0,0,0.14)
+  user-select: none
+  background: #0078E7
+  color: #fff
+  padding: 0 16px
+  margin: 10px
+
+.field
+  flex: 1
+  margin: 10px
+
+.switch-field
   label
-    line-height: 18px
-    white-space: nowrap
-    margin: 0 6px
-
-  button, .btn
     line-height: 38px
-    white-space: nowrap
-    border: 0
+    padding-right: 40px
+    position: relative
     cursor: pointer
-    box-shadow: 0 3px 13px rgba(0,0,0,0.09), 0 1px 5px 0 rgba(0,0,0,0.14)
-    user-select: none
-    background: #0078E7
-    color: #fff
-    padding: 0 16px
-    margin: 10px
+  input
+    display: none
 
-  .field
-    flex: 1
-    margin: 10px
-
-  .switch-field
-    label
-      line-height: 38px
-      padding-right: 40px
-      position: relative
-      cursor: pointer
-    input
-      display: none
-
-  .switch-knob
-    pointer-events: none
-    margin-left: -36px
+.switch-knob
+  pointer-events: none
+  margin-left: -36px
+  position: absolute
+  height: 38px
+  width: 34px
+  display: inline-block
+  vertical-align: middle
+  &:before
+    content: ''
+    display: block
+    border-radius: 10px
+    margin-top: 9px
+    height: 20px
+    width: 100%
+    background: #9E9E9E
+  &:after
+    left: 0
+    top: 9px
     position: absolute
-    height: 38px
-    width: 34px
-    display: inline-block
-    vertical-align: middle
-    &:before
-      content: ''
-      display: block
-      border-radius: 10px
-      margin-top: 9px
-      height: 20px
-      width: 100%
-      background: #9E9E9E
-    &:after
-      left: 0
-      top: 9px
-      position: absolute
-      box-shadow: 0 1px 3px 0 rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.18)
-      content: ''
-      background: #fff
-      border-radius: 50%
-      width: 19px
-      height: @width
-      transition: .2s
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.18)
+    content: ''
+    background: #fff
+    border-radius: 50%
+    width: 19px
+    height: @width
+    transition: .2s
 
-  :checked+.switch-knob
-    &:before
-      background: linear-gradient(to bottom, #4CD964, #4BD863);
-    &:after
-      transform: translateX(15px)
+:checked+.switch-knob
+  &:before
+    background: linear-gradient(to bottom, #4CD964, #4BD863);
+  &:after
+    transform: translateX(15px)
 
 
-  form
-    &.pending
-      button, .btn
-        opacity: .6
-        pointer-events: none
+form
+  &.pending
+    button, .btn
+      opacity: .6
+      pointer-events: none

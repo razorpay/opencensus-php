@@ -15,11 +15,7 @@ export default class Form extends Component {
     }
 
     return (
-      <form
-        onSubmit={::this.onSubmit}
-        {...props}
-        class={`${className} ui-form`}
-      >
+      <form onSubmit={::this.onSubmit} {...props} class={className}>
         {children}
       </form>
     );
