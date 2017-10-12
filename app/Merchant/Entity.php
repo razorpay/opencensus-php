@@ -51,9 +51,6 @@ class Entity extends Base\Entity
     const WALLET  = 'WALLET';
     const UNKNOWN = 'UNKNOWN';
 
-    const AGGREGATOR    = 'Aggregator';
-    const MARKETPLACE   = 'Marketplace';
-
     protected static $api_mappings = array(
         'American Express'  =>  self::AMEX,
         'Diners Club'       =>  self::DICL,

@@ -25,8 +25,6 @@ class Service extends Base\Service
     const EMAIL_CHANGE_FORBIDDEN                = "Email change forbidden on this account";
     const NAME_CHANGE_FORBIDDEN                 = "Name change forbidden on this account";
     const SELF_REMOVE_FORBIDDEN                 = "You cannot remove yourself.";
-    const SUBMERCHANT_NOT_ALLOWED               = "Your account does not have sub-merchant creation privileges. Please contact support@razorpay.com";
-    const ACCOUNT_CREATION_NOT_ALLOWED          = "You do not have account creation privileges. Please contact support@razorpay.com";
     const SUBMERCHANT_EMAIL_NOT_UNIQUE          = "Unique email is required to create a new user";
     const NOT_AUTHORIZED_TO_ACCESS_MERCHANT     = "Cannot access merchant";
 
@@ -47,93 +45,32 @@ class Service extends Base\Service
      */
     public function registerSubMerchant(array $input)
     {
-        $currentMerchant = $this->currentUser->currentMerchant();
+        $isLinkedAccount = (bool) ($input['account'] ?? false);
 
-        $isLinkedAccount = (bool) (\Input::get('account') ?? false);
+        $data = array_merge([
+            'user_id' => $this->currentUser->id
+        ], $input);
 
-        $currentMerchant = Merchant\Entity::find($currentMerchant->id);
+        $registerSubMerchant = [
+            'route_name' => 'merchant_sub_create',
+            'body'       => $data,
+        ];
 
-        $currentMerchantTags = $this->getMerchantTags($currentMerchant->id);
+        $genericService = new Generic\Service;
 
-        if ($isLinkedAccount === true)
+        list($error, $data) = $genericService->call('POST', $registerSubMerchant);
+
+        if (($isLinkedAccount === false) and (empty($error) === true))
         {
-            //if (in_array(Entity::MARKETPLACE, $currentMerchantTags) === false)
-            //{
-            //    return [[self::ACCOUNT_CREATION_NOT_ALLOWED], null];
-            //}
-        }
-        else
-        {
-            /**
-             * Checking if the current merchant is an aggregator
-             * An aggregator is defined as a merchant
-             * which can create other merchants without sending
-             * them confirmation emails. All these merchants are also
-             * created with the same email address
-             */
-            if (in_array(Entity::AGGREGATOR, $currentMerchantTags) === false)
+            list($error, $genericUser) = (new User\Service)->getUserFromApi($this->currentUser->id);
+
+            if (empty($error) === true)
             {
-                return [[self::SUBMERCHANT_NOT_ALLOWED], null];
+                Session::put('dashboard_user_payload', $genericUser);
             }
         }
 
-        $error = (new Merchant\Validator)->validateInput('create_submerchant', $input)
-                                         ->messages();
-
-        if (empty($error))
-        {
-            $businessName = $input['name'];
-
-            $email = \Input::get('email');
-
-            if (!$email or empty($email))
-            {
-                $email = $currentMerchant->email;
-            }
-
-            $merchant = Entity::createFromMerchant($currentMerchant, $businessName, $email, $isLinkedAccount);
-
-            try
-            {
-                $this->createSubMerchantOnApi($merchant, $currentMerchant, $isLinkedAccount);
-            }
-            catch(ApiError $e)
-            {
-                return [[$e->getMessage()], null];
-            }
-
-            $merchant->save();
-
-            if ($isLinkedAccount === false)
-            {
-                // We tag the merchant as referred from the original merchant on api
-                $this->addMerchantTagsOnAPI($merchant->id, ['ref-'.$currentMerchant->id]);
-
-                // Finally attach the current user to the new user's team
-                // And also update the session user merchant list.
-                list($error, $response) = (new User\Service)->attachMerchantUserOnApi($this->currentUser->id, $merchant->id, 'owner');
-
-                if (empty($error) === true)
-                {
-                    User\Entity::find($this->currentUser->id)->merchants()->attach([$merchant->id], ['role' => 'owner']);
-
-                    list($error, $genericUser) = (new User\Service)->getUserFromApi($this->currentUser->id);
-
-                    if (empty($error) === true)
-                    {
-                        Session::put('dashboard_user_payload', $genericUser);
-                    }
-                }
-
-                return [$error, $merchant->toArray()];
-            }
-
-            return [null, $merchant->toArray()];
-        }
-        else
-        {
-            return [$error, null];
-        }
+        return [$error, $data];
     }
 
     public function registerSubMerchantUser(array $input)
@@ -202,37 +139,6 @@ class Service extends Base\Service
         }
     }
 
-    protected function createSubMerchantOnApi(Entity $merchant, Entity $aggregator, $isLinkedAccount)
-    {
-        $data = [
-            'name'  =>  $merchant->name,
-            'id'    =>  $merchant->id
-        ];
-
-        // Only send the email field if the email is not
-        // the same as the aggregator email
-        if ($merchant->email !== $aggregator->email)
-        {
-            $data['email'] = $merchant->email;
-        }
-
-        if ($isLinkedAccount)
-        {
-            $this->setApiCredentials($aggregator->id, 'test');
-        }
-        else
-        {
-            $this->setApiCredentials($aggregator->id);
-        }
-
-
-        $response = $this->api
-                         ->merchant
-                         ->createSubMerchant($data)
-                         ->toArray();
-
-        return $response;
-    }
     /**
      * take care when calling this function
      * This is only called from the admin service

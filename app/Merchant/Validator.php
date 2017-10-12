@@ -11,11 +11,6 @@ class Validator extends Base\Validator
         'email'                 => 'required|email|unique:merchants',
     );
 
-    protected static $createSubmerchantRules = array(
-        'name'                  => 'required|alpha_space_num|max:200',
-        'email'                 => 'sometimes|email',
-    );
-
     protected static $createSubmerchantUserRules = array(
         'id'                    => 'required|alpha_num',
         'password'              => 'required|between:7,50|confirmed|numbers|letters',

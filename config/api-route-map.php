@@ -549,6 +549,9 @@ return [
             'routeName' => 'feature_onboarding_fetch_responses'
         ],
 
+        // Create SubMerchant
+        'merchant_sub_create'               => 'submerchants',
+
         'merchant_pre_signup_details'       => 'pre_signup',
         'merchant_edit_pre_signup_details'  => 'pre_signup',
     ],

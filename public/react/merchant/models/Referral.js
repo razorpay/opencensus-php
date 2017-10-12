@@ -47,8 +47,9 @@ export default class Referral extends Entity {
   createMerchant() {
     let data = {
       name: this.name,
-      email: this.email,
     };
+    this.email ? (data.email = this.email) : null;
+
     return ajax({
       url: '/submerchants',
       method: 'POST',
