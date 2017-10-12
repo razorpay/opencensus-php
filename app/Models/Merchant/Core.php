@@ -63,12 +63,17 @@ class Core extends Base\Core
         if (isset($input['email']) === true)
         {
             $email['email'] = $input['email'];
+
             (new Validator)->validateInput('unique_email', $email);
         }
         else
         {
             $input['email'] = $aggregatorMerchant->getEmail();
         }
+
+        $merchantData['name'] = $input['name'] ?? null;
+
+        (new Validator)->validateInput('edit_name', $merchantData);
 
         $subMerchant = (new Merchant\Entity)->build($input);
 

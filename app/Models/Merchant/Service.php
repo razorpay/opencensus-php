@@ -84,6 +84,19 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
+        $currentMerchantTags = $merchant->tagNames();
+
+        if (in_array(Feature\Constants::AGGREGATOR, $currentMerchantTags) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PRICING_ID_REQURED);
+        }
+        $ownerId = $input['user_id'];
+
+        $linkedAccount = $input['account'] ?? false;
+
+        unset($input['user_id']);
+
         $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant);
 
         // This goes out to the aggregator
@@ -93,11 +106,41 @@ class Service extends Base\Service
             $this->sendSubMerchantCreationMail($subMerchant, $merchant);
         }
 
+        if ($linkedAccount === false)
+        {
+            $this->addLinkedAccountReferral($merchant, $subMerchant);
+
+            $this->attachSubMerchantOwner($ownerId, $subMerchant);
+        }
+
         $subMerchantData = $this->saveMerchantAndApplyCoupon($subMerchant, $input);
 
         return $subMerchantData;
     }
 
+    /**
+     * @param string $ownerId
+     * @param Entity $subMerchant
+     */
+    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant)
+    {
+        $userMerchantMappingInputData = [
+            'action' => 'attach',
+            'role' => 'owner',
+            'merchant_id' => $subMerchant->id
+        ];
+
+        (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
+    }
+
+    private function addLinkedAccountReferral($aggregratorMerchant, $account)
+    {
+        $tagInputData = [
+            'tags' => ['ref-'.$aggregratorMerchant->id],
+        ];
+
+        $this->addTags($account->id, $tagInputData);
+    }
     protected function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
     {
         $this->repo->saveOrFail($merchant);
