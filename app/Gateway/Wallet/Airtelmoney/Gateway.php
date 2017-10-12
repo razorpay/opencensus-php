@@ -75,8 +75,6 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        $this->assertPaymentId($input['payment']['id'], $content[ResponseFields::TXN_REF_NO]);
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
@@ -575,6 +573,9 @@ class Gateway extends Base\Gateway
         ];
 
         $this->verifySecureHash($hashContent);
+
+        $this->assertPaymentId($input['payment']['id'], $content[ResponseFields::TXN_REF_NO]);
+        $this->assertAmount($input['payment']['amount'], (int) ($content[ResponseFields::TRAN_AMT] * 100));
 
         $date = $this->getEpochTime(
             $content[ResponseFields::TRAN_DATE],

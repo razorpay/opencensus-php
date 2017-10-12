@@ -65,6 +65,8 @@ class Gateway extends Base\Gateway
         $this->assertPaymentId($input['payment']['id'],
              $content[RequestFields::MERCHANT_REFERENCE]);
 
+        $this->assertAmount($input['payment']['amount'], (int) ($content['AMT'] * 100));
+
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
             $content[RequestFields::MERCHANT_REFERENCE], Action::AUTHORIZE);
 

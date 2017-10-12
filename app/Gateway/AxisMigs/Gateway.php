@@ -92,6 +92,8 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $input['gateway']['vpc_MerchTxnRef']);
 
+        $this->assertAmount($input['payment']['amount'], (int) $input['gateway']['vpc_Amount']);
+
         $gatewayPayment = $this->repo->findByMerchantTxnRefAndCommand(
             $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
 
