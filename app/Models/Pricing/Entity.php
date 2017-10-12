@@ -40,6 +40,9 @@ class Entity extends Base\PublicEntity
     const EXPIRED_AT           = 'expired_at';
     const DELETED_AT           = 'deleted_at';
 
+    // Input key for array of rules
+    const RULES                = 'rules';
+
     protected $revisionEnabled = true;
 
     protected $revisionCreationsEnabled = true;

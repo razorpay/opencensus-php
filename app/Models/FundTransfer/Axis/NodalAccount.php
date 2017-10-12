@@ -3,15 +3,22 @@
 namespace RZP\Models\FundTransfer\Axis;
 
 use Mail;
+use Config;
 use Carbon\Carbon;
+use phpseclib\Crypt\AES;
 use PHPExcel_Shared_Date;
 
 use RZP\Models\Base;
+use RZP\Encryption\Type;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Mail\Settlement\AxisSettlement;
 
-class NodalAccount extends Base\Core
+use RZP\Models\FundTransfer\Base as NodalBase;
+use RZP\Encryption\AESEncryption;
+use RZP\Mail\Settlement\AxisSettlement;
+use RZP\Models\FundTransfer\Mode;
+
+class NodalAccount extends NodalBase\NodalAccount
 {
     const SIGNED_URL_DURATION = '1440';
 
@@ -23,6 +30,16 @@ class NodalAccount extends Base\Core
         'Transaction',
         'Cr Date',
     ];
+
+    const MODE_MAPPING = [
+        Mode::NEFT    => 'N',
+        Mode::RTGS    => 'R',
+        Mode::IMPS    => 'I',
+    ];
+
+    protected $secret = null;
+
+    protected $iv = null;
 
     protected $date = null;
 
@@ -39,6 +56,10 @@ class NodalAccount extends Base\Core
         $this->date = Carbon::today(Timezone::IST)->format('n/j/y');
 
         $this->id = Base\UniqueIdEntity::generateUniqueId();
+
+        $this->secret = Config::get('nodal.axis.secret');
+
+        $this->iv = base64_decode(Config::get('nodal.axis.iv'));
     }
 
     public function generateTransferFile(string $amount): array
@@ -68,6 +89,10 @@ class NodalAccount extends Base\Core
                         ->metadata($metadata)
                         ->headers(false)
                         ->columnFormat(['C3' => 'dd/mm/yy', 'E3' => 'dd/mm/yy', 'F3' => 'dd/mm/yy'])
+                        ->encrypt(Type::AES_ENCRYPTION, [
+                            AESEncryption::MODE   => AES::MODE_CBC,
+                            AESEncryption::IV     => $this->iv,
+                            AESEncryption::SECRET => $this->secret,])
                         ->save();
 
         $fileInstance = $file->get();
@@ -96,8 +121,9 @@ class NodalAccount extends Base\Core
 
     protected function getRows(string $amount): array
     {
-        // Deciding on based of amount to choose mode as R or N
-        $mode = ($amount >= 200000) ? 'R' : 'N';
+        $mode = $this->getTransferMode($amount);
+
+        $this->mode = self::MODE_MAPPING[$mode];
 
         $formattedAmount = (float) sprintf('%0.2f', $amount);
 
@@ -115,7 +141,7 @@ class NodalAccount extends Base\Core
         $excelDate = PHPExcel_Shared_Date::PHPToExcel(strtotime($this->date));
 
         $transactionValues = [
-            $mode,
+            $this->mode,
             'RZRNAXISCARD',
             $excelDate,
             $formattedAmount,

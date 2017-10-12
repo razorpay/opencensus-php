@@ -18,9 +18,6 @@ build:
     # The steps that will be executed on build
     steps:
       - script:
-          name: ENV Variables
-          code: env
-      - script:
           name: copy env file
           code: cp ./environment/.env.wercker ./environment/.env.testing
       - add-ssh-key:
@@ -70,7 +67,7 @@ build:
           name: Composer set-up
           code: |
               composer config -g github-oauth.github.com $github_token
-              export COMPOSER_CACHE_DIR="$WERCKER_CACHE_DIR/composer" && mkdir -p $COMPOSER_CACHE_DIR
+              mkdir -p $COMPOSER_CACHE_DIR
               composer install --no-interaction
       - script:
           name: Create certificate directories

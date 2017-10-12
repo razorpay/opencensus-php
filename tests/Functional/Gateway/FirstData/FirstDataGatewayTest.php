@@ -273,9 +273,8 @@ class FirstDataGatewayTest extends TestCase
 
         $paymentRes = $this->getLastPayment(true);
 
-        // FirstData is preferred over Sharp, but does not get selected
-        // as ICICI cards are disabled on FirstData
-        $this->assertNotEquals('first_data', $paymentRes['gateway']);
+        // FirstData now should get selected
+        $this->assertEquals('first_data', $paymentRes['gateway']);
 
         $payment['card']['number'] = '5109591717594888';
 
@@ -305,6 +304,21 @@ class FirstDataGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(1, $payment['verified']);
+    }
+
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['chargetotal'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $this->doAuthPayment();
+        });
     }
 
     public function testPaymentRefund()
@@ -588,5 +602,37 @@ class FirstDataGatewayTest extends TestCase
         $paymentId = explode('_', $payment['id'])[1];
 
         $this->assertEquals(strtoupper($paymentId), $firstData['caps_payment_id']);
+    }
+
+    public function testAuthCodeMappingFromApprovalCode()
+    {
+        $sampleAuthCode = random_integer(6);
+
+        $this->getOveriddenApprovalCode("Y:$sampleAuthCode:PPX: 233123");
+
+        $this->doAuthPayment($this->payment);
+
+        $gatewayPayment = $this->getLastEntity('first_data', true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($sampleAuthCode, $gatewayPayment['auth_code']);
+
+        $this->assertEquals($sampleAuthCode, $payment['reference2']);
+    }
+
+    public function testAuthCodeMapForVerifyPayment()
+    {
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->verifyPayment($payment['id']);
+
+        $gatewayPayment = $this->getLastEntity('first_data', true);
+
+        // The value is hardcoded in SoapWrapper,
+        // it also makes sure that the first TransactionValues is picked if there are many
+        $this->assertEquals('543210', $gatewayPayment['auth_code']);
     }
 }

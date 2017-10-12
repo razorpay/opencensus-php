@@ -25,6 +25,13 @@ class ScheduleTest extends TestCase
         $this->ba->adminAuth();
     }
 
+    public function testFetchSettlementSchedules()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateSchedule()
     {
         $schedule = $this->createSchedule();

@@ -34,6 +34,9 @@ class CreateNetbanking extends Migration
             $table->string('status')->nullable();
             $table->string('error_message')->nullable();
             $table->string('reference1')->nullable();
+            $table->string('si_token')->nullable();
+            $table->string('si_status')->nullable();
+            $table->string('si_message')->nullable();
             $table->string('date')->nullable();
             $table->string('account_number')->nullable();
             $table->string('account_type')->nullable();

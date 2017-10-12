@@ -119,7 +119,7 @@ class Processor extends Base\Core
     {
         $paymentProcessor = new PaymentProcessor($this->merchant);
 
-        $this->repo->transaction(function() use (
+        $payment = $this->repo->transaction(function() use (
             $bankTransfer,
             $paymentProcessor)
         {
@@ -143,11 +143,13 @@ class Processor extends Base\Core
 
             $this->updateVirtualAccount($bankTransfer);
 
-            if ($bankTransfer->isExpected() === true)
-            {
-                $paymentProcessor->autoCapturePayment($payment);
-            }
+            return $payment;
         });
+
+        if ($bankTransfer->isExpected() === true)
+        {
+            $paymentProcessor->autoCapturePayment($payment);
+        }
     }
 
     /**
@@ -476,7 +478,7 @@ class Processor extends Base\Core
 
         return [
             BankAccount\Entity::IFSC_CODE        => $ifsc,
-            BankAccount\Entity::ACCOUNT_NUMBER   => $bankTransfer->getPayerAccount(),
+            BankAccount\Entity::ACCOUNT_NUMBER   => $this->getPayerAccount($bankTransfer),
             BankAccount\Entity::BENEFICIARY_NAME => $label,
         ];
     }
@@ -487,7 +489,7 @@ class Processor extends Base\Core
      *
      * @param Entity $bankTransfer
      *
-     * @return bool|string
+     * @return string
      */
     protected function getLabel(Entity $bankTransfer)
     {
@@ -499,6 +501,25 @@ class Processor extends Base\Core
         }
 
         return substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $label), 0, 39);
+    }
+
+    /**
+     * Sanitizes account numbers received.
+     *
+     * @param Entity $bankTransfer
+     *
+     * @return null|string
+     */
+    protected function getPayerAccount(Entity $bankTransfer)
+    {
+        $account = $bankTransfer->getPayerAccount();
+
+        if (empty($account) === true)
+        {
+            return null;
+        }
+
+        return preg_replace('/[^a-zA-Z0-9 ]+/', '', $account);
     }
 
     /**

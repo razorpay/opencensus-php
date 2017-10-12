@@ -236,7 +236,7 @@ class Gateway extends Base\Gateway
     protected $inquiryResponse = [
         'type' => 'inquiry',
         'fields' => ['result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid', 'amt',
-            'udf1', 'udf2', 'udf3', 'udf4', 'udf5'],
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'authRespCode'],
         'data' => [],
         'xml' => '',
         'error' => null];
@@ -376,6 +376,11 @@ class Gateway extends Base\Gateway
             $this->model = $this->repo->findByGatewayPaymentIdOrFail($gatewayPaymentId);
 
             $this->verifyAuthResponse($authResponse);
+
+            $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+            $actualAmount = number_format($input['gateway']['amt'], 2, '.', '');
+
+            $this->assertAmount($expectedAmount, $actualAmount);
 
             return $this->getCallbackResponseData($input);
         }

@@ -45,6 +45,14 @@ class Core extends Base\Core
 
         $existingToken = $this->validateExistingToken($token);
 
+        //
+        // For cards, we check if there's already an existing
+        // token with the same customer, and simply return that
+        // instead of creating a new token altogether.
+        // However, for netbanking, we don't do this check,
+        // because netbanking tokens are newly created for each
+        // and every new first recurring payment, for now.
+        //
         if ($existingToken !== null)
         {
             return $existingToken;
@@ -88,9 +96,60 @@ class Core extends Base\Core
         return $token;
     }
 
+    /**
+     * This method gives us all of the customer's saved tokens
+     *
+     * @param $customer
+     * @return mixed
+     */
     public function fetchTokensByCustomer($customer)
     {
         $tokens = $this->repo->token->getByCustomer($customer);
+
+        return $tokens;
+    }
+
+    /**
+     * This method takes in the current tokens collection, removes the netbanking
+     * recurring tokens and returns the remaining tokens as an array
+     *
+     * @param $tokens
+     * @return mixed
+     */
+    public function removeNetbankingRecurringTokens($tokens)
+    {
+        //
+        // We are creating an array of all the items that do not pass the truth test
+        // that the token is recurring and netbanking - as we do not want to show
+        // recurring netbanking tokens to the merchant via preferences
+        //
+
+        if (Base\PublicCollection::isPublicCollection($tokens) === true)
+        {
+            $tokens = $tokens->reject(
+                function($token)
+                {
+                    if (($token->getMethod() === 'netbanking') and
+                        ($token->isRecurring() === true))
+                    {
+                        return true;
+                    }
+
+                    return false;
+                })->values();
+        }
+        else
+        {
+            $tokenItems = & $tokens['items'];
+
+            $tokenItems = array_filter($tokenItems, function ($item)
+                        {
+                            $netbankingRecurring = (($item['method'] === 'netbanking') and
+                                                    ($item['recurring']));
+
+                            return ($netbankingRecurring === false);
+                        });
+        }
 
         return $tokens;
     }

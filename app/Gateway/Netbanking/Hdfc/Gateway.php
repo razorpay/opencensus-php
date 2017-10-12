@@ -95,6 +95,10 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $input['gateway']['MerchRefNo']);
 
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($input['gateway']['TxnAmount'], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
+
         unset($input['gateway']['CheckSum']);
 
         // Unset date because format of date returned is different than what we sent
