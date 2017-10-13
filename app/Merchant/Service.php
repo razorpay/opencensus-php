@@ -88,6 +88,8 @@ class Service extends Base\Service
 
         unset($input['id']);
 
+        unset($input['name']);
+
         $data = array_merge([
             'user_id' => $this->currentUser->id
         ], $input);

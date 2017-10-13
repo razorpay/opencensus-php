@@ -36,7 +36,6 @@ export default class Referral extends Entity {
 
   createLogin(params = {}) {
     let data = params;
-    delete data.name;
     return ajax({
       url: '/subusers',
       method: 'POST',
