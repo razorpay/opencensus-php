@@ -858,8 +858,8 @@ class Gateway extends Base\Gateway
         $merchantId = $this->getDealerId($input['terminal']);
         $dealerId = null;
 
-        # Read Mpesa code on why I used to this approach.
-        # TODO This is wrong, we have to find a better solution.
+        // Read Mpesa code on why I used to this approach.
+        // TODO This is wrong, we have to find a better solution.
         if (empty($merchantId) === true)
         {
             $merchantId = $this->getMerchantId($input['terminal']);
