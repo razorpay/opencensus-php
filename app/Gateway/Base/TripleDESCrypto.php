@@ -34,9 +34,4 @@ class TripleDESCrypto
     {
         return $this->des->decrypt($ciphertext);
     }
-
-    public function getblockLength()
-    {
-        return $this->des->block_size;
-    }
 }

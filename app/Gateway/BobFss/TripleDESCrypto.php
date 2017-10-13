@@ -15,12 +15,6 @@ class TripleDESCrypto extends BaseTripeDESCrypto
      */
     public function encryptString($plaintext)
     {
-        $blockSize = $this->getblockLength();
-
-        $paddingLength = $blockSize - (strlen($plaintext) % $blockSize);
-
-        $plaintext .= str_repeat(chr($paddingLength), $paddingLength);
-
         $encryptedData = parent::encryptString($plaintext);
 
         return bin2hex($encryptedData);
@@ -41,6 +35,8 @@ class TripleDESCrypto extends BaseTripeDESCrypto
         $decryptedData = parent::decryptString($data);
 
         $decryptedData = substr($decryptedData, 0, (strripos($decryptedData, '^') - 1));
+
+        $decryptedData = rtrim($decryptedData, "\0");
 
         return $decryptedData;
     }
