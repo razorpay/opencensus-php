@@ -753,7 +753,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->addTags($id, $input);
+        $response = $this->service()->addTags($id, $input, true);
 
         return ApiResponse::json($response);
     }

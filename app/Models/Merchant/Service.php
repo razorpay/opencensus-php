@@ -1132,8 +1132,9 @@ class Service extends Base\Service
      * used for adding tags to merchant
      * @param string $id
      * @param array $input which contains the tags of the merchant
+     * @param bool $slackNotify
      */
-    public function addTags($id, $input)
+    public function addTags($id, $input, $slackNotify = false)
     {
         (new Validator)->validateInput('addTags', $input);
 
@@ -1146,6 +1147,11 @@ class Service extends Base\Service
         $merchant->retag($tags);
 
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
+        if ($slackNotify === true)
+        {
+            $this->logActionToSlack($merchant, SlackActions::TAGGED, $input);
+        }
 
         return $merchant->tagNames();
     }
