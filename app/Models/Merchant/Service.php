@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use DB;
 use Mail;
 use Config;
+use Hash;
 use Carbon\Carbon;
 
 use Razorpay\OAuth\Token as OAuthToken;
@@ -1466,4 +1467,38 @@ class Service extends Base\Service
         return $this->app['eventManager']->query($input);
     }
 
+    /**
+     * Creates submerchant User and associates with the submerchant as owner.
+     * @param array $input
+     *
+     * @return array
+     */
+    public function createSubMerchantUser($merchantId, array $input)
+    {
+        $subMerchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $input['email']  = $subMerchant->getEmail();
+
+        (new Merchant\Validator)->validateInput('create_sub_merchant_user', $input);
+
+        //Creates a user from the given data.
+        $userData = $this->formatUserCreationData($input, $subMerchant);
+
+        $subMerchantUser = (new User\Service)->create($userData);
+
+        $this->attachSubMerchantOwner($subMerchantUser['id'], $subMerchant);
+
+        return $subMerchantUser;
+    }
+
+    private function formatUserCreationData($input, $subMerchant)
+    {
+        //TODO move the hash function to modifiers of user entity.
+        return [
+            'name'                  => $subMerchant->getName(),
+            'email'                 => $input['email'],
+            'password_confirmation' => Hash::make($input['password_confirmation']),
+            'password'              => Hash::make($input['password']),
+        ];
+    }
 }

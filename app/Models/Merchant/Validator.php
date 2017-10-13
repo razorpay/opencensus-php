@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\User;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Terminal;
@@ -124,6 +125,13 @@ class Validator extends Base\Validator
         'settlement' => 'sometimes|filled|file|mimes:txt|max:1024',
     ];
 
+    protected static $createSubMerchantUserRules = [
+        'user_id'               => 'required|alpha_num|size:14',
+        'password'              => 'required|between:7,50|confirmed|numbers|letters',
+        'password_confirmation' => 'required|between:7,50',
+        Entity::EMAIL           => 'required|email', //Add merchant unique check except for the merchant whose email is being validated
+    ];
+
     protected static $editConfigValidators = [
         'csv_email',
     ];
@@ -137,6 +145,30 @@ class Validator extends Base\Validator
         'feature_update_for_mode',
         'uneditable_features',
     ];
+
+    protected static $createSubMerchantUserValidators = [
+        'owner_validaton',
+    ];
+
+    /**
+     * validates if the user who is attempting to create a submerchant user is the owner or not.
+     * @param array $input
+     */
+    protected function validateSubMerchantOwner(array $input)
+    {
+        $currentMerchantUser = (new User\Repository)->findOrFailPublic($input['user_id']);
+
+        $ownerMerchant = $currentMerchantUser->merchants
+            ->where('role', 'owner')
+            ->where('id', $input['merchant_id'])
+            ->first();
+
+        if (empty($ownerMerchant) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBUSER_CREATE_NOT_ALLOWED);
+        }
+    }
 
     /**
      * Throw an error, if any of the features that can be enabled or disabled only by

@@ -838,4 +838,13 @@ class MerchantController extends Controller
 
         return $response;
     }
+
+    public function postCreateSubMerchantUser($merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createSubMerchantUser($merchantId, $input);
+
+        return ApiResponse::json($response);
+    }
 }
