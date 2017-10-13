@@ -30,9 +30,9 @@ export default class MerchantEntity extends Component {
     this.merchantId = props.match.params.id;
 
     this.model = new Model({
-      fetchRoute: 'merchant_details_fetch',
       fetchFn: adminFetch,
-      urlParams: {
+      data: {
+        route_name: 'merchant_details_fetch',
         account_id: this.merchantId,
         merchant_id: this.merchantId,
       },

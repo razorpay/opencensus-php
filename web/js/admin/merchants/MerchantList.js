@@ -12,7 +12,9 @@ const defaultFilters = {
 
 export default class MerchantList extends Component {
   collection = new Collection({
-    fetchRoute: 'admin_fetch_merchants_new',
+    data: {
+      route_name: 'admin_fetch_merchants_new',
+    },
     fetchFn: adminFetch,
     filters: defaultFilters,
   });

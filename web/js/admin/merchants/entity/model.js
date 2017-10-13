@@ -10,10 +10,9 @@ export default class Model {
     bankDetails: {},
   };
 
-  constructor({ fetchRoute, fetchFn, urlParams }) {
-    this.fetchRoute = fetchRoute;
+  constructor({ data, fetchFn }) {
     this.fetchFn = fetchFn;
-    this.urlParams = urlParams;
+    this.data = data;
 
     this.pending = observable.box();
 
@@ -26,9 +25,7 @@ export default class Model {
     return this._request(
       'fetchMerchantDetails',
       this.fetchFn({
-        route: this.fetchRoute,
-        queryParams: this.filters,
-        urlParams: this.urlParams,
+        data: this.data,
       })
     );
   }
