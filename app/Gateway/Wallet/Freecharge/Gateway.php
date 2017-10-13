@@ -120,7 +120,7 @@ class Gateway extends Base\Gateway
         $code = $content[ResponseFields::STATUS];
 
         $contentToSave = [
-            RequestFields::MERCHANT_ID   => $this->getMerchantId($input['terminal']),
+            RequestFields::MERCHANT_ID   => $this->getMerchantId1($input['terminal']),
             RequestFields::EMAIL         => $input['payment']['email'],
             RequestFields::MOBILE_NUMBER => $this->getFormattedContact($input['payment']['contact']),
             RequestFields::AMOUNT        => $input['payment']['amount'],
@@ -251,7 +251,7 @@ class Gateway extends Base\Gateway
         }
 
         $contentToSave = array(
-            RequestFields::MERCHANT_ID   => $this->getMerchantId($input['terminal']),
+            RequestFields::MERCHANT_ID   => $this->getMerchantId1($input['terminal']),
             RequestFields::EMAIL         => $input['payment']['email'],
             RequestFields::MOBILE_NUMBER => $this->getFormattedContact($input['payment']['contact']),
             RequestFields::STATUS        => $content[ResponseFields::STATUS],
@@ -673,6 +673,18 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
+    protected function getMerchantId1($terminal)
+    {
+        $id = $this->getDealerId($terminal);
+
+        if (empty($id) === false)
+        {
+            return $id;
+        }
+
+        return $this->getMerchantId($terminal);
+    }
+
     protected function getMerchantId($terminal)
     {
         if ($this->mode === Mode::TEST)
@@ -827,7 +839,7 @@ class Gateway extends Base\Gateway
     {
         $content = [
             RequestFields::ACCESS_TOKEN   => '',
-            RequestFields::MERCHANT_ID    => $this->getMerchantId($input['terminal']),
+            RequestFields::MERCHANT_ID    => $this->getMerchantId1($input['terminal']),
         ];
 
         $this->traceGatewayPaymentRequest($content, $input, TraceCode::GATEWAY_CHECK_BALANCE_REQUEST);
@@ -886,7 +898,7 @@ class Gateway extends Base\Gateway
     {
         $content = array(
             RequestFields::EMAIL         => $input['payment']['email'],
-            RequestFields::MERCHANT_ID   => $this->getMerchantId($input['terminal']),
+            RequestFields::MERCHANT_ID   => $this->getMerchantId1($input['terminal']),
             RequestFields::MOBILE_NUMBER => $this->getFormattedContact($input['payment']['contact']),
         );
 
@@ -904,7 +916,7 @@ class Gateway extends Base\Gateway
 
         $content = array(
             RequestFields::CHANNEL     => OtpChannel::SMS,
-            RequestFields::MERCHANT_ID => $this->getMerchantId($input['terminal']),
+            RequestFields::MERCHANT_ID => $this->getMerchantId1($input['terminal']),
             RequestFields::OTP_ID      => $wallet['reference1'],
         );
 
@@ -924,7 +936,7 @@ class Gateway extends Base\Gateway
             RequestFields::OTP_ID                  => $wallet['reference1'],
             RequestFields::OTP                     => '',
             RequestFields::USER_MACHINE_IDENTIFIER => $input['payment']['id'],
-            RequestFields::MERCHANT_ID             => $this->getMerchantId($input['terminal']),
+            RequestFields::MERCHANT_ID             => $this->getMerchantId1($input['terminal']),
         );
 
         $this->traceGatewayPaymentRequest($content, $input, TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_REQUEST);
@@ -966,7 +978,7 @@ class Gateway extends Base\Gateway
             RequestFields::CALLBACK_URL => $input['callbackUrl'],
             RequestFields::CHANNEL      => self::DEFAULT_TXN_CHANNEL,
             RequestFields::LOGIN_TOKEN  => '',
-            RequestFields::MERCHANT_ID  => $this->getMerchantId($input['terminal']),
+            RequestFields::MERCHANT_ID  => $this->getMerchantId1($input['terminal']),
             RequestFields::METADATA     => $input['payment']['public_id'],
         );
 
@@ -993,7 +1005,7 @@ class Gateway extends Base\Gateway
         );
 
         $content = [
-            RequestFields::MERCHANT_ID            => $this->getMerchantId($input['terminal']),
+            RequestFields::MERCHANT_ID            => $this->getMerchantId1($input['terminal']),
             RequestFields::MERCHANT_TXN_ID        => $input['payment']['public_id'],
             RequestFields::REFUND_AMOUNT          => (string) ($input['refund']['amount'] / 100),
             RequestFields::REFUND_MERCHANT_TXN_ID => $input['refund']['id'],
@@ -1017,7 +1029,7 @@ class Gateway extends Base\Gateway
             WalletEntity::EMAIL               => $input['payment']['email'],
             WalletEntity::RECEIVED            => true,
             WalletEntity::CONTACT             => $this->getFormattedContact($input['payment']['contact']),
-            WalletEntity::GATEWAY_MERCHANT_ID => $this->getMerchantId($input['terminal']),
+            WalletEntity::GATEWAY_MERCHANT_ID => $this->getMerchantId1($input['terminal']),
             WalletEntity::REFUND_ID           => $input['refund']['id'],
             WalletEntity::STATUS_CODE         => $response['status'],
             WalletEntity::GATEWAY_REFUND_ID   => $response['refundTxnId'],
@@ -1157,7 +1169,7 @@ class Gateway extends Base\Gateway
     protected function getWalletContentFromVerify($payment, array $content)
     {
         $contentToSave = array(
-            RequestFields::MERCHANT_ID   => $this->getMerchantId($this->input['terminal']),
+            RequestFields::MERCHANT_ID   => $this->getMerchantId1($this->input['terminal']),
             RequestFields::EMAIL         => $this->input['payment']['email'],
             RequestFields::MOBILE_NUMBER => $this->getFormattedContact($this->input['payment']['contact']),
             RequestFields::STATUS        => Status::TRANSACTION_SUCCESS,
@@ -1176,7 +1188,7 @@ class Gateway extends Base\Gateway
     protected function getRefundVerifyRequestArray(array $input)
     {
         $content = [
-            RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
+            RequestFields::MERCHANT_ID     => $this->getMerchantId1($input['terminal']),
             RequestFields::MERCHANT_TXN_ID => $input['refund']['id'],
             RequestFields::TXN_TYPE        => TxnType::CANCELLATION_REFUND,
         ];
@@ -1202,7 +1214,7 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $content = [
-            RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
+            RequestFields::MERCHANT_ID     => $this->getMerchantId1($input['terminal']),
             RequestFields::MERCHANT_TXN_ID => $input['payment']['public_id'],
             RequestFields::TXN_ID          => $wallet['gateway_payment_id'],
             RequestFields::TXN_TYPE        => TxnType::CUSTOMER_PAYMENT,
@@ -1228,7 +1240,7 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::CALLBACK_URL  => $input['callbackUrl'],
             RequestFields::MOBILE_NUMBER => $this->getFormattedContact($input['payment']['contact']),
-            RequestFields::MERCHANT_ID   => $this->getMerchantId($input['terminal']),
+            RequestFields::MERCHANT_ID   => $this->getMerchantId1($input['terminal']),
         ];
 
         $request = $this->getStandardRequestArray($content);
@@ -1297,7 +1309,7 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::AUTH_CODE   => $callback[ResponseFields::AUTH_CODE],
             RequestFields::GRANT_TYPE  => 'AUTHORIZATION_CODE',
-            RequestFields::MERCHANT_ID => $this->getMerchantId($input['terminal']),
+            RequestFields::MERCHANT_ID => $this->getMerchantId1($input['terminal']),
         ];
 
         $content[ResponseFields::CHECKSUM] = $this->getHashOfArray($content);
