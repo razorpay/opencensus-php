@@ -119,7 +119,6 @@ class Service extends Base\Service
         }
 
         // Fetch the admin with the email
-        // $admin = Admin\Entity::where('email', $result->email)->first();
         // TODO: can throw exception
         $admin = $this->api
                       ->admin
@@ -622,10 +621,6 @@ class Service extends Base\Service
         }
         finally
         {
-            $merchant = Merchant\Entity::findorfail($id);
-
-            $this->activateMerchantOnDashboard($merchant);
-
             return [$error, $response->toArray()];
         }
     }
@@ -660,14 +655,6 @@ class Service extends Base\Service
             'business_website' => $merchantDetails['business_website'],
             'ref'              => $merchant['referrer'],
         ];
-    }
-
-    protected function activateMerchantOnDashboard($merchant)
-    {
-        $merchant->activated = 1;
-        $merchant->save();
-
-        return array();
     }
 
     public function generateMerchantHdfcExcel($id)
