@@ -2,11 +2,13 @@
 
 namespace RZP\Gateway\Upi\Sbi;
 
-use RZP\Gateway\Base;
+use RZP\Constants\Mode;
+use RZP\Gateway\Upi\Base;
+use RZP\Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway
 {
-    use Base\AuthorizeFailed;
+    use AuthorizeFailed;
 
     const ACQUIRER = 'sbi';
 
@@ -24,6 +26,18 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        sd('1');
+        sd($this->getMerchantId(), $this->getSecret());
+    }
+
+    protected function getMerchantId()
+    {
+        $merchantId = $this->getLiveMerchantId();
+
+        if ($this->mode === Mode::TEST)
+        {
+            $merchantId = $this->getTestMerchantId();
+        }
+
+        return $merchantId;
     }
 }

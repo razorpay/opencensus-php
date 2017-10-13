@@ -82,6 +82,7 @@ return [
     'mock_wallet_jiomoney'        => env('JIOMONEY_MOCK'),
     'mock_wallet_sbibuddy'        => env('SBIBUDDY_MOCK'),
     'mock_upi_mindgate'           => env('UPI_MINDGATE_MOCK'),
+    'mock_upi_mindgate_sbi'       => env('UPI_MINDGATE_SBI_MOCK'),
     'mock_upi_icici'              => env('UPI_ICICI_MOCK'),
     'mock_upi_npci'               => env('UPI_NPCI_MOCK'),
     'mock_aeps_icici'             => env('AEPS_ICICI_MOCK'),
@@ -218,6 +219,11 @@ return [
     'upi_mindgate' => [
         'test_merchant_id'       => env('UPI_MINDGATE_TEST_MERCHANT_ID'),
         'test_merchant_key'      => env('UPI_MINDGATE_TEST_MERCHANT_KEY'),
+    ],
+
+    'upi_mindgate_sbi' => [
+        'test_merchant_id'       => env('UPI_MINDGATE_SBI_TEST_MERCHANT_ID'),
+        'test_hash_secret'       => env('UPI_MINDGATE_SBI_TEST_HASH_SECRET'),
     ],
 
     'wallet_payzapp' => [
