@@ -71,23 +71,6 @@ class Entity extends Base\Entity
     );
 
     /**
-     * Create sub-merchant accounts
-     * @param  App\Merchant\Entity $aggregator Aggregator Merchant Entity
-     * @param  string          $businessName   Merchant Business Name
-     * @return App\Merchant\Entity Sub Merchant Entity
-     */
-    public static function createFromMerchant(Entity $aggregator, $businessName, $email, $isLinkedAccount = false)
-    {
-        $merchant = new static();
-
-        $merchant->id       = Uuid::generate();
-        $merchant->name     = $businessName;
-        $merchant->email    = $email;
-
-        return $merchant;
-    }
-
-    /**
      * Take care while calling this method
      *
      * @param array $input array with new email address

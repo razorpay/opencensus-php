@@ -345,16 +345,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function postTagMerchant($merchantId)
-    {
-        $input = Input::all();
-
-        list($error, $response) = (new Admin\Service)->tagMerchant($merchantId, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-
-    }
-
     public function addEntityFeatures($entityType, $entityId)
     {
         $input = Input::all();

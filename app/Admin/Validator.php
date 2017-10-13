@@ -26,10 +26,6 @@ class Validator extends Base\Validator
         'file_name'     =>  'sometimes|max:100|required_with:file',
     ];
 
-    protected static $addTagsRules = [
-        'tags'      =>      'required|max:255',
-    ];
-
     protected static $merchantStatsRules = [
         'sort'      =>  'sometimes|in:total_amount,total_count'
     ];

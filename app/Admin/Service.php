@@ -880,41 +880,6 @@ class Service extends Base\Service
         return $request->send();
     }
 
-    public function tagMerchant($merchantId, $input)
-    {
-        $error = (new Admin\Validator)->validateInput('add_tags', $input)->messages();
-
-        if (empty($error))
-        {
-            $merchant = Merchant\Entity::findOrFail($merchantId);
-
-            if (is_array($input['tags']) === false)
-            {
-                $inputTags = explode(',', $input['tags']);
-            }
-            else
-            {
-                $inputTags = $input['tags'];
-            }
-
-            (new Merchant\Service)->addMerchantTagsOnAPI($merchantId, $inputTags);
-
-            $output = [];
-
-            $output['tags'] = (new Merchant\Service)->getMerchantTags($merchantId);
-
-            $this->logActionToSlack($merchant, Actions::TAGGED, ['tags' => $input['tags']]);
-
-            $output = array_merge($merchant->toArray(), $output);
-
-            return [null, $output];
-        }
-        else
-        {
-            return [$error, null];
-        }
-    }
-
     public function addEntityFeatures($entityType, $entityId, $input)
     {
         $error = $response = array();
@@ -956,13 +921,11 @@ class Service extends Base\Service
 
     private function retagMerchant($entityId, $features)
     {
-        $merchant = Merchant\Entity::findOrFail($entityId);
-
         $featureNames = $this->getFeatureNames($features['assigned_features']);
 
-        $merchantTags = (new Merchant\Service)->getMerchantTags($merchant->id);
+        $merchantTags = (new Merchant\Service)->getMerchantTags($entityId);
 
-        (new Merchant\Service)->addMerchantTagsOnAPI($merchant->id, array_merge($featureNames, $merchantTags));
+        (new Merchant\Service)->addMerchantTagsOnAPI($entityId, array_merge($featureNames, $merchantTags));
     }
 
     private function getFeatureNames($features)
