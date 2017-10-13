@@ -12,15 +12,16 @@ export default class Collection {
     return this.fetch();
   }
 
-  constructor({ fetchRoute, fetchFn, filters, items, urlParams }) {
-    this.fetchRoute = fetchRoute;
+  constructor({ data, fetchFn, filters, items }) {
     this.fetchFn = fetchFn;
-    this.urlParams = urlParams;
-
+    this.data = data;
     this.pending = observable.box();
-    this.filters = observable.shallowObject(
-      Object.assign({}, defaultFilters, filters)
-    );
+
+    if (filters !== null) {
+      this.filters = observable.shallowObject(
+        Object.assign({}, defaultFilters, filters)
+      );
+    }
 
     // load initial values
     // fetch if not pre-populated
@@ -31,20 +32,12 @@ export default class Collection {
   }
 
   fetch() {
-    return this.request(
-      'fetch',
-      this.fetchFn({
-        route: this.fetchRoute,
-        queryParams: this.filters,
-        urlParams: this.urlParams,
-      })
-    );
-  }
-
-  request(name, promise) {
     this.pending.set(true);
 
-    return promise
+    return this.fetchFn({
+      data: this.data,
+      queryParams: this.filters,
+    })
       .then(({ data }) => {
         if (!data.success) {
           throw data.errors[0];

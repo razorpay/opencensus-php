@@ -10,8 +10,8 @@ import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 
 import MerchantList from 'admin/merchants/MerchantList';
 import Stats from 'admin/stats';
-import PlanList from 'admin/plans/list';
-import GatewayRulesList from 'admin/gatewayrules/list';
+import PlanList from 'admin/plans/List';
+import GatewayRulesList from 'admin/gatewayrules/List';
 import EntityList from 'admin/entities/list';
 
 import MerchantEntity from 'admin/merchants/entity/MerchantEntity';

@@ -15,7 +15,12 @@ function compileCss(o) {
   }
   return gulp
     .src('web/css/*.styl')
-    .pipe(stylus())
+    .pipe(
+      stylus({
+        include: [__dirname + '/node_modules'],
+        'include css': true,
+      })
+    )
     .on('error', handleError)
     .pipe(gulp.dest('public/dist'));
 }

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { deepClone } from 'util/index';
 
 export function adminFetch(params) {
   return axios.get('/admin/generic', { params: parseParams(params) });
@@ -8,25 +9,17 @@ export function adminPost(params) {
   return axios.post('/admin/generic', parseParams(params));
 }
 
-function parseParams({ route, queryParams, urlParams, body, merchantId }) {
-  let params = {
-    route_name: route,
-  };
-  if (body) {
-    params.body = body;
-  }
-  if (merchantId) {
-    params.merchant_id = merchantId;
-  }
+function parseParams({ data, queryParams }) {
+  let params = deepClone(data);
+
   if (queryParams) {
     params.query_params = JSON.stringify(queryParams);
   }
-  if (urlParams) {
+
+  if (data.url_params) {
     let curlyParams = {};
-    for (let i in urlParams) {
-      if (urlParams.hasOwnProperty(i)) {
-        curlyParams[`{${i}}`] = urlParams[i];
-      }
+    for (let i in data.url_params) {
+      curlyParams[`{${i}}`] = data.url_params[i];
     }
     params.url_params = JSON.stringify(curlyParams);
   }

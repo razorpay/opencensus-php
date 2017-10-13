@@ -4,11 +4,13 @@ import Table from 'ui/Table';
 import Field from 'ui/Field';
 import Collection from 'util/collection';
 import { adminFetch } from 'util/fetch';
-import { openPricingEntity } from './entity';
+import { openPricingEntity } from './Entity';
 
 export default class PlanList extends Component {
   collection = new Collection({
-    fetchRoute: 'pricing_get_merchant_plans',
+    data: {
+      route_name: 'pricing_get_merchant_plans',
+    },
     fetchFn: adminFetch,
   });
 

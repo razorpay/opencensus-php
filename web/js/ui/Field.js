@@ -54,3 +54,12 @@ export function SelectField({ label, children, ...props }) {
     </div>
   );
 }
+
+export function SelectMode() {
+  return (
+    <SelectField name="mode" label="Mode">
+      <option value="test">Test</option>
+      <option value="live">Live</option>
+    </SelectField>
+  );
+}
