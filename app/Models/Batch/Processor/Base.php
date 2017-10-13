@@ -108,7 +108,7 @@ class Base extends BaseModel\Core
     * - Saves batch entity
     * @param  array  $input batch creation params
     */
-    public function createInputFileAndUpdateBatch(array $input)
+    public function storeInputFileAndCreateBatch(array $input)
     {
         $this->repo->transaction(function () use ($input)
         {
@@ -141,6 +141,21 @@ class Base extends BaseModel\Core
 
         $this->batch->setAmount($totalAmount);
         $this->batch->setTotalCount($totalCount);
+    }
+
+    /**
+     * Checks if the batch can be processed. If yes sets the processing flag to 1
+     * and calls the main process method.
+     */
+    public function validateAndProcess()
+    {
+        $this->batch->getValidator()->validateIfProcessable();
+
+        $this->batch->setProcessing(1);
+
+        $this->repo->saveOrFail($this->batch);
+
+        $this->process();
     }
 
     public function process()

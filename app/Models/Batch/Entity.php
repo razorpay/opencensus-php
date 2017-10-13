@@ -72,7 +72,6 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::TYPE,
         self::STATUS,
-        self::PROCESSING,
         self::TOTAL_COUNT,
         self::SUCCESS_COUNT,
         self::FAILURE_COUNT,

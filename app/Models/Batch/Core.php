@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
 use RZP\Jobs\DispatchRouter;
@@ -14,16 +15,27 @@ class Core extends Base\Core
 {
     use FileHandlerTrait;
 
+    /**
+     * This method creates a batch for a specific merchant. The use case is when
+     * we want to internally create a batch for a merchant from an internal auth route
+     * when the merchant is not the one derived from auth.`
+     *
+     * @param  array           $input    Batch creation params
+     * @param  Merchant\Entity $merchant merchant for whom we want to create the batch
+     * @return Batch\Entity              batch entity created
+     */
+    public function createForMerchant(array $input, Merchant\Entity $merchant): Entity
+    {
+        $this->merchant = $merchant;
+
+        $batch = $this->create($input);
+
+        return $batch;
+    }
+
     public function create(array $input): Entity
     {
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
-
-        if (isset($input[Entity::MERCHANT_ID]) === true)
-        {
-            $this->merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
-
-            unset($input[Entity::MERCHANT_ID]);
-        }
 
         $batch = (new Entity)->build($input);
 
@@ -33,7 +45,7 @@ class Core extends Base\Core
 
         // We upload the input file to S3 create a filestore entity for the input file via UFH
         // We then update the batch entity with file metadata if available
-        $processor->createInputFileAndUpdateBatch($input);
+        $processor->storeInputFileAndCreateBatch($input);
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
 
@@ -47,6 +59,8 @@ class Core extends Base\Core
      *
      * - Only sets the status to PROCESSING so it gets picked by
      *   the next cron run.
+     * - TBD if this behavior can remain as is or can be changed, so that
+     *   we can use queue for this also.
      *
      * @param Entity $batch
      */
@@ -141,7 +155,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Processes individual batch via API
+     * Retry individual batch by internal auth API call
      *
      * @param Entity $batch
      *
@@ -149,8 +163,6 @@ class Core extends Base\Core
      */
     public function processBatchViaApi(Entity $batch)
     {
-        $batch->getValidator()->validateIfProcessable();
-
         return $this->processBatch($batch);
     }
 
@@ -168,16 +180,12 @@ class Core extends Base\Core
      */
     public function processBatch(Entity $batch): Entity
     {
-        $batch->setProcessing(1);
-
-        $this->repo->saveOrFail($batch);
-
         // TBD - Need to discuss once if all batch types can be retried.
         $job = new BatchJob($this->mode, $batch->getId());
 
         if (Type::isQueueGroup($batch->getType()) === false)
         {
-            Processor\Base::get($batch)->process();
+            Processor\Base::get($batch)->validateAndProcess();
         }
         else
         {

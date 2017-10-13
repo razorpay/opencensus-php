@@ -50,12 +50,6 @@ class Batch extends Job implements ShouldQueue
         {
             $batch = $this->repoManager->batch->findOrFail($this->id);
 
-            $batch->getValidator()->validateIfProcessable();
-
-            $batch->setProcessing(1);
-
-            $this->repoManager->saveOrFail($batch);
-
             $timeStarted = microtime(true);
 
             $this->trace->debug(
@@ -66,7 +60,7 @@ class Batch extends Job implements ShouldQueue
 
             BatchModel\Processor\Base::get($batch)
                                      ->setParams($this->params)
-                                     ->process();
+                                     ->validateAndProcess();
 
             $timeTaken = microtime(true) - $timeStarted;
 

@@ -42,7 +42,7 @@ class Reconciliation extends Base
      *
      * @param  array  $input batch creation params
      */
-    public function createInputFileAndUpdateBatch(array $input)
+    public function storeInputFileAndCreateBatch(array $input)
     {
         $this->repo->transaction(function () use ($input)
         {
