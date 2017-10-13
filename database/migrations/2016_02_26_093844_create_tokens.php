@@ -51,7 +51,7 @@ class CreateTokens extends Migration {
             $table->string(Token::WALLET, 15)
                   ->nullable();
 
-            $table->string(Token::ACCOUNT_NUMBER)
+            $table->string(Token::ACCOUNT_NUMBER, 40)
                   ->nullable();
 
             $table->text(Token::GATEWAY_TOKEN)

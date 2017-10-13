@@ -1681,14 +1681,6 @@ class Entity extends Base\PublicEntity
         return $token;
     }
 
-    public function isFileBasedEmandatePayment(): bool
-    {
-        $bank = $this->getAttribute(self::BANK);
-
-        return (($this->isEmandatePayment() === true) and
-                (Gateway::isFileBasedEMandatePaymentBank($bank) === true));
-    }
-
     public function getReferenceForGatewayToken()
     {
         if ($this->hasSubscription() === true)

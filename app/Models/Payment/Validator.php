@@ -61,7 +61,7 @@ class Validator extends Base\Validator
         '_'                       => 'sometimes|array',
         'test_success'            => 'sometimes|boolean',
         'subscription_card_change'=> 'sometimes|boolean',
-        'account_number'          => 'sometimes_if:recurring,1,method,netbanking|string|nullable',
+        'account_number'          => 'sometimes_if:recurring,1,method,netbanking|alpha_num|between:5,20|nullable',
     ];
 
     protected static $editRules = [

@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TOKEN   => 'sometimes|string',
         Entity::GATEWAY_TOKEN2  => 'sometimes|string',
         Entity::EXPIRED_AT      => 'sometimes|integer',
-        Entity::ACCOUNT_NUMBER  => 'sometimes|string|nullable',
+        Entity::ACCOUNT_NUMBER  => 'sometimes|alpha_num|between:5,20|nullable',
     );
 
     protected static $editRules = array(

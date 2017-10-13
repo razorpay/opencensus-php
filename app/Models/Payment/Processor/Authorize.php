@@ -1814,14 +1814,12 @@ trait Authorize
             $savedLocalCard = $payment->card;
 
             // save local saved card for local customer
-            $token = $this->savePaymentMethod($customer, $payment, $savedLocalCard->getId());
+            $token = $this->savePaymentMethod($customer, $payment, $savedLocalCard->getId(), $input);
         }
         else if ($payment->isNetbanking() === true)
         {
-            $accountNumber = $input['account_number'] ?? null;
-
             // save netbanking bank locally for local customer
-            $token = $this->savePaymentMethod($customer, $payment, $accountNumber);
+            $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
 
         if ($token !== null)
@@ -1853,14 +1851,12 @@ trait Authorize
             $this->repo->saveOrFail($payment->card);
 
             // save global saved card for global customer
-            $token = $this->savePaymentMethod($customer, $payment, $savedGlobalCard->getId());
+            $token = $this->savePaymentMethod($customer, $payment, $savedGlobalCard->getId(), $input);
         }
         else if ($payment->isNetbanking() === true)
         {
-            $accountNumber = $input['account_number'] ?? null;
-
             // save netbanking bank token globally for global customer
-            $token = $this->savePaymentMethod($customer, $payment, $accountNumber);
+            $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
 
         if ($token !== null)
@@ -1870,7 +1866,7 @@ trait Authorize
     }
 
     protected function savePaymentMethod(
-        Customer\Entity $customer, Payment\Entity $payment, $instrumentId = null): Token\Entity
+        Customer\Entity $customer, Payment\Entity $payment, $savedCardId = null, array $input = []): Token\Entity
     {
         $this->trace->info(
             TraceCode::PAYMENT_SAVE_METHOD,
@@ -1880,7 +1876,8 @@ trait Authorize
                 'merchant_id'       => $payment->merchant->getId(),
                 'customer_id'       => $customer->getId(),
                 'local'             => $customer->isLocal(),
-                'instrument_id'     => $instrumentId,
+                'card_id'           => $savedCardId,
+                'account_number'    => $input[Token\Entity::ACCOUNT_NUMBER] ?? null,
             ]);
 
         $saveMethodInput = [
@@ -1891,7 +1888,7 @@ trait Authorize
         {
             $saveMethodInput[Token\Entity::METHOD] = Payment\Method::CARD;
 
-            $saveMethodInput[Token\Entity::CARD_ID] = $instrumentId;
+            $saveMethodInput[Token\Entity::CARD_ID] = $savedCardId;
         }
         else if ($payment->isNetbanking() === true)
         {
@@ -1900,7 +1897,7 @@ trait Authorize
             // TODO: We need to get this from user input - hard coding for now
             $saveMethodInput[Token\Entity::MAX_AMOUNT] = Token\Entity::DEFAULT_MAX_AMOUNT;
 
-            $saveMethodInput[Token\Entity::ACCOUNT_NUMBER] = $instrumentId;
+            $saveMethodInput[Token\Entity::ACCOUNT_NUMBER] = $input[Token\Entity::ACCOUNT_NUMBER] ?? null;
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
@@ -2239,8 +2236,9 @@ trait Authorize
      * Gateway Tokens purpose was to handle multiple terminals
      * for same token only.
      *
-     * @param Token\Entity $token
-     * @param array        $gatewayData
+     * @param Token\Entity      $token
+     * @param array             $gatewayData
+     * @param Payment\Entity    $payment
      */
     protected function updateTokenOnAuthorizedForNetbankingRecurring(
         Token\Entity $token, array $gatewayData, Payment\Entity $payment)
@@ -2263,17 +2261,6 @@ trait Authorize
                     'token'        => $token->toArray(),
                     'gateway_data' => $gatewayData
                 ]);
-
-            return;
-        }
-
-        // Set the token recurring_status to initiated for Netbanking file-based emandate registration banks
-        if (($token->getMethod() === Payment\Method::NETBANKING) and
-            ($token->isRecurring() === false) and
-            (Payment\Gateway::isFileBasedEMandateRegsitrationBank($payment->getBank()) === true) and
-            ($payment->getRecurringType() === Payment\RecurringType::INITIAL))
-        {
-            $token->setRecurringStatus(Token\RecurringStatus::INITIATED);
 
             return;
         }

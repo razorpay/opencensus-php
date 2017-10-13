@@ -135,6 +135,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CARD,
+        // TODO: Remove this after deciding on how to expose
         self::RECURRING_DETAILS
     ];
 
@@ -339,11 +340,6 @@ class Entity extends Base\PublicEntity
      */
     public function getRecurringDetailsAttribute()
     {
-        if ($this->getAttribute(self::METHOD) === Payment\Method::CARD)
-        {
-            return [];
-        }
-
         return [
             self::RECURRING_STATUS_SHORT            => $this->getRecurringStatus(),
             self::RECURRING_FAILURE_REASON_SHORT    => $this->getRecurringFailureReason()
