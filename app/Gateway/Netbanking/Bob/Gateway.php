@@ -55,6 +55,8 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($content[ResponseFields::PAYMENT_ID], $input['payment']['id']);
 
+        $this->assertAmount($this->formatAmount($input['payment']['amount']), $content[ResponseFields::AMOUNT]);
+
         $this->saveCallbackResponse($content, $input);
 
         $this->checkCallbackStatus($content);
