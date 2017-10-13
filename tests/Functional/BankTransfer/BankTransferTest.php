@@ -842,6 +842,26 @@ class BankTransferTest extends TestCase
         $this->assertEquals('initiated', $attempt['status']);
     }
 
+    public function testBankTransferFloatingPointImprecision()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['payee_account'] = $accountNumber;
+
+        $request['content']['payee_ifsc'] = $ifsc;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(57930, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(57930, $payment['amount']);
+    }
+
     protected function createVirtualAccount()
     {
         $this->ba->privateAuth();

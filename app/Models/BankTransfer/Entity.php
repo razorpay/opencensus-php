@@ -212,7 +212,17 @@ class Entity extends Base\PublicEntity
 
     public function modifyAmount(array & $input)
     {
-        $input[self::AMOUNT] = (int) ($input[self::AMOUNT] * 100);
+        //
+        // If you're wondering why this is here, run "(int) (579.3 * 100)" in tinker
+        //
+        // The value of (579.3 * 100) is actually stored as 57929.999... and casting
+        // that to an integer just dumps the decimal part and ruins everything.
+        //
+        // testBankTransferFloatingPointImprecision exists to check against this.
+        //
+
+        $input[self::AMOUNT] = (int) number_format(($input[self::AMOUNT] * 100), 0, '.', '');
+
     }
 
     // -------------------------- Getters --------------------------------------
