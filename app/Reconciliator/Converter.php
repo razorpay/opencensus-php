@@ -5,12 +5,12 @@ namespace RZP\Reconciliator;
 use Str;
 use Excel;
 use Config;
-use Box\Spout\Common\Type;
-use Box\Spout\Reader\ReaderFactory;
-
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use Box\Spout\Common\Type;
 use RZP\Reconciliator\Base;
+use RZP\Models\FileStore\Format;
+use Box\Spout\Reader\ReaderFactory;
 
 class Converter
 {
@@ -59,6 +59,56 @@ class Converter
         }
 
         return $sheets;
+    }
+
+    /**
+     * Convers excel sheet to in memory array, by using spout or maatwebsite excel parser
+     * depending on the extension of the excel file
+     *
+     * @param  array  $fileDetails details of the file being processed
+     * @param  array  $sheetNames  sheet names to be considered
+     * @param  int    $startRow
+     */
+    public function convertExcelToArray(array $fileDetails, $sheetNames, int $startRow)
+    {
+        if ($this->shouldUseSpoutLib($fileDetails[FileProcessor::EXTENSION]) === true)
+        {
+            // getting contents using spout library for xlsx
+            $sheetsContents = $this->getRowsFromExcelSheetsSpout($fileDetails, $sheetNames);
+        }
+        else
+        {
+            $sheetsContents = $this->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames, $startRow);
+        }
+
+        $fileContents = [];
+
+        foreach ($sheetsContents as $sheetName => $rows)
+        {
+            if (empty($rows) === true)
+            {
+                // This would happen when the sheet name sent, does not exist
+                continue;
+            }
+
+            $sheetArray = [];
+
+            foreach ($rows as $cellCollection)
+            {
+                if ($this->shouldUseSpoutLib($fileDetails[FileProcessor::EXTENSION]) === true)
+                {
+                    $sheetArray[] = $cellCollection;
+                }
+                else
+                {
+                    $sheetArray[] = $cellCollection->all();
+                }
+            }
+
+            $fileContents[$sheetName] = $sheetArray;
+        }
+
+        return $fileContents;
     }
 
     public function getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames = [], $startRow = 1)
@@ -190,6 +240,7 @@ class Converter
         return $data;
     }
 
+
     /**
      * If this function is being used, ensure that the sheet name is not being
      * used to perform any operations in the core reconciliation flow. Since, this
@@ -276,6 +327,11 @@ class Converter
         }
 
         return $allSheetsContent;
+    }
+
+    protected function shouldUseSpoutLib(string $extension): bool
+    {
+        return ($extension === Format::XLSX);
     }
 
     protected function getRowsFromExcelSheetsWithIndicesSpout($reader)

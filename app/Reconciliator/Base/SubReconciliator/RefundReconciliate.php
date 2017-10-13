@@ -5,6 +5,7 @@ namespace RZP\Reconciliator\Base;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment;
+use RZP\Models\Batch;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
@@ -78,7 +79,34 @@ class RefundReconciliate extends Foundation\SubReconciliate
         return $this->getSummary();
     }
 
-    public function runReconciliate($row)
+    /**
+     * This method is called during batch processing. Instead of throwing an unhandled
+     * exception for a row, we suppress it and only the recon summary is updated
+     * @param array $fileContents
+     * @return array
+     */
+    public function startReconciliationV2($fileContents, Batch\Entity $batch)
+    {
+        $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
+        unset($fileContents[Orchestrator::EXTRA_DETAILS]);
+
+        try
+        {
+            foreach ($fileContents as $row)
+            {
+                $this->repo->transactionOnLiveAndTest(function() use ($row, $extraDetails)
+                {
+                    $this->runReconciliate($row, $extraDetails);
+                });
+            }
+        }
+        finally
+        {
+            $this->updateBatchWithSummary($batch);
+        }
+    }
+
+    public function runReconciliate($row, $extraDetails)
     {
         $rowDetails = $this->getRowDetailsStructured($row);
 

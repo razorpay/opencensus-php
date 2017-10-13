@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\Base;
 
 use App;
 use RZP\Models\Card;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
 use Rzp\Trace\TraceCode;
 use RZP\Models\Card\IIN;
@@ -94,7 +95,35 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         return $this->getSummary();
     }
 
-    public function runReconciliate($row)
+    /**
+     * Runs the same reconciliation process, though here we always update the batch with recon
+     * summary, regardless of any exception thrown during the process.
+     *
+     * @param array          $fileContents      file contents to be processed
+     * @param Batch\Entity   $batch             Batch entity for the current run
+     */
+    public function startReconciliationV2(array $fileContents, Batch\Entity $batch)
+    {
+        $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
+        unset($fileContents[Orchestrator::EXTRA_DETAILS]);
+
+        try
+        {
+            foreach ($fileContents as $row)
+            {
+                $this->repo->transactionOnLiveAndTest(function() use ($row, $extraDetails)
+                {
+                    $this->runReconciliate($row, $extraDetails);
+                });
+            }
+        }
+        finally
+        {
+            $this->updateBatchWithSummary($batch);
+        }
+    }
+
+    public function runReconciliate($row, $extraDetails)
     {
         $rowDetails = $this->getRowDetailsStructured($row);
 

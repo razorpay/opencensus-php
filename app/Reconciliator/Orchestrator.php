@@ -2,16 +2,17 @@
 
 namespace RZP\Reconciliator;
 
-use DirectoryIterator;
-
 use App;
-
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Batch;
+use DirectoryIterator;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\FileStore\Format;
+use RZP\Models\Merchant\Account;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\PublicCollection;
 
 class Orchestrator extends Base\Core
 {
@@ -127,6 +128,12 @@ class Orchestrator extends Base\Core
      */
     const REFUND_ARN = 'refund_arn';
 
+    const BATCH_RECON_GATEWAYS = [
+        self::NETBANKING_RBL,
+        self::JIOMONEY,
+        self::FIRST_DATA
+    ];
+
     /*********************
      * Instance variables
      *********************/
@@ -196,6 +203,13 @@ class Orchestrator extends Base\Core
             return [];
         }
 
+        // In the cases where recon is processed async via batch we return a collection
+        // of batches created in the result, which needs to be serialized.
+        if (is_array($summary) === false)
+        {
+            $summary = $summary->toArrayAdmin();
+        }
+
         return $summary;
     }
 
@@ -253,6 +267,11 @@ class Orchestrator extends Base\Core
         $this->trace->info(
             TraceCode::RECON_FILE_DETAILS,
             $this->allFilesDetails);
+
+        if (in_array($this->gateway, self::BATCH_RECON_GATEWAYS, true) === true)
+        {
+            return $this->orchestrateV2();
+        }
 
         return $this->orchestrate();
     }
@@ -388,11 +407,12 @@ class Orchestrator extends Base\Core
                 ]
             );
 
-            $skipFile = $this->checkFileSkip($fileDetails);
+            $skipFile = $this->shouldSkipFile($fileDetails);
 
             if ($skipFile === true)
             {
                 $this->handleFileSkip($file, $fileDetails);
+
                 continue;
             }
 
@@ -443,7 +463,83 @@ class Orchestrator extends Base\Core
         return $this->gatewayReconciliator->startReconciliation($this->allFilesContents);
     }
 
-    protected function checkFileSkip($fileDetails)
+    protected function orchestrateV2()
+    {
+        $batches = new PublicCollection;
+
+        foreach ($this->allFilesDetails as $file => $fileDetails)
+        {
+            $this->trace->info(
+                TraceCode::RECON_FILE_DETAILS,
+                [
+                    'message'      => 'File details of the file being orchestrated.',
+                    'file_details' => $fileDetails
+                ]
+            );
+
+            $skipFile = $this->shouldSkipFile($fileDetails);
+
+            if ($skipFile === true)
+            {
+                $this->handleFileSkip($file, $fileDetails);
+
+                continue;
+            }
+
+            try
+            {
+                // Creates batch with relevant params and dispatches for processing via queue
+                $batch = $this->createBatchAndDispatchForProcessing($fileDetails);
+
+                $batches->push($batch);
+            }
+            catch (\Exception $ex)
+            {
+                $this->handleBatchCreationError($ex, $file, $fileDetails);
+
+                continue;
+            }
+
+            //
+            // Delete the file. We have all the data in $allFilesContents.
+            // Ensure that you don't delete the directory by mistake.
+            // In case of zip files, that's fine. But otherwise, it'll delete
+            // off the settlement folder only.
+            //
+            $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
+        }
+
+        if ($batches->isEmpty() === true)
+        {
+            throw new Exception\ReconciliationException(
+                'No batches created for recon',
+                [
+                    'all_files_details' => $this->allFilesDetails,
+                ]);
+        }
+
+        return $batches;
+    }
+
+    protected function handleBatchCreationError(\Exception $ex, int $file, array $fileDetails)
+    {
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'   => TraceCode::RECON_ERROR_CREATING_BATCH,
+                'message'      => 'Skipping file because not able to convert file content to array. -> ' .
+                                    $ex->getMessage(),
+                'file_details' => $fileDetails,
+                'gateway'      => $this->gateway,
+            ]);
+
+        $this->trace->traceException($ex,
+                Trace::ERROR,
+                TraceCode::RECON_ERROR_CREATING_BATCH);
+
+        $this->handleFileSkip($file, $fileDetails);
+    }
+
+    protected function shouldSkipFile($fileDetails)
     {
         // Checks if this particular file needs to be excluded for the gateway
         $inExclude = $this->gatewayReconciliator->inExcludeList($fileDetails);
@@ -490,7 +586,28 @@ class Orchestrator extends Base\Core
     }
 
     /**
-     * Validates and Gets the required details from the input, structured.
+     * Creates batch and saves it to DB. Also uploads recon file to S3
+     *
+     * @param  array  $fileDetails Recon file details
+     * @return Batch\Entity        batch entity created
+     */
+    protected function createBatchAndDispatchForProcessing(array $fileDetails): Batch\Entity
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic(Account::SHARED_ACCOUNT);
+
+        $params = [
+            Batch\Entity::TYPE        => Batch\Type::RECONCILIATION,
+            Batch\Entity::GATEWAY     => $this->gateway,
+            Batch\Entity::FILE        => $fileDetails
+        ];
+
+        $batch = (new Batch\Core)->createForMerchant($params, $merchant);
+
+        return $batch;
+    }
+
+    /**
+     * Gets the required details from the input, structured.
      * This includes the gateway for which the reconciliation
      * needs to be done and the number of attachments. This is an
      * optional parameter.

@@ -30,14 +30,14 @@ if (!function_exists('getallheaders'))
 
 if (! function_exists('array_merge_intersect'))
 {
-	function array_merge_intersect(array &$array1, $array2, $array3)
-	{
-		$intersect = array_intersect($array2, $array3);
+    function array_merge_intersect(array &$array1, $array2, $array3)
+    {
+        $intersect = array_intersect($array2, $array3);
 
-   		$array1 = array_merge($array1, $intersect);
+        $array1 = array_merge($array1, $intersect);
 
-   		return $array1;
-	}
+        return $array1;
+    }
 }
 
 if (! function_exists('array_assoc_flatten'))
@@ -392,4 +392,23 @@ if (! function_exists('encode_currency'))
     {
         return str_replace('₹', '&#8377;', $str);
     }
+}
+
+/**
+* @param $needle
+* @param array $haystack An associative array with array values.
+*                        ['a' => ['b', 'c'], 'd' => ['e', 'f']]
+* @return int|string|null
+*/
+function get_key_from_subarray_match($needle, array $haystack)
+{
+    foreach ($haystack as $key => $subArray)
+    {
+        if (in_array($needle, $subArray, true) === true)
+        {
+            return $key;
+        }
+    }
+
+    return null;
 }

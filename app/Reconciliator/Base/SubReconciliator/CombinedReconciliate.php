@@ -2,11 +2,12 @@
 
 namespace RZP\Reconciliator\Base;
 
+use App;
+use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Exception\ReconciliationException;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Messenger;
-use App;
 
 class CombinedReconciliate extends Foundation\SubReconciliate
 {
@@ -16,6 +17,8 @@ class CombinedReconciliate extends Foundation\SubReconciliate
 
     protected $app;
     protected $repo;
+
+    protected $subReconciliatorObjects = [];
 
     public function __construct()
     {
@@ -92,6 +95,112 @@ class CombinedReconciliate extends Foundation\SubReconciliate
         return [
             'message' => 'All payments and refunds have been reconciled successfully!'
         ];
+    }
+
+    /**
+     * This is the start of reconciliation for a combined report.
+     * Ones which have both payments and refunds in the same file.
+     * Here, we get the reconciliation type for each row, instead of for
+     * each file as being done in payment and refund reconciliations.
+     * We run the respective reconciliation function for payments and refunds
+     * from the gateway's sub reconciliator classes itself. We reuse the same
+     * subreconciliate objects and  at the end of the reconciliation, we update the
+     * summary count to the batch
+     *
+     * @param array         $fileContents       input file contents
+     * @param Batch\Entity  $batch              batch entity for reconciliation
+     */
+    public function startReconciliationV2(array $fileContents, Batch\Entity $batch)
+    {
+        $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
+        unset($fileContents[Orchestrator::EXTRA_DETAILS]);
+
+        try
+        {
+            foreach ($fileContents as $row)
+            {
+                $entityType = $this->getReconciliationTypeForRow($row);
+
+                if ($entityType === self::NA)
+                {
+                    // This row probably doesn't have a payment and hence is not applicable for
+                    // reconciliation.
+                    continue;
+                }
+
+                if ($entityType === null)
+                {
+                    $message = 'Did not get the reconciliation type for the row in combined reconciliation.';
+
+                    $this->messenger->raiseReconAlert(
+                        [
+                            'trace_code'    => TraceCode::RECON_PARSE_ERROR,
+                            'message'       => $message,
+                            'row_details'   => $row,
+                            'extra_details' => $extraDetails,
+                            'gateway'       => get_called_class()
+                        ]);
+
+                    // TODO: Removed the eexception thrown here, instead continuing with processing
+                    // the remaining rows in the file.
+                    continue;
+                }
+
+                $subReconciliatorObject = $this->getSubReconciliatorObject($entityType);
+
+                $this->repo->transactionOnLiveAndTest(function() use ($subReconciliatorObject, $row, $extraDetails)
+                {
+                    $subReconciliatorObject->runReconciliate($row, $extraDetails);
+                });
+            }
+        }
+        finally
+        {
+            $this->updateCombinedSummaryCount();
+
+            $this->updateBatchWithSummary($batch);
+        }
+    }
+
+    /**
+     * For the given reconciliation request for the gateway, we maintain a map of
+     * the subreconciliator objects created for a given type so that they can be reused
+     *
+     * @param  string $entityType Recon entity type
+     */
+    protected function getSubReconciliatorObject(string $entityType)
+    {
+        if (isset($this->subReconciliatorObjects[$entityType]) === true)
+        {
+            return $this->subReconciliatorObjects[$entityType];
+        }
+
+        $subReconciliatorClassName = $this->getSubReconciliatorClassName($entityType);
+
+        $subReconciliatorObject = new $subReconciliatorClassName;
+
+        $this->subReconciliatorObjects[$entityType] = $subReconciliatorObject;
+
+        return $subReconciliatorObject;
+    }
+
+    /**
+     * Post reconciliation, we update the summary count of the combined reconciliator
+     * object with that of the inividual payment / refund subreconciliator
+     *
+     */
+    protected function updateCombinedSummaryCount()
+    {
+        s(count($this->subReconciliatorObjects));
+        foreach ($this->subReconciliatorObjects as $subReconciliatorObject)
+        {
+            s($subReconciliatorObject->getTotal(), $subReconciliatorObject->getSuccesses(), $subReconciliatorObject->getFailures());
+            $this->total = array_merge($this->total, $subReconciliatorObject->getTotal());
+
+            $this->successes = array_merge($this->successes, $subReconciliatorObject->getSuccesses());
+
+            $this->failures = array_merge($this->failures, $subReconciliatorObject->getFailures());
+        }
     }
 
     protected function getSubReconciliatorClassName($reconciliationType)

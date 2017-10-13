@@ -81,6 +81,14 @@ class FileProcessor
     protected $messenger;
     protected $trace;
 
+    public static function getFileType(string $mime)
+    {
+        $fileType = get_key_from_subarray_match(
+            $mime, FileProcessor::FILE_TYPES_MAPPINGS);
+
+        return $fileType;
+    }
+
     public function __construct()
     {
         $app = App::getFacadeRoot();

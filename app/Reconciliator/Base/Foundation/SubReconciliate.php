@@ -3,7 +3,9 @@
 namespace RZP\Reconciliator\Base\Foundation;
 
 use App;
+
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
@@ -20,7 +22,7 @@ class SubReconciliate
      *
      * @var $total
      */
-    protected $total;
+    protected $total = [];
 
     /**
      * All the payments/refunds which were successfully reconciled.
@@ -29,7 +31,7 @@ class SubReconciliate
      *
      * @var $successes
      */
-    protected $successes;
+    protected $successes = [];
 
     /**
      * All the payments/refunds which could not be reconciled.
@@ -38,7 +40,22 @@ class SubReconciliate
      *
      * @var $failures
      */
-    protected $failures;
+    protected $failures = [];
+
+    public function getTotal()
+    {
+        return $this->total;
+    }
+
+    public function getSuccesses()
+    {
+        return $this->successes;
+    }
+
+    public function getFailures()
+    {
+        return $this->failures;
+    }
 
     /**
      * Contains details for files, email or manual details
@@ -173,5 +190,14 @@ class SubReconciliate
     public function setExtraDetails(array $extraDetails)
     {
         $this->extraDetails = $extraDetails;
+    }
+
+    protected function updateBatchWithSummary(Batch\Entity $batch)
+    {
+        $batch->setTotalCount(count($this->total));
+
+        $batch->setSuccessCount(count($this->successes));
+
+        $batch->setFailureCount(count($this->failures));
     }
 }

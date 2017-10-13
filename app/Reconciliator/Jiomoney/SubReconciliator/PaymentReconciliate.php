@@ -99,7 +99,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     ->findSuccessfulPaymentsByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
     }
 
-    protected function forceAuthorizeFailed($row)
+    protected function forceAuthorizeFailed(array $row)
     {
         $paymentId = $this->payment->getPublicId();
 
