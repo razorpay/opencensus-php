@@ -1494,6 +1494,8 @@ class Service extends Base\Service
 
         $this->attachSubMerchantOwner($subMerchantUser['id'], $subMerchant);
 
+        (new User\Service)->sendConfirmationMail($subMerchantUser['id']);
+
         return $subMerchantUser;
     }
 

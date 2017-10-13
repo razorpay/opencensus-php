@@ -210,7 +210,7 @@ class Service extends Base\Service
      *
      * @return array
      */
-    private function sendConfirmationMail($userId)
+    public function sendConfirmationMail($userId)
     {
         $user = $this->repo->user->findOrFailPublic($userId);
 
