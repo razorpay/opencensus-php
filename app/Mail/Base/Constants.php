@@ -37,7 +37,7 @@ class Constants
         self::EMI           => 'emifiles@razorpay.com',
         self::ADMIN         => 'admin@razorpay.com',
         self::ACTIVATION    => 'activationsteam@razorpay.com',
-        self::DISPUTES      => 'alerts@razorpay.com',           // TODO : To be verified (waiting on pooja)
+        self::DISPUTES      => 'disputes@razorpay.com',
     ];
 
     const HEADERS = [
@@ -49,6 +49,6 @@ class Constants
         self::CARE       => 'Team Razorpay',
         self::ALERTS     => 'Razorpay Webhook Support',
         self::ACTIVATION => 'Razorpay Activations Team',
-        self::DISPUTES   => 'Razorpay Risk Team',               // TODO : To be verified (waiting on pooja)
+        self::DISPUTES   => 'Razorpay Risk Team',
     ];
 }
