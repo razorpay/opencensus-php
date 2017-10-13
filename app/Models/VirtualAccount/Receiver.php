@@ -22,7 +22,7 @@ class Receiver
 
     const ROOT_LENGTH               = 4;
     // Handle length can be 3 also
-    // const HANDLE_LENGTH             = 4;
+    const STANDARD_HANDLE_LENGTH    = 4;
     const DESCRIPTOR_LENGTH         = 9;
     const ACCOUNT_NUMBER_LENGTH     = 17;
 
@@ -201,9 +201,15 @@ class Receiver
     {
         $root = Provider::ROOT[$provider]['standard'];
 
-        if ($this->merchant->getHandle() === null)
+        $handle = $this->merchant->getHandle();
+
+        if ($handle === null)
         {
             $root = Provider::ROOT[$provider]['default'];
+        }
+        else if (strlen($handle) !== self::STANDARD_HANDLE_LENGTH)
+        {
+            $root = Provider::ROOT[$provider]['special'];
         }
 
         return $root;

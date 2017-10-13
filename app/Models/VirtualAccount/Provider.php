@@ -41,21 +41,26 @@ class Provider
             // Todo
             'default'  => '',
             'standard' => '',
+            'special'  => '',
             'reserved' => [],
         ],
         self::KOTAK     => [
+            // Used for merchants who have not set handle
             'default'  => 'RAZO',
+            // Used for merchants who have set a 4-char handle
             'standard' => 'RZRP',
+            // Used for merchants who have set a 3-char handle
+            'special'  => 'RAZR',
+            // Used for our own nodal-to-nodal transfers
             'reserved' => [
-                // This is to be used for our own nodal account,
                 // DO NOT REFUND PAYMENTS MADE HERE
-                'RAZR',
                 'RZRN',
             ],
         ],
         self::DASHBOARD       => [
             'default'  => 'RAZO',
             'standard' => 'RZRP',
+            'special'  => 'RAZR',
             'reserved' => [
                 'RZRN',
             ],
