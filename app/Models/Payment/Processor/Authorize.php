@@ -1137,6 +1137,8 @@ trait Authorize
         }
 
         $this->validateInternationalAllowed($payment);
+
+        $this->validateInternationalRecurringPaymentsAllowed($payment);
     }
 
     protected function runFraudChecks(Payment\Entity $payment)
@@ -3514,6 +3516,26 @@ trait Authorize
         }
 
         return $atLeastOneEnabled;
+    }
+
+    protected function validateInternationalRecurringPaymentsAllowed(Payment\Entity $payment)
+    {
+        if (($payment->isRecurring() === true) and
+            ($payment->isInternational() === true))
+        {
+            //
+            //  If feature is enabled, recurring international
+            //  payments are to be disabled.
+            //
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::BLOCK_INTERNATIONAL_RECURRING) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT,
+                    [
+                        'merchant_id' => $payment->merchant->getId(),
+                    ]);
+            }
+        }
     }
 
     protected function validateCardAndCvv(Payment\Entity $payment, array $input)
