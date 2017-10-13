@@ -388,6 +388,7 @@ class AdminFetch
                         'under_review',
                         'won',
                         'lost',
+                        'closed',
                     ],
                 ],
                 'phase' => [
@@ -398,6 +399,7 @@ class AdminFetch
                         'pre_arbitration',
                         'arbitration',
                         'retrieval',
+                        'fraud',
                     ],
                 ],
                 'amount' => [
