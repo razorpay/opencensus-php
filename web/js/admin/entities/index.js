@@ -42,7 +42,7 @@ export default class EntityList extends Component {
   }
 
   render() {
-    const { entities, fields, selectedEntity } = this.props,
+    const { entities, selectedEntity } = this.props,
       filters = entities && entities[selectedEntity];
 
     return (
@@ -141,6 +141,17 @@ export default class EntityList extends Component {
             })}
           </div>
         )}
+        <div className="entity-results">
+          {this.props.collection.items.length > 0 && (
+            <table className="table table-striped">
+              <thead>
+                <tr />
+              </thead>
+              <tbody />
+            </table>
+          )}
+          {this.collection.pending && <span>Progress</span>}
+        </div>
       </div>
     );
   }

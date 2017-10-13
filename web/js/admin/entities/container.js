@@ -8,10 +8,7 @@ const initialState = {
   entities: null,
   fields: null,
   errors: [],
-  collection: {
-    loading: false,
-    items: [],
-  },
+  collection: { pending: false, items: [] },
   selectedEntity: 'payment',
   selectedMode: 'live',
   selectedFrom: 0,
@@ -97,7 +94,7 @@ export default class EntityListContainer extends Component {
     }
 
     this.setState({
-      collection: { loading: true },
+      collection: { pending: true },
     });
 
     return adminFetch({
@@ -115,7 +112,7 @@ export default class EntityListContainer extends Component {
         const { items } = resp.data;
 
         this.setState({
-          collection: { items },
+          collection: { items, filters },
           searchErrors: [],
         });
       })
@@ -123,7 +120,7 @@ export default class EntityListContainer extends Component {
         this.setState({ searchErrors });
       })
       .then(() => {
-        this.setState({ collection: { loading: false } });
+        this.setState({ collection: { pending: false } });
       });
   }
 
@@ -134,6 +131,7 @@ export default class EntityListContainer extends Component {
           <EntityList
             entities={this.state.entities}
             fields={this.state.fields}
+            collection={this.state.collection}
             selectedEntity={this.state.selectedEntity}
             selectedMode={this.state.selectedMode}
             selectedFrom={this.state.selectedFrom}
