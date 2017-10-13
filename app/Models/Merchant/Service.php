@@ -1499,12 +1499,14 @@ class Service extends Base\Service
 
     private function formatUserCreationData($input, $subMerchant)
     {
+        $password = Hash::make($input['password']);
+
         //TODO move the hash function to modifiers of user entity.
         return [
             'name'                  => $subMerchant->getName(),
             'email'                 => $input['email'],
-            'password_confirmation' => Hash::make($input['password_confirmation']),
-            'password'              => Hash::make($input['password']),
+            'password_confirmation' => $password,
+            'password'              => $password,
         ];
     }
 }
