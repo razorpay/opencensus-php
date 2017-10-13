@@ -190,8 +190,6 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
-        $gatewayPayment = $verify->payment;
-
         $verify->status = VerifyResult::STATUS_MATCH;
 
         $this->checkApiSuccess($verify);
@@ -230,7 +228,7 @@ class Gateway extends Base\Gateway
 
         foreach ($pairs as $value)
         {
-            $pair = explode(Constants::VERIFY_KEY_VALUE_SEPARATOR, $value);
+            $pair = explode(Constants::VERIFY_KEY_VALUE_SEPARATOR, $value, 2);
 
             $content[$pair[0]] = $pair[1];
         }
