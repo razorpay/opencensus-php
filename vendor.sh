@@ -1,3 +1,4 @@
+mkdir -p public/dist
 files=$(cat <<-END
   axios           axios/dist/axios.min.js
   React           react/umd/react.production.min.js

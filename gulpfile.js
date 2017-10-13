@@ -30,6 +30,8 @@ function iconFont() {
 }
 
 gulp.task('watch', () => {
+  compileCss();
+  iconFont();
   gulp.watch('web/css/**/*.styl', compileCss);
   gulp.watch('web/icons/*.svg', iconFont);
 });
