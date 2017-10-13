@@ -88,15 +88,6 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function createUserOnApi($userApiData)
-    {
-        $this->setApiCredentials();
-
-        $response = $this->api->user->create($userApiData);
-
-        return $response;
-    }
-
     public function editUserOnApi($userData, $userId)
     {
         $this->setApiCredentials();
@@ -153,69 +144,6 @@ class Service extends Base\Service
         }
 
         return [$error, $response];
-    }
-
-    public function getUserApiData(Entity $user)
-    {
-        $userApiData = $user->toArray();
-
-        $userApiData['password'] = $user->getAuthPassword();
-        $userApiData['password_confirmation'] = $user->getAuthPassword();
-        $userApiData['remember_token'] = $user->getRememberToken();
-        $userApiData['confirm_token'] = $user->getConfirmToken();
-        $userApiData['name'] = '';
-        unset($userApiData['created_at']);
-        unset($userApiData['updated_at']);
-        unset($userApiData['confirmed']);
-
-        return $userApiData;
-    }
-
-    public function createUserForSubmerchant(array $input)
-    {
-        // id contains the merchant ID
-        // Even though this is ignored by eloquent because we
-        // have a generator, nice idea to drop it
-        unset($input['id']);
-        $user = $this->buildUserEntity($input);
-
-        if ($user->confirm_token !== null)
-        {
-            $user->token = $user->confirm_token;
-            (new UserMailer($user))->accountVerification()->queueAndDeliver();
-        }
-
-        unset($user->token);
-
-        return $user;
-    }
-
-    /**
-     * Builds a new user entity from the input
-     * @param  array  $input array build for the user entity
-     * @return Models\User\Entity
-     */
-    protected function buildUserEntity(array $input)
-    {
-        $input['email'] = strtolower($input['email']);
-
-        // Now we can build a new user using the entire input
-        $user = new User\Entity;
-
-        $error = $user->build($input);
-
-        if (! empty($error))
-        {
-            $error = array_values($error);
-
-            throw new RecoverableException($error[0]);
-        }
-
-        $user->password = Hash::make($user->password);
-
-        $user->save();
-
-        return $user;
     }
 
     /**

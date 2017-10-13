@@ -83,11 +83,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
         $this->merchants()->attach([$merchantId], ['role' => $role]);
     }
 
-    public function getConfirmToken()
-    {
-        return $this->confirm_token;
-    }
-
     /**
      * Refresh the current merchant for the user.
      *
@@ -113,26 +108,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     public function getAuthIdentifier()
     {
         return $this->getKey();
-    }
-
-    /**
-     * Get the password for the user.
-     *
-     * @return string
-     */
-    public function getAuthPassword()
-    {
-        return $this->password;
-    }
-
-    /**
-     * Get the token value for the "remember me" session.
-     *
-     * @return string
-     */
-    public function getRememberToken()
-    {
-        return $this->getAttribute('remember_token');
     }
 
     public static function getUserWithEmail($email)

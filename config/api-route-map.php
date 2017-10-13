@@ -551,6 +551,8 @@ return [
 
         // Create SubMerchant
         'merchant_sub_create'               => 'submerchants',
+        // Create SubMerchant User
+        'create_submerchant_user'           => 'submerchant/user/{id}',
 
         'merchant_pre_signup_details'       => 'pre_signup',
         'merchant_edit_pre_signup_details'  => 'pre_signup',

@@ -25,8 +25,6 @@ class Service extends Base\Service
     const EMAIL_CHANGE_FORBIDDEN                = "Email change forbidden on this account";
     const NAME_CHANGE_FORBIDDEN                 = "Name change forbidden on this account";
     const SELF_REMOVE_FORBIDDEN                 = "You cannot remove yourself.";
-    const SUBMERCHANT_EMAIL_NOT_UNIQUE          = "Unique email is required to create a new user";
-    const NOT_AUTHORIZED_TO_ACCESS_MERCHANT     = "Cannot access merchant";
 
     public function __construct()
     {
@@ -86,68 +84,27 @@ class Service extends Base\Service
 
     public function registerSubMerchantUser(array $input)
     {
-        $currentMerchant = $this->currentUser->currentMerchant();
+        $merchantId = $input['id'];
 
-        $currentUser = User\Entity::getUserWithEmail($currentMerchant->email);
+        unset($input['id']);
 
-        $subMerchant = $this->fetch($input['id']);
+        $data = array_merge([
+            'user_id' => $this->currentUser->id
+        ], $input);
 
-        $email = $subMerchant['email'];
-        $input['email'] = $email;
+        $registerSubMerchantUser = [
+            'route_name' => 'create_submerchant_user',
+            'url_params' => [
+                '{id}' => $merchantId,
+            ],
+            'body'       => $data,
+        ];
 
-        $error = (new Merchant\Validator)->validateInput('create_submerchant_user', $input)->messages();
+        $genericService = new Generic\Service;
 
-        if (empty($error) === false)
-        {
-            return [$error, null];
-        }
+        list($error, $data) = $genericService->call('POST', $registerSubMerchantUser);
 
-        if ($email === $currentMerchant->email)
-        {
-            return [[self::SUBMERCHANT_EMAIL_NOT_UNIQUE], null];
-        }
-
-        list($error, $genericUser) = (new User\Service)->getUserFromApi($this->currentUser->id);
-
-        $ownerMerchant = $genericUser->merchants
-                                     ->where('role', 'owner')
-                                     ->where('id', $subMerchant['id'])
-                                     ->first();
-
-        // checks if the main merchant's owner user is the primary
-        // owner of the submerchant account
-        if ($ownerMerchant === null)
-        {
-            return [[self::NOT_AUTHORIZED_TO_ACCESS_MERCHANT], null];
-        }
-
-        $input['name'] = $subMerchant['name'];
-        $input['captcha_disable'] = User\Validator::DISABLE_CAPTCHA_SECRET;
-
-        try
-        {
-            $user = (new User\Service)->createUserForSubmerchant($input);
-            $user->save();
-
-            $userApiData = (new User\Service)->getUserApiData($user);
-            (new User\Service)->createUserOnApi($userApiData);
-
-            // Finally attach the new user to the sub merchant
-            list($error, $response) = (new User\Service)->attachMerchantUserOnApi($user->id, $input['id'], 'owner');
-
-            if (empty($error) === true)
-            {
-                $user->joinMerchantByIdWithRole($input['id'], 'owner');
-            }
-
-            return [null, $user->toArray()];
-        }
-        catch(User\RecoverableException $e)
-        {
-            $error = [$e->getMessage()];
-
-            return [$error, null];
-        }
+        return [$error, $data];
     }
 
     /**
