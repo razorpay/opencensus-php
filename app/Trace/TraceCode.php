@@ -368,6 +368,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEE_ADJUSTMENT_CREATE_REQUEST                 = 'FEE_ADJUSTMENT_CREATE_REQUEST';
     const DISPUTE_ADJUSTMENT_CREATE_REQUEST             = 'DISPUTE_ADJUSTMENT_CREATE_REQUEST';
     const ADJUSTMENT_CREATE_SUCCESS                     = 'ADJUSTMENT_CREATE_SUCCESS';
+    const ADJUSTMENT_SPLIT_REQUEST                      = 'ADJUSTMENT_SPLIT_REQUEST';
+    const ADJUSTMENT_SPLIT_ERROR                        = 'ADJUSTMENT_SPLIT_ERROR';
 
     const VERIFY_LOCKED_PAYMENTS                        = 'VERIFY_LOCKED_PAYMENTS';
     const VERIFY_GATEWAY_BLOCK                          = 'VERIFY_GATEWAY_BLOCK';
