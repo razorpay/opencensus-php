@@ -47,6 +47,16 @@ class Service extends Base\Service
     {
         $isLinkedAccount = (bool) ($input['account'] ?? false);
 
+        /*
+         * Mode has to be passed in case of creating submerchant via marketplace
+         * This is because the route has a feature check on api.
+         * Without passing mode, the request is in live mode by default and the route fails
+         * as the feature will not be enabled in live mode initially.
+         */
+        $mode = $input['mode'] ?? null;
+
+        unset($input['mode']);
+
         $data = array_merge([
             'user_id' => $this->currentUser->id
         ], $input);
@@ -54,6 +64,7 @@ class Service extends Base\Service
         $registerSubMerchant = [
             'route_name' => 'merchant_sub_create',
             'body'       => $data,
+            'mode'       => $mode,
         ];
 
         $genericService = new Generic\Service;
