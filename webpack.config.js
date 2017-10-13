@@ -90,7 +90,12 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['env', 'react', 'stage-0'],
+            presets: [
+              'env',
+              ['es2015', { loose: true, modules: false }],
+              'react',
+              'stage-0',
+            ],
             plugins: ['transform-decorators-legacy', 'react-html-attrs'],
           },
         },
