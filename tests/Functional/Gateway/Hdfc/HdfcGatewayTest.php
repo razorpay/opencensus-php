@@ -266,6 +266,32 @@ class HdfcGatewayTest extends TestCase
         $this->verifyPayment($payment['razorpay_payment_id']);
     }
 
+    public function testPaymentVerifyAndTransactionNotFoundInResponse()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $payment = $this->doAuthPayment();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content = [
+                    'error_code_tag' => 'GW00201',
+                    'error_service_tag' => 'null',
+                    'result' => '!ERROR!-GW00201-Transaction not found.',
+                ];
+            }
+
+            return $content;
+        });
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->verifyPayment($payment['razorpay_payment_id']);
+        });
+    }
+
     public function testVerifyRefundDeniedByRiskOnGateway()
     {
         $payment = $this->doAuthAndCapturePayment();
