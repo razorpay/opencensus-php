@@ -16,10 +16,23 @@ const htmlPlugins = require('./web/webpack/html')(
   }
 );
 
-const plugins = [htmlPlugins];
+let plugins = [htmlPlugins];
 
 if (isProd) {
-  plugins = plugins.concat(new UglifyJSPlugin());
+  plugins = plugins.concat(
+    new webpack.LoaderOptionsPlugin({
+      minimize: true,
+      debug: false,
+    }),
+    new UglifyJSPlugin({
+      uglifyOptions: {
+        beautify: false,
+        ecma: 6,
+        compress: true,
+        comments: false,
+      },
+    })
+  );
 }
 
 module.exports = {

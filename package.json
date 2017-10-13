@@ -36,7 +36,7 @@
   },
   "scripts": {
     "start": "externals=`./vendor.sh` webpack -w & gulp watch; kill -9 $!",
-    "build": "gulp; externals=`./vendor.sh` webpack",
+    "build": "gulp; externals=`./vendor.sh` NODE_ENV=production webpack",
     "precommit": "lint-staged",
     "prettier": "prettier"
   },
