@@ -84,7 +84,7 @@ class PaymentCreateController extends Controller
         {
             $input = $this->service(E::PAYMENT_ANALYTICS)->setMetadataForS2SPayment($input);
         }
-
+        
         $data = $this->service(E::PAYMENT)->process($input);
 
         return $this->processCoprotoData($data);

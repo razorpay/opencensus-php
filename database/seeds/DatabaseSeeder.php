@@ -1635,7 +1635,7 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert([
             'id'                        => Terminal\Shared::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL,
-            'merchant_id'               => Account::DEMO_ACCOUNT,
+            'merchant_id'               => Account::SHARED_ACCOUNT,
             'gateway'                   => Gateway::UPI_MINDGATE_SBI,
             'card'                      => '0',
             'netbanking'                => '0',

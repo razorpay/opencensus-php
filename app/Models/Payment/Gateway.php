@@ -310,6 +310,7 @@ class Gateway
     public static $asynchronous = [
         self::UPI_MINDGATE,
         self::UPI_ICICI,
+        self::UPI_MINDGATE_SBI,
         self::SHARP,
     ];
 
