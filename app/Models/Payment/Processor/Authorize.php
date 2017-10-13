@@ -3475,6 +3475,8 @@ trait Authorize
                 $type . ' card transactions are not allowed',
                 'number');
         }
+
+        $this->checkAndValidateIfCardNetworkDisabled($payment->merchant, $card);
     }
 
     protected function verifyFeatureForMerchant(Merchant\Entity $merchant, $feature)
@@ -3772,5 +3774,27 @@ trait Authorize
         $secret = $this->app->config->get('app.key');
 
         return hash_hmac('sha1', $string, $secret);
+    }
+
+    protected function checkAndValidateIfCardNetworkDisabled(Merchant\Entity $merchant, Card\Entity $card)
+    {
+        $disabledNetworkFeatures = [
+            Card\Network::RUPAY => Feature\Constants::DISABLE_RUPAY,
+            Card\Network::MAES  => Feature\Constants::DISABLE_MAESTRO,
+        ];
+
+        $networkCode = $card->getNetworkCode();
+
+        if ((isset($disabledNetworkFeatures[$networkCode]) === true) and
+            ($merchant->isFeatureEnabled($disabledNetworkFeatures[$networkCode]) === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
+                null,
+                [
+                    'network' => $networkCode,
+                    'iin'     => $card->getIin()
+                ]);
+        }
     }
 }

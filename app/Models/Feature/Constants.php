@@ -46,6 +46,8 @@ class Constants
     const RULE_FILTER              = 'rule_filter';
     const TPV                      = 'tpv';
     const IRCTC_REPORT             = 'irctc_report';
+    const DISABLE_MAESTRO          = 'disable_maestro';
+    const DISABLE_RUPAY            = 'disable_rupay';
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -89,6 +91,8 @@ class Constants
         self::RULE_FILTER              => true,
         self::TPV                      => true,
         self::IRCTC_REPORT             => true,
+        self::DISABLE_MAESTRO          => true,
+        self::DISABLE_RUPAY            => true,
     ];
 
     // Keys used in the feature onbaording workflow
