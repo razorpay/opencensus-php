@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-import { Line } from 'react-chartjs-2';
-import { createLineData } from 'util/chart';
 
 export class SingleValue extends Component {
   render() {
@@ -22,7 +20,6 @@ export class TimeSeries extends Component {
     return (
       <div>
         <header>{title}</header>
-        <Line data={createLineData(value)} />
       </div>
     );
   }

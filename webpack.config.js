@@ -1,35 +1,46 @@
 const webpack = require('webpack');
-const isProd = require('process').env.NODE_ENV === 'prod';
-const path = require('path');
+const isProd = require('process').env.NODE_ENV === 'production';
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 // generated bladefiles
 const htmlPlugins = require('./web/webpack/html')(
   {
-    'merchant.jst': 'merchantIndex',
-    'admin.jst': 'adminIndex',
+    template: 'admin.jst',
+    filename: 'adminIndex',
   },
   {
     // template locals
     cdnUrl: isProd ? 'https://cdn.razorpay.com/dashboard' : '/dist',
-
-    filename: function(_, name) {
-      return _.webpackConfig.output.filename
-        .replace('[name]', name)
-        .replace('[hash]', _.webpack.hash);
-    },
+    filename: (_, name) =>
+      _.webpackConfig.output.filename.replace('[name]', name),
   }
 );
 
+const plugins = [htmlPlugins];
+
+if (isProd) {
+  plugins = plugins.concat(new UglifyJSPlugin());
+}
+
 module.exports = {
+  externals: [].reduce.call(
+    (process.env.externals || '').split(' '),
+    (prev, next, index, arr) => {
+      if (index % 2) {
+        prev[next.split('/')[0]] = arr[index - 1];
+      }
+      return prev;
+    },
+    {}
+  ),
+
   entry: {
-    vendor: ['react', 'react-dom', 'react-router-dom', 'mobx', 'mobx-react'],
-    merchant: './web/merchant.js',
     admin: './web/admin.js',
   },
 
   output: {
-    path: __dirname + '/public/dist',
-    filename: isProd ? '[name]-[hash].js' : '[name].js',
+    path: __dirname + '/public/dist/admin',
+    filename: '[name].js',
   },
 
   resolve: {
@@ -52,21 +63,7 @@ module.exports = {
     chunkModules: false,
   },
 
-  plugins: htmlPlugins.concat([
-    new webpack.NamedModulesPlugin(),
-    new webpack.NamedChunksPlugin(chunk => {
-      if (chunk.name) {
-        return chunk.name;
-      }
-      return chunk
-        .mapModules(m => path.relative(m.context, m.request))
-        .join('_');
-    }),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      minChunks: Infinity,
-    }),
-  ]),
+  plugins,
 
   module: {
     rules: [
