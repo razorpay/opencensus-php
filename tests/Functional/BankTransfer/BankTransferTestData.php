@@ -58,6 +58,23 @@ return [
         ],
     ],
 
+    'testBankTransferInsert' => [
+        'url'     => '/bank_transfers/dashboard',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '9876543210123456789',
+            'payer_ifsc'     => 'HDFC0000001',
+            'mode'           => 'neft',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 50000,
+            'description'    => 'NEFT payment of 50,000 rupees, inserted',
+        ],
+    ],
+
     'testBankTransferSpecialCharsInAccNumber' => [
         'url'     => '/ecollect/validate',
         'method'  => 'post',
