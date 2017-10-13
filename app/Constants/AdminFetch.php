@@ -3,6 +3,7 @@
 namespace RZP\Constants;
 
 use RZP\Base\Fetch;
+use RZP\Models\Dispute;
 
 /**
  * Class AdminFetch
@@ -378,33 +379,33 @@ class AdminFetch
             ],
 
             Entity::DISPUTE => [
-                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
-                'payment_id' => Fetch::FIELD_PAYMENT_ID,
-                'status' => [
-                    Fetch::LABEL  => 'Status',
-                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => [
-                        'open',
-                        'under_review',
-                        'won',
-                        'lost',
-                        'closed',
+                Dispute\Entity::MERCHANT_ID     => Fetch::FIELD_MERCHANT_ID,
+                Dispute\Entity::PAYMENT_ID      => Fetch::FIELD_PAYMENT_ID,
+                Dispute\Entity::STATUS          => [
+                    Fetch::LABEL        => 'Status',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        Dispute\Status::OPEN,
+                        Dispute\Status::UNDER_REVIEW,
+                        Dispute\Status::WON,
+                        Dispute\Status::LOST,
+                        Dispute\Status::CLOSED,
                     ],
                 ],
-                'phase' => [
-                    Fetch::LABEL  => 'Phase',
-                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => [
-                        'chargeback',
-                        'pre_arbitration',
-                        'arbitration',
-                        'retrieval',
-                        'fraud',
+                Dispute\Entity::PHASE           => [
+                    Fetch::LABEL        => 'Phase',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        Dispute\Phase::CHARGEBACK,
+                        Dispute\Phase::PRE_ARBITRATION,
+                        Dispute\Phase::ARBITRATION,
+                        Dispute\Phase::RETRIEVAL,
+                        Dispute\Phase::FRAUD,
                     ],
                 ],
-                'amount' => [
-                    Fetch::LABEL  => 'Amount',
-                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                Dispute\Entity::AMOUNT          => [
+                    Fetch::LABEL        => 'Amount',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
                 ],
             ],
 
