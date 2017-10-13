@@ -5,33 +5,33 @@ namespace RZP\Jobs;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Batch as BatchModel;
+use Razorpay\Trace\Logger as Trace;
 
 /**
- * Represents asynchronous Batch job.
+ * Represents asynchronous Batch job for IRCTC.
  *
- * Handler:
- * - Calls the batch processor on given batch id.
+ * Different from other generic Jobs\Batch, reason to following: In case of IRCTC,
+ * we are to execute 2 batches in sequence. And so from elsewhere we push a job
+ * containing 2 batch ids in their order of execution which get processed here.
  */
 class IrctcBatch extends Job implements ShouldQueue
 {
     use InteractsWithQueue;
 
-     const MAX_ALLOWED_ATTEMPTS = 1;
-
-    /**
-     * Batches array.
-     *
-     * @var array
-     */
-    protected $batches;
-
     const BATCH_ORDER = [
         BatchModel\Type::IRCTC_REFUND,
         BatchModel\Type::IRCTC_SETTLEMENT
     ];
+
+    /**
+     * Associative array with key as batch type and value
+     * as Batch entity object.
+     *
+     * @var array
+     */
+    protected $batches;
 
     public function __construct(string $mode, array $batches)
     {
@@ -46,7 +46,7 @@ class IrctcBatch extends Job implements ShouldQueue
 
         try
         {
-            $this->trace->info(TraceCode::BATCH_JOB_RECEIVED, $this->batches);
+            $this->trace->info(TraceCode::IRCTC_BATCH_JOB_RECEIVED, $this->batches);
 
             foreach (self::BATCH_ORDER as $batchType)
             {
@@ -68,9 +68,9 @@ class IrctcBatch extends Job implements ShouldQueue
                 $this->trace->info(
                     TraceCode::BATCH_JOB_HANDLED,
                     [
-                        'type'       => $batchType,
-                        'batch_id'   => $batchId,
-                        'time_taken' => $timeTaken,
+                        BatchModel\Entity::TYPE => $batchType,
+                        BatchModel\Entity::ID   => $batchId,
+                        'time_taken'            => $timeTaken,
                     ]);
             }
         }
@@ -79,7 +79,7 @@ class IrctcBatch extends Job implements ShouldQueue
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::BATCH_JOB_ERROR,
+                TraceCode::IRCTC_BATCH_JOB_ERROR,
                 [
                     'data' => $this->batches
                 ]);

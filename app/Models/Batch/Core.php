@@ -15,37 +15,22 @@ class Core extends Base\Core
 {
     use FileHandlerTrait;
 
-    /**
-     * This method creates a batch for a specific merchant. The use case is when
-     * we want to internally create a batch for a merchant from an internal auth route
-     * when the merchant is not the one derived from auth.`
-     *
-     * @param  array           $input    Batch creation params
-     * @param  Merchant\Entity $merchant merchant for whom we want to create the batch
-     * @return Batch\Entity              batch entity created
-     */
-    public function createForMerchant(array $input, Merchant\Entity $merchant): Entity
-    {
-        $this->merchant = $merchant;
-
-        $batch = $this->create($input);
-
-        return $batch;
-    }
-
-    public function create(array $input): Entity
+    public function create(array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
         $batch = (new Entity)->build($input);
 
-        $batch->merchant()->associate($this->merchant);
+        $batch->merchant()->associate($merchant);
 
         $processor = Processor\Base::get($batch);
 
-        // We upload the input file to S3 create a filestore entity for the input file via UFH
-        // We then update the batch entity with file metadata if available
-        $processor->storeInputFileAndCreateBatch($input);
+        //
+        // We upload the input file to S3 create a filestore entity for the
+        // input file via UFH. We then update the batch entity with file meta
+        // data if available, follow by save, all inside a transaction.
+        //
+        $processor->storeInputFileAndSaveBatch($input);
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
 
@@ -68,7 +53,7 @@ class Core extends Base\Core
     {
         $batch->getValidator()->validateIfProcessable();
 
-        $batch->setProcessing(1);
+        $batch->setProcessing(true);
 
         $this->repo->saveOrFail($batch);
 
@@ -145,10 +130,7 @@ class Core extends Base\Core
 
         foreach ($batches as $batch)
         {
-            if ($batch->isProcessable() === true)
-            {
-                $this->processBatch($batch);
-            }
+            Processor\Base::get($batch)->validateAndProcess();
         }
 
         return $batches;
@@ -163,35 +145,11 @@ class Core extends Base\Core
      */
     public function processBatchViaApi(Entity $batch)
     {
-        return $this->processBatch($batch);
-    }
-
-    /**
-     * Process a particular batch entity.
-     *
-     * @param Entity  $batch
-     * @param boolean $bubbleEx   - When called iteratively over batch collection
-     *                            we don't break execution. But when called via
-     *                            API for individual batch we bubble exception
-     *                            to response.
-     *
-     * @return Entity
-     * @throws \Throwable
-     */
-    public function processBatch(Entity $batch): Entity
-    {
-        // TBD - Need to discuss once if all batch types can be retried.
-        $job = new BatchJob($this->mode, $batch->getId());
-
-        if (Type::isQueueGroup($batch->getType()) === false)
-        {
-            Processor\Base::get($batch)->validateAndProcess();
-        }
-        else
-        {
-            (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
-        }
-
+        //
+        // TODO: Don't call below method, let's add one more named
+        // queueBatchForProcessing() and always use that if called via API
+        //
+        // return $this->processBatch($batch);
         return $batch;
     }
 

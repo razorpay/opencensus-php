@@ -8,6 +8,9 @@ use Illuminate\Bus\Queueable;
 
 class Job
 {
+    // General use constants
+    const TIME_TAKEN = 'time_taken';
+
     /**
      * Mode as received from pushed job payload. We set the basic auth's mode
      * and db connection to this value for convenience.

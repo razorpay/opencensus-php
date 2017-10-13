@@ -128,12 +128,16 @@ class Entity extends Base\PublicEntity
      */
     public function inputFile()
     {
-        $fileStoreType = ($this->getType() === Type::RECONCILIATION) ?
-                            FileStore\Type::BATCH_RECON_INPUT :
-                            FileStore\Type::BATCH_INPUT;
+        //
+        // For files of reconciliation type batches, we use a different UFH type
+        // (hence S3 locations) for reasons.
+        //
+        $ufhType = ($this->isReconciliationType() === true) ?
+                        FileStore\Type::BATCH_RECON_INPUT :
+                        FileStore\Type::BATCH_INPUT;
 
         return $this->files()
-                    ->where(FileStore\Entity::TYPE, $fileStoreType)
+                    ->where(FileStore\Entity::TYPE, $ufhType)
                     ->latest()
                     ->first();
     }
@@ -174,33 +178,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY);
     }
 
-    public function isProcessed()
+    public function isProcessed(): bool
     {
         return ($this->getStatus() === Status::PROCESSED);
     }
 
-    public function isPartiallyProcessed()
+    public function isPartiallyProcessed(): bool
     {
         return ($this->getStatus() === Status::PARTIALLY_PROCESSED);
     }
 
-    public function isFailed()
+    public function isFailed(): bool
     {
         return ($this->getStatus() === Status::FAILED);
     }
 
-    public function isProcessing()
+    public function isProcessing(): bool
     {
         return $this->getAttribute(self::PROCESSING);
-    }
-
-    /**
-     * Indicates if the batch is currently available for processing or has not
-     * been processed already
-     */
-    public function isProcessable()
-    {
-        return (($this->isProcessing() === false) and ($this->isProcessed() === false));
     }
 
     public function getFailureCount()
@@ -213,9 +208,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOTAL_COUNT);
     }
 
-    public function isPaymentLinkType()
+    public function isPaymentLinkType(): bool
     {
         return ($this->getType() === Type::PAYMENT_LINK);
+    }
+
+    public function isReconciliationType(): bool
+    {
+        return ($this->getType() === Type::RECONCILIATION);
     }
 
     /**
@@ -334,7 +334,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
-    public function setProcessing($value)
+    public function setProcessing(bool $value)
     {
         $this->setAttribute(self::PROCESSING, $value);
     }

@@ -42,7 +42,7 @@ class Reconciliation extends Base
      *
      * @param  array  $input batch creation params
      */
-    public function storeInputFileAndCreateBatch(array $input)
+    public function storeInputFileAndSaveBatch(array $input)
     {
         $this->repo->transaction(function () use ($input)
         {
@@ -114,13 +114,13 @@ class Reconciliation extends Base
      * We then process the contents of the recon file by calling the gateway recon class.
      * Any unhandled exceptions in the reconciliator is being handled here.
      */
-    protected function parseAndProcessBatchData()
+    protected function parseAndProcessBatchEntries()
     {
         $fileContents = $this->parseInputFileContents();
 
         $this->gatewayReconciliator->startReconciliationV2($fileContents, $this->batch);
 
-        $this->updateBatchStatus();
+        $this->updateBatchStatusPostProcess();
     }
 
     protected function shouldMarkProcessed(): bool
@@ -155,14 +155,6 @@ class Reconciliation extends Base
         }
 
         return $fileContent;
-    }
-
-    protected function updateBatchPostProcessing()
-    {
-        $now = Carbon::now()->getTimestamp();
-
-        // TBD for failed batches should we have separate failed_at timestamp
-        $this->batch->setProcessedAt($now);
     }
 
     protected function parseExcelContent(array $inputFileDetails): array
@@ -281,39 +273,9 @@ class Reconciliation extends Base
         ];
     }
 
-    /**
-     * Un case of unhandled exceptions in case of recon, we still mark the batch
-     * as partially processed if we were able to process some rows and had abort on a
-     * particular row. Basically we mark it as partially processed if we were able
-     * to get the total number of rows
-     *
-     * @param  \Throwable $ex Exception thrown while processing the batch
-     */
-    protected function handleBatchProcessingException(\Throwable $ex)
-    {
-        $this->trace->traceException(
-                            $ex,
-                            Trace::ERROR,
-                            TraceCode::BATCH_FILE_PROCESSING_ERROR,
-                            [
-                                Batch\Entity::ID => $this->batch->getId()
-                            ]);
-
-        if ($this->batch->getTotalCount() > 0)
-        {
-            $this->batch->setStatus(Status::PARTIALLY_PROCESSED);
-        }
-        else if ($this->batch->isPartiallyProcessed() === false)
-        {
-            $this->batch->setStatus(Status::FAILED);
-        }
-
-        $this->batch->setFailureReason($ex->getMessage());
-    }
-
     protected function postProcess()
     {
-        $this->batch->setProcessing(0);
+        $this->batch->setProcessing(false);
 
         $this->repo->saveOrFail($this->batch);
     }
