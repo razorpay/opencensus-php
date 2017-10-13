@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Sbi\Mock;
 
 use Carbon\Carbon;
+use Razorpay\Api\Request;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
 use RZP\Gateway\Upi\Sbi\RequestFields;
@@ -16,13 +17,26 @@ class Server extends Base\Mock\Server
     {
         parent::authorize($input);
 
-        $this->validateSbiUpiAuthInput($input);
+        $request = $this->decrypt($input);
 
-        $content = $this->getAuthorizeResponseArray($input);
+        $this->validateSbiUpiAuthInput($request);
+
+        $content = $this->getAuthorizeResponseArray($request);
 
         $this->content($content);
 
         return $this->makeResponse($content);
+    }
+
+    protected function decrypt(string $json)
+    {
+        $array = json_decode($json, true);
+
+        $aes = $this->getGatewayInstance()->getAesCrypto();
+
+        $decryptedString = $aes->decryptString($array[RequestFields::REQUEST_MESSAGE]);
+
+        return json_decode($decryptedString, true);
     }
 
     protected function getAuthorizeResponseArray(array $input)

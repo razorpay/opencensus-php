@@ -36,6 +36,6 @@ class UpiMindgateSbiGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
     }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Sbi;
 
 use Mockery\Exception;
+use phpseclib\Crypt\AES;
 use Razorpay\Api\Request;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -96,8 +97,6 @@ class Gateway extends Base\Gateway
             RequestFields::TRANSACTION_NOTE => Constants::TRANSACTION_NOTE . $input['payment']['vpa'],
         ];
 
-        $request = $this->getStandardRequestArray($content);
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
@@ -106,7 +105,31 @@ class Gateway extends Base\Gateway
                 'content'           => $content
             ]);
 
+        $requestMsg = $this->encrypt($content);
+
+        $json = [
+            RequestFields::REQUEST_MESSAGE => $requestMsg,
+            RequestFields::PG_MERCHANT_ID  => $this->getMerchantId(),
+        ];
+
+        $content = json_encode($json);
+
+        $request = $this->getStandardRequestArray($content);
+
         return $request;
+    }
+
+    public function encrypt(array $content)
+    {
+        $json = json_encode($content);
+
+        // TODO: Ensure this is correct
+        return $this->getAesCrypto()->encryptString($json);
+    }
+
+    public function getAesCrypto()
+    {
+        return (new Crypto(AES::MODE_ECB, $this->getSecret()));
     }
 
     protected function parseGatewayResponse(string $body)

@@ -15,4 +15,5 @@ class RequestFields
     const ADDITIONAL_INFO   = 'addInfo';
     const ADDITIONAL_INFO9  = 'addInfo9';
     const ADDITIONAL_INFO10 = 'addInfo10';
+    const REQUEST_MESSAGE   = 'requestMsg';
 }
