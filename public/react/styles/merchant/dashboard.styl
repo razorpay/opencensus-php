@@ -500,6 +500,11 @@
   padding: 8px;
   border-bottom: 1px solid #ebecee;
 
+  &.clickable:hover {
+    background-color: #f7f6f6;
+    cursor: pointer;
+  }
+
 // To highlight selected row
   &.active {
     background-color: rgba(255,255,215,0.75);
@@ -519,10 +524,6 @@
       font-size: 22px;
       padding: 10px;
       cursor: pointer;
-
-      &:hover {
-        color: #9bb2bf;
-      }
     }
   }
 

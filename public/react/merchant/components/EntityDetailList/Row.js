@@ -13,113 +13,158 @@ export default props => {
     loading,
     activeSecEntityId,
     subscriptionStatus,
+    subscriptionType,
     authAttempts,
+    isInvoiceWithAttemptsFailed,
     subscriptionchargeAt,
     onManualAttempt,
     isUpfront,
     mode,
   } = props;
 
-  let retryingText;
+  let chargeAttemptsFailedText; // Charge attempts failed text
+  let retryingInfo; // Whether further retries
 
-  // To b shown only for latest issued invoice. As per authAttempts condition calc in parent componen
-  if (item.status === 'issued' && authAttempts) {
-    if (subscriptionStatus === 'halted') {
-      retryingText = 'Not retrying automatically. ';
-    } else if (subscriptionStatus === 'pending') {
-      let timeDiff =
-        subscriptionchargeAt - Math.round(new Date().getTime() / 1000);
-      timeDiff = Math.ceil(timeDiff / (3600 * 24));
-      retryingText = `Retrying in ${timeDiff} days. `;
+  // For invoice in issued state, if it's subscription_status = halted then analyse whether 1st invoice or further invoices
+  if (item.status === 'issued') {
+    // For subscriptions in pending status
+    if (subscriptionStatus === 'pending') {
+      if (!item.subscription_status) {
+        // Retrying info for pending state subscription
+        let timeDiff =
+          subscriptionchargeAt - Math.round(new Date().getTime() / 1000);
+        timeDiff = Math.ceil(timeDiff / 3600);
+        retryingInfo = `Retrying in ${timeDiff} hrs. `;
+      }
+      if (item.subscription_status !== 'halted') {
+        chargeAttemptsFailedText = (
+          <span>
+            {authAttempts}{' '}
+            {authAttempts > 1 ? 'charge attempts' : 'charge attempt'} failed.
+          </span>
+        );
+      }
+    }
+
+    if (item.subscription_status === 'halted') {
+      if (isInvoiceWithAttemptsFailed === 2) {
+        // To handle situation where such invoices were created in halted state but now invoice is pending (,active, complete, etc)
+        /*
+          chargeAttemptsFailedText = 'No auto-charge attempted. ';
+        */
+
+        // Temp change until api supports properly
+        chargeAttemptsFailedText = <span>Invoice unpaid. </span>;
+      } else if (isInvoiceWithAttemptsFailed === 1) {
+        // retryingInfo = 'Not retrying automatically';
+        // To handle situation where such invoices were created in halted state but now invoice is pending (,active, complete, etc)
+        /*
+          chargeAttemptsFailedText = (
+            <span>All auto-charge attempts failed. </span>
+          );
+        */
+        // Temp change until api supports properly
+        chargeAttemptsFailedText = <span>Invoice unpaid. </span>;
+      }
     }
   }
 
+  // Calculate time Diff to show 'due in' text
   let timeDiff;
-  // issued_at in next_due invoice is charge_at of subscription. Check FE creation of next_due invoice. (Not api related)
-  if (item.status === 'next_due' && item.issued_at) {
-    timeDiff = item.issued_at - Math.round(new Date().getTime() / 1000);
+  // billing_start in next_due invoice is charge_at of subscription. Check FE creation of next_due invoice. (Not api related)
+  if (item.status === 'next_due' && item.billing_start) {
+    timeDiff = item.billing_start - Math.round(new Date().getTime() / 1000);
+  }
+
+  // Check if row is clickable
+  let isRowClickable = goToLink && !loading && activeSecEntityId !== item.id;
+  let classNames = ['entity-detail-row'];
+
+  if (item.id && activeSecEntityId === item.id) {
+    classNames.push('active');
+  }
+  if (isRowClickable) {
+    classNames.push('clickable');
   }
 
   return (
     <div
-      class={`entity-detail-row ${item.id && activeSecEntityId === item.id
-        ? 'active'
-        : ''}`}
+      class={classNames.join(' ')}
+      onClick={() => {
+        if (isRowClickable) {
+          goToLink(item.id, index);
+        }
+      }}
     >
       <div class="row-item content">
         <div class="detail-row">
           <div class="row-element left">
-            {loading
-              ? <PlaceholderLoader style={{ width: '70%' }} />
-              : item.issued_at
-                ? <span class="label--primary">
-                    <Time
-                      value={`${mode === 'test'
-                        ? item.billing_start
-                        : item.issued_at}`}
-                      format="MMM DD, YYYY"
-                    />
-                    {timeDiff > 0 &&
-                      <span>
-                        {' '}(due in {Math.ceil(timeDiff / (3600 * 24))} days)
-                      </span>}
+            {loading ? (
+              <PlaceholderLoader style={{ width: '70%' }} />
+            ) : item.billing_start ? (
+              <span class="label--primary">
+                <Time value={item.billing_start} format="MMM DD, YYYY" />
+                {timeDiff > 0 && (
+                  <span>
+                    {' '}
+                    (due in {Math.ceil(timeDiff / (3600 * 24))} days)
                   </span>
-                : 'Upcoming Payment'}
+                )}
+              </span>
+            ) : (
+              'Upcoming Invoice'
+            )}
           </div>
           <div class="row-element right">
-            {loading
-              ? <PlaceholderLoader style={{ width: '45%' }} />
-              : <Amount currency={item.currency} value={item.amount} />}
+            {loading ? (
+              <PlaceholderLoader style={{ width: '45%' }} />
+            ) : (
+              <Amount currency={item.currency} value={item.amount} />
+            )}
           </div>
         </div>
 
         <div class="detail-row">
           <div class="row-element left">
-            {loading
-              ? <PlaceholderLoader style={{ width: '60%', height: '10px' }} />
-              : <span class="label--secondary">
-                  {index ? `Recurring payment # ${index}` : ''}
-                  {index && isUpfront ? ', ' : ''}
-                  {isUpfront ? 'Upfront Amount' : ''}
-                </span>}
+            {loading ? (
+              <PlaceholderLoader style={{ width: '60%', height: '10px' }} />
+            ) : (
+              <span class="label--secondary">
+                {index ? `Recurring payment # ${index}` : ''}
+                {index && isUpfront ? ', ' : ''}
+                {isUpfront ? 'Upfront Amount' : ''}
+              </span>
+            )}
           </div>
           <div class="row-element right">
-            {loading
-              ? <PlaceholderLoader style={{ width: '30%' }} />
-              : <span class="tag">
-                  <InvoiceStatusLabel status={item.status} />
-                </span>}
+            {loading ? (
+              <PlaceholderLoader style={{ width: '30%' }} />
+            ) : (
+              <span class="tag">
+                <InvoiceStatusLabel status={item.status} />
+              </span>
+            )}
           </div>
         </div>
 
         <div class="detail-row">
           {item.id &&
-          retryingText && [
-            <span key="info" class="text-danger">
-              <i class="icon icon-info-circle" />{' '}
-              {
-                <span>
-                  {authAttempts}{' '}
-                  {authAttempts > 1 ? 'charge attempts' : 'charge attempt'}{' '}
-                  failed.
-                </span>
-              }
-            </span>,
-            <span key="info-notice">
-              {' '}{retryingText}
-            </span>,
-          ]}
+            (chargeAttemptsFailedText || retryingInfo) && [
+              <span key="retrying-attempts" class="text-danger">
+                <i class="icon icon-info-circle" /> {chargeAttemptsFailedText}
+              </span>,
+              <span key="retrying-info"> {retryingInfo}</span>,
+            ]}
           {
             do {
               if (
                 item.status === 'issued' &&
-                [
-                  'active',
-                  'pending',
-                  'halted',
-                  'completed',
-                  'cancelled',
-                ].indexOf(subscriptionStatus) > -1
+                (['active', 'pending', 'halted', 'completed'].indexOf(
+                  subscriptionStatus
+                ) > -1 ||
+                  (subscriptionStatus === 'cancelled' &&
+                    (index > 1 ||
+                      (subscriptionType !== 3 && subscriptionType !== 1))))
               ) {
                 <AsyncButton
                   class="btn-link no-padding"
@@ -135,7 +180,7 @@ export default props => {
 
       {
         do {
-          if (goToLink && !loading && activeSecEntityId !== item.id) {
+          if (isRowClickable) {
             <span
               class="row-item icon icon-chevron-right"
               onClick={() => goToLink(item.id, index)}
