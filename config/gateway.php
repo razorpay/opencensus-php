@@ -254,7 +254,7 @@ return [
     'wallet_freecharge' => [
         'test_hash_secret'      => env('FREECHARGE_WALLET_TEST_HASH_SECRET'),
         'test_merchant_id'      => env('FREECHARGE_WALLET_TEST_MERCHANT_ID'),
-        'test_dealer_id'        => env('FREECHARGE_WALLET_TEST_DEALER_ID'),
+        'test_dealer_id'        => null,
     ],
 
     'wallet_jiomoney' => [

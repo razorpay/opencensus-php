@@ -843,16 +843,28 @@ class Gateway extends Base\Gateway
 
     protected function getDebitRequestArray($input)
     {
+        $merchantId = $this->getDealerId($input['terminal']);
+        $dealerId = null;
+
+        # Read Mpesa code on why I used to this approach.
+        # TODO This is wrong, we have to find a better solution.
+        if (empty($merchantId) === true)
+        {
+            $merchantId = $this->getMerchantId($input['terminal']);
+        }
+        else
+        {
+            $dealerId = $this->getMerchantId($input['terminal']);
+        }
+
         $content = [
             RequestFields::ACCESS_TOKEN    => '',
             RequestFields::AMOUNT          => (string) ($input['payment']['amount'] / 100),
             RequestFields::CHANNEL         => self::DEFAULT_TXN_CHANNEL,
             RequestFields::CURRENCY        => $input['payment']['currency'],
-            RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
+            RequestFields::MERCHANT_ID     => $merchantId,
             RequestFields::MERCHANT_TXN_ID => $input['payment']['public_id'],
         ];
-
-        $dealerId = $this->getDealerId($input['terminal']);
 
         if (empty($dealerId) === false)
         {
