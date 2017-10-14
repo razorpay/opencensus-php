@@ -1,16 +1,14 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
-import Table from 'ui/Table';
-import Field, { SelectField, SwitchField, DateTimeField } from 'ui/Field';
-import Collection from 'model/collection';
+import EntityTable from './EntityTable';
+import Field, {
+  SelectField,
+  ControlledSwitchField,
+  DateTimeField,
+} from 'ui/Field';
 import { adminFetch } from 'util/fetch';
 
 export default class EntityList extends Component {
-  collection = new Collection({
-    fetchRoute: 'pricing_get_merchant_plans',
-    fetchFn: adminFetch,
-  });
-
   state = {
     entityList: [],
   };
@@ -50,7 +48,7 @@ export default class EntityList extends Component {
         <div class="box">
           <header>Entities</header>
           {!entities ? (
-            <span>Please Wait...</span>
+            <center>loading...</center>
           ) : (
             <Form onSubmit={this.onSubmit} class="filters">
               <SelectField
@@ -65,19 +63,21 @@ export default class EntityList extends Component {
                   </option>
                 ))}
               </SelectField>
-              <SwitchField
+              <ControlledSwitchField
                 disabledValue="test"
-                value={this.props.selectedMode}
+                enabledValue="live"
                 onChange={this.props.onModeChange}
-                mode="mode"
+                enabled={this.props.selectedMode === 'live'}
+                name="mode"
                 label="Live Mode"
               />
               <Field
                 label="Count"
-                class="small"
+                className="small"
                 name="count"
                 type="number"
-                defaultValue="20"
+                value={this.props.selectedCount}
+                onChange={this.props.onSetCount}
                 min="10"
                 max="1000"
                 step="10"
@@ -134,23 +134,14 @@ export default class EntityList extends Component {
             </Form>
           )}
         </div>
-        {this.props.searchErrors.length > 0 && (
-          <div className="text-danger">
-            {this.props.searchErrors.map((error, index) => {
-              return <span key={index}>{error}</span>;
-            })}
-          </div>
-        )}
         <div className="entity-results">
-          {this.props.collection.items.length > 0 && (
-            <table className="table table-striped">
-              <thead>
-                <tr />
-              </thead>
-              <tbody />
-            </table>
+          {this.props.collection.pending ? (
+            <center>Loading...</center>
+          ) : (
+            this.props.collection.items.length > 0 && (
+              <EntityTable records={this.props.collection.items} />
+            )
           )}
-          {this.collection.pending && <span>Progress</span>}
         </div>
       </div>
     );

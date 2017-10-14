@@ -6,16 +6,42 @@ import EntityList from './index';
 
 const initialState = {
   entities: null,
-  fields: null,
   errors: [],
   collection: { pending: false, items: [] },
   selectedEntity: 'payment',
   selectedMode: 'live',
   selectedFrom: 0,
   selectedTo: 0,
+  selectedCount: 20,
   searchEntity: '',
   searchErrors: [],
+  skip: 0,
 };
+
+function mergeEntitiesWithFields(entities, fields) {
+  const modifiedEntities = {};
+
+  Object.keys(entities).map(entityType => {
+    const entity = entities[entityType];
+
+    const modifiedEntity = {};
+
+    // entity can be null
+    if (entity) {
+      Object.keys(entity).map(fieldType => {
+        let field = entity[fieldType];
+
+        field = typeof field === 'string' ? fields[fieldType] : field;
+
+        modifiedEntity[fieldType] = field;
+      });
+    }
+
+    modifiedEntities[entityType] = modifiedEntity;
+  });
+
+  return modifiedEntities;
+}
 
 export default class EntityListContainer extends Component {
   constructor(props) {
@@ -28,6 +54,7 @@ export default class EntityListContainer extends Component {
     this.onEntityChange = this.onEntityChange.bind(this);
     this.onSetSelectedFrom = this.onSetSelectedFrom.bind(this);
     this.onSetSelectedTo = this.onSetSelectedTo.bind(this);
+    this.onSetCount = this.onSetCount.bind(this);
     this.onSearchEntityChange = this.onSearchEntityChange.bind(this);
   }
 
@@ -36,7 +63,7 @@ export default class EntityListContainer extends Component {
   }
 
   onEntityChange(selectedEntity) {
-    this.setState({ selectedEntity });
+    this.setState({ selectedEntity }, this.onSearch);
   }
 
   onSetSelectedFrom(e) {
@@ -51,6 +78,10 @@ export default class EntityListContainer extends Component {
     this.setState({ searchEntity: e.target.value.trim() });
   }
 
+  onSetCount(e) {
+    this.setState({ selectedCount: e.target.value.trim() });
+  }
+
   componentWillMount() {
     const route = 'admin_fetch_all_entities';
 
@@ -62,9 +93,11 @@ export default class EntityListContainer extends Component {
           return Promise.reject(resp.errors);
         }
 
-        const { entities, fields } = resp.data;
+        let { entities, fields } = resp.data;
 
-        this.setState({ entities, fields });
+        entities = mergeEntitiesWithFields(entities, fields);
+
+        this.setState({ entities }, this.onSearch);
       })
       .catch(errors => {
         this.setState({ errors });
@@ -74,33 +107,42 @@ export default class EntityListContainer extends Component {
   onSearch(filters = {}) {
     const urlParams = {
       type: this.state.selectedEntity,
-      mode: this.state.selectedMode,
     };
+
+    let queryParams = {};
+
+    const mode = this.state.selectedMode;
 
     let route = 'admin_fetch_entity_multiple';
 
     if (this.state.searchEntity) {
       urlParams.id = this.state.searchEntity;
-      filters = null;
       route = 'admin_fetch_entity_by_id';
     } else {
+      queryParams = {
+        ...filters,
+        count: this.state.selectedCount,
+        skip: this.state.skip,
+      };
+
       if (this.state.selectedFrom) {
-        filters.from = this.state.selectedFrom;
+        queryParams.from = this.state.selectedFrom;
       }
 
       if (this.state.selectedTo) {
-        filters.to = this.state.selectedTo;
+        queryParams.to = this.state.selectedTo;
       }
     }
 
     this.setState({
-      collection: { pending: true },
+      collection: { ...this.state.collection, pending: true },
     });
 
     return adminFetch({
+      mode,
       route,
       urlParams,
-      queryParams: filters,
+      queryParams,
     })
       .then(resp => {
         resp = resp.data;
@@ -109,18 +151,18 @@ export default class EntityListContainer extends Component {
           return Promise.reject(resp.errors);
         }
 
-        const { items } = resp.data;
+        const { items, filters } = resp.data;
 
         this.setState({
-          collection: { items, filters },
+          collection: { items, pending: false },
           searchErrors: [],
         });
       })
       .catch(searchErrors => {
-        this.setState({ searchErrors });
-      })
-      .then(() => {
-        this.setState({ collection: { pending: false } });
+        this.setState({
+          searchErrors,
+          collection: { ...this.state.collection, pending: false },
+        });
       });
   }
 
@@ -136,6 +178,7 @@ export default class EntityListContainer extends Component {
             selectedMode={this.state.selectedMode}
             selectedFrom={this.state.selectedFrom}
             selectedTo={this.state.selectedTo}
+            selectedCount={this.state.selectedCount}
             searchEntity={this.state.searchEntity}
             searchErrors={this.state.searchErrors}
             onSearch={this.onSearch}
@@ -144,6 +187,7 @@ export default class EntityListContainer extends Component {
             onSetSelectedFrom={this.onSetSelectedFrom}
             onSetSelectedTo={this.onSetSelectedTo}
             onSearchEntityChange={this.onSearchEntityChange}
+            onSetCount={this.onSetCount}
           />
         ) : (
           <div className="text-danger">
