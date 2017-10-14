@@ -305,45 +305,6 @@ class Base extends BaseModel\Core
         $this->batch->setFailureCount($failureCount);
     }
 
-    /**
-     * Updates the status of the batch as per the processing
-     */
-    protected function updateBatchStatusPostProcess()
-    {
-        //
-        // Sets processed_at. We override this attribute whether it finally
-        // processed or still in partially_processed status after multiple re-runs.
-        //
-        $now = Carbon::now()->getTimestamp();
-
-        $this->batch->setProcessedAt($now);
-
-        // By default we assume status is processed
-        $status = Status::PROCESSED;
-
-        //
-        // But if we were able to process the file and there were failures, we
-        // mark it as partially_processed or processed depending on the type of
-        // the file.
-        //
-        if (($this->batch->getTotalCount() > 0) and ($this->batch->getFailureCount() > 0))
-        {
-            $status = ($this->shouldMarkProcessedOnFailures() === true) ?
-                        Status::PROCESSED :
-                        Status::PARTIALLY_PROCESSED;
-        }
-
-        //
-        // If in the current run the batch has been processed, we reset the failure
-        // reason to maintain consistency
-        //
-        if ($status === Status::PROCESSED)
-        {
-            $this->batch->unsetFailureReason();
-        }
-
-        $this->batch->setStatus($status);
-    }
 
     /**
      * Indicates if a batch should be marked as processed in all cases, i.e even when
@@ -375,6 +336,55 @@ class Base extends BaseModel\Core
         $this->deleteFile($this->outputFileLocalPath);
 
         $this->deleteFile($this->inputFileLocalPath);
+    }
+
+    /**
+     * Updates the status of the batch as per the processing
+     */
+    protected function updateBatchStatusPostProcess()
+    {
+        //
+        // Sets processed_at. We override this attribute whether it finally
+        // processed or still in partially_processed status after multiple re-runs.
+        //
+        $now = Carbon::now()->getTimestamp();
+
+        $this->batch->setProcessedAt($now);
+
+        //
+        // We set the batch status to processed unless irt failed because of some
+        // unhandled error in the current run.
+        //
+        $status = ($this->batch->isFailed() === true) ?
+                    Status::FAILED :
+                    Status::PROCESSED;
+
+        //
+        // But if we were able to process the file and there were failures, we
+        // mark it as partially_processed or processed depending on the type of
+        // the file.
+        //
+        if (($this->batch->getTotalCount() > 0) and ($this->batch->getFailureCount() > 0))
+        {
+            $status = ($this->shouldMarkProcessedOnFailures() === true) ?
+                        Status::PROCESSED :
+                        Status::PARTIALLY_PROCESSED;
+        }
+
+        //
+        // If in the current run the batch has been processed, we reset the failure
+        // reason to maintain consistency
+        //
+        if ($status === Status::PROCESSED)
+        {
+            $this->batch->unsetFailureReason();
+        }
+
+        $this->batch->setStatus($status);
+
+        $this->batch->setProcessing(false);
+
+        $this->repo->saveOrFail($this->batch);
     }
 
     protected function createSetOutputFileAndSave(array & $entries)
@@ -469,7 +479,7 @@ class Base extends BaseModel\Core
                                  )
                                  ->store(
                                     $ext,
-                                    $this->batch->getLocalSaveDir(),
+                                    $this->batch->getLocalSaveDir(Batch\Entity::OUTPUT_FILE),
                                     true
                                 );
                 $this->outputFileLocalPath = $fileMeta['full'];
@@ -576,7 +586,9 @@ class Base extends BaseModel\Core
 
         $ext = $file->getClientOriginalExtension();
 
-        $file = $file->move($this->batch->getLocalSaveDir(), $this->getFileName($ext));
+        $file = $file->move(
+                    $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE),
+                    $this->batch->getFileKeyWithExt($ext));
 
         $ufh = $this->saveFile($file->getPathname(), FileStore\Type::BATCH_INPUT);
 
@@ -606,9 +618,13 @@ class Base extends BaseModel\Core
      */
     protected function saveFile(string $filePath, string $type): FileStore\Creator
     {
-        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $batchFilePrefix = ($type === FileStore\Type::BATCH_INPUT) ?
+                                Batch\Entity::INPUT_FILE_PREFIX :
+                                Batch\Entity::OUTPUT_FILE_PREFIX;
 
-        $name = $this->batch->getFilePrefix() . $this->getFileName();
+        $name = $batchFilePrefix . $this->batch->getFileKey();
+
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
 
         return (new FileStore\Creator)
                     ->localFilePath($filePath)
@@ -644,10 +660,10 @@ class Base extends BaseModel\Core
         }
         else
         {
-            $awsKey = $this->batch->getFilePrefix(Batch\Status::CREATED) .
+            $awsKey = $this->batch->getFilePrefix(Batch\Entity::INPUT_FILE) .
                             $this->batch->getFileKeyWithExt();
 
-            $saveAs = $this->batch->getLocalSavePath(Batch\Status::CREATED);
+            $saveAs = $this->batch->getLocalSavePath(Batch\Entity::INPUT);
 
             $filePath = $this->getFileFromAws($awsKey, $saveAs);
         }
@@ -761,6 +777,16 @@ class Base extends BaseModel\Core
             [
                 Batch\Entity::ID => $this->batch->getId()
             ]);
+
+        //
+        // In case of any unhandled exceptions we set the status to failed, only if
+        // it wasn't partially_processed previously and we weren't able to parse the file
+        //
+        if (($this->batch->isPartiallyProcessed() === false) and
+            ($this->batch->getFailureCount() === 0))
+        {
+            $this->batch->setStatus(Status::FAILED);
+        }
 
         //
         // Sets failure reason here because exception instance won't be available

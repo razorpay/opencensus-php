@@ -67,13 +67,15 @@ class Reconciliation extends Base
         // We use the original filename here instead of the batch id as it s required
         // by the reconciliator classes to determine the type of reconciliation
         $fileName = pathinfo($fileNameWithExt, PATHINFO_FILENAME);
-        $fileName = $this->batch->getFilePrefix() . $fileName;
+        $fileName = $this->batch->getFilePrefix(Batch\Entity::INPUT_FILE) . $fileName;
 
         $file = new File($inputFileDetails[FileProcessor::FILE_PATH]);
 
         // we move the file to storage location used by UFH Accessor, so that S3
         // mock works successfully.
-        $file = $file->move($this->batch->getLocalSaveDir(), $fileNameWithExt);
+        $file = $file->move(
+                    $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE),
+                    $fileNameWithExt);
 
         $ufh = new FileStore\Creator;
 
@@ -95,6 +97,8 @@ class Reconciliation extends Base
 
     protected function performPreProcessingActions()
     {
+        $this->increaseAllowedSystemLimits();
+
         $this->setGatewayReconciliatorObject();
 
         $this->batch->incrementAttempts();
@@ -119,11 +123,9 @@ class Reconciliation extends Base
         $fileContents = $this->parseInputFileContents();
 
         $this->gatewayReconciliator->startReconciliationV2($fileContents, $this->batch);
-
-        $this->updateBatchStatusPostProcess();
     }
 
-    protected function shouldMarkProcessed(): bool
+    protected function shouldMarkProcessedOnFailures(): bool
     {
         return false;
     }
@@ -275,9 +277,7 @@ class Reconciliation extends Base
 
     protected function postProcess()
     {
-        $this->batch->setProcessing(false);
-
-        $this->repo->saveOrFail($this->batch);
+        $this->updateBatchStatusPostProcess();
     }
 
     /**

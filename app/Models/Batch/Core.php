@@ -130,7 +130,10 @@ class Core extends Base\Core
 
         foreach ($batches as $batch)
         {
-            Processor\Base::get($batch)->validateAndProcess();
+            if ($batch->isProcessable() === true)
+            {
+                Processor\Base::get($batch)->process();
+            }
         }
 
         return $batches;
@@ -145,11 +148,8 @@ class Core extends Base\Core
      */
     public function processBatchViaApi(Entity $batch)
     {
-        //
-        // TODO: Don't call below method, let's add one more named
-        // queueBatchForProcessing() and always use that if called via API
-        //
-        // return $this->processBatch($batch);
+        $this->queueBatchForProcessing($batch);
+
         return $batch;
     }
 
@@ -191,9 +191,15 @@ class Core extends Base\Core
 
         unset($input[Entity::FILE]);
 
+        $this->queueBatchForProcessing($batch, $input);
+    }
+
+    protected function queueBatchForProcessing(Entity $batch, array $input = [])
+    {
+        //
         // For now this is being pushed onto invoice_emails queue only and
         // later we might have a new queue for this purpose only.
-
+        //
         $job = new BatchJob($this->mode, $batch->getId(), $input);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);

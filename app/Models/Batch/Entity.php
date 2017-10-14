@@ -45,6 +45,9 @@ class Entity extends Base\PublicEntity
     const INPUT_FILE_PREFIX         = 'batch/upload/';
     const OUTPUT_FILE_PREFIX        = 'batch/download/';
 
+    const INPUT_FILE                = 'input_file';
+    const OUTPUT_FILE               = 'output_file';
+
     protected static $sign = 'batch';
 
     protected $entity = 'batch';
@@ -198,6 +201,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PROCESSING);
     }
 
+    public function isProcessable(): bool
+    {
+        return (($this->isProcessed() === false) and ($this->isProcessing() === false));
+    }
+
     public function getFailureCount()
     {
         return $this->getAttribute(self::FAILURE_COUNT);
@@ -227,18 +235,11 @@ class Entity extends Base\PublicEntity
      *
      * @return string
      */
-    public function getFilePrefix(string $status = null): string
+    public function getFilePrefix(string $type): string
     {
-        $status = $status ?: $this->getStatus();
-
-        if ($status === Status::CREATED)
-        {
-            return self::INPUT_FILE_PREFIX;
-        }
-        else
-        {
-            return self::OUTPUT_FILE_PREFIX;
-        }
+        return ($type === self::INPUT_FILE) ?
+                    self::INPUT_FILE_PREFIX :
+                    self::OUTPUT_FILE_PREFIX;
     }
 
     /**
@@ -281,18 +282,18 @@ class Entity extends Base\PublicEntity
      * - To move temp php request to this location and pass the same to UFH
      * - To create output file at proper location.
      *
-     * @param string|null $status
+     * @param string    $type   type of batch file input / output
      *
      * @return string
      */
-    public function getLocalSaveDir(string $status = null): string
+    public function getLocalSaveDir(string $type): string
     {
-        return storage_path('files/filestore') . '/' . $this->getFilePrefix($status);
+        return storage_path('files/filestore') . '/' . $this->getFilePrefix($type);
     }
 
-    public function getLocalSavePath(string $status = null)
+    public function getLocalSavePath(string $type): string
     {
-        return $this->getLocalSaveDir($status) . $this->getFileKeyWithExt();
+        return $this->getLocalSaveDir($type) . $this->getFileKeyWithExt();
     }
 
     // ----------------------- End  Getters --------------------------
