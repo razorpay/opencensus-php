@@ -290,6 +290,10 @@ class HdfcGatewayTest extends TestCase
         {
             $this->verifyPayment($payment['razorpay_payment_id']);
         });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['verified']);
     }
 
     public function testVerifyRefundDeniedByRiskOnGateway()
