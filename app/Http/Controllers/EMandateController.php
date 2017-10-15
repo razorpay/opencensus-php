@@ -32,6 +32,8 @@ class EMandateController extends Controller
 
         $input = Request::all();
 
+        $input['file'] = $file;
+
         $data = (new EMandate\Service)->reconcileRegistrationFile($gateway, $input);
 
         return ApiResponse::json($data);
@@ -48,7 +50,16 @@ class EMandateController extends Controller
 
     public function postReconcileDebitFile($gateway)
     {
-        $input = Request::all();
+        if (Request::hasFile('file') === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Input does not contain the excel file to be processed'
+            );
+        }
+
+        $file = Request::file('file');
+
+        $input['file'] = $file;
 
         $data = (new EMandate\Service)->reconcileDebitFile($gateway, $input);
 
