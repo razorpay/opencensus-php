@@ -6,6 +6,7 @@ import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
 import { replaceSlider } from 'common/modal';
 import { methods } from 'util/data';
+import { showEntity } from './Entity';
 
 export default class GatewayRuleList extends Component {
   collection = new Collection({
@@ -29,7 +30,12 @@ export default class GatewayRuleList extends Component {
     return (
       <div class="list-container">
         <div class="box">
-          <header>Gateway Rules</header>
+          <header>
+            Gateway Rules
+            <div class="btn" onClick={showEntity}>
+              Add
+            </div>
+          </header>
           <Form onSubmit={this.onSubmit} class="filters">
             <Field name="merchant_id" label="Merchant ID" required />
             <SelectField name="type" label="Type">
@@ -55,7 +61,7 @@ export default class GatewayRuleList extends Component {
             <button>Search</button>
           </Form>
         </div>
-        <Table model={this.collection} fields={fields} />
+        <Table model={this.collection} fields={fields} onClick={showEntity} />
       </div>
     );
   }

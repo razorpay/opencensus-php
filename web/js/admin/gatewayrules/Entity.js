@@ -1,40 +1,21 @@
 import React, { Component } from 'react';
-import Table from 'ui/Table';
-import Collection from 'util/collection';
-import { observer } from 'mobx-react';
+import Form from 'ui/Form';
+import Field, { SelectField } from 'ui/Field';
+import { openModal } from 'common/modal';
 
-@observer
-export default class PlanEntity extends Component {
-  collection = new Collection({
-    items: this.props.model.rules,
-  });
-
-  componentWillReceiveProps(props) {
-    if (this.props.model.id !== props.model.id) {
-      this.collection.items.replace(props.model.rules);
-    }
-  }
-
+export default class GatewayRuleEntity extends Component {
   render() {
     return (
       <div>
-        <Table model={this.collection} fields={fields} />
+        <header>Create new Gateway Rule</header>
+        <Form>
+          <SelectField />
+        </Form>
       </div>
     );
   }
 }
 
-const PricingFeature = item => (
-  <select value={item.feature} readOnly>
-    <option value="payment">Payment</option>
-    <option value="recurring">Recurring</option>
-    <option value="payout">Payout</option>
-    <option value="transfer">Transfer</option>
-    <option value="emi">EMI</option>
-  </select>
-);
-
-const fields = [
-  ['Rule ID', item => item.id],
-  ['Pricing Feature', PricingFeature],
-];
+export function showEntity() {
+  return openModal(<GatewayRuleEntity />);
+}
