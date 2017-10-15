@@ -1,6 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+
 import Amount from 'ui/Amount';
+import EntityRow from 'ui/EntityRow';
+import SimpleTable from 'ui/SimpleTable';
+
+/*---------------------------------------- Functionality ------------------------------------------*/
 
 /* RESOURCE UTILS */
 export function openMerchantEntity() {
@@ -8,6 +13,7 @@ export function openMerchantEntity() {
   window.open(url);
 }
 
+/*---------------------------------------- Getters ------------------------------------------------*/
 function _getRiskRating(value) {
   const riskMap = {
     1: ['Very Low', 'success'],
@@ -24,9 +30,25 @@ function _getBoolIcon(value) {
   return () => <span>{value ? '✓' : 'x'}</span>;
 }
 
+function _getPricingPlansFields() {
+  return [
+    ['Payment Method', item => item.payment_method],
+    ['Payment Method Type', item => item.payment_method_type],
+    ['Payment Network', item => item.payment_network],
+    ['Payment Issuer', item => item.payment_issuer],
+    ['International', item => item.international],
+    ['Amount Range Active', item => item.amount_range_active],
+    ['Amount Range Min', item => item.amount_range_min / 100],
+    ['Amount Range Max', item => item.amount_range_max / 100],
+    ['Percent Rate', item => item.percent_rate / 100],
+    ['Fixed Rate', item => <Amount value={item.fixed_rate} />],
+  ];
+}
+
+/*---------------------------------------- UI resource --------------------------------------------*/
 export function getDetailsViewMap(merchant) {
   const { details, terminals, pricingPlans, bankDetails } = merchant;
-  console.log('DETAILS....', details);
+  // console.log('DETAILS....', details);
 
   return [
     {
@@ -201,9 +223,22 @@ export function getDetailsViewMap(merchant) {
       label: 'Print Screenshots',
       value: details.amount,
     },
+    // TODO: Convert this in ToggleEntityRow container. Check EntityRow.js TODO
     {
       label: 'Pricing Plan',
       value: () => <button class="btn-default">Show/Hide</button>,
+      toggleChildren: function() {
+        return (
+          <div>
+            <EntityRow label="Plan Id" value={pricingPlans.id} />
+            <EntityRow label="Plan Name" value={pricingPlans.name} />
+            <SimpleTable
+              items={pricingPlans.rules}
+              fields={_getPricingPlansFields()}
+            />
+          </div>
+        );
+      },
     },
     {
       label: 'Terminal',

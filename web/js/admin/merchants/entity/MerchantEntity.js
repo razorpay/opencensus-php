@@ -217,14 +217,15 @@ export default class MerchantEntity extends Component {
         {detailsMap.map(item => {
           if (typeof item.value === 'function') {
             //TODO: Display the value directly (That value is to be something like ListViewToggler)
-            if (item.label === 'Pricing Plan') {
-              console.log('PRICING PLANS?', item.value);
-            }
+
             return (
               <EntityRow
                 key={item.label}
                 label={item.label}
                 value={item.value}
+                toggleChildren={
+                  item.toggleChildren ? item.toggleChildren() : undefined
+                }
               />
             );
           } else {
