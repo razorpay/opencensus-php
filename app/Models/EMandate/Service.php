@@ -43,7 +43,7 @@ class Service extends Base\Service
      * @return array Summary of reconciliation
      * @throws \Throwable
      */
-    public function reconcileRegistrationFile(stirng $gateway, array $input)
+    public function reconcileRegistrationFile(string $gateway, array $input)
     {
         (new Validator)->validateRegistrationGateway($gateway);
 
