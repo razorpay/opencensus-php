@@ -32,7 +32,7 @@ class EMandateController extends Controller
 
         $input = Request::all();
 
-        $data = $this->service('emandate')->reconcileRegistrationFile($gateway, $input);
+        $data = (new EMandate\Service)->reconcileRegistrationFile($gateway, $input);
 
         return ApiResponse::json($data);
     }

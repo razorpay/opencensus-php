@@ -4,6 +4,7 @@ namespace RZP\Models\EMandate;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Payment\Gateway;
 
 class Validator extends Base\Validator
 {
@@ -13,7 +14,19 @@ class Validator extends Base\Validator
 
         if (in_array($gateway, $validGateways, true) === false)
         {
-            throw new Exception\BadRequestValidationFailureException('Invalida eMandate gateway. ' . $gateway);
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid eMandate registration gateway. ' . $gateway);
+        }
+    }
+
+    public function validateDebitGateway($gateway)
+    {
+        $validGateways = array_values(Gateway::$fileBasedEMandateDebitBanks);
+
+        if (in_array($gateway, $validGateways, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid eMandate debit gateway. ' . $gateway);
         }
     }
 }

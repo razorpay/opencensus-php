@@ -1008,18 +1008,22 @@ class Repository extends Base\Repository
 
         $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
 
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+
         $payments = $this->newQuery()
                          ->join(function ($join)
                          {
-                            $join->on(Entity::TOKEN_ID, '=', Token\Entity::ID);
-                            $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', Token\Entity::ID);
+                            $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
+                            $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
                          })
                         ->where(Entity::RECURRING_TYPE, '=', RecurringType::AUTO)
                         ->where(Entity::STATUS, '=', Status::CREATED)
                         ->where($paymentRecurringColumn, '=', 1)
-                        ->where(Entity::METHOD, '=', Method::NETBANKING)
+                        ->where($paymentMethodColumn, '=', Method::NETBANKING)
                         ->where(Entity::GATEWAY, '=', $gateway)
-                        ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                        ->whereBetween($paymentCreatedAtColumn, [$from, $to])
                         ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::CONFIRMED)
                         ->where($tokenRecurringColumn, '=', 1)
                         ->with(['localToken', 'globalToken'])

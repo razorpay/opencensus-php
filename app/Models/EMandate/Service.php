@@ -70,7 +70,7 @@ class Service extends Base\Service
 
     public function generateDebitFile(string $gateway, array $input)
     {
-        (new Validator)->validateGateway($gateway);
+        (new Validator)->validateDebitGateway($gateway);
 
         list($from, $to) = $this->getTimestamps($input);
 
@@ -88,11 +88,26 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function reconcileDebitFile(stirng $gateway, array $input)
+    public function reconcileDebitFile(string $gateway, array $input)
     {
-        (new Validator)->validateGateway($gateway);
+        (new Validator)->validateDebitGateway($gateway);
 
-        $response = $this->app['gateway']->call($gateway, Payment\Action::RECONCILE_DEBIT_EMANDATE, $input, $this->mode);
+        try
+        {
+            $response = $this->app['gateway']->call(
+                            $gateway,
+                            Payment\Action::RECONCILE_DEBIT_EMANDATE,
+                            $input,
+                            $this->mode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e, Trace::DEBUG, TraceCode::EMANDATE_DEBIT_RECON_FAILED,
+                (array) json_decode($e->getMessage()));
+
+                throw $e;
+        }
 
         return $response;
     }
