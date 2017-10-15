@@ -3,6 +3,9 @@ const stylus = require('gulp-stylus');
 const iconFontGenerator = require('icon-font-generator/lib');
 const glob = require('glob').sync;
 const path = require('path');
+const { execSync } = require('child_process');
+
+execSync('mkdir -p public/dist/fonts');
 
 function handleError(err) {
   console.log(err.toString());

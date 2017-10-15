@@ -4,6 +4,7 @@ import CSSTransition from 'react-transition-group/CSSTransition';
 
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
+import { animObj } from 'util/index';
 
 class ModalStore {
   @observable modals = [];
@@ -120,8 +121,6 @@ export default class ModalContainer extends Component {
     );
   }
 }
-
-const animObj = { enter: 300, exit: 300 };
 
 const Modal = ({ modal }) => (
   <div class="modal">

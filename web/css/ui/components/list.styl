@@ -1,7 +1,4 @@
 .list-container
-  header
-    padding: 20px
-    font-size: 20px
   .filters
     padding: 10px 5px
     display: flex
@@ -41,6 +38,9 @@
       border-top: 1px solid #eee
       border-bottom: @border-top
 
+.table-bordered
+  border: 1px solid #eee
+
 .table
   display: inherit
   width: 100%
@@ -49,10 +49,15 @@
 .tr
   display: table-row
   width: 100%
+  transition: .7s
+  &.row-enter
+    background: $bg-highlight !important
+  &.row-exit
+    background: #FFCDCD !important
   &.clickable
     cursor: pointer
     &:hover
-      background: #FFFFE0
+      background: $bg-highlight
 
 .th
   font-weight: bold

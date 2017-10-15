@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Table from 'ui/Table';
 import Field, { SelectField, CheckField } from 'ui/Field';
-import Collection from 'util/collection';
+import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
 import { openMerchantEntity } from './entity/entity-resources';
 

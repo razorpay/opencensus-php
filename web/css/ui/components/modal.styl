@@ -53,13 +53,9 @@
   background: #fff
   border-radius: 3px
   box-shadow: 0 2px 8px 2px rgba(0,0,0,.1)
-  padding: 30px
   transition: .3s
   header
-    margin: -30px -30px 30px
-    padding: 16px 20px
     border-bottom: 2px solid #eee
-    font-size: 20px
 
 .modal-close, .slider-close
   position: absolute
@@ -100,11 +96,11 @@
     opacity: 0
     transform: translateY(-4px) scale(.99)
   &.success
-    background: #E9F3E6
-    color: #627207
+    background: $bg-success
+    color: $color-success
   &.error
-    background: #FDEBDF
-    color: #94191B
+    background: $bg-danger
+    color: $color-danger
     &:before
       content: 'Error: '
       font-weight: bold

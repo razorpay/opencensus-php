@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Table from 'ui/Table';
 import Field, { SelectField, SwitchField, DateTimeField } from 'ui/Field';
-import Collection from 'util/collection';
+import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
 
 export default class EntityList extends Component {

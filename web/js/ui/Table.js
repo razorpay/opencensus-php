@@ -11,7 +11,7 @@ export default class Table extends Component {
     let Tr = onSubmit ? Form : 'div';
     let trClass = onClick ? 'tr clickable' : 'tr';
 
-    pending = pending.get();
+    pending = pending.fetch;
 
     return (
       <div>

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Table from 'ui/Table';
 import Field, { SelectField, SelectMode } from 'ui/Field';
-import Collection from 'util/collection';
+import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
 import { replaceSlider } from 'common/modal';
 import { methods } from 'util/data';

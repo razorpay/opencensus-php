@@ -1,8 +1,8 @@
 mkdir -p public/dist
 files=$(cat <<-END
   axios           axios/dist/axios.min.js
-  React           react/umd/react.production.min.js
-  ReactDOM        react-dom/umd/react-dom.production.min.js
+  React           react/umd/react.development.js
+  ReactDOM        react-dom/umd/react-dom.development.js
   ReactRouterDOM  react-router-dom/umd/react-router-dom.min.js
   mobx            mobx/lib/mobx.umd.min.js
   mobxReact       mobx-react/index.min.js

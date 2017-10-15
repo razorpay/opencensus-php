@@ -5,3 +5,4 @@ export const getFormattedAmount = amount =>
     .replace('.00', '');
 
 export const deepClone = o => JSON.parse(JSON.stringify(o));
+export const animObj = { enter: 300, exit: 300 };

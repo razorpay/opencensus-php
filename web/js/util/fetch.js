@@ -9,6 +9,10 @@ export function adminPost(params) {
   return axios.post('/admin/generic', parseParams(params));
 }
 
+export function adminDelete(params) {
+  return axios.delete('/admin/generic', { params: parseParams(params) });
+}
+
 function parseParams({ data, queryParams }) {
   let params = deepClone(data);
 

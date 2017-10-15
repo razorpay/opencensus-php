@@ -1,70 +1,87 @@
 import React, { Component } from 'react';
-import { replaceSlider } from 'common/modal';
-import Table from 'ui/Table';
-import Collection from 'util/collection';
+import { openModal } from 'common/modal';
+import Duplexes from 'ui/Duplexes';
+import Plan, { options } from './plan';
 import { observer } from 'mobx-react';
+import * as item from 'ui/Item';
+import AsyncButton from 'ui/AsyncButton';
+import Field from 'ui/Field';
 
 @observer
 export default class PlanEntity extends Component {
-  collection = new Collection({
-    items: this.props.model.rules,
-  });
-
-  componentWillReceiveProps(props) {
-    if (this.props.model.id !== props.model.id) {
-      this.collection.items.replace(props.model.rules);
-    }
-  }
+  collection = new Plan(this.props.plan);
 
   render() {
+    let { props, items, save, updateName } = this.collection;
     return (
       <div>
-        <Table model={this.collection} fields={fields} />
+        <header>
+          {(props.id && props.name) || (
+            <div>
+              Enter Plan Name: <Field onChange={updateName} />
+              {items.length > 1 && (
+                <AsyncButton
+                  class="btn"
+                  pendingClass="btn spinner"
+                  onClick={save}
+                  text="Save Plan"
+                />
+              )}
+            </div>
+          )}
+        </header>
+        <Duplexes model={this.collection} fields={fields} />
       </div>
     );
   }
 }
 
-const PricingFeature = item => (
-  <select value={item.feature} readOnly>
-    <option value="payment">Payment</option>
-    <option value="recurring">Recurring</option>
-    <option value="payout">Payout</option>
-    <option value="transfer">Transfer</option>
-    <option value="emi">EMI</option>
-  </select>
-);
+// options.feature[item.feature]
+const namedKey = (item, name) => {
+  if (item.props.id || item.readonly) {
+    return options[name][item[name] || ''];
+  } else {
+    return (
+      <select name={name} value={item[name]} onChange={item.onPropChange}>
+        {Object.keys(options[name]).map(value => (
+          <option value={value} key={value}>
+            {options[name][value]}
+          </option>
+        ))}
+      </select>
+    );
+  }
+};
 
 const fields = [
-  ['Rule ID', item => item.id],
-  ['Pricing Feature', PricingFeature],
+  item => item.props.id && ['', item.props.id],
+  item => ['Feature', namedKey(item, 'feature')],
+  item => item.props.feature && ['Method', namedKey(item, 'payment_method')],
+  item =>
+    item.props.feature === 'payment' && [
+      'Card Type',
+      namedKey(item, 'payment_method_type'),
+    ],
+  item => [
+    '',
+    ((item.props.id || item.readonly) && (
+      <AsyncButton
+        class="link danger"
+        pendingClass="spinner"
+        text="Delete"
+        onClick={item.delete}
+      />
+    )) || (
+      <AsyncButton
+        class="btn"
+        text="Add"
+        pendingClass="spinner"
+        onClick={item.save}
+      />
+    ),
+  ],
 ];
 
 export function openPricingEntity() {
-  replaceSlider(<PlanEntity model={this} />);
+  openModal(<PlanEntity plan={this} />);
 }
-
-/*{
-    "id": "1b03fh9jXGH34f",
-    "plan_id": "2atGxLIYLyHWg7",
-    "plan_name": "Startup Plan",
-    "feature": "payment",
-    "gateway": null,
-    "payment_method": "wallet",
-    "payment_method_type": null,
-    "payment_network": null,
-    "payment_issuer": null,
-    "emi_duration": null,
-    "international": false,
-    "amount_range_active": false,
-    "amount_range_min": null,
-    "amount_range_max": null,
-    "percent_rate": 250,
-    "fixed_rate": 0,
-    "min_fee": 0,
-    "max_fee": null,
-    "created_at": 1505747346,
-    "updated_at": 1505747346,
-    "deleted_at": null,
-    "expired_at": null
-}*/
