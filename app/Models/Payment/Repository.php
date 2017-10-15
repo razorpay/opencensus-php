@@ -1013,7 +1013,15 @@ class Repository extends Base\Repository
         $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
 
         $payments = $this->newQuery()
-                         ->join(function ($join)
+                         ->join(
+                              Table::TOKEN,
+                              function ($join)
+                              use (
+                                $tokenIdColumn,
+                                $paymentRecurringColumn,
+                                $paymentMethodColumn,
+                                $paymentCreatedAtColumn,
+                                $tokenRecurringColumn)
                          {
                             $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
                             $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
