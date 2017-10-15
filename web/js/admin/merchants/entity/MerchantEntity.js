@@ -26,6 +26,7 @@ export default class MerchantEntity extends Component {
   constructor(props) {
     super();
     parentProps = props;
+    this.state = {};
 
     this.merchantId = props.match.params.id;
 
@@ -206,7 +207,9 @@ export default class MerchantEntity extends Component {
   }
 
   getMainContent() {
-    const detailsMap = getDetailsViewMap(toJS(this.model.merchant));
+    // TODO: Find better solution to pass scope to make avail this.setState in case required. (POC commit only)
+    const detailsMap = this::getDetailsViewMap(toJS(this.model.merchant));
+    console.log('STATE...', this.state);
 
     return (
       <main class="">

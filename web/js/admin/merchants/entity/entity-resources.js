@@ -49,6 +49,7 @@ function _getPricingPlansFields() {
 export function getDetailsViewMap(merchant) {
   const { details, terminals, pricingPlans, bankDetails } = merchant;
   // console.log('DETAILS....', details);
+  const self = this;
 
   return [
     {
@@ -242,7 +243,16 @@ export function getDetailsViewMap(merchant) {
     },
     {
       label: 'Terminal',
-      value: () => <button class="btn-default">Show/Hide</button>,
+      value: () => (
+        <button
+          class="btn-default"
+          onClick={function() {
+            self.setState({ showTerminal: !self.state.showTerminal });
+          }}
+        >
+          Show/Hide
+        </button>
+      ),
     },
     {
       label: 'Gateway Rules',
