@@ -6,42 +6,137 @@ export default class Model {
   merchant = {
     details: {},
     terminals: {},
+    offers: [],
     pricingPlans: {},
+    scheduleTasks: {},
     bankDetails: {},
+    hasSettlementSchedule: undefined,
   };
 
-  constructor({ data, fetchFn }) {
+  constructor({ merchantId, fetchFn }) {
     this.fetchFn = fetchFn;
-    this.data = data;
+    this.merchantId = merchantId;
 
     this.pending = observable.box();
 
     // fetch if not pre-populated
-    this.fetch();
+    this.fetchDetails();
+    this.fetchMerchantOffers();
   }
 
   @action
-  fetch() {
+  fetchDetails() {
+    const data = {
+      route_name: 'merchant_details_fetch',
+      account_id: this.merchantId,
+      merchant_id: this.merchantId,
+    };
+
+    this.pending.set(true);
+
     return this._request(
       'fetchMerchantDetails',
       this.fetchFn({
-        data: this.data,
+        data,
       })
-    );
+    ).then(data => {
+      transaction(() => {
+        this.merchant.details = data.data;
+        this.pending.set(false);
+      });
+
+      this.fetchPricingPlans();
+      this.fetchScheduleTasks();
+    });
   }
 
-  _request(name, promise) {
-    this.pending.set(true);
+  @action
+  fetchMerchantOffers() {
+    const data = {
+      route_name: 'admin_fetch_entity_multiple',
+      url_params: {
+        type: 'offer',
+      },
+      mode: 'live',
+    };
 
+    const queryParams = {
+      merchant_id: this.merchantId,
+    };
+
+    return this._request(
+      'fetchMerchantOffers',
+      this.fetchFn({
+        data: data,
+        queryParams,
+      })
+    ).then(data => {
+      this.merchant.offers = data.data.items;
+    });
+  }
+
+  @action
+  fetchPricingPlans() {
+    const data = {
+      route_name: 'merchant_get_pricing',
+      url_params: {
+        id: this.merchantId,
+      },
+    };
+
+    return this._request(
+      'fetchMerchantPricingPlans',
+      this.fetchFn({
+        data,
+      })
+    ).then(data => {
+      this.merchant.pricingPlans = data.data;
+    });
+  }
+
+  @action
+  fetchScheduleTasks() {
+    const data = {
+      route_name: 'admin_fetch_entity_multiple',
+      url_params: {
+        type: 'schedule_task',
+      },
+    };
+
+    const queryParams = {
+      merchant_id: this.merchantId,
+    };
+
+    return this._request(
+      'fetchMerchantScheduleTasks',
+      this.fetchFn({
+        data,
+        queryParams,
+      })
+    ).then(data => {
+      this.merchant.scheduleTasks = data.data;
+
+      // Check if merchant has Settlement Schedule
+      if (this.merchant.scheduleTasks) {
+        for (let key in this.merchant.scheduleTasks.items) {
+          if (this.merchant.scheduleTasks.items[key]['type'] === 'settlement') {
+            this.merchant.hasSettlementSchedule = true;
+            break;
+          }
+        }
+      }
+    });
+  }
+
+  // TODO: Can be moved to file fetch.js as compulsory layer for all requests
+  _request(name, promise) {
     return promise
       .then(({ data }) => {
         if (!data.success) {
           throw data.errors[0];
         }
-        transaction(() => {
-          this.merchant.details = data.data;
-          this.pending.set(false);
-        });
+
+        return data;
       })
       .catch(e => {
         notifyError(e);

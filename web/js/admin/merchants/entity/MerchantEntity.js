@@ -31,11 +31,7 @@ export default class MerchantEntity extends Component {
 
     this.model = new Model({
       fetchFn: adminFetch,
-      data: {
-        route_name: 'merchant_details_fetch',
-        account_id: this.merchantId,
-        merchant_id: this.merchantId,
-      },
+      merchantId: this.merchantId,
     });
   }
 
@@ -221,6 +217,9 @@ export default class MerchantEntity extends Component {
         {detailsMap.map(item => {
           if (typeof item.value === 'function') {
             //TODO: Display the value directly (That value is to be something like ListViewToggler)
+            if (item.label === 'Pricing Plan') {
+              console.log('PRICING PLANS?', item.value);
+            }
             return (
               <EntityRow
                 key={item.label}
