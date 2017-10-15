@@ -1,22 +1,28 @@
 <?php
 
-namespace RZP\Gateway\Netbanking;
+namespace RZP\Models\EMandate;
 
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
     public function generateRegistrationFile(string $gateway, array $input): array
     {
-        (new Validator)->validateGateway($gateway);
+        // Validate bank
+        (new Validator)->validateRegistrationGateway($gateway);
 
+        // Get timestamps
         list($from, $to) = $this->getTimestamps($input);
 
+        // Get eligible payments
         $payments = $this->repo->payment->fetchPendingEMandateRegistration($gateway, $from, $to);
 
         if ($payments->count() === 0)
@@ -26,16 +32,38 @@ class Service extends Base\Service
 
         $gatewayInput = ['payments' => $payments];
 
+        // Call gateway method
         $response = $this->app['gateway']->call($gateway, Payment\Action::INITIATE_REGISTER_EMANDATE, $gatewayInput, $this->mode);
 
         return $response;
     }
 
+    /** @param array $input The input received from the route
+     *
+     * @return array Summary of reconciliation
+     * @throws \Throwable
+     */
     public function reconcileRegistrationFile(stirng $gateway, array $input)
     {
-        (new Validator)->validateGateway($gateway);
+        (new Validator)->validateRegistrationGateway($gateway);
 
-        $response = $this->app['gateway']->call($gateway, Payment\Action::RECONCILE_REGISTER_EMANDATE, $input, $this->mode);
+        try
+        {
+            $response = $this->app['gateway']->call(
+                            $gateway,
+                            Payment\Action::RECONCILE_REGISTER_EMANDATE,
+                            $input,
+                            $this->mode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e, Trace::DEBUG, TraceCode::EMANDATE_REGISTER_RECON_FAILED,
+                (array) json_decode($e->getMessage()));
+
+                throw $e;
+        }
+
 
         return $response;
     }

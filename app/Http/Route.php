@@ -1455,9 +1455,7 @@ final class Route
             'gateway_file_create',
             'reports_refund_irctc',
             'emandate_registration_initiate',
-            'emandate_registration_reconcile',
             'emandate_debit_initiate',
-            'emandate_debit_reconcile',
         ],
 
         'kotak' => [
@@ -1471,7 +1469,9 @@ final class Route
         ],
 
         'mailgun' => [
-            'reconciliate'
+            'reconciliate',
+            'emandate_registration_reconcile',
+            'emandate_debit_reconcile',
         ],
 
         'raven' => [

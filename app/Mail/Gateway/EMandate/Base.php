@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Mail\Gateway;
+namespace RZP\Mail\Gateway\EMandate;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;

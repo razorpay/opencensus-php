@@ -7,11 +7,11 @@ use RZP\Exception;
 
 class Validator extends Base\Validator
 {
-    public function validateGateway($gateway)
+    public function validateRegistrationGateway($gateway)
     {
-        $fileBasedEMandateBanks = array_values(Payment\Gateway::$fileBasedEMandateBanks);
+        $validGateways = array_values(Gateway::$fileBasedEMandateRegistrationBanks);
 
-        if (in_array($gateway, $fileBasedEMandateBanks, true) === false)
+        if (in_array($gateway, $validGateways, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException('Invalida eMandate gateway. ' . $gateway);
         }

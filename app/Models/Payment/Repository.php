@@ -967,20 +967,37 @@ class Repository extends Base\Repository
     {
         $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
 
-        $payments = $this->newQuery()
-                         ->join(function ($join)
-                         {
-                            $join->on(Entity::TOKEN_ID, '=', Token\Entity::ID);
-                            $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', Token\Entity::ID);
-                         })
-                        ->where(Entity::RECURRING_TYPE, '=', RecurringType::INITIAL)
-                        ->where(Entity::RECURRING, '=', 1)
-                        ->where(Entity::METHOD, '=', Method::NETBANKING)
-                        ->where(Entity::GATEWAY, '=', $gateway)
-                        ->whereBetween(Entity::CREATED_AT, [$from, $to])
-                        ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
-                        ->with(['localToken', 'globalToken', 'token.customer'])
-                        ->get();
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Token\Entity::RECURRING);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+
+        return $this->newQuery()
+                    ->join(
+                          Table::TOKEN,
+                          function ($join)
+                          use(
+                            $tokenIdColumn,
+                            $tokenRecurringColumn,
+                            $paymentRecurringColumn,
+                            $paymentMethodColumn,
+                            $paymentCreatedAtColumn)
+                    {
+                        $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
+                        $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
+                    })
+                    ->where(Entity::RECURRING_TYPE, '=', RecurringType::INITIAL)
+                    ->where($paymentRecurringColumn, '=', 1)
+                    ->where($paymentMethodColumn, '=', Method::NETBANKING)
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+                    ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
+                    ->where($tokenRecurringColumn, '!=', 1)
+                    ->with(['localToken', 'globalToken', 'customer'])
+                    ->get();
     }
 
     public function fetchPendingEMandateDebit(string $gateway, $from, $to)

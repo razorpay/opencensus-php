@@ -11,6 +11,9 @@ use RZP\Models\FileStore;
 
 class EMandateRegistrationFile extends Base\Core
 {
+    // In mins
+    const SIGNED_URL_DURATION = 1440;
+
     protected function createFile(
                         string $extension,
                         $content,

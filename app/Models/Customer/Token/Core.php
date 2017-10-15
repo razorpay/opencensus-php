@@ -155,7 +155,7 @@ class Core extends Base\Core
         return $tokens;
     }
 
-    public function updateTokenFromNetbankingGatewayData(Entity $token, array $gatewayData): Entity
+    public function updateTokenFromNetbankingGatewayData(Entity $token, array $gatewayData)
     {
         if (empty($gatewayData[Entity::RECURRING_STATUS]) === false)
         {
