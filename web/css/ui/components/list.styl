@@ -41,14 +41,16 @@
 .table-bordered
   border: 1px solid #eee
 
+.table-container
+  overflow: auto
+
 .table
-  display: inherit
   width: 100%
-  overflow-x: scroll
+  display: table
+  .tr
+    display: table-row
 
 .tr
-  display: table-row
-  width: 100%
   transition: .7s
   &.row-enter
     background: $bg-highlight !important

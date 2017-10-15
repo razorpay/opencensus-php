@@ -20,21 +20,23 @@ export default class Duplexes extends Component {
       <div>
         {(pending && <div class="table-pending" />) ||
           (items.length && (
-            <div class="table table-striped">
-              {(model.props.id && (
-                <TransitionGroup>
-                  {items.map(m => (
-                    <CSSTransition
-                      key={m.props.id || 'last'}
-                      classNames="row"
-                      timeout={animObj}
-                    >
-                      <Row fields={fields} item={m} />
-                    </CSSTransition>
-                  ))}
-                </TransitionGroup>
-              )) ||
-                items.map((m, i) => <Row key={i} fields={fields} item={m} />)}
+            <div class="table-container">
+              <div class="table-striped">
+                {(model.props.id && (
+                  <TransitionGroup>
+                    {items.map(m => (
+                      <CSSTransition
+                        key={m.props.id || 'last'}
+                        classNames="row"
+                        timeout={animObj}
+                      >
+                        <Row fields={fields} item={m} />
+                      </CSSTransition>
+                    ))}
+                  </TransitionGroup>
+                )) ||
+                  items.map((m, i) => <Row key={i} fields={fields} item={m} />)}
+              </div>
             </div>
           )) || <div class="table-empty" />}
       </div>

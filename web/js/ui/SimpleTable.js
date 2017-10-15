@@ -12,37 +12,27 @@ export default ({ fields, items, onClick }) => {
   let trClass = onClick ? 'tr clickable' : 'tr';
 
   return (
-    <div>
-      {items && items.length ? (
-        <div class="box">
-          <div class="table table-striped">
-            <div class="tr thead">
+    <div class="table-container">
+      <div class="table table-striped">
+        <div class="tr thead">
+          {fields.map((field, index) => (
+            <div class="th" key={index}>
+              {field[0]}
+            </div>
+          ))}
+        </div>
+        {items.map((item, index) => {
+          return (
+            <div class={trClass} key={index} onClick={onClick && item::onClick}>
               {fields.map((field, index) => (
-                <div class="th" key={index}>
-                  {field[0]}
+                <div class="td" key={index}>
+                  {field[1](item)}
                 </div>
               ))}
             </div>
-            {items.map((item, index) => {
-              return (
-                <div
-                  class={trClass}
-                  key={index}
-                  onClick={onClick && item::onClick}
-                >
-                  {fields.map((field, index) => (
-                    <div class="td" key={index}>
-                      {field[1](item)}
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ) : (
-        <div class="table-empty" />
-      )}
+          );
+        })}
+      </div>
     </div>
   );
 };
