@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Route, matchPath, withRouter, Switch } from 'react-router-dom';
+import { Route, matchPath, Switch } from 'react-router-dom';
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 import MainNavLink from 'admin/components/MainNavLink';
 import ShowWhen from 'admin/components/ShowWhen';
@@ -13,116 +13,73 @@ import EmailLogsList from 'admin/emailLogs/EmailLogsList';
 
 import MerchantEntity from 'admin/merchants/entity/MerchantEntity';
 
-@withRouter
+import WorkflowList from 'admin/workflows/List';
+// import RequestList from 'admin/workflows/RequestList';
+
 export default class App extends Component {
-  componentWillMount() {
-    this.setBaseLocation(this.props.location);
-  }
-
-  componentWillReceiveProps(props) {
-    this.setBaseLocation(props.location);
-  }
-
   render() {
     return (
       <div id="app-container">
         <main>
-          {(this.location && (
-            <Switch location={this.location}>
-              <Route path="/merchants/:id" component={MerchantEntity} />
-              <Route path="/merchants" component={MerchantList} />
-              <Route path="/stats" component={Stats} />
-              <Route path="/pricing-plans" component={PlanList} />
-              <Route path="/gateway-rules" component={GatewayRulesList} />
-              <Route path="/entities" component={EntityList} />
-              <Route path="/email-logs" component={EmailLogsList} />
-            </Switch>
-          )) ||
-            null}
+          <Switch location={this.location}>
+            <Route path="/merchants/:id" component={MerchantEntity} />
+            <Route path="/merchants" component={MerchantList} />
+            <Route path="/stats" component={Stats} />
+            <Route path="/pricing-plans" component={PlanList} />
+            <Route path="/gateway-rules" component={GatewayRulesList} />
+            <Route path="/entities" component={EntityList} />
+            <Route path="/email-logs" component={EmailLogsList} />
+
+            <Route path="/workflows" component={WorkflowList} />
+          </Switch>
         </main>
         <header />
         <aside>
           <a href="/admin">
             <img src="https://cdn.razorpay.com/logo_invert.svg" width="146" />
           </a>
-          <label>Management</label>
-          <MainNavLink to="/merchants" permission="view_all_merchants">
-            Merchants
-          </MainNavLink>
-          <MainNavLink to="/stats" permission="view_merchant_stats">
-            Merchant Stats
-          </MainNavLink>
-          <MainNavLink to="/pricing-plans" permission="view_pricing_list">
-            Pricing Plans
-          </MainNavLink>
-          <MainNavLink to="/gateway-rules" permission="view_gateway_rule">
-            Gateway Rules
-          </MainNavLink>
-          <MainNavLink to="/entities" permission="view_all_entity">
-            Entities
-          </MainNavLink>
-          <MainNavLink to="/actions" permission="view_actions">
-            Actions
-          </MainNavLink>
-          <MainNavLink to="/email-logs" permission="view_email_logs">
-            Email Logs
-          </MainNavLink>
-          <ShowWhen permission="view_workflow_requests">
-            <label>Workflows</label>
-          </ShowWhen>
-          <MainNavLink to="/workflows" permission="view_all_workflow">
-            Workflows
-          </MainNavLink>
-          <MainNavLink
-            to="/workflows/actions/list"
-            permission="view_workflow_requests"
-          >
-            Requests
-          </MainNavLink>
-          <ShowWhen permission="view_all_admin">
-            <label>User Access Management</label>
-          </ShowWhen>
-          <MainNavLink to="/invitations/list" permission="view_merchant_invite">
-            Invitations
-          </MainNavLink>
-          <MainNavLink to="/orgs/list" permission="view_all_org">
-            Organizations
-          </MainNavLink>
-          <MainNavLink to="/users/list" permission="view_all_admin">
-            Users
-          </MainNavLink>
-          <MainNavLink to="/roles/list" permission="view_all_role">
-            Roles
-          </MainNavLink>
-          <MainNavLink to="/permissions/list" permission="view_all_permission">
-            Permissions
-          </MainNavLink>
-          <MainNavLink to="/groups/list" permission="view_group">
-            Groups
-          </MainNavLink>
-          <MainNavLink to="/auditlogs/list" permission="view_auditlog">
-            Audit Log
-          </MainNavLink>
+          {links.map((linkGroup, i) => (
+            <div key={i}>
+              {linkGroup.map((l, i) => (
+                <MainNavLink key={i} to={l[1]} permission={l[2]}>
+                  {l[0]}
+                </MainNavLink>
+              ))}
+            </div>
+          ))}
         </aside>
         <ModalContainer />
       </div>
     );
   }
-
-  setBaseLocation(location) {
-    for (let route in entityRoutes) {
-      var match = matchPath(location.pathname, route);
-      if (match) {
-        var EntityView = entityRoutes[route];
-        return openSlider({
-          component: <EntityView id={match.params.id} />,
-          closeUrl: location.pathname,
-        });
-      }
-    }
-    closeSlider();
-    this.location = location;
-  }
 }
 
-const entityRoutes = {};
+const links = [
+  [
+    // title, url, permission
+    ['Merchants', '/merchants', 'view_all_merchants'],
+    ['Stats', '/stats', 'view_merchant_stats'],
+    ['Pricing Plans', '/pricing-plans', 'view_pricing_list'],
+    ['Gateway Rules', '/gateway-rules', 'view_gateway_rule'],
+    ['Entities', '/entities', 'view_all_entity'],
+    ['Actions', '/actions', 'view_actions'],
+    ['Email Logs', '/email-logs', 'view_email_logs'],
+  ],
+
+  // workflow
+  [
+    ['Workflows', '/workflows', 'view_all_workflow'],
+    ['Requests', '/requests', 'view_workflow_requests'],
+  ],
+
+  // user access management
+  [
+    ['Invitations', '/invite', 'view_merchant_invite'],
+    ['Organisations', '/orgs', 'view_all_org'],
+    ['Users', '/users', 'view_all_admin'],
+    ['Roles', '/roles', 'view_all_role'],
+    ['Permissions', '/permissions', 'view_all_permission'],
+    ['Groups', '/groups', 'view_group'],
+    ['Audit Log', '/logs', 'view_auditlog'],
+  ],
+];

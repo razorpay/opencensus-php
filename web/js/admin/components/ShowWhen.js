@@ -1,5 +1,5 @@
 import { Component, PropTypes } from 'react';
-import user from '../entities/user';
+import user from 'admin/user';
 
 export default class ShowWhen extends Component {
   render() {

@@ -5,16 +5,6 @@ import Field, { SelectField, CheckField } from 'ui/Field';
 import Collection from 'model/collection';
 import fetch from 'util/fetch';
 
-const dummydata = {
-  event: 'delivered',
-  recepient: 'aibhav.padlikar@railyatri.in',
-  subject: 'Razorpay | Webhook failed for RailYatri',
-  failureReason: '',
-  tags: ['webhook', '6nEoDWoLQaMfGc'],
-  url: 'asdasd.com',
-  ts: new Date().toDateString(),
-};
-
 const emailFetch = ({ queryParams }) => {
   if (!queryParams.event) {
     queryParams.event = 'NOT accepted';

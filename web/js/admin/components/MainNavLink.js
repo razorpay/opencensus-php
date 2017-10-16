@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { NavLink, withRouter } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import ShowWhen from './ShowWhen';
 
 export default class MainNavLink extends Component {
@@ -9,7 +9,6 @@ export default class MainNavLink extends Component {
       children,
       isNew,
       isBeta = false,
-      baseLocation,
       permission,
       ...linkProps
     } = this.props;
@@ -17,21 +16,14 @@ export default class MainNavLink extends Component {
     let tag;
 
     if (isBeta) {
-      tag = (
-        <span class="badge bg-primary-fuse pull-right hidden-xs">beta</span>
-      );
+      tag = <badge>beta</badge>;
     } else if (isNew) {
-      tag = <span class="badge bg-success pull-right hidden-xs">new</span>;
+      tag = <badge>new</badge>;
     }
 
     return (
       <ShowWhen permission={permission}>
-        <NavLink
-          {...linkProps}
-          isActive={(match, location) => {
-            return (baseLocation || location).pathname === linkProps.to;
-          }}
-        >
+        <NavLink {...linkProps}>
           <i class={icon} />
           {children}
           {tag}
