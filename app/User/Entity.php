@@ -100,16 +100,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
         return $this->edit($input, 'changePassword');
     }
 
-    /**
-     * Get the unique identifier for the user.
-     *
-     * @return mixed
-     */
-    public function getAuthIdentifier()
-    {
-        return $this->getKey();
-    }
-
     public static function getUserWithEmail($email)
     {
         return self::where('email', $email)->first();

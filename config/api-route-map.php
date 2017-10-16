@@ -612,6 +612,8 @@ return [
         'user_login'                        => 'users/login',
         // Resend Verification
         'user_resend_verification'          => 'users/resend-verification',
+        // Fetch user
+        'user_fetch'                        => 'users/{id}',
 
         // Admin Routes
         // Pricing

@@ -197,7 +197,7 @@ class Service extends Base\Service
             $this->updatePasswordOnApi($dashboardUser);
 
             $currentSessionId = Session::getId();
-            (new SessionTable\Entity)->deleteAllOtherSessionsForUser($user->getAuthIdentifier(), $currentSessionId);
+            (new SessionTable\Entity)->deleteAllOtherSessionsForUser($user->id, $currentSessionId);
         });
 
         return [$error, null];
@@ -346,7 +346,7 @@ class Service extends Base\Service
 
         if ($data !== null)
         {
-            $user = (new Entity)->findOrFail($data['user_id']);
+            $user = $this->getUserFromApi($data['user_id']);
 
             $data['user'] = $user;
             $data['user']['merchant_id'] = $data['merchant_id'];
@@ -497,23 +497,24 @@ class Service extends Base\Service
         return [$error, $genericUser];
     }
 
-    public function getUserFromApi($userId, array $input = [])
+    public function getUserFromApi($userId)
     {
-        $error = [];
+        $getUser = [
+            'route_name' => 'user_fetch',
+            'url_params' => [
+                '{id}' => $userId,
+            ],
+        ];
+
+        $genericService = new Generic\Service;
 
         $genericUser = null;
 
-        $this->setApiCredentials();
+        list($error, $data) = $genericService->call('GET', $getUser);
 
-        try
+        if (empty($error) === true)
         {
-            $response = $this->api->user->get($userId, $input)->toArray();
-
-            $genericUser = (new Helper)->createdGenericUser($response);
-        }
-        catch(\Razorpay\Api\Errors\Error $e)
-        {
-            $error[] = $e->getMessage();
+            $genericUser = (new Helper)->createdGenericUser($data);
         }
 
         return [$error, $genericUser];
