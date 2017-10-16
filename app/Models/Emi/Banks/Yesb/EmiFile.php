@@ -70,6 +70,8 @@ class EmiFile extends Base\EmiFile
                 $subventionAmount = number_format((float)$amount, 2, '.', '');
             }
 
+            $emiAmount = $this->getEmiAmount($principalAmount, $emiPercent, $emiTenure);
+
             $notApplicable = 'NA';
 
             $acquirer = 'NA';
@@ -109,7 +111,7 @@ class EmiFile extends Base\EmiFile
                 'Product Sub-Category 2'       => $notApplicable,
                 'Model Name'                   => $notApplicable,
                 'Card Hash'                    => $notApplicable,
-                'EMI Amount'                   => $notApplicable,
+                'EMI Amount'                   => $emiAmount,
                 'Loan Amount'                  => $notApplicable,
                 'Discount / Cashback %'        => $notApplicable,
                 'Discount / Cashback Amount'   => $notApplicable,
