@@ -4,6 +4,7 @@ namespace RZP\Models\Emi\Banks\Yesb;
 
 use Config;
 use Carbon\Carbon;
+use RZP\Models\Emi;
 use RZP\Constants\Timezone;
 use RZP\Models\Card;
 use RZP\Models\FileStore;
@@ -58,6 +59,17 @@ class EmiFile extends Base\EmiFile
 
             $totalTransactions++;
 
+            $subventionAmount = '0.00';
+
+            if ($emiPlan->getSubvention() === Emi\Subvention::MERCHANT)
+            {
+                $merchantPayback = $emiPlan->getMerchantPayback()/100;
+
+                $amount = ($principalAmount * $merchantPayback)/100;
+
+                $subventionAmount = number_format((float)$amount, 2, '.', '');
+            }
+
             $notApplicable = 'NA';
 
             $acquirer = 'NA';
@@ -88,7 +100,7 @@ class EmiFile extends Base\EmiFile
                 'Customer Processing Fee'      => '0.00%',
                 'Customer Processing Amt'      => '0.00',
                 'Subvention payable to Issuer' => '0.0%',
-                'Subvention Amount (Rs.)'      => '0.00',
+                'Subvention Amount (Rs.)'      => $subventionAmount,
                 'Interest Rate'                => $emiPercent.'%',
                 'Tx Status'                    => 'Settled',
                 'Status'                       => 'online',
