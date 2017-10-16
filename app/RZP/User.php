@@ -23,13 +23,6 @@ class User extends Entity
         return $this->request('PUT', $relativeUrl, $body);
     }
 
-    public function get($userId, array $params)
-    {
-        $relativeUrl = $this->getEntityUrl().$userId;
-
-        return $this->request('GET', $relativeUrl, $params);
-    }
-
     public function attach($userId, array $params)
     {
         $relativeUrl = $this->getEntityUrl().$userId.'/attach';
@@ -40,13 +33,6 @@ class User extends Entity
     public function detach($userId, array $params)
     {
         $relativeUrl = $this->getEntityUrl().$userId.'/detach';
-
-        return $this->request('PUT', $relativeUrl, $params);
-    }
-
-    public function changePassword($userId, array $params)
-    {
-        $relativeUrl = $this->getEntityUrl().$userId.'/password';
 
         return $this->request('PUT', $relativeUrl, $params);
     }

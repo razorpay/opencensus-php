@@ -614,6 +614,10 @@ return [
         'user_resend_verification'          => 'users/resend-verification',
         // Fetch user
         'user_fetch'                        => 'users/{id}',
+        // Fetch User by email
+        'user_fetch_email'                  => 'users/email/{email}',
+        // User change password
+        'user_change_password'              => 'users/{id}/password',
 
         // Admin Routes
         // Pricing

@@ -263,18 +263,35 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function updatePasswordOnApi($user)
+    public function updatePasswordOnApi($userId, $data)
     {
-        $this->setApiCredentials();
-
-        $params = [
-            'password'              => $user->password,
-            'password_confirmation' => $user->password,
+        $passwordData = [
+            'password'              => $data['password'],
+            'password_confirmation' => $data['password_confirmation'],
         ];
 
-        $response = $this->api->user->changePassword($user->id, $params);
+        $updatePasswordOnApi = [
+            'route_name' => 'user_change_password',
+            'url_params' => [
+                '{id}'     => $userId,
+            ],
+            'body'       => $passwordData
+        ];
 
-        return $response;
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('PUT', $updatePasswordOnApi);
+
+        if (empty($error) === false)
+        {
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                $error[0],
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return [$error, $data];
     }
 
     /**
@@ -518,5 +535,23 @@ class Service extends Base\Service
         }
 
         return [$error, $genericUser];
+    }
+
+    public function getUserByEmail($email)
+    {
+        $getUserByEmail = [
+            'route_name' => 'user_fetch_email',
+            'url_params' => [
+                '{email}' => $email,
+            ],
+        ];
+
+        $genericService = new Generic\Service;
+
+        $genericUser = null;
+
+        list($error, $data) = $genericService->call('GET', $getUserByEmail);
+
+        return [$error, $data];
     }
 }

@@ -38,11 +38,9 @@ class PasswordController extends Controller
             $credentials['email'] = mb_strtolower($credentials['email']);
         }
 
-        $user = User\Entity::select(['users.id'])
-                            ->where('users.email', $credentials['email'])
-                            ->first();
+        list($error, $user) = (new User\Service)->getUserByEmail($credentials['email']);
 
-        if ($user === null)
+        if (empty($user) === true)
         {
             return Response::json(['success' => true]);
         }
@@ -76,9 +74,9 @@ class PasswordController extends Controller
             $credentials['email'] = mb_strtolower($credentials['email']);
         }
 
-        $user = User\Entity::where('users.email', $credentials['email'])->first();
+        list($error, $user) = (new User\Service)->getUserByEmail($credentials['email']);
 
-        if ($user === null)
+        if (empty($user) === true)
         {
             return Response::json([
                             'success' => true,
@@ -96,10 +94,7 @@ class PasswordController extends Controller
                         ]);
         }
 
-        $user->password = Hash::make($credentials['password']);
-        $user->save();
-
-        (new User\Service)->updatePasswordOnApi($user);
+        (new User\Service)->updatePasswordOnApi($user['id'], $credentials);
 
         return Response::json(['success' => true]);
     }
