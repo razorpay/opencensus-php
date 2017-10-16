@@ -113,7 +113,7 @@ export default class ModalContainer extends Component {
               classNames="toast"
               timeout={animObj}
             >
-              <div>{message}</div>
+              <div>{'' + message}</div>
             </CSSTransition>
           ))}
         </TransitionGroup>

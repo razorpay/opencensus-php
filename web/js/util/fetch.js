@@ -5,6 +5,10 @@ export function adminFetch(params) {
   return axios.get('/admin/generic', { params: parseParams(params) });
 }
 
+export default function fetch(options) {
+  return axios(options);
+}
+
 export function adminPost(params) {
   return axios.post('/admin/generic', parseParams(params));
 }

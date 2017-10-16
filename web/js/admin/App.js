@@ -13,6 +13,7 @@ import Stats from 'admin/stats';
 import PlanList from 'admin/plans/List';
 import GatewayRulesList from 'admin/gatewayrules/List';
 import EntityList from 'admin/entities/list';
+import EmailLogsList from 'admin/emailLogs/EmailLogsList';
 
 import MerchantEntity from 'admin/merchants/entity/MerchantEntity';
 
@@ -38,6 +39,7 @@ export default class App extends Component {
               <Route path="/pricing-plans" component={PlanList} />
               <Route path="/gateway-rules" component={GatewayRulesList} />
               <Route path="/entities" component={EntityList} />
+              <Route path="/email-logs" component={EmailLogsList} />
             </Switch>
           )) ||
             null}

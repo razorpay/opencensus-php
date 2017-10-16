@@ -17,11 +17,9 @@ export default class Collection extends BaseModel {
     let { data, fetchFn, filters, items } = props;
     Object.assign(this, { data, fetchFn });
 
-    if (filters !== null) {
-      this.filters = observable.shallowObject(
-        Object.assign({}, defaultFilters, filters)
-      );
-    }
+    this.filters = filters
+      ? observable.shallowObject(Object.assign({}, defaultFilters, filters))
+      : {};
 
     // load initial values
     // fetch if not pre-populated
@@ -39,7 +37,9 @@ export default class Collection extends BaseModel {
         queryParams: this.filters,
       })
     ).then(data => {
-      this.items.replace(data.items);
+      if (data) {
+        this.items.replace(data.items);
+      }
       return data;
     });
   }
