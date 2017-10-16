@@ -572,4 +572,37 @@ class AuthorizeTest extends TestCase
             $this->makeRequestAndGetContent($request);
         });
     }
+
+    public function testAuthCodeUpdateFromLateAuth()
+    {
+        $randomAuthCode = random_integer(6);
+
+        $this->mockServerContentFunction(
+            function(& $content, $action) use ($randomAuthCode)
+            {
+                if ($action === 'authorize')
+                {
+                    throw new Exception\GatewayErrorException('GATEWAY_ERROR_UNKNOWN_ERROR');
+                }
+
+                $content['auth'] = $randomAuthCode;
+            },
+            'hdfc');
+
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->doAuthPayment();
+            });
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertNull($payment['reference2']);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($randomAuthCode, $payment['reference2']);
+    }
 }
