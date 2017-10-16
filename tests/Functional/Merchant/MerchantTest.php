@@ -1717,23 +1717,27 @@ class MerchantTest extends TestCase
 
     public function testUpdateSubmerchantEmail()
     {
-        $this->markTestSkipped();
-        $this->fixtures->create("merchant");
         $merchant = Merchant\Entity::find("10000000000000");
         $merchant->reTag(["Aggregator", "Referral"]);
+        $merchant->saveOrFail();
 
         $this->fixtures->merchant->addFeatures(["aggregator"]);
 
         $this->ba->proxyAuth();
         $request = array(
-            'url' => '/submerchants',
-            'method' => 'post',
+            'url'     => '/submerchants',
+            'method'  => 'post',
             'content' => [
-                "id" => "10000000000044",
-                "name" => "Submerchant",
+                "id"     => "10000000000044",
+                "name"   => "Submerchant",
                 "org_id" => "100000razorpay"
             ]);
+
         $this->makeRequestAndGetContent($request);
+
+        $merchant = Merchant\Entity::find("10000000000044");
+        $merchant->reTag(["ref-10000000000000"]);
+        $merchant->saveOrFail();
 
         $this->ba->appAuth();
         $this->startTest();
