@@ -30,7 +30,7 @@ export default class Form extends Component {
       });
 
       this.props
-        .onSubmit(this.serialize(e.target))
+        .onSubmit(serialize(e.target))
         .catch(e => notifyError(e.message))
         .then(() => {
           this.setState({
@@ -38,32 +38,6 @@ export default class Form extends Component {
           });
         });
     }
-  }
-
-  serialize(form) {
-    return Array.prototype.reduce.call(
-      form.querySelectorAll('[name]'),
-      function(data, el) {
-        var { name, value } = el;
-        if (el.type === 'checkbox') {
-          value = el.checked ? el.value || 1 : 0;
-        }
-        if (value) {
-          // item[foo] → item.foo
-          var nameSplit = name.match(/(.+)\[(\w+)\]$/);
-          if (nameSplit) {
-            if (!data[nameSplit[1]]) {
-              data[nameSplit[1]] = {};
-            }
-            data[nameSplit[1]][nameSplit[2]] = value;
-          } else {
-            data[name] = value;
-          }
-        }
-        return data;
-      },
-      {}
-    );
   }
 }
 
@@ -76,4 +50,30 @@ export function postForm(form) {
   form.enctype = 'multipart/form-data';
   form.target = '_blank';
   form.submit();
+}
+
+export function serialize(form) {
+  return Array.prototype.reduce.call(
+    form.querySelectorAll('[name]'),
+    function(data, el) {
+      var { name, value } = el;
+      if (el.type === 'checkbox') {
+        value = el.checked ? el.value || 1 : 0;
+      }
+      if (value) {
+        // item[foo] → item.foo
+        var nameSplit = name.match(/(.+)\[(\w+)\]$/);
+        if (nameSplit) {
+          if (!data[nameSplit[1]]) {
+            data[nameSplit[1]] = {};
+          }
+          data[nameSplit[1]][nameSplit[2]] = value;
+        } else {
+          data[name] = value;
+        }
+      }
+      return data;
+    },
+    {}
+  );
 }

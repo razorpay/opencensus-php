@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { serialize } from 'ui/Form';
 
 export default class AsyncButton extends Component {
   state = {
@@ -9,12 +10,23 @@ export default class AsyncButton extends Component {
 
   onClick(e) {
     if (!this.state.pending) {
-      let onClickValue = this.props.onClick(e);
-      if (onClickValue instanceof Promise) {
+      let { onSubmit, onClick } = this.props;
+
+      let formData = {};
+      if (onSubmit) {
+        let form = e.currentTarget.closest('form');
+        if (form) {
+          formData = serialize(form);
+        }
+      }
+
+      let returnValue = onSubmit ? onSubmit(formData) : onClick(e);
+
+      if (returnValue instanceof Promise) {
         this.setState({
           pending: true,
         });
-        onClickValue.then(_ => {
+        returnValue.then(_ => {
           this.setState({
             pending: false,
           });
