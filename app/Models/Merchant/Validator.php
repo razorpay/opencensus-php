@@ -129,7 +129,7 @@ class Validator extends Base\Validator
         'user_id'               => 'required|alpha_num|size:14',
         'password'              => 'required|between:7,50|confirmed|numbers|letters',
         'password_confirmation' => 'required|between:7,50',
-        Entity::EMAIL           => 'required|email', //Add merchant unique check except for the merchant whose email is being validated
+        Entity::EMAIL           => 'required|email', // TODO Add merchant unique check except for the merchant
     ];
 
     protected static $editConfigValidators = [
@@ -149,6 +149,24 @@ class Validator extends Base\Validator
     protected static $createSubMerchantUserValidators = [
         'owner_validaton',
     ];
+
+    protected static $editEmailValidators = [
+        'is_test_account',
+    ];
+
+    protected function validateIsTestAccount(array $input)
+    {
+        $merchant = $this->entity;
+
+        $isTestAccount = (new Account)->isTestAccount($merchant->getId());
+
+        if ($isTestAccount === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT);
+        }
+
+    }
 
     /**
      * validates if the user who is attempting to create a submerchant user is the owner or not.
