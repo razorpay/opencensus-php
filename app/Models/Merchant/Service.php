@@ -186,17 +186,16 @@ class Service extends Base\Service
 
         foreach ($tags as $tag)
         {
-            if ("Ref-" === substr($tag, 0, 4))
+            if (substr($tag, 0, 4) === "Ref-")
             {
                 $parentId = substr($tag, 4);
                 $parent = $this->repo->merchant->find($parentId);
 
-                if (null !== $parent and
+                if (($parent !== null) and
                     strtolower($merchant->getEmail()) == strtolower($parent->getEmail()))
                 {
-
                     throw new BadRequestException(ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
-                                                                 'email', $input['email']);
+                                                  'email', $input['email']);
                 }
             }
         }
