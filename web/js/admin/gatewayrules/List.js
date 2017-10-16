@@ -1,13 +1,26 @@
 import React, { Component } from 'react';
+import { observer } from 'mobx-react';
+
 import Form from 'ui/Form';
 import Table from 'ui/Table';
 import Field, { SelectField, SelectMode } from 'ui/Field';
-import Collection from 'model/collection';
-import { adminFetch } from 'util/fetch';
-import { replaceSlider } from 'common/modal';
-import { methods } from 'util/data';
-import { showEntity } from './Entity';
+import { merchantId } from 'ui/Item';
+import AsyncButton from 'ui/AsyncButton';
 
+import { showEntity } from './Entity';
+import { replaceSlider } from 'common/modal';
+import Collection from 'model/collection';
+import GatewayRule from './model';
+
+import { adminFetch } from 'util/fetch';
+import { methods, testMerchantId, gateways } from 'util/data';
+
+const defaultFilters = {
+  merchant_id: testMerchantId,
+  mode: 'test',
+};
+
+@observer
 export default class GatewayRuleList extends Component {
   collection = new Collection({
     data: {
@@ -16,8 +29,9 @@ export default class GatewayRuleList extends Component {
         type: 'gateway_rule',
       },
     },
+    model: GatewayRule,
+    filters: defaultFilters,
     fetchFn: adminFetch,
-    items: [],
   });
 
   onSubmit = ({ mode, ...filters }) => {
@@ -37,7 +51,12 @@ export default class GatewayRuleList extends Component {
             </div>
           </header>
           <Form onSubmit={this.onSubmit} class="filters">
-            <Field name="merchant_id" label="Merchant ID" required />
+            <Field
+              name="merchant_id"
+              label="Merchant ID"
+              required
+              defaultValue={defaultFilters.merchant_id}
+            />
             <SelectField name="type" label="Type">
               <option value="">All</option>
               <option value="sorter">Sorter</option>
@@ -57,7 +76,7 @@ export default class GatewayRuleList extends Component {
                 </option>
               ))}
             </SelectField>
-            <SelectMode />
+            <SelectMode defaultValue={defaultFilters.mode} />
             <button>Search</button>
           </Form>
         </div>
@@ -69,11 +88,24 @@ export default class GatewayRuleList extends Component {
 
 const fields = [
   ['Rule Id', item => item.id],
-  ['Merchant Id', item => item.merchant_id],
+  ['Merchant Id', merchantId],
   ['Type', item => item.type],
+  [
+    'Load/Filter',
+    item => (item.type === 'sorter' ? item.load : item.filter_type),
+  ],
   ['Group', item => item.group],
-  ['Gateway', item => item.gateway_acquirer],
   ['Method', item => methods[item.method]],
-  ['Load', item => item.load],
-  ['Filter Type', item => item.filter_type],
+  ['Gateway', item => gateways[item.method][item.gateway]],
+  [
+    'Action',
+    item => (
+      <AsyncButton
+        text="Delete"
+        class="link danger"
+        pendingClass="small spinner"
+        onClick={item.delete}
+      />
+    ),
+  ],
 ];

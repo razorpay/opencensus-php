@@ -6,3 +6,7 @@ export const getFormattedAmount = amount =>
 
 export const deepClone = o => JSON.parse(JSON.stringify(o));
 export const animObj = { enter: 300, exit: 300 };
+export const prevent = e => {
+  e.preventDefault();
+  e.stopPropagation();
+};

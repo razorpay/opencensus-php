@@ -57,7 +57,7 @@ module.exports = {
   },
 
   resolve: {
-    modules: ['node_modules', 'web/js'],
+    modules: ['web/js', 'node_modules'],
   },
 
   resolveLoader: {

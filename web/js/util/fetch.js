@@ -14,7 +14,9 @@ export function adminPost(params) {
 }
 
 export function adminDelete(params) {
-  return axios.delete('/admin/generic', { params: parseParams(params) });
+  return axios.delete('/admin/generic', {
+    params: parseParams({ data: params }),
+  });
 }
 
 function parseParams({ data, queryParams }) {

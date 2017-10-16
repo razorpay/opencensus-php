@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { methods } from 'util/data';
 
 function focusInput(e) {
   e.target.nextElementSibling.focus();
@@ -55,11 +56,24 @@ export function SelectField({ label, children, ...props }) {
   );
 }
 
-export function SelectMode() {
+export function SelectMode({ defaultValue }) {
   return (
-    <SelectField name="mode" label="Mode">
+    <SelectField name="mode" label="Mode" defaultValue={defaultValue}>
       <option value="test">Test</option>
       <option value="live">Live</option>
+    </SelectField>
+  );
+}
+
+export function SelectMethod(props) {
+  return (
+    <SelectField name="method" label="Method" {...props}>
+      <option value="" />
+      {Object.keys(methods).map(m => (
+        <option value={m} key={m}>
+          {methods[m]}
+        </option>
+      ))}
     </SelectField>
   );
 }
