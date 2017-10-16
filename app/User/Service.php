@@ -183,24 +183,13 @@ class Service extends Base\Service
             return [["Password change forbidden on this account"], null];
         }
 
-        $dashboardUser = Entity::findOrFail($user->id);
+        list($error, $data) = $this->updatePasswordOnApi($user->id, $input);
 
-        $error = $dashboardUser->changePassword($input);
+        $currentSessionId = Session::getId();
 
-        //Any changes in user password
-        //are also reflected in the merchants table for now
-        DB::transaction(function() use ($dashboardUser, $user)
-        {
-            $dashboardUser->password = Hash::make($dashboardUser->password);
-            $dashboardUser->save();
+        (new SessionTable\Entity)->deleteAllOtherSessionsForUser($user->id, $currentSessionId);
 
-            $this->updatePasswordOnApi($dashboardUser);
-
-            $currentSessionId = Session::getId();
-            (new SessionTable\Entity)->deleteAllOtherSessionsForUser($user->id, $currentSessionId);
-        });
-
-        return [$error, null];
+        return [$error, $data];
     }
 
     /**
@@ -269,6 +258,11 @@ class Service extends Base\Service
             'password'              => $data['password'],
             'password_confirmation' => $data['password_confirmation'],
         ];
+
+        if (isset($data['old_password']))
+        {
+            $passwordData['old_password'] = $data['old_password'];
+        }
 
         $updatePasswordOnApi = [
             'route_name' => 'user_change_password',

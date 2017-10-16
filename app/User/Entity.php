@@ -95,11 +95,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
         return $this->currentMerchant();
     }
 
-    public function changePassword($input)
-    {
-        return $this->edit($input, 'changePassword');
-    }
-
     public static function getUserWithEmail($email)
     {
         return self::where('email', $email)->first();

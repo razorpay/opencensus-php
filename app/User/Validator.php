@@ -40,30 +40,10 @@ class Validator extends Base\Validator
         'password'
     ];
 
-    protected static $changePasswordRules = [
-        'old_password'              => 'required',
-        'password'                  => 'required|between:7,50|confirmed|numbers|letters',
-        'password_confirmation'     => 'required|between:7,50'
-    ];
-
     protected static $preSignupRules = [
         'name'                  => 'sometimes|alpha_space|max:200',
         'contact_mobile'        => 'sometimes|numeric|digits_between:8,11',
     ];
-
-    protected static $changePasswordValidators = ['changePassword'];
-
-    protected function validateChangePassword($input)
-    {
-        $oldPassword = $input['old_password'];
-
-        $password = $this->entity->password;
-
-        if (\Hash::check($oldPassword, $password) === false)
-        {
-            $this->addError('old_password', 'Incorrect password');
-        }
-    }
 
     protected function validateCaptcha($input)
     {
