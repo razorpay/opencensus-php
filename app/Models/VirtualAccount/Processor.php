@@ -31,6 +31,9 @@ abstract class Processor extends Base\Core
         $this->provider = $this->app['basicauth']->getInternalApp();
     }
 
+     /**
+     *@todo need to make this generic
+     */
     abstract public function process($entity);
 
      /**
@@ -105,7 +108,7 @@ abstract class Processor extends Base\Core
     }
 
     /**
-     * Throwaway VAs for unexpected bank transfers don't need much to be created.
+     * Throwaway VAs for unexpected payments
      *
      * @param int $amount
      *

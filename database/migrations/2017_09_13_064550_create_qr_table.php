@@ -32,6 +32,9 @@ class CreateQrTable extends Migration
             $table->char(Qr::VIRTUAL_ACCOUNT_ID, Qr::ID_LENGTH)
                   ->nullable();
 
+            $table->tinyInteger(Qr::EXPECTED)
+                  ->default(0);
+
             $table->string(Qr::GATEWAY_MERCHANT_ID)
                   ->nullable();
 

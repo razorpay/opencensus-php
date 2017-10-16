@@ -36,6 +36,31 @@ class QrPaymentTest extends TestCase
 
         //Created Qr Entity As Expected
         $qr = $this->getLastEntity('qr', true);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('card', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->assertEquals($qr['payment_id'], $payment['id']);
+        $this->assertEquals($qr['expected'], true);
+    }
+
+    public function testUnexpectedPayment()
+    {
+        $request = $this->testData['testQrPaymentProcess'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['valid']);
+
+        $qr = $this->getLastEntity('qr', true);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('card', $payment['method']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals($qr['expected'], false);
     }
 
     protected function createVirtualAccount()

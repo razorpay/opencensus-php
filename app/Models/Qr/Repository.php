@@ -7,4 +7,11 @@ use RZP\Models\Base;
 class Repository extends Base\Repository
 {
     protected $entity = 'qr';
+
+    public function findByMerchantReference(string $merchantReference)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_REFERENCE, '=', $merchantReference)
+                    ->first();
+    }
 }

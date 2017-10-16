@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
@@ -18,7 +19,7 @@ class Processor extends VirtualAccount\Processor
     const RANDOM_CARD_PADDING = '12345';
 
     /**
-     * @param Entity $bankTransfer
+     * @param Entity $qr
      *
      * @return Entity|null
      */
@@ -26,18 +27,21 @@ class Processor extends VirtualAccount\Processor
     {
         $isPaymentExpected = $this->isPaymentExpected($qr);
 
-        if ($isPaymentExpected === true)
+        $isDuplicateNotification = $this->checkIfDuplicateNotification($qr);
+
+        if (($isPaymentExpected === true) and
+            ($isDuplicateNotification === false))
         {
+            $qr->setExpected(true);
+
             $this->setMerchant();
         }
         else if ($isPaymentExpected === false)
         {
-            //Will it ever happen? Need to confirm
+            $this->preProcessUnexpectedPayment($qr);
         }
         else
         {
-            //Need to check for duplicate API call here?
-
             $this->repo->saveOrFail($qr);
 
             return $qr;
@@ -50,6 +54,35 @@ class Processor extends VirtualAccount\Processor
                 $qr->toArray());
 
         return $qr;
+    }
+
+     /**
+     * Throwaway VAs for unexpected payments
+     *
+     * @param int $amount
+     *
+     * @return array
+     */
+    protected function virtualAccountCreationArray(int $amount): array
+    {
+        return [
+            VirtualAccount\Entity::AMOUNT_EXPECTED => $amount,
+            VirtualAccount\Entity::RECEIVER_TYPES  => [Receiver::BHARAT_QR]
+        ];
+    }
+
+    protected function checkIfDuplicateNotification($qr)
+    {
+        $merchantReference = $qr->getMerchantReference();
+
+        $qrEntity  = $this->repo->qr->findByMerchantReference($merchantReference);
+
+        if ($qrEntity === null)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function processQr(Entity $qr)
@@ -78,7 +111,10 @@ class Processor extends VirtualAccount\Processor
 
             $this->updateVirtualAccount($qr);
 
-            $paymentProcessor->autoCapturePayment($payment);
+            if ($qr->isExpected() === true)
+            {
+                $paymentProcessor->autoCapturePayment($payment);
+            }
         });
     }
 
@@ -100,7 +136,14 @@ class Processor extends VirtualAccount\Processor
     {
         $bharatQrId = $qr->getMerchantReference();
 
-        $bharatQr = $this->repo->bharat_qr->findByPublicId($bharatQrId);
+        try
+        {
+            $bharatQr = $this->repo->bharat_qr->findByPublicId($bharatQrId);
+        }
+        catch (\Exception $e)
+        {
+            return null;
+        }
 
         $virtualAccount = $this->repo
                                ->virtual_account
@@ -109,6 +152,9 @@ class Processor extends VirtualAccount\Processor
         return $virtualAccount;
     }
 
+    /**
+     *@todo Need a better way to handle this
+     */
     protected function getLuhnValidCardNumberFromQr(Entity $qr)
     {
         $maskedCardNumber = $qr->getCardNumber();
@@ -133,8 +179,7 @@ class Processor extends VirtualAccount\Processor
         $paymentArray[Payment\Entity::CURRENCY] = Currency::INR;
         $paymentArray[Payment\Entity::METHOD]   = $qr->getMethod();
 
-        //TODO :: Need to check amount format for hitachi side
-        $paymentArray[Payment\Entity::AMOUNT]      = ($qr->getAmount()) * 100;
+        $paymentArray[Payment\Entity::AMOUNT]      = $qr->getAmount();
         $paymentArray[Payment\Entity::DESCRIPTION] = "";
 
         $paymentArray['card']['number'] = $this->getLuhnValidCardNumberFromQr($qr);

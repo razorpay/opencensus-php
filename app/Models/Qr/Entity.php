@@ -3,11 +3,14 @@
 namespace RZP\Models\Qr;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Models\VirtualAccount;
 
 class Entity extends Base\PublicEntity
 {
     const ID                    = 'id';
     const PAYMENT_ID            = 'payment_id';
+    const EXPECTED              = 'expected';
     const VIRTUAL_ACCOUNT_ID    = 'virtual_account_id';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
     //card or upi
@@ -59,6 +62,7 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::EXPECTED,
         self::AMOUNT,
         self::PAYMENT_ID,
         self::VIRTUAL_ACCOUNT_ID,
@@ -79,14 +83,21 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::AMOUNT => 'int',
+        self::EXPECTED => 'bool',
+        self::AMOUNT   => 'int',
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::VIRTUAL_ACCOUNT_ID,
+        self::PAYMENT_ID,
     ];
 
     protected $generateIdOnCreate = true;
 
     public function payment()
     {
-        return $this->belongsTo('RZP\Models\Payment\Entity', self::PAYMENT_ID, self::ID);
+        return $this->belongsTo('RZP\Models\Payment\Entity');
     }
 
     public function virtualAccount()
@@ -94,9 +105,41 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\virtualAccount\Entity', self::VIRTUAL_ACCOUNT_ID, self::ID);
     }
 
+    // ----------------------- Public Setters ----------------------------------
+
+    public function setPublicVirtualAccountIdAttribute(array & $array)
+    {
+        if (isset($array[self::VIRTUAL_ACCOUNT_ID]) === true)
+        {
+            $virtualAccountId = $array[self::VIRTUAL_ACCOUNT_ID];
+
+            $array[self::VIRTUAL_ACCOUNT_ID] = VirtualAccount\Entity::getSignedId($virtualAccountId);
+        }
+    }
+
+    public function setPublicPaymentIdAttribute(array & $array)
+    {
+        if (isset($array[self::PAYMENT_ID]) === true)
+        {
+            $paymentId = $array[self::PAYMENT_ID];
+
+            $array[self::PAYMENT_ID] = Payment\Entity::getSignedId($paymentId);
+        }
+    }
+
     public function setReceived($received)
     {
-        $this->setAttribute($received);
+        $this->setAttribute(self::RECEIVED, $received);
+    }
+
+    public function setExpected($expected)
+    {
+        $this->setAttribute(self::EXPECTED, $expected);
+    }
+
+    public function isExpected()
+    {
+        return $this->getAttribute(self::EXPECTED);
     }
 
     public function getMerchantReference()
