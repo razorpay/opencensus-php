@@ -16,6 +16,8 @@ class Format
     const XLS   = 'xls';
     const XLSX  = 'xlsx';
     const ZIP   = 'zip';
+    const DOC   = 'doc';
+    const DOCX  = 'docx';
 
     const EXCEL_COLUMN_TEXT = '@';
 
@@ -30,6 +32,8 @@ class Format
         self::XLS,
         self::XLSX,
         self::ZIP,
+        self::DOC,
+        self::DOCX
     ];
 
     const VALID_EXTENSION_MIME_MAP = [
@@ -46,6 +50,8 @@ class Format
         self::XLS   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
                         'application/vnd.ms-office', 'application/pgp'],
         self::ZIP   => ['application/zip', 'application/pgp'],
+        self::DOC   => ['application/msword'],
+        self::DOCX  => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
     ];
 
     const VALID_LOCAL_EXTENSIONS = [
