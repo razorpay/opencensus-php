@@ -63,6 +63,10 @@ trait Verify
                     TraceCode::PAYMENT_VERIFY_FAILED,
                     $e->getData());
             }
+            else
+            {
+                $this->updatePaymentVerified($payment, VerifyStatus::UNKNOWN);
+            }
 
             throw $e;
         }
