@@ -72,9 +72,6 @@ class Service extends Base\Service
          */
         if (empty($user) === true)
         {
-            //TODO move the below to modifiers.
-            $input['password'] = Hash::make($input['password']);
-
             $input['password_confirmation'] = $input['password'];
 
             $input['name'] = '';

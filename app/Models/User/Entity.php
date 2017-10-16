@@ -2,6 +2,7 @@
 
 namespace RZP\Models\User;
 
+use Hash;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
@@ -59,6 +60,11 @@ class Entity extends Base\PublicEntity
     protected static $generators = [
         self::ID,
         self::CONFIRM_TOKEN,
+        self::PASSWORD,
+    ];
+
+    protected static $unsetCreateInput = [
+        self::PASSWORD,
     ];
 
     protected $generateIdOnCreate = true;
@@ -74,6 +80,11 @@ class Entity extends Base\PublicEntity
         $token = bin2hex($bytes);
 
         return $token;
+    }
+
+    protected function generatePassword(array $input)
+    {
+        $this->setAttribute(self::PASSWORD, Hash::make($input[self::PASSWORD]));
     }
 
     /**
