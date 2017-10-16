@@ -2881,4 +2881,29 @@ return [
             ]
         ]
     ],
+    'testUpdateSubmerchantEmail' => [
+        'request' => [
+            'url'       => '/merchants/10000000000044/email',
+            'method'    => 'PUT',
+            'content'   => [
+                'email' => 'differentemail@razorpay.com'
+            ],
+            'server' => [
+                'HTTP_' . \RZP\Http\BasicAuth\BasicAuth::ACCOUNT_HEADER_KEY => '10000000000044',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "error" => [
+
+                    "internal_error_code" => "BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL",
+                    "class" => "BAD_REQUEST",
+                    "code" => "BAD_REQUEST_ERROR",
+                    "http_status_code" => 400,
+                    "description" => "Cannot change email of Sub-Merchant with same email as its parent"
+                ]
+            ],
+            'status_code' => 400
+        ]
+    ]
 ];
