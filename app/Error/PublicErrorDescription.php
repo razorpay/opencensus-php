@@ -456,6 +456,7 @@ class PublicErrorDescription
     const BAD_REQUEST_USER_NOT_AUTHENTICATED                                    = 'The user is not authenticated';
     const BAD_REQUEST_USER_NOT_FOUND                                            = 'User not found with the given input';
     const BAD_REQUEST_USER_ROLE_INVALID                                         = 'The given role is not supported';
+    const BAD_REQUEST_OLD_PASSWORD_MISMATCH                                     = 'Old Password mismatch';
     const BAD_REQUEST_SUBUSER_CREATE_NOT_ALLOWED                                = 'Sub user creation not allowed';
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                           = 'Invitation is already sent to this email';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                            = 'User with given email is already a member of the team';

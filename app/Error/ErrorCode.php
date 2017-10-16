@@ -597,6 +597,7 @@ class ErrorCode
     const BAD_REQUEST_USER_NOT_AUTHENTICATED                                        = 'BAD_REQUEST_USER_NOT_AUTHENTICATED';
     const BAD_REQUEST_USER_NOT_FOUND                                                = 'BAD_REQUEST_USER_NOT_FOUND';
     const BAD_REQUEST_USER_ROLE_INVALID                                             = 'BAD_REQUEST_USER_ROLE_INVALID';
+    const BAD_REQUEST_OLD_PASSWORD_MISMATCH                                         = 'BAD_REQUEST_OLD_PASSWORD_MISMATCH';
 
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                               = 'BAD_REQUEST_INVITATION_USER_ALREADY_INVITED';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                                = 'BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER';

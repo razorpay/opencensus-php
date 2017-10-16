@@ -12,8 +12,8 @@ class Validator extends Base\Validator
         Entity::ID                    => 'sometimes|max:14',
         Entity::NAME                  => 'sometimes|string|max:200',
         Entity::EMAIL                 => 'required|email|unique:users,email',
-        Entity::PASSWORD              => 'required|confirmed|numbers|letters',
-        Entity::PASSWORD_CONFIRMATION => 'required',
+        Entity::PASSWORD              => 'required|between:7,50|confirmed|numbers|letters',
+        Entity::PASSWORD_CONFIRMATION => 'required|between:7,50',
         Entity::CONTACT_MOBILE        => 'sometimes|max:15',
         Entity::REMEMBER_TOKEN        => 'sometimes',
         Entity::CONFIRM_TOKEN         => 'sometimes',
@@ -26,8 +26,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $changePasswordRules = [
-        Entity::PASSWORD              => 'required|confirmed|numbers|letters',
-        Entity::PASSWORD_CONFIRMATION => 'required',
+        Entity::PASSWORD              => 'required|between:7,50|confirmed|numbers|letters',
+        Entity::PASSWORD_CONFIRMATION => 'required|between:7,50',
+        Entity::OLD_PASSWORD          => 'sometimes|string',
     ];
 
     protected static $actionRules = [
