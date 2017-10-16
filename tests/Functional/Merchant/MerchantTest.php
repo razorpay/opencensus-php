@@ -1717,6 +1717,7 @@ class MerchantTest extends TestCase
 
     public function testUpdateSubmerchantEmail()
     {
+        $this->markTestSkipped();
         $this->fixtures->create("merchant");
         $merchant = Merchant\Entity::find("10000000000000");
         $merchant->reTag(["Aggregator", "Referral"]);
