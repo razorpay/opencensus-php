@@ -10,7 +10,7 @@ import AsyncButton from 'ui/AsyncButton';
 import { showEntity } from './Entity';
 import { replaceSlider } from 'common/modal';
 import Collection from 'model/collection';
-import GatewayRule from './model';
+import Model from './model';
 
 import { adminFetch } from 'util/fetch';
 import { methods, testMerchantId, gateways } from 'util/data';
@@ -29,7 +29,7 @@ export default class GatewayRuleList extends Component {
         type: 'gateway_rule',
       },
     },
-    model: GatewayRule,
+    model: Model,
     filters: defaultFilters,
     fetchFn: adminFetch,
   });
@@ -46,7 +46,7 @@ export default class GatewayRuleList extends Component {
         <div class="box">
           <header>
             Gateway Rules
-            <div class="btn" onClick={showEntity}>
+            <div class="btn" onClick={showEntity.bind(null, this.collection)}>
               Add
             </div>
           </header>

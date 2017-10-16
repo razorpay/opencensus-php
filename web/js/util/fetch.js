@@ -9,8 +9,8 @@ export default function fetch(options) {
   return axios(options);
 }
 
-export function adminPost(params) {
-  return axios.post('/admin/generic', parseParams(params));
+export function adminPost(params, config) {
+  return axios.post('/admin/generic', parseParams(params), config);
 }
 
 export function adminDelete(params) {

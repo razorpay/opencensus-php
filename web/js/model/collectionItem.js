@@ -1,11 +1,11 @@
-import { observable, extendObservable } from 'mobx';
+import { observable, extendShallowObservable } from 'mobx';
 import BaseModel from 'model/base';
 
 export default class Item extends BaseModel {
   constructor(collection, props = {}) {
     super();
 
-    extendObservable(this, props);
+    extendShallowObservable(this, props);
 
     this.define('collection', collection);
     this.bind(['onPropChange']);

@@ -38,46 +38,6 @@ export default class Collection extends BaseModel {
       }),
       'fetch'
     ).then(data => {
-      data = {
-        success: true,
-        data: {
-          entity: 'collection',
-          count: 1,
-          admin: true,
-          items: [
-            {
-              id: '8O9FFfrUed72LQ',
-              merchant_id: '100000Razorpay',
-              gateway: 'hdfc',
-              type: 'sorter',
-              group: null,
-              filter_type: null,
-              load: 25,
-              gateway_acquirer: null,
-              network_category: null,
-              shared_terminal: null,
-              international: null,
-              network: null,
-              method: 'card',
-              method_type: null,
-              issuer: null,
-              min_amount: 0,
-              max_amount: null,
-              iins: [],
-              currency: 'INR',
-              emi_duration: null,
-              emi_subvention: null,
-              category2: null,
-              created_at: 1502103815,
-              updated_at: 1502103815,
-              deleted_at: null,
-              entity: 'gateway_rule',
-              admin: true,
-            },
-          ],
-        },
-      };
-      data = data.data;
       if (data) {
         let Model = this.model;
         if (Model) {

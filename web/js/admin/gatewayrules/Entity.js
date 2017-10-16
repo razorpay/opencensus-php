@@ -4,6 +4,7 @@ import Field, { SelectField, SelectMethod } from 'ui/Field';
 import { openModal } from 'common/modal';
 import { observer } from 'mobx-react';
 import {
+  methods,
   gateways,
   cardTypes,
   networks,
@@ -11,8 +12,49 @@ import {
   gatewayAcquirers,
 } from 'util/data';
 
+import { merchantId } from 'ui/Item';
+import Duplex from 'ui/Duplex';
+import GatewayRule from './model';
+
+class EntityProps extends Component {
+  render() {
+    let { model } = this.props;
+    return (
+      <div>
+        <header>View Rule</header>
+        <Duplex fields={fields} model={model} />
+      </div>
+    );
+  }
+}
+
+const fields = [
+  item => ['Type', item.type],
+  item => item.type === 'filter' && ['Filter Type', item.filter_type],
+  item => item.type === 'sorter' && ['Load', item.load],
+  item => item.group && ['Group', item.group],
+  item => ['Merchant Id', merchantId(item)],
+  item => ['Method', methods[item.method]],
+  item => ['Gateway', gateways[item.method][item.gateway]],
+  item => item.method_type && ['Card Type', cardTypes[item.method_type]],
+  item => item.network && ['Network', networks[item.network]],
+  item => ['Currency', item.currency],
+  item => item.international && ['International', item.international],
+  item => (item.iins.length && ['IINs', item.iins]) || null,
+  item => (item.min_amount && ['Min Amount', item.min_amount]) || null,
+  item => (item.max_amount && ['Max Amount', item.max_amount]) || null,
+  item => item.issuer && ['Issuer', item.issuer],
+  item => item.category2 && ['Category2', categories[item.category2]],
+  item =>
+    item.gateway_acquirer && [
+      'Gateway Acquirer',
+      gatewayAcquirers[item.gateway_acquirer],
+    ],
+  item => item.shared_terminal && ['Shared Terminal', item.shared_terminal],
+];
+
 @observer
-export default class GatewayRuleEntity extends Component {
+class NewGatewayRule extends Component {
   render() {
     let { model } = this.props;
     return (
@@ -124,7 +166,7 @@ export default class GatewayRuleEntity extends Component {
                 name="iins"
                 defaultValue={model.iins}
                 placeholder="6 digit IINs, comma separated"
-                pattern="^(\\d{6},)*\\d{6}$"
+                pattern="^(\d{6},)*\d{6}$"
               />
             </div>
           )}
@@ -187,6 +229,12 @@ export default class GatewayRuleEntity extends Component {
   }
 }
 
-export function showEntity() {
-  return openModal(<GatewayRuleEntity model={this} />);
+export function showEntity(collection) {
+  openModal(
+    this ? (
+      <EntityProps model={this} />
+    ) : (
+      <NewGatewayRule model={new GatewayRule(collection)} />
+    )
+  );
 }

@@ -8,7 +8,7 @@ export default class Duplex extends Component {
       <div>
         {(pending && <div class="table-pending" />) ||
           (fields.length && (
-            <div class="table table-striped table-bordered">
+            <div class="table table-striped">
               {fields.map((itemFn, index) => {
                 var result = itemFn(model);
                 return (
