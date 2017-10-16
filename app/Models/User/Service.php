@@ -340,4 +340,17 @@ class Service extends Base\Service
 
         return $data;
     }
+
+    /**
+     * Returns user by email.
+     * @param string $email
+     *
+     * @array
+     */
+    public function getUserByEmail(string $email)
+    {
+        $user = $this->repo->user->findByEmail($email);
+
+        return $user->toArrayPublic();
+    }
 }

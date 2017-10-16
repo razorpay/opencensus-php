@@ -570,6 +570,7 @@ final class Route
         'user_create'                             => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                              => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_confirm_by_data'                    => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
+        'user_fetch_email'                        => ['get',      'users/email/{email}',                            'UserController@getUserByEmail'                                     ],
         'user_edit'                               => ['put',      'users/{id}',                                     'UserController@editUser'                                           ],
         'user_fetch'                              => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         // The order of the following routes is important. The one with action should be last
@@ -1058,6 +1059,7 @@ final class Route
         'settings_delete',
         'user_merchant_upgrade',
         'user_resend_verification',
+        'user_fetch_email',
     ];
 
     public static $proxy = [

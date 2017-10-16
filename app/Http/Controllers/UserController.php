@@ -1,6 +1,7 @@
 <?php
 namespace RZP\Http\Controllers;
 
+use Razorpay\Api\Api;
 use Request;
 use ApiResponse;
 
@@ -101,5 +102,12 @@ class UserController extends Controller
         $data = $this->service()->resendVerificationMail($input);
 
         return $data;
+    }
+
+    public function getUserByEmail(string $email)
+    {
+        $data = $this->service()->getUserByEmail($email);
+
+        return ApiResponse::json($data);
     }
 }
