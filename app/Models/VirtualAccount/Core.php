@@ -60,7 +60,7 @@ class Core extends Base\Core
 
         $descriptor = $virtualAccount->getDescriptor();
 
-        $receiverHelper = new Receiver($this->merchant, $name, $descriptor);
+        $receiverHelper = new Receiver($virtualAccount->merchant, $name, $descriptor);
 
         foreach ($receiverTypes as $receiverType)
         {
