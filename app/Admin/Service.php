@@ -2,6 +2,7 @@
 
 namespace App\Admin;
 
+use DB;
 use Auth;
 use Hash;
 use Uuid;
@@ -1411,6 +1412,61 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
+    }
+
+    /**
+     * This function returns the status of the dashboard app
+     *
+     * @return array $response
+     */
+    public function getStatus()
+    {
+        $response = [];
+
+        $successMessage = [];
+
+        $errorMessage = [];
+
+        try
+        {
+            if (DB::connection('mysql')->getPdo())
+            {
+                $successMessage[] = 'Connected to DB';
+            }
+        }
+        catch (\Exception $e)
+        {
+            $errorMessage[] = 'DB Connection error';
+        }
+
+        try
+        {
+            if ($this->app['redis']->connection()->ping())
+            {
+                $successMessage[] = 'Connected to Redis';
+            }
+        }
+        catch (\Exception $e)
+        {
+            $errorMessage[] = 'Redis Connection error';
+        }
+
+        if (empty($errorMessage) === true)
+        {
+            $response = [
+                'message'    => implode(', ', $successMessage),
+                'statusCode' => 200
+            ];
+        }
+        else
+        {
+            $response = [
+                'message'    => implode(', ', $errorMessage),
+                'statusCode' => 500
+            ];
+        }
+
+        return $response;
     }
 
     public function getEmailLogs($input)
