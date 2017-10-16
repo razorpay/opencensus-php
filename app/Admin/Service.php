@@ -14,6 +14,7 @@ use Input;
 use Config;
 use Session;
 use Requests;
+use Exception;
 use App\Base;
 use App\User;
 use App\Admin;
@@ -50,6 +51,8 @@ class Service extends Base\Service
     const PAGE_SIZE = 1000;
 
     const SELF_INVITE_NOT_ALLOWED = "You can't invite yourself";
+
+    const API_BASE_URL = 'https://api.razorpay.com';
 
     // This is the Admin\Logger trait
     use Logger;
@@ -1415,58 +1418,130 @@ class Service extends Base\Service
     }
 
     /**
+     * This function returns the database connection status
+     *
+     * @return array $response
+     */
+    public function getDBConnectionStatus()
+    {
+        try
+        {
+            if (DB::connection('mysql')->getPdo())
+            {
+                $statusMessage = 'Connected to DB';
+
+                $statusCode = 200;
+            }
+        }
+        catch (Exception $e)
+        {
+            $statusMessage = 'DB Connection Error';
+
+            $statusCode = 500;
+        }
+
+        $response = [
+            'statusMessage' => $statusMessage,
+            'statusCode'    => $statusCode
+        ];
+
+        return $response;
+    }
+
+    /**
+     * This function returns the redis connection status
+     *
+     * @return array $response
+     */
+    public function getRedisConnectionStatus()
+    {
+        try
+        {
+            if ($this->app['redis']->connection()->ping())
+            {
+                $statusMessage = 'Connected to Redis';
+
+                $statusCode = 200;
+            }
+        }
+        catch (Exception $e)
+        {
+            $statusMessage = 'Redis Connection Error';
+
+            $statusCode = 500;
+        }
+
+        $response = [
+            'statusMessage' => $statusMessage,
+            'statusCode'    => $statusCode
+        ];
+
+        return $response;
+    }
+
+    /**
+     * This function returns the api connection status
+     *
+     * @return array $response
+     */
+    public function getAPIConnectionStatus()
+    {
+        try
+        {
+            if (Requests::request(self::API_BASE_URL))
+            {
+                $statusMessage = 'Connected to API';
+
+                $statusCode = 200;
+            }
+        }
+        catch (Exception $e)
+        {
+            $statusMessage = 'API Connection Error';
+
+            $statusCode = 500;
+        }
+
+        $response = [
+            'statusMessage' => $statusMessage,
+            'statusCode'    => $statusCode
+        ];
+
+        return $response;
+    }
+
+    /**
      * This function returns the status of the dashboard app
      *
      * @return array $response
      */
     public function getStatus()
     {
-        $response = [];
+        $statusCode = 200;
 
-        $successMessage = [];
+        // Check Database Connection
+        $databaseStatus = $this->getDBConnectionStatus();
 
-        $errorMessage = [];
+        // Check Redis Connection
+        $redisStatus = $this->getRedisConnectionStatus();
 
-        try
-        {
-            if (DB::connection('mysql')->getPdo())
-            {
-                $successMessage[] = 'Connected to DB';
-            }
-        }
-        catch (\Exception $e)
-        {
-            $errorMessage[] = 'DB Connection error';
-        }
+        // Check API Connection
+        $apiStatus = $this->getAPIConnectionStatus();
 
-        try
+        if ($databaseStatus['statusCode'] === 500 or
+            $redisStatus['statusCode'] === 500 or
+            $apiStatus['statusCode'] === 500)
         {
-            if ($this->app['redis']->connection()->ping())
-            {
-                $successMessage[] = 'Connected to Redis';
-            }
-        }
-        catch (\Exception $e)
-        {
-            $errorMessage[] = 'Redis Connection error';
+            $statusCode = 500;
         }
 
-        if (empty($errorMessage) === true)
-        {
-            $response = [
-                'message'    => implode(', ', $successMessage),
-                'statusCode' => 200
-            ];
-        }
-        else
-        {
-            $response = [
-                'message'    => implode(', ', $errorMessage),
-                'statusCode' => 500
-            ];
-        }
+        $response = [
+            'db'    => $databaseStatus['statusMessage'],
+            'redis' => $redisStatus['statusMessage'],
+            'api'   => $apiStatus['statusMessage']
+        ];
 
-        return $response;
+        return [$response, $statusCode];
     }
 
     public function getEmailLogs($input)

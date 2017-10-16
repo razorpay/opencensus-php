@@ -452,9 +452,9 @@ class AdminController extends Controller
 
     public function getStatus()
     {
-        $response = (new Admin\Service)->getStatus();
+        list($response, $statusCode) = (new Admin\Service)->getStatus();
 
-        return Response::json($response, $response['statusCode']);
+        return Response::json($response, $statusCode);
     }
 
     public function getEmailLogs()
