@@ -1,12 +1,8 @@
 import React, { Component } from 'react';
-import {
-  NavLink,
-  Route,
-  matchPath,
-  withRouter,
-  Switch,
-} from 'react-router-dom';
+import { Route, matchPath, withRouter, Switch } from 'react-router-dom';
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
+import MainNavLink from 'admin/components/MainNavLink';
+import ShowWhen from 'admin/components/ShowWhen';
 
 import MerchantList from 'admin/merchants/MerchantList';
 import Stats from 'admin/stats';
@@ -50,13 +46,63 @@ export default class App extends Component {
             <img src="https://cdn.razorpay.com/logo_invert.svg" width="146" />
           </a>
           <label>Management</label>
-          <NavLink to="/merchants">Merchants</NavLink>
-          <NavLink to="/stats">Merchant Stats</NavLink>
-          <NavLink to="/pricing-plans">Pricing Plans</NavLink>
-          <NavLink to="/gateway-rules">Gateway Rules</NavLink>
-          <NavLink to="/entities">Entities</NavLink>
-          <NavLink to="/actions">Actions</NavLink>
-          <NavLink to="/email-logs">Email Logs</NavLink>
+          <MainNavLink to="/merchants" permission="view_all_merchants">
+            Merchants
+          </MainNavLink>
+          <MainNavLink to="/stats" permission="view_merchant_stats">
+            Merchant Stats
+          </MainNavLink>
+          <MainNavLink to="/pricing-plans" permission="view_pricing_list">
+            Pricing Plans
+          </MainNavLink>
+          <MainNavLink to="/gateway-rules" permission="view_gateway_rule">
+            Gateway Rules
+          </MainNavLink>
+          <MainNavLink to="/entities" permission="view_all_entity">
+            Entities
+          </MainNavLink>
+          <MainNavLink to="/actions" permission="view_actions">
+            Actions
+          </MainNavLink>
+          <MainNavLink to="/email-logs" permission="view_email_logs">
+            Email Logs
+          </MainNavLink>
+          <ShowWhen permission="view_workflow_requests">
+            <label>Workflows</label>
+          </ShowWhen>
+          <MainNavLink to="/workflows" permission="view_all_workflow">
+            Workflows
+          </MainNavLink>
+          <MainNavLink
+            to="/workflows/actions/list"
+            permission="view_workflow_requests"
+          >
+            Requests
+          </MainNavLink>
+          <ShowWhen permission="view_all_admin">
+            <label>User Access Management</label>
+          </ShowWhen>
+          <MainNavLink to="/invitations/list" permission="view_merchant_invite">
+            Invitations
+          </MainNavLink>
+          <MainNavLink to="/orgs/list" permission="view_all_org">
+            Organizations
+          </MainNavLink>
+          <MainNavLink to="/users/list" permission="view_all_admin">
+            Users
+          </MainNavLink>
+          <MainNavLink to="/roles/list" permission="view_all_role">
+            Roles
+          </MainNavLink>
+          <MainNavLink to="/permissions/list" permission="view_all_permission">
+            Permissions
+          </MainNavLink>
+          <MainNavLink to="/groups/list" permission="view_group">
+            Groups
+          </MainNavLink>
+          <MainNavLink to="/auditlogs/list" permission="view_auditlog">
+            Audit Log
+          </MainNavLink>
         </aside>
         <ModalContainer />
       </div>
