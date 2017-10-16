@@ -1,6 +1,5 @@
 const webpack = require('webpack');
 const isProd = require('process').env.NODE_ENV === 'production';
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 // generated bladefiles
 const htmlPlugins = require('./web/webpack/html')(
@@ -17,23 +16,6 @@ const htmlPlugins = require('./web/webpack/html')(
 );
 
 let plugins = [htmlPlugins];
-
-if (isProd) {
-  plugins = plugins.concat(
-    new webpack.LoaderOptionsPlugin({
-      minimize: true,
-      debug: false,
-    }),
-    new UglifyJSPlugin({
-      uglifyOptions: {
-        beautify: false,
-        ecma: 6,
-        compress: true,
-        comments: false,
-      },
-    })
-  );
-}
 
 module.exports = {
   externals: [].reduce.call(

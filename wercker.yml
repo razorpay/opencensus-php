@@ -7,7 +7,8 @@ build:
       - script:
           name: Build
           code: |
-            NODE_ENV=prod npm run build
+            npm run build
+            npm run squash
             mkdir -p /tmp/generated
             mv scripts/s3sync.js /tmp
             cp -r public/dist /tmp/generated
