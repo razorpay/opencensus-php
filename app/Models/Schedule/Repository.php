@@ -35,7 +35,9 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->whereRaw(
                         Entity::NAME . " LIKE 'Hourly%' OR " .
-                        Entity::NAME . " LIKE 'Basic%'")
+                        Entity::NAME . " LIKE 'Basic%' OR " .
+                        Entity::NAME . " LIKE '%PM' OR " .
+                        Entity::NAME . " LIKE '%AM'")
                     ->get();
     }
 
