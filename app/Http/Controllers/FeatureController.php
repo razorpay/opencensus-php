@@ -59,27 +59,27 @@ class FeatureController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function postOnboardingResponses(string $feature)
+    public function postOnboardingSubmissions(string $feature)
     {
         $input = Request::all();
 
-        $response = $this->service()->postOnboardingResponses($input, $feature);
+        $response = $this->service()->postOnboardingSubmissions($input, $feature);
 
         return ApiResponse::json($response);
     }
 
-    public function updateOnboardingResponses(string $feature)
+    public function updateOnboardingSubmissions(string $feature)
     {
         $input = Request::all();
 
-        $response = $this->service()->updateOnboardingResponses($input, $feature);
+        $response = $this->service()->updateOnboardingSubmissions($input, $feature);
 
         return ApiResponse::json($response);
     }
 
-    public function getOnboardingResponses(string $feature)
+    public function getOnboardingSubmissions(string $feature)
     {
-        $response = $this->service()->getOnboardingResponses($feature);
+        $response = $this->service()->getOnboardingSubmissions($feature);
 
         return ApiResponse::json($response);
     }
@@ -91,18 +91,18 @@ class FeatureController extends Controller
      *
      * @return mixed
      */
-    public function getOnboardingResponsesDeprecated(string $feature = null)
+    public function getOnboardingSubmissionsDeprecated(string $feature = null)
     {
-        $response = $this->service()->getOnboardingResponses($feature);
+        $response = $this->service()->getOnboardingSubmissions($feature);
 
         return ApiResponse::json($response);
     }
 
-    public function getFeatureActivationRequests()
+    public function getFeatureOnboardingRequests()
     {
         $input = Request::all();
 
-        $response = $this->service()->getFeatureActivationRequests($input);
+        $response = $this->service()->getFeatureOnboardingRequests($input);
 
         return ApiResponse::json($response);
     }

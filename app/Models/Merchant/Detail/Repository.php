@@ -68,7 +68,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getFeatureActivationRequestsFromStatus(string $status): Base\PublicCollection
+    public function getFeatureOnboardingRequestsByStatus(string $status): Base\PublicCollection
     {
         return $this->newQueryWithConnection(Mode::LIVE)
             ->select(
@@ -104,7 +104,7 @@ class Repository extends Base\Repository
             ($merchant->isFeatureEnabled($featureName) === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_CANNOT_APPROVE_MERCHANT_FEATURE_NOT_ASSIGNED,
+                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_NOT_ASSIGNED,
                 $attributeName,
                 [$featureName, $status]);
         }

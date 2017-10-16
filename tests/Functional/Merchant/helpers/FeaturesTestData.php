@@ -608,7 +608,7 @@ return [
             'content' => [
                 'status' => 'approved'
             ],
-            'url'     => '/onboarding/features/responses',
+            'url'     => '/onboarding/features/submissions',
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',

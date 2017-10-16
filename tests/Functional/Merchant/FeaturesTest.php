@@ -894,7 +894,7 @@ class FeaturesTest extends TestCase
                 'content' => [
                     'error' => [
                         'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => PublicErrorDescription::BAD_REQUEST_CANNOT_RESEND_FEATURE_ONBOARDING_RESPONSES
+                        'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_ACTIVATION_FORM_ALREADY_SUBMITTED
                     ],
                 ],
                 'status_code' => 400,
@@ -902,7 +902,7 @@ class FeaturesTest extends TestCase
 
             $testData['exception'] = [
                 'class' => 'RZP\Exception\BadRequestException',
-                'internal_error_code' => ErrorCode::BAD_REQUEST_CANNOT_RESEND_FEATURE_ONBOARDING_RESPONSES,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ACTIVATION_FORM_ALREADY_SUBMITTED,
             ];
 
             $this->startTest($testData);

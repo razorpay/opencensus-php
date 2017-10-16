@@ -49,6 +49,10 @@ class Constants
     const TPV                      = 'tpv';
     const IRCTC_REPORT             = 'irctc_report';
 
+    // Different actions for feature activation flow
+    const CREATE           = 'create';
+    const UPDATE           = 'update';
+
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
         self::DUMMY                    => true,

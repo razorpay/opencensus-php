@@ -159,7 +159,7 @@ class Service extends Base\Service
     {
         $response['questions'] = $this->getOnboardingQuestions($input);
 
-        $response['responses'] = $this->getOnboardingResponses();
+        $response['submissions'] = $this->getOnboardingSubmissions();
 
         return $response;
     }
@@ -199,7 +199,7 @@ class Service extends Base\Service
      * @return bool
      * @throws Exception\BadRequestException
      */
-    public function postOnboardingResponses(array $input, string $feature): bool
+    public function postOnboardingSubmissions(array $input, string $feature): bool
     {
         // Prevent the merchant from re-submitting
         $data = Accessor::for($this->merchant, Constants::ONBOARDING)
@@ -209,14 +209,16 @@ class Service extends Base\Service
         if (count($data) > 0)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_CANNOT_RESEND_FEATURE_ONBOARDING_RESPONSES,
+                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ACTIVATION_FORM_ALREADY_SUBMITTED,
                 $feature,
                 ['feature' => $feature, 'data' => $data]);
         }
 
         $data[$feature] = $input;
 
-        return $this->processOnboardingResponses('create', $data, $this->merchant);
+        $status = $this->processOnboardingResponses(Constants::CREATE, $data, $this->merchant);
+
+        return $status;
     }
 
     /**
@@ -227,7 +229,7 @@ class Service extends Base\Service
      *
      * @return bool
      */
-    public function updateOnboardingResponses(array $input, string $feature): bool
+    public function updateOnboardingSubmissions(array $input, string $feature): bool
     {
         $merchantId = $input['merchant_id'];
 
@@ -237,7 +239,9 @@ class Service extends Base\Service
 
         $data[$feature] = $input;
 
-        return $this->processOnboardingResponses('update', $data, $merchant);
+        $status = $this->processOnboardingResponses(Constants::UPDATE, $data, $merchant);
+
+        return $status;
     }
 
     /**
@@ -255,7 +259,7 @@ class Service extends Base\Service
         $saved = true;
 
         $this->trace->info(
-            TraceCode::FEATURE_ONBOARDING_RESPONSE_REQUEST,
+            TraceCode::FEATURE_ONBOARDING_SUBMISSION_REQUEST,
             [$action, $data, $merchant->getId()]);
 
         $feature = array_keys($data)[0] ?? "";
@@ -272,7 +276,7 @@ class Service extends Base\Service
                 ->upsert($data)
                 ->save();
 
-            if ($action === 'create')
+            if ($action === Constants::CREATE)
             {
                 $saved = $this->repo->merchant_detail->updateFeatureActivationStatus(
                     $merchant,
@@ -280,10 +284,7 @@ class Service extends Base\Service
                     Merchant\Detail\Entity::PENDING);
             }
 
-            if ($this->auth->isAdminAuth() === false)
-            {
-                (new Core)->notifyFeatureOnboardingFormSubmitOnSlack($feature);
-            }
+            (new Core)->notifyFeatureOnboardingFormSubmitOnSlack($feature);
         }
         catch (\Throwable $exception)
         {
@@ -297,14 +298,14 @@ class Service extends Base\Service
     }
 
     /**
-     * Returns the merchant responses to the onboarding questions of
+     * Returns the merchant submissions to the onboarding questions of
      * one/ all features
      *
      * @param string|null $feature
      *
      * @return Dictionary|string
      */
-    public function getOnboardingResponses(string $feature = null)
+    public function getOnboardingSubmissions(string $feature = null)
     {
         $settings = Accessor::for($this->merchant, Constants::ONBOARDING);
 
@@ -447,11 +448,11 @@ class Service extends Base\Service
      *
      * @return mixed
      */
-    public function getFeatureActivationRequests(array $input)
+    public function getFeatureOnboardingRequests(array $input)
     {
         $status = $input['status'];
 
-        $merchantDetails = $this->repo->merchant_detail->getFeatureActivationRequestsFromStatus($status);
+        $merchantDetails = $this->repo->merchant_detail->getFeatureOnboardingRequestsByStatus($status);
 
         return $merchantDetails;
     }

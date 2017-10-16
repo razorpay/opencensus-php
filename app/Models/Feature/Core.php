@@ -124,32 +124,36 @@ class Core extends Base\Core
     }
 
     /**
-     * Notifies slack about the new onboarding responses submitted
+     * Notifies slack about the new onboarding responses submitted.
+     * Notifies only when the submission is created (by the merchant)
      *
      * @param string $productName
      */
     public function notifyFeatureOnboardingFormSubmitOnSlack(string $productName)
     {
-        $merchant = $this->merchant;
+        if ($this->auth->isAdminAuth() === false)
+        {
+            $merchant = $this->merchant;
 
-        $isLive = ($merchant->isLive() === true) ? "true" : "false";
+            $isLive = ($merchant->isLive() === true) ? "true" : "false";
 
-        $isActivated = ($merchant->isActivated() === true) ? "true" : "false";
+            $isActivated = ($merchant->isActivated() === true) ? "true" : "false";
 
-        $merchantDetails = $merchant->merchantDetail;
+            $merchantDetails = $merchant->merchantDetail;
 
-        $submitted = (($merchantDetails !== null) and
-            ($merchantDetails->isSubmitted() === true)) ? "true"  : "false";
+            $submitted = (($merchantDetails !== null) and
+                ($merchantDetails->isSubmitted() === true)) ? "true"  : "false";
 
-        $data = [
-            'id'                         => $merchant->getId(),
-            'activated'                  => $isActivated,
-            'activation_form_submitted'  => $submitted,
-            'live'                       => $isLive,
-            'product'                    => $productName
-        ];
+            $data = [
+                'id'                         => $merchant->getId(),
+                'activated'                  => $isActivated,
+                'activation_form_submitted'  => $submitted,
+                'live'                       => $isLive,
+                'product'                    => $productName
+            ];
 
-        $this->logActionToSlack($this->merchant, SlackActions::PRODUCT_ACTIVATION, $data);
+            $this->logActionToSlack($this->merchant, SlackActions::PRODUCT_ACTIVATION, $data);
+        }
     }
 
     /**
