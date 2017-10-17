@@ -2,8 +2,9 @@
 
 namespace RZP\Gateway\Base;
 
-use RZP\Trace\TraceCode;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Entity;
 
 trait AuthorizeFailed
 {
@@ -45,15 +46,25 @@ trait AuthorizeFailed
             $gatewayPayment = $verify->payment;
             $gatewayPayment->fill($verify->verifyResponseContent);
             $gatewayPayment->saveOrFail();
-        }
-        else
-        {
-            throw new Exception\LogicException(
-                'Should not have reached here',
-                null,
-                ['payment' => $verify->input['payment']]);
+
+            return $this->extractPaymentsProperties($gatewayPayment);
         }
 
-        return true;
+        throw new Exception\LogicException(
+            'Should not have reached here',
+            null,
+            ['payment' => $verify->input['payment']]);
+    }
+
+    protected function extractPaymentsProperties($gatewayPayment)
+    {
+        $response = [];
+
+        if (method_exists($gatewayPayment, 'getAuthCode') === true)
+        {
+            $response['acquirer'][Entity::REFERENCE2] = $gatewayPayment->getAuthCode();
+        }
+
+        return $response;
     }
 }

@@ -5,7 +5,6 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class DisputeController extends Controller
 {
@@ -35,5 +34,14 @@ class DisputeController extends Controller
 
         return ApiResponse::json($data);
 
+    }
+
+    public function createReason()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createReason($input);
+
+        return ApiResponse::json($data);
     }
 }

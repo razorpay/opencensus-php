@@ -63,10 +63,8 @@ class Core extends Base\Core
      *   the next cron run.
      *
      * @param Entity $batch
-     *
-     * @return Entity
      */
-    public function retryBatch(Entity $batch): Entity
+    public function retryBatch(Entity $batch)
     {
         $batch->getValidator()->validateNotProcessedAlready();
 
@@ -75,8 +73,6 @@ class Core extends Base\Core
         $this->repo->saveOrFail($batch);
 
         $this->trace->info(TraceCode::BATCH_RETRY, $batch->toArrayPublic());
-
-        return $batch;
     }
 
     /**
@@ -170,13 +166,14 @@ class Core extends Base\Core
     /**
      * Process a particular batch entity.
      *
-     * @param Entity $batch
-     * @param boolean $bubbleEx - When called iteratively over batch collection
+     * @param Entity  $batch
+     * @param boolean $bubbleEx   - When called iteratively over batch collection
      *                            we don't break execution. But when called via
      *                            API for individual batch we bubble exception
      *                            to response.
      *
      * @return Entity
+     * @throws \Throwable
      */
     public function processBatch(Entity $batch, bool $bubbleEx = false): Entity
     {
@@ -261,9 +258,7 @@ class Core extends Base\Core
      * @param Entity $batch
      * @param array  $input
      */
-    protected function dispatchOnQueueForProcessingIfApplicable(
-        Entity $batch,
-        array $input)
+    protected function dispatchOnQueueForProcessingIfApplicable(Entity $batch, array $input)
     {
         if (Type::isQueueGroup($batch->getType()) === false)
         {

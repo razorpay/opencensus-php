@@ -303,7 +303,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
-    public function setUtr($utr)
+    public function setUtr(string $utr = null)
     {
         $this->setAttribute(self::UTR, $utr);
     }

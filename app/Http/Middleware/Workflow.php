@@ -39,6 +39,7 @@ class Workflow
         Permission::CREATE_PRICING_PLAN,
         Permission::CREATE_DISPUTE,
         Permission::EDIT_MERCHANT_BANK_DETAIL,
+        Permission::EDIT_MERCHANT_INVOICE_GSTIN,
     ];
 
     protected $app;

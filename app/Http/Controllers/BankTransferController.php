@@ -33,4 +33,22 @@ class BankTransferController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function retryBankTransferRefund()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->retryBankTransferRefund($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function insertBankTransfer(string $provider)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->insert($provider, $input);
+
+        return ApiResponse::json($response);
+    }
 }

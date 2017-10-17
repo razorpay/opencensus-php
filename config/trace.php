@@ -36,5 +36,9 @@ return array(
         ]
     ],
 
+    'rotate'  => true,
+
+    'log_max_files' => 5,
+
     'trace_code_class' => RZP\Trace\TraceCode::class,
 );

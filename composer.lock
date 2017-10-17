@@ -5262,16 +5262,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "2.0.3",
+            "version": "2.0.4",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "5ab67676b76e48c5630e5196c04357d3b387ffbe"
+                "reference": "15c22a89e221c034eb7d7405010a2a9d1b2d65ee"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/5ab67676b76e48c5630e5196c04357d3b387ffbe",
-                "reference": "5ab67676b76e48c5630e5196c04357d3b387ffbe",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/15c22a89e221c034eb7d7405010a2a9d1b2d65ee",
+                "reference": "15c22a89e221c034eb7d7405010a2a9d1b2d65ee",
                 "shasum": ""
             },
             "require": {
@@ -5321,10 +5321,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/2.0.3",
+                "source": "https://github.com/razorpay/trace/tree/2.0.4",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2017-08-18T06:46:58+00:00"
+            "time": "2017-10-03T14:26:14+00:00"
         },
         {
             "name": "razorpay/upi-clients",

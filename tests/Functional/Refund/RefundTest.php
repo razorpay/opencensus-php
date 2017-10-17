@@ -722,7 +722,8 @@ class RefundTest extends TestCase
                         'refund',
                         [
                             'gateway'     => $payment1->getGateway(),
-                            'amount'      => $rfnd1->getAmount()
+                            'amount'      => $rfnd1->getAmount(),
+                            'method'      => 'card',
                         ],
                         true);
 

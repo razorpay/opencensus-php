@@ -276,6 +276,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SETTLEMENT_ID);
     }
 
+    public function getReconciledAt()
+    {
+        return $this->getAttribute(self::RECONCILED_AT);
+    }
+
 /* ----------------------------- Accessors -----------------------------------*/
 
     protected function getApiFeeAttribute()
@@ -698,7 +703,15 @@ class Entity extends Base\PublicEntity
 
             if ($adjustment->getEntityType() === Constants\Entity::DISPUTE)
             {
-                $reportTxn[Adjustment\Entity::DISPUTE_ID] = $adjustment->entity->getPublicId();
+                $dispute = $adjustment->entity;
+
+                $reportTxn[Adjustment\Entity::DISPUTE_ID] = $dispute->getPublicId();
+
+                $payment = $dispute->payment;
+
+                $reportTxn[Dispute\Entity::PAYMENT_ID] = $payment->getPublicId();
+
+                $this->fillPaymentDetails($payment, $reportTxn);
             }
         }
         else if ($this->isTypeDispute() === true)

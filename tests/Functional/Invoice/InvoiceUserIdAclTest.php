@@ -16,6 +16,9 @@ class InvoiceUserIdAclTest extends TestCase
 
         parent::setUp();
 
+        $this->fixtures->create('user', ['id' => '10000000UserId']);
+        $this->fixtures->create('user', ['id' => '10000001UserId']);
+
         $this->ba->proxyAuth();
     }
 

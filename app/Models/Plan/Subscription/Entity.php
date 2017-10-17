@@ -127,6 +127,10 @@ class Entity extends Base\PublicEntity
         self::TYPE,
     ];
 
+    protected static $modifiers = [
+        self::START_AT,
+    ];
+
     protected $fillable = [
         self::QUANTITY,
         self::NOTES,
@@ -860,6 +864,18 @@ class Entity extends Base\PublicEntity
     }
 
     // --------------------- END GENERATORS ---------------------
+
+    // ----------------------- MODIFIERS -----------------------
+
+    public function modifyStartAt(& $input)
+    {
+        if (empty($input[Entity::START_AT]) === true)
+        {
+            unset($input[self::START_AT]);
+        }
+    }
+
+    // --------------------- END MODIFIERS ---------------------
 
     public function associateEntities(
         Plan\Entity $plan,

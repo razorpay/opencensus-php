@@ -51,6 +51,23 @@ class NetbankingHdfcGatewayTest extends TestCase
         $this->assertTrue(filter_var($gatewayPayment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['TxnAmount'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testPaymentOnDirectHdfcTerminal()
     {
         $terminal = $this->fixtures->create('terminal:netbanking_hdfc_terminal');

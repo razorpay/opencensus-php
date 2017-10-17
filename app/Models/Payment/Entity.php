@@ -13,12 +13,13 @@ use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Order;
-use RZP\Models\Currency;
-use RZP\Models\Customer;
 use RZP\Models\Feature;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
+use RZP\Models\Currency;
+use RZP\Models\Customer;
+use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
@@ -28,6 +29,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 /**
  * @property Subscription\Entity    $subscription
  * @property Invoice\Entity         $invoice
+ * @property Terminal\Entity        $terminal
  * @property Merchant\Entity        $merchant
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
@@ -113,6 +115,9 @@ class Entity extends Base\PublicEntity
 
     // Query params
     const TRANSFERRED           = 'transferred';
+
+    // Tells us whether this payment is a initial or auto recurring type
+    const RECURRING_TYPE        = 'recurring_type';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -232,6 +237,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DISPUTED,
+        self::RECURRING_TYPE,
     ];
 
     protected $public = [
@@ -349,6 +355,7 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_ID          => null,
         self::TRANSFER_ID          => null,
         self::DISPUTED             => false,
+        self::RECURRING_TYPE       => null,
     ];
 
     protected $amounts = [
@@ -635,6 +642,28 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BANK, $bank);
     }
 
+    /**
+     * Recurring Type is null by default, and will be set to initial or auto based on use case
+     *
+     * @param $type
+     */
+    public function setRecurringType($type)
+    {
+        RecurringType::validateRecurringType($type);
+
+        $this->setAttribute(self::RECURRING_TYPE, $type);
+    }
+
+    public function isRecurringTypeAuto()
+    {
+        return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::AUTO);
+    }
+
+    public function isRecurringTypeInitial()
+    {
+        return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::INITIAL);
+    }
+
     public function setSigned($signed = true)
     {
         $this->setAttribute(self::SIGNED, $signed);
@@ -754,6 +783,11 @@ class Entity extends Base\PublicEntity
     public function setMetadataKey($key, $value)
     {
         $this->metadata[$key] = $value;
+    }
+
+    public function getRecurringType()
+    {
+        return $this->getAttribute(self::RECURRING_TYPE);
     }
 
     public function setMetadata($input)
@@ -1481,6 +1515,26 @@ class Entity extends Base\PublicEntity
         return ($existingGatewayTokens->count() === 1);
     }
 
+    public function isEmandatePayment()
+    {
+        $token = $this->getGlobalOrLocalTokenEntity();
+
+        //
+        // It's not an e-mandate payment if
+        // - Token not set
+        // - Payment not netbanking
+        // - Payment not recurring
+        //
+        if (($token === null) or
+            ($this->isNetbanking() === false) or
+            ($this->isRecurring() === false))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public function getConvertCurrency()
     {
         return $this->getAttribute(self::CONVERT_CURRENCY);
@@ -1608,6 +1662,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SUBSCRIPTION_ID);
     }
 
+    /**
+     * @return Customer\Token\Entity
+     */
     public function getGlobalOrLocalTokenEntity()
     {
         $token = null;

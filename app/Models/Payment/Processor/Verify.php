@@ -10,6 +10,7 @@ use RZP\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Verify\Status as VerifyStatus;
+use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 trait Verify
 {
@@ -39,24 +40,33 @@ trait Verify
             $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
         }
 
+        // So that verification calls can be made with the relevant token related information
+        if ($payment->getGlobalOrLocalTokenEntity())
+        {
+            $data['token'] = $payment->getGlobalOrLocalTokenEntity();
+        }
+
         try
         {
             $data['gateway'] = $this->callGatewayFunction(Payment\Action::VERIFY, $data);
         }
         catch (Exception\PaymentVerificationException $e)
         {
-            $this->updatePaymentVerified($payment, VerifyStatus::FAILED);
+            $action = $e->getAction();
 
-            $this->trace->info(
-                TraceCode::PAYMENT_VERIFY_FAILED,
-                $e->getData());
+            // If action is BLOCK, RETRY, FINISH we don't update Verify Status
+            if ($action === null)
+            {
+                $this->updatePaymentVerified($payment, VerifyStatus::FAILED);
 
-            $data['gateway'] = $e->getData();
-
-            $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
-
-            // @todo: No need now to notify on individual payments verify failure.
-            // $this->notifyInSlack($slackData);
+                $this->trace->info(
+                    TraceCode::PAYMENT_VERIFY_FAILED,
+                    $e->getData());
+            }
+            else
+            {
+                $this->updatePaymentVerified($payment, VerifyStatus::UNKNOWN);
+            }
 
             throw $e;
         }

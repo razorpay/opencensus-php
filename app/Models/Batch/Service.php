@@ -31,7 +31,7 @@ class Service extends Base\Service
     {
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $batch = (new Core)->retryBatch($batch);
+        (new Core)->retryBatch($batch);
 
         return $batch->toArrayPublic();
     }

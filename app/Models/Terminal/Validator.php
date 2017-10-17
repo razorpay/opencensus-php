@@ -197,6 +197,11 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
     ];
 
+    protected static $netbankingIciciEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID2    => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
+    ];
+
     protected static $walletPayzappTerminalRules = [
         Entity::GATEWAY                    => 'required|in:wallet_payzapp',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string|size:21',
@@ -232,12 +237,15 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:wallet_freecharge',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes',
     ];
 
     protected static $netbankingIciciTerminalRules = [
-        Entity::GATEWAY                    => 'required|in:netbanking_icici',
-        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::GATEWAY                 => 'required|in:netbanking_icici',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2    => 'required|string',
+        Entity::TYPE                    => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16'
     ];
 
     protected static $walletJiomoneyTerminalRules = [

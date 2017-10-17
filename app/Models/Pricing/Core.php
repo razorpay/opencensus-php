@@ -2,22 +2,19 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Models\Pricing;
-use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Action;
 
 class Core extends Base\Core
 {
-    public function addPlanRule($input, $plan)
+    public function addPlanRule(Plan $plan, array $input): Entity
     {
         $rule = (new Entity)->addPlanRule($input, $plan);
 
         $rule = $rule->generateId();
 
-        $rule->getValidator()->matchPaymentRules($plan);
+        $rule->getValidator()->validateRuleDoesNotMatch($plan);
 
         $rule->setAuditAction(Action::CREATE_PRICING_PLAN_RULE);
 
@@ -26,30 +23,62 @@ class Core extends Base\Core
         return $rule;
     }
 
-    public function createPricingPlan($input)
+    /**
+     * Create a pricing plan from rule input
+     * The $planName is sent separately
+     */
+    public function createPlan(string $planName, array $input): Plan
     {
-        $this->trace->info(
-            TraceCode::PRICING_PLAN_CREATE_ATTEMPT,
-            $input);
+        $input[Entity::PLAN_NAME] = $planName;
 
-        $pricing = (new Pricing\Entity)->build($input);
+        $rule = (new Entity)->build($input);
 
-        $pricing = $pricing->generateId();
+        $rule = $rule->generateId();
 
-        //setting Id as new Id because here everytime we will have a new workflow for create pricing plan.
-        $this->app['workflow']
-            ->setEntityAndId($pricing->getEntity(), $pricing->getId())
-            ->handle((new \stdClass), $pricing);
+        $rule->setAuditAction(Action::CREATE_MERCHANT_PRICING_PLAN);
 
-        $pricing->setAuditAction(Action::CREATE_MERCHANT_PRICING_PLAN);
+        $this->repo->saveOrFail($rule);
 
-        $plan = $this->repo->pricing->getPricingPlanByName($input[Entity::PLAN_NAME]);
+        return $this->createPlanFromRule($rule);
+    }
 
-        Pricing\Validator::validatePlanCountZero($plan);
+    public function createPricing(array $input)
+    {
+        $validator = new Validator();
 
-        $this->repo->saveOrFail($pricing);
+        $validator->validateInput('createBulkPricing', $input);
 
-        $plan = new Plan(array($pricing));
+        $planName = $input[Entity::PLAN_NAME];
+
+        $inputRules = $input[Entity::RULES];
+
+        // Validate plan name is unique
+        $plan = $this->repo->pricing->getPricingPlanByName($planName);
+
+        $validator->validatePlanCountZero($plan);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($planName, $inputRules)
+        {
+            $plan = $this->createPlan($planName, $inputRules[0]);
+
+            array_shift($inputRules);
+
+            foreach ($inputRules as $inputRule)
+            {
+                $rule = $this->addPlanRule($plan, $inputRule);
+
+                $plan->add($rule);
+            }
+
+            // $rules = $plan->all();
+
+            // $rules to be injected in workflow here
+        });
+    }
+
+    protected function createPlanFromRule(Entity $rule): Plan
+    {
+        $plan = new Plan([$rule]);
 
         return $plan;
     }

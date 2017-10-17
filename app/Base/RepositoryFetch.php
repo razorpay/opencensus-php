@@ -15,6 +15,13 @@ use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
 use RZP\Exception\BadRequestValidationFailureException;
 
+/**
+ * Trait RepositoryFetch
+ *
+ * @package RZP\Base
+ *
+ * @property Fetch $entityFetch
+ */
 trait RepositoryFetch
 {
     use EsHydrator;
@@ -127,6 +134,8 @@ trait RepositoryFetch
 
         $this->addCommonQueryParamMerchantId($query, $merchantId);
 
+        $this->setEsRepoIfExist();
+
         // Splits the params into mysqlParams and esParams. Check methods doc on
         // how that happens.
         list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
@@ -167,7 +176,10 @@ trait RepositoryFetch
      */
     protected function getMysqlAndEsParams(array $params): array
     {
-        $this->setEsRepoIfExist();
+        if ($this->hasEntityFetch() === true)
+        {
+            return $this->entityFetch->groupMysqlAndEsParams($params);
+        }
 
         if ($this->esRepo === null)
         {
@@ -418,6 +430,11 @@ trait RepositoryFetch
      */
     protected function processFetchParams(array & $params)
     {
+        if ($this->hasEntityFetch() === true)
+        {
+            return $this->entityFetch->processFetchParams($params);
+        }
+
         $params = $this->unsetEmptyParams($params);
 
         $this->addDefaultParams($params);
@@ -604,9 +621,16 @@ trait RepositoryFetch
         Merchant\Entity $merchant,
         array $params = []): PublicEntity
     {
-        $params = $this->modifyFindParams($params);
+        if ($this->hasEntityFetch() === true)
+        {
+            $this->entityFetch->processFindParams($params);
+        }
+        else
+        {
+            $params = $this->modifyFindParams($params);
 
-        $this->validateFindParams($params);
+            $this->validateFindParams($params);
+        }
 
         $expands = $this->getExpandsForQueryFromInput($params);
 

@@ -33,9 +33,7 @@ class Validator extends Base\Validator
 
     protected function validateDescriptor($attribute, $descriptor)
     {
-        $app = App::getFacadeRoot();
-
-        $merchant = $app['basicauth']->getMerchant();
+        $merchant = $this->entity->merchant;
 
         $descriptorLength = strlen($descriptor);
 

@@ -125,6 +125,12 @@ class Gateway extends Base\Gateway
     {
         $attributes = [];
 
+        if (isset($response[VERes::MESSAGE]['Error']) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
+        }
+
         $ch = $response[VERes::MESSAGE][VERes::VERES][VERes::CH];
 
         $attributes = [
@@ -184,7 +190,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function validateSignatureAndInflatePares($paresXml)
+    protected function validateSignatureAndInflatePares($pares)
     {
         $paresXml = gzinflate(substr($pares, 2));
 
@@ -554,10 +560,10 @@ class Gateway extends Base\Gateway
                     VEReq::MERCHANT   => [
                         VEReq::ACQBIN       => $this->getAcquirerBin($input),
                         VEReq::MERCHANT_ID  => $this->getMerchantId($input),
-                        // 'password' => $creds['password'],
+                        //'password' => '',
                     ],
                     VEReq::BROWSER    => [
-                        VEReq::DEVICE_CATEGORY => DeviceCategory::DESKTOP,
+                        VEReq::DEVICE_CATEGORY => DeviceCategory::getDeviceCategory(DeviceCategory::DESKTOP),
                         VEReq::DEVICE_ACCEPT   => $accept,
                         VEReq::DEVICE_UA       => $userAgent,
                     ]
@@ -594,16 +600,16 @@ class Gateway extends Base\Gateway
 
     protected function getAcquirerBin(array $input)
     {
-        $certName = '';
+        $acquirerBin = '';
 
         switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
-                $certName = $this->config['live_mastercard_acq_bin'];
+                $acquirerBin = $this->config['live_mastercard_acq_bin'];
                 break;
 
             case Card\Network::VISA:
-                $certName = $this->config['live_visa_acq_bin'];
+                $acquirerBin = $this->config['live_visa_acq_bin'];
                 break;
 
             default:
@@ -617,7 +623,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_acq_bin'];
         }
 
-        return $certName;
+        return $acquirerBin;
     }
 
     protected function getMerchantId(array $input)
@@ -735,6 +741,8 @@ class Gateway extends Base\Gateway
             'Accept'       => $this->app['request']->header('Accept'),
             'User-Agent'   => $this->app['request']->header('User-Agent')
         ];
+
+        $request['options'] = $options;
 
         $request['options']['timeout'] = 10;
         $request['options']['connect_timeout'] = 10;
