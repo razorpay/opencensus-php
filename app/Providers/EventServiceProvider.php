@@ -56,10 +56,17 @@ class EventServiceProvider extends ServiceProvider
             return;
         }
 
-        // Actual job class is wrapped under likes of SyncJob, SqsJob classes
+        //
+        // Actual job class is wrapped under likes of SyncJob, SqsJob classes.
+        // Also we only have to deal with Job classes extending our base Job.
+        //
         $resolvedJob  = unserialize($job->payload()['data']['command']);
-        $previousMode = $resolvedJob->getPreviousMode();
 
-        $this->app['basicauth']->setModeAndDbConn($previousMode);
+        if ($resolvedJob instanceof \RZP\Jobs\Job === true)
+        {
+            $previousMode = $resolvedJob->getPreviousMode();
+
+            $this->app['basicauth']->setModeAndDbConn($previousMode);
+        }
     }
 }
