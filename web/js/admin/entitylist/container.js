@@ -110,8 +110,8 @@ class EntityListContainer extends Component {
 
   render() {
     return (
-      <div className="entity-results box">
-        <div>
+      <div className="entity-results">
+        <div className="box">
           <EntityList
             records={this.state.records}
             limit={this.props.columnLimit || 10}

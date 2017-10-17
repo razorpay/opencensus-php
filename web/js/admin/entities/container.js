@@ -117,11 +117,8 @@ export default class Entities extends Component {
 
     const mode = this.state.selectedMode;
 
-    let routeName = 'admin_fetch_entity_multiple';
-
     if (this.state.searchEntity) {
       urlParams.id = this.state.searchEntity;
-      route = 'admin_fetch_entity_by_id';
     } else {
       queryParams = {
         ...filters,
