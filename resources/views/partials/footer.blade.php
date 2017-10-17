@@ -7,6 +7,11 @@
 
     ga('create', 'UA-53341507-2', 'auto');
     ga('send', 'pageview');
+
+    if (document.cookie.match('signup_pixel=1')) {
+      document.cookie = 'signup_pixel=;domain=.razorpay.com;expires=Thu, 01 Jan 1970 00:00:01 GMT';
+      new Image().src = '//www.facebook.com/tr?id=697927486977350&ev=CompleteRegistration'
+    }
   }
   </script>
 </body>
