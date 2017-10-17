@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
     const REMEMBER_TOKEN        = 'remember_token';
     const CONFIRM_TOKEN         = 'confirm_token';
     const CAPTCHA               = 'captcha';
+    const CAPTCHA_DISABLE       = 'captcha_disable';
 
     const ACTION                = 'action';
     const USER_ID               = 'user_id';

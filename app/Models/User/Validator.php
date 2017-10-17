@@ -20,6 +20,7 @@ class Validator extends Base\Validator
         Entity::REMEMBER_TOKEN        => 'sometimes',
         Entity::CONFIRM_TOKEN         => 'sometimes',
         Entity::CAPTCHA               => 'required_without:captcha_disable',
+        Entity::CAPTCHA_DISABLE       => 'sometimes|string',
     ];
 
     protected static $editRules = [
@@ -66,15 +67,15 @@ class Validator extends Base\Validator
      */
     protected function validateCaptcha(array $input)
     {
-        if ((isset($input['captcha_disable'])) and
-            ($input['captcha_disable'] === self::DISABLE_CAPTCHA_SECRET))
+        if ((isset($input[Entity::CAPTCHA_DISABLE])) and
+            ($input[Entity::CAPTCHA_DISABLE] === self::DISABLE_CAPTCHA_SECRET))
         {
             return;
         }
 
         if($_SERVER['HTTP_HOST'] === 'dashboard.razorpay.com' or $_SERVER['HTTP_HOST'] === 'betadashboard.razorpay.com')
         {
-            $captchaResponse = $input['captcha'] ?? null;
+            $captchaResponse = $input[Entity::CAPTCHA] ?? null;
 
             if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) and $_SERVER['HTTP_X_FORWARDED_FOR'])
             {
