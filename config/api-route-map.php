@@ -88,7 +88,7 @@ return [
         // Create Schedule
         'schedule_create'                   => 'schedules',
         'schedule_assign'                   => 'merchants/{id}/schedules',
-        'schedule_fetch_multiple'           => 'schedules',
+        'setl_fetch_schedule'               => 'settlements/schedules',
 
         // Add Adjustment
         'adj_add'                           => 'adjustments',
@@ -117,6 +117,9 @@ return [
         'merchant_invoice_update_gstin'     => 'merchants/{id}/invoice/gstin',
 
         'merchant_activation_files'         => 'merchant/activation/{id}/files',
+
+        // Add new dispute reason
+        'dispute_reason_create'             => 'disputes/reasons',
     ],
 
     // auth

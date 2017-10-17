@@ -46,6 +46,7 @@
             <option value="chargeback">Chargeback</option>
             <option value="pre_arbitration">Pre Arbitration</option>
             <option value="arbitration">Arbitration</option>
+            <option value="retrieval">Retrieval</option>
           </select>
         </div>
       </div>
@@ -112,6 +113,7 @@
             <option value="under_review">Under Review</option>
             <option value="lost">Lost</option>
             <option value="won">Won</option>
+            <option value="closed">Closed</option>
           </select>
         </div>
       </div>
@@ -164,7 +166,7 @@
         <div class="col-sm-8">
           <input type="checkbox" class="form-control m-b"
                  ng-model="dispute.deduct_at_onset"
-                 ng-disabled="true"/>
+                 ng-disabled="editMode"/>
         </div>
       </div>
 

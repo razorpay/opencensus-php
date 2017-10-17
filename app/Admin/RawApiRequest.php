@@ -60,6 +60,7 @@ class RawApiRequest
         $this->client = new Guzzle($options);
 
         $this->setupCredentials($input);
+
         $this->input = $input;
         $this->path = $path;
 

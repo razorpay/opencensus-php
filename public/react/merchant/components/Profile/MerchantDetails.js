@@ -14,6 +14,11 @@ export default ({ user }) => {
       />
 
       <DetailRow
+        label="Activation Form Progress"
+        value={`${user.activation_progress}%`}
+      />
+
+      <DetailRow
         label="Activation Status"
         value={() => (
           <span data-tip={user.isActivated ? 'Activated' : 'Not Activated'}>
@@ -27,11 +32,6 @@ export default ({ user }) => {
         value={() => (
           <Time value={user.created_at} format="MMM DD YYYY, hh:mm:ss a" />
         )}
-      />
-
-      <DetailRow
-        label="Activation Form Progress"
-        value={`${user.activation_progress}%`}
       />
     </div>
   );

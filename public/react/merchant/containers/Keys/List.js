@@ -28,6 +28,7 @@ export default class KeysListContainer extends ListContainer {
 
   showRollKeyModal = (params = null) => {
     this.props.openModal({
+      size: 'small',
       component: (
         <RollKey
           params={params}

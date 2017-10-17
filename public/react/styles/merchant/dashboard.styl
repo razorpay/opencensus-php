@@ -243,7 +243,7 @@
   }
 }
 
-.onboarding-card.media { 
+.onboarding-card.media {
   background-color: #fff;
   margin-bottom: 20px;
   box-shadow: 0 0 8px 0 rgba(0,0,0,0.16);
@@ -313,7 +313,7 @@
       height: 100%;
       padding-left: 10px;
       display: inline-block;
-     
+
       &:first-child {
         padding-left: 0;
       }
@@ -340,7 +340,7 @@
         height: 31px;
       }
     }
-  } 
+  }
 
   .media-heading {
     font-size: 15px;
@@ -500,6 +500,11 @@
   padding: 8px;
   border-bottom: 1px solid #ebecee;
 
+  &.clickable:hover {
+    background-color: #f7f6f6;
+    cursor: pointer;
+  }
+
 // To highlight selected row
   &.active {
     background-color: rgba(255,255,215,0.75);
@@ -519,10 +524,6 @@
       font-size: 22px;
       padding: 10px;
       cursor: pointer;
-
-      &:hover {
-        color: #9bb2bf;
-      }
     }
   }
 
@@ -672,4 +673,8 @@ div.feature-activation-banner {
   .rdtPicker {
     width: 200px;
   }
+}
+
+.rollkey .RadioButton {
+  margin: 8px 0;
 }

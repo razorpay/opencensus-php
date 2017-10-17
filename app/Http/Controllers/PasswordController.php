@@ -106,6 +106,6 @@ class PasswordController extends Controller
 
     protected function generateToken($userId, $time)
     {
-        return hash_hmac(self::SHA256, 'password.reset' . '_' . $userId . '_' . $time, env('APP_KEY'));
+        return hash_hmac(self::SHA256, 'password.reset' . '_' . $userId . '_' . $time, config('app.key'));
     }
 }

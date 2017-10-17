@@ -160,39 +160,37 @@ export default class ReversalModal extends Component {
                 <div>Partial Reversal</div>
               </label>
               <div class="col-sm-8">
-                <div class="checkbox">
-                  <label class="i-checks">
-                    <Field
-                      name="partial"
-                      id="partial"
-                      component="input"
-                      type="checkbox"
-                      class="form-control"
-                    />
-                    <i />
-                  </label>
+                <div class="checkbox rzpCheckbox">
+                  <Field
+                    name="partial"
+                    id="partial"
+                    component="input"
+                    type="checkbox"
+                    class="form-control"
+                  />
+                  <label for="partial" />
                 </div>
               </div>
             </div>
-            {this.props.partial
-              ? <div class="form-group">
-                  <label class="col-sm-4 control-label">
-                    <div>Amount</div>
-                    <small>(in INR)</small>
-                  </label>
-                  <div class="col-sm-8">
-                    <Field
-                      name="amount"
-                      component={InputField}
-                      autoComplete="off"
-                      class="form-control"
-                      validate={amountValidation}
-                      placeholder="Enter the reversal amount"
-                    />
-                    <i />
-                  </div>
+            {this.props.partial ? (
+              <div class="form-group">
+                <label class="col-sm-4 control-label">
+                  <div>Amount</div>
+                  <small>(in INR)</small>
+                </label>
+                <div class="col-sm-8">
+                  <Field
+                    name="amount"
+                    component={InputField}
+                    autoComplete="off"
+                    class="form-control"
+                    validate={amountValidation}
+                    placeholder="Enter the reversal amount"
+                  />
+                  <i />
                 </div>
-              : null}
+              </div>
+            ) : null}
 
             <div class="form-group">
               <div class="col-sm-8 col-sm-offset-4">
