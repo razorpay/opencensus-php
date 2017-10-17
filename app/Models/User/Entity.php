@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const CONTACT_MOBILE        = 'contact_mobile';
     const REMEMBER_TOKEN        = 'remember_token';
     const CONFIRM_TOKEN         = 'confirm_token';
+    const CAPTCHA               = 'captcha';
 
     const ACTION                = 'action';
     const USER_ID               = 'user_id';
