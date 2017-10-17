@@ -10,11 +10,11 @@ function toggleChecked(e) {
   sib.checked = !sib.checked;
 }
 
-export default function Field({ label, ...props }) {
+export default function Field({ label, onChange, value, ...props }) {
   return (
     <div class="field">
       <label onClick={focusInput}>{label}</label>
-      <input {...props} />
+      <input {...props} value={value} onChange={onChange} />
     </div>
   );
 }
@@ -42,6 +42,31 @@ export function SwitchField({ label, disabledValue, ...props }) {
       )}
       <label onClick={toggleChecked}>{label}</label>
       <input {...props} type="checkbox" />
+      <div class="switch-knob" />
+    </div>
+  );
+}
+
+export function ControlledSwitchField({
+  label,
+  enabled,
+  onChange,
+  enabledValue,
+  disabledValue,
+  name,
+  ...props
+}) {
+  return (
+    <div class="field switch-field">
+      <input
+        type="hidden"
+        name={name}
+        value={enabled ? enabledValue : disabledValue}
+      />
+      <label onClick={() => onChange(enabled ? disabledValue : enabledValue)}>
+        {label}
+      </label>
+      <input {...props} checked={enabled} type="checkbox" readOnly={true} />
       <div class="switch-knob" />
     </div>
   );

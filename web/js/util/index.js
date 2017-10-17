@@ -10,3 +10,15 @@ export const prevent = e => {
   e.preventDefault();
   e.stopPropagation();
 };
+export const titleCase = (str = '') => {
+  const chars = str.split('');
+
+  return chars[0].toUpperCase() + chars.splice(1).join('');
+};
+
+export const snakeToTitleCase = (str = '') => {
+  return str
+    .split('_')
+    .map(titleCase)
+    .join(' ');
+};
