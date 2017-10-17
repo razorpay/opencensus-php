@@ -41,7 +41,10 @@ export default class Model {
       })
     ).then(data => {
       transaction(() => {
-        this.merchant.details = data.data;
+        if (data && data.success) {
+          this.merchant.details = data.data;
+        }
+
         this.pending.set(false);
       });
 
@@ -71,7 +74,9 @@ export default class Model {
         queryParams,
       })
     ).then(data => {
-      this.merchant.offers = data.data.items;
+      if (data && data.success) {
+        this.merchant.offers = data.data.items;
+      }
     });
   }
 
@@ -90,7 +95,9 @@ export default class Model {
         data,
       })
     ).then(data => {
-      this.merchant.pricingPlans = data.data;
+      if (data && data.success) {
+        this.merchant.pricingPlans = data.data;
+      }
     });
   }
 
@@ -114,7 +121,9 @@ export default class Model {
         queryParams,
       })
     ).then(data => {
-      this.merchant.scheduleTasks = data.data;
+      if (data && data.success) {
+        this.merchant.scheduleTasks = data.data;
+      }
 
       // Check if merchant has Settlement Schedule
       if (this.merchant.scheduleTasks) {

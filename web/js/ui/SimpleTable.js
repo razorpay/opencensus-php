@@ -13,26 +13,34 @@ export default ({ fields, items, onClick }) => {
 
   return (
     <div class="table-container">
-      <div class="table table-striped">
-        <div class="tr thead">
-          {fields.map((field, index) => (
-            <div class="th" key={index}>
-              {field[0]}
-            </div>
-          ))}
+      {items && items.length ? (
+        <div class="table table-striped">
+          <div class="tr thead">
+            {fields.map((field, index) => (
+              <div class="th" key={index}>
+                {field[0]}
+              </div>
+            ))}
+          </div>
+          {items.map((item, index) => {
+            return (
+              <div
+                class={trClass}
+                key={index}
+                onClick={onClick && item::onClick}
+              >
+                {fields.map((field, index) => (
+                  <div class="td" key={index}>
+                    {field[1](item)}
+                  </div>
+                ))}
+              </div>
+            );
+          })}
         </div>
-        {items.map((item, index) => {
-          return (
-            <div class={trClass} key={index} onClick={onClick && item::onClick}>
-              {fields.map((field, index) => (
-                <div class="td" key={index}>
-                  {field[1](item)}
-                </div>
-              ))}
-            </div>
-          );
-        })}
-      </div>
+      ) : (
+        <div class="table-empty" />
+      )}
     </div>
   );
 };
