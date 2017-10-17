@@ -63,7 +63,6 @@ export default class PaymentLinksContainer extends ListContainer {
 
   render() {
     let { loading, invoices, user } = this.props;
-    let isOldUIEnabled = user.isOldUIEnabled;
     let status = this.state.status;
 
     return (
@@ -97,7 +96,6 @@ export default class PaymentLinksContainer extends ListContainer {
           invoices={invoices}
           isLoading={loading}
           type="link"
-          isOldUIEnabled={isOldUIEnabled}
           onEdit={this.showPaymentLinkModal}
         />
 
