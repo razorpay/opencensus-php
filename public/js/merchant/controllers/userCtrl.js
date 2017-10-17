@@ -164,42 +164,6 @@ app
             }
           }
 
-          if (window.smoochScript) {
-            smoochScript.then(function() {
-              var sk_user = function() {
-                if (window.skIntro) {
-                  window.skIntro.html('');
-                }
-                $('#sk-footer input').off('focus', window.skFocusListener);
-                window.smoochUserLoaded = true;
-                Smooch.updateUser({
-                  givenName: data.name,
-                  email: data.email,
-                  properties: {
-                    id: data.id,
-                    activated: data.activated,
-                    locked: data.locked,
-                    submitted: data.submitted,
-                    role: $scope.role,
-                    userEmail: data.user.email,
-                    dashboardLink: location.origin +
-                      '/admin#/app/merchants/' +
-                      data.id +
-                      '/detail',
-                  },
-                });
-              };
-
-              if (Smooch._rzpReady) {
-                sk_user();
-              } else {
-                Smooch.on('ready', function() {
-                  sk_user();
-                });
-              }
-            });
-          }
-
           if (window.ga) {
             ga('set', 'userId', data.id);
           }
@@ -266,7 +230,8 @@ app
                   };
                 },
               ],
-              template: '<div class="modal-header">' +
+              template:
+                '<div class="modal-header">' +
                 '<h3 class="modal-title">Alert</h3>' +
                 '</div>' +
                 '<div class="confirm-modal modal-body">' +

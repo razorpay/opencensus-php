@@ -53,9 +53,6 @@ export default class App extends Component {
 
         this.props.updateSession({ mode: currentMode });
         this.redirectToRoute(role);
-        setTimeout(() => {
-          this.initSmooch(user);
-        });
 
         return data;
       }),
@@ -125,47 +122,6 @@ export default class App extends Component {
         case null:
           return this.props.history.replace('/profile');
       }
-    }
-  }
-
-  initSmooch(data) {
-    let role = data.userRole;
-    if (window.smoochScript) {
-      smoochScript.then(function() {
-        var sk_user = function() {
-          if (window.skIntro) {
-            window.skIntro.html('');
-          }
-          $('#sk-footer input').off('focus', window.skFocusListener);
-          window.smoochUserLoaded = true;
-          Smooch.updateUser({
-            givenName: data.name,
-            email: data.email,
-            properties: {
-              id: data.id,
-              activated: data.activated,
-              locked: data.locked,
-              submitted: data.submitted,
-              isOldUIEnabled: data.isOldUIEnabled,
-              role: role,
-              userEmail: data.user.email,
-              dashboardLink:
-                location.origin +
-                '/admin#/app/merchants/' +
-                data.id +
-                '/detail',
-            },
-          });
-        };
-
-        if (Smooch._rzpReady) {
-          sk_user();
-        } else {
-          Smooch.on('ready', function() {
-            sk_user();
-          });
-        }
-      });
     }
   }
 
