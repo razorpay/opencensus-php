@@ -63,8 +63,6 @@ class Service extends Base\Service
      */
     public function register($input)
     {
-        unset($input['captcha']);
-
         unset($input['business_name']);
 
         $registerUser = [
