@@ -2,5 +2,5 @@ import React from 'react';
 import BaseModal from 'ui/BaseModal';
 
 export default () => {
-  return <BaseModal title="Activation Form">Hello World</BaseModal>;
+  return <BaseModal header="Activation Form">Hello World</BaseModal>;
 };

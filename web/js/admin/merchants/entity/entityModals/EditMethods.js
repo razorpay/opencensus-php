@@ -2,5 +2,5 @@ import React from 'react';
 import BaseModal from 'ui/BaseModal';
 
 export default () => {
-  return <BaseModal title="Edit Methods">Hello World</BaseModal>;
+  return <BaseModal header="Edit Methods">Hello World</BaseModal>;
 };
