@@ -25,7 +25,7 @@ for i in $files; do
   else
     even=true
     cat node_modules/$i
-    echo $'\n'
+    printf '\n'
   fi
 done > public/dist/vendor.js
 echo $files

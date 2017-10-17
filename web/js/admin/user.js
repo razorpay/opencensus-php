@@ -1,5 +1,63 @@
 import { observable } from 'mobx';
 
-var user = observable.box(window.rzpAdmin);
+var admin = window.rzpAdmin || {
+  id: 'admin_7BJNkK0XD3s6ho',
+  email: 'ankit.verma@razorpay.com',
+  name: 'Ankit Verma',
+  username: 'ankitverma',
+  oauth_provider_id: '108444718713295141454',
+  org_id: 'org_100000razorpay',
+  user_type: null,
+  employee_code: 'RZP010',
+  branch_code: 'RZP010',
+  department_code: 'RZP010',
+  supervisor_code: 'RZP010',
+  location_code: 'RZP010',
+  disabled: false,
+  locked: false,
+  deleted_at: null,
+  last_login_at: 1507897483,
+  allow_all_merchants: false,
+  roles: ['Developers L1'],
+  groups: [
+    {
+      name: 'Demo Accounts',
+      description:
+        'This group will contain demo merchant accounts which will be accessible to developers, etc.',
+    },
+  ],
+  permissions: [
+    'view_merchant_features',
+    'view_networks',
+    'view_email_logs',
+    'view_gateway_rule',
+    'view_refund_payments',
+    'add_reconciliation_file',
+    'view_merchant_screenshot',
+    'view_merchant_referrer',
+    'view_merchant_bank_accounts',
+    'view_merchant_banks',
+    'view_merchant_aggregations',
+    'view_beneficiary_file',
+    'view_merchant_company_info',
+    'view_merchant_balance',
+    'view_payment_verify',
+    'view_merchant_pricing',
+    'view_all_entity',
+    'view_actions',
+    'view_pricing_list',
+    'view_activity',
+    'view_merchant',
+    'view_merchant_hdfc_excel',
+    'view_all_merchants',
+    'view_merchant_tags',
+    'view_merchant_credits_log',
+    'view_all_admin',
+    'view_workflow_requests',
+    'view_all_workflow',
+  ],
+};
+
+var user = observable.box(admin);
 
 export default user.get();
