@@ -2,12 +2,12 @@ import Promise from 'promise';
 import React, { Component } from 'react';
 
 import { adminFetch } from 'util/fetch';
-import EntityList from './index';
+import EntityFilters from './index';
+import EntityListContainer from '../entitylist/container.js';
 
 const initialState = {
   entities: null,
   errors: [],
-  collection: { pending: false, items: [] },
   selectedEntity: 'payment',
   selectedMode: 'live',
   selectedFrom: 0,
@@ -16,6 +16,7 @@ const initialState = {
   searchEntity: '',
   searchErrors: [],
   skip: 0,
+  entityProps: {},
 };
 
 function mergeEntitiesWithFields(entities, fields) {
@@ -43,7 +44,7 @@ function mergeEntitiesWithFields(entities, fields) {
   return modifiedEntities;
 }
 
-export default class EntityListContainer extends Component {
+export default class Entities extends Component {
   constructor(props) {
     super(props);
 
@@ -83,9 +84,14 @@ export default class EntityListContainer extends Component {
   }
 
   componentWillMount() {
-    const route = 'admin_fetch_all_entities';
+    const routeName = 'admin_fetch_all_entities';
 
-    adminFetch({ route })
+    adminFetch({
+      data: {
+        route_name: routeName,
+        mode: this.state.selectedMode,
+      },
+    })
       .then(resp => {
         resp = resp.data;
 
@@ -105,15 +111,13 @@ export default class EntityListContainer extends Component {
   }
 
   onSearch(filters = {}) {
-    const urlParams = {
-      type: this.state.selectedEntity,
-    };
+    const urlParams = {};
 
     let queryParams = {};
 
     const mode = this.state.selectedMode;
 
-    let route = 'admin_fetch_entity_multiple';
+    let routeName = 'admin_fetch_entity_multiple';
 
     if (this.state.searchEntity) {
       urlParams.id = this.state.searchEntity;
@@ -134,61 +138,53 @@ export default class EntityListContainer extends Component {
       }
     }
 
-    this.setState({
-      collection: { ...this.state.collection, pending: true },
+    return new Promise(res => {
+      this.setState(
+        {
+          entityProps: {
+            type: this.state.selectedEntity,
+            mode,
+            urlParams: urlParams,
+            queryParams,
+          },
+        },
+        res
+      );
     });
-
-    return adminFetch({
-      mode,
-      route,
-      urlParams,
-      queryParams,
-    })
-      .then(resp => {
-        resp = resp.data;
-
-        if (resp.errors) {
-          return Promise.reject(resp.errors);
-        }
-
-        const { items, filters } = resp.data;
-
-        this.setState({
-          collection: { items, pending: false },
-          searchErrors: [],
-        });
-      })
-      .catch(searchErrors => {
-        this.setState({
-          searchErrors,
-          collection: { ...this.state.collection, pending: false },
-        });
-      });
   }
 
   render() {
     return (
       <div>
         {this.state.errors.length === 0 ? (
-          <EntityList
-            entities={this.state.entities}
-            fields={this.state.fields}
-            collection={this.state.collection}
-            selectedEntity={this.state.selectedEntity}
-            selectedMode={this.state.selectedMode}
-            selectedFrom={this.state.selectedFrom}
-            selectedTo={this.state.selectedTo}
-            selectedCount={this.state.selectedCount}
-            searchEntity={this.state.searchEntity}
-            searchErrors={this.state.searchErrors}
-            onSearch={this.onSearch}
-            onModeChange={this.onModeChange}
-            onEntityChange={this.onEntityChange}
-            onSetSelectedFrom={this.onSetSelectedFrom}
-            onSetSelectedTo={this.onSetSelectedTo}
-            onSearchEntityChange={this.onSearchEntityChange}
-            onSetCount={this.onSetCount}
-          />
+          <div className="entity-view">
+            <EntityFilters
+              entities={this.state.entities}
+              fields={this.state.fields}
+              selectedEntity={this.state.selectedEntity}
+              selectedMode={this.state.selectedMode}
+              selectedFrom={this.state.selectedFrom}
+              selectedTo={this.state.selectedTo}
+              selectedCount={this.state.selectedCount}
+              searchEntity={this.state.searchEntity}
+              searchErrors={this.state.searchErrors}
+              onSearch={this.onSearch}
+              onModeChange={this.onModeChange}
+              onEntityChange={this.onEntityChange}
+              onSetSelectedFrom={this.onSetSelectedFrom}
+              onSetSelectedTo={this.onSetSelectedTo}
+              onSearchEntityChange={this.onSearchEntityChange}
+              onSetCount={this.onSetCount}
+            />
+            {!!this.state.entities && (
+              <EntityListContainer
+                type={this.state.entityProps.type}
+                mode={this.state.entityProps.mode}
+                urlParams={this.state.entityProps.urlParams}
+                queryParams={this.state.entityProps.queryParams}
+              />
+            )}
+          </div>
         ) : (
           <div className="text-danger">
             {this.state.errors.map((error, index) => {

@@ -19,6 +19,7 @@
     "babel-preset-stage-0": "^6.24.1",
     "butternut": "^0.4.6",
     "chartist": "^0.11.0",
+    "deep-equal": "^1.0.1",
     "dot": "^1.1.2",
     "dot-settings": "github:razorpay/dot-settings",
     "glob": "^7.1.2",

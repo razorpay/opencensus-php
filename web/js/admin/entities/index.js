@@ -1,14 +1,12 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
-import EntityTable from './EntityTable';
 import Field, {
   SelectField,
   ControlledSwitchField,
   DateTimeField,
 } from 'ui/Field';
-import { adminFetch } from 'util/fetch';
 
-export default class EntityList extends Component {
+export default class EntityFilters extends Component {
   state = {
     entityList: [],
   };
@@ -132,15 +130,6 @@ export default class EntityList extends Component {
                 })}
               <button>Go</button>
             </Form>
-          )}
-        </div>
-        <div className="entity-results">
-          {this.props.collection.pending ? (
-            <center>Loading...</center>
-          ) : (
-            this.props.collection.items.length > 0 && (
-              <EntityTable records={this.props.collection.items} />
-            )
           )}
         </div>
       </div>
