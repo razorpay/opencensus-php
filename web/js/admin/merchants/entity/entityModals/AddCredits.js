@@ -1,5 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
+import BaseModal from 'ui/BaseModal';
 
 export default () => {
-  return <div>Hello World....</div>;
+  return <BaseModal title="Add Credits">Hello World</BaseModal>;
 };

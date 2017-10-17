@@ -1,5 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
+import BaseModal from 'ui/BaseModal';
 
 export default () => {
-  return <div />;
+  return <BaseModal title="Upload Screenshots">Hello World</BaseModal>;
 };
