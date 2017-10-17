@@ -28,186 +28,6 @@ class FeaturesTest extends TestCase
         $this->ba->appAuth();
     }
 
-    /**
-     * Adds a feature as an admin based on
-     * the params received
-     *
-     * @param string $addToMode
-     * @param bool   $shouldSync
-     * @param array  $featureNames
-     */
-    private function addFeatures(
-        string $addToMode,
-        bool $shouldSync = false,
-        array $featureNames = ['dummy'], string $merchant_id = null)
-    {
-        $authMethod = 'appAuth' . studly_case($addToMode);
-
-        $this->ba->$authMethod();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        if (empty($featureNames) === false)
-        {
-            $testData['request']['content']['names'] = $featureNames;
-        }
-
-        if ($shouldSync !== false)
-        {
-            $testData['request']['content']['should_sync'] = 1;
-        }
-
-        if ($merchant_id !== null)
-        {
-            $testData['request']['content']['entity_id'] = $merchant_id;
-        }
-
-        $this->startTest($testData);
-    }
-
-    /**
-     * Deletes a feature as an admin based on
-     * the params received
-     *
-     * @param string $deleteFromMode
-     * @param bool   $shouldSync
-     * @param string $featureName
-     */
-    private function deleteFeature(
-        string $deleteFromMode,
-        bool $shouldSync = false,
-        string $featureName = 'dummy')
-    {
-        $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
-
-        $testData = $this->testData[__FUNCTION__];
-
-        if ($featureName === null)
-        {
-            $testData['request']['url'] = '/features/10000000000000/' . $featureName;
-        }
-
-        if ($shouldSync === true)
-        {
-            $testData['request']['content']['should_sync'] = 1;
-        }
-
-        $this->startTest($testData);
-    }
-
-    /**
-     * Simulates merchant behavior based on the
-     * params received
-     *
-     * @param string $action
-     * @param string $addToMode
-     * @param string $featureName
-     * @param bool   $expectBadRequestException
-     * @param bool   $shouldSync
-     */
-    private function updateFeatureAsMerchant(
-        string $action,
-        string $addToMode,
-        string $featureName = 'noflashcheckout',
-        bool $expectBadRequestException = false,
-        bool $shouldSync = true)
-    {
-        $authMethod = 'proxyAuth' . studly_case($addToMode);
-
-        $this->ba->$authMethod();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        if ($action === 'add')
-        {
-            $testData['request']['content']['features'][$featureName] = '1';
-        }
-        else
-        {
-            $testData['request']['content']['features'][$featureName] = '0';
-        }
-
-        if ($expectBadRequestException === true)
-        {
-            $testData['response'] = [
-                'content' => [
-                    'error' => [
-                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
-                    ],
-                ],
-                'status_code' => 400,
-            ];
-
-            $testData['exception'] = [
-                'class' => 'RZP\Exception\BadRequestException',
-                'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
-            ];
-        }
-
-        if ($shouldSync === true)
-        {
-            $testData['request']['content']['should_sync'] = 1;
-        }
-
-        $this->startTest($testData);
-    }
-
-    /**
-     * Performs a GET request based on the mode received and verifies the
-     * presence of the features received as arguments
-     *
-     * @param string $mode
-     * @param array  $featureNames
-     */
-    private function verifyFeaturePresence(
-        string $mode,
-        array $featureNames = ['dummy'])
-    {
-        $authMethod = 'appAuth' . studly_case($mode);
-
-        $this->ba->$authMethod();
-
-        $response = $this->startTest();
-
-        $assignedFeatures = array_map(function ($feature)
-            {
-                return $feature["name"];
-            }, $response["assigned_features"]);
-
-        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
-
-        // Check if all the featureNames requested, are present in the assignedFeatures array
-        $this->assertTrue(count($assignedFeaturesInResponse) === count($featureNames));
-    }
-
-    /**
-     * Performs a GET request based on the mode received and verifies the
-     * absence of the features received as arguments
-     *
-     * @param string $mode
-     * @param array  $featureNames
-     */
-    private function verifyFeatureAbsence(
-        string $mode,
-        array $featureNames = ['dummy'])
-    {
-        $authMethod = 'appAuth' . studly_case($mode);
-
-        $this->ba->$authMethod();
-
-        $response = $this->startTest();
-
-        $assignedFeatures = array_map(function ($feature)
-            {
-                return $feature["name"];
-            }, $response["assigned_features"]);
-
-        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
-
-        $this->assertEquals(0, count($assignedFeaturesInResponse));
-    }
-
     public function testAddInvalidFeatureToMerchant()
     {
         $this->startTest();
@@ -585,28 +405,6 @@ class FeaturesTest extends TestCase
     }
 
     /**
-     * @param string $url
-     *
-     * @return UploadedFile
-     */
-    protected function createUploadedFile(string $file): UploadedFile
-    {
-        $this->assertFileExists($file);
-
-        $mimeType = 'application/pdf';
-        $uploadedFile = new UploadedFile(
-            $file,
-            $file,
-            $mimeType,
-            filesize($file),
-            null,
-            true
-        );
-
-        return $uploadedFile;
-    }
-
-    /**
      * Enable a notifyFeature on Live mode
      */
     public function testFeatureEnabledEmailNotificationOnLive()
@@ -950,7 +748,189 @@ class FeaturesTest extends TestCase
         $this->assertTrue($response);
     }
 
-    private function createMerchantDetailsOnLive()
+    /**
+     * Adds a feature as an admin based on
+     * the params received
+     *
+     * @param string      $addToMode
+     * @param bool        $shouldSync
+     * @param array       $featureNames
+     * @param string|null $merchant_id
+     */
+    protected function addFeatures(
+        string $addToMode,
+        bool $shouldSync = false,
+        array $featureNames = ['dummy'],
+        string $merchant_id = null)
+    {
+        $authMethod = 'appAuth' . studly_case($addToMode);
+
+        $this->ba->$authMethod();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if (empty($featureNames) === false)
+        {
+            $testData['request']['content']['names'] = $featureNames;
+        }
+
+        if ($shouldSync !== false)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        if ($merchant_id !== null)
+        {
+            $testData['request']['content']['entity_id'] = $merchant_id;
+        }
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Deletes a feature as an admin based on
+     * the params received
+     *
+     * @param string $deleteFromMode
+     * @param bool   $shouldSync
+     * @param string $featureName
+     */
+    protected function deleteFeature(
+        string $deleteFromMode,
+        bool $shouldSync = false,
+        string $featureName = 'dummy')
+    {
+        $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if ($featureName === null)
+        {
+            $testData['request']['url'] = '/features/10000000000000/' . $featureName;
+        }
+
+        if ($shouldSync === true)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Simulates merchant behavior based on the
+     * params received
+     *
+     * @param string $action
+     * @param string $mode
+     * @param string $featureName
+     * @param bool   $expectBadRequestException
+     * @param bool   $shouldSync
+     */
+    protected function updateFeatureAsMerchant(
+        string $action,
+        string $mode,
+        string $featureName = 'noflashcheckout',
+        bool $expectBadRequestException = false,
+        bool $shouldSync = true)
+    {
+        $authMethod = 'proxyAuth' . studly_case($mode);
+
+        $this->ba->$authMethod();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if ($action === 'add')
+        {
+            $testData['request']['content']['features'][$featureName] = '1';
+        }
+        else
+        {
+            $testData['request']['content']['features'][$featureName] = '0';
+        }
+
+        if ($expectBadRequestException === true)
+        {
+            $testData['response'] = [
+                'content' => [
+                    'error' => [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                    ],
+                ],
+                'status_code' => 400,
+            ];
+
+            $testData['exception'] = [
+                'class' => 'RZP\Exception\BadRequestException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+            ];
+        }
+
+        if ($shouldSync === true)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Performs a GET request based on the mode received and verifies the
+     * presence of the features received as arguments
+     *
+     * @param string $mode
+     * @param array  $featureNames
+     */
+    protected function verifyFeaturePresence(
+        string $mode,
+        array $featureNames = ['dummy'])
+    {
+        $authMethod = 'appAuth' . studly_case($mode);
+
+        $this->ba->$authMethod();
+
+        $response = $this->startTest();
+
+        $assignedFeatures = array_map(function ($feature)
+        {
+            return $feature["name"];
+        }, $response["assigned_features"]);
+
+        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
+
+        // Check if all the featureNames requested, are present in the assignedFeatures array
+        $this->assertEquals(count($featureNames), count($assignedFeaturesInResponse));
+    }
+
+    /**
+     * Performs a GET request based on the mode received and verifies the
+     * absence of the features received as arguments
+     *
+     * @param string $mode
+     * @param array  $featureNames
+     */
+    protected function verifyFeatureAbsence(
+        string $mode,
+        array $featureNames = ['dummy'])
+    {
+        $authMethod = 'appAuth' . studly_case($mode);
+
+        $this->ba->$authMethod();
+
+        $response = $this->startTest();
+
+        $assignedFeatures = array_map(function ($feature)
+        {
+            return $feature["name"];
+        }, $response["assigned_features"]);
+
+        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
+
+        $this->assertEquals(0, count($assignedFeaturesInResponse));
+    }
+
+    protected function createMerchantDetailsOnLive()
     {
         $merchantId = '10000000001017';
 
@@ -965,6 +945,28 @@ class FeaturesTest extends TestCase
         $this->ba->proxyAuth('rzp_live_' . $merchantId);
 
         return $merchantId;
+    }
+
+    /**
+     * @param string $file
+     *
+     * @return UploadedFile
+     */
+    protected function createUploadedFile(string $file): UploadedFile
+    {
+        $this->assertFileExists($file);
+
+        $mimeType = 'application/pdf';
+        $uploadedFile = new UploadedFile(
+            $file,
+            $file,
+            $mimeType,
+            filesize($file),
+            null,
+            true
+        );
+
+        return $uploadedFile;
     }
 
 }

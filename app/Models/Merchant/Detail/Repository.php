@@ -78,8 +78,8 @@ class Repository extends Base\Repository
                 Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
                 Entity::SUBSCRIPTIONS_ACTIVATION_STATUS)
             ->where(Entity::MARKETPLACE_ACTIVATION_STATUS, $status)
-            ->OrWhere(Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS, $status)
-            ->OrWhere(Entity::SUBSCRIPTIONS_ACTIVATION_STATUS, $status)
+            ->orWhere(Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS, $status)
+            ->orWhere(Entity::SUBSCRIPTIONS_ACTIVATION_STATUS, $status)
             ->get();
     }
 

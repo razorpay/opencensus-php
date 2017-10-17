@@ -260,9 +260,17 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::FEATURE_ONBOARDING_SUBMISSION_REQUEST,
-            [$action, $data, $merchant->getId()]);
+            [
+                'action'      => $action,
+                'data'        => $data,
+                'merchant_id' => $merchant->getId()]);
 
-        $feature = array_keys($data)[0] ?? "";
+        $feature = array_keys($data)[0] ?? null;
+
+        if ($feature === null)
+        {
+            return false;
+        }
 
         (new Validator)->validateInput(Constants::ONBOARDING, $data);
 
@@ -276,6 +284,7 @@ class Service extends Base\Service
                 ->upsert($data)
                 ->save();
 
+            // Set the product activation status as pending
             if ($action === Constants::CREATE)
             {
                 $saved = $this->repo->merchant_detail->updateFeatureActivationStatus(
@@ -361,7 +370,7 @@ class Service extends Base\Service
 
             $settingKey = $featureName . "." . $question;
 
-            $extension = $file->extension() ?? "";
+            $extension = $file->extension();
 
             $fileName = 'api/' . $merchantId . '/' . $settingKey;
 
@@ -374,7 +383,7 @@ class Service extends Base\Service
     /**
      * Creates a file entity and uploads it to S3 bucket
      *
-     * @param string          $extension
+     * @param                 $extension
      * @param                 $file
      * @param string          $fileName
      * @param string          $type
@@ -383,12 +392,12 @@ class Service extends Base\Service
      *
      * @return array
      */
-    protected function createFile(string $extension,
-                                     $file,
-                                     string $fileName,
-                                     string $type,
-                                     Merchant\Entity $merchant,
-                                     string $store = FileStore\Store::S3)
+    protected function createFile($extension,
+                                  $file,
+                                  string $fileName,
+                                  string $type,
+                                  Merchant\Entity $merchant,
+                                  string $store = FileStore\Store::S3)
     {
         $creator = new FileStore\Creator;
 

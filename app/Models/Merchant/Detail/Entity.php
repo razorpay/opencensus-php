@@ -87,7 +87,7 @@ class Entity extends Base\PublicEntity
 
     const SUBMIT = 'submit';
 
-    // Enum values used for MARKETPLACE_ACTIVATION_STATUS, VIRTUAL_ACCOUNTS_ACTIVATION_STATUS and SUBSCRIPTIONS_ACTIVATION_STATUS
+    // Enum values used for product activation status
     const PENDING = 'pending';
     const APPROVED = 'approved';
     const REJECTED = 'rejected';
