@@ -9,6 +9,7 @@ export const animObj = { enter: 300, exit: 300 };
 export const prevent = e => {
   e.preventDefault();
   e.stopPropagation();
+};
 export const titleCase = (str = '') => {
   const chars = str.split('');
 
