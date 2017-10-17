@@ -32,6 +32,8 @@ function iconFont() {
   iconFontGenerator.generate({
     classPrefix: 'i',
     silent: false,
+    types: ['woff', 'woff2', 'ttf'],
+    json: false,
     paths: glob('web/icons/*.svg'),
     outputDir: 'public/dist/fonts',
   });

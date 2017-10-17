@@ -1,10 +1,10 @@
 mkdir -p public/dist
 
 # react library to use, based on environment
-if $NODE_ENV = production
-  REACT_ENV=production ; then
-else
-  REACT_ENV=development
+
+REACT_ENV=development
+if [ "$NODE_ENV" = production ] ; then
+  REACT_ENV=production.min
 fi
 
 files=$(cat <<-END
@@ -17,15 +17,15 @@ files=$(cat <<-END
   Chartist        chartist/dist/chartist.min.js
 END
 )
+
+even=true
+for i in $files; do
+  if [ $even = true ] ; then
+    even=false
+  else
+    even=true
+    cat node_modules/$i
+    printf '\n'
+  fi
+done > public/dist/vendor.js
 echo $files
-# even=true
-# for i in $files; do
-#   if [ $even = true ] ; then
-#     even=false
-#   else
-#     even=true
-#     cat node_modules/$i
-#     echo $'\n'
-#   fi
-# done > public/dist/vendor.js
-# echo $files
