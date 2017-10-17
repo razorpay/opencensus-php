@@ -21,12 +21,10 @@ const NewProducts = () => {
         Check our brand new products.
       </p>
       <div className="new-products-row">
-        {newProducts.map((product, key) =>
+        {newProducts.map((product, key) => (
           <div key={key} className={`product-item`} style={productItemStyle}>
             <MediaCard title={product.name} symbol={product.symbol}>
-              <div className="text-small m-b">
-                {product.description}
-              </div>
+              <div className="text-small m-b">{product.description}</div>
               <div className="links">
                 <Link to={product.link}>Try Now</Link>
                 <span className="text-fade" style={{ padding: '0 4px' }}>
@@ -38,11 +36,31 @@ const NewProducts = () => {
               </div>
             </MediaCard>
           </div>
-        )}
+        ))}
       </div>
     </div>
   );
 };
+
+const ServiceTaxNews = () => (
+  <div class="media onboarding-card servicetax-news">
+    <img src={require('styles/assets/remove-service-tax.svg')} />
+    <div>
+      <div class="heading">Removal of 'service_tax' field from APIs</div>
+      <div>
+        On 1 November 2017, service_tax field will be removed from our APIs and
+        Reports. Read announcement to understand how it may affect you.
+      </div>
+    </div>
+    <a
+      class="btn-primary pull-right"
+      href="https://razorpay.com/docs/announcements/gst-changes"
+      target="_blank"
+    >
+      View Announcement <i class="icon icon-chevron-right" />
+    </a>
+  </div>
+);
 
 @connect(state => state.session)
 export default class OnboardingCard extends Component {
@@ -109,11 +127,11 @@ export default class OnboardingCard extends Component {
       } else {
         FirstStep = (
           <div class="media-body">
-            {user.isActivated
-              ? <button class="close" onClick={this.closeOnboarding}>
-                  <i class="icon icon-close" />
-                </button>
-              : null}
+            {user.isActivated ? (
+              <button class="close" onClick={this.closeOnboarding}>
+                <i class="icon icon-close" />
+              </button>
+            ) : null}
             <div class="media-heading">Your Next Steps...</div>
             <p>
               Your Razorpay account is created. Now, you can browse through the
@@ -125,31 +143,35 @@ export default class OnboardingCard extends Component {
               </div>
 
               <div class="col-sm-6">
-                {payments.length
-                  ? <PaymentsReceivedStep />
-                  : <KeyGenerationStep
-                      user={user}
-                      mode={mode}
-                      modeFormatted={modeFormatted}
-                    />}
+                {payments.length ? (
+                  <PaymentsReceivedStep />
+                ) : (
+                  <KeyGenerationStep
+                    user={user}
+                    mode={mode}
+                    modeFormatted={modeFormatted}
+                  />
+                )}
               </div>
             </div>
 
-            {user.isActivated
-              ? <div style={{ marginTop: '12px' }}>
-                  You may now{' '}
-                  <a onClick={this.closeOnboarding}>close this card</a>
-                  . You can access the <a>documentation</a> from topbar, if
-                  needed.
-                </div>
-              : null}
+            {user.isActivated ? (
+              <div style={{ marginTop: '12px' }}>
+                You may now{' '}
+                <a onClick={this.closeOnboarding}>close this card</a>
+                . You can access the <a>documentation</a> from topbar, if
+                needed.
+              </div>
+            ) : null}
           </div>
         );
       }
     }
+
     return (
       <div>
-        {FirstStep &&
+        {isOldUser && <ServiceTaxNews />}
+        {true && (
           <div
             class={`media onboarding-card ${isFirstStep ? 'first-step' : ''}`}
           >
@@ -157,11 +179,13 @@ export default class OnboardingCard extends Component {
               <img class="media-object" src={OnboardingIllustrationPNG} />
             </div>
             {FirstStep}
-          </div>}
-        {isOldUser &&
+          </div>
+        )}
+        {isOldUser && (
           <div class={`media onboarding-card new-features`}>
             <NewProducts />
-          </div>}
+          </div>
+        )}
       </div>
     );
   }
