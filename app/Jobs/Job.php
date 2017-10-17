@@ -9,14 +9,22 @@ use Illuminate\Bus\Queueable;
 class Job
 {
     /**
-     * Mode of the RZP application: TEST|LIVE
+     * Mode as received from pushed job payload. We set the basic auth's mode
+     * and db connection to this value for convenience.
      *
-     * If it's not set by the child class application mode
-     * won't be set.
-     *
-     * @var string
+     * @var string|null
      */
     protected $mode;
+
+    /**
+     * In case of sync queue implementaiton it's needed that we keep mode of
+     * current request context and once job is processed we reset back to that.
+     *
+     * Also ref EventServiceProvider::resetModePostSyncQueueProcessed()
+     *
+     * @var string|null
+     */
+    protected $previousMode;
 
     /**
      * Repository manager
@@ -53,12 +61,21 @@ class Job
 
         $app = App::getFacadeRoot();
 
-        $this->taskId = $app['request']->getTaskId();
+        $this->previousMode = $app['basicauth']->getMode();
+        $this->taskId       = $app['request']->getTaskId();
     }
 
     public function handle()
     {
         $this->init();
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPreviousMode()
+    {
+        return $this->previousMode;
     }
 
     /**
@@ -84,15 +101,10 @@ class Job
         // Task Id needs to be set in trace
         $this->trace->processor('web')->setTaskId($this->taskId);
 
-        //
         // Sets application and db mode if $mode is set
-        //
-
         if ($this->mode !== null)
         {
-            $app['basicauth']->setMode($this->mode);
-
-            \Database\DefaultConnection::set($this->mode);
+            $app['basicauth']->setModeAndDbConn($this->mode);
         }
     }
 }
