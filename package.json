@@ -2,7 +2,7 @@
   "name": "dashboard",
   "author": "Team Razorpay",
   "private": true,
-  "devDependencies": {
+  "dependencies": {
     "aws-sdk": "2.4.1",
     "babel-core": "^6.23.1",
     "babel-loader": "^6.3.2",
@@ -43,9 +43,7 @@
     "through2": "^2.0.3",
     "webpack": "^3.3.0",
     "webpack-merge": "^4.1.0",
-    "zlib": "^1.0.5"
-  },
-  "dependencies": {
+    "zlib": "^1.0.5",
     "autoprefixer-stylus": "^0.14.0",
     "babel-polyfill": "^6.23.0",
     "babel-runtime": "^6.23.0",

@@ -1,8 +1,6 @@
 @import "./workflow"
 @import "./pricing-plans"
 
-$supportkit-text = ' You can also reach us at 1800-270-0323'
-
 #switch-merchant-button {
   width: 140px;
   b {
@@ -106,29 +104,6 @@ $supportkit-text = ' You can also reach us at 1800-270-0323'
 {
   border-radius: 8px;
   background-color: #666;
-}
-
-.sk-input-wrap{
-    margin: 8px 10px 0!important;
-}
-.sk-intro input {
-  color: #555;
-  width: 100%;
-  margin: 0 0 0 -10px;
-  border: 1px solid #ddd;
-  padding: 0 10px;
-  line-height: 34px;
-  border-radius: 2px;
-  outline: none;
-
-  &:invalid {
-    border-color: #e74c3c;
-  }
-}
-
-// tourbus container is available after login. we only show it to logged in users
-.tourbus-container ~ #sk-holder .sk-intro-section .intro-text:after {
-  content: $supportkit-text;
 }
 
 .dynamic-tooltip {
