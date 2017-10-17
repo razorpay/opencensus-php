@@ -27,7 +27,7 @@
 
 <!-- supportkiy code -->
 @if(env('APP_ENV') !== 'testing')
-   @include('partials/supportkit')
+  <script async="true" src="https://static.helpninja.com/helpninja.js" id="oc_script" convid="-Kvx6dgy972KCFPlQR0s"></script>
 @endif
 
 @include('partials/footer')
