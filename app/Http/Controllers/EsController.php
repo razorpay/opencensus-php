@@ -107,7 +107,10 @@ class EsController extends Controller
         {
             $tracePayload = $this->getTracePayload();
 
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID, null, $tracePayload);
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID,
+                null,
+                $tracePayload);
         }
     }
 

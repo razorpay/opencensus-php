@@ -3602,7 +3602,7 @@ return [
 
     'testGetInvoiceByReceiptExpectedSearchParams' => [
         'index' => 'testing_invoice_test',
-        // 'type'  => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -3658,7 +3658,7 @@ return [
 
     'testGetMultipleInvoicesOnlyEsFieldsExpectedSearchParams' => [
         'index' => 'testing_invoice_test',
-        // 'type'  => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -3726,7 +3726,7 @@ return [
 
     'testGetMultipleInvoicesByQExpectedSearchParams' => [
         'index' => 'testing_invoice_test',
-        // 'type'  => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 10,
@@ -3790,7 +3790,7 @@ return [
 
     'testGetMultipleInvoicesSearchHitsOnlyExpectedSearchParams' => [
         'index' => 'testing_invoice_test',
-        // 'type'  => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => true,
             'from'    => 0,
@@ -3853,7 +3853,7 @@ return [
 
     'testGetMultipleInvoicesByEsFeildAndFromExpectedSearchParams' => [
         'index' => 'testing_invoice_test',
-        // 'type'  => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 20,
@@ -3912,7 +3912,7 @@ return [
 
     'testGetMultipleInvoicesByEsFeildFromAndToExpectedSearchParams' => [
         'index' => 'testing_invoice_test',
-        // 'type'  => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 20,
@@ -3972,7 +3972,7 @@ return [
 
     'testGetMultipleInvoicesByCommonAndEsFieldsExpectedSearchParams' => [
         'index' => 'testing_invoice_test',
-        // 'type'  => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,

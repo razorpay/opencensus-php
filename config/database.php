@@ -182,4 +182,5 @@ return array(
     'es_workflow_action_mock' => env('ES_WORKFLOW_ACTION_MOCK', false),
 
     'es_entity_index_prefix'  => env('ES_ENTITY_INDEX_PREFIX'),
+    'es_entity_type_prefix'   => env('ES_ENTITY_TYPE_PREFIX'),
 );

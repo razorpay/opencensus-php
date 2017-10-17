@@ -81,11 +81,6 @@ class EsClient
         return $this->client->explain($params);
     }
 
-    public function getTask(array $params)
-    {
-        return $this->client->tasks()->get($params);
-    }
-
     public function getAliases(array $params)
     {
         return $this->client->indices()->getAliases($params);
