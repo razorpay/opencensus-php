@@ -19,7 +19,7 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE        => 'sometimes|max:15',
         Entity::REMEMBER_TOKEN        => 'sometimes',
         Entity::CONFIRM_TOKEN         => 'sometimes',
-        Entity::CAPTCHA               => 'required_unless:captcha_disable,'. self::DISABLE_CAPTCHA_SECRET,
+        Entity::CAPTCHA               => 'required_without:captcha_disable',
     ];
 
     protected static $editRules = [
@@ -74,7 +74,7 @@ class Validator extends Base\Validator
 
         if($_SERVER['HTTP_HOST'] === 'dashboard.razorpay.com' or $_SERVER['HTTP_HOST'] === 'betadashboard.razorpay.com')
         {
-            $captchaResponse = $input['captcha'];
+            $captchaResponse = $input['captcha'] ?? null;
 
             if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) and $_SERVER['HTTP_X_FORWARDED_FOR'])
             {
@@ -103,7 +103,7 @@ class Validator extends Base\Validator
 
             if($output->success !== true)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CAPTCHA_FAILED);
             }
         }
     }
