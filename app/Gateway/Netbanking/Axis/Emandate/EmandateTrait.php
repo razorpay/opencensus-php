@@ -36,7 +36,7 @@ trait EmandateTrait
         $ppiArray = [
             $input['payment']['id'],
             'max',
-            Constants::FREQUENCY_ADHOC,
+            Frequency::ADHOC,
             '914010009305862', // TODO: Fetch the correct account number later
             Carbon::now(Timezone::IST)->format('m/d/Y'),
             Carbon::now(Timezone::IST)->addYears(30)->format('m/d/Y'),
@@ -106,13 +106,15 @@ trait EmandateTrait
             ]
         );
 
-        $this->assertPaymentId($input['payment']['id'],
-            $content[ResponseFields::REQUEST_ID]);
+        $this->assertPaymentId(
+            $input['payment'][Payment\Entity::ID],
+            $content[ResponseFields::REQUEST_ID]
+        );
 
         $this->validateCallbackChecksum($content);
 
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
+            $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
         $attributes = $this->getEmandateCallbackAttributes($content);
 
@@ -173,63 +175,9 @@ trait EmandateTrait
             Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason,
         ];
     }
-
     //---------------Callback request helpers end-----------------
 
-    //---------------Second auth request helpers------------------
-    // TODO:  These are file based. Would have to change it now.
-    protected function authorizeSecondRecurring(array $input)
-    {
-        if (empty($input['token']->getGatewayToken()) === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_GATEWAY_TOKEN_EMPTY,
-                Token\Entity::GATEWAY_TOKEN,
-                [
-                    'payment' => $input['payment'],
-                    'token'   => $input['token']->toArray(),
-                ]
-            );
-        }
-
-        $entity = $this->getEmandateEntityAttributes($input);
-
-        $this->createGatewayPaymentEntity($entity);
-
-        $requestData = $this->getRecurringPaymentData($input);
-
-        $request = $this->getStandardRequestArray($requestData);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_RECURRING_DEBIT_REQUEST,
-            [
-                'payment_id' => $input['payment']['id'],
-                'token_id'   => $input['token']->getId(),
-                'request'    => $request,
-                'gateway'    => $this->gateway
-            ]
-        );
-
-        $response = $this->sendGatewayRequest($request);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_RECURRING_DEBIT_RESPONSE,
-            [
-                'gateway'            => $this->gateway,
-                'response'           => $response->body,
-                'payment_id'         => $input['payment']['id']
-            ]
-        );
-
-        parse_str($response->body, $content);
-
-        $this->handleEmandateResponse($input, $content);
-    }
-
-    //---------------Second auth request helpers end------------------
-
     //-------------- Verify request helpers --------------------------
-
     public function getEmandatePaymentVerifyData(Verify $verify)
     {
         $input = $verify->input;

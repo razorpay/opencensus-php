@@ -46,31 +46,6 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->assertEMandateEntities();
     }
 
-    public function testEmandateScheduledPayment()
-    {
-        $payment = $this->payment;
-
-        $this->doAuthPayment($payment);
-
-        $paymentEntity = $this->getLastEntity('payment', true);
-        $tokenEntity   = $this->getLastEntity('token', true);
-
-        $payment['token'] = $paymentEntity['token_id'];
-
-        // Second auth payment for the recurring product
-        $this->mockServerContentFunction(function (& $content, $action = null)
-        {
-            if($action === 'second_payment')
-            {
-                $content = true;
-            }
-        });
-
-        $this->doS2SRecurringPayment($payment);
-
-        $this->assertEMandateEntities(false);
-    }
-
     public function testPaymentVerify()
     {
         $payment = $this->doAuthPayment($this->payment);
@@ -80,6 +55,8 @@ class NetbankingAxisEMandateTest extends TestCase
         assert($verify['payment']['verified'] === 1);
 
         $verifyResponseContent = $verify['gateway']['verifyResponseContent'];
+
+        $this->assertTestResponse($verifyResponseContent);
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 

@@ -16,6 +16,13 @@ return [
         'entity'          => 'netbanking',
     ],
 
+    'testPaymentVerify' => [
+        'TYP' => 'M',
+        'STC' => '000',
+        'RMK' => 'Success',
+        'PMD' => 'AIB',
+    ],
+
     'testPaymentVerifyFailure' => [
         'response'  => [
             'content'     => [
@@ -27,7 +34,7 @@ return [
         ],
         'exception' => [
             'class'               => RZP\Exception\PaymentVerificationException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
 
@@ -42,7 +49,7 @@ return [
         ],
         'exception' => [
             'class'               => RZP\Exception\RuntimeException::class,
-            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
     ],
 ];
