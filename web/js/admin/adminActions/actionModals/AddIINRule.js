@@ -58,7 +58,10 @@ export default function AddIINRule() {
         onSubmit={data => {
           data.emi = data.emi ? 1 : 0;
           return adminPost({
-            data: { body: data, route_name: 'iin_add' },
+            params: {
+              route_name: 'iin_add',
+            },
+            body: data,
           })
             .then(response => {
               if (response.data.success) {

@@ -19,6 +19,7 @@ import WorkflowList from 'admin/workflows/List';
 // import RequestList from 'admin/workflows/RequestList';
 
 import GroupList from 'admin/groups/List';
+import UserList from 'admin/users/List';
 
 export default class App extends Component {
   render() {
@@ -37,6 +38,7 @@ export default class App extends Component {
             <Route path="/workflows" component={WorkflowList} />
 
             <Route path="/groups" component={GroupList} />
+            <Route path="/users" component={UserList} />
           </Switch>
         </main>
         <header />
