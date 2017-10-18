@@ -179,15 +179,6 @@ class Core extends Base\Core
 
     protected function validateExistingTokenNetbanking($existingTokens, $newToken)
     {
-        foreach ($existingTokens as $token)
-        {
-            if (($token->getBank()  === $newToken->getBank()) and
-                ($token->getGatewayToken() === $newToken->getGatewayToken()))
-            {
-                return $token;
-            }
-        }
-
         return null;
     }
 
