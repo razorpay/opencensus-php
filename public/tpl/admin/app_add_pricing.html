@@ -38,7 +38,6 @@
         </thead>
         <tbody>
           <tr ng-repeat="rule in plan.rules"
-              ng-show="rule.percent_rate || rule.fixed_rate"
               tooltip="Preview">
             <td>{{rule.feature || 'payment' | capitalize}}</td>
             <td>{{rule.payment_method || 'Any' | capitalize}}</td>
