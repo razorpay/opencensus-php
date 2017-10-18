@@ -116,29 +116,9 @@ export const without = (source, keys) => {
 };
 
 export const rupeesToPaise = amount => {
-  /*
-   * Converting rupees to paise without using floating point
-   * arithmetic
-   */
+  amount = (Number(amount) * 100).toFixed(0);
 
-  // the content before "." is rupees, and after is paise
-  amount = amount.toString().split('.');
-
-  // replacing any commas given by user in rupees part
-  const rupees = amount[0].replace(/,/g, '');
-
-  // trimming of the paise part to max 2 characters,
-  // there can be zero or one digit after "."
-  let paise = (amount[1] || '').substr(0, 2);
-
-  // making sure that there are 2 digits by appending "0" in paise part
-  // it can be zero digits in case of amount is 20
-  // it can be one digit in case of amount is 20.1
-  while (paise.length !== 2) {
-    paise = paise + '0';
-  }
-
-  return window.parseInt(rupees + paise);
+  return Number(amount);
 };
 
 export const objectDiff = (oldObj = {}, newObj = {}) => {
