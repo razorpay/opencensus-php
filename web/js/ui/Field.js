@@ -19,11 +19,9 @@ export default function Field({ label, onChange, value, ...props }) {
   );
 }
 
-export const DateTimeField = props => (
-  <Field {...props} type="datetime-local" />
-);
+export const DateTimeField = props => <Field {...props} type="date" />;
 export const FromField = _ => <DateTimeField name="from" label="From" />;
-export const ToField = _ => <DateTimeField labele="to" label="To" />;
+export const ToField = _ => <DateTimeField name="to" label="To" />;
 
 export function CheckField({ label, ...props }) {
   return (
@@ -81,6 +79,15 @@ export function SelectField({ label, children, ...props }) {
   );
 }
 
+export function TextAreaField({ label, children, ...props }) {
+  return (
+    <div class="field text-area-field">
+      <label onClick={focusInput}>{label}</label>
+      <textarea {...props}>{children}</textarea>
+    </div>
+  );
+}
+
 export function SelectMode({ defaultValue }) {
   return (
     <SelectField name="mode" label="Mode" defaultValue={defaultValue}>
@@ -100,5 +107,14 @@ export function SelectMethod(props) {
         </option>
       ))}
     </SelectField>
+  );
+}
+
+export function FileField({ label, many = false, ...props }) {
+  return (
+    <div className="field file-field">
+      <label onClick={focusInput}>{label}</label>
+      <input type="file" multiple={many} {...props} />
+    </div>
   );
 }

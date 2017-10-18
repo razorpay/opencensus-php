@@ -17,6 +17,7 @@ class ModalStore {
   confirm = (message, onAction, confirmLabel = 'Yes', rejectLabel = 'Cancel') =>
     this.modals.push(
       <div class="confirm-modal">
+        <header>Confirm</header>
         <div key="message">{message}</div>
         <div key="action-buttons">
           <button onClick={onAction} key="btn-confirm">
