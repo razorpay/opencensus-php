@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Mail;
 
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\TestCase;
@@ -154,7 +155,19 @@ class MerchantCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
+        $user = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
         $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
         $this->startTest();
 

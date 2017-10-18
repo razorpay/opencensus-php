@@ -12,13 +12,25 @@ class User extends Base
 
         $user = $this->createEntityInTestAndLive('user', $attributes);
 
-        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'owner');
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
 
         return $user;
     }
 
-    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role)
+    public function createUserMerchantMapping(array $attributes)
     {
+        $userId = $attributes['user_id'];
+
+        $merchantId = $attributes['merchant_id'];
+
+        $role = $attributes['role'];
+
         DB::table('merchant_users')
             ->insert([
                 'merchant_id' => $merchantId,

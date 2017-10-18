@@ -129,7 +129,7 @@ class Validator extends Base\Validator
         'user_id'               => 'required|alpha_num|size:14',
         'password'              => 'required|between:7,50|confirmed|numbers|letters',
         'password_confirmation' => 'required|between:7,50',
-        Entity::EMAIL           => 'required|email', // TODO Add merchant unique check except for the merchant
+        Entity::EMAIL           => 'required|email',
     ];
 
     protected static $editConfigValidators = [
