@@ -2,15 +2,22 @@ import axios from 'axios';
 import { deepClone } from 'util/index';
 
 export function adminFetch(params) {
-  return axios.get('/admin/generic', { params: parseParams(params) });
+  return axios({
+    url: '/admin/generic',
+    params: parseParams(params),
+  });
 }
 
 export default function fetch(options) {
   return axios(options);
 }
 
-export function adminPost(params, config) {
-  return axios.post('/admin/generic', parseParams(params), config);
+export function adminPost(params) {
+  return axios({
+    url: '/admin/generic',
+    method: 'post',
+    ...parseParams(params),
+  });
 }
 
 export function adminDelete(params) {
@@ -19,17 +26,17 @@ export function adminDelete(params) {
   });
 }
 
-function parseParams({ data, queryParams }) {
-  let params = deepClone(data);
+function parseParams(origParams) {
+  let params = deepClone(origParams);
 
-  if (queryParams) {
-    params.query_params = JSON.stringify(queryParams);
+  if (origParams.query_params) {
+    params.query_params = JSON.stringify(origParams.query_params);
   }
 
-  if (data.url_params) {
+  if (origParams.url_params) {
     let curlyParams = {};
-    for (let i in data.url_params) {
-      curlyParams[`{${i}}`] = data.url_params[i];
+    for (let i in origParams.url_params) {
+      curlyParams[`{${i}}`] = origParams.url_params[i];
     }
     params.url_params = JSON.stringify(curlyParams);
   }

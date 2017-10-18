@@ -7,9 +7,9 @@ import { observer } from 'mobx-react';
 import { animObj } from 'util/index';
 
 class ModalStore {
-  @observable modals = [];
-  @observable toasts = [];
-  @observable sliders = [];
+  @observable.shallow modals = [];
+  @observable.shallow toasts = [];
+  @observable.shallow sliders = [];
 
   openModal = modal => this.modals.push(modal);
   closeModal = _ => this.modals.pop();

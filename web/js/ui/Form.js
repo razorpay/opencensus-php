@@ -64,10 +64,18 @@ export function serialize(form) {
         // item[foo] → item.foo
         var nameSplit = name.match(/(.+)\[(\w+)\]$/);
         if (nameSplit) {
-          if (!data[nameSplit[1]]) {
-            data[nameSplit[1]] = {};
+          let arrayIndex = nameSplit[2];
+          let array = data[nameSplit[1]];
+          if (arrayIndex === '0') {
+            data[nameSplit[1]] = [value];
+          } else if (/^\d+$/.test(arrayIndex)) {
+            array.push(value);
+          } else {
+            if (!array) {
+              data[nameSplit[1]] = {};
+            }
+            data[nameSplit[1]][arrayIndex] = value;
           }
-          data[nameSplit[1]][nameSplit[2]] = value;
         } else {
           data[name] = value;
         }

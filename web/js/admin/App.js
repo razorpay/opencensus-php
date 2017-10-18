@@ -16,6 +16,8 @@ import MerchantEntity from 'admin/merchants/entity/MerchantEntity';
 import WorkflowList from 'admin/workflows/List';
 // import RequestList from 'admin/workflows/RequestList';
 
+import GroupList from 'admin/groups/List';
+
 export default class App extends Component {
   render() {
     return (
@@ -31,6 +33,8 @@ export default class App extends Component {
             <Route path="/email-logs" component={EmailLogsList} />
 
             <Route path="/workflows" component={WorkflowList} />
+
+            <Route path="/groups" component={GroupList} />
           </Switch>
         </main>
         <header />

@@ -50,7 +50,7 @@ glob(ENV.TARGET_DIR + '/**', {}, function(error, files) {
         // ignore mapfiles
         var fileParams = JSON.parse(JSON.stringify(params));
         fileParams.localFile = f;
-        if (ext == 'css' || ext == 'js') {
+        if (ext == 'css' || ext == 'js' || ext === 'html') {
           fileParams.s3Params.ContentEncoding = 'gzip';
         }
         fileParams.s3Params.Key = f;
