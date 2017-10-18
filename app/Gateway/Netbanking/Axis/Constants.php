@@ -11,6 +11,5 @@ class Constants
     const AUTH_CALL_MODE  = '2';
     const CATEGORY_ID     = 'IRCSM';
     const MODE_CBC        = 2;
-    const TYPE            = 'M'; // TODO: Type is TEST??
     const NO_MODIFICATION = 'MN';
 }

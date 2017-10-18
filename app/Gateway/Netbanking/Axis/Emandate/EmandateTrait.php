@@ -10,7 +10,6 @@ use RZP\Exception\GatewayErrorException;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Netbanking\Axis\Constants as AxisConstants;
 use RZP\Gateway\Netbanking\Base as Netbanking;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Customer\Token;
@@ -31,11 +30,11 @@ trait EmandateTrait
      * @param array $input
      * @return array
      */
-    protected function getRecurringPaymentData(array $input) : array
+    protected function getRecurringPaymentData(array $input): array
     {
         $ppiArray = [
             $input['payment']['id'],
-            Constants::PPI_MAX_VALUE,
+            Constants::PPI_AMOUNT_TYPE,
             Frequency::ADHOC,
             $input['token'][Token\Entity::ACCOUNT_NUMBER],
             Carbon::now(Timezone::IST)->format('m/d/Y'),
@@ -46,14 +45,14 @@ trait EmandateTrait
         $data = [
             RequestFields::VERSION         => Constants::VERSION,
             RequestFields::CORP_ID         => $this->getMerchantId(),
-            RequestFields::TYPE            => AxisConstants::TYPE,
+            RequestFields::TYPE            => Constants::TYPE,
             RequestFields::REQUEST_ID      => $input['payment']['id'],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
             RequestFields::CURRENCY        => Currency::INR,
             RequestFields::AMOUNT          => $this->formatAmount($input['payment']['amount']),
             RequestFields::RETURN_URL      => $input['callbackUrl'],
             RequestFields::PRE_POP_INFO    => implode('|', $ppiArray),
-            RequestFields::RESERVE_FIELD_1 => AxisConstants::NO_MODIFICATION,
+            RequestFields::RESERVE_FIELD_1 => Constants::NO_MODIFICATION,
             RequestFields::RESERVE_FIELD_2 => '',
             RequestFields::RESERVE_FIELD_3 => '',
             RequestFields::RESERVE_FIELD_4 => '',
@@ -82,7 +81,7 @@ trait EmandateTrait
 
     //-----------------------Callback request helpers---------------------
 
-    public function handleEmandateCallback(array $input) : array
+    public function handleEmandateCallback(array $input): array
     {
         $content = $input['gateway'];
 
@@ -128,7 +127,7 @@ trait EmandateTrait
         return $gatewayEntity;
     }
 
-    protected function getEmandateCallbackAttributes(array $content) : array
+    protected function getEmandateCallbackAttributes(array $content): array
     {
         return [
             Netbanking\Entity::RECEIVED        => true,
@@ -158,7 +157,7 @@ trait EmandateTrait
         }
     }
 
-    protected function getEmandateAcquirerData(Netbanking\Entity $gatewayPayment) : array
+    protected function getEmandateAcquirerData(Netbanking\Entity $gatewayPayment): array
     {
         $recurringStatus = (StatusCode::isEmandateRegistrationSuccess($gatewayPayment[Netbanking\Entity::REFERENCE1])) ?
                             (Token\RecurringStatus::CONFIRMED) :
@@ -178,7 +177,7 @@ trait EmandateTrait
     //---------------Callback request helpers end-----------------
 
     //-------------- Verify request helpers --------------------------
-    public function getEmandatePaymentVerifyData(Verify $verify)
+    public function getEmandatePaymentVerifyData(Verify $verify): array
     {
         $input = $verify->input;
 
@@ -188,7 +187,7 @@ trait EmandateTrait
         $data = [
             RequestFields::VERSION         => Constants::VERSION,
             RequestFields::CORP_ID         => $this->getMerchantId(),
-            RequestFields::TYPE            => AxisConstants::TYPE,
+            RequestFields::TYPE            => Constants::TYPE,
             RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
             RequestFields::BANK_REF_NO     => $gatewayEntity[Netbanking\Entity::BANK_PAYMENT_ID]
@@ -222,7 +221,6 @@ trait EmandateTrait
 
         return false;
     }
-
     //---------------Verify request helpers end-----------------------
 
     //----------------------General helpers---------------------------
@@ -251,7 +249,7 @@ trait EmandateTrait
         return $aes;
     }
 
-    protected function getEmandateEntityAttributes(array $input) : array
+    protected function getEmandateEntityAttributes(array $input): array
     {
         return [
             RequestFields::AMOUNT          => $input['payment']['amount'] / 100,

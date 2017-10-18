@@ -20,7 +20,7 @@ class Validator extends Base\Validator
     protected static $emandateauthRules = [
         Emandate\RequestFields::VERSION         => 'required|string',
         Emandate\RequestFields::CORP_ID         => 'required|string',
-        Emandate\RequestFields::TYPE            => 'required|string|in:M',
+        Emandate\RequestFields::TYPE            => 'required|string|in:TEST',
         Emandate\RequestFields::REQUEST_ID      => 'required|string|size:14',
         Emandate\RequestFields::CUSTOMER_REF_NO => 'required|string|size:14',
         Emandate\RequestFields::CURRENCY        => 'required|string|in:INR',
