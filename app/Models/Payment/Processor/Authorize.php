@@ -2132,6 +2132,8 @@ trait Authorize
 
         $token->incrementUsedCount();
 
+        $oldRecurringStatus = $token->getRecurringStatus();
+
         if ($payment->isRecurring() === true)
         {
             $this->updateTokenOnAuthorizedForRecurring($payment, $token, $data);
@@ -2144,6 +2146,14 @@ trait Authorize
         }
 
         $this->repo->saveOrFail($token);
+
+        //
+        // This flow gets called for non recurring tokens also.
+        //
+        if ($token->isRecurring() === true)
+        {
+            $this->eventTokenStatus($token, $oldRecurringStatus);
+        }
     }
 
     protected function updateTokenOnAuthorizedForRecurring(
@@ -3052,6 +3062,35 @@ trait Authorize
         ];
 
         $this->app['events']->fire('api.payment.authorized', $eventPayload);
+    }
+
+    /**
+     * Fire event when token status is confirmed or rejected
+     *
+     * @param Token\Entity $token
+     * @param string|null  $oldRecurringStatus
+     */
+    protected function eventTokenStatus(Token\Entity $token, string $oldRecurringStatus = null)
+    {
+        $currentRecurringStatus = $token->getRecurringStatus();
+
+        //
+        // Old recurring status can be the same as current
+        // recurring status in cases like second recurring
+        // payment. Here, we don't update anything at all
+        // except the used count, terminals and stuff.
+        //
+        if (($oldRecurringStatus !== $currentRecurringStatus) and
+            (in_array($currentRecurringStatus, Token\RecurringStatus::$webhookStatuses, true) === true))
+        {
+            $event = 'api.token.' . $currentRecurringStatus;
+
+            $eventPayload = [
+                ApiEventSubscriber::MAIN => $token,
+            ];
+
+            $this->app['events']->fire($event, $eventPayload);
+        }
     }
 
     protected function traceAuthorizeFailedOperationData(Payment\Entity $payment)

@@ -97,12 +97,12 @@ class Constants
         self::BLOCK_INTERNATIONAL_RECURRING => false,
     ];
 
-    // Keys used in the feature onbaording workflow
+    // Keys used in the feature on-boarding workflow
     const ONBOARDING = 'onboarding';
     const FEATURES   = 'features';
     const MERCHANT   = 'merchant';
 
-    // Keys used to define the question names in the onboarding process
+    // Keys used to define the question names in the on-boarding process
     const BUSINESS_MODEL           = 'business_model';
     const EXPECTED_MONTHLY_REVENUE = 'expected_monthly_revenue';
     const SETTLING_TO              = 'settling_to';
@@ -111,7 +111,7 @@ class Constants
     const USE_CASE                 = 'use_case';
     const WEBSITE_DETAILS          = 'website_details';
 
-    // Keys that will describe the above-mentioned quesions
+    // Keys that will describe the above-mentioned questions
     const ID                  = 'id';
     const QUESTION            = 'question';
     const DESCRIPTION         = 'description';
