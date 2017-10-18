@@ -33,8 +33,8 @@ export default class Collection extends BaseModel {
   fetch() {
     return this.request(
       this.fetchFn({
-        data: this.data,
-        queryParams: this.filters,
+        ...this.data,
+        query_params: this.filters,
       }),
       'fetch'
     ).then(data => {

@@ -5,18 +5,18 @@ import Field, { SelectField, CheckField } from 'ui/Field';
 import Collection from 'model/collection';
 import fetch from 'util/fetch';
 
-const emailFetch = ({ queryParams }) => {
-  if (!queryParams.event) {
-    queryParams.event = 'NOT accepted';
+const emailFetch = ({ query_params }) => {
+  if (!query_params.event) {
+    query_params.event = 'NOT accepted';
   }
-  if (!queryParams.recipient) {
-    queryParams.recipient =
+  if (!query_params.recipient) {
+    query_params.recipient =
       'NOT https://api.razorpay.com/v1/mailgun/callback/failure';
   }
-  queryParams.ascending = 'no';
+  query_params.ascending = 'no';
   return fetch({
     url: '/admin/emaillogs',
-    params: queryParams,
+    params: query_params,
   });
 };
 

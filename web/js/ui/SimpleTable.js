@@ -8,13 +8,17 @@ import React from 'react';
     Fields: Array of array,
     Items: Array of objects where keys depend upon above fields
 */
-export default ({ fields, items, onClick }) => {
+export default ({ fields, items, onClick, bordered }) => {
   let trClass = onClick ? 'tr clickable' : 'tr';
+  let tableClass = 'table table-striped';
+  if (bordered) {
+    tableClass += ' table-bordered';
+  }
 
   return (
     <div class="table-container">
       {items && items.length ? (
-        <div class="table table-striped">
+        <div class={tableClass}>
           <div class="tr thead">
             {fields.map((field, index) => (
               <div class="th" key={index}>
