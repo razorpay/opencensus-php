@@ -30,8 +30,6 @@ class Creation extends Base
             $headers = $message->getHeaders();
 
             $headers->addTextHeader(MailTags::HEADER, MailTags::DISPUTE_CREATED_MAIL);
-
-            // TODO : Check if any additional headers to be added (waiting on pooja)
         });
 
         return $this;

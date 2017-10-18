@@ -289,6 +289,6 @@ class Core extends Base\Core
             'dispute' => $dispute->toArrayPublic(),
         ];
 
-        Mail::send(new DisputeMailer\Creation($data));
+        Mail::queue(new DisputeMailer\Creation($data));
     }
 }

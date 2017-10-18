@@ -20,9 +20,9 @@ class Base extends Mailable
     {
         $fromEmail = Constants::MAIL_ADDRESSES[Constants::DISPUTES];
 
-        $fromHeader = Constants::HEADERS[Constants::DISPUTES];
+        $fromName = Constants::HEADERS[Constants::DISPUTES];
 
-        $this->from($fromEmail, $fromHeader);
+        $this->from($fromEmail, $fromName);
 
         return $this;
     }
@@ -42,9 +42,9 @@ class Base extends Mailable
     {
         $email = Constants::MAIL_ADDRESSES[Constants::DISPUTES];
 
-        $header = Constants::HEADERS[Constants::DISPUTES];
+        $replyToName = Constants::HEADERS[Constants::DISPUTES];
 
-        $this->replyTo($email, $header);
+        $this->replyTo($email, $replyToName);
 
         return $this;
     }

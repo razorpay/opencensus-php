@@ -86,7 +86,7 @@ class MailTags
     const FEATURE_ENABLED                  = 'feature_enabled';
 
     // Dispute tags
-    const DISPUTE_CREATED_MAIL             = 'dispute_created_mail';
+    const DISPUTE_CREATED_MAIL             = 'dispute_creation';
 
     /**
      * Email tags that should respond to the mailgun failure webhook
