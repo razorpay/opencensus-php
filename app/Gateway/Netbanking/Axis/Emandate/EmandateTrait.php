@@ -35,9 +35,9 @@ trait EmandateTrait
     {
         $ppiArray = [
             $input['payment']['id'],
-            'max',
+            Constants::PPI_MAX_VALUE,
             Frequency::ADHOC,
-            '914010009305862', // TODO: Fetch the correct account number later
+            $input['token'][Token\Entity::ACCOUNT_NUMBER],
             Carbon::now(Timezone::IST)->format('m/d/Y'),
             Carbon::now(Timezone::IST)->addYears(30)->format('m/d/Y'),
             $this->formatAmount($input['payment']['amount']),

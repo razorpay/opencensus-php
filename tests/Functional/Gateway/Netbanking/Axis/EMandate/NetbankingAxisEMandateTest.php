@@ -14,6 +14,8 @@ class NetbankingAxisEMandateTest extends TestCase
 {
     use PaymentTrait;
 
+    protected $payment;
+
     public function setUp()
     {
         $this->gateway = 'netbanking_axis';
@@ -31,6 +33,8 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
 
         $this->payment = $this->getNetbankingRecurringPaymentArray('UTIB');
+
+        $this->payment['account_number'] = '914010009305862';
 
         unset($this->payment[Entity::CARD]);
 
