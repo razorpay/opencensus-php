@@ -86,6 +86,8 @@ class Server extends Base\Mock\Server
             $content['AuthStatus'] = AuthStatus::PENDING;
         }
 
+        $this->content($content, 'bank_preprocess');
+
         $msg = $this->getGatewayInstance()
                     // ->setInput($gatewayInput)
                     ->getMessageStringWithHash($content);

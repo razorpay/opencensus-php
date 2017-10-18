@@ -341,6 +341,19 @@ class Gateway
         }
     }
 
+    protected function assertAmount($expectedAmount, $actualAmount)
+    {
+        if ($expectedAmount !== $actualAmount)
+        {
+            throw new Exception\LogicException(
+                'Amount tampering found.',
+                ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED, [
+                    'expected' => $expectedAmount,
+                    'actual'   => $actualAmount
+                ]);
+        }
+    }
+
     protected function getAcquirerData($input, $gatewayPayment)
     {
         $acquirer = [];

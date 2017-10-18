@@ -3,19 +3,20 @@
 namespace RZP\Models\Terminal\Filters;
 
 use App;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\Card\Network;
-use RZP\Models\Card\Issuer;
-use RZP\Models\Card\Type;
-use RZP\Models\Payment\Gateway;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Method;
-use RZP\Models\Currency\Currency;
+use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Card\Type;
+use RZP\Models\Card\Issuer;
+use RZP\Models\Card\Network;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Shared;
-use RZP\Models\Feature;
+use RZP\Models\Currency\Currency;
+use RZP\Models\Terminal\Category;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
@@ -26,7 +27,8 @@ class TransactionFilter extends Terminal\Filter
         'bank',
         'recurring',
         'subscription',
-        'tpv'
+        'tpv',
+        'pharma',
     ];
 
     public function methodFilter($terminal)
@@ -251,6 +253,39 @@ class TransactionFilter extends Terminal\Filter
         $subvention = $this->input['payment']->emiPlan->getSubvention();
 
         return $terminal->isValidEmiTerminal($gateway, $emiDuration, $subvention);
+    }
+
+    public function pharmaFilter(Terminal\Entity $terminal)
+    {
+        $category2 = $this->input['merchant']->getCategory2();
+
+        $acquirer = $terminal->getGatewayAcquirer();
+
+        if (($category2 === Category::PHARMA) and
+            ($this->input['payment']->isMethodCardOrEmi() === true))
+        {
+            if (($terminal->isShared() === true) and
+                ($acquirer === Gateway::ACQUIRER_HDFC))
+            {
+                // This check is for all the card networks which are
+                // supported by gateways from other acquirers that also
+                // have a shared terminal.
+                // Currently, we don't have a shared terminal RuPay and
+                // Maestro. We are doing a workaround using the
+                // merchant descriptor feature of FirstData
+                return false;
+            }
+            // Terminal ID for Aala first data terminal is 76lEBqibDvhOzY
+            else if ($terminal->getId() === '76lEBqibDvhOzY')
+            {
+                 $network = $this->input['payment']->card->getNetworkCode();
+                 if (in_array($network, [Network::RUPAY, Network::MAES], true) === false)
+                 {
+                    return false;
+                 }
+            }
+        }
+        return true;
     }
 
     public function tpvFilter($terminal)

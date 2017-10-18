@@ -216,6 +216,24 @@ class HdfcGatewayTest extends TestCase
         $this->refundPayment($payment['id']);
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['amt'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '6073849700004947';
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testHdfcEntityAfterPaymentRefund()
     {
         $payment = $this->doAuthAndCapturePayment();
@@ -246,6 +264,36 @@ class HdfcGatewayTest extends TestCase
         $payment = $this->doAuthPayment();
 
         $this->verifyPayment($payment['razorpay_payment_id']);
+    }
+
+    public function testPaymentVerifyAndTransactionNotFoundInResponse()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $payment = $this->doAuthPayment();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content = [
+                    'error_code_tag' => 'GW00201',
+                    'error_service_tag' => 'null',
+                    'result' => '!ERROR!-GW00201-Transaction not found.',
+                ];
+            }
+
+            return $content;
+        });
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->verifyPayment($payment['razorpay_payment_id']);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['verified']);
     }
 
     public function testVerifyRefundDeniedByRiskOnGateway()

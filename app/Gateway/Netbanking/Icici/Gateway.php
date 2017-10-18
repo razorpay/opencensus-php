@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
@@ -214,7 +215,10 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($attrs, $callbackData);
 
-        $this->assertAmount($input, $callbackData);
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($callbackData['AMT'], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -644,18 +648,6 @@ class Gateway extends Base\Gateway
         return array_merge($data, $recurringData);
     }
 
-    protected function assertAmount($input, $content)
-    {
-        $actualAmount = number_format($content['AMT'], 2, '.', '');
-        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-
-        if ($actualAmount !== $expectedAmount)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED);
-        }
-    }
-
     protected function checkCallbackStatus(array $attrs, array $content)
     {
         if ((isset($attrs[ResponseFields::STATUS_LC]) === false) or
@@ -838,6 +830,18 @@ class Gateway extends Base\Gateway
      */
     protected function getLiveSecret()
     {
+        //
+        // For SI terminals, there's no concept of
+        // master merchant ID or master key.
+        // Every terminal will have a different secret and
+        // hence we take it from the terminal and not from
+        // the config like we do for retail and corp.
+        //
+        if ($this->isRecurringBanking() === true)
+        {
+            return $this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET];
+        }
+
         switch ($this->getLiveMerchantId2())
         {
             case $this->config['live_merchant_id2']:

@@ -182,6 +182,7 @@ final class Route
         'bank_transfer_process'                   => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_notify'                    => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
         'bank_transfer_refund_retry'              => ['post',     'bank_transfers/refunds/retry',                   'BankTransferController@retryBankTransferRefund'                    ],
+        'bank_transfer_insert'                    => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
         'virtual_account_fetch'                   => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
@@ -225,6 +226,7 @@ final class Route
         'transaction_fetch_multiple'              => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'              => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
         'transaction_create_fees_breakup'         => ['post',     'transactions/fees_breakup',                      'TransactionController@postCreateFeeBreakup'                        ],
+        'setl_fetch_schedule'                     => ['get',      'settlements/schedules',                          'ScheduleController@getSettlementSchedules'                         ],
         'setl_fetch_by_id'                        => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                     => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                 => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
@@ -249,6 +251,7 @@ final class Route
         'adj_add_reverse'                         => ['post',     'adjustments/reversal',                           'AdjustmentController@postReverseAdjustments'                       ],
         'adj_add_bulk'                            => ['post',     'adjustments/bulk',                               'AdjustmentController@postMultipleAdjustments'                      ],
         'adj_add_fee'                             => ['post',     'adjustments/fees',                               'AdjustmentController@postFeesAdjustment'                           ],
+        'adjustments_split_for_dispute'           => ['post',     'adjustments/split_adjustments',                  'AdjustmentController@splitAdjustments'                             ],
         'mock_hdfc_enroll'                        => ['post',     'gateway/mock_hdfc/enroll',                       'MockGatewayController@enroll'                                      ],
         'mock_hdfc_payment'                       => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
         'mock_hdfc_auth_enrolled'                 => ['post',     'gateway/mock_hdfc/auth_enrolled',                'MockGatewayController@authEnrolled'                                ],
@@ -931,6 +934,7 @@ final class Route
         'bank_transfer_process',
         'bank_transfer_notify',
         'bank_transfer_refund_retry',
+        'bank_transfer_insert',
         'iin_fetch_by_iin',
         'card_update_saved',
         'iin_fetch_multiple',
@@ -1041,6 +1045,7 @@ final class Route
         'payment_dispute_create',
         'dispute_edit',
         'dispute_migrate_adjustments',
+        'adjustments_split_for_dispute',
         'dispute_reason_create',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
@@ -1191,6 +1196,7 @@ final class Route
         'schedule_update',
         'schedule_assign',
         'schedule_fetch_multiple',
+        'setl_fetch_schedule',
         'feature_delete',
         'admin_dummy_account_test',
         'admin_get_file',
@@ -1359,7 +1365,7 @@ final class Route
         'dispute_reason_create'                 => '*',
         'onboarding_features_fetch_submissions' => '*',
         'onboarding_features_update_status'     => '*',
-        'onboarding_features_update'            => '*'
+        'onboarding_features_update'            => '*',
     ];
 
     public static $direct = [

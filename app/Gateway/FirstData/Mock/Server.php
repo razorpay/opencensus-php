@@ -279,9 +279,9 @@ class Server extends Base\Mock\Server
 
         $txnDateTime = $content[FirstData\ConnectResponseFields::TXN_DATE_TIME];
 
-        $chargeTotal = $input[FirstData\ConnectRequestFields::CHARGE_TOTAL];
+        $chargeTotal = $content[FirstData\ConnectRequestFields::CHARGE_TOTAL];
 
-        $currencyCode = $input[FirstData\ConnectRequestFields::CURRENCY];
+        $currencyCode = $content[FirstData\ConnectRequestFields::CURRENCY];
 
         $storeName = $input[FirstData\ConnectRequestFields::STORE_NAME];
 

@@ -274,36 +274,24 @@ class Service extends Base\Service
 
         (new Validator)->validateInput(Constants::ONBOARDING, $data);
 
-        try
+        // While updating the responses, the file gets overwritten,
+        // so no need to delete the old file.
+        $this->processFiles($data, $merchant);
+
+        Accessor::for($merchant, Constants::ONBOARDING)
+            ->upsert($data)
+            ->save();
+
+        // Set the product activation status as pending
+        if ($action === Constants::CREATE)
         {
-            // While updating the responses, the file gets overwritten,
-            // so no need to delete the old file.
-            $this->processFiles($data, $merchant);
-
-            Accessor::for($merchant, Constants::ONBOARDING)
-                ->upsert($data)
-                ->save();
-
-            // Set the product activation status as pending
-            if ($action === Constants::CREATE)
-            {
-                $saved = $this->repo->merchant_detail->updateFeatureActivationStatus(
-                    $merchant,
-                    $feature,
-                    Merchant\Detail\Entity::PENDING);
-            }
-
-            $this->auth;
-
-            (new Core)->notifyFeatureOnboardingFormSubmitOnSlack($feature);
+            $saved = $this->repo->merchant_detail->updateFeatureActivationStatus(
+                $merchant,
+                $feature,
+                Merchant\Detail\Entity::PENDING);
         }
-        catch (\Throwable $exception)
-        {
-            $saved = false;
 
-            $this->trace->traceException(
-                $exception, Trace::CRITICAL, TraceCode::FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED);
-        }
+        (new Core)->notifyFeatureOnboardingFormSubmitOnSlack($feature);
 
         return $saved;
     }

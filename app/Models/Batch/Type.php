@@ -16,6 +16,9 @@ class Type
     // Marketplace Batch
     const LINKED_ACCOUNT   = 'linked_account';
 
+    // Virtual Account Bulk Creation
+    const VIRTUAL_BANK_ACCOUNT = 'virtual_bank_account';
+
     /**
      * Following batch types get processed via CRON job, CRON currently runs
      * less frequently (now every 6 hrs).
@@ -35,6 +38,7 @@ class Type
     public static $queueGroup = [
         self::PAYMENT_LINK,
         self::LINKED_ACCOUNT,
+        self::VIRTUAL_BANK_ACCOUNT,
     ];
 
     public static function exists(string $type)

@@ -174,6 +174,16 @@ class PhoneBook
         return self::UNKNOWN_REGION;
     }
 
+    public function isValidNumberForRegion(string $regionCode): bool
+    {
+        if ($this->phoneNumber !== null)
+        {
+            return $this->libphonenumber->isValidNumberForRegion($this->phoneNumber, $regionCode);
+        }
+
+        return false;
+    }
+
     public function __toString()
     {
         if ($this->isValidNumber() === true)

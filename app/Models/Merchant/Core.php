@@ -40,7 +40,7 @@ class Core extends Base\Core
 
         $merchant->getValidator()->validateInput('unique_email', $email);
 
-        $merchant->setPricingPlan(Pricing\DefaultPlan::STARTUP_PLAN_ID);
+        $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
 
         $this->repo->saveOrFail($merchant);
 
