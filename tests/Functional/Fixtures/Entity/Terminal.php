@@ -1284,7 +1284,7 @@ class Terminal extends Base
         $defaultValues = [
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
-            'gateway'                   => Gateway::UPI_MINDGATE_SBI,
+            'gateway'                   => Gateway::UPI_SBI,
             'gateway_merchant_id'       => 'razorpay upi mindgate sbi',
             'gateway_terminal_id'       => 'nodal account upi sbi',
             'gateway_merchant_id2'      => 'razorpay@sbibank',

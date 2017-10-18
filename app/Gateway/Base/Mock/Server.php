@@ -177,6 +177,8 @@ class Server extends Base\Core
 
         $ns = substr(get_called_class(), 0, strrpos(get_called_class(), "\\"));
 
+        s($ns);
+
         return $ns;
     }
 

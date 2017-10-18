@@ -2,16 +2,15 @@
 
 namespace RZP\Gateway\Upi\Sbi;
 
-use Mockery\Exception;
-use phpseclib\Crypt\AES;
-use Razorpay\Api\Request;
+use App;
 use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
-use RZP\Exception\GatewayErrorException;
-use RZP\Gateway\Base\Entity;
-use RZP\Gateway\Upi\Base;
-use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\Action;
 use RZP\Trace\TraceCode;
+use phpseclib\Crypt\AES;
+use RZP\Gateway\Upi\Base;
+use RZP\Gateway\Base\Entity;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Exception\GatewayErrorException;
 
 class Gateway extends Base\Gateway
 {
@@ -19,7 +18,7 @@ class Gateway extends Base\Gateway
 
     const ACQUIRER = 'sbi';
 
-    protected $gateway = 'upi_mindgate_sbi';
+    protected $gateway = 'upi_sbi';
 
     const BANK = 'sbi';
 
@@ -31,14 +30,24 @@ class Gateway extends Base\Gateway
 
     protected $map = [
         // Mapping entity variables to entity variables
-        Base\Entity::GATEWAY_MERCHANT_ID    => Base\Entity::GATEWAY_MERCHANT_ID,
-        Base\Entity::VPA                    => Base\Entity::VPA,
-        Base\Entity::ACTION                 => Base\Entity::ACTION,
+        Base\Entity::GATEWAY_MERCHANT_ID       => Base\Entity::GATEWAY_MERCHANT_ID,
+        Base\Entity::VPA                       => Base\Entity::VPA,
+        Base\Entity::ACTION                    => Base\Entity::ACTION,
 
         // Mapping response fields to entity variables
-        ResponseFields::NPCI_TRANSACTION_ID => Base\Entity::NPCI_REFERENCE_ID,
-        ResponseFields::STATUS              => Base\Entity::STATUS_CODE,
+        ResponseFields::NPCI_TRANSACTION_ID    => Base\Entity::NPCI_REFERENCE_ID,
+        ResponseFields::UPI_TRANS_REFERENCE_NO => Base\Entity::GATEWAY_PAYMENT_ID,
+        ResponseFields::STATUS                 => Base\Entity::STATUS_CODE,
     ];
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $mode = $this->app['rzp.mode'];
+
+        $this->setMode($mode);
+    }
 
     public function authorize(array $input)
     {
@@ -54,9 +63,9 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($response->body);
 
-        $this->updateGatewayEntityResponse($gatewayPayment, $response);
+        $this->updateGatewayEntityResponse($gatewayPayment, $response[ResponseFields::API_RESPONSE]);
 
-        $this->checkResponseStatus($response);
+        $this->checkResponseStatus($response[ResponseFields::API_RESPONSE]);
 
         $vpa = $this->terminal->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA;
 
@@ -67,14 +76,38 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    // Handles S2S callback
+    public function callback(array $input)
+    {
+        parent::callback($input);
+
+        $content = $input['gateway'][ResponseFields::API_RESPONSE];
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        assertTrue($content[ResponseFields::UPI_TRANS_REFERENCE_NO] === $gatewayPayment->getGatewayPaymentId());
+
+        $this->checkResponseStatus($content);
+
+        // Authorization was successful
+        $this->updateGatewayEntityResponse($gatewayPayment, $content);
+
+        return [];
+    }
+
+    // TODO: Validate VPA before sending collect request and don't create payment entity if VPA is invalid
+
     protected function checkResponseStatus(array $response)
     {
-        $status = $response[ResponseFields::API_RESPONSE][ResponseFields::STATUS];
+        $status = $response[ResponseFields::STATUS];
 
         if (Status::isStatusSuccess($status) === false)
         {
-            // TODO: Complete this
-            throw new GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+            $errorCode = Status::getErrorCode($status);
+
+            $errorMessage = Status::getMessage($status);
+
+            throw new GatewayErrorException($errorCode, $status, $errorMessage);
         }
     }
 
@@ -85,7 +118,7 @@ class Gateway extends Base\Gateway
                 RequestFields::ADDITIONAL_INFO9  => Constants::NOT_APPLICABLE,
                 RequestFields::ADDITIONAL_INFO10 => Constants::NOT_APPLICABLE,
             ],
-            RequestFields::AMOUNT           => $input['payment']['amount'] / 100,
+            RequestFields::AMOUNT           => $this->formatAmount($input),
             RequestFields::EXPIRY_TIME      => Constants::EXPIRY_TIME,
             RequestFields::PAYER_TYPE       => [
                 RequestFields::VIRTUAL_ADDRESS => $input['payment']['vpa'],
@@ -100,9 +133,9 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
-                'gateway'           => $this->gateway,
-                'payment_id'        => $input['payment']['id'],
-                'content'           => $content
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'content'    => $content
             ]);
 
         $requestMsg = $this->encrypt($content);
@@ -134,7 +167,36 @@ class Gateway extends Base\Gateway
 
     protected function parseGatewayResponse(string $body)
     {
-        return json_decode($body, true);
+        $this->trace->info(TraceCode::GATEWAY_RESPONSE,
+            [
+                'response'  => $body,
+                'encrypted' => true,
+                'gateway'   => $this->gateway,
+            ]);
+
+        $encryptedResponse = json_decode($body, true)[ResponseFields::RESPONSE];
+
+        $decryptedString = $this->getAesCrypto()->decryptString($encryptedResponse);
+
+        $response = json_decode($decryptedString, true);
+
+        $this->trace->info(TraceCode::GATEWAY_RESPONSE,
+            [
+                'response'  => $response,
+                'encrypted' => false,
+                'gateway'   => $this->gateway,
+            ]);
+
+        return $response;
+    }
+
+    protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
+    {
+        $request = parent::getStandardRequestArray($content, $method, $type);
+
+        $request['headers']['Content-Type'] = 'application/json';
+
+        return $request;
     }
 
     /**
@@ -156,7 +218,7 @@ class Gateway extends Base\Gateway
 
     protected function updateGatewayEntityResponse(Entity $upiEntity, array $response)
     {
-        $attr = $this->getMappedAttributes($response[ResponseFields::API_RESPONSE]);
+        $attr = $this->getMappedAttributes($response);
 
         // To mark that we have received a response for this request
         $attr[Entity::RECEIVED] = 1;
@@ -166,7 +228,12 @@ class Gateway extends Base\Gateway
         $upiEntity->saveOrFail();
     }
 
-    protected function getMerchantId()
+    protected function formatAmount(array $input)
+    {
+        return number_format($input['payment']['amount'] / 100, '2', '.', '');
+    }
+
+    public function getMerchantId()
     {
         $merchantId = $this->getLiveMerchantId();
 
@@ -176,5 +243,27 @@ class Gateway extends Base\Gateway
         }
 
         return $merchantId;
+    }
+
+    /**
+     * @param $input
+     * @return array
+     */
+    public function preProcessServerCallback($input): array
+    {
+        $response = json_decode($input['msg'], true)[ResponseFields::RESPONSE];
+
+        $json = $this->getAesCrypto()->decryptString($response);
+
+        return json_decode($json, true);
+    }
+
+    /**
+     * @param array $response
+     * @return mixed
+     */
+    public function getPaymentIdFromServerCallback(array $response)
+    {
+        return $response[ResponseFields::API_RESPONSE][ResponseFields::PSP_REFERENCE_NO];
     }
 }

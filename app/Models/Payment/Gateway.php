@@ -42,7 +42,7 @@ class Gateway
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
-    const UPI_MINDGATE_SBI       = 'upi_mindgate_sbi';
+    const UPI_SBI                = 'upi_sbi';
     const UPI_ICICI              = 'upi_icici';
     const AEPS_ICICI             = 'aeps_icici';
 
@@ -310,7 +310,7 @@ class Gateway
     public static $asynchronous = [
         self::UPI_MINDGATE,
         self::UPI_ICICI,
-        self::UPI_MINDGATE_SBI,
+        self::UPI_SBI,
         self::SHARP,
     ];
 
@@ -498,6 +498,7 @@ class Gateway
 
         Gateway::BILLDESK,
         Gateway::UPI_MINDGATE,
+        Gateway::UPI_SBI,
         Gateway::UPI_ICICI,
         Gateway::WALLET_OLAMONEY,
         Gateway::NETBANKING_CORPORATION,
