@@ -8,6 +8,8 @@ import MerchantList from 'admin/merchants/MerchantList';
 import Stats from 'admin/stats';
 import PlanList from 'admin/plans/List';
 import GatewayRulesList from 'admin/gatewayrules/List';
+
+import ActionsList from 'admin/adminActions/ActionsList';
 import EmailLogsList from 'admin/emailLogs/EmailLogsList';
 import Entities from 'admin/entities/container';
 
@@ -30,8 +32,8 @@ export default class App extends Component {
             <Route path="/pricing-plans" component={PlanList} />
             <Route path="/gateway-rules" component={GatewayRulesList} />
             <Route path="/entities" component={Entities} />
+            <Route path="/actions" component={ActionsList} />
             <Route path="/email-logs" component={EmailLogsList} />
-
             <Route path="/workflows" component={WorkflowList} />
 
             <Route path="/groups" component={GroupList} />

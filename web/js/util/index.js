@@ -4,7 +4,13 @@ export const getFormattedAmount = amount =>
     .replace(/(.{1,2})(?=.(..)+(\...)$)/g, '$1,')
     .replace('.00', '');
 
-export const deepClone = o => JSON.parse(JSON.stringify(o));
+export const deepClone = o => {
+  try {
+    return JSON.parse(JSON.stringify(o));
+  } catch (err) {
+    console.log('Deepclone error: ', err);
+  }
+};
 export const animObj = { enter: 300, exit: 300 };
 export const prevent = e => {
   e.preventDefault();

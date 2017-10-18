@@ -20,6 +20,20 @@ export function adminPost(params) {
   });
 }
 
+export function adminPut(params, config) {
+  return axios.put('/admin/generic', parseParams(params), config);
+}
+
+export function adminUserConfirm(params, config) {
+  return axios.post('/admin/users/confirm', params);
+}
+
+export function adminFormUpload(form, url) {
+  //Let axios decide which "Content-Type" to send
+  let fData = createFormData(form);
+  return axios.post(url, fData);
+}
+
 export function adminDelete(params) {
   return axios.delete('/admin/generic', {
     params: parseParams({ data: params }),
@@ -41,4 +55,13 @@ function parseParams(origParams) {
     params.url_params = JSON.stringify(curlyParams);
   }
   return params;
-}
+};
+
+const createFormData = (form = {}) => {
+  let formData = new FormData();
+
+  Object.keys(form).map(key => {
+    formData.append(key, form[key]);
+  });
+  return formData;
+};

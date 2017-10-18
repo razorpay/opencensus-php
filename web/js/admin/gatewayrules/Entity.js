@@ -118,58 +118,58 @@ class NewGatewayRule extends Component {
           </SelectField>
           <br />
           {(model.method === 'card' || model.method === 'emi') && (
-            <div>
-              <SelectField
-                name="method_type"
-                label="Card Type"
-                defaultValue={model.method_type}
-              >
-                <option value="">All</option>
-                {Object.keys(cardTypes).map((m, index) => (
-                  <option key={index} value={m}>
-                    {cardTypes[m]}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField
-                defaultValue={model.network}
-                name="network"
-                label="Card Network"
-              >
-                <option value="">All</option>
-                {Object.keys(networks).map((m, index) => (
-                  <option key={index} value={m}>
-                    {networks[m]}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField
-                name="currency"
-                label="Currency"
-                defaultValue={model.currency}
-              >
-                <option value="INR">INR</option>
-                <option value="USD">USD</option>
-              </SelectField>
-              <SelectField
-                name="international"
-                label="International"
-                defaultValue={model.international}
-              >
-                <option value="" />
-                <option value="0">No</option>
-                <option value="1">Yes</option>
-              </SelectField>
-              <Field
-                style={{ width: 300 }}
-                label="IINs"
-                name="iins"
-                defaultValue={model.iins}
-                placeholder="6 digit IINs, comma separated"
-                pattern="^(\d{6},)*\d{6}$"
-              />
-            </div>
-          )}
+              <div>
+                <SelectField
+                  name="method_type"
+                  label="Card Type"
+                  defaultValue={model.method_type}
+                >
+                  <option value="">All</option>
+                  {Object.keys(cardTypes).map((m, index) => (
+                    <option key={index} value={m}>
+                      {cardTypes[m]}
+                    </option>
+                  ))}
+                </SelectField>
+                <SelectField
+                  defaultValue={model.network}
+                  name="network"
+                  label="Card Network"
+                >
+                  <option value="">All</option>
+                  {Object.keys(networks).map((m, index) => (
+                    <option key={index} value={m}>
+                      {networks[m]}
+                    </option>
+                  ))}
+                </SelectField>
+                <SelectField
+                  name="currency"
+                  label="Currency"
+                  defaultValue={model.currency}
+                >
+                  <option value="INR">INR</option>
+                  <option value="USD">USD</option>
+                </SelectField>
+                <SelectField
+                  name="international"
+                  label="International"
+                  defaultValue={model.international}
+                >
+                  <option value="" />
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </SelectField>
+                <Field
+                  style={{ width: 300 }}
+                  label="IINs"
+                  name="iins"
+                  defaultValue={model.iins}
+                  placeholder="6 digit IINs, comma separated"
+                  pattern="^(\d{6},)*\d{6}$"
+                />
+              </div>
+            )}
 
           <Field
             type="number"
