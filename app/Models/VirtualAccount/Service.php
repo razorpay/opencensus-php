@@ -38,16 +38,7 @@ class Service extends Base\Service
 
         $this->setDefaultReceiverTypesIfNeeded($input);
 
-        $virtualAccount = $this->repo->transaction(function() use ($input, $customer)
-        {
-            $virtualAccount = $this->core->create($input, $this->merchant, $customer);
-
-            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVER_TYPES]);
-
-            $this->repo->saveOrFail($virtualAccount);
-
-            return $virtualAccount;
-        });
+        $virtualAccount = $this->core->create($input, $this->merchant, $customer);
 
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_CREATED,
@@ -229,26 +220,6 @@ class Service extends Base\Service
         if (is_array($input[Entity::RECEIVER_TYPES]) === false)
         {
             $input[Entity::RECEIVER_TYPES] = [$input[Entity::RECEIVER_TYPES]];
-        }
-    }
-
-    protected function buildReceivers(Entity $virtualAccount, array $receiverTypes)
-    {
-        $name = $virtualAccount->getName();
-
-        $descriptor = $virtualAccount->getDescriptor();
-
-        $receiverHelper = new Receiver($this->merchant, $name, $descriptor);
-
-        foreach ($receiverTypes as $receiverType)
-        {
-            $func = 'build' . studly_case($receiverType);
-
-            $receiver = $receiverHelper->$func($virtualAccount);
-
-            $association = camel_case($receiverType);
-
-            $virtualAccount->$association()->associate($receiver);
         }
     }
 

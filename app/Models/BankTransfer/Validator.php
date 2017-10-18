@@ -78,7 +78,7 @@ class Validator extends Base\Validator
         {
             $ifsc = $bankTransfer->getPayerIfsc();
 
-            $bankCode = substr($ifsc, 0, 3);
+            $bankCode = substr($ifsc, 0, -10);
 
             if (BankCodes::hasIfscMapping($bankCode) === false)
             {

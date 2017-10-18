@@ -3,16 +3,17 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Mail;
+use Queue;
 
-use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Batch\Header;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
 
 class MerchantCreateTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use BatchTestTrait;
 
     public function setUp()
     {
@@ -255,6 +256,34 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals($schedule['delay'], 2);
     }
 
+    public function testCreateLinkedAccountBatch()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $entries = $this->getLinkedAccountBatchFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        // Gets last entity (Post queue processing) and asserts attributes
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(2, $batch['success_count']);
+        $this->assertEquals(0, $batch['failure_count']);
+
+        $merchantDetail = $this->getLastEntity('merchant_detail', true);
+
+        $this->assertEquals('Test Bank Account 2', $merchantDetail['bank_account_name']);
+
+        $account = $this->getLastEntity('merchant', true);
+
+        $this->assertEquals('test 2', $account['name']);
+        $this->assertEquals(true, $account['activated']);
+    }
+
     protected function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -263,5 +292,28 @@ class MerchantCreateTest extends TestCase
         $testData = $this->testData[$name];
 
         return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function getLinkedAccountBatchFileEntries(): array
+    {
+        return [
+            [
+                Header::BUSINESS_NAME       => 'test 1',
+                Header::BANK_ACCOUNT_NUMBER => '111000',
+                Header::BANK_BRANCH_IFSC    => 'SBIN0007105',
+                Header::BANK_ACCOUNT_TYPE   => 'Current',
+                Header::BANK_ACCOUNT_NAME   => 'Test Bank Account 1',
+                Header::REFERENCE_ID        => 'REF001',
+
+            ],
+            [
+                Header::BUSINESS_NAME       => 'test 2',
+                Header::BANK_ACCOUNT_NUMBER => '111000',
+                Header::BANK_BRANCH_IFSC    => 'SBIN0007105',
+                Header::BANK_ACCOUNT_TYPE   => 'Current',
+                Header::BANK_ACCOUNT_NAME   => 'Test Bank Account 2',
+                Header::REFERENCE_ID        => 'REF002',
+            ],
+        ];
     }
 }

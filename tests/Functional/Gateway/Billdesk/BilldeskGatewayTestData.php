@@ -35,6 +35,22 @@ return [
         'entity'            => 'payment',
     ],
 
+    'testAmountTampering' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\LogicException',
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
+        ],
+    ],
+
     'testTransactionAfterAuthorize' => [
         'type'            => 'payment',
         'merchant_id'     => '10000000000000',
@@ -99,7 +115,7 @@ return [
     'testPaymentRefund' => [
         'action'           => 'refund',
         'received'         => true,
-        'TxnAmount'        => '5.00',
+        'TxnAmount'        => '500',
         'BankID'           => null,
         'CurrencyType'     => 'INR',
         'ItemCode'         => null,
@@ -125,7 +141,7 @@ return [
     'testPaymentMultiplePartialRefund' => [
         'action'           => 'refund',
         'received'         => true,
-        'TxnAmount'        => '5.00',
+        'TxnAmount'        => '500',
         'BankID'           => null,
         'CurrencyType'     => 'INR',
         'ItemCode'         => null,
@@ -151,7 +167,7 @@ return [
     'testPaymentPartialRefund' => [
         'action'           => 'refund',
         'received'         => true,
-        'TxnAmount'        => '5.00',
+        'TxnAmount'        => '500',
         'BankID'           => null,
         'CurrencyType'     => 'INR',
         'ItemCode'         => null,

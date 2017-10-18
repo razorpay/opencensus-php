@@ -9,6 +9,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 trait Inquiry
 {
@@ -37,8 +38,11 @@ trait Inquiry
         }
         else if (($response['data']['result'] === 'FAILURE(SUSPECT)') and
                  ($response['data']['trackid'] === $input['refund']['id']) and
-                 ((int) ($response['data']['amt'] * 100) === $input['refund']['amount']))
+                 ((int) ($response['data']['amt'] * 100) === $input['refund']['amount']) and
+                 (empty($response['data']['authRespCode']) === true) and
+                 (empty($response['data']['auth']) === false))
         {
+            // Changing the result to `CAPTURED` as FSS returns `FAILURE(SUSPECT)`
             $response['data']['result'] = 'CAPTURED';
 
             $refund = $this->repo->findByRefundId($input['refund']['id']);
@@ -95,8 +99,22 @@ trait Inquiry
         return $payment;
     }
 
+    protected function checkResponseAndThrowExceptionIfRequired($verify)
+    {
+        if ((empty($verify->verifyResponse['error']['code']) === false) and
+            ($verify->verifyResponse['error']['code'] === 'GW00201'))
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                VerifyAction::FINISH);
+        }
+    }
+
     protected function verifyPayment($verify)
     {
+        $this->checkResponseAndThrowExceptionIfRequired($verify);
+
         // gateway entity in db
         // NOTE: This is an entity and not an array.
         $gatewayPayment = $verify->payment;
@@ -412,7 +430,7 @@ trait Inquiry
         $inquiryResponse = $this->inquiryResponse;
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
             [
                 'payment_id' => $input['payment']['id'],
                 'xml' => $inquiryResponse['xml'],

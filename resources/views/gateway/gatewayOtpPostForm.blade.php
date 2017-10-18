@@ -3,19 +3,10 @@
 <head>
   <title></title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-.loader{height:24px;width:24px;border-radius:50%;display:inline-block;opacity:0;
-animation:lo .8s infinite linear;-webkit-animation:lo .8s infinite linear;
-transition:0.3s;-webkit-transition:0.3s;
-border:2px solid #29B7D6;border-top-color:transparent}
-.vis{opacity:1}
-@keyframes lo{to{transform:rotate(360deg)}}@-webkit-keyframes lo{to{-webkit-transform:rotate(360deg)}}
-  </style>
 </head>
-<body>
-  <img src="{{$data['cdn']}}/logo.svg" id="logo" height="70px" style="margin:30px auto 0">
-  <div class="loader vis" style="position:absolute;top:115px;left:50%;margin-left:-12px"></div>
-  <link href="{{$data['cdn']}}/static/payment_redirect/bundle.css" rel="stylesheet"></link>
+<body style="background: #f4f4f4">
+  @include('partials.loader')
+  <img src="{{$data['cdn']}}/logo.svg" id="logo" height="35px" style="margin:30px auto 10px; display:block">
   <script type="text/javascript">
     var data = {!!utf8_json_encode($data['data'])!!};
   </script>

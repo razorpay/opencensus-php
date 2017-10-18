@@ -4,6 +4,7 @@ namespace RZP\Models\BankTransfer;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\VirtualAccount\Provider;
@@ -15,6 +16,9 @@ class Service extends Base\Service
     protected $ip;
     protected $mutex;
     protected $core;
+
+    // Seconds in 15 minutes
+    const FIFTEEN_MINUTES = 900;
 
     /**
      * Service constructor. Sets provider from app auth, and
@@ -31,6 +35,8 @@ class Service extends Base\Service
         $this->provider = $this->auth->getInternalApp();
 
         $this->ip = $this->app['request']->ip();
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     /**
@@ -86,6 +92,38 @@ class Service extends Base\Service
     }
 
     /**
+     * Manual insertion of a bank transfer on behalf of another provider.
+     *
+     * @param string $provider
+     * @param array $input
+     *
+     * @return array
+     */
+    public function insert(string $provider, array $input): array
+    {
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_MANUAL_PROCESS_REQUEST,
+            [
+                'provider' => $provider,
+                'input'    => $input,
+            ]
+        );
+
+        if ($this->mode === Mode::LIVE)
+        {
+            Provider::validateLiveProvider($provider);
+        }
+
+        $valid = $this->core->process($input, $provider);
+
+        return [
+            'valid'          => $valid,
+            'message'        => null,
+            'transaction_id' => $input[Entity::REQ_UTR],
+        ];
+    }
+
+    /**
      * This is used by the payment_bank_transfer_fetch route. Bank transfer
      * public entity contains payer bank account info for use by the merchant.
      *
@@ -104,6 +142,35 @@ class Service extends Base\Service
                              ->findByPayment($payment);
 
         return $bankTransfer->toArrayPublic();
+    }
+
+    /**
+     * Mutex lock on processing of failed bank transfer refunds
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function retryBankTransferRefund(array $input)
+    {
+        // Adding a lock for 15 minutes to avoid race conditions on the cron.
+        // This cron is only executed once a day for now.
+        $summary = $this->mutex->acquireAndRelease(
+            'bank_transfer_refund_retry',
+            function() use ($input)
+            {
+                return $this->core->retryBankTransferRefund($input);
+            },
+            self::FIFTEEN_MINUTES,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        $this->trace->info(
+            TraceCode::REFUND_RETRY_RESULT,
+            [
+                'summary' => $summary
+            ]);
+
+        return $summary;
     }
 
     /**

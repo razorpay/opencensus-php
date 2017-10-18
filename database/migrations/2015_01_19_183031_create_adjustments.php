@@ -27,10 +27,10 @@ class CreateAdjustments extends Migration {
 
             $table->char(Adjustment::MERCHANT_ID, Adjustment::ID_LENGTH);
 
-            $table->char(Adjustment::ENTITY_ID, Adjustment::ID_LENGTH)
+            $table->string(Adjustment::ENTITY_TYPE, 100)
                 ->nullable();
 
-            $table->string(Adjustment::ENTITY_TYPE, 100)
+            $table->char(Adjustment::ENTITY_ID, Adjustment::ID_LENGTH)
                 ->nullable();
 
             $table->integer(Adjustment::AMOUNT);

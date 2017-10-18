@@ -55,7 +55,7 @@ class Validator
         Orchestrator::AXIS               => "/Please find attached the settlement file for today."
                                             . " You net amount settled is/",
         Orchestrator::FIRST_DATA         => "/the statement of transactions for MID (.)*razorpay/",
-        Orchestrator::VIRTUAL_ACC_KOTAK  => "/Please find the report./",
+        Orchestrator::VIRTUAL_ACC_KOTAK  => "/Please find the hourly report of Virtual Accounts./",
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [

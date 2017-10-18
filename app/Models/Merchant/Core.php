@@ -40,7 +40,7 @@ class Core extends Base\Core
 
         $merchant->getValidator()->validateInput('unique_email', $email);
 
-        $merchant->setPricingPlan(Pricing\DefaultPlan::STARTUP_PLAN_ID);
+        $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
 
         $this->repo->saveOrFail($merchant);
 
@@ -56,7 +56,7 @@ class Core extends Base\Core
         return $merchant;
     }
 
-    public function createSubMerchant($input, $aggregatorMerchant)
+    public function createSubMerchant($input, $aggregatorMerchant): Entity
     {
         // We only check for email uniqueness if the email
         // address is provided

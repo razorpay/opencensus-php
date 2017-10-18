@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Exception;
 use RZP\Models\Bank;
 use RZP\Models\Base;
 use RZP\Models\Card;
@@ -14,30 +13,9 @@ class Service extends Base\Service
 {
     public function createPricingPlan($input)
     {
-        $plan = (new Pricing\Core)->createPricingPlan($input);
+        (new Pricing\Core())->createPricing($input);
 
-        $this->trace->info(
-            TraceCode::PRICING_PLAN_CREATE_SUCCESS,
-            $plan->toArrayPublic());
-
-        return $plan->toArrayPublic();
-    }
-
-    public function uploadPricingPlan($input)
-    {
-        $this->repo->transactionOnLiveAndTest(function() use ($input){
-
-            $plan = (new Pricing\Core)->createPricingPlan($input[0]);
-
-            array_shift($input);
-
-            foreach ($input as $value)
-            {
-                $rule = (new Pricing\Core)->addPlanRule($value, $plan);
-            }
-        });
-
-        $plan = $this->repo->pricing->getPricingPlanByName($input[0][Entity::PLAN_NAME]);
+        $plan = $this->repo->pricing->getPricingPlanByName($input[Entity::PLAN_NAME]);
 
         return $plan->toArrayPublic();
     }
@@ -50,7 +28,7 @@ class Service extends Base\Service
 
         $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic($id);
 
-        $rule = (new Pricing\Core)->addPlanRule($input, $plan);
+        $rule = (new Pricing\Core)->addPlanRule($plan, $input);
 
         $this->trace->info(
             TraceCode::PRICING_PLAN_RULE_ADD_SUCCESS,

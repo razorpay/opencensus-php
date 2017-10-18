@@ -65,6 +65,8 @@ class Gateway
      */
     protected $trace;
 
+    protected $repo;
+
     /**
      * @var array
      */
@@ -100,6 +102,8 @@ class Gateway
      * @var string
      */
     protected $mode;
+
+    protected $env;
 
     /**
      * Denotes if the gateway is a mock
@@ -138,6 +142,8 @@ class Gateway
     protected $route;
 
     protected $terminal;
+
+    protected $gateway;
 
     /**
      * Laravel request class instance
@@ -191,7 +197,9 @@ class Gateway
      * Handles gateway callback
      *
      * @param array $input
+     *
      * @return array|null
+     * @throws Exception\GatewayErrorException
      */
     public function callback(array $input)
     {
@@ -333,6 +341,19 @@ class Gateway
         }
     }
 
+    protected function assertAmount($expectedAmount, $actualAmount)
+    {
+        if ($expectedAmount !== $actualAmount)
+        {
+            throw new Exception\LogicException(
+                'Amount tampering found.',
+                ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED, [
+                    'expected' => $expectedAmount,
+                    'actual'   => $actualAmount
+                ]);
+        }
+    }
+
     protected function getAcquirerData($input, $gatewayPayment)
     {
         $acquirer = [];
@@ -393,8 +414,7 @@ class Gateway
                 [
                     'actual'    => $actual,
                     'generated' => $generated
-                ]
-            );
+                ]);
 
             throw new Exception\RuntimeException('Failed checksum verification');
         }
@@ -454,12 +474,12 @@ class Gateway
     {
         if (isset($request['options']) === false)
         {
-            $request['options'] = array();
+            $request['options'] = [];
         }
 
         if (isset($request['headers']) === false)
         {
-            $request['headers'] = array();
+            $request['headers'] = [];
         }
 
         $method = 'post';
@@ -711,6 +731,16 @@ class Gateway
         return $this->input['terminal']['gateway_secure_secret'];
     }
 
+    protected function isTestMode() : bool
+    {
+        return ($this->mode === Mode::TEST);
+    }
+
+    protected function isLiveMode() : bool
+    {
+        return ($this->mode === Mode::LIVE);
+    }
+
     protected function getNewGatewayPaymentEntity()
     {
         $class = $this->getGatewayNamespace() . '\Entity';
@@ -743,7 +773,7 @@ class Gateway
     {
         $ns = $this->getGatewayNamespace();
 
-        return constant($ns.'\Url::'.$type);
+        return constant($ns . '\Url::' . $type);
     }
 
     protected function getUrl($type = null)

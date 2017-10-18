@@ -23,6 +23,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Plan\Subscription;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
 
 class Checkout
 {
@@ -231,13 +232,23 @@ class Checkout
                 return null;
             }
 
-            $savedTokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
+            $tokenCore = (new Customer\Token\Core);
 
-            $custData =  array(
+            $savedTokens = $tokenCore->fetchTokensByCustomer($customer);
+
+            //
+            // TODO: Remove this later when we start handling the below case.
+            // Currently, we do not expose any recurring NB tokens to the customer.
+            // We do not handle the flow where a customer can use an existing token
+            // to subscribe to another product.
+            //
+            $savedTokens = $tokenCore->removeNetbankingRecurringTokens($savedTokens);
+
+            $custData =  [
                 'email'     => $customer->getEmail(),
                 'contact'   => $customer->getContact(),
-                'tokens'    => $savedTokens->toArrayPublic()
-            );
+                'tokens'    => $savedTokens->toArrayPublic(),
+            ];
 
             //
             // This case comes when customer_id is sent in the input (always local customer).
@@ -351,14 +362,19 @@ class Checkout
 
                 if ($response['saved'] === true)
                 {
-                    if (isset($response['email']))
+                    if (isset($response['email']) === true)
                     {
                         $data['customer']['email'] = $response['email'];
                     }
 
-                    if (isset($response['tokens']))
+                    if (isset($response['tokens']) === true)
                     {
-                        $data['customer']['tokens'] = $response['tokens'];
+                        $tokens = $response['tokens'];
+
+                        // TODO: Needs to be fixed later when we allow first recurring on old recurring nb token.
+                        $tokensWithoutNB = (new Customer\Token\Core)->removeNetbankingRecurringTokens($tokens);
+
+                        $data['customer']['tokens'] = $tokensWithoutNB;
                     }
                 }
             }
