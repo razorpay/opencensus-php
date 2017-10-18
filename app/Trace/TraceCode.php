@@ -560,6 +560,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ACCOUNT_ACTIVATED                = 'MERCHANT_ACCOUNT_ACTIVATED';
     const MERCHANT_LINKED_ACCOUNT_ACTIVATED         = 'MERCHANT_LINKED_ACCOUNT_ACTIVATED';
     const MERCHANT_TERMINALS                        = 'MERCHANT_TERMINALS';
+    const MERCHANT_CREATE                           = 'MERCHANT_CREATE';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const MERCHANT_EDIT_ACTION                      = 'MERCHANT_EDIT_ACTION';
     const MERCHANT_ORG_NOT_GIVEN                    = 'MERCHANT_ORG_NOT_GIVEN';
