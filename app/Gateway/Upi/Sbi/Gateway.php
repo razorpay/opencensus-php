@@ -251,7 +251,7 @@ class Gateway extends Base\Gateway
      */
     public function preProcessServerCallback($input): array
     {
-        $response = json_decode($input['msg'], true)[ResponseFields::RESPONSE];
+        $response = json_decode($input[ResponseFields::MESSAGE], true)[ResponseFields::RESPONSE];
 
         $json = $this->getAesCrypto()->decryptString($response);
 

@@ -4,6 +4,7 @@ namespace RZP\Gateway\Upi\Sbi;
 
 class ResponseFields
 {
+    const MESSAGE                = 'msg';
     const RESPONSE               = 'resp';
     const API_RESPONSE           = 'apiResp';
     const PSP_REFERENCE_NO       = 'pspRefNo';

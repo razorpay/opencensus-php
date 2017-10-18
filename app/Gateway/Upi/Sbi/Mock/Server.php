@@ -44,7 +44,7 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($content);
     }
 
-    public function makeAsyncCallbackContent(array $upiEntity, array $payment)
+    public function getAsyncCallbackContent(array $upiEntity, array $payment)
     {
         $response = $this->getAsyncCallbackResponseArray($upiEntity, $payment);
 
@@ -58,7 +58,7 @@ class Server extends Base\Mock\Server
         $response = $this->makeResponse($content);
 
         return [
-            'msg' => $response->content()
+            ResponseFields::MESSAGE => $response->content()
         ];
     }
 
@@ -87,7 +87,6 @@ class Server extends Base\Mock\Server
         $pspRefNo = Payment\Entity::stripDefaultSign($payment[Payment\Entity::ID]);
 
         $response = [
-            // TODO: Both of these need to be saved from the response
             ResponseFields::PSP_REFERENCE_NO       => $pspRefNo,
             ResponseFields::UPI_TRANS_REFERENCE_NO => $upiEntity[Entity::GATEWAY_PAYMENT_ID],
             ResponseFields::NPCI_TRANSACTION_ID    => $upiEntity[Entity::NPCI_REFERENCE_ID],

@@ -50,13 +50,23 @@ class UpiMindgateSbiGatewayTest extends TestCase
 
         $payment = $this->getEntityById('payment', $paymentId, true);
 
-        // TODO: Add methods for the code below
-        $content = $this->mockServer()->makeAsyncCallbackContent($upiEntity, $payment);
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
 
         $response = $this->makeS2SCallbackAndGetContent($content);
 
         // We should have gotten a successful response
         $this->assertEquals(['success' => true], $response);
+
+        // The payment should now be authorized
+        $payment = $this->getEntityById('payment', $paymentId, true);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+        $this->assertNotNull($upiEntity['npci_reference_id']);
+        $this->assertNotNull($upiEntity['gateway_payment_id']);
+
+        // Add a capture as well, just for completeness sake
+        $this->capturePayment($paymentId, $payment['amount']);
 
         // TODO: Complete flow
     }
