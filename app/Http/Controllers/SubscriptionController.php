@@ -157,26 +157,32 @@ class SubscriptionController extends Controller
     {
         $error = Request::get('error');
 
-        try
-        {
-            $data = $this->service()->getSubscriptionViewData($subscriptionId);
-        }
-        catch (BaseException $e)
-        {
-            $data = $e->getError()->toPublicArray();
-        }
+        $data = [];
 
         if (empty($error) === false)
         {
             $data['error'] = $error;
+
+            $view = 'public.error';
+        }
+        else
+        {
+            try
+            {
+                $data = $this->service()->getSubscriptionViewData($subscriptionId);
+
+                $view = 'subscription.index';
+            }
+            catch (BaseException $e)
+            {
+                $data = $e->getError()->toPublicArray();
+
+                $view = 'public.error';
+            }
         }
 
-        $view = 'subscription.index';
-
-        $data['request_params'] = Request::all();
-
         return View::make($view)
-            ->with('data', $data);
+                   ->with('data', $data);
     }
 
     public function postCancelDueSubscriptions()

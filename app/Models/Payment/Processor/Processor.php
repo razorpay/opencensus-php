@@ -762,6 +762,7 @@ class Processor
      *                             action
      *
      * @return array or null
+     * @throws Exception\GatewayErrorException
      * @throws Exception\LogicException
      */
     protected function callGatewayFunction($action, array $gatewayData)

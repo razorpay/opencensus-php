@@ -1137,6 +1137,8 @@ trait Authorize
         }
 
         $this->validateInternationalAllowed($payment);
+
+        $this->validateInternationalRecurringPaymentsAllowed($payment);
     }
 
     protected function runFraudChecks(Payment\Entity $payment)
@@ -1220,26 +1222,15 @@ trait Authorize
                 $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
             }
 
-            $flag = $this->callGatewayFunction(Action::AUTHORIZE_FAILED, $data);
-
-            if ($flag === false)
-            {
-                $this->segment->trackPayment($payment,
-                                                    TraceCode::PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS,
-                                                    $data);
-
-                throw new Exception\BadRequestValidationFailureException(
-                    'Payment expected to have succeeded on the gateway has actually not. ' .
-                    'Should not have called this function in this scenario');
-            }
+            $response = $this->callGatewayFunction(Action::AUTHORIZE_FAILED, $data);
 
             $this->lockForUpdateAndReload($payment);
 
             if ($payment->isStatusCreatedOrFailed() === false)
             {
                 $this->segment->trackPayment($payment,
-                                                    TraceCode::PAYMENT_ALREADY_AUTHORIZED,
-                                                    $data);
+                                             TraceCode::PAYMENT_ALREADY_AUTHORIZED,
+                                             $data);
 
                 throw new Exception\BadRequestValidationFailureException(
                     'Payment being authorized is actually already authorized by some other thread.',
@@ -1252,7 +1243,7 @@ trait Authorize
 
             // The first argument marks the payment as converted from failed
             // to authorized
-            $this->updateAndNotifyPaymentAuthorized([], true);
+            $this->updateAndNotifyPaymentAuthorized($response, true);
 
             $this->autoCapturePaymentIfApplicable($payment);
 
@@ -3475,6 +3466,8 @@ trait Authorize
                 $type . ' card transactions are not allowed',
                 'number');
         }
+
+        $this->checkAndValidateIfCardNetworkDisabled($payment->merchant, $card);
     }
 
     protected function verifyFeatureForMerchant(Merchant\Entity $merchant, $feature)
@@ -3512,6 +3505,26 @@ trait Authorize
         }
 
         return $atLeastOneEnabled;
+    }
+
+    protected function validateInternationalRecurringPaymentsAllowed(Payment\Entity $payment)
+    {
+        if (($payment->isRecurring() === true) and
+            ($payment->isInternational() === true))
+        {
+            //
+            //  If feature is enabled, recurring international
+            //  payments are to be disabled.
+            //
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::BLOCK_INTERNATIONAL_RECURRING) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT,
+                    [
+                        'merchant_id' => $payment->merchant->getId(),
+                    ]);
+            }
+        }
     }
 
     protected function validateCardAndCvv(Payment\Entity $payment, array $input)
@@ -3772,5 +3785,27 @@ trait Authorize
         $secret = $this->app->config->get('app.key');
 
         return hash_hmac('sha1', $string, $secret);
+    }
+
+    protected function checkAndValidateIfCardNetworkDisabled(Merchant\Entity $merchant, Card\Entity $card)
+    {
+        $disabledNetworkFeatures = [
+            Card\Network::RUPAY => Feature\Constants::DISABLE_RUPAY,
+            Card\Network::MAES  => Feature\Constants::DISABLE_MAESTRO,
+        ];
+
+        $networkCode = $card->getNetworkCode();
+
+        if ((isset($disabledNetworkFeatures[$networkCode]) === true) and
+            ($merchant->isFeatureEnabled($disabledNetworkFeatures[$networkCode]) === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
+                null,
+                [
+                    'network' => $networkCode,
+                    'iin'     => $card->getIin()
+                ]);
+        }
     }
 }

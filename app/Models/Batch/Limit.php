@@ -10,10 +10,11 @@ class Limit
     const DEFAULT_LIMIT = 1000;
 
     const PER_TYPE = [
-        Type::REFUND           => 1000,
-        Type::PAYMENT_LINK     => 5000,
-        Type::IRCTC_REFUND     => 100000,
-        Type::IRCTC_SETTLEMENT => 100000,
+        Type::REFUND                => 1000,
+        Type::PAYMENT_LINK          => 5000,
+        Type::IRCTC_REFUND          => 100000,
+        Type::IRCTC_SETTLEMENT      => 100000,
+        Type::VIRTUAL_BANK_ACCOUNT  => 50000,
     ];
 
     /**

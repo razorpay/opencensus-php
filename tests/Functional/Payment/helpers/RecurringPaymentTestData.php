@@ -5,6 +5,21 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testRecurringInternationalPaymentWhenNotAllowed' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT,
+        ],
+    ],
     'testRecurringPaymentCreateFeatureDisabled' => [
         'response' => [
             'content' => [

@@ -184,33 +184,21 @@ class Service extends Base\Service
     {
         $data[$feature] = $input;
 
-        $saved = false;
-
         $this->trace->info(
             TraceCode::FEATURE_ONBOARDING_RESPONSE_REQUEST,
             [$input, $feature]);
 
         (new Validator)->validateInput(Constants::ONBOARDING, $data);
 
-        try
-        {
-            $this->processFiles($data);
+        $this->processFiles($data);
 
-            Accessor::for($this->merchant, Constants::ONBOARDING)
-                    ->upsert($data)
-                    ->save();
-
-            $saved = true;
-        }
-        catch (\Throwable $exception)
-        {
-            $this->trace->traceException(
-                $exception, Trace::CRITICAL, TraceCode::FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED);
-        }
+        Accessor::for($this->merchant, Constants::ONBOARDING)
+                ->upsert($data)
+                ->save();
 
         (new Core)->notifyOnboardingResponseCreationOnSlack($feature);
 
-        return $saved;
+        return true;
     }
 
     /**

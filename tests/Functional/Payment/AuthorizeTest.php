@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Constants\Mode;
 
 class AuthorizeTest extends TestCase
 {
@@ -510,5 +511,98 @@ class AuthorizeTest extends TestCase
         $testData['request']['content'] = $this->payment;
 
         return $this->runRequestResponseFlow($testData);
+    }
+
+    public function testMaestroPaymentWithFeatureDisabled()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'activated'       => 1,
+            'live'            => 1,
+            'pricing_plan_id' => '1hDYlICobzOCYt',
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['disable_maestro']);
+
+        $payment['card']['number'] = '5081597022059105';
+
+        $data = $this->testData['testCardNetworkDisabled'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $request = [
+                'method'  => 'POST',
+                'url'     => '/payments',
+                'content' => $payment
+            ];
+
+            $this->ba->publicLiveAuth();
+
+            $this->makeRequestAndGetContent($request);
+        });
+    }
+
+    public function testRupayPaymentWithFeatureDisabled()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'activated'       => 1,
+            'live'            => 1,
+            'pricing_plan_id' => '1hDYlICobzOCYt',
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['disable_rupay']);
+
+        $payment['card']['number'] = '6073849700004947';
+
+        $data = $this->testData['testCardNetworkDisabled'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $request = [
+                'method'  => 'POST',
+                'url'     => '/payments',
+                'content' => $payment
+            ];
+
+            $this->ba->publicLiveAuth();
+
+            $this->makeRequestAndGetContent($request);
+        });
+    }
+
+    public function testAuthCodeUpdateFromLateAuth()
+    {
+        $randomAuthCode = random_integer(6);
+
+        $this->mockServerContentFunction(
+            function(& $content, $action) use ($randomAuthCode)
+            {
+                if ($action === 'authorize')
+                {
+                    throw new Exception\GatewayErrorException('GATEWAY_ERROR_UNKNOWN_ERROR');
+                }
+
+                $content['auth'] = $randomAuthCode;
+            },
+            'hdfc');
+
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->doAuthPayment();
+            });
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertNull($payment['reference2']);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($randomAuthCode, $payment['reference2']);
     }
 }
