@@ -194,8 +194,6 @@ class SubReconciliate
 
     protected function updateBatchWithSummary(Batch\Entity $batch)
     {
-        $batch->setTotalCount(count($this->total));
-
         $batch->setSuccessCount(count($this->successes));
 
         $batch->setFailureCount(count($this->failures));
