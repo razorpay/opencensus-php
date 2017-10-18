@@ -1,4 +1,4 @@
-import { observable, extendShallowObservable } from 'mobx';
+import { observable, extendShallowObservable, toJS } from 'mobx';
 import BaseModel from 'model/base';
 
 export default class Item extends BaseModel {
@@ -13,5 +13,9 @@ export default class Item extends BaseModel {
 
   onPropChange(e) {
     this[e.target.name] = e.target.value;
+  }
+
+  get copy() {
+    return new Item(this.collection, toJS(this));
   }
 }

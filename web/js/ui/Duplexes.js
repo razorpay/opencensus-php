@@ -12,7 +12,7 @@ const animObj = {
 export default class Duplexes extends Component {
   render() {
     let { fields, model } = this.props;
-    let { pending, items } = model;
+    let { pending, items, props } = model;
 
     pending = pending.fetch;
 
@@ -22,19 +22,20 @@ export default class Duplexes extends Component {
           (items.length && (
             <div class="table-container">
               <div class="table-striped">
-                {(model.props.id && (
-                  <TransitionGroup>
-                    {items.map(m => (
-                      <CSSTransition
-                        key={m.props.id || 'last'}
-                        classNames="row"
-                        timeout={animObj}
-                      >
-                        <Row fields={fields} item={m} />
-                      </CSSTransition>
-                    ))}
-                  </TransitionGroup>
-                )) ||
+                {(props &&
+                  props.id && (
+                    <TransitionGroup>
+                      {items.map(m => (
+                        <CSSTransition
+                          key={m.id || 'last'}
+                          classNames="row"
+                          timeout={animObj}
+                        >
+                          <Row fields={fields} item={m} />
+                        </CSSTransition>
+                      ))}
+                    </TransitionGroup>
+                  )) ||
                   items.map((m, i) => <Row key={i} fields={fields} item={m} />)}
               </div>
             </div>

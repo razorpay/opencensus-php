@@ -32,11 +32,11 @@ export default class Collection extends BaseModel {
 
   fetch() {
     return this.request(
+      'fetch',
       this.fetchFn({
         ...this.data,
         query_params: this.filters,
-      }),
-      'fetch'
+      })
     ).then(data => {
       if (data) {
         let Model = this.model;
