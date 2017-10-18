@@ -156,15 +156,7 @@ class MerchantCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
-        $user = $this->fixtures->create('user');
-
-        $mappingData = [
-            'user_id'     => $user['id'],
-            'merchant_id' => '10000000000000',
-            'role'        => 'owner',
-        ];
-
-        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
 
         $this->ba->proxyAuth();
 
@@ -182,19 +174,42 @@ class MerchantCreateTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
         $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
         $this->startTest();
     }
 
+    private function createUserMerchantMapping($merchantId, $role)
+    {
+        $user = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantId,
+            'role'        => $role,
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        return $user;
+
+    }
     public function testCreateSubMerchantWithDuplicateEmail()
     {
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
         // Just to check email collisions are still errors
         $this->fixtures->create('merchant', ['id' => '10000000000002', 'email' => 'test2@razorpay.com']);
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
         $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
         $this->startTest();
     }
