@@ -7,10 +7,27 @@ class ResponseFields
     const MESSAGE                = 'msg';
     const RESPONSE               = 'resp';
     const API_RESPONSE           = 'apiResp';
+
+    /**
+     * Razorpay Payment ID
+     */
     const PSP_REFERENCE_NO       = 'pspRefNo';
+
+    /**
+     * Unique UPI Transaction Reference number - mapped to Gateway Payment ID
+     */
     const UPI_TRANS_REFERENCE_NO = 'upiTransRefNo';
+
+    /**
+     * Unique number assigned by NPCI - mapped to NPCI Reference ID
+     */
     const NPCI_TRANSACTION_ID    = 'npciTransId';
+
+    /**
+     * RRN Number, which is unique in the UPI platform - mapped to Customer Reference ID
+     */
     const CUSTOMER_REFERENCE_NO  = 'custRefNo';
+
     const AMOUNT                 = 'amount';
     const TRANSACTION_AUTH_DATE  = 'txnAuthDate';
     const STATUS                 = 'status';

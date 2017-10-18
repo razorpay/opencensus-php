@@ -5,7 +5,12 @@ namespace RZP\Gateway\Upi\Sbi;
 class RequestFields
 {
     const PG_MERCHANT_ID    = 'pgMerchantId';
+
+    /**
+     * Razorpay Payment ID
+     */
     const PSP_REFERENCE_NO  = 'pspRefNo';
+
     const TRANSACTION_NOTE  = 'transactionNote';
     const REQUEST_INFO      = 'requestInfo';
     const PAYER_TYPE        = 'payerType';

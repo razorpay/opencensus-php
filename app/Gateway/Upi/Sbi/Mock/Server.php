@@ -90,7 +90,7 @@ class Server extends Base\Mock\Server
             ResponseFields::PSP_REFERENCE_NO       => $pspRefNo,
             ResponseFields::UPI_TRANS_REFERENCE_NO => $upiEntity[Entity::GATEWAY_PAYMENT_ID],
             ResponseFields::NPCI_TRANSACTION_ID    => $upiEntity[Entity::NPCI_REFERENCE_ID],
-            ResponseFields::CUSTOMER_REFERENCE_NO  => 3434343, // TODO: Double check this
+            ResponseFields::CUSTOMER_REFERENCE_NO  => $upiEntity[Entity::CUSTOMER_REFERENCE_ID],
             ResponseFields::AMOUNT                 => $payment[Payment\Entity::AMOUNT],
             ResponseFields::TRANSACTION_AUTH_DATE  => Carbon::now(Timezone::IST)->toDateTimeString(),
             ResponseFields::STATUS                 => 'S',

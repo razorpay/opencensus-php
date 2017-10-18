@@ -36,6 +36,7 @@ class Gateway extends Base\Gateway
 
         // Mapping response fields to entity variables
         ResponseFields::NPCI_TRANSACTION_ID    => Base\Entity::NPCI_REFERENCE_ID,
+        ResponseFields::CUSTOMER_REFERENCE_NO  => Base\Entity::CUSTOMER_REFERENCE_ID,
         ResponseFields::UPI_TRANS_REFERENCE_NO => Base\Entity::GATEWAY_PAYMENT_ID,
         ResponseFields::STATUS                 => Base\Entity::STATUS_CODE,
     ];
@@ -76,7 +77,12 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    // Handles S2S callback
+    /**
+     * Handles S2S callback flow
+     *
+     * @param array $input
+     * @return array
+     */
     public function callback(array $input)
     {
         parent::callback($input);
@@ -160,6 +166,13 @@ class Gateway extends Base\Gateway
         return $this->getAesCrypto()->encryptString($json);
     }
 
+    public function decrypt(string $encryptedResponse)
+    {
+        $decryptedString = $this->getAesCrypto()->decryptString($encryptedResponse);
+
+        return json_decode($decryptedString, true);
+    }
+
     public function getAesCrypto()
     {
         return (new Crypto(AES::MODE_ECB, $this->getSecret()));
@@ -176,9 +189,7 @@ class Gateway extends Base\Gateway
 
         $encryptedResponse = json_decode($body, true)[ResponseFields::RESPONSE];
 
-        $decryptedString = $this->getAesCrypto()->decryptString($encryptedResponse);
-
-        $response = json_decode($decryptedString, true);
+        $response = $this->decrypt($encryptedResponse);
 
         $this->trace->info(TraceCode::GATEWAY_RESPONSE,
             [
