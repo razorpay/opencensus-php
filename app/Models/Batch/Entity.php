@@ -91,8 +91,8 @@ class Entity extends Base\PublicEntity
         self::PROCESSING          => 0,
         self::DOWNLOAD_FILE_URL   => null,
         self::TOTAL_COUNT         => 0,
-        self::SUCCESS_COUNT       => null,
-        self::FAILURE_COUNT       => null,
+        self::SUCCESS_COUNT       => 0,
+        self::FAILURE_COUNT       => 0,
         self::AMOUNT              => null,
         self::PROCESSED_AMOUNT    => 0,
         self::GATEWAY             => null,
@@ -204,6 +204,11 @@ class Entity extends Base\PublicEntity
     public function isProcessable(): bool
     {
         return (($this->isProcessed() === false) and ($this->isProcessing() === false));
+    }
+
+    public function getSuccessCount()
+    {
+        return $this->getAttribute(self::SUCCESS_COUNT);
     }
 
     public function getFailureCount()

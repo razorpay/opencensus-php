@@ -364,11 +364,20 @@ class Base extends BaseModel\Core
         // mark it as partially_processed or processed depending on the type of
         // the file.
         //
-        if (($this->batch->getTotalCount() > 0) and ($this->batch->getFailureCount() > 0))
+        if ($this->batch->getTotalCount() > 0)
         {
-            $status = ($this->shouldMarkProcessedOnFailures() === true) ?
-                        Status::PROCESSED :
-                        Status::PARTIALLY_PROCESSED;
+            //
+            // If the number of failures are greater than zero or
+            // if the number of successes and failures are zero., i.e although rows
+            // were present in the file, none were processed
+            //
+            if (($this->batch->getFailureCount() > 0) or
+                (($this->batch->getSuccessCount() === 0) and ($this->batch->getFailureCount() === 0)))
+            {
+                $status = ($this->shouldMarkProcessedOnFailures() === true) ?
+                            Status::PROCESSED :
+                            Status::PARTIALLY_PROCESSED;
+            }
         }
 
         //
