@@ -28,6 +28,13 @@ class ResponseFields
      */
     const CUSTOMER_REFERENCE_NO  = 'custRefNo';
 
+    /**
+     * Transaction approval number - core bank reference number
+     * TODO: Is this used for anything?
+     */
+    const APPROVAL_NUMBER        = 'approvalNumber';
+
+    const RESPONSE_CODE          = 'responseCode';
     const AMOUNT                 = 'amount';
     const TRANSACTION_AUTH_DATE  = 'txnAuthDate';
     const STATUS                 = 'status';

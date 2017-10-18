@@ -119,6 +119,16 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::CUSTOMER_REFERENCE_ID);
     }
 
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getVpa()
+    {
+        return $this->getAttribute(self::VPA);
+    }
+
     public function getRefundId()
     {
         return $this->getAttribute(self::REFUND_ID);

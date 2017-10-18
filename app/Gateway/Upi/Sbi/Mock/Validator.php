@@ -39,4 +39,18 @@ class Validator extends Base\Validator
         RequestFields::PG_MERCHANT_ID   => 'required|string',
         RequestFields::PSP_REFERENCE_NO => 'required|string|size:14'
     ];
+
+    protected static $verifyRules = [
+        RequestFields::REQUEST_INFO          => 'required|array',
+        RequestFields::CUSTOMER_REFERENCE_NO => 'required|string',
+    ];
+
+    /**
+     * @var array Validates request info key in verify request
+     * TODO: Re-use code above?
+     */
+    protected static $verifyRequestInfoRules = [
+        RequestFields::PG_MERCHANT_ID   => 'required|string',
+        RequestFields::PSP_REFERENCE_NO => 'required|string|size:14'
+    ];
 }

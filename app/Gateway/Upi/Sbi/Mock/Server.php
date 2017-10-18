@@ -3,9 +3,9 @@
 namespace RZP\Gateway\Upi\Sbi\Mock;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Sbi\RequestFields;
 use RZP\Gateway\Upi\Sbi\ResponseFields;
@@ -16,12 +16,16 @@ class Server extends Base\Mock\Server
 
     protected $ns;
 
+    protected $repo;
+
     public function __construct()
     {
         parent::__construct();
 
         // TODO: Verify this
         $this->ns = $this->ns ?? __NAMESPACE__;
+
+        $this->repo = $this->app['repo']->upi;
     }
 
     public function authorize($input)
@@ -62,6 +66,30 @@ class Server extends Base\Mock\Server
         ];
     }
 
+    public function verify($input)
+    {
+        parent::verify($input);
+
+        $input = $this->decrypt($input);
+
+        $this->validateActionInput($input, 'verify');
+
+        $this->validateActionInput($input[RequestFields::REQUEST_INFO], 'verify_request_info');
+
+        // TODO: Ensure that this is correct
+        $content = $this->getVerifyResponseContent($input);
+
+        $this->content($content, 'verify');
+
+        // TODO: Double check this
+        $content = [
+            ResponseFields::RESPONSE       => $this->encrypt($content),
+            ResponseFields::PG_MERCHANT_ID => $this->getGatewayInstance()->getMerchantId()
+        ];
+
+        return $this->makeResponse($content);
+    }
+
     protected function encrypt(array $response)
     {
         $aes = $this->getGatewayInstance()->getAesCrypto();
@@ -82,6 +110,31 @@ class Server extends Base\Mock\Server
         return json_decode($decryptedString, true);
     }
 
+    protected function getVerifyResponseContent(array $input)
+    {
+        $paymentId = $input[RequestFields::REQUEST_INFO][RequestFields::PSP_REFERENCE_NO];
+
+        $gatewayPayment = $this->repo->findByPaymentId($paymentId)->first();
+
+        $response = [
+            ResponseFields::PSP_REFERENCE_NO       => $paymentId,
+            ResponseFields::UPI_TRANS_REFERENCE_NO => $gatewayPayment->getGatewayPaymentId(),
+            ResponseFields::NPCI_TRANSACTION_ID    => $gatewayPayment->getNpciReferenceId(),
+            ResponseFields::CUSTOMER_REFERENCE_NO  => $gatewayPayment->getCustomerReferenceId(),
+            ResponseFields::AMOUNT                 => $gatewayPayment->getAmount(),
+            ResponseFields::TRANSACTION_AUTH_DATE  => Carbon::now(Timezone::IST)->toDateTimeString(),
+            ResponseFields::RESPONSE_CODE          => '00',
+            ResponseFields::APPROVAL_NUMBER        => uniqid(),
+            ResponseFields::STATUS                 => 'S',
+            ResponseFields::STATUS_DESCRIPTION     => 'Payment Successful',
+            ResponseFields::ADDITIONAL_INFO        => [],
+            ResponseFields::PAYER_VPA              => $gatewayPayment->getVpa(),
+            ResponseFields::PAYEE_VPA              => self::DEFAULT_PAYEE_VPA,
+        ];
+
+        return [ResponseFields::API_RESPONSE => $response];
+    }
+
     protected function getAsyncCallbackResponseArray(array $upiEntity, array $payment)
     {
         $pspRefNo = Payment\Entity::stripDefaultSign($payment[Payment\Entity::ID]);
@@ -93,6 +146,8 @@ class Server extends Base\Mock\Server
             ResponseFields::CUSTOMER_REFERENCE_NO  => $upiEntity[Entity::CUSTOMER_REFERENCE_ID],
             ResponseFields::AMOUNT                 => $payment[Payment\Entity::AMOUNT],
             ResponseFields::TRANSACTION_AUTH_DATE  => Carbon::now(Timezone::IST)->toDateTimeString(),
+            ResponseFields::RESPONSE_CODE          => '00',
+            ResponseFields::APPROVAL_NUMBER        => uniqid(),
             ResponseFields::STATUS                 => 'S',
             ResponseFields::STATUS_DESCRIPTION     => 'Payment Successful',
             ResponseFields::ADDITIONAL_INFO        => [],

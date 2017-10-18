@@ -3,14 +3,18 @@
 namespace RZP\Gateway\Upi\Sbi;
 
 use App;
+use RZP\Models\Payment;
 use RZP\Constants\Mode;
-use RZP\Gateway\Base\Action;
 use RZP\Trace\TraceCode;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Entity;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Exception\GatewayErrorException;
+use RZP\Constants\Entity as ConstantsEntity;
 
 class Gateway extends Base\Gateway
 {
@@ -18,7 +22,7 @@ class Gateway extends Base\Gateway
 
     const ACQUIRER = 'sbi';
 
-    protected $gateway = 'upi_sbi';
+    protected $gateway = Payment\Gateway::UPI_SBI;
 
     const BANK = 'sbi';
 
@@ -72,7 +76,7 @@ class Gateway extends Base\Gateway
 
         return [
             'data'   => [
-                'vpa'   => $vpa
+                Payment\Entity::VPA => $vpa
             ]
         ];
     }
@@ -101,6 +105,131 @@ class Gateway extends Base\Gateway
         return [];
     }
 
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function sendPaymentVerifyRequest(Verify $verify)
+    {
+        $request = $this->getPaymentVerifyRequestArray($verify);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $verify->verifyResponseBody = $response->body;
+
+        $verify->verifyResponseContent = $this->parseGatewayResponse($response->body);
+    }
+
+    protected function verifyPayment(Verify $verify)
+    {
+        $content = $verify->verifyResponseContent;
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'content' => $content,
+                'gateway' => $this->gateway,
+            ]);
+
+        $this->setVerifyStatus($verify);
+
+        // TODO: Is this needed?
+        // $this->saveVerifyContentIfNeeded($verify);
+    }
+
+    /**
+     * @param Verify $verify
+     * @return array
+     */
+    protected function getPaymentVerifyRequestArray(Verify $verify)
+    {
+        $input = $verify->input;
+
+        $requestInfo = [
+            RequestFields::PG_MERCHANT_ID   => $this->getMerchantId(),
+            RequestFields::PSP_REFERENCE_NO => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
+        ];
+
+        $request = [
+            RequestFields::REQUEST_INFO          => $requestInfo,
+            RequestFields::CUSTOMER_REFERENCE_NO => $verify->payment->getCustomerReferenceID(),
+        ];
+
+        $requestMsg = $this->encrypt($request);
+
+        $json = [
+            RequestFields::REQUEST_MESSAGE => $requestMsg,
+            RequestFields::PG_MERCHANT_ID  => $this->getMerchantId(),
+        ];
+
+        $content = json_encode($json);
+
+        return $this->getStandardRequestArray($content);
+    }
+
+    protected function setVerifyStatus(Verify $verify)
+    {
+        $status = VerifyResult::STATUS_MATCH;
+
+        $this->setApiSuccess($verify);
+
+        $this->setGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->status = $status;
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH);
+    }
+
+    protected function setApiSuccess(Verify $verify)
+    {
+        $verify->apiSuccess = true;
+
+        $input = $verify->input;
+
+        // If payment status is either failed or created,
+        // this is an api failure
+        if (($input[ConstantsEntity::PAYMENT][Payment\Entity::STATUS] === Payment\Status::FAILED) or
+            ($input[ConstantsEntity::PAYMENT][Payment\Entity::STATUS] === Payment\Status::CREATED))
+        {
+            $verify->apiSuccess = false;
+        }
+    }
+
+    protected function setGatewaySuccess(Verify $verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $content = $verify->verifyResponseContent;
+
+        // TODO: Ensure this is correct
+        try
+        {
+            //
+            // If Response status checking passes, we set gateway success to true
+            //
+            $this->checkResponseStatus($content[ResponseFields::API_RESPONSE]);
+
+            $verify->gatewaySuccess = true;
+        }
+        catch (\Exception $e)
+        {
+            //
+            // If an exception is thrown in checkResponseStatus, we leave $verify->gatewaySuccess = false
+            //
+            return;
+        }
+    }
+
     // TODO: Validate VPA before sending collect request and don't create payment entity if VPA is invalid
 
     protected function checkResponseStatus(array $response)
@@ -112,6 +241,15 @@ class Gateway extends Base\Gateway
             $errorCode = Status::getErrorCode($status);
 
             $errorMessage = Status::getMessage($status);
+
+            $this->trace->info(
+                TraceCode::GATEWAY_RESPONSE_STATUS_FAILURE,
+                [
+                    'status'       => $status,
+                    'errorCode'    => $errorCode,
+                    'errorMessage' => $errorMessage,
+                    'gateway'      => $this->gateway
+                ]);
 
             throw new GatewayErrorException($errorCode, $status, $errorMessage);
         }
@@ -158,7 +296,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    public function encrypt(array $content)
+    public function encrypt(array $content): string
     {
         $json = json_encode($content);
 
@@ -166,7 +304,7 @@ class Gateway extends Base\Gateway
         return $this->getAesCrypto()->encryptString($json);
     }
 
-    public function decrypt(string $encryptedResponse)
+    public function decrypt(string $encryptedResponse): array
     {
         $decryptedString = $this->getAesCrypto()->decryptString($encryptedResponse);
 
@@ -178,7 +316,7 @@ class Gateway extends Base\Gateway
         return (new Crypto(AES::MODE_ECB, $this->getSecret()));
     }
 
-    protected function parseGatewayResponse(string $body)
+    protected function parseGatewayResponse(string $body): array
     {
         $this->trace->info(TraceCode::GATEWAY_RESPONSE,
             [
@@ -216,7 +354,7 @@ class Gateway extends Base\Gateway
      * @param array $input
      * @return array
      */
-    protected function getGatewayEntityAttributes(array $input)
+    protected function getGatewayEntityAttributes(array $input): array
     {
         $attributes = [
             Base\Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
@@ -239,7 +377,7 @@ class Gateway extends Base\Gateway
         $upiEntity->saveOrFail();
     }
 
-    protected function formatAmount(array $input)
+    protected function formatAmount(array $input): string
     {
         return number_format($input['payment']['amount'] / 100, '2', '.', '');
     }

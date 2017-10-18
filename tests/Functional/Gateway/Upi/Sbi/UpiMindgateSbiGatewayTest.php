@@ -43,6 +43,11 @@ class UpiMindgateSbiGatewayTest extends TestCase
         $this->payment = $this->getDefaultUpiPaymentArray();
     }
 
+    /**
+     * Tests the flow where the customer is sent the collect request from the razorpay sbi vpa.
+     * User then accepts the collect request, and a asynchronous callback is sent to API.
+     * We assert the entity is being updated correctly in this flow
+     */
     public function testPayment()
     {
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
@@ -77,6 +82,30 @@ class UpiMindgateSbiGatewayTest extends TestCase
         // Add a capture as well, just for completeness sake
         $this->capturePayment($paymentId, $payment[Payment\Entity::AMOUNT]);
     }
+
+    /**
+     * This verifies the transaction status after a payment has been successfully made.
+     */
+    public function testPaymentVerify()
+    {
+        $this->testPayment();
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        // TODO: Add more assertions
+
+        $this->assertEquals(true, $verify['gateway']['apiSuccess']);
+        $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals($verify[Entity::PAYMENT][Payment\Entity::ID], $payment[Payment\Entity::ID]);
+        $this->assertEquals(1, $payment[Payment\Entity::VERIFIED]);
+    }
+
+    // TODO: Test case for when we verify a payment without getting async callback response
 
     protected function checkPaymentStatus(string $id, string $status)
     {
