@@ -293,6 +293,8 @@ class Service extends Base\Service
                     Merchant\Detail\Entity::PENDING);
             }
 
+            $this->auth;
+
             (new Core)->notifyFeatureOnboardingFormSubmitOnSlack($feature);
         }
         catch (\Throwable $exception)
