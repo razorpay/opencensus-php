@@ -25,6 +25,7 @@ class Entity extends Base\PublicEntity
     const CARD                      = 'card';
     const BANK                      = 'bank';
     const WALLET                    = 'wallet';
+    const ACCOUNT_NUMBER            = 'account_number';
     const GATEWAY_TOKEN             = 'gateway_token';
     const GATEWAY_TOKEN2            = 'gateway_token2';
     const RECURRING                 = 'recurring';
@@ -64,6 +65,7 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::WALLET,
         self::METHOD,
+        self::ACCOUNT_NUMBER,
         self::TOKEN,
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
@@ -77,6 +79,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::BANK,
         self::WALLET,
+        self::ACCOUNT_NUMBER,
         self::TOKEN,
         self::METHOD,
         self::CARD_ID,
@@ -115,6 +118,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::WALLET                    => null,
+        self::ACCOUNT_NUMBER            => null,
         self::BANK                      => null,
         self::CARD_ID                   => null,
         self::GATEWAY_TOKEN2            => null,
@@ -181,6 +185,11 @@ class Entity extends Base\PublicEntity
     public function getWallet()
     {
         return $this->getAttribute(self::WALLET);
+    }
+
+    public function getAccountNumber()
+    {
+        return $this->getAttribute(self::ACCOUNT_NUMBER);
     }
 
     public function getToken()

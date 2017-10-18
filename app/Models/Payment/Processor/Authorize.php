@@ -1805,12 +1805,12 @@ trait Authorize
             $savedLocalCard = $payment->card;
 
             // save local saved card for local customer
-            $token = $this->savePaymentMethod($customer, $payment, $savedLocalCard->getId());
+            $token = $this->savePaymentMethod($customer, $payment, $savedLocalCard->getId(), $input);
         }
         else if ($payment->isNetbanking() === true)
         {
             // save netbanking bank locally for local customer
-            $token = $this->savePaymentMethod($customer, $payment);
+            $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
 
         if ($token !== null)
@@ -1842,12 +1842,12 @@ trait Authorize
             $this->repo->saveOrFail($payment->card);
 
             // save global saved card for global customer
-            $token = $this->savePaymentMethod($customer, $payment, $savedGlobalCard->getId());
+            $token = $this->savePaymentMethod($customer, $payment, $savedGlobalCard->getId(), $input);
         }
         else if ($payment->isNetbanking() === true)
         {
             // save netbanking bank token globally for global customer
-            $token = $this->savePaymentMethod($customer, $payment);
+            $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
 
         if ($token !== null)
@@ -1857,17 +1857,18 @@ trait Authorize
     }
 
     protected function savePaymentMethod(
-        Customer\Entity $customer, Payment\Entity $payment, $savedCardId = null): Token\Entity
+        Customer\Entity $customer, Payment\Entity $payment, $savedCardId = null, array $input = []): Token\Entity
     {
         $this->trace->info(
             TraceCode::PAYMENT_SAVE_METHOD,
             [
-                'method'      => $payment->getMethod(),
-                'payment_id'  => $payment->getId(),
-                'merchant_id' => $payment->merchant->getId(),
-                'customer_id' => $customer->getId(),
-                'local'       => $customer->isLocal(),
-                'card_id'     => $savedCardId
+                'method'            => $payment->getMethod(),
+                'payment_id'        => $payment->getId(),
+                'merchant_id'       => $payment->merchant->getId(),
+                'customer_id'       => $customer->getId(),
+                'local'             => $customer->isLocal(),
+                'card_id'           => $savedCardId,
+                'account_number'    => $input[Token\Entity::ACCOUNT_NUMBER] ?? null,
             ]);
 
         $saveMethodInput = [
@@ -1880,12 +1881,14 @@ trait Authorize
 
             $saveMethodInput[Token\Entity::CARD_ID] = $savedCardId;
         }
-        else if ($payment->isMethod(Payment\Method::NETBANKING))
+        else if ($payment->isNetbanking() === true)
         {
             $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
 
             // TODO: We need to get this from user input - hard coding for now
             $saveMethodInput[Token\Entity::MAX_AMOUNT] = Token\Entity::DEFAULT_MAX_AMOUNT;
+
+            $saveMethodInput[Token\Entity::ACCOUNT_NUMBER] = $input[Token\Entity::ACCOUNT_NUMBER] ?? null;
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
@@ -2190,7 +2193,7 @@ trait Authorize
         }
         else if ($payment->isNetbanking() === true)
         {
-            $this->updateTokenOnAuthorizedForNetbankingRecurring($token, $data);
+            $this->updateTokenOnAuthorizedForNetbankingRecurring($token, $data, $payment);
         }
 
         //
@@ -2224,10 +2227,12 @@ trait Authorize
      * Gateway Tokens purpose was to handle multiple terminals
      * for same token only.
      *
-     * @param Token\Entity $token
-     * @param array        $gatewayData
+     * @param Token\Entity      $token
+     * @param array             $gatewayData
+     * @param Payment\Entity    $payment
      */
-    protected function updateTokenOnAuthorizedForNetbankingRecurring(Token\Entity $token, array $gatewayData)
+    protected function updateTokenOnAuthorizedForNetbankingRecurring(
+        Token\Entity $token, array $gatewayData, Payment\Entity $payment)
     {
         //
         // This should trace a critical error because this method is called

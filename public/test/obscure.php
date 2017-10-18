@@ -187,6 +187,10 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td colspan='40'>VPA:</td>
         <td><input type="text" name="vpa" size="25" value="nemomobile@imobile"></td>
     </tr>
+    <td colspan='40'>Account Number:</td>
+        <td><input type="text" name="account_number" size="25"></td>
+    </tr>
+    <tr>
     <tr>
         <td colspan='40'>Token:</td>
         <td><input type="text" name="token" size="25" value=""></td>
