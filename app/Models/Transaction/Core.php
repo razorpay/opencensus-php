@@ -750,17 +750,24 @@ class Core extends Base\Core
 
     /**
      * Create transaction and update balances for a reversal
+     * with entity=`transfer`
      *
      * @param  Reversal\Entity   $reversal
      * @return Entity
      */
-    public function createFromReversal($reversal)
+    public function createFromTransferReversal(Reversal\Entity $reversal)
     {
         $txn = new Transaction\Entity;
 
         $amount = $reversal->getAmount();
 
-        $nowTimestamp = time();
+        //
+        // By default, set settled_at for reversals to tomorrow midnight
+        // to let them be picked up for settlements the next day
+        //
+        $settleTimestamp = Carbon::tomorrow(Timezone::IST)->getTimestamp();
+
+        $transfer = $reversal->entity;
 
         $data = [
             Transaction\Entity::DEBIT         => 0,
@@ -768,9 +775,9 @@ class Core extends Base\Core
             Transaction\Entity::CURRENCY      => Currency\Currency::INR,
             Transaction\Entity::GATEWAY_FEE   => 0,
             Transaction\Entity::API_FEE       => 0,
-            Transaction\Entity::RECONCILED_AT => $nowTimestamp,
+            Transaction\Entity::RECONCILED_AT => $settleTimestamp,
             Transaction\Entity::SETTLED       => 0,
-            Transaction\Entity::SETTLED_AT    => $nowTimestamp,
+            Transaction\Entity::SETTLED_AT    => $settleTimestamp,
             Transaction\Entity::FEE           => 0,
             Transaction\Entity::SERVICE_TAX   => 0,
             Transaction\Entity::TAX           => 0,
