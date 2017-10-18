@@ -30,7 +30,7 @@ class ResponseFields
 
     /**
      * Transaction approval number - core bank reference number
-     * TODO: Is this used for anything?
+     * TODO: Is this used for anything? Do we need to save this?
      */
     const APPROVAL_NUMBER        = 'approvalNumber';
 

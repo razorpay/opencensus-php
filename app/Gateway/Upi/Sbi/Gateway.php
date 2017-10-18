@@ -45,9 +45,18 @@ class Gateway extends Base\Gateway
         ResponseFields::STATUS                 => Base\Entity::STATUS_CODE,
     ];
 
+    // TODO: Ensure that request / response traced in encrypted and decrypted format
+    // TODO: Ensure payment id present in all traces
+
     public function __construct()
     {
         parent::__construct();
+
+        //
+        // When this class is instantiated during the async callback flow via test cases,
+        // $this->mode is not set, and is therefore null. But we need mode to be set
+        // to be able to get the test secret for decryption. Setting $this->mode below.
+        //
 
         $mode = $this->app['rzp.mode'];
 
@@ -132,8 +141,9 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
-                'content' => $content,
-                'gateway' => $this->gateway,
+                'content'    => $content,
+                'gateway'    => $this->gateway,
+                'payment_id' => $verify->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
             ]);
 
         $this->setVerifyStatus($verify);
@@ -146,7 +156,7 @@ class Gateway extends Base\Gateway
      * @param Verify $verify
      * @return array
      */
-    protected function getPaymentVerifyRequestArray(Verify $verify)
+    protected function getPaymentVerifyRequestArray(Verify $verify): array
     {
         $input = $verify->input;
 
@@ -232,6 +242,10 @@ class Gateway extends Base\Gateway
 
     // TODO: Validate VPA before sending collect request and don't create payment entity if VPA is invalid
 
+    /**
+     * @param array $response
+     * @throws GatewayErrorException
+     */
     protected function checkResponseStatus(array $response)
     {
         $status = $response[ResponseFields::STATUS];
@@ -265,20 +279,20 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT           => $this->formatAmount($input),
             RequestFields::EXPIRY_TIME      => Constants::EXPIRY_TIME,
             RequestFields::PAYER_TYPE       => [
-                RequestFields::VIRTUAL_ADDRESS => $input['payment']['vpa'],
+                RequestFields::VIRTUAL_ADDRESS => $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
             ],
             RequestFields::REQUEST_INFO     => [
                 RequestFields::PG_MERCHANT_ID   => $this->getMerchantId(),
-                RequestFields::PSP_REFERENCE_NO => $input['payment']['id'],
+                RequestFields::PSP_REFERENCE_NO => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
             ],
-            RequestFields::TRANSACTION_NOTE => Constants::TRANSACTION_NOTE . $input['payment']['vpa'],
+            RequestFields::TRANSACTION_NOTE => Constants::TRANSACTION_NOTE . $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
         ];
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
                 'gateway'    => $this->gateway,
-                'payment_id' => $input['payment']['id'],
+                'payment_id' => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
                 'content'    => $content
             ]);
 
@@ -358,7 +372,7 @@ class Gateway extends Base\Gateway
     {
         $attributes = [
             Base\Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
-            Base\Entity::VPA                 => $input['payment']['vpa'],
+            Base\Entity::VPA                 => $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
             Base\Entity::ACTION              => $this->action,
         ];
 
@@ -379,7 +393,7 @@ class Gateway extends Base\Gateway
 
     protected function formatAmount(array $input): string
     {
-        return number_format($input['payment']['amount'] / 100, '2', '.', '');
+        return number_format($input[ConstantsEntity::PAYMENT][Payment\Entity::AMOUNT] / 100, '2', '.', '');
     }
 
     public function getMerchantId()
