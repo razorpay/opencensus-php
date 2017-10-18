@@ -122,7 +122,7 @@ trait EmandateTrait
         $this->repo->saveOrFail($gatewayEntity);
 
         // We check the status of the payment, and not the SI registration here
-        $this->checkEmandatePaymentResponseStatus($content);
+        $this->checkEmandatePaymentResponseStatus($content, $input);
 
         return $gatewayEntity;
     }
@@ -136,19 +136,23 @@ trait EmandateTrait
             Netbanking\Entity::REFERENCE1      => $content[ResponseFields::MANDATE_NUMBER],
 
             // SI registration specific callback attributes
-            Netbanking\Entity::SI_TOKEN        => $content[ResponseFields::CUSTOMER_REF_NO], // TODO: Confirm this
-            Netbanking\Entity::SI_STATUS       => $content[ResponseFields::STATUS_CODE], // TODO: Confirm this
+            Netbanking\Entity::SI_TOKEN        => $content[ResponseFields::CUSTOMER_REF_NO],
+            Netbanking\Entity::SI_STATUS       => $content[ResponseFields::STATUS_CODE],
             Netbanking\Entity::SI_MSG          => $content[ResponseFields::REMARKS],
         ];
     }
 
-    protected function checkEmandatePaymentResponseStatus(array $content)
+    protected function checkEmandatePaymentResponseStatus(array $content, array $input)
     {
         if (StatusCode::isStatusCodeSuccess($content[ResponseFields::STATUS_CODE]) !== true)
         {
             $this->trace->error(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
-                ['content' => $content]
+                [
+                    'content'    => $content,
+                    'payment_id' => $input['payment'][ Payment\Entity::ID ],
+                    'gateway'    => $this->gateway,
+                ]
             );
 
             throw new GatewayErrorException(
@@ -210,16 +214,6 @@ trait EmandateTrait
         );
 
         return $content;
-    }
-
-    protected function isEmandateGatewaySuccess(array $data)
-    {
-        if ($data[ResponseFields::STATUS_CODE] === StatusCode::SUCCESS)
-        {
-            return true;
-        }
-
-        return false;
     }
     //---------------Verify request helpers end-----------------------
 

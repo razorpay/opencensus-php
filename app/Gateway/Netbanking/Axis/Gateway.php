@@ -217,7 +217,7 @@ class Gateway extends Base\Gateway
 
         if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
         {
-            if ($this->isEmandateGatewaySuccess($response))
+            if (Emandate\StatusCode::isStatusCodeSuccess($response[Emandate\ResponseFields::STATUS_CODE]))
             {
                 $verify->gatewaySuccess = true;
             }
