@@ -216,9 +216,13 @@ class MerchantCreateTest extends TestCase
 
     public function testCreateMarketplaceLinkedAccount()
     {
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
         $this->startTest();
     }

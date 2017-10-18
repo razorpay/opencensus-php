@@ -225,9 +225,10 @@ return [
             'url' => '/submerchants',
             'method' => 'POST',
             'content' => [
-                'id'    => '7gcKngYfqyDMjN',
-                'name'  => 'Linked Account 2',
-                'email' => 'linkedaccount@razorpay.com'
+                'id'      => '7gcKngYfqyDMjN',
+                'name'    => 'Linked Account 2',
+                'email'   => 'linkedaccount@razorpay.com',
+                'account' => true,
             ],
         ],
         'response' => [
