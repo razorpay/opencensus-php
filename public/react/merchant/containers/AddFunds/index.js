@@ -9,6 +9,7 @@ import { required } from 'rzp/utils/validators';
 import * as AddFundsActions from 'merchant/modules/addfunds';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
+import { rupeesToPaise } from 'rzp/utils/rzp-utils';
 
 @connect(state => state.session, {
   ...AddFundsActions,
@@ -88,7 +89,7 @@ export default class AddFundsContainer extends Component {
 
   openCheckout = fieldProps => {
     let user = this.props.user;
-    let amountInPaise = Number(fieldProps.amountInINR) * 100;
+    let amountInPaise = rupeesToPaise(fieldProps.amountInINR);
     let options = {
       key: this.key,
       amount: amountInPaise,
@@ -152,8 +153,9 @@ export default class AddFundsContainer extends Component {
             .
           </p>
 
-          {this.props.mode === 'test' &&
-            <p>Since you are in test mode, this will be a test payment.</p>}
+          {this.props.mode === 'test' && (
+            <p>Since you are in test mode, this will be a test payment.</p>
+          )}
 
           <form style={{ marginTop: '30px' }}>
             <div class="form-group">
