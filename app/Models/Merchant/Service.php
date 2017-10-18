@@ -192,10 +192,10 @@ class Service extends Base\Service
                 $parent = $this->repo->merchant->find($parentId);
 
                 if (($parent !== null) and
-                    strtolower($merchant->getEmail()) == strtolower($parent->getEmail()))
+                    strtolower($merchant->getEmail()) === strtolower($parent->getEmail()))
                 {
                     throw new BadRequestException(ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
-                                                  'email', $input['email']);
+                                                  Merchant\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
                 }
             }
         }
