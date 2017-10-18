@@ -20,6 +20,8 @@ class Core extends Base\Core
     const DEBIT_ADJUSTMENT_DESCRIPTION = 'Debit disputed amount';
     const CREDIT_ADJUSTMENT_DESCRIPTION = 'Credit to reverse a previous dispute debit';
 
+    protected $disputeParent;
+
     /**
      * @param Payment\Entity $payment
      * @param Reason\Entity  $reason
@@ -41,7 +43,7 @@ class Core extends Base\Core
 
         (new Validator)->validatePaymentForDispute($input, $payment);
 
-        $this->checkParentDispute($input);
+        $this->checkAndGetParentDispute($input);
 
         $dispute = (new Entity)->build($input);
 
@@ -90,11 +92,14 @@ class Core extends Base\Core
             array_merge($input, [Entity::ID => $dispute->getId()])
         );
 
-        $this->checkParentDispute($input, $dispute);
+        $this->checkAndGetParentDispute($input, $dispute);
 
         $dispute->edit($input);
 
         $dispute->setAuditAction(Action::EDIT_DISPUTE);
+
+        if ($this->disputeParent !== null)
+            $dispute->parent()->associate($this->disputeParent);
 
         return $this->repo->transaction(function() use ($dispute)
         {
@@ -217,6 +222,9 @@ class Core extends Base\Core
         $dispute->merchant()->associate($merchant);
 
         $dispute->reason()->associate($reason);
+
+        if ($this->disputeParent !== null)
+            $dispute->parent()->associate($this->disputeParent);
     }
 
     protected function handleDisputeClosure(Entity $dispute)
@@ -279,20 +287,26 @@ class Core extends Base\Core
         (new Adjustment\Core)->createDisputeAdjustment($input, $dispute);
     }
 
-    protected function checkParentDispute(array $input, Entity $dispute = null)
+    /**
+     *  Checks if the new parent, if exists, is not same as the old parent
+     *  and is not the parent of any other dispute entity
+     */
+    protected function checkAndGetParentDispute(array $input, Entity $dispute = null)
     {
-        if(isset($input['parent_id']) === true)
+        if(isset($input[Entity::PARENT_ID]) === false)
+            return;
+
+        $validator = new Validator($dispute);
+
+        if($dispute !== null)
         {
-            $validator = new Validator();
-
-            if($dispute !== null)
-            {
-                $validator->validateParentDisputeWithExistingParent($dispute, $input);
-            }
-
-            $disputeParent = $this->repo->dispute->findOrFailPublic($input['parent_id']);
-
-            $validator->validateParentDispute($disputeParent);
+            $validator->validateParentDisputeWithExistingParent($input);
         }
+
+        $disputeParent = $this->repo->dispute->findOrFailPublic($input[Entity::PARENT_ID]);
+
+        $validator->validateParentDispute($disputeParent);
+
+        $this->disputeParent = $disputeParent;
     }
 }

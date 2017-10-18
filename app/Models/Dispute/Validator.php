@@ -84,7 +84,7 @@ class Validator extends Base\Validator
 
     public function validateParentDispute(Entity $disputeParent)
     {
-        if($disputeParent->child !== null)
+        if ($disputeParent->child !== null)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The parent dispute is linked to another dispute entity.',
@@ -92,12 +92,13 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateParentDisputeWithExistingParent(Entity $dispute, array $input)
+    public function validateParentDisputeWithExistingParent(array $input)
     {
-        if(($dispute->isChildDispute() === true) and ($dispute->parent->getId() === $input['parent_id']))
+        if (($this->entity->isChildDispute() === true) and
+            ($this->entity->parent->getId() === $input['parent_id']))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'The dispute is already linked with this parent dispute.',
+                'The predecessor dispute is already linked to this dispute.',
                 Entity::PARENT_ID);
         }
     }

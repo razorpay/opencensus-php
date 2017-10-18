@@ -47,7 +47,6 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::ID,
-        self::PARENT_ID,
         self::AMOUNT,
         self::CURRENCY,
         self::GATEWAY_DISPUTE_ID,
@@ -250,12 +249,12 @@ class Entity extends Base\PublicEntity
 
     public function parent()
     {
-        return $this->belongsTo('RZP\Models\Dispute\Entity', self::PARENT_ID, self::ID);
+        return $this->belongsTo(Entity::class, self::PARENT_ID, self::ID);
     }
 
     public function child()
     {
-        return $this->hasOne('RZP\Models\Dispute\Entity', self::PARENT_ID, self::ID);
+        return $this->hasOne(Entity::class, self::PARENT_ID, self::ID);
     }
 
     public function transaction()

@@ -511,7 +511,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The dispute is already linked with this parent dispute.',
+                    'description' => 'The predecessor dispute is already linked to this dispute.',
                 ],
             ],
             'status_code' => 400,
