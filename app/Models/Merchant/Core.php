@@ -37,8 +37,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::MERCHANT_CREATE,
             [
-                'email'   => $merchant->getEmail(),
-                'id'      => $merchant->getId(),
+                'data' => $input
             ]);
 
         $merchant->setAuditAction(Action::CREATE_MERCHANT);
