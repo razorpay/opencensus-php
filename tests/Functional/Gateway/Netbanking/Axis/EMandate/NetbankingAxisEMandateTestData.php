@@ -17,7 +17,7 @@ return [
     ],
 
     'testPaymentVerify' => [
-        'TYP' => 'M',
+        'TYP' => 'TEST',
         'STC' => '000',
         'RMK' => 'Success',
         'PMD' => 'AIB',

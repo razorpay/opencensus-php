@@ -92,7 +92,7 @@ trait EmandateTrait
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    public function handleEmandateResponse($input, $content)
+    protected function handleEmandateResponse(array $input, array $content)
     {
         $content = $this->getEmandateDecryptedData($content[ResponseFields::DATA]);
 
@@ -212,7 +212,7 @@ trait EmandateTrait
         return $content;
     }
 
-    protected function isEmandateGatewaySuccess($data)
+    protected function isEmandateGatewaySuccess(array $data)
     {
         if ($data[ResponseFields::STATUS_CODE] === StatusCode::SUCCESS)
         {
@@ -242,7 +242,7 @@ trait EmandateTrait
         return $output;
     }
 
-    public function getEncryptor()
+    protected function getEncryptor()
     {
         $aes = new AESCrypto(AES::MODE_ECB, $this->getRecSecret(true));
 
@@ -257,8 +257,6 @@ trait EmandateTrait
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId()
         ];
     }
-
-
 
     protected function getHashOfString($str) : string
     {
@@ -300,8 +298,6 @@ trait EmandateTrait
      */
     protected function getChecksum(array $data) : string
     {
-        $arrayToBeHashed = [];
-
         // Amount is not part of the hash for verify
         if ($this->action === Action::VERIFY)
         {
