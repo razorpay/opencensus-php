@@ -9,8 +9,6 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\Settings\Accessor;
-use Razorpay\Trace\Logger as Trace;
-use Razorpay\Spine\DataTypes\Dictionary;
 
 class Service extends Base\Service
 {
@@ -297,18 +295,17 @@ class Service extends Base\Service
     }
 
     /**
-     * Returns the merchant submissions to the onboarding questions of
-     * one/ all features
-     *
      * @param string|null $feature
      *
-     * @return Dictionary|string
+     * @return array
      */
     public function getOnboardingSubmissions(string $feature = null)
     {
         $settings = Accessor::for($this->merchant, Constants::ONBOARDING);
 
         $settings = ($feature === null) ? $settings->all() : $settings->get($feature);
+
+        $settings = $settings->toArray();
 
         $settings = $this->addFileUrlInResponseIfApplicable($settings);
 
@@ -320,14 +317,12 @@ class Service extends Base\Service
      *
      * @param $settings
      *
-     * @return Dictionary
+     * @return array
      */
-    protected function addFileUrlInResponseIfApplicable($settings): Dictionary
+    protected function addFileUrlInResponseIfApplicable($settings): array
     {
         if (isset($settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT]) === true)
         {
-            $settings = $settings->toArray();
-
             $fileId = $settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT];
 
             $fileUrl = $this->getSignedUrl($fileId, $this->merchant->getId());
