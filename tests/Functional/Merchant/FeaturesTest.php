@@ -402,6 +402,20 @@ class FeaturesTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $fileStoreItems = $this->getEntities('file_store', [], true,  Mode::LIVE);
+
+        $fileStoreData = $fileStoreItems['items'][0];
+
+        $expectedOutput = [
+            'merchant_id'   => '10000000001017',
+            'type'          => 'marketplace.vendor_agreement',
+            'extension'     => 'pdf',
+            'name'          => 'api/10000000001017/marketplace.vendor_agreement',
+            'entity'        => 'file_store',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedOutput, $fileStoreData);
     }
 
     /**
