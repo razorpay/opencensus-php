@@ -3,13 +3,13 @@
 namespace RZP\Models\Schedule\Task;
 
 use Config;
-use Carbon\Carbon;
 
+use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
+use RZP\Exception\LogicException;
 
 class Core extends Base\Core
 {
@@ -116,6 +116,49 @@ class Core extends Base\Core
                                     $method);
 
         return $scheduleTask;
+    }
+
+    /**
+     * Get the next applicable time for a method, based
+     * on the schedule assigned to a merchant
+     *
+     * @param int             $startTime The next applicable time is computed from
+     *                                   this value
+     * @param Merchant\Entity $merchant
+     * @param string|null     $method    Can be a specific method - `card`, `upi`;
+     *                                   else `null` for the generic schedule
+     *
+     * @return int
+     * @throws LogicException
+     */
+    public function getNextApplicableTimeForMerchant(
+        int $startTime,
+        Merchant\Entity $merchant,
+        string $method = null): int
+    {
+        // Fetch the merchant's schedule_task for the method
+        $scheduleTask = $this->getMerchantSettlementSchedule($merchant, $method);
+
+        //
+        // Null check for legacy reasons:
+        // The `getMerchantSettlementSchedule()` should now
+        // return Schedule\Task\Entity always.
+        //
+        if ($scheduleTask === null)
+        {
+            $data = [
+                'merchant_id' => $merchant->getId(),
+                'method'      => $method,
+            ];
+
+            throw new LogicException('schedule_task not found for merchant settlement', null, $data);
+        }
+
+        $schedule = $scheduleTask->schedule;
+
+        $nextRunAt = $scheduleTask->getNextRunAt();
+
+        return Schedule\Library::getNextApplicableTime($startTime, $schedule, $nextRunAt);
     }
 
     protected function createOrUpdateInMode(Entity $scheduleTask, string $mode)

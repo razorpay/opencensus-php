@@ -3,13 +3,21 @@
 namespace RZP\Models\Schedule\Task;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
-
 use Carbon\Carbon;
-use RZP\Constants\Mode;
-use RZP\Constants\Timezone;
+
 use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Models\Schedule;
+use RZP\Constants\Timezone;
 use RZP\Models\Schedule\Library;
 
+/**
+ * Class Entity
+ *
+ * @package RZP\Models\Schedule\Task
+ *
+ * @property Schedule\Entity $schedule
+ */
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;

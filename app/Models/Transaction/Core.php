@@ -761,13 +761,7 @@ class Core extends Base\Core
 
         $amount = $reversal->getAmount();
 
-        //
-        // By default, set settled_at for reversals to tomorrow midnight
-        // to let them be picked up for settlements the next day
-        //
-        $settleTimestamp = Carbon::tomorrow(Timezone::IST)->getTimestamp();
-
-        $transfer = $reversal->entity;
+        $settleTimestamp = $this->getTransferReversalSettledAtTimestamp($reversal);
 
         $data = [
             Transaction\Entity::DEBIT         => 0,
@@ -1167,5 +1161,24 @@ class Core extends Base\Core
                 TraceCode::CREDITS_TRANSACTION_FAILED,
                 $data);
         }
+    }
+
+    /**
+     * Compute and return the settled_at timestamp for a transfer
+     * reversal transaction
+     *
+     * @param Reversal\Entity $reversal
+     *
+     * @return int
+     */
+    protected function getTransferReversalSettledAtTimestamp(Reversal\Entity $reversal): int
+    {
+        //
+        // By default, set settled_at for reversals to tomorrow midnight
+        // to let them be picked up for settlements the next day
+        //
+        $settleTimestamp = Carbon::tomorrow(Timezone::IST)->getTimestamp();
+
+        $transfer = $reversal->entity;
     }
 }
