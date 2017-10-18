@@ -1608,6 +1608,15 @@ class Processor
 
     protected function shouldHitGateway(Payment\Entity $payment)
     {
+        if ($payment->isFileBasedEmandateDebitPayment() === true)
+        {
+            //
+            // If the payment is a second recurring payment of a file-based emandate bank
+            // we do not hit the gateway, we send a debit request asynchronously
+            //
+            return false;
+        }
+
         if ($payment->isBankTransfer() === true)
         {
             return false;

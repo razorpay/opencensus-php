@@ -5,12 +5,14 @@ namespace RZP\Models\Customer\Token;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Models\Merchant\Account;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property Card\Entity $card
+ * @property Terminal\Entity $terminal
  */
 class Entity extends Base\PublicEntity
 {

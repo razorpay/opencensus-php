@@ -82,19 +82,25 @@ trait Authorize
             return $ret;
         }
 
-        return $this->processAuth($payment);
+        return $this->processPaymentFinal($payment);
     }
 
     protected function hitGatewayIfRequired(Payment\Entity $payment, array $input, array $gatewayInput)
     {
+        //
+        // The instance variable selectedTerminals need to be set
+        // even if the gateway doesn't need to be hit. This is needed
+        // for s2s recurring payments, so that terminal can be set later
+        // using this instance variable.
+        //
+        $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+
         if ($this->shouldHitGateway($payment) === false)
         {
             $this->repo->saveOrFail($payment);
 
             return null;
         }
-
-        $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
         $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
 
@@ -257,6 +263,9 @@ trait Authorize
     }
 
     /**
+     * This method is used when on payment create request,
+     * authorization is done – i.e. Gateway is hit for auth
+     *
      * @param Payment\Entity $payment
      *
      * @return array
@@ -270,6 +279,45 @@ trait Authorize
         $payment = $this->payment;
 
         return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    /**
+     * This method is used when on payment create request,
+     * authorization is skipped – i.e. Gateway isn't hit for auth
+     * These payments are picked up asynchronously for auth later.
+     *
+     * @param Payment\Entity $payment
+     *
+     * @return array
+     */
+    protected function processCreated(Payment\Entity $payment): array
+    {
+        $currentTerminal = $this->selectedTerminals[0];
+
+        //
+        // TODO:: Add a check to verify that this terminal is same as
+        // the terminal id stored in token used for the first payment
+        //
+
+        $payment->associateTerminal($currentTerminal);
+
+        $this->repo->saveOrFail($payment);
+
+        $payment = $this->payment;
+
+        return ['razorpay_payment_id' => $payment->getPublicId()];
+    }
+
+    protected function processPaymentFinal(Payment\Entity $payment): array
+    {
+        if ($payment->isFileBasedEmandateDebitPayment() === true)
+        {
+            return $this->processCreated($payment);
+        }
+        else
+        {
+            return $this->processAuth($payment);
+        }
     }
 
     protected function getOtpPaymentCreatedResponse($request, $payment)
@@ -1410,7 +1458,6 @@ trait Authorize
         $payment->setInternational();
 
         $this->processEmandatePayments($payment);
-
     }
 
     protected function processEmandatePayments(Payment\Entity $payment)

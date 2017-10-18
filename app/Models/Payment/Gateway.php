@@ -466,7 +466,7 @@ class Gateway
      * @var array
      */
     public static $fileBasedEMandateDebitGateways = [
-        IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        Gateway::NETBANKING_HDFC,
     ];
 
     /**
@@ -475,7 +475,7 @@ class Gateway
      * @var array
      */
     public static $fileBasedEMandateRegistrationGateways = [
-        IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        Gateway::NETBANKING_HDFC,
     ];
 
     /**
@@ -661,7 +661,7 @@ class Gateway
      */
     public static function isFileBasedEMandateRegistrationGateway(string $gateway): bool
     {
-        return (array_key_exists($gateway, self::$fileBasedEMandateRegistrationGateways));
+        return (in_array($gateway, self::$fileBasedEMandateRegistrationGateways) === true);
     }
 
     /**
@@ -671,7 +671,7 @@ class Gateway
      */
     public static function isFileBasedEMandateDebitGateway(string $gateway): bool
     {
-        return (array_key_exists($gateway, self::$fileBasedEMandateDebitGateways));
+        return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
     }
 
     /**
