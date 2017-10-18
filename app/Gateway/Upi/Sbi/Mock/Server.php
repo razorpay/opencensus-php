@@ -124,7 +124,7 @@ class Server extends Base\Mock\Server
             ResponseFields::AMOUNT                 => $gatewayPayment->getAmount(),
             ResponseFields::TRANSACTION_AUTH_DATE  => Carbon::now(Timezone::IST)->toDateTimeString(),
             ResponseFields::RESPONSE_CODE          => '00',
-            ResponseFields::APPROVAL_NUMBER        => uniqid(),
+            ResponseFields::APPROVAL_NUMBER        => random_int(100000, 999999),
             ResponseFields::STATUS                 => 'S',
             ResponseFields::STATUS_DESCRIPTION     => 'Payment Successful',
             ResponseFields::ADDITIONAL_INFO        => [],
@@ -147,7 +147,7 @@ class Server extends Base\Mock\Server
             ResponseFields::AMOUNT                 => $payment[Payment\Entity::AMOUNT],
             ResponseFields::TRANSACTION_AUTH_DATE  => Carbon::now(Timezone::IST)->toDateTimeString(),
             ResponseFields::RESPONSE_CODE          => '00',
-            ResponseFields::APPROVAL_NUMBER        => uniqid(),
+            ResponseFields::APPROVAL_NUMBER        => random_int(100000, 999999),
             ResponseFields::STATUS                 => 'S',
             ResponseFields::STATUS_DESCRIPTION     => 'Payment Successful',
             ResponseFields::ADDITIONAL_INFO        => [],
@@ -162,9 +162,9 @@ class Server extends Base\Mock\Server
     {
         $content = [
             ResponseFields::PSP_REFERENCE_NO       => $input[RequestFields::REQUEST_INFO][RequestFields::PSP_REFERENCE_NO],
-            ResponseFields::UPI_TRANS_REFERENCE_NO => uniqid(), // TODO: Double check this
-            ResponseFields::NPCI_TRANSACTION_ID    => 99999999999, // TODO: Double check this
-            ResponseFields::CUSTOMER_REFERENCE_NO  => 3434343, // TODO: Double check this
+            ResponseFields::UPI_TRANS_REFERENCE_NO => random_int(100000, 999999),
+            ResponseFields::NPCI_TRANSACTION_ID    => random_int(100000000000, 999999999999),
+            ResponseFields::CUSTOMER_REFERENCE_NO  => random_int(100000000000, 999999999999),
             ResponseFields::AMOUNT                 => $input[RequestFields::AMOUNT],
             ResponseFields::TRANSACTION_AUTH_DATE  => Carbon::now(Timezone::IST)->toDateTimeString(),
             ResponseFields::STATUS                 => 'S',
