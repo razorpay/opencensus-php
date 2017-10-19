@@ -148,6 +148,7 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::RECURRING     => 'bool',
         self::MAX_AMOUNT    => 'int',
+        self::USED_COUNT    => 'int',
     ];
 
     protected static $generators = [
