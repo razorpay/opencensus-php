@@ -34,13 +34,19 @@ class Core extends Base\Core
     {
         $merchant = (new Merchant\Entity)->build($input);
 
+        $this->trace->info(
+            TraceCode::MERCHANT_CREATE,
+            [
+                'data' => $input
+            ]);
+
         $merchant->setAuditAction(Action::CREATE_MERCHANT);
 
         $email['email'] = $input['email'];
 
         $merchant->getValidator()->validateInput('unique_email', $email);
 
-        $merchant->setPricingPlan(Pricing\DefaultPlan::STARTUP_PLAN_ID);
+        $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
 
         $this->repo->saveOrFail($merchant);
 

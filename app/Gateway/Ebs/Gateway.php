@@ -125,9 +125,12 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             ['gateway' => $input['gateway']]);
 
-        $this->assertPaymentId($input['payment']['id'], $input['gateway'][Resp::MERCHANT_REF_NO]);
-
         $this->verifySecureHash($input['gateway']);
+
+        $this->assertPaymentId($input['payment']['id'], $input['gateway'][Resp::MERCHANT_REF_NO]);
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($input['gateway'][Resp::AMOUNT], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);

@@ -38,6 +38,7 @@ class ProviderCode
     const INDIANBANK        = 'indianbank';
     const INDUS             = 'indus';
     const IOB               = 'iob';
+    const JKB               = 'jkb';
     const KAYPAY            = 'kaypay';
     const KBL               = 'kbl';
     const KOTAK             = 'kotak';
@@ -98,6 +99,7 @@ class ProviderCode
         self::INDUS             => IFSC::INDB,
         self::INDIANBANK        => IFSC::IDIB,
         self::IOB               => IFSC::IOBA,
+        self::JKB               => IFSC::JAKA,
         self::KAYPAY            => IFSC::KKBK,
         self::KBL               => IFSC::KARB,
         self::KOTAK             => IFSC::KKBK,

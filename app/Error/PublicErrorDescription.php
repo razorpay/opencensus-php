@@ -285,6 +285,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_VOID_NOT_SUPPORTED                                = 'Void is not supported for refund transaction on this endpoint.';
     const BAD_REQUEST_INVALID_PARAMETERS                                        = 'One or more fields have invalid data';
     const BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED                           = 'Payment declined because partial amount was approved';
+    const BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT  = 'Recurring payments on international cards not supported for merchant.';
     const BAD_REQUEST_ORDER_DOES_NOT_EXIST                                      = 'Order does not exist.';
     const BAD_REQUEST_ORDER_EXISTS                                              = 'This order already exists in the gateway database.';
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';

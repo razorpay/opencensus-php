@@ -110,6 +110,8 @@ class Entity extends Base\PublicEntity
 
     protected $amounts = [
         self::AMOUNT,
+        self::AMOUNT_PAID,
+        self::AMOUNT_DUE,
     ];
 
     protected $appends = [

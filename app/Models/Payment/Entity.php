@@ -127,6 +127,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_TIMEOUT_NETBANKING        = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
+    const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 864000;   // 10 Days -- TODO: Reduce later
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
@@ -1681,6 +1682,43 @@ class Entity extends Base\PublicEntity
         return $token;
     }
 
+    /**
+     * Checks whether the recurring payment will
+     * need to be authorized via sending a file
+     */
+    public function isFileBasedEmandateDebitPayment(): bool
+    {
+        if (($this->isEmandatePayment() === true) and
+            ($this->isRecurringTypeAuto() === true))
+        {
+            $gateway = $this->getGateway();
+
+            //
+            // This will be the case when during second recurring payment,
+            // we are deciding whether to hit the gateway or not.
+            // At that stage, the gateway is not yet set.
+            //
+            if ($gateway === null)
+            {
+                //
+                // We don't really have to use gateway token here because
+                // we are actually getting the gateway and not the terminal.
+                // Gateway tokens need to be used when we are getting a terminal.
+                // Since a token can have multiple terminals.
+                // TODO: Check again ^
+                //
+                // Token will always be set if it's
+                // emandate and recurring type is auto.
+                //
+                $gateway = $this->getGlobalOrLocalTokenEntity()->terminal->getGateway();
+            }
+
+            return (Gateway::isFileBasedEMandateDebitGateway($gateway) === true);
+        }
+
+        return false;
+    }
+
     public function getReferenceForGatewayToken()
     {
         if ($this->hasSubscription() === true)
@@ -2243,6 +2281,16 @@ class Entity extends Base\PublicEntity
                 // for direct netbanking 1 hour is good enough
                 $timeWindow = self::PAYMENT_TIMEOUT_WALLET;
             }
+        }
+
+        //
+        // Irrespective of the created_flow or auto refund delay,
+        // if it's emandate debit payment, the timeout window
+        // defined for this must always take higher preference.
+        //
+        if ($this->isFileBasedEmandateDebitPayment() === true)
+        {
+             return self::PAYMENT_TIMEOUT_FILE_BASED_DEBIT;
         }
 
         $autoRefundDelay = $this->merchant->getAutoRefundDelay();

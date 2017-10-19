@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Refund as PaymentRefund;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
@@ -48,12 +49,14 @@ class Core extends Base\Core
      *
      * @return bool
      */
-    public function process(array $input)
+    public function process(array $input, string $provider = null)
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PROCESSING,
             $input
         );
+
+        $processor = new Processor($provider);
 
         try
         {
@@ -61,9 +64,9 @@ class Core extends Base\Core
 
             $this->mutex->acquireAndRelease(
                 $input[Entity::PAYEE_ACCOUNT],
-                function() use ($bankTransfer)
+                function() use ($processor, $bankTransfer)
                 {
-                    (new Processor)->process($bankTransfer);
+                    $processor->process($bankTransfer);
                 },
                 60,
                 ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -171,11 +174,16 @@ class Core extends Base\Core
 
         foreach ($refunds as $refund)
         {
-
+            //
             // If refund was marked as failed after creating a fund
             // transfer attempt then that means this failure was result
             // of payout file recon. We aren't handling these just now.
-            if ($refund->fundTransferAttempts->isNotEmpty() === true)
+            //
+            // Reusing the same route for manual retries. If refund is being
+            // retried manually, then we don't check for this condition.
+            //
+            if (($this->isManualRetry($refund, $input) === false) and
+                ($refund->fundTransferAttempts->isNotEmpty() === true))
             {
                 $this->trace->info(
                     TraceCode::REFUND_RETRY_SKIPPED,
@@ -214,6 +222,26 @@ class Core extends Base\Core
             'failure'       => $failure,
             'status'        => $status,
         ];
+    }
+
+    /**
+     * If ids were given in input, this is a manual retry.
+     * We skip certain checks in this case.
+     *
+     * @param PaymentRefund\Entity $refund
+     * @param array                $input
+     *
+     * @return bool
+     */
+    protected function isManualRetry(PaymentRefund\Entity $refund, array $input): bool
+    {
+        if ((isset($input['ids']) === true) and
+            (in_array($refund->getPublicId(), $input['ids'], true) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
