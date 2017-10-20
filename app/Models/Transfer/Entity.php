@@ -347,6 +347,21 @@ class Entity extends Base\PublicEntity
 
     // -------------------- End Setters ---------------------------
 
+    /**
+     * Is this a direct transfer? i.e. No source payment
+     *
+     * @return bool
+     */
+    public function isDirectTransfer(): bool
+    {
+        return ($this->getSourceType() === E::MERCHANT);
+    }
+
+    public function isPaymentTransfer(): bool
+    {
+        return ($this->getSourceType() === E::PAYMENT);
+    }
+
     public function reverseAmount(int $amount)
     {
         $amountUnreversed = $this->getAmountUnreversed();

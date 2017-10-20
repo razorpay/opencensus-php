@@ -1177,8 +1177,26 @@ class Core extends Base\Core
         // By default, set settled_at for reversals to tomorrow midnight
         // to let them be picked up for settlements the next day
         //
-        $settleTimestamp = Carbon::tomorrow(Timezone::IST)->getTimestamp();
+        $startTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $scheduleTaskCore = new ScheduleTask\Core;
+
+        $nextTime = $scheduleTaskCore->getNextApplicableTimeForMerchant($startTime, $reversal->merchant);
 
         $transfer = $reversal->entity;
+
+        if ($transfer->isDirectTransfer() === true)
+        {
+            $transferDelayTime = $scheduleTaskCore->getNextApplicableTimeForMerchant($startTime, $reversal->merchant);
+
+        }
+        else if ($transfer->isPaymentTransfer() === true)
+        {
+
+        }
+        else
+        {
+
+        }
     }
 }
