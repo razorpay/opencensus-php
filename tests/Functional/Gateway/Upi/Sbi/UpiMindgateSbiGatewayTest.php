@@ -107,6 +107,16 @@ class UpiMindgateSbiGatewayTest extends TestCase
 
     // TODO: Test case for when we verify a payment without getting async callback response
 
+    public function testPaymentRefund()
+    {
+        $this->testPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Attempt a partial refund
+        $this->refundPayment($payment['id'], 10000);
+    }
+
     protected function checkPaymentStatus(string $id, string $status)
     {
         $response = $this->getPaymentStatus($id);

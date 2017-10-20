@@ -8,5 +8,6 @@ class Url
 
     const AUTHORIZE    = '/meCollectInitiateWeb';
     const VERIFY       = '/meTranStatusQueryWeb';
+    const REFUND       = 'meRefund'; // TODO: This has not been shared yet
     const VALIDATE_VPA = '/validateVPAWeb';
 }

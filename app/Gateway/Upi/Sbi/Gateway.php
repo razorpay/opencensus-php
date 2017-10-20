@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Sbi;
 
 use App;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -11,6 +12,7 @@ use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Entity;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
+use RZP\Models\Payment\Refund;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Exception\GatewayErrorException;
@@ -121,6 +123,25 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $attributes = $this->getGatewayEntityAttributes($input);
+
+        $refund = $this->createGatewayPaymentEntity($attributes);
+
+        $request = $this->getRefundRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $response = $this->parseGatewayResponse($response->body);
+
+        $this->updateGatewayEntityResponse($refund, $response);
+
+        $this->checkResponseStatus($response[ResponseFields::API_RESPONSE], ResponseFields::REFUND_STATUS);
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
@@ -244,11 +265,12 @@ class Gateway extends Base\Gateway
 
     /**
      * @param array $response
+     * @param string $status
      * @throws GatewayErrorException
      */
-    protected function checkResponseStatus(array $response)
+    protected function checkResponseStatus(array $response, $status = ResponseFields::STATUS)
     {
-        $status = $response[ResponseFields::STATUS];
+        $status = $response[$status];
 
         if (Status::isStatusSuccess($status) === false)
         {
@@ -290,6 +312,56 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'gateway'    => $this->gateway,
+                'payment_id' => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
+                'content'    => $content
+            ]);
+
+        $requestMsg = $this->encrypt($content);
+
+        $json = [
+            RequestFields::REQUEST_MESSAGE => $requestMsg,
+            RequestFields::PG_MERCHANT_ID  => $this->getMerchantId(),
+        ];
+
+        $content = json_encode($json);
+
+        $request = $this->getStandardRequestArray($content);
+
+        return $request;
+    }
+
+    protected function getRefundRequestArray(array $input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentId($input[ConstantsEntity::PAYMENT][Payment\Entity::ID])
+                                     ->first();
+
+        // TODO: Verify that all the parameters are correct
+
+        $content = [
+            RequestFields::REQUEST_INFO              => [
+                RequestFields::PG_MERCHANT_ID => $this->getMerchantId(),
+            ],
+            RequestFields::REFUND_TRANSACTION_DETAIL => [
+                RequestFields::ORDER_NUMBER               => $input[ConstantsEntity::REFUND][Payment\Entity::ID],
+                RequestFields::ORG_ORDER_NUMBER           => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
+                RequestFields::ORG_TRANSACTION_REF_NUMBER => $gatewayPayment->getGatewayPaymentId(),
+                RequestFields::ORG_CUSTOMER_REF_NUMBER    => $gatewayPayment->getCustomerReferenceId(),
+                RequestFields::TRANSACTION_REMARKS        => Constants::REFUND_REMARKS,
+                RequestFields::CURRENCY_CODE              => Currency::INR,
+                RequestFields::PAYMENT_TYPE               => Constants::PAYMENT_TYPE,
+                RequestFields::TRANSACTION_TYPE           => Constants::REFUND,
+            ],
+            RequestFields::ADDITIONAL_INFO           => [
+                RequestFields::ADDITIONAL_INFO1  => Constants::NOT_APPLICABLE,
+                RequestFields::ADDITIONAL_INFO9  => Constants::NOT_APPLICABLE,
+                RequestFields::ADDITIONAL_INFO10 => Constants::NOT_APPLICABLE,
+            ],
+        ];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_REQUEST,
             [
                 'gateway'    => $this->gateway,
                 'payment_id' => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
@@ -375,6 +447,11 @@ class Gateway extends Base\Gateway
             Base\Entity::VPA                 => $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
             Base\Entity::ACTION              => $this->action,
         ];
+
+        if ($this->action === Action::REFUND)
+        {
+            $attributes[Base\Entity::REFUND_ID] = $input[ConstantsEntity::REFUND][Refund\Entity::ID];
+        }
 
         return $attributes;
     }
