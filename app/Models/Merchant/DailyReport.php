@@ -107,6 +107,11 @@ class DailyReport extends Base\Core
 
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+                if ($merchant->isLinkedAccount() === true)
+                {
+                    continue;
+                }
+
                 $data = array_merge($data, $this->getMerchantData($merchant));
 
                 $sentId = $this->send($merchant, $data);
