@@ -336,6 +336,48 @@ class DisputeTest extends TestCase
         $this->assertEquals(0 - $input['amount'], $adjustments['items'][1]['amount']);
     }
 
+    public function testDisputeLostLogicWithPartialAcceptedAmountForNoOnsetDeduct()
+    {
+        // Input params while creating
+        $input = [
+            'amount'                => 10000,
+            'deduct_at_onset'       => 0,
+        ];
+        $testdata = $this->updateEditTestData($input);
+
+        $testdata['request']['content']['accepted_dispute_amount'] = 7000;
+
+        $content = $this->runRequestResponseFlow($testdata);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $adjustments = $this->getEntities('adjustment', [], true);
+
+        $this->assertEquals($dispute['id'], $content['id']);
+        $this->assertEquals($testdata['request']['content']['status'], $content['status']);
+        $this->assertEquals($input['amount'], $dispute['amount']);
+        $this->assertEquals($testdata['request']['content']['accepted_dispute_amount'], $dispute['amount_deducted']);
+        $this->assertEquals(0, $dispute['amount_reversed']);
+        $this->assertEquals(1, $adjustments['count']);
+        $this->assertEquals(DisputeEntity::stripDefaultSign($dispute['id']), $adjustments['items'][0]['entity_id']);
+        $this->assertEquals((0 - $testdata['request']['content']['accepted_dispute_amount']),
+            $adjustments['items'][0]['amount']);
+    }
+
+    public function testDisputeLostLogicWithInvalidPartialAcceptedAmount()
+    {
+        // Input params while creating
+        $input = [
+            'amount'                => 10000,
+            'deduct_at_onset'       => 0,
+        ];
+        $testdata = $this->updateEditTestData($input);
+
+        $testdata['request']['content']['accepted_dispute_amount'] = 20000;
+
+        $this->startTest($testdata);
+    }
+
     // ---------------------------- helper methods-------------------------------
 
     protected function updateCreateTestData(string $paymentId = null): array
