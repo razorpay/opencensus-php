@@ -12,7 +12,6 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
 use RZP\Reconciliator\Converter;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\FileProcessor;
 
 class Reconciliation extends Base

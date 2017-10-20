@@ -8,9 +8,9 @@ use App;
 use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
-use RZP\Reconciliator\FileProcessor;
-use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Messenger;
+use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate
 {
@@ -140,7 +140,7 @@ class Reconciliate
                 continue;
             }
 
-            $this->updateBatchWithReconCiliationType($batch, $reconciliationType, $extraDetails);
+            $this->updateBatchWithReconciliationType($batch, $reconciliationType, $extraDetails);
 
             $this->setSubReconciliator($reconciliationType);
 
@@ -248,7 +248,7 @@ class Reconciliate
      * @param  string       $reconciliationType Recon type determined for the file
      * @param  array        $extraDetails       Extra file metadata
      */
-    protected function updateBatchWithReconCiliationType(
+    protected function updateBatchWithReconciliationType(
                             Batch\Entity $batch,
                             string $reconciliationType,
                             array $extraDetails)

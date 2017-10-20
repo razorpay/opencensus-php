@@ -18,9 +18,9 @@ class SubReconciliate
     const SUCCESSES_SUMMARY = 'successes_summary';
 
     /**
-     * The total number of payments/refunds attempted to reconcile.
+     * The list of payments/refunds attempted to reconcile.
      *
-     * @var $total
+     * @var array
      */
     protected $total = [];
 
@@ -29,7 +29,7 @@ class SubReconciliate
      * These include payments/refunds for which we were able to successfully record the gateway
      * service tax and gateway fees in db.
      *
-     * @var $successes
+     * @var array
      */
     protected $successes = [];
 
@@ -38,21 +38,21 @@ class SubReconciliate
      * These include the payments/refunds for which we could not record the gateway service tax
      * and gateway fees in db.
      *
-     * @var $failures
+     * @var array
      */
     protected $failures = [];
 
-    public function getTotal()
+    public function getTotal(): array
     {
         return $this->total;
     }
 
-    public function getSuccesses()
+    public function getSuccesses(): array
     {
         return $this->successes;
     }
 
-    public function getFailures()
+    public function getFailures(): array
     {
         return $this->failures;
     }

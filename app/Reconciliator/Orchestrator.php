@@ -203,13 +203,6 @@ class Orchestrator extends Base\Core
             return [];
         }
 
-        // In the cases where recon is processed async via batch we return a collection
-        // of batches created in the result, which needs to be serialized.
-        if (is_array($summary) === false)
-        {
-            $summary = $summary->toArrayAdmin();
-        }
-
         return $summary;
     }
 
@@ -518,7 +511,9 @@ class Orchestrator extends Base\Core
                 ]);
         }
 
-        return $batches;
+        $result = $batches->toArrayAdmin();
+
+        return $result;
     }
 
     protected function handleBatchCreationError(\Exception $ex, int $file, array $fileDetails)
