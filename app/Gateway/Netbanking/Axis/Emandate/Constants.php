@@ -15,6 +15,7 @@ class Constants
 
     /**
      * We can pass any value to this field, since they're not using it as confirmed in the mail.
+     * @see PRE_POP_INFO
      */
     const PPI_AMOUNT_TYPE = 'max';
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace RZP\Gateway\Netbanking\Axis\Emandate;
 
 class Frequency
