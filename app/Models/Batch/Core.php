@@ -162,7 +162,7 @@ class Core extends Base\Core
      */
     protected function dispatchOnQueueForProcessingIfApplicable(Entity $batch, array $input)
     {
-        if (Type::isQueueGroup($batch->getType()) === false)
+        if (Type::isQueueGroup($batch->getType()) === true)
         {
             unset($input[Entity::FILE]);
 

@@ -314,7 +314,7 @@ class Base extends BaseModel\Core
 
     /**
      * Indicates if a batch should be marked as processed even if it has partial
-     * failures. This we do partial failures in most types requires action and
+     * failures. This we do as partial failures in most types requires action and
      * reprocessing the same is issue.
      *
      * @return bool

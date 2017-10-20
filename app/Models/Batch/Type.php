@@ -39,11 +39,8 @@ class Type
     public static $queueGroup = [
         self::PAYMENT_LINK,
         self::LINKED_ACCOUNT,
-<<<<<<< HEAD
         self::VIRTUAL_BANK_ACCOUNT,
-=======
         self::RECONCILIATION,
->>>>>>> [batch] adds entity and core changes in batch processor for recon
     ];
 
     public static function exists(string $type)
