@@ -250,6 +250,7 @@ final class Route
         'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
         'nodal_initiate_transfer'                 => ['post',     'nodal/transfer',                                 'SettlementController@postInitiateTransfer'                         ],
+        'nodal_add_beneficiary'                   => ['post',     'nodal/beneficiary',                              'SettlementController@addBeneficiary'                               ],
         'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                      => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
         'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
