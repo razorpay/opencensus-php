@@ -56,6 +56,7 @@ var admin = window.rzpAdmin || {
     'view_workflow_requests',
     'view_all_workflow',
     'view_group',
+    'view_all_org',
   ],
 };
 
