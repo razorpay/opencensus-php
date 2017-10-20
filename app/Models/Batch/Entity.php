@@ -55,9 +55,6 @@ class Entity extends Base\PublicEntity
     const INPUT_FILE_PREFIX         = 'batch/upload/';
     const OUTPUT_FILE_PREFIX        = 'batch/download/';
 
-    const INPUT_FILE                = 'input_file';
-    const OUTPUT_FILE               = 'output_file';
-
     protected static $sign = 'batch';
 
     protected $entity = 'batch';
@@ -276,11 +273,17 @@ class Entity extends Base\PublicEntity
      *
      * @return string
      */
-    public function getFilePrefix(string $type): string
+    public function getFilePrefix(string $status = null): string
     {
-        return ($type === self::INPUT_FILE) ?
-                    self::INPUT_FILE_PREFIX :
-                    self::OUTPUT_FILE_PREFIX;
+        $status = $status ?: $this->getStatus();
+        if ($status === Status::CREATED)
+        {
+            return self::INPUT_FILE_PREFIX;
+        }
+        else
+        {
+            return self::OUTPUT_FILE_PREFIX;
+        }
     }
 
     /**
@@ -323,18 +326,18 @@ class Entity extends Base\PublicEntity
      * - To move temp php request to this location and pass the same to UFH
      * - To create output file at proper location.
      *
-     * @param string    $type   type of batch file input / output
+     * @param string    $prefix     prefix to use while forming the path
      *
      * @return string
      */
-    public function getLocalSaveDir(string $type): string
+    public function getLocalSaveDir(string $prefix): string
     {
-        return storage_path('files/filestore') . '/' . $this->getFilePrefix($type);
+        return storage_path('files/filestore') . '/' . $prefix;
     }
 
-    public function getLocalSavePath(string $type): string
+    public function getLocalSavePath(string $prefix): string
     {
-        return $this->getLocalSaveDir($type) . $this->getFileKeyWithExt();
+        return $this->getLocalSaveDir($prefix) . $this->getFileKeyWithExt();
     }
 
     // ----------------------- End  Getters --------------------------

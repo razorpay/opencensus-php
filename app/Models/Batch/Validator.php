@@ -90,7 +90,7 @@ class Validator extends Base\Validator
 
     protected static $reconciliationBatchCreateRules = [
         Entity::TYPE                        => 'required|in:reconciliation',
-        Entity::GATEWAY                     => 'required|string|max:30',
+        Entity::GATEWAY                     => 'required|string|max:25',
         Entity::FILE                        => 'required|array'
     ];
 

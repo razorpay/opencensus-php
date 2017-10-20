@@ -70,14 +70,14 @@ class Reconciliation extends Base
         // We use the original filename here instead of the batch id as it s required
         // by the reconciliator classes to determine the type of reconciliation
         $fileName = pathinfo($fileNameWithExt, PATHINFO_FILENAME);
-        $fileName = $this->batch->getFilePrefix(Batch\Entity::INPUT_FILE) . $fileName;
+        $fileName = Batch\Entity::INPUT_FILE_PREFIX . $fileName;
 
         $file = new File($inputFileDetails[FileProcessor::FILE_PATH]);
 
         // we move the file to storage location used by UFH Accessor, so that S3
         // mock works successfully.
         $file = $file->move(
-                    $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE),
+                    $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE_PREFIX),
                     $fileNameWithExt);
 
         $ufh = new FileStore\Creator;

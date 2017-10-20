@@ -15,6 +15,7 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
         Entity::STATUS      => 'sometimes|in:created,processing,processed',
+        Entity::GATEWAY     => 'sometimes|string|max:30',
     ];
 
     protected function validateType($attribute, $value)

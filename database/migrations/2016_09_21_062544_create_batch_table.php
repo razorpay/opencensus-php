@@ -35,7 +35,7 @@ class CreateBatchTable extends Migration
 
             $table->char(Batch::TYPE, 25);
 
-            $table->string(Batch::SUB_TYPE, 20)
+            $table->string(Batch::SUB_TYPE, 25)
                   ->nullable();
 
             $table->string(Batch::GATEWAY, 25)

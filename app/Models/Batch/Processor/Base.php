@@ -496,7 +496,7 @@ class Base extends BaseModel\Core
                                  )
                                  ->store(
                                     $ext,
-                                    $this->batch->getLocalSaveDir(Batch\Entity::OUTPUT_FILE),
+                                    $this->batch->getLocalSaveDir(Batch\Entity::OUTPUT_FILE_PREFIX),
                                     true
                                 );
                 $this->outputFileLocalPath = $fileMeta['full'];
@@ -604,7 +604,7 @@ class Base extends BaseModel\Core
         $ext = $file->getClientOriginalExtension();
 
         $file = $file->move(
-                    $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE),
+                    $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE_PREFIX),
                     $this->batch->getFileKeyWithExt($ext));
 
         $ufh = $this->saveFile($file->getPathname(), FileStore\Type::BATCH_INPUT);
@@ -677,10 +677,10 @@ class Base extends BaseModel\Core
         }
         else
         {
-            $awsKey = $this->batch->getFilePrefix(Batch\Entity::INPUT_FILE) .
+            $awsKey = $this->batch->getFilePrefix(Batch\Status::CREATED) .
                             $this->batch->getFileKeyWithExt();
 
-            $saveAs = $this->batch->getLocalSavePath(Batch\Entity::INPUT);
+            $saveAs = $this->batch->getLocalSavePath(Batch\Entity::INPUT_FILE_PREFIX);
 
             $filePath = $this->getFileFromAws($awsKey, $saveAs);
         }
