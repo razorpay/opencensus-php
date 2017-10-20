@@ -305,7 +305,7 @@ class DisputeTest extends TestCase
         $this->assertEquals('adjustment', $txn['type']);
     }
 
-    public function testDisputeLostLogicWithPartialAcceptedAmount()
+    public function testDisputeLostPartiallyAccepted()
     {
         // Input params while creating
         $input = [
@@ -314,29 +314,31 @@ class DisputeTest extends TestCase
         ];
         $testdata = $this->updateEditTestData($input);
 
-        $testdata['request']['content']['accepted_dispute_amount'] = 7000;
+        $testdata['request']['content'][DisputeEntity::ACCEPTED_DISPUTE_AMOUNT] = 7000;
 
         $content = $this->runRequestResponseFlow($testdata);
 
         $dispute = $this->getLastEntity('dispute', true);
 
         $adjustments = $this->getEntities('adjustment', [], true);
+
+        $reqContent = $testdata['request']['content'];
 
         $this->assertEquals($dispute['id'], $content['id']);
         $this->assertEquals($testdata['request']['content']['status'], $content['status']);
         $this->assertEquals($input['amount'], $dispute['amount']);
         $this->assertEquals($input['amount'], $dispute['amount_deducted']);
-        $this->assertEquals(($input['amount'] - $testdata['request']['content']['accepted_dispute_amount']),
+        $this->assertEquals(($input['amount'] - $reqContent[DisputeEntity::ACCEPTED_DISPUTE_AMOUNT]),
             $dispute['amount_reversed']);
         $this->assertEquals(2, $adjustments['count']);
         $this->assertEquals(DisputeEntity::stripDefaultSign($dispute['id']), $adjustments['items'][0]['entity_id']);
         $this->assertEquals(DisputeEntity::stripDefaultSign($dispute['id']), $adjustments['items'][1]['entity_id']);
-        $this->assertEquals(($input['amount'] - $testdata['request']['content']['accepted_dispute_amount']),
+        $this->assertEquals(($input['amount'] - $reqContent[DisputeEntity::ACCEPTED_DISPUTE_AMOUNT]),
             $adjustments['items'][0]['amount']);
         $this->assertEquals(0 - $input['amount'], $adjustments['items'][1]['amount']);
     }
 
-    public function testDisputeLostLogicWithPartialAcceptedAmountForNoOnsetDeduct()
+    public function testDisputeLostPartiallyAcceptedForNoOnsetDeduct()
     {
         // Input params while creating
         $input = [
@@ -345,7 +347,7 @@ class DisputeTest extends TestCase
         ];
         $testdata = $this->updateEditTestData($input);
 
-        $testdata['request']['content']['accepted_dispute_amount'] = 7000;
+        $testdata['request']['content'][DisputeEntity::ACCEPTED_DISPUTE_AMOUNT] = 7000;
 
         $content = $this->runRequestResponseFlow($testdata);
 
@@ -353,18 +355,22 @@ class DisputeTest extends TestCase
 
         $adjustments = $this->getEntities('adjustment', [], true);
 
+        $reqContent = $testdata['request']['content'];
+
         $this->assertEquals($dispute['id'], $content['id']);
-        $this->assertEquals($testdata['request']['content']['status'], $content['status']);
+        $this->assertEquals($reqContent['status'], $content['status']);
         $this->assertEquals($input['amount'], $dispute['amount']);
-        $this->assertEquals($testdata['request']['content']['accepted_dispute_amount'], $dispute['amount_deducted']);
+        $this->assertEquals($reqContent[DisputeEntity::ACCEPTED_DISPUTE_AMOUNT],
+            $dispute['amount_deducted']);
         $this->assertEquals(0, $dispute['amount_reversed']);
         $this->assertEquals(1, $adjustments['count']);
-        $this->assertEquals(DisputeEntity::stripDefaultSign($dispute['id']), $adjustments['items'][0]['entity_id']);
-        $this->assertEquals((0 - $testdata['request']['content']['accepted_dispute_amount']),
+        $this->assertEquals(DisputeEntity::stripDefaultSign($dispute['id']),
+            $adjustments['items'][0]['entity_id']);
+        $this->assertEquals((0 - $reqContent[DisputeEntity::ACCEPTED_DISPUTE_AMOUNT]),
             $adjustments['items'][0]['amount']);
     }
 
-    public function testDisputeLostLogicWithInvalidPartialAcceptedAmount()
+    public function testDisputeLostPartiallyAcceptedWithInvalidAcceptedAmount()
     {
         // Input params while creating
         $input = [
@@ -373,7 +379,21 @@ class DisputeTest extends TestCase
         ];
         $testdata = $this->updateEditTestData($input);
 
-        $testdata['request']['content']['accepted_dispute_amount'] = 20000;
+        $testdata['request']['content'][DisputeEntity::ACCEPTED_DISPUTE_AMOUNT] = 20000;
+
+        $this->startTest($testdata);
+    }
+
+    public function testDisputeLostPartiallyAcceptedWithZeroAcceptedAmount()
+    {
+        // Input params while creating
+        $input = [
+            'amount'                => 10000,
+            'deduct_at_onset'       => 0,
+        ];
+        $testdata = $this->updateEditTestData($input);
+
+        $testdata['request']['content'][DisputeEntity::ACCEPTED_DISPUTE_AMOUNT] = 0;
 
         $this->startTest($testdata);
     }

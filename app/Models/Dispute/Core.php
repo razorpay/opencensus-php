@@ -60,7 +60,7 @@ class Core extends Base\Core
         {
             if ($dispute->getDeductAtOnset() === true)
             {
-                $this->createNegativeAdjustmentAndUpdateDispute($dispute, $dispute->getAmount());
+                $this->createNegativeAdjustmentAndUpdateDispute($dispute);
             }
 
             $this->repo->saveOrFail($dispute->payment);
@@ -232,26 +232,32 @@ class Core extends Base\Core
 
         if ($dispute->isLost() === true)
         {
-            $acceptedDisputeAmount = $this->getAcceptedDisputeAmount($dispute, $input);
-
-            if ($dispute->getAmountDeducted() === 0)
-            {
-                $this->createNegativeAdjustmentAndUpdateDispute($dispute, $acceptedDisputeAmount);
-            }
-            else
-            {
-                // If amount_deducted is not zero, it is equal to the disputed amount only
-
-                if (($dispute->getAmountDeducted() - $acceptedDisputeAmount) > 0)
-
-                    $this->createPositiveAdjustmentAndUpdateDispute($dispute,
-                        $dispute->getAmountDeducted() - $acceptedDisputeAmount);
-            }
+            $this->handleLostDisputeAdjustments($dispute, $input);
         }
 
         if ($this->shouldReverse($dispute) === true)
         {
-            $this->createPositiveAdjustmentAndUpdateDispute($dispute, $dispute->getAmountDeducted());
+            $this->createPositiveAdjustmentAndUpdateDispute($dispute);
+        }
+    }
+
+    protected function handleLostDisputeAdjustments(Entity $dispute, array $input)
+    {
+        $acceptedDisputeAmount = $this->getAcceptedDisputeAmount($dispute, $input);
+
+        if ($dispute->getAmountDeducted() === 0)
+        {
+            $this->createNegativeAdjustmentAndUpdateDispute($dispute, $acceptedDisputeAmount);
+        }
+        else
+        {
+            // If amount_deducted is not zero, it is equal to the disputed amount only
+
+            if (($dispute->getAmountDeducted() - $acceptedDisputeAmount) > 0)
+            {
+                $this->createPositiveAdjustmentAndUpdateDispute($dispute,
+                    $dispute->getAmountDeducted() - $acceptedDisputeAmount);
+            }
         }
     }
 
@@ -262,8 +268,13 @@ class Core extends Base\Core
                 ($dispute->getAmountReversed() === 0));
     }
 
-    protected function createNegativeAdjustmentAndUpdateDispute(Entity $dispute, int $amount)
+    protected function createNegativeAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0)
     {
+        if ($amount === 0)
+        {
+            $amount = $dispute->getAmount();
+        }
+
         $input = [
             Adjustment\Entity::CURRENCY    => $dispute->getCurrency(),
             Adjustment\Entity::AMOUNT      => 0 - $amount,
@@ -275,8 +286,13 @@ class Core extends Base\Core
         $dispute->setAmountDeducted($amount);
     }
 
-    protected function createPositiveAdjustmentAndUpdateDispute(Entity $dispute, int $amount)
+    protected function createPositiveAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0)
     {
+        if ($amount === 0)
+        {
+            $amount = $dispute->getAmountDeducted();
+        }
+
         $input = [
             Adjustment\Entity::CURRENCY    => $dispute->getCurrency(),
             Adjustment\Entity::AMOUNT      => $amount,
@@ -290,11 +306,12 @@ class Core extends Base\Core
 
     protected function getAcceptedDisputeAmount(Entity $dispute, array $input)
     {
-        if ((isset($input[Entity::ACCEPTED_DISPUTE_AMOUNT]) === false) or
-            ($input[Entity::ACCEPTED_DISPUTE_AMOUNT] === 0))
+        if (isset($input[Entity::ACCEPTED_DISPUTE_AMOUNT]) === false)
+        {
             return $dispute->getAmount();
+        }
 
-        (new Validator)->validateAcceptedDisputeAmount($dispute->getAmount(), $input);
+        $dispute->getValidator()->validateAcceptedDisputeAmount($dispute->getAmount(), $input);
 
         return $input[Entity::ACCEPTED_DISPUTE_AMOUNT];
     }

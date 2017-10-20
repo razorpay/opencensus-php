@@ -23,7 +23,7 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::GATEWAY_DISPUTE_STATUS  => 'sometimes|string',
         Entity::STATUS                  => 'sometimes|string|custom',
-        Entity::ACCEPTED_DISPUTE_AMOUNT => 'sometimes|integer',
+        Entity::ACCEPTED_DISPUTE_AMOUNT => 'sometimes|integer|min:100',
         Entity::EXPIRES_ON              => 'sometimes|epoch',
     ];
 
@@ -81,6 +81,10 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     *  We ensured via $editRules that $input[Entity::ACCEPTED_DISPUTE_AMOUNT] must be positive value.
+     *  Here we put an upper limit to value of same.
+    */
     public function validateAcceptedDisputeAmount(int $disputedAmount, array $input)
     {
         if ($input[Entity::ACCEPTED_DISPUTE_AMOUNT] > $disputedAmount)
