@@ -7,6 +7,11 @@ class ResponseFields
     const VERSION         = 'VER';
     const CORP_ID         = 'CID';
     const TYPE            = 'TYP';
+
+    /**
+     * They return customer specific token in this fields and we store the same
+     * in Netbanking\Entity::SI_TOKEN
+     */
     const CUSTOMER_REF_NO = 'CRN';
     const CURRENCY        = 'CNY';
     const REQUEST_ID      = 'RID';

@@ -285,7 +285,6 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentRequestData(array $input)
     {
-        // TODO: First / Second recurring?
         if ($input['terminal']->isRecurring())
         {
             return $this->getRecurringPaymentData($input);
