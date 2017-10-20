@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Dispute;
 
+use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -302,6 +303,37 @@ class DisputeTest extends TestCase
         $this->assertEquals($input['amount'], $dispute['amount_deducted']);
         $this->assertEquals(0, $dispute['amount_reversed']);
         $this->assertEquals('adjustment', $txn['type']);
+    }
+
+    public function testDisputeLostLogicWithPartialAcceptedAmount()
+    {
+        // Input params while creating
+        $input = [
+            'amount'                => 10000,
+            'deduct_at_onset'       => 1,
+        ];
+        $testdata = $this->updateEditTestData($input);
+
+        $testdata['request']['content']['accepted_dispute_amount'] = 7000;
+
+        $content = $this->runRequestResponseFlow($testdata);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $adjustments = $this->getEntities('adjustment', [], true);
+
+        $this->assertEquals($dispute['id'], $content['id']);
+        $this->assertEquals($testdata['request']['content']['status'], $content['status']);
+        $this->assertEquals($input['amount'], $dispute['amount']);
+        $this->assertEquals($input['amount'], $dispute['amount_deducted']);
+        $this->assertEquals(($input['amount'] - $testdata['request']['content']['accepted_dispute_amount']),
+            $dispute['amount_reversed']);
+        $this->assertEquals(2, $adjustments['count']);
+        $this->assertEquals(DisputeEntity::stripDefaultSign($dispute['id']), $adjustments['items'][0]['entity_id']);
+        $this->assertEquals(DisputeEntity::stripDefaultSign($dispute['id']), $adjustments['items'][1]['entity_id']);
+        $this->assertEquals(($input['amount'] - $testdata['request']['content']['accepted_dispute_amount']),
+            $adjustments['items'][0]['amount']);
+        $this->assertEquals(0 - $input['amount'], $adjustments['items'][1]['amount']);
     }
 
     // ---------------------------- helper methods-------------------------------

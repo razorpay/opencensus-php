@@ -438,4 +438,16 @@ return [
             'content' => [],
         ],
     ],
+
+    'testDisputeLostLogicWithPartialAcceptedAmount' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'                    => 'lost',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 ];
