@@ -12,16 +12,12 @@ import Items from 'merchant/containers/Items/List';
 @connect(state => state.session)
 export default class InvoicingContainer extends Component {
   render() {
-    let isOldUIEnabled = this.props.user.isOldUIEnabled;
     return (
       <tabbed-container>
         <header id="invoicing-header">
           <NavLink to="/invoices">Invoices</NavLink>
           <ShowWhen notMyRole="sellerapp" featureEnabled="Invoice">
             <span>
-              {isOldUIEnabled
-                ? <NavLink to="/customers">Customers</NavLink>
-                : null}
               <NavLink to="/items">Items</NavLink>
             </span>
           </ShowWhen>

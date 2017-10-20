@@ -1,3 +1,5 @@
+import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+
 /*
   Description: Filter out extra values on basis of `resourceFields`
   Input:
@@ -32,7 +34,7 @@ function _serializeProperty(key, value) {
     case 'name':
       return value && value.trim();
     case 'amount':
-      return Number(value) * 100; // Ideally should be multiplied by unit price. Currently assuming INR
+      return rupeesToPaise(value); // Ideally should be multiplied by unit price. Currently assuming INR
     case 'quantity':
       return Number(value);
   }

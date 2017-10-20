@@ -30,13 +30,4 @@
   </div>
  <div class="app" id="app" ng-class="{'app-header-fixed':app.settings.headerFixed, 'app-aside-fixed':app.settings.asideFixed, 'app-aside-folded':app.settings.asideFolded}" ui-view></div>
 
-  <script type='text/javascript'>
-    window.__lo_site_id = 77197;
-
-    (function() {
-      var wa = document.createElement('script'); wa.type = 'text/javascript'; wa.async = true;
-      wa.src = 'https://d10lpsik1i8c69.cloudfront.net/w.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(wa, s);
-      })();
-  </script>
   <script type="text/javascript" src="https://www.googleadservices.com/pagead/conversion_async.js" charset="utf-8"></script>

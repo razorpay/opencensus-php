@@ -8,7 +8,7 @@ import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { getCustomerDisplayName } from 'rzp/utils/rzp-utils';
 
 const InvoiceListItem = props => {
-  let { invoice, isOldUIEnabled, onEditClick } = props;
+  let { invoice, onEditClick } = props;
   let customer = invoice.customer_details;
 
   return (
@@ -17,19 +17,11 @@ const InvoiceListItem = props => {
         {
           do {
             if (['link', 'ecod'].indexOf(invoice.type) !== -1) {
-              if (isOldUIEnabled) {
-                <NavLink to={`/invoices/${invoice.id}/details`}>
-                  <code>
-                    {invoice.id}
-                  </code>
-                </NavLink>;
-              } else {
-                <NavLink to={`/paymentlinks/${invoice.id}`}>
-                  <code>
-                    {invoice.id}
-                  </code>
-                </NavLink>;
-              }
+              <NavLink to={`/paymentlinks/${invoice.id}`}>
+                <code>
+                  {invoice.id}
+                </code>
+              </NavLink>;
             } else {
               <NavLink to={`/invoices/${invoice.id}`}>
                 <code>
@@ -59,11 +51,6 @@ const InvoiceListItem = props => {
       <td>
         {invoice.short_url && <CopyLink url={invoice.short_url} />}
       </td>
-      {isOldUIEnabled
-        ? <td>
-            {invoice.type}
-          </td>
-        : ''}
       <td>
         <InvoiceStatusLabel status={invoice.status} />
       </td>
@@ -89,7 +76,7 @@ const InvoiceListItem = props => {
 };
 
 export default props => {
-  let { type, invoices, isOldUIEnabled, isLoading } = props;
+  let { type, invoices, isLoading } = props;
   let label = type === 'link' ? 'Payment Link' : 'Invoice';
 
   return (
@@ -107,7 +94,6 @@ export default props => {
             <th>Receipt No.</th>
             <th>Customer</th>
             <th>Payment Link</th>
-            {isOldUIEnabled ? <th>Type</th> : ''}
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -122,7 +108,6 @@ export default props => {
             <InvoiceListItem
               key={invoice.id}
               invoice={invoice}
-              isOldUIEnabled={isOldUIEnabled}
               onEditClick={() => props.onEdit(invoice)}
               onDeleteClick={() => props.onDelete(invoice)}
             />

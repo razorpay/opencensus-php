@@ -71,10 +71,6 @@ export default class User {
     return !!parseInt(this.submitted);
   }
 
-  get isOldUIEnabled() {
-    return (this.tags || []).indexOf('Oldui') !== -1;
-  }
-
   get isMarketplaceEnabled() {
     return this.isFeatureEnabled('marketplace');
   }
