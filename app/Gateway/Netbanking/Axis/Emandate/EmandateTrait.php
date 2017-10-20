@@ -301,25 +301,18 @@ trait EmandateTrait
      */
     protected function getChecksum(array $data) : string
     {
+        $arrayToBeHashed = [
+            $data[RequestFields::CORP_ID],
+            $data[RequestFields::REQUEST_ID],
+            $data[RequestFields::CUSTOMER_REF_NO],
+            $data[RequestFields::AMOUNT] ?? null,
+            $this->getRecSecret(),
+        ];
+
         // Amount is not part of the hash for verify
-        if ($this->action === Action::VERIFY)
+        if ($this->action !== Action::VERIFY)
         {
-            $arrayToBeHashed = [
-                $data[RequestFields::CORP_ID],
-                $data[RequestFields::REQUEST_ID],
-                $data[RequestFields::CUSTOMER_REF_NO],
-                $this->getRecSecret(),
-            ];
-        }
-        else
-        {
-            $arrayToBeHashed = [
-                $data[RequestFields::CORP_ID],
-                $data[RequestFields::REQUEST_ID],
-                $data[RequestFields::CUSTOMER_REF_NO],
-                $data[RequestFields::AMOUNT],
-                $this->getRecSecret(),
-            ];
+            unset($arrayToBeHashed[3]);
         }
 
         return $this->generateHash($arrayToBeHashed);
