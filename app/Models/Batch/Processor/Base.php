@@ -180,9 +180,9 @@ class Base extends BaseModel\Core
         }
         finally
         {
-            $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArray());
-
             $this->postProcess();
+
+            $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArray());
         }
     }
 
@@ -307,8 +307,10 @@ class Base extends BaseModel\Core
 
 
     /**
-     * Indicates if a batch should be marked as processed in all cases, i.e even when
-     * processing failed for certain rows
+     * Indicates if a batch should be marked as processed even if it has partial
+     * failures. This we do partial failures in most types requires action and
+     * reprocessing the same is issue.
+     *
      * @return bool
      */
     protected function shouldMarkProcessedOnFailures(): bool
@@ -352,7 +354,7 @@ class Base extends BaseModel\Core
         $this->batch->setProcessedAt($now);
 
         //
-        // We set the batch status to processed unless irt failed because of some
+        // We set the batch status to processed unless it failed because of some
         // unhandled error in the current run.
         //
         $status = ($this->batch->isFailed() === true) ?
@@ -772,10 +774,11 @@ class Base extends BaseModel\Core
     }
 
     /**
-     * Handles any exception while processing the batch, and updates the batch status accordingly.
-     * Should be overrideen by respective processors for any special handling
+     * Handles any exception while processing the batch, and updates the batch
+     * status accordingly. Should be overrideen by respective processors for any
+     * special handling
      *
-     * @param  \Throwable $ex  Exception encountered while processing the batch
+     * @param \Throwable $ex Exception encountered while processing the batch
      */
     protected function handleBatchProcessingException(\Throwable $ex)
     {
@@ -788,8 +791,9 @@ class Base extends BaseModel\Core
             ]);
 
         //
-        // In case of any unhandled exceptions we set the status to failed, only if
-        // it wasn't partially_processed previously and we weren't able to parse the file
+        // In case of any unhandled exceptions we set the status to failed,
+        // only if it wasn't partially_processed previously and we weren't able
+        // to parse the file. In all other cases the old status will continue.
         //
         if (($this->batch->isPartiallyProcessed() === false) and
             ($this->batch->getFailureCount() === 0))

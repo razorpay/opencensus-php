@@ -186,20 +186,14 @@ class Core extends Base\Core
     {
         if (Type::isQueueGroup($batch->getType()) === false)
         {
-            return;
+            unset($input[Entity::FILE]);
+
+            $this->queueBatchForProcessing($batch, $input);
         }
-
-        unset($input[Entity::FILE]);
-
-        $this->queueBatchForProcessing($batch, $input);
     }
 
     protected function queueBatchForProcessing(Entity $batch, array $input = [])
     {
-        //
-        // For now this is being pushed onto invoice_emails queue only and
-        // later we might have a new queue for this purpose only.
-        //
         $job = new BatchJob($this->mode, $batch->getId(), $input);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);

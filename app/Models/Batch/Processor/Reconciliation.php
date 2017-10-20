@@ -37,10 +37,11 @@ class Reconciliation extends Base
     }
 
     /**
-     * Saves recon file to s3 using UFH and updates batch entity with relevant file details.
-     * This is done in sync when the request is received and not inside queue
+     * Saves recon file to s3 using UFH and updates batch entity with relevant
+     * file details. This is done in sync when the request is received and not
+     * inside queue
      *
-     * @param  array  $input batch creation params
+     * @param array $input
      */
     public function storeInputFileAndSaveBatch(array $input)
     {
@@ -97,11 +98,11 @@ class Reconciliation extends Base
 
     protected function performPreProcessingActions()
     {
+        $this->batch->incrementAttempts();
+
         $this->increaseAllowedSystemLimits();
 
         $this->setGatewayReconciliatorObject();
-
-        $this->batch->incrementAttempts();
     }
 
     protected function setGatewayReconciliatorObject()
