@@ -71,6 +71,8 @@ class Entity extends Base\PublicEntity
     const PROMOTER_PAN_URL                  =      'promoter_pan_url';
     const PROMOTER_ADDRESS_URL              =      'promoter_address_url';
     const TRANSACTION_REPORT_EMAIL          =      'transaction_report_email';
+    const TECHNICAL_SPOC_EMAIL              =      'technical_spoc_email';
+    const BUSINESS_SPOC_EMAIL               =      'business_spoc_email';
     const COMMENT                           =      'comment';
     const ROLE                              =      'role';
     const DEPARTMENT                        =      'department';
