@@ -77,7 +77,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $virtualBankAccountBatchCreateRules = [
-        Entity::TYPE                        => 'required|in:linked_account',
+        Entity::TYPE                        => 'required|in:virtual_bank_account',
         Entity::FILE                        => 'required|file|max:1024|mime_types:'
                                                 . 'application/zip,'
                                                 . 'application/vnd.ms-excel,'
@@ -93,29 +93,6 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|string|max:30',
         Entity::FILE                        => 'required|array'
     ];
-
-    protected static $createValidators = [
-        Entity::TYPE,
-    ];
-
-    protected function validateType(array $input)
-    {
-        $type = $input[Entity::TYPE];
-
-        if (Type::exists($type) === false)
-        {
-            throw new BadRequestException(
-                        ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TYPE,
-                        Entity::TYPE,
-                        [
-                            Entity::TYPE => $type,
-                        ]);
-        }
-
-        $op = $type . '_batch';
-
-        $this->validateInput($op, $input);
-    }
 
     /**
      * Throws error if batch is not in a state which can be processed
