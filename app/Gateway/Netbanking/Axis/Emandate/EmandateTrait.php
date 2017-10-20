@@ -270,6 +270,15 @@ trait EmandateTrait
 
         if ($actualChecksum !== $content[ResponseFields::CHECKSUM])
         {
+            $this->trace->info(
+                TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED,
+                [
+                    'payment_id'         => $this->input['payment'][Payment\Entity::ID],
+                    'gateway'            => $this->gateway,
+                    'action'             => $this->action,
+                ]
+            );
+
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,
                 null,
