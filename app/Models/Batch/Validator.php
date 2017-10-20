@@ -13,82 +13,85 @@ use RZP\Models\Feature\Constants as Feature;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = [
-        Entity::FILE                 => 'sometimes',
-        Entity::TYPE                 => 'required|string|max:25',
-        Entity::GATEWAY              => 'sometimes',
-        Invoice\Entity::DRAFT        => 'sometimes',
-        Invoice\Entity::SMS_NOTIFY   => 'sometimes',
-        Invoice\Entity::EMAIL_NOTIFY => 'sometimes',
+    protected static $refundBatchCreateRules = [
+        Entity::TYPE                        => 'required|in:refund',
+        Entity::FILE                        => 'required|file|max:1024|mime_types:'
+                                                . 'application/zip,'
+                                                . 'application/vnd.ms-excel,'
+                                                . 'application/vnd.oasis.opendocument.spreadsheet,'
+                                                . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
+                                                . 'application/octet-stream,'
+                                                . 'text/csv,'
+                                                . 'text/plain',
     ];
 
-    protected static $refundBatchRules = [
-        Entity::TYPE => 'required|in:refund',
-        Entity::FILE => 'required|file|max:1024|mime_types:'
-                        . 'application/zip,'
-                        . 'application/vnd.ms-excel,'
-                        . 'application/vnd.oasis.opendocument.spreadsheet,'
-                        . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
-                        . 'application/octet-stream,'
-                        . 'text/csv,'
-                        . 'text/plain',
+    protected static $paymentLinkBatchCreateRules = [
+        Entity::TYPE                        => 'required|in:payment_link',
+        Entity::FILE                        => 'required|file|max:1024|mime_types:'
+                                                . 'application/zip,'
+                                                . 'application/vnd.ms-excel,'
+                                                . 'application/vnd.oasis.opendocument.spreadsheet,'
+                                                . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
+                                                . 'application/octet-stream,'
+                                                . 'text/csv,'
+                                                . 'text/plain',
+        Invoice\Entity::DRAFT               => 'filled|in:0,1',
+        Invoice\Entity::SMS_NOTIFY          => 'filled|in:0,1',
+        Invoice\Entity::EMAIL_NOTIFY        => 'filled|in:0,1',
     ];
 
-    protected static $paymentLinkBatchRules = [
-        Entity::TYPE                 => 'required|in:payment_link',
-        Entity::FILE                 => 'required|file|max:1024|mime_types:'
-                                        . 'application/zip,'
-                                        . 'application/vnd.ms-excel,'
-                                        . 'application/vnd.oasis.opendocument.spreadsheet,'
-                                        . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
-                                        . 'application/octet-stream,'
-                                        . 'text/csv,'
-                                        . 'text/plain',
-        Invoice\Entity::DRAFT        => 'filled|in:0,1',
-        Invoice\Entity::SMS_NOTIFY   => 'filled|in:0,1',
-        Invoice\Entity::EMAIL_NOTIFY => 'filled|in:0,1',
+    protected static $irctcRefundBatchCreateRules = [
+        Entity::TYPE                        => 'required|in:irctc_refund',
+        Entity::FILE                        => 'required|file|max:1024|mime_types:'
+                                                . 'application/zip,'
+                                                . 'application/vnd.ms-excel,'
+                                                . 'application/vnd.oasis.opendocument.spreadsheet,'
+                                                . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
+                                                . 'application/octet-stream,'
+                                                . 'text/csv,'
+                                                . 'text/plain',
     ];
 
-    protected static $irctcRefundBatchRules = [
-        Entity::TYPE => 'required|in:irctc_refund',
-        Entity::FILE => 'required|file|max:1024|mime_types:'
-                        . 'application/zip,'
-                        . 'application/vnd.ms-excel,'
-                        . 'application/vnd.oasis.opendocument.spreadsheet,'
-                        . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
-                        . 'application/octet-stream,'
-                        . 'text/csv,'
-                        . 'text/plain',
+    protected static $irctcSettlementBatchCreateRules = [
+        Entity::TYPE                        => 'required|in:irctc_settlement',
+        Entity::FILE                        => 'required|file|max:1024|mime_types:'
+                                                . 'application/zip,'
+                                                . 'application/vnd.ms-excel,'
+                                                . 'application/vnd.oasis.opendocument.spreadsheet,'
+                                                . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
+                                                . 'application/octet-stream,'
+                                                . 'text/csv,'
+                                                . 'text/plain',
     ];
 
-    protected static $irctcSettlementBatchRules = [
-        Entity::TYPE => 'required|in:irctc_settlement',
-        Entity::FILE => 'required|file|max:1024|mime_types:'
-                        . 'application/zip,'
-                        . 'application/vnd.ms-excel,'
-                        . 'application/vnd.oasis.opendocument.spreadsheet,'
-                        . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
-                        . 'application/octet-stream,'
-                        . 'text/csv,'
-                        . 'text/plain',
+    protected static $linkedAccountBatchCreateRules = [
+        Entity::TYPE                        => 'required|in:linked_account',
+        Entity::FILE                        => 'required|file|max:1024|mime_types:'
+                                                . 'application/zip,'
+                                                . 'application/vnd.ms-excel,'
+                                                . 'application/vnd.oasis.opendocument.spreadsheet,'
+                                                . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
+                                                . 'application/octet-stream,'
+                                                . 'text/csv,'
+                                                . 'text/plain',
     ];
 
-    protected static $linkedAccountBatchRules = [
-        Entity::TYPE => 'required|in:linked_account',
-        Entity::FILE => 'required|file|max:1024|mime_types:'
-                        . 'application/zip,'
-                        . 'application/vnd.ms-excel,'
-                        . 'application/vnd.oasis.opendocument.spreadsheet,'
-                        . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
-                        . 'application/octet-stream,'
-                        . 'text/csv,'
-                        . 'text/plain',
+    protected static $virtualBankAccountBatchCreateRules = [
+        Entity::TYPE                        => 'required|in:linked_account',
+        Entity::FILE                        => 'required|file|max:1024|mime_types:'
+                                                . 'application/zip,'
+                                                . 'application/vnd.ms-excel,'
+                                                . 'application/vnd.oasis.opendocument.spreadsheet,'
+                                                . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
+                                                . 'application/octet-stream,'
+                                                . 'text/csv,'
+                                                . 'text/plain',
     ];
 
-    protected static $reconciliationBatchRules = [
-        Entity::TYPE    => 'required|in:reconciliation',
-        Entity::GATEWAY => 'required|string|max:30',
-        Entity::FILE    => 'required|array'
+    protected static $reconciliationBatchCreateRules = [
+        Entity::TYPE                        => 'required|in:reconciliation',
+        Entity::GATEWAY                     => 'required|string|max:30',
+        Entity::FILE                        => 'required|array'
     ];
 
     protected static $createValidators = [

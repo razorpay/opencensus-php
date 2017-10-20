@@ -122,6 +122,32 @@ class Entity extends Base\PublicEntity
         self::PROCESSING       => 'bool',
     ];
 
+    /**
+     * We are overriding build here as the spine build method doesn't accept custom
+     * operation name for create validation. For batch we have specific per type validation
+     *
+     * @param  array  $input
+     * @return Entity
+     */
+    public function build(array $input = [])
+    {
+        $this->input = $input;
+
+        $this->modify($input);
+
+        $operation = $input[Entity::TYPE] . '_batch_create';
+
+        $this->validateInput($operation, $input);
+
+        $this->generate($input);
+
+        $this->unsetInput('create', $input);
+
+        $this->fill($input);
+
+        return $this;
+    }
+
     // Relations
 
     public function merchant()
