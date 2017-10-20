@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Upi\Sbi;
 
 use App;
-use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -13,6 +12,7 @@ use RZP\Gateway\Base\Entity;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Exception\GatewayErrorException;
@@ -191,16 +191,7 @@ class Gateway extends Base\Gateway
             RequestFields::CUSTOMER_REFERENCE_NO => $verify->payment->getCustomerReferenceID(),
         ];
 
-        $requestMsg = $this->encrypt($request);
-
-        $json = [
-            RequestFields::REQUEST_MESSAGE => $requestMsg,
-            RequestFields::PG_MERCHANT_ID  => $this->getMerchantId(),
-        ];
-
-        $content = json_encode($json);
-
-        return $this->getStandardRequestArray($content);
+        return $this->getStandardRequestArray($request);
     }
 
     protected function setVerifyStatus(Verify $verify)
@@ -264,6 +255,8 @@ class Gateway extends Base\Gateway
     // TODO: Validate VPA before sending collect request and don't create payment entity if VPA is invalid
 
     /**
+     * By default, $status is ResponseFields::STATUS, but for refund API, we use ResponseFields::REFUND_STATUS
+     *
      * @param array $response
      * @param string $status
      * @throws GatewayErrorException
@@ -291,7 +284,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getAuthorizeRequestData(array $input)
+    protected function getAuthorizeRequestData(array $input): array
     {
         $content = [
             RequestFields::ADDITIONAL_INFO  => [
@@ -318,18 +311,7 @@ class Gateway extends Base\Gateway
                 'content'    => $content
             ]);
 
-        $requestMsg = $this->encrypt($content);
-
-        $json = [
-            RequestFields::REQUEST_MESSAGE => $requestMsg,
-            RequestFields::PG_MERCHANT_ID  => $this->getMerchantId(),
-        ];
-
-        $content = json_encode($json);
-
-        $request = $this->getStandardRequestArray($content);
-
-        return $request;
+        return $this->getStandardRequestArray($content);
     }
 
     protected function getRefundRequestArray(array $input)
@@ -368,18 +350,7 @@ class Gateway extends Base\Gateway
                 'content'    => $content
             ]);
 
-        $requestMsg = $this->encrypt($content);
-
-        $json = [
-            RequestFields::REQUEST_MESSAGE => $requestMsg,
-            RequestFields::PG_MERCHANT_ID  => $this->getMerchantId(),
-        ];
-
-        $content = json_encode($json);
-
-        $request = $this->getStandardRequestArray($content);
-
-        return $request;
+        return $this->getStandardRequestArray($content);
     }
 
     public function encrypt(array $content): string
@@ -397,11 +368,18 @@ class Gateway extends Base\Gateway
         return json_decode($decryptedString, true);
     }
 
-    public function getAesCrypto()
+    /**
+     * @return Crypto
+     */
+    public function getAesCrypto(): Crypto
     {
         return (new Crypto(AES::MODE_ECB, $this->getSecret()));
     }
 
+    /**
+     * @param string $body
+     * @return array
+     */
     protected function parseGatewayResponse(string $body): array
     {
         $this->trace->info(TraceCode::GATEWAY_RESPONSE,
@@ -425,8 +403,27 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
+    /**
+     * @override
+     *
+     * This method encrypts the request content before converting the request into standard form for Sbi's API's
+     *
+     * @param array $content
+     * @param string $method
+     * @param null $type
+     * @return array
+     */
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
     {
+        $requestMsg = $this->encrypt($content);
+
+        $json = [
+            RequestFields::REQUEST_MESSAGE => $requestMsg,
+            RequestFields::PG_MERCHANT_ID  => $this->getMerchantId(),
+        ];
+
+        $content = json_encode($json);
+
         $request = parent::getStandardRequestArray($content, $method, $type);
 
         $request['headers']['Content-Type'] = 'application/json';
@@ -473,7 +470,7 @@ class Gateway extends Base\Gateway
         return number_format($input[ConstantsEntity::PAYMENT][Payment\Entity::AMOUNT] / 100, '2', '.', '');
     }
 
-    public function getMerchantId()
+    public function getMerchantId(): string
     {
         $merchantId = $this->getLiveMerchantId();
 
@@ -502,7 +499,7 @@ class Gateway extends Base\Gateway
      * @param array $response
      * @return mixed
      */
-    public function getPaymentIdFromServerCallback(array $response)
+    public function getPaymentIdFromServerCallback(array $response): string
     {
         return $response[ResponseFields::API_RESPONSE][ResponseFields::PSP_REFERENCE_NO];
     }

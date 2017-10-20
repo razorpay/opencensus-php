@@ -111,10 +111,10 @@ class UpiMindgateSbiGatewayTest extends TestCase
     {
         $this->testPayment();
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
 
         // Attempt a partial refund
-        $this->refundPayment($payment['id'], 10000);
+        $this->refundPayment($payment[Payment\Entity::ID], 10000);
     }
 
     protected function checkPaymentStatus(string $id, string $status)

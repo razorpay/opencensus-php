@@ -53,21 +53,50 @@ class ResponseFields
     const REFUND_STATUS_DESC         = 'refund_status_desc';
     const REFUND_DATE                = 'refund_date';
     const RESPONSE_CODE_LC           = 'response_code';
+
+    /**
+     * Transaction approval number of the refund request
+     */
     const APPROVAL_NUMBER_LC         = 'approval_number';
-    const REFUND_TRN_DETAIL          = 'refund_trn_detail';
+
     const REFUND_TRANSACTION_DETAIL  = 'refund_trn_detail';
+
+    /**
+     * Order number of the refund request - mapped to refund id
+     */
     const ORDER_NUMBER               = 'order_number';
+
+    /**
+     * Order number of the original payment - mapped to payment id
+     */
     const ORG_ORDER_NUMBER           = 'org_order_number';
+
+    /**
+     * Original upi transaction reference number - mapped to gateway payment id in the upi entity
+     */
     const ORG_TRANSACTION_REF_NUMBER = 'org_trn_ref_number';
+
+    /**
+     * Original customer reference number saved in the upi entity
+     */
     const ORG_CUSTOMER_REF_NUMBER    = 'org_cust_ref_number';
+
+    /**
+     * Npci Transaction ID of the original upi payment, for which we are raising a refund request
+     */
+    const NPCI_TRANSACTION_ID_LC     = 'npci_txn_id';
+
     const TRANSACTION_REMARKS        = 'txn_remarks';
     const CURRENCY_CODE              = 'currency_code';
     const PAYMENT_TYPE               = 'payment_type';
-    const NPCI_TRANSACTION_ID_LC     = 'npci_txn_id';
+    const PAYEE_INFO                 = 'payee_info';
+
+    /**
+     * Payer info fields below
+     */
     const PAYER_INFO                 = 'payer_info';
     const VIRTUAL_ADDRESS            = 'virtualAddress';
     const NAME                       = 'name';
     const ACCOUNT_NUMBER             = 'accountNo';
     const IFSC_CODE                  = 'ifsc';
-    const PAYEE_INFO                 = 'payee_info';
 }

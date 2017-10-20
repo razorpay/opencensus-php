@@ -171,20 +171,20 @@ class Server extends Base\Mock\Server
             ResponseFields::REFUND_DATE               => Carbon::now(Timezone::IST)->toDateTimeString(),
             ResponseFields::RESPONSE_CODE             => '00',
             ResponseFields::APPROVAL_NUMBER           => random_int(100000, 999999),
-            ResponseFields::CUSTOMER_REFERENCE_NO     => $gatewayPayment->getCustomerReferenceId(),
+            ResponseFields::CUSTOMER_REFERENCE_NO     => random_int(100000000000, 999999999999),
             ResponseFields::REFUND_TRANSACTION_DETAIL => [
                 ResponseFields::ORDER_NUMBER               => $refundTransactionDetails[RequestFields::ORDER_NUMBER],
                 ResponseFields::ORG_ORDER_NUMBER           => $refundTransactionDetails[RequestFields::ORG_ORDER_NUMBER],
-                ResponseFields::ORG_CUSTOMER_REF_NUMBER    => $refundTransactionDetails[RequestFields::ORG_CUSTOMER_REF_NUMBER],
                 ResponseFields::ORG_TRANSACTION_REF_NUMBER => $refundTransactionDetails[RequestFields::ORG_TRANSACTION_REF_NUMBER],
+                ResponseFields::ORG_CUSTOMER_REF_NUMBER    => $refundTransactionDetails[RequestFields::ORG_CUSTOMER_REF_NUMBER],
                 ResponseFields::TRANSACTION_REMARKS        => $refundTransactionDetails[RequestFields::TRANSACTION_REMARKS],
                 ResponseFields::CURRENCY_CODE              => $refundTransactionDetails[ResponseFields::CURRENCY_CODE],
                 ResponseFields::PAYMENT_TYPE               => $refundTransactionDetails[ResponseFields::PAYMENT_TYPE],
                 ResponseFields::NPCI_TRANSACTION_ID_LC     => $gatewayPayment->getNpciReferenceId(),
                 ResponseFields::PAYER_INFO                 => [
                     ResponseFields::VIRTUAL_ADDRESS => $gatewayPayment->getVpa(),
-                    ResponseFields::NAME            => 'Merchant name', // TODO: work on this
-                    ResponseFields::ACCOUNT_NUMBER  => 12121121, // TODO: Work on this
+                    ResponseFields::NAME            => 'Random merchant name', // TODO: work on this
+                    ResponseFields::ACCOUNT_NUMBER  => random_int(100000000000, 999999999999), // TODO: Work on this
                     ResponseFields::IFSC_CODE       => 'SBIN000000013', // TODO: Work on this
                 ],
                 ResponseFields::PAYEE_INFO                 => [
