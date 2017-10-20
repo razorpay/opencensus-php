@@ -52,8 +52,6 @@ class Service extends Base\Service
 
     const SELF_INVITE_NOT_ALLOWED = "You can't invite yourself";
 
-    const API_BASE_URL = 'https://api.razorpay.com';
-
     // This is the Admin\Logger trait
     use Logger;
 
@@ -1422,28 +1420,23 @@ class Service extends Base\Service
      *
      * @return array $response
      */
-    public function getDBConnectionStatus()
+    protected function getDBConnectionStatus()
     {
+        $response = [
+            'statusMessage' => 'ok',
+            'statusCode'    => 200
+        ];
+
         try
         {
-            if (DB::connection('mysql')->getPdo())
-            {
-                $statusMessage = 'Connected to DB';
-
-                $statusCode = 200;
-            }
+            $DBConnection = DB::connection('mysql')->getPdo();
         }
         catch (Exception $e)
         {
-            $statusMessage = 'DB Connection Error';
+            $response['statusMessage'] = 'DB Connection Error';
 
-            $statusCode = 500;
+            $response['statusCode'] = $e->getCode();
         }
-
-        $response = [
-            'statusMessage' => $statusMessage,
-            'statusCode'    => $statusCode
-        ];
 
         return $response;
     }
@@ -1453,28 +1446,23 @@ class Service extends Base\Service
      *
      * @return array $response
      */
-    public function getRedisConnectionStatus()
+    protected function getRedisConnectionStatus()
     {
+        $response = [
+            'statusMessage' => 'ok',
+            'statusCode'    => 200
+        ];
+
         try
         {
-            if ($this->app['redis']->connection()->ping())
-            {
-                $statusMessage = 'Connected to Redis';
-
-                $statusCode = 200;
-            }
+            $redisConnection = $this->app['redis']->connection()->ping();
         }
         catch (Exception $e)
         {
-            $statusMessage = 'Redis Connection Error';
+            $response['statusMessage'] = 'Redis Connection Error';
 
-            $statusCode = 500;
+            $response['statusCode'] = $e->getCode();
         }
-
-        $response = [
-            'statusMessage' => $statusMessage,
-            'statusCode'    => $statusCode
-        ];
 
         return $response;
     }
@@ -1484,28 +1472,25 @@ class Service extends Base\Service
      *
      * @return array $response
      */
-    public function getAPIConnectionStatus()
+    protected function getAPIConnectionStatus()
     {
+        $response = [
+            'statusMessage' => 'ok',
+            'statusCode'    => 200
+        ];
+
         try
         {
-            if (Requests::request(self::API_BASE_URL))
-            {
-                $statusMessage = 'Connected to API';
+            $apiURL = substr(config('api.url'), 0, -4);
 
-                $statusCode = 200;
-            }
+            $APIConnection = Requests::request($apiURL);
         }
         catch (Exception $e)
         {
-            $statusMessage = 'API Connection Error';
+            $response['statusMessage'] = 'API Connection Error';
 
-            $statusCode = 500;
+            $response['statusCode'] = $e->getCode();
         }
-
-        $response = [
-            'statusMessage' => $statusMessage,
-            'statusCode'    => $statusCode
-        ];
 
         return $response;
     }
@@ -1528,9 +1513,9 @@ class Service extends Base\Service
         // Check API Connection
         $apiStatus = $this->getAPIConnectionStatus();
 
-        if ($databaseStatus['statusCode'] === 500 or
-            $redisStatus['statusCode'] === 500 or
-            $apiStatus['statusCode'] === 500)
+        if ($databaseStatus['statusCode'] !== 200 or
+            $redisStatus['statusCode'] !== 200 or
+            $apiStatus['statusCode'] !== 200)
         {
             $statusCode = 500;
         }
