@@ -109,7 +109,7 @@ class Core extends Base\Core
 
         foreach ($batches as $batch)
         {
-            $this->processBatchInSync();
+            $this->processBatchInSync($batch);
         }
 
         return $batches;
@@ -181,15 +181,15 @@ class Core extends Base\Core
      * Performs batch processing in sync, by calling the respective batch processor.
      * Used in cron batch processing flow
      *
-     * @param  bool     $shouldThrow     flag to indicate if a processing exception
-     *                                   should be bubbled up or not
+     * @param  Batch\Entity $batch
+     * @param  bool         $shouldThrow     flag to indicate if a processing exception
+     *                                           should be bubbled up or not
      */
-    protected function processBatchInSync(bool $shouldThrow = false)
+    protected function processBatchInSync(Entity $batch, bool $shouldThrow = false)
     {
         try
         {
             Processor\Base::get($batch)
-                          ->setParams($this->params)
                           ->validateAndProcess();
         }
         catch (\Throwable $ex)

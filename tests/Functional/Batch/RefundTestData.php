@@ -258,7 +258,7 @@ return [
 
     'testProcessRefundWithThreeAttempt' => [
         'request' => [
-            'url' => '/batches/process',
+            'url' => '',
             'method' => 'post',
             'content' => [
 
@@ -266,26 +266,20 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity' => 'collection',
-                'count' => 1,
-                'items' => [
-                    [
-                        'entity'            => 'batch',
-                        'status'            => 'processed',
-                        'amount'            =>  4000,
-                        'processed_amount'  =>  0,
-                        'success_count'     =>  0,
-                        'failure_count'     =>  1,
-                        'attempts'          =>  3,
-                    ],
-                ]
+                'entity'            => 'batch',
+                'status'            => 'partially_processed',
+                'amount'            =>  4000,
+                'processed_amount'  =>  0,
+                'success_count'     =>  0,
+                'failure_count'     =>  1,
+                'attempts'          =>  2,
             ],
         ],
     ],
 
     'testProcessRefundWithThreeAttemptSuccess' => [
         'request' => [
-            'url' => '/batches/process',
+            'url' => '',
             'method' => 'post',
             'content' => [
 
@@ -293,63 +287,14 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity' => 'collection',
-                'count' => 1,
-                'items' => [
-                    [
-                        'entity'            => 'batch',
-                        'status'            => 'processed',
-                        'amount'            =>  4000,
-                        'processed_amount'  =>  4000,
-                        'success_count'     =>  1,
-                        'failure_count'     =>  0,
-                        'attempts'          =>  3,
-                    ],
-                ]
+                'entity'            => 'batch',
+                'status'            => 'partially_processed',
+                'amount'            =>  4000,
+                'processed_amount'  =>  0,
+                'success_count'     =>  0,
+                'failure_count'     =>  1,
+                'attempts'          =>  2,
             ],
         ],
     ],
-
-    'testRetryRefund' => [
-        'request' => [
-            'method' => 'post',
-            'content' => [
-
-            ],
-        ],
-        'response' => [
-            'content' => [
-                        'entity'            => 'batch',
-                        'status'            => 'partially_processed',
-                        'amount'            =>  4000,
-                        'processed_amount'  =>  0,
-                        'success_count'     =>  0,
-                        'failure_count'     =>  1,
-                        'attempts'          =>  3,
-            ],
-        ],
-    ],
-
-    'testRetryRefundWithException' => [
-        'request' => [
-            'method' => 'post',
-            'content' => [
-
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The uploaded file is already processed',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED,
-        ],
-    ],
-
 ];
