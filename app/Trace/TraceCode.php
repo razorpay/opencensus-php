@@ -678,8 +678,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_INFO_SUMMARY                        = 'RECON_INFO_SUMMARY';
     const RECON_FILE_LINK                           = 'RECON_FILE_LINK';
     const IIN_INSERT_FAILED                         = 'IIN_INSERT_FAILED';
-    const RECON_ERROR_CREATING_BATCH                = 'RECON_ERROR_CREATING_BATCH';
-    const RECON_BATCH_PROCESSING_FATAL_ERROR        = 'RECON_BATCH_PROCESSING_FATAL_ERROR';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH           = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';

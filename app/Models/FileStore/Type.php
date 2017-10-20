@@ -44,7 +44,7 @@ class Type
 
     const BATCH_INPUT                       = 'batch_input';
     const BATCH_OUTPUT                      = 'batch_output';
-    const BATCH_RECON_INPUT                 = 'batch_recon_input';
+    const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
 
     const BLANK                             = 'blank';
 
@@ -126,7 +126,7 @@ class Type
         Constants\Entity::BATCH => [
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
-            self::BATCH_RECON_INPUT,
+            self::RECONCILIATION_BATCH_INPUT,
         ],
 
         Constants\Entity::MERCHANT_DETAIL => [
@@ -157,7 +157,7 @@ class Type
      * Types allowed when no entity is associated
      */
     const SHARED_ACCOUNT_ALLOWED_TYPES = [
-        self::BATCH_RECON_INPUT,
+        self::RECONCILIATION_BATCH_INPUT,
         self::BENEFICIARY_FILE,
         self::EMI_FILE,
         self::AXIS_EMI_FILE,

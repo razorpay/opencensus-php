@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Batch\Processor;
 
-use Carbon\Carbon;
-use Razorpay\Trace\Logger as Trace;
 use Symfony\Component\HttpFoundation\File\File;
 
 use RZP\Models\Batch;
@@ -11,7 +9,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
-use RZP\Models\Batch\Status;
 use RZP\Reconciliator\Converter;
 use RZP\Reconciliator\FileProcessor;
 
@@ -27,6 +24,11 @@ class Reconciliation extends Base
 
     protected $converter;
 
+    /**
+     * Represents the reconciliator class for individual gateway
+     *
+     * @var RZP\Reconciliator\Base\Reconciliate
+     */
     protected $gatewayReconciliator;
 
     public function __construct(Batch\Entity $batch)
@@ -85,7 +87,7 @@ class Reconciliation extends Base
             ->name($fileName)
             ->extension($inputFileDetails[FileProcessor::EXTENSION])
             ->entity($this->batch)
-            ->type(FileStore\Type::BATCH_RECON_INPUT)
+            ->type(FileStore\Type::RECONCILIATION_BATCH_INPUT)
             ->deleteLocalFile()
             ->save();
 
@@ -117,7 +119,6 @@ class Reconciliation extends Base
     /**
      * We download the recon file for processing here, and parse the contents.
      * We then process the contents of the recon file by calling the gateway recon class.
-     * Any unhandled exceptions in the reconciliator is being handled here.
      */
     protected function parseAndProcessBatchEntries()
     {
@@ -153,7 +154,7 @@ class Reconciliation extends Base
         {
             throw new Exception\ReconciliationException(
                 'File is neither an Excel nor a CSV type.',
-                ['file_details' => $inputFileDetails]
+                [self::FILE_DETAILS => $inputFileDetails]
             );
         }
 
@@ -253,8 +254,14 @@ class Reconciliation extends Base
         $inputFile = $this->batch->inputFile();
 
         $filePath = (new FileStore\Accessor)
-                    ->id($inputFile->getId())
-                    ->getFile();
+                        ->id($inputFile->getId())
+                        ->getFile();
+
+        //
+        // This is being set here so that we delete the downloaded file once
+        // processing is done
+        //
+        $this->inputFileLocalPath = $filePath;
 
         $fileType = FileProcessor::getFileType($inputFile->getMime());
 
@@ -276,9 +283,13 @@ class Reconciliation extends Base
         ];
     }
 
-    protected function postProcess()
+    /**
+     * For reconciliation batch we don't need to send any mail, hence not doing
+     * anything inside this function
+     */
+    protected function sendProcessedMail()
     {
-        $this->updateBatchStatusPostProcess();
+        return;
     }
 
     /**

@@ -22,11 +22,21 @@ class Entity extends Base\PublicEntity
     const SUCCESS_COUNT             = 'success_count';
     const FAILURE_COUNT             = 'failure_count';
     const ATTEMPTS                  = 'attempts';
+    /**
+     * amount and processed_amount represent the total amounnt across entities
+     * present in the batch input file, for batches like refund.
+     */
     const AMOUNT                    = 'amount';
     const PROCESSED_AMOUNT          = 'processed_amount';
+
     const COMMENT                   = 'comment';
     const PROCESSED_AT              = 'processed_at';
     const TYPE                      = 'type';
+
+    /**
+     * sub_type is used for further classification of the batch. Currently being
+     * used for reconciliation batch and can have values like combined | payment | refund
+     */
     const SUB_TYPE                  = 'sub_type';
     const GATEWAY                   = 'gateway';
     const FAILURE_REASON            = 'failure_reason';

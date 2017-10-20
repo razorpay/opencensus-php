@@ -13,7 +13,6 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
-use RZP\Models\Batch\Status;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
@@ -61,8 +60,8 @@ class Base extends BaseModel\Core
      * - sending mails with attachment,
      * - unlinking post processing etc..
      */
-    protected $inputFileLocalPath;
-    protected $outputFileLocalPath;
+    protected $inputFileLocalPath = "";
+    protected $outputFileLocalPath = "";
 
     /**
      * Static method returns instance of processor based on type of batch
@@ -145,16 +144,30 @@ class Base extends BaseModel\Core
     /**
      * Checks if the batch can be processed, if yes sets the processing flag
      * and calls the main process method. In other case throws an exception.
+     * We perform the entire operation inside a mutex lock, so that concurrent
+     * process requests are handled successfully. We also validate after doing a
+     * data reload for the batch entity so that there is no chance of concurrent
+     * requests processing the same batch.
      */
     public function validateAndProcess()
     {
-        $this->batch->getValidator()->validateIfProcessable();
+        $this->mutex->acquireAndRelease(
+            $this->batch->getId(),
+            function ()
+            {
+                $this->batch->reload();
 
-        $this->batch->setProcessing(true);
+                $this->batch->getValidator()->validateIfProcessable();
 
-        $this->repo->saveOrFail($this->batch);
+                $this->batch->setProcessing(true);
 
-        $this->process();
+                $this->repo->saveOrFail($this->batch);
+
+                $this->process();
+            },
+            static::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS
+        );
     }
 
     public function process()
@@ -165,14 +178,7 @@ class Base extends BaseModel\Core
 
             $this->performPreProcessingActions();
 
-            $this->mutex->acquireAndRelease(
-                $this->batch->getId(),
-                function ()
-                {
-                    $this->parseAndProcessBatchEntries();
-                },
-                static::MUTEX_LOCK_TIMEOUT,
-                ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS);
+            $this->parseAndProcessBatchEntries();
         }
         catch (\Throwable $ex)
         {
@@ -358,8 +364,8 @@ class Base extends BaseModel\Core
         // unhandled error in the current run.
         //
         $status = ($this->batch->isFailed() === true) ?
-                    Status::FAILED :
-                    Status::PROCESSED;
+                    Batch\Status::FAILED :
+                    Batch\Status::PROCESSED;
 
         //
         // But if we were able to process the file and there were failures, we
@@ -377,8 +383,8 @@ class Base extends BaseModel\Core
                 (($this->batch->getSuccessCount() === 0) and ($this->batch->getFailureCount() === 0)))
             {
                 $status = ($this->shouldMarkProcessedOnFailures() === true) ?
-                            Status::PROCESSED :
-                            Status::PARTIALLY_PROCESSED;
+                            Batch\Status::PROCESSED :
+                            Batch\Status::PARTIALLY_PROCESSED;
             }
         }
 
@@ -386,7 +392,7 @@ class Base extends BaseModel\Core
         // If in the current run the batch has been processed, we reset the failure
         // reason to maintain consistency
         //
-        if ($status === Status::PROCESSED)
+        if ($status === Batch\Status::PROCESSED)
         {
             $this->batch->unsetFailureReason();
         }
@@ -798,7 +804,7 @@ class Base extends BaseModel\Core
         if (($this->batch->isPartiallyProcessed() === false) and
             ($this->batch->getFailureCount() === 0))
         {
-            $this->batch->setStatus(Status::FAILED);
+            $this->batch->setStatus(Batch\Status::FAILED);
         }
 
         //

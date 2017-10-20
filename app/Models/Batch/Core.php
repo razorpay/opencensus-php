@@ -40,27 +40,6 @@ class Core extends Base\Core
     }
 
     /**
-     * Retry batch entity.
-     *
-     * - Only sets the status to PROCESSING so it gets picked by
-     *   the next cron run.
-     * - TBD if this behavior can remain as is or can be changed, so that
-     *   we can use queue for this also.
-     *
-     * @param Entity $batch
-     */
-    public function retryBatch(Entity $batch)
-    {
-        $batch->getValidator()->validateIfProcessable();
-
-        $batch->setProcessing(true);
-
-        $this->repo->saveOrFail($batch);
-
-        $this->trace->info(TraceCode::BATCH_RETRY, $batch->toArrayPublic());
-    }
-
-    /**
      * Internal Auth: There are some very rare cases (UFH issues) where output
      * file doesn't get created but the batch is actually processed. This has
      * happened specifically for payment_link type batch. We can't wrap the whole
@@ -130,17 +109,14 @@ class Core extends Base\Core
 
         foreach ($batches as $batch)
         {
-            if ($batch->isProcessable() === true)
-            {
-                Processor\Base::get($batch)->process();
-            }
+            $this->processBatchInSync();
         }
 
         return $batches;
     }
 
     /**
-     * Retry individual batch by internal auth API call
+     * Process individual batch by internal auth API call
      *
      * @param Entity $batch
      *
@@ -148,6 +124,8 @@ class Core extends Base\Core
      */
     public function processBatchViaApi(Entity $batch)
     {
+        $this->trace->info(TraceCode::BATCH_RETRY, $batch->toArrayPublic());
+
         $this->queueBatchForProcessing($batch);
 
         return $batch;
@@ -197,5 +175,29 @@ class Core extends Base\Core
         $job = new BatchJob($this->mode, $batch->getId(), $input);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
+    }
+
+    /**
+     * Performs batch processing in sync, by calling the respective batch processor.
+     * Used in cron batch processing flow
+     *
+     * @param  bool     $shouldThrow     flag to indicate if a processing exception
+     *                                   should be bubbled up or not
+     */
+    protected function processBatchInSync(bool $shouldThrow = false)
+    {
+        try
+        {
+            Processor\Base::get($batch)
+                          ->setParams($this->params)
+                          ->validateAndProcess();
+        }
+        catch (\Throwable $ex)
+        {
+            if ($shouldThrow === true)
+            {
+                throw $ex;
+            }
+        }
     }
 }
