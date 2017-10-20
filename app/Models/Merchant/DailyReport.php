@@ -107,6 +107,7 @@ class DailyReport extends Base\Core
 
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+                // Do not send the report to linked accounts
                 if ($merchant->isLinkedAccount() === true)
                 {
                     continue;
