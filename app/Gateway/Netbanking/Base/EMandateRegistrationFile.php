@@ -11,8 +11,10 @@ use RZP\Models\FileStore;
 
 class EMandateRegistrationFile extends Base\Core
 {
-    // In mins
+    // In minutes
     const SIGNED_URL_DURATION = 1440;
+
+    protected static $fileToWriteName = 'Hdfc_Emandate_Registration';
 
     protected function createFile(
                         string $extension,

@@ -6,7 +6,7 @@ use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 
-/** Implement Recepients, and Subject in your class */
+/** Implement Recipients, and Subject in your class */
 
 class Base extends Mailable
 {

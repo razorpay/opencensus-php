@@ -27,18 +27,27 @@ class Service extends Base\Service
 
         if ($payments->count() === 0)
         {
-            return ['count' => 0, 'message' => 'No payments are pending EMandate registration for gateway ' . $gateway];
+            return [
+                'count' => 0,
+                'message' => 'No payments are pending EMandate registration for gateway ' . $gateway
+            ];
         }
 
         $gatewayInput = ['payments' => $payments];
 
         // Call gateway method
-        $response = $this->app['gateway']->call($gateway, Payment\Action::INITIATE_REGISTER_EMANDATE, $gatewayInput, $this->mode);
+        $response = $this->app['gateway']->call(
+                            $gateway,
+                            Payment\Action::INITIATE_REGISTER_EMANDATE,
+                            $gatewayInput,
+                            $this->mode);
 
         return $response;
     }
 
-    /** @param array $input The input received from the route
+    /**
+     * @param string $gateway
+     * @param array  $input The input received from the route
      *
      * @return array Summary of reconciliation
      * @throws \Throwable
@@ -47,22 +56,11 @@ class Service extends Base\Service
     {
         (new Validator)->validateRegistrationGateway($gateway);
 
-        try
-        {
-            $response = $this->app['gateway']->call(
+        $response = $this->app['gateway']->call(
                             $gateway,
                             Payment\Action::RECONCILE_REGISTER_EMANDATE,
                             $input,
                             $this->mode);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e, Trace::DEBUG, TraceCode::EMANDATE_REGISTER_RECON_FAILED,
-                (array) json_decode($e->getMessage()));
-
-                throw $e;
-        }
 
 
         return $response;
@@ -83,7 +81,11 @@ class Service extends Base\Service
 
         $gatewayInput = ['payments' => $payments];
 
-        $response = $this->app['gateway']->call($gateway, Payment\Action::INITIATE_DEBIT_EMANDATE, $gatewayInput, $this->mode);
+        $response = $this->app['gateway']->call(
+                            $gateway,
+                            Payment\Action::INITIATE_DEBIT_EMANDATE,
+                            $gatewayInput,
+                            $this->mode);
 
         return $response;
     }
@@ -92,29 +94,19 @@ class Service extends Base\Service
     {
         (new Validator)->validateDebitGateway($gateway);
 
-        try
-        {
-            $response = $this->app['gateway']->call(
+        $response = $this->app['gateway']->call(
                             $gateway,
                             Payment\Action::RECONCILE_DEBIT_EMANDATE,
                             $input,
                             $this->mode);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e, Trace::DEBUG, TraceCode::EMANDATE_DEBIT_RECON_FAILED,
-                (array) json_decode($e->getMessage()));
-
-                throw $e;
-        }
 
         return $response;
     }
 
     protected function getTimestamps(array $input): array
     {
-        if ((isset($input['from']) === true) and (isset($input['to']) === true))
+        if ((isset($input['from']) === true) and
+            (isset($input['to']) === true))
         {
             return [$input['from'], $input['to']];
         }

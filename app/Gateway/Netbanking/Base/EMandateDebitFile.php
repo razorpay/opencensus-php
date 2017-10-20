@@ -11,8 +11,10 @@ use RZP\Models\FileStore;
 
 class EMandateDebitFile extends Base\Core
 {
-    // In mins
+    // In minutes
     const SIGNED_URL_DURATION = 1440;
+
+    protected static $fileToWriteName = 'Hdfc_Emandate_Debit';
 
     protected function createFile(
                         string $extension,

@@ -2,8 +2,8 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use Request;
+use ApiResponse;
 
 use RZP\Exception;
 use RZP\Models\EMandate;
@@ -14,7 +14,7 @@ class EMandateController extends Controller
     {
         $input = Request::all();
 
-        $data = (new EMandate\Service)->generateRegistrationFile($gateway, $input);
+        $data = $this->service()->generateRegistrationFile($gateway, $input);
 
         return ApiResponse::json($data);
     }
@@ -28,13 +28,9 @@ class EMandateController extends Controller
             );
         }
 
-        $file = Request::file('file');
-
         $input = Request::all();
 
-        $input['file'] = $file;
-
-        $data = (new EMandate\Service)->reconcileRegistrationFile($gateway, $input);
+        $data = $this->service()->reconcileRegistrationFile($gateway, $input);
 
         return ApiResponse::json($data);
     }
@@ -43,7 +39,7 @@ class EMandateController extends Controller
     {
         $input = Request::all();
 
-        $data = (new EMandate\Service)->generateDebitFile($gateway, $input);
+        $data = $this->service()->generateDebitFile($gateway, $input);
 
         return ApiResponse::json($data);
     }
@@ -57,11 +53,9 @@ class EMandateController extends Controller
             );
         }
 
-        $file = Request::file('file');
+        $input = Request::all();
 
-        $input['file'] = $file;
-
-        $data = (new EMandate\Service)->reconcileDebitFile($gateway, $input);
+        $data = $this->service()->reconcileDebitFile($gateway, $input);
 
         return ApiResponse::json($data);
     }

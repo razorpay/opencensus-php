@@ -214,10 +214,6 @@ class Core extends Base\Core
 
             $token->setRecurringFailureReason($gatewayData[Entity::RECURRING_FAILURE_REASON]);
         }
-
-        $this->repo->saveOrFail($token);
-
-        return $token;
     }
 
     protected function validateExistingToken($token)

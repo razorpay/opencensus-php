@@ -10,9 +10,7 @@ class Validator extends Base\Validator
 {
     public function validateRegistrationGateway($gateway)
     {
-        $validGateways = array_values(Gateway::$fileBasedEMandateRegistrationBanks);
-
-        if (in_array($gateway, $validGateways, true) === false)
+        if (Gateway::isFileBasedEMandateRegistrationGateway($gateway) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid eMandate registration gateway. ' . $gateway);
@@ -21,9 +19,7 @@ class Validator extends Base\Validator
 
     public function validateDebitGateway($gateway)
     {
-        $validGateways = array_values(Gateway::$fileBasedEMandateDebitBanks);
-
-        if (in_array($gateway, $validGateways, true) === false)
+        if (Gateway::isFileBasedEMandateDebitGateway($gateway) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid eMandate debit gateway. ' . $gateway);
