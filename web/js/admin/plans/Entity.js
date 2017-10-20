@@ -38,7 +38,7 @@ export default class PlanEntity extends Component {
 
 // options.feature[item.feature]
 const namedKey = (item, name) => {
-  if (item.props.id || item.readonly) {
+  if (item.id || item.readonly) {
     return options[name][item[name] || ''];
   } else {
     return (
@@ -54,17 +54,17 @@ const namedKey = (item, name) => {
 };
 
 const fields = [
-  item => item.props.id && ['', item.props.id],
+  item => item.id && ['', item.id],
   item => ['Feature', namedKey(item, 'feature')],
-  item => item.props.feature && ['Method', namedKey(item, 'payment_method')],
+  item => item.feature && ['Method', namedKey(item, 'payment_method')],
   item =>
-    item.props.feature === 'payment' && [
+    item.feature === 'payment' && [
       'Card Type',
       namedKey(item, 'payment_method_type'),
     ],
   item => [
     '',
-    ((item.props.id || item.readonly) && (
+    ((item.id || item.readonly) && (
       <AsyncButton
         class="link danger"
         pendingClass="spinner"

@@ -1,6 +1,6 @@
 import { observable, extendObservable } from 'mobx';
 import Collection from 'model/collection';
-import BaseModel from 'model/base';
+import CollectionItem from 'model/collectionItem';
 import { adminDelete, adminFetch, adminPost } from 'util/fetch';
 import { methods } from 'util/data';
 import { notifySuccess, notifyError } from 'common/modal';
@@ -17,6 +17,7 @@ export default class Plan extends Collection {
           id: props.id,
         },
       },
+      model: Rule,
     });
     this.props = props;
 
@@ -31,8 +32,8 @@ export default class Plan extends Collection {
     return this.request(
       'fetch',
       adminFetch({
-        data: this.data,
-        queryParams: this.filters,
+        ...this.data,
+        query_params: this.filters,
       })
     ).then(data => {
       this.items.replace(
@@ -50,13 +51,9 @@ export default class Plan extends Collection {
     return this.request(
       'save',
       adminPost({
-        data: {
-          route_name: 'pricing_create_plan',
-          body: {
-            plan_name: name,
-            rules: this.items.slice(1).map(p => p.props),
-          },
-        },
+        route_name: 'pricing_create_plan',
+        plan_name: name,
+        rules: this.items.slice(1).map(p => p.props),
       })
     );
   }
@@ -94,66 +91,55 @@ const ruleProps = Object.keys(options).reduce(function(o, key) {
   return o;
 }, {});
 
-class Rule extends BaseModel {
-  constructor(plan, props = ruleProps) {
-    super();
-    this.plan = plan;
-
-    if (!props.id) {
-      props = Object.assign(props, ruleProps);
-    }
-    this.bind(['onPropChange', 'save', 'delete']);
-    this.props = observable(props);
-  }
-
-  onPropChange(e) {
-    this.props[e.target.name] = e.target.value;
+class Rule extends CollectionItem {
+  constructor(collection, props = ruleProps) {
+    super(collection, props);
+    this.bind(['save', 'delete']);
+    extendObservable(this, props);
   }
 
   save() {
     // if unsaved plan
-    if (!this.plan.props.id) {
-      this.readonly = true;
-      return this.plan.items.push(new Rule(this.plan, deepClone(this.props)));
+    if (!this.collection.props.id) {
+      this.define('readonly', true);
+      let copy = this.copy;
+      copy.readonly = true;
+      return this.collection.items.push(copy);
     }
     return this.request(
       'save',
       adminPost({
-        data: {
-          route_name: 'pricing_add_plan_rule',
-          url_params: {
-            id: this.plan.props.id,
-          },
-          body: this.props,
+        body: this,
+        route_name: 'pricing_add_plan_rule',
+        url_params: {
+          id: this.collection.props.id,
         },
       })
     ).then(data => {
       if (data) {
         notifySuccess(`Rule added for ${data.plan_name}`);
-        this.plan.items.splice(-1, 0, new Rule(this.plan, data));
+        this.collection.items.splice(-1, 0, Object.assign(this.copy, data));
       }
     });
   }
 
   delete() {
-    if (!this.plan.props.id) {
-      return this.plan.items.remove(this);
+    if (!this.collection.props.id) {
+      return this.collection.items.remove(this);
     }
     return this.request(
       'delete',
       adminDelete({
-        data: {
-          route_name: 'pricing_delete_plan_rule',
-          url_params: {
-            planId: this.plan.props.id,
-            ruleId: this.props.id,
-          },
+        route_name: 'pricing_delete_plan_rule',
+        url_params: {
+          planId: this.collection.props.id,
+          ruleId: this.id,
         },
       })
     ).then(data => {
       if (data) {
         notifySuccess(data.message);
-        this.plan.items.remove(this);
+        this.collection.items.remove(this);
       }
     });
   }

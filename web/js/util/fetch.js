@@ -1,28 +1,57 @@
 import axios from 'axios';
 import { deepClone } from 'util/index';
+import { notifyError } from 'common/modal';
+
+export default function fetch(options) {
+  return axios(options)
+    .then(({ data }) => {
+      if (!data.success) {
+        throw data.errors[0];
+      }
+      return data.data;
+    })
+    .catch(e => notifyError(e));
+}
 
 export function adminFetch(params) {
-  return axios({
+  return fetch({
     url: '/admin/generic',
     params: parseParams(params),
   });
 }
 
-export default function fetch(options) {
-  return axios(options);
-}
-
-export function adminPost(params) {
-  return axios({
+export function adminPost(data) {
+  data = parseParams(data);
+  return fetch({
     url: '/admin/generic',
     method: 'post',
+    data,
+  });
+}
+
+export function adminPut(params, config) {
+  return fetch({
+    url: '/admin/generic',
+    method: 'put',
     ...parseParams(params),
   });
 }
 
+export function adminUserConfirm(params, config) {
+  return axios.post('/admin/users/confirm', params);
+}
+
+export function adminFormUpload(form, url) {
+  //Let axios decide which "Content-Type" to send
+  let fData = createFormData(form);
+  return axios.post(url, fData);
+}
+
 export function adminDelete(params) {
-  return axios.delete('/admin/generic', {
-    params: parseParams({ data: params }),
+  return fetch({
+    url: '/admin/generic',
+    method: 'delete',
+    params: parseParams(params),
   });
 }
 
@@ -42,3 +71,12 @@ function parseParams(origParams) {
   }
   return params;
 }
+
+const createFormData = (form = {}) => {
+  let formData = new FormData();
+
+  Object.keys(form).map(key => {
+    formData.append(key, form[key]);
+  });
+  return formData;
+};

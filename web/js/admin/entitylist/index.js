@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { snakeToTitleCase } from 'util/index';
-import { default as SimpleTable } from 'ui/SimpleTable';
+import SimpleTable from 'ui/SimpleTable';
 
 const EntityList = ({ columnMeta = {}, records = [], limit = 10 }) => {
   if (records.length === 0) {

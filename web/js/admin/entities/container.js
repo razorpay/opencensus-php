@@ -50,13 +50,13 @@ export default class Entities extends Component {
 
     this.state = initialState;
 
-    this.onSearch = this.onSearch.bind(this);
-    this.onModeChange = this.onModeChange.bind(this);
-    this.onEntityChange = this.onEntityChange.bind(this);
-    this.onSetSelectedFrom = this.onSetSelectedFrom.bind(this);
-    this.onSetSelectedTo = this.onSetSelectedTo.bind(this);
-    this.onSetCount = this.onSetCount.bind(this);
-    this.onSearchEntityChange = this.onSearchEntityChange.bind(this);
+    this.onSearch = ::this.onSearch;
+    this.onModeChange = ::this.onModeChange;
+    this.onEntityChange = ::this.onEntityChange;
+    this.onSetSelectedFrom = ::this.onSetSelectedFrom;
+    this.onSetSelectedTo = ::this.onSetSelectedTo;
+    this.onSetCount = ::this.onSetCount;
+    this.onSearchEntityChange = ::this.onSearchEntityChange;
   }
 
   onModeChange(selectedMode) {

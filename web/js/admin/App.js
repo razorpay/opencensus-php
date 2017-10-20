@@ -8,6 +8,8 @@ import MerchantList from 'admin/merchants/MerchantList';
 import Stats from 'admin/stats';
 import PlanList from 'admin/plans/List';
 import GatewayRulesList from 'admin/gatewayrules/List';
+
+import ActionsList from 'admin/adminActions/ActionsList';
 import EmailLogsList from 'admin/emailLogs/EmailLogsList';
 import Entities from 'admin/entities/container';
 
@@ -17,6 +19,8 @@ import WorkflowList from 'admin/workflows/List';
 // import RequestList from 'admin/workflows/RequestList';
 
 import GroupList from 'admin/groups/List';
+import UserList from 'admin/users/List';
+import RoleList from 'admin/roles/List';
 
 export default class App extends Component {
   render() {
@@ -30,11 +34,13 @@ export default class App extends Component {
             <Route path="/pricing-plans" component={PlanList} />
             <Route path="/gateway-rules" component={GatewayRulesList} />
             <Route path="/entities" component={Entities} />
+            <Route path="/actions" component={ActionsList} />
             <Route path="/email-logs" component={EmailLogsList} />
-
             <Route path="/workflows" component={WorkflowList} />
 
             <Route path="/groups" component={GroupList} />
+            <Route path="/users" component={UserList} />
+            <Route path="/roles" component={RoleList} />
           </Switch>
         </main>
         <header />

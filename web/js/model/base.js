@@ -6,27 +6,21 @@ export default class BaseModel {
     this.define('pending', observable({}));
   }
 
-  request(promise, name) {
-    if (name) {
+  request(name, promise) {
+    if (typeof name === 'string') {
       extendObservable(this.pending, {
         [name]: true,
       });
+    } else {
+      promise = name;
     }
 
-    return promise
-      .then(({ data }) => {
-        if (!data.success) {
-          throw data.errors[0];
-        }
-        return data.data;
-      })
-      .catch(e => notifyError(e))
-      .then(data => {
-        if (name) {
-          this.pending[name] = false;
-        }
-        return data;
-      });
+    return promise.then(data => {
+      if (name) {
+        this.pending[name] = false;
+      }
+      return data;
+    });
   }
 
   bind(methods) {
