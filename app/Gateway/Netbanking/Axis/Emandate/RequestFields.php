@@ -33,6 +33,11 @@ class RequestFields
      * We're sending the value 'max' in it.
      */
     const PRE_POP_INFO    = 'PPI';
+
+    /**
+     * We can pass MN(dont allow modification) or MY(allow modification) in this field
+     * For all reserve fields other than RE1, we sent empty string
+     */
     const RESERVE_FIELD_1 = 'RE1';
     const RESERVE_FIELD_2 = 'RE2';
     const RESERVE_FIELD_3 = 'RE3';
@@ -41,7 +46,7 @@ class RequestFields
     const CHECKSUM        = 'CKS';
 
     /**
-     * Encrypted data goes in this fields
+     * Encrypted data goes in this field
      */
     const DATA            = 'i';
 }
