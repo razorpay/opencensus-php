@@ -520,7 +520,7 @@ class Orchestrator extends Base\Core
     {
         $this->messenger->raiseReconAlert(
             [
-                'trace_code'   => TraceCode::RECON_ERROR_CREATING_BATCH,
+                'trace_code'   => TraceCode::RECON_BATCH_CREATION_FAILED,
                 'message'      => 'Skipping file because not able to convert file content to array. -> ' .
                                     $ex->getMessage(),
                 'file_details' => $fileDetails,
@@ -529,7 +529,7 @@ class Orchestrator extends Base\Core
 
         $this->trace->traceException($ex,
                 Trace::ERROR,
-                TraceCode::RECON_ERROR_CREATING_BATCH);
+                TraceCode::RECON_BATCH_CREATION_FAILED);
 
         $this->handleFileSkip($file, $fileDetails);
     }
@@ -596,7 +596,7 @@ class Orchestrator extends Base\Core
             Batch\Entity::FILE        => $fileDetails
         ];
 
-        $batch = (new Batch\Core)->createForMerchant($params, $merchant);
+        $batch = (new Batch\Core)->create($params, $merchant);
 
         return $batch;
     }
