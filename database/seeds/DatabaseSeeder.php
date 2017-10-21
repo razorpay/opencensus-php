@@ -1453,8 +1453,6 @@ class DatabaseSeeder extends Seeder
                     'card'                      => '0',
                     'netbanking'                => '1',
                     'gateway_merchant_id'       => 'test_merchant_netbanking_axis_recurring',
-                    // 'gateway_merchant_id2'      => 'test_submerchant_netbanking_icici',
-                    // 'gateway_secure_secret'     => Crypt::encrypt('test_netbanking_master_terminal_pass'),
                     'recurring'                 => 1,
                     'created_at'                => time(),
                     'updated_at'                => time(),
