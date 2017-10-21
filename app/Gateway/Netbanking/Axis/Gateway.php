@@ -185,7 +185,7 @@ class Gateway extends Base\Gateway
         $this->setVerifyAmountMismatch($verify);
     }
 
-    protected function setVerifyAmountMismatch($verify)
+    protected function setVerifyAmountMismatch(Verify $verify)
     {
         $paymentAmount = $this->formatAmount($verify->input['payment'][Payment\Entity::AMOUNT]);
 
@@ -603,7 +603,7 @@ class Gateway extends Base\Gateway
     /**
      * Formats amount to 2 decimal places
      * @param  int $amount amount in paise (100)
-     * @return string amount formatted to 2 decimal places in INR (1.00)
+     * @return string amount in Rupees
      */
     protected function formatAmount(int $amount): string
     {
