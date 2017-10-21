@@ -13,7 +13,6 @@ use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Checkout;
-use RZP\Models\Plan\Subscription;
 use RZP\Exception\BadRequestException;
 
 /**
@@ -109,7 +108,7 @@ class ViewDataSerializer extends Base\Core
         {
             $subscription = $this->invoice->subscription;
 
-            $data[E::INVOICE][E::SUBSCRIPTION][Subscription\Entity::STATUS] = $subscription->getStatus();
+            $data[E::INVOICE][E::SUBSCRIPTION] = $subscription->toArrayHosted();
         }
 
         return $data;
