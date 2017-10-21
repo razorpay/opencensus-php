@@ -240,9 +240,9 @@ class Notify
     public function trigger(string $event)
     {
         //
-        // This is wrapped in a try-catch block as this is critical path for
-        // the payment operation. We should continue running even if this
-        // raises critical error.
+        // This is wrapped in a try-catch block as this is not
+        // critical path for the payment operation.
+        // We should continue running even if this raises critical error.
         //
         try
         {

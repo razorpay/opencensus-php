@@ -147,8 +147,7 @@ class Job extends BaseJob implements ShouldQueue
     {
         //
         // Event=authorized is not being used now but keeping for backward
-        // compatibility. Otherwise will raise alert MAX_ALLOWED_ATTEMPTS (10)
-        // times.
+        // compatibility.
         //
         return true;
     }
