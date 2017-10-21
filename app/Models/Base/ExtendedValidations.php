@@ -20,6 +20,13 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     const EPOCH_DEFAULT_MIN      = 946684800;                  // Sat Jan  1 05:30:00 IST 2000
     const EPOCH_DEFAULT_MAX      = self::MYSQL_SIGNED_INT_MAX; // Tue Jan 19 08:44:07 IST 2038, *MySQL max for Signed Int
 
+    protected $numericRules = [
+        'Numeric',
+        'Integer',
+        'MysqlSignedInt',
+        'MysqlUnsignedInt',
+    ];
+
     protected function validatePublicId($attribute, $id)
     {
         //
