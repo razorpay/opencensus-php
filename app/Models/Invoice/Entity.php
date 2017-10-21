@@ -780,11 +780,11 @@ class Entity extends Base\PublicEntity
     public function unsetCustomerDetails()
     {
         $this->customer()->dissociate();
+        $this->customerBillingAddress()->dissociate();
 
         $this->setCustomerName(null);
         $this->setCustomerContact(null);
         $this->setCustomerEmail(null);
-        $this->setCustomerBillingAddrId(null);
     }
 
     public function setCustomerName($customerName)
@@ -800,11 +800,6 @@ class Entity extends Base\PublicEntity
     public function setCustomerContact($customerContact)
     {
         $this->setAttribute(self::CUSTOMER_CONTACT, $customerContact);
-    }
-
-    public function setCustomerBillingAddrId(string $billingAddressId = null)
-    {
-        $this->setAttribute(self::CUSTOMER_BILLING_ADDR_ID, $billingAddressId);
     }
 
     public function setSmsStatus($status)
