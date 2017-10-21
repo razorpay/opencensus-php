@@ -66,7 +66,7 @@ class EventServiceProvider extends ServiceProvider
         {
             $previousMode = $resolvedJob->getPreviousMode();
 
-            $this->app['basicauth']->setModeAndDbConn($previousMode);
+            $this->app['basicauth']->setModeAndDbConnection($previousMode);
         }
     }
 }

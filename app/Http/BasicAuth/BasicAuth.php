@@ -1098,7 +1098,7 @@ class BasicAuth
         $this->app['rzp.mode'] = $mode;
     }
 
-    public function setModeAndDbConn(string $mode)
+    public function setModeAndDbConnection(string $mode)
     {
         $this->setMode($mode);
 

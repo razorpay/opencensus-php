@@ -104,7 +104,7 @@ class Job
         // Sets application and db mode if $mode is set
         if ($this->mode !== null)
         {
-            $app['basicauth']->setModeAndDbConn($this->mode);
+            $app['basicauth']->setModeAndDbConnection($this->mode);
         }
     }
 }
