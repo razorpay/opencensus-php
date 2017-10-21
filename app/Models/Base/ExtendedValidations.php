@@ -11,8 +11,14 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 {
-    const EPOCH_DEFAULT_MIN = 946684800;  // Sat Jan  1 05:30:00 IST 2000
-    const EPOCH_DEFAULT_MAX = 2147483647; // Tue Jan 19 08:44:07 IST 2038, *MySQL max for Signed Int
+    const MYSQL_UNSIGNED_INT_MIN = 0;
+    const MYSQL_UNSIGNED_INT_MAX = 4294967295;
+
+    const MYSQL_SIGNED_INT_MIN   = -2147483648;
+    const MYSQL_SIGNED_INT_MAX   = 2147483647;
+
+    const EPOCH_DEFAULT_MIN      = 946684800;                  // Sat Jan  1 05:30:00 IST 2000
+    const EPOCH_DEFAULT_MAX      = self::MYSQL_SIGNED_INT_MAX; // Tue Jan 19 08:44:07 IST 2038, *MySQL max for Signed Int
 
     protected function validatePublicId($attribute, $id)
     {
@@ -327,6 +333,22 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         {
             throw new BadRequestValidationFailureException("$attribute must be between $min and $max");
         }
+
+        return true;
+    }
+
+    protected function validateMysqlSignedInt(string $attribute, $value)
+    {
+        $this->validateInteger($attribute, $value);
+        $this->validateBetween($attribute, $value, [self::MYSQL_SIGNED_INT_MIN, self::MYSQL_SIGNED_INT_MAX]);
+
+        return true;
+    }
+
+    protected function validateMysqlUnsignedInt(string $attribute, $value)
+    {
+        $this->validateInteger($attribute, $value);
+        $this->validateBetween($attribute, $value, [self::MYSQL_UNSIGNED_INT_MIN, self::MYSQL_UNSIGNED_INT_MAX]);
 
         return true;
     }
