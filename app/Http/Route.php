@@ -293,6 +293,13 @@ final class Route
         'gateway_payment_callback_kotak'          => ['get',      'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotak'                                   ],
         'gateway_payment_callback_kotak_cancel'   => ['post',     'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotakCancel'                             ],
         'gateway_payment_callback_corporation'    => ['post',     'gateway/netbanking_corporation/callback',        'GatewayController@callbackCorporation'                             ],
+
+        // File-based Emandate Routes
+        'emandate_registration_initiate'          => ['post',     'emandate/registration/initiate/{gateway}',       'EMandateController@postGenerateRegistrationFile'                   ],
+        'emandate_registration_reconcile'         => ['post',     'emandate/registration/reconcile/{gateway}',      'EMandateController@postReconcileRegistrationFile'                  ],
+        'emandate_debit_initiate'                 => ['post',     'emandate/debit/initiate/{gateway}',              'EMandateController@postGenerateDebitFile'                          ],
+        'emandate_debit_reconcile'                => ['post',     'emandate/debit/reconcile/{gateway}',             'EMandateController@postReconcileDebitFile'                         ],
+
         'reconciliate'                            => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
         'dummy_return_callback'                   => ['post',     'return/callback',                                'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                    => ['get',      'trigger/error',                                  'AdminController@getTriggerError'                                   ],
@@ -1058,6 +1065,10 @@ final class Route
         'settings_fetch',
         'settings_upsert',
         'settings_delete',
+        'emandate_registration_initiate',
+        'emandate_registration_reconcile',
+        'emandate_debit_initiate',
+        'emandate_debit_reconcile',
     ];
 
     public static $proxy = [
@@ -1452,6 +1463,8 @@ final class Route
             'merchant_payout',
             'gateway_file_create',
             'reports_refund_irctc',
+            'emandate_registration_initiate',
+            'emandate_debit_initiate',
         ],
 
         'kotak' => [
@@ -1465,7 +1478,9 @@ final class Route
         ],
 
         'mailgun' => [
-            'reconciliate'
+            'reconciliate',
+            'emandate_registration_reconcile',
+            'emandate_debit_reconcile',
         ],
 
         'raven' => [

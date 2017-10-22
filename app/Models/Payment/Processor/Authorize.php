@@ -2313,52 +2313,7 @@ trait Authorize
             return;
         }
 
-        if (empty($gatewayData[Token\Entity::RECURRING_STATUS]) === false)
-        {
-            $gatewayRecurringStatus = $gatewayData[Token\Entity::RECURRING_STATUS];
-
-            $token->setRecurringStatus($gatewayRecurringStatus);
-        }
-        else
-        {
-            //
-            // The recurring status should always be set for token update.
-            //
-            $this->trace->critical(
-                TraceCode::GATEWAY_RECURRING_STATUS_NOT_SET,
-                [
-                    'token'        => $token->toArray(),
-                    'gateway_data' => $gatewayData
-                ]);
-
-            return;
-        }
-
-        if ($gatewayRecurringStatus === Token\RecurringStatus::CONFIRMED)
-        {
-            $token->setRecurring(true);
-            $this->updateGatewayTokenForRecurring($token, $gatewayData);
-        }
-        else if ($gatewayRecurringStatus === Token\RecurringStatus::REJECTED)
-        {
-            if (empty($gatewayData[Token\Entity::RECURRING_FAILURE_REASON]) === true)
-            {
-                //
-                // If it's rejected, there must always be a reason.
-                //
-
-                $this->trace->critical(
-                    TraceCode::GATEWAY_RECURRING_REJECTED_WITHOUT_REASON,
-                    [
-                        'token'        => $token->toArray(),
-                        'gateway_data' => $gatewayData
-                    ]);
-
-                return;
-            }
-
-            $token->setRecurringFailureReason($gatewayData[Token\Entity::RECURRING_FAILURE_REASON]);
-        }
+        (new Token\Core)->updateTokenFromNetbankingGatewayData($token, $gatewayData);
     }
 
     protected function shouldSetTokenTerminal(Token\Entity $token, Payment\Entity $payment)
@@ -2371,26 +2326,6 @@ trait Authorize
                                       (empty($token->getTerminalId()) === false));
 
         return ($shouldNotSetTokenTerminal === false);
-    }
-
-    protected function updateGatewayTokenForRecurring(Token\Entity $token, array $gatewayData)
-    {
-        $recurringStatus = $token->getRecurringStatus();
-
-        if ($recurringStatus === Token\RecurringStatus::CONFIRMED)
-        {
-            //
-            // Not all netbanking recurring have a gateway token.
-            // However, if a second recurring payment is attempted without a gateway token,
-            // we throw an exception or handle the case appropriately in the child gateway class.
-            //
-            if (empty($gatewayData[Token\Entity::GATEWAY_TOKEN]) === false)
-            {
-                $gatewayToken = $gatewayData[Token\Entity::GATEWAY_TOKEN];
-
-                $token->setGatewayToken($gatewayToken);
-            }
-        }
     }
 
     protected function createAndSetTerminalInGatewayToken(Payment\Entity $payment, Token\Entity $token)
