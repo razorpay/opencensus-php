@@ -284,4 +284,15 @@ class Core extends Base\Core
 
         return $refunds;
     }
+
+    public function editPayerBankAccount(Entity $bankTransfer, array $input)
+    {
+        $payerBankAccount = $bankTransfer->payerBankAccount;
+
+        $payerBankAccount = $payerBankAccount->edit($input, 'editVirtualBankAccount');
+
+        $this->repo->saveOrFail($payerBankAccount);
+
+        return $bankTransfer;
+    }
 }

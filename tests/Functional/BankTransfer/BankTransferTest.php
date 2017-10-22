@@ -862,6 +862,54 @@ class BankTransferTest extends TestCase
         $this->assertEquals(57930, $payment['amount']);
     }
 
+    public function testBankTransferEditPayerBankAccount()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals('Razorpay', $bankTransfer['payer_bank_name']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        // Customer bank account created
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
+        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+        $this->assertEquals('Name of account holder', $bankAccount['name']);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/bank_transfers/'.$bankTransfer['id'].'/payer_bank_account',
+            'content' => [
+                'account_number' => '123456',
+                'ifsc_code'      => 'HDFC0000002',
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('HDFC0000002', $response['payer_bank_account']['ifsc']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertEquals('HDFC0000002', $bankAccount['ifsc']);
+        $this->assertEquals('123456', $bankAccount['account_number']);
+    }
+
     protected function createVirtualAccount()
     {
         $this->ba->privateAuth();
