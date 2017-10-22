@@ -50,7 +50,6 @@ trait EmandateTrait
             ResponseFields::CUSTOMER_REF_NO => $input[RequestFields::CUSTOMER_REF_NO],
             ResponseFields::CURRENCY        => $input[RequestFields::CURRENCY],
             ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
-            // TODO: Docs say this is not needed, but docs checksum says it is needed
             ResponseFields::REQUEST_ID      => $input[RequestFields::REQUEST_ID],
             ResponseFields::BANK_REF_NO     => 9999999999,
             ResponseFields::STATUS_CODE     => StatusCode::SUCCESS,
@@ -62,9 +61,6 @@ trait EmandateTrait
             ResponseFields::MANDATE_NUMBER  => 8888888888,
         ];
 
-        // TODO: Encrypt this
-
-        // for test cases
         $this->content($data, 'emandateauth');
 
         $content = [
@@ -87,6 +83,8 @@ trait EmandateTrait
 
     protected function createEmandateVerifyResponse($input)
     {
+        $this->validateActionInput($input, 'emandateverify');
+
         $date = Carbon::now(Timezone::IST)->format('d-M-y');
 
         $gatewayEntity = $this->repo->netbanking->findByPaymentIdAndActionOrFail(

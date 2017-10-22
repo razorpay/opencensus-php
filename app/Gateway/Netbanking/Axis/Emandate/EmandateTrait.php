@@ -155,9 +155,9 @@ trait EmandateTrait
                 ]
             );
 
-            throw new GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED
-            );
+            $errorCode = StatusCode::getErrorCodeMap($content[ResponseFields::STATUS_CODE]);
+
+            throw new GatewayErrorException($errorCode);
         }
     }
 

@@ -35,6 +35,16 @@ class Validator extends Base\Validator
         Emandate\RequestFields::CHECKSUM        => 'required|string',
     ];
 
+    protected static $emandateverifyRules = [
+        Emandate\RequestFields::VERSION         => 'required|string|in:1.0',
+        Emandate\RequestFields::CORP_ID         => 'required|string',
+        Emandate\RequestFields::TYPE            => 'required|string|in:TEST',
+        Emandate\RequestFields::REQUEST_ID      => 'required|string|size:14',
+        Emandate\RequestFields::CUSTOMER_REF_NO => 'required|string|size:14',
+        Emandate\RequestFields::BANK_REF_NO     => 'required|string',
+        Emandate\RequestFields::CHECKSUM        => 'required|string',
+    ];
+
     protected static $verifyRules = [
         RequestFields::VERIFY_PAYEE_ID          => 'required|string',
         RequestFields::VERIFY_ITC               => 'required|string',

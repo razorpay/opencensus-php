@@ -22,6 +22,7 @@ class RequestFields
      * Required for the payment verification request
      */
     const BANK_REF_NO     = 'BRN';
+
     const CURRENCY        = 'CNY';
     const AMOUNT          = 'AMT';
     const RETURN_URL      = 'RTU';
