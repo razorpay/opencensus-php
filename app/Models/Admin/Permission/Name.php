@@ -157,7 +157,7 @@ class Name
     const CREATE_WALLET_CONFIG                = 'create_wallet_config';
     const EDIT_WALLET_CONFIG                  = 'edit_wallet_config';
     const MERCHANT_BATCH_UPLOAD               = 'merchant_batch_upload';
-
+    const MANAGE_ONBOARDING_SUBMISSIONS       = 'manage_onboarding_submissions';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

@@ -1364,9 +1364,9 @@ final class Route
         'merchant_analytics'                    => '*',
         'merchant_activation_files'             => '*',
         'dispute_reason_create'                 => '*',
-        'onboarding_features_fetch_submissions' => '*',
-        'onboarding_features_update_status'     => '*',
-        'onboarding_features_update'            => '*',
+        'onboarding_features_fetch_submissions' => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
+        'onboarding_features_update_status'     => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
+        'onboarding_features_update'            => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
     ];
 
     public static $direct = [
