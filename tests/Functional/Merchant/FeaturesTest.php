@@ -403,17 +403,11 @@ class FeaturesTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
-        $fileStoreItems = $this->getEntities('file_store', [], true,  Mode::LIVE);
+        $fileStoreData = $this->getLastEntity('file_store', true, MODE::LIVE);
 
-        $fileStoreData = $fileStoreItems['items'][0];
+        $testData = $this->testData['testFileStoreData'];
 
-        $expectedOutput = [
-            'merchant_id'   => '10000000001017',
-            'type'          => 'marketplace.vendor_agreement',
-            'extension'     => 'pdf',
-            'name'          => 'api/10000000001017/marketplace.vendor_agreement',
-            'entity'        => 'file_store',
-        ];
+        $expectedOutput = $testData['response']['content'];
 
         $this->assertArraySelectiveEquals($expectedOutput, $fileStoreData);
     }
@@ -429,8 +423,7 @@ class FeaturesTest extends TestCase
 
         Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
         {
-            $feature       = 'Route';
-            $this->assertEquals($feature, $mail->viewData['feature']);
+            $this->assertEquals('Route', $mail->viewData['feature']);
 
             $documentation = 'route';
             $this->assertEquals($documentation, $mail->viewData['documentation']);
@@ -462,11 +455,9 @@ class FeaturesTest extends TestCase
 
         Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
         {
-            $feature       = 'Route';
-            $this->assertEquals($feature, $mail->viewData['feature']);
+            $this->assertEquals('Route', $mail->viewData['feature']);
 
-            $documentation = 'route';
-            $this->assertEquals($documentation, $mail->viewData['documentation']);
+            $this->assertEquals('route', $mail->viewData['documentation']);
 
             return true;
         });

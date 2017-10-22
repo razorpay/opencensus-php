@@ -370,6 +370,18 @@ return [
         ]
     ],
 
+    'testFileStoreData' => [
+        'response' => [
+            'content' => [
+                'merchant_id'   => '10000000001017',
+                'type'          => 'marketplace.vendor_agreement',
+                'extension'     => 'pdf',
+                'name'          => 'api/10000000001017/marketplace.vendor_agreement',
+                'entity'        => 'file_store',
+            ]
+        ]
+    ],
+
     'getOnboardingResponses'      => [
         'request'  => [
             'content' => [],
