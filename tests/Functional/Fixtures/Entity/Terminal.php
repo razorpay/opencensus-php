@@ -459,7 +459,7 @@ class Terminal extends Base
         $attributes['id'] = 'FssRecurringTl';
 
         $attributes['type'] = [
-            Type::RECURRING_3DS => '1',
+            Type::RECURRING_3DS     => '1',
             Type::RECURRING_NON_3DS => '1',
         ];
 
