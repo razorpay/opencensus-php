@@ -3,7 +3,9 @@
 namespace RZP\Http;
 
 use App;
+use RZP\Http\Route;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\ThrottleException;
@@ -20,6 +22,8 @@ class Throttle
         $this->router = $this->app['router'];
 
         $this->config = $this->app['config']->get('throttle');
+
+        $this->trace = $this->app['trace'];
     }
 
     public function process($auth)
@@ -56,11 +60,26 @@ class Throttle
                     'route' => $this->request->route()->getName(),
                     'limit' => $limit,
                     'count' => $throttle->count(),
+                    'time'  => $time,
                 ];
+
+                if ($this->isThrottleMocked() === true)
+                {
+                    $this->trace->warning(TraceCode::REQUEST_THROTTLED, $traceData);
+
+                    return;
+                }
 
                 throw new ThrottleException($time * 60, $traceData);
             }
         }
+    }
+
+    protected function isThrottleMocked()
+    {
+        $route = $this->request->route()->getName();
+
+        return (in_array($route, Route::$throttledRoutes, true) === false);
     }
 
     protected function getIdentifier(string $auth, string $mode)
