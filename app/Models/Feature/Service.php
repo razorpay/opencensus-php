@@ -4,11 +4,9 @@ namespace RZP\Models\Feature;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
-use RZP\Models\Settings\Accessor;
 
 class Service extends Base\Service
 {
@@ -199,22 +197,7 @@ class Service extends Base\Service
      */
     public function postOnboardingSubmissions(array $input, string $feature): bool
     {
-        // Prevent the merchant from re-submitting
-        $data = Accessor::for($this->merchant, Constants::ONBOARDING)
-                    ->get($feature)
-                    ->toArray();
-
-        if (count($data) > 0)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ACTIVATION_FORM_ALREADY_SUBMITTED,
-                $feature,
-                ['feature' => $feature, 'data' => $data]);
-        }
-
-        $data[$feature] = $input;
-
-        $status = $this->processOnboardingResponses(Constants::CREATE, $data, $this->merchant);
+        $status = (new Core)->postOnboardingSubmissions($input, $feature);
 
         return $status;
     }
@@ -237,61 +220,9 @@ class Service extends Base\Service
 
         $data[$feature] = $input;
 
-        $status = $this->processOnboardingResponses(Constants::UPDATE, $data, $merchant);
+        $status = (new Core)->processOnboardingResponses(Constants::UPDATE, $data, $merchant);
 
         return $status;
-    }
-
-    /**
-     * @param string          $action
-     * @param array           $data
-     * @param Merchant\Entity $merchant
-     *
-     * @return bool
-     */
-    private function processOnboardingResponses(
-        string $action,
-        array $data,
-        Merchant\Entity $merchant): bool
-    {
-        $saved = true;
-
-        $this->trace->info(
-            TraceCode::FEATURE_ONBOARDING_SUBMISSION_REQUEST,
-            [
-                'action'      => $action,
-                'data'        => $data,
-                'merchant_id' => $merchant->getId()]);
-
-        $feature = array_keys($data)[0] ?? null;
-
-        if ($feature === null)
-        {
-            return false;
-        }
-
-        (new Validator)->validateInput(Constants::ONBOARDING, $data);
-
-        // While updating the responses, the file gets overwritten,
-        // so no need to delete the old file.
-        $this->processFiles($data, $merchant);
-
-        Accessor::for($merchant, Constants::ONBOARDING)
-            ->upsert($data)
-            ->save();
-
-        // Set the product activation status as pending
-        if ($action === Constants::CREATE)
-        {
-            $saved = $this->repo->merchant_detail->updateFeatureActivationStatus(
-                $merchant,
-                $feature,
-                Merchant\Detail\Entity::PENDING);
-        }
-
-        (new Core)->notifyFeatureOnboardingFormSubmitOnSlack($feature);
-
-        return $saved;
     }
 
     /**
@@ -301,101 +232,9 @@ class Service extends Base\Service
      */
     public function getOnboardingSubmissions(string $feature = null)
     {
-        $settings = Accessor::for($this->merchant, Constants::ONBOARDING);
-
-        $settings = ($feature === null) ? $settings->all() : $settings->get($feature);
-
-        $settings = $settings->toArray();
-
-        $settings = $this->addFileUrlInResponseIfApplicable($settings);
+        $settings = (new Core)->getOnboardingSubmissions($feature);
 
         return $settings;
-    }
-
-    /**
-     * Adds the vendor_agreement file URL to the response if the feature is marketplace
-     *
-     * @param $settings
-     *
-     * @return array
-     */
-    protected function addFileUrlInResponseIfApplicable($settings): array
-    {
-        if (isset($settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT]) === true)
-        {
-            $fileId = $settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT];
-
-            $fileUrl = $this->getSignedUrl($fileId, $this->merchant->getId());
-
-            $settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT] = $fileUrl;
-        }
-
-        return $settings;
-    }
-
-    /**
-     * Processes the file, primarily,
-     * $input['marketplace']['vendor_agreement'] right now.
-     * Need to make it generic enough for any other key
-     *
-     * @param $input
-     */
-    protected function processFiles(& $input, Merchant\Entity $merchant)
-    {
-        $featureName = Constants::MARKETPLACE;
-
-        $question = Constants::VENDOR_AGREEMENT;
-
-        $merchantId = $merchant->getId();
-
-        if ((isset($input[$featureName]) === true) and
-            (isset($input[$featureName][$question]) === true))
-        {
-            $file = $input[$featureName][$question];
-
-            $settingKey = $featureName . "." . $question;
-
-            $extension = $file->extension();
-
-            $fileName = 'api/' . $merchantId . '/' . $settingKey;
-
-            $file = $this->createFile($extension, $file, $fileName, $settingKey, $merchant);
-
-            $input[$featureName][$question] = FileStore\Entity::stripSignWithoutValidation($file['id']);
-        }
-    }
-
-    /**
-     * Creates a file entity and uploads it to S3 bucket
-     *
-     * @param                 $extension
-     * @param                 $file
-     * @param string          $fileName
-     * @param string          $type
-     * @param Merchant\Entity $merchant
-     * @param string          $store
-     *
-     * @return array
-     */
-    protected function createFile($extension,
-                                  $file,
-                                  string $fileName,
-                                  string $type,
-                                  Merchant\Entity $merchant,
-                                  string $store = FileStore\Store::S3)
-    {
-        $creator = new FileStore\Creator;
-
-        $file = $creator->extension($extension)
-                        ->localFile($file)
-                        ->name($fileName)
-                        ->store($store)
-                        ->type($type)
-                        ->merchant($merchant)
-                        ->save()
-                        ->get();
-
-        return $file;
     }
 
     private function buildFeatureParams($input)
@@ -463,13 +302,7 @@ class Service extends Base\Service
 
         $merchantId = $input['merchant_id'];
 
-        $merchant = $this->repo->merchant->findByPublicId($merchantId);
-
-        $status =  $this->repo->merchant_detail->updateFeatureActivationStatus(
-                        $merchant,
-                        $featureName,
-                        $status
-                    );
+        $status = (new Core)->updateFeatureActivationStatus($merchantId, $featureName, $status);
 
         return $status;
     }

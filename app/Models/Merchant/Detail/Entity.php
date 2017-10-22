@@ -88,7 +88,7 @@ class Entity extends Base\PublicEntity
     const SUBMIT = 'submit';
 
     // Enum values used for product activation status
-    const PENDING = 'pending';
+    const PENDING  = 'pending';
     const APPROVED = 'approved';
     const REJECTED = 'rejected';
 
