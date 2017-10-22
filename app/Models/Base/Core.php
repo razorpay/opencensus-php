@@ -36,12 +36,6 @@ class Core
     protected $mode;
 
     /**
-     * BasicAuth entity
-     * @var BasicAuth
-     */
-    protected $auth;
-
-    /**
      * Environment - production/testing/beta
      *
      * @var String
@@ -66,8 +60,6 @@ class Core
         $this->repo = $this->app['repo'];
 
         $this->merchant = $this->app['basicauth']->getMerchant();
-
-        $this->auth = $this->app['basicauth'];
 
         $this->device = $this->app['basicauth']->getDevice();
 

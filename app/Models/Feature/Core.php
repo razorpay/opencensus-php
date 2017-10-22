@@ -131,7 +131,7 @@ class Core extends Base\Core
      */
     public function notifyFeatureOnboardingFormSubmitOnSlack(string $productName)
     {
-        if ($this->auth->isAdminAuth() === false)
+        if ($this->app['basicauth']->isAdminAuth() === false)
         {
             $merchant = $this->merchant;
 
