@@ -8,7 +8,7 @@ use RZP\Gateway\Netbanking\Bob\RequestFields;
 class Validator extends Base\Validator
 {
     protected static $authRules = array(
-        RequestFields::MERCHANT_ID      => 'required|string',
+        RequestFields::BANK_ID          => 'required|string',
         RequestFields::BANK_FIXED_VALUE => 'required|alpha_num',
         RequestFields::BILLER_NAME      => 'required|string',
         RequestFields::AMOUNT           => 'required|numeric',

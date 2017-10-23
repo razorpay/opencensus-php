@@ -6,8 +6,8 @@ use RZP\Gateway\Base;
 
 class AESCrypto extends Base\AESCrypto
 {
-    const VALUE_SEPARATOR = "=";
-    const PAIR_SEPARATOR  = "|";
+    const VALUE_SEPARATOR = '=';
+    const PAIR_SEPARATOR  = '|';
 
     public function __construct(int $mode, string $masterKey, string $initializationVector = '')
     {

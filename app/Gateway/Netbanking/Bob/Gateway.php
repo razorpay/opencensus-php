@@ -27,7 +27,7 @@ class Gateway extends Base\Gateway
     protected $bank = 'bob';
 
     protected $map = [
-        RequestFields::MERCHANT_ID              => NetbankingEntity::MERCHANT_CODE,
+        RequestFields::BANK_ID                  => NetbankingEntity::MERCHANT_CODE,
         RequestFields::AMOUNT                   => NetbankingEntity::AMOUNT,
         ResponseFields::STATUS                  => NetbankingEntity::STATUS,
         ResponseFields::BANK_REF_NUMBER         => NetbankingEntity::BANK_PAYMENT_ID,
@@ -80,7 +80,7 @@ class Gateway extends Base\Gateway
         $payment = $input['payment'];
 
         $content = [
-            RequestFields::MERCHANT_ID      => $this->getMerchantId(),
+            RequestFields::BANK_ID          => $this->getMerchantId(),
             RequestFields::BANK_FIXED_VALUE => Constants::BANK_FIXED_VALUE,
             RequestFields::BILLER_NAME      => Constants::BILLER_NAME,
             RequestFields::AMOUNT           => $this->formatAmount($payment[Payment::AMOUNT]),
@@ -111,7 +111,7 @@ class Gateway extends Base\Gateway
     protected function getContentToSave($payment): array
     {
         return [
-            RequestFields::MERCHANT_ID => $this->getMerchantId(),
+            RequestFields::BANK_ID     => $this->getMerchantId(),
             RequestFields::AMOUNT      => $payment[Payment::AMOUNT]
         ];
     }
@@ -147,8 +147,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'],
-            Action::AUTHORIZE
-        );
+            Action::AUTHORIZE);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
     }
