@@ -90,26 +90,6 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($content);
     }
 
-    public function refund($input)
-    {
-        parent::refund($input);
-
-        $input = $this->decrypt($input);
-
-        $this->validateSbiUpiRefundInput($input);
-
-        $content = $this->getRefundResponseContent($input);
-
-        $this->content($content, 'refund');
-
-        $content = [
-            ResponseFields::RESPONSE       => $this->encrypt($content),
-            ResponseFields::PG_MERCHANT_ID => $this->getGatewayInstance()->getMerchantId()
-        ];
-
-        return $this->makeResponse($content);
-    }
-
     protected function encrypt(array $response)
     {
         $aes = $this->getGatewayInstance()->getAesCrypto();
@@ -150,48 +130,6 @@ class Server extends Base\Mock\Server
             ResponseFields::ADDITIONAL_INFO        => [],
             ResponseFields::PAYER_VPA              => $gatewayPayment->getVpa(),
             ResponseFields::PAYEE_VPA              => self::DEFAULT_PAYEE_VPA,
-        ];
-
-        return [ResponseFields::API_RESPONSE => $response];
-    }
-
-    protected function getRefundResponseContent(array $input)
-    {
-        // TODO: Ensure all the variables below are correct
-
-        $paymentId = $input[RequestFields::REFUND_TRANSACTION_DETAIL][RequestFields::ORG_ORDER_NUMBER];
-
-        $gatewayPayment = $this->repo->findByPaymentId($paymentId)->first();
-
-        $refundTransactionDetails = $input[RequestFields::REFUND_TRANSACTION_DETAIL];
-
-        $response = [
-            ResponseFields::REQUEST_INFO              => $input[RequestFields::REQUEST_INFO],
-            ResponseFields::REFUND_STATUS             => 'S',
-            ResponseFields::REFUND_DATE               => Carbon::now(Timezone::IST)->toDateTimeString(),
-            ResponseFields::RESPONSE_CODE             => '00',
-            ResponseFields::APPROVAL_NUMBER           => random_int(100000, 999999),
-            ResponseFields::CUSTOMER_REFERENCE_NO     => random_int(100000000000, 999999999999),
-            ResponseFields::REFUND_TRANSACTION_DETAIL => [
-                ResponseFields::ORDER_NUMBER               => $refundTransactionDetails[RequestFields::ORDER_NUMBER],
-                ResponseFields::ORG_ORDER_NUMBER           => $refundTransactionDetails[RequestFields::ORG_ORDER_NUMBER],
-                ResponseFields::ORG_TRANSACTION_REF_NUMBER => $refundTransactionDetails[RequestFields::ORG_TRANSACTION_REF_NUMBER],
-                ResponseFields::ORG_CUSTOMER_REF_NUMBER    => $refundTransactionDetails[RequestFields::ORG_CUSTOMER_REF_NUMBER],
-                ResponseFields::TRANSACTION_REMARKS        => $refundTransactionDetails[RequestFields::TRANSACTION_REMARKS],
-                ResponseFields::CURRENCY_CODE              => $refundTransactionDetails[ResponseFields::CURRENCY_CODE],
-                ResponseFields::PAYMENT_TYPE               => $refundTransactionDetails[ResponseFields::PAYMENT_TYPE],
-                ResponseFields::NPCI_TRANSACTION_ID_LC     => $gatewayPayment->getNpciReferenceId(),
-                ResponseFields::PAYER_INFO                 => [
-                    ResponseFields::VIRTUAL_ADDRESS => $gatewayPayment->getVpa(),
-                    ResponseFields::NAME            => 'Random merchant name', // TODO: work on this
-                    ResponseFields::ACCOUNT_NUMBER  => random_int(100000000000, 999999999999), // TODO: Work on this
-                    ResponseFields::IFSC_CODE       => 'SBIN000000013', // TODO: Work on this
-                ],
-                ResponseFields::PAYEE_INFO                 => [
-                    ResponseFields::VIRTUAL_ADDRESS => self::DEFAULT_PAYEE_VPA,
-                ],
-            ],
-            ResponseFields::ADDITIONAL_INFO           => $input[RequestFields::ADDITIONAL_INFO],
         ];
 
         return [ResponseFields::API_RESPONSE => $response];
@@ -248,16 +186,5 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input[RequestFields::PAYER_TYPE], 'auth_payer_type');
 
         $this->validateActionInput($input[RequestFields::REQUEST_INFO], 'auth_request_info');
-    }
-
-    protected function validateSbiUpiRefundInput(array $input)
-    {
-        $this->validateRefundInput($input);
-
-        $this->validateActionInput($input[RequestFields::ADDITIONAL_INFO], 'refund_additional_info');
-
-        $this->validateActionInput($input[RequestFields::REFUND_TRANSACTION_DETAIL], 'refund_txn_detail');
-
-        $this->validateActionInput($input[RequestFields::REQUEST_INFO], 'refund_request_info');
     }
 }

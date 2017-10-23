@@ -57,39 +57,4 @@ class Validator extends Base\Validator
         RequestFields::PG_MERCHANT_ID   => 'required|string',
         RequestFields::PSP_REFERENCE_NO => 'required|string|size:14'
     ];
-
-    // TODO: Stronger validations for refund request
-
-    protected static $refundRules = [
-        RequestFields::REQUEST_INFO              => 'required|array',
-        RequestFields::REFUND_TRANSACTION_DETAIL => 'required|array',
-        RequestFields::ADDITIONAL_INFO           => 'required|array',
-    ];
-
-    /**
-     * @var array Validates request info key in refund request
-     */
-    protected static $refundRequestInfoRules = [
-        RequestFields::PG_MERCHANT_ID   => 'required|string',
-    ];
-
-    /**
-     * @var array Validates additional info key in refund request
-     */
-    protected static $refundAdditionalInfoRules = [
-        RequestFields::ADDITIONAL_INFO1  => 'required|string|in:NA',
-        RequestFields::ADDITIONAL_INFO9  => 'required|string|in:NA',
-        RequestFields::ADDITIONAL_INFO10 => 'required|string|in:NA',
-    ];
-
-    protected static $refundTxnDetailRules = [
-        RequestFields::ORDER_NUMBER               => 'required|string',
-        RequestFields::ORG_ORDER_NUMBER           => 'required|string',
-        RequestFields::ORG_TRANSACTION_REF_NUMBER => 'required|string',
-        RequestFields::ORG_CUSTOMER_REF_NUMBER    => 'required|string',
-        RequestFields::TRANSACTION_REMARKS        => 'required|string',
-        RequestFields::CURRENCY_CODE              => 'required|string|in:INR',
-        RequestFields::PAYMENT_TYPE               => 'required|string',
-        RequestFields::TRANSACTION_TYPE           => 'required|string',
-    ];
 }

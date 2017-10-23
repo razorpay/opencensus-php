@@ -130,25 +130,6 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function refund(array $input)
-    {
-        parent::refund($input);
-
-        $attributes = $this->getGatewayEntityAttributes($input);
-
-        $refund = $this->createGatewayPaymentEntity($attributes);
-
-        $request = $this->getRefundRequestArray($input);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $response = $this->parseGatewayResponse($response->body);
-
-        $this->updateGatewayEntityResponse($refund, $response);
-
-        $this->checkResponseStatus($response[ResponseFields::API_RESPONSE], ResponseFields::REFUND_STATUS);
-    }
-
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
         $request = $this->getPaymentVerifyRequestArray($verify);
@@ -260,8 +241,6 @@ class Gateway extends Base\Gateway
     // TODO: Validate VPA before sending collect request and don't create payment entity if VPA is invalid
 
     /**
-     * By default, $status is ResponseFields::STATUS, but for refund API, we use ResponseFields::REFUND_STATUS
-     *
      * @param array $response
      * @param string $status
      * @throws GatewayErrorException
@@ -310,45 +289,6 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
-            [
-                'gateway'    => $this->gateway,
-                'payment_id' => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
-                'content'    => $content
-            ]);
-
-        return $this->getStandardRequestArray($content);
-    }
-
-    protected function getRefundRequestArray(array $input)
-    {
-        $gatewayPayment = $this->repo->findByPaymentId($input[ConstantsEntity::PAYMENT][Payment\Entity::ID])
-                                     ->first();
-
-        // TODO: Verify that all the parameters are correct
-
-        $content = [
-            RequestFields::REQUEST_INFO              => [
-                RequestFields::PG_MERCHANT_ID => $this->getMerchantId(),
-            ],
-            RequestFields::REFUND_TRANSACTION_DETAIL => [
-                RequestFields::ORDER_NUMBER               => $input[ConstantsEntity::REFUND][Payment\Entity::ID],
-                RequestFields::ORG_ORDER_NUMBER           => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
-                RequestFields::ORG_TRANSACTION_REF_NUMBER => $gatewayPayment->getGatewayPaymentId(),
-                RequestFields::ORG_CUSTOMER_REF_NUMBER    => $gatewayPayment->getCustomerReferenceId(),
-                RequestFields::TRANSACTION_REMARKS        => Constants::REFUND_REMARKS,
-                RequestFields::CURRENCY_CODE              => Currency::INR,
-                RequestFields::PAYMENT_TYPE               => Constants::PAYMENT_TYPE,
-                RequestFields::TRANSACTION_TYPE           => Constants::REFUND,
-            ],
-            RequestFields::ADDITIONAL_INFO           => [
-                RequestFields::ADDITIONAL_INFO1  => Constants::NOT_APPLICABLE,
-                RequestFields::ADDITIONAL_INFO9  => Constants::NOT_APPLICABLE,
-                RequestFields::ADDITIONAL_INFO10 => Constants::NOT_APPLICABLE,
-            ],
-        ];
-
-        $this->trace->info(
-            TraceCode::GATEWAY_REFUND_REQUEST,
             [
                 'gateway'    => $this->gateway,
                 'payment_id' => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
