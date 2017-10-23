@@ -419,12 +419,14 @@ class Service extends Base\Service
 
         $input[Merchant\Entity::EMAIL] = strtolower($input[Merchant\Entity::EMAIL]);
 
+        $originalEmail = $this->api->merchant->fetch($id)->email;
+
         try
         {
-            $data = $this->api->merchant->fetch($id)->editEmail($input)->toArray();
+//            $data = $this->api->merchant->fetch($id)->editEmail($input)->toArray();
 
             // Only when it is changed we update on the dashboard side as well
-            list($e,) = (new Merchant\Service)->changeEmail($id, $input);
+            list($e,) = (new Merchant\Service)->handleUserEmailChange($id, $originalEmail, $input);
 
             $error = $e;
         }

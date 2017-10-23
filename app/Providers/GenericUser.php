@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Session;
 use App\User\Helper;
 use Illuminate\Auth\GenericUser as AuthGenericUser;
 
@@ -28,5 +29,12 @@ class GenericUser extends AuthGenericUser
         $ownerMerchant = (new Helper)->getOwnerMerchant($this);
 
         return $ownerMerchant;
+    }
+
+    public function refreshCurrentMerchant()
+    {
+        Session::put('current_merchant_id', null);
+
+        return $this->currentMerchant();
     }
 }

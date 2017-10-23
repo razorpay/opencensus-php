@@ -110,35 +110,6 @@ class Service extends Base\Service
     }
 
     /**
-     * take care when calling this function
-     * This is only called from the admin service
-     * @param  string $id    Merchant Id
-     * @param  array $input  Array with new Merchant Email Address
-     */
-    public function changeEmail($id, $input)
-    {
-        $merchant = Merchant\Entity::findorfail($id);
-
-        $originalEmail = $merchant->email;
-
-        if ($merchant->isTestAccount())
-        {
-            return [[static::EMAIL_CHANGE_FORBIDDEN], null];
-        }
-
-        $error = $merchant->changeEmail($input);
-
-        if (empty($error))
-        {
-            $this->handleUserEmailChange($merchant, $originalEmail, $input); //This handles different cases of 'user' email change.
-
-            $merchant->saveOrFail();
-        }
-
-        return [$error, null];
-    }
-
-    /**
      * This handles 3 possible cases when changing user email.
      * 1. There exists a team member with the new email
      *    Here, we swap the roles of the team member(manager) with new email and the original owner
@@ -149,83 +120,74 @@ class Service extends Base\Service
      * @param App\Merchant\Entity $merchant Merchant entity for which email is to be changed
      * @param array $input array containing the new email
      */
-    protected function handleUserEmailChange($merchant, $originalEmail, $input)
+    public function handleUserEmailChange($merchantId, $originalEmail, $input)
     {
-        if ($merchant->hasUsers())
+        list($error, $merchantUsers) = $this->getUsersOfMerchantFromApi($merchantId);
+
+        if (empty($error) === true and count($merchantUsers->all()) > 0)
         {
-            $teamUser = $merchant->users()->where('email', $input['email'])->first();
+            $teamUser = $merchantUsers->where('email', $input['email'], false)->first();
 
-            $existingUser = User\Entity::getUserWithEmail($input['email']);
+            $existingUser = null;
 
-            $selfUser = $merchant->users()->where('email', $originalEmail)->first();
+            list($error,$existingUserData) = (new User\Service)->getUserByEmail($input['email']);
+
+            if (empty($error) === true)
+            {
+                $existingUser = (new User\Helper)->createdGenericUser($existingUserData);
+            }
+            
+            $selfUser = $merchantUsers->where('email', $originalEmail)->first();
 
             //The merchant has a team member with new email
             if ($teamUser !== null)
             {
                 //swap roles between user with new email and original owner
-                $oldOwner = $merchant->users()->where('role', 'owner')->first();
+                $oldOwner = $merchantUsers->where('role', 'owner')->first();
 
                 // removing merchant user mapping entry on both api and dashboard for oldOwner user
-                list($error, $response) = (new User\Service)->detachMerchantUserOnApi($oldOwner->id, $merchant->id);
-
-                if (empty($error) === true)
-                {
-                    $merchant->removeUserById($oldOwner->id);
-                }
+                list($error, $response) = (new User\Service)->detachMerchantUserOnApi($oldOwner->id, $merchantId);
 
                 // adding merchant user mapping entry on both api and dashboard with manager role for oldOwner user
-                list($error, $response) = (new User\Service)->attachMerchantUserOnApi($oldOwner->id, $merchant->id, 'manager');
+                list($error, $response) = (new User\Service)->attachMerchantUserOnApi($oldOwner->id, $merchantId, 'manager');
 
                 if (empty($error) === true)
                 {
-                    $oldOwner->joinMerchantByIdWithRole($merchant->id, 'manager');
+                    $oldOwner->refreshCurrentMerchant();
                 }
 
                 // removing merchant user mapping entry on both api and dashboard for teamUser user
-                list($error, $response) = (new User\Service)->detachMerchantUserOnApi($teamUser->id, $merchant->id);
-
-                if (empty($error) === true)
-                {
-                    $merchant->removeUserById($teamUser->id);
-                }
+                list($error, $response) = (new User\Service)->detachMerchantUserOnApi($teamUser->id, $merchantId);
 
                 // adding merchant user mapping entry on both api and dashboard with owner role for teamUser user
-                list($error, $response) = (new User\Service)->attachMerchantUserOnApi($teamUser->id, $merchant->id, 'owner');
+                list($error, $response) = (new User\Service)->attachMerchantUserOnApi($teamUser->id, $merchantId, 'owner');
 
                 if (empty($error) === true)
                 {
-                    $teamUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+                    $teamUser->refreshCurrentMerchant();
                 }
             }
             //There is an existing user with new email but not a team member
             else if ($existingUser !== null)
             {
                 //assign owner to existing user and make existing owner a manager.
-                $oldOwner = $merchant->users()->where('role', 'owner')->first();
+                $oldOwner = $merchantUsers->where('role', 'owner')->first();
 
                 // removing merchant user mapping entry on both api and dashboard for oldOwner user
-                list($error, $response) = (new User\Service)->detachMerchantUserOnApi($oldOwner->id, $merchant->id);
-
-                if (empty($error) === true)
-                {
-                    $merchant->removeUserById($oldOwner->id);
-                }
+                list($error, $response) = (new User\Service)->detachMerchantUserOnApi($oldOwner->id, $merchantId);
 
                 // adding merchant user mapping entry on both api and dashboard with manager role for oldOwner user
-                list($error, $response) = (new User\Service)->attachMerchantUserOnApi($oldOwner->id, $merchant->id, 'manager');
+                list($error, $response) = (new User\Service)->attachMerchantUserOnApi($oldOwner->id, $merchantId, 'manager');
 
                 if (empty($error) === true)
                 {
-                    $oldOwner->joinMerchantByIdWithRole($merchant->id, 'manager');
+                    $oldOwner->refreshCurrentMerchant();
                 }
 
                 // adding merchant user mapping entry on both api and dashboard with owner role for existingUser user
-                list($error, $response) = (new User\Service)->attachMerchantUserOnApi($existingUser->id, $merchant->id, 'owner');
+                list($error, $response) = (new User\Service)->attachMerchantUserOnApi($existingUser->id, $merchantId, 'owner');
 
-                if (empty($error) === true)
-                {
-                    $existingUser->joinMerchantByIdWithRole($merchant->id, 'owner');
-                }
+                $existingUser->refreshCurrentMerchant();
             }
             //change email of existing user attached to the merchant as owner
             else if ($selfUser)
@@ -236,12 +198,7 @@ class Service extends Base\Service
 
                 list($error, $response) = (new User\Service)->editUserOnApi($emailData, $selfUser->id);
 
-                if (empty($error) === true)
-                {
-                    $selfUser->email = $input['email'];
-
-                    $selfUser->saveOrFail();
-                }
+                $selfUser->refreshCurrentMerchant();
             }
         }
     }
