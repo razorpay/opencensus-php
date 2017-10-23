@@ -223,7 +223,7 @@ class SoapWrapper
                             <ipgapi:OrderId>$oid</ipgapi:OrderId>
                             <ipgapi:PayerSecurityLevel>1</ipgapi:PayerSecurityLevel>
                             <ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType>
-                            <ipgapi:ProcessorApprovalCode>014932</ipgapi:ProcessorApprovalCode>
+                            <ipgapi:ProcessorApprovalCode>543210</ipgapi:ProcessorApprovalCode>
                             <ipgapi:ProcessorCCVResponse/>
                             <ipgapi:ReferencedTDate>$tdate</ipgapi:ReferencedTDate>
                             <ipgapi:TDate>$tdate</ipgapi:TDate>

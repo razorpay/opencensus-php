@@ -2271,24 +2271,24 @@ return [
             'content' => [
                 'features' => [
                     [
-                        'feature' => 'noflashcheckout',
-                        'value' => false,
+                        'feature'      => 'noflashcheckout',
+                        'value'        => false,
                         'display_name' => 'No Flash Checkout'
                     ],
                     [
-                        'feature' => 'marketplace',
-                        'value' => false,
-                        'display_name' => 'Marketplace'
+                        'feature'      => 'marketplace',
+                        'value'        => false,
+                        'display_name' => 'Route'
                     ],
                     [
-                        'feature' => 'subscriptions',
-                        'value' => false,
+                        'feature'      => 'subscriptions',
+                        'value'        => false,
                         'display_name' => 'Subscriptions'
                     ],
                     [
-                        'feature' => 'virtual_accounts',
-                        'value' => false,
-                        'display_name' => 'Virtual accounts'
+                        'feature'      => 'virtual_accounts',
+                        'value'        => false,
+                        'display_name' => 'Smart Collect'
                     ],
                 ]
             ],
@@ -2400,7 +2400,7 @@ return [
                     [
                         'feature'      => 'marketplace',
                         'value'        => true,
-                        'display_name' => 'Marketplace'
+                        'display_name' => 'Route'
                     ],
                     [
                         'feature'      => 'subscriptions',
@@ -2410,7 +2410,7 @@ return [
                     [
                         'feature'      => 'virtual_accounts',
                         'value'        => false,
-                        'display_name' => 'Virtual accounts'
+                        'display_name' => 'Smart Collect'
                     ],
                 ]
             ],
@@ -2444,7 +2444,7 @@ return [
                     [
                         'feature'      => 'marketplace',
                         'value'        => false,
-                        'display_name' => 'Marketplace'
+                        'display_name' => 'Route'
                     ],
                     [
                         'feature'      => 'subscriptions',
@@ -2454,7 +2454,7 @@ return [
                     [
                         'feature'      => 'virtual_accounts',
                         'value'        => false,
-                        'display_name' => 'Virtual accounts'
+                        'display_name' => 'Smart Collect'
                     ],
                 ]
             ],
@@ -2463,22 +2463,22 @@ return [
     ],
 
     'testAddMerchantFeaturesWithSyncOnLive' => [
-        'request' => [
+        'request'  => [
             'content' => [
-                'features'      => [
+                'features'    => [
                     'noflashcheckout' => '1',
                 ],
-                'should_sync'   => 1
+                'should_sync' => 1
             ],
-            'url' => '/merchants/10000000000000/features',
-            'method' => 'post',
-            'server' => [
+            'url'     => '/merchants/10000000000000/features',
+            'method'  => 'post',
+            'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
         ],
         'response' => [
-            'content' => [
+            'content'     => [
                 'features' => [
                     [
                         'feature'      => 'noflashcheckout',
@@ -2488,7 +2488,7 @@ return [
                     [
                         'feature'      => 'marketplace',
                         'value'        => false,
-                        'display_name' => 'Marketplace'
+                        'display_name' => 'Route'
                     ],
                     [
                         'feature'      => 'subscriptions',
@@ -2498,12 +2498,12 @@ return [
                     [
                         'feature'      => 'virtual_accounts',
                         'value'        => false,
-                        'display_name' => 'Virtual accounts'
-                    ],
-                ]
+                        'display_name' => 'Smart Collect'
+                    ]
+                ],
             ],
             'status_code' => 200
-        ]
+        ],
     ],
 
     'testAddMerchantUneditableFeaturesWithSyncOnLive' => [

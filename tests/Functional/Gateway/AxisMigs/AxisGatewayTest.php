@@ -70,6 +70,21 @@ class AxisGatewayTest extends TestCase
             $this->testData['testPaymentAxisMigsCaptureEntity'], $migs);
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['vpc_Amount'] = '100';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $this->doAuthPayment();
+        });
+    }
+
     public function testMasterCardPayment()
     {
         $payment = $this->getDefaultPaymentArray();
@@ -176,9 +191,158 @@ class AxisGatewayTest extends TestCase
                         });
 
         $data = $this->testData[__FUNCTION__];
+
         $this->runRequestResponseFlow($data, function() use ($pid)
         {
             $this->verifyPayment($pid);
+        });
+    }
+
+    public function testVerifyRefundSuccessfulOnGateway()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content['vpc_Message']         = 'I5426-07060432: Invalid Permission : advanceMA';
+                $content['vpc_TransactionNo']   = '0';
+                $content['vpc_TxnResponseCode'] = '7';
+            }
+        });
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->clearMockFunction();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['vpc_RefundedAmount'] = $content['vpc_Amount'];
+            }
+        });
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals($refund['id'], $response['refund_id']);
+        $this->assertEquals('processed', $response['status']);
+    }
+
+    public function testVerifyRefundFailedOnGateway()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content['vpc_Message']         = 'I5426-07060432: Invalid Permission : advanceMA';
+                $content['vpc_TransactionNo']   = '0';
+                $content['vpc_TxnResponseCode'] = '7';
+            }
+        });
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->clearMockFunction();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                unset($content['vpc_AcqResponseCode'], $content['vpc_Card'], $content['vpc_MerchTxnRef']);
+                unset($content['vpc_Message'], $content['vpc_ReceiptNo'], $content['vpc_TxnResponseCode']);
+
+                $content['vpc_Amount'] = '0';
+                $content['vpc_BatchNo'] = '0';
+                $content['vpc_DRExists'] = 'N';
+                $content['vpc_FoundMultipleDRs'] = 'N';
+                $content['vpc_TransactionNo'] = '0';
+            }
+        });
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals($refund['id'], $response['refund_id']);
+        $this->assertEquals('processed', $response['status']);
+    }
+
+    public function testVerifyRefundFailedOnGatewayMultipleResponses()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content['vpc_Message']         = 'I5426-07060432: Invalid Permission : advanceMA';
+                $content['vpc_TransactionNo']   = '0';
+                $content['vpc_TxnResponseCode'] = '7';
+            }
+        });
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['vpc_FoundMultipleDRs'] = 'Y';
+                $content['vpc_RefundedAmount'] = $content['vpc_Amount'];
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($refund)
+        {
+            $this->retryFailedRefund($refund['id']);
+        });
+    }
+
+    public function testVerifyRefundOldRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $ts = Carbon::createFromDate(2017, 1, 1)->getTimestamp();
+
+        $this->fixtures->refund->edit($refund['id'], [
+            'status' => 'failed',
+            'created_at' => $ts,
+            'gateway_refunded' => '0'
+        ]);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($ts, $refund['created_at']);
+        $this->assertFalse($refund['gateway_refunded']);
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($refund)
+        {
+            $this->retryFailedRefund($refund['id']);
         });
     }
 

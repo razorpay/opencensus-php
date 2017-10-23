@@ -6,6 +6,7 @@ use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Models\VirtualAccount;
+use Razorpay\IFSC\IFSC;
 use RZP\Exception;
 
 class Entity extends Base\PublicEntity
@@ -18,6 +19,7 @@ class Entity extends Base\PublicEntity
     const TYPE                      = 'type';
     const BENEFICIARY_CODE          = 'beneficiary_code';
     const IFSC_CODE                 = 'ifsc_code';
+    const BANK_NAME                 = 'bank_name';
     const ACCOUNT_NUMBER            = 'account_number';
     const BENEFICIARY_NAME          = 'beneficiary_name';
     const BENEFICIARY_ADDRESS1      = 'beneficiary_address1';
@@ -74,6 +76,7 @@ class Entity extends Base\PublicEntity
         self::IFSC,
         self::IFSC_CODE,
         self::NAME,
+        self::BANK_NAME,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
         self::MERCHANT_ID,
@@ -100,6 +103,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::IFSC,
+        self::BANK_NAME,
         self::NAME,
         self::ACCOUNT_NUMBER,
     ];
@@ -108,6 +112,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::IFSC,
         self::MPIN_SET,
+        self::BANK_NAME,
     ];
 
     protected $guarded = [self::ID];
@@ -179,6 +184,23 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::MPIN) !== null);
     }
 
+    public function getBankNameAttribute()
+    {
+        $ifsc = $this->getAttribute(self::IFSC_CODE);
+
+        if ($ifsc === null)
+        {
+            return null;
+        }
+
+        if ($ifsc === self::SPECIAL_IFSC_CODE)
+        {
+            return 'Razorpay';
+        }
+
+        return IFSC::getBankName($ifsc);
+    }
+
     protected function getMpinAttribute()
     {
         if (isset($this->attributes[self::MPIN]) === false)
@@ -204,6 +226,11 @@ class Entity extends Base\PublicEntity
     public function getBeneficiaryName()
     {
         return $this->getAttribute(self::BENEFICIARY_NAME);
+    }
+
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
     }
 
     public function getAccountNumber()

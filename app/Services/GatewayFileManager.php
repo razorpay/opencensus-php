@@ -11,7 +11,7 @@ class GatewayFileManager extends Manager
 
     public function getDefaultDriver()
     {
-        throw new Exception\LogicException('No default gateway is specified');
+        throw new Exception\LogicException('No default driver is specified');
     }
 
     public function getProcessor(string $type, string $target)

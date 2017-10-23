@@ -30,6 +30,8 @@ class MailTags
 
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL           = 'icici_upi_refunds_mail';
+    const BATCH_IRCTC_REFUNDS_FILE         = 'batch_irctc_refunds_file';
+    const BATCH_IRCTC_SETTLEMENT_FILE      = 'batch_irctc_settlement_file';
     const BATCH_REFUNDS_FILE               = 'batch_refunds_file';
     const BATCH_PAYMENT_LINK_FILE          = 'batch_payment_link_file';
 
@@ -81,6 +83,9 @@ class MailTags
 
     // OAuth email tags
     const OAUTH_APP_AUTHORIZED             = 'oauth_app_authorized';
+
+    // Merchant feature tags
+    const FEATURE_ENABLED                  = 'feature_enabled';
 
     /**
      * Email tags that should respond to the mailgun failure webhook

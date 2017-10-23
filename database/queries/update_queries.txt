@@ -679,7 +679,6 @@ UPDATE offers SET payment_network = NULL WHERE payment_method != 'card';
 UPDATE terminals SET tpv = '2' WHERE gateway = 'netbanking_federal' AND
     id = '7j1qFPcYQhXbsk';
 
-
 UPDATE refunds SET status = "processed", gateway_refunded = 1, updated_at = UNIX_TIMESTAMP() WHERE id IN ("8OCaLQWlQ2GU6F", "8GZxnX7qNUCxbn", "8DBuziIXL80sg9", "8Ey3S0es6jh7le", "8K8LtVTtE4CoW1", "8Hw9ZMV0M8fGyc", "8VEqpr2nTL7PDx", "8LmidpwWQQ1Jqr", "8J0wJyY71kYNTJ", "8KTHDD6btnGfBR", "8MIFtJdjZJFHQd", "8KFO379X6apUhF", "8ODs9H0wb2VKdq", "8LotddEjtS9f0q", "8LpEkQtQ2zNMWz", "8MDQiaqNAeWjud", "8MYeL7b2W3GzT4", "8OCuOfFs5RR3oD", "8MzVt9AiUhFLL0", "8MYxxASJPrexG3", "8ST4UF0gzizsZu", "8NPx5jBPbrKftl", "8ODujr2rC8eiMT", "8P2eTvsq3fsKUO", "8PSXudK8pLpzEP", "8UTgUD8gxzu0M1", "8R2dlPROxKZ7x5", "8PjItVSxB7NixX", "8R2eiC6pluCOdI", "8R2ecJoh2T08m2", "8PLqghEWnPWpvR", "8RR9GmOXvOQiax", "8Te3HOySmsJirk", "8RRA0VAchw3hKk", "8PjqxNfFDVQggm", "8QaifjpT5bwKbw", "8Q4lHbGwkqyawW", "8RQFxPz3TNYLyZ", "8QoLF80vcFcx0T", "8R4unvMopuQ1GA", "8T1I2fs0gHpLAP", "8T1JAXwfVu0pW4", "8RPuBGD3pqyCZq", "8QzbBD25Fbd5wq", "8RicDRaOyD5wGY", "8RbjFD9tIXWq5S", "8SUmQM6YqHlfI8", "8TgfB4owKaZ0Qh", "8TgfG2AswpuXd2", "8UbRQWs7mf7dj4", "8TbFuL6YLu9dLr", "8Vn2Bln7dQSjTi", "8WBZW6StSh6g1a", "8VnC3bt91TTltD", "8USDSC4alQuGOd", "8WBYcTEkHapJH0", "8Wa7jNZ60OZCHX", "8UuyCDTWxoVOKb", "8VhPfdEwqFfoZK", "8WuFa4R0ejk2i7", "8WaBP5ZBV9nEFZ", "8Z8wN35MU5p6Wj", "8YNb3r7rZfMkgc", "8ZAV55LzoD7Sz5", "8Z9SJg7kldhZoL", "8YV9jckgh5s24T", "8Z6BAb6h8HeHW7") AND status = "failed";
 
 # Data correction for merchant_users mapping
@@ -804,3 +803,87 @@ UPDATE payments
 
 UPDATE billdesk SET RefundId = 'JSBI56715667791' WHERE id = 2124216;
 UPDATE billdesk SET RefundId = 'IUBI53988238411' WHERE id = 2110989;
+
+UPDATE billdesk SET RefundId = 'JSBI56869209721' WHERE id = 2156652;
+
+# Data correction - ref: https://github.com/razorpay/api/issues/5318
+UPDATE merchant_details
+SET bank_account_type = 'current',
+    bank_beneficiary_address1 = 'Bangalore',
+    bank_beneficiary_city = 'Bangalore',
+    bank_beneficiary_state = 'KA',
+    bank_beneficiary_pin = '560001'
+WHERE merchant_id = '8fyopxXdbZ5Cwr';
+
+UPDATE merchant_details
+SET business_type = 9
+WHERE merchant_id = '8fxCRCWAH1F6gL';
+
+UPDATE merchant_details
+SET contact_name = 'yunus ansari',
+    contact_mobile = '8461939326'
+WHERE merchant_id = '8gEIgmsxQ7Dmpy';
+
+UPDATE merchant_details
+SET transaction_volume = 1
+WHERE merchant_id = '8gGZ0cZaLgHU1m';
+
+update merchants
+set invoice_code = upper(concat(substr(`id`,1, 8), substr(`id`, -4)))
+where invoice_code is NULL or invoice_code = '';
+
+UPDATE merchant_invoice
+SET invoice_number = upper(concat(substr(`merchant_id`,1, 8), substr(`merchant_id`, -4), '0917'))
+WHERE month=9 AND invoice_number = '0917';
+
+# Zomato single adjustment for 2 different disputes, splitting to 2 adjustments and transactions
+update adjustment set amount=-171460 where id='84cF4u7kbGIvn8';
+
+insert into adjustment
+    values ('84cF4u7kbGIvn9', '6H7N6hlcv29OMG', NULL, NULL, -35800, 'INR', 'kotak',
+            'Merchant accepted CB', NULL, NULL, 1497839130, 1497839130);
+
+update transactions set amount=171460, debit=171460, balance=954631656 where id='84cF4uXbrXWgWs';
+
+insert into transactions
+    values ('84cF4uXbrXWgWt', '84cF4u7kbGIvn9', 'adjustment', '6H7N6hlcv29OMG',
+            35800, 0, 0, 0, NULL, 35800, 0, 'INR', 954595856, NULL, 0, NULL, 0,
+            0, 0, NULL, 'kotak', -1, -1, 'default', 0, 1, 1497843065, NULL,
+            '84dNEyRhJujmGu', 1497839130, 1497839130, 1501545069);
+
+update adjustment set transaction_id='84cF4uXbrXWgWt' where id='84cF4u7kbGIvn9';
+
+update settlement_details set count=2 where id='84dNF18ydO6H50';
+
+# PR:5366 Extracting auth code from approval code
+UPDATE `first_data`
+    SET `auth_code` = SUBSTR(`approval_code`,3,6)
+WHERE
+    `action` IN ('authorize', 'purchase') AND
+    `approval_code` LIKE 'Y:%';
+
+UPDATE payments
+    JOIN first_data ON first_data.payment_id = payments.id
+    SET payments.reference2 = first_data.auth_code
+WHERE
+    first_data.action IN ('authorize', 'purchase') AND
+    (first_data.auth_code IS NOT NULL AND first_data.auth_code != '00') AND
+    payments.gateway = "first_data" AND
+    (payments.reference2 is NULL OR payments.reference2 = "00") AND
+    payments.status != 'failed';
+
+UPDATE merchant_banks
+    SET bank_transfer=1;
+
+UPDATE invoices
+    SET user_id = NULL WHERE id = '8K7Wt4J7XF559F' LIMIT 1;
+
+#Create only 1 entry for tax in fee_breakup
+UPDATE fees_breakup set name='tax' where name='igst';
+
+UPDATE fees_breakup set name='tax' and percentage=percentage*2 and amount=amount*2 where name='sgst';
+
+DELETE from fees_breakup where name='cgst';
+
+# MiGS failed refund. Failed because flyrobe terminal was purchase instead of auth capture
+UPDATE refunds SET gateway_refunded = "0", status = "failed" WHERE id = "87eT5BJpNL8uPb" and status = "processed";

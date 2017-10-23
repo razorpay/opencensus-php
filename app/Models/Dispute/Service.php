@@ -27,4 +27,16 @@ class Service extends Base\Service
 
         return $dispute->toArrayPublic();
     }
+
+    public function migrateOldAdjustments($file): array
+    {
+        return $this->core()->migrateOldAdjustments($file);
+    }
+
+    public function createReason(array $input): array
+    {
+        $reason = (new Reason\Core)->create($input);
+
+        return $reason->toArrayPublic();
+    }
 }

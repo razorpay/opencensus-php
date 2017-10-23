@@ -3,7 +3,6 @@
 namespace RZP\Tests\Functional\Helpers\Payment;
 
 use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Exception\BaseException;
 use RZP\Exception;
 use Mockery;
 use Requests;
@@ -245,6 +244,36 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function createCustomerToken(int $recurring)
+    {
+        $this->ba->proxyAuth();
+
+        $request = [
+            'url'     => '/customers/cust_100000customer/tokens',
+            'method'  => 'post',
+            'content' => [
+                'method'     => 'netbanking',
+                'bank'       => 'ICIC',
+                'max_amount' => 100000,
+                'recurring'  => $recurring,
+            ]
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function getTokenById(string $id)
+    {
+        $this->ba->privateAuth();
+
+        $request = [
+            'url'     => '/customers/cust_100000customer/tokens/' . $id,
+            'method'  => 'get',
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function doAuthPayment($payment = null, $server = null)
     {
         if ($payment === null)
@@ -399,6 +428,24 @@ trait PaymentTrait
         $this->ba->publicAuth();
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function getWalletFormViaCreateRoute($payment)
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments',
+            'content' => $payment
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $response->assertViewIs('gateway.gatewayWalletForm');
+        $response->assertHeader('content-type', 'text/html; charset=UTF-8');
+
+        return $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
     }
 
     protected function makeOtpCallback($url)
@@ -934,6 +981,19 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getNetbankingRecurringPaymentArray($bank = 'HDFC')
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray($bank);
+
+        $payment['amount'] = 2000;
+
+        $payment['recurring'] = true;
+
+        $payment['customer_id'] = 'cust_100000customer';
+
+        return $payment;
+    }
+
     protected function getDefaultEmiPaymentArray($saved)
     {
         $card = null;
@@ -1001,6 +1061,8 @@ trait PaymentTrait
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'netbanking';
 
+        unset($payment['card']);
+
         if ($bank !== null)
         {
             $payment['bank'] = $bank;
@@ -1014,6 +1076,8 @@ trait PaymentTrait
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'wallet';
         $payment['wallet'] = $wallet;
+
+        unset($payment['card'], $payment['bank']);
 
         return $payment;
     }

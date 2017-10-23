@@ -4,6 +4,7 @@ namespace RZP\Tests\Unit\Encryption;
 
 use RZP\Tests\TestCase;
 use RZP\Encryption\PGPEncryption;
+use RZP\Encryption\AESEncryption;
 
 class EncryptionTest extends TestCase
 {
@@ -25,6 +26,28 @@ class EncryptionTest extends TestCase
         $encryptedData = $pgpEncryption->encrypt($dataToEncrypt);
 
         $decryptedData = $pgpEncryption->decrypt($encryptedData);
+
+        $this->assertEquals($dataToEncrypt, $decryptedData);
+    }
+
+    public function testAesEncryptionDecryption()
+    {
+        $dataToEncrypt = 'somerandomdata';
+
+        // to be changed
+        $encryptionData = [
+            'mode'   => 2,
+            'iv'     => 'aai_wee',
+            'secret' => 'kissi_ko_pata_nhi_chalega',
+        ];
+
+        $pgpEncryption = new AESEncryption($encryptionData);
+
+        $encryptedData = $pgpEncryption->encrypt($dataToEncrypt);
+
+        $readableHexData = bin2hex($encryptedData);
+
+        $decryptedData = $pgpEncryption->decrypt(hex2bin($readableHexData));
 
         $this->assertEquals($dataToEncrypt, $decryptedData);
     }

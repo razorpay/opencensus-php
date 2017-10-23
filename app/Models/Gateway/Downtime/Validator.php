@@ -293,6 +293,9 @@ class Validator extends Base\Validator
 
     protected function validateWalletIssuer(string $issuer = null)
     {
+        // We convert the issuer to lower case because we convert issuer to upper case in StatusCakeProcessor
+        $issuer = strtolower($issuer);
+
         if (Wallet::exists($issuer) === false)
         {
             throw new Exception\BadRequestValidationFailureException(

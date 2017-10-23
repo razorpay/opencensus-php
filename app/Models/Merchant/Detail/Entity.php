@@ -3,7 +3,15 @@
 namespace RZP\Models\Merchant\Detail;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 
+/**
+ * Class Entity
+ *
+ * @property Merchant\Entity $merchant
+ *
+ * @package RZP\Models\Merchant\Detail
+ */
 class Entity extends Base\PublicEntity
 {
     const MERCHANT_ID                       =      'merchant_id';
@@ -262,6 +270,11 @@ class Entity extends Base\PublicEntity
     public function isLocked()
     {
         return ($this->getAttribute(self::LOCKED) === true);
+    }
+
+    public function setLocked(bool $locked)
+    {
+        $this->setAttribute(self::LOCKED, $locked);
     }
 
     public function isSubmitted()

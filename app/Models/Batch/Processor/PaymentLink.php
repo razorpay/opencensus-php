@@ -3,17 +3,29 @@
 namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Invoice;
+use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Helpers;
 
 class PaymentLink extends Base
 {
+    /**
+     * @var Invoice\Core
+     */
+    protected $invoiceCore;
+
+    public function __construct(Entity $batch)
+    {
+        parent::__construct($batch);
+
+        $this->invoiceCore = new Invoice\Core;
+    }
+
     protected function processEntry(array & $entry)
     {
         $input = Helpers\PaymentLink::getEntityInput($entry, $this->params);
 
-        $invoice = (new Invoice\Core)->create(
-                        $input, $this->merchant, null, $this->batch);
+        $invoice = $this->invoiceCore->create($input, $this->merchant, null, $this->batch);
 
         // Update the entry with output values
 

@@ -5,6 +5,7 @@ namespace RZP\Models\Dispute;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 
 class Entity extends Base\PublicEntity
@@ -241,6 +242,11 @@ class Entity extends Base\PublicEntity
     public function reason()
     {
         return $this->belongsTo(Reason\Entity::class);
+    }
+
+    public function adjustments()
+    {
+        return $this->morphMany(Adjustment\Entity::class, 'entity');
     }
 
     // --------------- Relation to other entity section ends --------------------

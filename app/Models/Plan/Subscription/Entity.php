@@ -127,6 +127,10 @@ class Entity extends Base\PublicEntity
         self::TYPE,
     ];
 
+    protected static $modifiers = [
+        self::START_AT,
+    ];
+
     protected $fillable = [
         self::QUANTITY,
         self::NOTES,
@@ -165,6 +169,12 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_NOTIFY,
         self::CREATED_AT,
         // self::CANCEL_AT_CYCLE_END,
+    ];
+
+    protected $hosted = [
+        self::ID,
+        self::STATUS,
+        self::CREATED_AT,
     ];
 
     protected $casts = [
@@ -860,6 +870,18 @@ class Entity extends Base\PublicEntity
     }
 
     // --------------------- END GENERATORS ---------------------
+
+    // ----------------------- MODIFIERS -----------------------
+
+    public function modifyStartAt(& $input)
+    {
+        if (empty($input[Entity::START_AT]) === true)
+        {
+            unset($input[self::START_AT]);
+        }
+    }
+
+    // --------------------- END MODIFIERS ---------------------
 
     public function associateEntities(
         Plan\Entity $plan,

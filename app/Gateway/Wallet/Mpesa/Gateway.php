@@ -63,6 +63,10 @@ class Gateway extends Base\Gateway
         $this->assertPaymentId($input['payment']['id'],
                                $content[ResponseFields::TRANSACTION_REFERENCE]);
 
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($input['gateway']['txnAmt'], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
+
         $wallet = $this->repo->findByPaymentIdAndAction(
                     $input['payment']['id'],
                     Action::AUTHORIZE);
@@ -214,6 +218,41 @@ class Gateway extends Base\Gateway
 
         // response will contain status 100 or 101
         $this->checkGatewayResponse($status);
+    }
+
+    public function verifyRefund(array $input)
+    {
+        parent::verify($input);
+
+        // Hardcoding these refunds for processing
+        $unprocessedRefunds = [
+            '89EjEZhXy1P1PY',
+            '89vusCkrDiFjPG',
+            '8a8vG9jPmmdVa3',
+            '8bvLSKxaWQACdJ',
+            '8c7YeFT8dwzg1P',
+            '8e6Fn5jlJynnd3',
+            '8fC4IPnITPqHt9',
+            '8gFtsmntN4VtVH',
+            '8gGLYRDZEAg3gU',
+            '8htVob7hAKtiPq',
+            '8jx8pnnsQbdcWT',
+            '8RiLxDLIbyX86n',
+            '8Ybeo1i6ArNMDi',
+        ];
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        {
+            return false;
+        }
+
+        throw new Exception\RuntimeException(
+            'This refund should not be processed by verify refund',
+            [
+                'refund_id'  => $input['refund']['id'],
+                'payment_id' => $input['payment']['id'],
+                'gateway'    => $this->gateway,
+            ]);
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)

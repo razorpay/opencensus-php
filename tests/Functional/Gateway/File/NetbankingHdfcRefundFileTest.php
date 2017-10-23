@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Functional\Gateway\File;
+namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
 use Carbon\Carbon;
@@ -18,6 +18,8 @@ class NetbankingHdfcRefundFileTest extends TestCase
 
     public function setUp()
     {
+        Carbon::setTestNow();
+
         $this->testDataFilePath = __DIR__ . '/helpers/NetbankingHdfcRefundFileTestData.php';
 
         parent::setUp();
@@ -59,7 +61,7 @@ class NetbankingHdfcRefundFileTest extends TestCase
 
         Mail::assertSent(RefundFileMail::class, function ($mail) use ($file)
         {
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+            $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
             $expectedSubject = RefundFileMailConstants::SUBJECT_MAP[Gateway::NETBANKING_HDFC] . $today;
 

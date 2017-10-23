@@ -34,13 +34,19 @@ class Core extends Base\Core
     {
         $merchant = (new Merchant\Entity)->build($input);
 
+        $this->trace->info(
+            TraceCode::MERCHANT_CREATE,
+            [
+                'data' => $input
+            ]);
+
         $merchant->setAuditAction(Action::CREATE_MERCHANT);
 
         $email['email'] = $input['email'];
 
         $merchant->getValidator()->validateInput('unique_email', $email);
 
-        $merchant->setPricingPlan(Pricing\DefaultPlan::STARTUP_PLAN_ID);
+        $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
 
         $this->repo->saveOrFail($merchant);
 
@@ -56,7 +62,7 @@ class Core extends Base\Core
         return $merchant;
     }
 
-    public function createSubMerchant($input, $aggregatorMerchant)
+    public function createSubMerchant($input, $aggregatorMerchant): Entity
     {
         // We only check for email uniqueness if the email
         // address is provided
@@ -70,7 +76,7 @@ class Core extends Base\Core
             $input['email'] = $aggregatorMerchant->getEmail();
         }
 
-        $subMerchant = (new Merchant\Entity)->build($input);
+        $subMerchant = (new Entity)->build($input);
 
         $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
@@ -114,7 +120,7 @@ class Core extends Base\Core
 
         (new Methods\Core)->setDefaultMethods($merchant);
 
-        (new Detail\Service)->createMerchantDetails($merchant);
+        (new Detail\Core)->createMerchantDetails($merchant);
 
         (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
     }

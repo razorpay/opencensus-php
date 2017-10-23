@@ -35,8 +35,6 @@ class Anchor
     {
         Period::validatePeriod($period);
 
-        $check = self::$checks[$period];
-
         if ($startTime === null)
         {
             $startTime = Carbon::now(Timezone::IST);
@@ -48,6 +46,8 @@ class Anchor
         }
         else
         {
+            $check = self::$checks[$period];
+
             $anchor = $startTime->$check;
         }
 
@@ -82,7 +82,7 @@ class Anchor
         //
         $testDay = 1;
 
-        $date = Carbon::createFromDate($leapYear, $month, $testDay, 'Asia/Kolkata');
+        $date = Carbon::createFromDate($leapYear, $month, $testDay, Timezone::IST);
 
         if ($day > $date->daysInMonth)
         {
