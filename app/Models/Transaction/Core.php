@@ -1174,15 +1174,17 @@ class Core extends Base\Core
      */
     protected function getTransferReversalSettledAtTimestamp(Reversal\Entity $reversal): int
     {
-        //
-        // By default, set settled_at for reversals to tomorrow midnight
-        // to let them be picked up for settlements the next day
-        //
-        $startTime = Carbon::now(Timezone::IST)->getTimestamp();
-
         $scheduleTaskCore = new ScheduleTask\Core;
 
-        $nextSettlementTime = $scheduleTaskCore->getNextApplicableTimeForMerchant($startTime, $reversal->merchant);
+        $defaultScheduleTask = $scheduleTaskCore->getMerchantSettlementSchedule($reversal->merchant, null);
+
+        //
+        // Get the next_run_at for the merchant's default schedule_task
+        // (where method = null)
+        //
+        // TODO: Need to fix this - pick the next_run_at starting tomorrow
+        //
+        $nextSettlementTime = $defaultScheduleTask->getNextRunAt();
 
         //
         // `source` will always be `Transfer/Entity` since this flow
