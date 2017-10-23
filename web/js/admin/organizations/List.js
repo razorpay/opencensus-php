@@ -35,6 +35,8 @@ class OrganizationsList extends Component {
     fetchFn: adminFetch,
   });
 
+  onSubmit = filters => this.collection.setFilters(filters);
+
   showEntity = showEntity.bind(null, this.collection);
 
   render() {
@@ -42,11 +44,11 @@ class OrganizationsList extends Component {
       <div class="list-container">
         <div class="box">
           <header>Organizations</header>
-          <Form>
+          <div class="btn" onClick={this.showEntity}>
+            Add an Organization
+          </div>
+          <Form onSubmit={this.onSubmit} class="filters">
             <Field label="Search" />
-            <div class="btn" onClick={this.showEntity}>
-              Add an Organization
-            </div>
           </Form>
         </div>
         <Table model={this.collection} fields={fields} onClick={showEntity} />

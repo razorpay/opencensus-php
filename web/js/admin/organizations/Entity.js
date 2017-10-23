@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
-import Field, { SelectField, CheckField } from 'ui/Field';
+import Field, { SelectField, CheckField, FileField } from 'ui/Field';
 import { openSlider } from 'common/modal';
 import SimpleTable from 'ui/SimpleTable';
 import { adminFetch, adminPut } from 'util/fetch';
@@ -19,18 +19,19 @@ class EditOrg extends Component {
   };
 
   save = body => {
-    console.log(body);
     let params = {
       content_type: 'application/json',
       route_name: 'org_edit',
+      body: body,
     };
+
     if (this.props.model) {
       params.url_params = {
         id: this.props.model.id,
       };
     }
 
-    return adminPut({ body, params });
+    return adminPut(params);
   };
 
   init(props) {
@@ -54,28 +55,79 @@ class EditOrg extends Component {
   }
 
   render() {
-    let { id, business_name, display_name, email, email_domains } =
+    let {
+      id,
+      business_name,
+      display_name,
+      email,
+      email_domains,
+      custom_code,
+      from_email,
+      signature_email,
+      invoice_logo_url,
+      login_logo_url,
+      main_logo_url,
+      allow_sign_up,
+    } =
       this.props.model || {};
 
     return (
       <div>
         <header>Edit Org - {id} </header>
         <Form onSubmit={this.save}>
-          <Field label="Email" required defaultValue={email} />
-          <Field label="Business Name" required defaultValue={business_name} />
-          <Field label="Display Name" required defaultValue={display_name} />
-          {/* <Field name="name" label="Full Name" required defaultValue={name} />
-          <CheckField
-            name="allow_all_merchants"
-            label="Allow All Merchants"
-            defaultValue={allow_all_merchants}
+          <Field type="hidden" name="id" defaultValue={id} />
+          <Field label="Email" name="email" required defaultValue={email} />
+          <Field
+            label="Business Name"
+            name="business_name"
+            required
+            defaultValue={business_name}
           />
-          <CheckField
-            name="disabled"
-            label="Disabled"
-            defaultValue={disabled}
-          /> */}
+          <Field
+            label="Display Name"
+            name="display_name"
+            required
+            defaultValue={display_name}
+          />
           <br />
+          <Field
+            label="Email Domains"
+            name="email_domains"
+            required
+            defaultValue={email_domains}
+          />
+          <Field label="Hostname" />
+          <SelectField label="Auth Type" name="auth_type">
+            <option value="">Please select an auth type</option>
+            <option value="password">Password</option>
+            <option value="google_auth">Google Auth</option>
+          </SelectField>
+          <br />
+          <Field
+            label="Custom Code"
+            name="custom_code"
+            defaultValue={custom_code}
+          />
+          <Field
+            label="From Email"
+            name="from_email"
+            defaultValue={from_email}
+          />
+          <Field
+            label="Signature Email"
+            name="signature_email"
+            defaultValue={signature_email}
+          />
+          <br />
+          <FileField label="Login Logo" name="login_logo_url" />
+          <FileField label="Invoice Logo" name="invoice_logo_url" />
+          <FileField label="Main Logo" name="main_logo_url" />
+          <br />
+          <CheckField
+            label="Allow Sign Up"
+            defaultValue={allow_sign_up}
+            name="allow_sign_up"
+          />
           <button>Save</button>
         </Form>
       </div>
