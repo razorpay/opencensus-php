@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Constants\Table;
+use RZP\Models\Customer\Token;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
@@ -960,5 +961,70 @@ class Repository extends Base\Repository
                     ->whereNotNull(Entity::SERVICE_TAX)
                     ->limit($limit)
                     ->update([Entity::TAX => DB::raw(Entity::SERVICE_TAX)]);
+    }
+
+    public function fetchPendingEMandateRegistration(string $gateway, int $from, int $to)
+    {
+        $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
+
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Token\Entity::RECURRING);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+
+        return $this->newQuery()
+                    ->join(
+                          Table::TOKEN,
+                          function ($join)
+                          use($tokenIdColumn)
+                            {
+                                $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
+                                $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
+                            })
+                    ->where(Entity::RECURRING_TYPE, '=', RecurringType::INITIAL)
+                    ->where($paymentRecurringColumn, '=', 1)
+                    ->where($paymentMethodColumn, '=', Method::NETBANKING)
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+                    ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
+                    ->where($tokenRecurringColumn, '!=', 1)
+                    ->with(['localToken', 'globalToken', 'customer'])
+                    ->get();
+    }
+
+    public function fetchPendingEMandateDebit(string $gateway, $from, $to)
+    {
+        $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
+
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Token\Entity::RECURRING);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+
+        return $this->newQuery()
+                    ->join(
+                        Table::TOKEN,
+                        function ($join)
+                        use ($tokenIdColumn)
+                         {
+                            $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
+                            $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
+                         })
+                    ->where(Entity::RECURRING_TYPE, '=', RecurringType::AUTO)
+                    ->where(Entity::STATUS, '=', Status::CREATED)
+                    ->where($paymentRecurringColumn, '=', 1)
+                    ->where($paymentMethodColumn, '=', Method::NETBANKING)
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+                    ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::CONFIRMED)
+                    ->where($tokenRecurringColumn, '=', 1)
+                    ->with(['localToken', 'globalToken'])
+                    ->get();
     }
 }

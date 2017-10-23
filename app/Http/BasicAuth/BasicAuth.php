@@ -1092,10 +1092,17 @@ class BasicAuth
 
 // --------------------- Setters -----------------------------------------------
 
-    public function setMode($mode)
+    public function setMode(string $mode)
     {
         $this->mode = $mode;
         $this->app['rzp.mode'] = $mode;
+    }
+
+    public function setModeAndDbConnection(string $mode)
+    {
+        $this->setMode($mode);
+
+        \Database\DefaultConnection::set($mode);
     }
 
     /**

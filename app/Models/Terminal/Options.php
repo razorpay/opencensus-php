@@ -30,7 +30,6 @@ class Options
         'prepaid_iin_filter',
         'billdesk_category_filter',
         'billdesk_merchant_filter',
-        'pharma_filter',
         'tpv_filter',
         'category_filter',
         'gateway_exclusion_filter',

@@ -762,6 +762,7 @@ class Processor
      *                             action
      *
      * @return array or null
+     * @throws Exception\GatewayErrorException
      * @throws Exception\LogicException
      */
     protected function callGatewayFunction($action, array $gatewayData)
@@ -1607,6 +1608,15 @@ class Processor
 
     protected function shouldHitGateway(Payment\Entity $payment)
     {
+        if ($payment->isFileBasedEmandateDebitPayment() === true)
+        {
+            //
+            // If the payment is a second recurring payment of a file-based emandate bank
+            // we do not hit the gateway, we send a debit request asynchronously
+            //
+            return false;
+        }
+
         if ($payment->isBankTransfer() === true)
         {
             return false;

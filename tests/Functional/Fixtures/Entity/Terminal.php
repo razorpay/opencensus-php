@@ -971,6 +971,29 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedNetbankingHdfcRecurringTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'netbanking_hdfc',
+            'netbanking'                => 1,
+            'shared'                    => 1,
+            'gateway_acquirer'          => 'hdfc',
+            'gateway_merchant_id'       => 'razorpay_submerchant',
+            'gateway_secure_secret'     => 'razorpay_password',
+        ];
+
+        // Recurring supports both 3ds and non3ds terminal;
+        $attributes['id'] = 'NHdRecurringTl';
+
+        $attributes['type'] = [
+            Type::RECURRING_NON_3DS => '1',
+            Type::RECURRING_3DS     => '1'
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedNetbankingIciciTpvTerminal()
     {
         $attributes = [
@@ -1274,8 +1297,8 @@ class Terminal extends Base
             'gateway'                   => 'wallet_freecharge',
             'card'                      => 0,
             'netbanking'                => 0,
-            'gateway_merchant_id'       => 'random_id',
-            'gateway_merchant_id2'      => 'freecharge_dealer',
+            'gateway_merchant_id'       => 'random_dealer_id',
+            'gateway_merchant_id2'      => 'random_id',
             'gateway_terminal_id'       => 'freecharge_terminal',
             'gateway_terminal_password' => 'razorpay_password',
             'gateway_secure_secret'     => 'secret',

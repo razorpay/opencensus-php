@@ -36,7 +36,7 @@ class Wallet
 
     public static function exists($wallet)
     {
-        return defined(get_class().'::'.strtoupper($wallet));
+        return (isset(self::$fullName[$wallet]) === true);
     }
 
     public static function validateExists($wallet)

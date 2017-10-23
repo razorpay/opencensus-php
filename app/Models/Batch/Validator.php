@@ -9,11 +9,19 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Feature\Constants as Feature;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::FILE                 => 'required|file|mimes:xlsx,application/zip,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/octet-stream,txt|max:1024',
+        Entity::FILE                 => 'required|file|max:1024|mime_types:'
+                                        . 'application/zip,'
+                                        . 'application/vnd.ms-excel,'
+                                        . 'application/vnd.oasis.opendocument.spreadsheet,'
+                                        . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
+                                        . 'application/octet-stream,'
+                                        . 'text/csv,'
+                                        . 'text/plain',
         Entity::TYPE                 => 'required|string|max:25|custom',
         Entity::MERCHANT_ID          => 'sometimes|string',
 
@@ -196,6 +204,19 @@ class Validator extends Base\Validator
                     'errors'        => $errors,
                     'error_entries' => $errorEntries,
                     'merchant_id'   => $merchant->getId(),
+                ]);
+        }
+    }
+
+    protected function validateVirtualBankAccountEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    {
+        if ($merchant->isFeatureEnabled(Feature::VIRTUAL_ACCOUNTS) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Virtual accounts is not enabled for merchant',
+                null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
                 ]);
         }
     }
