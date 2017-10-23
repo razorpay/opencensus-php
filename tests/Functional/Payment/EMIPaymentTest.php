@@ -99,8 +99,15 @@ class EmiPaymentTest extends TestCase
         //Yes Bank
         $this->makeEmiPaymentOnCard('5318491050009999', 9 ,$yesterdayAtTen);
 
+        //merchant subvention payments
+
+        $this->fixtures->merchant->addFeatures(['emi_merchant_subvention']);
+
         //ICICI Merchant subvention Card
-        $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen, 0, null, null, true);
+        $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen, 0, null, null);
+
+        ////Yes Bank Merchant subvention Card
+        $this->makeEmiPaymentOnCard('5318491050009999', 9 ,$yesterdayAtTen, 0, null, null);
 
 
         $request = array(
@@ -201,7 +208,7 @@ class EmiPaymentTest extends TestCase
     }
 
     protected function makeEmiPaymentOnCard($card, $emiDuration,
-        $paymentTime, $save = 0, $appToken = null, $customerId = null, $merchantSubvention = false)
+        $paymentTime, $save = 0, $appToken = null, $customerId = null)
     {
         $this->payment['amount'] = 500000;
         $this->payment['method'] = 'emi';
@@ -210,11 +217,6 @@ class EmiPaymentTest extends TestCase
         $this->payment['save'] = $save;
         $this->payment['app_token'] = $appToken;
         $this->payment['customer_id'] = $customerId;
-
-        if ($merchantSubvention === true)
-        {
-            $this->fixtures->merchant->addFeatures(['emi_merchant_subvention']);
-        }
 
         $this->doAuthAndCapturePayment($this->payment);
 
