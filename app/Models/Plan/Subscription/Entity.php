@@ -171,6 +171,12 @@ class Entity extends Base\PublicEntity
         // self::CANCEL_AT_CYCLE_END,
     ];
 
+    protected $hosted = [
+        self::ID,
+        self::STATUS,
+        self::CREATED_AT,
+    ];
+
     protected $casts = [
         self::START_AT              => 'int',
         self::END_AT                => 'int',

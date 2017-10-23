@@ -336,7 +336,7 @@ class Processor extends Base\Core
     {
         $data = $this->virtualAccountCreationArray($amount);
 
-        $virtualAccount = (new VirtualAccount\Core)->create($data, $this->merchant);
+        $virtualAccount = (new VirtualAccount\Core)->createWithoutReceivers($data, $this->merchant);
 
         $this->virtualAccount = $virtualAccount;
     }

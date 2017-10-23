@@ -4,8 +4,10 @@ namespace RZP\Tests\Functional\Payment;
 
 use Mail;
 
+use RZP\Models\Bank\IFSC;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Mail\Payment\Failed as PaymentFailedMail;
+use RZP\Models\Payment as PaymentModel;
 use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
@@ -295,6 +297,65 @@ class AuthorizeTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testTimeoutOldEmandatePayments()
+    {
+        // Should timeout
+        $payment = $this->fixtures->create(
+                    'payment:status_created',
+                    [
+                        'created_at' => time() - (60 * 100),
+                    ]);
+
+        $token = $this->fixtures->create(
+                    'token',
+                    [
+                        'bank' => 'HDFC',
+                        'recurring' => true,
+                    ]);
+
+        $tokenId = $token['id'];
+
+        // Should timeout
+        $payment2 = $this->fixtures->create('payment:status_created',
+            [
+                'created_at'        => time() - (60 * 100),
+                'gateway'           => PaymentModel\Gateway::NETBANKING_HDFC,
+                'bank'              => IFSC::HDFC,
+                'method'            => PaymentModel\Method::NETBANKING,
+                'token_id'          => $tokenId,
+                'recurring'         => 1,
+                'recurring_type'    => PaymentModel\RecurringType::INITIAL,
+            ]);
+
+        // Should not timeout as the created_at Payment\Entity::PAYMENT_TIMEOUT_FILE_BASED_DEBIT
+        $payment3 = $this->fixtures->create('payment:status_created',
+            [
+                'created_at'        => time() - (60 * 100),
+                'gateway'           => PaymentModel\Gateway::NETBANKING_HDFC,
+                'bank'              => IFSC::HDFC,
+                'method'            => PaymentModel\Method::NETBANKING,
+                'token_id'          => $tokenId,
+                'recurring'         => 1,
+                'recurring_type'    => PaymentModel\RecurringType::AUTO,
+            ]);
+
+        // Should timeout
+        $payment4 = $this->fixtures->create('payment:status_created',
+            [
+                'created_at'        => time() - (60 * 60 * 24 * 11),
+                'gateway'           => PaymentModel\Gateway::NETBANKING_HDFC,
+                'bank'              => IFSC::HDFC,
+                'token_id'          => $tokenId,
+                'method'            => PaymentModel\Method::NETBANKING,
+                'recurring'         => 1,
+                'recurring_type'    => PaymentModel\RecurringType::AUTO,
+            ]);
+
+        $content = $this->timeoutOldPayment();
+
+        $this->assertEquals(3, $content['count']);
+    }
+
     public function testTimeoutOldPaymentWithErrorRetention()
     {
         $payment = $this->fixtures->create('payment:status_created', [
@@ -571,5 +632,38 @@ class AuthorizeTest extends TestCase
 
             $this->makeRequestAndGetContent($request);
         });
+    }
+
+    public function testAuthCodeUpdateFromLateAuth()
+    {
+        $randomAuthCode = random_integer(6);
+
+        $this->mockServerContentFunction(
+            function(& $content, $action) use ($randomAuthCode)
+            {
+                if ($action === 'authorize')
+                {
+                    throw new Exception\GatewayErrorException('GATEWAY_ERROR_UNKNOWN_ERROR');
+                }
+
+                $content['auth'] = $randomAuthCode;
+            },
+            'hdfc');
+
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->doAuthPayment();
+            });
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertNull($payment['reference2']);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($randomAuthCode, $payment['reference2']);
     }
 }

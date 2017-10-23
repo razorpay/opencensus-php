@@ -482,7 +482,7 @@ class Server extends Base\Mock\Server
             $res['result'] = 'SUCCESS';
         }
 
-        $res = $this->content($res, $this->action);
+        $this->content($res, $this->action);
 
         $xml = Hdfc\Utility::createXml($res);
 

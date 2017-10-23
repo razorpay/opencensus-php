@@ -8,6 +8,7 @@ use App;
 use RZP\Constants;
 use RZP\Jobs\WebHook;
 use RZP\Models\Base;
+use RZP\Models\Customer\Token;
 use RZP\Models\Event;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
@@ -291,6 +292,20 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onTokenConfirmed($token)
+    {
+        $payload = $this->getTokenPayload($token);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onTokenRejected($token)
+    {
+        $payload = $this->getTokenPayload($token);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function getP2pPayload($p2p)
     {
         $source = $p2p->source;
@@ -310,6 +325,17 @@ class ApiEventSubscriber extends Base\Core
         ];
 
         return $partialPayload;
+    }
+
+    protected function getTokenPayload(Token\Entity $token)
+    {
+        $payload = [
+            Constants\Entity::TOKEN => [
+                'entity' => $token->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
     }
 
     protected function getSubscriptionPayload($subscription)

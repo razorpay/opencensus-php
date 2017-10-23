@@ -34,6 +34,12 @@ class Core extends Base\Core
     {
         $merchant = (new Merchant\Entity)->build($input);
 
+        $this->trace->info(
+            TraceCode::MERCHANT_CREATE,
+            [
+                'data' => $input
+            ]);
+
         $merchant->setAuditAction(Action::CREATE_MERCHANT);
 
         $email['email'] = $input['email'];

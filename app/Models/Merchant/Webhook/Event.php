@@ -32,6 +32,8 @@ class Event
     const SUBSCRIPTION_CANCELLED    = 'subscription.cancelled';
     const SUBSCRIPTION_COMPLETED    = 'subscription.completed';
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
+    const TOKEN_CONFIRMED           = 'token.confirmed';
+    const TOKEN_REJECTED            = 'token.rejected';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -52,6 +54,8 @@ class Event
         self::SUBSCRIPTION_CANCELLED,
         self::SUBSCRIPTION_COMPLETED,
         // self::SUBSCRIPTION_EXPIRED,
+        self::TOKEN_CONFIRMED,
+        self::TOKEN_REJECTED,
     ];
 
     protected static $bitMap = [
@@ -72,6 +76,8 @@ class Event
         // self::SUBSCRIPTION_EXPIRED      => 0x15,
         self::INVOICE_EXPIRED           => 0x16,
         self::INVOICE_PARTIALLY_PAID    => 0x17,
+        self::TOKEN_CONFIRMED           => 0x18,
+        self::TOKEN_REJECTED            => 0x19,
     ];
 
     /**
@@ -98,6 +104,8 @@ class Event
         self::SUBSCRIPTION_CANCELLED,
         self::SUBSCRIPTION_COMPLETED,
         // self::SUBSCRIPTION_EXPIRED,
+        self::TOKEN_CONFIRMED,
+        self::TOKEN_REJECTED,
     ];
 
     protected static $bitPosition = [
@@ -119,6 +127,8 @@ class Event
         // self::SUBSCRIPTION_EXPIRED      => 16,
         self::INVOICE_EXPIRED           => 17,
         self::INVOICE_PARTIALLY_PAID    => 18,
+        self::TOKEN_CONFIRMED           => 19,
+        self::TOKEN_REJECTED            => 20,
     ];
 
     /**
@@ -145,6 +155,8 @@ class Event
         self::SUBSCRIPTION_CANCELLED,
         self::SUBSCRIPTION_COMPLETED,
         // self::SUBSCRIPTION_EXPIRED,
+        self::TOKEN_CONFIRMED,
+        self::TOKEN_REJECTED,
     ];
 
     /**
@@ -168,6 +180,8 @@ class Event
         self::SUBSCRIPTION_CANCELLED    => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_COMPLETED    => Entity::SUBSCRIPTION,
         // self::SUBSCRIPTION_EXPIRED      => Entity::SUBSCRIPTION,
+        self::TOKEN_CONFIRMED           => Entity::TOKEN,
+        self::TOKEN_REJECTED            => Entity::TOKEN,
     ];
 
     public static $eventsToFeatureMap = [
@@ -179,6 +193,8 @@ class Event
         self::SUBSCRIPTION_COMPLETED    => Feature\Constants::SUBSCRIPTIONS,
         // self::SUBSCRIPTION_EXPIRED      => Feature\Constants::SUBSCRIPTIONS,
         self::INVOICE_PARTIALLY_PAID    => Feature\Constants::INVOICE_PARTIAL_PAYMENTS,
+        self::TOKEN_CONFIRMED           => Feature\Constants::E_MANDATE,
+        self::TOKEN_REJECTED            => Feature\Constants::E_MANDATE,
     ];
 
     /**

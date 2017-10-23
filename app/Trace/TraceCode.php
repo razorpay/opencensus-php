@@ -280,6 +280,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBSCRIPTION_CANCEL_DUE_SUMMARY               = 'SUBSCRIPTION_CANCEL_DUE_SUMMARY';
     const SUBSCRIPTION_CANCEL_FAILED                    = 'SUBSCRIPTION_CANCEL_FAILED';
 
+    const EMANDATE_DEBIT_RECON_REQUEST                  = 'EMANDATE_DEBIT_RECON_REQUEST';
+    const EMANDATE_DEBIT_RECON_FAILED                   = 'EMANDATE_DEBIT_RECON_FAILED';
+    const EMANDATE_DEBIT_RECON_ROW                      = 'EMANDATE_DEBIT_RECON_ROW';
+    const EMANDATE_REGISTER_RECON_REQUEST               = 'EMANDATE_REGISTER_RECON_REQUEST';
+    const EMANDATE_REGISTER_RECON_FAILED                = 'EMANDATE_REGISTER_RECON_FAILED';
+    const EMANDATE_REGISTER_RECON_ROW                   = 'EMANDATE_REGISTER_RECON_ROW';
+    const EMANDATE_REGISTER_RECON_ERRORS                = 'EMANDATE_REGISTER_RECON_ERRORS';
+
+
     const MAILER_JOB_RECEIVED                           = 'MAILER_JOB_RECEIVED';
     const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
     const INVOICE_ACTION_JOB_ERROR                      = 'INVOICE_ACTION_JOB_ERROR';
@@ -560,6 +569,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ACCOUNT_ACTIVATED                = 'MERCHANT_ACCOUNT_ACTIVATED';
     const MERCHANT_LINKED_ACCOUNT_ACTIVATED         = 'MERCHANT_LINKED_ACCOUNT_ACTIVATED';
     const MERCHANT_TERMINALS                        = 'MERCHANT_TERMINALS';
+    const MERCHANT_CREATE                           = 'MERCHANT_CREATE';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const MERCHANT_EDIT_ACTION                      = 'MERCHANT_EDIT_ACTION';
     const MERCHANT_ORG_NOT_GIVEN                    = 'MERCHANT_ORG_NOT_GIVEN';
@@ -887,7 +897,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Merchant feature trace codes
     const FEATURE_ONBOARDING_RESPONSE_REQUEST           = 'FEATURE_ONBOARDING_RESPONSE_REQUEST';
-    const FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED   = 'FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED';
     const FEATURE_ENABLED_MERCHANT_NOTIFIED             = 'FEATURE_ENABLED_MERCHANT_NOTIFIED';
     const FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED         = 'FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED';
 

@@ -35,6 +35,7 @@ class Job extends BaseJob implements ShouldQueue
     const UPDATED               = 'updated';
     const EXPIRED               = 'expired';
     const AUTHORIZED            = 'authorized';
+    const CAPTURED              = 'captured';
 
     protected $event;
     protected $id;
@@ -144,10 +145,16 @@ class Job extends BaseJob implements ShouldQueue
 
     protected function handleAuthorized()
     {
-        $this->core->createInvoicePdf($this->invoice);
+        //
+        // Event=authorized is not being used now but keeping for backward
+        // compatibility.
+        //
+        return true;
+    }
 
-        // Unless it throws exception, above is assumed to be successful, hence
-        // returning true.
+    protected function handleCaptured()
+    {
+        $this->core->createInvoicePdf($this->invoice);
 
         return true;
     }
