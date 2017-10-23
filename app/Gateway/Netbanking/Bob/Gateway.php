@@ -14,7 +14,6 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
-use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Trace\TraceCode;
 

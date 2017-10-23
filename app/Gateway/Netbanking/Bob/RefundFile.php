@@ -93,7 +93,7 @@ class RefundFile extends Base\RefundFile
 
     protected function getFormattedAmountString(int $amount): String
     {
-        $amt = number_format((float) ($amount / 100), 2, '.', '');
+        $amt = number_format(($amount / 100), 2, '.', '');
 
         // Amount is of type NUMBER(14,2). i.e 14 digits before decimal point and 2 digits after decimal point.
         return str_pad($amt, 17, '0', STR_PAD_LEFT);
