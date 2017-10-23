@@ -148,7 +148,9 @@ trait EmandateTrait
         {
             $errorCode = StatusCode::getErrorCodeMap($content[ResponseFields::STATUS_CODE]);
 
-            throw new GatewayErrorException($errorCode);
+            $errorDescription = StatusCode::getErrorDescriptionMap($content[ResponseFields::STATUS_CODE]);
+
+            throw new GatewayErrorException($errorCode, $content[ResponseFields::STATUS_CODE], $errorDescription);
         }
     }
 

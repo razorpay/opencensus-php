@@ -17,6 +17,11 @@ class StatusCode
         self::PENDING => ErrorCode::BAD_REQUEST_PAYMENT_PENDING,
     ];
 
+    protected static $errorDescriptionMap = [
+        self::FAILED  => 'Failed',
+        self::PENDING => 'Pending',
+    ];
+
     public static function isStatusCodeSuccess(string $statusCode)
     {
         return ($statusCode === self::SUCCESS);
@@ -29,11 +34,11 @@ class StatusCode
 
     public static function getErrorCodeMap($errorCode)
     {
-        if (isset(self::$errorCodeMap[$errorCode]) === true)
-        {
-            return self::$errorCodeMap[$errorCode];
-        }
+        return self::$errorCodeMap[$errorCode] ?? ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
+    }
 
-        return ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
+    public static function getErrorDescriptionMap($errorCode)
+    {
+        return self::$errorDescriptionMap[$errorCode] ?? null;
     }
 }
