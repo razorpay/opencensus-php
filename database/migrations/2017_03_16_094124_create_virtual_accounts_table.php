@@ -106,8 +106,6 @@ class CreateVirtualAccountsTable extends Migration
 
             $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::BANK_ACCOUNT_ID . '_foreign');
 
-            $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::BHARAT_QR_ID . '_foreign');
-
             $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::MERCHANT_ID . '_foreign');
         });
 

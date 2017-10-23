@@ -44,12 +44,30 @@ class VirtualAccountTest extends TestCase
     public function testCreateVirtualAccountWithBharatQr()
     {
         $input = [
-            'receiver_types' => 'bharat_qr',
+            'receiver_types'  => 'bharat_qr',
+            'amount_expected' => '',
         ];
 
         $response = $this->createVirtualAccount($input);
 
         $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $qrString = $response['receivers'][0]['qr_string'];
+
+        $tlvArray = $this->getTagMappedValues($qrString);
+    }
+
+    public function testCreateVirtualAccountWithBharatQrWithAmount()
+    {
+        $input = [
+            'receiver_types' => 'bharat_qr',
+        ];
+
+        $response = $this->createVirtualAccount($input);
+
+        $expectedResponse = $this->testData['testCreateVirtualAccountWithBharatQr'];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 

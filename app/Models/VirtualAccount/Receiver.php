@@ -102,7 +102,7 @@ class Receiver
 
         $input = $this->getBharatQrEntityParams($virtualAccount);
 
-        $bharatQr = $bharatQr->build($input, 'addBharatQr');
+        $bharatQr = $bharatQr->build($input);
 
         $bharatQr->generateId();
 
@@ -156,7 +156,14 @@ class Receiver
         return $qrString;
     }
 
-    //network could be visa , mastercard or rupay
+    /**
+     * This will generate merchant identifier using network
+     * network could be visa , mastercard or rupay
+     *
+     * @param string $provider
+     * @param string $network
+     * @return string
+     */
     protected function generateMerchantIdentifierForProvider(string $provider, string $network)
     {
         $acquirerCode = Provider::getAcquirerCode($provider, $network);
@@ -165,7 +172,6 @@ class Receiver
 
         return $identifier . Luhn::computeCheckDigit($identifier);
     }
-
 
     protected function generateBankAccountInput()
     {
@@ -339,7 +345,7 @@ class Receiver
 
         $pad = '';
 
-        $charSpace = str_split(self::ACCOUNT_NUMBER_CHAR_SPACE);
+        $charSpace = str_split($charSpace);
 
         while (strlen($pad) < $requiredLength)
         {

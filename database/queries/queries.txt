@@ -2523,3 +2523,6 @@ DELETE FROM bank_transfers
 
 ALTER TABLE merchant_banks
     ADD COLUMN bharat_qr TINYINT(1) DEFAULT 0 NOT NULL AFTER aeps;
+
+ALTER TABLE virtual_accounts
+    ADD COLUMN bharat_qr_id CHAR(14) DEFAULT NULL after bank_account_id;

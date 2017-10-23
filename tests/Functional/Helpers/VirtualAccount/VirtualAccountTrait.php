@@ -10,6 +10,11 @@ trait VirtualAccountTrait
 
         $attributes = array_merge($defaultValues, $input);
 
+        if (empty($attributes['amount_expected']) === true)
+        {
+            unset($attributes['amount_expected']);
+        }
+
         $this->ba->privateAuth();
 
         $request = [

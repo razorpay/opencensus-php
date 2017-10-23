@@ -6,7 +6,7 @@ use RZP\Base;
 
 class Validator extends Base\Validator
 {
-    protected static $addBharatQrRules = [
+    protected static $createRules = [
         Entity::VISA_IDENTIFIER         => 'required|alpha_num',
         Entity::MASTER_CARD_IDENTIFIER  => 'required|alpha_num',
         Entity::AMOUNT                  => 'sometimes|integer',

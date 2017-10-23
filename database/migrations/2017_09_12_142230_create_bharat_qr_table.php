@@ -85,6 +85,11 @@ class CreateBharatQrTable extends Migration
             $table->dropForeign(Table::BHARAT_QR . '_' . BharatQr::MERCHANT_ID . '_foreign');
         });
 
+        Schema::table(Table::VIRTUAL_ACCOUNT, function(Blueprint $table)
+        {
+            $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::BHARAT_QR_ID . '_foreign');
+        });
+
         Schema::drop(Table::BHARAT_QR);
     }
 }

@@ -112,7 +112,7 @@ class Provider
 
     public static function getAcquirerCode(string $provider, string $network)
     {
-        return Config::get('applications.' . $provider . '.' .  $network . '_' .  'code');
+        return Config::get('applications.' . $provider . '.' . $network . '_' . 'code');
     }
 
     // Checks if request is originating from known IP for the given provider

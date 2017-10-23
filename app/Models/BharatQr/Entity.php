@@ -52,17 +52,6 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    public function build(array $input = [], string $operation = 'addBharatQr')
-    {
-        $this->getValidator()->validateInput($operation, $input);
-
-        $this->generate($input);
-
-        $this->fill($input);
-
-        return $this;
-    }
-
     public function source()
     {
         return $this->morphTo('source', self::ENTITY_TYPE, self::ENTITY_ID);
@@ -121,7 +110,7 @@ class Entity extends Base\PublicEntity
 
         $additionalDetailsTag = $this->getAdditionalDetailsTag();
 
-        return $visaTag . $masterCardTag . $merchantCategoryTag . $currencyCodeTag . $amountTag . $countryCode  . $merchantName . $merchantCity . $additionalDetailsTag;
+        return $visaTag . $masterCardTag . $merchantCategoryTag . $currencyCodeTag . $amountTag . $countryCode . $merchantName . $merchantCity . $additionalDetailsTag;
     }
 
     protected function getMasterCardTag()
