@@ -2520,3 +2520,6 @@ DELETE FROM transactions
     WHERE entity_id='8iQEuts9RhZTvI';
 DELETE FROM bank_transfers
     WHERE payment_id='8i1eFM9BkOB8Ze';
+
+ALTER TABLE merchant_banks
+    ADD COLUMN bharat_qr TINYINT(1) DEFAULT 0 NOT NULL AFTER aeps;
