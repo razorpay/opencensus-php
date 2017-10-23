@@ -605,7 +605,7 @@ class Base extends BaseModel\Core
 
         $file = $file->move(
                     $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE_PREFIX),
-                    $this->batch->getFileKeyWithExt($ext));
+                    $this->getFileName($ext));
 
         $ufh = $this->saveFile($file->getPathname(), FileStore\Type::BATCH_INPUT);
 
@@ -635,6 +635,8 @@ class Base extends BaseModel\Core
      */
     protected function saveFile(string $filePath, string $type): FileStore\Creator
     {
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+
         $batchFilePrefix = ($type === FileStore\Type::BATCH_INPUT) ?
                                 Batch\Entity::INPUT_FILE_PREFIX :
                                 Batch\Entity::OUTPUT_FILE_PREFIX;
