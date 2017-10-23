@@ -1,10 +1,11 @@
-import { observable, extendObservable } from 'mobx';
+import { observe, observable, extendObservable, computed } from 'mobx';
 import Collection from 'model/collection';
 import CollectionItem from 'model/collectionItem';
 import { adminDelete, adminFetch, adminPost } from 'util/fetch';
 import { methods } from 'util/data';
 import { notifySuccess, notifyError } from 'common/modal';
 import { deepClone } from 'util/index';
+import { cardTypes } from 'util/data';
 
 export default class Plan extends Collection {
   constructor(props = {}) {
@@ -81,9 +82,31 @@ export const options = {
   },
   payment_method_type: {
     '': 'All',
-    credit: 'Credit',
-    debit: 'Debit',
+    ...cardTypes,
   },
+  payment_network: {
+    '': 'All',
+  },
+  payment_issuer: {
+    '': 'All',
+    HDFC: 'HDFC',
+    ICIC: 'ICICI',
+  },
+  international: {
+    0: 'No',
+    1: 'Yes',
+  },
+  emi_duration: {
+    '': 'All',
+    3: 3,
+    6: 6,
+    9: 9,
+    12: 12,
+    18: 18,
+    24: 24,
+  },
+  percent_rate: '',
+  fixed_rate: '',
 };
 
 const ruleProps = Object.keys(options).reduce(function(o, key) {
@@ -96,31 +119,34 @@ class Rule extends CollectionItem {
     super(collection, props);
     this.bind(['save', 'delete']);
     extendObservable(this, props);
+    observe(this, _ => {
+      this.define('isCard', /card|emi/.test(this.payment_method));
+    });
   }
 
   save() {
     // if unsaved plan
     if (!this.collection.props.id) {
       this.define('readonly', true);
-      let copy = this.copy;
-      copy.readonly = true;
-      return this.collection.items.push(copy);
+      this.collection.items.push(new Rule(this.collection));
+    } else {
+      return this.request(
+        'save',
+        adminPost({
+          body: this,
+          route_name: 'pricing_add_plan_rule',
+          url_params: {
+            id: this.collection.props.id,
+          },
+        })
+      ).then(data => {
+        if (data) {
+          notifySuccess(`Rule added for ${data.plan_name}`);
+          this.collection.items.splice(-1, 0, new Rule(this.collection, data));
+          return data;
+        }
+      });
     }
-    return this.request(
-      'save',
-      adminPost({
-        body: this,
-        route_name: 'pricing_add_plan_rule',
-        url_params: {
-          id: this.collection.props.id,
-        },
-      })
-    ).then(data => {
-      if (data) {
-        notifySuccess(`Rule added for ${data.plan_name}`);
-        this.collection.items.splice(-1, 0, Object.assign(this.copy, data));
-      }
-    });
   }
 
   delete() {

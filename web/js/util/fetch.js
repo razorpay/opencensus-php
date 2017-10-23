@@ -16,7 +16,8 @@ export default function fetch(options) {
 export function adminFetch(params) {
   return fetch({
     url: '/admin/generic',
-    params: parseParams(params),
+    params:
+      typeof params === 'string' ? { route_name: params } : parseParams(params),
   });
 }
 

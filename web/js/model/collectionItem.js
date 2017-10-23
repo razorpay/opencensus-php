@@ -1,5 +1,6 @@
-import { observable, extendShallowObservable, toJS } from 'mobx';
+import { observable, extendShallowObservable } from 'mobx';
 import BaseModel from 'model/base';
+import { deepClone } from 'util/index';
 
 export default class Item extends BaseModel {
   constructor(collection, props = {}) {
@@ -13,9 +14,5 @@ export default class Item extends BaseModel {
 
   onPropChange(e) {
     this[e.target.name] = e.target.value;
-  }
-
-  get copy() {
-    return new Item(this.collection, toJS(this));
   }
 }
