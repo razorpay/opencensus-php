@@ -23,6 +23,8 @@ class VirtualAccountTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bharat_qr');
+
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
         $this->ba->privateAuth();

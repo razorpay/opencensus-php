@@ -39,7 +39,7 @@ class Receiver
     const ACCOUNT_NUMBER_CHAR_SPACE       = '34679ACDEFGHJKLMNPQRTUVWXY';
     const MAX_ACCOUNT_GENERATION_ATTEMPTS = 10;
 
-    const NUMBER_SPACE                    = '0123456789';
+    const BHARAT_QR_NUMBER_SPACE          = '0123456789';
 
     protected $app;
     protected $merchant;
@@ -100,6 +100,27 @@ class Receiver
     {
         $bharatQr = new BharatQr;
 
+        $input = $this->getBharatQrEntityParams($virtualAccount);
+
+        $bharatQr = $bharatQr->build($input, 'addBharatQr');
+
+        $bharatQr->generateId();
+
+        $qrString = $this->buildDynamicQrString($bharatQr);
+
+        $bharatQr->setQrString($qrString);
+
+        $bharatQr->merchant()->associate($this->merchant);
+
+        $bharatQr->source()->associate($virtualAccount);
+
+        $this->repo->saveOrFail($bharatQr);
+
+        return $bharatQr;
+    }
+
+    protected function getBharatQrEntityParams(Entity $virtualAccount)
+    {
         $provider = Provider::BHARAT_QR;
 
         $visaIdentifier = $this->generateMerchantIdentifierForProvider($provider, 'visa');
@@ -119,21 +140,7 @@ class Receiver
 
         $input = array_merge($input, $defaultDetails);
 
-        $bharatQr = $bharatQr->build($input, 'addBharatQr');
-
-        $bharatQr->generateId();
-
-        $qrString = $this->buildDynamicQrString($bharatQr);
-
-        $bharatQr->setQrString($qrString);
-
-        $bharatQr->merchant()->associate($this->merchant);
-
-        $bharatQr->source()->associate($virtualAccount);
-
-        $this->repo->saveOrFail($bharatQr);
-
-        return $bharatQr;
+        return $input;
     }
 
     protected function buildDynamicQrString($bharatQr)
@@ -154,7 +161,7 @@ class Receiver
     {
         $acquirerCode = Provider::getAcquirerCode($provider, $network);
 
-        $identifier  = $acquirerCode . '0' . $this->padWithRandomNumbers(7);
+        $identifier  = $acquirerCode . '0' . $this->padWithRandomDigits(7, self::BHARAT_QR_NUMBER_SPACE);
 
         return $identifier . Luhn::computeCheckDigit($identifier);
     }
@@ -315,7 +322,7 @@ class Receiver
 
             $availableLength = $totalLength - self::ROOT_LENGTH - strlen($handle);
 
-            $descriptor = $this->padWithRandomDigits($availableLength);
+            $descriptor = $this->padWithRandomDigits($availableLength, self::ACCOUNT_NUMBER_CHAR_SPACE);
         }
 
         return $descriptor;
@@ -326,26 +333,7 @@ class Receiver
         return Provider::DEFAULT_HANDLE_MAPPING[$root];
     }
 
-    protected function padWithRandomNumbers(int $desiredLength, string $str = '')
-    {
-        $requiredLength = $desiredLength - strlen($str);
-
-        $pad = '';
-
-        $charSpace = str_split(self::NUMBER_SPACE);
-
-        while (strlen($pad) < $requiredLength)
-        {
-            $pad .= $charSpace[array_rand($charSpace)];
-        }
-
-        $str = $pad . $str;
-
-        return $str;
-    }
-
-
-    protected function padWithRandomDigits(int $desiredLength, $str = '')
+    protected function padWithRandomDigits(int $desiredLength, $charSpace, $str = '')
     {
         $requiredLength = $desiredLength - strlen($str);
 

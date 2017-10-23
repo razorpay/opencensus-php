@@ -239,7 +239,7 @@ class Service extends Base\Service
 
         foreach ($receiverTypes as $receiverType)
         {
-            $this->validateReceiverEnabled($receiverType);
+            $this->validateReceiver($receiverType);
 
             $func = 'build' . studly_case($receiverType);
 
@@ -251,12 +251,16 @@ class Service extends Base\Service
         }
     }
 
-    protected function validateReceiverEnabled(string $receiver)
+    protected function validateReceiver(string $receiver)
     {
         switch ($receiver)
         {
             case Receiver::BANK_ACCOUNT:
                 $this->verifyBankTransferEnabled();
+                break;
+
+            case Receiver::BHARAT_QR:
+                $this->verifyBharatQrEnabled();
                 break;
 
             default:
@@ -285,6 +289,19 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_TRANSFER_NOT_ENABLED_FOR_MERCHANT);
         }
+    }
+
+    protected function verifyBharatQrEnabled()
+    {
+        $merchantMethods = $this->getMethodsForMerchant($this->merchant);
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isBharatQrEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);
+        }
+
     }
 
     protected function getMethodsForMerchant(Merchant\Entity $merchant)
