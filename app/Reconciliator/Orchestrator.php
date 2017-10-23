@@ -129,7 +129,6 @@ class Orchestrator extends Base\Core
     const REFUND_ARN = 'refund_arn';
 
     const BATCH_RECON_GATEWAYS = [
-        self::NETBANKING_RBL,
         self::JIOMONEY,
         self::FIRST_DATA
     ];
