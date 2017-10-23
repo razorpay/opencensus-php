@@ -1206,13 +1206,19 @@ class Service extends Base\Service
      */
     protected function sendAuthorizedPaymentsReminderMail($merchantId, $payments, $final)
     {
-        $merchant = (new Merchant\Entity)->findOrFail($merchantId)->toArray();
+        $merchant = (new Merchant\Entity)->findOrFail($merchantId);
 
-        $data = compact('merchant', 'payments', 'final');
+        if ($merchant->isLinkedAccount() === false)
+        {
+            $merchant = $merchant->toArray();
 
-        $authorizedPaymentsReminderMail = new AuthorizedPaymentsReminderMail($data);
+            $data = compact('merchant', 'payments', 'final');
 
-        Mail::send($authorizedPaymentsReminderMail);
+            $authorizedPaymentsReminderMail = new AuthorizedPaymentsReminderMail($data);
+
+            Mail::send($authorizedPaymentsReminderMail);
+
+        }
     }
 
     protected function getNewProcessor(Merchant\Entity $merchant = null)
