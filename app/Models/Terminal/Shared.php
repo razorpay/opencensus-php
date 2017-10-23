@@ -22,6 +22,7 @@ class Shared
     const NETBANKING_ICICI_TERMINAL         = '100NbIciciTmnl';
     const NETBANKING_ICICI_TPV_TERMINAL     = '100NbIcicTpvTl';
     const NETBANKING_ICICI_REC_TERMINAL     = '100NbIcicRecTl';
+    const NETBANKING_HDFC_REC_TERMINAL      = '100NbHdfcRecTl';
     const NETBANKING_AIRTEL_TERMINAL        = '100NbAirtlTmnl';
     const NETBANKING_AXIS_TERMINAL          = '100NbAxisTrmnl';
     const NETBANKING_AXIS_TPV_TERMINAL      = '100NbAxisTpvTl';

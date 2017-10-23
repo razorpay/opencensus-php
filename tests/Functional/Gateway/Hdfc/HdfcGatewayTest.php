@@ -209,7 +209,8 @@ class HdfcGatewayTest extends TestCase
 
         $payment = $this->getLastPayment(true);
         $this->assertNotNull($payment['transaction_id']);
-        $this->assertEquals($payment['two_factor_auth'], 'passed');
+        $this->assertEquals('passed', $payment['two_factor_auth']);
+        $this->assertEquals('999999', $payment['reference2']);
 
         $this->verifyPayment($payment['id']);
         $this->capturePayment($payment['id'], $payment['amount']);

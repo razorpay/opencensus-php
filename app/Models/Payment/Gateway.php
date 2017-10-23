@@ -467,8 +467,9 @@ class Gateway
      *
      * @var array
      */
-    public static $fileBasedEMandateDebitBanks = [
-        IFSC::HDFC => Gateway::NETBANKING_HDFC,
+    public static $fileBasedEMandateDebitGateways = [
+        Gateway::NETBANKING_HDFC,
+        Gateway::NETBANKING_AXIS,
     ];
 
     /**
@@ -476,8 +477,8 @@ class Gateway
      *
      * @var array
      */
-    public static $fileBasedEMandateRegistrationBanks = [
-        IFSC::HDFC => Gateway::NETBANKING_HDFC,
+    public static $fileBasedEMandateRegistrationGateways = [
+        Gateway::NETBANKING_HDFC,
     ];
 
     /**
@@ -667,6 +668,28 @@ class Gateway
     {
         return ((self::isRecurringSupportedOnBank($bank)) and
                 (array_key_exists($bank, self::$fileBasedEMandateRegistrationBanks)));
+    }
+
+    /**
+     * Checks whether the bank requires a file-based system to register for eMandate
+     *
+     * @param string $gateway
+     *
+     * @return bool
+     */
+    public static function isFileBasedEMandateRegistrationGateway(string $gateway): bool
+    {
+        return (in_array($gateway, self::$fileBasedEMandateRegistrationGateways) === true);
+    }
+
+    /**
+     * @param string $gateway
+     *
+     * @return bool
+     */
+    public static function isFileBasedEMandateDebitGateway(string $gateway): bool
+    {
+        return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
     }
 
     /**

@@ -333,12 +333,12 @@ class Base extends BaseModel\Core
         {
             case FileStore\Format::TXT:
                 $txt = $this->generateText($entries, '|');
-                $this->outputFileLocalPath = $this->createTxtFile($this->batch->getId() . '.' . $ext, $txt);
+                $this->outputFileLocalPath = $this->createTxtFile($this->getFileName($ext), $txt);
                 return;
 
             case FileStore\Format::CSV:
                 $txt = $this->generateText($entries, ',');
-                $this->outputFileLocalPath = $this->createTxtFile($this->batch->getId() . '.' . $ext, $txt);
+                $this->outputFileLocalPath = $this->createTxtFile($this->getFileName($ext), $txt);
                 return;
 
             case FileStore\Format::XLSX:
@@ -359,6 +359,16 @@ class Base extends BaseModel\Core
             default:
                 throw new LogicException("Extension not handled: {$ext}");
         }
+    }
+
+    protected function getFileName(string $ext = null): string
+    {
+        if (empty($ext) === true)
+        {
+            return $this->batch->getFileKey();
+        }
+
+        return $this->batch->getFileKeyWithExt($ext);
     }
 
     protected function sendProcessedMail()
@@ -447,7 +457,7 @@ class Base extends BaseModel\Core
 
         $ext = $file->getClientOriginalExtension();
 
-        $file = $file->move($this->batch->getLocalSaveDir(), $this->batch->getFileKeyWithExt($ext));
+        $file = $file->move($this->batch->getLocalSaveDir(), $this->getFileName($ext));
 
         $ufh = $this->saveFile($file->getPathname(), FileStore\Type::BATCH_INPUT);
 
@@ -477,9 +487,9 @@ class Base extends BaseModel\Core
      */
     protected function saveFile(string $filePath, string $type): FileStore\Creator
     {
-        $name = $this->batch->getFilePrefix() . $this->batch->getFileKey();
-
         $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+
+        $name = $this->batch->getFilePrefix() . $this->getFileName();
 
         return (new FileStore\Creator)
                     ->localFilePath($filePath)

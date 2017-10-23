@@ -101,6 +101,26 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         return (new $class)->generate($input);
     }
 
+    public function initiateRegisterEmandate(array $input)
+    {
+        $this->input = $input;
+    }
+
+    public function reconcileRegisterEmandate(array $input)
+    {
+        $this->input = $input;
+    }
+
+    public function initiateDebitEmandate(array $input)
+    {
+        $this->input = $input;
+    }
+
+    public function reconcileDebitEmandate(array $input)
+    {
+        $this->input = $input;
+    }
+
     public function setBankingType($bankingType)
     {
         $this->bankingType = $bankingType;

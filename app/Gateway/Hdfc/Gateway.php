@@ -381,28 +381,28 @@ class Gateway extends Base\Gateway
             $actualAmount = number_format($input['gateway']['amt'], 2, '.', '');
 
             $this->assertAmount($expectedAmount, $actualAmount);
-
-            return $this->getCallbackResponseData($input);
         }
-
-        $this->validateCallbackGatewayFields($input, $network);
-
-        $this->validatePares($input);
-
-        $this->id = $input['payment']['id'];
-
-        $this->model = $this->repo->findByGatewayPaymentIdOrFail(
-            $input['gateway']['MD']);
-
-        $paymentId = $this->model->getPaymentId();
-
-        if ($this->id !== $paymentId)
+        else
         {
-            throw new Exception\LogicException(
-                'app payment '. $this->id . ' should be equal to payment id . '. $paymentId);
-        }
+            $this->validateCallbackGatewayFields($input, $network);
 
-        $this->postAuthEnrolledRequest($input);
+            $this->validatePares($input);
+
+            $this->id = $input['payment']['id'];
+
+            $this->model = $this->repo->findByGatewayPaymentIdOrFail(
+                $input['gateway']['MD']);
+
+            $paymentId = $this->model->getPaymentId();
+
+            if ($this->id !== $paymentId)
+            {
+                throw new Exception\LogicException(
+                    'app payment '. $this->id . ' should be equal to payment id . '. $paymentId);
+            }
+
+            $this->postAuthEnrolledRequest($input);
+        }
 
         $acquirerData = $this->getAcquirerData($input, $this->model);
 
