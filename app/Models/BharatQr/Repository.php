@@ -6,4 +6,5 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
+    protected $entity = 'bharat_qr';
 }
