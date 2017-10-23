@@ -6,15 +6,6 @@ use App\Base;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
-        'name'                  => 'sometimes|alpha_space_num|max:200',
-        'email'                 => 'required|email|unique:merchants',
-    );
-
-    protected static $unsetCreateInput = array(
-        'captcha'
-    );
-
     protected static $changeEmailRules = array(
         'email'         => 'required|email'
     );

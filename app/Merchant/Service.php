@@ -283,13 +283,6 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function fetch($merchantId)
-    {
-        list($error, $merchant) = $this->fetchMerchantFromApi($merchantId);
-
-        return $merchant;
-    }
-
     public function fetchMerchantFromApi($merchantId)
     {
         $this->setApiCredentials();

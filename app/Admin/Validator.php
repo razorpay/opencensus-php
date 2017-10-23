@@ -30,19 +30,6 @@ class Validator extends Base\Validator
         'sort'      =>  'sometimes|in:total_amount,total_count'
     ];
 
-    protected static $addTagsValidators = [
-        'addTags'
-    ];
-
-    protected static $createRules = array(
-        'name'                  => 'required|between:3,100|alpha_space',
-        'username'              => 'required|between:3,50|alpha_dash|unique:admins',
-        'password'              => 'required|between:6,50|confirmed',
-        'password_confirmation' => 'required|between:6,50',
-        'email'                 => 'required|email|unique:admins',
-        'superadmin'            => 'required|in:1,0'
-    );
-
     protected static $changePasswordRules = array(
         'old_password'              => 'required',
         'password'                  => 'required|between:6,50|confirmed',
@@ -75,15 +62,6 @@ class Validator extends Base\Validator
             default:
                 $this->addError('auth', 'Invalid Auth Method Specified');
                 break;
-        }
-    }
-
-    protected function validateAddTags($input)
-    {
-        $tags = explode(',', $input['tags']);
-        if (count($tags) < 1)
-        {
-            $this->addError('tags', 'Atleast one tag must be specified');
         }
     }
 
