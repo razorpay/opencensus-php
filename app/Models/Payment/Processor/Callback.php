@@ -99,9 +99,9 @@ trait Callback
                 // In case of non - corporate payments, this case is fine.
                 // In case of corporate and payment already having been authorized
                 if ((($payment->isCreated() === false) and
-                    ($isCorporatePayment === false)) or
+                     ($isCorporatePayment === false)) or
                     (($isCorporatePayment === true) and
-                    ($payment->hasBeenAuthorized() === true)))
+                     ($payment->hasBeenAuthorized() === true)))
                 {
                     $this->app['segment']->trackPayment(
                         $payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);

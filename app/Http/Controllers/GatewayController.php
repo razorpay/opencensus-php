@@ -102,13 +102,6 @@ class GatewayController extends Controller
             case Gateway::WALLET_FREECHARGE:
             case Gateway::BILLDESK:
             case Gateway::NETBANKING_AXIS:
-            case 'axis_corporate':
-
-                // TODO : Remove before prod merge. temporary hack for testing.
-                if ($gateway === 'axis_corporate')
-                {
-                    $gateway = Gateway::NETBANKING_AXIS;
-                }
 
                 $data = $this->processServerCallback($input, $gateway);
                 break;
