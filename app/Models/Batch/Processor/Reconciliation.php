@@ -4,6 +4,7 @@ namespace RZP\Models\Batch\Processor;
 
 use Symfony\Component\HttpFoundation\File\File;
 
+use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
@@ -26,7 +27,7 @@ class Reconciliation extends Base
     /**
      * Represents the reconciliator class for individual gateway
      *
-     * @var RZP\Reconciliator\Base\Reconciliate
+     * @var \RZP\Reconciliator\Base\Reconciliate
      */
     protected $gatewayReconciliator;
 
@@ -133,7 +134,9 @@ class Reconciliation extends Base
 
     /**
      * Parses the file and converts the contents into an in memory array
+     *
      * @return array parsed contents of the recon file
+     * @throws Exception\ReconciliationException
      */
     protected function parseInputFileContents(): array
     {
@@ -247,6 +250,7 @@ class Reconciliation extends Base
      * Downloads the file from S3 and returns the metadata regarding the same
      *
      * @return array downloaded recon file metadata
+     * @throws Exception\ReconciliationException
      */
     protected function getInputFileDetails(): array
     {
@@ -268,7 +272,7 @@ class Reconciliation extends Base
         {
             // @todo handle this exception better
             throw new Exception\ReconciliationException(
-                'Unsupported file type.', ['file_details' => $fileDetails, 'file_type' => $fileType]
+                'Unsupported file type.', ['file_type' => $fileType]
             );
         }
 
@@ -282,21 +286,21 @@ class Reconciliation extends Base
         ];
     }
 
-    /**
-     * For reconciliation batch we don't need to send any mail, hence not doing
-     * anything inside this function
-     */
     protected function sendProcessedMail()
     {
+        //
+        // For reconciliation batch we don't need to send any mail,
+        // hence not doing anything inside this function
+        //
         return;
     }
 
-    /**
-     * The reconciliation can run for a long time.
-     * Hence, changing the system's execution time limit to 1 hour.
-     */
     protected function increaseAllowedSystemLimits()
     {
+        //
+        // The reconciliation can run for a long time.
+        // Hence, changing the script's execution time limit to 1 hour.
+        //
         RuntimeManager::setTimeLimit(3600);
     }
 }

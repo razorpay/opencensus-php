@@ -18,6 +18,7 @@ class Type
 
     // Virtual Account Bulk Creation
     const VIRTUAL_BANK_ACCOUNT  = 'virtual_bank_account';
+
     const RECONCILIATION        = 'reconciliation';
 
     /**
