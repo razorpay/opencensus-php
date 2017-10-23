@@ -71,7 +71,7 @@ class Processor extends VirtualAccount\Processor
         ];
     }
 
-    protected function checkIfDuplicateNotification($qr)
+    protected function checkIfDuplicateNotification(Entity $qr)
     {
         $merchantReference = $qr->getMerchantReference();
 
@@ -182,6 +182,8 @@ class Processor extends VirtualAccount\Processor
         $paymentArray[Payment\Entity::AMOUNT]      = $qr->getAmount();
         $paymentArray[Payment\Entity::DESCRIPTION] = "";
 
+
+        // @todo find a better method to do this. This is done in order to bypass validation
         $paymentArray['card']['number'] = $this->getLuhnValidCardNumberFromQr($qr);
 
         $paymentArray['card']['cvv'] = '123';

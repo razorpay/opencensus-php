@@ -99,7 +99,6 @@ class CreateQrTable extends Migration
                   ->references(Payment::ID)
                   ->on(Table::PAYMENT)
                   ->on_delete('restrict');
-
         });
     }
 

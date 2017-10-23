@@ -1541,12 +1541,9 @@ class Processor
 
     protected function shouldHitGateway(Payment\Entity $payment)
     {
-        if ($payment->isBankTransfer() === true)
-        {
-            return false;
-        }
-
-        if (Route::currentRouteName() === 'qr_payment_process')
+        if (($payment->isBankTransfer() === true) or
+            // @todo to be changed after refactor
+            (Route::currentRouteName() === 'qr_payment_process'))
         {
             return false;
         }

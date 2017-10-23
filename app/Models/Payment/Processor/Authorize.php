@@ -3283,13 +3283,10 @@ trait Authorize
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
     {
-        // No gateway for bank transfer, everything is internal
-        if ($payment->isBankTransfer() === true)
-        {
-            return false;
-        }
-
-        if (Route::currentRouteName() === 'qr_payment_process')
+        // No gateway for bank transfer or Bharat Qr, everything is internal
+        if (($payment->isBankTransfer() === true) or
+            // @todo to be changed after refactor
+            (Route::currentRouteName() === 'qr_payment_process'))
         {
             return false;
         }

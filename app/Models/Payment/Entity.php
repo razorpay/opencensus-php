@@ -582,7 +582,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
-    public function setGatewayViaQr($gateway)
+    public function setGatewayViaQr(string $gateway)
     {
         $this->setGateway($gateway);
     }

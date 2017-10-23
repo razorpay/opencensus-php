@@ -127,12 +127,12 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setReceived($received)
+    public function setReceived(bool $received)
     {
         $this->setAttribute(self::RECEIVED, $received);
     }
 
-    public function setExpected($expected)
+    public function setExpected(bool $expected)
     {
         $this->setAttribute(self::EXPECTED, $expected);
     }

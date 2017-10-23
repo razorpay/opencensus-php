@@ -121,10 +121,12 @@ class Luhn
     }
 
     /**
-     * @param $partialNumber
+     * @param string $part1
+     * @param string $part2
+     * @param string $base
      * @return string
      */
-    public static function computeCheckDigitWithPart($part1, $part2, $base = 10)
+    public static function computeCheckDigitWithPart(string $part1, string $part2, int $base = 10)
     {
         $checkDigit = self::checksum($part1 . '0' . $part2, $base);
 
