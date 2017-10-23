@@ -1481,6 +1481,7 @@ class Service extends Base\Service
 
         try
         {
+            // removing the /v1/ part at the end in the apiURL obtained from config
             $apiURL = substr(config('api.url'), 0, -4);
 
             $APIConnection = Requests::request($apiURL);
