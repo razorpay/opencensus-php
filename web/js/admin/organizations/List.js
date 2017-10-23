@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { observer } from 'mobx-react';
 
 import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
@@ -7,6 +8,8 @@ import Form from 'ui/Form';
 import Table from 'ui/Table';
 import Field from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
+
+import { showEntity } from './Entity';
 
 const fields = [
   ['Organization ID', item => item.id],
@@ -19,14 +22,11 @@ const fields = [
 
 const Actions = item => (
   <div>
-    <AsyncButton text="FieldMaps" class="link" />
-    <br />
-    <AsyncButton text="Edit" class="link" />
-    <br />
-    <AsyncButton text="Delete" class="link" />
+    <div class="link">Edit</div>
   </div>
 );
 
+@observer
 class OrganizationsList extends Component {
   collection = new Collection({
     data: {
@@ -34,6 +34,9 @@ class OrganizationsList extends Component {
     },
     fetchFn: adminFetch,
   });
+
+  showEntity = showEntity.bind(null, this.collection);
+
   render() {
     return (
       <div class="list-container">
@@ -41,10 +44,12 @@ class OrganizationsList extends Component {
           <header>Organizations</header>
           <Form>
             <Field label="Search" />
-            <button>Add an Organization</button>
+            <div class="btn" onClick={this.showEntity}>
+              Add an Organization
+            </div>
           </Form>
         </div>
-        <Table model={this.collection} fields={fields} />
+        <Table model={this.collection} fields={fields} onClick={showEntity} />
       </div>
     );
   }

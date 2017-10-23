@@ -20,7 +20,8 @@ import WorkflowList from 'admin/workflows/List';
 
 import GroupList from 'admin/groups/List';
 import UserList from 'admin/users/List';
-import RoleList from 'admin/roles/List';
+import OrgsList from 'admin/organizations/List';
+// import RoleList from "admin/roles/List";
 
 export default class App extends Component {
   render() {
@@ -40,7 +41,8 @@ export default class App extends Component {
 
             <Route path="/groups" component={GroupList} />
             <Route path="/users" component={UserList} />
-            <Route path="/roles" component={RoleList} />
+            {/* <Route path="/roles" component={RoleList} /> */}
+            <Route path="/orgs" component={OrgsList} />
           </Switch>
         </main>
         <header />
