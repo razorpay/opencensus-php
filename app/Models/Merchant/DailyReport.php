@@ -107,12 +107,6 @@ class DailyReport extends Base\Core
 
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-                // Do not send the report to linked accounts
-                if ($merchant->isLinkedAccount() === true)
-                {
-                    continue;
-                }
-
                 $data = array_merge($data, $this->getMerchantData($merchant));
 
                 $sentId = $this->send($merchant, $data);
@@ -152,7 +146,8 @@ class DailyReport extends Base\Core
     public function send($merchant, $data)
     {
         if (($this->isBlank($data) === false) and
-            (empty($data['email']) === false))
+            (empty($data['email']) === false) and
+            ($merchant->isLinkedAccount() === false))
         {
             $this->sendDailyReport($merchant, $data);
 

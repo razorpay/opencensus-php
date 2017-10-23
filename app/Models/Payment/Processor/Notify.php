@@ -136,8 +136,7 @@ class Notify
                 }
             }
 
-            if (($this->isMerchantMailEnabled($mailable) === true) and
-                ($this->merchant->isLinkedAccount() === false))
+            if ($this->isMerchantMailEnabled($mailable) === true)
             {
                 Mail::queue($mailable);
             }
@@ -572,7 +571,8 @@ class Notify
         $merchantTransactionReportEmail = $this->merchant->getTransactionReportEmail();
 
         return (($this->isEnabled() === true) and
-                (empty($merchantTransactionReportEmail) === false));
+                (empty($merchantTransactionReportEmail) === false) and
+                ($this->merchant->isLinkedAccount() === false));
     }
 
     /**

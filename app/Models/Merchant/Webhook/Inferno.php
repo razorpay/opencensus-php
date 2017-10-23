@@ -108,6 +108,11 @@ class Inferno
 
     public function sendEmail($webhook, $type)
     {
+        if ($webhook->merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
+
         $options = [
             'mode'         => $this->mode,
             'type'         => $type,
@@ -427,19 +432,13 @@ class Inferno
 
             $this->disableWebhook($webhook);
 
-            if ($webhook->merchant->isLinkedAccount() === false)
-            {
-                $this->sendEmail($webhook, 'deactivate');
-            }
+            $this->sendEmail($webhook, 'deactivate');
 
             $deleteJobFlag = true;
         }
         else
         {
-            if ($webhook->merchant->isLinkedAccount() === false)
-            {
-                $this->sendEmail($webhook, 'failure');
-            }
+            $this->sendEmail($webhook, 'failure');
         }
 
         $this->updateJob($deleteJobFlag);

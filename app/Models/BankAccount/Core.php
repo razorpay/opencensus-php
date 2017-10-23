@@ -99,11 +99,7 @@ class Core extends Base\Core
 
                 $ba = $this->createBankAccount($input, $merchant, $this->mode);
 
-                // Do not email linked accounts
-                if ($merchant->isLinkedAccount() === false)
-                {
-                    $this->sendBankAccountChangeEmail($ba, $merchant);
-                }
+                $this->sendBankAccountChangeEmail($ba, $merchant);
 
                 $merchantDetails = $merchant->merchantDetail;
 
@@ -192,8 +188,11 @@ class Core extends Base\Core
 
     protected function sendBankAccountChangeEmail($newBankAccount, $merchant)
     {
-        // In deve and testing environments we want to send mail even if Mode is TEST
-        if (($this->mode === Mode::TEST) and ($this->app->environment('dev', 'testing') === false))
+        // In dev and testing environments we want to send mail even if Mode is TEST
+        // Do not email linked accounts
+        if (($this->mode === Mode::TEST) and
+            ($this->app->environment('dev', 'testing') === false) and
+            ($merchant->isLinkedAccount() === true))
         {
             return;
         }

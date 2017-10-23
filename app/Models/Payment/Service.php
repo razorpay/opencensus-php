@@ -1208,17 +1208,18 @@ class Service extends Base\Service
     {
         $merchant = (new Merchant\Entity)->findOrFail($merchantId);
 
-        if ($merchant->isLinkedAccount() === false)
+        if ($merchant->isLinkedAccount() === true)
         {
-            $merchant = $merchant->toArray();
-
-            $data = compact('merchant', 'payments', 'final');
-
-            $authorizedPaymentsReminderMail = new AuthorizedPaymentsReminderMail($data);
-
-            Mail::send($authorizedPaymentsReminderMail);
-
+            return;
         }
+
+        $merchant = $merchant->toArray();
+
+        $data = compact('merchant', 'payments', 'final');
+
+        $authorizedPaymentsReminderMail = new AuthorizedPaymentsReminderMail($data);
+
+        Mail::send($authorizedPaymentsReminderMail);
     }
 
     protected function getNewProcessor(Merchant\Entity $merchant = null)
