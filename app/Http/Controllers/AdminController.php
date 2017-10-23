@@ -8,6 +8,7 @@ use Input;
 use Cache;
 use Config;
 use Session;
+use Response;
 use Redirect;
 use App\Admin;
 use OAuthFacade;
@@ -447,6 +448,13 @@ class AdminController extends Controller
         list($error, $response) = (new Admin\Service)->uploadOrgLogo($orgId, $input);
 
         return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function getStatus()
+    {
+        list($response, $statusCode) = (new Admin\Service)->getStatus();
+
+        return Response::json($response, $statusCode);
     }
 
     public function getEmailLogs()

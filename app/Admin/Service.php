@@ -2,6 +2,7 @@
 
 namespace App\Admin;
 
+use DB;
 use Auth;
 use Hash;
 use Uuid;
@@ -13,6 +14,7 @@ use Input;
 use Config;
 use Session;
 use Requests;
+use Exception;
 use App\Base;
 use App\User;
 use App\Admin;
@@ -1411,6 +1413,121 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
+    }
+
+    /**
+     * This function returns the database connection status
+     *
+     * @return array $response
+     */
+    protected function getDBConnectionStatus()
+    {
+        $response = [
+            'statusMessage' => 'ok',
+            'statusCode'    => 200
+        ];
+
+        try
+        {
+            $DBConnection = DB::connection('mysql')->getPdo();
+        }
+        catch (Exception $e)
+        {
+            $response['statusMessage'] = 'DB Connection Error';
+
+            $response['statusCode'] = $e->getCode();
+        }
+
+        return $response;
+    }
+
+    /**
+     * This function returns the redis connection status
+     *
+     * @return array $response
+     */
+    protected function getRedisConnectionStatus()
+    {
+        $response = [
+            'statusMessage' => 'ok',
+            'statusCode'    => 200
+        ];
+
+        try
+        {
+            $redisConnection = $this->app['redis']->connection()->ping();
+        }
+        catch (Exception $e)
+        {
+            $response['statusMessage'] = 'Redis Connection Error';
+
+            $response['statusCode'] = $e->getCode();
+        }
+
+        return $response;
+    }
+
+    /**
+     * This function returns the api connection status
+     *
+     * @return array $response
+     */
+    protected function getAPIConnectionStatus()
+    {
+        $response = [
+            'statusMessage' => 'ok',
+            'statusCode'    => 200
+        ];
+
+        try
+        {
+            // removing the /v1/ part at the end in the apiURL obtained from config
+            $apiURL = substr(config('api.url'), 0, -4);
+
+            $APIConnection = Requests::request($apiURL);
+        }
+        catch (Exception $e)
+        {
+            $response['statusMessage'] = 'API Connection Error';
+
+            $response['statusCode'] = $e->getCode();
+        }
+
+        return $response;
+    }
+
+    /**
+     * This function returns the status of the dashboard app
+     *
+     * @return array $response
+     */
+    public function getStatus()
+    {
+        $statusCode = 200;
+
+        // Check Database Connection
+        $databaseStatus = $this->getDBConnectionStatus();
+
+        // Check Redis Connection
+        $redisStatus = $this->getRedisConnectionStatus();
+
+        // Check API Connection
+        $apiStatus = $this->getAPIConnectionStatus();
+
+        if ($databaseStatus['statusCode'] !== 200 or
+            $redisStatus['statusCode'] !== 200 or
+            $apiStatus['statusCode'] !== 200)
+        {
+            $statusCode = 500;
+        }
+
+        $response = [
+            'db'    => $databaseStatus['statusMessage'],
+            'redis' => $redisStatus['statusMessage'],
+            'api'   => $apiStatus['statusMessage']
+        ];
+
+        return [$response, $statusCode];
     }
 
     public function getEmailLogs($input)
