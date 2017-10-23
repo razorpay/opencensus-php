@@ -172,28 +172,44 @@ class Core extends Base\Core
         {
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-            $visibleFeatures = Constants::$visibleFeaturesMap;
-            $featureName     = $feature->getName();
-            $merchantEmail   = $merchant->getEmail();
+            if ($merchant->isLinkedAccount() === false)
+            {
+                $visibleFeatures = Constants::$visibleFeaturesMap;
+                $featureName     = $feature->getName();
+                $merchantEmail   = $merchant->getEmail();
 
-            $data['feature']       = $visibleFeatures[$featureName]['display_name'];
-            $data['documentation'] = $visibleFeatures[$featureName]['documentation'];
-            $data['contact_name']  = $merchant->getName();
-            $data['contact_email'] = $merchantEmail;
+                $data['feature']       = $visibleFeatures[$featureName]['display_name'];
+                $data['documentation'] = $visibleFeatures[$featureName]['documentation'];
+                $data['contact_name']  = $merchant->getName();
+                $data['contact_email'] = $merchantEmail;
 
-            $featureUpdateEmail = new FeatureEnabled($data);
+                $featureUpdateEmail = new FeatureEnabled($data);
 
-            Mail::queue($featureUpdateEmail);
+                Mail::queue($featureUpdateEmail);
 
-            $this->trace->info(
-                TraceCode::FEATURE_ENABLED_MERCHANT_NOTIFIED,
-                [
-                    PublicEntity::MERCHANT_ID => $merchantId,
-                    Entity::SHOULD_SYNC       => $shouldSync,
-                    Mode::LIVE                => $isLiveMode,
-                    Entity::NEW_FEATURE       => $feature,
-                    Merchant\Entity::EMAIL    => $merchantEmail
-                ]);
+                $this->trace->info(
+                    TraceCode::FEATURE_ENABLED_MERCHANT_NOTIFIED,
+                    [
+                        PublicEntity::MERCHANT_ID => $merchantId,
+                        Entity::SHOULD_SYNC       => $shouldSync,
+                        Mode::LIVE                => $isLiveMode,
+                        Entity::NEW_FEATURE       => $feature,
+                        Merchant\Entity::EMAIL    => $merchantEmail
+                    ]);
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED,
+                    [
+                        PublicEntity::MERCHANT_ID => $merchantId,
+                        Entity::SHOULD_SYNC       => $shouldSync,
+                        Mode::LIVE                => $isLiveMode,
+                        Entity::NEW_FEATURE       => $feature,
+                    ]);
+
+                return;
+            }
         }
         else
         {
