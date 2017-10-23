@@ -88,12 +88,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    /**
-     * Get all of the owning reversable models.
-     */
-    public function entity()
+    public function source()
     {
-        return $this->morphTo();
+        return $this->morphTo('source', 'entity_type', 'entity_id');
     }
 
     // -------------------- End Relations -----------------------
