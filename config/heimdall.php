@@ -37,6 +37,10 @@ return [
                 'description' => 'View a particular merchant details',
                 'assignable'  => true,
             ],
+            Permission::MANAGE_ONBOARDING_SUBMISSIONS => [
+                'description' => 'View and update product onboarding submissions and the activation statuses',
+                'assignable'  => true,
+            ]
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [
