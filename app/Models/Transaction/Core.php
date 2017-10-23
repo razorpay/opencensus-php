@@ -1170,6 +1170,7 @@ class Core extends Base\Core
      * @param Reversal\Entity $reversal
      *
      * @return int
+     * @throws Exception\LogicException
      */
     protected function getTransferReversalSettledAtTimestamp(Reversal\Entity $reversal): int
     {
@@ -1181,22 +1182,54 @@ class Core extends Base\Core
 
         $scheduleTaskCore = new ScheduleTask\Core;
 
-        $nextTime = $scheduleTaskCore->getNextApplicableTimeForMerchant($startTime, $reversal->merchant);
+        $nextSettlementTime = $scheduleTaskCore->getNextApplicableTimeForMerchant($startTime, $reversal->merchant);
 
-        $transfer = $reversal->entity;
+        //
+        // `source` will always be `Transfer/Entity` since this flow
+        // is invoked only on Transfer Reversal creation
+        //
+        $transfer = $reversal->source;
 
-        if ($transfer->isDirectTransfer() === true)
+        if ($transfer->isPaymentTransfer() === true)
         {
-            $transferDelayTime = $scheduleTaskCore->getNextApplicableTimeForMerchant($startTime, $reversal->merchant);
+            //
+            // For payment transfers, the transfer txn's `settled_at` is
+            // already set to at-least the payment's settlement timestamp,
+            // (refer `createFromTransfer()` above) and is hence delayed to
+            // after the merchant settlement schedule
+            //
+            // Therefore: Delay the reversal txn to the max of
+            // - Transfer txn settled_at OR
+            // - Next available settlement slot as per schedule
+            //
+            $transferSettledAt = $transfer->transaction->getSettledAt();
 
+            return max($transferSettledAt, $nextSettlementTime);
         }
-        else if ($transfer->isPaymentTransfer() === true)
+        else if ($transfer->isDirectTransfer() === true)
         {
+            //
+            // For direct transfers, there's no source payment to look at.
+            // Hence, we look at the transfer created_at timestamp and add
+            // the merchants settlement schedule to it (calling this -
+            // `transferDelayTime`)
+            //
+            // We then set the reversal txn settled_at to the max of either
+            // - transferDelayTime OR
+            // - Next available settlement slot as per schedule
+            //
+            $transferCreatedAt = $transfer->getCreatedAt();
 
+            $transferDelayTime = $scheduleTaskCore->getNextApplicableTimeForMerchant(
+                $transferCreatedAt,
+                $reversal->merchant);
+
+            return max($transferDelayTime, $nextSettlementTime);
         }
         else
         {
-
+            // Invalid case
+            throw new Exception\LogicException('Invalid transfer type', null, ['transfer' => $transfer]);
         }
     }
 }
