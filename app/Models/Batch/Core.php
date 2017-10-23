@@ -66,10 +66,11 @@ class Core extends Base\Core
         $file = ($batch->getStatus() === Status::CREATED) ?
                     $batch->inputFile() : $batch->outputFile();
 
+        //
         // Backward compatibility:
         // - If file relation exists use that else to handle BC
         //   form the AWS key and get the signed URL as done previously.
-
+        //
         if ($file === null)
         {
             $signedUrl = $this->getSignedUrlOfBatchFile($batch);

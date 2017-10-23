@@ -11,6 +11,13 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Feature\Constants as Feature;
 
+/**
+ * Class Validator
+ *
+ * @package RZP\Models\Batch
+ *
+ * @property Entity $entity
+ */
 class Validator extends Base\Validator
 {
     const DEFAULT_MIME_TYPES = 'application/zip,'
@@ -143,6 +150,7 @@ class Validator extends Base\Validator
      *   otherwise in creation by API flow. This approach let us re-use code.
      *
      * @param array           $entries
+     * @param array           $params
      * @param Merchant\Entity $merchant
      *
      * @throws BadRequestException

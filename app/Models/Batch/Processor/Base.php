@@ -559,6 +559,7 @@ class Base extends BaseModel\Core
      * @param string $filePath
      *
      * @return array
+     * @throws LogicException
      */
     protected function parseFile(string $filePath): array
     {
