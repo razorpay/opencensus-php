@@ -72,31 +72,27 @@ class RefundFile extends Base\RefundFile
         $data = [];
 
         // For first line
-        array_push($data, $this->getDataForRow(
-                self::POOLING_ACCOUNT_BR_CODE,
-                Carbon::now(Timezone::IST)->timestamp,
-                Constants::REFUND_FILE_DEBIT,
-                '00000000120000',
-                self::POOLING_ACCOUNT_TYPE,
-                self::POOLING_ACCOUNT_SUBTYPE,
-                Config::get('gateways.netbanking_corporation.pooling_account_number'),
-                true
-            )
+        $data[] = $this->getDataForRow(
+            self::POOLING_ACCOUNT_BR_CODE,
+            Carbon::now(Timezone::IST)->timestamp,
+            Constants::REFUND_FILE_DEBIT,
+            '00000000120000',
+            self::POOLING_ACCOUNT_TYPE,
+            self::POOLING_ACCOUNT_SUBTYPE,
+            Config::get('gateways.netbanking_corporation.pooling_account_number'),
+            true
         );
 
         foreach ($input['data'] as $row)
         {
-            array_push(
-                $data,
-                $this->getDataForRow(
-                    $row['gateway'][NetbankingEntity::ACCOUNT_BRANCHCODE],
-                    $row['payment']['created_at'],
-                    Constants::REFUND_FILE_CREDIT,
-                    '00000000040000',
-                    str_pad($row['gateway'][NetbankingEntity::ACCOUNT_TYPE], 5, ' ', STR_PAD_RIGHT),
-                    $row['gateway'][NetbankingEntity::ACCOUNT_SUBTYPE],
-                    $row['gateway'][NetbankingEntity::ACCOUNT_NUMBER]
-                )
+            $data[] = $this->getDataForRow(
+                $row['gateway'][NetbankingEntity::ACCOUNT_BRANCHCODE],
+                $row['payment']['created_at'],
+                Constants::REFUND_FILE_CREDIT,
+                '00000000040000',
+                str_pad($row['gateway'][NetbankingEntity::ACCOUNT_TYPE], 5, ' ', STR_PAD_RIGHT),
+                $row['gateway'][NetbankingEntity::ACCOUNT_SUBTYPE],
+                $row['gateway'][NetbankingEntity::ACCOUNT_NUMBER]
             );
 
             $totalAmount += $row['refund']['amount'];
