@@ -72,6 +72,20 @@ class NetbankingBobGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
     }
 
+    public function testPaymentAmountMismatch()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockAmountMismatch();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthAndCapturePayment($this->payment);
+            });
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
@@ -151,6 +165,18 @@ class NetbankingBobGatewayTest extends TestCase
             {
                 $content[ResponseFields::STATUS] = Status::FAILURE;
                 unset($content[ResponseFields::BANK_REF_NUMBER]);
+            }
+        });
+    }
+
+    protected function mockAmountMismatch()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content[ResponseFields::STATUS] = Status::SUCCESS;
+                $content[ResponseFields::AMOUNT] = '10.00';
             }
         });
     }
