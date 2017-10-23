@@ -30,11 +30,6 @@ class Entity extends Base\Entity
 
     protected static $generators = array('id');
 
-    protected static $test_merchant_ids = array(
-        '10000000000000',
-        '100DemoAccount'
-    );
-
     const AMEX  = 'AMEX';
     const DICL  = 'DICL';
     const DISC  = 'DISC';
@@ -69,55 +64,6 @@ class Entity extends Base\Entity
         'upi'               =>  self::UPI,
         'Unknown'           =>  self::UNKNOWN
     );
-
-    /**
-     * Take care while calling this method
-     *
-     * @param array $input array with new email address
-     */
-    public function changeEmail($input)
-    {
-        return $this->edit($input, 'changeEmail');
-    }
-
-    /**
-     * Determine if the merchant has any users.
-     *
-     * @return bool
-     */
-    public function hasUsers()
-    {
-        return count($this->users) > 0;
-    }
-
-    /**
-     * Get all of the users that belong to the merchant.
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function users()
-    {
-        return $this->belongsToMany(
-            User\Entity::class, 'merchant_users', 'merchant_id', 'user_id'
-        )->withPivot('role');
-    }
-
-    /**
-     * Remove a user from the merchant by their ID.
-     *
-     * @param  int  $userId
-     * @return void
-     */
-    public function removeUserById($userId)
-    {
-        $this->users()->detach([$userId]);
-
-        $removedUser = (new User\Entity)->find($userId);
-
-        if($removedUser)
-        {
-            $removedUser->refreshCurrentMerchant();
-        }
-    }
 
     public static function getAggregations($data, $mode)
     {
@@ -246,10 +192,5 @@ class Entity extends Base\Entity
             ->where('merchant_id','=',$data['merchant_id'])
             ->where('mode', '=', $mode)
             ->update($obj);
-    }
-
-    public function isTestAccount()
-    {
-        return in_array($this->id, static::$test_merchant_ids);
     }
 }

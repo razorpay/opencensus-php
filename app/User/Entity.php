@@ -55,48 +55,4 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     protected static $generators = array('id','confirm_token');
 
     protected $appends = ['confirmed'];
-
-    /**
-     * Get all of the merchants that the user belongs to.
-     */
-    public function merchants($suspendedAlso = false)
-    {
-        $query = $this->belongsToMany(Merchant\Entity::class, 'merchant_users', 'user_id', 'merchant_id')
-                      ->withPivot(['role']);
-
-        if ($suspendedAlso === false)
-        {
-            $query = $query->whereNull('suspended_at');
-        }
-
-        return $query->orderBy('name', 'asc');
-    }
-
-    /**
-     * Join the merchant with the given ID and role.
-     *
-     * @param  string  $merchantId
-     * @return void
-     */
-    public function joinMerchantByIdWithRole($merchantId, $role)
-    {
-        $this->merchants()->attach([$merchantId], ['role' => $role]);
-    }
-
-    /**
-     * Refresh the current merchant for the user.
-     *
-     * @return  \App\Merchant\Entity
-     */
-    public function refreshCurrentMerchant()
-    {
-        Session::put('current_merchant_id', null);
-
-        return $this->currentMerchant();
-    }
-
-    public static function getUserWithEmail($email)
-    {
-        return self::where('email', $email)->first();
-    }
 }
