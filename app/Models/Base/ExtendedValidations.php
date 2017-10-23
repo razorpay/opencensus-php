@@ -20,6 +20,14 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     const EPOCH_DEFAULT_MIN      = 946684800;                  // Sat Jan  1 05:30:00 IST 2000
     const EPOCH_DEFAULT_MAX      = self::MYSQL_SIGNED_INT_MAX; // Tue Jan 19 08:44:07 IST 2038, *MySQL max for Signed Int
 
+    /**
+     * Overridden from \Illuminate\Validation\Validator because we have added
+     * custom rules for integer data type. This list is used by framework for
+     * various operations on integer data type attributes under validations,
+     * e.g. getSize() method etc.
+     *
+     * @var array
+     */
     protected $numericRules = [
         'Numeric',
         'Integer',
@@ -346,18 +354,30 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 
     protected function validateMysqlSignedInt(string $attribute, $value)
     {
-        $this->validateInteger($attribute, $value);
-        $this->validateBetween($attribute, $value, [self::MYSQL_SIGNED_INT_MIN, self::MYSQL_SIGNED_INT_MAX]);
+        $isInteger = $this->validateInteger($attribute, $value);
+        $isInRange = $this->validateBetween(
+                                $attribute,
+                                $value,
+                                [
+                                    self::MYSQL_SIGNED_INT_MIN,
+                                    self::MYSQL_SIGNED_INT_MAX,
+                                ]);
 
-        return true;
+        return ($isInteger and $isInRange);
     }
 
     protected function validateMysqlUnsignedInt(string $attribute, $value)
     {
-        $this->validateInteger($attribute, $value);
-        $this->validateBetween($attribute, $value, [self::MYSQL_UNSIGNED_INT_MIN, self::MYSQL_UNSIGNED_INT_MAX]);
+        $isInteger = $this->validateInteger($attribute, $value);
+        $isInRange = $this->validateBetween(
+                                $attribute,
+                                $value,
+                                [
+                                    self::MYSQL_UNSIGNED_INT_MIN,
+                                    self::MYSQL_UNSIGNED_INT_MAX,
+                                ]);
 
-        return true;
+        return ($isInteger and $isInRange);
     }
 
     /**
