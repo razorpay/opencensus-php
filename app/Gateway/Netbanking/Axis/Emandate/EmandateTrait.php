@@ -33,7 +33,7 @@ trait EmandateTrait
     protected function getRecurringPaymentData(array $input): array
     {
         $ppiArray = [
-            $input['payment']['id'],
+            $input['payment'][Payment\Entity::ID],
             Constants::PPI_AMOUNT_TYPE,
             Frequency::ADHOC,
             $input['token'][Token\Entity::ACCOUNT_NUMBER],
@@ -46,7 +46,7 @@ trait EmandateTrait
             RequestFields::VERSION         => Constants::VERSION,
             RequestFields::CORP_ID         => $this->getMerchantId(),
             RequestFields::TYPE            => Constants::TYPE,
-            RequestFields::REQUEST_ID      => $input['payment']['id'],
+            RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
             RequestFields::CURRENCY        => Currency::INR,
             RequestFields::AMOUNT          => $this->formatAmount($input['payment']['amount']),
@@ -65,7 +65,7 @@ trait EmandateTrait
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
                 'gateway'         => $this->gateway,
-                'payment_id'      => $input['payment']['id'],
+                'payment_id'      => $input['payment'][Payment\Entity::ID],
                 'data_before_enc' => $data
             ]
         );
@@ -101,7 +101,7 @@ trait EmandateTrait
             [
                 'gateway'            => $this->gateway,
                 'decrypted_response' => $content,
-                'payment_id'         => $input['payment']['id']
+                'payment_id'         => $input['payment'][Payment\Entity::ID]
             ]
         );
 
@@ -146,15 +146,6 @@ trait EmandateTrait
     {
         if (StatusCode::isStatusCodeSuccess($content[ResponseFields::STATUS_CODE]) !== true)
         {
-            $this->trace->error(
-                TraceCode::PAYMENT_CALLBACK_FAILURE,
-                [
-                    'content'    => $content,
-                    'payment_id' => $input['payment'][ Payment\Entity::ID ],
-                    'gateway'    => $this->gateway,
-                ]
-            );
-
             $errorCode = StatusCode::getErrorCodeMap($content[ResponseFields::STATUS_CODE]);
 
             throw new GatewayErrorException($errorCode);
@@ -186,7 +177,7 @@ trait EmandateTrait
         $input = $verify->input;
 
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
+            $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
         $data = [
             RequestFields::VERSION         => Constants::VERSION,
@@ -207,7 +198,7 @@ trait EmandateTrait
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
                 'gateway'                => $this->gateway,
-                'payment_id'             => $input['payment']['id'],
+                'payment_id'             => $input['payment'][Payment\Entity::ID],
                 'data_before_encryption' => $data,
                 'request'                => $content,
             ]
@@ -247,7 +238,7 @@ trait EmandateTrait
     {
         return [
             RequestFields::AMOUNT          => $input['payment']['amount'] / 100,
-            RequestFields::REQUEST_ID      => $input['payment']['id'],
+            RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId()
         ];
     }
@@ -285,7 +276,7 @@ trait EmandateTrait
                 null,
                 [
                     'content'    => $content,
-                    'payment_id' => $this->input['payment']['id'],
+                    'payment_id' => $this->input['payment'][Payment\Entity::ID],
                     'action'     => $this->action,
                     'gateway'    => $this->gateway,
                 ]
