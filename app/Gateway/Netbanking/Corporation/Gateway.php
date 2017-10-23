@@ -66,6 +66,10 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::PAYMENT_ID]
         );
 
+        $this->assertAmount(
+            $this->formatAmount($input['payment']['amount']), $content[ResponseFields::AMOUNT]
+        );
+
         $this->verifyCallback($input, $content);
 
         // Saving callback response only if the verification passes
