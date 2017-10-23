@@ -229,11 +229,15 @@ class MerchantCreateTest extends TestCase
 
     public function testCreateLinkedAccountMaxPaymentLimit()
     {
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 6000]);
 
         $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
         $this->startTest();
     }
@@ -245,6 +249,8 @@ class MerchantCreateTest extends TestCase
                                     'id' => '10000000000002',
                                     'email' => 'test2@razorpay.com'
                                 ]);
+
+        $user = $this->createUserMerchantMapping('10000000000002', 'owner');
 
         // Define T+2 cycle for new merchant
         $schedule = [
@@ -262,6 +268,8 @@ class MerchantCreateTest extends TestCase
         $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000002');
 
         $this->ba->proxyAuth('rzp_test_10000000000002');
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
         $linkedAcc = $this->startTest();
 

@@ -175,8 +175,8 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'password'              => 'hello',
-            'password_confirmation' => 'hello1'
+            'password'              => 'hello1234',
+            'password_confirmation' => 'hello123'
         ];
 
         $testData['request']['content'] = $content;
@@ -283,12 +283,14 @@ class UserTest extends TestCase
     protected function createUserMerchantMapping(string $userId, string $merchantId, string $role)
     {
         DB::table('merchant_users')
-            ->insert([
+            ->insert(
+                [
                 'merchant_id' => $merchantId,
                 'user_id'     => $userId,
                 'role'        => $role,
                 'created_at'  => 1493805150,
                 'updated_at'  => 1493805150
-            ]);
+                ]
+            );
     }
 }
