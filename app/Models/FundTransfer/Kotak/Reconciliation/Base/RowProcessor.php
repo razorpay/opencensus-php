@@ -75,7 +75,8 @@ class RowProcessor extends BaseCore
 
         $this->entity = $this->updateEntities();
 
-        if ($this->firstFailure === true)
+        if (($this->firstFailure === true) and
+            ($this->entity->merchant->isLinkedAccount() === false))
         {
             $this->sendReconciliationFailureEmail();
         }
