@@ -415,6 +415,7 @@ class Service extends Base\Service
     public function postEditMerchantEmail($id, $input)
     {
         $data = $error = [];
+
         $this->setApiCredentials();
 
         $input[Merchant\Entity::EMAIL] = strtolower($input[Merchant\Entity::EMAIL]);
@@ -423,12 +424,9 @@ class Service extends Base\Service
 
         try
         {
-//            $data = $this->api->merchant->fetch($id)->editEmail($input)->toArray();
+            $data = $this->api->merchant->fetch($id)->editEmail($input)->toArray();
 
-            // Only when it is changed we update on the dashboard side as well
-            list($e,) = (new Merchant\Service)->handleUserEmailChange($id, $originalEmail, $input);
-
-            $error = $e;
+            (new Merchant\Service)->handleUserEmailChange($id, $originalEmail, $input);
         }
 
         catch (\Razorpay\Api\Errors\BadRequestError $e)
