@@ -16,6 +16,13 @@ class Entity extends Base\PublicEntity
     const METHOD                    = 'method';
     const QR_STRING                 = 'qr_string';
 
+    // tag values
+    const MERCHANT_CATEGORY_TAG = '52045399';
+    const CURRENCY_CODE_TAG     = '5303356';
+    const COUNTRY_CODE_TAG      = '5802IN';
+    const MERCHANT_NAME_TAG     = '5908PAYMENTS';
+    const MERCHANT_CITY_TAG     = '6009BANGALORE';
+
     protected static $sign = 'bhqr';
 
     protected $entity = 'bharat_qr';
@@ -96,17 +103,17 @@ class Entity extends Base\PublicEntity
 
         $masterCardTag = '';
 
-        $merchantCategoryTag = '52045399';
+        $merchantCategoryTag = self::MERCHANT_CATEGORY_TAG;
 
-        $currencyCodeTag = '5303356';
+        $currencyCodeTag = self::CURRENCY_CODE_TAG;
 
         $amountTag = $this->getAmountTag();
 
-        $countryCode = '5802IN';
+        $countryCode = self::COUNTRY_CODE_TAG;
 
-        $merchantName = '5908PAYMENTS';
+        $merchantName = self::MERCHANT_NAME_TAG;
 
-        $merchantCity = '6009BANGALORE';
+        $merchantCity = self::MERCHANT_CITY_TAG;
 
         $additionalDetailsTag = $this->getAdditionalDetailsTag();
 
