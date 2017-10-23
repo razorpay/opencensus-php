@@ -9,6 +9,36 @@ use RZP\Models\FileStore;
 
 class RefundFile extends Base\RefundFile
 {
+    // TODO: Fix these constants
+    const PG_MERCHANT_ID  = 'pgMerchantId';
+    const REFUND_REQ_NO   = 'refundReqNo';
+    const TRANS_REF_NO    = 'transRefNo';
+    const CUSTOMER_REF_NO = 'customerRefNo';
+    const ORDER_NO        = 'orderNo';
+    const REFUND_REQ_AMT  = 'refundReqAmt';
+    const REFUND_REMARK   = 'refundRemark';
+
+    /**
+     * Headers of the CSV file
+     * @var array
+     */
+    protected static $headers = [
+        self::PG_MERCHANT_ID,
+        self::REFUND_REQ_NO,
+        self::TRANS_REF_NO,
+        self::CUSTOMER_REF_NO,
+        self::ORDER_NO,
+        self::REFUND_REQ_AMT,
+        self::REFUND_REMARK
+    ];
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->repo = $this->app['repo']->upi;
+    }
+
     public function generate($input)
     {
         $data = $this->getRefundData($input);
@@ -40,21 +70,18 @@ class RefundFile extends Base\RefundFile
     {
         $data = [];
 
-        $fileName = $this->getFileToWriteName(FileStore\Format::CSV);
-
         foreach ($input['data'] as $row)
         {
-            // TODO: Is this needed?
-//            if (isset($row['gateway']) === false)
-//            {
-//                continue;
-//            }
-
-            $date = Carbon::createFromTimestamp(
-                $row['payment']['authorized_at'], Timezone::IST)->format('Y-m-d');
+            $upi = $this->repo->findByPaymentIdAndActionOrFail($row['payment']['id'], Base\Action::AUTHORIZE);
 
             $data[] = [
-                // TODO: Add the data here
+                self::PG_MERCHANT_ID  => $this->getMerchantId(),
+                self::REFUND_REQ_NO   => $row['refund']['id'],
+                self::TRANS_REF_NO    => $upi->getNpciReferenceId(), // TODO: Verify this
+                self::CUSTOMER_REF_NO => $upi->getCustomerReferenceId(),
+                self::ORDER_NO        => $row['payment']['id'],
+                self::REFUND_REQ_AMT  => $row['refund']['amount'] / 100,
+                self::REFUND_REMARK   => 'Refund'
             ];
         }
 

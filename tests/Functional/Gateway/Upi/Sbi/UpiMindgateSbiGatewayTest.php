@@ -2,8 +2,10 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Sbi;
 
+use Excel;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Gateway\Upi\Sbi\RefundFile;
 use RZP\Models\Payment;
 use RZP\Constants\Entity;
 use RZP\Models\Payment\Method;
@@ -139,6 +141,20 @@ class UpiMindgateSbiGatewayTest extends TestCase
         $this->refundPayment($payment['id']);
 
         $data = $this->generateRefundsExcelForSbiUpi();
+
+        $this->assertArrayHasKey('upi_sbi', $data);
+
+        $this->assertEquals(3, $data['upi_sbi']['count']);
+        $this->assertTrue(file_exists($data['upi_sbi']['file']));
+
+        $sheet = Excel::load($data['upi_sbi']['file'])->all()->toArray();
+
+        $key = strtolower(RefundFile::REFUND_REQ_AMT);
+
+        $this->assertEquals($sheet[0][$key], 500);
+        $this->assertEquals($sheet[1][$key], 500);
+        $this->assertEquals($sheet[2][$key], 100);
+
     }
 
     protected function generateRefundsExcelForSbiUpi($date = false)
