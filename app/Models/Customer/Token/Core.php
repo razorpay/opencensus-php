@@ -13,6 +13,63 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
+    // TODO: merget create and this method
+    // curently this needs to be in transaction as we are creating new card
+    // entity as well with token creation without payment 
+    public function createDirectToken($customer, $input)
+    {
+        return $this->repo->transaction(function() use ($customer, $input)
+        {
+            $token = (new Token\Entity)->build($input, 'create_direct');
+
+            if ($token->isCard() === true)
+            {
+                $cardInput = $input[Token\Entity::CARD];
+
+                $cardInput[Token\Entity::VAULT] = Card\Vault::TOKENEX;
+
+                $card = (new Card\Entity)->build($cardInput);
+
+                $this->repo->saveOrFail($card);
+
+                $token->card()->associate($card);
+            }
+
+            $token->customer()->associate($customer);
+
+            $token->merchant()->associate($customer->merchant);
+
+            $existingToken = $this->validateExistingToken($token);
+
+            //
+            // For cards, we check if there's already an existing
+            // token with the same customer, and simply return that
+            // instead of creating a new token altogether.
+            // However, for netbanking, we don't do this check,
+            // because netbanking tokens are newly created for each
+            // and every new first recurring payment, for now.
+            //
+            if ($existingToken !== null)
+            {
+                return $existingToken;
+            }
+            else
+            {
+                $this->repo->saveOrFail($token);
+
+                return $token;
+            }
+        });
+    }
+
+    /**
+     * @param  Customer Entity
+     * @param  input array 
+     * @return Token Entity
+     *
+     * Below function is used to create token in payment flow where we 
+     * already have a card_id
+     */
     public function create($customer, $input)
     {
         $token = new Token\Entity;

@@ -21,7 +21,6 @@ class Service extends Base\Service
     }
 
     /**
-     * Note that this is on internal auth and not private auth
      * Adds token for a customer
      *
      * @param string $id customer ID
@@ -33,7 +32,7 @@ class Service extends Base\Service
     {
         $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $token = $this->core->create($customer, $input);
+        $token = $this->core->createDirectToken($customer, $input);
 
         return $token->toArrayPublic();
     }
