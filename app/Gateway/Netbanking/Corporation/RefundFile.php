@@ -4,8 +4,8 @@ namespace RZP\Gateway\Netbanking\Corporation;
 
 use Carbon\Carbon;
 use Mail;
+use Config;
 
-use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
@@ -19,7 +19,6 @@ class RefundFile extends Base\RefundFile
 
     // TODO: Remove the below data and use env to store them
     const POOLING_ACCOUNT_BR_CODE = '1234';
-    const POOLING_ACCOUNT_NUMBER  = '234567';
     const POOLING_ACCOUNT_TYPE    = 'CA';
     const POOLING_ACCOUNT_SUBTYPE = '01';
 
@@ -80,7 +79,7 @@ class RefundFile extends Base\RefundFile
                 '00000000120000',
                 self::POOLING_ACCOUNT_TYPE,
                 self::POOLING_ACCOUNT_SUBTYPE,
-                self::POOLING_ACCOUNT_NUMBER,
+                Config::get('gateways.netbanking_corporation.pooling_account_number'),
                 true
             )
         );
