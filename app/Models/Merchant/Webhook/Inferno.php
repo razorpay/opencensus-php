@@ -427,13 +427,19 @@ class Inferno
 
             $this->disableWebhook($webhook);
 
-            $this->sendEmail($webhook, 'deactivate');
+            if ($webhook->merchant->isLinkedAccount() === false)
+            {
+                $this->sendEmail($webhook, 'deactivate');
+            }
 
             $deleteJobFlag = true;
         }
         else
         {
-            $this->sendEmail($webhook, 'failure');
+            if ($webhook->merchant->isLinkedAccount() === false)
+            {
+                $this->sendEmail($webhook, 'failure');
+            }
         }
 
         $this->updateJob($deleteJobFlag);
