@@ -180,7 +180,7 @@ class Base extends BaseModel\Core
 
             $this->parseAndProcessBatchEntries();
         }
-        catch (\Throwable $ex)
+        catch (\Throwable $e)
         {
             $this->handleBatchProcessingException($ex);
         }
@@ -325,9 +325,10 @@ class Base extends BaseModel\Core
     }
 
     /**
-     * Out of db transaction: Gets run at last, once batch is processed and
-     * output file is created and saved.
+     * Gets run at last, once batch is processed and output file is
+     * created and saved.
      *
+     * - Updates batch status
      * - Sends mail with aggregate data and output attached.
      * - Clean temp files.
      *
@@ -335,6 +336,8 @@ class Base extends BaseModel\Core
     protected function postProcess()
     {
         $this->updateBatchStatusPostProcess();
+
+        $this->repo->saveOrFail($this->batch);
 
         if ($this->batch->isProcessed() === true)
         {
@@ -367,25 +370,19 @@ class Base extends BaseModel\Core
                     Batch\Status::FAILED :
                     Batch\Status::PROCESSED;
 
+
         //
         // But if we were able to process the file and there were failures, we
         // mark it as partially_processed or processed depending on the type of
         // the file.
         //
-        if ($this->batch->getTotalCount() > 0)
+        if (($this->batch->getFailureCount() > 0)
+            or (($this->batch->getSuccessCount() === 0) and
+                ($this->batch->getFailureCount() === 0)))
         {
-            //
-            // If the number of failures are greater than zero or
-            // if the number of successes and failures are zero., i.e although rows
-            // were present in the file, none were processed
-            //
-            if (($this->batch->getFailureCount() > 0) or
-                (($this->batch->getSuccessCount() === 0) and ($this->batch->getFailureCount() === 0)))
-            {
-                $status = ($this->shouldMarkProcessedOnFailures() === true) ?
-                            Batch\Status::PROCESSED :
-                            Batch\Status::PARTIALLY_PROCESSED;
-            }
+            $status = ($this->shouldMarkProcessedOnFailures() === true) ?
+                        Batch\Status::PROCESSED :
+                        Batch\Status::PARTIALLY_PROCESSED;
         }
 
         //
@@ -400,8 +397,6 @@ class Base extends BaseModel\Core
         $this->batch->setStatus($status);
 
         $this->batch->setProcessing(false);
-
-        $this->repo->saveOrFail($this->batch);
     }
 
     protected function createSetOutputFileAndSave(array & $entries)
@@ -786,16 +781,17 @@ class Base extends BaseModel\Core
      * status accordingly. Should be overrideen by respective processors for any
      * special handling
      *
-     * @param \Throwable $ex Exception encountered while processing the batch
+     * @param \Throwable $e Exception encountered while processing the batch
      */
-    protected function handleBatchProcessingException(\Throwable $ex)
+    protected function handleBatchProcessingException(\Throwable $e)
     {
         $this->trace->traceException(
             $ex,
             Trace::ERROR,
             TraceCode::BATCH_FILE_PROCESSING_ERROR,
             [
-                Batch\Entity::ID => $this->batch->getId()
+                Batch\Entity::ID   => $this->batch->getId(),
+                Batch\Entity::Type => $this->batch->getType(),
             ]);
 
         //
@@ -803,8 +799,7 @@ class Base extends BaseModel\Core
         // only if it wasn't partially_processed previously and we weren't able
         // to parse the file. In all other cases the old status will continue.
         //
-        if (($this->batch->isPartiallyProcessed() === false) and
-            ($this->batch->getFailureCount() === 0))
+        if ($this->batch->isPartiallyProcessed() === false)
         {
             $this->batch->setStatus(Batch\Status::FAILED);
         }

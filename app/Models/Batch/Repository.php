@@ -38,6 +38,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->whereIn(Entity::TYPE, Type::$cronGroup)
                     ->where(Entity::STATUS, Status::CREATED)
+                    ->where(Entity::PROCESSING, false)
                     ->oldest()
                     ->limit($limit)
                     ->get();

@@ -22,9 +22,10 @@ class Entity extends Base\PublicEntity
     const SUCCESS_COUNT             = 'success_count';
     const FAILURE_COUNT             = 'failure_count';
     const ATTEMPTS                  = 'attempts';
+
     /**
-     * amount and processed_amount represent the total amounnt across entities
-     * present in the batch input file, for batches like refund.
+     * Fields amount and processed_amount represent the total amounnt across
+     * entities present in the batch input file, for batches like refund.
      */
     const AMOUNT                    = 'amount';
     const PROCESSED_AMOUNT          = 'processed_amount';
@@ -34,8 +35,9 @@ class Entity extends Base\PublicEntity
     const TYPE                      = 'type';
 
     /**
-     * sub_type is used for further classification of the batch. Currently being
-     * used for reconciliation batch and can have values like combined | payment | refund
+     * Fields sub_type is used for further classification of the batch.
+     * Currently being used for reconciliation batch and can have values like
+     * combined | payment | refund
      */
     const SUB_TYPE                  = 'sub_type';
     const GATEWAY                   = 'gateway';
@@ -120,8 +122,8 @@ class Entity extends Base\PublicEntity
     ];
 
     /**
-     * We are overriding build here as the spine build method doesn't accept custom
-     * operation name for create validation. For batch we have specific per type validation
+     * Overridden
+     * Ref: validateInputByType
      *
      * @param  array  $input
      * @return Entity
@@ -132,9 +134,7 @@ class Entity extends Base\PublicEntity
 
         $this->modify($input);
 
-        $operation = $input[Entity::TYPE] . '_batch_create';
-
-        $this->validateInput($operation, $input);
+        $this->validateInputByType($input);
 
         $this->generate($input);
 
@@ -143,6 +143,27 @@ class Entity extends Base\PublicEntity
         $this->fill($input);
 
         return $this;
+    }
+
+    /**
+     * Does input validation for create based on batch type if defined else
+     * there is one default create rule.
+     *
+     * @param array $input
+     */
+    protected function validateInputByType(array $input)
+    {
+        $operation = 'default_create';
+
+        $type = $input[Entity::TYPE] ?? 'unknown';
+        $rule = camel_case($type) . 'CreateRules';
+
+        if (property_exists(Validator::class, $rule) === true)
+        {
+            $operation = $type . '_create';
+        }
+
+        $this->validateInput($operation, $input);
     }
 
     // Relations
@@ -239,17 +260,17 @@ class Entity extends Base\PublicEntity
         return (($this->isProcessed() === false) and ($this->isProcessing() === false));
     }
 
-    public function getSuccessCount()
+    public function getSuccessCount(): int
     {
         return $this->getAttribute(self::SUCCESS_COUNT);
     }
 
-    public function getFailureCount()
+    public function getFailureCount(): int
     {
         return $this->getAttribute(self::FAILURE_COUNT);
     }
 
-    public function getTotalCount()
+    public function getTotalCount(): int
     {
         return $this->getAttribute(self::TOTAL_COUNT);
     }

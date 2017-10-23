@@ -25,11 +25,6 @@ class Core extends Base\Core
 
         $processor = Processor\Base::get($batch);
 
-        //
-        // We upload the input file to S3 create a filestore entity for the
-        // input file via UFH. We then update the batch entity with file meta
-        // data if available, follow by save, all inside a transaction.
-        //
         $processor->storeInputFileAndSaveBatch($input);
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
@@ -109,22 +104,22 @@ class Core extends Base\Core
 
         foreach ($batches as $batch)
         {
-            $this->processBatchInSync($batch);
+            try
+            {
+                Processor\Base::get($batch)->validateAndProcess();
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e);
+            }
         }
 
         return $batches;
     }
 
-    /**
-     * Process individual batch by internal auth API call
-     *
-     * @param Entity $batch
-     *
-     * @return Entity
-     */
-    public function processBatchViaApi(Entity $batch)
+    public function processBatchAsync(Entity $batch): Entity
     {
-        $this->trace->info(TraceCode::BATCH_RETRY, $batch->toArrayPublic());
+        $this->trace->info(TraceCode::BATCH_PROCESS_ASYNC, $batch->toArrayPublic());
 
         $this->queueBatchForProcessing($batch);
 
@@ -175,29 +170,5 @@ class Core extends Base\Core
         $job = new BatchJob($this->mode, $batch->getId(), $input);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
-    }
-
-    /**
-     * Performs batch processing in sync, by calling the respective batch processor.
-     * Used in cron batch processing flow
-     *
-     * @param  Batch\Entity $batch
-     * @param  bool         $shouldThrow     flag to indicate if a processing exception
-     *                                           should be bubbled up or not
-     */
-    protected function processBatchInSync(Entity $batch, bool $shouldThrow = false)
-    {
-        try
-        {
-            Processor\Base::get($batch)
-                          ->validateAndProcess();
-        }
-        catch (\Throwable $ex)
-        {
-            if ($shouldThrow === true)
-            {
-                throw $ex;
-            }
-        }
     }
 }

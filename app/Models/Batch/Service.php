@@ -65,18 +65,11 @@ class Service extends Base\Service
         return $batches->toArrayPublic();
     }
 
-    /**
-     * Processes particular batch id if not processed already.
-     *
-     * @param string $id
-     *
-     * @return array
-     */
     public function processBatch(string $id): array
     {
         $batch = $this->repo->batch->findByPublicId($id);
 
-        $batch = (new Core)->processBatchViaApi($batch);
+        $batch = (new Core)->processBatchAsync($batch);
 
         return $batch->toArrayPublic();
     }

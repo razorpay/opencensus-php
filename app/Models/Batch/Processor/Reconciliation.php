@@ -5,7 +5,6 @@ namespace RZP\Models\Batch\Processor;
 use Symfony\Component\HttpFoundation\File\File;
 
 use RZP\Models\Batch;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
