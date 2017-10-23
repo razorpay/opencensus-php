@@ -811,6 +811,9 @@ class Base extends BaseModel\Core
         // Sets failure reason here because exception instance won't be available
         // in postProcess() call in finally block
         //
-        $this->batch->setFailureReason($ex->getMessage());
+
+        $failureReason = $ex->getError()->getDescription();
+
+        $this->batch->setFailureReason($ex->getError()->getDescription());
     }
 }
