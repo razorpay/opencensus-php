@@ -182,6 +182,8 @@ final class Route
         'bank_transfer_process'                   => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_notify'                    => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
         'bank_transfer_refund_retry'              => ['post',     'bank_transfers/refunds/retry',                   'BankTransferController@retryBankTransferRefund'                    ],
+        'bank_transfer_edit_payer_account'        => ['put',      'bank_transfers/{id}/payer_bank_account',         'BankTransferController@editPayerBankAccount'                       ],
+        'bank_transfer_insert'                    => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
         'virtual_account_fetch'                   => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
@@ -250,6 +252,7 @@ final class Route
         'adj_add_reverse'                         => ['post',     'adjustments/reversal',                           'AdjustmentController@postReverseAdjustments'                       ],
         'adj_add_bulk'                            => ['post',     'adjustments/bulk',                               'AdjustmentController@postMultipleAdjustments'                      ],
         'adj_add_fee'                             => ['post',     'adjustments/fees',                               'AdjustmentController@postFeesAdjustment'                           ],
+        'adjustments_split_for_dispute'           => ['post',     'adjustments/split_adjustments',                  'AdjustmentController@splitAdjustments'                             ],
         'mock_hdfc_enroll'                        => ['post',     'gateway/mock_hdfc/enroll',                       'MockGatewayController@enroll'                                      ],
         'mock_hdfc_payment'                       => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
         'mock_hdfc_auth_enrolled'                 => ['post',     'gateway/mock_hdfc/auth_enrolled',                'MockGatewayController@authEnrolled'                                ],
@@ -290,6 +293,13 @@ final class Route
         'gateway_payment_callback_kotak'          => ['get',      'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotak'                                   ],
         'gateway_payment_callback_kotak_cancel'   => ['post',     'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotakCancel'                             ],
         'gateway_payment_callback_corporation'    => ['post',     'gateway/netbanking_corporation/callback',        'GatewayController@callbackCorporation'                             ],
+
+        // File-based Emandate Routes
+        'emandate_registration_initiate'          => ['post',     'emandate/registration/initiate/{gateway}',       'EMandateController@postGenerateRegistrationFile'                   ],
+        'emandate_registration_reconcile'         => ['post',     'emandate/registration/reconcile/{gateway}',      'EMandateController@postReconcileRegistrationFile'                  ],
+        'emandate_debit_initiate'                 => ['post',     'emandate/debit/initiate/{gateway}',              'EMandateController@postGenerateDebitFile'                          ],
+        'emandate_debit_reconcile'                => ['post',     'emandate/debit/reconcile/{gateway}',             'EMandateController@postReconcileDebitFile'                         ],
+
         'reconciliate'                            => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
         'dummy_return_callback'                   => ['post',     'return/callback',                                'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                    => ['get',      'trigger/error',                                  'AdminController@getTriggerError'                                   ],
@@ -925,6 +935,8 @@ final class Route
         'bank_transfer_process',
         'bank_transfer_notify',
         'bank_transfer_refund_retry',
+        'bank_transfer_edit_payer_account',
+        'bank_transfer_insert',
         'iin_fetch_by_iin',
         'card_update_saved',
         'iin_fetch_multiple',
@@ -1035,6 +1047,7 @@ final class Route
         'payment_dispute_create',
         'dispute_edit',
         'dispute_migrate_adjustments',
+        'adjustments_split_for_dispute',
         'dispute_reason_create',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
@@ -1052,6 +1065,10 @@ final class Route
         'settings_fetch',
         'settings_upsert',
         'settings_delete',
+        'emandate_registration_initiate',
+        'emandate_registration_reconcile',
+        'emandate_debit_initiate',
+        'emandate_debit_reconcile',
     ];
 
     public static $proxy = [
@@ -1446,6 +1463,8 @@ final class Route
             'merchant_payout',
             'gateway_file_create',
             'reports_refund_irctc',
+            'emandate_registration_initiate',
+            'emandate_debit_initiate',
         ],
 
         'kotak' => [
@@ -1459,7 +1478,9 @@ final class Route
         ],
 
         'mailgun' => [
-            'reconciliate'
+            'reconciliate',
+            'emandate_registration_reconcile',
+            'emandate_debit_reconcile',
         ],
 
         'raven' => [

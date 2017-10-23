@@ -8,6 +8,7 @@ class Mode
     const NEFT = 'neft';
     const IMPS = 'imps';
     const IFT  = 'ift';
+    const UPI  = 'upi';
 
     public static function isValid($mode)
     {

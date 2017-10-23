@@ -2547,3 +2547,7 @@ ALTER TABLE invoices
 
 ALTER TABLE schedules
     MODIFY COLUMN `anchor` int(11);
+
+ALTER TABLE tokens
+    ADD COLUMN account_number VARCHAR(40) AFTER wallet,
+    ADD INDEX `tokens_account_number_index` (`account_number`);

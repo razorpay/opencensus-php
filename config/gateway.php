@@ -253,8 +253,9 @@ return [
 
     'wallet_freecharge' => [
         'test_hash_secret'      => env('FREECHARGE_WALLET_TEST_HASH_SECRET'),
-        'test_merchant_id'      => env('FREECHARGE_WALLET_TEST_MERCHANT_ID'),
-        'test_dealer_id'        => env('FREECHARGE_WALLET_TEST_DEALER_ID'),
+        // Freecharge is little different hence exchanging values
+        'test_merchant_id'      => env('FREECHARGE_WALLET_TEST_DEALER_ID'),
+        'test_dealer_id'        => env('FREECHARGE_WALLET_TEST_MERCHANT_ID'),
     ],
 
     'wallet_jiomoney' => [
@@ -280,11 +281,16 @@ return [
     ],
 
     'netbanking_hdfc' => [
+        // TODO: Move constants to env file
+
         'live_hash_secret'  => env('NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret'  => '123456',
+
         // tpv
         'live_hash_secret_tpv' => env('NETBANKING_HDFC_GATEWAY_CUG_LIVE_HASH_SECRET'),
         'test_hash_secret_tpv' => '12345',
+
+        'test_merchant_id' => 'RAZORPAY',
     ],
 
     'netbanking_corporation' => [

@@ -57,6 +57,20 @@ class Header
     const REFERENCE_ID        = 'reference_id';
     const ACCOUNT_ID          = 'account_id';
 
+    //
+    // Virtual Account Bulk Creation Headers
+    //
+    const VA_CUSTOMER_ID         = 'customer_id';
+    const VA_CUSTOMER_NAME       = 'customer_name';
+    const VA_CUSTOMER_CONTACT    = 'customer_contact';
+    const VA_CUSTOMER_EMAIL      = 'customer_email';
+    const VA_ID                  = 'virtual_account_id';
+    const VA_DESCRIPTOR          = 'virtual_account_descriptor';
+    const VA_BANK_ACCOUNT_ID     = 'bank_account_id';
+    const VA_BANK_ACCOUNT_NAME   = 'bank_account_name';
+    const VA_BANK_ACCOUNT_NUMBER = 'bank_account_number';
+    const VA_BANK_ACCOUNT_IFSC   = 'bank_account_ifsc';
+
     /**
      * Input and output file headers per type.
      *
@@ -178,6 +192,27 @@ class Header
                 self::BANK_ACCOUNT_NUMBER,
                 self::REFERENCE_ID,
                 self::ACCOUNT_ID,
+            ],
+        ],
+
+        Type::VIRTUAL_BANK_ACCOUNT => [
+            self::INPUT => [
+                self::VA_CUSTOMER_NAME,
+                self::VA_CUSTOMER_CONTACT,
+                self::VA_CUSTOMER_EMAIL,
+                self::VA_DESCRIPTOR,
+            ],
+
+            self::OUTPUT => [
+                self::VA_CUSTOMER_ID,
+                self::VA_CUSTOMER_NAME,
+                self::VA_CUSTOMER_CONTACT,
+                self::VA_CUSTOMER_EMAIL,
+                self::VA_ID,
+                self::VA_BANK_ACCOUNT_ID,
+                self::VA_BANK_ACCOUNT_NAME,
+                self::VA_BANK_ACCOUNT_NUMBER,
+                self::VA_BANK_ACCOUNT_IFSC,
             ],
         ],
     ];

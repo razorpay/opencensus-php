@@ -939,30 +939,6 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
         $this->fixtures->create('terminal:shared_cybersource_axis_terminal');
 
-        $this->fixtures->create('gateway_rule', [
-            'method'           => 'card',
-            'merchant_id'      => '100000Razorpay',
-            'gateway'          => 'axis_migs',
-            'category2'        => 'pharma',
-            'type'             => 'filter',
-            'filter_type'      => 'reject',
-            'shared_terminal'  => 1,
-            'gateway_acquirer' => 'hdfc',
-            'group'            => 'pharma_filter',
-        ]);
-
-        $this->fixtures->create('gateway_rule', [
-            'method'           => 'card',
-            'merchant_id'      => '100000Razorpay',
-            'gateway'          => 'cybersource',
-            'category2'        => 'pharma',
-            'type'             => 'filter',
-            'filter_type'      => 'reject',
-            'shared_terminal'  => 1,
-            'gateway_acquirer' => 'hdfc',
-            'group'            => 'pharma_filter',
-        ]);
-
         $payment = $this->getDefaultPaymentArray();
         $this->doAuthAndCapturePayment($payment);
 
