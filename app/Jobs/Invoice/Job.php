@@ -34,7 +34,6 @@ class Job extends BaseJob implements ShouldQueue
     const ISSUED                = 'issued';
     const UPDATED               = 'updated';
     const EXPIRED               = 'expired';
-    const AUTHORIZED            = 'authorized';
     const CAPTURED              = 'captured';
 
     protected $event;
@@ -141,15 +140,6 @@ class Job extends BaseJob implements ShouldQueue
     {
         return (new Invoice\Notifier($this->invoice))
                     ->notifyInvoiceExpiredToCustomer();
-    }
-
-    protected function handleAuthorized()
-    {
-        //
-        // Event=authorized is not being used now but keeping for backward
-        // compatibility.
-        //
-        return true;
     }
 
     protected function handleCaptured()
