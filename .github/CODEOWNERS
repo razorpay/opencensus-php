@@ -198,3 +198,11 @@ tests/Functional/Gateway/Wallet/Openwallet/*            amit.mahbubani@razorpay.
 tests/Functional/Gateway/Wallet/Payumoney/*             mayank.amencherla@razorpay.com                          vivek.kumar@razorpay.com
 tests/Functional/Gateway/Wallet/Payzapp/*               giri@razorpay.com                                       mayank.amencherla@razorpay.com          vivek.kumar@razorpay.com
 tests/Functional/Gateway/Wallet/Sbibuddy/*              albin.george@razorpay.com                               priyanshu.chhazed@razorpay.com          vivek.kumar@razorpay.com
+
+
+#
+# Misc
+#
+
+composer.lock                                           nemo@razorpay.com
+wercker.yml                                             @razorpay/security                                      @razorpay/devops

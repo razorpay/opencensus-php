@@ -26,7 +26,7 @@ class Validator extends Base\Validator
         Entity::REQ_UTR        => 'required|string|max:30',
         Entity::TIME           => 'required',
         Entity::AMOUNT         => 'required|integer|min:0',
-        Entity::DESCRIPTION    => 'sometimes|string|max:100',
+        Entity::DESCRIPTION    => 'sometimes|string|max:255',
     ];
 
     protected static $createValidators = [
@@ -78,7 +78,7 @@ class Validator extends Base\Validator
         {
             $ifsc = $bankTransfer->getPayerIfsc();
 
-            $bankCode = substr($ifsc, 0, 3);
+            $bankCode = substr($ifsc, 0, -10);
 
             if (BankCodes::hasIfscMapping($bankCode) === false)
             {

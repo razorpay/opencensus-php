@@ -37,7 +37,8 @@ class Handler
         {
             case Type::PGP_ENCRYPTION :
                  return new PGPEncryption($this->params);
-
+            case Type::AES_ENCRYPTION :
+                 return new AESEncryption($this->params);
             default:
                 throw new Exception\LogicException('Not A Valid Encryption Type');
         }

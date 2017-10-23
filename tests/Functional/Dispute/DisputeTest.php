@@ -145,6 +145,17 @@ class DisputeTest extends TestCase
         $this->startTest();
     }
 
+    public function testDisputeEditWon()
+    {
+        $data = $this->updateEditTestData();
+
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(false, $payment['disputed']);
+    }
+
     public function testDisputeEditClose()
     {
         $data = $this->updateEditTestData();
@@ -154,6 +165,14 @@ class DisputeTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(false, $payment['disputed']);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('payment', $txn['type']);
+
+        $adj = $this->getLastEntity('adjustment', true);
+
+        $this->assertNull($adj);
     }
 
     public function testDisputeEditDeductOnLost()

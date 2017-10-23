@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Functional\Gateway\File;
+namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
 use Excel;
@@ -19,6 +19,8 @@ class NetbankingIciciRefundFileTest extends TestCase
 
     public function setUp()
     {
+        Carbon::setTestNow();
+
         $this->testDataFilePath = __DIR__ . '/helpers/NetbankingIciciRefundFileTestData.php';
 
         parent::setUp();
