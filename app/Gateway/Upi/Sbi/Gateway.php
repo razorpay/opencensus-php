@@ -34,6 +34,11 @@ class Gateway extends Base\Gateway
      */
     const DEFAULT_PAYEE_VPA = 'razorpay@sbi';
 
+    /**
+     * Used to map request / response fields to entity
+     * fields before creating or updating the upi entity.
+     * @var array
+     */
     protected $map = [
         // Mapping entity variables to entity variables
         Base\Entity::GATEWAY_MERCHANT_ID       => Base\Entity::GATEWAY_MERCHANT_ID,

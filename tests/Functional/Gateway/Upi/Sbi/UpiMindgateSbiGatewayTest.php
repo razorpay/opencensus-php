@@ -26,15 +26,13 @@ class UpiMindgateSbiGatewayTest extends TestCase
      */
     protected $sharedTerminal;
 
-    const PAYMENT_ID = 'payment_id';
-
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/UpiMindgateSbiGatewayTestData.php';
+        $this->testDataFilePath = Constants::MINDGATE_SBI_GATEWAY_TEST_DATA_FILE;
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_sbi_terminal');
+        $this->sharedTerminal = $this->fixtures->create(Constants::SHARED_UPI_MIDGATE_TERMINAL);
 
         $this->gateway = Gateway::UPI_SBI;
 
@@ -52,10 +50,10 @@ class UpiMindgateSbiGatewayTest extends TestCase
     {
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
 
-        $paymentId = $response[self::PAYMENT_ID];
+        $paymentId = $response[Constants::PAYMENT_ID];
 
         // Coproto must be working
-        $this->assertEquals('async', $response['type']);
+        $this->assertEquals(Constants::ASYNC, $response[Constants::TYPE]);
 
         $this->checkPaymentStatus($paymentId, Status::CREATED);
 
@@ -68,7 +66,7 @@ class UpiMindgateSbiGatewayTest extends TestCase
         $response = $this->makeS2SCallbackAndGetContent($content);
 
         // We should have gotten a successful response
-        $this->assertEquals(['success' => true], $response);
+        $this->assertEquals([Constants::SUCCESS => true], $response);
 
         // The payment should now be authorized
         $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
@@ -92,12 +90,12 @@ class UpiMindgateSbiGatewayTest extends TestCase
 
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
 
-        $verify = $this->verifyPayment($payment['id']);
+        $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
 
         // TODO: Add more assertions
 
-        $this->assertEquals(true, $verify['gateway']['apiSuccess']);
-        $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);
+        $this->assertEquals(true, $verify[Constants::GATEWAY][Constants::API_SUCCESS]);
+        $this->assertEquals(true, $verify[Constants::GATEWAY][Constants::GATEWAY_SUCCESS]);
 
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
 
@@ -107,6 +105,9 @@ class UpiMindgateSbiGatewayTest extends TestCase
 
     // TODO: Test case for when we verify a payment without getting async callback response
 
+    /**
+     * This method tests the normal refund flow after a successful payment.
+     */
     public function testPaymentRefund()
     {
         $this->testPayment();
