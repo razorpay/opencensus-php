@@ -1,18 +1,33 @@
 import React, { Component } from 'react';
-import { openModal } from 'common/modal';
+import { openSlider } from 'common/modal';
 import Duplexes from 'ui/Duplexes';
 import Plan, { options } from './plan';
+import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import * as item from 'ui/Item';
 import AsyncButton from 'ui/AsyncButton';
 import Field from 'ui/Field';
+import { adminFetch } from 'util/fetch';
+
+let sharedNetworks = observable.box();
 
 @observer
 export default class PlanEntity extends Component {
   collection = new Plan(this.props.plan);
 
+  componentWillMount() {
+    adminFetch('pricing_supported_networks').then(networks => {
+      networks.netbanking = networks.bank;
+      networks.emi = networks.card;
+      sharedNetworks.set(networks);
+    });
+  }
+
   render() {
     let { props, items, save, updateName } = this.collection;
+    if (!sharedNetworks.get()) {
+      return <div class="spinner" />;
+    }
     return (
       <div>
         <header>
@@ -37,15 +52,23 @@ export default class PlanEntity extends Component {
 }
 
 // options.feature[item.feature]
-const namedKey = (item, name) => {
+const namedKey = (item, name, values = options[name]) => {
+  var value = item[name] || '';
+  var displayValue = value;
+  if (typeof values === 'object') {
+    displayValue = values[value];
+  }
+
   if (item.id || item.readonly) {
-    return options[name][item[name] || ''];
+    return displayValue;
+  } else if (typeof values === 'string') {
+    return <input name={name} value={value} onChange={item.onPropChange} />;
   } else {
     return (
-      <select name={name} value={item[name]} onChange={item.onPropChange}>
-        {Object.keys(options[name]).map(value => (
+      <select name={name} value={value} onChange={item.onPropChange}>
+        {Object.keys(values).map(value => (
           <option value={value} key={value}>
-            {options[name][value]}
+            {values[value]}
           </option>
         ))}
       </select>
@@ -58,12 +81,21 @@ const fields = [
   item => ['Feature', namedKey(item, 'feature')],
   item => item.feature && ['Method', namedKey(item, 'payment_method')],
   item =>
-    item.feature === 'payment' && [
-      'Card Type',
-      namedKey(item, 'payment_method_type'),
-    ],
+    item.feature === 'payment' &&
+    item.isCard && ['Card Type', namedKey(item, 'payment_method_type')],
+
   item => [
-    '',
+    'Network',
+    namedKey(
+      item,
+      'payment_network',
+      sharedNetworks.get()[item.payment_method] || options.payment_method
+    ),
+  ],
+  item => ['Issuer', namedKey(item, 'payment_issuer')],
+  item => ['International', namedKey(item, 'international')],
+  item => [
+    'Action',
     ((item.id || item.readonly) && (
       <AsyncButton
         class="link danger"
@@ -83,5 +115,5 @@ const fields = [
 ];
 
 export function openPricingEntity() {
-  openModal(<PlanEntity plan={this} />);
+  openSlider(<PlanEntity plan={this} />);
 }

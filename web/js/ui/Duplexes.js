@@ -45,18 +45,24 @@ export default class Duplexes extends Component {
   }
 }
 
-const Row = props => (
-  <div class="tr">
-    {props.fields.map((fieldFn, index) => {
-      var result = fieldFn(props.item);
-      return (
-        result && (
-          <div class="td" key={index}>
-            <div>{result[0]}</div>
-            <div>{result[1]}</div>
-          </div>
-        )
-      );
-    })}
-  </div>
-);
+@observer
+class Row extends Component {
+  render() {
+    let props = this.props;
+    return (
+      <div class="tr">
+        {props.fields.map((fieldFn, index) => {
+          var result = fieldFn(props.item);
+          return (
+            result && (
+              <div class="td" key={index}>
+                <div>{result[0]}</div>
+                <div>{result[1]}</div>
+              </div>
+            )
+          );
+        })}
+      </div>
+    );
+  }
+}
