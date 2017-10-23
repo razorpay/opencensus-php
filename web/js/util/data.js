@@ -24,6 +24,7 @@ export const wallets = {
   openwallet: 'Openwallet',
   mpesa: 'Mpesa',
   paytm: 'Paytm',
+  sbibuddy: 'SBI Buddy',
 };
 
 export const networks = {
