@@ -168,7 +168,8 @@ class Notify extends Processor\Notify
         {
             $mailable = new $mailableClass($this->template, true);
 
-            if ($this->isMerchantMailEnabledForMerchant() === true)
+            if (($this->isMerchantMailEnabledForMerchant() === true) and
+                ($this->merchant->isLinkedAccount() === false))
             {
                 Mail::queue($mailable);
             }
