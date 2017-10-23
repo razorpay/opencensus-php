@@ -67,10 +67,10 @@ class EmiFile extends Base\EmiFile
 
                 $amount = ($principalAmount * $merchantPayback)/100;
 
-                $subventionAmount = number_format((float)$amount, 2, '.', '');
+                $subventionAmount = $this->getFormattedAmount($amount);
             }
 
-            $emiAmount = $this->getEmiAmount($principalAmount, $emiPercent, $emiTenure);
+            $emiAmount = $this->getFormattedAmount($this->getEmiAmount($principalAmount, $emiPercent, $emiTenure));
 
             $notApplicable = 'NA';
 
@@ -87,7 +87,7 @@ class EmiFile extends Base\EmiFile
                 'Issuer'                       => 'YES',
                 'RRN'                          => $notApplicable,
                 'Auth Code'                    => $this->getAuthCode($emiPayment),
-                'Tx Amount'                    => $principalAmount,
+                'Tx Amount'                    => $this->getFormattedAmount($principalAmount),
                 'EMI_Offer'                    => $emiTenure.' Months',
                 'Manufacturer'                 => $notApplicable,
                 'Merchant Name'                => $notApplicable,
@@ -188,5 +188,10 @@ class EmiFile extends Base\EmiFile
         }
 
         parent::sendEmiFile($fileData, $mailData);
+    }
+
+    protected function getFormattedAmount($amount)
+    {
+        return number_format((float)$amount, 2, '.', '');
     }
 }
