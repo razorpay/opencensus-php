@@ -99,7 +99,11 @@ class Core extends Base\Core
 
                 $ba = $this->createBankAccount($input, $merchant, $this->mode);
 
-                $this->sendBankAccountChangeEmail($ba, $merchant);
+                // Do not email linked accounts
+                if ($merchant->isLinkedAccount() === false)
+                {
+                    $this->sendBankAccountChangeEmail($ba, $merchant);
+                }
 
                 $merchantDetails = $merchant->merchantDetail;
 
