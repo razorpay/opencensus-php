@@ -136,7 +136,8 @@ class Notify
                 }
             }
 
-            if ($this->isMerchantMailEnabled($mailable) === true)
+            if (($this->isMerchantMailEnabled($mailable) === true) and
+                ($this->merchant->isLinkedAccount() === false))
             {
                 Mail::queue($mailable);
             }
