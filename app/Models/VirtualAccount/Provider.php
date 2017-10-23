@@ -80,7 +80,10 @@ class Provider
             BankAccount::IFSC_CODE => 'RAZR0000001',
         ],
 
-        //Refer to NPCI docs for these values
+        /**
+         * Refer to NPCI docs for these values
+         * https://drive.google.com/drive/u/0/folders/0B4GPmD46vWAxTWRsUjlqSkJGWWM
+         **/
         self::BHARAT_QR => [
             BharatQr::QR_STRING    => '000201',
             BharatQr::METHOD       => 'QR',
