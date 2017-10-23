@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment;
 
+use Illuminate\Auth\Access\Gate;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC as BaseIFSC;
 
@@ -395,6 +396,7 @@ class Gateway
     public static $upiToGatewayMap = [
         Upi::HDFC   => Gateway::UPI_MINDGATE,
         Upi::ICICI  => Gateway::UPI_ICICI,
+        Upi::SBI    => Gateway::UPI_SBI
     ];
 
     public static $acquirerToCodeMap = [

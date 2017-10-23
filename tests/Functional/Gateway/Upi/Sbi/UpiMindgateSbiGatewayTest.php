@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Sbi;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment;
 use RZP\Constants\Entity;
 use RZP\Models\Payment\Method;
@@ -106,6 +108,60 @@ class UpiMindgateSbiGatewayTest extends TestCase
     // TODO: Test case for when we verify a payment without getting async callback response
 
     // TODO: File based refund flow - upload file
+    public function testRefundFileFlow()
+    {
+        // Create 3 payments
+        $this->testPayment();
+        $this->testPayment();
+        $this->testPayment();
+
+        // Refund 2 fully and the other one partially
+        $payments = $this->getEntities('payment', [], true);
+
+        $refundAmount = [50000, 50000, 10000];
+
+        foreach ($payments['items'] as $count => $payment)
+        {
+            $this->refundPayment($payment['id'], $refundAmount[$count]);
+        }
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        foreach ($refunds['items'] as $refund)
+        {
+            $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 5;
+            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+        }
+
+        // Refund a 4th payment
+        $this->testPayment();
+        $payment = $this->getLastEntity('payment', true);
+        $this->refundPayment($payment['id']);
+
+        $data = $this->generateRefundsExcelForSbiUpi();
+    }
+
+    protected function generateRefundsExcelForSbiUpi($date = false)
+    {
+        $this->ba->appAuth();
+
+        $request = [
+            'url' => '/refunds/excel',
+            'method' => 'post',
+            'content' => [
+                'method'    => 'upi',
+                'bank'      => 'sbi',
+                'frequency' => 'daily'
+            ],
+        ];
+
+        if ($date)
+        {
+            $request['content']['on'] = Carbon::now()->format('Y-m-d');
+        }
+
+        return $this->makeRequestAndGetContent($request);
+    }
 
     protected function checkPaymentStatus(string $id, string $status)
     {
