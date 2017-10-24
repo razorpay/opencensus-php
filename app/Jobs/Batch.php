@@ -83,7 +83,6 @@ class Batch extends Job implements ShouldQueue
                 TraceCode::BATCH_JOB_ERROR,
                 [
                     BatchModel\Entity::ID   => $this->id,
-                    BatchModel\Entity::TYPE => $batch->getType(),
                 ]);
         }
     }
