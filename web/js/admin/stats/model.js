@@ -88,19 +88,23 @@ class Stat {
       merchant_id: data.merchant_id,
       body,
       route_name: 'merchant_analytics',
-    }).then(({ data }) => {
-      if (!data.success) {
-        throw data.errors[0];
-      }
-      var result = data.data.result;
+    }).then(({ result }) => {
       var title = this.getTitle();
+
+      if (details.column === 'base_amount') {
+        result.forEach(r => {
+          r.displayValue = '₹' + getFormattedAmount(r.value);
+        });
+      } else if (details.agg_type === 'success_rate') {
+        result.forEach(r => {
+          r.displayValue = r.value + '%';
+        });
+      }
+
       if (result.length === 1) {
-        if (details.column === 'base_amount') {
-          result.forEach(r => (r.value = '₹' + getFormattedAmount(r.value)));
-        } else if (details.agg_type === 'success_rate') {
-          result.forEach(r => (r.value += '%'));
-        }
-        this.component.set(<Single title={title} value={result[0].value} />);
+        this.component.set(
+          <Single title={title} value={result[0].displayValue} />
+        );
       } else {
         if (result[0].timestamp) {
           this.component.set(<TimeSeries title={title} value={result} />);
