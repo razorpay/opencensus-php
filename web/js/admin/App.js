@@ -21,6 +21,7 @@ import WorkflowList from 'admin/workflows/List';
 import GroupList from 'admin/groups/List';
 import UserList from 'admin/users/List';
 import OrgsList from 'admin/organizations/List';
+import FieldMaps from 'admin/FieldMaps/List';
 // import RoleList from "admin/roles/List";
 
 export default class App extends Component {
@@ -43,6 +44,7 @@ export default class App extends Component {
             <Route path="/users" component={UserList} />
             {/* <Route path="/roles" component={RoleList} /> */}
             <Route path="/orgs" component={OrgsList} />
+            <Route path="/fieldmaps/:orgId" component={FieldMaps} />
           </Switch>
         </main>
         <header />

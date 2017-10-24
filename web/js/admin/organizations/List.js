@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { observer } from 'mobx-react';
+import { Link } from 'react-router-dom';
 
 import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
@@ -7,7 +7,6 @@ import { adminFetch } from 'util/fetch';
 import Form from 'ui/Form';
 import Table from 'ui/Table';
 import Field from 'ui/Field';
-import AsyncButton from 'ui/AsyncButton';
 
 import { showEntity } from './Entity';
 
@@ -22,11 +21,18 @@ const fields = [
 
 const Actions = item => (
   <div>
-    <div class="link">Edit</div>
+    <div class="link" onClick={showEntity}>
+      Edit
+    </div>
+    <br />
+    <div class="link">
+      <Link to={`/fieldmaps/${item.id}`}>FieldMaps</Link>
+    </div>
+    <br />
+    <div class="link danger">Delete</div>
   </div>
 );
 
-@observer
 class OrganizationsList extends Component {
   collection = new Collection({
     data: {
@@ -51,7 +57,7 @@ class OrganizationsList extends Component {
             <Field label="Search" />
           </Form>
         </div>
-        <Table model={this.collection} fields={fields} onClick={showEntity} />
+        <Table model={this.collection} fields={fields} />
       </div>
     );
   }
