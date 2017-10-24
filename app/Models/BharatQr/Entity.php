@@ -16,13 +16,6 @@ class Entity extends Base\PublicEntity
     const METHOD                    = 'method';
     const QR_STRING                 = 'qr_string';
 
-    // tag values
-    const MERCHANT_CATEGORY_TAG = '52045399';
-    const CURRENCY_CODE_TAG     = '5303356';
-    const COUNTRY_CODE_TAG      = '5802IN';
-    const MERCHANT_NAME_TAG     = '5908PAYMENTS';
-    const MERCHANT_CITY_TAG     = '6009BANGALORE';
-
     protected static $sign = 'bhqr';
 
     protected $entity = 'bharat_qr';
@@ -98,22 +91,19 @@ class Entity extends Base\PublicEntity
     {
         $visaTag = $this->getVisaTag();
 
-        //Removing for now. Visa Test cases fails it
-        //$masterCardTag = $this->getMasterCardTag();
+        $masterCardTag = $this->getMasterCardTag();
 
-        $masterCardTag = '';
+        $merchantCategoryTag = Constants::MERCHANT_CATEGORY_TAG;
 
-        $merchantCategoryTag = self::MERCHANT_CATEGORY_TAG;
-
-        $currencyCodeTag = self::CURRENCY_CODE_TAG;
+        $currencyCodeTag = Constants::CURRENCY_CODE_TAG;
 
         $amountTag = $this->getAmountTag();
 
-        $countryCode = self::COUNTRY_CODE_TAG;
+        $countryCode = Constants::COUNTRY_CODE_TAG;
 
-        $merchantName = self::MERCHANT_NAME_TAG;
+        $merchantName = Constants::MERCHANT_NAME_TAG;
 
-        $merchantCity = self::MERCHANT_CITY_TAG;
+        $merchantCity = Constants::MERCHANT_CITY_TAG;
 
         $additionalDetailsTag = $this->getAdditionalDetailsTag();
 

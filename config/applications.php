@@ -81,11 +81,6 @@ return [
         'secret'    => env('YESBANK_SECRET'),
     ],
 
-    VirtualAccount\Provider::BHARAT_QR => [
-        'visa_code'       => env('BHARAT_QR_VISA_CODE'),
-        'mastercard_code' => env('BHARAT_QR_MASTER_CODE'),
-    ],
-
     'lumberjack' => [
         'url'           => env('LUMBERJACK_URL'),
         'secret'        => env('LUMBERJACK_SECRET'),

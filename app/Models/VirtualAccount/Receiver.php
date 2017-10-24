@@ -3,6 +3,7 @@
 namespace RZP\Models\VirtualAccount;
 
 use App;
+use Config;
 use Lib\CRC16;
 use RZP\Exception;
 use RZP\Base\Luhn;
@@ -10,6 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\BharatQr\Constants;
 use RZP\Models\BharatQr\Entity as BharatQr;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
@@ -106,9 +108,7 @@ class Receiver
 
         $bharatQr->generateId();
 
-        $qrString = $this->buildDynamicQrString($bharatQr);
-
-        $bharatQr->setQrString($qrString);
+        $bharatQr = $this->generateDynamicQrString($bharatQr);
 
         $bharatQr->merchant()->associate($this->merchant);
 
@@ -121,29 +121,22 @@ class Receiver
 
     protected function getBharatQrEntityParams(Entity $virtualAccount)
     {
-        $provider = Provider::BHARAT_QR;
+        $visaIdentifier = $this->generateMerchantIdentifierForReceiver(self::BHARAT_QR, 'visa');
 
-        $visaIdentifier = $this->generateMerchantIdentifierForProvider($provider, 'visa');
+        $mastercardIdentifier = $this->generateMerchantIdentifierForReceiver(self::BHARAT_QR, 'mastercard');
 
-        $mastercardIdentifier = $this->generateMerchantIdentifierForProvider($provider, 'mastercard');
-
-        if (empty($virtualAccount->getAmountExpected()) === false)
-        {
-            $input[BharatQr::AMOUNT] = $virtualAccount->getAmountExpected();
-        }
-
-        $input[BharatQr::VISA_IDENTIFIER] = $visaIdentifier;
-
-        $input[BharatQr::MASTER_CARD_IDENTIFIER] = $mastercardIdentifier;
-
-        $defaultDetails = Provider::DEFAULT_DETAILS[$provider];
-
-        $input = array_merge($input, $defaultDetails);
+        $input = [
+            BharatQr::VISA_IDENTIFIER        => $visaIdentifier,
+            BharatQr::MASTER_CARD_IDENTIFIER => $mastercardIdentifier,
+            BharatQr::AMOUNT                 => $virtualAccount->getAmountExpected(),
+            BharatQr::QR_STRING              => Constants::VERSION_TAG,
+            BharatQr::METHOD                 => 'QR',
+        ];
 
         return $input;
     }
 
-    protected function buildDynamicQrString($bharatQr)
+    protected function generateDynamicQrString($bharatQr)
     {
         $qrString = $bharatQr->getQrString();
 
@@ -153,24 +146,31 @@ class Receiver
 
         $qrString .= $crc;
 
-        return $qrString;
+        $bharatQr->setQrString($qrString);
+
+        return $bharatQr;
     }
 
     /**
      * This will generate merchant identifier using network
      * network could be visa , mastercard or rupay
      *
-     * @param string $provider
+     * @param string $receiver
      * @param string $network
      * @return string
      */
-    protected function generateMerchantIdentifierForProvider(string $provider, string $network)
+    protected function generateMerchantIdentifierForReceiver(string $receiver, string $network)
     {
-        $acquirerCode = Provider::getAcquirerCode($provider, $network);
+        $acquirerCode = $this->getAcquirerCode($receiver, $network);
 
         $identifier  = $acquirerCode . '0' . $this->padWithRandomDigits(7, self::BHARAT_QR_NUMBER_SPACE);
 
         return $identifier . Luhn::computeCheckDigit($identifier);
+    }
+
+    protected function getAcquirerCode(string $receiver, string $network)
+    {
+        return Config::get('gateway.' . $receiver . '.' . $network . '_' . 'code');
     }
 
     protected function generateBankAccountInput()

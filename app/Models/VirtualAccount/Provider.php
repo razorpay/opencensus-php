@@ -2,7 +2,6 @@
 
 namespace RZP\Models\VirtualAccount;
 
-use Config;
 use RZP\Constants\Mode;
 use RZP\Models\BharatQr\Entity as BharatQr;
 use RZP\Models\BankAccount\Entity as BankAccount;
@@ -11,8 +10,6 @@ class Provider
 {
     const YESBANK   = 'yesbank';
     const KOTAK     = 'kotak';
-
-    const BHARAT_QR = 'bharat_qr';
 
     // Dashboard acts as a mock provider bank,
     // and is used to run tests.
@@ -79,15 +76,6 @@ class Provider
         self::DASHBOARD => [
             BankAccount::IFSC_CODE => 'RAZR0000001',
         ],
-
-        /**
-         * Refer to NPCI docs for these values
-         * https://drive.google.com/drive/u/0/folders/0B4GPmD46vWAxTWRsUjlqSkJGWWM
-         **/
-        self::BHARAT_QR => [
-            BharatQr::QR_STRING    => '000201',
-            BharatQr::METHOD       => 'QR',
-        ],
     ];
 
     const IP = [
@@ -108,11 +96,6 @@ class Provider
         $ifsc = self::DEFAULT_DETAILS[$provider][BankAccount::IFSC_CODE];
 
         return substr($ifsc, 0, 4);
-    }
-
-    public static function getAcquirerCode(string $provider, string $network)
-    {
-        return Config::get('applications.' . $provider . '.' . $network . '_' . 'code');
     }
 
     // Checks if request is originating from known IP for the given provider

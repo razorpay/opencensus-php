@@ -358,6 +358,11 @@ return [
     'sharp' => [
     ],
 
+    'bharat_qr' => [
+        'visa_code'       => env('BHARAT_QR_VISA_CODE'),
+        'mastercard_code' => env('BHARAT_QR_MASTER_CODE'),
+    ],
+
     'proxy_enabled' => env('PROXY_ENABLED'),
 
     'proxy_address' => env('PROXY_ADDRESS'),
