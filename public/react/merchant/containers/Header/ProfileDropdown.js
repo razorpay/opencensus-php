@@ -1,7 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
-import NewUIOnboardingDialog from 'merchant/components/NewUIOnboardingDialog';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import { logout, showOrHideTour } from 'merchant/modules/session';
@@ -93,19 +92,18 @@ export default class ProfileDropdown extends Component {
               </div>
             </div>
 
-            {!user.isOldUIEnabled
-              ? <div
-                  class="media media-action"
-                  onClick={() => this.props.showOrHideTour(true)}
-                >
-                  <div class="media-left">
-                    <div class="media-object">
-                      <i class="icon icon-tour" />
-                    </div>
-                  </div>
-                  <div class="media-body">Show Recent UI Changes</div>
+            <div
+              class="media media-action"
+              onClick={() => this.props.showOrHideTour(true)}
+            >
+              <div class="media-left">
+                <div class="media-object">
+                  <i class="icon icon-tour" />
                 </div>
-              : null}
+              </div>
+              <div class="media-body">Show Recent UI Changes</div>
+            </div>
+
             <div class="media media-action" onClick={this.submitFeedback}>
               <div class="media-left">
                 <div class="media-object">

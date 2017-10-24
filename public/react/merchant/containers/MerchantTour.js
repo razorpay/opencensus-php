@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { Tour, TourStep } from 'rzp/ui/Tour';
 import * as ModalActions from 'rzp/modules/modals';
 import LocalStorageService from 'rzp/utils/localStorage';
-import NewUIOnboardingDialog from 'merchant/components/NewUIOnboardingDialog';
 import { showOrHideTour } from 'merchant/modules/session';
 
 @connect(state => state.session, {
@@ -17,43 +16,11 @@ export default class MerchantTour extends Component {
     showOnboardingTour: false,
   };
 
-  componentWillMount() {
-    // Identify user already using new ui
-    if (
-      this.props.user.tags.indexOf('Newui') === -1 && // old users with old ui won't have this tag
-      !JSON.parse(LocalStorageService.getItem('tour_shown')) && // users who already seen the tour
-      !LocalStorageService.getItem('ngStorage-new_user_signup') // newly signing up users must have this defined
-    ) {
-      this.display(); // Showing to only old users with old design
-    }
-  }
-
   componentWillReceiveProps(nextProps) {
     if (this.props.isTourVisible !== nextProps.isTourVisible) {
       nextProps.isTourVisible ? this.showTour() : this.closeTour();
     }
   }
-
-  display = () => {
-    let isOldUIEnabled = this.props.user.isOldUIEnabled;
-
-    if (!isOldUIEnabled) {
-      window.setTimeout(() => {
-        this.props.openModal({
-          size: 'small',
-          component: (
-            <NewUIOnboardingDialog
-              onShowChanges={this.showTour}
-              onCancelClick={() => {
-                this.showTour();
-                this.setToLastInTour();
-              }}
-            />
-          ),
-        });
-      }, 1500);
-    }
-  };
 
   showTour = () => {
     this.props.closeModal();
