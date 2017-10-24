@@ -58,6 +58,7 @@ class Throttle
                 $traceData = [
                     'ip'    => $this->request->ip(),
                     'route' => $this->request->route()->getName(),
+                    'auth'  => $auth,
                     'limit' => $limit,
                     'count' => $throttle->count(),
                     'time'  => $time,
