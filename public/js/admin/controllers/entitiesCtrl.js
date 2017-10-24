@@ -293,8 +293,15 @@ app.controller('EntitiesCtrl', [
       dispute: {
         merchant_id: ['Merchant ID'],
         payment_id: ['Payment ID'],
-        status: ['open', 'under_review', 'won', 'lost'],
-        phase: ['chargeback', 'pre_arbitration', 'arbitration'],
+        status: ['all', 'open', 'under_review', 'won', 'lost', 'closed'],
+        phase: [
+          'all',
+          'chargeback',
+          'pre_arbitration',
+          'arbitration',
+          'retrieval',
+          'fraud',
+        ],
         amount: ['Amount'],
       },
       emi_plan: {
