@@ -6,13 +6,14 @@ use SoapFault;
 use SoapClient;
 use SoapHeader;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Exception;
 use SimpleXMLElement;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
+use Razorpay\Trace\Logger;
+use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Verify;
@@ -85,6 +86,8 @@ class Gateway extends Base\Gateway
      * prevent user tampering with the data while making a payment.
      *
      * @param array $input
+     * @param Base\Entity $wallet
+     * @throws Exception\GatewayErrorException
      */
     protected function verifyCallback(array $input, Base\Entity $wallet)
     {
@@ -259,9 +262,29 @@ class Gateway extends Base\Gateway
     {
         $data = $this->getVerifyRequestData($verify);
 
-        $verify->verifyResponse = $this->sendSoapRequest($data,
-                                                   SoapAction::QUERY_API,
-                                                   SoapMethod::QUERY_PAYMENT_TRANSACTION);
+        try
+        {
+            $verify->verifyResponse = $this->sendSoapRequest($data,
+                                                             SoapAction::QUERY_API,
+                                                             SoapMethod::QUERY_PAYMENT_TRANSACTION);
+        }
+        catch (\Exception $e)
+        {
+            //
+            // When soap faults or soap error's happen during verify, we must retry the verification call
+            //
+
+            $data = [
+                'payment_id' => $verify->input['payment']['id'],
+                'gateway'    => $this->gateway,
+            ];
+
+            $this->trace->traceException($e, Logger::INFO, TraceCode::GATEWAY_VERIFY_ERROR, $data);
+
+            $data['error_message'] = $e->getMessage();
+
+            throw new Exception\PaymentVerificationException($data, $verify, VerifyAction::RETRY);
+        }
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -276,8 +299,6 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment(Verify $verify)
     {
-        $content = $verify->verifyResponseContent;
-
         $status = $this->getVerifyStatus($verify);
 
         $verify->status = $status;
@@ -634,14 +655,6 @@ class Gateway extends Base\Gateway
             // We simply trace this at a warning level
             //
             $this->trace->warning(TraceCode::GATEWAY_SOAP_ERROR, $context);
-
-            // If the soap call fails during verify, we simply retry the verify call
-            if ($this->action === Action::VERIFY)
-            {
-                $verify = new Verify($this->gateway, $this->input);
-
-                throw new Exception\PaymentVerificationException($context, $verify, VerifyAction::RETRY);
-            }
         }
 
         return json_decode(json_encode($response), true);
