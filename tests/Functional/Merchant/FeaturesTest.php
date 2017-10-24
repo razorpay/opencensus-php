@@ -245,7 +245,7 @@ class FeaturesTest extends TestCase
      */
     public function testDeleteFeatureFromLiveAndVerifyPresenceInTest()
     {
-        $this->addFeatures( Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
 

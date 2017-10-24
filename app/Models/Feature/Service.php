@@ -237,7 +237,7 @@ class Service extends Base\Service
         return $settings;
     }
 
-    private function buildFeatureParams($input)
+    protected function buildFeatureParams($input)
     {
         $featureParams = new Base\Collection;
 

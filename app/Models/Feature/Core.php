@@ -95,8 +95,8 @@ class Core extends Base\Core
     }
 
     /**
-     * Notifies slack about the new onboarding responses submitted.
-     * Notifies only when the submission is created (by the merchant)
+     * Posts the feature onboarding responses to slack,
+     * We post only when the submission is created by the merchant and not admin
      *
      * @param Merchant\Entity $merchant
      * @param string          $productName
@@ -283,11 +283,11 @@ class Core extends Base\Core
 
         $settings = ($feature === null) ? $settings->all() : $settings->get($feature);
 
-        $settings = $settings->toArray();
+        $response = $settings->toArray();
 
-        $settings = $this->addFileUrlInResponseIfApplicable($merchant, $settings);
+        $this->updateFileUrlInResponseIfApplicable($response, $merchant);
 
-        return $settings;
+        return $response;
     }
 
     /**
@@ -374,37 +374,32 @@ class Core extends Base\Core
     /**
      * Adds the vendor_agreement file URL to the response if the feature is marketplace
      *
-     * @param Merchant\Entity $merchant
-     * @param                 $settings
-     *
-     * @return array
-     */
-    protected function addFileUrlInResponseIfApplicable(Merchant\Entity $merchant, $settings): array
+     * @param   array               $response
+     * @param   Merchant\Entity     $merchant
+     *     */
+    protected function updateFileUrlInResponseIfApplicable(array & $response, Merchant\Entity $merchant)
     {
         $featureName = Constants::MARKETPLACE;
 
         $question = Constants::VENDOR_AGREEMENT;
 
-        if (isset($settings[$featureName][$question]) === true)
+        if (isset($response[$featureName][$question]) === true)
         {
-            $fileId = $settings[$featureName][$question];
+            $fileId = $response[$featureName][$question];
 
             $fileUrl = $this->getSignedUrl($fileId, $merchant->getId());
 
-            $settings[$featureName][$question] = $fileUrl;
+            $response[$featureName][$question] = $fileUrl;
         }
-
-        return $settings;
     }
 
     /**
-     * Processes the file, primarily,
-     * $input['marketplace']['vendor_agreement'] right now.
-     * Need to make it generic enough for any other key
+     * Uploads the vendor agreement file to S3 via UFH for the marketplace feature
      *
-     * @param $input
+     * @param   array               $input
+     * @param   Merchant\Entity     $merchant
      */
-    protected function processFiles(& $input, Merchant\Entity $merchant)
+    protected function processFiles(array & $input, Merchant\Entity $merchant)
     {
         $featureName = Constants::MARKETPLACE;
 
