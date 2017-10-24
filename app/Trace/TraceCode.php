@@ -889,6 +889,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_FILE_JOB_RECEIVED                     = 'GATEWAY_FILE_JOB_RECEIVED';
     const GATEWAY_FILE_JOB_HANDLED                      = 'GATEWAY_FILE_JOB_HANDLED';
     const GATEWAY_FILE_JOB_ERROR                        = 'GATEWAY_FILE_JOB_ERROR';
+    const GATEWAY_FILE_REFUND_ENTITIES                  = 'GATEWAY_FILE_REFUND_ENTITIES';
+    const GATEWAY_FILE_CLAIM_ENTITIES                   = 'GATEWAY_FILE_CLAIM_ENTITIES';
 
     const VERIFY_ENROLLMENT_RESPONSE                    = 'VERIFY_ENROLLMENT_RESPONSE';
 
