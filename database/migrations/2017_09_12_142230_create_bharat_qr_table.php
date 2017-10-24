@@ -62,6 +62,22 @@ class CreateBharatQrTable extends Migration
 
         });
 
+        switch(DB::connection()->getPDO()->getAttribute(PDO::ATTR_DRIVER_NAME))
+        {
+            case 'mysql':
+                DB::statement('ALTER TABLE bharat_qr CHANGE identifier_padding identifier_padding INT(10) AUTO_INCREMENT');
+                break;
+
+            case 'sqlite':
+                DB::statement('ALTER TABLE bharat_qr DROP COLUMN identifier_padding');
+                DB::statement('ALTER TABLE bharat_qr ADD COLUMN identifier_padding INT(10) AUTO_INCREMENT');
+                break;
+
+            default:
+                throw new \Exception('Driver not supported.');
+                break;
+        }
+
         DB::statement('ALTER TABLE bharat_qr CHANGE identifier_padding identifier_padding INT(10) AUTO_INCREMENT');
 
         // This needs to be done here because migrations are run in order of
