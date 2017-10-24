@@ -17,22 +17,22 @@ class Constants extends Base\Constants
     ];
 
     const HEADER_MAP = [
-        Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => 'HDFC EMandate Registration',
+        Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => 'HDFC EMandate Register',
         Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => 'HDFC EMandate Debit',
     ];
 
     const SUBJECT_MAP = [
-        Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => 'HDFC EMandate Registration File for ',
+        Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => 'HDFC EMandate Register File for ',
         Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => 'HDFC EMandate Debit File for ',
     ];
 
     const MAILTAG_MAP = [
-        Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => MailTags::HDFC_EMANDATE_REGISTRATION_MAIL,
+        Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => MailTags::HDFC_EMANDATE_REGISTER_MAIL,
         Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => MailTags::HDFC_EMANDATE_DEBIT_MAIL,
     ];
 
     const BODY_MAP = [
-        Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => 'PFA EMandate Registration request file.',
+        Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => 'PFA EMandate Register request file.',
         Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => 'PFA EMandate Debit request file.',
     ];
 

@@ -9,6 +9,7 @@ use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Gateway\Netbanking;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as Headings;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\FileStore;
 use RZP\Models\Gateway\File\Processor\EMandate\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -22,14 +23,16 @@ class NetbankingHdfc extends Base
     const GATEWAY       = Payment\Gateway::NETBANKING_HDFC;
     const FILE_NAME     = 'HDFC_EMandate_Debit';
     const EXTENSION     = FileStore\Format::XLSX;
-    const FILE_TYPE     = FileStore\Type::HDFC_EMANDATE_REGISTRATION;
+    const FILE_TYPE     = FileStore\Type::HDFC_EMANDATE_DEBIT;
 
     public function fetchEntities(): PublicCollection
     {
         $begin = $this->gatewayFile->getBegin();
         $end = $this->gatewayFile->getEnd();
 
-        $payments = $this->repo->payment->fetchPendingEMandateDebit($gateway, $from, $to);
+        $gateway = $this->gatewayFile->getTarget();
+
+        $payments = $this->repo->payment->fetchPendingEMandateDebit($gateway, $begin, $end);
 
         $paymentIds = $payments->pluck(Payment\Entity::ID)->toArray();
 
@@ -138,6 +141,8 @@ class NetbankingHdfc extends Base
 
             $rows[] = $row;
         }
+
+        $this->trace->info(TraceCode::EMANDATE_DEBIT_REQUEST_FILE_DATA, ['rows' => $rows]);
 
         return $rows;
     }

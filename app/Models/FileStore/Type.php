@@ -13,7 +13,7 @@ class Type
     const KOTAK_NETBANKING_REFUND           = 'kotak_netbanking_refund';
 
     const HDFC_NETBANKING_REFUND            = 'hdfc_netbanking_refund';
-    const HDFC_EMANDATE_REGISTRATION        = 'hdfc_emandate_registration';
+    const HDFC_EMANDATE_REGISTER            = 'hdfc_emandate_register';
     const HDFC_EMANDATE_DEBIT               = 'hdfc_emandate_debit';
 
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
@@ -95,7 +95,7 @@ class Type
             self::KOTAK_NETBANKING_CLAIM,
             self::KOTAK_NETBANKING_REFUND,
             self::HDFC_NETBANKING_REFUND,
-            self::HDFC_EMANDATE_REGISTRATION,
+            self::HDFC_EMANDATE_REGISTER,
             self::HDFC_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
@@ -172,7 +172,7 @@ class Type
         self::KOTAK_NETBANKING_CLAIM,
         self::KOTAK_NETBANKING_REFUND,
         self::HDFC_NETBANKING_REFUND,
-        self::HDFC_EMANDATE_REGISTRATION,
+        self::HDFC_EMANDATE_REGISTER,
         self::HDFC_EMANDATE_DEBIT,
         self::CORPORATION_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
@@ -199,7 +199,7 @@ class Type
         self::SETTLEMENT_BUCKET_CONFIG => [
             self::KOTAK_NETBANKING_REFUND,
             self::HDFC_NETBANKING_REFUND,
-            self::HDFC_EMANDATE_REGISTRATION,
+            self::HDFC_EMANDATE_REGISTER,
             self::HDFC_EMANDATE_DEBIT,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,

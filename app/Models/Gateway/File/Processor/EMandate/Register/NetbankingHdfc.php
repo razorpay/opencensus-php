@@ -23,7 +23,7 @@ class NetbankingHdfc extends Base
     const GATEWAY       = Payment\Gateway::NETBANKING_HDFC;
     const FILE_NAME     = 'HDFC_EMandate_Registration';
     const EXTENSION     = FileStore\Format::XLSX;
-    const FILE_TYPE     = FileStore\Type::HDFC_EMANDATE_REGISTRATION;
+    const FILE_TYPE     = FileStore\Type::HDFC_EMANDATE_REGISTER;
 
     public function fetchEntities(): PublicCollection
     {
