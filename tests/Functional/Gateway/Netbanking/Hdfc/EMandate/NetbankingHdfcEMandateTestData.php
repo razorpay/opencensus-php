@@ -1,5 +1,8 @@
 <?php
 
+use Carbon\Carbon;
+
+use RZP\Constants\Timezone;
 use RZP\Models\Payment;
 
 return [
@@ -29,4 +32,37 @@ return [
         'used_count'                => 1,
         'recurring_failure_reason'  => null,
     ],
+
+    'testEMandateRegistration' => [
+        'request' => [
+            'content' => [
+                'type'    => 'emandate_register',
+                'targets' => ['netbanking_hdfc'],
+                'begin'   => Carbon::today(Timezone::IST)->timestamp,
+                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp,
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'file_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emandate@razorpay.com',
+                        'type'                => 'emandate_register',
+                        'target'              => 'netbanking_hdfc',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
+            ]
+        ]
+    ]
 ];

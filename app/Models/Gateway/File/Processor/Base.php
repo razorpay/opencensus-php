@@ -82,6 +82,9 @@ abstract class Base extends Core
      */
     protected function handleProcessingFailure(Exception\GatewayFileException $e)
     {
+        throw $e;
+
+
         $this->trace->traceException($e);
 
         if ($this->shouldNotReportFailure($e->getCode()) === true)
@@ -169,7 +172,7 @@ abstract class Base extends Core
      */
     abstract public function checkIfValidDataAvailable(PublicCollection $entites);
 
-    abstract public function generateData(PublicCollection $entites): array;
+    abstract public function generateData(PublicCollection $entites);
 
     abstract public function createFile();
 

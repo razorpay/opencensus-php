@@ -7,13 +7,14 @@ use RZP\Mail\Base\Constants as MailConstants;
 
 class Constants
 {
-    const HDFC     = 'hdfc';
-    const AXIS     = 'axis';
-    const ICICI    = 'icici';
-    const KOTAK    = 'kotak';
-    const FEDERAL  = 'federal';
-    const INDUSIND = 'indusind';
-    const RBL      = 'rbl';
+    const HDFC              = 'hdfc';
+    const AXIS              = 'axis';
+    const ICICI             = 'icici';
+    const KOTAK             = 'kotak';
+    const FEDERAL           = 'federal';
+    const INDUSIND          = 'indusind';
+    const RBL               = 'rbl';
+    const NETBANKING_HDFC   = 'netbanking_hdfc';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -38,6 +39,9 @@ class Constants
             self::RBL,
             self::INDUSIND,
         ],
+        Type::EMANDATE_REGISTER => [
+            self::NETBANKING_HDFC,
+        ],
     ];
 
     const TYPE_SENDER_MAPPING = [
@@ -45,6 +49,7 @@ class Constants
         Type::CLAIM    => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
         Type::COMBINED => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
         Type::EMI      => MailConstants::MAIL_ADDRESSES[MailConstants::EMI],
+        Type::EMANDATE_REGISTER => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
     ];
 
     const RECIPIENTS_MAP = [
@@ -58,6 +63,9 @@ class Constants
             self::RBL      => ['rbl.netbanking.refunds@razorpay.com'],
             self::FEDERAL  => ['federal.netbanking.refunds@razorpay.com'],
             self::INDUSIND => ['indusind.netbanking.refunds@razorpay.com'],
+        ],
+        Type::EMANDATE_REGISTER => [
+            self::NETBANKING_HDFC => ['hdfc.emandate@razorpay.com'],
         ],
     ];
 }

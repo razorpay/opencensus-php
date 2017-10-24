@@ -1,0 +1,43 @@
+<?php
+
+namespace RZP\Mail\Gateway\EMandate;
+
+use RZP\Constants\MailTags;
+use RZP\Mail\Base;
+use RZP\Models\Payment\Gateway;
+
+class Constants extends Base\Constants
+{
+    const REGISTER  = 'register';
+    const DEBIT     = 'debit';
+
+    const RECIPIENT_EMAILS_MAP = [
+        Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => ['hdfc.emandate@razorpay.com'],
+        Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => ['hdfc.emandate@razorpay.com'],
+    ];
+
+    const HEADER_MAP = [
+        Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => 'HDFC EMandate Registration',
+        Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => 'HDFC EMandate Debit',
+    ];
+
+    const SUBJECT_MAP = [
+        Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => 'HDFC EMandate Registration File for ',
+        Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => 'HDFC EMandate Debit File for ',
+    ];
+
+    const MAILTAG_MAP = [
+        Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => MailTags::HDFC_EMANDATE_REGISTRATION_MAIL,
+        Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => MailTags::HDFC_EMANDATE_DEBIT_MAIL,
+    ];
+
+    const BODY_MAP = [
+        Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => 'PFA EMandate Registration request file.',
+        Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => 'PFA EMandate Debit request file.',
+    ];
+
+    const MAIL_TEMPLATE_MAP = [
+        Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => 'emails.message',
+        Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => 'emails.message',
+    ];
+}

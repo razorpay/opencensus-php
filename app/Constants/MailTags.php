@@ -53,6 +53,9 @@ class MailTags
     const SUBSCRIPTION_COMPLETED           = 'subscription_completed';
     const SUBSCRIPTION_INVOICE_CHARGED     = 'subscription_invoice_charged';
 
+    const HDFC_EMANDATE_REGISTRATION_MAIL  = 'hdfc_emandate_registration_mail';
+    const HDFC_EMANDATE_DEBIT_MAIL         = 'hdfc_emandate_debit_mail';
+
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
     const AUTH_REMINDER                    = 'auth_reminder';
