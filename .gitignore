@@ -42,3 +42,6 @@ environment/.env.testing_docker
 !environment/.env.beta
 !environment/.env.alpha
 !environment/*.j2
+
+#ignore IDE configs
+jsconfig.json
