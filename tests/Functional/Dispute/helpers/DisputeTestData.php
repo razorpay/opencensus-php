@@ -438,4 +438,18 @@ return [
             'content' => [],
         ],
     ],
+
+    'testDisputeMerchantDocumentUpload' => [
+        'request' => [
+            'content' => [
+                'foo'       => 'bar',
+            ],
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

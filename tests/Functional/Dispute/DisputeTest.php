@@ -2,8 +2,10 @@
 
 namespace RZP\Tests\Functional\Dispute;
 
+use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 
 class DisputeTest extends TestCase
 {
@@ -304,6 +306,17 @@ class DisputeTest extends TestCase
         $this->assertEquals('adjustment', $txn['type']);
     }
 
+    public function testDisputeMerchantDocumentUpload()
+    {
+        $testData = $this->updateUploadDocumentData();
+
+        $testData['request']['files'][DisputeFileEntity::FILES] = $this->getTestFiles();
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals(2, sizeof($content));
+    }
+
     // ---------------------------- helper methods-------------------------------
 
     protected function updateCreateTestData(string $paymentId = null): array
@@ -345,5 +358,61 @@ class DisputeTest extends TestCase
         $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
 
         return $testData;
+    }
+
+    protected function updateUploadDocumentData(array $attributes = []): array
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+        $name = $trace[1]['function'];
+
+        $dispute = $this->fixtures->create('dispute', $attributes);
+
+        $this->merchant = $dispute->merchant;
+
+        $testData = &$this->testData[$name];
+
+        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId() . '/upload';
+
+        return $testData;
+    }
+
+    protected function createUploadedFile(string $filePath, string $mimeType = null, int $fileSize = -1)
+    {
+        $this->assertFileExists($filePath);
+
+        $mimeType = $mimeType ?: 'image/png';
+
+        $fileSize = ($fileSize === -1) ? filesize($filePath) : $fileSize;
+
+        $uploadedFile = new UploadedFile(
+            $filePath,
+            $filePath,
+            $mimeType,
+            $fileSize,
+            null,
+            true
+        );
+
+        return $uploadedFile;
+    }
+
+    protected function getTestFiles()
+    {
+        $files = [];
+
+        $originalFile = $this->createUploadedFile('tests/Functional/Storage/a.png');
+
+        copy($originalFile, 'tests/Functional/Storage/a2.png');
+
+        $files[0] = $this->createUploadedFile('tests/Functional/Storage/a2.png');
+
+        $originalFile = $this->createUploadedFile('tests/Functional/Storage/chargeback_codes.pdf');
+
+        copy($originalFile, 'tests/Functional/Storage/chargeback_codes2.pdf');
+
+        $files[1] = $this->createUploadedFile('tests/Functional/Storage/chargeback_codes2.pdf');
+
+        return $files;
     }
 }

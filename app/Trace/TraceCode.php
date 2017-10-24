@@ -597,6 +597,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AWS_S3_LOGO_UPLOAD                        = 'AWS_S3_LOGO_UPLOAD';
     const AWS_S3_LOGO_UPLOADED                      = 'AWS_S3_LOGO_UPLOADED';
     const AWS_FILE_UPLOAD                           = 'AWS_FILE_UPLOAD';
+    const AWS_FILE_UPLOADED                         = 'AWS_FILE_UPLOADED';
     const AWS_FILE_DOWNLOAD                         = 'AWS_FILE_DOWNLOAD';
     const AWS_FILE_DELETE                           = 'AWS_FILE_DELETE';
     const LOGO_IMAGE_DETAILS                        = 'LOGO_IMAGE_DETAILS';
@@ -852,6 +853,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_ADJUSTMENT_MIGRATE_REQUEST            = 'DISPUTE_ADJUSTMENT_MIGRATE_REQUEST';
     const DISPUTE_ADJUSTMENT_MIGRATE_ERROR              = 'DISPUTE_ADJUSTMENT_MIGRATE_ERROR';
     const DISPUTE_REASON_CREATE                         = 'DISPUTE_REASON_CREATE';
+    const DISPUTE_FILE_CREATE                           = 'DISPUTE_FILE_CREATE';
+    const DISPUTE_FILE_DETAILS                          = 'DISPUTE_FILE_DETAILS';
 
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
