@@ -14,14 +14,13 @@ export class SingleValue extends Component {
   }
 }
 
-export class TimeSeries extends Component {
+export class Chart extends Component {
   render() {
-    let { title, data, options } = this.props;
-
+    let { title, data, options, type } = this.props;
     return (
       <div>
         <header>{title}</header>
-        <div ref={el => el && data && makeChart(el, data, options, 'line')} />
+        <div ref={el => el && data && makeChart(el, data, options, type)} />
       </div>
     );
   }

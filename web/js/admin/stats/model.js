@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observable } from 'mobx';
 import { notifyError } from 'common/modal';
 import { adminPost } from 'util/fetch';
-import { Single, TimeSeries } from './graphs';
+import { Single, Chart } from './graphs';
 import { getFormattedAmount } from 'util/index';
 
 const defaultData = {
@@ -91,21 +91,11 @@ class Stat {
     }).then(({ result }) => {
       var title = this.getTitle();
 
-      if (details.column === 'base_amount') {
-        result.forEach(r => {
-          r.displayValue = '₹' + getFormattedAmount(r.value);
-        });
-      } else if (details.agg_type === 'success_rate') {
-        result.forEach(r => {
-          r.displayValue = r.value + '%';
-        });
-      }
-
       if (result.length === 1) {
         this.component.set(
           <Single title={title} value={result[0].displayValue} />
         );
-      } else {
+      } else if (result.length > 0) {
         if (result[0].timestamp) {
           // This is a time-oritented result
           let timeData = {
@@ -116,12 +106,15 @@ class Stat {
             timeData.labels.push(element.timestamp);
             timeData.series[0].push(element.value);
           }, this);
+
+          // We want to display at-most 10 labels, so we select a number we will perform MOD with
+          let labelInterpolationMod = Math.ceil(timeData.labels.length / 10);
           let chartOptions = {
             showPoint: false,
             axisX: {
               showGrid: false,
               labelInterpolationFnc: function(value, index, labels) {
-                if (index % 20 === 0)
+                if (index % labelInterpolationMod === 0)
                   return new Date(value * 1000).toDateString();
                 return null;
               },
@@ -132,7 +125,52 @@ class Stat {
             lineSmooth: false,
           };
           this.component.set(
-            <TimeSeries title={title} data={timeData} options={chartOptions} />
+            <Chart
+              type="line"
+              title={title}
+              data={timeData}
+              options={chartOptions}
+            />
+          );
+        } else {
+          // This is not a time-oriented result
+          let barData = {
+            labels: [],
+            series: [[]],
+          };
+          result.forEach(function(element) {
+            barData.labels.push(element.method);
+            barData.series[0].push(element.value);
+          }, this);
+          let chartOptions = {
+            axisY: {
+              labelInterpolationFnc: function(value, index, labels) {
+                let label = labels[index];
+
+                if (label > 100000000) {
+                  label = Math.round(label / 10000000).toString() + ' cr';
+                } else if (label > 1000000) {
+                  label = Math.round(label / 100000).toString() + ' L';
+                } else if (label > 10000) {
+                  label = Math.round(label / 1000).toString() + ' K';
+                }
+
+                if (details.column === 'base_amount') {
+                  label = '₹' + label;
+                } else if (details.agg_type === 'success_rate') {
+                  label = '%' + label;
+                }
+                return label;
+              },
+            },
+          };
+          this.component.set(
+            <Chart
+              type="bar"
+              title={title}
+              data={barData}
+              options={chartOptions}
+            />
           );
         }
       }
