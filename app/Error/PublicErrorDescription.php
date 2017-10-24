@@ -467,7 +467,7 @@ class PublicErrorDescription
     const BAD_REQUEST_OLD_PASSWORD_MISMATCH                                     = 'Old Password mismatch';
     const BAD_REQUEST_CAPTCHA_FAILED                                            = 'Captcha Failed';
 
-    const BAD_REQUEST_SUBUSER_CREATE_NOT_ALLOWED                                = 'Sub user creation not allowed';
+    const BAD_REQUEST_SUBUSER_CREATE_NOT_ALLOWED                                = 'Sub user creation not allowed for this role';
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                           = 'Invitation is already sent to this email';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                            = 'User with given email is already a member of the team';
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                = 'SuperAdmin/Admin cannot edit their own preferences';

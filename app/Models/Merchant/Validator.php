@@ -127,6 +127,7 @@ class Validator extends Base\Validator
 
     protected static $createSubMerchantUserRules = [
         'user_id'               => 'required|alpha_num|size:14',
+        'merchant_id'           => 'required|alpha_num|size:14',
         'password'              => 'required|between:7,50|confirmed|numbers|letters',
         'password_confirmation' => 'required|between:7,50',
         Entity::EMAIL           => 'required|email',
