@@ -246,7 +246,7 @@ export default class OnBoarding extends Component {
                     <div class="m-t">
                       {heading === 'Razorpay Subscriptions' ? (
                         <span>
-                          We will review your request and get back to you
+                          We will review your request and get back to you.
                         </span>
                       ) : (
                         <span>
