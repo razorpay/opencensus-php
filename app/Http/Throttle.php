@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\ThrottleException;
+use RZP\Exception\BaseException;
 use GrahamCampbell\Throttle\Facades\Throttle as ThrottleFacade;
 
 class Throttle
@@ -33,6 +34,18 @@ class Throttle
             return;
         }
 
+        try
+        {
+            $this->throttle($auth);
+        }
+        catch (BaseException $e)
+        {
+            $this->trace->traceException($e);
+        }
+    }
+
+    protected function throttle(string $auth)
+    {
         $mode = $this->getMode($auth);
 
         $limits = $this->config['limits'][$mode];
