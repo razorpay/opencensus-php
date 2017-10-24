@@ -170,6 +170,11 @@ class Throttle
 
         $mode = substr($key, 4, 4);
 
-        return $mode ?: Mode::LIVE;
+        if (Mode::exists($mode) === false)
+        {
+            $mode = Mode::LIVE;
+        }
+
+        return $mode;
     }
 }
