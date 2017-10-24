@@ -70,7 +70,7 @@ class CreateBharatQrTable extends Migration
 
             case 'sqlite':
                 DB::statement('ALTER TABLE bharat_qr DROP COLUMN identifier_padding');
-                DB::statement('ALTER TABLE bharat_qr ADD COLUMN identifier_padding INT(10) AUTO_INCREMENT');
+                DB::statement('ALTER TABLE bharat_qr ADD COLUMN identifier_padding int AUTOINCREMENT');
                 break;
 
             default:
