@@ -197,7 +197,7 @@ class Service extends Base\Service
      */
     public function postOnboardingSubmissions(array $input, string $feature): bool
     {
-        $status = (new Core)->postOnboardingSubmissions($input, $feature);
+        $status = (new Core)->postOnboardingSubmissions($this->merchant, $input, $feature);
 
         return $status;
     }
@@ -232,7 +232,7 @@ class Service extends Base\Service
      */
     public function getOnboardingSubmissions(string $feature = null)
     {
-        $settings = (new Core)->getOnboardingSubmissions($feature);
+        $settings = (new Core)->getOnboardingSubmissions($this->merchant, $feature);
 
         return $settings;
     }

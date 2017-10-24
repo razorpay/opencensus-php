@@ -98,14 +98,15 @@ class Core extends Base\Core
      * Notifies slack about the new onboarding responses submitted.
      * Notifies only when the submission is created (by the merchant)
      *
-     * @param string $productName
+     * @param Merchant\Entity $merchant
+     * @param string          $productName
      */
-    public function notifyFeatureOnboardingFormSubmitOnSlack(string $productName)
+    protected function notifyFeatureOnboardingFormSubmitOnSlack(
+        Merchant\Entity $merchant,
+        string $productName)
     {
         if ($this->app['basicauth']->isAdminAuth() === false)
         {
-            $merchant = $this->merchant;
-
             $isLive = ($merchant->isLive() === true) ? "true" : "false";
 
             $isActivated = ($merchant->isActivated() === true) ? "true" : "false";
@@ -113,7 +114,7 @@ class Core extends Base\Core
             $merchantDetails = $merchant->merchantDetail;
 
             $submitted = (($merchantDetails !== null) and
-                ($merchantDetails->isSubmitted() === true)) ? "true" : "false";
+                            ($merchantDetails->isSubmitted() === true)) ? "true" : "false";
 
             $data = [
                 'id'                        => $merchant->getId(),
@@ -123,7 +124,7 @@ class Core extends Base\Core
                 'product'                   => $productName
             ];
 
-            $this->logActionToSlack($this->merchant, SlackActions::PRODUCT_ACTIVATION, $data);
+            $this->logActionToSlack($merchant, SlackActions::PRODUCT_ACTIVATION, $data);
         }
     }
 
@@ -184,18 +185,19 @@ class Core extends Base\Core
     }
 
     /**
-     * @param array  $input
-     * @param string $feature
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     * @param string          $feature
      *
      * @return bool
      * @throws Exception\BadRequestException
      */
-    public function postOnboardingSubmissions(array $input, string $feature): bool
+    public function postOnboardingSubmissions(Merchant\Entity $merchant, array $input, string $feature): bool
     {
         // Prevent the merchant from re-submitting
-        $data = Accessor::for ($this->merchant, Constants::ONBOARDING)
-            ->get($feature)
-            ->toArray();
+        $data = Accessor::for($merchant, Constants::ONBOARDING)
+                        ->get($feature)
+                        ->toArray();
 
         if (count($data) > 0)
         {
@@ -207,7 +209,7 @@ class Core extends Base\Core
 
         $data[$feature] = $input;
 
-        $status = $this->processOnboardingResponses(Constants::CREATE, $data, $this->merchant);
+        $status = $this->processOnboardingResponses(Constants::CREATE, $data, $merchant);
 
         return $status;
     }
@@ -233,7 +235,8 @@ class Core extends Base\Core
             [
                 'action'      => $action,
                 'data'        => $data,
-                'merchant_id' => $merchantId]);
+                'merchant_id' => $merchantId
+            ]);
 
         $featureName = array_keys($data)[0] ?? null;
 
@@ -247,9 +250,9 @@ class Core extends Base\Core
             // so no need to delete the old file.
             $this->processFiles($data, $merchant);
 
-            Accessor::for ($merchant, Constants::ONBOARDING)
-                ->upsert($data)
-                ->save();
+            Accessor::for($merchant, Constants::ONBOARDING)
+                    ->upsert($data)
+                    ->save();
 
             // Set the product activation status as pending
             if ($action === Constants::CREATE)
@@ -260,31 +263,36 @@ class Core extends Base\Core
                     Merchant\Detail\Entity::PENDING);
             }
 
-            $this->notifyFeatureOnboardingFormSubmitOnSlack($featureName);
+            $this->notifyFeatureOnboardingFormSubmitOnSlack($merchant, $featureName);
         }
 
         return $saved;
     }
 
     /**
-     * @param string|null $feature
+     * @param Merchant\Entity $merchant
+     * @param string|null     $feature
      *
      * @return array
      */
-    public function getOnboardingSubmissions(string $feature = null): array
+    public function getOnboardingSubmissions(
+        Merchant\Entity $merchant,
+        string $feature = null): array
     {
-        $settings = Accessor::for($this->merchant, Constants::ONBOARDING);
+        $settings = Accessor::for($merchant, Constants::ONBOARDING);
 
         $settings = ($feature === null) ? $settings->all() : $settings->get($feature);
 
         $settings = $settings->toArray();
 
-        $settings = $this->addFileUrlInResponseIfApplicable($settings);
+        $settings = $this->addFileUrlInResponseIfApplicable($merchant, $settings);
 
         return $settings;
     }
 
     /**
+     * Updates the feature activation status in the merchant details table
+     *
      * @param string $merchantId
      * @param string $featureName
      * @param string $status
@@ -292,7 +300,10 @@ class Core extends Base\Core
      * @return bool
      * @throws Exception\BadRequestException
      */
-    public function updateFeatureActivationStatus(string $merchantId, string $featureName, string $status): bool
+    public function updateFeatureActivationStatus(
+        string $merchantId,
+        string $featureName,
+        string $status): bool
     {
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
 
@@ -300,10 +311,10 @@ class Core extends Base\Core
 
         $attributeName = constant(MerchantDetail::class . '::' . strtoupper($attributeName));
 
-        if (in_array($status, Constants::$onboardingStatuses, true) === false)
+        if (in_array($status, Constants::ONBOARDING_STATUSES, true) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ONBOARDING_STATUS_NOT_RECOGNIZED,
+                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ONBOARDING_STATUS_INVALID,
                 $attributeName,
                 [$featureName, $status]);
         }
@@ -363,11 +374,12 @@ class Core extends Base\Core
     /**
      * Adds the vendor_agreement file URL to the response if the feature is marketplace
      *
-     * @param $settings
+     * @param Merchant\Entity $merchant
+     * @param                 $settings
      *
      * @return array
      */
-    protected function addFileUrlInResponseIfApplicable($settings): array
+    protected function addFileUrlInResponseIfApplicable(Merchant\Entity $merchant, $settings): array
     {
         $featureName = Constants::MARKETPLACE;
 
@@ -377,7 +389,7 @@ class Core extends Base\Core
         {
             $fileId = $settings[$featureName][$question];
 
-            $fileUrl = $this->getSignedUrl($fileId, $this->merchant->getId());
+            $fileUrl = $this->getSignedUrl($fileId, $merchant->getId());
 
             $settings[$featureName][$question] = $fileUrl;
         }

@@ -125,6 +125,11 @@ class Constants
     const AVAILABLE_RESPONSES = 'available_responses';
     const MANDATORY           = 'mandatory';
 
+    const ONBOARDING_STATUSES = [
+        MerchantDetail\Entity::PENDING,
+        MerchantDetail\Entity::REJECTED,
+        MerchantDetail\Entity::APPROVED,
+    ];
 
     /**
      * Features that are exposed to the merchant and can be
@@ -269,12 +274,6 @@ class Constants
             self::USE_CASE,
             self::EXPECTED_MONTHLY_REVENUE
         ]
-    ];
-
-    public static $onboardingStatuses = [
-        MerchantDetail\Entity::PENDING,
-        MerchantDetail\Entity::REJECTED,
-        MerchantDetail\Entity::APPROVED,
     ];
 
     /**
