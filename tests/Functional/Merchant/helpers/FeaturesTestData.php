@@ -614,8 +614,7 @@ return [
         ]
     ],
 
-
-    'verifyMarketplaceOnboardingResponseApproval' => [
+    'verifyMarketplaceOnboardingResponseStatus' => [
         'request'  => [
             'content' => [
                 'status' => 'approved'

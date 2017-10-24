@@ -19,6 +19,9 @@ class FeaturesTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
+    const DEFAULT_MERCHANT_ID    = '10000000000000';
+    const ONBOARDING_MERCHANT_ID = '10000000001017';
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/FeaturesTestData.php';
@@ -355,11 +358,13 @@ class FeaturesTest extends TestCase
      */
     public function testAddFeatureNonEditableByAdminOnLive()
     {
-        $this->addFeatures(Mode::LIVE, true, ['subscriptions']);
+        $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
 
-        $this->verifyFeaturePresence(Mode::TEST, ['subscriptions']);
+        $this->addFeatures(Mode::LIVE, true, ['subscriptions'], $merchantId);
 
-        $this->verifyFeaturePresence(Mode::LIVE, ['subscriptions']);
+        $this->verifyFeaturePresence(Mode::TEST, ['subscriptions'], self::ONBOARDING_MERCHANT_ID);
+
+        $this->verifyFeaturePresence(Mode::LIVE, ['subscriptions'], self::ONBOARDING_MERCHANT_ID);
     }
 
     /**
@@ -377,7 +382,7 @@ class FeaturesTest extends TestCase
      */
     public function testPostOnboardingResponses()
     {
-        $this->createMerchantDetailsOnLive();
+        $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
 
         $url = storage_path("files/" . Constants::ONBOARDING .  "/" . Constants::VENDOR_AGREEMENT . ".pdf");
 
@@ -410,57 +415,6 @@ class FeaturesTest extends TestCase
         $expectedOutput = $testData['response']['content'];
 
         $this->assertArraySelectiveEquals($expectedOutput, $fileStoreData);
-    }
-
-    /**
-     * Enable a notifyFeature on Live mode
-     */
-    public function testFeatureEnabledEmailNotificationOnLive()
-    {
-        Mail::fake();
-
-        $this->addFeatures(Mode::LIVE, false, ['dummy', 'marketplace']);
-
-        Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
-        {
-            $this->assertEquals('Route', $mail->viewData['feature']);
-
-            $documentation = 'route';
-            $this->assertEquals($documentation, $mail->viewData['documentation']);
-
-            return true;
-        });
-    }
-
-    /**
-     * Enable a notifyFeature on Test mode
-     */
-    public function testFeatureEnabledEmailNotificationOnTest()
-    {
-        Mail::fake();
-
-        $this->addFeatures(Mode::TEST, false, ['dummy', 'marketplace']);
-
-        Mail::assertNotSent(FeatureEnabledEmail::class);
-    }
-
-    /**
-     * Enable a notifyFeature on Test mode with shouldSync flag
-     */
-    public function testFeatureEnabledEmailNotificationOnTestWithSync()
-    {
-        Mail::fake();
-
-        $this->addFeatures(Mode::TEST, true, ['dummy', 'marketplace']);
-
-        Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
-        {
-            $this->assertEquals('Route', $mail->viewData['feature']);
-
-            $this->assertEquals('route', $mail->viewData['documentation']);
-
-            return true;
-        });
     }
 
     /**
@@ -611,7 +565,7 @@ class FeaturesTest extends TestCase
 
     public function testUpdateOnboardingResponses()
     {
-        $merchantId = $this->createMerchantDetailsOnLive();
+        $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
 
         $this->createMarketplaceOnboardingResponse($merchantId);
 
@@ -626,63 +580,66 @@ class FeaturesTest extends TestCase
 
     public function testResendOnboardingResponses()
     {
-        $merchantId = $this->createMerchantDetailsOnLive();
+        $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
 
         $this->createMarketplaceOnboardingResponse($merchantId);
 
         $this->createMarketplaceOnboardingResponse($merchantId, true);
     }
 
-    public function testGetAllOnboardingResponsesByStatus()
+    public function testOnboardingRequestStatus()
     {
-        $merchantId = $this->createMerchantDetailsOnLive();
+        Mail::fake();
+
+        $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
 
         $this->createMarketplaceOnboardingResponse($merchantId);
 
-        $this->addFeatures('live', true, [Constants::MARKETPLACE], $merchantId);
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
-        $this->ba->adminAuth('live', null, 'org_100000razorpay');
-
-        $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'approved');
-
-        $this->verifyMarketplaceOnboardingResponseApproval();
-    }
-
-    public function testUpdateOnboardingRequestStatus()
-    {
-        $merchantId = $this->createMerchantDetailsOnLive();
-
-        $this->createMarketplaceOnboardingResponse($merchantId);
-
-        $this->ba->adminAuth('live', null, 'org_100000razorpay');
-
+        // Test update status API
         $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'rejected');
 
         $this->addFeatures(Mode::LIVE, false, [Constants::MARKETPLACE], $merchantId);
 
-        $this->ba->adminAuth('live', null, 'org_100000razorpay');
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
-        $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'approved');
+        // Test fetch by status API
+        // Test auto approving of a request, when added in Live mode
+        $this->verifyMarketplaceOnboardingResponseStatus('approved');
+
+        Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
+        {
+            $this->assertEquals('Route', $mail->viewData['feature']);
+
+            $documentation = 'route';
+            $this->assertEquals($documentation, $mail->viewData['documentation']);
+
+            return true;
+        });
     }
 
-    public function testApproveOnboardingRequestWithoutEnablingFeature()
+    /**
+     * The feature onboarding request should not be approved if the feature is enabled on Test mode
+     * Also, email should not be sent to the merchant
+     */
+    public function testOnboardingRequestStatusForTestMode()
     {
-        $merchantId = $this->createMerchantDetailsOnLive();
+        Mail::fake();
+
+        $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
 
         $this->createMarketplaceOnboardingResponse($merchantId);
 
-        $this->ba->adminAuth('live', null, 'org_100000razorpay');
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
-        $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'rejected');
+        $this->addFeatures(Mode::TEST, false, [Constants::MARKETPLACE], $merchantId);
 
-        $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'pending');
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
-        $this->addFeatures(Mode::LIVE, false, [Constants::MARKETPLACE], $merchantId);
+        $this->verifyMarketplaceOnboardingResponseStatus('pending');
 
-        $this->ba->adminAuth('live', null, 'org_100000razorpay');
-
-        $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'approved');
-
+        Mail::assertNotSent(FeatureEnabledEmail::class);
     }
 
     public function createMarketplaceOnboardingResponse(string $merchantId, bool $expectError = false)
@@ -733,9 +690,15 @@ class FeaturesTest extends TestCase
         $this->assertTrue($response);
     }
 
-    public function verifyMarketplaceOnboardingResponseApproval()
+    public function verifyMarketplaceOnboardingResponseStatus(string $status)
     {
-        $this->startTest();
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['status'] = $status;
+
+        $testData['response']['content'][0]['marketplace_activation_status'] = $status;
+
+        $this->startTest($testData);
     }
 
     public function updateMarketplaceOnboardingResponseStatus(string $merchantId, string $status)
@@ -811,7 +774,7 @@ class FeaturesTest extends TestCase
 
         if ($featureName === null)
         {
-            $testData['request']['url'] = '/features/10000000000000/' . $featureName;
+            $testData['request']['url'] = '/features/' . self::DEFAULT_MERCHANT_ID . '/' . $featureName;
         }
 
         if ($shouldSync === true)
@@ -886,16 +849,22 @@ class FeaturesTest extends TestCase
      *
      * @param string $mode
      * @param array  $featureNames
+     * @param string $merchantId
      */
     protected function verifyFeaturePresence(
         string $mode,
-        array $featureNames = ['dummy'])
+        array $featureNames = ['dummy'],
+        string $merchantId = self::DEFAULT_MERCHANT_ID)
     {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/features/' . $merchantId;
+
         $authMethod = 'appAuth' . studly_case($mode);
 
         $this->ba->$authMethod();
 
-        $response = $this->startTest();
+        $response = $this->startTest($testData);
 
         $assignedFeatures = array_map(function ($feature)
         {
@@ -935,17 +904,16 @@ class FeaturesTest extends TestCase
         $this->assertEquals(0, count($assignedFeaturesInResponse));
     }
 
-    protected function createMerchantDetailsOnLive()
+    protected function createMerchantDetails(string $merchantId)
     {
-        $merchantId = '10000000001017';
-
         $attributes = ['id' => $merchantId, 'org_id' => Org::RZP_ORG];
 
-        $detailsAttributes = ['merchant_id' => $merchantId];
+        $detailsAttributes = ['merchant_id' => $merchantId, 'contact_email' => 'test@gmail.com'];
 
-        $this->fixtures->on('live')->create('merchant', $attributes);
+        $this->fixtures->on(Mode::LIVE)->create('merchant', $attributes);
 
-        $this->fixtures->on('live')->create('merchant_detail:sane', $detailsAttributes);
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $detailsAttributes);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $detailsAttributes);
 
         $this->ba->proxyAuth('rzp_live_' . $merchantId);
 

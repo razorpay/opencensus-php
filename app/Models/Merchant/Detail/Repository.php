@@ -85,11 +85,22 @@ class Repository extends Base\Repository
 
     public function updateFeatureActivationStatus(
         Merchant\Entity $merchant,
-        string $attributeName,
+        string $featureName,
         string $status): bool
     {
-        return $this->newQueryWithConnection(Mode::LIVE)
-                    ->where(Entity::MERCHANT_ID, $merchant->getId())
-                    ->update([$attributeName => $status]);
+        $merchantDetail = $merchant->merchantDetail;
+
+        $setFeatureActivationStatus = camel_case('set_' . $featureName . '_activation_status');
+
+        $merchantDetail->$setFeatureActivationStatus($status);
+
+        $status = $this->saveOrFailTestAndLive($merchantDetail);
+
+        if ($status === null)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

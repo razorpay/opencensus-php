@@ -55,6 +55,8 @@ class Core extends Base\Core
             $assignedFeatureNames,
             $shouldSync);
 
+        $this->approveFeatureOnboardingRequestIfApplicable($feature, $shouldSync);
+
         $this->notifyFeatureUpdateOnSlack($feature);
 
         $merchantId = $input['entity_id'];
@@ -95,41 +97,6 @@ class Core extends Base\Core
     }
 
     /**
-     * Posts the feature onboarding responses to slack,
-     * We post only when the submission is created by the merchant and not admin
-     *
-     * @param Merchant\Entity $merchant
-     * @param string          $productName
-     */
-    protected function notifyFeatureOnboardingFormSubmitOnSlack(
-        Merchant\Entity $merchant,
-        string $productName)
-    {
-        if ($this->app['basicauth']->isAdminAuth() === false)
-        {
-            $isLive = ($merchant->isLive() === true) ? "true" : "false";
-
-            $isActivated = ($merchant->isActivated() === true) ? "true" : "false";
-
-            $merchantDetails = $merchant->merchantDetail;
-
-            $submitted = (($merchantDetails !== null) and
-                            ($merchantDetails->isSubmitted() === true)) ? "true" : "false";
-
-            $data = [
-                'id'                        => $merchant->getId(),
-                'activated'                 => $isActivated,
-                'activation_form_submitted' => $submitted,
-                'live'                      => $isLive,
-                'product'                   => $productName
-            ];
-
-            $this->logActionToSlack($merchant, SlackActions::PRODUCT_ACTIVATION, $data);
-        }
-    }
-
-    /**
-     * Sends an email to the merchant if a
      * notifyFeature is enabled on Live mode
      *
      * @param string $merchantId
@@ -307,15 +274,11 @@ class Core extends Base\Core
     {
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
 
-        $attributeName = $featureName . '_activation_status';
-
-        $attributeName = constant(MerchantDetail::class . '::' . strtoupper($attributeName));
-
         if (in_array($status, Constants::ONBOARDING_STATUSES, true) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ONBOARDING_STATUS_INVALID,
-                $attributeName,
+                $featureName,
                 [$featureName, $status]);
         }
 
@@ -324,13 +287,13 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_NOT_ASSIGNED,
-                $attributeName,
+                $featureName,
                 [$featureName, $status]);
         }
 
         $status =  $this->repo->merchant_detail->updateFeatureActivationStatus(
             $merchant,
-            $attributeName,
+            $featureName,
             $status
         );
 
@@ -455,5 +418,79 @@ class Core extends Base\Core
                         ->get();
 
         return $file;
+    }
+
+    protected function approveFeatureOnboardingRequestIfApplicable(
+        Entity $feature,
+        bool $shouldSync)
+    {
+        $merchantId = $feature->getEntityId();
+
+        $featureName = $feature->getName();
+
+        if ($this->shouldUpdateFeatureOnboardingStatus($feature, $shouldSync) === true)
+        {
+
+            $this->updateFeatureActivationStatus(
+                $merchantId,
+                $featureName,
+                MerchantDetail::APPROVED);
+
+            $this->trace->info(
+                TraceCode::FEATURE_ONBOARDING_SUBMISSION_APPROVED,
+                [
+                    PublicEntity::MERCHANT_ID => $merchantId,
+                    Entity::NEW_FEATURE       => $featureName,
+                ]);
+        }
+    }
+
+    protected function shouldUpdateFeatureOnboardingStatus(
+        Entity $feature,
+        bool $shouldSync): bool
+    {
+        $isLiveMode = $this->isLiveMode();
+
+        if (($feature->isNotifyFeature() === true) and
+            (($isLiveMode === true) or ($shouldSync === true)))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Posts the feature onboarding responses to slack,
+     * We post only when the submission is created by the merchant and not admin
+     *
+     * @param Merchant\Entity $merchant
+     * @param string          $productName
+     */
+    protected function notifyFeatureOnboardingFormSubmitOnSlack(
+        Merchant\Entity $merchant,
+        string $productName)
+    {
+        if ($this->app['basicauth']->isAdminAuth() === false)
+        {
+            $isLive = ($merchant->isLive() === true) ? "true" : "false";
+
+            $isActivated = ($merchant->isActivated() === true) ? "true" : "false";
+
+            $merchantDetails = $merchant->merchantDetail;
+
+            $submitted = (($merchantDetails !== null) and
+                ($merchantDetails->isSubmitted() === true)) ? "true" : "false";
+
+            $data = [
+                'id'                        => $merchant->getId(),
+                'activated'                 => $isActivated,
+                'activation_form_submitted' => $submitted,
+                'live'                      => $isLive,
+                'product'                   => $productName
+            ];
+
+            $this->logActionToSlack($merchant, SlackActions::PRODUCT_ACTIVATION, $data);
+        }
     }
 }
