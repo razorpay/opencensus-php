@@ -85,9 +85,9 @@ class Stat {
     };
 
     return adminPost({
-      merchantId: data.merchant_id,
+      merchant_id: data.merchant_id,
       body,
-      route: 'merchant_analytics',
+      route_name: 'merchant_analytics',
     }).then(({ data }) => {
       if (!data.success) {
         throw data.errors[0];
