@@ -155,23 +155,20 @@ export default class OnBoarding extends Component {
         >
           {/* Feature Description */}
           <main class="onboarding-overview col-md-7 col-xs-12">
-            <h2>
-              {heading}
-            </h2>
-            <p>
-              {description}
-            </p>
+            <h2>{heading}</h2>
+            <p>{description}</p>
 
             <div class="action-container">
               {/* Test mode only button to enable feature in test mode */}
-              {isTestMode &&
+              {isTestMode && (
                 <AsyncButton
                   type="button"
                   class="btn btn-primary"
                   text="Get Started"
                   pendingText="Enabling..."
                   onClick={enableFeatureInTestMode}
-                />}
+                />
+              )}
 
               <div class="action-links">
                 <a
@@ -207,54 +204,62 @@ export default class OnBoarding extends Component {
           </main>
 
           {/* Feature Form for live mode*/}
-          {!isTestMode &&
+          {!isTestMode && (
             <aside class="onboarding-form col-md-5 col-xs-12">
               <h3>Get Started</h3>
-              <p>
-                {currentForm.formText}
-              </p>
+              <p>{currentForm.formText}</p>
 
-              {this.state.isLoading
-                ? <div class="page-spinner-container">
-                    <Spinner />
-                  </div>
-                : !this.state.submitted
-                  ? <div>
-                      <WizardForm handleChange={this.handleChange} />
-                      <AsyncButton
-                        type="button"
-                        class="btn btn-primary pull-left"
-                        style={{ marginTop: '20px' }}
-                        text="Apply Now"
-                        pendingText="Applying..."
-                        onClick={handleSubmit(this.onSubmitClick)}
-                        disabled={
-                          invalid ||
-                          (formType === 'marketplace' &&
-                            !this.state.uploadedFile)
-                        }
-                      />
+              {this.state.isLoading ? (
+                <div class="page-spinner-container">
+                  <Spinner />
+                </div>
+              ) : !this.state.submitted ? (
+                <div>
+                  <WizardForm handleChange={this.handleChange} />
+                  <AsyncButton
+                    type="button"
+                    class="btn btn-primary pull-left"
+                    style={{ marginTop: '20px' }}
+                    text="Apply Now"
+                    pendingText="Applying..."
+                    onClick={handleSubmit(this.onSubmitClick)}
+                    disabled={
+                      invalid ||
+                      (formType === 'marketplace' && !this.state.uploadedFile)
+                    }
+                  />
+                </div>
+              ) : (
+                <div class="alert alert-info">
+                  Your form is submitted for enabling {heading}. Meanwhile, you
+                  can switch to <a onClick={this.switchToTestMode}>
+                    Test Mode
+                  </a>{' '}
+                  to try the product.
+                  {!this.props.user.isActivated ? (
+                    <div class="m-t">
+                      <b> Please note </b> that this is activation form for{' '}
+                      {heading}. Your request will be processed after you submit
+                      the <Link to="/activation">primary activation form</Link>.
                     </div>
-                  : <div class="alert alert-info">
-                      Your form is submitted for enabling {heading}. Meanwhile,
-                      you can switch to{' '}
-                      <a onClick={this.switchToTestMode}>Test Mode</a> to try
-                      the product.
-                      {!this.props.user.isActivated
-                        ? <div class="m-t">
-                            <b> Please note </b> that this is activation form
-                            for {heading}. Your request will be processed after
-                            you submit the{' '}
-                            <Link to="/activation">
-                              primary activation form
-                            </Link>.
-                          </div>
-                        : <div class="m-t">
-                            <b> Please note </b> that your request will be
-                            processed in 1 working day.
-                          </div>}
-                    </div>}
-            </aside>}
+                  ) : (
+                    <div class="m-t">
+                      {heading === 'Razorpay Subscriptions' ? (
+                        <span>
+                          We will review your request and get back to you
+                        </span>
+                      ) : (
+                        <span>
+                          <b> Please note </b> that your request will be
+                          processed in 1 working day.
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </aside>
+          )}
         </div>
       </div>
     );
