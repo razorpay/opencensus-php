@@ -13,7 +13,6 @@ use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Exception\BadRequestException;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
@@ -182,23 +181,6 @@ class Service extends Base\Service
     public function editEmail($id, array $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
-        $tags = $merchant->tagNames();
-
-        foreach ($tags as $tag)
-        {
-            if (substr($tag, 0, 4) === "Ref-")
-            {
-                $parentId = substr($tag, 4);
-                $parent = $this->repo->merchant->find($parentId);
-
-                if (($parent !== null) and
-                    strtolower($merchant->getEmail()) === strtolower($parent->getEmail()))
-                {
-                    throw new BadRequestException(ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
-                                                  Merchant\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
-                }
-            }
-        }
 
         $merchant = (new Merchant\Core)->editEmail($merchant, $input);
 
