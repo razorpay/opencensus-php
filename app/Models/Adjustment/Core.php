@@ -13,15 +13,11 @@ use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
-use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Models\Transfer;
 
 class Core extends Base\Core
 {
     public function createAdjustment(array $input, $merchant): Entity
     {
-        (new Validator)->validateInput('fee_adjustment', $input);
-
         $this->trace->info(
             TraceCode::ADJUSTMENT_CREATE_REQUEST,
             [
@@ -35,13 +31,8 @@ class Core extends Base\Core
         // Create input for Merchant Invoice
         $merchantInvoiceInput = $input;
 
-        // Either amount is expected, or tax-and-fees, throwing exception if all are present
-        if (isset($input[Entity::AMOUNT]) === true and
-            isset($input[MerchantInvoice\Entity::TAX]) === true and
-            isset($input['fees']) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException('Either amount OR tax/fees should be passed');
-        }
+        // Checking validations on input array
+        Adjustment\Validator::checkAdjustmentInputValidation($input);
 
         $amount = $input[Entity::AMOUNT] ?? 0;
 
