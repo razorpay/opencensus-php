@@ -100,6 +100,11 @@ export function getPriceChartOptions(type, extra) {
   switch (type) {
     case 'bar':
       return {
+        axisX: {
+          labelInterpolationFnc: function(value, index, label) {
+            return label[index].charAt(0).toUpperCase() + label[index].slice(1);
+          },
+        },
         axisY: {
           labelInterpolationFnc: priceLabelInterpolationFnc(extra),
         },
