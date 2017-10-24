@@ -223,15 +223,19 @@ return [
         ],
 
         PermissionCategory::DISPUTE => [
-            Permission::CREATE_DISPUTE => [
-                'description'   => 'Create Dispute Permission',
-                'assignable'    => true,
-                'workflow'      => true,
+            Permission::CREATE_DISPUTE        => [
+                'description' => 'Create Dispute Permission',
+                'assignable'  => true,
+                'workflow'    => true,
             ],
-            Permission::EDIT_DISPUTE    => [
-                'description'   => 'Edit Dispute Permission',
-                'assignable'    => true,
-                'workflow'      => true,
+            Permission::EDIT_DISPUTE          => [
+                'description' => 'Edit Dispute Permission',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
+            Permission::CREATE_DISPUTE_REASON => [
+                'description' => 'Create Dispute Reason Permission',
+                'assignable'  => true,
             ],
         ],
 
