@@ -390,11 +390,11 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Customer\Entity::class, [
-            'id' => $faker->uniqueid,
+            'id'          => $faker->uniqueid,
             'merchant_id' => '10000000000000',
-            'name' => 'name',
-            'contact' => '9988776655',
-            'notes' => null,
+            'name'        => 'name',
+            'contact'     => '9988776655',
+            'notes'       => null,
         ]);
 
         $factory(\RZP\Models\Customer\Token\Entity::class, [
@@ -402,11 +402,13 @@ final class FactoryData
             'merchant_id' => '10000000000000',
             'customer_id' => '100000customer',
             'wallet'      => 'paytm',
-            'method'      => 'wallet',
-            'bank'        => null,
+            'method'      => 'netbanking',
+            'bank'        => 'ICIC',
             'card_id'     => null,
             'recurring'   => false,
             'used_count'  => 0,
+            'token'       => $faker->uniqueid,
+            'used_at'     => null,
         ]);
 
         $factory(\RZP\Models\Customer\AppToken\Entity::class, [

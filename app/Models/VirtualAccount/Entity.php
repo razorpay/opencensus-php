@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant;
+use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Base\Traits\NotesTrait;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -164,6 +165,11 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Getters -----------------------------------------
 
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     public function getAmountPaid()
     {
         return $this->getAttribute(self::AMOUNT_PAID);
@@ -198,6 +204,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NAME);
     }
 
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
     public function getDescriptor()
     {
         return $this->getAttribute(self::DESCRIPTOR);
@@ -223,6 +234,19 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- Setters -----------------------------------------
+
+    /**
+     * Post-processing, VA amount fields are to be updated.
+     * Status change is done inside incrementAmountPaid.
+     *
+     * @param Entity $bankTransfer
+     */
+    public function updateWithBankTransfer(BankTransfer\Entity $bankTransfer)
+    {
+        $this->incrementAmountPaid($bankTransfer->getAmount());
+
+        $this->incrementAmountReceived($bankTransfer->getAmount());
+    }
 
     public function setStatus(string $status)
     {

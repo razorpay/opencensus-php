@@ -44,6 +44,8 @@ class Base extends Payment\Base
         {
             $subscriptionId = $this->data['subscription']['id'];
 
+            $mode = $this->data['mode'];
+
             $mailTag = $this->getMailTag();
 
             $headers = $message->getHeaders();
@@ -51,6 +53,8 @@ class Base extends Payment\Base
             $headers->addTextHeader(MailTags::HEADER, $subscriptionId);
 
             $headers->addTextHeader(MailTags::HEADER, $mailTag);
+
+            $headers->addTextHeader(MailTags::HEADER, $mode);
         });
 
         return $this;

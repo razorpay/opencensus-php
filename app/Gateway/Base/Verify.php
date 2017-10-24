@@ -13,7 +13,7 @@ class Verify
 
     /**
      * Used If the transaction happens via a wallet.
-     * */
+     */
     public $wallet;
 
     public $verifyRequest;
@@ -34,6 +34,11 @@ class Verify
 
     public $throwExceptionOnMismatch = true;
 
+    /**
+     * Used to set the status match property of $verify
+     *
+     * @var bool
+     */
     public $amountMismatch = false;
 
     public $match;

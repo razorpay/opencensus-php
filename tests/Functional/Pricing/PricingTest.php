@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\Merchant;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PricingTest extends TestCase
@@ -21,20 +20,6 @@ class PricingTest extends TestCase
         $this->ba->appAuth();
     }
 
-    public function testCreatePricingPlan()
-    {
-        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
-
-        $this->startTest();
-    }
-
-    public function testCreatePricingPlanWithMinAndMaxFee()
-    {
-        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
-
-        $this->startTest();
-    }
-
     public function testAddPricingPlanRule()
     {
         $content = $this->createPricingPlan();
@@ -44,12 +29,41 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function testUploadPricingPlan()
+    public function testBulkPricingPlan()
     {
-        $testData['request']['url'] = '/pricing/upload';
+        $this->ba->adminAuth();
 
-        $this->startTest($testData);
+        $this->startTest();
     }
+
+    public function testEmptyBulkPricingPlan()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testDuplicateBulkPricingPlan()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreatePricingPlanWithMinAndMaxFee()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreatePricingPlanWithInvalidMinAndMaxFee()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
 
     public function testAddPricingPlanNBRule()
     {
@@ -340,13 +354,6 @@ class PricingTest extends TestCase
     public function testDeletePricingPlanRuleForce()
     {
         $content = $this->startTest();
-    }
-
-    public function testCreatePricingPlanWithInvalidMinAndMaxFee()
-    {
-        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
-
-        $this->startTest();
     }
 
     public function testDeleteUsedPricingPlanRule()

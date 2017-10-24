@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
 
     // For report
     const DISPUTE_ID        = 'dispute_id';
+    const ENTITY            = 'entity';
 
     protected static $sign = 'adj';
 
@@ -100,6 +101,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_TYPE);
     }
 
+    public function getTransactionId()
+    {
+        return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
@@ -123,6 +129,16 @@ class Entity extends Base\PublicEntity
     public function setChannel($channel)
     {
         $this->setAttribute(self::CHANNEL, $channel);
+    }
+
+    public function setCreatedAt($createdAt)
+    {
+        $this->setAttribute(self::CREATED_AT, $createdAt);
+    }
+
+    public function setUpdatedAt($updatedAt)
+    {
+        $this->setAttribute(self::UPDATED_AT, $updatedAt);
     }
 
     public function entity()

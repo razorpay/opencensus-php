@@ -141,7 +141,7 @@ class Entity extends Base\PublicEntity
         self::NETBANKING     => true,
         self::CREDIT_CARD    => true,
         self::DEBIT_CARD     => true,
-        self::BANK_TRANSFER  => false,
+        self::BANK_TRANSFER  => true,
         self::BHARAT_QR      => false,
     );
 
@@ -530,6 +530,11 @@ class Entity extends Base\PublicEntity
     public function setUpi(bool $upi)
     {
         $this->setAttribute(self::UPI, $upi);
+    }
+
+    public function setBankTransfer(bool $bankTransfer)
+    {
+        $this->setAttribute(self::BANK_TRANSFER, $bankTransfer);
     }
 
     public function setEmi($emi)

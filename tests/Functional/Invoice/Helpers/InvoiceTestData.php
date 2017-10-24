@@ -29,7 +29,6 @@ return [
                         'amount'        => 100000,
                     ]
                 ],
-                'user_id'  => 'abcdefghij1234',
             ],
         ],
         'response' => [
@@ -91,7 +90,6 @@ return [
                 'currency' => 'INR',
                 'date' => null,
                 'type' => 'ecod',
-                'user_id'  => 'abcdefghij1234',
             ],
         ],
         'response' => [
@@ -175,6 +173,41 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithCustomerIdAndDetails' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'customer'    => [
+                    'name' => 'test',
+                ],
+                'line_items'  => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                    ]
+                ],
+                'currency' => 'INR',
+                'date'     => 1480666664,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Either of customer_id or customer must be sent in input',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateLinkWithSource' => [
         'request' => [
             'url' => '/invoices',
@@ -209,7 +242,19 @@ return [
                 'source'      => 'random_app',
             ],
         ],
-        'response' => [],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Not a valid source: random_app',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 
     'testCreateLinkWithTooLargeAmount' => [
@@ -945,7 +990,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Currency must not be empty.',
+                    'description' => 'The currency field is required.',
                 ],
             ],
             'status_code' => 400,
@@ -976,7 +1021,7 @@ return [
                     ]
                 ],
                 'amount'        => 1000,
-                'currency'      => null,
+                'currency'      => 'INR',
             ],
         ],
         'response' => [
@@ -1382,25 +1427,24 @@ return [
                 'entity'               => 'invoice',
                 'receipt'              => 'inv_receipt_0001',
                 'customer_details'     => [
-                    'name'    => 'new customer',
-                    'email'   => 'new@razorpay.com',
-                    'contact' => null,
+                    'name'            => 'new customer',
+                    'email'           => 'new@razorpay.com',
+                    'contact'         => '1234567890',
+                    'billing_address' => null,
                 ],
                 'status'               => 'draft',
-            ]
-        ]
+            ],
+        ],
     ],
 
     'testUpdateDraftInvoiceWithCustomerIdAndDetails' => [
         'request' => [
-            'url'       => '/invoices/inv_1000000invoice',
-            'method'    => 'patch',
-            'content'   => [
-                'receipt'      => 'inv_receipt_0001',
-                'customer_id'  => 'cust_100000customer',
-                'customer'  => [
-                    'name'  => 'new customer',
-                    'email' => 'new@razorpay.com'
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'patch',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'customer'    => [
+                    'name' => 'test',
                 ],
             ],
         ],
@@ -1408,7 +1452,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Expecting either customer_id or customer details',
+                    'description' => 'Either of customer_id or customer must be sent in input',
                 ],
             ],
             'status_code' => 400,
@@ -1416,6 +1460,96 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateDraftInvoiceWithCustomerBillingAddressId' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice',
+            'method'    => 'patch',
+            'content'   => [
+                'receipt'  => 'inv_receipt_0001',
+                'customer' => [
+                    'name'               => 'new customer',
+                    'email'              => 'new@razorpay.com',
+                    'billing_address_id' => 'addr_1000000address',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'                   => 'inv_1000000invoice',
+                'entity'               => 'invoice',
+                'receipt'              => 'inv_receipt_0001',
+                'customer_details'     => [
+                    'name'            => 'new customer',
+                    'email'           => 'new@razorpay.com',
+                    'contact'         => '1234567890',
+                    'billing_address' => [
+                        'id'      => 'addr_1000000address',
+                        'type'    => 'billing_address',
+                        'primary' => false,
+                        'line1'   => 'some line one',
+                        'line2'   => 'some line two',
+                        'zipcode' => '560078',
+                        'city'    => 'Bangalore',
+                        'state'   => 'Karnataka',
+                        'country' => 'in',
+                    ],
+                ],
+                'status'               => 'draft',
+            ],
+        ],
+    ],
+
+    'testUpdateDraftInvoiceWithInvalidCustomerBillingAddressId' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice',
+            'method'    => 'patch',
+            'content'   => [
+                'receipt'      => 'inv_receipt_0001',
+                'customer'  => [
+                    'name'               => 'new customer',
+                    'email'              => 'new@razorpay.com',
+                    'billing_address_id' => 'addr_1000001address',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No db records found.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        ],
+    ],
+
+    'testUpdateDraftInvoiceUnsetCustomer' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice',
+            'method'    => 'patch',
+            'content'   => [
+                'customer_id' => null,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'inv_1000000invoice',
+                'entity'           => 'invoice',
+                'customer_id'      => null,
+                'customer_details' => [
+                    'name'    => null,
+                    'email'   => null,
+                    'contact' => null,
+                ],
+                'status' => 'draft',
+            ],
         ],
     ],
 

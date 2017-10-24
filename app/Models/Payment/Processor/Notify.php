@@ -3,18 +3,18 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
-use Carbon\Carbon;
 use Mail;
-use RZP\Constants\MailTags;
+use Carbon\Carbon;
+
 use RZP\Constants\Mode;
-use RZP\Jobs\Invoice\Job as InvoiceJob;
-use RZP\Jobs\DispatchRouter;
-use RZP\Mail\Payment as PaymentMail;
-use RZP\Models\Invoice;
-use RZP\Models\Invoice\ViewDataSerializer;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Jobs\DispatchRouter;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Mail\Payment as PaymentMail;
+use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Models\Invoice\ViewDataSerializer;
 
 class Notify
 {
@@ -239,46 +239,28 @@ class Notify
      */
     public function trigger(string $event)
     {
-        /**
-         * This is wrapped in a try-catch block as this is not
-         * critical path for the payment operation
-         * We should continue running even if this raises critical error.
-         */
+        //
+        // This is wrapped in a try-catch block as this is not
+        // critical path for the payment operation.
+        // We should continue running even if this raises critical error.
+        //
         try
         {
-            // If it's invoice payment authorization:
-            // - dispatch a queue job which updates the invoice pdf,
-            // - if invoice's email_notify is set to '0', just return.
+            $this->dispatchInvoiceJobIfApplicable($event);
 
-            if ($event === Payment\Event::INVOICE_PAYMENT_AUTHORIZED)
-            {
-                $job = new InvoiceJob(
-                            $this->mode,
-                            InvoiceJob::AUTHORIZED,
-                            $this->invoice->getId());
-
-                (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
-            }
-
-            // Send out notification for Slack
             $this->notifyViaSlack($event);
 
-            // Mails use the entire template
-            // So there is no need to get separate data for each
             $this->notifyViaMail($event);
         }
         catch (\Exception $e)
         {
-            // Shouldn't fail for any reason
-            $this->trace->error(
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
                 TraceCode::PAYMENT_NOTIFY_FAILED,
                 [
                     'payment_id' => $this->payment->getPublicId(),
-                    'message'    => 'Payment Notify raised an exception'
-                ]
-            );
-
-            $this->trace->traceException($e);
+                ]);
         }
     }
 
@@ -622,5 +604,21 @@ class Notify
             return 'RZP\\Mail\\Invoice\\Payment\\' . $event;
         }
         return 'RZP\\Mail\\Payment\\' . studly_case($event);
+    }
+
+    /**
+     * Dispatches invoice job on payment capture event. One purpose for now is
+     * to update the pdf version of invoice with paid amount details.
+     *
+     * @param string $event
+     */
+    protected function dispatchInvoiceJobIfApplicable(string $event)
+    {
+        if ($event === Payment\Event::INVOICE_PAYMENT_CAPTURED)
+        {
+            $job = new InvoiceJob($this->mode, InvoiceJob::CAPTURED, $this->invoice->getId());
+
+            (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+        }
     }
 }

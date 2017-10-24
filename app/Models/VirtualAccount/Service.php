@@ -35,16 +35,7 @@ class Service extends Base\Service
 
         $this->setDefaultReceiverTypesIfNeeded($input);
 
-        $virtualAccount = $this->repo->transaction(function() use ($input, $customer)
-        {
-            $virtualAccount = $this->core->create($input, $this->merchant, $customer);
-
-            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVER_TYPES]);
-
-            $this->repo->saveOrFail($virtualAccount);
-
-            return $virtualAccount;
-        });
+        $virtualAccount = $this->core->create($input, $this->merchant, $customer);
 
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_CREATED,

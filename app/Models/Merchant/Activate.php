@@ -87,7 +87,16 @@ class Activate extends Base\Core
 
         (new Merchant\Core)->createBalance($merchant, 'live');
 
-        $this->repo->saveOrFail($merchant);
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $this->repo->saveOrFail($merchant);
+
+            $merchantDetail = $merchant->merchantDetail;
+
+            $merchantDetail->setLocked(true);
+
+            $this->repo->saveOrFail($merchantDetail);
+        });
 
         $this->trace->info(
             TraceCode::MERCHANT_ACCOUNT_ACTIVATED,

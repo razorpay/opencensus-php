@@ -41,4 +41,11 @@ class Validator extends \Razorpay\Spine\Validation\Validator
 
         return ($app['rzp.mode'] === Mode::LIVE);
     }
+
+    public function setStrictFalse()
+    {
+        $this->strict = false;
+
+        return $this;
+    }
 }

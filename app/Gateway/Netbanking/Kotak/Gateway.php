@@ -99,6 +99,10 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId((string) $gatewayPayment->getIntPaymentId(), $content['TraceNumber']);
 
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($content['Amount'], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
+
         $attrs['received'] = true;
         $attrs['status'] = $content['AuthorizationStatus'];
         $attrs['bank_payment_id'] = $content['BankReference'];

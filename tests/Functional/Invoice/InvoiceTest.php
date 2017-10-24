@@ -36,6 +36,8 @@ class InvoiceTest extends TestCase
                 'business_registered_address' => '#1205, Rzp, Outer Ring Road, Bangalore',
             ]);
 
+        $this->fixtures->create('user', ['id' => '1000000000user']);
+
         $this->ba->privateAuth();
     }
 
@@ -65,6 +67,11 @@ class InvoiceTest extends TestCase
         $this->assertInvoiceCreateResponse($response);
 
         $this->assertEquals('cust_100000customer', $response['customer_id']);
+    }
+
+    public function testCreateInvoiceWithCustomerIdAndDetails()
+    {
+        $this->startTest();
     }
 
     public function testCreateInvoiceAndPay()
@@ -129,10 +136,7 @@ class InvoiceTest extends TestCase
 
     public function testCreateLinkWithInvalidSource()
     {
-        //
-        // TODO: (Low priority)
-        // - Fix Source::checkType and Type::validateType methods.
-        //
+        $this->startTest();
     }
 
     public function testCreateLinkWithTooLargeAmount()
@@ -527,8 +531,7 @@ class InvoiceTest extends TestCase
                 'name'    => 'test 2',
                 'email'   => 'test2@razorpay.com',
                 'contact' => null,
-            ]
-        );
+            ]);
 
         $this->startTest();
 
@@ -539,10 +542,7 @@ class InvoiceTest extends TestCase
     {
         $this->createDraftInvoice();
 
-        $response = $this->startTest();
-
-        $customer = $this->getLastEntity('customer', true);
-        $this->assertEquals($customer['id'], $response['customer_id']);
+        $this->startTest();
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
@@ -552,6 +552,59 @@ class InvoiceTest extends TestCase
         $this->createDraftInvoice();
 
         $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceWithCustomerBillingAddressId()
+    {
+        $this->fixtures->create(
+            'address',
+            [
+                'id'      => '1000000address',
+                'type'    => 'billing_address',
+                'primary' => false,
+            ]);
+
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceWithInvalidCustomerBillingAddressId()
+    {
+        //
+        // Creates a different customer and it's billing_address and that follows
+        // attempt to update invoice's customer's biling address with this id(of
+        // another customer) which should fail.
+        //
+        $this->fixtures->create(
+            'customer',
+            [
+                'id'      => '100001customer',
+                'name'    => 'test 2',
+                'email'   => 'test2@razorpay.com',
+                'contact' => null,
+            ]);
+
+        $this->fixtures->create(
+            'address',
+            [
+                'id'        => '1000001address',
+                'entity_id' => '100001customer',
+                'type'      => 'billing_address',
+            ]);
+
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceUnsetCustomer()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
+
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testUpdateIssuedInvoice()
