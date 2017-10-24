@@ -21,6 +21,10 @@ class Stat {
 
   getTitle() {
     var data = this.data;
+    if (data.type === 'summary') {
+      return 'Summary';
+    }
+
     var title = data.type === 'sum' ? 'Payment Volume' : 'Success Rate';
     if (data.filter) {
       title = data.filter + ' ' + title;
@@ -88,7 +92,8 @@ class Stat {
       merchant_id: data.merchant_id,
       body,
       route_name: 'merchant_analytics',
-    }).then(({ result }) => {
+    }).then(response => {
+      var result = [{ value: 0 }];
       var title = this.getTitle();
 
       if (details.column === 'base_amount') {
@@ -98,6 +103,10 @@ class Stat {
       } else if (details.agg_type === 'success_rate') {
         result.forEach(r => {
           r.displayValue = r.value + '%';
+        });
+      } else {
+        result.forEach(r => {
+          r.displayValue = r.value;
         });
       }
 

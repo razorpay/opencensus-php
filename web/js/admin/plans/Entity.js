@@ -9,7 +9,7 @@ import AsyncButton from 'ui/AsyncButton';
 import Field from 'ui/Field';
 import { adminFetch } from 'util/fetch';
 
-let sharedNetworks = observable.box();
+let sharedNetworks = observable.shallowBox();
 
 @observer
 export default class PlanEntity extends Component {

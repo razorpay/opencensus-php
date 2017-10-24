@@ -60,6 +60,6 @@ var admin = window.rzpAdmin || {
   ],
 };
 
-var user = observable.box(admin);
+var user = observable.shallowBox(admin);
 
 export default user.get();
