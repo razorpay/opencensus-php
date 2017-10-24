@@ -23,7 +23,7 @@ class CustomerTokenTest extends TestCase
 
     public function testAddCustomerTokenCard()
     {
-        $this->fixtures->create('card', ['id' => '10000savedcard']);
+        $this->mockTokenEx();
 
         $this->ba->privateAuth();
 

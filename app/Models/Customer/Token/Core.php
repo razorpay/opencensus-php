@@ -15,7 +15,7 @@ class Core extends Base\Core
 {
     // TODO: merget create and this method
     // curently this needs to be in transaction as we are creating new card
-    // entity as well with token creation without payment 
+    // entity as well with token creation without payment
     public function createDirectToken($customer, $input)
     {
         return $this->repo->transaction(function() use ($customer, $input)
@@ -26,11 +26,9 @@ class Core extends Base\Core
             {
                 $cardInput = $input[Token\Entity::CARD];
 
-                $cardInput[Token\Entity::VAULT] = Card\Vault::TOKENEX;
+                $cardInput[Card\Entity::VAULT] = Card\Vault::TOKENEX;
 
-                $card = (new Card\Entity)->build($cardInput);
-
-                $this->repo->saveOrFail($card);
+                $card = (new Card\Core)->create($cardInput, $this->merchant);
 
                 $token->card()->associate($card);
             }
@@ -64,10 +62,10 @@ class Core extends Base\Core
 
     /**
      * @param  Customer Entity
-     * @param  input array 
+     * @param  input array
      * @return Token Entity
      *
-     * Below function is used to create token in payment flow where we 
+     * Below function is used to create token in payment flow where we
      * already have a card_id
      */
     public function create($customer, $input)

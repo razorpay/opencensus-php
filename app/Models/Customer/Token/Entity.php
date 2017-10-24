@@ -155,6 +155,17 @@ class Entity extends Base\PublicEntity
         self::TOKEN
     ];
 
+    public function build(array $input = [], string $operation = 'create')
+    {
+        $this->getValidator()->validateInput($operation, $input);
+
+        $this->generate($input);
+
+        $this->fill($input);
+
+        return $this;
+    }
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
