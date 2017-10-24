@@ -611,6 +611,47 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedCybersourceAxisRecurringTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'cybersource',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'gateway_acquirer'          => 'axis',
+            'gateway_merchant_id'       => 'merchant_id',
+            'gateway_terminal_id'       => 'cybersource',
+            'gateway_terminal_password' => 'cybersource',
+            'gateway_access_code'       => '111111',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        // Add recurring 3ds terminal;
+        $attributes['id'] = '1RecurringTerm';
+        $attributes['type'] = [
+            Type::NON_RECURRING => '1',
+            Type::RECURRING_3DS => '1'
+        ];
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+
+        $attributes['id'] = '3RecurringTerm';
+        $attributes['type'] = [
+            Type::NON_RECURRING => '1',
+            Type::RECURRING_3DS => '1'
+        ];
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+
+        // Add recurring 3ds
+        $attributes['id'] = '2RecurringTerm';
+        $attributes['type'] = [
+            Type::RECURRING_NON_3DS => '1',
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedHitachiTerminal(array $attributes = [])
     {
         $terminalId = \RZP\Models\Terminal\Shared::HITACHI_TERMINAL;

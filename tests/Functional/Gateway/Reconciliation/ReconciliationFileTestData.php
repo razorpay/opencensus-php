@@ -84,6 +84,43 @@ return [
             'invoice_number'   => '\'0',
             'transaction_id'   => '\'9780002136',
         ],
+
+        'axis' => [
+            'settlement_date'      => '24-OCT-17',
+            'mename'               => 'RAZORPAY SOFTWARE PVT LTD',
+            'msg_type'             => 'CAPTURE',
+            'card_no'              => '534680XXXXXX3881',
+            'card_type'            => 'D',
+            'lofo'                 => 'L',
+            'merchant_type'        => 'RazorPay',
+            'card_category'        => 'PREMIUM',
+            'mer_comm'             => '0.25',
+            'txn_amount'           => 192.06,
+            'dcc_amount'           => 0,
+            'commission'           => 0,
+            'agg_comm_amt'         => 0,
+            'gst'                  => 0,
+            'agg_gst'              => 0,
+            'payment'              => 192.06,
+            'txn_date'             => '2017-10-23 16:51:33',
+            'mcc'                  => '8299',
+            'mcc_description'      => 'Schools and Educational Services-not elsewhere classified',
+            'rrn_no'               => '729622438628',
+            'appr_code'            => '028084',
+            'account_no'           => '100012910528',
+            'curr_code'            => '356',
+            'eci'                  => '212',
+            'mid'                  => 'RAZORPAYADD',
+            'sol_id'               => null,
+            'network'              => 'MASTER',
+            'zone'                 => 'North',
+            'transaction_category' => 'ONUS',
+            'merchant_trans_ref'   => '8scgTNQTnntA67',
+            'order_id'             => '2001504881',
+            'order_info'           => null,
+            'curr_exp'             => '2',
+            'arn'                  => '75105177297000905183277',
+        ]
     ],
 
     'reconciliate' => [
@@ -97,11 +134,7 @@ return [
             ]
         ],
         'response' => [
-            'content' => [
-                [
-                    'message' => 'All payments and refunds have been reconciled successfully!'
-                ]
-            ]
+            'content' => [],
         ]
     ],
 ];

@@ -1357,6 +1357,19 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
     }
 
+    protected function reportMissingColumn(array $row, $columnName)
+    {
+        $this->trace->info(
+            TraceCode::RECON_INFO_ALERT,
+            [
+                'message'           => 'Unable to get the expected column.',
+                'column_name'       => $columnName,
+                'row'               => $row,
+                'gateway'           => get_called_class()
+            ]
+        );
+    }
+
     /**
      * For wallets and netbanking, there will be no card, hence we
      * send an empty array for these payment methods.

@@ -8,6 +8,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 use RZP\Reconciliator\FirstData\PaymentReconciliate as FDPaymentRecon;
 use RZP\Reconciliator\HDFC\PaymentReconciliate as HDFCPaymentRecon;
+use RZP\Reconciliator\Axis\PaymentReconciliate as AxisPaymentRecon;
 
 class ReconciliationFileTest extends TestCase
 {
@@ -26,6 +27,8 @@ class ReconciliationFileTest extends TestCase
         $this->payment = $this->getDefaultPaymentArray();
 
         $this->recurringPayment = $this->getDefaultRecurringPaymentArray();
+
+        $this->mockTokenex();
     }
 
     public function testFirstDataReconPaymentFile()
@@ -89,6 +92,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedPayment1['reference1']);
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE[0]], "'" . $updatedPayment1['reference2']);
+        $this->assertTrue($updatedPayment1['gateway_captured']);
     }
 
     public function testHdfcCyberSourceReconPaymentFile()
@@ -112,6 +116,56 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedPayment1['reference1']);
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE[0]], "'" . $updatedPayment1['reference2']);
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+    }
+
+    public function testAxisMigsReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:shared_migs_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment1 = $this->getNewPaymentEntity(true, false);
+        $gatewayPayment1 = $this->getLastEntity('axis_migs', true);
+
+        $this->assertNull($payment1['reference1']);
+        $this->assertNull($payment1['reference2']);
+
+        $entries[] = $this->overrideAxisPayment($gatewayPayment1,[],'migs');
+
+        $file = $this->writeToExcelFile($entries, 'axis', 'files/settlement','Sale');
+        $this->runForFiles([$file], 'Axis');
+
+        $updatedPayment1 = $this->getEntityById('payment' ,$payment1['id'], true);
+
+        $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
+        $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+    }
+
+    public function testAxisCyberSourceReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_cybersource_axis_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment1 = $this->getNewPaymentEntity(false, true);
+        $gatewayPayment1 = $this->getLastEntity('cybersource', true);
+
+        $this->assertNull($payment1['reference1']);
+
+        $entries[] = $this->overrideAxisPayment($gatewayPayment1,[],'cybersource');
+
+        $file = $this->writeToExcelFile($entries, 'axis', 'files/settlement','Sale');
+        $this->runForFiles([$file], 'Axis');
+
+        $updatedPayment1 = $this->getEntityById('payment' ,$payment1['id'], true);
+
+        $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
+        // Recon should not overwrite reference2 if it was saved before
+        $this->assertEquals($payment1['reference2'], $updatedPayment1['reference2']);
+        $this->assertTrue($updatedPayment1['gateway_captured']);
     }
 
     /*
@@ -158,20 +212,38 @@ class ReconciliationFileTest extends TestCase
         return array_merge($facade, $forceOverride);
     }
 
-    private function overrideHdfcPayment(array $payment, array $forceOverride = [], $acquirer = 'fss')
+    private function overrideHdfcPayment(array $payment, array $forceOverride = [], $gateway = 'fss')
     {
         $facade = $this->testData['facades']['hdfc'];
 
         $facade[HDFCPaymentRecon::COLUMN_PAYMENT_ID[0]] = $payment['payment_id'];
+        $facade[HDFCPaymentRecon::COLUMN_AUTH_CODE[0]]  = "'" . random_integer(6);
+        $facade[HDFCPaymentRecon::COLUMN_ARN[0]]        = "'" . str_random(24);
 
-        if ($acquirer === 'cybersource')
+        if ($gateway === 'cybersource')
         {
-            $facade[HDFCPaymentRecon::COLUMN_TERMINAL_NUMBER[0]] = '\'89050258';
+            $facade[HDFCPaymentRecon::COLUMN_TERMINAL_NUMBER[0]] = "'89050258";
         }
 
         return $facade;
     }
 
+    private function overrideAxisPayment(array $payment, array $forceOverride = [], $gateway = 'migs')
+    {
+        $facade = $this->testData['facades']['axis'];
+
+        $facade[AxisPaymentRecon::COLUMN_PAYMENT_ID[0]] = $payment['payment_id'];
+        $facade[AxisPaymentRecon::COLUMN_AUTH_CODE]     = random_integer(6);
+        $facade[AxisPaymentRecon::COLUMN_ARN]           = str_random(24);
+
+        if ($gateway === 'cybersource')
+        {
+            $facade[AxisPaymentRecon::COLUMN_MID] = 'RAZORPAYCYBS';
+            $facade[AxisPaymentRecon::COLUMN_ORDER_ID] = $payment['ref'];
+        }
+
+        return $facade;
+    }
     protected function runForFiles(array $files, string $gateway)
     {
         $testData = $this->testData['reconciliate'];
