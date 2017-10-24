@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observable } from 'mobx';
 import { notifyError } from 'common/modal';
 import { adminPost } from 'util/fetch';
-import { Single, Chart } from './graphs';
+import { Single, Chart, getPriceChartOptions } from './graphs';
 import { getFormattedAmount } from 'util/index';
 
 const defaultData = {
@@ -101,46 +101,101 @@ class Stat {
       }
 
       var title = this.getTitle();
+      let legends = [];
 
       if (result.length === 1) {
-        this.component.set(
-          <Single title={title} value={result[0].displayValue} />
-        );
+        let displayValue = result[0].value;
+        if (details.column === 'base_amount') {
+          displayValue = '₹' + displayValue;
+        } else if (details.agg_type === 'success_rate') {
+          displayValue = '%' + displayValue;
+        }
+        this.component.set(<Single title={title} value={displayValue} />);
       } else if (result.length > 0) {
         if (result[0].timestamp) {
-          // This is a time-oritented result
+          // This is a time-oriented result
           let timeData = {
             labels: [],
-            series: [[]],
+            series: [],
           };
-          result.forEach(function(element) {
-            timeData.labels.push(element.timestamp);
-            timeData.series[0].push(element.value);
-          }, this);
 
-          // We want to display at-most 10 labels, so we select a number we will perform MOD with
-          let labelInterpolationMod = Math.ceil(timeData.labels.length / 10);
-          let chartOptions = {
-            showPoint: false,
-            axisX: {
-              showGrid: false,
-              labelInterpolationFnc: function(value, index, labels) {
-                if (index % labelInterpolationMod === 0)
-                  return new Date(value * 1000).toDateString();
-                return null;
-              },
-            },
-            axisY: {
-              showGrid: false,
-            },
-            lineSmooth: false,
-          };
+          // If we have more than two keys in a result, it has to be time-series
+          if (Object.keys(result[0]).length > 2) {
+            /**
+             * First, let's create an object like
+             * {
+             *    timestamp1: {
+             *      method1: value
+             *    },
+             *    timestamp2: {
+             *      method1: value,
+             *      method2: value
+             *    }
+             * }
+             */
+            let series = {};
+            result.forEach(function(element) {
+              const { timestamp, method, value } = element;
+              if (!series[timestamp]) {
+                series[timestamp] = {};
+              }
+              series[timestamp][method] = value;
+            });
+
+            // The keys of the object created above are the labels
+            timeData.labels = Object.keys(series);
+
+            /**
+             * Now, let's initialize an object like
+             * {
+             *    method1: [],
+             *    method2: []
+             * }
+             */
+            let multiLineSeries = {};
+            result.forEach(function(element) {
+              if (!multiLineSeries[element.method]) {
+                multiLineSeries[element.method] = [];
+              }
+            });
+
+            /**
+             * Now, we will populate the array in each value of `multiLineSeries`.
+             * This is important because the methods whose data does not exist in a given label
+             * need to have `null` as the value at that index.
+             */
+            const methods = Object.keys(multiLineSeries);
+            for (let timestamp in series) {
+              for (let m_index in methods) {
+                multiLineSeries[methods[m_index]].push(
+                  series[timestamp][methods[m_index]] || null
+                );
+              }
+            }
+
+            // The values for the series are the arrays created in `multiLineSeries`
+            timeData.series = Object.values(multiLineSeries);
+
+            legends = Object.keys(multiLineSeries);
+            console.log('legends', legends);
+          } else {
+            timeData.series.push([]);
+            result.forEach(function(element) {
+              timeData.labels.push(element.timestamp);
+              timeData.series[0].push(element.value);
+            }, this);
+          }
+
           this.component.set(
             <Chart
               type="line"
               title={title}
               data={timeData}
-              options={chartOptions}
+              options={getPriceChartOptions('line', {
+                ...details,
+                maxLabels: 15,
+              })}
+              legends={legends}
             />
           );
         } else {
@@ -153,34 +208,13 @@ class Stat {
             barData.labels.push(element.method);
             barData.series[0].push(element.value);
           }, this);
-          let chartOptions = {
-            axisY: {
-              labelInterpolationFnc: function(value, index, labels) {
-                let label = labels[index];
 
-                if (label > 100000000) {
-                  label = Math.round(label / 10000000).toString() + ' cr';
-                } else if (label > 1000000) {
-                  label = Math.round(label / 100000).toString() + ' L';
-                } else if (label > 10000) {
-                  label = Math.round(label / 1000).toString() + ' K';
-                }
-
-                if (details.column === 'base_amount') {
-                  label = '₹' + label;
-                } else if (details.agg_type === 'success_rate') {
-                  label = '%' + label;
-                }
-                return label;
-              },
-            },
-          };
           this.component.set(
             <Chart
               type="bar"
               title={title}
               data={barData}
-              options={chartOptions}
+              options={getPriceChartOptions('bar', details)}
             />
           );
         }
