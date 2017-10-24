@@ -1015,13 +1015,13 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->select($selectCols)
                     ->join(
-                          Table::TOKEN,
-                          function ($join)
-                          use ($tokenIdColumn)
-                     {
-                        $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
-                        $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
-                     })
+                        Table::TOKEN,
+                        function ($join)
+                        use ($tokenIdColumn)
+                        {
+                          $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
+                          $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
+                        })
                     ->where(Entity::RECURRING_TYPE, '=', RecurringType::AUTO)
                     ->where(Entity::STATUS, '=', Status::CREATED)
                     ->where($paymentRecurringColumn, '=', 1)
