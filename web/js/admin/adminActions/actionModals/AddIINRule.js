@@ -55,13 +55,11 @@ export default function AddIINRule() {
         text="OK"
         class="btn"
         pendingClass="small spinner"
-        onSubmit={data => {
-          data.emi = data.emi ? 1 : 0;
+        onSubmit={body => {
+          body.emi = body.emi ? 1 : 0;
           return adminPost({
-            params: {
-              route_name: 'iin_add',
-            },
-            body: data,
+            route_name: 'iin_add',
+            body,
           })
             .then(response => {
               if (response.data.success) {

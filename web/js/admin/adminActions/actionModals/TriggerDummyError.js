@@ -17,7 +17,7 @@ export default function TriggerDummyError() {
         class="btn"
         pendingClass="small spinner"
         onSubmit={() => {
-          return adminFetch({ data: { route_name: 'dummy_critical_error' } })
+          return adminFetch('dummy_critical_error')
             .then(response => {
               if (response.data.success) {
                 notifySuccess('Error triggerred successfully');

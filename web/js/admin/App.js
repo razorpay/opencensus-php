@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Route, matchPath, Switch } from 'react-router-dom';
+import { Route, matchPath, Switch, Redirect } from 'react-router-dom';
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 import MainNavLink from 'admin/components/MainNavLink';
 import ShowWhen from 'admin/components/ShowWhen';
@@ -41,6 +41,7 @@ export default class App extends Component {
             <Route path="/groups" component={GroupList} />
             <Route path="/users" component={UserList} />
             <Route path="/roles" component={RoleList} />
+            <Redirect to="/stats" />
           </Switch>
         </main>
         <header />

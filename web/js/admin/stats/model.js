@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observable } from 'mobx';
 import { notifyError } from 'common/modal';
 import { adminPost } from 'util/fetch';
-import { Single, TimeSeries } from './graphs';
+import { Single, Chart, getPriceChartOptions } from './graphs';
 import { getFormattedAmount } from 'util/index';
 
 const defaultData = {
@@ -16,11 +16,15 @@ const defaultData = {
 class Stat {
   constructor(data) {
     this.data = observable(data || defaultData);
-    this.component = observable.box(<div class="spinner" />);
+    this.component = observable.shallowBox(<div class="spinner" />);
   }
 
   getTitle() {
     var data = this.data;
+    if (data.type === 'summary') {
+      return 'Summary';
+    }
+
     var title = data.type === 'sum' ? 'Payment Volume' : 'Success Rate';
     if (data.filter) {
       title = data.filter + ' ' + title;
@@ -85,25 +89,134 @@ class Stat {
     };
 
     return adminPost({
-      merchantId: data.merchant_id,
+      merchant_id: data.merchant_id,
       body,
-      route: 'merchant_analytics',
-    }).then(({ data }) => {
-      if (!data.success) {
-        throw data.errors[0];
-      }
-      var result = data.data.result;
-      var title = this.getTitle();
-      if (result.length === 1) {
-        if (details.column === 'base_amount') {
-          result.forEach(r => (r.value = '₹' + getFormattedAmount(r.value)));
-        } else if (details.agg_type === 'success_rate') {
-          result.forEach(r => (r.value += '%'));
-        }
-        this.component.set(<Single title={title} value={result[0].value} />);
+      route_name: 'merchant_analytics',
+    }).then(response => {
+      var result;
+      if (response) {
+        result = response.result;
       } else {
+        return;
+      }
+
+      var title = this.getTitle();
+      let legends = [];
+
+      if (result.length === 1) {
+        let displayValue = result[0].value;
+        if (details.column === 'base_amount') {
+          displayValue = '₹' + displayValue;
+        } else if (details.agg_type === 'success_rate') {
+          displayValue = '%' + displayValue;
+        }
+        this.component.set(<Single title={title} value={displayValue} />);
+      } else if (result.length > 0) {
         if (result[0].timestamp) {
-          this.component.set(<TimeSeries title={title} value={result} />);
+          // This is a time-oriented result
+          let timeData = {
+            labels: [],
+            series: [],
+          };
+
+          // If we have more than two keys in a result, it has to be time-series
+          if (Object.keys(result[0]).length > 2) {
+            /**
+             * First, let's create an object like
+             * {
+             *    timestamp1: {
+             *      method1: value
+             *    },
+             *    timestamp2: {
+             *      method1: value,
+             *      method2: value
+             *    }
+             * }
+             */
+            let series = {};
+            result.forEach(function(element) {
+              const { timestamp, method, value } = element;
+              if (!series[timestamp]) {
+                series[timestamp] = {};
+              }
+              series[timestamp][method] = value;
+            });
+
+            // The keys of the object created above are the labels
+            timeData.labels = Object.keys(series);
+
+            /**
+             * Now, let's initialize an object like
+             * {
+             *    method1: [],
+             *    method2: []
+             * }
+             */
+            let multiLineSeries = {};
+            result.forEach(function(element) {
+              if (!multiLineSeries[element.method]) {
+                multiLineSeries[element.method] = [];
+              }
+            });
+
+            /**
+             * Now, we will populate the array in each value of `multiLineSeries`.
+             * This is important because the methods whose data does not exist in a given label
+             * need to have `null` as the value at that index.
+             */
+            const methods = Object.keys(multiLineSeries);
+            for (let timestamp in series) {
+              for (let m_index in methods) {
+                multiLineSeries[methods[m_index]].push(
+                  series[timestamp][methods[m_index]] || null
+                );
+              }
+            }
+
+            // The values for the series are the arrays created in `multiLineSeries`
+            timeData.series = Object.values(multiLineSeries);
+
+            legends = Object.keys(multiLineSeries);
+            console.log('legends', legends);
+          } else {
+            timeData.series.push([]);
+            result.forEach(function(element) {
+              timeData.labels.push(element.timestamp);
+              timeData.series[0].push(element.value);
+            }, this);
+          }
+
+          this.component.set(
+            <Chart
+              type="line"
+              title={title}
+              data={timeData}
+              options={getPriceChartOptions('line', {
+                ...details,
+                maxLabels: 15,
+              })}
+              legends={legends}
+            />
+          );
+        } else {
+          // This is not a time-oriented result
+          let barData = {
+            labels: [],
+            series: [[]],
+          };
+          result.forEach(function(element) {
+            barData.labels.push(element.method);
+            barData.series[0].push(element.value);
+          }, this);
+
+          this.component.set(
+            <Chart
+              type="bar"
+              title={title}
+              data={barData}
+              options={getPriceChartOptions('bar', details)}
+            />
+          );
         }
       }
     });
@@ -112,7 +225,7 @@ class Stat {
 
 export default class StatsModel {
   constructor() {
-    this.selected = observable.box(0);
+    this.selected = observable.shallowBox(0);
     this.items = observable.shallowArray([new Stat()]);
   }
 
