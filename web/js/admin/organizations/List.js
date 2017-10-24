@@ -16,12 +16,12 @@ const fields = [
   ['Display Name', item => item.display_name],
   ['Email', item => item.email],
   ['Email Domain', item => item.email_domains.join(',')],
-  ['Actions', item => <Actions id={item.id} />],
+  ['Actions', item => <Actions item={item} />],
 ];
 
-const Actions = item => (
+const Actions = ({ item }) => (
   <div>
-    <div class="link" onClick={showEntity}>
+    <div class="link" onClick={item::showEntity}>
       Edit
     </div>
     <br />

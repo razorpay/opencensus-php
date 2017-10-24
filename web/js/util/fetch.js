@@ -34,7 +34,7 @@ export function adminPut(params, config) {
   return fetch({
     url: '/admin/generic',
     method: 'put',
-    ...parseParams(params),
+    data: parseParams(params),
   });
 }
 

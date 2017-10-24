@@ -21,7 +21,7 @@ import WorkflowList from 'admin/workflows/List';
 import GroupList from 'admin/groups/List';
 import UserList from 'admin/users/List';
 import OrgsList from 'admin/organizations/List';
-import FieldMaps from 'admin/FieldMaps/List';
+import FieldMaps from 'admin/fieldmaps/List';
 // import RoleList from "admin/roles/List";
 
 export default class App extends Component {

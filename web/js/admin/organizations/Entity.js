@@ -1,32 +1,13 @@
 import React, { Component } from 'react';
 
-import Form from 'ui/Form';
-import Collection from 'model/collection';
-import Field, { SelectField, CheckField, FileField } from 'ui/Field';
 import { openSlider, openModal } from 'common/modal';
-import Table from 'ui/Table';
-import { adminFetch, adminPut } from 'util/fetch';
 
-import OrgForm from './OrgForm';
+import { adminPut } from 'util/fetch';
 
-const permsFields = [
-  ['', () => <CheckField />],
-  ['Permission', item => item.name],
-  ['Category', item => item.merchant_detail],
-  ['Assignable', item => <CheckField disabled={!item.assignable} />],
-];
+import OrgForm from './OrganizationForm';
+import PermissionsList from './PermissionsList';
 
 class EditOrg extends Component {
-  permissions = new Collection({
-    data: {
-      route_name: 'permission_get_by_type',
-      url_params: {
-        type: 'assignable', //this.props.model ? "assignable" : "all"
-      },
-    },
-    fetchFn: adminFetch,
-  });
-
   save = body => {
     let params = {
       content_type: 'application/json',
@@ -43,12 +24,9 @@ class EditOrg extends Component {
     return adminPut(params);
   };
 
-  editPermissions = () => {
+  openPermissions = () => {
     openModal(
-      <div>
-        <header>Permissions</header>
-        <Table model={this.permissions} fields={permsFields} />
-      </div>
+      <PermissionsList orgId={this.props.model && this.props.model.id} />
     );
   };
 
@@ -57,7 +35,7 @@ class EditOrg extends Component {
       <OrgForm
         {...this.props.model}
         onSubmit={this.save}
-        onEditPerms={this.editPermissions}
+        onEditPerms={this.openPermissions}
       />
     );
   }

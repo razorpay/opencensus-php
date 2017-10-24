@@ -21,7 +21,7 @@ export default function OrgForm({
 }) {
   return (
     <div>
-      <header>Edit Org - {id} </header>
+      <header>{id ? `Edit Org - ${id}` : 'Add an Organization'}</header>
       <Form onSubmit={onSubmit}>
         <input
           type="hidden"
