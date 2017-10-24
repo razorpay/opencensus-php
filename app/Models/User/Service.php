@@ -62,6 +62,8 @@ class Service extends Base\Service
                     $tokenData['id'],
                     $tokenSignUpInput);
             }
+
+            unset($input['merchant_invitation']);
         }
 
         /**
