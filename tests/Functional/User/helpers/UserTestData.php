@@ -231,4 +231,14 @@ return [
             ],
         ],
     ],
+
+    'testGetUserByEmail' => [
+        'request' => [
+            'url'    => '/users/email/%s',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 ];
