@@ -31,8 +31,6 @@ class CreateBharatQrTable extends Migration
 
             $table->string(BharatQr::ENTITY_TYPE, 50);
 
-            $table->integer(BharatQr::IDENTIFIER_PADDING);
-
             $table->integer(BharatQr::AMOUNT)
                   ->unsigned()
                   ->nullable();
@@ -44,8 +42,6 @@ class CreateBharatQrTable extends Migration
             $table->integer(BharatQr::CREATED_AT);
 
             $table->integer(BharatQr::UPDATED_AT);
-
-            $table->index(BharatQr::IDENTIFIER_PADDING);
 
             $table->index(BharatQr::ENTITY_ID);
 
@@ -65,12 +61,11 @@ class CreateBharatQrTable extends Migration
         switch(DB::connection()->getPDO()->getAttribute(PDO::ATTR_DRIVER_NAME))
         {
             case 'mysql':
-                DB::statement('ALTER TABLE bharat_qr CHANGE identifier_padding identifier_padding INT(10) AUTO_INCREMENT');
+                DB::statement('ALTER TABLE bharat_qr ADD COLUMN identifier_padding INT(10) AUTO_INCREMENT UNIQUE FIRST');
                 break;
 
             case 'sqlite':
-                DB::statement('ALTER TABLE bharat_qr DROP COLUMN identifier_padding');
-                DB::statement('ALTER TABLE bharat_qr ADD COLUMN identifier_padding int AUTOINCREMENT');
+                DB::statement('ALTER TABLE bharat_qr ADD COLUMN identifier_padding int DEFAULT 1');
                 break;
 
             default:
