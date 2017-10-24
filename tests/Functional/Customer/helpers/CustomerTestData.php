@@ -378,7 +378,6 @@ return [
                     'expiry_month' => '11',
                     'expiry_year'  => '2020',
                     'name'         => 'Random',
-                    'cvv'          => '123',
                 ]
             ],
         ],

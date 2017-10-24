@@ -254,8 +254,6 @@ trait PaymentTrait
             'content' => [
                 'method'     => 'netbanking',
                 'bank'       => 'ICIC',
-                'max_amount' => 100000,
-                'recurring'  => $recurring,
             ]
         ];
 

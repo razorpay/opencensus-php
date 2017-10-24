@@ -187,8 +187,9 @@ class Core extends Base\Core
         // we might need to do a similar thing when we start with
         // global charge at will recurring.
         //
-        if (($this->app['basicauth']->isProxyOrPrivilegeAuth() === true) and
-            (isset($input['cvv']) === false))
+        if ((($this->app['basicauth']->isProxyOrPrivilegeAuth() === true) and
+            (isset($input['cvv']) === false)) or
+            (Route::currentRouteName() === 'customer_create_token'))
         {
             return;
         }
