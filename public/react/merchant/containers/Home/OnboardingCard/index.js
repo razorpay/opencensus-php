@@ -22,7 +22,7 @@ const NewProducts = () => {
       </p>
       <div className="new-products-row">
         {newProducts.map((product, key) => (
-          <div key={key} className={`product-item`}>
+          <div key={key} className={`product-item`} style={productItemStyle}>
             <MediaCard title={product.name} symbol={product.symbol}>
               <div className="text-small m-b">{product.description}</div>
               <div className="links">
