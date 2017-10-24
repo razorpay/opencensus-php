@@ -82,9 +82,6 @@ abstract class Base extends Core
      */
     protected function handleProcessingFailure(Exception\GatewayFileException $e)
     {
-        throw $e;
-
-
         $this->trace->traceException($e);
 
         if ($this->shouldNotReportFailure($e->getCode()) === true)

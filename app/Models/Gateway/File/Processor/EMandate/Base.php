@@ -61,7 +61,6 @@ abstract class Base extends BaseProcessor
         }
         catch (\Throwable $e)
         {
-            throw $e;
             $this->trace->traceException(
                             $e,
                             Trace::INFO,
@@ -94,7 +93,6 @@ abstract class Base extends BaseProcessor
         }
         catch (\Throwable $e)
         {
-            throw $e;
             $this->trace->traceException(
                             $e,
                             Trace::INFO,
