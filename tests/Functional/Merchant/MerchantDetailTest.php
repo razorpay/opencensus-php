@@ -297,10 +297,10 @@ class MerchantDetailTest extends TestCase
                                              'email' => 'razorpay@razorpay.com']);
         $merchantDetailData = [
             'merchant_id'        => '10000000000155',
-            'business_type'      => 1,
-            'transaction_volume' => 5,
-            'department'         => 6,
-            'contact_mobile'     => 8722627189,
+            'business_type'      => "1",
+            'transaction_volume' => "5",
+            'department'         => "6",
+            'contact_mobile'     => "8722627189",
         ];
 
         $this->fixtures->create('merchant_detail', $merchantDetailData);

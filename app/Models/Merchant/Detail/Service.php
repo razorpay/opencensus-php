@@ -316,7 +316,7 @@ class Service extends Base\Service
             {
                 if (empty($merchantDetails[$key]) === false)
                 {
-                    $presignupDetails[$key] = $merchantDetails[$key];
+                    $presignupDetails[$key] = (string) $merchantDetails[$key];
                 }
                 else
                 {
