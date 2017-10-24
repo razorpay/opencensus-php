@@ -91,18 +91,23 @@ class Stat {
     }).then(({ result }) => {
       var title = this.getTitle();
 
-      if (result.length > 0) {
-        if (Object.keys(result[0])[0] !== 'timestamp') {
-          // This is not a time-oriented result
-          if (details.column === 'base_amount') {
-            result.forEach(r => (r.value = '₹' + getFormattedAmount(r.value)));
-          } else if (details.agg_type && details.agg_type === 'success_rate') {
-            result.forEach(r => (r.value += '%'));
-          }
-          // this.component.set(<Single title={title} value={result[0].value} />);
-        } else {
+      if (details.column === 'base_amount') {
+        result.forEach(r => {
+          r.displayValue = '₹' + getFormattedAmount(r.value);
+        });
+      } else if (details.agg_type === 'success_rate') {
+        result.forEach(r => {
+          r.displayValue = r.value + '%';
+        });
+      }
+
+      if (result.length === 1) {
+        this.component.set(
+          <Single title={title} value={result[0].displayValue} />
+        );
+      } else {
+        if (result[0].timestamp) {
           // This is a time-oritented result
-          console.log('time-series');
           let timeData = {
             labels: [],
             series: [[]],
@@ -131,19 +136,6 @@ class Stat {
           );
         }
       }
-
-      // if (result.length === 1) {
-      //   if (details.column === 'base_amount') {
-      //     result.forEach(r => (r.value = '₹' + getFormattedAmount(r.value)));
-      //   } else if (details.agg_type === 'success_rate') {
-      //     result.forEach(r => (r.value += '%'));
-      //   }
-      //   this.component.set(<Single title={title} value={result[0].value} />);
-      // } else {
-      //   if (result[0].timestamp) {
-      //     this.component.set(<TimeSeries title={title} value={result} />);
-      //   }
-      // }
     });
   }
 }
