@@ -93,7 +93,13 @@ class Stat {
       body,
       route_name: 'merchant_analytics',
     }).then(response => {
-      var result = [{ value: 0 }];
+      var result;
+      if (response) {
+        result = response.result;
+      } else {
+        return;
+      }
+
       var title = this.getTitle();
 
       if (result.length === 1) {
