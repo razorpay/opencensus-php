@@ -1,12 +1,12 @@
+$side-width = 216px
 .dual-container
-  @side-width = 216px
   min-height: 640px
   aside
     .field
       display: block
     position: fixed
     top: 50px
-    width: @side-width
+    width: $side-width
     bottom: 0
     background: #fff
     box-shadow: 1px 2px 9px rgba(0,0,0,.1)
@@ -20,7 +20,7 @@
       display: block
   main
     padding-top: 1px
-    padding-left: @side-width
+    padding-left: $side-width
     min-height: 640px
     background: repeating-linear-gradient(0deg, transparent, transparent 12px, rgba(0, 0, 0, .12) 1px, transparent 13px), repeating-linear-gradient(90deg, transparent, transparent 12px, rgba(0, 0, 0, .12) 1px, transparent 13px)
     background-attachment: fixed
