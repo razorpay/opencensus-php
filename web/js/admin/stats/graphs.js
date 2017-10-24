@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Chartist from 'chartist';
 
-export class SingleValue extends Component {
+export class Single extends Component {
   render() {
     let { title, value } = this.props;
 
