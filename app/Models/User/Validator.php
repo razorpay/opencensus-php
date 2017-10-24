@@ -2,6 +2,7 @@
 
 namespace RZP\Models\User;
 
+use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -73,18 +74,13 @@ class Validator extends Base\Validator
             return;
         }
 
-        if($_SERVER['HTTP_HOST'] === 'dashboard.razorpay.com' or $_SERVER['HTTP_HOST'] === 'betadashboard.razorpay.com')
+        $app = App::getFacadeRoot();
+
+        if($app->environment('production') === true)
         {
             $captchaResponse = $input[Entity::CAPTCHA] ?? null;
 
-            if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) and $_SERVER['HTTP_X_FORWARDED_FOR'])
-            {
-                $clientIpAddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
-            }
-            else
-            {
-                $clientIpAddress = $_SERVER['REMOTE_ADDR'];
-            }
+            $clientIpAddress = $_SERVER['HTTP_X_IP_ADDRESS'];
 
             $noCaptchaSecret = config('app.signup.nocaptcha_secret');
 

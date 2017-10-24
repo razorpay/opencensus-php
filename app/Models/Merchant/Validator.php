@@ -147,7 +147,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createSubMerchantUserValidators = [
-        'owner_validaton',
+        'sub_merchant_owner',
     ];
 
     protected static $editEmailValidators = [
@@ -169,8 +169,11 @@ class Validator extends Base\Validator
     }
 
     /**
-     * validates if the user who is attempting to create a submerchant user is the owner or not.
+     * validates if the user who is attempting to create a submerchant user is the owner  or not.
+     *
      * @param array $input
+     *
+     * @throws Exception\BadRequestException
      */
     protected function validateSubMerchantOwner(array $input)
     {

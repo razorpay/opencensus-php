@@ -1485,7 +1485,11 @@ class Service extends Base\Service
 
         $input['email']  = $subMerchant->getEmail();
 
-        (new Merchant\Validator)->validateInput('create_sub_merchant_user', $input);
+        $input['merchant_id'] = $this->merchant->getId();
+
+        (new Merchant\Validator)->validateInput('createSubMerchantUser', $input);
+
+        unset($input['merchant_id']);
 
         //Creates a user from the given data.
         $userData = $this->formatUserCreationData($input, $subMerchant);
