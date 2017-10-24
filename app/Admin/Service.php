@@ -519,6 +519,10 @@ class Service extends Base\Service
 
         $mode = $input['mode'];
 
+        $input['mode'] = $input['terminal_mode'];
+
+        unset($input['terminal_mode']);
+
         if (empty($error))
         {
             $this->dropFields($input, [
