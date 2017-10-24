@@ -160,6 +160,8 @@ class Server extends Base\Mock\Server
 
     protected function getAuthorizeResponseArray(array $input)
     {
+        $vpa = $input[RequestFields::PAYER_TYPE][RequestFields::VIRTUAL_ADDRESS];
+
         $content = [
             ResponseFields::PSP_REFERENCE_NO       => $input[RequestFields::REQUEST_INFO][RequestFields::PSP_REFERENCE_NO],
             ResponseFields::UPI_TRANS_REFERENCE_NO => random_int(100000, 999999),
@@ -170,9 +172,15 @@ class Server extends Base\Mock\Server
             ResponseFields::STATUS                 => 'S',
             ResponseFields::STATUS_DESCRIPTION     => 'Transaction Pending waiting for response',
             ResponseFields::ADDITIONAL_INFO        => [],
-            ResponseFields::PAYER_VPA              => $input[RequestFields::PAYER_TYPE][RequestFields::VIRTUAL_ADDRESS],
+            ResponseFields::PAYER_VPA              => $vpa,
             ResponseFields::PAYEE_VPA              => self::DEFAULT_PAYEE_VPA,
         ];
+
+        if ($vpa === 'failedcollect@sbi')
+        {
+            $content[ResponseFields::STATUS] = 'F';
+            $content[ResponseFields::STATUS_DESCRIPTION] = 'Payment failed';
+        }
 
         return [ResponseFields::API_RESPONSE => $content];
     }

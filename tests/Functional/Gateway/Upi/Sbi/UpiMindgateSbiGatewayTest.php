@@ -6,6 +6,7 @@ use Excel;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Upi\Sbi\RefundFile;
+use RZP\Gateway\Upi\Sbi\ResponseFields;
 use RZP\Models\Payment;
 use RZP\Constants\Entity;
 use RZP\Models\Payment\Method;
@@ -86,6 +87,24 @@ class UpiMindgateSbiGatewayTest extends TestCase
     }
 
     /**
+     * Force the gateway to raise a failure on trying
+     * to initiate web collect
+     */
+    public function testFailedCollect()
+    {
+        $this->payment['vpa'] = 'failedcollect@sbi';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPaymentViaAjaxRoute($this->payment);
+        });
+    }
+
+    // TODO: testCollectRejectedFailure test case
+
+    /**
      * This verifies the transaction status after a payment has been successfully made.
      */
     public function testPaymentVerify()
@@ -107,7 +126,38 @@ class UpiMindgateSbiGatewayTest extends TestCase
         $this->assertEquals(1, $payment[Payment\Entity::VERIFIED]);
     }
 
-    // TODO: Test case for when we verify a payment without getting async callback response
+    public function testPaymentPendingVerifyFailed()
+    {
+        $this->testPayment();
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $data = $this->testData['testVerifyFailed'];
+
+        $this->mockVerifyFailed();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment[Payment\Entity::ID]);
+            });
+    }
+
+    public function testPaymentFailedVerifyFailed()
+    {
+        $this->testFailedCollect();
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->mockVerifyFailed('F');
+
+        $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
+
+        // This should result in api success and gateway success = false
+        $this->assertEquals(false, $verify[Constants::GATEWAY][Constants::API_SUCCESS]);
+        $this->assertEquals(false, $verify[Constants::GATEWAY][Constants::GATEWAY_SUCCESS]);
+    }
 
     // TODO: File based refund flow - upload file
     public function testRefundFileFlow()
@@ -166,6 +216,16 @@ class UpiMindgateSbiGatewayTest extends TestCase
         // We assert that there are 2 refunds of 500 rupees, and 1 of 100
         $this->assertEquals(2, $count[500]);
         $this->assertEquals(1, $count[100]);
+    }
+
+    protected function mockVerifyFailed($status = 'P')
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null) use ($status)
+            {
+                $content[ResponseFields::API_RESPONSE][ResponseFields::STATUS] = $status;
+            }
+        );
     }
 
     protected function generateRefundsExcelForSbiUpi($date = false)
