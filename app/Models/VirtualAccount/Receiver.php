@@ -104,11 +104,17 @@ class Receiver
 
         $bharatQr->generateId();
 
-        $bharatQr = $this->generateDynamicQrString($bharatQr);
-
         $bharatQr->merchant()->associate($this->merchant);
 
         $bharatQr->source()->associate($virtualAccount);
+
+
+        //This is done in order to generate identifier padding value
+        $this->repo->saveOrFail($bharatQr);
+
+        $bharatQr = $bharatQr->fresh();
+
+        $bharatQr = $this->generateDynamicQrString($bharatQr);
 
         $this->repo->saveOrFail($bharatQr);
 

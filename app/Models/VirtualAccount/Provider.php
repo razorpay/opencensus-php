@@ -4,7 +4,6 @@ namespace RZP\Models\VirtualAccount;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Models\BharatQr\Entity as BharatQr;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Provider

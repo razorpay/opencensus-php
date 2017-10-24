@@ -159,7 +159,6 @@ class Entity extends Base\PublicEntity
         return Config::get('gateway.bharat_qr.' . $network . '_' . 'code');
     }
 
-
     public function getFormattedAmount()
     {
         $amount = $this->getAmount();

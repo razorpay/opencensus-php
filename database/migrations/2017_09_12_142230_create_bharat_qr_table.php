@@ -22,7 +22,8 @@ class CreateBharatQrTable extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(BharatQr::ID, BharatQr::ID_LENGTH);
+            $table->char(BharatQr::ID, BharatQr::ID_LENGTH)
+                  ->primary();
 
             $table->char(BharatQr::MERCHANT_ID, BharatQr::ID_LENGTH);
 
@@ -30,9 +31,7 @@ class CreateBharatQrTable extends Migration
 
             $table->string(BharatQr::ENTITY_TYPE, 50);
 
-            $table->increments(BharatQr::IDENTIFIER_PADDING);
-
-            $table->unique(array(BharatQr::ID,BharatQr::IDENTIFIER_PADDING));
+            $table->integer(BharatQr::IDENTIFIER_PADDING);
 
             $table->integer(BharatQr::AMOUNT)
                   ->unsigned()
@@ -45,6 +44,8 @@ class CreateBharatQrTable extends Migration
             $table->integer(BharatQr::CREATED_AT);
 
             $table->integer(BharatQr::UPDATED_AT);
+
+            $table->index(BharatQr::IDENTIFIER_PADDING);
 
             $table->index(BharatQr::ENTITY_ID);
 
@@ -60,6 +61,8 @@ class CreateBharatQrTable extends Migration
                   ->on_delete('restrict');
 
         });
+
+        DB::statement('ALTER TABLE bharat_qr CHANGE identifier_padding identifier_padding INT(10) AUTO_INCREMENT');
 
         // This needs to be done here because migrations are run in order of
         // timestamps and bharat qr table gets created after virtualaccount.

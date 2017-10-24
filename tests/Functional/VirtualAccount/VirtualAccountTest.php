@@ -63,7 +63,7 @@ class VirtualAccountTest extends TestCase
 
         $masterCardValue = $tlvArray['04'];
 
-        $visaValue       = $tlvArray['02'];
+        $visaValue = $tlvArray['02'];
 
         assert(16, strlen($masterCardValue));
 
@@ -210,6 +210,7 @@ class VirtualAccountTest extends TestCase
             'amount_expected' => 10000,
             'name'            => 'Second VA'
         ];
+
         $this->createVirtualAccount($input);
 
         $response = $this->fetchVirtualAccounts();
