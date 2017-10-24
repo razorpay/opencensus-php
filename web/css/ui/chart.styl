@@ -18,545 +18,546 @@ $colors = {
   line-height: 1
 
 .ct-chart-line .ct-label,
-.ct-chart-bar .ct-label 
+.ct-chart-bar .ct-label
   display: block
-  display: flex 
+  display: flex
 
 .ct-chart-pie .ct-label,
-.ct-chart-donut .ct-label 
-  dominant-baseline: central 
+.ct-chart-donut .ct-label
+  dominant-baseline: central
 
-.ct-label.ct-horizontal.ct-start 
+.ct-label.ct-horizontal.ct-start
   align-items: flex-end
   justify-content: flex-start
   text-align: left
-  text-anchor: start 
+  text-anchor: start
 
-.ct-label.ct-horizontal.ct-end 
+.ct-label.ct-horizontal.ct-end
   align-items: flex-start
   justify-content: flex-start
   text-align: left
-  text-anchor: start 
+  text-anchor: start
 
-.ct-label.ct-vertical.ct-start 
+.ct-label.ct-vertical.ct-start
   align-items: flex-end
   justify-content: flex-end
   text-align: right
-  text-anchor: end 
+  text-anchor: end
+  white-space: nowrap
 
-.ct-label.ct-vertical.ct-end 
+.ct-label.ct-vertical.ct-end
   align-items: flex-end
   justify-content: flex-start
   text-align: left
-  text-anchor: start 
+  text-anchor: start
 
-.ct-chart-bar .ct-label.ct-horizontal.ct-start 
+.ct-chart-bar .ct-label.ct-horizontal.ct-start
   align-items: flex-end
   justify-content: center
   text-align: center
-  text-anchor: start 
+  text-anchor: start
 
-.ct-chart-bar .ct-label.ct-horizontal.ct-end 
+.ct-chart-bar .ct-label.ct-horizontal.ct-end
   align-items: flex-start
   justify-content: center
   text-align: center
-  text-anchor: start 
+  text-anchor: start
 
-.ct-chart-bar.ct-horizontal-bars .ct-label.ct-horizontal.ct-start 
+.ct-chart-bar.ct-horizontal-bars .ct-label.ct-horizontal.ct-start
   align-items: flex-end
   justify-content: flex-start
   text-align: left
-  text-anchor: start 
+  text-anchor: start
 
-.ct-chart-bar.ct-horizontal-bars .ct-label.ct-horizontal.ct-end 
+.ct-chart-bar.ct-horizontal-bars .ct-label.ct-horizontal.ct-end
   align-items: flex-start
   justify-content: flex-start
   text-align: left
-  text-anchor: start 
+  text-anchor: start
 
-.ct-chart-bar.ct-horizontal-bars .ct-label.ct-vertical.ct-start 
+.ct-chart-bar.ct-horizontal-bars .ct-label.ct-vertical.ct-start
   align-items: center
   justify-content: flex-end
   text-align: right
-  text-anchor: end 
+  text-anchor: end
 
-.ct-chart-bar.ct-horizontal-bars .ct-label.ct-vertical.ct-end 
+.ct-chart-bar.ct-horizontal-bars .ct-label.ct-vertical.ct-end
   align-items: center
   justify-content: flex-start
   text-align: left
-  text-anchor: end 
+  text-anchor: end
 
-.ct-grid 
+.ct-grid
   stroke: rgba(0, 0, 0, 0.2)
   stroke-width: 1px
-  stroke-dasharray: 2px 
+  stroke-dasharray: 2px
 
-.ct-grid-background 
-  fill: none 
+.ct-grid-background
+  fill: none
 
-.ct-point 
+.ct-point
   stroke-width: 10px
-  stroke-linecap: round 
+  stroke-linecap: round
 
-.ct-line 
+.ct-line
   fill: none
-  stroke-width: 1.5px 
+  stroke-width: 1.5px
 
-.ct-area 
+.ct-area
   stroke: none
-  fill-opacity: 0.1 
+  fill-opacity: 0.1
 
-.ct-bar 
+.ct-bar
   fill: none
-  stroke-width: 10px 
+  stroke-width: 10px
 
-.ct-slice-donut 
+.ct-slice-donut
   fill: none
-  stroke-width: 60px 
+  stroke-width: 60px
 
-.ct-series-a .ct-point, .ct-series-a .ct-line, .ct-series-a .ct-bar, .ct-series-a .ct-slice-donut 
+.ct-series-a .ct-point, .ct-series-a .ct-line, .ct-series-a .ct-bar, .ct-series-a .ct-slice-donut
   stroke: $colors.a
 
-.ct-series-a .ct-slice-pie, .ct-series-a .ct-slice-donut-solid, .ct-series-a .ct-area 
+.ct-series-a .ct-slice-pie, .ct-series-a .ct-slice-donut-solid, .ct-series-a .ct-area
   fill: $colors.a
 
-.ct-series-b .ct-point, .ct-series-b .ct-line, .ct-series-b .ct-bar, .ct-series-b .ct-slice-donut 
+.ct-series-b .ct-point, .ct-series-b .ct-line, .ct-series-b .ct-bar, .ct-series-b .ct-slice-donut
   stroke: $colors.b
 
-.ct-series-b .ct-slice-pie, .ct-series-b .ct-slice-donut-solid, .ct-series-b .ct-area 
+.ct-series-b .ct-slice-pie, .ct-series-b .ct-slice-donut-solid, .ct-series-b .ct-area
   fill: $colors.b
 
-.ct-series-c .ct-point, .ct-series-c .ct-line, .ct-series-c .ct-bar, .ct-series-c .ct-slice-donut 
+.ct-series-c .ct-point, .ct-series-c .ct-line, .ct-series-c .ct-bar, .ct-series-c .ct-slice-donut
   stroke: $colors.c
 
-.ct-series-c .ct-slice-pie, .ct-series-c .ct-slice-donut-solid, .ct-series-c .ct-area 
+.ct-series-c .ct-slice-pie, .ct-series-c .ct-slice-donut-solid, .ct-series-c .ct-area
   fill: $colors.c
 
-.ct-series-d .ct-point, .ct-series-d .ct-line, .ct-series-d .ct-bar, .ct-series-d .ct-slice-donut 
+.ct-series-d .ct-point, .ct-series-d .ct-line, .ct-series-d .ct-bar, .ct-series-d .ct-slice-donut
   stroke: $colors.d
 
-.ct-series-d .ct-slice-pie, .ct-series-d .ct-slice-donut-solid, .ct-series-d .ct-area 
+.ct-series-d .ct-slice-pie, .ct-series-d .ct-slice-donut-solid, .ct-series-d .ct-area
   fill: $colors.d
 
-.ct-series-e .ct-point, .ct-series-e .ct-line, .ct-series-e .ct-bar, .ct-series-e .ct-slice-donut 
+.ct-series-e .ct-point, .ct-series-e .ct-line, .ct-series-e .ct-bar, .ct-series-e .ct-slice-donut
   stroke: $colors.e
 
-.ct-series-e .ct-slice-pie, .ct-series-e .ct-slice-donut-solid, .ct-series-e .ct-area 
+.ct-series-e .ct-slice-pie, .ct-series-e .ct-slice-donut-solid, .ct-series-e .ct-area
   fill: $colors.e
 
-.ct-series-f .ct-point, .ct-series-f .ct-line, .ct-series-f .ct-bar, .ct-series-f .ct-slice-donut 
+.ct-series-f .ct-point, .ct-series-f .ct-line, .ct-series-f .ct-bar, .ct-series-f .ct-slice-donut
   stroke: $colors.f
 
-.ct-series-f .ct-slice-pie, .ct-series-f .ct-slice-donut-solid, .ct-series-f .ct-area 
+.ct-series-f .ct-slice-pie, .ct-series-f .ct-slice-donut-solid, .ct-series-f .ct-area
   fill: $colors.f
 
-.ct-series-g .ct-point, .ct-series-g .ct-line, .ct-series-g .ct-bar, .ct-series-g .ct-slice-donut 
+.ct-series-g .ct-point, .ct-series-g .ct-line, .ct-series-g .ct-bar, .ct-series-g .ct-slice-donut
   stroke: $colors.g
 
-.ct-series-g .ct-slice-pie, .ct-series-g .ct-slice-donut-solid, .ct-series-g .ct-area 
+.ct-series-g .ct-slice-pie, .ct-series-g .ct-slice-donut-solid, .ct-series-g .ct-area
   fill: $colors.g
 
-.ct-series-h .ct-point, .ct-series-h .ct-line, .ct-series-h .ct-bar, .ct-series-h .ct-slice-donut 
+.ct-series-h .ct-point, .ct-series-h .ct-line, .ct-series-h .ct-bar, .ct-series-h .ct-slice-donut
   stroke: $colors.h
 
-.ct-series-h .ct-slice-pie, .ct-series-h .ct-slice-donut-solid, .ct-series-h .ct-area 
+.ct-series-h .ct-slice-pie, .ct-series-h .ct-slice-donut-solid, .ct-series-h .ct-area
   fill: $colors.h
 
-.ct-series-i .ct-point, .ct-series-i .ct-line, .ct-series-i .ct-bar, .ct-series-i .ct-slice-donut 
+.ct-series-i .ct-point, .ct-series-i .ct-line, .ct-series-i .ct-bar, .ct-series-i .ct-slice-donut
   stroke: $colors.i
 
-.ct-series-i .ct-slice-pie, .ct-series-i .ct-slice-donut-solid, .ct-series-i .ct-area 
+.ct-series-i .ct-slice-pie, .ct-series-i .ct-slice-donut-solid, .ct-series-i .ct-area
   fill: $colors.i
 
-.ct-series-j .ct-point, .ct-series-j .ct-line, .ct-series-j .ct-bar, .ct-series-j .ct-slice-donut 
+.ct-series-j .ct-point, .ct-series-j .ct-line, .ct-series-j .ct-bar, .ct-series-j .ct-slice-donut
   stroke: $colors.j
 
-.ct-series-j .ct-slice-pie, .ct-series-j .ct-slice-donut-solid, .ct-series-j .ct-area 
+.ct-series-j .ct-slice-pie, .ct-series-j .ct-slice-donut-solid, .ct-series-j .ct-area
   fill: $colors.j
 
-.ct-series-k .ct-point, .ct-series-k .ct-line, .ct-series-k .ct-bar, .ct-series-k .ct-slice-donut 
+.ct-series-k .ct-point, .ct-series-k .ct-line, .ct-series-k .ct-bar, .ct-series-k .ct-slice-donut
   stroke: #eacf7d
 
-.ct-series-k .ct-slice-pie, .ct-series-k .ct-slice-donut-solid, .ct-series-k .ct-area 
+.ct-series-k .ct-slice-pie, .ct-series-k .ct-slice-donut-solid, .ct-series-k .ct-area
   fill: #eacf7d
 
-.ct-series-l .ct-point, .ct-series-l .ct-line, .ct-series-l .ct-bar, .ct-series-l .ct-slice-donut 
+.ct-series-l .ct-point, .ct-series-l .ct-line, .ct-series-l .ct-bar, .ct-series-l .ct-slice-donut
   stroke: #86797d
 
-.ct-series-l .ct-slice-pie, .ct-series-l .ct-slice-donut-solid, .ct-series-l .ct-area 
+.ct-series-l .ct-slice-pie, .ct-series-l .ct-slice-donut-solid, .ct-series-l .ct-area
   fill: #86797d
 
-.ct-series-m .ct-point, .ct-series-m .ct-line, .ct-series-m .ct-bar, .ct-series-m .ct-slice-donut 
+.ct-series-m .ct-point, .ct-series-m .ct-line, .ct-series-m .ct-bar, .ct-series-m .ct-slice-donut
   stroke: #b2c326
 
-.ct-series-m .ct-slice-pie, .ct-series-m .ct-slice-donut-solid, .ct-series-m .ct-area 
+.ct-series-m .ct-slice-pie, .ct-series-m .ct-slice-donut-solid, .ct-series-m .ct-area
   fill: #b2c326
 
-.ct-series-n .ct-point, .ct-series-n .ct-line, .ct-series-n .ct-bar, .ct-series-n .ct-slice-donut 
+.ct-series-n .ct-point, .ct-series-n .ct-line, .ct-series-n .ct-bar, .ct-series-n .ct-slice-donut
   stroke: #6188e2
 
-.ct-series-n .ct-slice-pie, .ct-series-n .ct-slice-donut-solid, .ct-series-n .ct-area 
+.ct-series-n .ct-slice-pie, .ct-series-n .ct-slice-donut-solid, .ct-series-n .ct-area
   fill: #6188e2
 
-.ct-series-o .ct-point, .ct-series-o .ct-line, .ct-series-o .ct-bar, .ct-series-o .ct-slice-donut 
+.ct-series-o .ct-point, .ct-series-o .ct-line, .ct-series-o .ct-bar, .ct-series-o .ct-slice-donut
   stroke: #a748ca
 
-.ct-series-o .ct-slice-pie, .ct-series-o .ct-slice-donut-solid, .ct-series-o .ct-area 
+.ct-series-o .ct-slice-pie, .ct-series-o .ct-slice-donut-solid, .ct-series-o .ct-area
   fill: #a748ca
 
-.ct-square 
+.ct-square
   display: block
   position: relative
-  width: 100% 
-  .ct-square:before 
+  width: 100%
+  .ct-square:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 100% 
-  .ct-square:after 
+    padding-bottom: 100%
+  .ct-square:after
     content: ''
     display: table
-    clear: both 
-  .ct-square > svg 
+    clear: both
+  .ct-square > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
 
-.ct-minor-second 
+.ct-minor-second
   display: block
   position: relative
-  width: 100% 
-  .ct-minor-second:before 
+  width: 100%
+  .ct-minor-second:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 93.75% 
-  .ct-minor-second:after 
+    padding-bottom: 93.75%
+  .ct-minor-second:after
     content: ''
     display: table
-    clear: both 
-  .ct-minor-second > svg 
+    clear: both
+  .ct-minor-second > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
 
-.ct-major-second 
+.ct-major-second
   display: block
   position: relative
-  width: 100% 
-  .ct-major-second:before 
+  width: 100%
+  .ct-major-second:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 88.8888888889% 
-  .ct-major-second:after 
+    padding-bottom: 88.8888888889%
+  .ct-major-second:after
     content: ''
     display: table
-    clear: both 
-  .ct-major-second > svg 
+    clear: both
+  .ct-major-second > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
 
-.ct-minor-third 
+.ct-minor-third
   display: block
   position: relative
-  width: 100% 
-  .ct-minor-third:before 
+  width: 100%
+  .ct-minor-third:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 83.3333333333% 
-  .ct-minor-third:after 
+    padding-bottom: 83.3333333333%
+  .ct-minor-third:after
     content: ''
     display: table
-    clear: both 
-  .ct-minor-third > svg 
+    clear: both
+  .ct-minor-third > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
 
-.ct-major-third 
+.ct-major-third
   display: block
   position: relative
-  width: 100% 
-  .ct-major-third:before 
+  width: 100%
+  .ct-major-third:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 80% 
-  .ct-major-third:after 
+    padding-bottom: 80%
+  .ct-major-third:after
     content: ''
     display: table
-    clear: both 
-  .ct-major-third > svg 
+    clear: both
+  .ct-major-third > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
 
-.ct-perfect-fourth 
+.ct-perfect-fourth
   display: block
   position: relative
-  width: 100% 
-  .ct-perfect-fourth:before 
+  width: 100%
+  .ct-perfect-fourth:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 75% 
-  .ct-perfect-fourth:after 
+    padding-bottom: 75%
+  .ct-perfect-fourth:after
     content: ''
     display: table
-    clear: both 
-  .ct-perfect-fourth > svg 
+    clear: both
+  .ct-perfect-fourth > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
 
-.ct-perfect-fifth 
+.ct-perfect-fifth
   display: block
   position: relative
-  width: 100% 
-  .ct-perfect-fifth:before 
+  width: 100%
+  .ct-perfect-fifth:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 66.6666666667% 
-  .ct-perfect-fifth:after 
+    padding-bottom: 66.6666666667%
+  .ct-perfect-fifth:after
     content: ''
     display: table
-    clear: both 
-  .ct-perfect-fifth > svg 
+    clear: both
+  .ct-perfect-fifth > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
 
-.ct-minor-sixth 
+.ct-minor-sixth
   display: block
   position: relative
-  width: 100% 
-  .ct-minor-sixth:before 
+  width: 100%
+  .ct-minor-sixth:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 62.5% 
-  .ct-minor-sixth:after 
+    padding-bottom: 62.5%
+  .ct-minor-sixth:after
     content: ''
     display: table
-    clear: both 
-  .ct-minor-sixth > svg 
+    clear: both
+  .ct-minor-sixth > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
 
-.ct-golden-section 
+.ct-golden-section
   display: block
   position: relative
-  width: 100% 
-  .ct-golden-section:before 
+  width: 100%
+  .ct-golden-section:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 61.804697157% 
-  .ct-golden-section:after 
+    padding-bottom: 61.804697157%
+  .ct-golden-section:after
     content: ''
     display: table
-    clear: both 
-  .ct-golden-section > svg 
+    clear: both
+  .ct-golden-section > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
 
-.ct-major-sixth 
+.ct-major-sixth
   display: block
   position: relative
-  width: 100% 
-  .ct-major-sixth:before 
+  width: 100%
+  .ct-major-sixth:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 60% 
-  .ct-major-sixth:after 
+    padding-bottom: 60%
+  .ct-major-sixth:after
     content: ''
     display: table
-    clear: both 
-  .ct-major-sixth > svg 
+    clear: both
+  .ct-major-sixth > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
 
-.ct-minor-seventh 
+.ct-minor-seventh
   display: block
   position: relative
-  width: 100% 
-  .ct-minor-seventh:before 
+  width: 100%
+  .ct-minor-seventh:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 56.25% 
-  .ct-minor-seventh:after 
+    padding-bottom: 56.25%
+  .ct-minor-seventh:after
     content: ''
     display: table
-    clear: both 
-  .ct-minor-seventh > svg 
+    clear: both
+  .ct-minor-seventh > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
 
-.ct-major-seventh 
+.ct-major-seventh
   display: block
   position: relative
-  width: 100% 
-  .ct-major-seventh:before 
+  width: 100%
+  .ct-major-seventh:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 53.3333333333% 
-  .ct-major-seventh:after 
+    padding-bottom: 53.3333333333%
+  .ct-major-seventh:after
     content: ''
     display: table
-    clear: both 
-  .ct-major-seventh > svg 
+    clear: both
+  .ct-major-seventh > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
 
-.ct-octave 
+.ct-octave
   display: block
   position: relative
-  width: 100% 
-  .ct-octave:before 
+  width: 100%
+  .ct-octave:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 50% 
-  .ct-octave:after 
+    padding-bottom: 50%
+  .ct-octave:after
     content: ''
     display: table
-    clear: both 
-  .ct-octave > svg 
+    clear: both
+  .ct-octave > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
 
-.ct-major-tenth 
+.ct-major-tenth
   display: block
   position: relative
-  width: 100% 
-  .ct-major-tenth:before 
+  width: 100%
+  .ct-major-tenth:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 40% 
-  .ct-major-tenth:after 
+    padding-bottom: 40%
+  .ct-major-tenth:after
     content: ''
     display: table
-    clear: both 
-  .ct-major-tenth > svg 
+    clear: both
+  .ct-major-tenth > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
 
-.ct-major-eleventh 
+.ct-major-eleventh
   display: block
   position: relative
-  width: 100% 
-  .ct-major-eleventh:before 
+  width: 100%
+  .ct-major-eleventh:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 37.5% 
-  .ct-major-eleventh:after 
+    padding-bottom: 37.5%
+  .ct-major-eleventh:after
     content: ''
     display: table
-    clear: both 
-  .ct-major-eleventh > svg 
+    clear: both
+  .ct-major-eleventh > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
 
-.ct-major-twelfth 
+.ct-major-twelfth
   display: block
   position: relative
-  width: 100% 
-  .ct-major-twelfth:before 
+  width: 100%
+  .ct-major-twelfth:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 33.3333333333% 
-  .ct-major-twelfth:after 
+    padding-bottom: 33.3333333333%
+  .ct-major-twelfth:after
     content: ''
     display: table
-    clear: both 
-  .ct-major-twelfth > svg 
+    clear: both
+  .ct-major-twelfth > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
 
-.ct-double-octave 
+.ct-double-octave
   display: block
   position: relative
-  width: 100% 
-  .ct-double-octave:before 
+  width: 100%
+  .ct-double-octave:before
     display: block
     float: left
     content: ''
     width: 0
     height: 0
-    padding-bottom: 25% 
-  .ct-double-octave:after 
+    padding-bottom: 25%
+  .ct-double-octave:after
     content: ''
     display: table
-    clear: both 
-  .ct-double-octave > svg 
+    clear: both
+  .ct-double-octave > svg
     display: block
     position: absolute
     top: 0
-    left: 0 
+    left: 0
