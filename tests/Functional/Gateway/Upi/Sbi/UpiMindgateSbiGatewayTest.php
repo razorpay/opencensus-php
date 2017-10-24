@@ -151,10 +151,21 @@ class UpiMindgateSbiGatewayTest extends TestCase
 
         $key = strtolower(RefundFile::REFUND_REQ_AMT);
 
-        $this->assertEquals($sheet[0][$key], 500);
-        $this->assertEquals($sheet[1][$key], 500);
-        $this->assertEquals($sheet[2][$key], 100);
+        $count = [
+            500 => 0,
+            100 => 0,
+        ];
 
+        foreach ($sheet as $refund)
+        {
+            $refundAmount = $refund[$key];
+
+            $count[$refundAmount]++;
+        }
+
+        // We assert that there are 2 refunds of 500 rupees, and 1 of 100
+        $this->assertEquals(2, $count[500]);
+        $this->assertEquals(1, $count[100]);
     }
 
     protected function generateRefundsExcelForSbiUpi($date = false)
