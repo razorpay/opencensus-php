@@ -1,6 +1,6 @@
 import GenericEntity from './GenericEntity';
 import ajax from 'merchant/utils/ajax';
-import { getFixedINRAmount, isBlank } from 'rzp/utils/rzp-utils';
+import { getFixedINRAmount, isBlank, rupeesToPaise } from 'rzp/utils/rzp-utils';
 import Payment from 'merchant/models/Payment';
 
 const createFields = [
@@ -106,7 +106,7 @@ export default class Invoice extends GenericEntity {
     }
 
     if (prop === 'amount' && !isBlank(this.amountInINR)) {
-      return Number(this.amountInINR) * 100;
+      return rupeesToPaise(this.amountInINR);
     }
 
     if (prop === 'customer' && this.type === 'invoice' && !this.isNew) {
@@ -134,7 +134,7 @@ export default class Invoice extends GenericEntity {
         return this.line_items.map(item => {
           return {
             name: item.name,
-            amount: Number(item.amount) * 100,
+            amount: rupeesToPaise(item.amount),
           };
         });
       } else if (this.type === 'invoice') {
@@ -144,7 +144,7 @@ export default class Invoice extends GenericEntity {
             let lineItem = {
               quantity: item.quantity,
               description: item.description,
-              amount: item.amountInINR * 100,
+              amount: rupeesToPaise(item.amountInINR),
             };
 
             if (item.item_id) {

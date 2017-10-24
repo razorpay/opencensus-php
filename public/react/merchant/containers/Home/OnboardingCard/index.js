@@ -42,6 +42,30 @@ const NewProducts = () => {
   );
 };
 
+const ServiceTaxNews = ({ close }) => (
+  <div class="media onboarding-card servicetax-news">
+    <img src={require('styles/assets/remove-service-tax.svg')} />
+    <div>
+      <div class="heading">Removal of 'service_tax' field from APIs</div>
+      <div class="news">
+        On 1 November 2017, service_tax field will be removed from our APIs and
+        Reports. Read announcement to understand how it may affect you. If
+        you've read and understood this, you may{' '}
+        <a class="btn-link" onClick={close}>
+          close this message
+        </a>.
+      </div>
+    </div>
+    <a
+      class="btn-primary pull-right"
+      href="https://razorpay.com/docs/announcements/gst-changes"
+      target="_blank"
+    >
+      View Announcement <i class="icon icon-chevron-right" />
+    </a>
+  </div>
+);
+
 @connect(state => state.session)
 export default class OnboardingCard extends Component {
   state = {};
@@ -56,6 +80,7 @@ export default class OnboardingCard extends Component {
     this.setState({
       showOnboarding: LocalStorageService.getItem('show_onboarding_card'),
       isFirstStep: LocalStorageService.getItem('onboarding_first_step'),
+      showServiceTaxNews: !LocalStorageService.getItem('show_service_tax_new'),
     });
   }
 
@@ -67,6 +92,11 @@ export default class OnboardingCard extends Component {
   closeOnboarding = () => {
     this.setState({ showOnboarding: false });
     LocalStorageService.removeItem('show_onboarding_card');
+  };
+
+  closeServiceTaxNews = () => {
+    LocalStorageService.setItem('show_service_tax_news', false);
+    this.setState({ showServiceTaxNews: false });
   };
 
   render() {
@@ -147,8 +177,13 @@ export default class OnboardingCard extends Component {
         );
       }
     }
+
     return (
       <div>
+        {isOldUser &&
+          this.state.showServiceTaxNews && (
+            <ServiceTaxNews close={this.closeServiceTaxNews} />
+          )}
         {FirstStep && (
           <div
             class={`media onboarding-card ${isFirstStep ? 'first-step' : ''}`}

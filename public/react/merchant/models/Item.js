@@ -1,6 +1,6 @@
 import GenericEntity from './GenericEntity';
 import ajax from 'merchant/utils/ajax';
-import { getFixedINRAmount } from 'rzp/utils/rzp-utils';
+import { getFixedINRAmount, rupeesToPaise } from 'rzp/utils/rzp-utils';
 
 export default class Item extends GenericEntity {
   listRouteName = 'item_fetch_multiple';
@@ -24,7 +24,7 @@ export default class Item extends GenericEntity {
 
   serializeProperty(prop) {
     if (prop === 'amount') {
-      return Number(this.amountInINR) * 100;
+      return rupeesToPaise(this.amountInINR);
     }
     return super.serializeProperty(prop);
   }

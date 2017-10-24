@@ -13,7 +13,7 @@ import InlineField from 'rzp/ui/Forms/InlineField';
 import InputGroupField from 'rzp/ui/Forms/InputField/InputGroupField';
 import { required } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { titleCase, rupeesToPaise } from 'rzp/utils/rzp-utils';
 
 import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
 import FormItem from 'merchant/components/FormItem';
@@ -130,7 +130,9 @@ export default class TransferNew extends Component {
 
       if (this.props.onHold === 'on_hold_until') {
         holdData.on_hold_until =
-          moment(this.props.holdUntil * 1000).startOf('day').toDate() / 1000;
+          moment(this.props.holdUntil * 1000)
+            .startOf('day')
+            .toDate() / 1000;
         holdData.on_hold_until = holdData.on_hold_until - 600;
       }
     } else {
@@ -142,7 +144,7 @@ export default class TransferNew extends Component {
       transfers: [
         {
           account: `acc_${accountId}`,
-          amount: window.parseInt(amount) * 100,
+          amount: rupeesToPaise(amount),
           notes: transformedNotes,
           currency: 'INR',
           ...holdData,
@@ -198,13 +200,18 @@ export default class TransferNew extends Component {
   render() {
     const { handleSubmit, invalid, plan, accounts } = this.props;
 
-    const nextWorkingDate = nextWorkingDay(moment().startOf('day').toDate(), 3);
+    const nextWorkingDate = nextWorkingDay(
+      moment()
+        .startOf('day')
+        .toDate(),
+      3
+    );
 
     return (
       <div class="content-wrapper content-sm txn-details">
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
-            {this.props.onClose &&
+            {this.props.onClose && (
               <button
                 type="button"
                 class="close close-secondary"
@@ -212,7 +219,8 @@ export default class TransferNew extends Component {
               >
                 <i class="icon icon-arrow-back" />
                 <i class="icon icon-close" />
-              </button>}
+              </button>
+            )}
             <i class="icon icon-plan text-main icon--formal" />{' '}
             <strong>Create New Transfer</strong>
           </div>
@@ -225,7 +233,7 @@ export default class TransferNew extends Component {
             >
               <FormItem
                 label={() => <Label text="Account" required />}
-                field={() =>
+                field={() => (
                   <div class="custom-select" style={{ position: 'relative' }}>
                     <TypeAhead
                       options={accounts.accounts}
@@ -248,8 +256,9 @@ export default class TransferNew extends Component {
                           </div>
                         );
                       }}
-                      beforeOptionsComponent={() =>
-                        <div class="heading">Recent</div>}
+                      beforeOptionsComponent={() => (
+                        <div class="heading">Recent</div>
+                      )}
                       onClick={this.handleClick}
                       onChange={this.handleSelect}
                     />
@@ -257,23 +266,22 @@ export default class TransferNew extends Component {
                       class="typeAheadSkin"
                       ref={c => (this.typeAheadSkin = c)}
                     >
-                      {this.state.selectedAccount
-                        ? <div>
-                            <b style={{ marginRight: '5px' }}>
-                              {this.state.selectedAccount.name}
-                            </b>
-                            <span>
-                              {' '}- {this.state.selectedAccount.id}{' '}
-                            </span>
-                          </div>
-                        : null}
+                      {this.state.selectedAccount ? (
+                        <div>
+                          <b style={{ marginRight: '5px' }}>
+                            {this.state.selectedAccount.name}
+                          </b>
+                          <span> - {this.state.selectedAccount.id} </span>
+                        </div>
+                      ) : null}
                     </div>
-                  </div>}
+                  </div>
+                )}
               />
 
               <FormItem
                 label={_ => <Label text="Billing Amount" required />}
-                field={_ =>
+                field={_ => (
                   <div>
                     <Field
                       name="amount"
@@ -288,36 +296,39 @@ export default class TransferNew extends Component {
                       <i class="icon icon-info-outline" />
                       <b>Transfer amount</b> can not exceed payment amount.
                     </span>
-                  </div>}
+                  </div>
+                )}
               />
 
               <FormItem
                 label={_ => <Label text="Settlement schedule" />}
-                field={_ =>
+                field={_ => (
                   <div>
                     <Field
                       component={RadioButton}
                       name="onHold"
                       htmlValue="false"
                       checked={this.props.onHold === 'false'}
-                      label={_ =>
+                      label={_ => (
                         <div>
                           <span>Settle Now</span>
                           <div className="text-fade">
                             This transfer will be settled in next available
                             settlement slot.
                           </div>
-                        </div>}
+                        </div>
+                      )}
                     />
                     <Field
                       component={RadioButton}
                       name="onHold"
                       htmlValue="on_hold_until"
                       checked={this.props.onHold === 'on_hold_until'}
-                      label={_ =>
+                      label={_ => (
                         <div>
                           <span>Schedule settlement on</span>
-                        </div>}
+                        </div>
+                      )}
                     />
                     <div className="transfers-onhold-datepicker">
                       <Field
@@ -326,7 +337,10 @@ export default class TransferNew extends Component {
                         required
                         disabled={this.props.onHold !== 'on_hold_until'}
                         isDayBlocked={date => {
-                          date = date.clone().startOf('day').toDate();
+                          date = date
+                            .clone()
+                            .startOf('day')
+                            .toDate();
 
                           return date < nextWorkingDate || isHoliday(date);
                         }}
@@ -337,27 +351,30 @@ export default class TransferNew extends Component {
                       name="onHold"
                       htmlValue="on_hold"
                       checked={this.props.onHold === 'on_hold'}
-                      label={_ =>
+                      label={_ => (
                         <div>
                           <span>Put on hold</span>
                           <div className="text-fade">
                             The settlement will be on hold till specified
                             otherwise.
                           </div>
-                        </div>}
+                        </div>
+                      )}
                     />
-                  </div>}
+                  </div>
+                )}
               />
 
               <FormItem
                 label={_ => <Label text="Internal Notes" />}
-                field={_ =>
-                  <FieldArray name="notes" component={NotesFieldArray} />}
+                field={_ => (
+                  <FieldArray name="notes" component={NotesFieldArray} />
+                )}
               />
 
               <Alert type="error" message={this.state.errors} />
               <div class="btn-toolbar text-center">
-                {typeof this.props.onClose === 'function' &&
+                {typeof this.props.onClose === 'function' && (
                   <button
                     type="button"
                     class="btn btn-default btn-half"
@@ -374,7 +391,8 @@ export default class TransferNew extends Component {
                     }}
                   >
                     Discard
-                  </button>}
+                  </button>
+                )}
                 <AsyncButton
                   type="submit"
                   class="btn btn-primary btn-half"
