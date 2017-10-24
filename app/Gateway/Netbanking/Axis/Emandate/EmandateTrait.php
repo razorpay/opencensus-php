@@ -208,6 +208,30 @@ trait EmandateTrait
 
         return $content;
     }
+
+    protected function sendEmandatePaymentVerifyRequest(Verify $verify)
+    {
+        $content = $this->getEmandatePaymentVerifyData($verify);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            $request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $verify->verifyResponseContent = $this->getEmandateDecryptedData($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'response_body' => $response->body,
+                'content'       => $verify->verifyResponseContent,
+                'payment_id'    => $verify->input['payment']['id'],
+                'status_code'   => $response->status_code
+            ]);
+    }
     //---------------Verify request helpers end-----------------------
 
     //----------------------General helpers---------------------------
@@ -323,5 +347,17 @@ trait EmandateTrait
         }
 
         return $this->config[$key];
+    }
+
+    public function getEmandateMerchantId()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_merchant_id_rec'];
+        }
+        else
+        {
+            return $this->config['live_merchant_id_rec'];
+        }
     }
 }

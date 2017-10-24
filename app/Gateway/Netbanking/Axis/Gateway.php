@@ -113,16 +113,14 @@ class Gateway extends Base\Gateway
 
     public function sendPaymentVerifyRequest(Verify $verify)
     {
-        $content = [];
-
         if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
         {
-            $content = $this->getEmandatePaymentVerifyData($verify);
+            $this->sendEmandatePaymentVerifyRequest($verify);
+
+            return;
         }
-        else
-        {
-            $content = $this->getPaymentVerifyData($verify);
-        }
+
+        $content = $this->getPaymentVerifyData($verify);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -132,14 +130,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
-        {
-            $verify->verifyResponseContent = $this->getEmandateDecryptedData($response->body);
-        }
-        else
-        {
-            $verify->verifyResponseContent = $this->parseResponseXml($response->body);
-        }
+        $verify->verifyResponseContent = $this->parseResponseXml($response->body);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -565,22 +556,17 @@ class Gateway extends Base\Gateway
 
     public function getMerchantId()
     {
+        if ($this->input['terminal']->isRecurring())
+        {
+            return $this->getEmandateMerchantId();
+        }
+
         if ($this->mode === Mode::TEST)
         {
-            if ($this->input['terminal']->isRecurring())
-            {
-                return $this->config['test_merchant_id_rec'];
-            }
-
             return $this->getTestMerchantId();
         }
         else
         {
-            if ($this->input['terminal']->isRecurring())
-            {
-                return $this->config['live_merchant_id_rec'];
-            }
-
             return $this->getLiveMerchantId();
         }
     }
