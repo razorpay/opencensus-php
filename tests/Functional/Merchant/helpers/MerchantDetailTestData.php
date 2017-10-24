@@ -419,4 +419,20 @@ return [
             ],
         ],
     ],
+
+    'testGetPreSignupDetails' => [
+        'request' => [
+            'content' => [],
+            'url'     => '/pre_signup',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'      => '1',
+                'transaction_volume' => 5,
+                'department'         => '6',
+                'contact_mobile'     => '8722627189',
+            ],
+        ],
+    ],
 ];

@@ -290,4 +290,23 @@ class MerchantDetailTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetPreSignupDetails()
+    {
+        $this->fixtures->create('merchant', ['id'    => '10000000000155',
+                                             'email' => 'razorpay@razorpay.com']);
+        $merchantDetailData = [
+            'merchant_id'        => '10000000000155',
+            'business_type'      => 1,
+            'transaction_volume' => 5,
+            'department'         => 6,
+            'contact_mobile'     => 8722627189,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailData);
+
+        $this->ba->proxyAuth('rzp_live_10000000000155');
+
+        $this->startTest();
+    }
 }
