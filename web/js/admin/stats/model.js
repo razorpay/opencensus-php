@@ -16,7 +16,7 @@ const defaultData = {
 class Stat {
   constructor(data) {
     this.data = observable(data || defaultData);
-    this.component = observable.box(<div class="spinner" />);
+    this.component = observable.shallowBox(<div class="spinner" />);
   }
 
   getTitle() {
@@ -88,31 +88,69 @@ class Stat {
       merchant_id: data.merchant_id,
       body,
       route_name: 'merchant_analytics',
-    }).then(({ data }) => {
-      if (!data.success) {
-        throw data.errors[0];
-      }
-      var result = data.data.result;
+    }).then(({ result }) => {
       var title = this.getTitle();
-      if (result.length === 1) {
-        if (details.column === 'base_amount') {
-          result.forEach(r => (r.value = '₹' + getFormattedAmount(r.value)));
-        } else if (details.agg_type === 'success_rate') {
-          result.forEach(r => (r.value += '%'));
-        }
-        this.component.set(<Single title={title} value={result[0].value} />);
-      } else {
-        if (result[0].timestamp) {
-          this.component.set(<TimeSeries title={title} value={result} />);
+
+      if (result.length > 0) {
+        if (Object.keys(result[0])[0] !== 'timestamp') {
+          // This is not a time-oriented result
+          if (details.column === 'base_amount') {
+            result.forEach(r => (r.value = '₹' + getFormattedAmount(r.value)));
+          } else if (details.agg_type && details.agg_type === 'success_rate') {
+            result.forEach(r => (r.value += '%'));
+          }
+          // this.component.set(<Single title={title} value={result[0].value} />);
+        } else {
+          // This is a time-oritented result
+          console.log('time-series');
+          let timeData = {
+            labels: [],
+            series: [[]],
+          };
+          result.forEach(function(element) {
+            timeData.labels.push(element.timestamp);
+            timeData.series[0].push(element.value);
+          }, this);
+          let chartOptions = {
+            showPoint: false,
+            axisX: {
+              showGrid: false,
+              labelInterpolationFnc: function(value, index, labels) {
+                if (index % 20 === 0)
+                  return new Date(value * 1000).toDateString();
+                return null;
+              },
+            },
+            axisY: {
+              showGrid: false,
+            },
+            lineSmooth: false,
+          };
+          this.component.set(
+            <TimeSeries title={title} data={timeData} options={chartOptions} />
+          );
         }
       }
+
+      // if (result.length === 1) {
+      //   if (details.column === 'base_amount') {
+      //     result.forEach(r => (r.value = '₹' + getFormattedAmount(r.value)));
+      //   } else if (details.agg_type === 'success_rate') {
+      //     result.forEach(r => (r.value += '%'));
+      //   }
+      //   this.component.set(<Single title={title} value={result[0].value} />);
+      // } else {
+      //   if (result[0].timestamp) {
+      //     this.component.set(<TimeSeries title={title} value={result} />);
+      //   }
+      // }
     });
   }
 }
 
 export default class StatsModel {
   constructor() {
-    this.selected = observable.box(0);
+    this.selected = observable.shallowBox(0);
     this.items = observable.shallowArray([new Stat()]);
   }
 

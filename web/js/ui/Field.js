@@ -20,8 +20,8 @@ export default function Field({ label, onChange, value, ...props }) {
 }
 
 export const DateTimeField = props => <Field {...props} type="date" />;
-export const FromField = _ => <DateTimeField name="from" label="From" />;
-export const ToField = _ => <DateTimeField name="to" label="To" />;
+export const FromField = _ => <DateTimeField {..._} name="from" label="From" />;
+export const ToField = _ => <DateTimeField {..._} name="to" label="To" />;
 
 export function CheckField({ label, ...props }) {
   return (

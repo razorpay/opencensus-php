@@ -37,8 +37,8 @@ export default class MerchantStats extends Component {
               <option value="sum">Payment Volume</option>
               <option value="success_rate">Success Rate</option>
             </SelectField>
-            <FromField />
-            <ToField />
+            <FromField onChange={this.updateData} />
+            <ToField onChange={this.updateData} />
             <SelectField
               name="interval"
               label="Interval"

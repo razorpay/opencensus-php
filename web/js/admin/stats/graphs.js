@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Chartist from 'chartist';
 
 export class SingleValue extends Component {
   render() {
@@ -15,12 +16,24 @@ export class SingleValue extends Component {
 
 export class TimeSeries extends Component {
   render() {
-    let { title, value } = this.props;
+    let { title, data, options } = this.props;
 
     return (
       <div>
         <header>{title}</header>
+        <div ref={el => el && data && makeChart(el, data, options, 'line')} />
       </div>
     );
+  }
+}
+
+function makeChart(el, data, options, type) {
+  switch (type) {
+    case 'bar':
+      return new Chartist.Bar(el, data, options);
+    case 'line':
+      return new Chartist.Line(el, data, options);
+    default:
+      return null;
   }
 }
