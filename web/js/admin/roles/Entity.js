@@ -1,11 +1,23 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Field, { SelectField, CheckField } from 'ui/Field';
-import { openModal } from 'common/modal';
+import { openSlider } from 'common/modal';
 import SimpleTable from 'ui/SimpleTable';
 import { adminFetch, adminPost } from 'util/fetch';
 
 class EditUser extends Component {
+  componentWillMount() {
+    this.init(this.props);
+  }
+
+  componentWillReceiveProps(props) {
+    this.init(props);
+  }
+
+  state = {
+    pending: true,
+  };
+
   save = body => {
     let params = {
       content_type: 'application/json',
@@ -20,31 +32,28 @@ class EditUser extends Component {
     return adminPost({ body, params });
   };
 
-  componentWillMount() {
-    let requests = [
-      'group_get_multiple',
-      {
-        route_name: 'org_fieldmap_get_by_entity',
-        url_params: {
-          entity: 'admin',
-        },
-      },
-    ];
+  init(props) {
+    if (props.model) {
+      Promise.all([
+        adminFetch({
+          route_name: 'org_fieldmap_get_by_entity',
+          url_params: {
+            entity: 'admin',
+          },
+        }),
 
-    if (this.props.model) {
-      requests.push({
-        route_name: 'admin_get',
-        url_params: {
-          adminId: props.model.id,
-        },
-      });
+        adminFetch({
+          route_name: 'group_get_multiple',
+        }),
+
+        adminFetch({
+          route_name: 'admin_get',
+          url_params: {
+            adminId: props.model.id,
+          },
+        }),
+      ]);
     }
-
-    Promise.all(
-      requests.map(r => adminFetch(r))
-    ).then(([groups, fieldMaps, model]) => {
-      console.log(groups, fieldMaps, model);
-    });
   }
 
   render() {
@@ -74,7 +83,7 @@ class EditUser extends Component {
 }
 
 export function showEntity(collection) {
-  openModal(<EditUser collection={collection} model={this} />);
+  openSlider(<EditUser collection={collection} model={this} />);
 }
 
 const fields = [

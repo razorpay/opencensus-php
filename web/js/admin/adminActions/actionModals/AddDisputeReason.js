@@ -43,12 +43,10 @@ export default function AddDisputeReason() {
         text="OK"
         class="btn"
         pendingClass="small spinner"
-        onSubmit={data => {
+        onSubmit={body => {
           return adminPost({
-            data: {
-              body: data,
-              route_name: 'dispute_reason_create',
-            },
+            body,
+            route_name: 'dispute_reason_create',
           })
             .then(response => {
               if (response.data.success) {

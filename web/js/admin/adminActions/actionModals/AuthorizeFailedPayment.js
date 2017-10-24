@@ -20,13 +20,11 @@ export default function AuthorizeFailedPayment() {
           pendingClass="small spinner"
           onSubmit={data => {
             return adminPost({
-              data: {
-                url_params: {
-                  id: data.payment || '',
-                },
-                mode: data.mode,
-                route_name: 'payment_authorize_failed',
+              url_params: {
+                id: data.payment || '',
               },
+              mode: data.mode,
+              route_name: 'payment_authorize_failed',
             })
               .then(response => {
                 if (response.data.success) {

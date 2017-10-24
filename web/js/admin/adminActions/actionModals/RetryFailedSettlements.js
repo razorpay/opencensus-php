@@ -28,10 +28,8 @@ export default function RetryFailedSettlements() {
                 : [],
             };
             return adminPost({
-              data: {
-                body,
-                route_name: 'setl_retry',
-              },
+              body,
+              route_name: 'setl_retry',
             })
               .then(response => {
                 if (response.data.success) {

@@ -36,12 +36,10 @@ export default function CreateSchedule() {
         text="OK"
         class="btn"
         pendingClass="small spinner"
-        onSubmit={data => {
+        onSubmit={body => {
           return adminPost({
-            data: {
-              body: data,
-              route_name: 'schedule_create',
-            },
+            body,
+            route_name: 'schedule_create',
           })
             .then(response => {
               if (response.data.success) {
