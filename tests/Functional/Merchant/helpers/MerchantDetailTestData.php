@@ -424,7 +424,7 @@ return [
         'request' => [
             'content' => [],
             'url'     => '/pre_signup',
-            'method'  => 'get',
+            'method'  => 'GET',
         ],
         'response' => [
             'content' => [
@@ -432,6 +432,25 @@ return [
                 'transaction_volume' => 5,
                 'department'         => '6',
                 'contact_mobile'     => '8722627189',
+            ],
+        ],
+    ],
+
+    'testPutPreSignupDetails' => [
+        'request' => [
+            'content' => [
+                'business_type' => 2,
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'      => '2',
+                'transaction_volume' => null,
+                'department'         => null,
+                'contact_mobile'     => null,
+                'role'               => null,
             ],
         ],
     ],

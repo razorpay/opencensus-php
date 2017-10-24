@@ -309,4 +309,13 @@ class MerchantDetailTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testPutPreSignupDetails()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_live_'.$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
 }

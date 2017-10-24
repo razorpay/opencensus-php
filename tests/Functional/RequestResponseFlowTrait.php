@@ -53,7 +53,7 @@ trait RequestResponseFlowTrait
                 $this->fail('Exception ' . $data['exception']['class'] . ' expected. None caught');
             }
         }
-
+//        sd($response->getContent());
         $this->processAndAssertStatusCode($data, $response);
 
         return $this->processAndAssertResponseData($data, $response);
