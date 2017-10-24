@@ -39,4 +39,9 @@ class Service extends Base\Service
 
         return $reason->toArrayPublic();
     }
+
+    public function uploadFiles(string $id, array $files): array
+    {
+        return (new File\Core)->uploadFiles($id, $files);
+    }
 }

@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Exception;
+use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 
 class DisputeController extends Controller
 {
@@ -43,5 +44,21 @@ class DisputeController extends Controller
         $data = $this->service()->createReason($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function postUploadDocuments(string $id)
+    {
+        if(Request::hasFile(DisputeFileEntity::FILES) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Input does not contain any file array named : ' . DisputeFileEntity::FILES . ' to be uploaded'
+            );
+        }
+
+        $files = Request::file(DisputeFileEntity::FILES);
+
+        $data = $this->service()->uploadFiles($id, $files);
+
+        return $data;
     }
 }

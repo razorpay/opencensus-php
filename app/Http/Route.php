@@ -612,6 +612,7 @@ final class Route
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
         'dispute_migrate_adjustments'             => ['post',     'disputes/migrate_old_adjustments',               'DisputeController@migrateOldAdjustments'                           ],
         'dispute_reason_create'                   => ['post',     'disputes/reasons',                               'DisputeController@createReason'                                    ],
+        'dispute_doc_upload'                      => ['post',     'disputes/{id}/upload',                           'DisputeController@postUploadDocuments'                             ],
 
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
 
@@ -1040,6 +1041,7 @@ final class Route
         'dispute_migrate_adjustments',
         'adjustments_split_for_dispute',
         'dispute_reason_create',
+        'dispute_doc_upload',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
         'risk_create',
@@ -1353,6 +1355,7 @@ final class Route
         'merchant_analytics'               => '*',
         'merchant_activation_files'        => '*',
         'dispute_reason_create'            => '*',
+        'dispute_doc_upload'               => Permission::EDIT_DISPUTE,
     ];
 
     public static $direct = [
