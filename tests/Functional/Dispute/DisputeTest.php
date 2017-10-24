@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Dispute;
 
+use RZP\Models\Dispute\Entity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -341,7 +342,15 @@ class DisputeTest extends TestCase
         $testData['request']['content']['parent_id'] = $disputeParent->getId();
         $testData['response']['content']['parent_id'] = $disputeParent->getId();
 
-        $this->startTest($testData);
+        $content = $this->runRequestResponseFlow($testData);
+
+        $disputes = $this->getEntities('dispute', [], true);
+
+        $this->assertEquals(2, $disputes['count']);
+        $this->assertEquals($content['id'], $disputes['items'][0]['id']);
+        $this->assertEquals($content['parent_id'], $disputes['items'][0]['parent_id']);
+        $this->assertEquals($content['payment_id'], $disputes['items'][0]['payment_id']);
+        $this->assertEquals($content['parent_id'], Entity::stripDefaultSign($disputes['items'][1]['id']));
     }
 
     public function testDisputeEditWithExistingParent()
@@ -366,7 +375,15 @@ class DisputeTest extends TestCase
         $testData['request']['content']['parent_id'] = $disputeNewParent->getId();
         $testData['response']['content']['parent_id'] = $disputeNewParent->getId();
 
-        $this->startTest($testData);
+        $content = $this->runRequestResponseFlow($testData);
+
+        $disputes = $this->getEntities('dispute', [], true);
+
+        $this->assertEquals(3, $disputes['count']);
+        $this->assertEquals($content['id'], $disputes['items'][0]['id']);
+        $this->assertEquals($content['parent_id'], $disputes['items'][0]['parent_id']);
+        $this->assertEquals($content['payment_id'], $disputes['items'][0]['payment_id']);
+        $this->assertEquals($content['parent_id'], Entity::stripDefaultSign($disputes['items'][1]['id']));
     }
 
     public function testDisputeEditReplaceParentWithAlreadyLinkedParent()

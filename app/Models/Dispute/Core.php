@@ -20,7 +20,7 @@ class Core extends Base\Core
     const DEBIT_ADJUSTMENT_DESCRIPTION = 'Debit disputed amount';
     const CREDIT_ADJUSTMENT_DESCRIPTION = 'Credit to reverse a previous dispute debit';
 
-    protected $disputeParent;
+    protected $parent;
 
     /**
      * @param Payment\Entity $payment
@@ -43,7 +43,7 @@ class Core extends Base\Core
 
         (new Validator)->validatePaymentForDispute($input, $payment);
 
-        $this->checkAndGetParentDispute($input);
+        $this->checkAndGetParent($input);
 
         $dispute = (new Entity)->build($input);
 
@@ -92,14 +92,14 @@ class Core extends Base\Core
             array_merge($input, [Entity::ID => $dispute->getId()])
         );
 
-        $this->checkAndGetParentDispute($input, $dispute);
+        $this->checkAndGetParent($input, $dispute);
 
         $dispute->edit($input);
 
         $dispute->setAuditAction(Action::EDIT_DISPUTE);
 
-        if ($this->disputeParent !== null)
-            $dispute->parent()->associate($this->disputeParent);
+        if ($this->parent !== null)
+            $dispute->parent()->associate($this->parent);
 
         return $this->repo->transaction(function() use ($dispute)
         {
@@ -223,8 +223,8 @@ class Core extends Base\Core
 
         $dispute->reason()->associate($reason);
 
-        if ($this->disputeParent !== null)
-            $dispute->parent()->associate($this->disputeParent);
+        if ($this->parent !== null)
+            $dispute->parent()->associate($this->parent);
     }
 
     protected function handleDisputeClosure(Entity $dispute)
@@ -288,10 +288,10 @@ class Core extends Base\Core
     }
 
     /**
-     *  Checks if the new parent, if exists, is not same as the old parent
-     *  and is not the parent of any other dispute entity
+     *  Checks if the new parent is not same as existing parent
+     *  and is eligible to become a parent (has no child)
      */
-    protected function checkAndGetParentDispute(array $input, Entity $dispute = null)
+    protected function checkAndGetParent(array $input, Entity $dispute = null)
     {
         if(isset($input[Entity::PARENT_ID]) === false)
             return;
@@ -300,13 +300,13 @@ class Core extends Base\Core
 
         if($dispute !== null)
         {
-            $validator->validateParentDisputeWithExistingParent($input);
+            $validator->validateNewParentIsNotExisting($input);
         }
 
-        $disputeParent = $this->repo->dispute->findOrFailPublic($input[Entity::PARENT_ID]);
+        $parent = $this->repo->dispute->findOrFailPublic($input[Entity::PARENT_ID]);
 
-        $validator->validateParentDispute($disputeParent);
+        $validator->validateDisputeCanBecomeParent($parent);
 
-        $this->disputeParent = $disputeParent;
+        $this->parent = $parent;
     }
 }

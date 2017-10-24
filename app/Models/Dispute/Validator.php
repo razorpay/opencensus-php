@@ -82,7 +82,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateParentDispute(Entity $disputeParent)
+    public function validateDisputeCanBecomeParent(Entity $disputeParent)
     {
         if ($disputeParent->child !== null)
         {
@@ -92,7 +92,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateParentDisputeWithExistingParent(array $input)
+    public function validateNewParentIsNotExisting(array $input)
     {
         if (($this->entity->isChildDispute() === true) and
             ($this->entity->parent->getId() === $input['parent_id']))
