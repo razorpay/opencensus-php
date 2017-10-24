@@ -887,3 +887,6 @@ DELETE from fees_breakup where name='cgst';
 
 # MiGS failed refund. Failed because flyrobe terminal was purchase instead of auth capture
 UPDATE refunds SET gateway_refunded = "0", status = "failed" WHERE id = "87eT5BJpNL8uPb" and status = "processed";
+
+# Fixes entity_type stored in gateway_file for already created filestore entities for gateway_files
+UPDATE files SET entity_type = "gateway_file" WHERE entity_type = "RZP\\Models\\Gateway\\File\\Entity";
