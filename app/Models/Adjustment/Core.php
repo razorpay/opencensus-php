@@ -20,6 +20,8 @@ class Core extends Base\Core
 {
     public function createAdjustment(array $input, $merchant): Entity
     {
+        (new Validator)->validateInput('fee_adjustment', $input);
+
         $this->trace->info(
             TraceCode::ADJUSTMENT_CREATE_REQUEST,
             [
@@ -27,7 +29,11 @@ class Core extends Base\Core
                 'merchant' => $merchant->getId()
             ]);
 
+        // Create input for adjustment
         $adjInput = $input;
+
+        // Create input for Merchant Invoice
+        $merchantInvoiceInput = $input;
 
         // Either amount is expected, or tax-and-fees, throwing exception if all are present
         if (isset($input[Entity::AMOUNT]) === true and
@@ -37,11 +43,11 @@ class Core extends Base\Core
             throw new Exception\BadRequestValidationFailureException('Either amount OR tax/fees should be passed');
         }
 
-        $amount = $adjInput[Entity::AMOUNT] ?? 0;
+        $amount = $input[Entity::AMOUNT] ?? 0;
 
-        $tax =  $adjInput[MerchantInvoice\Entity::TAX] ?? 0;
+        $tax =  $input[MerchantInvoice\Entity::TAX] ?? 0;
 
-        $fees = $adjInput['fees'] ?? 0;
+        $fees = $input['fees'] ?? 0;
 
         $adjInput[Entity::AMOUNT] = $amount + $tax + $fees;
 
@@ -57,19 +63,26 @@ class Core extends Base\Core
 
         if (isset($input[Entity::AMOUNT]) === true)
         {
+            // Creating adjustment only, since no invoice record is reqd
             return $this->transaction([$this, 'createAdjInTransaction'], $adj, $merchant);
         }
         else
         {
-            $adjInput[MerchantInvoice\Entity::TAX] = $tax;
+            // Creating merchant invoice entries too along with adj
+            // because of adjustment entries (fees and tax)
+            $merchantInvoiceInput[MerchantInvoice\Entity::TAX] = $tax;
 
-            $adjInput[Entity::AMOUNT] = $fees;
+            $merchantInvoiceInput[Entity::AMOUNT] = $fees;
 
-            $adjustment = $this->repo->transaction(function () use ($adj, $merchant, $adjInput)
+            unset($merchantInvoiceInput['fees']);
+
+            $adjustment = $this->repo->transaction(function () use ($adj, $merchant, $merchantInvoiceInput)
             {
+                // 1. Create adjustment
+                // 2. Create Invoice entity for adjustment
                 $adjustment = $this->createAdjInTransaction($adj, $merchant);
 
-                (new Merchant\Invoice\Core)->createAdjustmentInvoiceEntity($adj, $adjInput);
+                (new Merchant\Invoice\Core)->createAdjustmentInvoiceEntity($adj, $merchantInvoiceInput);
 
                 return $adjustment;
             });

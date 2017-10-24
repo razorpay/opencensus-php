@@ -94,7 +94,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_MERCHANT_INVOICE_NUMBER,
         ],
     ],

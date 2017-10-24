@@ -8,6 +8,8 @@ use RZP\Models\Merchant\Invoice\Entity as InvoiceEntity;
 
 class Validator extends Base\Validator
 {
+    const FEES = 'fees';
+
     protected static $createRules = [
         Entity::AMOUNT        => 'required|integer',
         Entity::CURRENCY      => 'required|in:INR',
@@ -20,6 +22,7 @@ class Validator extends Base\Validator
         InvoiceEntity::TAX    => 'sometimes|integer',
         Entity::CURRENCY      => 'required|in:INR',
         Entity::DESCRIPTION   => 'required|min:10|max:255',
+        Validator::FEES       => 'sometimes|integer',
     ];
 
     // Payment id is actually a comma separated list of payment_ids
