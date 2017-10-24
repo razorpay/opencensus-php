@@ -75,8 +75,7 @@ class RowProcessor extends BaseCore
 
         $this->entity = $this->updateEntities();
 
-        if (($this->firstFailure === true) and
-            ($this->entity->merchant->isLinkedAccount() === false))
+        if ($this->firstFailure === true)
         {
             $this->sendReconciliationFailureEmail();
         }
@@ -202,6 +201,11 @@ class RowProcessor extends BaseCore
         }
 
         if ($this->mode === Mode::TEST)
+        {
+            return false;
+        }
+
+        if ($this->merchant->isLinkedAccount() === true)
         {
             return false;
         }

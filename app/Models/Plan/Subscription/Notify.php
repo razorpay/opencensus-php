@@ -468,7 +468,8 @@ class Notify extends Processor\Notify
     {
         $merchantTransactionReportEmail = $this->merchant->getTransactionReportEmail();
 
-        return ((empty($merchantTransactionReportEmail) === false) and ($this->merchant->isLinkedAccount() === false));
+        return ((empty($merchantTransactionReportEmail) === false) and
+            ($this->merchant->isLinkedAccount() === false));
     }
 
     protected function getMailableClass(string $event)

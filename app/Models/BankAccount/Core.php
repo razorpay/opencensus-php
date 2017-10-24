@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 
@@ -188,11 +189,7 @@ class Core extends Base\Core
 
     protected function sendBankAccountChangeEmail($newBankAccount, $merchant)
     {
-        // In dev and testing environments we want to send mail even if Mode is TEST
-        // Do not email linked accounts
-        if (($this->mode === Mode::TEST) and
-            ($this->app->environment('dev', 'testing') === false) and
-            ($merchant->isLinkedAccount() === true))
+        if ($this->notifyViaEmail($merchant) === false)
         {
             return;
         }
@@ -259,5 +256,23 @@ class Core extends Base\Core
         ];
 
         return $detail;
+    }
+
+    private function notifyViaEmail(MerchantEntity $merchant): bool
+    {
+        // In dev and testing environments we want to send mail even if Mode is TEST
+        if (($this->mode === Mode::TEST) and
+            ($this->app->environment('dev', 'testing') === false))
+        {
+            return false;
+        }
+
+        // Do not email linked accounts
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

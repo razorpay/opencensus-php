@@ -169,9 +169,7 @@ class Core extends Base\Core
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        if (($feature->isNotifyFeature() === false) or
-            (($shouldSync === false) and ($isLiveMode === false)) or
-            ($merchant->isLinkedAccount() === true))
+        if ($this->notifyViaEmail($merchant, $feature, $shouldSync, $isLiveMode) === false)
         {
             $this->trace->info(
                 TraceCode::FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED,
@@ -207,6 +205,40 @@ class Core extends Base\Core
                 Entity::NEW_FEATURE       => $feature,
                 Merchant\Entity::EMAIL    => $merchantEmail
             ]);
+    }
+
+    /**
+     * Returns a boolean for whether a merchant should be notified
+     *
+     * @param Entity $merchant
+     * @param Entity $feature
+     * @param bool   $shouldSync
+     * @param bool   $isLiveMode
+     *
+     * @return bool
+     */
+    private function notifyViaEmail(
+        Entity $merchant,
+        Entity $feature,
+        bool $shouldSync,
+        bool $isLiveMode): bool
+    {
+        if ($feature->isNotifyFeature() === false)
+        {
+            return false;
+        }
+
+        if (($shouldSync === false) and ($isLiveMode === false))
+        {
+            return false;
+        }
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 
 }
