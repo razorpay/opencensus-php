@@ -72,7 +72,6 @@ class Gateway extends Base\Gateway
                            ['gateway_response' => $input['gateway'],
                             'payment_id'       => $input['payment']['id']]);
 
-        // TODO: First / Second Recurring ???
         if ($input['terminal']->isRecurring())
         {
             return $this->handleEmandateCallback($input);
@@ -324,7 +323,6 @@ class Gateway extends Base\Gateway
 
     protected function getEntityAttributes(array $input)
     {
-        // TODO: First / Second recurring??
         if ($input['terminal']->isRecurring())
         {
             return $this->getEmandateEntityAttributes($input);

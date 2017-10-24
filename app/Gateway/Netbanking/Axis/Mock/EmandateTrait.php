@@ -54,8 +54,8 @@ trait EmandateTrait
             ResponseFields::BANK_REF_NO     => 9999999999,
             ResponseFields::STATUS_CODE     => StatusCode::SUCCESS,
             ResponseFields::REMARKS         => 'Recurring payment successful',
-            ResponseFields::TRANS_REF_NO    => $input[RequestFields::REQUEST_ID], // TODO: Confirm this
-            ResponseFields::TRANS_EXEC_TIME => Carbon::now(Timezone::IST)->toDateTimeString(), // TODO: Confirm this
+            ResponseFields::TRANS_REF_NO    => $input[RequestFields::REQUEST_ID],
+            ResponseFields::TRANS_EXEC_TIME => Carbon::now(Timezone::IST)->toDateTimeString(),
             ResponseFields::PAYMENT_MODE    => Constants::PMD,
             ResponseFields::CHECKSUM        => $input[RequestFields::CHECKSUM],
             ResponseFields::MANDATE_NUMBER  => 8888888888,
