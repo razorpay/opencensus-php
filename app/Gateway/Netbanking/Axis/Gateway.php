@@ -51,12 +51,6 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if ($this->isSecondRecurringPaymentRequest($input) === true)
-        {
-            // Debit steps are handled in the method below
-            return $this->authorizeSecondRecurring($input);
-        }
-
         $content = $this->getPaymentRequestData($input);
 
         $entityAttributes = $this->getEntityAttributes($input);

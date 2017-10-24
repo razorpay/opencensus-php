@@ -37,7 +37,7 @@ class RequestFields
 
     /**
      * We can pass MN(dont allow modification) or MY(allow modification) in this field
-     * For all reserve fields other than RE1, we sent empty string
+     * For all reserve fields other than RE1, we send empty string
      */
     const RESERVE_FIELD_1 = 'RE1';
     const RESERVE_FIELD_2 = 'RE2';
