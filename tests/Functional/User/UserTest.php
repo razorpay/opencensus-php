@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\User;
 
 use DB;
+use Mail;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Hashing\BcryptHasher;
+use RZP\Mail\User\AccountVerification;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class UserTest extends TestCase
@@ -309,5 +311,32 @@ class UserTest extends TestCase
                 'updated_at'  => 1493805150
                 ]
             );
+    }
+
+    public function testResendVerificationMail()
+    {
+        Mail::fake();
+
+        $user = $this->fixtures->create('user', [
+            'confirm_token' => 'testingtestingtesting',
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        Mail::assertSent(AccountVerification::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('org', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+
+            $this->assertEquals('emails.user.account_verification', $mail->view);
+
+            return true;
+        });
     }
 }

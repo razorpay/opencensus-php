@@ -241,4 +241,17 @@ return [
             'content' => [],
         ],
     ],
+
+    'testResendVerificationMail' => [
+        'request' => [
+            'url'     => '/users/resend-verification',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                "success" => true,
+            ],
+        ],
+    ],
 ];
