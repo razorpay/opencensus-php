@@ -22,8 +22,7 @@ class CreateBharatQrTable extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(BharatQr::ID, BharatQr::ID_LENGTH)
-                  ->primary();
+            $table->char(BharatQr::ID, BharatQr::ID_LENGTH);
 
             $table->char(BharatQr::MERCHANT_ID, BharatQr::ID_LENGTH);
 
@@ -31,9 +30,9 @@ class CreateBharatQrTable extends Migration
 
             $table->string(BharatQr::ENTITY_TYPE, 50);
 
-            $table->string(BharatQr::VISA_IDENTIFIER);
+            $table->increments(BharatQr::IDENTIFIER_PADDING);
 
-            $table->string(BharatQr::MASTER_CARD_IDENTIFIER);
+            $table->unique(array(BharatQr::ID,BharatQr::IDENTIFIER_PADDING));
 
             $table->integer(BharatQr::AMOUNT)
                   ->unsigned()

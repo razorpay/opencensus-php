@@ -3,10 +3,8 @@
 namespace RZP\Models\VirtualAccount;
 
 use App;
-use Config;
 use Lib\CRC16;
 use RZP\Exception;
-use RZP\Base\Luhn;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -40,8 +38,6 @@ class Receiver
     // No 2s and Zs
     const ACCOUNT_NUMBER_CHAR_SPACE       = '34679ACDEFGHJKLMNPQRTUVWXY';
     const MAX_ACCOUNT_GENERATION_ATTEMPTS = 10;
-
-    const BHARAT_QR_NUMBER_SPACE          = '0123456789';
 
     protected $app;
     protected $merchant;
@@ -121,13 +117,7 @@ class Receiver
 
     protected function getBharatQrEntityParams(Entity $virtualAccount)
     {
-        $visaIdentifier = $this->generateMerchantIdentifierForReceiver(self::BHARAT_QR, 'visa');
-
-        $mastercardIdentifier = $this->generateMerchantIdentifierForReceiver(self::BHARAT_QR, 'mastercard');
-
         $input = [
-            BharatQr::VISA_IDENTIFIER        => $visaIdentifier,
-            BharatQr::MASTER_CARD_IDENTIFIER => $mastercardIdentifier,
             BharatQr::AMOUNT                 => $virtualAccount->getAmountExpected(),
             BharatQr::QR_STRING              => Constants::VERSION_TAG,
             BharatQr::METHOD                 => 'QR',
@@ -149,28 +139,6 @@ class Receiver
         $bharatQr->setQrString($qrString);
 
         return $bharatQr;
-    }
-
-    /**
-     * This will generate merchant identifier using network
-     * network could be visa , mastercard or rupay
-     *
-     * @param string $receiver
-     * @param string $network
-     * @return string
-     */
-    protected function generateMerchantIdentifierForReceiver(string $receiver, string $network)
-    {
-        $acquirerCode = $this->getAcquirerCode($receiver, $network);
-
-        $identifier  = $acquirerCode . '0' . $this->padWithRandomDigits(7, self::BHARAT_QR_NUMBER_SPACE);
-
-        return $identifier . Luhn::computeCheckDigit($identifier);
-    }
-
-    protected function getAcquirerCode(string $receiver, string $network)
-    {
-        return Config::get('gateway.' . $receiver . '.' . $network . '_' . 'code');
     }
 
     protected function generateBankAccountInput()

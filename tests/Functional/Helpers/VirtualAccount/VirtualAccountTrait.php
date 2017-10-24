@@ -10,11 +10,6 @@ trait VirtualAccountTrait
 
         $attributes = array_merge($defaultValues, $input);
 
-        if (empty($attributes['amount_expected']) === true)
-        {
-            unset($attributes['amount_expected']);
-        }
-
         $this->ba->privateAuth();
 
         $request = [
@@ -160,7 +155,6 @@ trait VirtualAccountTrait
         return [
             'name'            => 'Test virtual account',
             'description'     => 'VA for tests',
-            'amount_expected' => 10000,
             'receiver_types'  => [
                 'bank_account'
             ],
