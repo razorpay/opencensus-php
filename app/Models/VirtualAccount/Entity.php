@@ -33,7 +33,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_REVERSED      = 'amount_reversed';
     const BANK_ACCOUNT_ID      = 'bank_account_id';
     const VPA                  = 'vpa';
-    const BHARAT_QR_ID         = 'bharat_qr_id';
+    const QR_CODE_ID           = 'qr_code_id';
     const CUSTOMER_ID          = 'customer_id';
     const NOTES                = 'notes';
 
@@ -107,9 +107,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\BankAccount\Entity');
     }
 
-    public function bharatQr()
+    public function qrCode()
     {
-        return $this->belongsTo('RZP\Models\BharatQr\Entity');
+        return $this->belongsTo('RZP\Models\QrCode\Entity');
     }
 
     public function customer()
@@ -148,9 +148,9 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
     }
 
-    public function hasBharatQr()
+    public function hasQrCode()
     {
-        return ($this->isAttributeNotNull(self::BHARAT_QR_ID));
+        return ($this->isAttributeNotNull(self::QR_CODE_ID));
     }
 
     public function hasCustomer()

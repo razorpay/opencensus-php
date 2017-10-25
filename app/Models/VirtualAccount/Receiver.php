@@ -9,20 +9,20 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\BharatQr\Constants;
-use RZP\Models\BharatQr\Entity as BharatQr;
+use RZP\Models\QrCode\Constants;
+use RZP\Models\QrCode\Entity as QrCode;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Receiver
 {
     const BANK_ACCOUNT      = 'bank_account';
     // const VPA               = 'vpa';
-    const BHARAT_QR         = 'bharat_qr';
+    const QR_CODE           = 'qr_code';
 
     const TYPES = [
         self::BANK_ACCOUNT,
         // self::VPA,
-        self::BHARAT_QR,
+        self::QR_CODE,
     ];
 
     const ROOT_LENGTH               = 4;
@@ -94,57 +94,56 @@ class Receiver
         return $bankAccount;
     }
 
-    public function buildBharatQr(Entity $virtualAccount)
+    public function buildQrCode(Entity $virtualAccount)
     {
-        $bharatQr = new BharatQr;
+        $qrCode = new QrCode;
 
-        $input = $this->getBharatQrEntityParams($virtualAccount);
+        $input = $this->getQrCodeEntityParams($virtualAccount);
 
-        $bharatQr = $bharatQr->build($input);
+        $qrCode = $qrCode->build($input);
 
-        $bharatQr->generateId();
+        $qrCode->generateId();
 
-        $bharatQr->merchant()->associate($this->merchant);
+        $qrCode->merchant()->associate($this->merchant);
 
-        $bharatQr->source()->associate($virtualAccount);
+        $qrCode->source()->associate($virtualAccount);
 
 
         //This is done in order to generate identifier padding value
-        $this->repo->saveOrFail($bharatQr);
+        $this->repo->saveOrFail($qrCode);
 
-        $bharatQr = $bharatQr->fresh();
+        $qrCode = $qrCode->fresh();
 
-        $bharatQr = $this->generateDynamicQrString($bharatQr);
+        $qrCode = $this->generateDynamicQrString($qrCode);
 
-        $this->repo->saveOrFail($bharatQr);
+        $this->repo->saveOrFail($qrCode);
 
-        return $bharatQr;
+        return $qrCode;
     }
 
-    protected function getBharatQrEntityParams(Entity $virtualAccount)
+    protected function getQrCodeEntityParams(Entity $virtualAccount)
     {
         $input = [
-            BharatQr::AMOUNT                 => $virtualAccount->getAmountExpected(),
-            BharatQr::QR_STRING              => Constants::VERSION_TAG,
-            BharatQr::METHOD                 => 'QR',
+            qrCode::AMOUNT                 => $virtualAccount->getAmountExpected(),
+            qrCode::QR_STRING              => Constants::VERSION_TAG,
         ];
 
         return $input;
     }
 
-    protected function generateDynamicQrString($bharatQr)
+    protected function generateDynamicQrString($qrCode)
     {
-        $qrString = $bharatQr->getQrString();
+        $qrString = $qrCode->getQrString();
 
-        $qrString .= $bharatQr->getDynamicTagString() .'6304';
+        $qrString .= $qrCode->getDynamicTagString() .'6304';
 
         $crc = (new CRC16)->calculateCrc($qrString);
 
         $qrString .= $crc;
 
-        $bharatQr->setQrString($qrString);
+        $qrCode->setQrString($qrString);
 
-        return $bharatQr;
+        return $qrCode;
     }
 
     protected function generateBankAccountInput()

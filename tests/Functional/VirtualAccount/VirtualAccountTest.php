@@ -23,7 +23,7 @@ class VirtualAccountTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
-        $this->fixtures->merchant->enableMethod('10000000000000', 'bharat_qr');
+        $this->fixtures->merchant->addFeatures('bharat_qr');
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
@@ -48,7 +48,7 @@ class VirtualAccountTest extends TestCase
     public function testCreateVirtualAccountWithBharatQr()
     {
         $input = [
-            'receiver_types'  => 'bharat_qr',
+            'receiver_types'  => 'qr_code',
         ];
 
         $response = $this->createVirtualAccount($input);
@@ -73,7 +73,7 @@ class VirtualAccountTest extends TestCase
     public function testCreateVirtualAccountWithBharatQrWithAmount()
     {
         $input = [
-            'receiver_types' => 'bharat_qr',
+            'receiver_types' => 'qr_code',
             'amount_expected' => 10000,
         ];
 

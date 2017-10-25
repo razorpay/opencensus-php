@@ -52,7 +52,7 @@ class Entity
     const SCHEDULE              = 'schedule';
     const TERMINAL              = 'terminal';
     const TRANSFER              = 'transfer';
-    const BHARAT_QR             = 'bharat_qr';
+    const QR_CODE               = 'qr_code';
     const PROMOTION             = 'promotion';
     const LINE_ITEM             = 'line_item';
     const APP_TOKEN             = 'app_token';

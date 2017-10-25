@@ -52,7 +52,7 @@ class CreateVirtualAccountsTable extends Migration
             $table->string(VirtualAccount::BANK_ACCOUNT_ID, VirtualAccount::ID_LENGTH)
                   ->nullable();
 
-            $table->string(VirtualAccount::BHARAT_QR_ID, VirtualAccount::ID_LENGTH)
+            $table->string(VirtualAccount::QR_CODE_ID, VirtualAccount::ID_LENGTH)
                   ->nullable();
 
             $table->string(VirtualAccount::VPA)

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\BharatQr;
+namespace RZP\Models\QrCode;
 
 use Config;
 use RZP\Base\Luhn;
@@ -14,23 +14,20 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE               = 'entity_type';
     const IDENTIFIER_PADDING        = 'identifier_padding';
     const AMOUNT                    = 'amount';
-    const METHOD                    = 'method';
     const QR_STRING                 = 'qr_string';
 
-    protected static $sign = 'bhqr';
+    protected static $sign = 'qr';
 
-    protected $entity = 'bharat_qr';
+    protected $entity = 'qr_code';
 
     protected $fillable = [
         self::AMOUNT,
-        self::METHOD,
         self::QR_STRING,
     ];
 
     protected $visible = [
         self::ID,
         self::AMOUNT,
-        self::METHOD,
         self::QR_STRING,
         self::CREATED_AT,
     ];
@@ -38,7 +35,6 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::AMOUNT,
-        self::METHOD,
         self::QR_STRING,
         self::CREATED_AT,
     ];

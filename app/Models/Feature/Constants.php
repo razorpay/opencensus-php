@@ -49,6 +49,7 @@ class Constants
     const DISABLE_MAESTRO               = 'disable_maestro';
     const DISABLE_RUPAY                 = 'disable_rupay';
     const BLOCK_INTERNATIONAL_RECURRING = 'block_intl_recurring';
+    const BHARAT_QR                     = 'bharat_qr';
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -95,6 +96,7 @@ class Constants
         self::DISABLE_MAESTRO               => true,
         self::DISABLE_RUPAY                 => true,
         self::BLOCK_INTERNATIONAL_RECURRING => false,
+        self::BHARAT_QR                     => true,
     ];
 
     // Keys used in the feature on-boarding workflow

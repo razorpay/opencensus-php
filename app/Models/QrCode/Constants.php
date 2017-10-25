@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\BharatQr;
+namespace RZP\Models\QrCode;
 
 class Constants
 {

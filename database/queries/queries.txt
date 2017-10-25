@@ -2545,8 +2545,5 @@ ALTER TABLE tokens
     ADD COLUMN account_number VARCHAR(40) AFTER wallet,
     ADD INDEX `tokens_account_number_index` (`account_number`);
 
-ALTER TABLE merchant_banks
-    ADD COLUMN bharat_qr TINYINT(1) DEFAULT 0 NOT NULL AFTER aeps;
-
 ALTER TABLE virtual_accounts
-    ADD COLUMN bharat_qr_id CHAR(14) DEFAULT NULL after bank_account_id;
+    ADD COLUMN qr_code_id CHAR(14) DEFAULT NULL after bank_account_id;
