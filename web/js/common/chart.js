@@ -6,19 +6,6 @@ global.maintainAspectRatio = false;
 global.elements.line.lineTension = 0;
 global.legend.display = false;
 
-global.defaultFontColor = '#666';
-global.defaultFontFamily =
-  '"Lato", "Helvetica Neue", Helvetica, Arial,sans-serif';
-global.defaultFontSize = 11;
-global.layout = {
-  padding: {
-    left: 10,
-    bottom: 15,
-    top: 5,
-    right: 5,
-  },
-};
-
 const tooltips = global.tooltips;
 tooltips.mode = 'index';
 tooltips.multiKeyBackground = 'rgba(0, 0, 0, 0)';

@@ -14,7 +14,8 @@ files=$(cat <<-END
   ReactRouterDOM  react-router-dom/umd/react-router-dom.min.js
   mobx            mobx/lib/mobx.umd.min.js
   mobxReact       mobx-react/index.min.js
-  Chartist        chartist/dist/chartist.min.js
+  moment          moment/min/moment.min.js
+  Chart           chart.js/dist/Chart.min.js
 END
 )
 

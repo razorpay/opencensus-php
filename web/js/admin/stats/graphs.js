@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import Chartist from 'chartist';
 
 export class Single extends Component {
   render() {
