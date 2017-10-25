@@ -7,14 +7,14 @@ use RZP\Mail\Base\Constants as MailConstants;
 
 class Constants
 {
-    const HDFC              = 'hdfc';
-    const AXIS              = 'axis';
-    const ICICI             = 'icici';
-    const KOTAK             = 'kotak';
-    const FEDERAL           = 'federal';
-    const INDUSIND          = 'indusind';
-    const RBL               = 'rbl';
-    const NETBANKING_HDFC   = 'netbanking_hdfc';
+    const HDFC            = 'hdfc';
+    const AXIS            = 'axis';
+    const ICICI           = 'icici';
+    const KOTAK           = 'kotak';
+    const FEDERAL         = 'federal';
+    const INDUSIND        = 'indusind';
+    const RBL             = 'rbl';
+    const NETBANKING_HDFC = 'netbanking_hdfc';
 
     /**
      * Stores a mapping of valid banks for each file type
