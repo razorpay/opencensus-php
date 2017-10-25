@@ -22,7 +22,7 @@ class StatusCode
         self::PENDING => 'Pending',
     ];
 
-    public static function isStatusCodeSuccess(string $statusCode)
+    public static function isSuccess(string $statusCode)
     {
         return ($statusCode === self::SUCCESS);
     }

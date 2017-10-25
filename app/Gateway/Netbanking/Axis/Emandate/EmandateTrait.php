@@ -144,7 +144,7 @@ trait EmandateTrait
 
     protected function checkEmandatePaymentResponseStatus(array $content, array $input)
     {
-        if (StatusCode::isStatusCodeSuccess($content[ResponseFields::STATUS_CODE]) !== true)
+        if (StatusCode::isSuccess($content[ResponseFields::STATUS_CODE]) !== true)
         {
             $errorCode = StatusCode::getErrorCodeMap($content[ResponseFields::STATUS_CODE]);
 
