@@ -34,7 +34,11 @@ class GatewayFileManager extends Manager
     {
         $baseNamespace = 'RZP\\Models\\Gateway\\File\\Processor\\';
 
-        $driverNameSpace = $baseNamespace . studly_case($type) . '\\' . studly_case($target);
+        $folderStruct = explode('_', $type);
+        $folderStruct = array_map('ucfirst', $folderStruct);
+        $folderStruct = implode('\\', $folderStruct);
+
+        $driverNameSpace = $baseNamespace . $folderStruct . '\\' . studly_case($target);
 
         return $driverNameSpace;
     }
