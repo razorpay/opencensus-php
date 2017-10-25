@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import axios from 'axios';
 
-import SimpleTable from 'ui/SimpleTable';
+import Table from 'ui/Table';
 import { CheckField } from 'ui/Field';
 
 import { adminFetch } from 'util/fetch';
@@ -43,7 +43,7 @@ class PermissionsList extends Component {
     return (
       <div>
         <header>Permissions</header>
-        <SimpleTable items={org.permissions} fields={permsFields} />
+        <Table items={org.permissions} fields={permsFields} />
       </div>
     );
   }

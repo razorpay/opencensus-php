@@ -5,7 +5,7 @@ import CollectionItem from 'model/collectionItem';
 import { adminFetch } from 'util/fetch';
 
 import Form from 'ui/Form';
-import Table from 'ui/Table';
+import { PageTable } from 'ui/Table';
 import Field from 'ui/Field';
 
 import { showEntity, removeEntity } from './Entity';
@@ -66,7 +66,7 @@ export default class FieldMaps extends Component {
             <Field label="Search" />
           </Form>
         </div>
-        <Table model={this.collection} fields={fields} />
+        <PageTable model={this.collection} fields={fields} />
       </div>
     );
   }
