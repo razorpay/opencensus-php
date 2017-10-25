@@ -1722,20 +1722,34 @@ class MerchantTest extends TestCase
 
     public function testUpdateSubmerchantEmail()
     {
+        $user = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
         $merchant = Merchant\Entity::find("10000000000000");
+
         $merchant->reTag(["Aggregator", "Referral"]);
+
         $merchant->saveOrFail();
 
         $this->fixtures->merchant->addFeatures(["aggregator"]);
 
         $this->ba->proxyAuth();
+
         $request = array(
             'url'     => '/submerchants',
             'method'  => 'post',
             'content' => [
-                "id"     => "10000000000044",
-                "name"   => "Submerchant",
-                "org_id" => "100000razorpay"
+                "id"      => "10000000000044",
+                "name"    => "Submerchant",
+                "org_id"  => "100000razorpay",
+                "user_id" => $user['id'],
             ]);
 
         $this->makeRequestAndGetContent($request);
