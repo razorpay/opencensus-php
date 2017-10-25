@@ -137,8 +137,7 @@ class Gateway extends Base\Gateway
 
     protected function assertPaymentIdAndAmount(array $input, array $response)
     {
-        $expectedAmount = $input[ConstantsEntity::PAYMENT][Payment\Entity::AMOUNT] / 100;
-        $expectedAmount = number_format($expectedAmount, 2, '.', '');
+        $expectedAmount = $this->formatAmount($input);
 
         $actualAmount = $response[ResponseFields::API_RESPONSE][ResponseFields::AMOUNT];
         $actualAmount = number_format($actualAmount, 2, '.', '');
@@ -165,15 +164,15 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment(Verify $verify)
     {
-        $content = $verify->verifyResponseContent;
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
-                'content'    => $content,
+                'content'    => $verify->verifyResponseContent,
                 'gateway'    => $this->gateway,
                 'payment_id' => $verify->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
             ]);
+
+        $this->setVerifyAmountMismatch($verify);
 
         $this->setVerifyStatus($verify);
 
@@ -200,6 +199,17 @@ class Gateway extends Base\Gateway
         ];
 
         return $this->getStandardRequestArray($request);
+    }
+
+    protected function setVerifyAmountMismatch(Verify $verify)
+    {
+        $paymentAmount = $this->formatAmount($verify->input);
+
+        $content = $verify->verifyResponseContent[ResponseFields::API_RESPONSE];
+
+        $actualAmount = number_format($content[ResponseFields::AMOUNT] / 100, 2, '.', '');
+
+        $verify->amountMismatch = ($paymentAmount !== $actualAmount);
     }
 
     protected function setVerifyStatus(Verify $verify)
