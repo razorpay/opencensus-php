@@ -2,39 +2,35 @@
 
 namespace RZP\Models\Merchant;
 
+use Carbon\Carbon;
+use Config;
 use DB;
 use Mail;
-use Config;
-use Hash;
-use Carbon\Carbon;
-
-use Razorpay\OAuth\Token as OAuthToken;
 use Razorpay\OAuth\Client as OAuthClient;
-
-use RZP\Exception;
-use RZP\Models\Key;
-use RZP\Models\User;
-use RZP\Models\Base;
-use RZP\Models\Offer;
-use RZP\Models\Coupon;
+use Razorpay\OAuth\Token as OAuthToken;
+use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
-use RZP\Models\Feature;
-use RZP\Models\Schedule;
-use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
-use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
+use RZP\Models\Admin\Org;
 use RZP\Models\BankAccount;
-use RZP\Base\RuntimeManager;
-use RZP\Models\Merchant\Webhook;
-use Requests_Response as Response;
-use RZP\Models\Settlement\Holidays;
-use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Base;
+use RZP\Models\Coupon;
+use RZP\Models\Feature;
+use RZP\Models\Key;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\SlackActions as SlackActions;
-use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
+use RZP\Models\Merchant\Webhook;
+use RZP\Models\Offer;
+use RZP\Models\Schedule;
+use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Settlement\Holidays;
+use RZP\Models\User;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {

@@ -41,8 +41,8 @@ class Validator extends Base\Validator
     const MIN_EXPIRY_SECS = 900;
 
     protected static $createRules = [
-        Entity::SMS_NOTIFY          => 'filled|boolean',
-        Entity::EMAIL_NOTIFY        => 'filled|boolean',
+        Entity::SMS_NOTIFY          => 'sometimes|boolean',
+        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|epoch|nullable',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
@@ -73,8 +73,8 @@ class Validator extends Base\Validator
     //
 
     protected static $createDraftRules = [
-        Entity::SMS_NOTIFY          => 'filled|boolean',
-        Entity::EMAIL_NOTIFY        => 'filled|boolean',
+        Entity::SMS_NOTIFY          => 'sometimes|boolean',
+        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|epoch|nullable',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
@@ -100,8 +100,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $createIssuedRules = [
-        Entity::SMS_NOTIFY          => 'filled|boolean',
-        Entity::EMAIL_NOTIFY        => 'filled|boolean',
+        Entity::SMS_NOTIFY          => 'sometimes|boolean',
+        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|epoch|nullable',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
@@ -127,8 +127,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $editDraftRules  = [
-        Entity::SMS_NOTIFY          => 'filled|boolean',
-        Entity::EMAIL_NOTIFY        => 'filled|boolean',
+        Entity::SMS_NOTIFY          => 'sometimes|boolean',
+        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|epoch|nullable',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',

@@ -1381,6 +1381,7 @@ final class Route
         'merchant_activation_files'        => '*',
         'user_confirm_by_data'             => '*',
         'dispute_reason_create'            => '*',
+        'dispute_reason_create'            => Permission::CREATE_DISPUTE_REASON,
     ];
 
     public static $direct = [

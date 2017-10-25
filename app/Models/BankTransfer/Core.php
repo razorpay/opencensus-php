@@ -174,22 +174,13 @@ class Core extends Base\Core
 
         foreach ($refunds as $refund)
         {
-            //
-            // If refund was marked as failed after creating a fund
-            // transfer attempt then that means this failure was result
-            // of payout file recon. We aren't handling these just now.
-            //
-            // Reusing the same route for manual retries. If refund is being
-            // retried manually, then we don't check for this condition.
-            //
-            if (($this->isManualRetry($refund, $input) === false) and
-                ($refund->fundTransferAttempts->isNotEmpty() === true))
+            if ($refund->isStatusFailed() === false)
             {
                 $this->trace->info(
                     TraceCode::REFUND_RETRY_SKIPPED,
                     [
-                        'refund_id'                 => $refund->getPublicId(),
-                        'fund_transfer_attempt_ids' => $refund->fundTransferAttempts->getIds(),
+                        'refund_id'     => $refund->getPublicId(),
+                        'refund_status' => $refund->getStatus(),
                     ]);
 
                 continue;
@@ -222,26 +213,6 @@ class Core extends Base\Core
             'failure'       => $failure,
             'status'        => $status,
         ];
-    }
-
-    /**
-     * If ids were given in input, this is a manual retry.
-     * We skip certain checks in this case.
-     *
-     * @param PaymentRefund\Entity $refund
-     * @param array                $input
-     *
-     * @return bool
-     */
-    protected function isManualRetry(PaymentRefund\Entity $refund, array $input): bool
-    {
-        if ((isset($input['ids']) === true) and
-            (in_array($refund->getPublicId(), $input['ids'], true) === true))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     /**
