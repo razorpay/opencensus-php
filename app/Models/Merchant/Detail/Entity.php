@@ -397,4 +397,26 @@ class Entity extends Base\PublicEntity
 
         return $merchantDetailAttributes;
     }
+
+    /**
+     * Returns an array with the statuses of the feature onboarding submissions
+     *
+     * @return array
+     */
+    public function getFeatureOnboardingStatuses(): array
+    {
+        $response = [
+            self::MARKETPLACE_ACTIVATION_STATUS       => $this->getMarketplaceActivationStatus(),
+            self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS  => $this->getVirtualAccountsActivationStatus(),
+            self::SUBSCRIPTIONS_ACTIVATION_STATUS     => $this->getSubscriptionsActivationStatus(),
+        ];
+
+        // Filter out the null values
+        $response = array_filter($response, function ($status)
+        {
+            return ($status !== null);
+        });
+
+        return $response;
+    }
 }

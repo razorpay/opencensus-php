@@ -301,11 +301,7 @@ class Core extends Base\Core
 
         $merchantDetail = $merchant->merchantDetail;
 
-        $response = [
-            MerchantDetail::MARKETPLACE_ACTIVATION_STATUS       => $merchantDetail->getMarketplaceActivationStatus(),
-            MerchantDetail::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS  => $merchantDetail->getVirtualAccountsActivationStatus(),
-            MerchantDetail::SUBSCRIPTIONS_ACTIVATION_STATUS     => $merchantDetail->getSubscriptionsActivationStatus(),
-        ];
+        $response = $merchantDetail->getFeatureOnboardingStatuses();
 
         return $response;
     }
