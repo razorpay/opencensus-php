@@ -84,6 +84,8 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($response->body);
 
+        $this->assertPaymentIdAndAmount($input, $response);
+
         $this->updateGatewayEntityResponse($gatewayPayment, $response[ResponseFields::API_RESPONSE]);
 
         $this->checkResponseStatus($response[ResponseFields::API_RESPONSE]);
@@ -107,9 +109,12 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $this->assertPaymentIdAndAmount($input);
+
         $content = $input['gateway'][ResponseFields::API_RESPONSE];
 
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
+                                                                      Action::AUTHORIZE);
 
         assertTrue($content[ResponseFields::UPI_TRANS_REFERENCE_NO] === $gatewayPayment->getGatewayPaymentId());
 
@@ -128,6 +133,21 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function assertPaymentIdAndAmount(array $input, array $response)
+    {
+        $expectedAmount = $input[ConstantsEntity::PAYMENT][Payment\Entity::AMOUNT];
+
+        $actualAmount = $response[ResponseFields::API_RESPONSE][ResponseFields::AMOUNT];
+
+        $this->assertAmount($expectedAmount, $actualAmount);
+
+        $expectedPaymentId = $input[ConstantsEntity::PAYMENT][Payment\Entity::ID];
+
+        $actualPaymentId = $input['gateway'][ResponseFields::API_RESPONSE][ResponseFields::PSP_REFERENCE_NO];
+
+        $this->assertPaymentId($expectedPaymentId, $actualPaymentId);
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)

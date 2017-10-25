@@ -159,6 +159,20 @@ class UpiMindgateSbiGatewayTest extends TestCase
         $this->assertEquals(false, $verify[Constants::GATEWAY][Constants::GATEWAY_SUCCESS]);
     }
 
+    public function testAmountAssertionFailure()
+    {
+        $this->mockAmountMismatch();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->testPayment();
+            });
+    }
+
     // TODO: File based refund flow - upload file
     public function testRefundFileFlow()
     {
@@ -216,6 +230,19 @@ class UpiMindgateSbiGatewayTest extends TestCase
         // We assert that there are 2 refunds of 500 rupees, and 1 of 100
         $this->assertEquals(2, $count[500]);
         $this->assertEquals(1, $count[100]);
+    }
+
+    protected function mockAmountMismatch()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'auth_decrypted')
+                {
+                    $content[ResponseFields::AMOUNT] = 1;
+                }
+            }
+        );
     }
 
     protected function mockVerifyFailed($status = 'P')

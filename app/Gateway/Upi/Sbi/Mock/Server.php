@@ -182,6 +182,8 @@ class Server extends Base\Mock\Server
             $content[ResponseFields::STATUS_DESCRIPTION] = 'Payment failed';
         }
 
+        $this->content($content, 'auth_decrypted');
+
         return [ResponseFields::API_RESPONSE => $content];
     }
 
