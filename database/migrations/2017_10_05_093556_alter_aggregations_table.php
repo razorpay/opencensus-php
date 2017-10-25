@@ -12,6 +12,7 @@ class AlterAggregationsTable extends Migration
      */
     public function up()
     {
+        // still there will be a key with confusing name aggregations_merchant_id_foreign
         Schema::table('aggregations', function(Blueprint $table)
         {
             $table->dropForeign('aggregations_merchant_id_foreign');

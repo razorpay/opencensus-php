@@ -12,6 +12,7 @@ class AlterTransactionsTable extends Migration
      */
     public function up()
     {
+        // still there will be a key with confusing name transactions_merchant_id_foreign
         Schema::table('transactions', function(Blueprint $table)
         {
             $table->dropForeign('transactions_merchant_id_foreign');
