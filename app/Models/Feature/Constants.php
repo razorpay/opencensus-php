@@ -59,7 +59,6 @@ class Constants
         self::S2SWALLET                     => true,
         self::S2SUPI                        => true,
         self::S2SAEPS                       => true,
-        self::SETL_REPORT                   => true,
         self::NOFLASHCHECKOUT               => true,
         self::RECURRING                     => true,
         self::S2S                           => true,
