@@ -30,8 +30,10 @@ export default class PermissionsList extends Component {
     return (
       <div class="list-container">
         <div class="box">
-          <header>Permissions</header>
-          <button onClick={this.showEntity}>Add new Permission</button>
+          <header>
+            Permissions
+            <button onClick={this.showEntity}>Add new Permission</button>
+          </header>
           <Form onSubmit={this.onSubmit} class="filters">
             <Field name="q" label="Search" />
           </Form>
@@ -52,13 +54,11 @@ const fields = [
 const Actions = ({ item }) => (
   <div>
     <div class="link" onClick={item::openRoleModal}>
-      Role
+      Roles
     </div>
-    <br />
     <div class="link" onClick={item::showEntity}>
       Edit
     </div>
-    <br />
     <div class="link danger">Delete</div>
   </div>
 );

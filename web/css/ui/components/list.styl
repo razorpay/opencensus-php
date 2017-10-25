@@ -15,21 +15,22 @@
       margin: 2px 0
       text-transform: capitalize
 
-.table-empty
+.table-empty, .table-pending
   text-align: center
+  padding: 20px
+  min-width: 120px
   &:after
     content: 'No items to display.'
+
+.table-pending
+  &:after
+    content: 'Loading...'
 
 .table-info
   padding: 10px 20px
   font-size: 20px
   line-height: 36px
   border-bottom: 2px solid #eee
-
-.table-pending
-  text-align: center
-  &:after
-    content: 'Loading...'
 
 .table-striped
   .tr:nth-child(2n)
