@@ -655,21 +655,6 @@ class Gateway
         return in_array($gateway, self::$recurringGateways, true);
     }
 
-    public static function isFileBasedEMandateDebitBank(string $bank): bool
-    {
-        return ((self::isRecurringSupportedOnBank($bank)) and
-                (array_key_exists($bank, self::$fileBasedEMandateDebitBanks)));
-    }
-
-    /**
-     * Checks whether the bank requires a file-based system to register for eMandate
-     */
-    public static function isFileBasedEMandateRegsitrationBank(string $bank): bool
-    {
-        return ((self::isRecurringSupportedOnBank($bank)) and
-                (array_key_exists($bank, self::$fileBasedEMandateRegistrationBanks)));
-    }
-
     /**
      * Checks whether the bank requires a file-based system to register for eMandate
      *
