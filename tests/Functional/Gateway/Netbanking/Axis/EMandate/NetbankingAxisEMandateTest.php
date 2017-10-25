@@ -3,10 +3,10 @@
 namespace RZP\Tests\Functional\Gateway\Netbanking\Axis\EMandate;
 
 use RZP\Constants\Entity;
-use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking\Axis\Emandate;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Customer\Token;
 
 use Carbon\Carbon;
 
@@ -123,5 +123,7 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->assertEquals('pay_' . $netbanking['payment_id'], $payment['id']);
         $this->assertEquals($payment['token_id'], $token['id']);
         $this->assertEquals($netbanking['si_token'], $token['gateway_token']);
+
+        $this->assertEquals(TOKEN\RecurringStatus::CONFIRMED, $token[Token\Entity::RECURRING_STATUS]);
     }
 }
