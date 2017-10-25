@@ -10,6 +10,7 @@ export default class RoleModal extends Component {
     super();
     this.state = {
       items: [],
+      pending: true,
     };
   }
 
@@ -22,15 +23,18 @@ export default class RoleModal extends Component {
     }).then(response => {
       this.setState({
         items: response.items,
+        pending: false,
       });
     });
   }
 
   render() {
+    let { items, pending } = this.state;
+
     return (
       <div>
         <header>Roles</header>
-        <Table items={this.state.items} fields={fields} />
+        <Table pending={pending} items={items} fields={fields} />
       </div>
     );
   }

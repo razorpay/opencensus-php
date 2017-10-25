@@ -1,52 +1,158 @@
 import React, { Component } from 'react';
-import { observer } from 'mobx-react';
-import { openSlider, openModal } from 'common/modal';
-import PermForm from './PermissionForm';
-import Model from './model';
+import { openModal, closeModal, notifyDone } from 'common/modal';
+import Form from 'ui/Form';
+import Field, { CheckField } from 'ui/Field';
+import OrgTable from './OrgTable';
+import Table from 'ui/Table';
+import { adminFetch, adminPut, adminPost } from 'util/fetch';
 
-@observer
-class EditPerm extends Component {
-  constructor() {
-    super();
-    this.model = new Model();
+export default class EditPerm extends Component {
+  state = {
+    pending: true,
+    roles: null,
+    orgs: null,
+    permission: null,
+    orgTableData: null,
+  };
+
+  fetchFn(route_name) {
+    return adminFetch({
+      route_name,
+      url_params: {
+        id: this.props.model.id,
+      },
+    });
   }
 
   componentWillMount() {
-    let { id } = this.props.model;
-    if (id) {
-      this.model.fetchAll(id);
+    let requests = [adminFetch('org_get_multiple')];
+    if (this.props.model) {
+      requests.push(
+        this.fetchFn('permission_get'),
+        this.fetchFn('permission_get_roles')
+      );
     }
+    Promise.all(requests).then(([orgs, permission, roles]) => {
+      if (permission) {
+        permission.orgs = permission.orgs.map(o => o.id);
+        permission.workflow_orgs = permission.workflow_orgs.map(o => o.id);
+      } else {
+        permission = {
+          orgs: [],
+          workflow_orgs: [],
+        };
+      }
+      this.setState({
+        permission,
+        roles: (roles && roles.items) || [],
+        orgs: orgs.items,
+        pending: false,
+        orgTableData: {
+          orgs: permission.orgs,
+          workflow_orgs: permission.workflow_orgs,
+        },
+      });
+    });
   }
 
-  handleSelectAll = e => {
-    console.log(e.target.checked);
-    this.model.selectAllOrg(e.target.checked);
-  };
+  onChange = orgTableData => this.setState({ orgTableData });
 
-  handleSelect = (e, id) => {
-    console.log(e.target.checked);
-    this.model.selectOrg(e.target.checked, id);
+  onSubmit = body => {
+    body = { ...body, ...this.state.orgTableData };
+    body.assignable = body.assignable === '1';
+    let data = { body };
+
+    let promise;
+    if (this.props.model) {
+      data.url_params = {
+        id: this.props.model.id,
+      };
+      data.route_name = 'permission_edit';
+      data.content_type = 'application/json';
+      promise = adminPut(data);
+    } else {
+      data.route_name = 'permission_create';
+      promise = adminPost(data).then(data => {
+        if (data) {
+          this.props.collection.items.push(data);
+          return data;
+        }
+      });
+    }
+    return promise.then(data => {
+      if (data) {
+        closeModal();
+        notifyDone();
+        return data;
+      }
+    });
   };
 
   render() {
+    if (this.state.pending) {
+      return <div class="spinner" />;
+    }
+
+    let { collection, model } = this.props;
+
+    let { id, name, category, description } = model || {};
+
+    let { roles, orgs, permission } = this.state;
+
     return (
-      <PermForm
-        {...this.props.model}
-        {...this.model}
-        onSelectAll={this.handleSelectAll}
-        onSelect={this.handleSelect}
-      />
+      <div>
+        <header>
+          {id ? `Edit Permission – ${name}` : 'Add a new Permission'}
+        </header>
+        <Form onSubmit={this.onSubmit}>
+          <Field
+            required
+            label="Permission Name"
+            name="name"
+            defaultValue={name}
+          />
+          <Field
+            required
+            label="Category"
+            name="category"
+            defaultValue={category}
+          />
+          <Field
+            required
+            label="Description"
+            name="description"
+            defaultValue={description}
+          />
+          <CheckField
+            label="Assignable"
+            name="assignable"
+            defaultChecked={false}
+          />
+          <header>Organizations:</header>
+          <OrgTable
+            onChange={this.onChange}
+            items={orgs}
+            orgs={permission.orgs}
+            workflowOrgs={permission.workflow_orgs}
+          />
+          {id && (
+            <div>
+              <header>Assigned Roles (In this Org)</header>
+              <Table items={roles} fields={roleFields} />
+            </div>
+          )}
+          <button>Save</button>
+        </Form>
+      </div>
     );
   }
 }
 
 export function showEntity(collection) {
-  openSlider(<EditPerm collection={collection} model={this} />);
+  openModal(<EditPerm collection={collection} model={this} />);
 }
 
-// function _fetchPermFn(route, id) {
-//   return adminFetch({
-//     route_name: route,
-//     ...(id ? { url_params: { id: id } } : null),
-//   });
-// }
+const roleFields = [
+  ['Name', item => item.name],
+  ['Description', item => item.description],
+];
