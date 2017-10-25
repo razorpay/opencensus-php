@@ -66,10 +66,8 @@ export default function GenerateRefundsExcel() {
             body.on = data.on;
           }
           return adminPost({
-            data: {
-              body: body,
-              route_name: 'refund_generate_excel',
-            },
+            body,
+            route_name: 'refund_generate_excel',
           })
             .then(response => {
               if (response.data.success) {

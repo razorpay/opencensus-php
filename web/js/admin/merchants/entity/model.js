@@ -17,7 +17,7 @@ export default class Model {
     this.fetchFn = fetchFn;
     this.merchantId = merchantId;
 
-    this.pending = observable.box();
+    this.pending = observable.shallowBox();
 
     // fetch if not pre-populated
     this.fetchDetails();

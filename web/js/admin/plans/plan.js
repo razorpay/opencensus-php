@@ -1,4 +1,4 @@
-import { observe, observable, extendObservable, computed } from 'mobx';
+import { toJS, extendObservable, computed } from 'mobx';
 import Collection from 'model/collection';
 import CollectionItem from 'model/collectionItem';
 import { adminDelete, adminFetch, adminPost } from 'util/fetch';
@@ -6,6 +6,7 @@ import { methods } from 'util/data';
 import { notifySuccess, notifyError } from 'common/modal';
 import { deepClone } from 'util/index';
 import { cardTypes } from 'util/data';
+import { Switch } from 'ui/Field';
 
 export default class Plan extends Collection {
   constructor(props = {}) {
@@ -54,7 +55,7 @@ export default class Plan extends Collection {
       adminPost({
         route_name: 'pricing_create_plan',
         plan_name: name,
-        rules: this.items.slice(1).map(p => p.props),
+        rules: this.items.slice(0, -1).map(p => p.serialize()),
       })
     );
   }
@@ -96,32 +97,68 @@ export const options = {
     0: 'No',
     1: 'Yes',
   },
+  amount_range: {
+    '': 'None',
+    '0-100000': '0-100000',
+    '100000-200000': '100000-200000',
+    '0-200000': '0-200000',
+    '200000-1000000000': '200000-1000000000',
+  },
   emi_duration: {
     '': 'All',
-    3: 3,
-    6: 6,
-    9: 9,
-    12: 12,
-    18: 18,
-    24: 24,
+    ' 3': 3,
+    ' 6': 6,
+    ' 9': 9,
+    ' 12': 12,
+    ' 15': 15,
+    ' 18': 18,
+    ' 21': 21,
+    ' 24': 24,
   },
   percent_rate: '',
   fixed_rate: '',
+  min_fee: '',
+  max_fee: '',
 };
 
 const ruleProps = Object.keys(options).reduce(function(o, key) {
-  o[key] = options[key] && Object.keys(options[key])[0];
+  o[key] = options[key];
+  if (typeof o[key] === 'object') {
+    o[key] = Object.keys(options[key])[0];
+  }
   return o;
 }, {});
 
 class Rule extends CollectionItem {
+  @computed
+  get isCard() {
+    return /card|emi/.test(this.payment_method);
+  }
+
   constructor(collection, props = ruleProps) {
     super(collection, props);
     this.bind(['save', 'delete']);
     extendObservable(this, props);
-    observe(this, _ => {
-      this.define('isCard', /card|emi/.test(this.payment_method));
-    });
+  }
+
+  serialize() {
+    let data = toJS(this);
+
+    if (data.amount_range) {
+      let range = data.amount_range.split('-');
+      data.amount_range_active = 1;
+      data.amount_range_min = range[0];
+      data.amount_range_max = range[1];
+    }
+    delete data.amount_range;
+
+    data.emi_duration = data.emi_duration.trim();
+
+    data.percent_rate = Math.round(data.percent_rate * 100);
+    data.fixed_rate = Math.round(data.fixed_rate * 100);
+    data.min_fee = Math.round(data.min_fee * 100);
+    data.max_fee = Math.round(data.max_fee * 100);
+    return data;
   }
 
   save() {
@@ -133,7 +170,7 @@ class Rule extends CollectionItem {
       return this.request(
         'save',
         adminPost({
-          body: this,
+          body: this.serialize(),
           route_name: 'pricing_add_plan_rule',
           url_params: {
             id: this.collection.props.id,
@@ -168,5 +205,84 @@ class Rule extends CollectionItem {
         this.collection.items.remove(this);
       }
     });
+  }
+
+  readonlyValue(name) {
+    var value = this[name] || '';
+
+    if (this.id || this.readonly) {
+      return values[value];
+    }
+    return false;
+  }
+
+  field(Component, name, props = {}) {
+    var value = this[name] || '';
+
+    if (this.id || this.readonly) {
+      if (props.type === 'number') {
+        value /= 100;
+      }
+      return value;
+    }
+
+    return (
+      <Component
+        name={name}
+        value={value}
+        onChange={this.onPropChange}
+        {...props}
+      />
+    );
+  }
+
+  selectField(name, values = options[name]) {
+    return this.field('select', name, {
+      children: Object.keys(values).map(value => (
+        <option value={value} key={value}>
+          {values[value]}
+        </option>
+      )),
+    });
+  }
+
+  numberField(name, props = {}) {
+    return this.field('input', name, {
+      type: 'number',
+      min: 0,
+      step: 0.01,
+      ...props,
+    });
+  }
+
+  binaryField(name) {
+    return this.field(Switch, name);
+  }
+
+  paymentMethodTypeField() {
+    if (this.payment_method === 'card') {
+      var field = this.selectField('payment_method_type');
+      if (field) {
+        return <div>Type {field}</div>;
+      }
+    }
+  }
+
+  internationalField() {
+    if (this.payment_method === 'card') {
+      var field = this.binaryField('international');
+      if (field) {
+        return <div>International {field}</div>;
+      }
+    }
+  }
+
+  emiDurationField() {
+    if (this.payment_method === 'emi') {
+      var field = this.selectField('emi_duration');
+      if (field) {
+        return <div>{field} Months</div>;
+      }
+    }
   }
 }

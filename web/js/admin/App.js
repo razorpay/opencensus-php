@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Route, matchPath, Switch } from 'react-router-dom';
+import { Route, matchPath, Switch, Redirect } from 'react-router-dom';
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 import MainNavLink from 'admin/components/MainNavLink';
 import ShowWhen from 'admin/components/ShowWhen';
@@ -22,7 +22,7 @@ import GroupList from 'admin/groups/List';
 import UserList from 'admin/users/List';
 import OrgsList from 'admin/organizations/List';
 import FieldMaps from 'admin/fieldmaps/List';
-// import RoleList from "admin/roles/List";
+import RoleList from 'admin/roles/List';
 
 export default class App extends Component {
   render() {
@@ -42,9 +42,10 @@ export default class App extends Component {
 
             <Route path="/groups" component={GroupList} />
             <Route path="/users" component={UserList} />
-            {/* <Route path="/roles" component={RoleList} /> */}
             <Route path="/orgs" component={OrgsList} />
             <Route path="/fieldmaps/:orgId" component={FieldMaps} />
+            <Route path="/roles" component={RoleList} />
+            <Redirect to="/stats" />
           </Switch>
         </main>
         <header />

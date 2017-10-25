@@ -75,9 +75,10 @@ export default function AddEMIPlan() {
         text="OK"
         class="btn"
         pendingClass="small spinner"
-        onSubmit={data => {
+        onSubmit={body => {
           return adminPost({
-            data: { body: data, route_name: 'emi_plan_add' },
+            body,
+            route_name: 'emi_plan_add',
           })
             .then(response => {
               if (response.data.success) {

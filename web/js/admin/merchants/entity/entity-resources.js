@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';
-import SimpleTable from 'ui/SimpleTable';
+import Table from 'ui/Table';
 
 /*---------------------------------------- Functionality ------------------------------------------*/
 
@@ -232,7 +232,7 @@ export function getDetailsViewMap(merchant) {
           <div>
             <EntityRow label="Plan Id" value={pricingPlans.id} />
             <EntityRow label="Plan Name" value={pricingPlans.name} />
-            <SimpleTable
+            <Table
               items={pricingPlans.rules}
               fields={_getPricingPlansFields()}
             />

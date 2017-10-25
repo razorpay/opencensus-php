@@ -30,14 +30,12 @@ export default function EditMerchantInvoice() {
         pendingClass="small spinner"
         onSubmit={data => {
           return adminPut({
-            data: {
-              url_params: {
-                id: data.merchantId,
-              },
-              body: { invoice_number: data.invoiceNumber },
-              mode: data.mode,
-              route_name: 'merchant_invoice_update_gstin',
+            url_params: {
+              id: data.merchantId,
             },
+            body: { invoice_number: data.invoiceNumber },
+            mode: data.mode,
+            route_name: 'merchant_invoice_update_gstin',
           })
             .then(response => {
               if (response.data.success) {

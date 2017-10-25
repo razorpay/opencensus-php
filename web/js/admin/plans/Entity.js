@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { openSlider } from 'common/modal';
-import Duplexes from 'ui/Duplexes';
+import { openModal } from 'common/modal';
+import { DataTable } from 'ui/Table';
 import Plan, { options } from './plan';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
@@ -9,7 +9,7 @@ import AsyncButton from 'ui/AsyncButton';
 import Field from 'ui/Field';
 import { adminFetch } from 'util/fetch';
 
-let sharedNetworks = observable.box();
+let sharedNetworks = observable.shallowBox();
 
 @observer
 export default class PlanEntity extends Component {
@@ -29,7 +29,7 @@ export default class PlanEntity extends Component {
       return <div class="spinner" />;
     }
     return (
-      <div>
+      <div class="pricing-container">
         <header>
           {(props.id && props.name) || (
             <div>
@@ -45,75 +45,67 @@ export default class PlanEntity extends Component {
             </div>
           )}
         </header>
-        <Duplexes model={this.collection} fields={fields} />
+        <DataTable items={this.collection.items} fields={fields} />
       </div>
     );
   }
 }
 
-// options.feature[item.feature]
-const namedKey = (item, name, values = options[name]) => {
-  var value = item[name] || '';
-  var displayValue = value;
-  if (typeof values === 'object') {
-    displayValue = values[value];
-  }
-
-  if (item.id || item.readonly) {
-    return displayValue;
-  } else if (typeof values === 'string') {
-    return <input name={name} value={value} onChange={item.onPropChange} />;
-  } else {
-    return (
-      <select name={name} value={value} onChange={item.onPropChange}>
-        {Object.keys(values).map(value => (
-          <option value={value} key={value}>
-            {values[value]}
-          </option>
-        ))}
-      </select>
-    );
-  }
-};
-
 const fields = [
-  item => item.id && ['', item.id],
-  item => ['Feature', namedKey(item, 'feature')],
-  item => item.feature && ['Method', namedKey(item, 'payment_method')],
-  item =>
-    item.feature === 'payment' &&
-    item.isCard && ['Card Type', namedKey(item, 'payment_method_type')],
-
-  item => [
-    'Network',
-    namedKey(
-      item,
-      'payment_network',
-      sharedNetworks.get()[item.payment_method] || options.payment_method
+  ['', item => item.id],
+  ['Feature', item => item.selectField('feature')],
+  [
+    'Method',
+    item => (
+      <div>
+        {item.selectField('payment_method')}
+        {item.paymentMethodTypeField()}
+        {item.internationalField()}
+        {item.emiDurationField()}
+      </div>
     ),
   ],
-  item => ['Issuer', namedKey(item, 'payment_issuer')],
-  item => ['International', namedKey(item, 'international')],
-  item => [
+  [
+    'Network',
+    item =>
+      item.selectField('payment_network', {
+        ...options.payment_network,
+        ...sharedNetworks.get()[item.payment_method],
+      }),
+  ],
+  ['Issuer', item => item.selectField('payment_issuer')],
+  ['Amount Range', item => item.selectField('amount_range')],
+  [
+    'Rate (%)',
+    item =>
+      item.numberField('percent_rate', {
+        max: 100,
+      }),
+  ],
+  ['Fee (₹)', item => item.numberField('fixed_rate')],
+  ['Min Fee', item => item.numberField('min_fee')],
+  ['Max Fee', item => item.numberField('max_fee')],
+  [
     'Action',
-    ((item.id || item.readonly) && (
-      <AsyncButton
-        class="link danger"
-        pendingClass="spinner"
-        text="Delete"
-        onClick={item.delete}
-      />
-    )) || (
-      <AsyncButton
-        class="btn"
-        text="Add"
-        pendingClass="spinner"
-        onClick={item.save}
-      />
-    ),
+    item =>
+      ((item.id || item.readonly) && (
+        <AsyncButton
+          class="link danger"
+          pendingClass="spinner"
+          text="Delete"
+          onClick={item.delete}
+        />
+      )) || (
+        <AsyncButton
+          class="btn"
+          text="Add"
+          pendingClass="spinner"
+          onSubmit={item.save}
+        />
+      ),
   ],
 ];
 
 export function openPricingEntity() {
-  openSlider(<PlanEntity plan={this} />);
+  openModal(<PlanEntity plan={this} />);
 }

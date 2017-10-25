@@ -1,0 +1,16 @@
+{
+    "result": [
+        {
+            "method": "wallet",
+            "value": 83299900
+        },
+        {
+            "method": "card",
+            "value": 1201742900
+        },
+        {
+            "method": "netbanking",
+            "value": 4188035600
+        }
+    ]
+}

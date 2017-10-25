@@ -58,9 +58,10 @@ var admin = window.rzpAdmin || {
     'view_group',
     'view_all_role',
     'view_all_org',
+    'view_merchant_stats',
   ],
 };
 
-var user = observable.box(admin);
+var user = observable.shallowBox(admin);
 
 export default user.get();

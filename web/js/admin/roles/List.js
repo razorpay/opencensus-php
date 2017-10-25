@@ -6,27 +6,46 @@ import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
 import { observer } from 'mobx-react';
 import { showEntity } from './Entity';
+import { bool } from 'ui/Item';
+import { notifyError } from 'common/modal';
 
 @observer
-export default class WorkflowList extends Component {
+export default class RoleList extends Component {
   collection = new Collection({
     fetchFn: adminFetch,
     data: {
-      route_name: 'group_get_multiple',
+      route_name: 'role_get_multiple',
     },
   });
+
+  state = {
+    pending: true,
+  };
+
+  componentWillMount() {
+    adminFetch({
+      route_name: 'permission_get_multiple',
+    }).then(data => {
+      this.setState({
+        pending: false,
+      });
+    });
+  }
 
   onSubmit = filters => this.collection.setFilters(filters);
   showEntity = showEntity.bind(null, this.collection);
 
   render() {
+    if (this.state.pending) {
+      return 'loading...';
+    }
     return (
       <div class="list-container">
         <div class="box">
           <header>
-            Groups
+            Roles
             <div class="btn" onClick={this.showEntity}>
-              Add Group
+              Add Role
             </div>
           </header>
           <Form onSubmit={this.onSubmit} class="filters">

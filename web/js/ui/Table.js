@@ -1,10 +1,51 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
-import Form from 'ui/Form';
-import SimpleTable from 'ui/SimpleTable';
+
+export default function Table({ fields, items, onClick, bordered }) {
+  let trClass = onClick ? 'tr clickable' : 'tr';
+  let tableClass = 'table table-striped';
+  if (bordered) {
+    tableClass += ' table-bordered';
+  }
+
+  return (
+    <div class="table-container">
+      {items && items.length ? (
+        <div class={tableClass}>
+          <div class="tr thead">
+            {fields.map((field, index) => (
+              <div class="th" key={index}>
+                {field[0]}
+              </div>
+            ))}
+          </div>
+          {items.map((item, index) => {
+            return (
+              <div
+                class={trClass}
+                key={index}
+                onClick={onClick && item::onClick}
+              >
+                {fields.map((field, index) => (
+                  <div class="td" key={index}>
+                    {field[1](item)}
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div class="table-empty" />
+      )}
+    </div>
+  );
+}
+
+export const DataTable = observer(Table);
 
 @observer
-export default class Table extends Component {
+export class PageTable extends Component {
   render() {
     let { fields, model, onClick } = this.props;
     let { pending, items, filters } = model;
@@ -22,7 +63,7 @@ export default class Table extends Component {
                   {items.length} Results ({filters.skip + 1} &ndash;{' '}
                   {filters.skip + items.length})
                 </div>
-                <SimpleTable fields={fields} onClick={onClick} items={items} />
+                <Table fields={fields} onClick={onClick} items={items} />
               </div>
             )) || <div class="table-empty" />)}
       </div>
