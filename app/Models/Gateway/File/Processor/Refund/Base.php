@@ -47,6 +47,13 @@ class Base extends BaseProcessor
                         );
         }
 
+        $this->trace->info(TraceCode::GATEWAY_FILE_REFUND_ENTITIES, [
+            'gateway_file_id' => $this->gatewayFile->getId(),
+            'entity_ids'      => $refunds->pluck('id'),
+            'begin'           => $begin,
+            'end'             => $end,
+        ]);
+
         return $refunds;
     }
 

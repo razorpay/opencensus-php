@@ -26,6 +26,7 @@ class TransactionFilter extends Terminal\Filter
         'network',
         'bank',
         'recurring',
+        'gateway',
         'subscription',
         'tpv',
         'pharma',
@@ -97,6 +98,32 @@ class TransactionFilter extends Terminal\Filter
             $gateways = Gateway::getGatewaysForNetbankingBank($bank, $isTPV);
 
             return in_array($terminalGateway, $gateways);
+        }
+
+        return true;
+    }
+
+    /**
+     * Filter to remove cybersource shared terminals for non recurring payments
+     *
+     * @param  Terminal\Entity $terminal
+     */
+    public function gatewayFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        $merchant = $this->input['merchant'];
+
+        // This filter should run only in production environment, else tests for
+        // cybersource would fail.
+        if ($this->isLiveMode() === true)
+        {
+            if (($payment->isRecurring() === false) and
+               (($terminal->getGateway() === Gateway::CYBERSOURCE) and
+               ($terminal->isDirectForMerchant($merchant) === false)))
+            {
+                return false;
+            }
         }
 
         return true;

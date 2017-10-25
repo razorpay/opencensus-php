@@ -49,6 +49,13 @@ class Base extends BaseProcessor
             $claims = $this->repo->payment->fetchPaymentsWithStatus($begin, $end, static::GATEWAY, $statuses);
         }
 
+        $this->trace->info(TraceCode::GATEWAY_FILE_CLAIM_ENTITIES, [
+            'gateway_file_id' => $this->gatewayFile->getId(),
+            'entity_ids'      => $claims->pluck('id'),
+            'begin'           => $begin,
+            'end'             => $end,
+        ]);
+
         return $claims;
     }
 

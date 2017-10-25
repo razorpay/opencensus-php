@@ -157,6 +157,7 @@ class Name
     const CREATE_WALLET_CONFIG                = 'create_wallet_config';
     const EDIT_WALLET_CONFIG                  = 'edit_wallet_config';
     const MERCHANT_BATCH_UPLOAD               = 'merchant_batch_upload';
+    const CREATE_DISPUTE_REASON               = 'create_dispute_reason';
 
 
     public static $actionMap = [

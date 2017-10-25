@@ -330,5 +330,11 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException("Subscription with id $id is not authenticated yet");
         }
+
+        if ($subscription->isGlobal() === false)
+        {
+            throw new BadRequestValidationFailureException('Hosted page is not available. ' .
+                'Please contact the merchant for further details.');
+        }
     }
 }

@@ -1365,7 +1365,7 @@ final class Route
         'settings_delete'                  => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'               => '*',
         'merchant_activation_files'        => '*',
-        'dispute_reason_create'            => '*',
+        'dispute_reason_create'            => Permission::CREATE_DISPUTE_REASON,
     ];
 
     public static $direct = [

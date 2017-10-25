@@ -376,7 +376,7 @@ class BankTransferTest extends TestCase
 
         $this->ba->appAuth();
 
-        $response = $this->makeRequestAndGetContent([
+        $request = [
             'method'  => 'POST',
             'url'     => '/bank_transfers/refunds/retry',
             'content' => [
@@ -384,7 +384,18 @@ class BankTransferTest extends TestCase
                     $refund['id']
                 ],
             ],
-        ]);
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEmpty($response['status']);
+
+        // Only failed refunds can be retried
+        $this->fixtures->refund->edit($refund['id'], ['status'=>'failed']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($response['status']);
 
         // Refund is now marked created again
         $refund =  $this->getLastEntity('refund', true);
