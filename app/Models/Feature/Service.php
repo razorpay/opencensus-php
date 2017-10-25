@@ -260,21 +260,6 @@ class Service extends Base\Service
     }
 
     /**
-     * @param string $fileStoreId
-     * @param string $merchantId
-     *
-     * @return mixed
-     */
-    protected function getSignedUrl(string $fileStoreId, string $merchantId)
-    {
-        $accessor = new FileStore\Accessor;
-
-        $signedUrls = $accessor->id($fileStoreId)->merchantId($merchantId)->getSignedUrl();
-
-        return $signedUrls[$fileStoreId];
-    }
-
-    /**
      * Returns the feature activation requests based on the status
      *
      * @param array $input

@@ -363,6 +363,21 @@ class Core extends Base\Core
     }
 
     /**
+     * @param string $fileStoreId
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    protected function getSignedUrl(string $fileStoreId, string $merchantId)
+    {
+        $accessor = new FileStore\Accessor;
+
+        $signedUrls = $accessor->id($fileStoreId)->merchantId($merchantId)->getSignedUrl();
+
+        return $signedUrls[$fileStoreId];
+    }
+
+    /**
      * Uploads the vendor agreement file to S3 via UFH for the marketplace feature
      *
      * @param   array               $input
