@@ -39,7 +39,7 @@ class Core extends Base\Core
 
                 $card = (new Card\Core)->create($cardInput, $customer->merchant);
 
-                $this->create($customer, $input, $card);
+                return $this->create($customer, $input, $card);
             });
     }
 
@@ -302,13 +302,22 @@ class Core extends Base\Core
         return null;
     }
 
-    protected function getCardInputForDirectToken(array $input)
+    protected function getCardInputForDirectToken(array & $input)
     {
         $cardInput = array_pull($input, Entity::CARD);
 
         $cardInput[Card\Entity::VAULT] = Card\Vault::TOKENEX;
 
-        // TODO: Fix cvv based on network
+        $iin = substr($cardInput[Card\Entity::NUMBER], 0, 6);
+
+        $cardInput[Card\Entity::CVV] = '123';
+
+        $network = Card\Network::detectNetwork($iin);
+
+        if ($network === Card\Network::AMEX)
+        {
+            $cardInput[Card\Entity::CVV] = '1234';
+        }
 
         return $cardInput;
     }

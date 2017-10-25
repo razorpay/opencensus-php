@@ -419,6 +419,7 @@ return [
             'content' => [
                 'method'        => 'netbanking',
                 'bank'          => 'KKBK',
+                'max_amount'    => 10000000,
             ],
         ],
         'response' => [

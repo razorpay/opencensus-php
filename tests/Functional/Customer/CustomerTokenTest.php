@@ -32,6 +32,8 @@ class CustomerTokenTest extends TestCase
 
     public function testAddCustomerTokenWallet()
     {
+        $this->markTestSkipped('To be implemented for Wallets');
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -39,6 +41,8 @@ class CustomerTokenTest extends TestCase
 
     public function testAddCustomerTokenNetbanking()
     {
+        $this->markTestSkipped('To be implemented for netbanking');
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -261,6 +265,8 @@ class CustomerTokenTest extends TestCase
 
     public function testFetchNbRecurringFalseRecurringStatusNullToken()
     {
+        $this->markTestSkipped('To be implemented for netbanking');
+
         $token = $this->createCustomerToken(0);
 
         // Public mode
