@@ -16,7 +16,6 @@ class Entity
     //
     // Core entities
     //
-    const QR                    = 'qr';
     const IIN                   = 'iin';
     const KEY                   = 'key';
     const P2P                   = 'p2p';
@@ -54,6 +53,7 @@ class Entity
     const TERMINAL              = 'terminal';
     const TRANSFER              = 'transfer';
     const QR_CODE               = 'qr_code';
+    const BHARAT_QR             = 'bharat_qr';
     const PROMOTION             = 'promotion';
     const LINE_ITEM             = 'line_item';
     const APP_TOKEN             = 'app_token';

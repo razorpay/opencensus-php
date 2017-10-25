@@ -648,7 +648,7 @@ final class Route
         'feature_onboarding_fetch_responses'      => ['get',      'feature/onboarding/{feature}/responses',        'FeatureController@getOnboardingResponses',                          ],
         'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                  'FeatureController@getOnboardingResponses',                          ],
 
-        'qr_payment_process'                      => ['post',     'qr/payment/process',                            'QrController@processQrPayment'                                       ],
+        'bharat_qr_payment_process'               => ['post',     'bharatqr/payment/process',                      'BharatQrController@processBharatQrPayment'                          ],
     ];
 
     public static $public = [
@@ -1071,7 +1071,7 @@ final class Route
         'emandate_registration_reconcile',
         'emandate_debit_initiate',
         'emandate_debit_reconcile',
-        'qr_payment_process',
+        'bharat_qr_payment_process',
     ];
 
     public static $proxy = [

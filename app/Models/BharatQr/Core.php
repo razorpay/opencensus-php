@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Qr;
+namespace RZP\Models\BharatQr;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -46,17 +46,15 @@ class Core extends Base\Core
      */
     public function create(array $input)
     {
-        $qr = (new Entity)->build($input);
+        $bharatQr = (new Entity)->build($input);
 
-        return $qr;
+        return $bharatQr;
     }
 
     public function processPayment(array $input)
     {
         $defaultInput = [
-            Entity::PROVIDER => Provider::BHARAT_QR,
             Entity::METHOD   => Method::CARD,
-            Entity::RECEIVED => true,
         ];
 
         $input = $this->getMappedAttributes($input);
@@ -68,13 +66,13 @@ class Core extends Base\Core
 
         try
         {
-            $qr = $this->create($input);
+            $bharatQr = $this->create($input);
 
              $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
-                function() use ($qr)
+                function() use ($bharatQr)
                 {
-                    (new Processor)->process($qr);
+                    (new Processor)->process($bharatQr);
                 },
                 60,
                 ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -83,8 +81,9 @@ class Core extends Base\Core
         }
         catch (Exception\BadRequestValidationFailureException $ex)
         {
+            s($ex->getMessage());
             $this->trace->traceException(
-                $ex, Trace::ERROR, TraceCode::QR_PAYMENT_PROCESSING_FAILED, $input);
+                $ex, Trace::ERROR, TraceCode::BHARAT_QR_PAYMENT_PROCESSING_FAILED, $input);
 
             $valid = false;
         }

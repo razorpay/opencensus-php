@@ -118,7 +118,7 @@ class Validator extends Base\Validator
     protected function validateEmail(array $input)
     {
         // @todo to be changed after refactor. No validation required for Bharat qr
-        if (Route::currentRouteName() === 'qr_payment_process')
+        if (Route::currentRouteName() === 'bharat_qr_payment_process')
         {
             return;
         }
@@ -335,7 +335,7 @@ class Validator extends Base\Validator
     protected function validateContact($input)
     {
         // @todo to be changed after refactor. No validation required for Bharat qr
-        if (Route::currentRouteName() === 'qr_payment_process')
+        if (Route::currentRouteName() === 'bharat_qr_payment_process')
         {
             return;
         }

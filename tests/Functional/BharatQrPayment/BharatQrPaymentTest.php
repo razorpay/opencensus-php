@@ -5,21 +5,21 @@ namespace RZP\Tests\Functional\QrPayment;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class QrPaymentTest extends TestCase
+class BharatQrPaymentTest extends TestCase
 {
     use PaymentTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/QrPaymentTestData.php';
+        $this->testDataFilePath = __DIR__.'/BharatQrPaymentTestData.php';
 
         parent::setUp();
 
-        $this->fixtures->merchant->enableMethod('10000000000000', 'bharat_qr');
+        $this->fixtures->merchant->addFeatures('bharat_qr');
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
-        $this->bharatQr = $this->createVirtualAccount();
+        $this->qrCode = $this->createVirtualAccount();
 
         $this->ba->appAuth();
     }
@@ -28,22 +28,22 @@ class QrPaymentTest extends TestCase
     {
         $request = $this->testData[__FUNCTION__];
 
-        $request['content']['PurchaseID'] = $this->bharatQr['id'];
+        $request['content']['PurchaseID'] = $this->qrCode['id'];
 
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals(true, $response['valid']);
 
         //Created Qr Entity As Expected
-        $qr = $this->getLastEntity('qr', true);
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
 
         // Payment is automatically captured
-        $payment =  $this->getLastEntity('payment', true);
+        $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('card', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
 
-        $this->assertEquals($qr['payment_id'], $payment['id']);
-        $this->assertEquals($qr['expected'], true);
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+        $this->assertEquals($bharatQr['expected'], true);
     }
 
     public function testUnexpectedPayment()
@@ -54,13 +54,13 @@ class QrPaymentTest extends TestCase
 
         $this->assertEquals(true, $response['valid']);
 
-        $qr = $this->getLastEntity('qr', true);
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
 
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals('card', $payment['method']);
         $this->assertEquals('authorized', $payment['status']);
 
-        $this->assertEquals($qr['expected'], false);
+        $this->assertEquals($bharatQr['expected'], false);
     }
 
     protected function createVirtualAccount()

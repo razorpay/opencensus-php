@@ -10,12 +10,12 @@ return [
         'url'     => '/virtual_accounts',
         'method'  => 'post',
         'content' => [
-            'receiver_types' => 'bharat_qr'
+            'receiver_types' => 'qr_code'
         ],
     ],
 
     'testQrPaymentProcess' => [
-        'url'     => '/qr/payment/process',
+        'url'     => '/bharatqr/payment/process',
         'method'  => 'post',
         'content' => [
             'F002'       => '423156XXXXXX1234',

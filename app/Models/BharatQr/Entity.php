@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Qr;
+namespace RZP\Models\BharatQr;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -19,7 +19,6 @@ class Entity extends Base\PublicEntity
     const VPA                   = 'vpa';
     const CARD_NUMBER           = 'card_number';
     const CARD_NETWORK          = 'card_network';
-    const PROVIDER              = 'provider';
     const PROVIDER_REFERENCE_ID = 'provider_reference_id';
     //URN
     const MERCHANT_REFERENCE    = 'merchant_reference';
@@ -31,14 +30,13 @@ class Entity extends Base\PublicEntity
     const GATEWAY_TERMINAL_DESC = 'gateway_terminal_desc';
     const CUSTOMER_NAME         = 'customer_name';
 
-    const RECEIVED              = 'received';
     const STATUS_CODE           = 'status_code';
 
-    protected static $sign      = 'qr';
+    protected static $sign      = 'bhqr';
 
     protected $primaryKey = self::ID;
 
-    protected $entity = 'qr';
+    protected $entity = 'bharat_qr';
 
     protected $fillable = [
         self::AMOUNT,
@@ -47,7 +45,6 @@ class Entity extends Base\PublicEntity
         self::VPA,
         self::CARD_NUMBER,
         self::CARD_NETWORK,
-        self::PROVIDER,
         self::PROVIDER_REFERENCE_ID,
         self::MERCHANT_REFERENCE,
         self::TRACE_NUMBER,
@@ -72,13 +69,11 @@ class Entity extends Base\PublicEntity
         self::RRN,
         self::CARD_NUMBER,
         self::CARD_NETWORK,
-        self::PROVIDER,
         self::TRANSACTION_TIME,
         self::TRANSACTION_DATE,
         self::PROVIDER_REFERENCE_ID,
         self::MERCHANT_REFERENCE,
         self::RRN,
-        self::RECEIVED,
         self::STATUS_CODE,
     ];
 
@@ -125,11 +120,6 @@ class Entity extends Base\PublicEntity
 
             $array[self::PAYMENT_ID] = Payment\Entity::getSignedId($paymentId);
         }
-    }
-
-    public function setReceived(bool $received)
-    {
-        $this->setAttribute(self::RECEIVED, $received);
     }
 
     public function setExpected(bool $expected)

@@ -5,7 +5,6 @@ namespace RZP\Constants;
 class Table
 {
     // Core entities
-    const QR                    = 'qr';
     const P2P                   = 'p2p';
     const VPA                   = 'vpa';
     const IIN                   = 'iins';
@@ -43,6 +42,7 @@ class Table
     const CUSTOMER              = 'customers';
     const TRANSFER              = 'transfers';
     const REVERSAL              = 'reversals';
+    const BHARAT_QR             = 'bharat_qr';
     const PROMOTION             = 'promotions';
     const LINE_ITEM             = 'line_items';
     const INVITATION            = 'invitations';

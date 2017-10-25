@@ -1620,7 +1620,7 @@ class Processor
 
         if (($payment->isBankTransfer() === true) or
             // @todo to be changed after refactor
-            (Route::currentRouteName() === 'qr_payment_process'))
+            (Route::currentRouteName() === 'bharat_qr_payment_process'))
         {
             return false;
         }

@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Models\Qr;
+namespace RZP\Models\BharatQr;
 
 use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'qr';
+    protected $entity = 'bharat_qr';
 
     public function findByMerchantReference(string $merchantReference)
     {

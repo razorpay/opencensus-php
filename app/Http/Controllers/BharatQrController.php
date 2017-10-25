@@ -5,9 +5,9 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
-class QrController extends Controller
+class BharatQrController extends Controller
 {
-    public function processQrPayment()
+    public function processBharatQrPayment()
     {
         $input = Request::all();
 

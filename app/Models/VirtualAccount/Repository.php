@@ -33,11 +33,11 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getActiveVirtualAccountFromBharatQrId(string $bharatQrId)
+    public function getActiveVirtualAccountFromQrCodeId(string $qrCodeId)
     {
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::ACTIVE)
-                    ->where(Entity::BHARAT_QR_ID, '=', $bharatQrId)
+                    ->where(Entity::QR_CODE_ID, '=', $qrCodeId)
                     ->first();
     }
 

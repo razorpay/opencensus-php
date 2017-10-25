@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Qr;
+namespace RZP\Models\BharatQr;
 
 class NotificationParams
 {

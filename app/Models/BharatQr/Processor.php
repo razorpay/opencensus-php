@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Qr;
+namespace RZP\Models\BharatQr;
 
 use RZP\Base\Luhn;
 use RZP\Models\Base;
@@ -19,41 +19,41 @@ class Processor extends VirtualAccount\Processor
     const RANDOM_CARD_PADDING = '12345';
 
     /**
-     * @param Entity $qr
+     * @param Entity $bharatQr
      *
      * @return Entity|null
      */
-    public function process($qr)
+    public function process($bharatQr)
     {
-        $isPaymentExpected = $this->isPaymentExpected($qr);
+        $isPaymentExpected = $this->isPaymentExpected($bharatQr);
 
-        $isDuplicateNotification = $this->checkIfDuplicateNotification($qr);
+        $isDuplicateNotification = $this->checkIfDuplicateNotification($bharatQr);
 
         if (($isPaymentExpected === true) and
             ($isDuplicateNotification === false))
         {
-            $qr->setExpected(true);
+            $bharatQr->setExpected(true);
 
             $this->setMerchant();
         }
         else if ($isPaymentExpected === false)
         {
-            $this->preProcessUnexpectedPayment($qr);
+            $this->preProcessUnexpectedPayment($bharatQr);
         }
         else
         {
-            $this->repo->saveOrFail($qr);
+            $this->repo->saveOrFail($bharatQr);
 
-            return $qr;
+            return $bharatQr;
         }
 
-        $this->processQr($qr);
+        $this->processBharatQr($bharatQr);
 
         $this->trace->info(
-                TraceCode::QR_PAYMENT_PROCESSING_SUCCESSFUL,
-                $qr->toArray());
+                TraceCode::BHARAT_QR_PAYMENT_PROCESSING_SUCCESSFUL,
+                $bharatQr->toArray());
 
-        return $qr;
+        return $bharatQr;
     }
 
      /**
@@ -67,17 +67,17 @@ class Processor extends VirtualAccount\Processor
     {
         return [
             VirtualAccount\Entity::AMOUNT_EXPECTED => $amount,
-            VirtualAccount\Entity::RECEIVER_TYPES  => [Receiver::BHARAT_QR]
+            VirtualAccount\Entity::RECEIVER_TYPES  => [Receiver::QR_CODE]
         ];
     }
 
-    protected function checkIfDuplicateNotification(Entity $qr)
+    protected function checkIfDuplicateNotification(Entity $bharatQr)
     {
-        $merchantReference = $qr->getMerchantReference();
+        $merchantReference = $bharatQr->getMerchantReference();
 
-        $qrEntity  = $this->repo->qr->findByMerchantReference($merchantReference);
+        $bharatQrEntity  = $this->repo->bharat_qr->findByMerchantReference($merchantReference);
 
-        if ($qrEntity === null)
+        if ($bharatQrEntity === null)
         {
             return false;
         }
@@ -85,15 +85,15 @@ class Processor extends VirtualAccount\Processor
         return true;
     }
 
-    protected function processQr(Entity $qr)
+    protected function processBharatQr(Entity $bharatQr)
     {
         $paymentProcessor = new PaymentProcessor($this->merchant);
 
         $this->repo->transaction(function() use (
-            $qr,
+            $bharatQr,
             $paymentProcessor)
         {
-            $paymentInput = $this->qrPaymentArray($qr);
+            $paymentInput = $this->bharatQrPaymentArray($bharatQr);
 
             $res = $paymentProcessor->process($paymentInput);
 
@@ -101,17 +101,17 @@ class Processor extends VirtualAccount\Processor
                             ->payment
                             ->findByPublicId($res['razorpay_payment_id']);
 
-            $qr->payment()->associate($payment);
+            $bharatQr->payment()->associate($payment);
 
             $payment->setGatewayViaQr(Payment\Gateway::BHARAT_QR);
 
-            $qr->virtualAccount()->associate($this->virtualAccount);
+            $bharatQr->virtualAccount()->associate($this->virtualAccount);
 
-            $this->repo->saveOrFail($qr);
+            $this->repo->saveOrFail($bharatQr);
 
-            $this->updateVirtualAccount($qr);
+            $this->updateVirtualAccount($bharatQr);
 
-            if ($qr->isExpected() === true)
+            if ($bharatQr->isExpected() === true)
             {
                 $paymentProcessor->autoCapturePayment($payment);
             }
@@ -132,13 +132,13 @@ class Processor extends VirtualAccount\Processor
         $this->repo->saveOrFail($this->virtualAccount);
     }
 
-    protected function getVirtualAccountFromEntity($qr)
+    protected function getVirtualAccountFromEntity($bharatQr)
     {
-        $bharatQrId = $qr->getMerchantReference();
+        $qrCodeId = $bharatQr->getMerchantReference();
 
         try
         {
-            $bharatQr = $this->repo->bharat_qr->findByPublicId($bharatQrId);
+            $qrCode = $this->repo->qr_code->findByPublicId($qrCodeId);
         }
         catch (\Exception $e)
         {
@@ -147,7 +147,7 @@ class Processor extends VirtualAccount\Processor
 
         $virtualAccount = $this->repo
                                ->virtual_account
-                               ->getActiveVirtualAccountFromBharatQrId($bharatQr->getId());
+                               ->getActiveVirtualAccountFromQrCodeId($qrCode->getId());
 
         return $virtualAccount;
     }
@@ -155,9 +155,9 @@ class Processor extends VirtualAccount\Processor
     /**
      *@todo Need a better way to handle this
      */
-    protected function getLuhnValidCardNumberFromQr(Entity $qr)
+    protected function getLuhnValidCardNumberFromBharatQr(Entity $bharatQr)
     {
-        $maskedCardNumber = $qr->getCardNumber();
+        $maskedCardNumber = $bharatQr->getCardNumber();
 
         $firstSix = substr($maskedCardNumber, 0, 6);
 
@@ -174,17 +174,17 @@ class Processor extends VirtualAccount\Processor
         return $finalCardNumber;
     }
 
-    protected function qrPaymentArray(Entity $qr): array
+    protected function bharatQrPaymentArray(Entity $bharatQr): array
     {
         $paymentArray[Payment\Entity::CURRENCY] = Currency::INR;
-        $paymentArray[Payment\Entity::METHOD]   = $qr->getMethod();
+        $paymentArray[Payment\Entity::METHOD]   = $bharatQr->getMethod();
 
-        $paymentArray[Payment\Entity::AMOUNT]      = $qr->getAmount();
+        $paymentArray[Payment\Entity::AMOUNT]      = $bharatQr->getAmount();
         $paymentArray[Payment\Entity::DESCRIPTION] = "";
 
 
         // @todo find a better method to do this. This is done in order to bypass validation
-        $paymentArray['card']['number'] = $this->getLuhnValidCardNumberFromQr($qr);
+        $paymentArray['card']['number'] = $this->getLuhnValidCardNumberFromBharatQr($bharatQr);
 
         $paymentArray['card']['cvv'] = '123';
 

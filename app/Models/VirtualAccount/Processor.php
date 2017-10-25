@@ -2,6 +2,7 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use App;
 use RZP\Models\Base;
 use RZP\Constants\Mode as RzpMode;
 use RZP\Trace\TraceCode;

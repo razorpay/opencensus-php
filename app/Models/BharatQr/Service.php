@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Qr;
+namespace RZP\Models\BharatQr;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -19,7 +19,7 @@ class Service extends Base\Service
     public function processPayment(array $input): array
     {
         $this->trace->info(
-            TraceCode::QR_PAYMENT_PROCESS_REQUEST,
+            TraceCode::BHARAT_QR_PAYMENT_PROCESS_REQUEST,
             $input
         );
 
