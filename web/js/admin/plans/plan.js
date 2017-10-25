@@ -48,14 +48,54 @@ export default class Plan extends Collection {
   save() {
     let name = this.props.name;
     if (!name) {
-      return notifyError('Name the pricing plan first.');
+      notifyError('Name the pricing plan first.');
+      return Promise.resolve();
     }
     return this.request(
       'save',
       adminPost({
         route_name: 'pricing_create_plan',
-        plan_name: name,
-        rules: this.items.slice(0, -1).map(p => p.serialize()),
+        body: {
+          plan_name: name,
+          rules: this.items.slice(0, -1).map(p => p.serialize()),
+        },
+      }).then(data => {
+        data = {
+          id: '8tNZHh6z4F47Jf',
+          name: 'lolplan',
+          entity: 'pricing',
+          count: 1,
+          rules: [
+            {
+              id: '8tNZHh8CLUk6dS',
+              plan_id: '8tNZHh6z4F47Jf',
+              plan_name: 'lolplan',
+              feature: 'payment',
+              gateway: null,
+              payment_method: 'card',
+              payment_method_type: null,
+              payment_network: null,
+              payment_issuer: null,
+              emi_duration: null,
+              international: false,
+              amount_range_active: false,
+              amount_range_min: null,
+              amount_range_max: null,
+              percent_rate: 200,
+              fixed_rate: 0,
+              min_fee: 0,
+              max_fee: null,
+              created_at: 1508922799,
+              updated_at: 1508922799,
+              deleted_at: null,
+              expired_at: null,
+            },
+          ],
+        };
+        if (data) {
+          this.props.collection.items.push(data);
+          return data;
+        }
       })
     );
   }

@@ -1,7 +1,25 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 
-export default function Table({ fields, items, onClick, bordered }) {
+import TransitionGroup from 'react-transition-group/TransitionGroup';
+import CSSTransition from 'react-transition-group/CSSTransition';
+
+const animObj = {
+  enter: 1000,
+  exit: 700,
+};
+
+function defaultIndexFn(item, index, array) {
+  return item.id || array.length - index;
+}
+
+export default function Table({
+  fields,
+  items,
+  onClick,
+  bordered,
+  indexFn = defaultIndexFn,
+}) {
   let trClass = onClick ? 'tr clickable' : 'tr';
   let tableClass = 'table table-striped';
   if (bordered) {
@@ -11,30 +29,34 @@ export default function Table({ fields, items, onClick, bordered }) {
   return (
     <div class="table-container">
       {items && items.length ? (
-        <div class={tableClass}>
-          <div class="tr thead">
-            {fields.map((field, index) => (
-              <div class="th" key={index}>
-                {field[0]}
-              </div>
-            ))}
-          </div>
+        <TransitionGroup class={tableClass}>
+          <CSSTransition timeout={0}>
+            <div class="tr thead">
+              {fields.map((field, index) => (
+                <div class="th" key={index}>
+                  {field[0]}
+                </div>
+              ))}
+            </div>
+          </CSSTransition>
           {items.map((item, index) => {
             return (
-              <div
-                class={trClass}
-                key={index}
-                onClick={onClick && item::onClick}
+              <CSSTransition
+                key={indexFn(item, index, items)}
+                classNames="row"
+                timeout={animObj}
               >
-                {fields.map((field, index) => (
-                  <div class="td" key={index}>
-                    {field[1](item)}
-                  </div>
-                ))}
-              </div>
+                <div class={trClass} onClick={onClick && item::onClick}>
+                  {fields.map((field, index) => (
+                    <div class="td" key={index}>
+                      {field[1](item)}
+                    </div>
+                  ))}
+                </div>
+              </CSSTransition>
             );
           })}
-        </div>
+        </TransitionGroup>
       ) : (
         <div class="table-empty" />
       )}
@@ -60,8 +82,8 @@ export class PageTable extends Component {
               <div class="box">
                 <Pagination model={model} />
                 <div class="table-info">
-                  {items.length} Results ({filters.skip + 1} &ndash;{' '}
-                  {filters.skip + items.length})
+                  Results {filters.skip + 1} &ndash;{' '}
+                  {filters.skip + items.length}
                 </div>
                 <Table fields={fields} onClick={onClick} items={items} />
               </div>

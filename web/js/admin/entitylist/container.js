@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { default as deepEqual } from 'deep-equal';
+import deepEqual from 'deep-equal';
 
 import { adminFetch } from 'util/fetch';
 import EntityList from './index';

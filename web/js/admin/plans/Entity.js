@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { openModal } from 'common/modal';
+import { openModal, closeModal } from 'common/modal';
 import { DataTable } from 'ui/Table';
 import Plan, { options } from './plan';
 import { observable } from 'mobx';
@@ -23,8 +23,12 @@ export default class PlanEntity extends Component {
     });
   }
 
+  save = _ => {
+    this.collection.save().then(data => data && closeModal());
+  };
+
   render() {
-    let { props, items, save, updateName } = this.collection;
+    let { props, items, updateName } = this.collection;
     if (!sharedNetworks.get()) {
       return <div class="spinner" />;
     }
@@ -38,7 +42,7 @@ export default class PlanEntity extends Component {
                 <AsyncButton
                   class="btn"
                   pendingClass="btn spinner"
-                  onClick={save}
+                  onClick={this.save}
                   text="Save Plan"
                 />
               )}
