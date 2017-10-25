@@ -4,17 +4,19 @@ namespace RZP\Tests\Functional\Gateway\Upi\Sbi;
 
 use Excel;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use RZP\Gateway\Upi\Sbi\RefundFile;
-use RZP\Gateway\Upi\Sbi\ResponseFields;
 use RZP\Models\Payment;
 use RZP\Constants\Entity;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Upi\Sbi\RefundFile;
+use RZP\Gateway\Upi\Sbi\ResponseFields;
 use RZP\Gateway\Upi\Base\Entity as Upi;
+use RZP\Gateway\Upi\Sbi\Status as SbiStatus;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class UpiMindgateSbiGatewayTest extends TestCase
@@ -92,7 +94,7 @@ class UpiMindgateSbiGatewayTest extends TestCase
      */
     public function testFailedCollect()
     {
-        $this->payment['vpa'] = 'failedcollect@sbi';
+        $this->payment[Payment\Entity::VPA] = 'failedcollect@sbi';
 
         $data = $this->testData[__FUNCTION__];
 
@@ -108,17 +110,17 @@ class UpiMindgateSbiGatewayTest extends TestCase
      */
     public function testCollectRejectedFailure()
     {
-        $this->payment['vpa'] = 'rejectedcollect@sbi';
+        $this->payment[Payment\Entity::VPA] = 'rejectedcollect@sbi';
 
         $response = $this->doAuthPayment($this->payment);
 
-        $paymentId = $response['payment_id'];
+        $paymentId = $response[Constants::PAYMENT_ID];
 
-        $this->checkPaymentStatus($paymentId, 'created');
+        $this->checkPaymentStatus($paymentId, Payment\Status::CREATED);
 
-        $upiEntity = $this->getLastEntity('upi', true);
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
 
-        $payment = $this->getEntityById('payment', $paymentId, true);
+        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
 
         $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
 
@@ -131,9 +133,9 @@ class UpiMindgateSbiGatewayTest extends TestCase
                 $this->makeS2SCallbackAndGetContent($content);
             });
 
-        $payment = $this->getEntityById('payment', $paymentId, true);
+        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
 
-        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
     }
 
     /**
@@ -182,7 +184,7 @@ class UpiMindgateSbiGatewayTest extends TestCase
 
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
 
-        $this->mockVerifyFailed('F');
+        $this->mockVerifyFailed(SbiStatus::FAILED);
 
         $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
 
@@ -214,36 +216,36 @@ class UpiMindgateSbiGatewayTest extends TestCase
         $this->testPayment();
 
         // Refund 2 fully and the other one partially
-        $payments = $this->getEntities('payment', [], true);
+        $payments = $this->getEntities(Entity::PAYMENT, [], true);
 
         $refundAmount = [50000, 50000, 10000];
 
         foreach ($payments['items'] as $count => $payment)
         {
-            $this->refundPayment($payment['id'], $refundAmount[$count]);
+            $this->refundPayment($payment[Payment\Entity::ID], $refundAmount[$count]);
         }
 
-        $refunds = $this->getEntities('refund', [], true);
+        $refunds = $this->getEntities(Entity::REFUND, [], true);
 
         foreach ($refunds['items'] as $refund)
         {
             $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 5;
-            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+            $this->fixtures->edit(Entity::REFUND, $refund[Refund\Entity::ID], [Refund\Entity::CREATED_AT => $createdAt]);
         }
 
         // Refund a 4th payment
         $this->testPayment();
-        $payment = $this->getLastEntity('payment', true);
-        $this->refundPayment($payment['id']);
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $this->refundPayment($payment[Payment\Entity::ID]);
 
         $data = $this->generateRefundsExcelForSbiUpi();
 
-        $this->assertArrayHasKey('upi_sbi', $data);
+        $this->assertArrayHasKey(Payment\Gateway::UPI_SBI, $data);
 
-        $this->assertEquals(3, $data['upi_sbi']['count']);
-        $this->assertTrue(file_exists($data['upi_sbi']['file']));
+        $this->assertEquals(3, $data[Payment\Gateway::UPI_SBI]['count']);
+        $this->assertTrue(file_exists($data[Payment\Gateway::UPI_SBI]['file']));
 
-        $sheet = Excel::load($data['upi_sbi']['file'])->all()->toArray();
+        $sheet = Excel::load($data[Payment\Gateway::UPI_SBI]['file'])->all()->toArray();
 
         $key = strtolower(RefundFile::REFUND_REQ_AMT);
 
