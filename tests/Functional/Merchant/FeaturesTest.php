@@ -609,9 +609,7 @@ class FeaturesTest extends TestCase
         $this->verifyMarketplaceOnboardingResponseStatus('approved');
 
         // Test the fetch status route
-        $status = $this->getMarketplaceOnboardingResponseStatus();
-
-        $this->assertEquals('approved', $status);
+        $this->getMarketplaceOnboardingResponseStatus();
 
         Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
         {
@@ -949,11 +947,7 @@ class FeaturesTest extends TestCase
 
     protected function getMarketplaceOnboardingResponseStatus()
     {
-        $testData = $this->testData[__FUNCTION__];
-
-        $response = $this->makeRequestAndGetContent($testData['request']);
-
-        return $response;
+        $this->startTest();
     }
 
 }

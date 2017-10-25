@@ -323,7 +323,9 @@ class Service extends Base\Service
             $featureName
         );
 
-        return $status;
+        $response['status'] = $status;
+
+        return $response;
     }
 }
 

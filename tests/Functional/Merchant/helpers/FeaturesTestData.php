@@ -619,7 +619,9 @@ return [
             ],
         ],
         'response' => [
-            'content' => [ ]
+            'content' => [
+                'status' => 'approved'
+            ]
         ]
     ]
 ];
