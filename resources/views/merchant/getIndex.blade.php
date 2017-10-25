@@ -18,16 +18,25 @@
   <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
   <script src="{{$cdnDashboardUrl}}<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
   <% } %>
+  <!-- smooch code -->
+  @if(env('APP_ENV') === 'production')
+    <script src='https://cdn.smooch.io/smooch.min.js'></script>
+    <script>
+      window.smoochScript = $.getScript('https://cdn.smooch.io/smooch.min.js', function() {
+        Smooch
+          .init({appToken: '02o6kuyoscqkwiqr3ld3lbehw'})
+          .then(function () {
+              Smooch._rzpReady = true; // custom prop
+          });
+      })
+    </script>
+  @endif
 @else
   <!-- jQuery & angular -->
   <script src='{{$cdnDashboardUrl}}{{asset('js/generated/pre.js')}}'></script>
   <!-- Merchant Js-->
   <script src='{{$cdnDashboardUrl}}{{asset('js/generated/merchant.js')}}'></script>
-@endif
-
-<!-- supportkiy code -->
-@if(env('APP_ENV') !== 'testing')
-   @include('partials/supportkit')
+  <script async="true" src="https://static.helpninja.com/helpninja.js" id="oc_script" convid="-Kvx6dgy972KCFPlQR0s"></script>
 @endif
 
 @include('partials/footer')

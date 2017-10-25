@@ -88,7 +88,7 @@ return [
         // Create Schedule
         'schedule_create'                   => 'schedules',
         'schedule_assign'                   => 'merchants/{id}/schedules',
-        'schedule_fetch_multiple'           => 'schedules',
+        'setl_fetch_schedule'               => 'settlements/schedules',
 
         // Add Adjustment
         'adj_add'                           => 'adjustments',

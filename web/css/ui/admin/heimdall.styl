@@ -1,0 +1,23 @@
+#org-logo
+  text-align: center
+  margin: -10px 0 15px
+  padding: 10px 20px
+  &:after
+    display: block
+    border-top: 2px solid rgba(255,255,255,0.1)
+    content: ''
+
+// to be applied on #app-container
+$theme($primary, $bg)
+  > aside
+    background: $bg
+    color: #fff
+
+#app-container
+  &.hdfc
+    $theme(#084c8d, #004A8F)
+  &.icici
+    $theme(#0A3D6B, #F07937)
+  &.bob
+    $theme(#F04E00, #FF5D27)
+  

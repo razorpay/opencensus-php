@@ -8,13 +8,15 @@ if [ "$NODE_ENV" = production ] ; then
 fi
 
 files=$(cat <<-END
+  Promise         promise-polyfill/promise.min.js
   axios           axios/dist/axios.min.js
   React           react/umd/react.$REACT_ENV.js
   ReactDOM        react-dom/umd/react-dom.$REACT_ENV.js
   ReactRouterDOM  react-router-dom/umd/react-router-dom.min.js
   mobx            mobx/lib/mobx.umd.min.js
   mobxReact       mobx-react/index.min.js
-  Chartist        chartist/dist/chartist.min.js
+  moment          moment/min/moment.min.js
+  Chart           chart.js/dist/Chart.min.js
 END
 )
 

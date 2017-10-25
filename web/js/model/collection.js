@@ -41,7 +41,7 @@ export default class Collection extends BaseModel {
       if (data) {
         let Model = this.model;
         if (Model) {
-          data.items = data.items.map(i => new Model(this, i));
+          data.items = data.items.map(i => Model(this, i));
         }
         this.items.replace(data.items);
       }

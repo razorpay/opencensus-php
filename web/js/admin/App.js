@@ -48,8 +48,8 @@ export default class App extends Component {
         </main>
         <header />
         <aside>
-          <a href="/admin">
-            <img src="https://cdn.razorpay.com/logo_invert.svg" width="146" />
+          <a id="org-logo" href="/admin">
+            <img src="https://cdn.razorpay.com/logo_invert.svg" height="28" />
           </a>
           {links.map((linkGroup, i) => (
             <div key={i}>

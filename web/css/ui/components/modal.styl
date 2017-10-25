@@ -38,6 +38,7 @@
   width: 100%
   height: 100%
   display: flex
+  overflow: scroll
   transition: .2s
   &.modal-enter, &.modal-exit
     opacity: 0
@@ -51,7 +52,10 @@
 .modal
   max-width: 96%
   position: relative
-  margin: 5% auto auto
+  top: 5%
+  margin: 0 auto auto
+  max-height: 90%
+  overflow: auto
   background: #fff
   border-radius: 3px
   box-shadow: 0 2px 8px 2px rgba(0,0,0,.1)

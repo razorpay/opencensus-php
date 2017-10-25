@@ -34,7 +34,7 @@ app.controller('DisputeModalCtrl', [
     // Date options for Expire date
     $scope.date = dateFactory.getHandler($scope);
     $scope.date.dateOptions['showWeeks'] = false;
-    $scope.date.dateOptions['minDate'] = moment().subtract(1, 'months'); // Avoid selection of date before today (Adding 1 month back temporarily)
+    $scope.date.dateOptions['minDate'] = moment().subtract(6, 'months'); // Avoid selection of date before today (Adding 6 months back temporarily)
 
     // Get offers of merchant to display in the list
     function getReasonId() {
