@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\GatewayErrorException;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\AESCrypto;
+use RZP\Gateway\Base\Entity as GatewayEntity;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base as Netbanking;
 use RZP\Models\Currency\Currency;
@@ -106,7 +107,7 @@ trait EmandateTrait
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    protected function handleEmandateResponse(array $input, array $content)
+    protected function handleEmandateResponse(array $input, array $content): GatewayEntity
     {
         $content = $this->getEmandateDecryptedData($content[ResponseFields::DATA]);
 
