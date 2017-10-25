@@ -44,13 +44,17 @@ class Gateway extends Base\Gateway
     {
         parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->setBankingTypeAndDomainType($terminal);
+        $this->setBankingTypeAndDomainType();
     }
 
     public function authorize(array $input)
     {
         parent::authorize($input);
 
+        if ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        {
+            return $this->authorizeRecurring($input);
+        }
         $content = $this->getPaymentRequestData($input);
 
         $entityAttributes = $this->getEntityAttributes($input);
@@ -72,7 +76,7 @@ class Gateway extends Base\Gateway
                            ['gateway_response' => $input['gateway'],
                             'payment_id'       => $input['payment']['id']]);
 
-        if ($input['terminal']->isRecurring())
+        if ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
         {
             return $this->handleEmandateCallback($input);
         }
@@ -314,11 +318,6 @@ class Gateway extends Base\Gateway
 
     protected function getEntityAttributes(array $input)
     {
-        if ($input['terminal']->isRecurring())
-        {
-            return $this->getEmandateEntityAttributes($input);
-        }
-
         return [
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
             RequestFields::ITEM_CODE          => $this->getMerchantId(),
@@ -510,10 +509,9 @@ class Gateway extends Base\Gateway
         return Status::getAuthSuccessStatus();
     }
 
-    protected function setBankingTypeAndDomainType($terminal)
+    protected function setBankingTypeAndDomainType()
     {
-        if ((isset($terminal) === true) and
-            ($terminal->isRecurring() === true))
+        if ($this->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
         {
             $this->setBankingType(self::EMANDATE);
         }
@@ -556,7 +554,7 @@ class Gateway extends Base\Gateway
 
     public function getMerchantId()
     {
-        if ($this->input['terminal']->isRecurring())
+        if ($this->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
         {
             return $this->getEmandateMerchantId();
         }

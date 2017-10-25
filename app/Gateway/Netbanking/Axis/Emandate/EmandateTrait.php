@@ -23,6 +23,20 @@ trait EmandateTrait
 {
     //-----------------------Auth request helpers------------------------
 
+    protected function authorizeRecurring(array $input)
+    {
+        $content = $this->getRecurringPaymentData($input);
+
+        $entityAttributes = $this->getEmandateEntityAttributes($input);
+
+        $this->createGatewayPaymentEntity($entityAttributes);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->traceGatewayPaymentRequest($request, $input);
+
+        return $request;
+    }
     /**
      * This method creates the recurring payment request data
      * We pass the token ID as customer reference number
