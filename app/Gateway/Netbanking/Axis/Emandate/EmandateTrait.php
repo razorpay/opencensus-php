@@ -125,6 +125,11 @@ trait EmandateTrait
             $content[ResponseFields::REQUEST_ID]
         );
 
+        $this->assertAmount(
+            $this->formatAmount($input['payment'][Payment\Entity::AMOUNT]),
+            $content[ResponseFields::AMOUNT]
+        );
+
         $this->validateCallbackChecksum($content);
 
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
