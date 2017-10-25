@@ -58,9 +58,9 @@ export function serialize(form) {
     function(data, el) {
       var { name, value } = el;
       if (el.type === 'checkbox') {
-        value = el.checked ? el.value || 1 : 0;
+        value = el.checked ? el.value || 1 : el.value || 0; // This doesn't handle el.value = false because boolean becomes string for checkbox
       }
-      if (value) {
+      if (value != null) {
         // item[foo] → item.foo
         var nameSplit = name.match(/(.+)\[(\w+)\]$/);
         if (nameSplit) {

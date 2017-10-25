@@ -25,7 +25,6 @@ Object.keys(entityModals).map(key => {
 export default class MerchantEntity extends Component {
   constructor(props) {
     super();
-    parentProps = props;
 
     this.merchantId = props.match.params.id;
 
@@ -33,6 +32,8 @@ export default class MerchantEntity extends Component {
       fetchFn: adminFetch,
       merchantId: this.merchantId,
     });
+
+    parentProps = this.model.merchant;
   }
 
   downloadReports = () => {
