@@ -218,7 +218,7 @@ class Core extends Base\Core
      * @return bool
      */
     private function notifyViaEmail(
-        Entity $merchant,
+        Merchant\Entity $merchant,
         Entity $feature,
         bool $shouldSync,
         bool $isLiveMode): bool
