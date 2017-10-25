@@ -27,9 +27,6 @@ class Service extends Base\Service
 
         $user = null;
 
-        // Epos sends business name for signup only.
-        unset($input['business_name']);
-
         /*
          * If we have an invitation token, the user may have created an account
          * in the meantime. $user will be equal to the user with the same email
@@ -81,7 +78,11 @@ class Service extends Base\Service
         {
             $input['password_confirmation'] = $input['password'];
 
+            $input['name'] = $input['name'] ?? '';
+
             unset($input['ref']);
+
+            unset($input['business_name']);
 
             $user = $this->create($input);
         }
