@@ -26,6 +26,7 @@ class Table
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const REPORT                = 'reports';
+    const QR_CODE               = 'qr_code';
     const BALANCE               = 'balance';
     const PRICING               = 'pricing';
     const UPI_VPA               = 'upi_vpa';
@@ -41,7 +42,6 @@ class Table
     const TERMINAL              = 'terminals';
     const CUSTOMER              = 'customers';
     const TRANSFER              = 'transfers';
-    const BHARAT_QR             = 'bharat_qr';
     const REVERSAL              = 'reversals';
     const PROMOTION             = 'promotions';
     const LINE_ITEM             = 'line_items';

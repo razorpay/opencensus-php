@@ -2,16 +2,17 @@
 
 namespace RZP\Models\Payment;
 
-use RZP\Constants\Mode;
 use RZP\Exception;
+use Razorpay\IFSC\IFSC as BaseIFSC;
+
+use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
-use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Models\Settlement;
-use RZP\Models\Payment;
-use Razorpay\IFSC\IFSC as BaseIFSC;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Gateway
 {
@@ -143,6 +144,7 @@ class Gateway
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::WALLET_PAYZAPP,
+        Payment\Gateway::WALLET_MPESA,
     ];
 
     public static $channels = [
@@ -359,10 +361,11 @@ class Gateway
         ],
         self::CYBERSOURCE => [
             Network::MC,
-            Network::VISA
+            Network::VISA,
         ],
         self::HITACHI => [
             Network::MC,
+            Network::VISA,
         ],
         self::FIRST_DATA => [
             Network::MC,
@@ -449,6 +452,31 @@ class Gateway
         Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS,
         Gateway::HDFC,
+        Gateway::NETBANKING_ICICI,
+        Gateway::NETBANKING_HDFC,
+    ];
+
+    public static $eMandateBanks = [
+        IFSC::ICIC,
+        IFSC::HDFC,
+    ];
+
+    /**
+     * List of netbanking gateways that process recurring payments through file send
+     *
+     * @var array
+     */
+    public static $fileBasedEMandateDebitGateways = [
+        Gateway::NETBANKING_HDFC,
+    ];
+
+    /**
+     * List of netbanking gateways that process emandate registration through file send
+     *
+     * @var array
+     */
+    public static $fileBasedEMandateRegistrationGateways = [
+        Gateway::NETBANKING_HDFC,
     ];
 
     /**
@@ -585,6 +613,10 @@ class Gateway
         Gateway::AXIS_MIGS
     ];
 
+    public static $shouldNotSetNon3DSTerminalsInTokenGateways = [
+        Gateway::FIRST_DATA,
+    ];
+
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];
@@ -616,9 +648,43 @@ class Gateway
         return $gatewayToBankMap[$gateway];
     }
 
-    public static function isRecurringGateway($gateway)
+    public static function isRecurringGateway($gateway): bool
     {
         return in_array($gateway, self::$recurringGateways, true);
+    }
+
+    /**
+     * Checks whether the bank requires a file-based system to register for eMandate
+     *
+     * @param string $gateway
+     *
+     * @return bool
+     */
+    public static function isFileBasedEMandateRegistrationGateway(string $gateway): bool
+    {
+        return (in_array($gateway, self::$fileBasedEMandateRegistrationGateways) === true);
+    }
+
+    /**
+     * @param string $gateway
+     *
+     * @return bool
+     */
+    public static function isFileBasedEMandateDebitGateway(string $gateway): bool
+    {
+        return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
+    }
+
+    /**
+     * @param string $bank
+     *
+     * @return bool
+     */
+    public static function isRecurringSupportedOnBank(string $bank) : bool
+    {
+        $gateway = self::$netbankingToGatewayMap[$bank];
+
+        return self::isRecurringGateway($gateway);
     }
 
     public static function getChannel($gateway)

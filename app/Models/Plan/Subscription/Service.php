@@ -25,9 +25,9 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function create(array $input) : array
+    public function create(array $input): array
     {
-        (new Validator)->validateInputBeforeBuild($input);
+        (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 
         $planId = $input[Entity::PLAN_ID];
 

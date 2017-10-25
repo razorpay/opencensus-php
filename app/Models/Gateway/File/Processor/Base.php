@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\FileStore;
 use RZP\Models\Base\Core;
 use RZP\Models\Gateway\File;
 use RZP\Models\Gateway\File\Status;
@@ -66,6 +67,13 @@ abstract class Base extends Core
         $this->repo->saveOrFail($gatewayFile);
     }
 
+    public function setGatewayFile(File\Entity $gatewayFile)
+    {
+        $this->gatewayFile = $gatewayFile;
+
+        return $this;
+    }
+
     /**
      * Handles any exception thrown during processing. Here we update the status as failed
      * with appropriate failure_code.
@@ -79,7 +87,7 @@ abstract class Base extends Core
         if ($this->shouldNotReportFailure($e->getCode()) === true)
         {
             $this->acknowledge($this->gatewayFile, [
-                File\Entity::COMMENTS => 'Valid data not available for file processing'
+                File\Entity::COMMENTS => $e->getMessage(),
             ]);
 
             return;
@@ -117,7 +125,32 @@ abstract class Base extends Core
         }
     }
 
-    abstract protected function canRetry(): bool;
+    protected function isFileGenerated(): bool
+    {
+        if ($this->gatewayFile->isFileGenerated() === true)
+        {
+            $file = $this->gatewayFile
+                               ->files()
+                               ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
+                               ->first();
+
+            return $file !== null;
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if the given gateway file can be retried or not. Currently
+     * we consider that if the refund gateway_file entity is in acknowledged state
+     * then it cannot be retried further.
+     *
+     * @return bool Whether gateway_file entity can be processed again or not
+     */
+    protected function canRetry(): bool
+    {
+        return ($this->gatewayFile->isAcknowledged() !== true);
+    }
 
     /**
      * If the processing fails due to some known reason like no data found for file

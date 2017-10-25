@@ -62,6 +62,13 @@ class Service extends Base\Service
         return $schedules->toArrayPublic();
     }
 
+    public function getSettlementSchedules()
+    {
+        $schedules = $this->repo->schedule->fetchSettlementSchedules();
+
+        return $schedules->toArrayPublic();
+    }
+
     public function editSchedule($id, $input)
     {
         $this->trace->info(TraceCode::SCHEDULE_EDIT_REQUEST, $input);

@@ -1,7 +1,9 @@
 <?php
 
-namespace RZP\Models\BharatQr;
+namespace RZP\Models\QrCode;
 
+use Config;
+use RZP\Base\Luhn;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
@@ -10,30 +12,22 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID               = 'merchant_id';
     const ENTITY_ID                 = 'entity_id';
     const ENTITY_TYPE               = 'entity_type';
-    const VISA_IDENTIFIER           = 'visa_identifier';
-    const MASTER_CARD_IDENTIFIER    = 'master_card_identifier';
+    const IDENTIFIER_PADDING        = 'identifier_padding';
     const AMOUNT                    = 'amount';
-    const METHOD                    = 'method';
     const QR_STRING                 = 'qr_string';
 
-    protected static $sign = 'bhqr';
+    protected static $sign = 'qr';
 
-    protected $entity = 'bharat_qr';
+    protected $entity = 'qr_code';
 
     protected $fillable = [
         self::AMOUNT,
-        self::METHOD,
-        self::VISA_IDENTIFIER,
-        self::MASTER_CARD_IDENTIFIER,
         self::QR_STRING,
     ];
 
     protected $visible = [
         self::ID,
         self::AMOUNT,
-        self::METHOD,
-        self::VISA_IDENTIFIER,
-        self::MASTER_CARD_IDENTIFIER,
         self::QR_STRING,
         self::CREATED_AT,
     ];
@@ -41,7 +35,6 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::AMOUNT,
-        self::METHOD,
         self::QR_STRING,
         self::CREATED_AT,
     ];
@@ -51,17 +44,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $generateIdOnCreate = true;
-
-    public function build(array $input = [], string $operation = 'addBharatQr')
-    {
-        $this->getValidator()->validateInput($operation, $input);
-
-        $this->generate($input);
-
-        $this->fill($input);
-
-        return $this;
-    }
 
     public function source()
     {
@@ -80,12 +62,12 @@ class Entity extends Base\PublicEntity
 
     public function getVisaIdentifier()
     {
-        return $this->getAttribute(self::VISA_IDENTIFIER);
+        return $this->generateMerchantIdentifier('visa');
     }
 
     public function getMasterCardIdentifier()
     {
-        return $this->getAttribute(self::MASTER_CARD_IDENTIFIER);
+        return $this->generateMerchantIdentifier('mastercard');
     }
 
     public function getQrString()
@@ -100,28 +82,19 @@ class Entity extends Base\PublicEntity
 
     public function getDynamicTagString()
     {
-        $visaTag = $this->getVisaTag();
+        $tagArray = [
+            $this->getVisaTag(),
+            $this->getMasterCardTag(),
+            Constants::MERCHANT_CATEGORY_TAG,
+            Constants::CURRENCY_CODE_TAG,
+            $this->getAmountTag(),
+            Constants::COUNTRY_CODE_TAG,
+            Constants::MERCHANT_NAME_TAG,
+            Constants::MERCHANT_CITY_TAG,
+            $this->getAdditionalDetailsTag(),
+        ];
 
-        //Removing for now. Visa Test cases fails it
-        //$masterCardTag = $this->getMasterCardTag();
-
-        $masterCardTag = '';
-
-        $merchantCategoryTag = '52045399';
-
-        $currencyCodeTag = '5303356';
-
-        $amountTag = $this->getAmountTag();
-
-        $countryCode = '5802IN';
-
-        $merchantName = '5908PAYMENTS';
-
-        $merchantCity = '6009BANGALORE';
-
-        $additionalDetailsTag = $this->getAdditionalDetailsTag();
-
-        return $visaTag . $masterCardTag . $merchantCategoryTag . $currencyCodeTag . $amountTag . $countryCode  . $merchantName . $merchantCity . $additionalDetailsTag;
+        return implode('', $tagArray);
     }
 
     protected function getMasterCardTag()
@@ -157,6 +130,29 @@ class Entity extends Base\PublicEntity
         }
 
         return '54' . str_pad(strlen($amount), 2, '0', STR_PAD_LEFT) . $amount;
+    }
+
+    /**
+     * This will generate merchant identifier using network
+     * network could be visa , mastercard or rupay
+     *r
+     * @param string $network
+     * @return string
+     */
+    protected function generateMerchantIdentifier(string $network)
+    {
+        $acquirerCode = $this->getAcquirerCode($network);
+
+        $identifierPadding = $this->getAttribute(self::IDENTIFIER_PADDING);
+
+        $identifier  = $acquirerCode . '0' . str_pad(strlen($identifierPadding), 8, '0', STR_PAD_LEFT);
+
+        return $identifier . Luhn::computeCheckDigit($identifier);
+    }
+
+    protected function getAcquirerCode(string $network)
+    {
+        return Config::get('gateway.bharat_qr.' . $network . '_' . 'code');
     }
 
     public function getFormattedAmount()

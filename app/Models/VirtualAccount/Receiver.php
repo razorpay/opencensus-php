@@ -5,29 +5,29 @@ namespace RZP\Models\VirtualAccount;
 use App;
 use Lib\CRC16;
 use RZP\Exception;
-use RZP\Base\Luhn;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\BharatQr\Entity as BharatQr;
+use RZP\Models\QrCode\Constants;
+use RZP\Models\QrCode\Entity as QrCode;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Receiver
 {
     const BANK_ACCOUNT      = 'bank_account';
     // const VPA               = 'vpa';
-    const BHARAT_QR         = 'bharat_qr';
+    const QR_CODE           = 'qr_code';
 
     const TYPES = [
         self::BANK_ACCOUNT,
         // self::VPA,
-        self::BHARAT_QR,
+        self::QR_CODE,
     ];
 
     const ROOT_LENGTH               = 4;
     // Handle length can be 3 also
-    // const HANDLE_LENGTH             = 4;
+    const STANDARD_HANDLE_LENGTH    = 4;
     const DESCRIPTOR_LENGTH         = 9;
     const ACCOUNT_NUMBER_LENGTH     = 17;
 
@@ -38,8 +38,6 @@ class Receiver
     // No 2s and Zs
     const ACCOUNT_NUMBER_CHAR_SPACE       = '34679ACDEFGHJKLMNPQRTUVWXY';
     const MAX_ACCOUNT_GENERATION_ATTEMPTS = 10;
-
-    const BHARAT_QR_NUMBER_SPACE          = '0123456789';
 
     protected $app;
     protected $merchant;
@@ -96,76 +94,57 @@ class Receiver
         return $bankAccount;
     }
 
-    public function buildBharatQr(Entity $virtualAccount)
+    public function buildQrCode(Entity $virtualAccount)
     {
-        $bharatQr = new BharatQr;
+        $qrCode = new QrCode;
 
-        $input = $this->getBharatQrEntityParams($virtualAccount);
+        $input = $this->getQrCodeEntityParams($virtualAccount);
 
-        $bharatQr = $bharatQr->build($input, 'addBharatQr');
+        $qrCode = $qrCode->build($input);
 
-        $bharatQr->generateId();
+        $qrCode->generateId();
 
-        $qrString = $this->buildDynamicQrString($bharatQr);
+        $qrCode->merchant()->associate($this->merchant);
 
-        $bharatQr->setQrString($qrString);
+        $qrCode->source()->associate($virtualAccount);
 
-        $bharatQr->merchant()->associate($this->merchant);
 
-        $bharatQr->source()->associate($virtualAccount);
+        //This is done in order to generate identifier padding value
+        $this->repo->saveOrFail($qrCode);
 
-        $this->repo->saveOrFail($bharatQr);
+        $qrCode = $qrCode->fresh();
 
-        return $bharatQr;
+        $qrCode = $this->generateDynamicQrString($qrCode);
+
+        $this->repo->saveOrFail($qrCode);
+
+        return $qrCode;
     }
 
-    protected function getBharatQrEntityParams(Entity $virtualAccount)
+    protected function getQrCodeEntityParams(Entity $virtualAccount)
     {
-        $provider = Provider::BHARAT_QR;
-
-        $visaIdentifier = $this->generateMerchantIdentifierForProvider($provider, 'visa');
-
-        $mastercardIdentifier = $this->generateMerchantIdentifierForProvider($provider, 'mastercard');
-
-        if (empty($virtualAccount->getAmountExpected()) === false)
-        {
-            $input[BharatQr::AMOUNT] = $virtualAccount->getAmountExpected();
-        }
-
-        $input[BharatQr::VISA_IDENTIFIER] = $visaIdentifier;
-
-        $input[BharatQr::MASTER_CARD_IDENTIFIER] = $mastercardIdentifier;
-
-        $defaultDetails = Provider::DEFAULT_DETAILS[$provider];
-
-        $input = array_merge($input, $defaultDetails);
+        $input = [
+            qrCode::AMOUNT                 => $virtualAccount->getAmountExpected(),
+            qrCode::QR_STRING              => Constants::VERSION_TAG,
+        ];
 
         return $input;
     }
 
-    protected function buildDynamicQrString($bharatQr)
+    protected function generateDynamicQrString($qrCode)
     {
-        $qrString = $bharatQr->getQrString();
+        $qrString = $qrCode->getQrString();
 
-        $qrString .= $bharatQr->getDynamicTagString() .'6304';
+        $qrString .= $qrCode->getDynamicTagString() .'6304';
 
         $crc = (new CRC16)->calculateCrc($qrString);
 
         $qrString .= $crc;
 
-        return $qrString;
+        $qrCode->setQrString($qrString);
+
+        return $qrCode;
     }
-
-    //network could be visa , mastercard or rupay
-    protected function generateMerchantIdentifierForProvider(string $provider, string $network)
-    {
-        $acquirerCode = Provider::getAcquirerCode($provider, $network);
-
-        $identifier  = $acquirerCode . '0' . $this->padWithRandomDigits(7, self::BHARAT_QR_NUMBER_SPACE);
-
-        return $identifier . Luhn::computeCheckDigit($identifier);
-    }
-
 
     protected function generateBankAccountInput()
     {
@@ -279,9 +258,15 @@ class Receiver
     {
         $root = Provider::ROOT[$provider]['standard'];
 
-        if ($this->merchant->getHandle() === null)
+        $handle = $this->merchant->getHandle();
+
+        if ($handle === null)
         {
             $root = Provider::ROOT[$provider]['default'];
+        }
+        else if (strlen($handle) !== self::STANDARD_HANDLE_LENGTH)
+        {
+            $root = Provider::ROOT[$provider]['special'];
         }
 
         return $root;
@@ -339,7 +324,7 @@ class Receiver
 
         $pad = '';
 
-        $charSpace = str_split(self::ACCOUNT_NUMBER_CHAR_SPACE);
+        $charSpace = str_split($charSpace);
 
         while (strlen($pad) < $requiredLength)
         {

@@ -149,7 +149,12 @@ class Core extends Base\Core
         {
             foreach ($entities as $entity)
             {
+                $oldEntity = clone($entity);
                 $entity->setGstin($currentGstin);
+
+                $this->app['workflow']
+                    ->setEntityAndId($entity->getEntity(), $entity->getId())
+                    ->handle($oldEntity, $entity);
 
                 $this->repo->saveOrFail($entity);
             }

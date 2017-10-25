@@ -301,13 +301,32 @@ class TerminalTest extends TestCase
         $this->assertEquals($types, $content['type']);
     }
 
-    public function startTest($testDataToReplace = [])
+    public function testTerminalCheckAutoDisable()
     {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        $name = $trace[1]['function'];
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $testData = $this->testData[$name];
+        $terminal = $this->fixtures->create(
+                        'terminal:shared_hdfc_terminal',
+                        [
+                            'id'          => '12HDFCTerminal',
+                            'merchant_id' => '10000000000000'
+                        ]);
 
-        return $this->runRequestResponseFlow($testData);
+        $this->mockServerContentFunction(function(&$content, $action)
+        {
+            if ($action === 'authorize')
+            {
+                $content['result'] = 'GW00154';
+            }
+        }, 'hdfc');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->defaultAuthPayment();
+        });
+
+        $this->assertFalse($terminal->reload()->isEnabled());
     }
 }

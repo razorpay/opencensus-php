@@ -20,6 +20,9 @@ class TerminalProcessor extends Base\Core
      * Note: In case of a reattempt, remove the terminals that were used, since
      * these can be treated as failures from the list of terminals
      * to be selected
+     *
+     * @param Payment\Entity $payment
+     *
      * @return Terminal\Entity
      */
     public function getTerminalsForPayment(Payment\Entity $payment)

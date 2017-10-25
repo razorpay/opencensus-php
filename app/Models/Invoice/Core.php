@@ -24,7 +24,14 @@ use RZP\Jobs\Invoice\BatchIssue as InvoiceBatchIssueJob;
 
 class Core extends Base\Core
 {
+    const QUEUE_JOB_DELAY              = 5; // In seconds
     const MAX_ALLOWED_PDF_GEN_ATTEMPTS = 2;
+
+    //
+    // When someone requests pdf version of invoice we use this factor
+    // to determine if we should create new latest pdf in sync or use already
+    // created one. Whenever invoice gets updated we update pdf version over queue.
+    //
     const MAX_EXPECTED_QUEUE_DELAY     = 360; // In seconds (= 6 minutes)
 
     protected $lineItemCore;
@@ -67,10 +74,7 @@ class Core extends Base\Core
         Subscription\Entity $subscription = null,
         Batch\Entity $batch = null): Entity
     {
-        $this->trace->info(
-            TraceCode::INVOICE_CREATE_REQUEST,
-            $input
-        );
+        $this->trace->info(TraceCode::INVOICE_CREATE_REQUEST, $input);
 
         $this->modifyInputToHandleRenamedAttributes($input);
 
@@ -85,10 +89,18 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $job = new InvoiceJob(
-                        $this->mode,
-                        InvoiceJob::ISSUED,
-                        $invoice->getId());
+            $job = new InvoiceJob($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+
+            //
+            // In cases we push job over queue with delay factor of 2 seconds.
+            // This is done because some methods of this Core gets called internally
+            // by other products (eg. subscriptions) and in their core they finish few
+            // other stuffs as well before commiting DB transactions.
+            //
+            if ($subscription !== null)
+            {
+                $job->delay(self::QUEUE_JOB_DELAY);
+            }
 
             (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
         }
@@ -550,8 +562,7 @@ class Core extends Base\Core
 
         if ($paymentCustomer !== null)
         {
-            $invoice->customer()->associate($paymentCustomer);
-            $invoice->setCustomerDetails($paymentCustomer);
+            $invoice->associateAndSetCustomerDetails($paymentCustomer);
         }
         else
         {
@@ -659,6 +670,7 @@ class Core extends Base\Core
      * @param array        $input
      *
      * @return array
+     * @throws BadRequestException
      */
     public function issueInvoicesOfBatch(Batch\Entity $batch, array $input): array
     {

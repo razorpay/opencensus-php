@@ -2,6 +2,8 @@
 
 namespace RZP\Models\BankTransfer;
 
+use App;
+
 use RZP\Models\Base;
 use RZP\Constants\Mode as RzpMode;
 use RZP\Trace\TraceCode;
@@ -99,7 +101,7 @@ class Processor extends VirtualAccount\Processor
     {
         $paymentProcessor = new PaymentProcessor($this->merchant);
 
-        $this->repo->transaction(function() use (
+        $payment = $this->repo->transaction(function() use (
             $bankTransfer,
             $paymentProcessor)
         {
@@ -121,13 +123,17 @@ class Processor extends VirtualAccount\Processor
 
             $this->repo->saveOrFail($bankTransfer);
 
-            $this->updateVirtualAccount($bankTransfer);
+            $this->virtualAccount->updateWithBankTransfer($bankTransfer);
 
-            if ($bankTransfer->isExpected() === true)
-            {
-                $paymentProcessor->autoCapturePayment($payment);
-            }
+            $this->repo->saveOrFail($this->virtualAccount);
+
+            return $payment;
         });
+
+        if ($bankTransfer->isExpected() === true)
+        {
+            $paymentProcessor->autoCapturePayment($payment);
+        }
     }
 
     /**
@@ -205,7 +211,6 @@ class Processor extends VirtualAccount\Processor
     {
         $this->merchant = $this->virtualAccount->merchant;
     }
-
 
     /**
      * Certain roots are reserved for Razorpay's own usage, eg. for inter-nodal transfers.
@@ -344,7 +349,7 @@ class Processor extends VirtualAccount\Processor
 
         return [
             BankAccount\Entity::IFSC_CODE        => $ifsc,
-            BankAccount\Entity::ACCOUNT_NUMBER   => $bankTransfer->getPayerAccount(),
+            BankAccount\Entity::ACCOUNT_NUMBER   => $this->getPayerAccount($bankTransfer),
             BankAccount\Entity::BENEFICIARY_NAME => $label,
         ];
     }
@@ -355,7 +360,7 @@ class Processor extends VirtualAccount\Processor
      *
      * @param Entity $bankTransfer
      *
-     * @return bool|string
+     * @return string
      */
     protected function getLabel(Entity $bankTransfer)
     {
@@ -367,6 +372,25 @@ class Processor extends VirtualAccount\Processor
         }
 
         return substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $label), 0, 39);
+    }
+
+    /**
+     * Sanitizes account numbers received.
+     *
+     * @param Entity $bankTransfer
+     *
+     * @return null|string
+     */
+    protected function getPayerAccount(Entity $bankTransfer)
+    {
+        $account = $bankTransfer->getPayerAccount();
+
+        if (empty($account) === true)
+        {
+            return null;
+        }
+
+        return preg_replace('/[^a-zA-Z0-9]+/', '', $account);
     }
 
     /**

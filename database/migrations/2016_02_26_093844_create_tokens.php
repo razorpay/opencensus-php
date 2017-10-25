@@ -45,7 +45,13 @@ class CreateTokens extends Migration {
             $table->string(Token::BANK, 6)
                   ->nullable();
 
+            $table->integer(Token::MAX_AMOUNT)
+                  ->nullable();
+
             $table->string(Token::WALLET, 15)
+                  ->nullable();
+
+            $table->string(Token::ACCOUNT_NUMBER, 40)
                   ->nullable();
 
             $table->text(Token::GATEWAY_TOKEN)
@@ -56,6 +62,12 @@ class CreateTokens extends Migration {
 
             $table->boolean(Token::RECURRING)
                   ->default(0);
+
+            $table->string(Token::RECURRING_STATUS, 32)
+                  ->nullable();
+
+            $table->text(Token::RECURRING_FAILURE_REASON)
+                  ->nullable();
 
             $table->integer(Token::USED_COUNT)
                   ->default(0);
@@ -74,6 +86,8 @@ class CreateTokens extends Migration {
                   ->nullable();
 
             $table->index(Token::CREATED_AT);
+
+            $table->index(Token::ACCOUNT_NUMBER);
 
             $table->foreign(Token::CUSTOMER_ID)
                   ->references(Customer::ID)

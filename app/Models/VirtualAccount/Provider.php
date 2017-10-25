@@ -2,9 +2,8 @@
 
 namespace RZP\Models\VirtualAccount;
 
-use Config;
+use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Models\BharatQr\Entity as BharatQr;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Provider
@@ -12,13 +11,16 @@ class Provider
     const YESBANK   = 'yesbank';
     const KOTAK     = 'kotak';
 
-    const BHARAT_QR = 'bharat_qr';
-
     // Dashboard acts as a mock provider bank,
     // and is used to run tests.
     // Also used when merchant makes a test
     // payment to a virtual account.
     const DASHBOARD = 'dashboard';
+
+    const LIVE_PROVIDERS = [
+        self::YESBANK,
+        self::KOTAK,
+    ];
 
     const TEST_PROVIDERS = [
         self::DASHBOARD,
@@ -39,21 +41,26 @@ class Provider
             // Todo
             'default'  => '',
             'standard' => '',
+            'special'  => '',
             'reserved' => [],
         ],
         self::KOTAK     => [
+            // Used for merchants who have not set handle
             'default'  => 'RAZO',
+            // Used for merchants who have set a 4-char handle
             'standard' => 'RZRP',
+            // Used for merchants who have set a 3-char handle
+            'special'  => 'RAZR',
+            // Used for our own nodal-to-nodal transfers
             'reserved' => [
-                // This is to be used for our own nodal account,
                 // DO NOT REFUND PAYMENTS MADE HERE
-                'RAZR',
                 'RZRN',
             ],
         ],
         self::DASHBOARD       => [
             'default'  => 'RAZO',
             'standard' => 'RZRP',
+            'special'  => 'RAZR',
             'reserved' => [
                 'RZRN',
             ],
@@ -79,15 +86,6 @@ class Provider
         self::DASHBOARD => [
             BankAccount::IFSC_CODE => 'RAZR0000001',
         ],
-
-        /**
-         * Refer to NPCI docs for these values
-         * https://drive.google.com/drive/u/0/folders/0B4GPmD46vWAxTWRsUjlqSkJGWWM
-         **/
-        self::BHARAT_QR => [
-            BharatQr::QR_STRING    => '000201',
-            BharatQr::METHOD       => 'QR',
-        ],
     ];
 
     const IP = [
@@ -110,9 +108,13 @@ class Provider
         return substr($ifsc, 0, 4);
     }
 
-    public static function getAcquirerCode(string $provider, string $network)
+    public static function validateLiveProvider(string $provider)
     {
-        return Config::get('applications.' . $provider . '.' .  $network . '_' .  'code');
+        if (in_array($provider, self::LIVE_PROVIDERS, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid provider:'. $provider);
+        }
     }
 
     // Checks if request is originating from known IP for the given provider

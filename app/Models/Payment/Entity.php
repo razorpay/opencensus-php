@@ -13,12 +13,13 @@ use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Order;
-use RZP\Models\Currency;
-use RZP\Models\Customer;
 use RZP\Models\Feature;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
+use RZP\Models\Currency;
+use RZP\Models\Customer;
+use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
@@ -28,6 +29,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 /**
  * @property Subscription\Entity    $subscription
  * @property Invoice\Entity         $invoice
+ * @property Terminal\Entity        $terminal
  * @property Merchant\Entity        $merchant
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
@@ -114,6 +116,9 @@ class Entity extends Base\PublicEntity
     // Query params
     const TRANSFERRED           = 'transferred';
 
+    // Tells us whether this payment is a initial or auto recurring type
+    const RECURRING_TYPE        = 'recurring_type';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
@@ -122,6 +127,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_TIMEOUT_NETBANKING        = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
+    const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 864000;   // 10 Days -- TODO: Reduce later
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
@@ -232,6 +238,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DISPUTED,
+        self::RECURRING_TYPE,
     ];
 
     protected $public = [
@@ -349,6 +356,7 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_ID          => null,
         self::TRANSFER_ID          => null,
         self::DISPUTED             => false,
+        self::RECURRING_TYPE       => null,
     ];
 
     protected $amounts = [
@@ -640,6 +648,28 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BANK, $bank);
     }
 
+    /**
+     * Recurring Type is null by default, and will be set to initial or auto based on use case
+     *
+     * @param $type
+     */
+    public function setRecurringType($type)
+    {
+        RecurringType::validateRecurringType($type);
+
+        $this->setAttribute(self::RECURRING_TYPE, $type);
+    }
+
+    public function isRecurringTypeAuto()
+    {
+        return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::AUTO);
+    }
+
+    public function isRecurringTypeInitial()
+    {
+        return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::INITIAL);
+    }
+
     public function setSigned($signed = true)
     {
         $this->setAttribute(self::SIGNED, $signed);
@@ -759,6 +789,11 @@ class Entity extends Base\PublicEntity
     public function setMetadataKey($key, $value)
     {
         $this->metadata[$key] = $value;
+    }
+
+    public function getRecurringType()
+    {
+        return $this->getAttribute(self::RECURRING_TYPE);
     }
 
     public function setMetadata($input)
@@ -1486,6 +1521,26 @@ class Entity extends Base\PublicEntity
         return ($existingGatewayTokens->count() === 1);
     }
 
+    public function isEmandatePayment()
+    {
+        $token = $this->getGlobalOrLocalTokenEntity();
+
+        //
+        // It's not an e-mandate payment if
+        // - Token not set
+        // - Payment not netbanking
+        // - Payment not recurring
+        //
+        if (($token === null) or
+            ($this->isNetbanking() === false) or
+            ($this->isRecurring() === false))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public function getConvertCurrency()
     {
         return $this->getAttribute(self::CONVERT_CURRENCY);
@@ -1613,6 +1668,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SUBSCRIPTION_ID);
     }
 
+    /**
+     * @return Customer\Token\Entity
+     */
     public function getGlobalOrLocalTokenEntity()
     {
         $token = null;
@@ -1627,6 +1685,43 @@ class Entity extends Base\PublicEntity
         }
 
         return $token;
+    }
+
+    /**
+     * Checks whether the recurring payment will
+     * need to be authorized via sending a file
+     */
+    public function isFileBasedEmandateDebitPayment(): bool
+    {
+        if (($this->isEmandatePayment() === true) and
+            ($this->isRecurringTypeAuto() === true))
+        {
+            $gateway = $this->getGateway();
+
+            //
+            // This will be the case when during second recurring payment,
+            // we are deciding whether to hit the gateway or not.
+            // At that stage, the gateway is not yet set.
+            //
+            if ($gateway === null)
+            {
+                //
+                // We don't really have to use gateway token here because
+                // we are actually getting the gateway and not the terminal.
+                // Gateway tokens need to be used when we are getting a terminal.
+                // Since a token can have multiple terminals.
+                // TODO: Check again ^
+                //
+                // Token will always be set if it's
+                // emandate and recurring type is auto.
+                //
+                $gateway = $this->getGlobalOrLocalTokenEntity()->terminal->getGateway();
+            }
+
+            return (Gateway::isFileBasedEMandateDebitGateway($gateway) === true);
+        }
+
+        return false;
     }
 
     public function getReferenceForGatewayToken()
@@ -2191,6 +2286,16 @@ class Entity extends Base\PublicEntity
                 // for direct netbanking 1 hour is good enough
                 $timeWindow = self::PAYMENT_TIMEOUT_WALLET;
             }
+        }
+
+        //
+        // Irrespective of the created_flow or auto refund delay,
+        // if it's emandate debit payment, the timeout window
+        // defined for this must always take higher preference.
+        //
+        if ($this->isFileBasedEmandateDebitPayment() === true)
+        {
+             return self::PAYMENT_TIMEOUT_FILE_BASED_DEBIT;
         }
 
         $autoRefundDelay = $this->merchant->getAutoRefundDelay();

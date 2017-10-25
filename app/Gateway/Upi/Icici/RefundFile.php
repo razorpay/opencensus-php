@@ -9,7 +9,7 @@ use RZP\Constants\MailTags;
 use RZP\Gateway\Base;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Models\FileStore;
-use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment;
 
 class RefundFile extends Base\RefundFile
 {
@@ -71,7 +71,7 @@ class RefundFile extends Base\RefundFile
 
     protected function sendRefundEmail($fileData = [])
     {
-        $refundFileMail = new RefundFileMail($fileData, Gateway::UPI_ICICI);
+        $refundFileMail = new RefundFileMail($fileData, Payment\Gateway::UPI_ICICI);
 
         Mail::queue($refundFileMail);
     }

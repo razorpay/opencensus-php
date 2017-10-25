@@ -19,16 +19,26 @@ abstract class Processor extends Base\Core
     protected $merchant;
     protected $validator;
 
-    public function __construct()
+    public function __construct(string $provider = null)
     {
         parent::__construct();
 
         $this->validator = new Validator;
 
+        //
         // These flows are initiated by the provider bank hitting
         // our APIs. Provider banks are currently authenticated by
         // registering them as apps, and using AppAuth.
-        $this->provider = $this->app['basicauth']->getInternalApp();
+        //
+        // For manual insertion of a bank transfer, it
+        // is also possible to give provider as input
+        //
+        if ($provider === null)
+        {
+            $provider = $this->app['basicauth']->getInternalApp();
+        }
+
+        $this->provider = $provider;
     }
 
      /**
@@ -92,7 +102,7 @@ abstract class Processor extends Base\Core
     {
         $data = $this->virtualAccountCreationArray($amount);
 
-        $virtualAccount = (new VirtualAccount\Core)->create($data, $this->merchant);
+        $virtualAccount = (new VirtualAccount\Core)->createWithoutReceivers($data, $this->merchant);
 
         $this->virtualAccount = $virtualAccount;
     }
@@ -137,19 +147,32 @@ abstract class Processor extends Base\Core
     }
 
     /**
-     * For unexpected payments, we use the demo page merchant. This merchant only
-     * exists on prod. For other envs, we use the test merchant, i.e. '10000000000000'.
+     * Set default merchant for future processing.
+     * Use default merchant for this env.
      */
     protected function setDefaultMerchant()
     {
+        $defaultMerchantId = self::getDefaultMerchantId();
+
+        $this->merchant = $this->repo->merchant->findByPublicId($defaultMerchantId);
+    }
+
+    /**
+     * For unexpected payments, we use the demo page merchant. This merchant only
+     * exists on prod. For other envs, we use the test merchant, i.e. '10000000000000'.
+     */
+    public static function getDefaultMerchantId()
+    {
         $defaultMerchantId = Merchant\Account::DEMO_PAGE_ACCOUNT;
 
-        if ($this->env !== 'production')
+        $env = App::getFacadeRoot()->environment();
+
+        if ($env !== 'production')
         {
             $defaultMerchantId = Merchant\Account::TEST_ACCOUNT;
         }
 
-        $this->merchant = $this->repo->merchant->findByPublicId($defaultMerchantId);
+        return $defaultMerchantId;
     }
 
 

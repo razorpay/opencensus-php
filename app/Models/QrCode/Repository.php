@@ -1,10 +1,10 @@
 <?php
 
-namespace RZP\Models\BharatQr;
+namespace RZP\Models\QrCode;
 
 use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'bharat_qr';
+    protected $entity = 'qr_code';
 }

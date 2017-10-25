@@ -35,16 +35,7 @@ class Service extends Base\Service
 
         $this->setDefaultReceiverTypesIfNeeded($input);
 
-        $virtualAccount = $this->repo->transaction(function() use ($input, $customer)
-        {
-            $virtualAccount = $this->core->create($input, $this->merchant, $customer);
-
-            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVER_TYPES]);
-
-            $this->repo->saveOrFail($virtualAccount);
-
-            return $virtualAccount;
-        });
+        $virtualAccount = $this->core->create($input, $this->merchant, $customer);
 
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_CREATED,
@@ -259,7 +250,7 @@ class Service extends Base\Service
                 $this->verifyBankTransferEnabled();
                 break;
 
-            case Receiver::BHARAT_QR:
+            case Receiver::QR_CODE:
                 $this->verifyBharatQrEnabled();
                 break;
 
@@ -293,10 +284,9 @@ class Service extends Base\Service
 
     protected function verifyBharatQrEnabled()
     {
-        $merchantMethods = $this->getMethodsForMerchant($this->merchant);
+        $feature = Feature\Constants::BHARAT_QR;
 
-        if (($merchantMethods === null) or
-            ($merchantMethods->isBharatQrEnabled() === false))
+        if ($merchant->isFeatureEnabled($feature) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);

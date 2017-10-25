@@ -23,71 +23,72 @@ use RZP\Models\Payment\Processor\Wallet;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        'amount'                  => 'required|integer',
-        'currency'                => 'required|string|size:3',
-        'method'                  => 'string|custom',
-        'vpa'                     => 'required_if:method,upi|string|max:100|custom',
-        'aadhaar'                 => 'required_if:method,aeps|array',
-        'aadhaar.number'          => 'required_if:method,aeps|size:12|string',
-        'aadhaar.fingerprint'     => 'required_if:method,aeps|max:999|string',
-        'aadhaar.session_key'     => 'sometimes_if:method,aeps|size:344|string',
-        'aadhaar.hmac'            => 'sometimes_if:method,aeps|size:64|string',
-        'aadhaar.cert_expiry'     => 'sometimes_if:method,aeps|size:8|string',
-        'card'                    => 'sometimes',
-        'bank'                    => 'required_if:method,netbanking,aeps',
-        'wallet'                  => 'required_if:method,wallet|custom',
-        'emi_duration'            => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
-        'description'             => 'sometimes|string|max:255|utf8',
-        'email'                   => 'sometimes|nullable|email',
-        'contact'                 => 'sometimes|nullable|contact_syntax',
-        'signature'               => 'sometimes|nullable|string',
-        'notes'                   => 'sometimes|notes',
-        'notes.merchant_order_id' => 'required_with:signature',
-        'callback_url'            => 'sometimes|url',
-        'order_id'                => 'sometimes|filled',
-        'customer_id'             => 'sometimes|public_id|filled',
-        'subscription_id'         => 'sometimes|public_id',
-        'app_token'               => 'sometimes',
-        'token'                   => 'sometimes',
-        'save'                    => 'sometimes|in:0,1',
-        'recurring'               => 'sometimes_if:method,card|in:0,1',
-        'fee'                     => 'sometimes|filled|integer|max:50000000',
-        Entity::SERVICE_TAX       => 'sometimes|filled|integer|max:50000000',
-        Entity::TAX               => 'sometimes|filled|integer|max:50000000',
-        'on_hold'                 => 'sometimes_if:method,transfer|boolean',
-        'on_hold_until'           => 'sometimes_if:method,transfer|nullable|epoch',
-        'ip'                      => 'sometimes|ip',
-        'referer'                 => 'sometimes|string|max:2083',
-        'user_agent'              => 'sometimes|string',
-        '_'                       => 'sometimes|array',
-        'test_success'            => 'sometimes|boolean',
-        'subscription_card_change'=> 'sometimes|boolean',
+        'amount'                     => 'required|integer',
+        'currency'                   => 'required|string|size:3',
+        'method'                     => 'string|custom',
+        'vpa'                        => 'required_if:method,upi|string|max:100|custom',
+        'aadhaar'                    => 'required_if:method,aeps|array',
+        'aadhaar.number'             => 'required_if:method,aeps|size:12|string',
+        'aadhaar.fingerprint'        => 'required_if:method,aeps|max:999|string',
+        'aadhaar.session_key'        => 'sometimes_if:method,aeps|size:344|string',
+        'aadhaar.hmac'               => 'sometimes_if:method,aeps|size:64|string',
+        'aadhaar.cert_expiry'        => 'sometimes_if:method,aeps|size:8|string',
+        'card'                       => 'sometimes',
+        'bank'                       => 'required_if:method,netbanking,aeps',
+        'wallet'                     => 'required_if:method,wallet|custom',
+        'emi_duration'               => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
+        'description'                => 'sometimes|string|max:255|utf8',
+        'email'                      => 'sometimes|nullable|email',
+        'contact'                    => 'sometimes|nullable|contact_syntax',
+        'signature'                  => 'sometimes|nullable|string',
+        'notes'                      => 'sometimes|notes',
+        'notes.merchant_order_id'    => 'required_with:signature',
+        'callback_url'               => 'sometimes|url',
+        'order_id'                   => 'sometimes|filled',
+        'customer_id'                => 'sometimes|public_id|filled',
+        'subscription_id'            => 'sometimes|public_id',
+        'app_token'                  => 'sometimes',
+        'token'                      => 'sometimes',
+        'save'                       => 'sometimes|in:0,1',
+        'recurring'                  => 'sometimes_if:method,card,netbanking|in:0,1',
+        'fee'                        => 'sometimes|filled|integer|max:50000000',
+        Entity::SERVICE_TAX          => 'sometimes|filled|integer|max:50000000',
+        Entity::TAX                  => 'sometimes|filled|integer|max:50000000',
+        'on_hold'                    => 'sometimes_if:method,transfer|boolean',
+        'on_hold_until'              => 'sometimes_if:method,transfer|nullable|epoch',
+        'ip'                         => 'sometimes|ip',
+        'referer'                    => 'sometimes|string|max:2083',
+        'user_agent'                 => 'sometimes|string',
+        '_'                          => 'sometimes|array',
+        'test_success'               => 'sometimes|boolean',
+        'subscription_card_change'   => 'sometimes|boolean',
+        'account_number'             => 'sometimes_if:recurring,1,method,netbanking|alpha_num|between:5,20|nullable',
     ];
 
     protected static $editRules = [
-        Entity::APPROVAL_CODE     => 'sometimes|string|max:6',
-        Entity::REFERENCE1        => 'sometimes|string',
-        Entity::REFERENCE2        => 'sometimes|string',
+        Entity::APPROVAL_CODE        => 'sometimes|string|max:6',
+        Entity::REFERENCE1           => 'sometimes|string',
+        Entity::REFERENCE2           => 'sometimes|string',
     ];
 
     protected static $captureRules = [
-        Entity::AMOUNT            => 'required|integer',
-        Entity::CURRENCY          => 'required|in:INR,USD',
+        Entity::AMOUNT               => 'required|integer',
+        Entity::CURRENCY             => 'required|in:INR,USD',
     ];
 
     protected static $bulkCaptureRules = [
-        'payment_ids'             => 'required|array',
-        'payment_ids.*'           => 'required|public_id',
+        'payment_ids'                => 'required|array',
+        'payment_ids.*'              => 'required|public_id',
     ];
 
     protected static $refundRules = [
-        'amount'                  => 'sometimes|integer',
-        'notes'                   => 'sometimes|notes',
-        'reverse_all'             => 'sometimes|boolean',
-        'reversals'               => 'sometimes|array',
-        'reversals.*.transfer'    => 'required|public_id',
-        'reversals.*.amount'      => 'required|integer|min:100',
-        'reversals.*.notes'       => 'sometimes|notes',
+        'amount'                     => 'sometimes|integer',
+        'notes'                      => 'sometimes|notes',
+        'reverse_all'                => 'sometimes|boolean',
+        'reversals'                  => 'sometimes|array',
+        'reversals.*.transfer'       => 'required|public_id',
+        'reversals.*.amount'         => 'required|integer|min:100',
+        'reversals.*.notes'          => 'sometimes|notes',
     ];
 
     protected static $transferRules = [
@@ -123,7 +124,7 @@ class Validator extends Base\Validator
         }
 
         $allowedPaymentMethods = [
-            'aeps',
+            Payment\Method::AEPS,
             Payment\Method::TRANSFER,
             Payment\Method::BANK_TRANSFER,
         ];
@@ -340,7 +341,7 @@ class Validator extends Base\Validator
         }
 
         $allowedPaymentMethods = [
-            'aeps',
+            Payment\Method::AEPS,
             Payment\Method::TRANSFER,
             Payment\Method::BANK_TRANSFER,
         ];
@@ -355,9 +356,8 @@ class Validator extends Base\Validator
         if ($input['method'] === Payment\Method::WALLET)
         {
             $number = new PhoneBook($input['contact'], true);
-            $country = $number->getRegionCodeForNumber();
 
-            if ($country !== 'IN')
+            if ($number->isValidNumberForRegion('IN') === false)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED);

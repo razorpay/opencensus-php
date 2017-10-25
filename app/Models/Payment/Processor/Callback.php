@@ -185,10 +185,11 @@ trait Callback
             $input['customer'] = $this->repo->customer->getGlobalCustomerForPayment($payment);
         }
 
-        if ($payment->getGlobalTokenId() !== null)
+        $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
+
+        if ($token !== null)
         {
-            $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
-            $input['token'] = $token->toArray();
+            $input['token'] = $token;
         }
 
         if ($payment->hasCard())
@@ -232,12 +233,14 @@ trait Callback
 
                 $isCorporatePayment = $payment->terminal->isCorporate();
 
+                //
                 // In case of non - corporate payments, this case is fine.
                 // In case of corporate and payment already having been authorized
-                if ((($payment->isCreated() === false) and
-                    ($isCorporatePayment === false)) or
+                //
+                if ((($isCorporatePayment === false) and
+                     ($payment->isCreated() === false)) or
                     (($isCorporatePayment === true) and
-                    ($payment->hasBeenAuthorized() === true)))
+                     ($payment->hasBeenAuthorized() === true)))
                 {
                     return $this->processPaymentCallbackSecondTime($payment);
                 }

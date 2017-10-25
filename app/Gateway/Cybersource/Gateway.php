@@ -904,7 +904,7 @@ class Gateway extends Base\Gateway
             E::CARD_GROUP               => $ccAuthReply[F::CARD_GROUP] ?? null,
             E::CV_CODE                  => $ccAuthReply[F::CV_CODE] ?? null,
             E::MERCHANT_ADVICE_CODE     => $ccAuthReply[F::MERCHANT_ADVICE_CODE] ?? null,
-            E::GATEWAY_TRANSACTION_ID   => $ccAuthReply[F::PAYMENT_NETWORK_TXN_ID],
+            E::GATEWAY_TRANSACTION_ID   => $ccAuthReply[F::PAYMENT_NETWORK_TXN_ID] ?? null,
             E::PROCESSOR_RESPONSE       => $ccAuthReply[F::PROCESSOR_RESPONSE],
             E::STATUS                   => Status::AUTHORIZED,
             E::RECEIVED                 => true
@@ -913,6 +913,12 @@ class Gateway extends Base\Gateway
         if ($response[F::REASON_CODE] !== Result::SUCCESS)
         {
             $attributes[E::STATUS] = Status::AUTHORIZE_FAILED;
+        }
+        else
+        {
+            // We are doing this because paymentNetworkTransactionId should
+            // be present if payment is successful.
+            $attributes[E::GATEWAY_TRANSACTION_ID] = $ccAuthReply[F::PAYMENT_NETWORK_TXN_ID];
         }
 
         return $attributes;

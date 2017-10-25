@@ -10,11 +10,13 @@ class Status
 
     const INVALID_PSP   = 5008;
 
-    const SUCCESS = 'SUCCESS';
+    const SUCCESS    = 'SUCCESS';
 
-    const PENDING = 'PENDING';
+    const PENDING    = 'PENDING';
 
-    const FAILURE = 'FAILURE';
+    const FAILURE    = 'FAILURE';
 
-    const REJECT  = 'REJECT';
+    const REJECT     = 'REJECT';
+
+    const NO_RECORDS = 'original record not found';
 }

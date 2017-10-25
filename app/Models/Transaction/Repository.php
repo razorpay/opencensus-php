@@ -180,9 +180,9 @@ class Repository extends Base\Repository
      *          Key - String - Name of the entity that led to the creation of the transaction
      *                          i.e. value of `type` column in Transactions table
      *          Value - Array - of relationships to fetch for the given Key
-     *      For example ['x' => ['y', 'z'], ['a'] => ['b']]
+     *      For example ['x' => ['y', 'z'], 'a' => ['b']]
      *      This means that when the `type` of transaction is 'x', fetch relations 'y', and 'z'
-     *      And when the `type` of transaction is `y`, fetch relations 'b'
+     *      And when the `type` of transaction is `a`, fetch relations 'b'
      * @param $type - String - The name of the column that has the `source` of the transaction
      * @param $idCol - String - The name of the column that has the  `id` of the `source` of the transaction
      */

@@ -210,6 +210,7 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR,
         self::HANDLE,
         self::RISK_RATING,
+        self::RISK_THRESHOLD,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::SUSPENDED_AT,
@@ -1199,15 +1200,16 @@ class Entity extends Base\PublicEntity
     public function toArrayUser()
     {
         $attributes = [
-            self::ID           => $this->getAttribute(self::ID),
-            self::NAME         => $this->getAttribute(self::NAME),
-            self::EMAIL        => $this->getAttribute(self::EMAIL),
-            self::ACTIVATED    => $this->getAttribute(self::ACTIVATED),
-            self::ARCHIVED_AT  => $this->getAttribute(self::ARCHIVED_AT),
-            self::SUSPENDED_AT => $this->getAttribute(self::SUSPENDED_AT),
-            self::LOGO_URL     => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
-            self::CREATED_AT   => $this->getAttribute(self::CREATED_AT),
-            self::UPDATED_AT   => $this->getAttribute(self::UPDATED_AT),
+            self::ID            => $this->getAttribute(self::ID),
+            self::NAME          => $this->getAttribute(self::NAME),
+            self::BILLING_LABEL => $this->getAttribute(self::BILLING_LABEL),
+            self::EMAIL         => $this->getAttribute(self::EMAIL),
+            self::ACTIVATED     => $this->getAttribute(self::ACTIVATED),
+            self::ARCHIVED_AT   => $this->getAttribute(self::ARCHIVED_AT),
+            self::SUSPENDED_AT  => $this->getAttribute(self::SUSPENDED_AT),
+            self::LOGO_URL      => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
+            self::CREATED_AT    => $this->getAttribute(self::CREATED_AT),
+            self::UPDATED_AT    => $this->getAttribute(self::UPDATED_AT),
         ];
 
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;

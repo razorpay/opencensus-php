@@ -10,11 +10,12 @@ use Mail;
 use App;
 use RZP\Exception;
 use RZP\Mail\Settlement as SettlementMail;
-use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Models\FileStore;
 use RZP\Models\FundTransfer;
+use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundTransfer\Base as NodalBase;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Constants\MailTags;
@@ -22,7 +23,7 @@ use RZP\Constants\Entity;
 use RZP\Constants\Mode;
 use RZP\Models\Transaction;
 
-class NodalAccount
+class NodalAccount extends NodalBase\NodalAccount
 {
     use FileHandlerTrait;
 
@@ -30,8 +31,6 @@ class NodalAccount
 
     protected static $nodalAccountNumber = '7911547334';
 
-    // RTGS if amount is more that 10L
-    const RTGS_AMOUNT = 1000000.00;
     // IMPS if amount is less that 1L
     const IMPS_AMOUNT = 100000.00;
 
@@ -41,6 +40,8 @@ class NodalAccount
 
     public function __construct()
     {
+        //parent::__construct();
+
         // Date format is DD/MM/YYYY in human representation
         $this->date = Carbon::today(Timezone::IST)->format('d/m/Y');
 
@@ -243,11 +244,6 @@ class NodalAccount
         {
             $type = 'IFT';
         }
-        else if (($amount >= self::RTGS_AMOUNT) and
-                 ($this->hour <= 14))
-        {
-            $type = 'RTGS';
-        }
         else if (($amount <= self::IMPS_AMOUNT) and
                  ($sourceType !== Entity::SETTLEMENT))
         {
@@ -255,7 +251,7 @@ class NodalAccount
         }
         else
         {
-            $type = 'NEFT';
+            $type = $this->getTransferMode($amount);
         }
 
         return $type;
@@ -363,7 +359,10 @@ class NodalAccount
 
         $data = compact('amounts', 'count');
 
-        $data['file'] = $this->getFullFilePath($fileName);
+        $data['file_data'] = [
+            'file_path'  => $this->getFullFilePath($fileName),
+            'file_name'  => $fileName,
+        ];
 
         $kotakPayoutMail = new SettlementMail\KotakPayout($data);
 

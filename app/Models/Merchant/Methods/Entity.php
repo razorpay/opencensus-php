@@ -30,7 +30,6 @@ class Entity extends Base\PublicEntity
     const UPI               = 'upi';
     const BANK_TRANSFER     = 'bank_transfer';
     const AEPS              = 'aeps';
-    const BHARAT_QR         = 'bharat_qr';
 
     const METHODS           = 'methods';
 
@@ -64,7 +63,6 @@ class Entity extends Base\PublicEntity
         self::DEBIT_CARD,
         self::CREDIT_CARD,
         self::BANK_TRANSFER,
-        self::BHARAT_QR,
     ];
 
     protected $visible = [
@@ -90,7 +88,6 @@ class Entity extends Base\PublicEntity
         self::DEBIT_CARD,
         self::CREDIT_CARD,
         self::BANK_TRANSFER,
-        self::BHARAT_QR,
     ];
 
     protected $public = [
@@ -117,7 +114,6 @@ class Entity extends Base\PublicEntity
         self::CREDIT_CARD,
         self::ENTITY,
         self::BANK_TRANSFER,
-        self::BHARAT_QR,
     ];
 
     protected $defaults = array(
@@ -141,8 +137,7 @@ class Entity extends Base\PublicEntity
         self::NETBANKING     => true,
         self::CREDIT_CARD    => true,
         self::DEBIT_CARD     => true,
-        self::BANK_TRANSFER  => false,
-        self::BHARAT_QR      => false,
+        self::BANK_TRANSFER  => true,
     );
 
     protected $wallets = array(
@@ -198,7 +193,6 @@ class Entity extends Base\PublicEntity
         self::UPI           => 'bool',
         self::BANK_TRANSFER => 'bool',
         self::AEPS          => 'bool',
-        self::BHARAT_QR     => 'bool',
     ];
 
     public function setMethods(array $input = array())
@@ -245,11 +239,6 @@ class Entity extends Base\PublicEntity
     public function isAepsEnabled()
     {
         return $this->getAttribute(self::AEPS);
-    }
-
-    public function isBharatQrEnabled()
-    {
-        return $this->getAttribute(self::BHARAT_QR);
     }
 
     public function isWalletEnabled($wallet = null)
@@ -530,6 +519,11 @@ class Entity extends Base\PublicEntity
     public function setUpi(bool $upi)
     {
         $this->setAttribute(self::UPI, $upi);
+    }
+
+    public function setBankTransfer(bool $bankTransfer)
+    {
+        $this->setAttribute(self::BANK_TRANSFER, $bankTransfer);
     }
 
     public function setEmi($emi)
