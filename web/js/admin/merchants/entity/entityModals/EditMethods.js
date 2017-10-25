@@ -2,7 +2,7 @@ import React from 'react';
 import BaseModal from 'ui/BaseModal';
 
 import Form from 'ui/Form';
-import { CheckField } from 'ui/Field';
+import { Switch } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
@@ -14,7 +14,7 @@ export default ({ props }) => {
   /* Send only changed methods */
   function filterChangedMethods(methods) {
     for (var method in methods) {
-      if (methods[method] === defaultMethods[method]) {
+      if (methods[method] === defaultMethods[method].toString()) {
         delete methods[method];
       }
     }
@@ -27,12 +27,12 @@ export default ({ props }) => {
     const fields = [];
     const methods = {};
 
-    _getPossiblyMissingFields().map(method => {
+    _getForceFields().map(method => {
       // Assign a default of false and override if we have it
-      methods[method] = 0;
+      methods[method] = '0';
 
       if (methods.hasOwnProperty(method)) {
-        methods[method] = props.details.methods[method] ? 1 : 0;
+        methods[method] = props.details.methods[method] ? '1' : '0';
       }
     });
 
@@ -40,12 +40,10 @@ export default ({ props }) => {
 
     for (let method in methods) {
       fields.push(
-        <CheckField
-          label={method}
-          name={method}
-          key={method}
-          defaultChecked={props.details.methods[method]}
-        />
+        <label key={method}>
+          {method}
+          <Switch name={method} value={methods[method]} />
+        </label>
       );
     }
 
@@ -57,7 +55,11 @@ export default ({ props }) => {
     body = filterChangedMethods(body);
 
     for (let method in body) {
-      body[method] = body[method] ? 1 : 0;
+      if (body[method] === '1') {
+        body[method] = 1;
+      } else if (body[method] === '0') {
+        body[method] = 0;
+      }
     }
 
     // TODO: adminPut, in this case, won't work if parseParams(params) are not sent as "data" like in adminPost
@@ -97,7 +99,7 @@ export default ({ props }) => {
   );
 };
 
-function _getPossiblyMissingFields() {
+function _getForceFields() {
   // List all the methods here
   // This lets us display methods that are not returned by the API as false
   return [
