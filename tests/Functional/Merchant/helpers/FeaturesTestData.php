@@ -605,4 +605,21 @@ return [
             ]
         ]
     ],
+
+    'getMarketplaceOnboardingResponseStatus' => [
+        'request'  => [
+            'content' => [
+                'merchant_id' => '10000000001017'
+            ],
+            'url'     => '/onboarding/features/' . Constants::MARKETPLACE . '/status',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [ ]
+        ]
+    ]
 ];

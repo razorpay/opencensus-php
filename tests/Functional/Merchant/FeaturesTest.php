@@ -608,6 +608,11 @@ class FeaturesTest extends TestCase
         // Test auto approving of a request, when added in Live mode
         $this->verifyMarketplaceOnboardingResponseStatus('approved');
 
+        // Test the fetch status route
+        $status = $this->getMarketplaceOnboardingResponseStatus();
+
+        $this->assertEquals('approved', $status);
+
         Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
         {
             $this->assertEquals('Route', $mail->viewData['feature']);
@@ -940,6 +945,15 @@ class FeaturesTest extends TestCase
         );
 
         return $uploadedFile;
+    }
+
+    protected function getMarketplaceOnboardingResponseStatus()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        return $response;
     }
 
 }

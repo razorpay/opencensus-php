@@ -306,5 +306,24 @@ class Service extends Base\Service
 
         return $status;
     }
+
+    /**
+     * @param string $featureName
+     * @param array  $input
+     *
+     */
+    public function getFeatureActivationStatus(string $featureName, array $input)
+    {
+        $merchantId = $input['merchant_id'];
+
+        $merchant = $this->repo->merchant->findByPublicId($merchantId);
+
+        $status =  $this->repo->merchant_detail->getFeatureActivationStatus(
+            $merchant,
+            $featureName
+        );
+
+        return $status;
+    }
 }
 

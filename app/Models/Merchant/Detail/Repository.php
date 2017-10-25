@@ -2,12 +2,9 @@
 
 namespace RZP\Models\Merchant\Detail;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\Feature\Constants;
 
 class Repository extends Base\Repository
 {
@@ -102,5 +99,18 @@ class Repository extends Base\Repository
         }
 
         return false;
+    }
+
+    public function getFeatureActivationStatus(
+        Merchant\Entity $merchant,
+        string $featureName)
+    {
+        $merchantDetail = $merchant->merchantDetail;
+
+        $getFeatureActivationStatus = camel_case('get_' . $featureName . '_activation_status');
+
+        $status = $merchantDetail->$getFeatureActivationStatus();
+
+        return $status;
     }
 }

@@ -641,6 +641,7 @@ final class Route
         'onboarding_features_update'              => ['put',      'onboarding/features/{feature}',                  'FeatureController@updateOnboardingSubmissions'                     ],
         'onboarding_features_fetch_submissions'   => ['get',      'onboarding/features/submissions',                'FeatureController@getFeatureOnboardingRequests'                    ],
         'onboarding_features_update_status'       => ['put',      'onboarding/features/{feature}/status',           'FeatureController@updateFeatureActivationStatus'                   ],
+        'onboarding_features_fetch_status'        => ['get',      'onboarding/features/{feature}/status',           'FeatureController@getFeatureActivationStatus'                   ],
 
         // Deprecated routes - maintaining for BC - Remove after dashboard changes
         'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                  'FeatureController@postOnboardingSubmissions'                       ],
@@ -1230,6 +1231,7 @@ final class Route
         'merchant_batches',
         'onboarding_features_fetch_submissions',
         'onboarding_features_update_status',
+        'onboarding_features_fetch_status',
         'onboarding_features_update'
     ];
 
@@ -1366,6 +1368,7 @@ final class Route
         'dispute_reason_create'                 => '*',
         'onboarding_features_fetch_submissions' => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_update_status'     => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
+        'onboarding_features_fetch_status'      => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_update'            => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
     ];
 

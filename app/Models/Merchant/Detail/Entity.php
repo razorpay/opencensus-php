@@ -158,6 +158,9 @@ class Entity extends Base\PublicEntity
         self::COMMENT,
         self::STEPS_FINISHED,
         self::LOCKED,
+        self::MARKETPLACE_ACTIVATION_STATUS,
+        self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
+        self::SUBSCRIPTIONS_ACTIVATION_STATUS,
         self::SUBMITTED,
         self::SUBMITTED_AT,
     ];
@@ -203,6 +206,9 @@ class Entity extends Base\PublicEntity
         self::STEPS_FINISHED,
         self::ACTIVATION_PROGRESS,
         self::LOCKED,
+        self::MARKETPLACE_ACTIVATION_STATUS,
+        self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
+        self::SUBSCRIPTIONS_ACTIVATION_STATUS,
         self::SUBMITTED,
         self::SUBMITTED_AT,
         self::TRANSACTION_REPORT_EMAIL,
@@ -345,6 +351,21 @@ class Entity extends Base\PublicEntity
     public function setSubscriptionsActivationStatus(string $status)
     {
         $this->setAttribute(self::SUBSCRIPTIONS_ACTIVATION_STATUS, $status);
+    }
+
+    public function getMarketplaceActivationStatus()
+    {
+        return $this->getAttribute(self::MARKETPLACE_ACTIVATION_STATUS);
+    }
+
+    public function getVirtualAccountsActivationStatus()
+    {
+        return $this->getAttribute(self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS);
+    }
+
+    public function getSubscriptionsActivationStatus()
+    {
+        return $this->getAttribute(self::SUBSCRIPTIONS_ACTIVATION_STATUS);
     }
 
     public function getActivationProgress()

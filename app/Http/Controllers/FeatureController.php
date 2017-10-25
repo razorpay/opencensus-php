@@ -115,4 +115,13 @@ class FeatureController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getFeatureActivationStatus(string $featureName)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getFeatureActivationStatus($featureName, $input);
+
+        return ApiResponse::json($response);
+    }
 }
