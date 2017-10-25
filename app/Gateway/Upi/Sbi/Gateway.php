@@ -109,9 +109,9 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->assertPaymentIdAndAmount($input);
-
         $content = $input['gateway'][ResponseFields::API_RESPONSE];
+
+        $this->assertPaymentIdAndAmount($input, $input['gateway']);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
                                                                       Action::AUTHORIZE);
@@ -137,15 +137,17 @@ class Gateway extends Base\Gateway
 
     protected function assertPaymentIdAndAmount(array $input, array $response)
     {
-        $expectedAmount = $input[ConstantsEntity::PAYMENT][Payment\Entity::AMOUNT];
+        $expectedAmount = $input[ConstantsEntity::PAYMENT][Payment\Entity::AMOUNT] / 100;
+        $expectedAmount = number_format($expectedAmount, 2, '.', '');
 
         $actualAmount = $response[ResponseFields::API_RESPONSE][ResponseFields::AMOUNT];
+        $actualAmount = number_format($actualAmount, 2, '.', '');
 
         $this->assertAmount($expectedAmount, $actualAmount);
 
         $expectedPaymentId = $input[ConstantsEntity::PAYMENT][Payment\Entity::ID];
 
-        $actualPaymentId = $input['gateway'][ResponseFields::API_RESPONSE][ResponseFields::PSP_REFERENCE_NO];
+        $actualPaymentId = $response[ResponseFields::API_RESPONSE][ResponseFields::PSP_REFERENCE_NO];
 
         $this->assertPaymentId($expectedPaymentId, $actualPaymentId);
     }
