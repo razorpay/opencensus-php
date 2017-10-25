@@ -8,19 +8,13 @@ class RequestFields
     const CORP_ID         = 'CID';
     const TYPE            = 'TYP';
 
-    /**
-     * To identify the payment request, we send the payment ID in this field.
-     */
+    // To identify the payment request, we send the payment ID in this field.
     const REQUEST_ID      = 'RID';
 
-    /**
-     * To uniquely identify a customer, we send the token id for the customer here.
-     */
+    // To uniquely identify a customer, we send the token id for the customer here.
     const CUSTOMER_REF_NO = 'CRN';
 
-    /**
-     * Required for the payment verification request
-     */
+    // Required for the payment verification request
     const BANK_REF_NO     = 'BRN';
 
     const CURRENCY        = 'CNY';
@@ -46,8 +40,6 @@ class RequestFields
     const RESERVE_FIELD_5 = 'RE5';
     const CHECKSUM        = 'CKS';
 
-    /**
-     * Encrypted data goes in this field
-     */
+    // Encrypted data goes in this field
     const DATA            = 'i';
 }

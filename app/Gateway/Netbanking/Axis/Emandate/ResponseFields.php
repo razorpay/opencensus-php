@@ -26,8 +26,6 @@ class ResponseFields
 
     const DATA            = 'i';
 
-    /**
-     * For successful registration, mandate number will be sent, otherwise 0 will be sent
-     */
+    // For successful registration, mandate number will be sent, otherwise 0 will be sent
     const MANDATE_NUMBER  = 'MDN';
 }
