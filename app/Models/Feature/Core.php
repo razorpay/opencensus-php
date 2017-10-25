@@ -110,7 +110,7 @@ class Core extends Base\Core
     {
         $isLiveMode = $this->isLiveMode();
 
-        if (($feature->isNotifyFeature() === true) and
+        if (($feature->isProductFeature() === true) and
             (($shouldSync === true) or ($isLiveMode === true)))
         {
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
@@ -420,6 +420,13 @@ class Core extends Base\Core
         return $file;
     }
 
+    /**
+     * Approves the pending feature onboarding request, if any,
+     * if the feature is being added to the live mode
+     *
+     * @param Entity $feature
+     * @param bool   $shouldSync
+     */
     protected function approveFeatureOnboardingRequestIfApplicable(
         Entity $feature,
         bool $shouldSync)
@@ -445,14 +452,20 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * Returns true if the feature is a Product feature and if the mode is Live
+     *
+     * @param Entity $feature
+     * @param bool   $shouldSync
+     *
+     * @return bool
+     */
     protected function shouldUpdateFeatureOnboardingStatus(
         Entity $feature,
         bool $shouldSync): bool
     {
-        $isLiveMode = $this->isLiveMode();
-
-        if (($feature->isNotifyFeature() === true) and
-            (($isLiveMode === true) or ($shouldSync === true)))
+        if (($feature->isProductFeature() === true) and
+            (($this->isLiveMode() === true) or ($shouldSync === true)))
         {
             return true;
         }

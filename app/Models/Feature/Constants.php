@@ -161,23 +161,13 @@ class Constants
     ];
 
     /*
-     * $notifyFeatures should be a subset of the visible features.
+     * PRODUCT_FEATURES should be a subset of the visible features.
      * If any of these features are enabled on live mode, the user
      * will be notified through an email.
+     * Product features can be enabled/disabled on test mode by the merchant,
+     * but not on the live mode.
      */
-    public static $notifyFeatures = [
-        self::MARKETPLACE,
-        self::SUBSCRIPTIONS,
-        self::VIRTUAL_ACCOUNTS
-    ];
-
-    /**
-     * Lists features that can be enabled/disabled on test mode by the merchant
-     * but not on live
-     *
-     * @var array
-     */
-    public static $featuresUneditableOnLive = [
+    const PRODUCT_FEATURES = [
         self::MARKETPLACE,
         self::SUBSCRIPTIONS,
         self::VIRTUAL_ACCOUNTS

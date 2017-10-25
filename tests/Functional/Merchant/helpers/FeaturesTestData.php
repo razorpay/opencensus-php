@@ -400,36 +400,6 @@ return [
         ]
     ],
 
-    'addNotifyFeatures' => [
-        'request'  => [
-            'content' => [
-                'names'       => ['dummy', Constants::MARKETPLACE],
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000'
-            ],
-            'url'     => '/features',
-            'method'  => 'POST',
-            'server'  => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                [
-                    'name'        => Constants::DUMMY,
-                    'entity_id'   => '10000000000000',
-                    'entity_type' => 'merchant'
-                ],
-                [
-                    'name'        => Constants::MARKETPLACE,
-                    'entity_id'   => '10000000000000',
-                    'entity_type' => 'merchant'
-                ]
-            ],
-        ],
-    ],
-
     'testGetFeaturesAsMerchant' => [
         'request' => [
             'url' => '/merchants/10000000000000/features',
@@ -485,7 +455,7 @@ return [
         ]
     ],
 
-    'testUpdateMerchantUnEditableFeatures' => [
+    'testUpdateMerchantProductFeatures' => [
         'request' => [
             'content' => [
                 'features' => [

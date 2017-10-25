@@ -148,7 +148,7 @@ class Validator extends Base\Validator
         $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
 
         $uneditableFeatures = array_values(
-            array_intersect($requestedFeatures, Feature\Constants::$featuresUneditableOnLive));
+            array_intersect($requestedFeatures, Feature\Constants::PRODUCT_FEATURES));
 
         if ((count($uneditableFeatures) > 0) and (
             ($this->isLiveMode() === true) or

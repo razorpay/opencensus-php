@@ -494,7 +494,7 @@ class FeaturesTest extends TestCase
     /**
      * This function tests updating of a non visble merchant feature: dummy
      */
-    public function testUpdateMerchantUnEditableFeatures()
+    public function testUpdateMerchantProductFeatures()
     {
         $this->ba->proxyAuth();
 
@@ -518,7 +518,7 @@ class FeaturesTest extends TestCase
      * This function tests updating of a merchant feature that can be
      * updated by the merchant on test but not live mode: marketplace.
      */
-    public function testAddMerchantUnEditableFeatures()
+    public function testAddMerchantProductFeatures()
     {
         /*
          * $input[0] - $action

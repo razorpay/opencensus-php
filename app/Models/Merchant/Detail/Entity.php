@@ -332,17 +332,17 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACTIVATION_PROGRESS, $activationProgress);
     }
 
-    public function setMarketplaceActivationStatus($status)
+    public function setMarketplaceActivationStatus(string $status)
     {
         $this->setAttribute(self::MARKETPLACE_ACTIVATION_STATUS, $status);
     }
 
-    public function setVirtualAccountsActivationStatus($status)
+    public function setVirtualAccountsActivationStatus(string $status)
     {
         $this->setAttribute(self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS, $status);
     }
 
-    public function setSubscriptionsActivationStatus($status)
+    public function setSubscriptionsActivationStatus(string $status)
     {
         $this->setAttribute(self::SUBSCRIPTIONS_ACTIVATION_STATUS, $status);
     }
