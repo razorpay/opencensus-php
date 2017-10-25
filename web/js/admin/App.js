@@ -21,6 +21,7 @@ import WorkflowList from 'admin/workflows/List';
 import GroupList from 'admin/groups/List';
 import UserList from 'admin/users/List';
 import RoleList from 'admin/roles/List';
+import PermissionsList from 'admin/permissions/List';
 
 export default class App extends Component {
   render() {
@@ -41,6 +42,7 @@ export default class App extends Component {
             <Route path="/groups" component={GroupList} />
             <Route path="/users" component={UserList} />
             <Route path="/roles" component={RoleList} />
+            <Route path="/permissions" component={PermissionsList} />
             <Redirect to="/stats" />
           </Switch>
         </main>
