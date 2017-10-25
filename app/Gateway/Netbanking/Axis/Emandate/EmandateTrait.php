@@ -109,7 +109,7 @@ trait EmandateTrait
 
     protected function handleEmandateResponse(array $input, array $content): GatewayEntity
     {
-        $content = $this->getEmandateDecryptedData($content[ResponseFields::DATA]);
+        $content = $this->getEmandateDecryptedData($content[ResponseFields::DATA], $input);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -267,7 +267,7 @@ trait EmandateTrait
 
         $response = $this->sendGatewayRequest($request);
 
-        $verify->verifyResponseContent = $this->getEmandateDecryptedData($response->body);
+        $verify->verifyResponseContent = $this->getEmandateDecryptedData($response->body, $verify->input);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -290,11 +290,24 @@ trait EmandateTrait
         );
     }
 
-    public function getEmandateDecryptedData(string $input): array
+    public function getEmandateDecryptedData(string $body, array $input): array
     {
-        $decrypted = $this->getEncryptor()->decryptString(base64_decode($input));
+        $decrypted = $this->getEncryptor()->decryptString(base64_decode($body));
 
         parse_str($decrypted, $output);
+
+        if (empty($output) === true)
+        {
+            throw new GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+                null,
+                null,
+                [
+                    'encrypted_string' => $body,
+                    'payment_id'       => $input['payment'][Payment\Entity::ID]
+                ]
+            );
+        }
 
         return $output;
     }
@@ -309,7 +322,7 @@ trait EmandateTrait
     protected function getEmandateEntityAttributes(array $input): array
     {
         return [
-            RequestFields::AMOUNT          => $input['payment']['amount'] / 100,
+            RequestFields::AMOUNT          => $this->formatAmount($input['payment']['amount']),
             RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId()
         ];

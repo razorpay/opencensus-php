@@ -22,7 +22,7 @@ trait EmandateTrait
 
         $this->validateActionInput($input, 'emandaterequest');
 
-        $data = $this->getGatewayInstance()->getEmandateDecryptedData($input[RequestFields::DATA]);
+        $data = $this->getGatewayInstance()->getEmandateDecryptedData($input[RequestFields::DATA], []);
 
         $this->validateActionInput($data, 'emandateauth');
 
@@ -74,7 +74,7 @@ trait EmandateTrait
     {
         $this->validateActionInput($input, 'emandaterequest');
 
-        $data = $this->getGatewayInstance()->getEmandateDecryptedData($input[RequestFields::DATA]);
+        $data = $this->getGatewayInstance()->getEmandateDecryptedData($input[RequestFields::DATA], []);
 
         $response = $this->createEmandateVerifyResponse($data);
 
