@@ -42,6 +42,16 @@ class Gateway extends Base\Gateway
         Action::REVERSE   => TraceCode::GATEWAY_REVERSE_RESPONSE,
     ];
 
+    const OLD_STORE_IDS = [
+        // EMI terminals
+        '3374679283',
+        '3374679291',
+        '3374679309',
+        '3374679333',
+        // Shared FirstData terminal, disabled now
+        '3396093976',
+    ];
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -1392,6 +1402,7 @@ class Gateway extends Base\Gateway
                 'Gateway Merchant ID2 has different meaning for old store ids.',
                 null,
                 [
+                    'payment_id'           => $this->input['payment']['id'],
                     'gateway_merchant_id'  => $this->getStoreId,
                     'gateway_merchant_id2' => $hostedDataStoreId,
                 ]);
@@ -1417,16 +1428,16 @@ class Gateway extends Base\Gateway
         $username = $this->config['live_user_id'];
         $password = $this->config['live_password'];
 
-        if ($this->mode === Mode::TEST)
-        {
-            $username = $this->config['test_user_id'];
-            $password = $this->config['test_password'];
-        }
-
         if ($this->isOldStoreId() === true)
         {
             $username = $this->getUsernameForOldStoreId();
             $password = $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE];
+        }
+
+        if ($this->mode === Mode::TEST)
+        {
+            $username = $this->config['test_user_id'];
+            $password = $this->config['test_password'];
         }
 
         return [$username, $password];
@@ -1439,7 +1450,7 @@ class Gateway extends Base\Gateway
      */
     protected function getUsernameForOldStoreId()
     {
-        $gatewayMerchantId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+        $gatewayMerchantId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
 
         $username = 'WS'.$gatewayMerchantId.'._.1';
 
@@ -1531,19 +1542,9 @@ class Gateway extends Base\Gateway
      */
     protected function isOldStoreId()
     {
-        $gatewayMerchantId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+        $gatewayMerchantId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
 
-        $oldTerminalGatewayMerchantIds = [
-            // EMI terminals
-            '3374679283',
-            '3374679291',
-            '3374679309',
-            '3374679333',
-            // Shared FirstData terminal, disabled now
-            '3396093976',
-        ];
-
-        return (in_array($gatewayMerchantId, $oldTerminalGatewayMerchantIds) === true);
+        return (in_array($gatewayMerchantId, self::OLD_STORE_IDS, true) === true);
     }
 
     protected function getAuthCodeFromCallback($callbackBody)

@@ -14,9 +14,4 @@ class Gateway extends FirstData\Gateway
     {
         return $this->authorizeMock($input);
     }
-
-    protected function isOldStoreId()
-    {
-        $parent = parent::isOldStoreId();
-    }
 }
