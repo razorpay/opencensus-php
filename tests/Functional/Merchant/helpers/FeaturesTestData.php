@@ -538,6 +538,13 @@ return [
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
+        ],
+        'response' => [
+            'content' => [
+                'marketplace_activation_status' => 'rejected',
+                'virtual_accounts_activation_status' => null,
+                'subscriptions_activation_status' => null
+            ]
         ]
     ],
 

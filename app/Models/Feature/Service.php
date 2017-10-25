@@ -294,23 +294,24 @@ class Service extends Base\Service
      * @param string $featureName
      * @param array  $input
      *
-     * @return bool
+     * @return array
      */
-    public function updateFeatureActivationStatus(string $featureName, array $input): bool
+    public function updateFeatureActivationStatus(string $featureName, array $input): array
     {
         $status = $input['status'];
 
         $merchantId = $input['merchant_id'];
 
-        $status = (new Core)->updateFeatureActivationStatus($merchantId, $featureName, $status);
+        $response = (new Core)->updateFeatureActivationStatus($merchantId, $featureName, $status);
 
-        return $status;
+        return $response;
     }
 
     /**
      * @param string $featureName
      * @param array  $input
      *
+     * @return array
      */
     public function getFeatureActivationStatus(string $featureName, array $input)
     {

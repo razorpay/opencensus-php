@@ -83,7 +83,7 @@ class Repository extends Base\Repository
     public function updateFeatureActivationStatus(
         Merchant\Entity $merchant,
         string $featureName,
-        string $status): bool
+        string $status)
     {
         $merchantDetail = $merchant->merchantDetail;
 
@@ -91,14 +91,7 @@ class Repository extends Base\Repository
 
         $merchantDetail->$setFeatureActivationStatus($status);
 
-        $status = $this->saveOrFailTestAndLive($merchantDetail);
-
-        if ($status === null)
-        {
-            return true;
-        }
-
-        return false;
+        $this->saveOrFailTestAndLive($merchantDetail);
     }
 
     public function getFeatureActivationStatus(

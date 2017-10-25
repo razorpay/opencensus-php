@@ -224,10 +224,12 @@ class Core extends Base\Core
             // Set the product activation status as pending
             if ($action === Constants::CREATE)
             {
-                $saved = $this->updateFeatureActivationStatus(
+                $this->updateFeatureActivationStatus(
                     $merchantId,
                     $featureName,
                     Merchant\Detail\Entity::PENDING);
+
+                $saved = true;
             }
 
             $this->notifyFeatureOnboardingFormSubmitOnSlack($merchant, $featureName);
@@ -264,13 +266,13 @@ class Core extends Base\Core
      * @param string $featureName
      * @param string $status
      *
-     * @return bool
+     * @return array
      * @throws Exception\BadRequestException
      */
     public function updateFeatureActivationStatus(
         string $merchantId,
         string $featureName,
-        string $status): bool
+        string $status): array
     {
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
 
@@ -291,13 +293,21 @@ class Core extends Base\Core
                 [$featureName, $status]);
         }
 
-        $status =  $this->repo->merchant_detail->updateFeatureActivationStatus(
+        $this->repo->merchant_detail->updateFeatureActivationStatus(
             $merchant,
             $featureName,
             $status
         );
 
-        return $status;
+        $merchantDetail = $merchant->merchantDetail;
+
+        $response = [
+            MerchantDetail::MARKETPLACE_ACTIVATION_STATUS       => $merchantDetail->getMarketplaceActivationStatus(),
+            MerchantDetail::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS  => $merchantDetail->getVirtualAccountsActivationStatus(),
+            MerchantDetail::SUBSCRIPTIONS_ACTIVATION_STATUS     => $merchantDetail->getSubscriptionsActivationStatus(),
+        ];
+
+        return $response;
     }
 
     /**

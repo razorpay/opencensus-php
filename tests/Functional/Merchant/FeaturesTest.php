@@ -693,7 +693,7 @@ class FeaturesTest extends TestCase
         $this->assertTrue($response);
     }
 
-    public function verifyMarketplaceOnboardingResponseStatus(string $status)
+    protected function verifyMarketplaceOnboardingResponseStatus(string $status)
     {
         $testData = $this->testData[__FUNCTION__];
 
@@ -704,7 +704,7 @@ class FeaturesTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function updateMarketplaceOnboardingResponseStatus(string $merchantId, string $status)
+    protected function updateMarketplaceOnboardingResponseStatus(string $merchantId, string $status)
     {
         $testData = $this->testData[__FUNCTION__];
 
@@ -712,11 +712,9 @@ class FeaturesTest extends TestCase
 
         $testData['request']['content']['status'] = $status;
 
-        $request = $testData['request'];
+        $testData['response']['content']['marketplace_activation_status'] = $status;
 
-        $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertTrue($response);
+        $this->startTest($testData);
     }
 
     /**
