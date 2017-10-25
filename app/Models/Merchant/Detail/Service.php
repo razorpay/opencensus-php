@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Merchant;
@@ -361,8 +362,7 @@ class Service extends Base\Service
     private function getZapierData($merchant, $input)
     {
         // This is the same format we'll set in the google spreadsheet
-        $timestamp = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")
-            ->format('j/m/Y');
+        $timestamp = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('j/m/Y');
 
         $userName = $input['contact_name'] ?? '';
 

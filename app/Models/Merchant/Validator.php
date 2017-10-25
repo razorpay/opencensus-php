@@ -178,12 +178,7 @@ class Validator extends Base\Validator
      */
     protected function validateSubMerchantOwner(array $input)
     {
-        $currentMerchantUser = (new User\Repository)->findOrFailPublic($input['user_id']);
-
-        $ownerMerchant = $currentMerchantUser->merchants
-            ->where('role', 'owner')
-            ->where('id', $input['merchant_id'])
-            ->first();
+        $ownerMerchant = (new User\Repository)->findMerchantByUserAsOwner($input['user_id'], $input['merchant_id']);
 
         if (empty($ownerMerchant) === true)
         {

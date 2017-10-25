@@ -65,6 +65,8 @@ class Validator extends Base\Validator
      * Google captcha validation.
      *
      * @param array $input
+     *
+     * @throws Exception\BadRequestException
      */
     protected function validateCaptcha(array $input)
     {
