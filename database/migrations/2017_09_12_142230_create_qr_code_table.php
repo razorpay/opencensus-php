@@ -56,7 +56,7 @@ class CreateQrCodeTable extends Migration
 
         });
 
-        switch(DB::connection()->getDriverNam)
+        switch(DB::connection()->getDriverName())
         {
             case 'mysql':
                 DB::statement('ALTER TABLE qr_code ADD COLUMN identifier_padding INT(10) AUTO_INCREMENT UNIQUE FIRST');
