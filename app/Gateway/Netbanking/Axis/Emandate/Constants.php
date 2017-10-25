@@ -5,12 +5,26 @@ namespace RZP\Gateway\Netbanking\Axis\Emandate;
 class Constants
 {
     const VERSION         = '1.0';
-    const PMD             = 'AIB';
 
     /**
-     * This value was set to TEST in the documentation
+     * "PMD" represents payment mode. Can contain "AIB" or "CD"
+     * AIB = Axis Internet Banking
+     * CD  = Credit / Debit Cards
      */
+    const PMD             = 'AIB';
+
+    // This value was set to TEST in the documentation
     const TYPE            = 'TEST';
+
+    /**
+     * From the document:
+     *
+     * Bank system will consider modification/Data entry is there at bank end.
+     * After clicking on submit from corporate site to bank site it will take
+     * to intermediate page where all details received from corporate site in
+     * request ( In PPI field) will display for modification/Data entry and
+     * user will submit request to payment gateway page.
+     */
     const NO_MODIFICATION = 'MN';
 
     /**
