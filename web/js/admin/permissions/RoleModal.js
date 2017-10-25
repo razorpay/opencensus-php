@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import SimpleTable from 'ui/SimpleTable';
+import Table from 'ui/Table';
 import { adminFetch } from 'util/fetch';
 import { openModal } from 'common/modal';
 import Collection from 'model/collection';
@@ -30,7 +30,7 @@ export default class RoleModal extends Component {
     return (
       <div>
         <header>Roles</header>
-        <SimpleTable items={this.state.items} fields={fields} />
+        <Table items={this.state.items} fields={fields} />
       </div>
     );
   }

@@ -1,67 +1,52 @@
 import React, { Component } from 'react';
-import axios from 'axios';
+import { observer } from 'mobx-react';
 import { openSlider, openModal } from 'common/modal';
-import { adminFetch } from 'util/fetch';
 import PermForm from './PermissionForm';
+import Model from './model';
 
+@observer
 class EditPerm extends Component {
   constructor() {
     super();
-    this.state = {
-      perms: null,
-      roles: null,
-      orgs: null,
-    };
+    this.model = new Model();
   }
 
   componentWillMount() {
-    let self = this;
-    if (this.props.model) {
-      axios
-        .all([
-          _fetchPermFn('permission_get', this.props.model.id),
-          _fetchPermFn('permission_get_roles', this.props.model.id),
-          _fetchPermFn('org_get_multiple'),
-        ])
-        .then(
-          axios.spread(function(perms, roles, orgs) {
-            self.setState({
-              perms,
-              roles,
-              orgs,
-            });
-          })
-        );
+    let { id } = this.props.model;
+    if (id) {
+      this.model.fetchAll(id);
     }
   }
 
   handleSelectAll = e => {
-    console.log(e.target.value);
+    console.log(e.target.checked);
+    this.model.selectAllOrg(e.target.checked);
   };
 
-  handleSelect = e => {
-    console.log(e.target.value);
+  handleSelect = (e, id) => {
+    console.log(e.target.checked);
+    this.model.selectOrg(e.target.checked, id);
   };
 
   render() {
-    return <PermForm {...this.props.model} {...this.state} />;
+    return (
+      <PermForm
+        {...this.props.model}
+        {...this.model}
+        onSelectAll={this.handleSelectAll}
+        onSelect={this.handleSelect}
+      />
+    );
   }
 }
 
 export function showEntity(collection) {
-  openSlider(
-    <EditPerm
-      collection={collection}
-      model={this}
-      onSelectAll={this.handleSelectAll}
-      onSelect={this.handleSelect}
-    />
-  );
+  openSlider(<EditPerm collection={collection} model={this} />);
 }
 
-function _fetchPermFn(route, id) {
-  return adminFetch({
-    route_name: route,
-    ...(id ? { url_params: { id: id } } : null),
-  });
-}
+// function _fetchPermFn(route, id) {
+//   return adminFetch({
+//     route_name: route,
+//     ...(id ? { url_params: { id: id } } : null),
+//   });
+// }
