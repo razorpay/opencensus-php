@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Field, { SelectField, CheckField } from 'ui/Field';
 import { openModal } from 'common/modal';
-import SimpleTable from 'ui/SimpleTable';
 import { adminFetch, adminPost } from 'util/fetch';
 
 class EditUser extends Component {

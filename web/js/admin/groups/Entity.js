@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Field, { SelectField, SelectMethod } from 'ui/Field';
 import { openSlider } from 'common/modal';
-import SimpleTable from 'ui/SimpleTable';
+import Table from 'ui/Table';
 import { adminPost } from 'util/fetch';
 
 class EditGroup extends Component {
@@ -87,13 +87,13 @@ class EditGroup extends Component {
           </SelectField>
           <button>Save</button>
           <label>Parents</label>
-          <SimpleTable
+          <Table
             fields={fields.concat([this.deleteParentField])}
             items={parents}
             bordered={true}
           />
           <label>Subgroups</label>
-          <SimpleTable fields={fields} items={parents} bordered={true} />
+          <Table fields={fields} items={parents} bordered={true} />
         </Form>
       </div>
     );

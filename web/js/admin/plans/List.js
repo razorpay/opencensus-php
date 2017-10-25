@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
-import Table from 'ui/Table';
+import { PageTable } from 'ui/Table';
 import Field from 'ui/Field';
 import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
@@ -30,7 +30,7 @@ export default class PlanList extends Component {
             <Field name="q" label="Search" />
           </Form>
         </div>
-        <Table
+        <PageTable
           model={this.collection}
           fields={pricingFields}
           onClick={openPricingEntity}
