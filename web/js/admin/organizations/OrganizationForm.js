@@ -18,6 +18,7 @@ export default function OrgForm({
   allow_sign_up,
   onSubmit,
   onEditPerms,
+  onSave,
 }) {
   return (
     <div>
@@ -68,9 +69,28 @@ export default function OrgForm({
           defaultValue={signature_email}
         />
         <br />
-        <FileField label="Login Logo" name="login_logo_url" />
-        <FileField label="Invoice Logo" name="invoice_logo_url" />
-        <FileField label="Main Logo" name="main_logo_url" />
+        {id ? (
+          <div>
+            <FileField
+              label="Login Logo"
+              name="login_logo_url"
+              accept="image/jpeg,image/jpg,image/png"
+            />
+            <FileField
+              label="Invoice Logo"
+              name="invoice_logo_url"
+              accept="image/jpeg,image/jpg,image/png"
+            />
+            <FileField
+              label="Main Logo"
+              name="main_logo_url"
+              accept="image/jpeg,image/jpg,image/png"
+            />
+          </div>
+        ) : (
+          ''
+        )}
+
         <br />
         <div class="link" onClick={onEditPerms}>
           Edit Permissions
@@ -82,7 +102,9 @@ export default function OrgForm({
           name="allow_sign_up"
         />
         <br />
-        <button type="submit">Save</button>
+        <button type="submit" onClick={onSave}>
+          Save
+        </button>
       </Form>
     </div>
   );

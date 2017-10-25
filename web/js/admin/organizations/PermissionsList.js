@@ -1,49 +1,145 @@
 import React, { Component } from 'react';
-import { observer } from 'mobx-react';
 import axios from 'axios';
-
 import Table from 'ui/Table';
 import { CheckField } from 'ui/Field';
-
 import { adminFetch } from 'util/fetch';
 
-import Model from './model';
-
-const permsFields = [
-  ['', item => <CheckField defaultChecked={item.assignable} />],
-  ['Permission', item => item.name],
-  ['Category', item => item.merchant_detail],
-  ['Workflow Enable', item => <CheckField defaultChecked={item.assignable} />],
-  ['Assignable', item => (item.assignable ? 'Yes' : 'No')],
-];
-
-@observer
 class PermissionsList extends Component {
-  constructor() {
-    super();
-    this.model = new Model();
-  }
+  state = {
+    selectedPerms: null,
+    workflowPerms: null,
+    isSelectAllChecked: false,
+  };
 
   componentWillMount() {
-    let { fetchAllPerms, fetchAssignablePerms, fetchOrg } = this.model;
+    let selectedPerms = {},
+      workflowPerms = {};
 
-    //fetch all permissions
-    fetchAllPerms();
+    let {
+      orgPerms,
+      allPerms,
+      assignablePerms,
+      orgWorkflowPerms,
+      isAdd,
+    } = this.props;
 
-    //fetch permissions based on Add or Edit Org
-    if (this.props.orgId) {
-      fetchOrg(this.props.orgId);
+    if (!isAdd) {
+      assignablePerms.forEach(aPerm => {
+        selectedPerms[aPerm.id] = true;
+      });
     } else {
-      fetchAssignablePerms();
+      orgPerms.forEach(oPerm => {
+        selectedPerms[oPerm.id] = true;
+      });
+      orgWorkflowPerms.forEach(wPerm => {
+        workflowPerms[wPerm.id] = true;
+      });
     }
+
+    this.setState({ selectedPerms, workflowPerms });
   }
 
+  selectAllPermission = () => {
+    let { allPerms } = this.props;
+    let isSelectAllChecked = !this.state.isSelectAllChecked,
+      selectedPerms = {},
+      workflowPerms = this.state.workflowPerms;
+
+    if (!isSelectAllChecked) {
+      workflowPerms = {};
+    } else {
+      allPerms.forEach(aPerm => {
+        selectedPerms[aPerm.id] = true;
+      });
+    }
+
+    this.setState({
+      isSelectAllChecked,
+      selectedPerms,
+      workflowPerms,
+    });
+  };
+
+  selectPermission = id => {
+    let { selectedPerms, workflowPerms } = this.state;
+
+    if (workflowPerms[id]) {
+      delete workflowPerms[id];
+    }
+
+    if (selectedPerms[id]) {
+      delete selectedPerms[id];
+    } else {
+      selectedPerms[id] = true;
+    }
+
+    this.setState({
+      ...this.state,
+      selectedPerms,
+      workflowPerms,
+    });
+  };
+
+  selectWorkflowPermission = id => {
+    let { workflowPerms } = this.state;
+
+    if (workflowPerms[id]) {
+      delete workflowPerms[id];
+    } else {
+      workflowPerms[id] = true;
+    }
+
+    this.setState({
+      ...this.state,
+      workflowPerms,
+    });
+  };
+
+  permFields = () => {
+    let { selectedPerms, workflowPerms, isSelectAllChecked } = this.state;
+    return [
+      [
+        <input
+          type="checkbox"
+          onChange={this.selectAllPermission}
+          checked={isSelectAllChecked}
+        />,
+        item => (
+          <input
+            class="some"
+            type="checkbox"
+            checked={!!selectedPerms[item.id]}
+            onChange={() => {
+              this.selectPermission(item.id);
+            }}
+          />
+        ),
+      ],
+      ['Permission', item => item.name],
+      ['Category', item => item.category],
+      ['Description', item => item.description],
+      [
+        'Workflow Enable',
+        item => (
+          <input
+            type="checkbox"
+            disabled={!selectedPerms[item.id]}
+            checked={!!workflowPerms[item.id]}
+            onChange={() => {
+              this.selectWorkflowPermission(item.id);
+            }}
+          />
+        ),
+      ],
+      ['Assignable', item => (item.assignable ? 'Yes' : 'No')],
+    ];
+  };
+
   render() {
-    const org = this.model.org;
     return (
       <div>
         <header>Permissions</header>
-        <Table items={org.permissions} fields={permsFields} />
+        <Table items={this.props.allPerms} fields={this.permFields()} />
       </div>
     );
   }
