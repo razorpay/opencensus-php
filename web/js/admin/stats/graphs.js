@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import Chart from 'chart.js';
+import { chartColors } from 'common/chart';
 
 export class Single extends Component {
   render() {
@@ -13,113 +15,115 @@ export class Single extends Component {
   }
 }
 
-export class Chart extends Component {
+/**
+ * Options to apply to all Line Charts
+ */
+const lineChartDefaultOptions = {
+  lineTension: 0,
+  pointRadius: 0,
+  fill: false,
+};
+
+/**
+ * ChartView class
+ * @prop {String} title - Title of the chart
+ * @prop {Object} data - Data for the charting library
+ * @prop {Object} options - Options for the charting library
+ * @prop {String} type - Type of the chart (bar, line, pie, etc.)
+ */
+export class ChartView extends Component {
   render() {
-    let { title, data, options, type, legends } = this.props;
+    let { title, data, options, type } = this.props;
+
+    if (type === 'line') {
+      // If the type of chart is a line, the colors need to be strings
+      data.datasets = data.datasets.map((dset, i) => {
+        if (!dset.backgroundColor) {
+          dset.backgroundColor = chartColors[i % chartColors.length];
+        }
+        if (!dset.borderColor) {
+          dset.borderColor = chartColors[i % chartColors.length];
+        }
+
+        // Merge data, colors, and defult line-chart options
+        return {
+          ...dset,
+          ...lineChartDefaultOptions,
+        };
+      });
+    } else {
+      // If the type of chart is not a line, the colors can be lists
+      data.datasets.forEach(function(dset) {
+        if (!dset.backgroundColor) {
+          dset.backgroundColor = chartColors;
+        }
+        if (!dset.borderColor) {
+          dset.borderColor = chartColors;
+        }
+      });
+    }
+
     return (
       <div>
-        <header>
-          {title}
-          <Legends legends={legends} />
-        </header>
-
-        <div ref={el => el && data && makeChart(el, data, options, type)} />
+        <header>{title}</header>
+        <canvas ref={el => el && data && makeChart(el, data, options, type)} />
       </div>
     );
   }
 }
 
-class Legends extends Component {
-  render() {
-    let { legends } = this.props;
-    if (!legends || legends.length === 0) return null;
-
-    const legendsToShow = legends.map((legend, i) => {
-      console.log('legendMapI', i);
-      return (
-        <div
-          className={`ct-legend ct-series-${String.fromCharCode(97 + i)}`}
-          key={`legend_${i}`}
-        >
-          <div className="ct-background" />
-          {legend.toUpperCase()}
-        </div>
-      );
-    });
-
-    return <div className="ct-legend-container">{legendsToShow}</div>;
-  }
-}
-
+/**
+ * Method to create a Chart
+ * @param {DOMElement} el - Container element for the chart
+ * @param {Object} data - Data for the chart
+ * @param {Object} options - Options to be passed to the charting library
+ * @param {String} type - Type of char (bar, line, pie, etc.)
+ */
 function makeChart(el, data, options, type) {
-  switch (type) {
-    case 'bar':
-      return new Chartist.Bar(el, data, options);
-    case 'line':
-      return new Chartist.Line(el, data, options);
-    default:
-      return null;
-  }
+  return new Chart(el, {
+    type,
+    data,
+    options,
+  });
 }
 
-export function priceLabelInterpolationFnc(extra = {}) {
-  return function(value, index, labels) {
-    let label = labels[index];
-
-    if (label > 100000000) {
-      label = Math.round(label / 10000000).toString() + ' cr';
-    } else if (label > 1000000) {
-      label = Math.round(label / 100000).toString() + ' L';
-    } else if (label > 10000) {
-      label = Math.round(label / 1000).toString() + ' K';
-    }
-
-    if (extra.column === 'base_amount') {
-      label = '₹' + label;
-    } else if (extra.agg_type === 'success_rate') {
-      label = '%' + label;
-    }
-    return label;
+/**
+ * Method to get a function that returns a tooltip label by appending the suffix onto `yLabel`
+ * @param {String} suffix
+ * @return {Function}
+ */
+export function tooltipYLabelSuffix(suffix = '') {
+  return function(tooltipItems, data) {
+    const { datasetIndex, yLabel } = tooltipItems,
+      xLabel = data.datasets[datasetIndex].label;
+    return xLabel + ': ' + yLabel + suffix;
   };
 }
 
-export function dateLabelInterpolationFnc(extra = {}) {
-  const { maxLabels } = extra;
-  return function(value, index, labels) {
-    const labelInterpolationMod = maxLabels
-      ? Math.ceil(labels.length / maxLabels)
-      : 1;
-    if (index % labelInterpolationMod === 0)
-      return new Date(value * 1000).toDateString();
-    return null;
+/**
+ * Method to get a function that returns the tooltip label by prepending the prefix onto `yLabel`
+ * @param {String} prefix
+ * @return {Function}
+ */
+export function tooltipYLabelPrefix(prefix = '') {
+  return function(tooltipItems, data) {
+    const { datasetIndex, yLabel } = tooltipItems,
+      xLabel = data.datasets[datasetIndex].label;
+    return xLabel + ': ' + prefix + yLabel;
   };
 }
 
-export function getPriceChartOptions(type, extra) {
-  switch (type) {
-    case 'bar':
-      return {
-        axisX: {
-          labelInterpolationFnc: function(value, index, label) {
-            return label[index].charAt(0).toUpperCase() + label[index].slice(1);
-          },
-        },
-        axisY: {
-          labelInterpolationFnc: priceLabelInterpolationFnc(extra),
-        },
-      };
-    case 'line':
-      return {
-        showPoint: false,
-        lineSmooth: false,
-        axisX: {
-          labelInterpolationFnc: dateLabelInterpolationFnc(extra),
-        },
-        axisY: {
-          labelInterpolationFnc: priceLabelInterpolationFnc(extra),
-        },
-      };
-    default:
-      return {};
-  }
+/**
+ * Method that returns the options to be used with the chart
+ * @param {String} type - Type of chart
+ * @param {Object} extra - Extra parameters, used to override the default ones
+ * @return {Object}
+ */
+export function getPriceChartOptions(type, extra = {}) {
+  return {
+    legend: {
+      display: true,
+    },
+    ...extra,
+  };
 }
