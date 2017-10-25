@@ -14,6 +14,7 @@ function defaultIndexFn(item, index, array) {
 }
 
 export default function Table({
+  pending,
   fields,
   items,
   onClick,
@@ -26,40 +27,44 @@ export default function Table({
     tableClass += ' table-bordered';
   }
 
+  if (pending) {
+    return <div class="table-pending" />;
+  }
+
+  if (!items || !items.length) {
+    return <div class="table-empty" />;
+  }
+
   return (
     <div class="table-container">
-      {items && items.length ? (
-        <TransitionGroup class={tableClass}>
-          <CSSTransition timeout={0}>
-            <div class="tr thead">
-              {fields.map((field, index) => (
-                <div class="th" key={index}>
-                  {field[0]}
-                </div>
-              ))}
-            </div>
-          </CSSTransition>
-          {items.map((item, index) => {
-            return (
-              <CSSTransition
-                key={indexFn(item, index, items)}
-                classNames="row"
-                timeout={animObj}
-              >
-                <div class={trClass} onClick={onClick && item::onClick}>
-                  {fields.map((field, index) => (
-                    <div class="td" key={index}>
-                      {field[1](item)}
-                    </div>
-                  ))}
-                </div>
-              </CSSTransition>
-            );
-          })}
-        </TransitionGroup>
-      ) : (
-        <div class="table-empty" />
-      )}
+      <TransitionGroup class={tableClass}>
+        <CSSTransition timeout={0}>
+          <div class="tr thead">
+            {fields.map((field, index) => (
+              <div class="th" key={index}>
+                {field[0]}
+              </div>
+            ))}
+          </div>
+        </CSSTransition>
+        {items.map((item, index) => {
+          return (
+            <CSSTransition
+              key={indexFn(item, index, items)}
+              classNames="row"
+              timeout={animObj}
+            >
+              <div class={trClass} onClick={onClick && item::onClick}>
+                {fields.map((field, index) => (
+                  <div class="td" key={index}>
+                    {field[1](item)}
+                  </div>
+                ))}
+              </div>
+            </CSSTransition>
+          );
+        })}
+      </TransitionGroup>
     </div>
   );
 }
@@ -74,24 +79,20 @@ export class PageTable extends Component {
 
     pending = pending.fetch;
 
-    return (
-      <div>
-        {(pending && <div class="table-pending" />) ||
-          ((items &&
-            items.length && (
-              <div class="box">
-                <Pagination model={model} />
-                {info && (
-                  <div class="table-info">
-                    Results {filters.skip + 1} &ndash;{' '}
-                    {filters.skip + items.length}
-                  </div>
-                )}
-                <Table fields={fields} onClick={onClick} items={items} />
-              </div>
-            )) || <div class="table-empty" />)}
-      </div>
-    );
+    if (items && items.length) {
+      return (
+        <div class="box">
+          <Pagination model={model} />
+          {info && (
+            <div class="table-info">
+              Results {filters.skip + 1} &ndash; {filters.skip + items.length}
+            </div>
+          )}
+          <Table fields={fields} onClick={onClick} items={items} />
+        </div>
+      );
+    }
+    return <Table pending={pending} />;
   }
 }
 
