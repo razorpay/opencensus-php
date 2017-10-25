@@ -20,10 +20,10 @@ class ModalStore {
         <header>Confirm</header>
         <div key="message">{message}</div>
         <div key="action-buttons">
-          <button onClick={onAction} key="btn-confirm">
+          <button onClick={onAction} class="btn">
             {confirmLabel}
           </button>
-          <button onClick={this.closeModal} key="btn-reject">
+          <button onClick={this.closeModal} class="btn-default">
             {rejectLabel}
           </button>
         </div>
