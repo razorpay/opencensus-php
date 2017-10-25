@@ -142,7 +142,7 @@ trait EmandateTrait
         $this->repo->saveOrFail($gatewayEntity);
 
         // We check the status of the payment, and not the SI registration here
-        $this->checkEmandatePaymentResponseStatus($content, $input);
+        $this->checkEmandatePaymentResponseStatus($content);
 
         return $gatewayEntity;
     }
@@ -162,7 +162,7 @@ trait EmandateTrait
         ];
     }
 
-    protected function checkEmandatePaymentResponseStatus(array $content, array $input)
+    protected function checkEmandatePaymentResponseStatus(array $content)
     {
         if (StatusCode::isSuccess($content[ResponseFields::STATUS_CODE]) !== true)
         {
