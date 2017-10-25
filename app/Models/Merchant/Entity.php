@@ -361,6 +361,23 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LINKED_ACCOUNT_KYC);
     }
 
+    public function getReferrer()
+    {
+        $tagNames = $this->tagNames();
+
+        foreach ($tagNames as $tagName)
+        {
+            $tagName = strtolower($tagName);
+
+            if (substr($tagName, 0, 4) === 'Ref-')
+            {
+                return substr($tagName, 4);
+            }
+        }
+
+        return null;
+    }
+
     public function isEducationCategory()
     {
         $eduCategories = array(

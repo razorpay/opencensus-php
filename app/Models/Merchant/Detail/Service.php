@@ -275,23 +275,6 @@ class Service extends Base\Service
         }
     }
 
-    private function getMerchantReferrer()
-    {
-        $tagNames = $this->merchant->tagNames();
-
-        foreach ($tagNames as $tagName)
-        {
-            $tagName = strtolower($tagName);
-
-            if (substr($tagName, 0, 4) === 'ref-')
-            {
-                return substr($tagName, 4);
-            }
-        }
-
-        return null;
-    }
-
     /**
      * Will get pre signup details from merchant details.
      *
@@ -300,7 +283,7 @@ class Service extends Base\Service
     public function getPreSignupDetails()
     {
         // Referrer merchant doesn't need to complete presignup details.
-        $referrerMerchant = $this->getMerchantReferrer();
+        $referrerMerchant = $this->merchant->getReferrer();
 
         $presignupDetails = [];
 
