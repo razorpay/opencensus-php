@@ -1,3 +1,18 @@
+const MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
 export const getFormattedAmount = amount =>
   (amount / 100)
     .toFixed(2)
@@ -16,6 +31,7 @@ export const prevent = e => {
   e.preventDefault();
   e.stopPropagation();
 };
+
 export const titleCase = (str = '') => {
   const chars = str.split('');
 
@@ -27,4 +43,18 @@ export const snakeToTitleCase = (str = '') => {
     .split('_')
     .map(titleCase)
     .join(' ');
+};
+
+export const formatDate = unixTimestamp => {
+  var date = new Date(1e3 * unixTimestamp);
+
+  var dateSuffix = 'th';
+  var dateOfMonth = date.getDate();
+  dateSuffix =
+    [0, 'st', 'nd', 'rd'][dateOfMonth === 31 ? 1 : dateOfMonth % 20] ||
+    dateSuffix;
+
+  return `${date.getDate()}${dateSuffix} ${MONTHS[
+    date.getMonth()
+  ]}, ${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
 };

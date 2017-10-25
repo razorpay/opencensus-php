@@ -12,6 +12,7 @@ import GatewayRulesList from 'admin/gatewayrules/List';
 import ActionsList from 'admin/adminActions/ActionsList';
 import EmailLogsList from 'admin/emailLogs/EmailLogsList';
 import Entities from 'admin/entities/container';
+import Profile from 'admin/profile';
 
 import MerchantEntity from 'admin/merchants/entity/MerchantEntity';
 
@@ -37,10 +38,10 @@ export default class App extends Component {
             <Route path="/actions" component={ActionsList} />
             <Route path="/email-logs" component={EmailLogsList} />
             <Route path="/workflows" component={WorkflowList} />
-
             <Route path="/groups" component={GroupList} />
             <Route path="/users" component={UserList} />
             <Route path="/roles" component={RoleList} />
+            <Route path="/profile" component={Profile} />
             <Redirect to="/stats" />
           </Switch>
         </main>
