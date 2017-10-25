@@ -185,7 +185,7 @@ trait EmandateTrait
 
             $errorDescription = StatusCode::getErrorDescriptionMap($statusCode);
 
-            throw new GatewayErrorException($errorCode, $statusCode, $errorDescription);
+            throw new GatewayErrorException($errorCode, $statusCode, $errorDescription, $content);
         }
     }
 
