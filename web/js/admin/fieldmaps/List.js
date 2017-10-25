@@ -49,6 +49,8 @@ export default class FieldMaps extends Component {
 
   showEntity = showEntity.bind(null, this.collection);
 
+  removeEntity = removeEntity.bind(this, this.collection);
+
   render() {
     //Bind org_id for adding new items
     let newCollection = {

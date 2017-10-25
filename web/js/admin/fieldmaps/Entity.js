@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 
 import { openSlider } from 'common/modal';
-import { notifyError, notifySuccess, closeModal } from 'common/modal';
+import { notifySuccess, closeSlider } from 'common/modal';
 
-import { adminPost, adminPut } from 'util/fetch';
+import { adminPost, adminPut, adminDelete } from 'util/fetch';
 
 import FieldMapForm from './FieldMapForm';
 
@@ -24,9 +24,7 @@ export default class EditFieldMaps extends Component {
       body: data,
       route_name: route_name,
       url_params: url_params,
-    })
-      .then(_successNotify)
-      .catch(_failureNotify);
+    }).then(_successNotify);
   };
 
   render() {
@@ -35,23 +33,23 @@ export default class EditFieldMaps extends Component {
 }
 
 const _successNotify = response => {
-  if (response.data.success) {
-    notifySuccess(
-      'Field Map added successfully. Response: ' +
-        JSON.stringify(response.data.data)
-    );
-    closeModal();
-  } else {
-    response.data.errors.map(error => notifyError(error));
-  }
+  notifySuccess(
+    'Field Map added successfully. Response: ' + JSON.stringify(response)
+  );
+  closeSlider();
 };
 
-const _failureNotify = err => {
-  notifyError(JSON.stringify('Failed to add Field Maps.'));
-};
-
-export function removeEntity() {
-  this.collection.items.remove(this);
+export function removeEntity(collection) {
+  adminDelete({
+    route_name: 'org_fieldmap_delete',
+    url_params: {
+      orgId: this.org_id,
+      id: this.id,
+    },
+  }).then(response => {
+    notifySuccess('Field Map deleted.' + JSON.stringify(response));
+    this.collection.items.remove(this);
+  });
 }
 
 export function showEntity(collection, item) {
