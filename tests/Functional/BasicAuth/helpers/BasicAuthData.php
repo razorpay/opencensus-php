@@ -361,4 +361,27 @@ return [
         ],
     ],
 
+    'testFetchApisWithAuthType' => [
+        'private' => [
+            'request' => [
+                'url'     => '/',
+                'method'  => 'GET',
+                'content' => []
+            ],
+            'response' => [
+                'content' => []
+            ]
+        ],
+        'privilege' => [
+            'request' => [
+                'url'     => '/admin/',
+                'method'  => 'GET',
+                'content' => []
+            ],
+            'response' => [
+                'content' => []
+            ]
+        ],
+    ]
+
 ];

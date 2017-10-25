@@ -83,8 +83,6 @@ class Fetch extends BaseFetch
         Entity::USER_ID,
     ];
 
-    protected $enabled = true;
-
     // ---------------------- Custom validation methods --------------
 
     protected function validateType($attribute, $value)

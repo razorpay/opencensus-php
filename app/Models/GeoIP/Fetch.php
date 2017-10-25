@@ -22,6 +22,4 @@ class Fetch extends BaseFetch
             Entity::COUNTRY,
         ]
     ];
-
-    protected $enabled = true;
 }
