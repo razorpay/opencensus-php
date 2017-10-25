@@ -157,7 +157,11 @@ trait EmandateTrait
 
             // SI registration specific callback attributes
             Netbanking\Entity::SI_TOKEN        => $content[ResponseFields::CUSTOMER_REF_NO],
-            Netbanking\Entity::SI_STATUS       => $content[ResponseFields::STATUS_CODE],
+
+            // If the registration fails, the value in mandate number would be 0,
+            // else, it would be the mandate number. So, we're storing this value in SI_STATUS
+            Netbanking\Entity::SI_STATUS       => $content[ResponseFields::MANDATE_NUMBER],
+
             Netbanking\Entity::SI_MSG          => $content[ResponseFields::REMARKS],
         ];
     }
@@ -191,9 +195,16 @@ trait EmandateTrait
 
     protected function getEmandateAcquirerData(Netbanking\Entity $gatewayPayment): array
     {
-        $recurringStatus = (StatusCode::isEmandateRegistrationSuccess($gatewayPayment[Netbanking\Entity::REFERENCE1])) ?
-                            (Token\RecurringStatus::CONFIRMED) :
-                            (Token\RecurringStatus::REJECTED);
+        $recurringStatus = null;
+
+        if (StatusCode::isEmandateRegistrationSuccess($gatewayPayment[Netbanking\Entity::REFERENCE1]))
+        {
+            $recurringStatus = Token\RecurringStatus::CONFIRMED;
+        }
+        else
+        {
+            $recurringStatus = Token\RecurringStatus::REJECTED;
+        }
 
         $recurringFailureReason = $gatewayPayment->getSIMessage();
 
