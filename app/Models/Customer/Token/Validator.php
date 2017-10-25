@@ -11,6 +11,8 @@ use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
+    const CREATE_DIRECT = 'create_direct';
+
     protected static $createRules = [
         Entity::METHOD          => 'required|in:card,netbanking,wallet',
         Entity::CARD_ID         => 'required_only_if:method,card|alpha_num|size:14',
@@ -25,11 +27,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $createDirectRules = [
-        Entity::METHOD          => 'required|in:card,netbanking,wallet',
-        Entity::CARD            => 'required_only_if:method,card|array',
-        Entity::BANK            => 'required_only_if:method,netbanking|custom',
-        Entity::WALLET          => 'required_only_if:method,wallet|custom',
-        Entity::ACCOUNT_NUMBER  => 'sometimes|alpha_num|between:5,20|nullable',
+        Entity::CARD            => 'required|array',
+        Entity::METHOD          => 'required|in:card'
     ];
 
     protected static $editRules = [

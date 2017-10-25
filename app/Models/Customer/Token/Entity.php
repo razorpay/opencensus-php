@@ -5,6 +5,7 @@ namespace RZP\Models\Customer\Token;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant\Account;
 
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property Card\Entity $card
  * @property Terminal\Entity $terminal
+ * @property Merchant\Entity $merchant
  */
 class Entity extends Base\PublicEntity
 {
@@ -155,17 +157,6 @@ class Entity extends Base\PublicEntity
         self::TOKEN
     ];
 
-    public function build(array $input = [], string $operation = 'create')
-    {
-        $this->getValidator()->validateInput($operation, $input);
-
-        $this->generate($input);
-
-        $this->fill($input);
-
-        return $this;
-    }
-
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
@@ -290,7 +281,6 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::CARD);
     }
-
 
     public function isExpired()
     {

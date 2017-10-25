@@ -13,68 +13,57 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    // TODO: merget create and this method
-    // curently this needs to be in transaction as we are creating new card
-    // entity as well with token creation without payment
-    public function createDirectToken($customer, $input)
+    /**
+     * TODO: merge create and this method
+     * currently this needs to be in transaction as we are creating
+     * new card entity as well with token creation without payment
+     *
+     * @param $customer
+     * @param $input
+     *
+     * @return mixed
+     */
+    public function createDirectToken(Customer\Entity $customer, array $input)
     {
-        return $this->repo->transaction(function() use ($customer, $input)
-        {
-            $token = (new Token\Entity)->build($input, 'create_direct');
+        (new Validator)->validateInput(Validator::CREATE_DIRECT, $input);
 
-            if ($token->isCard() === true)
+        $cardInput = $this->getCardInputForDirectToken($input);
+
+        return $this->repo->transaction(
+            function() use ($customer, $input, $cardInput)
             {
-                $cardInput = $input[Token\Entity::CARD];
+                //
+                // Doing this only for cards for now.
+                // Other types of tokens need to be thought out still.
+                //
 
-                $cardInput[Card\Entity::VAULT] = Card\Vault::TOKENEX;
+                $card = (new Card\Core)->create($cardInput, $customer->merchant);
 
-                $card = (new Card\Core)->create($cardInput, $this->merchant);
-
-                $token->card()->associate($card);
-            }
-
-            $token->customer()->associate($customer);
-
-            $token->merchant()->associate($customer->merchant);
-
-            $existingToken = $this->validateExistingToken($token);
-
-            //
-            // For cards, we check if there's already an existing
-            // token with the same customer, and simply return that
-            // instead of creating a new token altogether.
-            // However, for netbanking, we don't do this check,
-            // because netbanking tokens are newly created for each
-            // and every new first recurring payment, for now.
-            //
-            if ($existingToken !== null)
-            {
-                return $existingToken;
-            }
-            else
-            {
-                $this->repo->saveOrFail($token);
-
-                return $token;
-            }
-        });
+                $this->create($customer, $input, $card);
+            });
     }
 
     /**
-     * @param  Customer Entity
-     * @param  input array
-     * @return Token Entity
+     * @param  Customer\Entity $customer
+     * @param  array           $input
+     * @param Card\Entity|null $card
+     *
+     * @return Entity Below function is used to create token in payment flow where we
      *
      * Below function is used to create token in payment flow where we
      * already have a card_id
      */
-    public function create($customer, $input)
+    public function create($customer, $input, Card\Entity $card = null)
     {
         $token = new Token\Entity;
 
-        if (isset($input[Token\Entity::CARD_ID]))
+        if ((isset($input[Token\Entity::CARD_ID]) === true) or
+            ($card !== null))
         {
-            $card = $this->repo->card->findOrFailPublic($input[Token\Entity::CARD_ID]);
+            if ($card === null)
+            {
+                $card = $this->repo->card->findOrFailPublic($input[Token\Entity::CARD_ID]);
+            }
 
             $token->card()->associate($card);
 
@@ -311,5 +300,16 @@ class Core extends Base\Core
         }
 
         return null;
+    }
+
+    protected function getCardInputForDirectToken(array $input)
+    {
+        $cardInput = array_pull($input, Entity::CARD);
+
+        $cardInput[Card\Entity::VAULT] = Card\Vault::TOKENEX;
+
+        // TODO: Fix cvv based on network
+
+        return $cardInput;
     }
 }
