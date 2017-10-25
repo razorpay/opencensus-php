@@ -32,7 +32,7 @@ class Core extends Base\Core
         $merchantInvoiceInput = $input;
 
         // Checking validations on input array
-        Adjustment\Validator::checkAdjustmentInputValidation($input);
+        (new Adjustment\Validator)->validateAdjusmentCreateInput($input);
 
         $amount = $input[Entity::AMOUNT] ?? 0;
 
@@ -63,7 +63,7 @@ class Core extends Base\Core
             // because of adjustment entries (fees and tax)
             $merchantInvoiceInput[MerchantInvoice\Entity::TAX] = $tax;
 
-            $merchantInvoiceInput[Entity::AMOUNT] = $fees;
+            $merchantInvoiceInput[MerchantInvoice\Entity::AMOUNT] = $fees;
 
             unset($merchantInvoiceInput['fees']);
 
@@ -348,18 +348,5 @@ class Core extends Base\Core
         $newId = substr_replace($oldId, ++$last, -1, 1);
 
         return $newId;
-    }
-
-    protected function createAdjEntityAndSetWorkflow($adjInput, $merchant): Entity
-    {
-        unset($adjInput[Adjustment\Entity::FEES]);
-        
-        $adj = (new Adjustment\Entity)->build($adjInput);
-
-        $this->app['workflow']
-            ->setEntityAndId($adj->getEntity(), $merchant->getId())
-            ->handle((new \stdClass), $adj);
-
-        return $adj;
     }
 }

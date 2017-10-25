@@ -6,7 +6,6 @@ use RZP\Base;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
-use RZP\Models\Merchant\Invoice\Entity as InvoiceEntity;
 
 class Validator extends Base\Validator
 {
@@ -20,11 +19,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $feeAdjustmentRules = [
-        Entity::AMOUNT        => 'sometimes|integer',
-        InvoiceEntity::TAX    => 'sometimes|integer',
-        Entity::CURRENCY      => 'required|in:INR',
-        Entity::DESCRIPTION   => 'required|min:10|max:255',
-        Validator::FEES       => 'sometimes|integer',
+        Entity::AMOUNT                 => 'sometimes|integer',
+        MerchantInvoice\Entity::TAX    => 'sometimes|integer',
+        Entity::CURRENCY               => 'required|in:INR',
+        Entity::DESCRIPTION            => 'required|min:10|max:255',
+        Validator::FEES                => 'sometimes|integer',
     ];
 
     // Payment id is actually a comma separated list of payment_ids
@@ -34,7 +33,7 @@ class Validator extends Base\Validator
         DisputeEntity::PAYMENT_ID => 'required|string',
     ];
 
-    public static function checkAdjustmentInputValidation(array $input)
+    public function validateAdjusmentCreateInput(array $input)
     {
         // Presence of all three keys is not allowed
         if (isset($input[Entity::AMOUNT]) === true and

@@ -60,7 +60,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -94,7 +94,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
+            'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_MERCHANT_INVOICE_NUMBER,
         ],
     ],
