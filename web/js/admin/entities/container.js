@@ -84,30 +84,16 @@ export default class Entities extends Component {
   }
 
   componentWillMount() {
-    const routeName = 'admin_fetch_all_entities';
-
     adminFetch({
-      data: {
-        route_name: routeName,
-        mode: this.state.selectedMode,
-      },
-    })
-      .then(resp => {
-        resp = resp.data;
+      route_name: 'admin_fetch_all_entities',
+      mode: this.state.selectedMode,
+    }).then(data => {
+      let { entities, fields } = data;
 
-        if (resp.errors) {
-          return Promise.reject(resp.errors);
-        }
+      entities = mergeEntitiesWithFields(entities, fields);
 
-        let { entities, fields } = resp.data;
-
-        entities = mergeEntitiesWithFields(entities, fields);
-
-        this.setState({ entities }, this.onSearch);
-      })
-      .catch(errors => {
-        this.setState({ errors });
-      });
+      this.setState({ entities }, this.onSearch);
+    });
   }
 
   onSearch(filters = {}) {

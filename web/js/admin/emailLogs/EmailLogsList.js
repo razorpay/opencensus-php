@@ -47,7 +47,7 @@ export default class EmailLogsList extends Component {
             <button>Search</button>
           </Form>
         </div>
-        <PageTable model={this.collection} fields={fields} />
+        <PageTable info={false} model={this.collection} fields={fields} />
       </div>
     );
   }
