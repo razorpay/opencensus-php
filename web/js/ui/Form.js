@@ -60,7 +60,7 @@ export function serialize(form) {
       if (el.type === 'checkbox') {
         value = el.checked ? 1 : 0;
       }
-      if (value) {
+      if (value != null) {
         // item[foo] → item.foo
         var nameSplit = name.match(/(.+)\[(\w+)\]$/);
         if (nameSplit) {
