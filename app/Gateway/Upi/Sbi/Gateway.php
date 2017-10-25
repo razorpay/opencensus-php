@@ -175,9 +175,6 @@ class Gateway extends Base\Gateway
         $this->setVerifyAmountMismatch($verify);
 
         $this->setVerifyStatus($verify);
-
-        // TODO: Is this needed?
-        // $this->saveVerifyContentIfNeeded($verify);
     }
 
     /**

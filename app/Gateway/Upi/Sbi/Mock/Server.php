@@ -139,6 +139,8 @@ class Server extends Base\Mock\Server
     {
         $pspRefNo = Payment\Entity::stripDefaultSign($payment[Payment\Entity::ID]);
 
+        $vpa = $payment[Payment\Entity::VPA];
+
         $response = [
             ResponseFields::PSP_REFERENCE_NO       => $pspRefNo,
             ResponseFields::UPI_TRANS_REFERENCE_NO => $upiEntity[Entity::GATEWAY_PAYMENT_ID],
@@ -151,9 +153,15 @@ class Server extends Base\Mock\Server
             ResponseFields::STATUS                 => 'S',
             ResponseFields::STATUS_DESCRIPTION     => 'Payment Successful',
             ResponseFields::ADDITIONAL_INFO        => [],
-            ResponseFields::PAYER_VPA              => $payment[Payment\Entity::VPA],
+            ResponseFields::PAYER_VPA              => $vpa,
             ResponseFields::PAYEE_VPA              => self::DEFAULT_PAYEE_VPA,
         ];
+
+        if ($vpa === 'rejectedcollect@sbi')
+        {
+            $response[ResponseFields::STATUS] = 'R';
+            $response[ResponseFields::STATUS_DESCRIPTION] = 'Collect request rejected';
+        }
 
         return [ResponseFields::API_RESPONSE => $response];
     }

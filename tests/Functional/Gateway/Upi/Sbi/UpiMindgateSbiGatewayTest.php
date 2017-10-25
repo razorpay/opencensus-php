@@ -102,7 +102,39 @@ class UpiMindgateSbiGatewayTest extends TestCase
         });
     }
 
-    // TODO: testCollectRejectedFailure test case
+    /**
+     * Create a payment, and reject it so callback
+     * returns failure
+     */
+    public function testCollectRejectedFailure()
+    {
+        $this->payment['vpa'] = 'rejectedcollect@sbi';
+
+        $response = $this->doAuthPayment($this->payment);
+
+        $paymentId = $response['payment_id'];
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $data = $this->testData['testFailedCollect'];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($content)
+            {
+                $this->makeS2SCallbackAndGetContent($content);
+            });
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals('failed', $payment['status']);
+    }
 
     /**
      * This verifies the transaction status after a payment has been successfully made.
