@@ -21,9 +21,14 @@ class Service extends Base\Service
 
         $invitationToken = $input['invitation'] ?? null;
 
+        $businessName = $input['business_name'] ?? '';
+
         $invitation = null;
 
         $user = null;
+
+        // Epos sends business name for signup only.
+        unset($input['business_name']);
 
         /*
          * If we have an invitation token, the user may have created an account
@@ -76,8 +81,6 @@ class Service extends Base\Service
         {
             $input['password_confirmation'] = $input['password'];
 
-            $input['name'] = '';
-
             unset($input['ref']);
 
             $user = $this->create($input);
@@ -106,7 +109,7 @@ class Service extends Base\Service
         {
             $merchantInputData = [
                 'email' => $user['email'],
-                'name'  => $input['business_name'] ?? '',
+                'name'  => $businessName,
             ];
 
             $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer);
