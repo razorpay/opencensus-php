@@ -709,7 +709,11 @@ class Creator extends Base\Core
     {
         $fileToBeEncrypted = $this->getFullFilePath();
 
-        $this->encryptionHandler->encodeFile($fileToBeEncrypted);
+        $data = file_get_contents($fileToBeEncrypted);
+
+        $encodedData = base64_encode($data);
+
+        file_put_contents($fileToBeEncrypted, $encodedData);
     }
 
     /*

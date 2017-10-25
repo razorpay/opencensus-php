@@ -26,15 +26,6 @@ class Handler
         file_put_contents($filePath, $encryptedData);
     }
 
-    public function encodeFile(string $filePath)
-    {
-        $data = file_get_contents($filePath);
-
-        $encodedData = base64_encode($data);
-
-        file_put_contents($filePath, $encodedData);
-    }
-
     public function encrypt(string $data)
     {
         return $this->cipher->encrypt($data);
