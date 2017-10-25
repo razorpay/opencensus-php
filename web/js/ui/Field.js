@@ -6,7 +6,7 @@ function focusInput(e) {
 }
 
 function toggleChecked(e) {
-  var sib = e.target.nextElementSibling;
+  var sib = e.target.parentNode.querySelector('input');
   sib.checked = !sib.checked;
 }
 
@@ -20,8 +20,8 @@ export default function Field({ label, onChange, value, ...props }) {
 }
 
 export const DateTimeField = props => <Field {...props} type="date" />;
-export const FromField = _ => <DateTimeField name="from" label="From" />;
-export const ToField = _ => <DateTimeField name="to" label="To" />;
+export const FromField = _ => <DateTimeField {..._} name="from" label="From" />;
+export const ToField = _ => <DateTimeField {..._} name="to" label="To" />;
 
 export function CheckField({ label, ...props }) {
   return (
@@ -32,17 +32,41 @@ export function CheckField({ label, ...props }) {
   );
 }
 
-export function SwitchField({ label, disabledValue, ...props }) {
-  return (
-    <div class="field switch-field">
-      {disabledValue && (
-        <input type="hidden" name={props.name} value={disabledValue} />
-      )}
-      <label onClick={toggleChecked}>{label}</label>
-      <input {...props} type="checkbox" />
-      <div class="switch-knob" />
-    </div>
-  );
+export class Switch extends Component {
+  disabledValue = this.props.disabledValue || '0';
+  enabledValue = this.props.enabledValue || '1';
+
+  state = {
+    checked: this.props.value === this.enabledValue,
+  };
+
+  toggle = e => {
+    var checked = !this.state.checked;
+    this.setState({
+      checked,
+    });
+    if (this.props.onChange) {
+      return this.props.onChange(e);
+    }
+  };
+
+  render() {
+    let { disabledValue, enabledValue, value, ...restProps } = this.props;
+
+    let checked = this.state.checked;
+
+    return (
+      <div class="switch">
+        <input
+          {...restProps}
+          type="checkbox"
+          checked={checked}
+          value={checked ? this.enabledValue : this.disabledValue}
+        />
+        <div class="switch-knob" onClick={this.toggle} />
+      </div>
+    );
+  }
 }
 
 export function ControlledSwitchField({

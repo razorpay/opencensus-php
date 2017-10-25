@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
-import Table from 'ui/Table';
+import { PageTable } from 'ui/Table';
 import Field, { SelectField, CheckField } from 'ui/Field';
 import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
@@ -41,7 +41,7 @@ export default class MerchantList extends Component {
             <button>Apply</button>
           </Form>
         </div>
-        <Table
+        <PageTable
           model={this.collection}
           fields={fields}
           onClick={openMerchantEntity}

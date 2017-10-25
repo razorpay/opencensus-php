@@ -1,7 +1,8 @@
 import { observable, action, transaction } from 'mobx';
 import { notifyError } from 'common/modal';
+import BaseModel from 'model/base';
 
-export default class Model {
+export default class Model extends BaseModel {
   @observable
   merchant = {
     details: {},
@@ -14,10 +15,9 @@ export default class Model {
   };
 
   constructor({ merchantId, fetchFn }) {
+    super();
     this.fetchFn = fetchFn;
     this.merchantId = merchantId;
-
-    this.pending = observable.box();
 
     // fetch if not pre-populated
     this.fetchDetails();
@@ -32,21 +32,13 @@ export default class Model {
       merchant_id: this.merchantId,
     };
 
-    this.pending.set(true);
-
-    return this._request(
+    return this.request(
       'fetchMerchantDetails',
-      this.fetchFn({
-        data,
-      })
+      this.fetchFn(data)
     ).then(data => {
-      transaction(() => {
-        if (data && data.success) {
-          this.merchant.details = data.data;
-        }
-
-        this.pending.set(false);
-      });
+      if (data) {
+        this.merchant.details = data;
+      }
 
       this.fetchPricingPlans();
       this.fetchScheduleTasks();
@@ -67,15 +59,15 @@ export default class Model {
       merchant_id: this.merchantId,
     };
 
-    return this._request(
+    return this.request(
       'fetchMerchantOffers',
       this.fetchFn({
-        data: data,
+        ...data,
         queryParams,
       })
     ).then(data => {
-      if (data && data.success) {
-        this.merchant.offers = data.data.items;
+      if (data) {
+        this.merchant.offers = data.items;
       }
     });
   }
@@ -89,14 +81,12 @@ export default class Model {
       },
     };
 
-    return this._request(
+    return this.request(
       'fetchMerchantPricingPlans',
-      this.fetchFn({
-        data,
-      })
+      this.fetchFn(data)
     ).then(data => {
-      if (data && data.success) {
-        this.merchant.pricingPlans = data.data;
+      if (data) {
+        this.merchant.pricingPlans = data;
       }
     });
   }
@@ -114,15 +104,15 @@ export default class Model {
       merchant_id: this.merchantId,
     };
 
-    return this._request(
+    return this.request(
       'fetchMerchantScheduleTasks',
       this.fetchFn({
-        data,
+        ...data,
         queryParams,
       })
     ).then(data => {
-      if (data && data.success) {
-        this.merchant.scheduleTasks = data.data;
+      if (data) {
+        this.merchant.scheduleTasks = data;
       }
 
       // Check if merchant has Settlement Schedule
@@ -135,20 +125,5 @@ export default class Model {
         }
       }
     });
-  }
-
-  // TODO: Can be moved to file fetch.js as compulsory layer for all requests
-  _request(name, promise) {
-    return promise
-      .then(({ data }) => {
-        if (!data.success) {
-          throw data.errors[0];
-        }
-
-        return data;
-      })
-      .catch(e => {
-        notifyError(e);
-      });
   }
 }

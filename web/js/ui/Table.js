@@ -1,10 +1,73 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
-import Form from 'ui/Form';
-import SimpleTable from 'ui/SimpleTable';
+
+import TransitionGroup from 'react-transition-group/TransitionGroup';
+import CSSTransition from 'react-transition-group/CSSTransition';
+
+const animObj = {
+  enter: 1000,
+  exit: 700,
+};
+
+function defaultIndexFn(item, index, array) {
+  return item.id || array.length - index;
+}
+
+export default function Table({
+  fields,
+  items,
+  onClick,
+  bordered,
+  indexFn = defaultIndexFn,
+}) {
+  let trClass = onClick ? 'tr clickable' : 'tr';
+  let tableClass = 'table table-striped';
+  if (bordered) {
+    tableClass += ' table-bordered';
+  }
+
+  return (
+    <div class="table-container">
+      {items && items.length ? (
+        <TransitionGroup class={tableClass}>
+          <CSSTransition timeout={0}>
+            <div class="tr thead">
+              {fields.map((field, index) => (
+                <div class="th" key={index}>
+                  {field[0]}
+                </div>
+              ))}
+            </div>
+          </CSSTransition>
+          {items.map((item, index) => {
+            return (
+              <CSSTransition
+                key={indexFn(item, index, items)}
+                classNames="row"
+                timeout={animObj}
+              >
+                <div class={trClass} onClick={onClick && item::onClick}>
+                  {fields.map((field, index) => (
+                    <div class="td" key={index}>
+                      {field[1](item)}
+                    </div>
+                  ))}
+                </div>
+              </CSSTransition>
+            );
+          })}
+        </TransitionGroup>
+      ) : (
+        <div class="table-empty" />
+      )}
+    </div>
+  );
+}
+
+export const DataTable = observer(Table);
 
 @observer
-export default class Table extends Component {
+export class PageTable extends Component {
   render() {
     let { fields, model, onClick } = this.props;
     let { pending, items, filters } = model;
@@ -19,10 +82,10 @@ export default class Table extends Component {
               <div class="box">
                 <Pagination model={model} />
                 <div class="table-info">
-                  {items.length} Results ({filters.skip + 1} &ndash;{' '}
-                  {filters.skip + items.length})
+                  Results {filters.skip + 1} &ndash;{' '}
+                  {filters.skip + items.length}
                 </div>
-                <SimpleTable fields={fields} onClick={onClick} items={items} />
+                <Table fields={fields} onClick={onClick} items={items} />
               </div>
             )) || <div class="table-empty" />)}
       </div>

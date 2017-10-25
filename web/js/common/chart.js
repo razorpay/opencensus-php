@@ -1,23 +1,10 @@
-import { defaults } from 'Chart';
+import { defaults } from 'chart.js';
 import moment from 'moment';
 
 const global = defaults.global;
-global.maintainAspectRatio = false;
+// global.maintainAspectRatio = false;
 global.elements.line.lineTension = 0;
 global.legend.display = false;
-
-global.defaultFontColor = '#666';
-global.defaultFontFamily =
-  '"Lato", "Helvetica Neue", Helvetica, Arial,sans-serif';
-global.defaultFontSize = 11;
-global.layout = {
-  padding: {
-    left: 10,
-    bottom: 15,
-    top: 5,
-    right: 5,
-  },
-};
 
 const tooltips = global.tooltips;
 tooltips.mode = 'index';
@@ -43,6 +30,8 @@ const rgb = (array, alpha) => {
   if (alpha) return `rgba(${array[0]}, ${array[1]}, ${array[2]}, ${alpha})`;
   return `rgb(${array[0]}, ${array[1]}, ${array[2]})`;
 };
+
+export const chartColors = colors.map(color => rgb(color));
 
 export const timeScale = ({ xLabel, yLabel }) => {
   let scalesObj = {

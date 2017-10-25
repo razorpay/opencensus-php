@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 
 import Form from 'ui/Form';
-import Table from 'ui/Table';
+import { PageTable } from 'ui/Table';
 import Field, { SelectField, SelectMode } from 'ui/Field';
 import { merchantId } from 'ui/Item';
 import AsyncButton from 'ui/AsyncButton';
@@ -17,7 +17,6 @@ import { methods, testMerchantId, gateways } from 'util/data';
 
 const defaultFilters = {
   merchant_id: testMerchantId,
-  mode: 'test',
 };
 
 @observer
@@ -28,14 +27,16 @@ export default class GatewayRuleList extends Component {
       url_params: {
         type: 'gateway_rule',
       },
+      mode: 'test',
     },
     model: Model,
     filters: defaultFilters,
     fetchFn: adminFetch,
   });
 
-  onSubmit = ({ mode, ...filters }) => {
-    this.collection.data.mode = mode;
+  onSubmit = filters => {
+    this.collection.data.mode = filters.mode;
+    delete filters.mode;
     return this.collection.setFilters(filters);
   };
 
@@ -80,7 +81,11 @@ export default class GatewayRuleList extends Component {
             <button>Search</button>
           </Form>
         </div>
-        <Table model={this.collection} fields={fields} onClick={showEntity} />
+        <PageTable
+          model={this.collection}
+          fields={fields}
+          onClick={showEntity}
+        />
       </div>
     );
   }
