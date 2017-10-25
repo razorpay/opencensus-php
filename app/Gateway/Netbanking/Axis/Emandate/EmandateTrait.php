@@ -142,7 +142,7 @@ trait EmandateTrait
         $this->repo->saveOrFail($gatewayEntity);
 
         // We check the status of the payment, and not the SI registration here
-        $this->checkEmandatePaymentResponseStatus($content);
+        $this->checkEmandatePaymentResponseStatus($content, $input);
 
         return $gatewayEntity;
     }
@@ -162,15 +162,30 @@ trait EmandateTrait
         ];
     }
 
-    protected function checkEmandatePaymentResponseStatus(array $content)
+    protected function checkEmandatePaymentResponseStatus(array $content, array $input)
     {
-        if (StatusCode::isSuccess($content[ResponseFields::STATUS_CODE]) !== true)
+        if (isset($content[ResponseFields::STATUS_CODE]) === false)
         {
-            $errorCode = StatusCode::getErrorCodeMap($content[ResponseFields::STATUS_CODE]);
+            throw new GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+                null,
+                null,
+                [
+                    'content'    => $content,
+                    'payment_id' => $input['payment'][Payment\Entity::ID]
+                ]
+            );
+        }
 
-            $errorDescription = StatusCode::getErrorDescriptionMap($content[ResponseFields::STATUS_CODE]);
+        $statusCode = $content[ResponseFields::STATUS_CODE];
 
-            throw new GatewayErrorException($errorCode, $content[ResponseFields::STATUS_CODE], $errorDescription);
+        if (StatusCode::isSuccess($statusCode) !== true)
+        {
+            $errorCode = StatusCode::getErrorCodeMap($statusCode);
+
+            $errorDescription = StatusCode::getErrorDescriptionMap($statusCode);
+
+            throw new GatewayErrorException($errorCode, $statusCode, $errorDescription);
         }
     }
 
