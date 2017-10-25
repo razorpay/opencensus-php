@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 
 import Form from 'ui/Form';
-import Table from 'ui/Table';
+import { PageTable } from 'ui/Table';
 import Field, { SelectField, SelectMode } from 'ui/Field';
 import { merchantId } from 'ui/Item';
 import AsyncButton from 'ui/AsyncButton';
@@ -80,7 +80,11 @@ export default class GatewayRuleList extends Component {
             <button>Search</button>
           </Form>
         </div>
-        <Table model={this.collection} fields={fields} onClick={showEntity} />
+        <PageTable
+          model={this.collection}
+          fields={fields}
+          onClick={showEntity}
+        />
       </div>
     );
   }

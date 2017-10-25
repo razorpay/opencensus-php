@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
-import Table from 'ui/Table';
+import { PageTable } from 'ui/Table';
 import Field from 'ui/Field';
 import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
@@ -33,7 +33,11 @@ export default class WorkflowList extends Component {
             <Field name="q" label="Search" />
           </Form>
         </div>
-        <Table model={this.collection} fields={fields} onClick={showEntity} />
+        <PageTable
+          model={this.collection}
+          fields={fields}
+          onClick={showEntity}
+        />
       </div>
     );
   }

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Field, { SelectField, CheckField } from 'ui/Field';
 import { openSlider } from 'common/modal';
-import SimpleTable from 'ui/SimpleTable';
+import Table from 'ui/Table';
 import { adminFetch, adminPost } from 'util/fetch';
 
 class EditUser extends Component {
