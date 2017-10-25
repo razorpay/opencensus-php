@@ -11,7 +11,7 @@ export default class EditFieldMaps extends Component {
   save = data => {
     let adminFn = data.id ? adminPut : adminPost;
     let url_params = {
-      orgId: data.org_id,
+      orgId: this.props.model.org_id,
       ...(data.id ? { id: data.id } : null),
     };
     let route_name = data.id ? 'org_fieldmap_edit' : 'org_fieldmap_create';

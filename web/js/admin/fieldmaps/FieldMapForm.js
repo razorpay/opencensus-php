@@ -17,8 +17,6 @@ export default function FieldMapForm({
       <Form>
         {id ? <input type="hidden" name="id" defaultValue={id} /> : ''}
 
-        <input type="hidden" name="org_id" defaultValue={org_id} />
-
         <Field
           label="Entity Name"
           name="entity_name"
