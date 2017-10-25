@@ -52,7 +52,7 @@ class NetbankingHdfcRefundFileTest extends TestCase
 
         $expectedFileContent = [
             'type'        => 'hdfc_netbanking_refund',
-            'entity_type' => File\Entity::class,
+            'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'xlsx',
         ];

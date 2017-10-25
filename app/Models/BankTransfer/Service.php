@@ -195,4 +195,13 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
     }
+
+    public function editPayerBankAccount(string $id, array $input)
+    {
+        $bankTransfer = $this->repo->bank_transfer->findByPublicId($id);
+
+        $bankTransfer = $this->core->editPayerBankAccount($bankTransfer, $input);
+
+        return $bankTransfer->toArrayPublic();
+    }
 }
