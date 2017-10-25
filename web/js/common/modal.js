@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import TransitionGroup from 'react-transition-group/TransitionGroup';
 import CSSTransition from 'react-transition-group/CSSTransition';
 
-import { observable } from 'mobx';
+import { observe, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { animObj } from 'util/index';
 
@@ -49,6 +49,10 @@ class ModalStore {
 }
 
 const store = new ModalStore();
+
+observe(store.modals, e => {
+  document.body.className = store.modals.length ? 'noscroll' : '';
+});
 
 @observer
 export default class ModalContainer extends Component {

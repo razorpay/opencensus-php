@@ -17,7 +17,6 @@ import { methods, testMerchantId, gateways } from 'util/data';
 
 const defaultFilters = {
   merchant_id: testMerchantId,
-  mode: 'test',
 };
 
 @observer
@@ -28,14 +27,16 @@ export default class GatewayRuleList extends Component {
       url_params: {
         type: 'gateway_rule',
       },
+      mode: 'test',
     },
     model: Model,
     filters: defaultFilters,
     fetchFn: adminFetch,
   });
 
-  onSubmit = ({ mode, ...filters }) => {
-    this.collection.data.mode = mode;
+  onSubmit = filters => {
+    this.collection.data.mode = filters.mode;
+    delete filters.mode;
     return this.collection.setFilters(filters);
   };
 
