@@ -1251,7 +1251,7 @@ class Gateway extends Base\Gateway
         {
             $body[ApiRequestFields::V1_PAYMENT] = [
                 ApiRequestFields::V1_HOSTED_DATA_ID  => $input['token']->getId(),
-                ApiRequestFields::V1_HOSTED_STORE_ID => $input['gateway_token']->terminal->getGatewayMerchantId(),
+                ApiRequestFields::V1_HOSTED_STORE_ID => $this->getHostedDataStoreId(),
             ];
         }
 
@@ -1375,13 +1375,38 @@ class Gateway extends Base\Gateway
         return $storeId;
     }
 
+    /**
+     * Non-3DS recurring payments require the store id that the original 3DS
+     * payment was made on. This was earlier retrieved through the token used,
+     * but is now simply stored as an extra attribute in terminal entity
+     *
+     * @return string hostedDataStoreId
+     */
+    public function getHostedDataStoreId()
+    {
+        $hostedDataStoreId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+
+        if ($this->isOldStoreId() === true)
+        {
+            throw new Exception\LogicException(
+                'Gateway Merchant ID2 has different meaning for old store ids.',
+                null,
+                [
+                    'gateway_merchant_id'  => $this->getStoreId,
+                    'gateway_merchant_id2' => $hostedDataStoreId,
+                ]);
+        }
+
+        return $hostedDataStoreId;
+    }
+
     protected function getLiveSecret()
     {
-        $liveSecret = $this->input['terminal']['gateway_secure_secret'];
+        $liveSecret = $this->config['live_hash_secret'];
 
-        if ($this->isChildStoreId() === true)
+        if ($this->isOldStoreId() === true)
         {
-            $liveSecret = $this->config['live_hash_secret'];
+            $liveSecret = $this->input['terminal']['gateway_secure_secret'];
         }
 
         return $liveSecret;
@@ -1389,14 +1414,8 @@ class Gateway extends Base\Gateway
 
     protected function getCredentials()
     {
-        $username = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
-        $password = $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE];
-
-        if ($this->isChildStoreId() === true)
-        {
-            $username = $this->config['live_user_id'];
-            $password = $this->config['live_password'];
-        }
+        $username = $this->config['live_user_id'];
+        $password = $this->config['live_password'];
 
         if ($this->mode === Mode::TEST)
         {
@@ -1404,7 +1423,27 @@ class Gateway extends Base\Gateway
             $password = $this->config['test_password'];
         }
 
+        if ($this->isOldStoreId() === true)
+        {
+            $username = $this->getUsernameForOldStoreId();
+            $password = $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE];
+        }
+
         return [$username, $password];
+    }
+
+    /**
+     * Old terminal had a gateway_merchant_id2 that was just f(gateway_merchant_id)
+     *
+     * @return array credentials
+     */
+    protected function getUsernameForOldStoreId()
+    {
+        $gatewayMerchantId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+
+        $username = 'WS'.$gatewayMerchantId.'._.1';
+
+        return $username;
     }
 
     protected function getGatewayCertDirName()
@@ -1421,11 +1460,11 @@ class Gateway extends Base\Gateway
 
     public function getClientCertificateName()
     {
-        $certName = $this->getStoreId() . '.' . self::CERTIFICATE_FORMAT_P12;
+        $certName = $this->config['client_certificate'];
 
-        if ($this->isChildStoreId() === true)
+        if ($this->isOldStoreId() === true)
         {
-            $certName = $this->config['client_certificate'];
+            $certName = $this->getStoreId() . '.' . self::CERTIFICATE_FORMAT_P12;
         }
 
         return $certName;
@@ -1442,11 +1481,11 @@ class Gateway extends Base\Gateway
         {
             $clientCertFile = fopen($clientCertPath, 'w');
 
-            $encodedCert = $this->terminal[Terminal\Entity::GATEWAY_CLIENT_CERTIFICATE];
+            $encodedCert = $this->config['live_client_certificate'];
 
-            if ($this->isChildStoreId() === true)
+            if ($this->isOldStoreId() === true)
             {
-                $encodedCert = $this->config['live_client_certificate'];
+                $encodedCert = $this->terminal[Terminal\Entity::GATEWAY_CLIENT_CERTIFICATE];
             }
 
             if ($this->mode === Mode::TEST)
@@ -1470,11 +1509,11 @@ class Gateway extends Base\Gateway
 
     protected function getClientCertificatePassword()
     {
-        $password = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+        $password = $this->config['live_client_certificate_password'];
 
-        if ($this->isChildStoreId() === true)
+        if ($this->isOldStoreId() === true)
         {
-            $password = $this->config['live_client_certificate_password'];
+            $password = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
         }
 
         if ($this->mode === Mode::TEST)
@@ -1485,14 +1524,26 @@ class Gateway extends Base\Gateway
         return $password;
     }
 
-    protected function isChildStoreId()
+    /**
+     * The oldest FirstData terminals, had several values stored differently
+     *
+     * @return boolean
+     */
+    protected function isOldStoreId()
     {
-        // Older creds needed a separate value to access
-        // FirstData API and web portal.
-        // New FirstData creds are child ids, and do not
-        // have a merchantId2 value of their own.
+        $gatewayMerchantId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
 
-        return ($this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2] === null);
+        $oldTerminalGatewayMerchantIds = [
+            // EMI terminals
+            '3374679283',
+            '3374679291',
+            '3374679309',
+            '3374679333',
+            // Shared FirstData terminal, disabled now
+            '3396093976',
+        ];
+
+        return (in_array($gatewayMerchantId, $oldTerminalGatewayMerchantIds) === true);
     }
 
     protected function getAuthCodeFromCallback($callbackBody)
