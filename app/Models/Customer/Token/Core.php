@@ -310,14 +310,9 @@ class Core extends Base\Core
 
         $iin = substr($cardInput[Card\Entity::NUMBER], 0, 6);
 
-        $cardInput[Card\Entity::CVV] = '123';
-
         $network = Card\Network::detectNetwork($iin);
 
-        if ($network === Card\Network::AMEX)
-        {
-            $cardInput[Card\Entity::CVV] = '1234';
-        }
+        $cardInput[Card\Entity::CVV] = Card\Entity::getDummyCvv($network);
 
         return $cardInput;
     }
