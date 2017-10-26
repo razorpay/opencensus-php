@@ -53,16 +53,7 @@ class Core extends Base\Core
 
     public function processPayment(array $input)
     {
-        $defaultInput = [
-            Entity::METHOD   => Method::CARD,
-        ];
-
-        $input = $this->getMappedAttributes($input);
-
-        //As the amount sent by hitachi notification is string with format 1.00
-        $input[Entity::AMOUNT] = (int) ($input[Entity::AMOUNT] * 100);
-
-        $input = array_merge($defaultInput, $input);
+        $input = $this->getBharatQrInputParams($input);
 
         try
         {
@@ -79,7 +70,7 @@ class Core extends Base\Core
 
             $valid = true;
         }
-        catch (Exception\BadRequestValidationFailureException $ex)
+        catch (\Exception $ex)
         {
             s($ex->getMessage());
             $this->trace->traceException(
@@ -91,7 +82,22 @@ class Core extends Base\Core
         return $valid;
     }
 
-    protected function getMappedAttributes($attributes)
+
+    protected function getBharatQrInputParams(array $input)
+    {
+        $defaultInput = [
+            Entity::METHOD   => Method::CARD,
+        ];
+
+        $input = $this->getMappedAttributes($input);
+
+        //As the amount sent by hitachi notification is string with format 1.00
+        $input[Entity::AMOUNT] = (int) ($input[Entity::AMOUNT] * 100);
+
+        return array_merge($defaultInput, $input);
+    }
+
+    protected function getMappedAttributes(array $attributes)
     {
         $attr = [];
 
@@ -102,6 +108,7 @@ class Core extends Base\Core
             if (isset($map[$key]))
             {
                 $newKey = $map[$key];
+
                 $attr[$newKey] = $value;
             }
         }

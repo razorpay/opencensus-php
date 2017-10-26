@@ -88,6 +88,10 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
     ];
 
+    protected static $modifiers = [
+        self::AMOUNT,
+    ];
+
     protected $generateIdOnCreate = true;
 
     public function payment()
@@ -120,6 +124,21 @@ class Entity extends Base\PublicEntity
 
             $array[self::PAYMENT_ID] = Payment\Entity::getSignedId($paymentId);
         }
+    }
+
+    // -------------------------- Modifiers ------------------------------------
+
+    public function modifyAmount(array & $input)
+    {
+        //
+        // If you're wondering why this is here, run "(int) (579.3 * 100)" in tinker
+        //
+        // The value of (579.3 * 100) is actually stored as 57929.999... and casting
+        // that to an integer just dumps the decimal part and ruins everything.
+        //
+
+        $input[self::AMOUNT] = (int) number_format(($input[self::AMOUNT] * 100), 0, '.', '');
+
     }
 
     public function setExpected(bool $expected)

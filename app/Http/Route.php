@@ -647,7 +647,6 @@ final class Route
         'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                  'FeatureController@postOnboardingResponses',                         ],
         'feature_onboarding_fetch_responses'      => ['get',      'feature/onboarding/{feature}/responses',        'FeatureController@getOnboardingResponses',                          ],
         'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                  'FeatureController@getOnboardingResponses',                          ],
-
         'bharat_qr_payment_process'               => ['post',     'bharatqr/payment/process',                      'BharatQrController@processBharatQrPayment'                          ],
     ];
 
@@ -1478,6 +1477,10 @@ final class Route
         'yesbank' => [
             'bank_transfer_process',
             'bank_transfer_notify',
+        ],
+
+        'bharatqr' => [
+            'bharat_qr_payment_process',
         ],
 
         'mailgun' => [

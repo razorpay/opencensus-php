@@ -47,6 +47,8 @@ abstract class Processor extends Base\Core
      */
     abstract public function process($entity);
 
+    abstract protected function getVirtualAccountFromEntity($entity);
+
      /**
      * A receiver is expected if there exists an active VA
      * to receive it. If such a VA does not exist, or exists but
@@ -91,7 +93,6 @@ abstract class Processor extends Base\Core
 
         $this->createAndSetVirtualAccount($entity->getAmount());
     }
-
 
     /**
      * A throwaway VA is to be created for the default merchant. Create it use the amount
@@ -175,7 +176,4 @@ abstract class Processor extends Base\Core
 
         return $defaultMerchantId;
     }
-
-
-    abstract protected function getVirtualAccountFromEntity($entity);
 }

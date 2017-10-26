@@ -4,13 +4,14 @@ namespace RZP\Models\BharatQr;
 
 use RZP\Base\Luhn;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
-use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
-use RZP\Models\Payment;
+use RZP\Models\QrCode\Entity as QrCode;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
@@ -19,6 +20,18 @@ class Processor extends VirtualAccount\Processor
     const RANDOM_CARD_PADDING = '12345';
 
     /**
+     * Entry point for  BharatQr  process flow.
+     * Check if the bharatQr was an expected one.
+     * - BharatQr was expected?
+     *   - Yes
+     *     - unique merchant reference?
+     *       - Yes
+     *         - Process the payment towards the owner of the VA
+     *       - No
+     *         - Duplicate payment, save entity and ignore
+     *   - No
+     *     - Process payment toward demo merchant, auto-refund it later.
+     *
      * @param Entity $bharatQr
      *
      * @return Entity|null
@@ -42,6 +55,14 @@ class Processor extends VirtualAccount\Processor
         }
         else
         {
+            //
+            // The transfer is an expected one, i.e. it is made to a valid account
+            // but the merchant_reference is a duplicate, indicating that a payment is being processed
+            // for a second time. In this case, we do not create anything but a
+            // bharat_qr entity, marked as unexpected.
+            //
+            $bharatQr->setExpected(false);
+
             $this->repo->saveOrFail($bharatQr);
 
             return $bharatQr;
@@ -67,7 +88,7 @@ class Processor extends VirtualAccount\Processor
     {
         return [
             VirtualAccount\Entity::AMOUNT_EXPECTED => $amount,
-            VirtualAccount\Entity::RECEIVER_TYPES  => [Receiver::QR_CODE]
+            VirtualAccount\Entity::RECEIVER_TYPES  => [VirtualAccount\Receiver::QR_CODE]
         ];
     }
 
@@ -75,12 +96,16 @@ class Processor extends VirtualAccount\Processor
     {
         $merchantReference = $bharatQr->getMerchantReference();
 
-        $bharatQrEntity  = $this->repo->bharat_qr->findByMerchantReference($merchantReference);
+        $bharatQrEntity = $this->repo->bharat_qr->findByMerchantReference($merchantReference);
 
         if ($bharatQrEntity === null)
         {
             return false;
         }
+
+        $this->trace->info(
+                TraceCode::BHARAT_QR_PAYMENT_DUPLICATE_NOTIFICATION,
+                $bharatQr->toArray());
 
         return true;
     }
@@ -89,9 +114,9 @@ class Processor extends VirtualAccount\Processor
     {
         $paymentProcessor = new PaymentProcessor($this->merchant);
 
-        $this->repo->transaction(function() use (
-            $bharatQr,
-            $paymentProcessor)
+        $payment = $this->repo->transaction(function() use (
+                    $bharatQr,
+                    $paymentProcessor)
         {
             $paymentInput = $this->bharatQrPaymentArray($bharatQr);
 
@@ -111,11 +136,13 @@ class Processor extends VirtualAccount\Processor
 
             $this->updateVirtualAccount($bharatQr);
 
-            if ($bharatQr->isExpected() === true)
-            {
-                $paymentProcessor->autoCapturePayment($payment);
-            }
+            return $payment;
         });
+
+        if ($bharatQr->isExpected() === true)
+        {
+            $paymentProcessor->autoCapturePayment($payment);
+        }
     }
 
     protected function setMerchant()
@@ -136,13 +163,13 @@ class Processor extends VirtualAccount\Processor
     {
         $qrCodeId = $bharatQr->getMerchantReference();
 
-        try
+        (new QrCode)->stripSignWithoutValidation($qrCodeId);
+
+        $qrCode = $this->repo->qr_code->findById($qrCodeId);
+
+        if ($qrCode === null)
         {
-            $qrCode = $this->repo->qr_code->findByPublicId($qrCodeId);
-        }
-        catch (\Exception $e)
-        {
-            return null;
+            return $qrCode;
         }
 
         $virtualAccount = $this->repo
@@ -183,16 +210,8 @@ class Processor extends VirtualAccount\Processor
         $paymentArray[Payment\Entity::DESCRIPTION] = "";
 
 
-        // @todo find a better method to do this. This is done in order to bypass validation
-        $paymentArray['card']['number'] = $this->getLuhnValidCardNumberFromBharatQr($bharatQr);
-
-        $paymentArray['card']['cvv'] = '123';
-
-        $paymentArray['card']['name'] = 'random';
-
-        $paymentArray['card']['expiry_month'] = '11';
-
-        $paymentArray['card']['expiry_year'] = '2037';
+        // TODO: find a better method to do this. This is done in order to bypass validation
+        $paymentArray['card'] = $this->getDummyCardDetails($bharatQr);
 
         if ($this->virtualAccount->hasCustomer() === true)
         {
@@ -204,5 +223,21 @@ class Processor extends VirtualAccount\Processor
         }
 
         return $paymentArray;
+    }
+
+    protected function getDummyCardDetails(Entity $bharatQr)
+    {
+        //TODO: Handle the null checks in card validation
+        $card[Card\Entity::NUMBER] = $this->getLuhnValidCardNumberFromBharatQr($bharatQr);
+
+        $card[Card\Entity::CVV] = '123';
+
+        $card[Card\Entity::NAME] = 'Random';
+
+        $card[Card\Entity::EXPIRY_MONTH] = '11';
+
+        $card[Card\Entity::EXPIRY_YEAR] = '2037';
+
+        return $card;
     }
 }
