@@ -5,7 +5,6 @@ namespace RZP\Gateway\Netbanking\Axis;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
-use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;

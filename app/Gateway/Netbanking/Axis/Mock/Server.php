@@ -9,7 +9,6 @@ use RZP\Gateway\Netbanking\Axis\Emandate;
 use RZP\Gateway\Netbanking\Axis\AESCrypto;
 use RZP\Gateway\Netbanking\Axis\RequestFields;
 use RZP\Gateway\Netbanking\Axis\ResponseFields;
-// use RZP\Gateway\Netbanking\Axis\Emandate\EmandateTrait;
 
 class Server extends Base\Mock\Server
 {
