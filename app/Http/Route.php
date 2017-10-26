@@ -579,6 +579,7 @@ final class Route
         'user_merchant_upgrade'                   => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
         'user_resend_verification'                => ['post',     'users/resend-verification',                      'UserController@postResendVerificationMail'                         ],
         'user_reset_password_create'              => ['post',     'users/reset-password',                           'UserController@postResetPasswordByEmail'                           ],
+        'user_reset_password_token'               => ['post',     'users/reset-password-token',                     'UserController@postChangePasswordByToken'                          ],
         'user_create'                             => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                              => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_confirm_by_data'                    => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
@@ -1081,6 +1082,7 @@ final class Route
         'emandate_debit_initiate',
         'emandate_debit_reconcile',
         'user_reset_password_create',
+        'user_reset_password_token',
     ];
 
     public static $proxy = [
