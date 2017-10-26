@@ -1724,14 +1724,6 @@ class MerchantTest extends TestCase
     {
         $user = $this->fixtures->create('user');
 
-        $mappingData = [
-            'user_id'     => $user['id'],
-            'merchant_id' => '10000000000000',
-            'role'        => 'owner',
-        ];
-
-        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
-
         $merchant = Merchant\Entity::find("10000000000000");
 
         $merchant->reTag(["Aggregator", "Referral"]);
