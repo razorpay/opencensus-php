@@ -82,33 +82,6 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function registerSubMerchantUser(array $input)
-    {
-        $merchantId = $input['id'];
-
-        unset($input['id']);
-
-        unset($input['name']);
-
-        $data = array_merge([
-            'user_id' => $this->currentUser->id
-        ], $input);
-
-        $registerSubMerchantUser = [
-            'route_name' => 'create_submerchant_user',
-            'url_params' => [
-                '{id}' => $merchantId,
-            ],
-            'body'       => $data,
-        ];
-
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('POST', $registerSubMerchantUser);
-
-        return [$error, $data];
-    }
-
     /**
      * Detaches and attaches user to merchant.
      * @param $userId

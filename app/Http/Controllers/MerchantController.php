@@ -206,19 +206,6 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    /**
-     * Registers a new user account for a
-     * sub-merchant with his own email.
-     */
-    public function postRegisterSubUser()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Merchant\Service)->registerSubMerchantUser($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postSignup()
     {
         $input = Input::all();

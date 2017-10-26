@@ -100,7 +100,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/merchants/register', 'UserController@postUpgradeUserToMerchant');
         // Registers a sub-merchant account
         Route::post('/submerchants', 'MerchantController@postRegisterSubMerchant')->name('submerchant_register');
-        Route::post('/subusers', 'MerchantController@postRegisterSubUser')->name('subuser_register');
         // Send Feedback Mail to support@razorpay.com
         Route::post('/sendfeedback', 'MerchantController@sendFeedback')->name('send_feedback');
     });
