@@ -771,6 +771,7 @@ final class Route
         'setl_combined_report',
         'customer_create',
         'customer_update',
+        'customer_create_token',
         'customer_fetch_by_id',
         'customer_fetch_multiple',
         'customer_update_token',
@@ -842,7 +843,6 @@ final class Route
     ];
 
     public static $internal = [
-        'admin_fetch_all_entities',
         'admin_fetch_entity_multiple',
         'admin_fetch_terminal_by_id',
         'admin_fetch_entity_by_id',
@@ -1094,7 +1094,6 @@ final class Route
         'merchant_sub_create',
         'merchant_fetch_referrals',
         'customer_delete',
-        'customer_create_token',
         'device_verify_token',
         'app_fetch_tokens',
         'credits_fetch_multiple',
@@ -1230,6 +1229,7 @@ final class Route
         'setl_retry',
         'merchant_activation_files',
         'merchant_batches',
+        'admin_fetch_all_entities',
     ];
 
     public static $routePermission = [
@@ -1524,7 +1524,6 @@ final class Route
         'payment_create_openwallet'         => [Feature::OPENWALLET],
         'payment_create_recurring'          => [Feature::CHARGE_AT_WILL],
         'payment_create_private_old'        => [Feature::S2S],
-        'setl_combined_report'              => [Feature::SETL_REPORT],
         'reports_transaction_broking'       => [Feature::BROKING_REPORT],
         'reports_transaction_dsp'           => [Feature::DSP_REPORT],
         'reports_order_rpp'                 => [Feature::RPP_REPORT],
