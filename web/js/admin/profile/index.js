@@ -5,9 +5,12 @@ import Duplex from 'ui/Duplex';
 import BaseModal from 'ui/BaseModal';
 import Field from 'ui/Field';
 import Form from 'ui/Form';
-import SimpleTable from 'ui/SimpleTable';
+import { DataTable } from 'ui/Table';
 import AsyncButton from 'ui/AsyncButton';
 import { formatDate } from 'util/index';
+import { observer } from 'mobx-react';
+import { observable, computed } from 'mobx';
+import fetch, { adminPost } from 'util/fetch';
 import {
   openModal,
   notifyError,
@@ -15,7 +18,6 @@ import {
   closeModal,
   confirm,
 } from 'common/modal';
-import fetch, { adminPost } from 'util/fetch';
 
 class PasswordResetModal extends Component {
   submit(body) {
@@ -73,7 +75,19 @@ class PasswordResetModal extends Component {
   }
 }
 
+@observer
 class ActivityLogModal extends Component {
+  @observable log = [];
+  @computed
+  get str() {
+    return this.log.toJSON();
+  }
+
+  constructor(props) {
+    super();
+    this.log.splice(0, this.log.length, ...props.log);
+  }
+
   deleteOtherSessions() {
     return fetch({
       method: 'delete',
@@ -82,6 +96,11 @@ class ActivityLogModal extends Component {
       .then(response => {
         notifySuccess('Sessions deleted successfully');
         closeModal();
+        this.log.replace(
+          this.log.filter(activity => {
+            return activity.current;
+          })
+        );
       })
       .catch(err => {
         notifyError(JSON.stringify(err.response));
@@ -96,6 +115,11 @@ class ActivityLogModal extends Component {
       .then(response => {
         notifySuccess('Session deleted successfully');
         closeModal();
+        this.log.replace(
+          this.log.filter(current => {
+            return current.id !== activity.id;
+          })
+        );
       })
       .catch(err => {
         notifyError(JSON.stringify(err.response));
@@ -103,7 +127,6 @@ class ActivityLogModal extends Component {
   }
 
   render() {
-    var log = this.props.log;
     var fields = [
       [
         'Device',
@@ -138,7 +161,7 @@ class ActivityLogModal extends Component {
     ];
     return (
       <div>
-        <SimpleTable fields={fields} items={log} />
+        <DataTable fields={fields} items={this.log} />
         <button
           onClick={_ => {
             confirm(
@@ -156,9 +179,10 @@ class ActivityLogModal extends Component {
   }
 }
 
+@observer
 export default class Profile extends Component {
   showActivityLog() {
-    fetch({
+    return fetch({
       url: 'admin/activity',
     }).then(log => {
       openModal(
