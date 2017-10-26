@@ -111,4 +111,36 @@ class Validator extends Base\Validator
                 Entity::PARENT_ID);
         }
     }
+
+    public function validateNonTransactionalDisputesAreClosedOnly(array $input)
+    {
+        if (isset($input[Entity::STATUS]) === false)
+        {
+            return;
+        }
+
+        if (($this->entity->isNonTransactionalDispute() === true) and
+            in_array($input[Entity::STATUS], Status::getTransactionalStatuses()))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Disputes of non-transactional kinds can only be closed.',
+                Entity::STATUS,
+                $input);
+        }
+    }
+
+    public function validateDeductOnsetForNonTransactionalPhase(array $input)
+    {
+        if (isset($input[Entity::DEDUCT_AT_ONSET]) === true)
+        {
+            if ((in_array($input[Entity::PHASE], Phase::getNonTransactionalPhases()) === true) and
+                $input[Entity::DEDUCT_AT_ONSET] == true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Deduct at onset cannot be done for disputes in phase ' . $input[Entity::PHASE],
+                    Entity::DEDUCT_AT_ONSET,
+                    $input);
+            }
+        }
+    }
 }
