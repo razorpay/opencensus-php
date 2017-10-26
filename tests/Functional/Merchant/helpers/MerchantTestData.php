@@ -2870,7 +2870,6 @@ return [
                     's2swallet',
                     's2supi',
                     's2saeps',
-                    'setl_report',
                     'noflashcheckout',
                     'recurring',
                     's2s',
