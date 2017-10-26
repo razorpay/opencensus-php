@@ -57,7 +57,7 @@ else
   sed -i "s|APACHE_HOST|$HOSTNAME|g" dockerconf/api.apache.conf.j2
   $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app api "dockerconf/api.apache.conf.j2"
 
-  echo "copying apache config"
+  echo "copying nginx config"
   cp dockerconf/api.apache.conf /etc/apache2/conf.d/api.conf
 fi
 
