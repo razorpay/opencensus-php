@@ -176,9 +176,11 @@ class Validator extends Base\Validator
      */
     protected function validateSubMerchantOwner(array $input)
     {
-        $dashboardUserRole = $_SERVER['HTTP_X_DASHBOARD_USER_ROLE'] ?? '';
+        $app = App::getFacadeRoot();
 
-        if ($dashboardUserRole !== 'owner')
+        $dashboardHeaders = $app['basicauth']->getDashboardHeaders();
+
+        if ($dashboardHeaders['user_role'] !== 'owner')
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBUSER_CREATE_NOT_ALLOWED);
