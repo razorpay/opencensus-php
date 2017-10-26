@@ -17,6 +17,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Shared;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal\Category;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
@@ -118,11 +119,22 @@ class TransactionFilter extends Terminal\Filter
         // cybersource would fail.
         if ($this->isLiveMode() === true)
         {
-            if (($payment->isRecurring() === false) and
-               (($terminal->getGateway() === Gateway::CYBERSOURCE) and
-               ($terminal->isDirectForMerchant($merchant) === false)))
+            if ($terminal->getGateway() === Gateway::CYBERSOURCE)
             {
-                return false;
+                //
+                // For some merchants, due to business reasons we want payments
+                // to go through cybersource terminal
+                //
+                $merchantWhitelisted = (in_array($merchant->getId(),
+                                            Preferences::CYBERSOURCE_MERCHANT_WHITELIST,
+                                            true) === true);
+
+                if (($merchantWhitelisted === false) and
+                    ($payment->isRecurring() === false) and
+                    ($terminal->isDirectForMerchant($merchant) === false))
+                {
+                    return false;
+                }
             }
         }
 
