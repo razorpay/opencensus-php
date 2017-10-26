@@ -14,6 +14,7 @@ import EmailLogsList from 'admin/emailLogs/EmailLogsList';
 import Profile from 'admin/profile';
 
 import MerchantEntity from 'admin/merchants/entity/MerchantEntity';
+import GenericEntity from 'admin/entities/Entity';
 
 import WorkflowList from 'admin/workflows/List';
 // import RequestList from 'admin/workflows/RequestList';
@@ -22,7 +23,6 @@ import GroupList from 'admin/groups/List';
 import UserList from 'admin/users/List';
 import RoleList from 'admin/roles/List';
 import PermissionsList from 'admin/permissions/List';
-
 import AuditLog from 'admin/auditlog/List';
 
 export default class App extends Component {
@@ -39,13 +39,18 @@ export default class App extends Component {
             <Route path="/entities" component={Entities} />
             <Route path="/actions" component={ActionsList} />
             <Route path="/email-logs" component={EmailLogsList} />
+
             <Route path="/workflows" component={WorkflowList} />
+
             <Route path="/groups" component={GroupList} />
             <Route path="/users" component={UserList} />
             <Route path="/roles" component={RoleList} />
             <Route path="/profile" component={Profile} />
             <Route path="/permissions" component={PermissionsList} />
             <Route path="/audit-log" component={AuditLog} />
+
+            <Route path="/entity/:type/:mode/:id" component={GenericEntity} />
+
             <Redirect to="/stats" />
           </Switch>
         </main>

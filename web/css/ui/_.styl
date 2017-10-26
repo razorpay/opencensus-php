@@ -7,6 +7,7 @@
   outline: none
 
 pre
+  margin: 0
   font-size: 12px
 
 img
@@ -86,6 +87,35 @@ a
   background: #fff
   margin: 30px
   box-shadow: 1px 2px 8px rgba(0,0,0,.11)
+  padding-bottom: 1px
+  &.limited
+    margin: 30px auto
+    max-width: 600px
+  > header
+    border-bottom: 2px solid #eee
+
+.box-icon
+  float: right
+  margin: 24px 20px 0 0
+  font-size: 16px
+
+.capitalize
+  text-transform: capitalize
 
 .clearfix
   overflow: auto;
+
+.text-right
+  text-align: right
+
+i
+  font-style: normal
+
+code
+  background: #f6f9fa
+  border: 1px solid #eee
+  color: #444
+  font-size: 80%
+  padding: 2px 6px
+  border-radius: 3px
+  margin: 0 4px
