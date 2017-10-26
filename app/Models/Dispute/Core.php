@@ -224,10 +224,7 @@ class Core extends Base\Core
 
         $dispute->reason()->associate($reason);
 
-        if ($parent !== null)
-        {
-            $dispute->parent()->associate($parent);
-        }
+        $dispute->parent()->associate($parent);
     }
 
     protected function handleDisputeClosure(Entity $dispute, array $input)

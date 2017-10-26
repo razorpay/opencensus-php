@@ -116,9 +116,9 @@ class CreateDisputesTable extends Migration
         Schema::table(Table::DISPUTE, function(Blueprint $table)
         {
             $table->foreign(Dispute::PARENT_ID)
-                ->references(Dispute::ID)
-                ->on(Table::DISPUTE)
-                ->on_delete('restrict');
+                  ->references(Dispute::ID)
+                  ->on(Table::DISPUTE)
+                  ->on_delete('restrict');
         });
     }
 
