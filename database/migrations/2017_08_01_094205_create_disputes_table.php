@@ -97,11 +97,6 @@ class CreateDisputesTable extends Migration
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
-            $table->foreign(Dispute::PARENT_ID)
-                ->references(Dispute::ID)
-                ->on(Table::DISPUTE)
-                ->on_delete('restrict');
-
             $table->foreign(Dispute::PAYMENT_ID)
                   ->references(Payment::ID)
                   ->on(Table::PAYMENT)
@@ -116,6 +111,14 @@ class CreateDisputesTable extends Migration
                   ->references(Reason::ID)
                   ->on(Table::DISPUTE_REASON)
                   ->on_delete('restrict');
+        });
+
+        Schema::table(Table::DISPUTE, function(Blueprint $table)
+        {
+            $table->foreign(Dispute::PARENT_ID)
+                ->references(Dispute::ID)
+                ->on(Table::DISPUTE)
+                ->on_delete('restrict');
         });
     }
 
