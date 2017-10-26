@@ -331,15 +331,15 @@ class Service extends Base\Service
 
     /**
      * Resend verification mail for not confirmed user.
-     * @param array $input
+     * @param string $userId
      *
      * @return array
      */
-    public function resendVerificationMail(array $input)
+    public function resendVerificationMail()
     {
-        $userId = $input['user_id'];
+        $dashboardHeaders = $this->auth->getDashboardHeaders();
 
-        $data = $this->sendConfirmationMail($userId);
+        $data = $this->sendConfirmationMail($dashboardHeaders['user_id']);
 
         return $data;
     }

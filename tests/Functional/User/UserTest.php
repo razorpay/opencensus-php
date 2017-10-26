@@ -318,10 +318,11 @@ class UserTest extends TestCase
         Mail::fake();
 
         $user = $this->fixtures->create('user', [
+            'id' => '12398102831231',
             'confirm_token' => 'testingtestingtesting',
         ]);
 
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
 
         $this->ba->appAuth();
 

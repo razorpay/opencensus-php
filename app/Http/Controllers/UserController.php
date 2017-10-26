@@ -97,9 +97,7 @@ class UserController extends Controller
 
     public function postResendVerificationMail()
     {
-        $input = Request::all();
-
-        $data = $this->service()->resendVerificationMail($input);
+        $data = $this->service()->resendVerificationMail();
 
         return $data;
     }
