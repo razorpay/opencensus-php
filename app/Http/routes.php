@@ -33,8 +33,6 @@ Route::group(['middleware' => ['web']], function () {
     {
         Route::post('/signin', 'UserController@postSignin'); // ePOS
         Route::post('/register', 'UserController@postRegister'); // ePOS
-        Route::post('/password/reset', 'PasswordController@postRemind');
-        Route::post('/password/reset/{token}', 'PasswordController@postReset');
         // Adding the following here since auth:user middleware should be after cors
         Route::options('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
         Route::get('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);

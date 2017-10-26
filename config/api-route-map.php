@@ -12,6 +12,10 @@ return [
         'user_confirm_by_data',
         // Invitation fetch by token
         'invitation_fetch_by_token',
+        // User Forgot Password
+        'user_reset_password_create',
+        // User Forgot Password Reset Password using Token
+        'user_reset_password_token',
     ],
 
     // auth
@@ -626,6 +630,10 @@ return [
         'user_fetch_email'                  => 'users/email/{email}',
         // User change password
         'user_change_password'              => 'users/{id}/password',
+        // Forgot Password
+        'user_reset_password_create'        => 'users/reset-password',
+        // User Forgot Password Reset Password using Token
+        'user_reset_password_token'         => 'users/reset-password-token',
 
         // Admin Routes
         // Pricing
