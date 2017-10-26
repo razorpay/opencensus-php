@@ -54,6 +54,7 @@ class Gateway extends Base\Gateway
         {
             return $this->authorizeRecurring($input);
         }
+
         $content = $this->getPaymentRequestData($input);
 
         $entityAttributes = $this->getEntityAttributes($input);
@@ -72,8 +73,10 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
-                           ['gateway_response' => $input['gateway'],
-                            'payment_id'       => $input['payment']['id']]);
+                           [
+                                'gateway_response' => $input['gateway'],
+                                'payment_id'       => $input['payment']['id'],
+                            ]);
 
         if ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
         {
