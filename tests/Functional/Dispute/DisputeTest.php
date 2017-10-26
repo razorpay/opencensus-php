@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Dispute;
 
 use RZP\Models\Dispute\Entity;
+use RZP\Models\Dispute\Phase;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -166,6 +167,14 @@ class DisputeTest extends TestCase
 
         $this->startTest($testData);
     }
+
+    public function testDisputeCreateWithNonTransactionalInvalidDeductOnset()
+    {
+        $this->updateCreateTestData();
+
+        $this->startTest();
+    }
+
 
     public function testDisputeEdit()
     {
@@ -486,6 +495,19 @@ class DisputeTest extends TestCase
         $testdata = $this->updateEditTestData($input);
 
         $testdata['request']['content'][Entity::ACCEPTED_AMOUNT] = 0;
+
+        $this->startTest($testdata);
+    }
+
+    public function testNonTransactionalDisputeInvalidClose()
+    {
+        // Input params while creating
+        $input = [
+            'amount'                => 10000,
+            'deduct_at_onset'       => 0,
+            'phase'                 => Phase::RETRIEVAL,
+        ];
+        $testdata = $this->updateEditTestData($input);
 
         $this->startTest($testdata);
     }
