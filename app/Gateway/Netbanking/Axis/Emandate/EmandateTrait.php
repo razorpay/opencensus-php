@@ -282,7 +282,7 @@ trait EmandateTrait
     //---------------Verify request helpers end-----------------------
 
     //----------------------General helpers---------------------------
-    protected function getEmandateEncryptedData(array $data): string
+    public function getEmandateEncryptedData(array $data): string
     {
         return base64_encode(
             $this->getEncryptor()->encryptString(
@@ -291,7 +291,7 @@ trait EmandateTrait
         );
     }
 
-    protected function getEmandateDecryptedData(string $body, array $input): array
+    public function getEmandateDecryptedData(string $body, array $input): array
     {
         $decrypted = $this->getEncryptor()->decryptString(base64_decode($body));
 
