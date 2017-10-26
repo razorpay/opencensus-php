@@ -8,10 +8,9 @@ import MerchantList from 'admin/merchants/MerchantList';
 import Stats from 'admin/stats';
 import PlanList from 'admin/plans/List';
 import GatewayRulesList from 'admin/gatewayrules/List';
-
+import Entities from 'admin/entities/List';
 import ActionsList from 'admin/adminActions/ActionsList';
 import EmailLogsList from 'admin/emailLogs/EmailLogsList';
-import Entities from 'admin/entities/container';
 
 import MerchantEntity from 'admin/merchants/entity/MerchantEntity';
 
