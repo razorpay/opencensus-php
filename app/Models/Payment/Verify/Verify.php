@@ -575,13 +575,6 @@ class Verify extends Base\Core
             $result = Result::ERROR;
         }
 
-        $this->trace->info(
-            TraceCode::PAYMENT_VERIFY_RESULT,
-            [
-                'payment_id'    => $payment->getId(),
-                'result'        => $result,
-            ]);
-
         return $result;
     }
 
