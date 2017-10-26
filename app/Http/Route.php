@@ -251,7 +251,6 @@ final class Route
         'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
         'adj_add_reverse'                         => ['post',     'adjustments/reversal',                           'AdjustmentController@postReverseAdjustments'                       ],
         'adj_add_bulk'                            => ['post',     'adjustments/bulk',                               'AdjustmentController@postMultipleAdjustments'                      ],
-        'adj_add_fee'                             => ['post',     'adjustments/fees',                               'AdjustmentController@postFeesAdjustment'                           ],
         'adjustments_split_for_dispute'           => ['post',     'adjustments/split_adjustments',                  'AdjustmentController@splitAdjustments'                             ],
         'mock_hdfc_enroll'                        => ['post',     'gateway/mock_hdfc/enroll',                       'MockGatewayController@enroll'                                      ],
         'mock_hdfc_payment'                       => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
@@ -1219,7 +1218,6 @@ final class Route
         'workflow_action_get_multiple',
         'merchants_update_hold_funds',
         'adj_add',
-        'adj_add_fee',
         'payment_authorize_refund',
         'admin_change_password',
         'pricing_create_plan',
@@ -1315,7 +1313,6 @@ final class Route
         'merchant_fetch_bank_account'      => Permission::VIEW_MERCHANT_BANK_ACCOUNTS,
         'merchant_edit'                    => '*', // permission handled in code
         'adj_add'                          => Permission::ADD_MERCHANT_ADJUSTMENT,
-        'adj_add_fee'                      => Permission::ADD_MERCHANT_ADJUSTMENT,
         'merchant_add_bank_account'        => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'merchant_activate'                => Permission::EDIT_ACTIVATE_MERCHANT,
         'admin_fetch_terminal_by_id'       => '*',
