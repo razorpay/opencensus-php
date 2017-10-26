@@ -20,8 +20,6 @@ class Core extends Base\Core
     const DEBIT_ADJUSTMENT_DESCRIPTION = 'Debit disputed amount';
     const CREDIT_ADJUSTMENT_DESCRIPTION = 'Credit to reverse a previous dispute debit';
 
-    protected $parent;
-
     /**
      * @param Payment\Entity $payment
      * @param Reason\Entity  $reason
@@ -43,11 +41,11 @@ class Core extends Base\Core
 
         (new Validator)->validatePaymentForDispute($input, $payment);
 
-        $this->checkAndGetParent($input);
+        $parent = $this->checkAndGetParent($input);
 
         $dispute = (new Entity)->build($input);
 
-        $this->setRelationsAndDerivedAttributes($dispute, $payment, $reason);
+        $this->setRelationsAndDerivedAttributes($dispute, $parent, $payment, $reason);
 
         // entity id is required to create associated transaction
         $dispute->generateId();
@@ -92,15 +90,15 @@ class Core extends Base\Core
             array_merge($input, [Entity::ID => $dispute->getId()])
         );
 
-        $this->checkAndGetParent($input, $dispute);
+        $parent = $this->checkAndGetParent($input, $dispute);
 
         $dispute->edit($input);
 
         $dispute->setAuditAction(Action::EDIT_DISPUTE);
 
-        if ($this->parent !== null)
+        if ($parent !== null)
         {
-            $dispute->parent()->associate($this->parent);
+            $dispute->parent()->associate($parent);
         }
 
         return $this->repo->transaction(function() use ($dispute, $input)
@@ -208,6 +206,7 @@ class Core extends Base\Core
 
     protected function setRelationsAndDerivedAttributes(
         Entity $dispute,
+        $parent,
         Payment\Entity $payment,
         Reason\Entity $reason)
     {
@@ -225,9 +224,9 @@ class Core extends Base\Core
 
         $dispute->reason()->associate($reason);
 
-        if ($this->parent !== null)
+        if ($parent !== null)
         {
-            $dispute->parent()->associate($this->parent);
+            $dispute->parent()->associate($parent);
         }
     }
 
@@ -338,15 +337,14 @@ class Core extends Base\Core
      *
      * @param array $input
      * @param Entity|null $dispute
+     * @return null
      */
     protected function checkAndGetParent(array $input, Entity $dispute = null)
     {
         if (isset($input[Entity::PARENT_ID]) === false)
         {
-            return;
+            return null;
         }
-
-        $validator = new Validator($dispute);
 
         if($dispute !== null)
         {
@@ -364,14 +362,14 @@ class Core extends Base\Core
 
                 unset($input[Entity::PARENT_ID]);
 
-                return;
+                return null;
             }
         }
 
         $parent = $this->repo->dispute->findOrFailPublic($input[Entity::PARENT_ID]);
 
-        $validator->validateDisputeCanBecomeParent($parent);
+        $parent->getValidator()->validateDisputeCanBecomeParent($parent);
 
-        $this->parent = $parent;
+        return $parent;
     }
 }
