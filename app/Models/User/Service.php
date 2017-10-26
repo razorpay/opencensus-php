@@ -319,7 +319,7 @@ class Service extends Base\Service
             'user_id'     => $userId,
         ];
 
-        (new User\Validator)->validateInput('team_management', $teamData);
+        (new User\Validator)->validateInput('teamManagement', $teamData);
 
         return $this->updateUserMerchantMapping($userId, $input);
     }
