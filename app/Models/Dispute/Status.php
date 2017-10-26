@@ -16,6 +16,11 @@ class Status
         self::CLOSED,
     ];
 
+    protected static $transactionalStatuses = [
+        self::WON,
+        self::LOST,
+    ];
+
     public static function exists(string $status): bool
     {
         return defined(get_class() . '::' . strtoupper($status));
@@ -24,5 +29,10 @@ class Status
     public static function getClosedStatuses(): array
     {
         return self::$closedStatuses;
+    }
+
+    public static function getTransactionalStatuses(): array
+    {
+        return self::$transactionalStatuses;
     }
 }
