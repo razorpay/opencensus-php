@@ -1028,7 +1028,6 @@ final class Route
         'user_confirm',
         'user_login',
         'user_change_password',
-        'user_merchant_mapping_action',
         'merchant_admin_lead_put',
         'payment_update_on_hold',
         'gateway_create_rule',
@@ -1161,6 +1160,7 @@ final class Route
         'merchant_pre_signup_details',
         'merchant_edit_pre_signup_details',
         'create_submerchant_user',
+        'user_merchant_mapping_action',
     ];
 
     // These will run on internal auth with the assurance

@@ -10,6 +10,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Invitation;
 use RZP\Models\Admin\AdminLead;
 use RZP\Mail\User;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Service extends Base\Service
 {
@@ -305,6 +307,21 @@ class Service extends Base\Service
         $response = (new Core)->get($user);
 
         return $response;
+    }
+
+    public function updateMerchantManageTeam(string $userId, array $input): array
+    {
+        $dashboardHeaders = $this->auth->getDashboardHeaders();
+
+        $dashboardUserId = $dashboardHeaders['user_id'];
+
+        if ($userId === $dashboardUserId)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_AGGREGRATOR);
+        }
+
+        return $this->updateUserMerchantMapping($userId, $input);
     }
 
     /**

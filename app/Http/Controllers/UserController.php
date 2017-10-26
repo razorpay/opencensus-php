@@ -65,7 +65,7 @@ class UserController extends Controller
 
         $input['action'] = $action;
 
-        $data = $this->service()->updateUserMerchantMapping($id, $input);
+        $data = $this->service()->updateMerchantManageTeam($id, $input);
 
         return ApiResponse::json($data);
     }
