@@ -79,7 +79,7 @@ export class PageTable extends Component {
 
     pending = pending.fetch;
 
-    if (items && items.length) {
+    if (!pending && items && items.length) {
       return (
         <div class="box">
           <Pagination model={model} />

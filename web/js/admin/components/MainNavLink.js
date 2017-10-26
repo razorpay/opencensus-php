@@ -23,8 +23,8 @@ export default class MainNavLink extends Component {
 
     return (
       <ShowWhen permission={permission}>
-        <NavLink {...linkProps}>
-          <i class={icon} />
+        <NavLink class="main-nav" {...linkProps}>
+          <i class={'i-' + icon} />
           {children}
           {tag}
         </NavLink>
