@@ -73,7 +73,7 @@ class PasswordReset extends Base\Mailable
             'token'      => $this->token,
             'org'        => $this->org,
             'expiryTime' => $this->expiryTime,
-            'email'      => $this->user['email'],
+            'email'      => urlencode($this->user['email']),
         ];
 
         $this->with($data);
