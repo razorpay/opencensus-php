@@ -46,6 +46,7 @@ abstract class Base extends Core
         }
         catch (Exception\GatewayFileException $e)
         {
+            throw $e;
             $this->handleProcessingFailure($e);
         }
         finally

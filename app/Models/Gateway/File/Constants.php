@@ -14,7 +14,6 @@ class Constants
     const FEDERAL         = 'federal';
     const INDUSIND        = 'indusind';
     const RBL             = 'rbl';
-    const NETBANKING_HDFC = 'netbanking_hdfc';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -40,10 +39,10 @@ class Constants
             self::INDUSIND,
         ],
         Type::EMANDATE_REGISTER => [
-            self::NETBANKING_HDFC,
+            self::HDFC,
         ],
         Type::EMANDATE_DEBIT => [
-            self::NETBANKING_HDFC,
+            self::HDFC,
         ],
     ];
 
@@ -71,11 +70,11 @@ class Constants
         ],
 
         Type::EMANDATE_REGISTER => [
-            self::NETBANKING_HDFC => ['hdfc.emandate@razorpay.com'],
+            self::HDFC => ['hdfc.emandate@razorpay.com'],
         ],
 
         Type::EMANDATE_DEBIT => [
-            self::NETBANKING_HDFC => ['hdfc.emandate@razorpay.com'],
+            self::HDFC => ['hdfc.emandate@razorpay.com'],
         ],
     ];
 }

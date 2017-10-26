@@ -15,7 +15,7 @@ use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Mail\Gateway\EMandate\Base as eMail;
+use RZP\Mail\Gateway\EMandate\Base as EMandatMail;
 
 abstract class Base extends BaseProcessor
 {
@@ -61,6 +61,7 @@ abstract class Base extends BaseProcessor
         }
         catch (\Throwable $e)
         {
+            throw $e;
             $this->trace->traceException(
                             $e,
                             Trace::INFO,
@@ -83,7 +84,7 @@ abstract class Base extends BaseProcessor
             $mailData = $this->formatDataForMail();
 
             $type = static::GATEWAY . '_' . static::STEP;
-            $mailable = new eMail($mailData, $type, $recipients);
+            $mailable = new EMandatMail($mailData, $type, $recipients);
 
             Mail::queue($mailable);
 
@@ -93,6 +94,7 @@ abstract class Base extends BaseProcessor
         }
         catch (\Throwable $e)
         {
+            throw $e;
             $this->trace->traceException(
                             $e,
                             Trace::INFO,
