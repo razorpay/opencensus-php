@@ -107,18 +107,7 @@ class Validator extends Base\Validator
         if ($disputeParent->child !== null)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'The parent dispute id : '. $disputeParent->getId() .' is linked to another dispute entity.',
-                Entity::PARENT_ID);
-        }
-    }
-
-    public function validateNewParentIsNotExisting(array $input)
-    {
-        if (($this->entity->isChildDispute() === true) and
-            ($this->entity->parent->getId() === $input['parent_id']))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'The parent dispute is already linked to this dispute.',
+                'The parent dispute is linked to another dispute entity.',
                 Entity::PARENT_ID);
         }
     }

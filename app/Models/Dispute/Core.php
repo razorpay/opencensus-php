@@ -342,13 +342,30 @@ class Core extends Base\Core
     protected function checkAndGetParent(array $input, Entity $dispute = null)
     {
         if (isset($input[Entity::PARENT_ID]) === false)
+        {
             return;
+        }
 
         $validator = new Validator($dispute);
 
         if($dispute !== null)
         {
-            $validator->validateNewParentIsNotExisting($input);
+            // Check if new parent is existing parent
+
+            if (($dispute->isChildDispute() === true) and
+                ($dispute->parent->getId() === $input[Entity::PARENT_ID]))
+            {
+                $this->trace->info(
+                    TraceCode::DISPUTE_SAME_PARENT_LINKING,
+                    [
+                        'input'      => $input,
+                        'dispute_id' => $dispute->getId()
+                    ]);
+
+                unset($input[Entity::PARENT_ID]);
+
+                return;
+            }
         }
 
         $parent = $this->repo->dispute->findOrFailPublic($input[Entity::PARENT_ID]);
