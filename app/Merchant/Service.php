@@ -189,17 +189,8 @@ class Service extends Base\Service
 
     public function resendConfirmation()
     {
-        $authUser = Auth::user();
-
-        $authUserId = $authUser->id;
-
-        $data = [
-            'user_id' => $authUserId
-        ];
-
         $resendConfirmation = [
             'route_name' => 'user_resend_verification',
-            'body'       => $data
         ];
 
         $genericService = new Generic\Service;
