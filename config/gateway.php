@@ -281,11 +281,16 @@ return [
     ],
 
     'netbanking_hdfc' => [
+        // TODO: Move constants to env file
+
         'live_hash_secret'  => env('NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret'  => '123456',
+
         // tpv
         'live_hash_secret_tpv' => env('NETBANKING_HDFC_GATEWAY_CUG_LIVE_HASH_SECRET'),
         'test_hash_secret_tpv' => '12345',
+
+        'test_merchant_id' => 'RAZORPAY',
     ],
 
     'netbanking_corporation' => [

@@ -43,6 +43,15 @@ class BankTransferController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function editPayerBankAccount(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->editPayerBankAccount($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function insertBankTransfer(string $provider)
     {
         $input = Request::all();

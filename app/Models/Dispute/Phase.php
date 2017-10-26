@@ -8,6 +8,7 @@ class Phase
     const PRE_ARBITRATION = 'pre_arbitration';
     const ARBITRATION     = 'arbitration';
     const RETRIEVAL       = 'retrieval';
+    const FRAUD           = 'fraud';
 
     public static function exists(string $phase)
     {

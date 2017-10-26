@@ -562,8 +562,7 @@ class Core extends Base\Core
 
         if ($paymentCustomer !== null)
         {
-            $invoice->customer()->associate($paymentCustomer);
-            $invoice->setCustomerDetails($paymentCustomer);
+            $invoice->associateAndSetCustomerDetails($paymentCustomer);
         }
         else
         {

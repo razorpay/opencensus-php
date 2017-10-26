@@ -936,14 +936,18 @@ class TerminalSelectionTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
-        $this->fixtures->create('terminal:shared_cybersource_axis_terminal');
+        $this->fixtures->create('terminal:shared_axis_terminal', [
+            'id' =>'1000AxisHdfcTl',
+            'gateway_acquirer' => 'hdfc'
+        ]);
+
+        $this->fixtures->create('terminal:shared_axis_terminal');
 
         $payment = $this->getDefaultPaymentArray();
         $this->doAuthAndCapturePayment($payment);
 
         $payment1 = $this->getLastEntity('payment', true);
-        $this->assertEquals('1000CybAxTrmnl', $payment1['terminal_id']);
+        $this->assertEquals('1000AxisMigsTl', $payment1['terminal_id']);
 
         $terminalAttrs = [
             'id' => 'DrctHDFCTermnl',
