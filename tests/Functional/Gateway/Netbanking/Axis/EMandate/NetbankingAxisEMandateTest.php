@@ -15,6 +15,8 @@ class NetbankingAxisEMandateTest extends TestCase
 
     protected $payment;
 
+    const ACCOUNT_NUMBER = '914010009305862';
+
     public function setUp()
     {
         $this->gateway = 'netbanking_axis';
@@ -33,7 +35,7 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $this->payment = $this->getNetbankingRecurringPaymentArray('UTIB');
 
-        $this->payment['account_number'] = '914010009305862';
+        $this->payment['account_number'] = self::ACCOUNT_NUMBER;
 
         unset($this->payment[Entity::CARD]);
 
@@ -126,5 +128,6 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->assertEquals($netbanking['si_token'], $token['gateway_token']);
 
         $this->assertEquals(Token\RecurringStatus::CONFIRMED, $token[Token\Entity::RECURRING_STATUS]);
+        $this->assertEquals(self::ACCOUNT_NUMBER, $token[Token\Entity::ACCOUNT_NUMBER]);
     }
 }
