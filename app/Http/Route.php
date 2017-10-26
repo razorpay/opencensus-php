@@ -844,7 +844,6 @@ final class Route
     ];
 
     public static $internal = [
-        'admin_fetch_all_entities',
         'admin_fetch_entity_multiple',
         'admin_fetch_terminal_by_id',
         'admin_fetch_entity_by_id',
@@ -1232,6 +1231,7 @@ final class Route
         'setl_retry',
         'merchant_activation_files',
         'merchant_batches',
+        'admin_fetch_all_entities',
     ];
 
     public static $routePermission = [
