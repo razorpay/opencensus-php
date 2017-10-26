@@ -206,7 +206,7 @@ class Core extends Base\Core
 
     protected function setRelationsAndDerivedAttributes(
         Entity $dispute,
-        $parent,
+        Entity $parent = null,
         Payment\Entity $payment,
         Reason\Entity $reason)
     {
@@ -346,12 +346,12 @@ class Core extends Base\Core
             return null;
         }
 
-        if($dispute !== null)
+        if ($dispute !== null)
         {
             // Check if new parent is existing parent
 
             if (($dispute->isChildDispute() === true) and
-                ($dispute->parent->getId() === $input[Entity::PARENT_ID]))
+                ($dispute->getParentId() === $input[Entity::PARENT_ID]))
             {
                 $this->trace->info(
                     TraceCode::DISPUTE_SAME_PARENT_LINKING,
@@ -368,7 +368,7 @@ class Core extends Base\Core
 
         $parent = $this->repo->dispute->findOrFailPublic($input[Entity::PARENT_ID]);
 
-        $parent->getValidator()->validateDisputeCanBecomeParent($parent);
+        $parent->getValidator()->validateDisputeCanBecomeParent();
 
         return $parent;
     }

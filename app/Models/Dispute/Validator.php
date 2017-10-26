@@ -102,9 +102,9 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateDisputeCanBecomeParent(Entity $disputeParent)
+    public function validateDisputeCanBecomeParent()
     {
-        if ($disputeParent->child !== null)
+        if ($this->entity->child !== null)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The parent dispute is linked to another dispute entity.',
