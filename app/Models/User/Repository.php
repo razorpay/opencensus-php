@@ -34,13 +34,4 @@ class Repository extends Base\Repository
                     ->where(Entity::EMAIL, '=', $email)
                     ->first();
     }
-
-    public function findMerchantByUserAsOwner(string $userId, string $merchantId)
-    {
-        return $this->find($userId)
-                    ->merchants()
-                    ->where('id', $merchantId)
-                    ->where('role', 'owner')
-                    ->first();
-    }
 }

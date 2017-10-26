@@ -4,7 +4,6 @@ namespace RZP\Models\Merchant;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Models\User;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Terminal;
@@ -126,7 +125,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $createSubMerchantUserRules = [
-        'user_id'               => 'required|alpha_num|size:14',
         'merchant_id'           => 'required|alpha_num|size:14',
         'password'              => 'required|between:7,50|confirmed|numbers|letters',
         'password_confirmation' => 'required|between:7,50',
@@ -178,9 +176,9 @@ class Validator extends Base\Validator
      */
     protected function validateSubMerchantOwner(array $input)
     {
-        $ownerMerchant = (new User\Repository)->findMerchantByUserAsOwner($input['user_id'], $input['merchant_id']);
+        $dashboardUserRole = $_SERVER['HTTP_X_DASHBOARD_USER_ROLE'] ?? '';
 
-        if (empty($ownerMerchant) === true)
+        if ($dashboardUserRole !== 'owner')
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBUSER_CREATE_NOT_ALLOWED);
