@@ -62,7 +62,6 @@ export default ({ props }) => {
       }
     }
 
-    // TODO: adminPut, in this case, won't work if parseParams(params) are not sent as "data" like in adminPost
     return adminPut({
       route_name: 'merchant_put_payment_methods',
       url_params: {

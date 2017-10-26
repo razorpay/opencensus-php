@@ -8,10 +8,9 @@ import MerchantList from 'admin/merchants/MerchantList';
 import Stats from 'admin/stats';
 import PlanList from 'admin/plans/List';
 import GatewayRulesList from 'admin/gatewayrules/List';
-
+import Entities from 'admin/entities/List';
 import ActionsList from 'admin/adminActions/ActionsList';
 import EmailLogsList from 'admin/emailLogs/EmailLogsList';
-import Entities from 'admin/entities/container';
 
 import MerchantEntity from 'admin/merchants/entity/MerchantEntity';
 
@@ -21,6 +20,7 @@ import WorkflowList from 'admin/workflows/List';
 import GroupList from 'admin/groups/List';
 import UserList from 'admin/users/List';
 import RoleList from 'admin/roles/List';
+import PermissionsList from 'admin/permissions/List';
 
 import AuditLog from 'admin/auditlog/List';
 
@@ -43,7 +43,7 @@ export default class App extends Component {
             <Route path="/groups" component={GroupList} />
             <Route path="/users" component={UserList} />
             <Route path="/roles" component={RoleList} />
-
+            <Route path="/permissions" component={PermissionsList} />
             <Route path="/audit-log" component={AuditLog} />
 
             <Redirect to="/stats" />
