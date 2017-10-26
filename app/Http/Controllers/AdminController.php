@@ -91,7 +91,7 @@ class AdminController extends Controller
      */
     public function getIndex()
     {
-        return view('adminIndex');
+        return $this->getPokedex();
     }
 
     public function getPokedex()
