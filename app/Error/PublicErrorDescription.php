@@ -470,6 +470,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_SUBUSER_CREATE_NOT_ALLOWED                                = 'Sub user creation not allowed for this role';
     const BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER                          = 'Action not allowed for self user';
+    const BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHNAT                          = 'User doesn\'t belong to the current merchant';
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                           = 'Invitation is already sent to this email';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                            = 'User with given email is already a member of the team';
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                = 'SuperAdmin/Admin cannot edit their own preferences';

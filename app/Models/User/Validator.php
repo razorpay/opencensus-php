@@ -6,6 +6,7 @@ use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 
 class Validator extends Base\Validator
 {
@@ -57,9 +58,67 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE        => 'sometimes|numeric|digits_between:8,11',
     ];
 
+    protected static $actionUpdateRules = [
+        Entity::MERCHANT_ID => 'required|alpha_num|size:14',
+        Entity::ROLE        => 'required|in:owner,manager,operations,finance,support,admin,sellerapp',
+        Entity::ACTION      => 'required|custom',
+    ];
+
+    protected static $actionDetachRules = [
+        Entity::ACTION  => 'required|custom',
+    ];
+
+    protected static $teamManagementRules = [
+        Entity::MERCHANT_ID => 'required|alpha_num|size:14',
+        Entity::USER_ID     => 'required|alpha_num|size:14',
+    ];
+
+    protected static $teamManagementValidators = [
+        'self_user',
+        'team_user',
+    ];
+
     protected static $createValidators = [
         'captcha'
     ];
+
+    /**
+     * merchant can not edit or delete his own user id.
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function validateSelfUser(array $input)
+    {
+        $app = App::getFacadeRoot();
+
+        $dashboardHeaders = $app['basicauth']->getDashboardHeaders();
+
+        $dashboardUserId = $dashboardHeaders['user_id'];
+
+        if ($input['user_id'] === $dashboardUserId)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER);
+        }
+    }
+
+    /**
+     * This function handles https://www.owasp.org/index.php/Top_10_2013-A4-Insecure_Direct_Object_References
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function validateTeamUser(array $input)
+    {
+        $user = (new Merchant\Repository)->getMerchantUserMapping($input['merchant_id'], $input['user_id']);
+
+        if (empty($user) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHNAT);
+        }
+    }
 
     /**
      * Google captcha validation.

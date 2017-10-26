@@ -9,7 +9,8 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
 use RZP\Models\Admin\AdminLead;
-use RZP\Mail\User;
+use RZP\Mail\User as UserMail;
+use RZP\Models\User;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -228,7 +229,7 @@ class Service extends Base\Service
 
             $org['hostname'] = $this->auth->getOrgHostName();
 
-            $confirmationMail = new User\AccountVerification($user, $org);
+            $confirmationMail = new UserMail\AccountVerification($user, $org);
 
             Mail::queue($confirmationMail);
         }
@@ -311,15 +312,16 @@ class Service extends Base\Service
 
     public function updateMerchantManageTeam(string $userId, array $input): array
     {
-        $dashboardHeaders = $this->auth->getDashboardHeaders();
+        $input['merchant_id'] = $this->merchant->getId();
 
-        $dashboardUserId = $dashboardHeaders['user_id'];
+        $teamData = [
+            'merchant_id' => $input['merchant_id'],
+            'user_id'     => $userId,
+        ];
 
-        if ($userId === $dashboardUserId)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NOT_AGGREGRATOR);
-        }
+        (new User\Validator)->validateInput('team_management', $teamData);
+
+        (new User\Validator)->validateInput('action_'.$input['action'], $input);
 
         return $this->updateUserMerchantMapping($userId, $input);
     }
