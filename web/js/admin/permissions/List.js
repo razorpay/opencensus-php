@@ -3,13 +3,16 @@ import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import Field from 'ui/Field';
 import Collection from 'model/collection';
+import CollectionItem from 'model/collectionItem';
 import { adminFetch } from 'util/fetch';
 import { observer } from 'mobx-react';
 
 // import { showEntity } from "./Entity";
 
 import { openRoleModal } from './RoleModal';
-import { showEntity } from './Entity';
+import { showEntity, removeEntity } from './Entity';
+
+console.log(CollectionItem.constructor);
 
 @observer
 export default class PermissionsList extends Component {
@@ -19,6 +22,7 @@ export default class PermissionsList extends Component {
       route_name: 'permission_get_multiple',
       count: 1000,
     },
+    model: CollectionItem,
   });
 
   onSubmit = filters => this.collection.setFilters(filters);
@@ -59,6 +63,8 @@ const Actions = ({ item }) => (
     <div class="link" onClick={item::showEntity}>
       Edit
     </div>
-    <div class="link danger">Delete</div>
+    <div class="link danger" onClick={item::removeEntity}>
+      Delete
+    </div>
   </div>
 );
