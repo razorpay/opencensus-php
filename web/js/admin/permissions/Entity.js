@@ -4,7 +4,7 @@ import Form from 'ui/Form';
 import Field, { CheckField } from 'ui/Field';
 import OrgTable from './OrgTable';
 import Table from 'ui/Table';
-import { adminFetch, adminPut, adminPost } from 'util/fetch';
+import { adminFetch, adminPut, adminPost, adminDelete } from 'util/fetch';
 
 export default class EditPerm extends Component {
   state = {
@@ -79,6 +79,7 @@ export default class EditPerm extends Component {
         }
       });
     }
+
     return promise.then(data => {
       if (data) {
         closeModal();
@@ -150,6 +151,18 @@ export default class EditPerm extends Component {
 
 export function showEntity(collection) {
   openModal(<EditPerm collection={collection} model={this} />);
+}
+export function removeEntity() {
+  let params = {
+    route_name: 'permission_delete',
+    url_params: {
+      id: this.id,
+    },
+  };
+  adminDelete(params).then(response => {
+    notifyDone();
+    this.collection.items.remove(this);
+  });
 }
 
 const roleFields = [
