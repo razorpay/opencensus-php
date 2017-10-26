@@ -117,4 +117,13 @@ class UserController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postChangePasswordByToken()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->changePasswordByToken($input);
+
+        return ApiResponse::json($data);
+    }
 }

@@ -401,4 +401,37 @@ class Service extends Base\Service
 
         return ['success' => true];
     }
+
+    /**
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function changePasswordByToken(array $input)
+    {
+        (new User\Validator)->validateInput('changePasswordToken', $input);
+
+        $email = mb_strtolower($input['email']);
+
+        $user = $this->repo->user->findByEmail($email);
+
+        $token = (new Core)->generateToken($user->getId(), $input[Entity::EXPIRY_TIME]);
+
+        if (hash_equals($token, $input['token']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHNAT);
+        }
+        else
+        {
+            $changePasswordData = [
+                'password'              => $input['password'],
+                'password_confirmation' => $input['password_confirmation'],
+            ]
+
+            (new Core)->changePassword($user, $changePasswordData);
+        }
+
+        return ['success' => true];
+    }
 }

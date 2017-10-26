@@ -63,6 +63,14 @@ class Validator extends Base\Validator
         Entity::USER_ID     => 'required|alpha_num|size:14',
     ];
 
+    protected static $changePasswordTokenRules = [
+        Entity::EMAIL                 => 'required|email',
+        Entity::PASSWORD              => 'required|between:7,50|confirmed|numbers|letters',
+        Entity::PASSWORD_CONFIRMATION => 'required|between:7,50',
+        Entity::TOKEN                 => 'required|string',
+        Entity::EXPIRY_TIME           => 'required',
+    ];
+
     protected static $teamManagementValidators = [
         'self_user',
         'team_user',

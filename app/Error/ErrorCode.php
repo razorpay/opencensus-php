@@ -619,6 +619,7 @@ class ErrorCode
     const BAD_REQUEST_USER_NOT_FOUND                                                = 'BAD_REQUEST_USER_NOT_FOUND';
     const BAD_REQUEST_USER_ROLE_INVALID                                             = 'BAD_REQUEST_USER_ROLE_INVALID';
     const BAD_REQUEST_OLD_PASSWORD_MISMATCH                                         = 'BAD_REQUEST_OLD_PASSWORD_MISMATCH';
+    const BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID                                       = 'BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHNAT';
     const BAD_REQUEST_CAPTCHA_FAILED                                                = 'BAD_REQUEST_CAPTCHA_FAILED';
 
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                               = 'BAD_REQUEST_INVITATION_USER_ALREADY_INVITED';

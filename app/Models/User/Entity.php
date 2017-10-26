@@ -22,6 +22,9 @@ class Entity extends Base\PublicEntity
     const CAPTCHA               = 'captcha';
     const CAPTCHA_DISABLE       = 'captcha_disable';
 
+    const TOKEN                 = 'token';
+    const EXPIRY_TIME           = 'expiryTime';
+
     const ACTION                = 'action';
     const USER_ID               = 'user_id';
     const MERCHANT_ID           = 'merchant_id';
