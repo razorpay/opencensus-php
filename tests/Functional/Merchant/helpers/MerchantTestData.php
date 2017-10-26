@@ -2870,7 +2870,6 @@ return [
                     's2swallet',
                     's2supi',
                     's2saeps',
-                    'setl_report',
                     'noflashcheckout',
                     'recurring',
                     's2s',
@@ -2881,4 +2880,29 @@ return [
             ]
         ]
     ],
+    'testUpdateSubmerchantEmail' => [
+        'request' => [
+            'url'       => '/merchants/10000000000044/email',
+            'method'    => 'PUT',
+            'content'   => [
+                'email' => 'differentemail@razorpay.com'
+            ],
+            'server' => [
+                'HTTP_' . \RZP\Http\BasicAuth\BasicAuth::ACCOUNT_HEADER_KEY => '10000000000044',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
+        ],
+    ]
 ];

@@ -2541,6 +2541,10 @@ ALTER TABLE invoices
 ALTER TABLE schedules
     MODIFY COLUMN `anchor` int(11);
 
+ALTER TABLE tokens
+    ADD COLUMN account_number VARCHAR(40) AFTER wallet,
+    ADD INDEX `tokens_account_number_index` (`account_number`);
+
 ALTER TABLE disputes
     ADD COLUMN parent_id CHAR(14) DEFAULT NULL AFTER merchant_id,
     ADD CONSTRAINT disputes_parent_id_foreign FOREIGN KEY (parent_id) REFERENCES disputes(id) ON DELETE RESTRICT;

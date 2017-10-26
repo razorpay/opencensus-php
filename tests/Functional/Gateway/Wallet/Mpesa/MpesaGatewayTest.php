@@ -18,6 +18,10 @@ class MpesaGatewayTest extends TestCase
 
     const OTP = '1234';
 
+    protected $payment;
+
+    protected $sharedTerminal;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/MpesaGatewayTestData.php';
@@ -75,6 +79,21 @@ class MpesaGatewayTest extends TestCase
         $this->assertNotEmpty($wallet['gateway_payment_id']);
 
         $this->assertEmpty($wallet['gateway_payment_id_2']);
+    }
+
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['txnAmt'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $this->doAuthPayment($this->payment);
+        });
     }
 
     /**
@@ -284,7 +303,7 @@ class MpesaGatewayTest extends TestCase
 
     public function testSoapTimeoutError()
     {
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testVerifyMismatch'];
 
         $this->testAuthPayment();
 
@@ -302,7 +321,7 @@ class MpesaGatewayTest extends TestCase
 
     public function testSoapError()
     {
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testVerifyMismatch'];
 
         $this->testAuthPayment();
 
@@ -326,13 +345,29 @@ class MpesaGatewayTest extends TestCase
 
         $this->mockSoapSslError();
 
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testVerifyMismatch'];
 
         $this->runRequestResponseFlow(
             $data,
             function() use ($payment)
             {
                 $this->verifyPayment($payment['id']);
+            });
+    }
+
+    public function testMpesaUpperCaseError()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->payment;
+
+        $payment['wallet'] = 'MPESA';
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
             });
     }
 

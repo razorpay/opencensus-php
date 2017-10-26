@@ -12,6 +12,7 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::SETTLEMENT_ID   => 'sometimes|string|min:14|max:19',
+        Entity::COMPONENT       => 'sometimes|string',
     );
 
     public function getSettlementDetails($id, $merchant)

@@ -285,6 +285,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_VOID_NOT_SUPPORTED                                = 'Void is not supported for refund transaction on this endpoint.';
     const BAD_REQUEST_INVALID_PARAMETERS                                        = 'One or more fields have invalid data';
     const BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED                           = 'Payment declined because partial amount was approved';
+    const BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT  = 'Recurring payments on international cards not supported for merchant.';
     const BAD_REQUEST_ORDER_DOES_NOT_EXIST                                      = 'Order does not exist.';
     const BAD_REQUEST_ORDER_EXISTS                                              = 'This order already exists in the gateway database.';
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';
@@ -373,6 +374,7 @@ class PublicErrorDescription
     const BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED                          = 'Shared terminal cannot be copied';
     const BAD_REQUEST_SHARED_TERMINAL_MERCHANT_CANNOT_BE_CHANGED                = 'Shared terminal merchant cannot be changed';
     const BAD_REQUEST_SUB_MERCHANT_ALREADY_ASSIGNED_TO_TERMINAL                 = 'Sub-Merchant already assigned to terminal';
+    const BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL                   = 'Cannot change email of Sub-Merchant with same email as its parent';
 
     const BAD_REQUEST_RECONCILIATION                                            = 'Error occurred during reconciliation';
     const BAD_REQUEST_INVALID_COUNTRY                                           = 'Invalid country code/name passed';

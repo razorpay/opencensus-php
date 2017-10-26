@@ -182,6 +182,8 @@ final class Route
         'bank_transfer_process'                   => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_notify'                    => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
         'bank_transfer_refund_retry'              => ['post',     'bank_transfers/refunds/retry',                   'BankTransferController@retryBankTransferRefund'                    ],
+        'bank_transfer_edit_payer_account'        => ['put',      'bank_transfers/{id}/payer_bank_account',         'BankTransferController@editPayerBankAccount'                       ],
+        'bank_transfer_insert'                    => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
         'virtual_account_fetch'                   => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
@@ -225,6 +227,7 @@ final class Route
         'transaction_fetch_multiple'              => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'              => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
         'transaction_create_fees_breakup'         => ['post',     'transactions/fees_breakup',                      'TransactionController@postCreateFeeBreakup'                        ],
+        'setl_fetch_schedule'                     => ['get',      'settlements/schedules',                          'ScheduleController@getSettlementSchedules'                         ],
         'setl_fetch_by_id'                        => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                     => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                 => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
@@ -249,6 +252,7 @@ final class Route
         'adj_add_reverse'                         => ['post',     'adjustments/reversal',                           'AdjustmentController@postReverseAdjustments'                       ],
         'adj_add_bulk'                            => ['post',     'adjustments/bulk',                               'AdjustmentController@postMultipleAdjustments'                      ],
         'adj_add_fee'                             => ['post',     'adjustments/fees',                               'AdjustmentController@postFeesAdjustment'                           ],
+        'adjustments_split_for_dispute'           => ['post',     'adjustments/split_adjustments',                  'AdjustmentController@splitAdjustments'                             ],
         'mock_hdfc_enroll'                        => ['post',     'gateway/mock_hdfc/enroll',                       'MockGatewayController@enroll'                                      ],
         'mock_hdfc_payment'                       => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
         'mock_hdfc_auth_enrolled'                 => ['post',     'gateway/mock_hdfc/auth_enrolled',                'MockGatewayController@authEnrolled'                                ],
@@ -289,6 +293,13 @@ final class Route
         'gateway_payment_callback_kotak'          => ['get',      'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotak'                                   ],
         'gateway_payment_callback_kotak_cancel'   => ['post',     'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotakCancel'                             ],
         'gateway_payment_callback_corporation'    => ['post',     'gateway/netbanking_corporation/callback',        'GatewayController@callbackCorporation'                             ],
+
+        // File-based Emandate Routes
+        'emandate_registration_initiate'          => ['post',     'emandate/registration/initiate/{gateway}',       'EMandateController@postGenerateRegistrationFile'                   ],
+        'emandate_registration_reconcile'         => ['post',     'emandate/registration/reconcile/{gateway}',      'EMandateController@postReconcileRegistrationFile'                  ],
+        'emandate_debit_initiate'                 => ['post',     'emandate/debit/initiate/{gateway}',              'EMandateController@postGenerateDebitFile'                          ],
+        'emandate_debit_reconcile'                => ['post',     'emandate/debit/reconcile/{gateway}',             'EMandateController@postReconcileDebitFile'                         ],
+
         'reconciliate'                            => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
         'dummy_return_callback'                   => ['post',     'return/callback',                                'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                    => ['get',      'trigger/error',                                  'AdminController@getTriggerError'                                   ],
@@ -761,6 +772,7 @@ final class Route
         'setl_combined_report',
         'customer_create',
         'customer_update',
+        'customer_create_token',
         'customer_fetch_by_id',
         'customer_fetch_multiple',
         'customer_update_token',
@@ -832,7 +844,6 @@ final class Route
     ];
 
     public static $internal = [
-        'admin_fetch_all_entities',
         'admin_fetch_entity_multiple',
         'admin_fetch_terminal_by_id',
         'admin_fetch_entity_by_id',
@@ -924,6 +935,8 @@ final class Route
         'bank_transfer_process',
         'bank_transfer_notify',
         'bank_transfer_refund_retry',
+        'bank_transfer_edit_payer_account',
+        'bank_transfer_insert',
         'iin_fetch_by_iin',
         'card_update_saved',
         'iin_fetch_multiple',
@@ -1034,6 +1047,7 @@ final class Route
         'payment_dispute_create',
         'dispute_edit',
         'dispute_migrate_adjustments',
+        'adjustments_split_for_dispute',
         'dispute_reason_create',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
@@ -1051,6 +1065,10 @@ final class Route
         'settings_fetch',
         'settings_upsert',
         'settings_delete',
+        'emandate_registration_initiate',
+        'emandate_registration_reconcile',
+        'emandate_debit_initiate',
+        'emandate_debit_reconcile',
     ];
 
     public static $proxy = [
@@ -1077,7 +1095,6 @@ final class Route
         'merchant_sub_create',
         'merchant_fetch_referrals',
         'customer_delete',
-        'customer_create_token',
         'device_verify_token',
         'app_fetch_tokens',
         'credits_fetch_multiple',
@@ -1182,6 +1199,7 @@ final class Route
         'schedule_update',
         'schedule_assign',
         'schedule_fetch_multiple',
+        'setl_fetch_schedule',
         'feature_delete',
         'admin_dummy_account_test',
         'admin_get_file',
@@ -1213,6 +1231,7 @@ final class Route
         'setl_retry',
         'merchant_activation_files',
         'merchant_batches',
+        'admin_fetch_all_entities',
     ];
 
     public static $routePermission = [
@@ -1302,6 +1321,7 @@ final class Route
         'admin_fetch_terminal_by_id'       => '*',
         'merchants_update_hold_funds'      => Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS,
         'schedule_fetch_multiple'          => Permission::SCHEDULE_FETCH_MULTIPLE,
+        'setl_fetch_schedule'              => Permission::SCHEDULE_FETCH_MULTIPLE,
         'admin_fetch_all_entities'         => '*',
         'admin_fetch_entity_multiple'      => '*',
         'payment_authorize_refund'         => Permission::EDIT_AUTHORIZED_REFUND_PAYMENT,
@@ -1345,7 +1365,7 @@ final class Route
         'settings_delete'                  => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'               => '*',
         'merchant_activation_files'        => '*',
-        'dispute_reason_create'            => '*',
+        'dispute_reason_create'            => Permission::CREATE_DISPUTE_REASON,
     ];
 
     public static $direct = [
@@ -1443,6 +1463,8 @@ final class Route
             'merchant_payout',
             'gateway_file_create',
             'reports_refund_irctc',
+            'emandate_registration_initiate',
+            'emandate_debit_initiate',
         ],
 
         'kotak' => [
@@ -1456,7 +1478,9 @@ final class Route
         ],
 
         'mailgun' => [
-            'reconciliate'
+            'reconciliate',
+            'emandate_registration_reconcile',
+            'emandate_debit_reconcile',
         ],
 
         'raven' => [
@@ -1503,7 +1527,6 @@ final class Route
         'payment_create_openwallet'         => [Feature::OPENWALLET],
         'payment_create_recurring'          => [Feature::CHARGE_AT_WILL],
         'payment_create_private_old'        => [Feature::S2S],
-        'setl_combined_report'              => [Feature::SETL_REPORT],
         'reports_transaction_broking'       => [Feature::BROKING_REPORT],
         'reports_transaction_dsp'           => [Feature::DSP_REPORT],
         'reports_order_rpp'                 => [Feature::RPP_REPORT],

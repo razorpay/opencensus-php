@@ -22,10 +22,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::GATEWAY_DISPUTE_STATUS => 'sometimes|string',
-        Entity::STATUS                 => 'sometimes|string|custom',
-        Entity::EXPIRES_ON             => 'sometimes|epoch',
-        Entity::PARENT_ID              => 'sometimes|alpha_num|size:14',
+        Entity::GATEWAY_DISPUTE_STATUS  => 'sometimes|string',
+        Entity::STATUS                  => 'sometimes|string|custom',
+        Entity::ACCEPTED_AMOUNT         => 'sometimes|integer|min:100',
+        Entity::EXPIRES_ON              => 'sometimes|epoch',
+        Entity::PARENT_ID               => 'sometimes|alpha_num|size:14',
     ];
 
     protected function validatePhase(string $attribute, string $value)
@@ -82,12 +83,31 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     *  We ensured via $editRules that $input[Entity::ACCEPTED_DISPUTE_AMOUNT] must be positive value.
+     *  Here we put an upper limit to value of same.
+     *
+     * @param int $disputedAmount
+     * @param array $input
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateAcceptedDisputeAmount(int $disputedAmount, array $input)
+    {
+        if ($input[Entity::ACCEPTED_AMOUNT] > $disputedAmount)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Accepted chargeback amount cannot be greater than disputed amount.',
+                Entity::ACCEPTED_AMOUNT,
+                $input);
+        }
+    }
+
     public function validateDisputeCanBecomeParent(Entity $disputeParent)
     {
         if ($disputeParent->child !== null)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'The parent dispute is linked to another dispute entity.',
+                'The parent dispute id : '. $disputeParent->getId() .' is linked to another dispute entity.',
                 Entity::PARENT_ID);
         }
     }
@@ -98,7 +118,7 @@ class Validator extends Base\Validator
             ($this->entity->parent->getId() === $input['parent_id']))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'The predecessor dispute is already linked to this dispute.',
+                'The parent dispute is already linked to this dispute.',
                 Entity::PARENT_ID);
         }
     }

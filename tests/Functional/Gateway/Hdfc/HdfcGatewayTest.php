@@ -209,11 +209,30 @@ class HdfcGatewayTest extends TestCase
 
         $payment = $this->getLastPayment(true);
         $this->assertNotNull($payment['transaction_id']);
-        $this->assertEquals($payment['two_factor_auth'], 'passed');
+        $this->assertEquals('passed', $payment['two_factor_auth']);
+        $this->assertEquals('999999', $payment['reference2']);
 
         $this->verifyPayment($payment['id']);
         $this->capturePayment($payment['id'], $payment['amount']);
         $this->refundPayment($payment['id']);
+    }
+
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['amt'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '6073849700004947';
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testHdfcEntityAfterPaymentRefund()
@@ -246,6 +265,36 @@ class HdfcGatewayTest extends TestCase
         $payment = $this->doAuthPayment();
 
         $this->verifyPayment($payment['razorpay_payment_id']);
+    }
+
+    public function testPaymentVerifyAndTransactionNotFoundInResponse()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $payment = $this->doAuthPayment();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content = [
+                    'error_code_tag' => 'GW00201',
+                    'error_service_tag' => 'null',
+                    'result' => '!ERROR!-GW00201-Transaction not found.',
+                ];
+            }
+
+            return $content;
+        });
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->verifyPayment($payment['razorpay_payment_id']);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['verified']);
     }
 
     public function testVerifyRefundDeniedByRiskOnGateway()

@@ -28,6 +28,11 @@ class RecurringStatus
      */
     const NOT_APPLICABLE    = 'not_applicable';
 
+    public static $webhookStatuses = [
+        self::CONFIRMED,
+        self::REJECTED
+    ];
+
     public static function isRecurringStatusValid($recurringStatus): bool
     {
         return (defined(__CLASS__ . '::' . strtoupper($recurringStatus)));

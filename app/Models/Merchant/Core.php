@@ -2,29 +2,26 @@
 
 namespace RZP\Models\Merchant;
 
-use Config;
 use ApiResponse;
-
-use RZP\Models\Base;
-use RZP\Models\User;
-use RZP\Models\Batch;
+use Config;
 use RZP\Constants\Mode;
-use RZP\Models\Pricing;
-use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
-use RZP\Jobs\IrctcBatch;
-use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
-use RZP\Jobs\MerchantSync;
-use RZP\Models\Transaction;
-use RZP\Models\BankAccount;
-use RZP\Models\Admin\Action;
+use RZP\Exception\BadRequestException;
 use RZP\Jobs\DispatchRouter;
+use RZP\Jobs\MerchantSync;
+use RZP\Models\Admin\Action;
 use RZP\Models\Admin\AdminLead;
-use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
+use RZP\Models\BankAccount;
+use RZP\Models\Base;
+use RZP\Models\Batch;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Pricing;
 use RZP\Models\Schedule\Task as ScheduleTask;
-
+use RZP\Models\Transaction;
+use RZP\Models\User;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -34,13 +31,19 @@ class Core extends Base\Core
     {
         $merchant = (new Merchant\Entity)->build($input);
 
+        $this->trace->info(
+            TraceCode::MERCHANT_CREATE,
+            [
+                'data' => $input
+            ]);
+
         $merchant->setAuditAction(Action::CREATE_MERCHANT);
 
         $email['email'] = $input['email'];
 
         $merchant->getValidator()->validateInput('unique_email', $email);
 
-        $merchant->setPricingPlan(Pricing\DefaultPlan::STARTUP_PLAN_ID);
+        $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
 
         $this->repo->saveOrFail($merchant);
 
@@ -209,6 +212,23 @@ class Core extends Base\Core
                 'old_email' => $merchant->getEmail(),
                 'new_email' => $input['email']
             ]);
+
+        $tags = $merchant->tagNames();
+        foreach ($tags as $tag)
+        {
+            if (substr($tag, 0, 4) === "Ref-")
+            {
+                $parentId = substr($tag, 4);
+                $parent = $this->repo->merchant->find($parentId);
+
+                if (($parent !== null) and
+                    strtolower($merchant->getEmail()) === strtolower($parent->getEmail()))
+                {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
+                        Merchant\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
+                }
+            }
+        }
 
         $merchant->edit($input, 'editEmail');
 

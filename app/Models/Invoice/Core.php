@@ -562,8 +562,7 @@ class Core extends Base\Core
 
         if ($paymentCustomer !== null)
         {
-            $invoice->customer()->associate($paymentCustomer);
-            $invoice->setCustomerDetails($paymentCustomer);
+            $invoice->associateAndSetCustomerDetails($paymentCustomer);
         }
         else
         {
@@ -671,6 +670,7 @@ class Core extends Base\Core
      * @param array        $input
      *
      * @return array
+     * @throws BadRequestException
      */
     public function issueInvoicesOfBatch(Batch\Entity $batch, array $input): array
     {

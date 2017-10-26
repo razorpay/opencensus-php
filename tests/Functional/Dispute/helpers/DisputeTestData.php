@@ -511,7 +511,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The predecessor dispute is already linked to this dispute.',
+                    'description' => 'The parent dispute is already linked to this dispute.',
                 ],
             ],
             'status_code' => 400,
@@ -550,6 +550,75 @@ return [
         ],
         'exception' => [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisputeLostPartiallyAccepted' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'                    => 'lost',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testDisputeLostPartiallyAcceptedForNoOnsetDeduct' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'                    => 'lost',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testDisputeLostPartiallyAcceptedWithInvalidAcceptedAmount' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'                    => 'lost',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Accepted chargeback amount cannot be greater than disputed amount.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisputeLostPartiallyAcceptedWithZeroAcceptedAmount' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'                    => 'lost',
+                'accepted_amount'           => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The accepted amount must be at least 100.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],

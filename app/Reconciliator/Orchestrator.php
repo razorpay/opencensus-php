@@ -701,14 +701,24 @@ class Orchestrator extends Base\Core
                 {
                     $this->trace->traceException($ex);
 
-                    $this->messenger->raiseReconAlert(
-                        [
-                            'trace_code'   => TraceCode::RECON_FILE_SKIP,
-                            'message'      => 'Skipping file because unzip file caused an exception -> ' .
-                                                $ex->getMessage(),
-                            'file_details' => !empty($extractedFileDetails) ? $extractedFileDetails : null,
-                            'gateway'      => $this->gateway,
-                        ]);
+                    //
+                    // Axis sends hundreds of files daily with wrong password and one
+                    // file with the right password. We don't know which file has the
+                    // right password and which file has the wrong password.
+                    // Hence, we suppress all axis wrong password errors.
+                    //
+                    if (($this->gateway !== self::AXIS) and
+                        (str_contains($ex->getMessage(), 'Wrong password')))
+                    {
+                        $this->messenger->raiseReconAlert(
+                            [
+                                'trace_code'   => TraceCode::RECON_FILE_SKIP,
+                                'message'      => 'Skipping file because unzip file caused an exception -> ' .
+                                    $ex->getMessage(),
+                                'file_details' => !empty($extractedFileDetails) ? $extractedFileDetails : null,
+                                'gateway'      => $this->gateway,
+                            ]);
+                    }
 
                     $this->deleteFileLocallyIfPresent($zipFileDetails);
 

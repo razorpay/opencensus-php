@@ -373,14 +373,19 @@ return [
             'method' => 'post',
             'content' => [
                 'method'  => 'card',
-                'card_id' => '10000savedcard',
+                'card'    => [
+                    'number'       => '4012001038443335',
+                    'expiry_month' => '11',
+                    'expiry_year'  => '2020',
+                    'name'         => 'Random',
+                ]
             ],
         ],
         'response' => [
             'content' => [
                 'method' => 'card',
                 'card'   =>  [
-                    'last4'   => '1111',
+                    'last4'   => '3335',
                     'network' => 'Visa',
                 ],
                 'wallet'    => null,

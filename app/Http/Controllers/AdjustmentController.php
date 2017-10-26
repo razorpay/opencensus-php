@@ -2,8 +2,9 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use Request;
+use ApiResponse;
+use RZP\Exception;
 
 class AdjustmentController extends Controller
 {
@@ -55,6 +56,15 @@ class AdjustmentController extends Controller
         $input = Request::all();
 
         $data = $this->service()->addMultipleAdjustment($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function splitAdjustments()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->splitAdjustments($input);
 
         return ApiResponse::json($data);
     }

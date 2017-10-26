@@ -5,7 +5,6 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class DisputeController extends Controller
 {
