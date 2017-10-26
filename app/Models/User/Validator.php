@@ -40,7 +40,7 @@ class Validator extends Base\Validator
     protected static $actionRules = [
         Entity::ACTION                => 'required|custom',
         Entity::MERCHANT_ID           => 'required|max:14',
-        Entity::ROLE                  => 'sometimes|string',
+        Entity::ROLE                  => 'sometimes|string|in:owner,manager,operations,finance,support,admin,sellerapp',
     ];
 
     protected static $loginRules = [
@@ -56,16 +56,6 @@ class Validator extends Base\Validator
     protected static $preSignupRules = [
         Entity::NAME                  => 'sometimes|alpha_space|max:200',
         Entity::CONTACT_MOBILE        => 'sometimes|numeric|digits_between:8,11',
-    ];
-
-    protected static $actionUpdateRules = [
-        Entity::MERCHANT_ID => 'required|alpha_num|size:14',
-        Entity::ROLE        => 'required|in:owner,manager,operations,finance,support,admin,sellerapp',
-        Entity::ACTION      => 'required|custom',
-    ];
-
-    protected static $actionDetachRules = [
-        Entity::ACTION  => 'required|custom',
     ];
 
     protected static $teamManagementRules = [

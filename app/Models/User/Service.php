@@ -321,8 +321,6 @@ class Service extends Base\Service
 
         (new User\Validator)->validateInput('team_management', $teamData);
 
-        (new User\Validator)->validateInput('action_'.$input['action'], $input);
-
         return $this->updateUserMerchantMapping($userId, $input);
     }
 
