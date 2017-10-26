@@ -7,12 +7,8 @@ import CollectionItem from 'model/collectionItem';
 import { adminFetch } from 'util/fetch';
 import { observer } from 'mobx-react';
 
-// import { showEntity } from "./Entity";
-
 import { openRoleModal } from './RoleModal';
 import { showEntity, removeEntity } from './Entity';
-
-console.log(CollectionItem.constructor);
 
 @observer
 export default class PermissionsList extends Component {
