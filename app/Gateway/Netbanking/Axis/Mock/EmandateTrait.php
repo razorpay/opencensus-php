@@ -22,19 +22,11 @@ trait EmandateTrait
 
         $this->validateActionInput($input, 'emandaterequest');
 
-        $data = $this->getGatewayInstance()->getEmandateDecryptedData($input[RequestFields::DATA], []);
+        $data = $this->getGatewayInstance()->getEmandateDecryptedData($input[RequestFields::DATA]);
 
         $this->validateActionInput($data, 'emandateauth');
 
         $response = $this->createEmandateAuthResponse($data);
-
-        if ($secondPayment === true)
-        {
-            // Debit steps are handled in the method below
-            $response = http_build_query($response);
-
-            return $this->makeResponse($response);
-        }
 
         $callbackUrl = $data[RequestFields::RETURN_URL] . '?' . http_build_query($response);
 
@@ -74,7 +66,7 @@ trait EmandateTrait
     {
         $this->validateActionInput($input, 'emandaterequest');
 
-        $data = $this->getGatewayInstance()->getEmandateDecryptedData($input[RequestFields::DATA], []);
+        $data = $this->getGatewayInstance()->getEmandateDecryptedData($input[RequestFields::DATA]);
 
         $response = $this->createEmandateVerifyResponse($data);
 

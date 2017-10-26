@@ -124,6 +124,6 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->assertEquals($payment['token_id'], $token['id']);
         $this->assertEquals($netbanking['si_token'], $token['gateway_token']);
 
-        $this->assertEquals(TOKEN\RecurringStatus::CONFIRMED, $token[Token\Entity::RECURRING_STATUS]);
+        $this->assertEquals(Token\RecurringStatus::CONFIRMED, $token[Token\Entity::RECURRING_STATUS]);
     }
 }

@@ -127,7 +127,7 @@ trait EmandateTrait
 
         $this->assertAmount(
             $this->formatAmount($input['payment'][Payment\Entity::AMOUNT]),
-            number_format($content[ResponseFields::AMOUNT], 2, '.', '')
+            $content[ResponseFields::AMOUNT]
         );
 
         $this->validateCallbackChecksum($content);
@@ -291,7 +291,7 @@ trait EmandateTrait
         );
     }
 
-    public function getEmandateDecryptedData(string $body, array $input): array
+    public function getEmandateDecryptedData(string $body, array $input = []): array
     {
         $decrypted = $this->getEncryptor()->decryptString(base64_decode($body));
 
