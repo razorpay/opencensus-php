@@ -40,6 +40,14 @@ class Core extends Base\Core
 
         $this->validateMerchantForTransfer($merchant);
 
+        $validator = new Validator;
+
+        $validator->validateInput('create', $input);
+
+        $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
+
+        $validator->validateMerchantBalanceForTransfer($input[Entity::AMOUNT], $merchantBalance);
+
         return $this->repo->transaction(function () use ($input, $merchant)
         {
             $transfer = $this->makeTransfer($input, $merchant, $merchant);

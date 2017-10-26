@@ -147,11 +147,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_UNTRANSFERRED);
         }
 
-        if ($transferSum > $merchantBalance->getBalance())
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_NOT_ENOUGH_BALANCE);
-        }
+        $this->validateMerchantBalanceForTransfer($transferSum, $merchantBalance);
     }
 
     public function validateHoldParameters(array $input)
@@ -176,6 +172,14 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException(
                     'The on_hold_until timestamp cannot be less than the current timestamp');
             }
+        }
+    }
+
+    public function validateMerchantBalanceForTransfer(int $amount, Merchant\Balance\Entity $merchantBalance)
+    {
+        if ($amount > $merchantBalance->getBalance())
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE);
         }
     }
 }
