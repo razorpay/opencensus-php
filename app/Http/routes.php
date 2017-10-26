@@ -103,6 +103,7 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::group(['middleware'  =>  ['admin', 'admin_access']], function()
     {
+        Route::get('/admin/pokedex', 'AdminController@getPokedex');
         Route::any('/admin/generic', 'GenericController@handle');
         Route::get('/admin/user', 'AdminController@getAdmin');
         Route::get('/admin/user/logout', 'AdminController@getLogout');

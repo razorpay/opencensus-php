@@ -67,17 +67,19 @@ export default class App extends Component {
       }),
     ]).then(response => {
       // Fetch features before displaying other views
-      fetchFeaturesAjax(response[0].current).then(data => {
-        let user = new User(response[0]);
-        user.features = setFeatures(data.data.features);
+      fetchFeaturesAjax(response[0].current)
+        .catch(_ => _)
+        .then(data => {
+          let user = new User(response[0]);
+          user.features = setFeatures(data.success ? data.data.features : []);
 
-        this.props.updateSession({ user, mode: currentMode });
+          this.props.updateSession({ user, mode: currentMode });
 
-        let $splash = document.getElementById('splash');
-        $splash.parentElement.removeChild($splash);
+          let $splash = document.getElementById('splash');
+          $splash.parentElement.removeChild($splash);
 
-        this.setState({ isLoading: false });
-      });
+          this.setState({ isLoading: false });
+        });
     });
   }
 

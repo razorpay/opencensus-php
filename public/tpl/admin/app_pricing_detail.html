@@ -43,7 +43,7 @@
             <td>{{rule.international ?  'True' : 'False' }}</td>
             <td>{{rule.amount_range_active ? 'True' : 'False' }}</td>
             <td><span ng-show="rule.amount_range_active">{{rule.amount_range_min}}-{{rule.amount_range_max}}</span></td>
-            <td>{{rule.emi_duration}}<td>
+            <td>{{rule.emi_duration}}</td>
             <td>{{rule.percent_rate/100}} %</td>
             <td>{{rule.fixed_rate/100 | rupee:"INR "}}</td>
             <td>{{rule.min_fee/100 | rupee:"INR "}}</td>
