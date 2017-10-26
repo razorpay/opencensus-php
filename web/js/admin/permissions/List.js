@@ -7,12 +7,8 @@ import CollectionItem from 'model/collectionItem';
 import { adminFetch } from 'util/fetch';
 import { observer } from 'mobx-react';
 
-// import { showEntity } from "./Entity";
-
 import { openRoleModal } from './RoleModal';
 import { showEntity, removeEntity } from './Entity';
-
-console.log(CollectionItem.constructor);
 
 @observer
 export default class PermissionsList extends Component {
@@ -27,17 +23,13 @@ export default class PermissionsList extends Component {
 
   onSubmit = filters => this.collection.setFilters(filters);
 
-  showEntity = showEntity.bind(null, this.collection);
   showRole = openRoleModal.bind(null, this.collection);
 
   render() {
     return (
       <div class="list-container">
         <div class="box">
-          <header>
-            Permissions
-            <button onClick={this.showEntity}>Add new Permission</button>
-          </header>
+          <header>Permissions</header>
           <Form onSubmit={this.onSubmit} class="filters">
             <Field name="q" label="Search" />
           </Form>

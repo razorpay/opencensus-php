@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 
-import { openSlider } from 'common/modal';
-import { notifySuccess, closeSlider } from 'common/modal';
+import { openModal, closeModal, notifySuccess } from 'common/modal';
 
 import { adminPost, adminPut, adminDelete } from 'util/fetch';
 
@@ -9,22 +8,39 @@ import FieldMapForm from './FieldMapForm';
 
 export default class EditFieldMaps extends Component {
   save = data => {
-    let adminFn = data.id ? adminPut : adminPost;
+    let id = data.id || null;
+    let { org_id } = this.props.model;
+    let adminFn = id ? adminPut : adminPost;
+
     let url_params = {
-      orgId: this.props.model.org_id,
-      ...(data.id ? { id: data.id } : null),
+      orgId: org_id,
+      ...(id ? { id: id } : null),
     };
-    let route_name = data.id ? 'org_fieldmap_edit' : 'org_fieldmap_create';
 
-    if (data.fields) data.fields = data.fields.split(',');
+    let route_name = id ? 'org_fieldmap_edit' : 'org_fieldmap_create';
 
-    if (data.id) delete data.id;
+    if (data.fields) {
+      data.fields = data.fields.replace(/\s/g, '').split(',');
+      data.fields = data.fields.filter(field => field !== '');
+    }
+
+    if (id) delete data.id;
 
     return adminFn({
       body: data,
       route_name: route_name,
       url_params: url_params,
-    }).then(_successNotify);
+    }).then(response => {
+      if (response) {
+        notifySuccess(
+          'Field Map added successfully. Response: ' + JSON.stringify(response)
+        );
+        if (!id) {
+          this.props.model.items.push(response);
+        }
+        closeModal();
+      }
+    });
   };
 
   render() {
@@ -32,14 +48,7 @@ export default class EditFieldMaps extends Component {
   }
 }
 
-const _successNotify = response => {
-  notifySuccess(
-    'Field Map added successfully. Response: ' + JSON.stringify(response)
-  );
-  closeSlider();
-};
-
-export function removeEntity(collection) {
+export function removeEntity() {
   adminDelete({
     route_name: 'org_fieldmap_delete',
     url_params: {
@@ -53,5 +62,5 @@ export function removeEntity(collection) {
 }
 
 export function showEntity(collection, item) {
-  openSlider(<EditFieldMaps collection={collection} model={this} />);
+  openModal(<EditFieldMaps collection={collection} model={this} />);
 }

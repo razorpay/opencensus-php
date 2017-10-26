@@ -25,11 +25,9 @@ const Actions = ({ item }) => (
     <div class="link" onClick={item::showEntity}>
       Edit
     </div>
-    <br />
     <div class="link">
       <Link to={`/fieldmaps/${item.id}`}>FieldMaps</Link>
     </div>
-    <br />
     <div class="link danger">Delete</div>
   </div>
 );
@@ -51,10 +49,12 @@ class OrganizationsList extends Component {
     return (
       <div class="list-container">
         <div class="box">
-          <header>Organizations</header>
-          <div class="btn" onClick={this.showEntity}>
-            Add an Organization
-          </div>
+          <header>
+            Organizations
+            <button class="btn" onClick={this.showEntity}>
+              Add an Organization
+            </button>
+          </header>
           <Form onSubmit={this.onSubmit} class="filters">
             <Field label="Search" />
           </Form>

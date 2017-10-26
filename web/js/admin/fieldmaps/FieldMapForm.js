@@ -25,7 +25,7 @@ export default function FieldMapForm({
         />
         <br />
         <TextAreaField
-          label="Fields"
+          label="Fields (Seperated by comma's)"
           name="fields"
           defaultValue={fields.join(',')}
           required
