@@ -427,7 +427,7 @@ class Service extends Base\Service
             $changePasswordData = [
                 'password'              => $input['password'],
                 'password_confirmation' => $input['password_confirmation'],
-            ]
+            ];
 
             (new Core)->changePassword($user, $changePasswordData);
         }
