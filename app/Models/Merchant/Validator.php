@@ -23,7 +23,7 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::ID                          => 'required|alpha_num|size:14|unique:merchants',
-        Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
+        Entity::NAME                        => 'sometimes|string|max:200',
         Entity::EMAIL                       => 'required|email',
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
@@ -32,7 +32,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
+        Entity::NAME                        => 'sometimes|string|max:200',
         Entity::HOLD_FUNDS                  => 'sometimes|in:0,1',
         Entity::WEBSITE                     => 'sometimes|url|max:255',
         Entity::CATEGORY                    => 'sometimes|numeric|digits:4',
@@ -43,7 +43,6 @@ class Validator extends Base\Validator
         Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
         Entity::LINKED_ACCOUNT_KYC          => 'sometimes|boolean',
         Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
-        Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
         Entity::RISK_THRESHOLD              => 'sometimes|integer|min:0|max:20',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
@@ -183,7 +182,8 @@ class Validator extends Base\Validator
 
         $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
 
-        $uneditableFeatures = array_values(array_intersect($requestedFeatures, Feature\Constants::$featuresUneditableOnLive));
+        $uneditableFeatures = array_values(array_intersect($requestedFeatures,
+            Feature\Constants::$featuresUneditableOnLive));
 
         if (($shouldSync === true) and (count($uneditableFeatures) > 0))
         {
