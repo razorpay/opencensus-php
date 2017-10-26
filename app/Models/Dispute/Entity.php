@@ -13,8 +13,8 @@ class Entity extends Base\PublicEntity
     use Base\Traits\RevisionableTrait;
 
     const MERCHANT_ID             = 'merchant_id';
-    const PAYMENT_ID              = 'payment_id';
     const PARENT_ID               = 'parent_id';
+    const PAYMENT_ID              = 'payment_id';
     const TRANSACTION_ID          = 'transaction_id';
     const AMOUNT                  = 'amount';
     const AMOUNT_DEDUCTED         = 'amount_deducted';

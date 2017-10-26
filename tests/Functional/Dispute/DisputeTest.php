@@ -346,10 +346,8 @@ class DisputeTest extends TestCase
 
         $disputes = $this->getEntities('dispute', [], true);
 
+        $this->checkRequestDisputeAttributes($content, $disputes);
         $this->assertEquals(2, $disputes['count']);
-        $this->assertEquals($content['id'], $disputes['items'][0]['id']);
-        $this->assertEquals($content['parent_id'], $disputes['items'][0]['parent_id']);
-        $this->assertEquals($content['payment_id'], $disputes['items'][0]['payment_id']);
         $this->assertEquals($content['parent_id'], Entity::stripDefaultSign($disputes['items'][1]['id']));
     }
 
@@ -379,10 +377,8 @@ class DisputeTest extends TestCase
 
         $disputes = $this->getEntities('dispute', [], true);
 
+        $this->checkRequestDisputeAttributes($content, $disputes);
         $this->assertEquals(3, $disputes['count']);
-        $this->assertEquals($content['id'], $disputes['items'][0]['id']);
-        $this->assertEquals($content['parent_id'], $disputes['items'][0]['parent_id']);
-        $this->assertEquals($content['payment_id'], $disputes['items'][0]['payment_id']);
         $this->assertEquals($content['parent_id'], Entity::stripDefaultSign($disputes['items'][1]['id']));
     }
 
@@ -442,5 +438,12 @@ class DisputeTest extends TestCase
         $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
 
         return $testData;
+    }
+
+    protected function checkRequestDisputeAttributes(array $content, array $disputes)
+    {
+        $this->assertEquals($content['id'], $disputes['items'][0]['id']);
+        $this->assertEquals($content['parent_id'], $disputes['items'][0]['parent_id']);
+        $this->assertEquals($content['payment_id'], $disputes['items'][0]['payment_id']);
     }
 }

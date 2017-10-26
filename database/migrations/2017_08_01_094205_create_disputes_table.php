@@ -30,10 +30,10 @@ class CreateDisputesTable extends Migration
 
             $table->char(Dispute::MERCHANT_ID, Merchant::ID_LENGTH);
 
-            $table->char(Dispute::PAYMENT_ID, Payment::ID_LENGTH);
-
             $table->char(Dispute::PARENT_ID, Merchant::ID_LENGTH)
-                  ->nullable();
+                ->nullable();
+
+            $table->char(Dispute::PAYMENT_ID, Payment::ID_LENGTH);
 
             $table->char(Dispute::REASON_ID, Reason::ID_LENGTH);
 

@@ -2542,6 +2542,6 @@ ALTER TABLE schedules
     MODIFY COLUMN `anchor` int(11);
 
 ALTER TABLE disputes
-    ADD COLUMN parent_id CHAR(14) DEFAULT NULL AFTER payment_id,
+    ADD COLUMN parent_id CHAR(14) DEFAULT NULL AFTER merchant_id,
     ADD CONSTRAINT disputes_parent_id_foreign FOREIGN KEY (parent_id) REFERENCES disputes(id) ON DELETE RESTRICT;
 
