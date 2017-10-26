@@ -273,11 +273,6 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentRequestData(array $input)
     {
-        if ($input['terminal']->isRecurring())
-        {
-            return $this->getRecurringPaymentData($input);
-        }
-
         $encryptedString = $this->getAuthorizeEncryptedString($input);
 
         return [
