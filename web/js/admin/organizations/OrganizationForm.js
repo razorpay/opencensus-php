@@ -43,7 +43,6 @@ export default function OrgForm({
           required
           defaultValue={display_name}
         />
-        <br />
         <Field
           label="Email Domains"
           name="email_domains"
@@ -51,12 +50,13 @@ export default function OrgForm({
           defaultValue={email_domains}
         />
         <Field label="Hostname" />
+        <br />
         <SelectField label="Auth Type" name="auth_type">
           <option value="">Please select an auth type</option>
           <option value="password">Password</option>
           <option value="google_auth">Google Auth</option>
         </SelectField>
-        <br />
+
         <Field
           label="Custom Code"
           name="custom_code"
@@ -68,9 +68,16 @@ export default function OrgForm({
           name="signature_email"
           defaultValue={signature_email}
         />
+        <CheckField
+          label="Allow Sign Up"
+          defaultValue={allow_sign_up}
+          name="allow_sign_up"
+        />
         <br />
         {id ? (
           <div>
+            <header>Attach logos:</header>
+            <p>* Allowed file types are JPEG, JPG, PNG</p>
             <FileField
               label="Login Logo"
               name="login_logo_url"
@@ -90,21 +97,6 @@ export default function OrgForm({
         ) : (
           ''
         )}
-
-        <br />
-        <div class="link" onClick={onEditPerms}>
-          Edit Permissions
-        </div>
-        <br />
-        <CheckField
-          label="Allow Sign Up"
-          defaultValue={allow_sign_up}
-          name="allow_sign_up"
-        />
-        <br />
-        <button type="submit" onClick={onSave}>
-          Save
-        </button>
       </Form>
     </div>
   );

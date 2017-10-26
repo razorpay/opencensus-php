@@ -8,13 +8,14 @@ import PermissionsList from './PermissionsList';
 
 class EditOrg extends Component {
   state = {
-    org: null,
-    allPerms: null,
-    assignablePerms: null,
+    permissions: null,
+    selectedPerms: null,
+    workflowPerms: null,
   };
 
   componentWillMount() {
     let { id } = this.props.model || {};
+
     let requests = [
       this._fetchFn('permission_get_by_type', { type: 'all' }),
       ...(id
@@ -26,19 +27,97 @@ class EditOrg extends Component {
     ];
 
     Promise.all(requests).then(([allPerms, org, assignablePerms]) => {
-      let newState = {};
+      let permissions = allPerms.items,
+        selectedPerms = {},
+        workflowPerms = {};
 
-      if (id) {
-        newState = { allPerms, org };
+      //If add new, then assignable perms as selected
+      if (!id) {
+        assignablePerms.items.forEach(aPerm => {
+          selectedPerms[aPerm.id] = true;
+        });
       } else {
-        newState = { allPerms, assignablePerms };
+        org.permissions.forEach(oPerm => {
+          selectedPerms[oPerm.id] = true;
+        });
+        org.workflow_permissions.forEach(wPerm => {
+          workflowPerms[wPerm.id] = true;
+        });
       }
+
       this.setState({
-        ...this.state,
-        ...newState,
+        selectedPerms,
+        workflowPerms,
+        permissions,
       });
     });
   }
+
+  handleAllSelect = isChecked => {
+    let { permissions } = this.state;
+    let isSelectAllChecked = isChecked,
+      selectedPerms = {},
+      workflowPerms = this.state.workflowPerms;
+
+    if (!isSelectAllChecked) {
+      workflowPerms = {};
+    } else {
+      permissions.forEach(aPerm => {
+        selectedPerms[aPerm.id] = true;
+      });
+    }
+
+    this.setState({
+      selectedPerms,
+      workflowPerms,
+    });
+  };
+
+  handlePermissionSelect = id => {
+    let { selectedPerms, workflowPerms } = this.state;
+
+    if (workflowPerms[id]) {
+      delete workflowPerms[id];
+    }
+
+    if (selectedPerms[id]) {
+      delete selectedPerms[id];
+    } else {
+      selectedPerms[id] = true;
+    }
+
+    this.setState({
+      ...this.state,
+      selectedPerms,
+      workflowPerms,
+    });
+  };
+
+  handleWorkflowPermissionSelect = id => {
+    let { workflowPerms } = this.state;
+
+    if (workflowPerms[id]) {
+      delete workflowPerms[id];
+    } else {
+      workflowPerms[id] = true;
+    }
+
+    this.setState({
+      ...this.state,
+      workflowPerms,
+    });
+  };
+
+  openPermissions = () => {
+    // openModal(
+    //   <PermissionsList
+    //     {...this.state}
+    //     onAllSelect={this.handleAllSelect}
+    //     onPermissionSelect={this.handlePermissionSelect}
+    //     onWorkflowPermissionSelect={this.handleWorkflowPermissionSelect}
+    //   />
+    // );
+  };
 
   _fetchFn = (route, params) => {
     return adminFetch({
@@ -47,47 +126,27 @@ class EditOrg extends Component {
     });
   };
 
-  handleSave = body => {
-    let params = {
-      content_type: 'application/json',
-      route_name: 'org_edit',
-      body: body,
-    };
-
-    if (this.props.model) {
-      params.url_params = {
-        id: this.props.model.id,
-      };
-    }
-
-    return adminPut(params);
-  };
-
-  openPermissions = () => {
-    let { allPerms, org, assignablePerms } = this.state;
-    openModal(
-      <PermissionsList
-        allPerms={allPerms.items}
-        orgPerms={org && org.permissions}
-        orgWorkflowPerms={org && org.workflow_permissions}
-        assignablePerms={assignablePerms && assignablePerms.items}
-        isAdd={!!org}
-      />
-    );
-  };
-
   render() {
     return (
-      <OrgForm
-        {...this.props.model}
-        onSubmit={this.save}
-        onEditPerms={this.openPermissions}
-        onSave={this.handleSave}
-      />
+      <div class="orgs-container">
+        <OrgForm
+          {...this.props.model}
+          onSubmit={this.save}
+          onEditPerms={this.openPermissions}
+          onSave={this.handleSave}
+        />
+        <PermissionsList
+          {...this.state}
+          onAllSelect={this.handleAllSelect}
+          onPermissionSelect={this.handlePermissionSelect}
+          onWorkflowPermissionSelect={this.handleWorkflowPermissionSelect}
+        />
+        <button type="submit">Save</button>
+      </div>
     );
   }
 }
 
 export function showEntity(collection) {
-  openSlider(<EditOrg collection={collection} model={this} />);
+  openModal(<EditOrg collection={collection} model={this} />);
 }
