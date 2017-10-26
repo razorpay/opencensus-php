@@ -41,9 +41,11 @@ class Core extends Base\Core
 
         (new Validator)->validatePaymentForDispute($input, $payment);
 
+        $parent = $this->checkAndGetParent($input);
+
         $dispute = (new Entity)->build($input);
 
-        $this->setRelationsAndDerivedAttributes($dispute, $payment, $reason);
+        $this->setRelationsAndDerivedAttributes($dispute, $parent, $payment, $reason);
 
         // entity id is required to create associated transaction
         $dispute->generateId();
@@ -88,9 +90,16 @@ class Core extends Base\Core
             array_merge($input, [Entity::ID => $dispute->getId()])
         );
 
+        $parent = $this->checkAndGetParent($input, $dispute);
+
         $dispute->edit($input);
 
         $dispute->setAuditAction(Action::EDIT_DISPUTE);
+
+        if ($parent !== null)
+        {
+            $dispute->parent()->associate($parent);
+        }
 
         return $this->repo->transaction(function() use ($dispute, $input)
         {
@@ -197,6 +206,7 @@ class Core extends Base\Core
 
     protected function setRelationsAndDerivedAttributes(
         Entity $dispute,
+        Entity $parent = null,
         Payment\Entity $payment,
         Reason\Entity $reason)
     {
@@ -213,6 +223,8 @@ class Core extends Base\Core
         $dispute->merchant()->associate($merchant);
 
         $dispute->reason()->associate($reason);
+
+        $dispute->parent()->associate($parent);
     }
 
     protected function handleDisputeClosure(Entity $dispute, array $input)
@@ -306,13 +318,55 @@ class Core extends Base\Core
 
     protected function getAcceptedDisputeAmount(Entity $dispute, array $input)
     {
-        if (isset($input[Entity::ACCEPTED_DISPUTE_AMOUNT]) === false)
+        if (isset($input[Entity::ACCEPTED_AMOUNT]) === false)
         {
             return $dispute->getAmount();
         }
 
         $dispute->getValidator()->validateAcceptedDisputeAmount($dispute->getAmount(), $input);
 
-        return $input[Entity::ACCEPTED_DISPUTE_AMOUNT];
+        return $input[Entity::ACCEPTED_AMOUNT];
+    }
+
+    /**
+     *  Checks if the new parent is not same as existing parent
+     *  and is eligible to become a parent (has no child)
+     *
+     * @param array $input
+     * @param Entity|null $dispute
+     * @return null
+     */
+    protected function checkAndGetParent(array $input, Entity $dispute = null)
+    {
+        if (isset($input[Entity::PARENT_ID]) === false)
+        {
+            return null;
+        }
+
+        if ($dispute !== null)
+        {
+            // Check if new parent is existing parent
+
+            if (($dispute->isChildDispute() === true) and
+                ($dispute->getParentId() === $input[Entity::PARENT_ID]))
+            {
+                $this->trace->info(
+                    TraceCode::DISPUTE_SAME_PARENT_LINKING,
+                    [
+                        'input'      => $input,
+                        'dispute_id' => $dispute->getId()
+                    ]);
+
+                unset($input[Entity::PARENT_ID]);
+
+                return null;
+            }
+        }
+
+        $parent = $this->repo->dispute->findOrFailPublic($input[Entity::PARENT_ID]);
+
+        $parent->getValidator()->validateDisputeCanBecomeParent();
+
+        return $parent;
     }
 }

@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\Functional\Dispute;
 
-use RZP\Models\Dispute\Entity as DisputeEntity;
+use RZP\Models\Dispute\Entity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -137,6 +137,34 @@ class DisputeTest extends TestCase
         $this->updateCreateTestData();
 
         $this->startTest();
+    }
+
+    public function testDisputeCreateWithParent()
+    {
+        $disputeParent = $this->fixtures->create('dispute');
+
+        $testData = $this->updateCreateTestData();
+
+        $testData['request']['content']['parent_id'] = $disputeParent->getId();
+
+        $this->runRequestResponseFlow($testData);
+
+        $disputeChild = $this->getLastEntity('dispute', true);
+
+        $this->assertEquals($disputeParent->getId(), $disputeChild['parent_id']);
+    }
+
+    public function testDisputeCreateWithDuplicateParent()
+    {
+        $disputeParent = $this->fixtures->create('dispute');
+
+        $this->fixtures->create('dispute', ['parent_id' => $disputeParent->getId()]);
+
+        $testData = $this->updateCreateTestData();
+
+        $testData['request']['content']['parent_id'] = $disputeParent->getId();
+
+        $this->startTest($testData);
     }
 
     public function testDisputeEdit()
@@ -305,6 +333,70 @@ class DisputeTest extends TestCase
         $this->assertEquals('adjustment', $txn['type']);
     }
 
+    public function testDisputeEditForNoInitialParent()
+    {
+        $disputeParent = $this->fixtures->create('dispute');
+
+        $testData = $this->updateEditTestData();
+
+        $testData['request']['content']['parent_id'] = $disputeParent->getId();
+        $testData['response']['content']['parent_id'] = $disputeParent->getId();
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $disputes = $this->getEntities('dispute', [], true);
+
+        $this->checkRequestDisputeAttributes($content, $disputes);
+        $this->assertEquals(2, $disputes['count']);
+        $this->assertEquals($content['parent_id'], Entity::stripDefaultSign($disputes['items'][1]['id']));
+    }
+
+    public function testDisputeEditWithExistingParent()
+    {
+        $disputeParent = $this->fixtures->create('dispute');
+
+        $testData = $this->updateEditTestData(['parent_id' => $disputeParent->getId()]);
+
+        $testData['request']['content']['parent_id'] = $disputeParent->getId();
+
+        $this->startTest($testData);
+    }
+
+    public function testDisputeEditReplaceParent()
+    {
+        $disputeParent = $this->fixtures->create('dispute');
+
+        $disputeNewParent = $this->fixtures->create('dispute');
+
+        $testData = $this->updateEditTestData(['parent_id' => $disputeParent->getId()]);
+
+        $testData['request']['content']['parent_id'] = $disputeNewParent->getId();
+        $testData['response']['content']['parent_id'] = $disputeNewParent->getId();
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $disputes = $this->getEntities('dispute', [], true);
+
+        $this->checkRequestDisputeAttributes($content, $disputes);
+        $this->assertEquals(3, $disputes['count']);
+        $this->assertEquals($content['parent_id'], Entity::stripDefaultSign($disputes['items'][1]['id']));
+    }
+
+    public function testDisputeEditReplaceParentWithAlreadyLinkedParent()
+    {
+        $disputeOtherParent = $this->fixtures->create('dispute');
+
+        $this->fixtures->create('dispute', ['parent_id' => $disputeOtherParent->getId()]);
+
+        $disputeParent = $this->fixtures->create('dispute');
+
+        $testData = $this->updateEditTestData(['parent_id' => $disputeParent->getId()]);
+
+        $testData['request']['content']['parent_id'] = $disputeOtherParent->getId();
+
+        $this->startTest($testData);
+    }
+
     public function testDisputeLostPartiallyAccepted()
     {
         // Input params while creating
@@ -314,7 +406,7 @@ class DisputeTest extends TestCase
         ];
         $testdata = $this->updateEditTestData($input);
 
-        $testdata['request']['content'][DisputeEntity::ACCEPTED_DISPUTE_AMOUNT] = 7000;
+        $testdata['request']['content'][Entity::ACCEPTED_AMOUNT] = 7000;
 
         $content = $this->runRequestResponseFlow($testdata);
 
@@ -328,12 +420,12 @@ class DisputeTest extends TestCase
         $this->assertEquals($testdata['request']['content']['status'], $content['status']);
         $this->assertEquals($input['amount'], $dispute['amount']);
         $this->assertEquals($input['amount'], $dispute['amount_deducted']);
-        $this->assertEquals(($input['amount'] - $reqContent[DisputeEntity::ACCEPTED_DISPUTE_AMOUNT]),
+        $this->assertEquals(($input['amount'] - $reqContent[Entity::ACCEPTED_AMOUNT]),
             $dispute['amount_reversed']);
         $this->assertEquals(2, $adjustments['count']);
-        $this->assertEquals(DisputeEntity::stripDefaultSign($dispute['id']), $adjustments['items'][0]['entity_id']);
-        $this->assertEquals(DisputeEntity::stripDefaultSign($dispute['id']), $adjustments['items'][1]['entity_id']);
-        $this->assertEquals(($input['amount'] - $reqContent[DisputeEntity::ACCEPTED_DISPUTE_AMOUNT]),
+        $this->assertEquals(Entity::stripDefaultSign($dispute['id']), $adjustments['items'][0]['entity_id']);
+        $this->assertEquals(Entity::stripDefaultSign($dispute['id']), $adjustments['items'][1]['entity_id']);
+        $this->assertEquals(($input['amount'] - $reqContent[Entity::ACCEPTED_AMOUNT]),
             $adjustments['items'][0]['amount']);
         $this->assertEquals(0 - $input['amount'], $adjustments['items'][1]['amount']);
     }
@@ -347,7 +439,7 @@ class DisputeTest extends TestCase
         ];
         $testdata = $this->updateEditTestData($input);
 
-        $testdata['request']['content'][DisputeEntity::ACCEPTED_DISPUTE_AMOUNT] = 7000;
+        $testdata['request']['content'][Entity::ACCEPTED_AMOUNT] = 7000;
 
         $content = $this->runRequestResponseFlow($testdata);
 
@@ -360,13 +452,13 @@ class DisputeTest extends TestCase
         $this->assertEquals($dispute['id'], $content['id']);
         $this->assertEquals($reqContent['status'], $content['status']);
         $this->assertEquals($input['amount'], $dispute['amount']);
-        $this->assertEquals($reqContent[DisputeEntity::ACCEPTED_DISPUTE_AMOUNT],
+        $this->assertEquals($reqContent[Entity::ACCEPTED_AMOUNT],
             $dispute['amount_deducted']);
         $this->assertEquals(0, $dispute['amount_reversed']);
         $this->assertEquals(1, $adjustments['count']);
-        $this->assertEquals(DisputeEntity::stripDefaultSign($dispute['id']),
+        $this->assertEquals(Entity::stripDefaultSign($dispute['id']),
             $adjustments['items'][0]['entity_id']);
-        $this->assertEquals((0 - $reqContent[DisputeEntity::ACCEPTED_DISPUTE_AMOUNT]),
+        $this->assertEquals((0 - $reqContent[Entity::ACCEPTED_AMOUNT]),
             $adjustments['items'][0]['amount']);
     }
 
@@ -379,7 +471,7 @@ class DisputeTest extends TestCase
         ];
         $testdata = $this->updateEditTestData($input);
 
-        $testdata['request']['content'][DisputeEntity::ACCEPTED_DISPUTE_AMOUNT] = 20000;
+        $testdata['request']['content'][Entity::ACCEPTED_AMOUNT] = 20000;
 
         $this->startTest($testdata);
     }
@@ -393,7 +485,7 @@ class DisputeTest extends TestCase
         ];
         $testdata = $this->updateEditTestData($input);
 
-        $testdata['request']['content'][DisputeEntity::ACCEPTED_DISPUTE_AMOUNT] = 0;
+        $testdata['request']['content'][Entity::ACCEPTED_AMOUNT] = 0;
 
         $this->startTest($testdata);
     }
@@ -439,5 +531,12 @@ class DisputeTest extends TestCase
         $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
 
         return $testData;
+    }
+
+    protected function checkRequestDisputeAttributes(array $content, array $disputes)
+    {
+        $this->assertEquals($content['id'], $disputes['items'][0]['id']);
+        $this->assertEquals($content['parent_id'], $disputes['items'][0]['parent_id']);
+        $this->assertEquals($content['payment_id'], $disputes['items'][0]['payment_id']);
     }
 }

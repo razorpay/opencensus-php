@@ -10,21 +10,23 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::GATEWAY_DISPUTE_ID      => 'required|alpha_num',
-        Entity::GATEWAY_DISPUTE_STATUS  => 'sometimes|string',
-        Entity::PHASE                   => 'required|string|custom',
-        Entity::RAISED_ON               => 'required|epoch',
-        Entity::EXPIRES_ON              => 'required|epoch',
-        Entity::REASON_ID               => 'required|alpha_num|size:14',
-        Entity::AMOUNT                  => 'required|integer|min:100',
-        Entity::DEDUCT_AT_ONSET         => 'sometimes|boolean',
+        Entity::GATEWAY_DISPUTE_ID     => 'required|alpha_num',
+        Entity::GATEWAY_DISPUTE_STATUS => 'sometimes|string',
+        Entity::PHASE                  => 'required|string|custom',
+        Entity::RAISED_ON              => 'required|epoch',
+        Entity::EXPIRES_ON             => 'required|epoch',
+        Entity::REASON_ID              => 'required|alpha_num|size:14',
+        Entity::AMOUNT                 => 'required|integer|min:100',
+        Entity::DEDUCT_AT_ONSET        => 'sometimes|boolean',
+        Entity::PARENT_ID              => 'sometimes|alpha_num|size:14',
     ];
 
     protected static $editRules = [
         Entity::GATEWAY_DISPUTE_STATUS  => 'sometimes|string',
         Entity::STATUS                  => 'sometimes|string|custom',
-        Entity::ACCEPTED_DISPUTE_AMOUNT => 'sometimes|integer|min:100',
+        Entity::ACCEPTED_AMOUNT         => 'sometimes|integer|min:100',
         Entity::EXPIRES_ON              => 'sometimes|epoch',
+        Entity::PARENT_ID               => 'sometimes|alpha_num|size:14',
     ];
 
     protected function validatePhase(string $attribute, string $value)
@@ -84,15 +86,29 @@ class Validator extends Base\Validator
     /**
      *  We ensured via $editRules that $input[Entity::ACCEPTED_DISPUTE_AMOUNT] must be positive value.
      *  Here we put an upper limit to value of same.
-    */
+     *
+     * @param int $disputedAmount
+     * @param array $input
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function validateAcceptedDisputeAmount(int $disputedAmount, array $input)
     {
-        if ($input[Entity::ACCEPTED_DISPUTE_AMOUNT] > $disputedAmount)
+        if ($input[Entity::ACCEPTED_AMOUNT] > $disputedAmount)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Accepted chargeback amount cannot be greater than disputed amount.',
-                Entity::ACCEPTED_DISPUTE_AMOUNT,
+                Entity::ACCEPTED_AMOUNT,
                 $input);
+        }
+    }
+
+    public function validateDisputeCanBecomeParent()
+    {
+        if ($this->entity->child !== null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The parent dispute is linked to another dispute entity.',
+                Entity::PARENT_ID);
         }
     }
 }
