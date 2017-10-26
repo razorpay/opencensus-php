@@ -247,4 +247,16 @@ class Core extends Base\Core
 
         $this->dispatch($job);
     }
+
+    /**
+     * @param $userId
+     * @param $expiryTime
+     *
+     * @return string
+     */
+    public function generateToken($userId, $expiryTime)
+    {
+        // Using encryption key and combination of userid and time.
+        return hash_hmac('sha256', 'password.reset' . '_' . $userId . '_' . $expiryTime, config('app.key'));
+    }
 }

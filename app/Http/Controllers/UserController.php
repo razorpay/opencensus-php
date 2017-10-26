@@ -108,4 +108,13 @@ class UserController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postResetPasswordByEmail()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->postResetPassword($input);
+
+        return ApiResponse::json($data);
+    }
 }

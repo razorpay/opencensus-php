@@ -377,4 +377,28 @@ class Service extends Base\Service
 
         return $responseData;
     }
+
+    public function postResetPassword(array $input)
+    {
+        if (isset($input['email']) === true)
+        {
+            $email = mb_strtolower($input['email']);
+
+            //find or fail public by email.
+            $user = $this->repo->user->findByEmail($email);
+
+            $orgId = $this->auth->getOrgId();
+
+            //get Org and send it to mailer, deal with other orgs as well.
+            $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+
+            $org['hostname'] = $this->auth->getOrgHostName();
+
+
+            $passwordResetMail = new UserMail\PasswordReset($user, $org);
+
+        }
+
+        return ['success' => true];
+    }
 }
