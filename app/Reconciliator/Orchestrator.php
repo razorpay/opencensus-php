@@ -117,7 +117,6 @@ class Orchestrator extends Base\Core
     protected $fileProcessor;
     protected $converter;
     protected $gatewayReconciliator;
-    protected $app;
     protected $messenger;
     protected $gateway;
 
@@ -213,6 +212,15 @@ class Orchestrator extends Base\Core
         return $this->gatewayReconciliator->startReconciliation($this->allFilesContents);
     }
 
+    /**
+     * Validates each file.
+     * Gets the content of each file and stores it in an array.
+     * Deletes the file from local storage.
+     * Creates a batch entity with the reconciliation details
+     * and queues it for processing
+     *
+     * @throws Exception\ReconciliationException
+     */
     public function orchestrateV2(array $allFilesDetails)
     {
         $batches = new PublicCollection;
@@ -245,7 +253,7 @@ class Orchestrator extends Base\Core
             }
             catch (\Exception $ex)
             {
-                $this->handleBatchCreationError($ex, $file, $fileDetails);
+                $this->handleBatchCreationError($ex, $file, $fileDetails, $allFilesDetails);
 
                 continue;
             }
@@ -273,30 +281,21 @@ class Orchestrator extends Base\Core
         return $result;
     }
 
-    protected function handleBatchCreationError(\Exception $ex, int $file, array $fileDetails)
+    protected function setGatewayReconciliatorObject($gateway)
     {
-        $this->messenger->raiseReconAlert(
-            [
-                'trace_code'   => TraceCode::RECON_BATCH_CREATION_FAILED,
-                'message'      => 'Skipping file because not able to convert file content to array. -> ' .
-                                    $ex->getMessage(),
-                'file_details' => $fileDetails,
-                'gateway'      => $this->gateway,
-            ]);
+        $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
 
-        $this->trace->traceException($ex,
-                Trace::ERROR,
-                TraceCode::RECON_BATCH_CREATION_FAILED);
+        $this->gateway = $gateway;
 
-        $this->handleFileSkip($file, $fileDetails, $allFilesDetails);
+        $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
     }
 
     protected function shouldSkipFile($fileDetails)
     {
         // Checks if this particular file needs to be excluded for the gateway
-        $inExclude = $this->gatewayReconciliator->inExcludeList($fileDetails);
+        $shouldExclude = $this->gatewayReconciliator->inExcludeList($fileDetails);
 
-        if ($inExclude === true)
+        if ($shouldExclude === true)
         {
             $this->trace->info(
                 TraceCode::RECON_FILE_SKIP,
@@ -358,6 +357,24 @@ class Orchestrator extends Base\Core
         return $batch;
     }
 
+    protected function handleBatchCreationError(
+        \Exception $ex,
+        int $file,
+        array $fileDetails,
+        array & $allFilesDetails)
+    {
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'   => TraceCode::RECON_BATCH_CREATION_FAILED,
+                'message'      => 'Skipping file because not able to create batch for the file. -> ' .
+                                    $ex->getMessage(),
+                'file_details' => $fileDetails,
+                'gateway'      => $this->gateway,
+            ]);
+
+        $this->handleFileSkip($file, $fileDetails, $allFilesDetails);
+    }
+
     /**
      * Converts the data in file (excel/csv) and sets to in-memory array.
      *
@@ -405,15 +422,6 @@ class Orchestrator extends Base\Core
             'file_details' => $fileDetails,
         ]);
 
-    }
-
-    protected function setGatewayReconciliatorObject($gateway)
-    {
-        $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
-
-        $this->gateway = $gateway;
-
-        $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
     }
 
     /**

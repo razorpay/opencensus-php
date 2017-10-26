@@ -141,7 +141,12 @@ class CombinedReconciliate extends Foundation\SubReconciliate
                             'gateway'       => get_called_class()
                         ]);
 
+                    //
+                    // We add the invalid row to list of failures, so that batch entity
+                    // failure_count is updated accordingly
+                    //
                     $this->failures[] = $row;
+
                     throw new ReconciliationException(
                         'Did not get the reconciliation type for the row in combined reconciliation.',
                         [

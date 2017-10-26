@@ -5,6 +5,7 @@ namespace RZP\Reconciliator\RequestProcessor;
 use DirectoryIterator;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\Core;
 use RZP\Reconciliator\Messenger;

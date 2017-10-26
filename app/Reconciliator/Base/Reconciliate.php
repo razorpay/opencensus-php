@@ -259,7 +259,6 @@ class Reconciliate
      * the file is an excel, we always set the sub_type to combined, as excel can have
      * multiple sheets for payment / refund recon etc, however we process it in a single
      * batch. Later we can do something like split different sheets into separate files.
-     * TBD - if this is alright
      *
      * @param  Batch\Entity $batch              Batch entity for recon
      * @param  string       $reconciliationType Recon type determined for the file

@@ -166,22 +166,6 @@ class Service extends Base\Service
     }
 
     /**
-     * Checks if request is manual or via Mailgun.
-     *
-     * @param array $input The input received from the route.
-     * @return boolean Flag to indicate manual request
-     */
-    protected function isManualRequest(array $input)
-    {
-        if ((isset($input['manual']) === true) and ($input['manual'] === '1'))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Initializes the request processor to be used to handle the request
      * based on the source of the request i.e manual | mailgun
      *
@@ -202,4 +186,21 @@ class Service extends Base\Service
 
         return $requestProcessor;
     }
+
+    /**
+     * Checks if request is manual or via Mailgun.
+     *
+     * @param array $input The input received from the route.
+     * @return boolean Flag to indicate manual request
+     */
+    protected function isManualRequest(array $input)
+    {
+        if ((isset($input['manual']) === true) and ($input['manual'] === '1'))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
 }
