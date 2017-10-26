@@ -394,9 +394,9 @@ class Service extends Base\Service
 
             $org['hostname'] = $this->auth->getOrgHostName();
 
-
             $passwordResetMail = new UserMail\PasswordReset($user, $org);
 
+            Mail::queue($passwordResetMail);
         }
 
         return ['success' => true];

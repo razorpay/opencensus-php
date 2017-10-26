@@ -578,6 +578,7 @@ final class Route
         'user_register'                           => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
         'user_merchant_upgrade'                   => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
         'user_resend_verification'                => ['post',     'users/resend-verification',                      'UserController@postResendVerificationMail'                         ],
+        'user_reset_password_create'              => ['post',     'users/reset-password',                           'UserController@postResetPasswordByEmail'                           ],
         'user_create'                             => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                              => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_confirm_by_data'                    => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
@@ -708,7 +709,7 @@ final class Route
         'otp_verify',
         'otp_verify_app',
         'device_create',
-        'merchant_methods_downtime'
+        'merchant_methods_downtime',
     ];
 
     public static $device = [
@@ -1079,6 +1080,7 @@ final class Route
         'emandate_registration_reconcile',
         'emandate_debit_initiate',
         'emandate_debit_reconcile',
+        'user_reset_password_create',
     ];
 
     public static $proxy = [
