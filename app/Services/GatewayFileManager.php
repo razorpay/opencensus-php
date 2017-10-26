@@ -30,6 +30,21 @@ class GatewayFileManager extends Manager
         return $this->processors[$driver];
     }
 
+    /**
+     * Gets GatewayFile Processor's namespace
+     *
+     * @param string $type
+     * @param string $target
+     * @return string
+     *
+     * $folderStruct is the nested folder structure inside the folder Processor
+     * The following 3 lines replace '_' with '\\', and convert every first letter to uppercase
+     * For example:
+     *      $type = emandate_register
+     *      $taget = hdfc
+     *      $folderStruct = Emandate\\Register
+     *      $driveNameSpace = 'RZP\\Models\\Gateway\\File\\Processor\\Emandate\\Register\\Hdfc'
+     */
     protected function getProcessorDriver(string $type, string $target): string
     {
         $baseNamespace = 'RZP\\Models\\Gateway\\File\\Processor\\';
