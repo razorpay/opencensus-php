@@ -1,0 +1,201 @@
+<?php
+
+namespace RZP\Reconciliator\RequestProcessor;
+
+use RZP\Exception;
+use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\FileProcessor;
+
+class Mailgun extends Base
+{
+    /**************************
+     * Email details constants
+     **************************/
+    const EMAIL_DETAILS    = 'email_details';
+    const FROM             = 'from';
+    const TO               = 'to';
+    const SUBJECT          = 'subject';
+    const TIMESTAMP        = 'timestamp';
+    const BODY             = 'body';
+    const BODY_HTML_TEXT   = 'body_html_text';
+
+    /**
+     * Gateways for which we run validations on email content
+     */
+    const GATEWAY_EMAIL_VALIDATION = [
+        Orchestrator::HDFC,
+        Orchestrator::AXIS,
+        Orchestrator::KOTAK,
+        Orchestrator::OLAMONEY,
+        Orchestrator::FREECHARGE,
+        Orchestrator::FIRST_DATA,
+        Orchestrator::NETBANKING_AXIS,
+        Orchestrator::NETBANKING_ICICI,
+        Orchestrator::NETBANKING_FEDERAL,
+        Orchestrator::VIRTUAL_ACC_KOTAK,
+    ];
+
+    const LINK_BASED_GATEWAYS = [
+        Orchestrator::FREECHARGE,
+    ];
+
+    protected $emailDetails;
+
+    /**
+     * Getting all files details is handled by this function when the
+     * reconciliation route is hit by MailGun.
+     *
+     * @param array $input The input received from the route.
+     * @return array Details of all the files received from the input.
+     */
+    public function process(array $input): array
+    {
+        // Gets the email details and validates the email details.
+        $this->emailDetails = $this->getEmailDetails($input);
+
+        $this->validator->filterEmails($this->emailDetails);
+
+        // Figures out the gateway and sets the gateway reconciliator object for
+        // the orchestrator, using the input details.
+        $this->setGatewayFromEmail();
+
+        $fileLocationType = FileProcessor::UPLOADED;
+
+        if (in_array($this->gateway, self::LINK_BASED_GATEWAYS, true))
+        {
+            //
+            // Fetches the documents from the link, stores them in tmp
+            // after extraction if necessary, deletes the zip file, keeping
+            // the imp files
+            //
+            $this->fetchAndStoreLinkDocuments($input);
+
+            $fileLocationType = FileProcessor::STORAGE;
+
+            //
+            // This is already being done in `getEmailDetails`, but is being done
+            // again here because we create an attachment after parsing the email and
+            // downloading the file. Until then, the attachment count would be 0.
+            //
+            $this->validator->validateAttachments($input);
+
+            $this->emailDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
+        }
+
+        $allFilesDetails = $this->getFileDetailsFromInput(
+            $this->emailDetails, $input, $fileLocationType);
+
+        return $allFilesDetails;
+    }
+
+    protected function getEmailDetails($input)
+    {
+        //
+        // Sender info is picked from the 'X-Original-Sender' header, instead
+        // of 'sender' or 'from' headers.
+        //
+        // 'sender' will contain "settlement+{hash}@googlegroups.com", as the
+        // mail is being forwarded to Mailgun through our settlements group.
+        // 'From' may contain values like "HDFC Bank <payoutreport@hdfcbank.com",
+        // formatted by the sender's email client.
+        // 'X-Original-Sender' always contains just the email address.
+        //
+
+        $emailDetails = [
+            self::FROM           => strtolower($input['X-Original-Sender'] ?? $input['sender']),
+            self::SUBJECT        => $input['subject'],
+            self::TO             => $input['recipient'],
+            self::TIMESTAMP      => $input['timestamp'],
+            self::BODY           => $input['stripped-text'],
+            self::BODY_HTML_TEXT => html_entity_decode(strip_tags($input['stripped-html'])),
+        ];
+
+        //
+        // Validates that attachments are present in the email.
+        // In some cases (link based banks), attachment count can be 0.
+        // We haven't parsed the email for attachments yet at this point.
+        // Hence, sending `true` as the second parameter (allowZeroAttachments).
+        //
+        $this->validator->validateAttachments($input, true);
+
+        $emailDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
+
+        return $emailDetails;
+    }
+
+    /**
+     * Uses the 'from' email ID to figure out the gateway.
+     * If 'from' email ID is of one of the whitelisted admins,
+     * it uses the 'subject' to figure out the gateway.
+     * It also sets the gateway reconciliator object for the class.
+     *
+     * @throws Exception\ReconciliationException
+     */
+    protected function setGatewayFromEmail()
+    {
+        // For a particular gateway, reconciliation files can be sent from more than one email ID.
+        $gateway = $this->getGatewayFromEmail();
+
+        if ($gateway === Orchestrator::ADMIN)
+        {
+            $gateway = $this->emailDetails[self::SUBJECT];
+
+            if (in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)) === false)
+            {
+                throw new Exception\LogicException(
+                    '[Admin] Invalid/Unrecognized gateway sent in the subject line.',
+                    null,
+                    [
+                        'gateway'        => $gateway,
+                        'valid_gateways' => array_keys(self::GATEWAY_SENDER_MAPPING),
+                    ]);
+            }
+        }
+
+        $this->setGatewayReconciliatorObject($gateway);
+    }
+
+    protected function getGatewayFromEmail()
+    {
+        $fromEmailId = $this->emailDetails[self::FROM];
+
+        $gateway = get_key_from_subarray_match($fromEmailId, self::GATEWAY_SENDER_MAPPING);
+
+        if (empty($gateway) === true)
+        {
+            throw new Exception\ReconciliationException(
+                'Email ID not present in Sender-Gateway mapping.',
+                ['email_id' => $fromEmailId]);
+        }
+
+        if (($this->gatewayEmailValidationIsNeeded($gateway) === true) and
+            ($this->gatewayEmailIsValid($gateway) === false))
+        {
+            $formattedMailDetails = $this->emailDetails;
+            unset($formattedMailDetails[self::BODY]);
+            unset($formattedMailDetails[self::BODY_HTML_TEXT]);
+
+            throw new Exception\ReconciliationException(
+                'Email content is invalid.',
+                [
+                    self::EMAIL_DETAILS => $formattedMailDetails
+                ]);
+        }
+
+        return $gateway;
+    }
+
+    protected function gatewayEmailValidationIsNeeded($gateway)
+    {
+        return (in_array($gateway, self::GATEWAY_EMAIL_VALIDATION, true) === true);
+    }
+
+    protected function gatewayEmailIsValid($gateway)
+    {
+        $gatewayEmailValidator = 'validate' . studly_case($gateway) . 'Email';
+
+        $valid = $this->validator->$gatewayEmailValidator($this->emailDetails);
+
+        return $valid;
+    }
+}

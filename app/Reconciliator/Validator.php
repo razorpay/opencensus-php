@@ -89,7 +89,7 @@ class Validator
         $from = $emailDetails[Orchestrator::FROM];
         $validEmailIds = Orchestrator::GATEWAY_SENDER_MAPPING;
 
-        if (Orchestrator::getKeyFromSubArrayMatch($from, $validEmailIds) === null)
+        if (get_key_from_subarray_match($from, $validEmailIds) === null)
         {
             throw new Exception\ReconciliationException(
                 'The sender email ID is not whitelisted.', [Orchestrator::EMAIL_DETAILS => $emailDetails]
@@ -99,7 +99,7 @@ class Validator
 
     public function getExtensionFromContentType(string $contentType)
     {
-        $extension = Orchestrator::getKeyFromSubArrayMatch($contentType, self::ACCEPTED_EXTENSIONS_MAP);
+        $extension = get_key_from_subarray_match($contentType, self::ACCEPTED_EXTENSIONS_MAP);
 
         return $extension;
     }

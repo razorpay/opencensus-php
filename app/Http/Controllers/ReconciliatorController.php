@@ -16,7 +16,7 @@ class ReconciliatorController extends Controller
     {
         $input = Request::all();
 
-        $summary = (new Orchestrator)->initiateReconciliationProcess($input);
+        $summary = $this->service()->initiateReconciliationProcess($input);
 
         return ApiResponse::generateResponse($summary);
     }

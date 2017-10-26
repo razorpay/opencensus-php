@@ -314,7 +314,7 @@ class FileProcessor
      *
      * @return string Extension of the file
      */
-    public function getTypeOfFile($file, $fileLocationType)
+    public function getFileExtension($file, $fileLocationType)
     {
         if ($fileLocationType === self::UPLOADED)
         {
