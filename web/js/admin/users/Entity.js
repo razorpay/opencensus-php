@@ -34,7 +34,7 @@ class EditUser extends Component {
       requests.push({
         route_name: 'admin_get',
         url_params: {
-          adminId: props.model.id,
+          adminId: this.props.model.id,
         },
       });
     }

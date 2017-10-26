@@ -58,7 +58,7 @@ export function serialize(form) {
     function(data, el) {
       var { name, value } = el;
       if (el.type === 'checkbox') {
-        value = el.checked ? el.value || 1 : 0;
+        value = el.checked ? '1' : '0';
       }
       if (value) {
         // item[foo] → item.foo

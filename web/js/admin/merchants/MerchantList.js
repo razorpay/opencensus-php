@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
-import Field, { SelectField, CheckField } from 'ui/Field';
+import Field, { SelectField, SwitchField } from 'ui/Field';
 import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
 import { openMerchantEntity } from './entity/entity-resources';
@@ -37,7 +37,7 @@ export default class MerchantList extends Component {
               <option value="activated">Activated</option>
             </SelectField>
             <Field name="sub_accounts" label="Linked-accounts for ID" />
-            <CheckField label="Linked Accounts Only" name="sub_accounts" />
+            <SwitchField label="Linked Accounts Only" name="sub_accounts" />
             <button>Apply</button>
           </Form>
         </div>

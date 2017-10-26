@@ -6,8 +6,7 @@ var filename = _.htmlWebpackPlugin.options.vars.filename;
 @include('partials/header')
 
 <script src="`=cdnUrl`/`=filename(_, 'vendor')`" defer></script>
-<link rel='stylesheet' href="`=cdnUrl`/fonts/icons.css" type='text/css' />
-<link rel='stylesheet' href="`=cdnUrl`/admin.css" type='text/css' />
+<link rel='stylesheet' href="`=cdnUrl`/css/admin.css" type='text/css' />
 </head>
 <body>
   <div id="react-root" class="react-root"></div>

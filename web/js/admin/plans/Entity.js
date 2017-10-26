@@ -28,7 +28,9 @@ export default class PlanEntity extends Component {
   };
 
   render() {
-    let { props, items, updateName } = this.collection;
+    let { props, items, updateName, pending } = this.collection;
+    pending = pending.fetch;
+
     if (!sharedNetworks.get()) {
       return <div class="spinner" />;
     }
@@ -49,7 +51,11 @@ export default class PlanEntity extends Component {
             </div>
           )}
         </header>
-        <DataTable items={this.collection.items} fields={fields} />
+        <DataTable
+          pending={pending}
+          items={this.collection.items}
+          fields={fields}
+        />
       </div>
     );
   }

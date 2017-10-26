@@ -5,9 +5,6 @@
   width: 0
   height: 0
 
-#modal-container
-  overflow: auto
-
 #slider-container
   position: fixed
   top: 48px
@@ -29,6 +26,7 @@
   padding: 20px
   transition: .2s
   box-shadow: -1px 6px 10px rgba(0,0,0,.1)
+  overflow: auto
   .box
     margin: 0
 
@@ -53,9 +51,12 @@
 .modal
   max-width: 96%
   position: absolute
-  margin: 5% auto auto
+  margin: 0 auto auto
+  top: 5%
   left: 50%
   transform: translateX(-50%)
+  max-height: 90%
+  overflow: auto
   background: #fff
   border-radius: 3px
   box-shadow: 0 2px 8px 2px rgba(0,0,0,.1)
@@ -64,6 +65,7 @@
   pointer-events: none;
   header
     border-bottom: 2px solid #eee
+    padding-right: 44px
 
   &:last-child
     opacity: 1

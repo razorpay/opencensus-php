@@ -30,11 +30,12 @@ export function adminPost(data) {
   });
 }
 
-export function adminPut(params, config) {
+export function adminPut(data) {
+  data = parseParams(data);
   return fetch({
     url: '/admin/generic',
     method: 'put',
-    ...parseParams(params),
+    data,
   });
 }
 
