@@ -96,7 +96,7 @@ trait EmandateTrait
 
     //-----------------------Callback request helpers---------------------
 
-    public function handleEmandateCallback(array $input): array
+    protected function handleEmandateCallback(array $input): array
     {
         $content = $input['gateway'];
 
@@ -127,7 +127,7 @@ trait EmandateTrait
 
         $this->assertAmount(
             $this->formatAmount($input['payment'][Payment\Entity::AMOUNT]),
-            $content[ResponseFields::AMOUNT]
+            number_format($content[ResponseFields::AMOUNT], 2, '.', '')
         );
 
         $this->validateCallbackChecksum($content);
@@ -171,7 +171,7 @@ trait EmandateTrait
         if (isset($content[ResponseFields::STATUS_CODE]) === false)
         {
             throw new GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 null,
                 null,
                 [
@@ -197,7 +197,9 @@ trait EmandateTrait
     {
         $recurringStatus = null;
 
-        if (StatusCode::isEmandateRegistrationSuccess($gatewayPayment[Netbanking\Entity::REFERENCE1]))
+        $gatewaySiStatus = $gatewayPayment->getReference1();
+
+        if (StatusCode::isEmandateRegistrationSuccess($gatewaySiStatus) === true)
         {
             $recurringStatus = Token\RecurringStatus::CONFIRMED;
         }
@@ -248,7 +250,6 @@ trait EmandateTrait
                 'gateway'                => $this->gateway,
                 'payment_id'             => $input['payment'][Payment\Entity::ID],
                 'data_before_encryption' => $data,
-                'request'                => $content,
             ]
         );
 
@@ -281,7 +282,7 @@ trait EmandateTrait
     //---------------Verify request helpers end-----------------------
 
     //----------------------General helpers---------------------------
-    public function getEmandateEncryptedData(array $data): string
+    protected function getEmandateEncryptedData(array $data): string
     {
         return base64_encode(
             $this->getEncryptor()->encryptString(
@@ -290,7 +291,7 @@ trait EmandateTrait
         );
     }
 
-    public function getEmandateDecryptedData(string $body, array $input): array
+    protected function getEmandateDecryptedData(string $body, array $input): array
     {
         $decrypted = $this->getEncryptor()->decryptString(base64_decode($body));
 
