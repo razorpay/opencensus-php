@@ -19,22 +19,15 @@ export default class GatewayRule extends CollectionItem {
       body.iins = body.iins.split(',');
     }
     return this.request(
-      adminPost(
-        {
-          data: {
-            body,
-          },
-        },
-        {
-          params: {
-            route_name: 'gateway_create_rule',
-            mode: this.collection.filters.mode,
-          },
-        }
-      )
+      adminPost({
+        route_name: 'gateway_create_rule',
+        mode: this.collection.filters.mode,
+        body,
+      })
     ).then(data => {
       if (data) {
         this.collection.items.push(this);
+        return data;
       }
     });
   }
