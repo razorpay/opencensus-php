@@ -58,6 +58,9 @@ class Validator extends Base\Validator
         'referer'                 => 'sometimes|string|max:2083',
         'user_agent'              => 'sometimes|string',
         '_'                       => 'sometimes|array',
+        'test_success'            => 'sometimes|boolean',
+        'subscription_card_change'=> 'sometimes|boolean',
+        'account_number'          => 'sometimes_if:recurring,1,method,netbanking|alpha_num|between:5,20|nullable',
     ];
 
     protected static $editRules = [
