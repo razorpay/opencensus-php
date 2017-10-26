@@ -97,7 +97,9 @@ class AdminController extends Controller
     public function getPokedex()
     {
         return view('admin.pokedex', [
-            'cdn' => \Config::get('app.cdn_dashboard_url')
+            'cdn' => \Config::get('app.cdn_dashboard_url'),
+            'org' => $this->getOrg()->getData(true),
+            'user' => $this->getAdmin()->getData(true)
         ]);
     }
 

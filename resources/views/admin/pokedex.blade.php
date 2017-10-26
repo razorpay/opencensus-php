@@ -11,10 +11,13 @@
   <meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <script src="{{$cdn}}/dist/vendor.js" defer></script>
-  <link rel="stylesheet" href="{{$cdn}}/dist/admin.css"></link>
-  <link rel="stylesheet" href="{{$cdn}}/dist/pokedex.css"></link>
+  <link rel="stylesheet" href="{{$cdn}}/dist/css/admin.css"></link>
 </head>
 <body>
+  <script>
+    var org = {!! json_encode($org['data']) !!};
+    var user = {!! json_encode($user['data']) !!};
+  </script>
   <div id="react-root" class="react-root"></div>
   <script src="{{$cdn}}/dist/admin/admin.js" defer></script>
 </body>
