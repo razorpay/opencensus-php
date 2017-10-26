@@ -5,9 +5,9 @@ namespace RZP\Reconciliator\Base;
 use App;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
-use RZP\Exception\ReconciliationException;
-use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Messenger;
+use RZP\Reconciliator\Orchestrator;
+use RZP\Exception\ReconciliationException;
 
 class CombinedReconciliate extends Foundation\SubReconciliate
 {
@@ -141,9 +141,13 @@ class CombinedReconciliate extends Foundation\SubReconciliate
                             'gateway'       => get_called_class()
                         ]);
 
-                    // TODO: Removed the eexception thrown here, instead continuing with processing
-                    // the remaining rows in the file.
-                    continue;
+                    $this->failures[] = $row;
+                    throw new ReconciliationException(
+                        'Did not get the reconciliation type for the row in combined reconciliation.',
+                        [
+                            'row' => $row,
+                        ]
+                    );
                 }
 
                 $subReconciliatorObject = $this->getSubReconciliatorObject($entityType);
@@ -191,10 +195,8 @@ class CombinedReconciliate extends Foundation\SubReconciliate
      */
     protected function updateCombinedSummaryCount()
     {
-        s(count($this->subReconciliatorObjects));
         foreach ($this->subReconciliatorObjects as $subReconciliatorObject)
         {
-            s($subReconciliatorObject->getTotal(), $subReconciliatorObject->getSuccesses(), $subReconciliatorObject->getFailures());
             $this->total = array_merge($this->total, $subReconciliatorObject->getTotal());
 
             $this->successes = array_merge($this->successes, $subReconciliatorObject->getSuccesses());

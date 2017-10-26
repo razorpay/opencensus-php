@@ -11,9 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Reconciliator\Orchestrator;
-use RZP\Reconciliator\RequestProcessor\Manual as ManualRequestProcessor;
-use RZP\Reconciliator\RequestProcessor\Mailgun as MailgunRequestProcessor;
-
+use RZP\Reconciliator\RequestProcessor;
 
 class Service extends Base\Service
 {
@@ -113,6 +111,10 @@ class Service extends Base\Service
     {
         $requestProcessor = $this->getRequestProcessor($input);
 
+        //
+        // Sets the gateway reconciliator object and
+        // Gets all the file details from the input.
+        //
         $allFilesDetails = $requestProcessor->process($input);
 
         // There must be at least one file. Otherwise, error.
@@ -179,21 +181,23 @@ class Service extends Base\Service
         return false;
     }
 
-    protected function getRequestProcessor(array $input)
+    /**
+     * Initializes the request processor to be used to handle the request
+     * based on the source of the request i.e manual | mailgun
+     *
+     * @param  array                        $input
+     * @return RequestProcessor\Base
+     */
+    protected function getRequestProcessor(array $input): RequestProcessor\Base
     {
         // Checks if it's manual call or mailgun call
         if ($this->isManualRequest($input) === true)
         {
-            // Sets the gateway reconciliator object and
-            // Gets all the file details from the input.
-            // $this->allFilesDetails = $this->manualEntry($input)
-            $requestProcessor = new ManualRequestProcessor();
+            $requestProcessor = new RequestProcessor\Manual;
         }
         else
         {
-            // Sets the gateway reconciliator object and
-            // Gets all the file details from the input.
-            $requestProcessor = new MailgunRequestProcessor();
+            $requestProcessor = new RequestProcessor\Mailgun;
         }
 
         return $requestProcessor;

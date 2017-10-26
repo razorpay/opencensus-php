@@ -192,6 +192,9 @@ class SubReconciliate
         $this->extraDetails = $extraDetails;
     }
 
+    /**
+     * @param  Batch\Entity $batch  Batch entity for the current reconciliation request
+     */
     protected function updateBatchWithSummary(Batch\Entity $batch)
     {
         $batch->setSuccessCount(count($this->successes));

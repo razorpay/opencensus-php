@@ -3,17 +3,18 @@
 namespace RZP\Reconciliator\RequestProcessor;
 
 use DirectoryIterator;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\Core;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Validator;
 use RZP\Reconciliator\Orchestrator;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\FileProcessor;
 
 class Base extends Core
 {
-    const GATEWAY = 'gateway';
+    const GATEWAY          = 'gateway';
 
     const ATTACHMENT_COUNT = 'attachment_count';
 

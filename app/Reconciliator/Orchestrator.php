@@ -3,15 +3,15 @@
 namespace RZP\Reconciliator;
 
 use App;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
-use DirectoryIterator;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\FileStore\Format;
 use RZP\Models\Merchant\Account;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 
 class Orchestrator extends Base\Core
@@ -329,7 +329,7 @@ class Orchestrator extends Base\Core
         return false;
     }
 
-    protected function handleFileSkip($file, array $fileDetails, array $allFilesDetails)
+    protected function handleFileSkip($file, array $fileDetails, array & $allFilesDetails)
     {
         $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
 
@@ -338,7 +338,7 @@ class Orchestrator extends Base\Core
     }
 
     /**
-     * Creates batch and saves it to DB. Also uploads recon file to S3
+     * Creates batch for recon and enqueues it for processing
      *
      * @param  array  $fileDetails Recon file details
      * @return Batch\Entity        batch entity created
@@ -516,40 +516,6 @@ class Orchestrator extends Base\Core
         $columnHeaders = $this->gatewayReconciliator->getColumnHeadersForType($reconType);
 
         return $columnHeaders;
-    }
-
-    /**
-     * Unzips the zip file. Iterates through each extracted file and collects
-     * the file details.
-     *
-     * @param array $zipFileDetails Zip file that needs to be extracted.
-     * @return array File details of all the files present in the zip file.
-     * @throws Exception\ReconciliationException
-     */
-    protected function getFileDetailsFromZipFile($zipFileDetails)
-    {
-        $allExtractedFilesDetails = [];
-
-        $zipPassword = $this->gatewayReconciliator->getReconPassword($zipFileDetails);
-
-        $use7z = $this->gatewayReconciliator->shouldUse7z($zipFileDetails);
-
-        // unzipFile unzips the file and stores it in a location.
-        $unzippedFolderPath = $this->fileProcessor->unzipFile($zipFileDetails, $zipPassword, $use7z);
-
-        $unzippedFiles = new DirectoryIterator($unzippedFolderPath);
-
-        // Iterates through each zip file and gets the file details for them.
-        foreach ($unzippedFiles as $unzippedFile)
-        {
-            if ($unzippedFile->isFile() === true)
-            {
-                $allExtractedFilesDetails[] = $this->fileProcessor
-                                                   ->getFileDetails($unzippedFile, FileProcessor::STORAGE);
-            }
-        }
-
-        return $allExtractedFilesDetails;
     }
 
     /**

@@ -123,7 +123,15 @@ class Reconciliate
     }
 
     /**
-     * Processing reconciliation via batch
+     * This is the start of the reconciliation. This is executed from the orchestrator.
+     * For each file, it figures out which type of reconciliation is it (nodal, payment, refund, combined)
+     * and calls the startReconciliation of the respective reconciliation type.
+     *
+     * The logic here is exactly the same as in startReconciliate, except that we
+     * pass the batch entity to the individual subreconciliators
+     *
+     * @param array $allFilesContents
+     * @param array $batch
      */
     public function startReconciliationV2(array $allFilesContents, Batch\Entity $batch)
     {
@@ -146,6 +154,15 @@ class Reconciliate
 
             $this->subReconciliator->startReconciliationV2($fileContents, $batch);
         }
+
+        $this->app['trace']->info(
+            TraceCode::RECON_INFO_SUMMARY,
+            [
+                'total_count'   => $batch->getTotalCount(),
+                'success_count' => $batch->getSuccessCount(),
+                'failure_count' => $batch->getFailureCount(),
+            ]
+        );
     }
 
     /**
@@ -253,7 +270,8 @@ class Reconciliate
                             string $reconciliationType,
                             array $extraDetails)
     {
-        if ($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_TYPE] === FileProcessor::EXCEL)
+        if ($extraDetails[FileProcessor::FILE_DETAILS]
+                [FileProcessor::FILE_TYPE] === FileProcessor::EXCEL)
         {
             $batch->setSubType(self::COMBINED);
         }
@@ -263,8 +281,15 @@ class Reconciliate
         }
     }
 
+    /**
+     * @param  array  $fileDetails  File metad data
+     * @return [type]              name of the file
+     */
     protected function getFileName(array $fileDetails): string
     {
+        //
+        // For excel recon files, we consider the sheet name if present as the file name.
+        //
         if (isset($fileDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME]) === true)
         {
             return $fileDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME];
