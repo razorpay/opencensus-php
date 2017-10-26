@@ -20,14 +20,12 @@ input, textarea, select
   width: 160px
   box-shadow: inset 0 1px 2px rgba(10, 10, 10, 0.1)
 
+input[type=checkbox]
+  width: auto
+  box-shadow: none
+
 .small
   width: 80px
-
-input
-  &[type=checkbox],&[type=radio]
-    width: auto
-    box-shadow: none
-    margin: 0
 
 label
   line-height: 18px
@@ -53,21 +51,12 @@ button, .btn
   display: inline-block
   margin: 10px
 
-.switch-field
-  label
-    line-height: 38px
-    padding-right: 40px
-    position: relative
-    cursor: pointer
-  input
-    display: none
+.checkbox
+  background: none
+  box-shadow: none
+  padding: 0
 
-.switch
-  display: inline-block
-  input
-    display: none !important
-
-.switch-knob
+.knob
   position: relative
   height: 38px
   width: 34px
@@ -77,7 +66,6 @@ button, .btn
     content: ''
     display: block
     border-radius: 10px
-    margin-top: 9px
     height: 20px
     width: 100%
     background: #9E9E9E
@@ -92,16 +80,15 @@ button, .btn
     width: 19px
     height: @width
     transition: .2s
-
-:checked+.switch-knob
-  &:before
-    background: linear-gradient(to bottom, #4CD964, #4BD863);
-  &:after
-    transform: translateX(15px)
+  &.checked
+    &:before
+      background: linear-gradient(to bottom, #4CD964, #4BD863);
+    &:after
+      transform: translateX(15px)
 
 
 form
   &.pending
-    button, .btn
+    button:not(.checkbox), .btn
       opacity: .6
       pointer-events: none

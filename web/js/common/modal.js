@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import TransitionGroup from 'react-transition-group/TransitionGroup';
 import CSSTransition from 'react-transition-group/CSSTransition';
 
-import { observable } from 'mobx';
+import { observe, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { animObj } from 'util/index';
 
@@ -20,10 +20,10 @@ class ModalStore {
         <header>Confirm</header>
         <div key="message">{message}</div>
         <div key="action-buttons">
-          <button onClick={onAction} key="btn-confirm">
+          <button onClick={onAction} class="btn">
             {confirmLabel}
           </button>
-          <button onClick={this.closeModal} key="btn-reject">
+          <button onClick={this.closeModal} class="btn-default">
             {rejectLabel}
           </button>
         </div>
@@ -49,6 +49,10 @@ class ModalStore {
 }
 
 const store = new ModalStore();
+
+observe(store.modals, e => {
+  document.body.className = store.modals.length ? 'noscroll' : '';
+});
 
 @observer
 export default class ModalContainer extends Component {

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { methods } from 'util/data';
+import { prevent } from 'util/index';
 
 function focusInput(e) {
   e.target.nextElementSibling.focus();
@@ -32,66 +33,57 @@ export function CheckField({ label, ...props }) {
   );
 }
 
+export function SwitchField({ label, ...props }) {
+  return (
+    <div class="field">
+      <label>{label}</label>
+      <Switch knob {...props} />
+    </div>
+  );
+}
+
 export class Switch extends Component {
-  disabledValue = this.props.disabledValue || '0';
+  disabledValue = this.props.disabledValue;
   enabledValue = this.props.enabledValue || '1';
+  buttonClass = this.props.knob ? 'checkbox knob' : 'checkbox';
 
   state = {
-    checked: this.props.value === this.enabledValue,
+    checked: this.props.defaultChecked,
   };
 
   toggle = e => {
     var checked = !this.state.checked;
-    this.setState({
-      checked,
-    });
-    if (this.props.onChange) {
-      return this.props.onChange(e);
-    }
+    let onChange = this.props.onChange;
+    let target = e.target;
+
+    this.setState({ checked }, _ => onChange && onChange({ target }));
+    prevent(e);
   };
 
   render() {
-    let { disabledValue, enabledValue, value, ...restProps } = this.props;
+    let {
+      knob,
+      defaultChecked,
+      disabledValue,
+      enabledValue,
+      ...restProps
+    } = this.props;
+    let { checked } = this.state;
 
-    let checked = this.state.checked;
+    let buttonClass = this.buttonClass;
+    if (checked) {
+      buttonClass += ' checked';
+    }
 
     return (
-      <div class="switch">
-        <input
-          {...restProps}
-          type="checkbox"
-          checked={checked}
-          value={checked ? this.enabledValue : this.disabledValue}
-        />
-        <div class="switch-knob" onClick={this.toggle} />
-      </div>
+      <button
+        {...restProps}
+        class={buttonClass}
+        value={checked ? this.enabledValue : this.disabledValue}
+        onClick={this.toggle}
+      />
     );
   }
-}
-
-export function ControlledSwitchField({
-  label,
-  enabled,
-  onChange,
-  enabledValue,
-  disabledValue,
-  name,
-  ...props
-}) {
-  return (
-    <div class="field switch-field">
-      <input
-        type="hidden"
-        name={name}
-        value={enabled ? enabledValue : disabledValue}
-      />
-      <label onClick={() => onChange(enabled ? disabledValue : enabledValue)}>
-        {label}
-      </label>
-      <input {...props} checked={enabled} type="checkbox" readOnly={true} />
-      <div class="switch-knob" />
-    </div>
-  );
 }
 
 export function SelectField({ label, children, ...props }) {

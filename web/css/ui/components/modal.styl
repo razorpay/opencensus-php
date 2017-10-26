@@ -26,6 +26,7 @@
   padding: 20px
   transition: .2s
   box-shadow: -1px 6px 10px rgba(0,0,0,.1)
+  overflow: auto
   .box
     margin: 0
 
@@ -50,13 +51,17 @@
 .modal
   max-width: 96%
   position: relative
-  margin: 5% auto auto
+  top: 5%
+  margin: 0 auto auto
+  max-height: 90%
+  overflow: auto
   background: #fff
   border-radius: 3px
   box-shadow: 0 2px 8px 2px rgba(0,0,0,.1)
   transition: .3s
   header
     border-bottom: 2px solid #eee
+    padding-right: 44px
 
 .modal-close, .slider-close
   position: absolute

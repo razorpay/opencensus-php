@@ -3163,7 +3163,7 @@ app
       $scope.method = current.method;
 
       var data = {
-        route_name: 'schedule_fetch_multiple',
+        route_name: 'setl_fetch_schedule',
       };
       var request = $http.get('/admin/generic', {
         params: data,

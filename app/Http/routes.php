@@ -16,6 +16,7 @@
 Route::group(['middleware' => ['web']], function () {
     Route::get('/', 'UserController@getIndex')->name('dashboard');
     Route::get('/admin', 'AdminController@getIndex');
+    Route::get('/status', 'AdminController@getStatus');
 
     // This is for enabling CORS support on contact form submissions
     Route::options('/contact', 'MerchantController@optionsContact');
@@ -104,6 +105,7 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::group(['middleware'  =>  ['admin', 'admin_access']], function()
     {
+        Route::get('/admin/pokedex', 'AdminController@getPokedex');
         Route::any('/admin/generic', 'GenericController@handle');
         Route::get('/admin/user', 'AdminController@getAdmin');
         Route::get('/admin/user/logout', 'AdminController@getLogout');

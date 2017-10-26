@@ -59,6 +59,7 @@ var admin = window.rzpAdmin || {
     'view_all_role',
     'view_all_org',
     'view_merchant_stats',
+    'view_all_permission',
   ],
 };
 

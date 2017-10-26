@@ -1,17 +1,44 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 
-export default function Table({ fields, items, onClick, bordered }) {
+import TransitionGroup from 'react-transition-group/TransitionGroup';
+import CSSTransition from 'react-transition-group/CSSTransition';
+
+const animObj = {
+  enter: 1000,
+  exit: 700,
+};
+
+function defaultIndexFn(item, index, array) {
+  return item.id || array.length - index;
+}
+
+export default function Table({
+  pending,
+  fields,
+  items,
+  onClick,
+  bordered,
+  indexFn = defaultIndexFn,
+}) {
   let trClass = onClick ? 'tr clickable' : 'tr';
   let tableClass = 'table table-striped';
   if (bordered) {
     tableClass += ' table-bordered';
   }
 
+  if (pending) {
+    return <div class="table-pending" />;
+  }
+
+  if (!items || !items.length) {
+    return <div class="table-empty" />;
+  }
+
   return (
     <div class="table-container">
-      {items && items.length ? (
-        <div class={tableClass}>
+      <TransitionGroup class={tableClass}>
+        <CSSTransition timeout={0}>
           <div class="tr thead">
             {fields.map((field, index) => (
               <div class="th" key={index}>
@@ -19,25 +46,25 @@ export default function Table({ fields, items, onClick, bordered }) {
               </div>
             ))}
           </div>
-          {items.map((item, index) => {
-            return (
-              <div
-                class={trClass}
-                key={index}
-                onClick={onClick && item::onClick}
-              >
+        </CSSTransition>
+        {items.map((item, index) => {
+          return (
+            <CSSTransition
+              key={indexFn(item, index, items)}
+              classNames="row"
+              timeout={animObj}
+            >
+              <div class={trClass} onClick={onClick && item::onClick}>
                 {fields.map((field, index) => (
                   <div class="td" key={index}>
                     {field[1](item)}
                   </div>
                 ))}
               </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div class="table-empty" />
-      )}
+            </CSSTransition>
+          );
+        })}
+      </TransitionGroup>
     </div>
   );
 }
@@ -47,27 +74,26 @@ export const DataTable = observer(Table);
 @observer
 export class PageTable extends Component {
   render() {
-    let { fields, model, onClick } = this.props;
+    let { fields, model, onClick, info = true, title } = this.props;
     let { pending, items, filters } = model;
 
     pending = pending.fetch;
 
-    return (
-      <div>
-        {(pending && <div class="table-pending" />) ||
-          ((items &&
-            items.length && (
-              <div class="box">
-                <Pagination model={model} />
-                <div class="table-info">
-                  {items.length} Results ({filters.skip + 1} &ndash;{' '}
-                  {filters.skip + items.length})
-                </div>
-                <Table fields={fields} onClick={onClick} items={items} />
-              </div>
-            )) || <div class="table-empty" />)}
-      </div>
-    );
+    if (items && items.length) {
+      return (
+        <div class="box">
+          <Pagination model={model} />
+          {title && `${title} · `}
+          {info && (
+            <div class="table-info">
+              Results {filters.skip + 1} &ndash; {filters.skip + items.length}
+            </div>
+          )}
+          <Table fields={fields} onClick={onClick} items={items} />
+        </div>
+      );
+    }
+    return <Table pending={pending} />;
   }
 }
 
