@@ -121,10 +121,17 @@ export const cancelInvitation = inviteId => {
 export const updateUser = (userId, body) => {
   return {
     type: USER_UPDATE,
-    payload: request(`/settings/merchants/owned/members/${userId}`, {
+    payload: request(GENERIC_URL, {
       method: 'put',
       appendModeInURL: false,
-      body,
+      body: {
+        route_name: 'user_merchant_mapping_action',
+        url_params: JSON.stringify({
+          '{id}': userId,
+          '{action}': 'update',
+        }),
+        body: body,
+      },
     }),
   };
 };
@@ -132,9 +139,16 @@ export const updateUser = (userId, body) => {
 export const removeUser = userId => {
   return {
     type: USER_REMOVE,
-    payload: request(`/settings/merchants/owned/members/${userId}`, {
-      method: 'delete',
+    payload: request(GENERIC_URL, {
+      method: 'put',
       appendModeInURL: false,
+      body: {
+        route_name: 'user_merchant_mapping_action',
+        url_params: JSON.stringify({
+          '{id}': userId,
+          '{action}': 'detach',
+        }),
+      },
     }),
   };
 };

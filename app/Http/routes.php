@@ -83,9 +83,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');
         // This is a sensitive route
         Route::get('settings/merchants/switch/{id}', 'UserController@switchCurrentMerchant');
-        // Team Administration
-        Route::put('settings/merchants/owned/members/{id}', 'MerchantController@updateTeamMember', 'team_users_update');
-        Route::delete('settings/merchants/owned/members/{id}', 'MerchantController@removeTeamMember', 'team_users_delete');
         // Invitation related (User side)
         Route::post('settings/invitations/{invite}/accept', 'InvitationsController@postAcceptMerchantInvitation');
 

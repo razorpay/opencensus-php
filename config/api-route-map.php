@@ -549,6 +549,9 @@ return [
             'routeName' => 'feature_onboarding_fetch_responses'
         ],
 
+        // User Merchant Mapping Action
+        'user_merchant_mapping_action'      => 'users/{id}/{action}',
+
         // Create SubMerchant
         'merchant_sub_create'               => 'submerchants',
         // Create SubMerchant User
@@ -666,9 +669,6 @@ return [
         'invitation_action'                 => 'invitations/{id}/{action}',
         // Invitation fetch by token
         'invitation_fetch_by_token'         => 'invitations/token/{token}',
-
-        // User Merchant Mapping Action
-        'user_merchant_mapping_action'      => 'users/{id}/{action}',
 
         // Make test payment for Virtual Account
         'bank_transfer_process'             => 'ecollect/validate',
