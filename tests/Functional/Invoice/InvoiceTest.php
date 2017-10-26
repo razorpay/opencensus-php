@@ -2202,7 +2202,7 @@ class InvoiceTest extends TestCase
         $this->assertEquals($order['id'], $response['order_id']);
         $this->assertEquals($order['payment_capture'], true);
         $this->assertEquals($invoice['id'], 'inv_' . $lineItem['entity_id']);
-        $this->assertContains('http://dwarf.razorpay.dev/', $invoice['short_url']);
+        $this->assertContains('http://dwarf.razorpay.in/', $invoice['short_url']);
         $this->assertEquals('10000000000000', $invoice['merchant_id']);
     }
 
