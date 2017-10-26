@@ -34,6 +34,12 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT              = 'updated_at';
     const RESOLVED_AT             = 'resolved_at';
 
+    /**
+     *  Field for edit input, when accepted chargeback amount
+     *  is lesser than disputed amount.
+     */
+    const ACCEPTED_DISPUTE_AMOUNT = 'accepted_amount';
+
     protected static $sign = 'disp';
 
     protected $entity = 'dispute';
