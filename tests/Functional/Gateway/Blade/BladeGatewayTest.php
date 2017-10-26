@@ -54,6 +54,8 @@ class BladeGatewayTest extends TestCase
 
         $txn = $this->getLastTransaction(true);
 
+        s($txn);
+
         $this->assertArraySelectiveEquals(
             $this->testData['testSuccessful13DigitPanTxn'], $txn);
 

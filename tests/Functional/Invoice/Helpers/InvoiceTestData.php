@@ -2628,7 +2628,6 @@ return [
                                 'merchant_order_id' => 'random order id',
                             ],
                             'fee'               => 2000,
-                            'service_tax'       => 0,
                             'error_code'        => null,
                             'error_description' => null,
                             'acquirer_data'     => [],
