@@ -4,11 +4,10 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Axis\EMandate;
 
 use RZP\Constants\Entity;
 use RZP\Gateway\Netbanking\Axis\Emandate;
+use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Customer\Token;
-
-use Carbon\Carbon;
 
 class NetbankingAxisEMandateTest extends TestCase
 {
@@ -64,7 +63,9 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals($gatewayPayment['status'], Emandate\StatusCode::SUCCESS);
+        $this->assertEquals($gatewayPayment[NetbankingEntity::STATUS], Emandate\StatusCode::SUCCESS);
+
+        $this->assertEquals($gatewayPayment[NetbankingEntity::RECEIVED], true);
     }
 
     public function testPaymentVerifyFailure()
@@ -73,7 +74,7 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
-            if($action === 'verify_emandate')
+            if ($action === 'verify_emandate')
             {
                 $content[Emandate\ResponseFields::STATUS_CODE] = Emandate\StatusCode::FAILED;
             }
@@ -93,7 +94,7 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
-            if($action === 'verify_emandate')
+            if ($action === 'verify_emandate')
             {
                 // Don't need to change status code, since status code would be success from gateway
                 $content[Emandate\ResponseFields::AMOUNT] = 12;
