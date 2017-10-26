@@ -6,7 +6,6 @@ use App;
 use Carbon\Carbon;
 
 use RZP\Base;
-use RZP\Base\JitValidator;
 use RZP\Exception;
 use RZP\Exception\BadRequestValidationFailureException;
 

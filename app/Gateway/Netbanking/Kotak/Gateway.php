@@ -235,15 +235,13 @@ class Gateway extends Base\Gateway
         // Kotak asks for date in IST
         $date = Carbon::now(Timezone::IST)->format('dmYHis');
 
-        $billingLabel = $input['merchant']['billing_label'];
-
         $data = array(
             'MessageCode'            => MessageCodes::AUTHORIZE,
             'DateTimeInGMT'          => $date,
             'MerchantId'             => $input['terminal']['gateway_merchant_id'],
             'TraceNumber'            => time() . random_integer(5),
             'Amount'                 => $input['payment']['amount'] / 100,
-            'TransactionDescription' => $billingLabel,
+            'TransactionDescription' => $this->getDynamicMerchantName($input['merchant'], 50),
         );
 
         if ($this->mode === Mode::TEST)

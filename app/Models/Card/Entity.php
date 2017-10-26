@@ -43,6 +43,7 @@ class Entity extends Base\PublicEntity
     const DUMMY_EXPIRY_YEAR  = '2021';
     const DUMMY_EXPIRY_MONTH = '12';
     const DUMMY_CVV          = '123';
+    const DUMMY_CVV_AMEX     = '1234';
 
     const NETWORK_CODE      = 'network_code';
 
@@ -581,5 +582,17 @@ class Entity extends Base\PublicEntity
         unset($attributes[self::ID]);
 
         return $attributes;
+    }
+
+    public static function getDummyCvv(string $network = null)
+    {
+        $dummyCvv = self::DUMMY_CVV;
+
+        if ($network === Network::AMEX)
+        {
+            $dummyCvv = self::DUMMY_CVV_AMEX;
+        }
+
+        return $dummyCvv;
     }
 }
