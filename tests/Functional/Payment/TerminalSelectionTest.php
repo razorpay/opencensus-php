@@ -762,13 +762,22 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
 
-        $data = [];
+        $this->doAuthPayment($payment);
 
-        // TPV payment should not be routed through either ecommerce or null terminal
-        $this->makeRequestAndCatchException(function () use ($payment)
-        {
-            $this->doAuthPayment($payment);
-        });
+        $payment2 = $this->getLastPayment(true);
+
+        $this->assertEquals('SharNbBdkTmnl1', $payment2['terminal_id']);
+
+        $this->fixtures->terminal->edit('SharNbBdkTmnl1',['enabled' => false]);
+
+        $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            RuntimeException::class);
     }
 
     public function testSecuritiesMerchantOnKKBKTerminalSelection()
