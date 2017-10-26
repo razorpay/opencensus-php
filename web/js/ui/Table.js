@@ -74,7 +74,7 @@ export const DataTable = observer(Table);
 @observer
 export class PageTable extends Component {
   render() {
-    let { fields, model, onClick, info = true } = this.props;
+    let { fields, model, onClick, info = true, title } = this.props;
     let { pending, items, filters } = model;
 
     pending = pending.fetch;
@@ -83,6 +83,7 @@ export class PageTable extends Component {
       return (
         <div class="box">
           <Pagination model={model} />
+          {title && `${title} · `}
           {info && (
             <div class="table-info">
               Results {filters.skip + 1} &ndash; {filters.skip + items.length}

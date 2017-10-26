@@ -22,6 +22,8 @@ import GroupList from 'admin/groups/List';
 import UserList from 'admin/users/List';
 import RoleList from 'admin/roles/List';
 
+import AuditLog from 'admin/auditlog/List';
+
 export default class App extends Component {
   render() {
     return (
@@ -41,6 +43,9 @@ export default class App extends Component {
             <Route path="/groups" component={GroupList} />
             <Route path="/users" component={UserList} />
             <Route path="/roles" component={RoleList} />
+
+            <Route path="/audit-log" component={AuditLog} />
+
             <Redirect to="/stats" />
           </Switch>
         </main>
@@ -91,6 +96,6 @@ const links = [
     ['Roles', '/roles', 'view_all_role'],
     ['Permissions', '/permissions', 'view_all_permission'],
     ['Groups', '/groups', 'view_group'],
-    ['Audit Log', '/logs', 'view_auditlog'],
+    ['Audit Log', '/audit-log', 'view_auditlog'],
   ],
 ];
