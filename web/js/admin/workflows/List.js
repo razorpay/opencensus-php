@@ -22,7 +22,12 @@ export default class WorkflowList extends Component {
     return (
       <div class="list-container">
         <div class="box">
-          <header>Workflows</header>
+          <header>
+            Workflows
+            <a class="btn" target="_blank" href={`/admin/_#/app/workflows/new`}>
+              Add New Workflow
+            </a>
+          </header>
           <Form onSubmit={this.onSubmit} class="filters">
             <Field name="q" label="Search" />
           </Form>

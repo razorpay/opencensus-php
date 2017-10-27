@@ -26,9 +26,6 @@ deploy:
       - script:
           name: S3 Sync
           code: mv s3sync.js /scripts && node /scripts/s3sync.js
-      - script:
-          name: Cloudfront cache invalidate
-          code: AWS_ACCESS_KEY=$AWS_KEY AWS_ACCESS_SECRET=$AWS_SECRET node /scripts/invalidate.js
 
     after-steps:
       - slack-notifier:

@@ -3,8 +3,8 @@ import { openModal } from 'common/modal';
 import { observer } from 'mobx-react';
 import Field from 'ui/Field';
 
-export function showEntity(collection) {
-  openModal(<EditWorkflow model={this || new GatewayRule(collection)} />);
+export function showEntity() {
+  open(`/admin/_#/app/workflows/${this.id}/edit`);
 }
 
 @observer

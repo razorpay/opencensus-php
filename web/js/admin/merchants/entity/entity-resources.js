@@ -9,8 +9,7 @@ import Table from 'ui/Table';
 
 /* RESOURCE UTILS */
 export function openMerchantEntity() {
-  const url = window.location.href + '/' + this.id;
-  window.open(url);
+  window.open(`/admin/_#/app/merchants/${this.id}/detail`);
 }
 
 /*---------------------------------------- Getters ------------------------------------------------*/
