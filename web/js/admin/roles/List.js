@@ -3,12 +3,12 @@ import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import Field from 'ui/Field';
 import Collection from 'model/collection';
+import CollectionItem from 'model/collectionItem';
 import { adminFetch, adminDelete } from 'util/fetch';
 import { observer } from 'mobx-react';
 import { showEntity } from './Entity';
 import { bool } from 'ui/Item';
-import { notifyDone, notifyError } from 'common/modal';
-import CollectionItem from 'model/collectionItem';
+import { notifyDone } from 'common/modal';
 import { prevent } from 'util/index';
 
 @observer

@@ -6,6 +6,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 execSync(`
+  rm -rf public/dist;
   mkdir -p public/dist/css;
   cp web/entry/* public/dist/
 `);
@@ -52,6 +53,5 @@ gulp.task('watch', () => {
 });
 
 gulp.task('default', () => {
-  execSync('rm -rf public/dist');
   iconFont(compileCss);
 });
