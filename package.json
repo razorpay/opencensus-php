@@ -36,8 +36,8 @@
     "webpack": "^3.6.0"
   },
   "scripts": {
-    "start": "externals=`./vendor.sh` webpack -w & gulp watch; kill -9 $!",
-    "build": "gulp; externals=`./vendor.sh` webpack",
+    "start": "externals=`./web/scripts/vendor.sh` webpack -w & gulp watch; kill -9 $!",
+    "build": "gulp; externals=`./web/scripts/vendor.sh` webpack; ./web/scripts/build.sh",
     "squash": "for i in public/dist/*/*.js; do squash $i > $i.min; rm $i; mv $i.min $i; done",
     "precommit": "lint-staged",
     "prettier": "prettier"

@@ -3,11 +3,13 @@ import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import Field from 'ui/Field';
 import Collection from 'model/collection';
-import { adminFetch } from 'util/fetch';
+import { adminFetch, adminDelete } from 'util/fetch';
 import { observer } from 'mobx-react';
 import { showEntity } from './Entity';
 import { bool } from 'ui/Item';
-import { notifyError } from 'common/modal';
+import { notifyDone, notifyError } from 'common/modal';
+import CollectionItem from 'model/collectionItem';
+import { prevent } from 'util/index';
 
 @observer
 export default class RoleList extends Component {
@@ -16,6 +18,7 @@ export default class RoleList extends Component {
     data: {
       route_name: 'role_get_multiple',
     },
+    model: CollectionItem,
   });
 
   state = {
@@ -66,5 +69,28 @@ const fields = [
   ['Id', item => item.id],
   ['Name', item => item.name],
   ['Description', item => item.description],
-  ['Action', item => <div class="link danger">Delete</div>],
+  [
+    'Action',
+    item => (
+      <div class="link danger" onClick={item::removeEntity}>
+        Delete
+      </div>
+    ),
+  ],
 ];
+
+export function removeEntity(e) {
+  prevent(e);
+  let params = {
+    route_name: 'role_delete',
+    url_params: {
+      roleId: this.id,
+    },
+  };
+  adminDelete(params).then(response => {
+    if (response) {
+      this.collection.items.remove(this);
+      notifyDone();
+    }
+  });
+}
