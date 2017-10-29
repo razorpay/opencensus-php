@@ -150,6 +150,15 @@ class Gateway extends Base\Gateway
 
     public function verifyPayment(Verify $verify)
     {
+        if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
+        {
+            $this->setRecurringVerifyStatus($verify);
+
+            $verify->payment = $this->saveRecurringVerifyResponseIfNeeded($verify);
+
+            return;
+        }
+
         $this->setVerifyStatus($verify);
 
         $verify->payment = $this->saveVerifyResponseIfNeeded($verify);
@@ -179,16 +188,8 @@ class Gateway extends Base\Gateway
     {
         $paymentAmount = $this->formatAmount($verify->input['payment'][Payment\Entity::AMOUNT]);
 
-        if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
-        {
-            $verify->amountMismatch =
-                ($paymentAmount !== $verify->verifyResponseContent[Emandate\ResponseFields::AMOUNT]);
-        }
-        else
-        {
-            $verify->amountMismatch =
-                ($paymentAmount !== $verify->verifyResponseContent[ResponseFields::VERIFY_RESPONSE_AMT]);
-        }
+        $verify->amountMismatch =
+            ($paymentAmount !== $verify->verifyResponseContent[ResponseFields::VERIFY_RESPONSE_AMT]);
     }
 
     protected function checkGatewaySuccess(Verify $verify)

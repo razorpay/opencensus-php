@@ -7,10 +7,12 @@ use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception\GatewayErrorException;
+use RZP\Exception\PaymentVerificationException;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Base\Entity as GatewayEntity;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base as Netbanking;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Customer\Token;
@@ -142,7 +144,7 @@ trait EmandateTrait
         $this->repo->saveOrFail($gatewayEntity);
 
         // We check the status of the payment, and not the SI registration here
-        $this->checkEmandatePaymentResponseStatus($content, $input);
+        $this->checkEmandateResponseStatus($content, $input);
 
         return $gatewayEntity;
     }
@@ -166,7 +168,7 @@ trait EmandateTrait
         ];
     }
 
-    protected function checkEmandatePaymentResponseStatus(array $content, array $input)
+    protected function checkEmandateResponseStatus(array $content, array $input)
     {
         if (isset($content[ResponseFields::STATUS_CODE]) === false)
         {
@@ -254,6 +256,86 @@ trait EmandateTrait
         );
 
         return $content;
+    }
+
+    /**
+     * Sets statuses and matches for recurring verify
+     *
+     * @param Verify $verify
+     */
+    protected function setRecurringVerifyStatus(Verify $verify)
+    {
+        $this->checkApiSuccess($verify);
+
+        $this->checkVerifyGatewaySuccess($verify);
+
+        $status = VerifyResult::STATUS_MATCH;
+
+        if ($verify->apiSuccess !== $verify->gatewaySuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->status = $status;
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH);
+
+        $this->setRecurrringVerifyAmountMismatch($verify);
+    }
+
+    protected function checkVerifyGatewaySuccess(Verify $verify)
+    {
+        $content = $verify->verifyResponseContent;
+
+        $verify->gatewaySuccess = false;
+
+        $statusCode = $content[ResponseFields::STATUS_CODE];
+
+        if (StatusCode::isSuccess($statusCode) === true)
+        {
+            $verify->gatewaySuccess = true;
+        }
+    }
+
+    protected function setRecurrringVerifyAmountMismatch(Verify $verify)
+    {
+        $paymentAmount = $this->formatAmount($verify->input['payment'][Payment\Entity::AMOUNT]);
+
+        $verify->amountMismatch =
+            ($paymentAmount !== $verify->verifyResponseContent[ResponseFields::AMOUNT]);
+    }
+
+    protected function saveRecurringVerifyResponseIfNeeded(Verify $verify)
+    {
+        $content = $verify->verifyResponseContent;
+
+        $gatewayPayment = $verify->payment;
+
+        if ((isset($content[ResponseFields::STATUS_CODE])) and
+            (StatusCode::isSuccess($content[ResponseFields::STATUS_CODE]) == true))
+        {
+            $attributes = $this->getEmandateVerifyAttributes($verify, $gatewayPayment);
+
+            $gatewayPayment->fill($attributes);
+
+            $this->repo->saveOrFail($gatewayPayment);
+        }
+
+        return $gatewayPayment;
+    }
+
+    protected function getEmandateVerifyAttributes(Verify $verify, $gatewayPayment)
+    {
+        $content = $verify->verifyResponseContent;
+
+        $bankPaymentId = $gatewayPayment->getBankPaymentId();
+
+        if (empty($bankPaymentId) === true)
+        {
+            $attributes[Netbanking\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_REF_NO];
+        }
+
+        return $attributes ?? [];
     }
 
     protected function sendEmandatePaymentVerifyRequest(Verify $verify)
