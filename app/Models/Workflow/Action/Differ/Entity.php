@@ -15,7 +15,7 @@ use RZP\Models\Workflow\Base;
         'entity_id' => string (20) "admin_7bU48ZewEqdPUk"
         'maker' => string (15) "Rishabh Pugalia"
         'type' => string (5) "maker"
-        'url' => string (78) "http://api.razorpay.dev/v1/orgs/org_100000razorpay/admins/admin_7bU48ZewEqdPUk"
+        'url' => string (78) "http://api.razorpay.in/v1/orgs/org_100000razorpay/admins/admin_7bU48ZewEqdPUk"
         'route_params' => array (2) [
             'orgId' => string (18) "org_100000razorpay"
             'id' => string (20) "admin_7bU48ZewEqdPUk"

@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Base\Common;
 use RZP\Constants\Es;
 use RZP\Constants\Timezone;
+use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -113,6 +114,9 @@ class EsRepository extends Base\EsRepository
 
     public function buildQueryForAccountStatus(array & $query, string $value)
     {
+        // Used in few of filters below
+        $submittedAtAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::SUBMITTED_AT;
+
         switch ($value)
         {
             case AccountStatus::ALL:
@@ -142,7 +146,7 @@ class EsRepository extends Base\EsRepository
 
             case AccountStatus::PENDING:
 
-                $this->addNotNullFilterForField($query, 'merchant_details.submitted_at');
+                $this->addNotNullFilterForField($query, $submittedAtAttr);
 
                 $this->addNullFilterForField($query, Entity::ACTIVATED_AT);
                 $this->addNullFilterForField($query, Entity::SUSPENDED_AT);
@@ -152,7 +156,7 @@ class EsRepository extends Base\EsRepository
 
             case AccountStatus::DEAD:
 
-                $this->addNullFilterForField($query, 'merchant_details.submitted_at');
+                $this->addNullFilterForField($query, $submittedAtAttr);
                 $this->addNullFilterForField($query, Entity::SUSPENDED_AT);
                 $this->addNullFilterForField($query, Entity::ARCHIVED_AT);
 

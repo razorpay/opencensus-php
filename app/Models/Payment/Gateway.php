@@ -132,6 +132,7 @@ class Gateway
     const REFUND_RETRY_GATEWAYS = [
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::BILLDESK,
+        Payment\Gateway::EBS,
         Payment\Gateway::HDFC,
         Payment\Gateway::MOBIKWIK,
         Payment\Gateway::WALLET_OLAMONEY,

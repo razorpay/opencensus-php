@@ -251,7 +251,6 @@ final class Route
         'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
         'adj_add_reverse'                         => ['post',     'adjustments/reversal',                           'AdjustmentController@postReverseAdjustments'                       ],
         'adj_add_bulk'                            => ['post',     'adjustments/bulk',                               'AdjustmentController@postMultipleAdjustments'                      ],
-        'adj_add_fee'                             => ['post',     'adjustments/fees',                               'AdjustmentController@postFeesAdjustment'                           ],
         'adjustments_split_for_dispute'           => ['post',     'adjustments/split_adjustments',                  'AdjustmentController@splitAdjustments'                             ],
         'mock_hdfc_enroll'                        => ['post',     'gateway/mock_hdfc/enroll',                       'MockGatewayController@enroll'                                      ],
         'mock_hdfc_payment'                       => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
@@ -772,6 +771,7 @@ final class Route
         'setl_combined_report',
         'customer_create',
         'customer_update',
+        'customer_create_token',
         'customer_fetch_by_id',
         'customer_fetch_multiple',
         'customer_update_token',
@@ -843,7 +843,6 @@ final class Route
     ];
 
     public static $internal = [
-        'admin_fetch_all_entities',
         'admin_fetch_entity_multiple',
         'admin_fetch_terminal_by_id',
         'admin_fetch_entity_by_id',
@@ -1095,7 +1094,6 @@ final class Route
         'merchant_sub_create',
         'merchant_fetch_referrals',
         'customer_delete',
-        'customer_create_token',
         'device_verify_token',
         'app_fetch_tokens',
         'credits_fetch_multiple',
@@ -1220,7 +1218,6 @@ final class Route
         'workflow_action_get_multiple',
         'merchants_update_hold_funds',
         'adj_add',
-        'adj_add_fee',
         'payment_authorize_refund',
         'admin_change_password',
         'pricing_create_plan',
@@ -1232,6 +1229,7 @@ final class Route
         'setl_retry',
         'merchant_activation_files',
         'merchant_batches',
+        'admin_fetch_all_entities',
     ];
 
     public static $routePermission = [
@@ -1315,7 +1313,6 @@ final class Route
         'merchant_fetch_bank_account'      => Permission::VIEW_MERCHANT_BANK_ACCOUNTS,
         'merchant_edit'                    => '*', // permission handled in code
         'adj_add'                          => Permission::ADD_MERCHANT_ADJUSTMENT,
-        'adj_add_fee'                      => Permission::ADD_MERCHANT_ADJUSTMENT,
         'merchant_add_bank_account'        => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'merchant_activate'                => Permission::EDIT_ACTIVATE_MERCHANT,
         'admin_fetch_terminal_by_id'       => '*',
@@ -1365,7 +1362,7 @@ final class Route
         'settings_delete'                  => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'               => '*',
         'merchant_activation_files'        => '*',
-        'dispute_reason_create'            => '*',
+        'dispute_reason_create'            => Permission::CREATE_DISPUTE_REASON,
     ];
 
     public static $direct = [
@@ -1527,7 +1524,6 @@ final class Route
         'payment_create_openwallet'         => [Feature::OPENWALLET],
         'payment_create_recurring'          => [Feature::CHARGE_AT_WILL],
         'payment_create_private_old'        => [Feature::S2S],
-        'setl_combined_report'              => [Feature::SETL_REPORT],
         'reports_transaction_broking'       => [Feature::BROKING_REPORT],
         'reports_transaction_dsp'           => [Feature::DSP_REPORT],
         'reports_order_rpp'                 => [Feature::RPP_REPORT],

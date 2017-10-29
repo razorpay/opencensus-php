@@ -245,14 +245,15 @@ class MerchantInvoiceTest extends TestCase
 
         $adjustmentData =[
             'merchant_id'   => '10000000000000',
-            'amount'        => -1300,
+            'fees'          => -1300,
+            'tax'           => 123,
             'currency'      => 'INR',
             'description'   => 'Fee adjustment',
         ];
 
         $request = [
             'method'    => 'POST',
-            'url'       => '/adjustments/fees',
+            'url'       => '/adjustments',
             'content'   => $adjustmentData
         ];
 
@@ -261,6 +262,7 @@ class MerchantInvoiceTest extends TestCase
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->setAdminForInternalAuth();
+
         $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
 
         $content = $this->makeRequestAndGetContent($request);
@@ -269,7 +271,7 @@ class MerchantInvoiceTest extends TestCase
 
         // Check adjustment entity
         $data = $this->getLastEntity('adjustment', true);
-
+        
         $this->assertArraySelectiveEquals($content, $data);
 
         // Check invoice entity
@@ -278,13 +280,50 @@ class MerchantInvoiceTest extends TestCase
         $this->assertTestResponse($merchantInvoice);
 
         $dateString = Carbon::createFromDate(
-                            $merchantInvoice['year'],
-                            $merchantInvoice['month'],
-                            1,
-                            Timezone::IST
-                        )->format('my');
+            $merchantInvoice['year'],
+            $merchantInvoice['month'],
+            1,
+            Timezone::IST
+        )->format('my');
 
         $this->assertEquals(substr($merchantInvoice[Invoice\Entity::INVOICE_NUMBER], -4), $dateString);
+    }
+
+    public function testFeeAdjustmentFailure()
+    {
+        $md1 = $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'gstin' => '29kjsngjk213922',
+            ]);
+
+        $adjustmentData =[
+            'merchant_id'   => '10000000000000',
+            'fees'          => -1300,
+            'tax'           => 123,
+            'amount'        => 1200,
+            'currency'      => 'INR',
+            'description'   => 'Fee adjustment',
+        ];
+
+        $request = [
+            'method'    => 'POST',
+            'url'       => '/adjustments',
+            'content'   => $adjustmentData
+        ];
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($request)
+        {
+            $this->makeRequestAndGetContent($request);
+        });
+
     }
 
     public function testInvoiceEntityCreateForGivenMerchant()
