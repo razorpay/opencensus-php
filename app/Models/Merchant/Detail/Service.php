@@ -289,8 +289,8 @@ class Service extends Base\Service
         $presignupDetails = [];
 
         // Referrer Merchant check for presignup details.
-        if (empty($referrerMerchant) === true or
-            Merchant\Entity::verifyUniqueId($referrerMerchant, false) === 0)
+        if ((empty($referrerMerchant) === true) or
+            (Merchant\Entity::verifyUniqueId($referrerMerchant, false) === 0))
         {
             $merchantDetails = $this->fetchMerchantDetails();
 
