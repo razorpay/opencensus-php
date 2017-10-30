@@ -1,3 +1,5 @@
+#!/bin/bash
+
 mkdir -p public/dist
 
 # react library to use, based on environment
