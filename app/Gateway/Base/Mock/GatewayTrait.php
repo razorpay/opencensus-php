@@ -80,7 +80,7 @@ trait GatewayTrait
             // We can either pass the query params in URL or via the request's
             // content field.
             if ((empty($request['content']) === false) and
-                (is_array($request['content'])))
+                (is_array($request['content']) === true))
             {
                 $input = array_merge($input, $request['content']);
             }
