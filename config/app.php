@@ -251,5 +251,6 @@ return array(
         'Uuid'            => App\Facades\Uuid::class,
     ),
 
-    'cdn_dashboard_url' => env('CDN_DASHBOARD_URL'),
+    'cdn_dashboard_url'   => env('CDN_DASHBOARD_URL'),
+    'entry_asset_url'     => env('ENTRY_ASSET_URL')
 );

@@ -92,7 +92,7 @@ class AdminController extends Controller
     public function getIndex()
     {
         return view('admin.index', [
-            'cdn' => \Config::get('app.cdn_dashboard_url'),
+            'entry' => \Config::get('app.entry_asset_url'),
             'org' => $this->getOrg()->getData(true),
             'user' => $this->getAdmin()->getData(true)
         ]);
