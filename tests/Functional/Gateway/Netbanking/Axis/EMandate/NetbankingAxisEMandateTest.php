@@ -8,6 +8,7 @@ use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Customer\Token;
+use RZP\Models\Payment;
 
 class NetbankingAxisEMandateTest extends TestCase
 {
@@ -109,6 +110,24 @@ class NetbankingAxisEMandateTest extends TestCase
         });
     }
 
+    public function testEmandateDebit()
+    {
+        $payment = $this->payment;
+
+        $this->doAuthPayment($payment);
+
+        $token = $this->getLastEntity('token', true);
+
+        $payment[Payment\Entity::TOKEN] = $token['id'];
+
+        $this->doS2SRecurringPayment($payment);
+
+        $debitPayment = $this->getLastEntity('payment', true);
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+    }
 
     protected function assertEmandateEntities()
     {
