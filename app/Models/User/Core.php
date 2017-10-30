@@ -90,15 +90,15 @@ class Core extends Base\Core
     {
         $oldPassword = $input[Entity::OLD_PASSWORD] ?? null;
 
-        if (empty($oldPassword) === false and
-            Hash::check($oldPassword, $user->getPassword()) === false)
+        if ((empty($oldPassword) === false) and
+            (Hash::check($oldPassword, $user->getPassword()) === false))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OLD_PASSWORD_MISMATCH);
         }
 
         (new Validator)->validateInput('change_password', $input);
 
-        $input[Entity::PASSWORD] = Hash::Make($input[Entity::PASSWORD]);
+        $input[Entity::PASSWORD] = Hash::make($input[Entity::PASSWORD]);
 
         $user->fill($input);
 
