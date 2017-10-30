@@ -417,6 +417,23 @@ class FeaturesTest extends TestCase
         $this->assertArraySelectiveEquals($expectedOutput, $fileStoreData);
     }
 
+
+    /**
+     * Post a request for subscriptions activation
+     */
+    public function testPostSubscriptionsOnboardingResponses()
+    {
+        $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response);
+    }
+
     /**
      * Enable a non-notifyFeature on Live mode
      */
