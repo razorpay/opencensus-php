@@ -55,8 +55,7 @@ class MailChimpSubscribe extends Job implements ShouldQueue
             $listId = $config['list_id'];
 
             // Mock can be false or null for falsy cases
-            // Unset mock is considered true
-            if (empty($config['mock']) === false)
+            if (empty($config['mock']) === true)
             {
                 $mailchimp = new MailChimp($apiKey);
 
