@@ -227,7 +227,13 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
+        $orignalEmail = $merchant->getEmail();
+
         $merchant = (new Merchant\Core)->editEmail($merchant, $input);
+
+        $newEmail = $merchant->getEmail();
+
+        (new Merchant\Core)->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail);
 
         return $merchant->toArrayPublic();
     }
