@@ -13,7 +13,6 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID               = 'merchant_id';
     const ENTITY_ID                 = 'entity_id';
     const ENTITY_TYPE               = 'entity_type';
-    const IDENTIFIER_PADDING        = 'identifier_padding';
     const AMOUNT                    = 'amount';
     const QR_STRING                 = 'qr_string';
 

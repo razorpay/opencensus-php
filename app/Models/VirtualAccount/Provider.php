@@ -11,6 +11,9 @@ class Provider
     const YESBANK   = 'yesbank';
     const KOTAK     = 'kotak';
 
+    // Qr Code Providers
+    const BHARAT_QR = 'bharat_qr';
+
     // Dashboard acts as a mock provider bank,
     // and is used to run tests.
     // Also used when merchant makes a test
