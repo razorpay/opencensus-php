@@ -33,15 +33,6 @@ class AdjustmentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postFeesAdjustment()
-    {
-        $input = Request::all();
-
-        $data = $this->service()->addFeesAdjustment($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function postReverseAdjustments()
     {
         $input = Request::all();

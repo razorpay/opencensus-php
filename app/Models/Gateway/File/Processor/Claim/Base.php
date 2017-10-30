@@ -38,7 +38,6 @@ class Base extends BaseProcessor
         $begin = $this->gatewayFile->getBegin();
         $end = $this->gatewayFile->getEnd();
         $gateway = static::GATEWAY;
-        $tpv = $this->gatewayFile->getTpv();
 
         if ($this->shouldFetchReconciledPayments() === true)
         {
@@ -63,7 +62,7 @@ class Base extends BaseProcessor
     {
         $begin = Carbon::createFromTimestamp($begin)->addDay()->timestamp;
         $end = Carbon::createFromTimestamp($end)->addDay()->timestamp;
-        $tpv = $this->gatewayFile->getTpv();
+        $tpv = $this->getTpv();
 
         if ($tpv === null)
         {

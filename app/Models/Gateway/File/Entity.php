@@ -12,7 +12,7 @@ class Entity extends Base\PublicEntity
     const ID                  = 'id';
     const TYPE                = 'type';
     const TARGET              = 'target';
-    const TPV                 = 'tpv';
+    const SUB_TYPE            = 'sub_type';
     const SENDER              = 'sender';
     const RECIPIENTS          = 'recipients';
     const BEGIN               = 'begin';
@@ -36,7 +36,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::TYPE,
         self::TARGET,
-        self::TPV,
+        self::SUB_TYPE,
         self::SENDER,
         self::RECIPIENTS,
         self::COMMENTS,
@@ -50,7 +50,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::TYPE,
         self::TARGET,
-        self::TPV,
+        self::SUB_TYPE,
         self::SENDER,
         self::RECIPIENTS,
         self::BEGIN,
@@ -72,7 +72,6 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::ATTEMPTS            => 'int',
-        self::TPV                 => 'boolean',
         self::RECIPIENTS          => 'array',
         self::SCHEDULED           => 'boolean',
         self::PARTIALLY_PROCESSED => 'boolean'
@@ -165,9 +164,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
-    public function getTpv()
+    public function getSubType()
     {
-        return $this->getAttribute(self::TPV);
+        return $this->getAttribute(self::SUB_TYPE);
     }
 
     public function isAcknowledged(): bool

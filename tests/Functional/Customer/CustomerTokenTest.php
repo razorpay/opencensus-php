@@ -23,23 +23,27 @@ class CustomerTokenTest extends TestCase
 
     public function testAddCustomerTokenCard()
     {
-        $this->fixtures->create('card', ['id' => '10000savedcard']);
+        $this->mockTokenEx();
 
-        $this->ba->proxyAuth();
+        $this->ba->privateAuth();
 
         $this->startTest();
     }
 
     public function testAddCustomerTokenWallet()
     {
-        $this->ba->proxyAuth();
+        $this->markTestSkipped('To be implemented for Wallets');
+
+        $this->ba->privateAuth();
 
         $this->startTest();
     }
 
     public function testAddCustomerTokenNetbanking()
     {
-        $this->ba->proxyAuth();
+        $this->markTestSkipped('To be implemented for netbanking');
+
+        $this->ba->privateAuth();
 
         $this->startTest();
     }
@@ -261,6 +265,8 @@ class CustomerTokenTest extends TestCase
 
     public function testFetchNbRecurringFalseRecurringStatusNullToken()
     {
+        $this->markTestSkipped('To be implemented for netbanking');
+
         $token = $this->createCustomerToken(0);
 
         // Public mode
