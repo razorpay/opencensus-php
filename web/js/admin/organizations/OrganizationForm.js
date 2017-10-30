@@ -58,7 +58,7 @@ export default function OrgForm({
 
           <SelectField
             label="Auth Type"
-            defaultValue="password"
+            defaultValue={org.auth_type || 'password'}
             name="auth_type"
           >
             <option value="">Please select an auth type</option>
