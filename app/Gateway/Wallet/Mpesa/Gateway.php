@@ -227,26 +227,21 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        // Hardcoding these refunds for processing
-        $unprocessedRefunds = [
-            '89EjEZhXy1P1PY',
-            '89vusCkrDiFjPG',
-            '8a8vG9jPmmdVa3',
-            '8bvLSKxaWQACdJ',
-            '8c7YeFT8dwzg1P',
-            '8e6Fn5jlJynnd3',
-            '8fC4IPnITPqHt9',
-            '8gFtsmntN4VtVH',
-            '8gGLYRDZEAg3gU',
-            '8htVob7hAKtiPq',
-            '8jx8pnnsQbdcWT',
-            '8RiLxDLIbyX86n',
-            '8Ybeo1i6ArNMDi',
+        $processedRefunds = [
+            '897PijT4dsJKJI',
+            '89qPekio4ZuHYK',
+            '8bXyVNxWy8M596',
+            '8batpufoOmwBlz',
+            '8bb3Y0LjF4Wctc',
+            '8bbUlUpMxjIXvz',
+            '8brMCJoXOYkcVn',
+            '8ejXKlFFSMSmHn',
+            '8gFMNPoOUxnBTS',
         ];
 
-        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        if (in_array($input['payment']['id'], $processedRefunds) === true)
         {
-            return false;
+            return true;
         }
 
         throw new Exception\RuntimeException(
@@ -425,7 +420,7 @@ class Gateway extends Base\Gateway
         // This is to maintain the backward compatibility
         // Current terminals have only `gateway_merchant_id` assigned
         // New terminals will have `gateway_merchant_id` and `gateway_merchant_id2`
-        // with values swaped. If it's an old terminal then `merchant_id2` will be empty
+        // with values swapped. If it's an old terminal then `merchant_id2` will be empty
         // and filler3 should not be sent in that case.
         if (empty($this->getMerchantId2()) === false)
         {

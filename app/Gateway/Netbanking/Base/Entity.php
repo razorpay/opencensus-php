@@ -22,7 +22,10 @@ class Entity extends Base\Entity
     const REFUND_ID             = 'refund_id';
     const REFERENCE1            = 'reference1';
     const ACCOUNT_NUMBER        = 'account_number';
-    //Credit Account number is the bank account to which money is transferred.
+    const ACCOUNT_TYPE          = 'account_type';
+    const ACCOUNT_SUBTYPE       = 'account_subtype';
+    const ACCOUNT_BRANCHCODE    = 'account_branch_code';
+    // Credit Account number is the bank account to which money is transferred.
     const CREDIT_ACCOUNT_NUMBER = 'credit_account_number';
     const INT_PAYMENT_ID        = 'int_payment_id';
     const CAPS_PAYMENT_ID       = 'caps_payment_id';
@@ -80,6 +83,9 @@ class Entity extends Base\Entity
         self::REFUND_ID,
         self::REFERENCE1,
         self::ACCOUNT_NUMBER,
+        self::ACCOUNT_TYPE,
+        self::ACCOUNT_SUBTYPE,
+        self::ACCOUNT_BRANCHCODE,
         self::INT_PAYMENT_ID,
         self::SI_TOKEN,
         self::SI_STATUS,
@@ -106,6 +112,21 @@ class Entity extends Base\Entity
     public function setAccountNumber($accountNumber)
     {
         $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
+    }
+
+    public function setAccountType(string $accountType)
+    {
+        $this->setAttribute(self::ACCOUNT_TYPE, $accountType);
+    }
+
+    public function setAccountSubType(string $accountSubType)
+    {
+        $this->setAttribute(self::ACCOUNT_SUBTYPE, $accountSubType);
+    }
+
+    public function setAccountBranchCode(string $accountBranchCode)
+    {
+        $this->setAttribute(self::ACCOUNT_BRANCHCODE, $accountBranchCode);
     }
 
     public function setCreditAccountNumber(string $creditAccountNumber)

@@ -21,7 +21,7 @@ class Service extends Elfin\Service
         // Generates random short url and returns
         //
 
-        $url = 'http://dwarf.razorpay.dev/' . random_alphanum_string(7);
+        $url = 'http://dwarf.razorpay.in/' . random_alphanum_string(7);
 
         return $url;
     }

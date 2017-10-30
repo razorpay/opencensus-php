@@ -14,7 +14,6 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
-use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use RZP\Exception\EarlyWorkflowResponse;
 
@@ -93,8 +92,8 @@ class Handler extends ExceptionHandler
                 $response = ApiResponse::httpMethodNotAllowed();
                 break;
 
-            case $e instanceof TooManyRequestsHttpException:
-                $response = ApiResponse::rateLimitExceeded();
+            case $e instanceof ThrottleException:
+                $response = $this->throttleExceptionHandler($e);
                 break;
 
             case $e instanceof EarlyWorkflowResponse:
@@ -176,6 +175,25 @@ class Handler extends ExceptionHandler
         $this->ifTestingThenRethrowException($exception);
 
         return $this->generateServerErrorResponse($this->isDebug(), $exception);
+    }
+
+    protected function throttleExceptionHandler(ThrottleException $exception)
+    {
+        //
+        // TODO: Trace different level for different auths here
+        // Take auth as one of the params for ThrottleException
+        //
+        // Currently using level ALERT, as we're only throttling
+        // admin auth, which should never be rate-limited at all
+        //
+        $this->traceException(
+            $exception,
+            Trace::ALERT,
+            TraceCode::REQUEST_THROTTLED);
+
+        $response = ApiResponse::rateLimitExceeded();
+
+        return $response;
     }
 
     protected function baseExceptionHandler(BaseException $exception)

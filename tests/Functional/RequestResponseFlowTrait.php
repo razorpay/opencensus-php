@@ -317,16 +317,20 @@ trait RequestResponseFlowTrait
         return $this->getJsonContentFromResponse($response, $callback);
     }
 
-    protected function makeRequestAndCatchException(Closure $closure)
+    protected function makeRequestAndCatchException(Closure $closure, string $exceptionClass = \Exception::class)
     {
         try
         {
-            return $closure();
+            $closure();
         }
         catch (\Exception $e)
-        {;
-            // throw $e;
+        {
+            $this->assertExceptionClass($e, $exceptionClass);
+
+            return;
         }
+
+        $this->fail('Expected exception ' . $exceptionClass . ' was not thrown');
     }
 
     public function getJsonContent($response)
