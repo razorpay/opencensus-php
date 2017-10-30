@@ -19,6 +19,7 @@ export default function Table({
   items,
   onClick,
   bordered,
+  animateRow,
   indexFn = defaultIndexFn,
 }) {
   let trClass = onClick ? 'tr clickable' : 'tr';
@@ -37,7 +38,7 @@ export default function Table({
 
   return (
     <div class="table-container">
-      <TransitionGroup class={tableClass}>
+      <TransitionGroup class={tableClass} enter={animateRow} exit={animateRow}>
         <CSSTransition timeout={0}>
           <div class="tr thead">
             {fields.map((field, index) => (
@@ -75,11 +76,11 @@ export const DataTable = observer(Table);
 export class PageTable extends Component {
   render() {
     let { fields, model, onClick, info = true, title } = this.props;
-    let { pending, items, filters } = model;
+    let { pending, items, filters, animateItems } = model;
 
     pending = pending.fetch;
 
-    if (items && items.length) {
+    if (!pending && items && items.length) {
       return (
         <div class="box">
           <Pagination model={model} />
@@ -89,7 +90,12 @@ export class PageTable extends Component {
               Results {filters.skip + 1} &ndash; {filters.skip + items.length}
             </div>
           )}
-          <Table fields={fields} onClick={onClick} items={items} />
+          <Table
+            animateRow={animateItems}
+            fields={fields}
+            onClick={onClick}
+            items={items}
+          />
         </div>
       );
     }

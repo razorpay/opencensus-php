@@ -18,12 +18,12 @@ class ModalStore {
     this.modals.push(
       <div class="confirm-modal">
         <header>Confirm</header>
-        <div key="message">{message}</div>
-        <div key="action-buttons">
-          <button onClick={onAction} class="btn">
+        <div class="message">{message}</div>
+        <div class="action-buttons">
+          <button onClick={onAction} class="btn-confirm">
             {confirmLabel}
           </button>
-          <button onClick={this.closeModal} class="btn-default">
+          <button onClick={this.closeModal} class="btn-reject">
             {rejectLabel}
           </button>
         </div>

@@ -91,14 +91,16 @@ class AdminController extends Controller
      */
     public function getIndex()
     {
-        return view('adminIndex');
+        return view('admin.index', [
+            'cdn' => \Config::get('app.cdn_dashboard_url'),
+            'org' => $this->getOrg()->getData(true),
+            'user' => $this->getAdmin()->getData(true)
+        ]);
     }
 
-    public function getPokedex()
+    public function getAngular()
     {
-        return view('admin.pokedex', [
-            'cdn' => \Config::get('app.cdn_dashboard_url')
-        ]);
+        return view('admin.tmpgetIndex');
     }
 
     protected function getGoogleOAuthUrl()

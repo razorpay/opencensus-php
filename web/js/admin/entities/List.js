@@ -76,14 +76,34 @@ export default class EntityList extends Component {
       key,
       item => {
         let value = item[key];
-        if (key === 'merchant_id') {
-          value = (
-            <Link class="link" to={'/merchants/' + value}>
+
+        if (
+          key === 'merchant_id' ||
+          (this.state.selectedEntity === 'merchant' && key === 'id')
+        ) {
+          return (
+            <a
+              href={`/admin/_#/app/merchants/${value}/detail`}
+              target="_blank"
+              class="link"
+            >
+              {value}
+            </a>
+          );
+        }
+
+        if (key === 'id') {
+          return (
+            <Link
+              class="link"
+              to={`/entity/${this.state.selectedEntity}/${this.collection.data
+                .mode}/${value}`}
+            >
               {value}
             </Link>
           );
         } else if (value && typeof value === 'object') {
-          value = <pre>{JSON.stringify(value)}</pre>;
+          return <pre>{JSON.stringify(value)}</pre>;
         }
         return value;
       },

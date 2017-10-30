@@ -7,12 +7,12 @@ use App\Base;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'name'                  => 'sometimes|alpha_space_num|max:200',
+        'name'                  => 'sometimes|string|max:200',
         'email'                 => 'required|email|unique:merchants',
     );
 
     protected static $createSubmerchantRules = array(
-        'name'                  => 'required|alpha_space_num|max:200',
+        'name'                  => 'required|string|max:200',
         'email'                 => 'sometimes|email',
     );
 
@@ -32,7 +32,7 @@ class Validator extends Base\Validator
     );
 
     protected static $changeNameRules = array(
-        'name'         => 'required|min:4|alpha_space_num|max:200'
+        'name'         => 'required|string|max:200'
     );
 
     protected static $loginRules = array(

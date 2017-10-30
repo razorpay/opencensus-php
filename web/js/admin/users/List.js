@@ -3,10 +3,13 @@ import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import Field from 'ui/Field';
 import Collection from 'model/collection';
-import { adminFetch } from 'util/fetch';
+import CollectionItem from 'model/collectionItem';
+import { adminFetch, adminDelete } from 'util/fetch';
 import { observer } from 'mobx-react';
 import { showEntity } from './Entity';
 import { bool } from 'ui/Item';
+import { notifyDone } from 'common/modal';
+import { prevent } from 'util/index';
 
 @observer
 export default class WorkflowList extends Component {
@@ -15,6 +18,7 @@ export default class WorkflowList extends Component {
     data: {
       route_name: 'admin_get_multiple',
     },
+    model: CollectionItem,
   });
 
   onSubmit = filters => this.collection.setFilters(filters);
@@ -51,5 +55,28 @@ const fields = [
   ['Role', item => item.roles.map(r => r.name).join(', ')],
   ['Locked', item => bool(item.locked)],
   ['Enabled', item => bool(!item.disabled)],
-  ['Action', item => <div class="link danger">Delete</div>],
+  [
+    'Action',
+    item => (
+      <div class="link danger" onClick={item::removeEntity}>
+        Delete
+      </div>
+    ),
+  ],
 ];
+
+export function removeEntity(e) {
+  prevent(e);
+  let params = {
+    route_name: 'admin_delete',
+    url_params: {
+      adminId: this.id,
+    },
+  };
+  adminDelete(params).then(response => {
+    if (response) {
+      this.collection.items.remove(this);
+      notifyDone();
+    }
+  });
+}

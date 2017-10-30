@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Field, { SelectField, CheckField } from 'ui/Field';
-import { openSlider } from 'common/modal';
+import { replaceSlider } from 'common/modal';
 import Table from 'ui/Table';
 import { adminFetch, adminPost } from 'util/fetch';
 
-class EditUser extends Component {
+class EditRole extends Component {
   componentWillMount() {
     this.init(this.props);
   }
@@ -21,11 +21,11 @@ class EditUser extends Component {
   save = body => {
     let params = {
       content_type: 'application/json',
-      route_name: 'admin_edit',
+      route_name: 'role_edit',
     };
     if (this.props.model) {
       params.url_params = {
-        adminId: this.props.model.id,
+        id: this.props.model.id,
       };
     }
 
@@ -34,47 +34,29 @@ class EditUser extends Component {
 
   init(props) {
     if (props.model) {
-      Promise.all([
-        adminFetch({
-          route_name: 'org_fieldmap_get_by_entity',
-          url_params: {
-            entity: 'admin',
-          },
-        }),
-
-        adminFetch({
-          route_name: 'group_get_multiple',
-        }),
-
-        adminFetch({
-          route_name: 'admin_get',
-          url_params: {
-            adminId: props.model.id,
-          },
-        }),
-      ]);
+      adminFetch({
+        route_name: 'role_get',
+        url_params: {
+          id: props.model.id,
+        },
+      });
     }
   }
 
   render() {
-    let { name, allow_all_merchants, disabled } = this.props.model || {};
+    let { name, description, permissions } = this.props.model || {};
 
     return (
       <div>
-        <header>Edit User</header>
+        <header>Edit Role</header>
         <Form onSubmit={this.save}>
-          <Field name="name" label="Full Name" required defaultValue={name} />
-          <CheckField
-            name="allow_all_merchants"
-            label="Allow All Merchants"
-            defaultValue={allow_all_merchants}
+          <Field name="name" label="Name" required defaultValue={name} />
+          <Field
+            name="description"
+            label="Description"
+            required
+            defaultValue={description}
           />
-          <CheckField
-            name="disabled"
-            label="Disabled"
-            defaultValue={disabled}
-          />
-          <br />
           <button>Save</button>
         </Form>
       </div>
@@ -83,11 +65,5 @@ class EditUser extends Component {
 }
 
 export function showEntity(collection) {
-  openSlider(<EditUser collection={collection} model={this} />);
+  replaceSlider(<EditRole collection={collection} model={this} />);
 }
-
-const fields = [
-  ['Group Id', item => item.id],
-  ['Name', item => item.name],
-  ['Description', item => item.description],
-];

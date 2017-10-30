@@ -1,22 +1,6 @@
 const webpack = require('webpack');
 const isProd = require('process').env.NODE_ENV === 'production';
 
-// generated bladefiles
-const htmlPlugins = require('./web/webpack/html')(
-  {
-    template: 'admin.jst',
-    filename: 'adminIndex',
-  },
-  {
-    // template locals
-    cdnUrl: isProd ? 'https://cdn.razorpay.com/dashboard' : '/dist',
-    filename: (_, name) =>
-      _.webpackConfig.output.filename.replace('[name]', name),
-  }
-);
-
-let plugins = [htmlPlugins];
-
 module.exports = {
   externals: [].reduce.call(
     (process.env.externals || '').split(' '),
@@ -57,8 +41,6 @@ module.exports = {
     chunks: false,
     chunkModules: false,
   },
-
-  plugins,
 
   module: {
     rules: [

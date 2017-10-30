@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, observe } from 'mobx';
 import BaseModel from './base';
 
 const defaultFilters = {
@@ -7,8 +7,15 @@ const defaultFilters = {
 };
 
 export default class Collection extends BaseModel {
+  animateItems = true;
+
   setFilters(filters) {
-    Object.assign(this.filters, filters);
+    for (let f in defaultFilters) {
+      if (f in filters) {
+        filters[f] = Number(filters[f]);
+      }
+    }
+    Object.assign(this.filters, { skip: 0 }, filters);
     return this.fetch();
   }
 
@@ -28,6 +35,10 @@ export default class Collection extends BaseModel {
     if (!items) {
       this.fetch();
     }
+
+    observe(this.items, _ => {
+      this.animateItems = true;
+    });
   }
 
   fetch() {
@@ -48,6 +59,7 @@ export default class Collection extends BaseModel {
           }
         }
         this.items.replace(data.items);
+        this.animateItems = false;
       }
       return data;
     });
