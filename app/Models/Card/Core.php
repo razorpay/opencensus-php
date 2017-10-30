@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Card;
 
+use Route;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;

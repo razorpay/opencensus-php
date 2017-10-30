@@ -345,7 +345,7 @@ ALTER TABLE bank_accounts
 ALTER TABLE bank_accounts
     ADD INDEX bank_accounts_deleted_at_index (deleted_at);
 
-UPDATE settlements s
+UPDATE settlements
     JOIN bank_accounts b ON s.merchant_id = b.merchant_id
     SET s.bank_account_id = b.id;
 
@@ -2551,3 +2551,19 @@ ALTER TABLE schedules
 ALTER TABLE tokens
     ADD COLUMN account_number VARCHAR(40) AFTER wallet,
     ADD INDEX `tokens_account_number_index` (`account_number`);
+
+ALTER TABLE disputes
+    ADD COLUMN parent_id CHAR(14) DEFAULT NULL AFTER merchant_id,
+    ADD CONSTRAINT disputes_parent_id_foreign FOREIGN KEY (parent_id) REFERENCES disputes(id) ON DELETE RESTRICT;
+
+ALTER TABLE bank_accounts
+    MODIFY COLUMN beneficiary_name VARCHAR(120) NOT NULL after account_number;
+
+# Adds tpv coulumn to gateway file
+ALTER TABLE gateway_files
+    ADD COLUMN sub_type VARCHAR(25) DEFAULT NULL AFTER target;
+
+ALTER TABLE merchant_details
+	ADD marketplace_activation_status VARCHAR(30) DEFAULT NULL AFTER locked,
+	ADD virtual_accounts_activation_status VARCHAR(30) DEFAULT NULL AFTER marketplace_activation_status,
+	ADD subscriptions_activation_status VARCHAR(30) DEFAULT NULL AFTER virtual_accounts_activation_status;

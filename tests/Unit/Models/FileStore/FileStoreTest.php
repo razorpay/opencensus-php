@@ -83,6 +83,26 @@ class FileStoreTest extends TestCase
                      ->save();
     }
 
+    function testEncoding()
+    {
+        $extension = FileStore\Format::TXT;
+
+        $dataToEncode = $this->content;
+
+        $encodedData = base64_encode($dataToEncode);
+
+        $file = $this->creator->extension($extension)
+            ->content($this->content)
+            ->name($this->fileName)
+            ->store($this->store)
+            ->type($this->type)
+            ->encode()
+            ->save();
+
+        $this->assertEquals($file->getFileInstance()->getMime(), 'text/plain');
+        $this->assertEquals(file_get_contents($file->get()['local_file_path']), $encodedData);
+    }
+
     function testInvalidType()
     {
         $type = 'invalid';

@@ -72,7 +72,7 @@ class Kotak extends Base
     {
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
-        $name = ($this->gatewayFile->getTpv() === true) ? static::TPV_FILE_NAME : static::NON_TPV_FILE_NAME;
+        $name = ($this->getTpv() === true) ? static::TPV_FILE_NAME : static::NON_TPV_FILE_NAME;
 
         return $name . '_' . $this->mode . '_' . $time;
     }
