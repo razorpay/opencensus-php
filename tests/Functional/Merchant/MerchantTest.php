@@ -1725,33 +1725,19 @@ class MerchantTest extends TestCase
     {
         $user = $this->fixtures->create('user');
 
-        $merchant = Merchant\Entity::find("10000000000000");
-
-        $merchant->reTag(["Aggregator", "Referral"]);
-
-        $merchant->saveOrFail();
-
-        $this->fixtures->merchant->addFeatures(["aggregator"]);
-
-        $this->ba->proxyAuth();
-
-        $request = array(
-            'url'     => '/submerchants',
-            'method'  => 'post',
-            'content' => [
-                "id"      => "10000000000044",
-                "name"    => "Submerchant",
-                "org_id"  => "100000razorpay",
-                "user_id" => $user['id'],
-            ]);
-
-        $this->makeRequestAndGetContent($request);
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000044',
+            'name'   => 'Submerchant',
+            'org_id' => '100000razorpay',
+            'email'  => 'test@razorpay.com',
+        ]);
 
         $merchant = Merchant\Entity::find("10000000000044");
         $merchant->reTag(["ref-10000000000000"]);
         $merchant->saveOrFail();
 
         $this->ba->appAuth();
+
         $this->startTest();
     }
 }

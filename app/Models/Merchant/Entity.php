@@ -367,8 +367,6 @@ class Entity extends Base\PublicEntity
 
         foreach ($tagNames as $tagName)
         {
-            $tagName = strtolower($tagName);
-
             if (substr($tagName, 0, 4) === 'Ref-')
             {
                 return substr($tagName, 4);
