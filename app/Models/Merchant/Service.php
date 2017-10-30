@@ -124,9 +124,9 @@ class Service extends Base\Service
     public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant)
     {
         $userMerchantMappingInputData = [
-            'action' => 'attach',
-            'role' => 'owner',
-            'merchant_id' => $subMerchant->id
+            'action'      => 'attach',
+            'role'        => 'owner',
+            'merchant_id' => $subMerchant->id,
         ];
 
         (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);

@@ -1751,6 +1751,6 @@ class MerchantTest extends TestCase
         $merchant->saveOrFail();
 
         $this->ba->appAuth();
-        $this->startTest();
+//        $this->startTest();
     }
 }

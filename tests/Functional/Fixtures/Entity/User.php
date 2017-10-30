@@ -31,7 +31,7 @@ class User extends Base
 
         $role = $attributes['role'];
 
-        DB::table('merchant_users')
+        DB::connection('test')->table('merchant_users')
             ->insert([
                 'merchant_id' => $merchantId,
                 'user_id'     => $userId,
