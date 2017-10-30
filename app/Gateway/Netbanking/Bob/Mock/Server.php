@@ -30,9 +30,13 @@ class Server extends Base\Mock\Server
 
         $redirectUrl = $content[RequestFields::CALLBACK_URL];
 
-        $params = http_build_query($authResponseContent);
+        $request = [
+            'url' => $redirectUrl,
+            'content' => $authResponseContent,
+            'method' => 'post',
+        ];
 
-        return \Redirect::to($redirectUrl . '?' . $params);
+        return $this->makePostResponse($request);
     }
 
     public function verify($input)
