@@ -46,7 +46,7 @@ class Format
         self::PNG   => ['image/png', 'application/pgp'],
         self::TXT   => ['text/plain', 'application/pgp'],
         self::XLSX  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pgp',
-                        'application/octet-stream'],
+                        'application/octet-stream', 'text/plain'],
         self::XLS   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
                         'application/vnd.ms-office', 'application/pgp'],
         self::ZIP   => ['application/zip', 'application/pgp'],
