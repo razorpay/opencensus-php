@@ -129,48 +129,12 @@ class Validator extends Base\Validator
 
     protected static $featureValidators = [
         'visible_features',
-        'feature_update_for_mode',
         'uneditable_features',
     ];
 
     /**
-     * Throw an error, if any of the features that can be enabled or disabled only by
-     * an admin in the LIVE mode, is being edited by the merchant.
-     *
-     * @param array $input
-     *
-     * @throws Exception\BadRequestException
-     */
-    protected function validateFeatureUpdateForMode(array $input)
-    {
-        if ($this->isTestMode() === true)
-        {
-            return;
-        }
-
-        $requestedFeatures = array_keys($input['features']);
-
-        $uneditableFeatures = Feature\Constants::$featuresUneditableOnLive;
-
-        //
-        // array_values is required as array_intersect returns an associative
-        // array with keys as the indexes if the element at index 0 in the
-        // first array is not present in the second array.
-        //
-        $featuresNotAllowed = array_values(array_intersect($requestedFeatures, $uneditableFeatures));
-
-        if (empty($featuresNotAllowed) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
-                null,
-                ['features' => $featuresNotAllowed]);
-        }
-    }
-
-    /**
      * Throws an exception if a merchant tries to enable an uneditable
-     * feature for live mode, via the should_sync flag
+     * feature for live mode, or via the should_sync flag
      *
      * @param array $input
      *
@@ -182,10 +146,12 @@ class Validator extends Base\Validator
 
         $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
 
-        $uneditableFeatures = array_values(array_intersect($requestedFeatures,
-            Feature\Constants::$featuresUneditableOnLive));
+        $uneditableFeatures = array_values(array_intersect($requestedFeatures, 
+            Feature\Constants::PRODUCT_FEATURES));
 
-        if (($shouldSync === true) and (count($uneditableFeatures) > 0))
+        if ((count($uneditableFeatures) > 0) and (
+            ($this->isLiveMode() === true) or
+            ($shouldSync === true)))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,

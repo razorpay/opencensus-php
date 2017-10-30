@@ -196,6 +196,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_BOOST_INVALID                        = 'TERMINAL_BOOST_INVALID';
     const TERMINAL_USED_BEFORE                          = 'TERMINAL_USED_BEFORE';
 
+    const REQUEST_THROTTLED                             = 'REQUEST_THROTTLED';
+
     const CARD_NETWORK_INVALID                          = 'CARD_NETWORK_INVALID';
 
     const CUSTOMER_EDIT                                 = 'CUSTOMER_EDIT';
@@ -903,7 +905,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTINGS_DELETE_REQUEST                       = 'SETTINGS_DELETE_REQUEST';
 
     // Merchant feature trace codes
-    const FEATURE_ONBOARDING_RESPONSE_REQUEST           = 'FEATURE_ONBOARDING_RESPONSE_REQUEST';
+    const FEATURE_ONBOARDING_SUBMISSION_REQUEST         = 'FEATURE_ONBOARDING_SUBMISSION_REQUEST';
+    const FEATURE_ONBOARDING_SUBMISSION_APPROVED        = 'FEATURE_ONBOARDING_SUBMISSION_APPROVED';
     const FEATURE_ENABLED_MERCHANT_NOTIFIED             = 'FEATURE_ENABLED_MERCHANT_NOTIFIED';
     const FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED         = 'FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED';
 
