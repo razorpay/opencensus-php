@@ -126,14 +126,18 @@
 
         if (submission.feature === featureDetails.marketplace.title) {
           angular.forEach(responses, function(val, key) {
-            data['body[' + key + ']'] = val;
+            if (key === 'file' || key === 'file_name') {
+              data[key] = val;
+            } else {
+              data['body[' + key + ']'] = val;
+            }
           });
 
           data['body[merchant_id]'] = submission.merchant;
           data['url_params[{feature}]'] = submission.featureFetchName;
 
           data = {
-            method: 'PUT',
+            method: 'POST',
             url: '/admin/generic',
             data: data,
           };
