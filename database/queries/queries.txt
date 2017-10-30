@@ -2555,3 +2555,8 @@ ALTER TABLE bank_accounts
 # Adds tpv coulumn to gateway file
 ALTER TABLE gateway_files
     ADD COLUMN sub_type VARCHAR(25) DEFAULT NULL AFTER target;
+
+ALTER TABLE merchant_details
+	ADD marketplace_activation_status VARCHAR(30) DEFAULT NULL AFTER locked,
+	ADD virtual_accounts_activation_status VARCHAR(30) DEFAULT NULL AFTER marketplace_activation_status,
+	ADD subscriptions_activation_status VARCHAR(30) DEFAULT NULL AFTER virtual_accounts_activation_status;

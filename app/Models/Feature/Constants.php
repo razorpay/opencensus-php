@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Feature;
 
+use RZP\Models\Merchant\Detail as MerchantDetail;
+
 class Constants
 {
     const ENTITY_IDS                    = 'entity_ids';
@@ -49,6 +51,10 @@ class Constants
     const DISABLE_MAESTRO               = 'disable_maestro';
     const DISABLE_RUPAY                 = 'disable_rupay';
     const BLOCK_INTERNATIONAL_RECURRING = 'block_intl_recurring';
+
+    // Different actions for feature activation flow
+    const CREATE           = 'create';
+    const UPDATE           = 'update';
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -118,6 +124,11 @@ class Constants
     const AVAILABLE_RESPONSES = 'available_responses';
     const MANDATORY           = 'mandatory';
 
+    const ONBOARDING_STATUSES = [
+        MerchantDetail\Entity::PENDING,
+        MerchantDetail\Entity::REJECTED,
+        MerchantDetail\Entity::APPROVED,
+    ];
 
     /**
      * Features that are exposed to the merchant and can be
@@ -149,23 +160,13 @@ class Constants
     ];
 
     /*
-     * $notifyFeatures should be a subset of the visible features.
+     * PRODUCT_FEATURES should be a subset of the visible features.
      * If any of these features are enabled on live mode, the user
      * will be notified through an email.
+     * Product features can be enabled/disabled on test mode by the merchant,
+     * but not on the live mode.
      */
-    public static $notifyFeatures = [
-        self::MARKETPLACE,
-        self::SUBSCRIPTIONS,
-        self::VIRTUAL_ACCOUNTS
-    ];
-
-    /**
-     * Lists features that can be enabled/disabled on test mode by the merchant
-     * but not on live
-     *
-     * @var array
-     */
-    public static $featuresUneditableOnLive = [
+    const PRODUCT_FEATURES = [
         self::MARKETPLACE,
         self::SUBSCRIPTIONS,
         self::VIRTUAL_ACCOUNTS

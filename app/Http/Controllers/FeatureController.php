@@ -50,29 +50,78 @@ class FeatureController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getOnboardingQuestions()
+    public function getOnboardingDetails()
     {
         $input = Request::all();
 
-        $response = $this->service()->getOnboardingQuestions($input);
+        $response = $this->service()->getOnboardingDetails($input);
 
         return ApiResponse::json($response);
     }
 
-    public function postOnboardingResponses(string $feature)
+    public function postOnboardingSubmissions(string $feature)
     {
         $input = Request::all();
 
-        $response = $this->service()->postOnboardingResponses($input, $feature);
+        $response = $this->service()->postOnboardingSubmissions($input, $feature);
 
         return ApiResponse::json($response);
     }
 
-    public function getOnboardingResponses(string $feature = null)
+    public function updateOnboardingSubmissions(string $feature)
     {
-        $response = $this->service()->getOnboardingResponses($feature);
+        $input = Request::all();
+
+        $response = $this->service()->updateOnboardingSubmissions($input, $feature);
 
         return ApiResponse::json($response);
     }
 
+    public function getOnboardingSubmissions(string $feature)
+    {
+        $response = $this->service()->getOnboardingSubmissions($feature);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Deprecated. Added for BC. Remove after dashboard changes.
+     *
+     * @param string|null $feature
+     *
+     * @return mixed
+     */
+    public function getOnboardingSubmissionsDeprecated(string $feature = null)
+    {
+        $response = $this->service()->getOnboardingSubmissions($feature);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getFeatureOnboardingRequests()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getFeatureOnboardingRequests($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateFeatureActivationStatus(string $featureName)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateFeatureActivationStatus($featureName, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getFeatureActivationStatus(string $featureName)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getFeatureActivationStatus($featureName, $input);
+
+        return ApiResponse::json($response);
+    }
 }
