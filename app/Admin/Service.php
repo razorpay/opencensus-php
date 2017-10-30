@@ -461,9 +461,12 @@ class Service extends Base\Service
 
         $mode = $input['mode'];
 
-        $input['mode'] = $input['terminal_mode'];
+        if (isset($input['terminal_mode']) === true)
+        {
+            $input['mode'] = $input['terminal_mode'];
 
-        unset($input['terminal_mode']);
+            unset($input['terminal_mode']);
+        }
 
         if (empty($error))
         {
