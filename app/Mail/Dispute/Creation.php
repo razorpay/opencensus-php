@@ -11,7 +11,7 @@ class Creation extends Base
     {
         $merchantName = $this->data['merchant']['name'];
 
-        $this->subject('Chargeback Alert');
+        $this->subject('Alert - A dispute has been received against ' . $merchantName);
 
         return $this;
     }
