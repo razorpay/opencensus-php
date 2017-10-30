@@ -45,7 +45,7 @@ class Service extends Base\Service
      * @param  array            $input
      * @return array
      */
-    public function create(array $input) : array
+    public function create(array $input): array
     {
         if (empty($input[Entity::ADMINS]) === false)
         {
@@ -77,7 +77,7 @@ class Service extends Base\Service
         return $merchantData;
     }
 
-    public function createSubMerchant(array $input)
+    public function createSubMerchant(array $input): array
     {
         $merchant = $this->merchant;
 
@@ -1481,7 +1481,7 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function createSubMerchantUser($merchantId, array $input)
+    public function createSubMerchantUser($merchantId, array $input): array
     {
         $subMerchant = $this->repo->merchant->findOrFailPublic($merchantId);
 

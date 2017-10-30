@@ -281,7 +281,7 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function getPreSignupDetails()
+    public function getPreSignupDetails(): array
     {
         // Referrer merchant doesn't need to complete presignup details.
         $referrerMerchant = $this->merchant->getReferrer();
