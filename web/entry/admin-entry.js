@@ -5,7 +5,7 @@ function prefixCdn(url) {
     prefix =
       'https://' + (match[1] ? 'beta' : '') + 'cdn.razorpay.com/dashboard';
   }
-  return prefix + url;
+  return prefix + '/dist/' + url;
 }
 
 document.write('<script src="' + prefixCdn('vendor.js') + '"></script>');
