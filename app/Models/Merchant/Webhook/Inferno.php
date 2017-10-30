@@ -201,6 +201,18 @@ class Inferno
         return $this->client;
     }
 
+    protected function validatePublicIpAddress(array $request, Entity $webhook)
+    {
+        $url = $request['url'];
+
+        if ($webhook->getValidator()->validatePublicIpAddress($url) === false)
+        {
+            $this->errorMessage = 'Webhook must point to a public IP address';
+
+            return false;
+        }
+    }
+
     /**
      * This Function Will send request to Webhook Url, and get the response
      * In case of non-successful response it will return false,
@@ -228,6 +240,12 @@ class Inferno
                 'request'     => $request,
                 'attempt'     => $this->job->attempts(),
             ]);
+
+        // Ensure that we are not hitting a private IP address
+        if ($this->validatePublicIpAddress($request, $webhook) === false)
+        {
+            return $clientError;
+        }
 
         $timeOfRequest = microtime(true);
 
@@ -336,6 +354,7 @@ class Inferno
             $webhookData + $responseData);
     }
 
+    // This function also sets class variable errorMessage, which is used while sending mails
     protected function getResponseData(string $msgPrefix = '', $response = null)
     {
         $this->errorMessage = $msgPrefix;
@@ -369,10 +388,10 @@ class Inferno
         $headers = $this->getRequestHeaders($hmac);
 
         $request = [
-            'url' => $webhook->getUrl(),
-            'method' => 'post',
-            'content' => $event,
-            'headers' => $headers
+            'url'       => $webhook->getUrl(),
+            'method'    => 'post',
+            'content'   => $event,
+            'headers'   => $headers
         ];
 
         $request['options'] = [

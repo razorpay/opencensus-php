@@ -2,10 +2,14 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
-use RZP\Models\Base;
-use RZP\Exception;
 use Crypt;
 
+use RZP\Models\Base;
+use RZP\Models\Merchant;
+
+/**
+ * @property Merchant\Entity $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     const ID                 = 'id';
