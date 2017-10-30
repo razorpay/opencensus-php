@@ -5,10 +5,12 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Axis\EMandate;
 use RZP\Constants\Entity;
 use RZP\Gateway\Netbanking\Axis\Emandate;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
+use RZP\Models\Customer\Token;
+use RZP\Models\Gateway\File;
+use RZP\Models\Payment;
+use RZP\Models\FileStore\Type;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Customer\Token;
-use RZP\Models\Payment;
 
 class NetbankingAxisEMandateTest extends TestCase
 {
@@ -127,6 +129,26 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->ba->appAuth();
 
         $content = $this->startTest();
+
+        $this->assertEquals(1, count($content['items']));
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => Type::AXIS_EMANDATE_DEBIT,
+            'entity_type' => Entity::GATEWAY_FILE,
+            'entity_id'   => $content['id'],
+            'extension'   => 'csv',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
     }
 
     protected function assertEmandateEntities()
