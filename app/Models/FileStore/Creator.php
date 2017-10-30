@@ -707,13 +707,13 @@ class Creator extends Base\Core
 
     protected function encodeFile()
     {
-        $fileToBeEncrypted = $this->getFullFilePath();
+        $fileToBeEncoded = $this->getFullFilePath();
 
-        $data = file_get_contents($fileToBeEncrypted);
+        $data = file_get_contents($fileToBeEncoded);
 
         $encodedData = base64_encode($data);
 
-        file_put_contents($fileToBeEncrypted, $encodedData);
+        file_put_contents($fileToBeEncoded, $encodedData);
     }
 
     /*
