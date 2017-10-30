@@ -54,11 +54,11 @@ export default function OrgForm({
             required
             defaultValue={org.email_domains}
           />
-          <Field label="Hostname" />
+          <Field label="Hostname" name="hostname" defaultValue={org.hostname} />
 
           <SelectField
             label="Auth Type"
-            defaultValue="password"
+            defaultValue={org.auth_type || 'password'}
             name="auth_type"
           >
             <option value="">Please select an auth type</option>
