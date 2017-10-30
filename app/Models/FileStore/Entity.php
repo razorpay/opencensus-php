@@ -265,6 +265,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PASSWORD);
     }
 
+    public function getSize()
+    {
+        return $this->getAttribute(self::SIZE);
+    }
+
     // ----------------------- Getters Ends----------------------------------------
 
     protected function getPasswordAttribute()

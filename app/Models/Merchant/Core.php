@@ -467,12 +467,11 @@ class Core extends Base\Core
             $batchType =  $type . '_' . $key;
 
             $params = [
-                Batch\Entity::MERCHANT_ID => $merchant->getId(),
                 Batch\Entity::FILE        => $file,
                 Batch\Entity::TYPE        => $batchType
             ];
 
-            $batch = (new Batch\Core)->create($params);
+            $batch = (new Batch\Core)->create($params, $merchant);
 
             $batches[$batchType] = $batch->getId();
         }

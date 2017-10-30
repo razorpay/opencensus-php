@@ -2552,6 +2552,13 @@ ALTER TABLE tokens
     ADD COLUMN account_number VARCHAR(40) AFTER wallet,
     ADD INDEX `tokens_account_number_index` (`account_number`);
 
+ALTER TABLE batches
+    ADD COLUMN sub_type VARCHAR(25) DEFAULT NULL AFTER type,
+    ADD COLUMN gateway VARCHAR(25) DEFAULT NULL AFTER sub_type,
+    ADD COLUMN failure_reason TEXT DEFAULT NULL AFTER gateway,
+    ADD COLUMN processing TINYINT(1) DEFAULT 0 AFTER failure_reason,
+    ADD INDEX batches_gateway_index (gateway);
+
 ALTER TABLE disputes
     ADD COLUMN parent_id CHAR(14) DEFAULT NULL AFTER merchant_id,
     ADD CONSTRAINT disputes_parent_id_foreign FOREIGN KEY (parent_id) REFERENCES disputes(id) ON DELETE RESTRICT;
