@@ -83,14 +83,6 @@ class Merchant extends Entity
         return $this;
     }
 
-    protected function getGuzzleInstance()
-    {
-        return new Guzzle([
-            'base_uri' => Config::get('api.url'),
-            'timeout'  => 200,
-        ]);
-    }
-
     public function getUsers($merchantId)
     {
         $relativeUrl = $this->getEntityUrl().$merchantId.'/users';

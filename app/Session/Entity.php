@@ -111,7 +111,7 @@ class Entity extends Base\Entity
         $setKey = $this->getUserSessionKey($userId);
 
         $sessionIds = Redis::smembers($setKey);
-        s($sessionIds);
+
         foreach ($sessionIds as $sessionId)
         {
             if (empty($currentSessionId) === false and ($sessionId === $currentSessionId))

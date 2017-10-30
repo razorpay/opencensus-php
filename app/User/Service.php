@@ -84,64 +84,6 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function editUserOnApi($userData, $userId)
-    {
-        $this->setApiCredentials();
-
-        $error = $response = [];
-
-        try
-        {
-            $response = $this->api->user->edit($userId, $userData);
-        }
-        catch (\Exception $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $response];
-    }
-
-    public function attachMerchantUserOnApi($userId, $merchantId, $role)
-    {
-        $this->setApiCredentials();
-
-        $error = $response = [];
-
-        try
-        {
-            $data = ['role' => $role, 'merchant_id' => $merchantId];
-
-            $response = $this->api->user->attach($userId, $data);
-        }
-        catch (\Exception $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $response];
-    }
-
-    public function detachMerchantUserOnApi($userId, $merchantId)
-    {
-        $this->setApiCredentials();
-
-        $error = $response = [];
-
-        try
-        {
-            $data = ['merchant_id' => $merchantId];
-
-            $response = $this->api->user->detach($userId, $data);
-        }
-        catch (\Exception $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $response];
-    }
-
     /**
      * @param  array  $input [description]
      */
@@ -525,23 +467,5 @@ class Service extends Base\Service
         }
 
         return [$error, $genericUser];
-    }
-
-    public function getUserByEmail($email)
-    {
-        $getUserByEmail = [
-            'route_name' => 'user_fetch_email',
-            'url_params' => [
-                '{email}' => $email,
-            ],
-        ];
-
-        $genericService = new Generic\Service;
-
-        $genericUser = null;
-
-        list($error, $data) = $genericService->call('GET', $getUserByEmail);
-
-        return [$error, $data];
     }
 }

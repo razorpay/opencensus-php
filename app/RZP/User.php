@@ -10,30 +10,4 @@ class User extends Entity
     {
         return parent::create($params);
     }
-
-    public function edit($userId, array $params)
-    {
-        $relativeUrl = $this->getEntityUrl().$userId;
-
-        // For some reason unknown the normal way was not working
-        ApiRequest::addHeader('Content-Type', 'application/json');
-
-        $body = json_encode($params);
-
-        return $this->request('PUT', $relativeUrl, $body);
-    }
-
-    public function attach($userId, array $params)
-    {
-        $relativeUrl = $this->getEntityUrl().$userId.'/attach';
-
-        return $this->request('PUT', $relativeUrl, $params);
-    }
-
-    public function detach($userId, array $params)
-    {
-        $relativeUrl = $this->getEntityUrl().$userId.'/detach';
-
-        return $this->request('PUT', $relativeUrl, $params);
-    }
 }

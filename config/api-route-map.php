@@ -674,6 +674,8 @@ return [
 
         // Get Merchant Users
         'merchant_fetch_users'              => 'merchants/{id}/users',
+        // Edit Merchant Email
+        'merchant_edit_email'               => 'merchants/{id}/email',
 
         // Accept/Reject Invitation
         'invitation_action'                 => 'invitations/{id}/{action}',

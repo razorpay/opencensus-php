@@ -30,11 +30,4 @@ class GenericUser extends AuthGenericUser
 
         return $ownerMerchant;
     }
-
-    public function refreshCurrentMerchant()
-    {
-        Session::put('current_merchant_id', null);
-
-        return $this->currentMerchant();
-    }
 }
