@@ -21,7 +21,7 @@ class Entity extends Base\PublicEntity
 
     const FILE = 'file';
 
-    // Upper limit for filesize in bytes
+    // Upper limit for file-size in bytes
     const MAX_FILE_SIZE = 10485760;
 
     // Upper limit for number of files uploaded ia single request

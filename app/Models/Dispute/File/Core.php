@@ -2,21 +2,21 @@
 
 namespace RZP\Models\Dispute\File;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Dispute\Entity as DisputeEntity;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Core extends Base\Core
 {
+    use FileHandlerTrait;
+
     public function create(DisputeEntity $dispute, array $input): array
     {
         $this->trace->info(
             TraceCode::DISPUTE_FILE_CREATE,
             [
                 'input'       => $input,
+                'dispute_id'  => $dispute->getId(),
             ]);
 
         $file = (new Entity)->build($input);
@@ -78,66 +78,5 @@ class Core extends Base\Core
         $disputeFiles = $this->createForDispute($disputeId, $fileUrls);
 
         return $disputeFiles;
-    }
-
-    protected function uploadFileAndGetUrl(UploadedFile $file): string
-    {
-        $extension = $file->getClientOriginalExtension();
-
-        $fileName = UniqueIdEntity::generateUniqueId() . '.' . $extension;
-
-        $destinationPath = storage_path(Entity::STORAGE_PATH);
-
-        $mimeType = $file->getMimeType();
-
-        $fileDetails = [
-                'file_name'  => $fileName,
-                'extension'  => $extension,
-                'mime_type'  => $mimeType,
-                'size'       => $file->getClientSize(),
-                'file_path'  => $destinationPath . '/' . $fileName,
-        ];
-
-        $this->trace->info(
-            TraceCode::DISPUTE_FILE_DETAILS,
-            $fileDetails
-        );
-
-        // Moves locally.
-        $file->move($destinationPath, $fileName);
-
-        try
-        {
-            // Store the file in AWS
-            $fileUrl = (new StorageClient())->saveToStorage($fileDetails);
-        }
-        catch (Exception\BaseException $e)
-        {
-            $fileUrl = '';
-
-            $e->setData($fileDetails);
-
-            throw $e;
-        }
-        finally
-        {
-            $this->deleteFile($destinationPath . '/' . $fileName);
-        }
-
-        return $fileUrl;
-    }
-
-    protected function deleteFile($filePath)
-    {
-        if (file_exists($filePath))
-        {
-            $success = unlink($filePath);
-
-            if ($success === false)
-            {
-                throw new Exception\RuntimeException(
-                    'Failed to delete file: ' . $filePath);
-            }
-        }
     }
 }

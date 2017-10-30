@@ -48,17 +48,15 @@ class DisputeController extends Controller
 
     public function editByMerchant(string $id)
     {
-        if(Request::hasFile(DisputeFileEntity::FILES) === false)
+        if (Request::hasFile(DisputeFileEntity::FILES) === true)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Input does not contain any file array named : ' . DisputeFileEntity::FILES . ' to be uploaded'
-            );
+            $files = Request::file(DisputeFileEntity::FILES);
+
+            return $this->service()->uploadFiles($id, $files);
         }
 
-        $files = Request::file(DisputeFileEntity::FILES);
+        // TODO : Update data for comments from merchant
 
-        $data = $this->service()->uploadFiles($id, $files);
-
-        return $data;
+        return [];
     }
 }

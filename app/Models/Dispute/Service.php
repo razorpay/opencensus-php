@@ -42,6 +42,6 @@ class Service extends Base\Service
 
     public function uploadFiles(string $id, array $files): array
     {
-        return (new File\Core)->uploadFiles($id, $files);
+        return ((new File\Core)->uploadFiles($id, $files));
     }
 }
