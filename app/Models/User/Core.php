@@ -225,7 +225,7 @@ class Core extends Base\Core
             'method'    => 'post',
             'url'       => $url,
             'headers'   => [],
-            'content'   => json_encode($data),
+            'content'   => $data,
             'options'   => [
                 'timeout'   => 30
             ]
