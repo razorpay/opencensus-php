@@ -32,7 +32,9 @@ export default class PermissionsList extends Component {
         <div class="box">
           <header>
             Permissions
-            <button onClick={this.showEntity}>Add new Permission</button>
+            <div class="btn" onClick={this.showEntity}>
+              Add new Permission
+            </div>
           </header>
           <Form onSubmit={this.onSubmit} class="filters">
             <Field name="q" label="Search" />

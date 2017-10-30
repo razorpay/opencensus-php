@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import user from 'admin/user';
-import org from 'admin/organization';
+import user, { org } from 'admin/user';
 import Duplex from 'ui/Duplex';
 import BaseModal from 'ui/BaseModal';
 import Field from 'ui/Field';
