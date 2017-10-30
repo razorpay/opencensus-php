@@ -474,8 +474,6 @@ class Entity extends Base\PublicEntity
         $data[self::SETTLEMENT_STATUS]       = $settlementStatus;
         $data[self::TAX]                     = $tax;
 
-        $data[self::ON_HOLD] = $this->getOnHold() ? "true" : "false";
-
         return $data;
     }
 }

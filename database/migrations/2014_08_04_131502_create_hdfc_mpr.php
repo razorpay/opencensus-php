@@ -38,7 +38,7 @@ class CreateHdfcMpr extends Migration
             $table->integer('net_amount');
             $table->integer('gateway_net_fee');
             $table->integer('gateway_fee');
-            $table->integer('tax');
+            $table->integer('service_tax');
             $table->integer('education_cess');
 
             $table->string('rec_format');
