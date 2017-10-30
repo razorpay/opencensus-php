@@ -6,40 +6,6 @@ use App\Base;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
-        'name'                  => 'sometimes|string|max:200',
-        'email'                 => 'required|email|unique:merchants',
-    );
-
-    protected static $createSubmerchantRules = array(
-        'name'                  => 'required|string|max:200',
-        'email'                 => 'sometimes|email',
-    );
-
-    protected static $createSubmerchantUserRules = array(
-        'id'                    => 'required|alpha_num',
-        'password'              => 'required|between:7,50|confirmed|numbers|letters',
-        'password_confirmation' => 'required|between:7,50',
-        'email'                 => 'required|email|unique:users',
-    );
-
-    protected static $unsetCreateInput = array(
-        'captcha'
-    );
-
-    protected static $changeEmailRules = array(
-        'email'         => 'required|email'
-    );
-
-    protected static $changeNameRules = array(
-        'name'         => 'required|string|max:200'
-    );
-
-    protected static $loginRules = array(
-        'email'     =>      'required|email',
-        'password'  =>      'required|between:6,50',
-    );
-
     protected static $terminalRules = array(
         'mode'                                      => 'required|in:test,live',
         'gateway'                                   => '',
@@ -62,10 +28,6 @@ class Validator extends Base\Validator
 
     protected static $banksRules = array(
         'banks'                                      => 'required|array'
-    );
-
-    protected static $updateTeamMemberRules = array(
-        'role'  => 'required|in:owner,manager,operations,finance,support,admin,sellerapp'
     );
 
     protected static $api_dashboard_mappings = array(

@@ -31,14 +31,8 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::group(['prefix' => 'user'], function()
     {
-        Route::get('/confirm/{token}', 'UserController@getConfirm');
         Route::post('/signin', 'UserController@postSignin'); // ePOS
         Route::post('/register', 'UserController@postRegister'); // ePOS
-        Route::post('/resend', 'MerchantController@postResendConfirmation');
-        Route::post('/password/reset', 'PasswordController@postRemind');
-        Route::post('/password/reset/{token}', 'PasswordController@postReset');
-        Route::get('/invitations/token/{token}', 'InvitationsController@fetchByToken');
-
         // Adding the following here since auth:user middleware should be after cors
         Route::options('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
         Route::get('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
@@ -47,12 +41,18 @@ Route::group(['middleware' => ['web']], function () {
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
     {
         Route::post('/pre_signup', 'MerchantController@postSignup');
-        Route::get('/pre_signup', 'MerchantController@getSignup');
+        Route::post('/resend', 'MerchantController@postResendConfirmation');
         Route::get('/keepalive', 'UserController@getKeepAlive');
         Route::get('/logout', 'UserController@getLogout');
         // This returns all the needed information
         Route::get('/', 'UserController@getUserDetailsV2'); //ePOS
         Route::get('/details', 'UserController@getUserDetailsV2');
+    });
+
+    // Generic guest route with no authentication
+    Route::group(['middleware' => ['guest.generic']], function()
+    {
+        Route::any('/guest/generic', 'GenericController@handle');
     });
 
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()
@@ -81,9 +81,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');
         // This is a sensitive route
         Route::get('settings/merchants/switch/{id}', 'UserController@switchCurrentMerchant');
-        // Team Administration
-        Route::put('settings/merchants/owned/members/{id}', 'MerchantController@updateTeamMember', 'team_users_update');
-        Route::delete('settings/merchants/owned/members/{id}', 'MerchantController@removeTeamMember', 'team_users_delete');
         // Invitation related (User side)
         Route::post('settings/invitations/{invite}/accept', 'InvitationsController@postAcceptMerchantInvitation');
 
@@ -98,7 +95,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/merchants/register', 'UserController@postUpgradeUserToMerchant');
         // Registers a sub-merchant account
         Route::post('/submerchants', 'MerchantController@postRegisterSubMerchant')->name('submerchant_register');
-        Route::post('/subusers', 'MerchantController@postRegisterSubUser')->name('subuser_register');
         // Send Feedback Mail to support@razorpay.com
         Route::post('/sendfeedback', 'MerchantController@sendFeedback')->name('send_feedback');
     });
@@ -125,7 +121,6 @@ Route::group(['middleware' => ['web']], function () {
 
         // Admin merchant actions
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
-        Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
         Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
         Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
         Route::get('/admin/companies/{cin}/info', 'AdminController@getCompanyInfo');
@@ -133,8 +128,6 @@ Route::group(['middleware' => ['web']], function () {
         // Creevey Related routes
         Route::put('/admin/merchant/{id}/screenshot', 'AdminController@captureMerchantScreenshot');
         Route::post('/admin/merchant/{id}/screenshot', 'AdminController@saveMerchantScreenshot');
-
-        Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
         // Reconcile settlements
         Route::post('/settlements/reconcile', 'AdminController@postReconcileSettlement');
         Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');

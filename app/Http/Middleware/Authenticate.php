@@ -52,7 +52,7 @@ class Authenticate {
 
 			if ($user)
 			{
-				ApiRequest::addHeader('X-Dashboard-User-Id', $user->getAuthIdentifier());
+				ApiRequest::addHeader('X-Dashboard-User-Id', $user->id);
 				ApiRequest::addHeader('X-Dashboard-User-Email', $user->email);
 
                 $currentMerchant = $user->currentMerchant();

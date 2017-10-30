@@ -50,6 +50,7 @@ class Kernel extends HttpKernel {
         'admin_access'  => 'App\Http\Middleware\AdminAccess',
         'verified'      => 'App\Http\Middleware\Verified',
         'auth.oauth'    => 'App\Http\Middleware\OAuth',
+        'guest.generic' => 'App\Http\Middleware\GuestGeneric',
     ];
 
 }

@@ -20,7 +20,7 @@ export const saveAccount = data => {
     payload: ajax({
       url: '/submerchants',
       method: 'post',
-      appendModeInURL: false,
+      appendModeInQueryParam: true,
       data,
     }).then(response => response.data),
   };

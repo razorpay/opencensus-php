@@ -20,14 +20,6 @@ return array(
         'activations' => 'activationsteam@razorpay.com'
     ),
 
-    'sorting_hat'   =>  [
-        // This is the token we pass to sorting-hat
-        // to verify authenticity of signups
-        'token' =>  env('SORTING_HAT_TOKEN', '4cace071107c854f0e320c309da81ff62c950da324e2c21d312362f174ca5b5e'),
-        // sorting-hat url
-        'url'   =>  env('SORTING_HAT_URL', 'https://sorting-hat-slack.herokuapp.com/')
-    ],
-
     'zapier'    =>  [
         'signups'       =>  'https://zapier.com/hooks/catch/1088429/2e1xtg/',
         'submissions'   =>  'https://hooks.zapier.com/hooks/catch/1088429/46x8fa/',

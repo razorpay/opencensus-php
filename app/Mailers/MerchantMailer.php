@@ -4,7 +4,6 @@ namespace App\Mailers;
 
 use App\Admin;
 use App\Merchant;
-use App\Merchant\Entity as MerchantEntity;
 use App\Exception\InvalidContactInformationException;
 
 class MerchantMailer extends Mailer
