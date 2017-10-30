@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Feature;
