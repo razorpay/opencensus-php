@@ -104,13 +104,7 @@ class Base extends Core
             // Validations should take care of this.
             $file = $input['attachment-' . $attachmentNumber];
 
-            // This step is mainly to figure out whether the file is of zip type,
-            // since we need to execute a different set of flow ONLY for zip files.
-            $fileExtension = $this->fileProcessor->getFileExtension($file, $fileLocationType);
-
-            // If it's a zip file, get all the details of all the files present in it.
-            // Else, get the file details of the attachment.
-            if (in_array($fileExtension, Validator::SUPPORTED_ZIP_EXTENSIONS))
+            if ($this->fileProcessor->isZipFile($file, $fileLocationType) === true)
             {
                 $zipFileDetails = [];
 
@@ -147,30 +141,7 @@ class Base extends Core
                 }
                 catch (\Exception $ex)
                 {
-                    $this->trace->traceException($ex);
-
-                    //
-                    // Axis sends hundreds of files daily with wrong password and one
-                    // file with the right password. We don't know which file has the
-                    // right password and which file has the wrong password.
-                    // Hence, we suppress all axis wrong password errors.
-                    //
-                    if (($this->gateway !== Orchestrator::AXIS) and
-                        (str_contains($ex->getMessage(), 'Wrong password')))
-                    {
-                        $this->messenger->raiseReconAlert(
-                            [
-                                'trace_code'   => TraceCode::RECON_FILE_SKIP,
-                                'message'      => 'Skipping file because unzip file caused an exception -> ' .
-                                    $ex->getMessage(),
-                                'file_details' => !empty($extractedFileDetails) ? $extractedFileDetails : null,
-                                'gateway'      => $this->gateway,
-                            ]);
-                    }
-
-                    $this->deleteFileLocallyIfPresent($zipFileDetails);
-
-                    continue;
+                    $this->handleZipProcessingException($ex);
                 }
             }
             else
@@ -182,6 +153,35 @@ class Base extends Core
         }
 
         return $allFilesDetails;
+    }
+
+    /**
+     * @param  \Exception $ex
+     */
+    protected function handleZipProcessingException(\Exception $ex)
+    {
+        $this->trace->traceException($ex);
+
+        //
+        // Axis sends hundreds of files daily with wrong password and one
+        // file with the right password. We don't know which file has the
+        // right password and which file has the wrong password.
+        // Hence, we suppress all axis wrong password errors.
+        //
+        if (($this->gateway !== Orchestrator::AXIS) and
+            (str_contains($ex->getMessage(), 'Wrong password')))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'   => TraceCode::RECON_FILE_SKIP,
+                    'message'      => 'Skipping file because unzip file caused an exception -> ' .
+                        $ex->getMessage(),
+                    'file_details' => !empty($extractedFileDetails) ? $extractedFileDetails : null,
+                    'gateway'      => $this->gateway,
+                ]);
+        }
+
+        $this->deleteFileLocallyIfPresent($zipFileDetails);
     }
 
     /**

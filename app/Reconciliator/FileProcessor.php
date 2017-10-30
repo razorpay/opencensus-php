@@ -179,6 +179,12 @@ class FileProcessor
         return new SplFileInfo($filePath);
     }
 
+    public function isZipFile($file, string $fileLocationType): bool
+    {
+         $fileExtension = $this->fileProcessor->getFileExtension($file, $fileLocationType);
+
+         return (in_array($fileExtension, Validator::SUPPORTED_ZIP_EXTENSIONS, true) === true);
+    }
     /**
      * Unzips the file to a folder which is created in the same folder in which the zip file is present.
      *
@@ -314,7 +320,7 @@ class FileProcessor
      *
      * @return string Extension of the file
      */
-    public function getFileExtension($file, $fileLocationType)
+    protected function getFileExtension($file, $fileLocationType)
     {
         if ($fileLocationType === self::UPLOADED)
         {
