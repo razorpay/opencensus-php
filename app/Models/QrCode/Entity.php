@@ -5,6 +5,7 @@ namespace RZP\Models\QrCode;
 use Config;
 use RZP\Base\Luhn;
 use RZP\Models\Base;
+use RZP\Models\Card\NetworkName;
 
 class Entity extends Base\PublicEntity
 {
@@ -45,6 +46,8 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    // --------------------- RELATIONS ---------------------
+
     public function source()
     {
         return $this->morphTo('source', self::ENTITY_TYPE, self::ENTITY_ID);
@@ -55,29 +58,23 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    // --------------------- END RELATIONS ---------------------
+
+    // --------------------- GETTERS ---------------------
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
     }
 
-    public function getVisaIdentifier()
+    public function getIdentifier(string $network)
     {
-        return $this->generateMerchantIdentifier('visa');
-    }
-
-    public function getMasterCardIdentifier()
-    {
-        return $this->generateMerchantIdentifier('mastercard');
+        return $this->generateMerchantIdentifier($network);
     }
 
     public function getQrString()
     {
         return $this->getAttribute(self::QR_STRING);
-    }
-
-    public function setQrString(string $qr)
-    {
-        $this->setAttribute(self::QR_STRING, $qr);
     }
 
     public function getDynamicTagString()
@@ -97,16 +94,39 @@ class Entity extends Base\PublicEntity
         return implode('', $tagArray);
     }
 
+    public function getFormattedAmount()
+    {
+        $amount = $this->getAmount();
+
+        if (empty($amount) === true)
+        {
+            return null;
+        }
+
+        return number_format($amount / 100, 2, '.', '');
+    }
+
+    // --------------------- END GETTERS ---------------------
+
+    // --------------------- SETTERS ---------------------
+
+    public function setQrString(string $qrString)
+    {
+        $this->setAttribute(self::QR_STRING, $qrString);
+    }
+
+    // --------------------- END SETTERS ---------------------
+
     protected function getMasterCardTag()
     {
-        $masterCardIdentifier = $this->getMasterCardIdentifier();
+        $masterCardIdentifier = $this->getIdentifier(NetworkName::MC);
 
         return '04' . strlen($masterCardIdentifier) . $masterCardIdentifier;
     }
 
     protected function getVisaTag()
     {
-        $visaIdentifier = $this->getVisaIdentifier();
+        $visaIdentifier = $this->getIdentifier(NetworkName::VISA);
 
         return '02' . strlen($visaIdentifier) . $visaIdentifier;
     }
@@ -122,7 +142,7 @@ class Entity extends Base\PublicEntity
 
     protected function getAmountTag()
     {
-        $amount = (string)($this->getFormattedAmount());
+        $amount = (string) ($this->getFormattedAmount());
 
         if (empty($amount) === true)
         {
@@ -135,7 +155,7 @@ class Entity extends Base\PublicEntity
     /**
      * This will generate merchant identifier using network
      * network could be visa , mastercard or rupay
-     *r
+     *
      * @param string $network
      * @return string
      */
@@ -152,18 +172,6 @@ class Entity extends Base\PublicEntity
 
     protected function getAcquirerCode(string $network)
     {
-        return Config::get('gateway.bharat_qr.' . $network . '_' . 'code');
-    }
-
-    public function getFormattedAmount()
-    {
-        $amount = $this->getAmount();
-
-        if (empty($amount) === true)
-        {
-            return null;
-        }
-
-        return number_format($amount / 100, 2, '.', '');
+        return Config::get('gateway.bharat_qr.' . strtolower($network) . '_' . 'code');
     }
 }
