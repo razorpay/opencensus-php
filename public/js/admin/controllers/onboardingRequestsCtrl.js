@@ -7,7 +7,7 @@
     '$modal',
     '$q',
     '$upload',
-    function OnboardingRequestsCtrl($scope, $http, $modal, $q) {
+    function OnboardingRequestsCtrl($scope, $http, $modal, $q, $upload) {
       var statuses = ($scope.statuses = ['pending', 'rejected', 'approved']);
 
       var featureDetails = ($scope.featureDetails = {
@@ -79,7 +79,7 @@
           });
       };
 
-      $scope.onSaveFeature = function onSaveFeature(submission) {
+      $scope.onSaveFeature = function onSaveFeature(submission, form) {
         var editVal = submission.editVal,
           status = editVal.status,
           responses = editVal.responses;
@@ -88,7 +88,8 @@
 
         var requests = [],
           request,
-          data;
+          data,
+          config;
 
         if (submission.status !== status) {
           data = {
@@ -121,15 +122,33 @@
 
         data = {
           route_name: 'onboarding_features_update',
-          body: responses,
-          url_params: {
-            '{feature}': submission.featureFetchName,
-          },
         };
 
-        data.body.merchant_id = submission.merchant;
+        if (submission.feature === featureDetails.marketplace.title) {
+          angular.forEach(responses, function(val, key) {
+            data['body[' + key + ']'] = val;
+          });
 
-        request = $http.put('/admin/generic', data);
+          data['body[merchant_id]'] = submission.merchant;
+          data['url_params[{feature}]'] = submission.featureFetchName;
+
+          data = {
+            method: 'PUT',
+            url: '/admin/generic',
+            data: data,
+          };
+
+          request = $upload.upload(data);
+        } else {
+          data.body = responses;
+          data.body.merchant_id = submission.merchant;
+
+          data.url_params = {
+            '{feature}': submission.featureFetchName,
+          };
+
+          request = $http.put('/admin/generic', data);
+        }
 
         request
           .success(function(data) {
@@ -171,8 +190,8 @@
                 $scope.submission.editVal.responses.file_name = file.name;
               };
 
-              $scope.ok = function onSubmit(submission) {
-                onSave(submission).then(function() {
+              $scope.ok = function onSubmit(submission, form) {
+                onSave(submission, form).then(function() {
                   $modalInstance.close();
                 });
               };

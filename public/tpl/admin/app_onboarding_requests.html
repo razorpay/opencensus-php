@@ -110,6 +110,7 @@
         <label class="col-lg-3">Use Case</label>
         <div class="col-lg-9">
           <textarea rows="4"
+                    name="body[use_case]"
                     class="form-control"
                     ng-model="submission.editVal.responses.use_case"
                     ></textarea>
@@ -158,7 +159,8 @@
            ng-if="submission.feature === featureDetails.marketplace.title">
         <label class="col-lg-3">Transferring to</label>
         <div class="col-lg-9">
-          <select ng-model="submission.editVal.responses.settling_to">
+          <select ng-model="submission.editVal.responses.settling_to"
+                  name="body[settling_to]">
             <option ng-repeat="item in transferToDDVals"
                     value="{{ item[0] }}"
                     ng-selected="submission.editVal.responses.settling_to === item[0]">
@@ -172,7 +174,17 @@
         <label class="col-lg-3">Signed Vendor Agreement</label>
         <div class="col-lg-9">
           <div>{{submission.editVal.responses.vendor_agreement }}</div>
+          <input type="hidden"
+                 name="file_name"
+                 value="{{ submission.editVal.responses.file_name }}"/>
+          <input type="hidden"
+                 name="route_name"
+                 value="onboarding_features_update"/>
+          <input type="hidden"
+                 name="url_params[{feature}]"
+                 value="{{ submission.featureFetchName }}"/>
           <input ui-jq="filestyle"
+                 name="file"
                  type="file"
                  ng-model="submission.editVal.responses.file"
                  ng-file-select="onFileSelect($files, submission)"/>
@@ -182,6 +194,6 @@
   </div>
   <div class="modal-footer">
     <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-    <button class="btn btn-primary modal-ok" ng-click="ok(submission)">Save</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok(submission, submissionform)">Save</button>
   </div>
 </script>
