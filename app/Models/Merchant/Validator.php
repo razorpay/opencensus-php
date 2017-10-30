@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Feature;
@@ -22,7 +23,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createRules = [
-        Entity::ID                          => 'required|alpha_num|size:14|unique:merchants',
+        Entity::ID                          => 'sometimes|alpha_num|size:14|unique:merchants',
         Entity::NAME                        => 'sometimes|string|max:200',
         Entity::EMAIL                       => 'required|email',
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
@@ -67,6 +68,10 @@ class Validator extends Base\Validator
 
     protected static $editEmailRules = [
         Entity::EMAIL                       => 'required|email|unique:merchants'
+    ];
+
+    protected static $editNameRules = [
+        Entity::NAME                        => 'required|min:4|string|max:200',
     ];
 
     protected static $editConfigRules = [
@@ -119,6 +124,13 @@ class Validator extends Base\Validator
         'settlement' => 'sometimes|filled|file|mimes:txt|max:1024',
     ];
 
+    protected static $createSubMerchantUserRules = [
+        'merchant_id'           => 'required|alpha_num|size:14',
+        'password'              => 'required|between:7,50|confirmed|numbers|letters',
+        'password_confirmation' => 'required|between:7,50',
+        Entity::EMAIL           => 'required|email',
+    ];
+
     protected static $editConfigValidators = [
         'csv_email',
     ];
@@ -131,6 +143,48 @@ class Validator extends Base\Validator
         'visible_features',
         'uneditable_features',
     ];
+
+    protected static $createSubMerchantUserValidators = [
+        'sub_merchant_owner',
+    ];
+
+    protected static $editEmailValidators = [
+        'is_test_account',
+    ];
+
+    protected function validateIsTestAccount(array $input)
+    {
+        $merchant = $this->entity;
+
+        $isTestAccount = (new Account)->isTestAccount($merchant->getId());
+
+        if ($isTestAccount === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT);
+        }
+
+    }
+
+    /**
+     * validates if the user who is attempting to create a submerchant user is the owner  or not.
+     *
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function validateSubMerchantOwner(array $input)
+    {
+        $app = App::getFacadeRoot();
+
+        $dashboardHeaders = $app['basicauth']->getDashboardHeaders();
+
+        if ($dashboardHeaders['user_role'] !== 'owner')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBUSER_CREATION_NOT_ALLOWED);
+        }
+    }
 
     /**
      * Throws an exception if a merchant tries to enable an uneditable
@@ -146,7 +200,7 @@ class Validator extends Base\Validator
 
         $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
 
-        $uneditableFeatures = array_values(array_intersect($requestedFeatures, 
+        $uneditableFeatures = array_values(array_intersect($requestedFeatures,
             Feature\Constants::PRODUCT_FEATURES));
 
         if ((count($uneditableFeatures) > 0) and (

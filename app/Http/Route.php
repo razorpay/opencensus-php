@@ -118,6 +118,8 @@ final class Route
         'merchant_edit_config_logo'               => ['post',     'account/config/logo',                            'MerchantController@postMerchantConfigLogo'                         ],
         'merchant_delete_config_logo'             => ['delete',   'account/config/logo',                            'MerchantController@deleteMerchantConfigLogo'                       ],
         'merchant_sub_create'                     => ['post',     'submerchants',                                   'MerchantController@postCreateSubMerchant'                          ],
+        'merchant_pre_signup_details'             => ['get',      'pre_signup',                                     'MerchantController@getPreSignupDetails'                            ],
+        'merchant_edit_pre_signup_details'        => ['put',      'pre_signup',                                     'MerchantController@putPreSignupDetails'                            ],
         'merchant_fetch_config'                   => ['get',      'account/config',                                 'MerchantController@getAccountConfig'                               ],
         'merchant_edit_email'                     => ['put',      'merchants/{id}/email',                           'MerchantController@putMerchantEmail'                               ],
         'merchant_fetch_multiple'                 => ['get',      'merchants',                                      'MerchantController@getMerchants'                                   ],
@@ -156,6 +158,7 @@ final class Route
         'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
         'merchant_details_fetch'                  => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'merchant_invoice_add_bulk'               => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
+        'create_submerchant_user'                 => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_fetch_by_id'                     => ['get',      'merchants/{mid}/credits/{id}',                   'MerchantController@getCreditsLog'                                  ],
@@ -570,9 +573,15 @@ final class Route
         'internal_dummy_account_test'             => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
         'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
 
+        'user_register'                           => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
+        'user_merchant_upgrade'                   => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
+        'user_resend_verification'                => ['post',     'users/resend-verification',                      'UserController@postResendVerificationMail'                         ],
+        'user_reset_password_create'              => ['post',     'users/reset-password',                           'UserController@postResetPasswordByEmail'                           ],
+        'user_reset_password_token'               => ['post',     'users/reset-password-token',                     'UserController@postChangePasswordByToken'                          ],
         'user_create'                             => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                              => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_confirm_by_data'                    => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
+        'user_fetch_email'                        => ['get',      'users/email/{email}',                            'UserController@getUserByEmail'                                     ],
         'user_edit'                               => ['put',      'users/{id}',                                     'UserController@editUser'                                           ],
         'user_fetch'                              => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         // The order of the following routes is important. The one with action should be last
@@ -707,7 +716,7 @@ final class Route
         'otp_verify',
         'otp_verify_app',
         'device_create',
-        'merchant_methods_downtime'
+        'merchant_methods_downtime',
     ];
 
     public static $device = [
@@ -1021,6 +1030,7 @@ final class Route
         'schedule_migration',
         'schedule_update_next_run',
         'internal_dummy_account_test',
+        'user_register',
         'user_create',
         'user_confirm_by_data',
         'user_edit',
@@ -1028,7 +1038,6 @@ final class Route
         'user_confirm',
         'user_login',
         'user_change_password',
-        'user_merchant_mapping_action',
         'merchant_admin_lead_put',
         'payment_update_on_hold',
         'gateway_create_rule',
@@ -1073,10 +1082,15 @@ final class Route
         'settings_fetch',
         'settings_upsert',
         'settings_delete',
+        'user_merchant_upgrade',
+        'user_resend_verification',
+        'user_fetch_email',
         'emandate_registration_initiate',
         'emandate_registration_reconcile',
         'emandate_debit_initiate',
         'emandate_debit_reconcile',
+        'user_reset_password_create',
+        'user_reset_password_token',
     ];
 
     public static $proxy = [
@@ -1152,6 +1166,10 @@ final class Route
         'feature_onboarding_create',
         'feature_onboarding_fetch_responses',
         'feature_onboarding_fetch_all_responses',
+        'merchant_pre_signup_details',
+        'merchant_edit_pre_signup_details',
+        'create_submerchant_user',
+        'user_merchant_mapping_action',
         'onboarding_features_fetch_details',
         'onboarding_features_create',
         'onboarding_features_fetch_submission',
@@ -1377,6 +1395,7 @@ final class Route
         'merchant_analytics'                    => '*',
         'merchant_activation_files'             => '*',
         'dispute_reason_create'                 => '*',
+        'user_confirm_by_data'                  => '*',
         'onboarding_features_fetch_submissions' => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_update_status'     => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_fetch_status'      => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
