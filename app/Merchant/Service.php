@@ -137,6 +137,7 @@ class Service extends Base\Service
      *    Here, we change the original owner to manager and then add the user with new email as owner
      * 3. The new email is unique so far
      *    Here, we just change the email of the original user(owner).
+     *
      * @param App\Merchant\Entity $merchant Merchant entity for which email is to be changed
      * @param array $input array containing the new email
      */

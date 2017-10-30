@@ -102,15 +102,19 @@ class Entity extends Base\Entity
         }
     }
 
-    public function deleteAllOtherSessionsForUser($userId, $currentSessionId)
+    /**
+     * @param        $userId
+     * @param string $currentSessionId
+     */
+    public function deleteAllOtherSessionsForUser($userId, $currentSessionId = null)
     {
         $setKey = $this->getUserSessionKey($userId);
 
         $sessionIds = Redis::smembers($setKey);
-
+        s($sessionIds);
         foreach ($sessionIds as $sessionId)
         {
-            if ($sessionId === $currentSessionId)
+            if (empty($currentSessionId) === false and ($sessionId === $currentSessionId))
             {
                 continue;
             }

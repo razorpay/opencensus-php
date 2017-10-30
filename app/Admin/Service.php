@@ -420,13 +420,12 @@ class Service extends Base\Service
 
         $input[Merchant\Entity::EMAIL] = strtolower($input[Merchant\Entity::EMAIL]);
 
-        $originalEmail = $this->api->merchant->fetch($id)->email;
-
         try
         {
             $data = $this->api->merchant->fetch($id)->editEmail($input)->toArray();
 
-            (new Merchant\Service)->handleUserEmailChange($id, $originalEmail, $input);
+            // Clear Merchant User Sessions because roles and new users will be added based on the email.
+            $this->clearMerchantUserSessions($id);
         }
 
         catch (\Razorpay\Api\Errors\BadRequestError $e)
@@ -435,6 +434,16 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
+    }
+
+    private function clearMerchantUserSessions($merchantId)
+    {
+        $merchantUsers = $this->api->merchant->getUsers($merchantId);
+
+        foreach ($merchantUsers as $merchantUser)
+        {
+            (new SessionTable\Entity)->deleteAllOtherSessionsForUser($merchantUser->id);
+        }
     }
 
     protected function dropFields(array &$array, array $fields)
