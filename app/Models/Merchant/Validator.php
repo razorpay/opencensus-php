@@ -182,7 +182,7 @@ class Validator extends Base\Validator
         if ($dashboardHeaders['user_role'] !== 'owner')
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBUSER_CREATE_NOT_ALLOWED);
+                ErrorCode::BAD_REQUEST_SUBUSER_CREATION_NOT_ALLOWED);
         }
     }
 
@@ -200,7 +200,7 @@ class Validator extends Base\Validator
 
         $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
 
-        $uneditableFeatures = array_values(array_intersect($requestedFeatures, 
+        $uneditableFeatures = array_values(array_intersect($requestedFeatures,
             Feature\Constants::PRODUCT_FEATURES));
 
         if ((count($uneditableFeatures) > 0) and (

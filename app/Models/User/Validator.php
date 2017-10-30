@@ -114,7 +114,7 @@ class Validator extends Base\Validator
         if (empty($user) === true)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHNAT);
+                ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT);
         }
     }
 
