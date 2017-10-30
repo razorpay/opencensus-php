@@ -345,7 +345,7 @@ ALTER TABLE bank_accounts
 ALTER TABLE bank_accounts
     ADD INDEX bank_accounts_deleted_at_index (deleted_at);
 
-UPDATE settlements s
+UPDATE settlements
     JOIN bank_accounts b ON s.merchant_id = b.merchant_id
     SET s.bank_account_id = b.id;
 
@@ -2551,3 +2551,10 @@ ALTER TABLE batches
     ADD COLUMN failure_reason TEXT DEFAULT NULL AFTER gateway,
     ADD COLUMN processing TINYINT(1) DEFAULT 0 AFTER failure_reason,
     ADD INDEX batches_gateway_index (gateway);
+
+ALTER TABLE disputes
+    ADD COLUMN parent_id CHAR(14) DEFAULT NULL AFTER merchant_id,
+    ADD CONSTRAINT disputes_parent_id_foreign FOREIGN KEY (parent_id) REFERENCES disputes(id) ON DELETE RESTRICT;
+
+ALTER TABLE bank_accounts
+    MODIFY COLUMN beneficiary_name VARCHAR(120) NOT NULL after account_number;
