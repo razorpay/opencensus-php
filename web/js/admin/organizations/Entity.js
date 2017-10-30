@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { openSlider } from 'common/modal';
 import { adminFetch, adminPut } from 'util/fetch';
 import OrgForm from './OrganizationForm';
 import PermissionsList from './PermissionsList';
 import normalize from 'util/normalize';
 import { notifyError, notifySuccess } from 'common/modal';
 
-class EditOrg extends Component {
+export default class EditOrg extends Component {
   state = {
     org: null,
     permissions: null,
@@ -17,25 +16,22 @@ class EditOrg extends Component {
   };
 
   componentWillMount() {
-    let { id } = this.props.model || {};
-
+    let { orgId } = this.props.match.params || {};
     let requests = [
       this._fetchFn('permission_get_by_type', { type: 'all' }),
-      ...(id
-        ? [this._fetchFn('org_get', { id })]
+      ...(orgId
+        ? [this._fetchFn('org_get', { id: orgId })]
         : [
             null, //Fake request as org_get is not needed for Add
             this._fetchFn('permission_get_by_type', { type: 'assignable' }),
           ]),
     ];
-
     Promise.all(requests).then(([allPerms, org, assignablePerms]) => {
       let permissions = allPerms.items,
         selectedPerms = {},
         workflowPerms = {};
-
       //If add new, then assignable perms as selected
-      if (!id) {
+      if (!orgId) {
         assignablePerms.items.forEach(aPerm => {
           selectedPerms[aPerm.id] = true;
         });
@@ -47,7 +43,6 @@ class EditOrg extends Component {
           workflowPerms[wPerm.id] = true;
         });
       }
-
       this.setState({
         selectedPerms,
         workflowPerms,
@@ -208,8 +203,4 @@ class EditOrg extends Component {
       </div>
     );
   }
-}
-
-export function showEntity(collection) {
-  openSlider(<EditOrg collection={collection} model={this} />);
 }

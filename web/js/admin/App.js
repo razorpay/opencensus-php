@@ -26,6 +26,7 @@ import FieldMaps from 'admin/fieldmaps/List';
 import RoleList from 'admin/roles/List';
 import PermissionsList from 'admin/permissions/List';
 import AuditLog from 'admin/auditlog/List';
+import OrgEntity from 'admin/organizations/Entity';
 
 export default class App extends Component {
   render() {
@@ -47,6 +48,7 @@ export default class App extends Component {
             <Route path="/groups" component={GroupList} />
             <Route path="/users" component={UserList} />
             <Route path="/orgs" component={OrgsList} />
+            <Route path="/orgsEdit/:orgId?" component={OrgEntity} />
             <Route path="/fieldmaps/:orgId" component={FieldMaps} />
             <Route path="/roles" component={RoleList} />
             <Route path="/profile" component={Profile} />
