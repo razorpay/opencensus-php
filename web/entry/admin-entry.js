@@ -1,11 +1,11 @@
 function prefixCdn(url) {
   prefix = '';
   var match = location.hostname.match(/(.*)dashboard\.razorpay\.com$/);
-  if (location.protocol === 'https' && match) {
+  if (location.protocol === 'https:' && match) {
     prefix =
       'https://' + (match[1] ? 'beta' : '') + 'cdn.razorpay.com/dashboard';
   }
-  return prefix + url;
+  return prefix + '/dist/' + url;
 }
 
 document.write('<script src="' + prefixCdn('vendor.js') + '"></script>');
