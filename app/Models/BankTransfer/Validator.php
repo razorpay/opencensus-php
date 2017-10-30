@@ -26,7 +26,7 @@ class Validator extends Base\Validator
         Entity::REQ_UTR        => 'required|string|max:30',
         Entity::TIME           => 'required',
         Entity::AMOUNT         => 'required|integer|min:0',
-        Entity::DESCRIPTION    => 'sometimes|string|max:100',
+        Entity::DESCRIPTION    => 'sometimes|string|max:255',
     ];
 
     protected static $createValidators = [

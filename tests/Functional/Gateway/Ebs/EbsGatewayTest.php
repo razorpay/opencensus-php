@@ -265,6 +265,14 @@ class EbsGatewayTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
 
+        $payment['card'] = [
+            'number'            => '4012001038443335',
+            'name'              => 'Harshil',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2017',
+            'cvv'               => '566',
+        ];
+
         $data = $this->testData['testErrorOnCard'];
 
         $payment['method'] = 'card';

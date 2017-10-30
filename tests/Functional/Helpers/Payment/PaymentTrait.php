@@ -1061,6 +1061,8 @@ trait PaymentTrait
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'netbanking';
 
+        unset($payment['card']);
+
         if ($bank !== null)
         {
             $payment['bank'] = $bank;

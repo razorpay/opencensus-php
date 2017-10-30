@@ -64,6 +64,8 @@ class Entity extends Base\PublicEntity
 
     const SPECIAL_IFSC_CODE  = 'RAZR0000001';
 
+    const MAX_DESCRIPTION_LENGTH = 255;
+
     protected $fillable = [
         self::PAYMENT_ID,
         self::PAYER_NAME,
@@ -128,6 +130,7 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = [
         self::AMOUNT,
+        self::DESCRIPTION,
     ];
 
     protected $defaults = [
@@ -223,6 +226,18 @@ class Entity extends Base\PublicEntity
 
         $input[self::AMOUNT] = (int) number_format(($input[self::AMOUNT] * 100), 0, '.', '');
 
+    }
+
+    public function modifyDescription(array & $input)
+    {
+        //
+        // This field is used in payment description, so we truncate to the limit
+        //
+
+        if (isset($input[self::DESCRIPTION]) === true)
+        {
+            $input[self::DESCRIPTION] = substr($input[self::DESCRIPTION], 0, self::MAX_DESCRIPTION_LENGTH);
+        }
     }
 
     // -------------------------- Getters --------------------------------------

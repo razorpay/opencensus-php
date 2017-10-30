@@ -461,6 +461,11 @@ class Notify extends Processor\Notify
             return false;
         }
 
+        if ($this->subscription->isGlobal() === false)
+        {
+            return false;
+        }
+
         return true;
     }
 

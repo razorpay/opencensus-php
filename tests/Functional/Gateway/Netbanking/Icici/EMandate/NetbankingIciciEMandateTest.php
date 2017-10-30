@@ -223,9 +223,11 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->doAuthPayment($payment);
 
-        $data = $this->testData[__FUNCTION__];
+        $firstPayment = $this->getLastEntity('payment', true);
 
-        $this->mockSiRecurringGatewayTokenNotSet(false);
+        $payment[Payment::TOKEN] = $firstPayment['token_id'];
+
+        $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow(
             $data,
