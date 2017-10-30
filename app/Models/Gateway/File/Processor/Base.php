@@ -19,6 +19,7 @@ abstract class Base extends Core
 {
     protected $gatewayFile;
 
+    protected $data;
     /**
      * We perform the following steps to process the gateway_file entity
      * 1. Generate the required data
