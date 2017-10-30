@@ -1647,6 +1647,7 @@ class MerchantTest extends TestCase
 
     public function testCreateNbRecurringTokenPreferencesRoute()
     {
+        $this->markTestSkipped();
         $this->fixtures->create('terminal:shared_netbanking_icici_recurring_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -1751,6 +1752,6 @@ class MerchantTest extends TestCase
         $merchant->saveOrFail();
 
         $this->ba->appAuth();
-//        $this->startTest();
+        $this->startTest();
     }
 }

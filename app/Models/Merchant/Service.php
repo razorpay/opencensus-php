@@ -128,6 +128,8 @@ class Service extends Base\Service
             'role'        => 'owner',
             'merchant_id' => $subMerchant->id,
         ];
+        s($userMerchantMappingInputData);
+        s($subMerchant->users()->get());
 
         (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
     }
