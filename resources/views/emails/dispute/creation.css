@@ -103,3 +103,11 @@ table {
   font-size: 10px;
   color: #757575;
 }
+
+.text-uppercase {
+  text-transform: uppercase;
+}
+
+.lh-26 {
+  line-height:26px;
+}
