@@ -259,4 +259,30 @@ class Core extends Base\Core
         // Using encryption key and combination of userid and time.
         return hash_hmac('sha256', 'password.reset' . '_' . $userId . '_' . $expiryTime, config('app.key'));
     }
+
+    /**
+     * @param Entity $user
+     * @param string $merchantId
+     * @param string $role
+     *
+     * @return User
+     */
+    public function detachAndAttachMerchantUser(Entity $user, string $merchantId, string $role)
+    {
+        // Detach the existing merchant User.
+        $userMerchantMappingData = [
+            'action'      => 'detach',
+            'merchant_id' => $merchantId,
+        ];
+
+        $this->updateUserMerchantMapping($user, $userMerchantMappingData);
+
+        // Attach the merchant with the role.
+
+        $userMerchantMappingData['action'] = 'attach';
+
+        $userMerchantMappingData['role'] = $role;
+
+        return $this->updateUserMerchantMapping($user, $userMerchantMappingData);
+    }
 }
