@@ -1,57 +1,58 @@
 import React from 'react';
-
 import Form from 'ui/Form';
 import Field, { SelectField, CheckField, FileField } from 'ui/Field';
+import AsyncButton from 'ui/AsyncButton';
+import PermissionsList from './PermissionsList';
 
 export default function OrgForm({
-  id,
-  business_name,
-  display_name,
-  email,
-  email_domains,
-  custom_code,
-  from_email,
-  signature_email,
-  invoice_logo_url,
-  login_logo_url,
-  main_logo_url,
-  allow_sign_up,
-  onSubmit,
-  onEditPerms,
-  onSave,
+  org,
+  permissions,
+  selectedPerms,
+  workflowPerms,
+  handleAllSelect,
+  handlePermissionSelect,
+  handleWorkflowPermissionSelect,
+  handleSave,
 }) {
   return (
     <div>
-      <header>{id ? `Edit Org - ${id}` : 'Add an Organization'}</header>
-      <Form onSubmit={onSubmit}>
+      <header>{org.id ? `Edit Org - ${org.id}` : 'Add an Organization'}</header>
+      <Form onSubmit={org.onSubmit}>
         <input
           type="hidden"
           name="id"
-          defaultValue={id}
+          defaultValue={org.id}
           style={{ display: 'none' }}
         />
-        <Field label="Email" name="email" required defaultValue={email} />
+        <Field
+          label="Email"
+          name="email"
+          required
+          defaultValue={org.email}
+          type="email"
+          required
+        />
         <Field
           label="Business Name"
           name="business_name"
           required
-          defaultValue={business_name}
+          defaultValue={org.business_name}
         />
         <Field
           label="Display Name"
           name="display_name"
           required
-          defaultValue={display_name}
+          defaultValue={org.display_name}
         />
         <Field
           label="Email Domains"
           name="email_domains"
           required
-          defaultValue={email_domains}
+          defaultValue={org.email_domains}
         />
         <Field label="Hostname" />
         <br />
-        <SelectField label="Auth Type" name="auth_type">
+        <SelectField label="Auth Type" defaultValue="password" name="auth_type">
           <option value="">Please select an auth type</option>
           <option value="password">Password</option>
           <option value="google_auth">Google Auth</option>
@@ -60,43 +61,61 @@ export default function OrgForm({
         <Field
           label="Custom Code"
           name="custom_code"
-          defaultValue={custom_code}
+          defaultValue={org.custom_code}
         />
-        <Field label="From Email" name="from_email" defaultValue={from_email} />
+        <Field
+          label="From Email"
+          name="from_email"
+          type="email"
+          required
+          defaultValue={org.from_email}
+        />
         <Field
           label="Signature Email"
           name="signature_email"
-          defaultValue={signature_email}
+          type="email"
+          required
+          defaultValue={org.signature_email}
         />
         <CheckField
           label="Allow Sign Up"
-          defaultValue={allow_sign_up}
+          defaultValue={org.allow_sign_up}
           name="allow_sign_up"
         />
         <br />
-        {id ? (
+        {org.id ? null : (
           <div>
-            <header>Attach logos:</header>
-            <p>* Allowed file types are JPEG, JPG, PNG</p>
-            <FileField
-              label="Login Logo"
-              name="login_logo_url"
-              accept="image/jpeg,image/jpg,image/png"
+            <Field label="Full Name" name="admin.name" />
+            <Field label="Employee Code" name="admin.username" />
+            <Field label="Password" type="password" name="admin.password" />
+            <Field
+              label="Re-Type password"
+              type="password"
+              name="admin.password_confirmation"
             />
-            <FileField
-              label="Invoice Logo"
-              name="invoice_logo_url"
-              accept="image/jpeg,image/jpg,image/png"
-            />
-            <FileField
-              label="Main Logo"
-              name="main_logo_url"
-              accept="image/jpeg,image/jpg,image/png"
-            />
+            <Field label="Employee Code" name="admin.employee_code" />
+            <br />
+            <Field label="Department Code" name="admin.department_code" />
+            <Field label="Branch Code" name="admin.branch_code" />
+            <Field label="Location Code" name="admin.location_code" />
+            <Field label="Supervisor Code" name="admin.supervisor_code" />
           </div>
-        ) : (
-          ''
         )}
+        <PermissionsList
+          permissions={permissions}
+          workflowPerms={workflowPerms}
+          selectedPerms={selectedPerms}
+          onPermissionSelect={handlePermissionSelect}
+          onWorkflowPermissionSelect={handleWorkflowPermissionSelect}
+          onAllSelect={handleAllSelect}
+        />
+        <AsyncButton
+          text="Save"
+          class="btn"
+          type="submit"
+          pendingClass="small spinner"
+          onSubmit={handleSave}
+        />
       </Form>
     </div>
   );

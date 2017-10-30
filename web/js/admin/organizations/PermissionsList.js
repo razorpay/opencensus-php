@@ -68,7 +68,7 @@ class PermissionsList extends Component {
 
   render() {
     return (
-      <div>
+      <div class="perms-container">
         <header>Select Permissions:</header>
         <Table
           items={this.props.permissions}
