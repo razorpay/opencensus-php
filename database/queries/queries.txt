@@ -2502,6 +2502,13 @@ ALTER TABLE subscriptions
 ALTER TABLE line_items
     MODIFY COLUMN type VARCHAR(16) NOT NULL DEFAULT 'invoice';
 
+# Adding these columns, since reconciliation send us these data
+# which we need to pass in the refund file for Corporation bank
+ALTER TABLE netbanking
+    ADD COLUMN account_branch_code VARCHAR(255) AFTER account_number,
+    ADD COLUMN account_subtype VARCHAR(255) AFTER account_number,
+    ADD COLUMN account_type VARCHAR(255) AFTER account_number;
+
 # Make adjustment morph to entity optionally
 ALTER TABLE adjustment
     ADD COLUMN entity_type VARCHAR(100) AFTER merchant_id,
