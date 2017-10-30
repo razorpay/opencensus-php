@@ -692,11 +692,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_UPLOADING_FILE                          = 'BATCH_UPLOADING_FILE';
     const BATCH_UPLOAD_FILE                             = 'BATCH_UPLOAD_FILE';
     const BATCH_FILE_PROCESSING                         = 'BATCH_FILE_PROCESSING';
+    const BATCH_FILE_PROCESSING_ERROR                   = 'BATCH_FILE_PROCESSING_ERROR';
     const BATCH_FILE_PROCESSED                          = 'BATCH_FILE_PROCESSED';
     const BATCH_ALREADY_PROCESSED                       = 'BATCH_ALREADY_PROCESSED';
     const BATCH_PROCESSING_ENTRY                        = 'BATCH_PROCESSING_ENTRY';
     const BATCH_PROCESSING_ERROR                        = 'BATCH_PROCESSING_ERROR';
-    const BATCH_RETRY                                   = 'BATCH_RETRY';
+    const BATCH_PROCESS_ASYNC                           = 'BATCH_PROCESS_ASYNC';
     const BATCH_RETRY_OUTPUT_FILE                       = 'BATCH_RETRY_OUTPUT_FILE';
     const BATCH_DOWNLOAD                                = 'BATCH_DOWNLOAD';
     const BATCH_LIST                                    = 'BATCH_LIST';
@@ -705,7 +706,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_JOB_RECEIVED                            = 'BATCH_JOB_RECEIVED';
     const BATCH_JOB_HANDLED                             = 'BATCH_JOB_HANDLED';
     const BATCH_JOB_ERROR                               = 'BATCH_JOB_ERROR';
-
+    const IRCTC_BATCH_JOB_RECEIVED                      = 'IRCTC_BATCH_JOB_RECEIVED';
+    const IRCTC_BATCH_JOB_ERROR                         = 'IRCTC_BATCH_JOB_ERROR';
     const MUTEX_LOCK_ALREADY_RELEASED                   = 'MUTEX_LOCK_ALREADY_RELEASED';
     const MUTEX_UNABLE_TO_ACQUIRE                       = 'MUTEX_UNABLE_TO_ACQUIRE';
 
@@ -1023,7 +1025,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
         self::BATCH_ALREADY_PROCESSED                   => 'Batch File already processed',
         self::BATCH_PROCESSING_ERROR                    => 'Error in processing batch',
-        self::BATCH_RETRY                               => 'Manual retry for the batch file',
         self::BATCH_DOWNLOAD                            => 'Downloading the batch file',
         self::BATCH_LIST                                => 'Getting the batch files',
         self::BATCH_GET                                 => 'Get Batch by given id',
