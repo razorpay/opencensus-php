@@ -71,7 +71,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editNameRules = [
-        Entity::NAME                        => 'required|min:4|alpha_space_num|max:200',
+        Entity::NAME                        => 'required|min:4|string|max:200',
     ];
 
     protected static $editConfigRules = [

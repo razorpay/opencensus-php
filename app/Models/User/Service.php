@@ -144,9 +144,9 @@ class Service extends Base\Service
         }
 
         $userMerchantMappingInputData = [
-            'action' => 'attach',
-            'role' => 'owner',
-            'merchant_id' => $merchantData['id']
+            'action'      => 'attach',
+            'role'        => 'owner',
+            'merchant_id' => $merchantData['id'],
         ];
 
         $this->updateUserMerchantMapping($userData['id'], $userMerchantMappingInputData);
