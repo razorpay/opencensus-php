@@ -368,6 +368,22 @@ return [
         ]
     ],
 
+    'testPostSubscriptionsOnboardingResponses' => [
+        'request' => [
+            'content' => [
+                Constants::BUSINESS_MODEL   => 'Some business model',
+                Constants::SAMPLE_PLANS     => 'Some new plans',
+                Constants::WEBSITE_DETAILS  => 'http://www.example.com/where_the_link_is_longer_than/50_characters',
+            ],
+            'url'     => '/onboarding/features/' . Constants::SUBSCRIPTIONS,
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ]
+    ],
+
     'testFileStoreData' => [
         'response' => [
             'content' => [
