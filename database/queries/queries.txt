@@ -2551,3 +2551,7 @@ ALTER TABLE disputes
 
 ALTER TABLE bank_accounts
     MODIFY COLUMN beneficiary_name VARCHAR(120) NOT NULL after account_number;
+
+# Adds tpv coulumn to gateway file
+ALTER TABLE gateway_files
+    ADD COLUMN sub_type VARCHAR(25) DEFAULT NULL AFTER target;

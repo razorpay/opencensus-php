@@ -23,7 +23,7 @@ class Base extends BaseProcessor
         $begin = $this->gatewayFile->getBegin();
         $end = $this->gatewayFile->getEnd();
 
-        $tpv = $this->gatewayFile->getTpv();
+        $tpv = $this->getTpv();
 
         if ($tpv === null)
         {
