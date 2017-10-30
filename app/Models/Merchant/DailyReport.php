@@ -145,9 +145,13 @@ class DailyReport extends Base\Core
      */
     public function send($merchant, $data)
     {
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return null;
+        }
+
         if (($this->isBlank($data) === false) and
-            (empty($data['email']) === false) and
-            ($merchant->isLinkedAccount() === false))
+            (empty($data['email']) === false))
         {
             $this->sendDailyReport($merchant, $data);
 

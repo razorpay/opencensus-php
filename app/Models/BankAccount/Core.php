@@ -258,7 +258,7 @@ class Core extends Base\Core
         return $detail;
     }
 
-    private function shouldNotifyViaEmail(MerchantEntity $merchant): bool
+    protected function shouldNotifyViaEmail(MerchantEntity $merchant): bool
     {
         // In dev and testing environments we want to send mail even if Mode is TEST
         if (($this->mode === Mode::TEST) and
