@@ -45,7 +45,7 @@ class Service extends Base\Service
      * @param  array            $input
      * @return array
      */
-    public function create(array $input)
+    public function create(array $input) : array
     {
         if (empty($input[Entity::ADMINS]) === false)
         {
@@ -128,8 +128,6 @@ class Service extends Base\Service
             'role'        => 'owner',
             'merchant_id' => $subMerchant->id,
         ];
-        s($userMerchantMappingInputData);
-        s($subMerchant->users()->get());
 
         (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
     }
@@ -225,7 +223,7 @@ class Service extends Base\Service
         Mail::queue($createSubMerchantMail);
     }
 
-    public function editEmail($id, array $input)
+    public function editEmail($id, array $input) :array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 

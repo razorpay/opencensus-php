@@ -159,7 +159,7 @@ final class Route
         'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
         'merchant_details_fetch'                  => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'merchant_invoice_add_bulk'               => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
-        'create_submerchant_user'                 => ['post',     'submerchant/user/{id}',                          'MerchantController@postCreateSubMerchantUser'                      ],
+        'create_submerchant_user'                 => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_fetch_by_id'                     => ['get',      'merchants/{mid}/credits/{id}',                   'MerchantController@getCreditsLog'                                  ],

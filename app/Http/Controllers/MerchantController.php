@@ -839,7 +839,7 @@ class MerchantController extends Controller
         return $response;
     }
 
-    public function postCreateSubMerchantUser($merchantId)
+    public function postSubMerchantUser($merchantId)
     {
         $input = Request::all();
 
