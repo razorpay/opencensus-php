@@ -22,10 +22,6 @@ use Razorpay\Api\Errors\Error as ApiError;
 
 class Service extends Base\Service
 {
-    const EMAIL_CHANGE_FORBIDDEN                = "Email change forbidden on this account";
-    const NAME_CHANGE_FORBIDDEN                 = "Name change forbidden on this account";
-    const SELF_REMOVE_FORBIDDEN                 = "You cannot remove yourself.";
-
     public function __construct()
     {
         $this->currentUser = Auth::user();
@@ -78,33 +74,6 @@ class Service extends Base\Service
                 Session::put('dashboard_user_payload', $genericUser);
             }
         }
-
-        return [$error, $data];
-    }
-
-    public function registerSubMerchantUser(array $input)
-    {
-        $merchantId = $input['id'];
-
-        unset($input['id']);
-
-        unset($input['name']);
-
-        $data = array_merge([
-            'user_id' => $this->currentUser->id
-        ], $input);
-
-        $registerSubMerchantUser = [
-            'route_name' => 'create_submerchant_user',
-            'url_params' => [
-                '{id}' => $merchantId,
-            ],
-            'body'       => $data,
-        ];
-
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('POST', $registerSubMerchantUser);
 
         return [$error, $data];
     }
@@ -217,17 +186,8 @@ class Service extends Base\Service
 
     public function resendConfirmation()
     {
-        $authUser = Auth::user();
-
-        $authUserId = $authUser->id;
-
-        $data = [
-            'user_id' => $authUserId
-        ];
-
         $resendConfirmation = [
             'route_name' => 'user_resend_verification',
-            'body'       => $data
         ];
 
         $genericService = new Generic\Service;
@@ -500,100 +460,6 @@ class Service extends Base\Service
         }
 
         return [$errors, $data];
-    }
-
-    /**
-     * Remove the team member on the given merchant.
-     *
-     * @param  string  $userId
-     * @return \Illuminate\Http\Response
-     */
-    public function removeTeamMemberForOwner($userId)
-    {
-        $error = [];
-
-        if ($userId === $this->currentUser->id)
-        {
-            return [static::SELF_REMOVE_FORBIDDEN];
-        }
-
-        $currentMerchant = $this->currentUser->currentMerchant();
-
-        $removeTeamMemberForOwner = [
-            'route_name' => 'user_merchant_mapping_action',
-            'url_params' => [
-                '{id}'     => $userId,
-                '{action}' => 'detach'
-            ],
-            'body'       => [
-                'merchant_id' => $currentMerchant->id
-            ]
-        ];
-
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('PUT', $removeTeamMemberForOwner);
-
-        return $error;
-    }
-
-    /**
-     * Update a team member on the given merchant.
-     *
-     * @param  string  $userId
-     * @param  array   $input
-     * @return \Illuminate\Http\Response
-     */
-    public function updateTeamMemberForOwner($userId, $input)
-    {
-        $error = [];
-
-        if ($userId === $this->currentUser->id)
-        {
-            $error[] = "You cannot change your role.";
-
-            return [$error, null];
-        }
-
-        $validator = (new Merchant\Entity)->validateInput('updateTeamMember', $input);
-
-        if ($validator->fails())
-        {
-            $error = $validator->messages();
-
-            return [$error, null];
-        }
-
-        $currentMerchant = $this->currentUser->currentMerchant();
-
-        list($error, $users) = $this->getUsersOfMerchantFromApi($currentMerchant->id);
-
-        $updatedUser = $users->where('id', $userId)->first();
-
-        if ($updatedUser === null)
-        {
-            $error[] = "The team member you are looking for doesn't exist";
-
-            return [$error, null];
-        }
-
-        $updateTeamMemberForOwner = [
-            'route_name' => 'user_merchant_mapping_action',
-            'url_params' => [
-                '{id}'     => $userId,
-                '{action}' => 'update'
-            ],
-            'body'       => [
-                'role'        => $input['role'],
-                'merchant_id' => $currentMerchant->id
-            ]
-        ];
-
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('PUT', $updateTeamMemberForOwner);
-
-        return [$error, $data];
     }
 
     public function savePreSignupDetails($input)

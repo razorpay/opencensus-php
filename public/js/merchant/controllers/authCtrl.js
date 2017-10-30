@@ -697,17 +697,17 @@ app
           return true;
         }
 
-        // todo show spinner
-        var payload = {
-          method: 'post',
-          url: '/user/password/reset',
-          transformRequest: transformRequestAsFormPost,
-          data: {
+        var data = {
+          route_name: 'user_reset_password_create',
+          body: {
             email: $scope.login.data.email,
           },
         };
-
-        var request = $http(payload);
+        var request = $http({
+          method: 'post',
+          url: '/guest/generic',
+          data: data,
+        });
         request.success(function(data) {
           if (data.success) {
             $scope.alerts.addAlert(

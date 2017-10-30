@@ -12,6 +12,10 @@ return [
         'user_confirm_by_data',
         // Invitation fetch by token
         'invitation_fetch_by_token',
+        // User Forgot Password
+        'user_reset_password_create',
+        // User Forgot Password Reset Password using Token
+        'user_reset_password_token',
     ],
 
     // auth
@@ -108,6 +112,8 @@ return [
 
         // Fetch Merchants from ES
         'admin_fetch_merchants_new'         => 'admins/merchants',
+
+        'admin_fetch_all_entities'          => 'admin/entities/all',
 
         // Admin Payment Actions
         // Refund Authorized Payment
@@ -549,10 +555,16 @@ return [
             'routeName' => 'feature_onboarding_fetch_responses'
         ],
 
+        // User Merchant Mapping Action
+        'user_merchant_mapping_action'      => 'users/{id}/{action}',
+
         // Create SubMerchant
         'merchant_sub_create'               => 'submerchants',
         // Create SubMerchant User
-        'create_submerchant_user'           => 'submerchant/user/{id}',
+        'create_submerchant_user'           => [
+            'url'       => 'submerchant/user/{id}',
+            'routeName' => 'subuser_register'
+        ],
 
         'merchant_pre_signup_details'       => 'pre_signup',
         'merchant_edit_pre_signup_details'  => 'pre_signup',
@@ -618,6 +630,10 @@ return [
         'user_fetch_email'                  => 'users/email/{email}',
         // User change password
         'user_change_password'              => 'users/{id}/password',
+        // Forgot Password
+        'user_reset_password_create'        => 'users/reset-password',
+        // User Forgot Password Reset Password using Token
+        'user_reset_password_token'         => 'users/reset-password-token',
 
         // Admin Routes
         // Pricing
@@ -663,9 +679,6 @@ return [
         'invitation_action'                 => 'invitations/{id}/{action}',
         // Invitation fetch by token
         'invitation_fetch_by_token'         => 'invitations/token/{token}',
-
-        // User Merchant Mapping Action
-        'user_merchant_mapping_action'      => 'users/{id}/{action}',
 
         // Make test payment for Virtual Account
         'bank_transfer_process'             => 'ecollect/validate',

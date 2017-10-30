@@ -22,34 +22,6 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
-    /**
-     * Update a team member on the given merchant.
-     *
-     * @param  string  $userId
-     * @return \Illuminate\Http\Response
-     */
-    public function updateTeamMember($userId)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Merchant\Service)->updateTeamMemberForOwner($userId, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    /**
-     * Remove the team member on the given merchant.
-     *
-     * @param  string  $userId
-     * @return \Illuminate\Http\Response
-     */
-    public function removeTeamMember($userId)
-    {
-        $error = (new Merchant\Service)->removeTeamMemberForOwner($userId);
-
-        return AppResponse::jsonResponse($error);
-    }
-
     public function getCsv()
     {
         $input = Input::only('id', 'secret');
@@ -202,19 +174,6 @@ class MerchantController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Merchant\Service)->registerSubMerchant($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    /**
-     * Registers a new user account for a
-     * sub-merchant with his own email.
-     */
-    public function postRegisterSubUser()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Merchant\Service)->registerSubMerchantUser($input);
 
         return AppResponse::jsonResponse($error, $data);
     }

@@ -94,6 +94,13 @@ class AdminController extends Controller
         return view('admin.tmpgetIndex');
     }
 
+    public function getPokedex()
+    {
+        return view('admin.pokedex', [
+            'cdn' => \Config::get('app.cdn_dashboard_url')
+        ]);
+    }
+
     protected function getGoogleOAuthUrl()
     {
         $googleService = OAuthFacade::consumer('Google');

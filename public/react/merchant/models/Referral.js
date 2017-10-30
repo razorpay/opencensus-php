@@ -35,12 +35,23 @@ export default class Referral extends Entity {
   }
 
   createLogin(params = {}) {
-    let data = params;
+    let data = {
+      email: params.email,
+      password: params.password,
+      password_confirmation: params.password_confirmation,
+    };
+
     return ajax({
-      url: '/subusers',
+      url: '/user/generic',
       method: 'POST',
       appendModeInURL: false,
-      data,
+      data: {
+        route_name: 'create_submerchant_user',
+        url_params: JSON.stringify({
+          '{id}': params.id,
+        }),
+        body: data,
+      },
     }).then(response => new Referral(response.data));
   }
 
