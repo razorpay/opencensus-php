@@ -155,6 +155,8 @@ class NetbankingBobGatewayTest extends TestCase
         $this->assertEquals($data['netbanking_bob']['count'], 3);
 
         $this->assertTrue(file_exists($data['netbanking_bob']['file']));
+
+        unlink($data['netbanking_bob']['file']);
     }
 
     protected function mockFailedCallbackResponse()
