@@ -16,6 +16,8 @@ use RZP\Trace\TraceCode;
 
 class Base extends EMandate\Base
 {
+    const STEP      = 'debit';
+
     public function fetchEntities(): PublicCollection
     {
         $begin = $this->gatewayFile->getBegin();
@@ -91,7 +93,7 @@ class Base extends EMandate\Base
             $date = $date = Carbon::now(Timezone::IST)->format('d/m/Y H:m:s');
 
             $attr = [
-                Netbanking\Base\Entity::CLIENT_CODE       => $this->getClientCode($payment),
+//                Netbanking\Base\Entity::CLIENT_CODE       => $this->getClientCode($payment) ?? null,
                 Netbanking\Base\Entity::MERCHANT_CODE     => $payment->getMerchantId(),
                 Netbanking\Base\Entity::AMOUNT            => $payment->getAmount(),
                 Netbanking\Base\Entity::DATE              => $date,
