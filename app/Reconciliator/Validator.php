@@ -4,6 +4,7 @@ namespace RZP\Reconciliator;
 
 use RZP\Exception;
 use RZP\Base\JitValidator;
+use RZP\Reconciliator\RequestProcessor;
 
 class Validator
 {
@@ -87,7 +88,7 @@ class Validator
     public function filterEmails(array $emailDetails)
     {
         $from = $emailDetails[Orchestrator::FROM];
-        $validEmailIds = Orchestrator::GATEWAY_SENDER_MAPPING;
+        $validEmailIds = RequestProcessor\Base::GATEWAY_SENDER_MAPPING;
 
         if (get_key_from_subarray_match($from, $validEmailIds) === null)
         {

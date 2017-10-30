@@ -96,7 +96,7 @@ class FileProcessor
         $this->validator = new Validator;
         $this->messenger = new Messenger();
 
-        $this->trace =$app['trace'];
+        $this->trace = $app['trace'];
 
         $this->registerMimeTypeGuesser();
     }

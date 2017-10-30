@@ -46,7 +46,7 @@ class Base extends Core
         Orchestrator::VIRTUAL_ACC_KOTAK   => ['kmb.reports@kotak.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        Orchestrator::ADMIN               => ['prashanth.yv@razorpay.com'],
+        Orchestrator::ADMIN               => ['saurav.chowdhury@razorpay.com'],
     ];
 
     protected $validator;
