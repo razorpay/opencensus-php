@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Gateway\File\Processor\EMandate\Debit;
 
-use Rzp\Models\Payment;
-use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Gateway\Netbanking;
 use RZP\Gateway\Netbanking\Axis\EMandateDebitFileHeadings as Headings;
+use RZP\Models\FileStore;
+use Rzp\Models\Payment;
 
 use Carbon\Carbon;
 
@@ -18,6 +20,40 @@ class Axis extends Base
     const FILE_TYPE = FileStore\Type::AXIS_EMANDATE_DEBIT;
 
     const FILE_NAME = 'Axis_EMandate_Debit';
+
+    protected function createGatewayEntity(Payment\Entity $payment): Netbanking\Base\Entity
+    {
+        $paymentId = $payment->getId();
+
+        $gatewayPayment = new Netbanking\Base\Entity;
+
+        $gatewayPayment->setPaymentId($paymentId);
+
+        $gatewayPayment->setAction(GatewayAction::AUTHORIZE);
+
+        $gatewayPayment->setBank($payment->getBank());
+
+        $merchant = $payment->merchant;
+
+        if ($merchant->isTPVRequired() === true)
+        {
+            $gatewayPayment->setAccountNumber($payment->order->getAccountNumber());
+        }
+
+        $date = $date = Carbon::now(Timezone::IST)->format('d/m/Y H:m:s');
+
+        $attr = [
+            Netbanking\Base\Entity::MERCHANT_CODE => $payment->getMerchantId(),
+            Netbanking\Base\Entity::AMOUNT        => $payment->getAmount(),
+            Netbanking\Base\Entity::DATE          => $date,
+        ];
+
+        $gatewayPayment->fill($attr);
+
+        $this->repo->netbanking->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
+    }
 
     protected function formatDataForFile()
     {
