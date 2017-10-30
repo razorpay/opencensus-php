@@ -75,7 +75,7 @@ export default class OnBoarding extends Component {
 
   // Form submit handler
   onSubmitClick = props => {
-    const prom = new Promise(() => {
+    const prom = new Promise(resolve => {
       let data = {};
       let file = null;
       let fileName = null;
@@ -86,7 +86,8 @@ export default class OnBoarding extends Component {
       }
 
       if (this.props.formType === 'subscriptions' && props.website_checkbox) {
-        delete props.website_checkbox;
+        const { website_checkbox, ...rest } = props;
+        props = rest;
       }
 
       return this.props
@@ -103,7 +104,8 @@ export default class OnBoarding extends Component {
             type: 'error',
             message: errors,
           });
-        });
+        })
+        .then(resolve);
     });
 
     return prom;
