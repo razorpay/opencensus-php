@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Dispute;
 
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 
@@ -316,7 +317,20 @@ class DisputeTest extends TestCase
 
         $content = $this->runRequestResponseFlow($testData);
 
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $files = $this->getEntities('dispute_file', [], true);
+
+        $dispute['id'] = DisputeEntity::stripDefaultSign($dispute['id']);
+
         $this->assertEquals(2, sizeof($content));
+        $this->assertEquals(2, $files['count']);
+        $this->assertEquals($dispute['id'], $content[0]['dispute_id']);
+        $this->assertEquals($dispute['id'], $content[1]['dispute_id']);
+        $this->assertEquals($files['items'][0]['dispute_id'], $dispute['id']);
+        $this->assertEquals($files['items'][1]['dispute_id'], $dispute['id']);
+        $this->assertEquals($files['items'][0]['url'], $content[1]['url']);
+        $this->assertEquals($files['items'][1]['url'], $content[0]['url']);
     }
 
     // ---------------------------- helper methods-------------------------------
