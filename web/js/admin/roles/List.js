@@ -40,7 +40,7 @@ export default class RoleList extends Component {
 
   render() {
     if (this.state.pending) {
-      return 'loading...';
+      return <div class="table-pending" />;
     }
     return (
       <div class="list-container">
