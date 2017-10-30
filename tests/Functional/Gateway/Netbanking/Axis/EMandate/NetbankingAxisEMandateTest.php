@@ -149,6 +149,16 @@ class NetbankingAxisEMandateTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        // Verify gateway payment entity
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'matchAuthGatewayPayment');
+
+        $debitPaymentId = substr($debitPayment['id'], 4);
+
+        $this->assertEquals($gatewayPayment['payment_id'], $debitPaymentId);
+        $this->assertEquals($gatewayPayment['amount'], $debitPayment['amount']);
     }
 
     protected function assertEmandateEntities()

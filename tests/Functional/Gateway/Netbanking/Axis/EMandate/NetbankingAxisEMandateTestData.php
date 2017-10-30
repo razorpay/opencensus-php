@@ -86,5 +86,18 @@ return [
                 ],
             ]
         ]
+    ],
+
+    'matchAuthGatewayPayment' => [
+        'action'            => 'authorize',
+        'bank'              => 'UTIB',
+        'received'          => false,
+        'merchant_code'     => '10000000000000',
+        'bank_payment_id'   => null,
+        'status'            => null,
+        'error_message'     => null,
+        'si_token'          => null,
+        'si_status'         => null,
+        'si_message'        => null,
     ]
 ];
