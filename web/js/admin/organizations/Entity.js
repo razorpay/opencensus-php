@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { openSlider, openModal } from 'common/modal';
-import { adminFetch, adminPut, adminFormUpload } from 'util/fetch';
+import { openSlider } from 'common/modal';
+import { adminFetch, adminPut } from 'util/fetch';
 import OrgForm from './OrganizationForm';
 import PermissionsList from './PermissionsList';
 import normalize from 'util/normalize';
@@ -211,5 +211,5 @@ class EditOrg extends Component {
 }
 
 export function showEntity(collection) {
-  openModal(<EditOrg collection={collection} model={this} />);
+  openSlider(<EditOrg collection={collection} model={this} />);
 }

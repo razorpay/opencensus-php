@@ -20,10 +20,10 @@ const fields = [
       return (
         <div>
           <div class="link" onClick={item::showEntity}>
-            EDIT
+            Edit
           </div>
           <div class="link danger" onClick={item::removeEntity}>
-            DELETE
+            Delete
           </div>
         </div>
       );

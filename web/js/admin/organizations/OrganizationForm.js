@@ -17,12 +17,13 @@ export default function OrgForm({
   return (
     <div>
       <header>{org.id ? `Edit Org - ${org.id}` : 'Add an Organization'}</header>
-      <Form onSubmit={org.onSubmit}>
+      <Form onSubmit={handleSave}>
         <input
           type="hidden"
           name="id"
           defaultValue={org.id}
           style={{ display: 'none' }}
+          required
         />
         <Field
           label="Email"
@@ -112,7 +113,6 @@ export default function OrgForm({
         <AsyncButton
           text="Save"
           class="btn"
-          type="submit"
           pendingClass="small spinner"
           onSubmit={handleSave}
         />
