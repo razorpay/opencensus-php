@@ -170,7 +170,7 @@ class Service extends Base\Service
     {
         $sortingData = $this->getSortingHatData($user, $merchantData, $referrer);
 
-        if (Config::get('slack.enable') === true)
+        if (Config::get('slack.is_slack_enabled') === true)
         {
             (new Core)->postSortingHatData($sortingData);
         }
