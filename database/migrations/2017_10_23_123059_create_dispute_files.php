@@ -16,7 +16,7 @@ class CreateDisputeFiles extends Migration
      */
     public function up()
     {
-        Schema::create(Table::DISPUTE_FILES, function (Blueprint $table) {
+        Schema::create(Table::DISPUTE_FILE, function (Blueprint $table) {
 
             $table->engine = 'InnoDB';
 

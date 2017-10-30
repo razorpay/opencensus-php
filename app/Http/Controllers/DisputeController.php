@@ -46,7 +46,7 @@ class DisputeController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postUploadDocuments(string $id)
+    public function editByMerchant(string $id)
     {
         if(Request::hasFile(DisputeFileEntity::FILES) === false)
         {

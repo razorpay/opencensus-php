@@ -308,6 +308,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeMerchantDocumentUpload()
     {
+        $this->ba->privateAuth();
+
         $testData = $this->updateUploadDocumentData();
 
         $testData['request']['files'][DisputeFileEntity::FILES] = $this->getTestFiles();
@@ -372,7 +374,7 @@ class DisputeTest extends TestCase
 
         $testData = &$this->testData[$name];
 
-        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId() . '/upload';
+        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId() . '/merchant';
 
         return $testData;
     }

@@ -442,9 +442,9 @@ return [
     'testDisputeMerchantDocumentUpload' => [
         'request' => [
             'content' => [
-                'foo'       => 'bar',
+                'comments'      => [],
             ],
-            'method' => 'post',
+            'method' => 'patch',
             'files' => [],
         ],
         'response' => [
