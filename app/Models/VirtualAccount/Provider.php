@@ -263,7 +263,7 @@ class Provider
 
     protected function getBharatQrAcquirerCode(string $network)
     {
-        return Config::get('gateway.bharat_qr.' . strtolower($network) . '_' . 'code');
+        return Config::get('gateway.bharat_qr.' . strtolower($network) . '_' . 'acquirer_code');
     }
 }
 
