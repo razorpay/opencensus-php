@@ -109,5 +109,5 @@ return [
     'sendmail' => '/usr/sbin/sendmail -bs',
 
     // Uncomment this for local mailgun testing
-    // 'to' => ['address' => 'prashanth.yv@razorpay.com', 'name' => 'Prashanth YV'],
+    'to' => ['address' => 'sourin.sutradhar@razorpay.com', 'name' => 'Sourin Sutradhar'],
 ];

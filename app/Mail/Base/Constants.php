@@ -37,7 +37,7 @@ class Constants
         self::EMI           => 'emifiles@razorpay.com',
         self::ADMIN         => 'admin@razorpay.com',
         self::ACTIVATION    => 'activationsteam@razorpay.com',
-        self::DISPUTES      => 'disputes@razorpay.com',
+        self::DISPUTES      => 'support@razorpay.com',
     ];
 
     const HEADERS = [
