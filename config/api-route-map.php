@@ -136,6 +136,9 @@ return [
 
         // Add new dispute reason
         'dispute_reason_create'             => 'disputes/reasons',
+
+        // Product Submissions
+        'onboarding_features_fetch_submissions' => 'onboarding/features/submissions',
     ],
 
     // auth
@@ -572,6 +575,11 @@ return [
 
     // auth
     'admin_proxy' => [
+        // Feature onboarding responses with questions 
+        'onboarding_features_fetch_details' => 'onboarding/features',
+        'onboarding_features_update_status' => 'onboarding/features/{feature}/status',
+        'onboarding_features_update'        => 'onboarding/features/{feature}',
+
         // Credits
         'credits_fetch_multiple'            => 'credits',
 
