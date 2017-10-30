@@ -38,8 +38,6 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->payment['account_number'] = self::ACCOUNT_NUMBER;
 
         unset($this->payment[Entity::CARD]);
-
-        $this->mockTokenex();
     }
 
     public function testEmandateInitialPayment()

@@ -18,8 +18,6 @@ trait EmandateTrait
     {
         $secondPayment = false;
 
-        $this->content($secondPayment, 'second_payment');
-
         $this->validateActionInput($input, 'emandaterequest');
 
         $data = $this->getGatewayInstance()->getEmandateDecryptedData($input[RequestFields::DATA]);
