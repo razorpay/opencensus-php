@@ -32,7 +32,7 @@ spec:
               name: api
               key: APP_MODE
         name: api
-        image: razorpay/api:4e90c5126a73c5838f545b95383b3cd9a363b3f3
+        image: razorpay/api:9a8b6e98bfda22c4d991f10ef45f6b14d92113b9
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
