@@ -266,6 +266,8 @@ class PaymentController extends Controller
         $this->app['trace']->info(
             TraceCode::PAYMENT_WEBHOOK,
             $input);
+
+        return ApiResponse::json($input);
     }
 
     public function postPaymentMetadata($id)

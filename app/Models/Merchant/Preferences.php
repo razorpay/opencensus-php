@@ -47,6 +47,14 @@ class Preferences
         ],
     ];
 
+    /**
+     * We do not want to reject cybersource for these merchants
+     */
+    const CYBERSOURCE_MERCHANT_WHITELIST = [
+        self::MID_ZOMATO,
+        self::MID_IPAY,
+    ];
+
     const X_AGGREGATOR_HEADER = 'x-aggregator';
 
     public static function checkZohoHeaders(Headers $headers)

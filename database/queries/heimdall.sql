@@ -13,8 +13,8 @@ INSERT INTO `org_hostname` (`id`, `org_id`, `hostname`, `created_at`, `updated_a
 VALUES
 	(1,'100000razorpay','dashboard.razorpay.com',1481813109,1481813109,NULL),
 	(2,'100000razorpay','beta-dashboard.razorpay.com',1481813109,1481813109,NULL),
-  (3,'100000razorpay','dashboard.razorpay.dev',1481813109,1481813109,NULL),
-	(4,'6dLbNSpv5XbCOG','dashboard-hdfc.razorpay.dev',1481813109,1481813109,NULL);
+  (3,'100000razorpay','dashboard.razorpay.in',1481813109,1481813109,NULL),
+	(4,'6dLbNSpv5XbCOG','dashboard-hdfc.razorpay.in',1481813109,1481813109,NULL);
 
 # ADMINS
 

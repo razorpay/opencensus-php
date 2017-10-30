@@ -11,6 +11,7 @@ use RZP\Models\Payment as PaymentModel;
 use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Constants\Mode;
 
@@ -643,7 +644,7 @@ class AuthorizeTest extends TestCase
             {
                 if ($action === 'authorize')
                 {
-                    throw new Exception\GatewayErrorException('GATEWAY_ERROR_UNKNOWN_ERROR');
+                    throw new GatewayErrorException('GATEWAY_ERROR_UNKNOWN_ERROR');
                 }
 
                 $content['auth'] = $randomAuthCode;
@@ -654,7 +655,8 @@ class AuthorizeTest extends TestCase
             function()
             {
                 $this->doAuthPayment();
-            });
+            },
+            GatewayErrorException::class);
 
         $payment = $this->getLastPayment(true);
 
