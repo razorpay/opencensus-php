@@ -25,7 +25,9 @@ class CreateQrCodeTable extends Migration
             $table->char(QrCode::ID, QrCode::ID_LENGTH)
                   ->primary();
 
-            $table->char(QrCode::MERCHANT_ID, QrCode::ID_LENGTH);
+            $table->char(QrCode::MERCHANT_ID, Merchant\Entity::ID_LENGTH);
+
+            $table->char(QrCode::PROVIDER, 50);
 
             $table->char(QrCode::ENTITY_ID, QrCode::ID_LENGTH);
 
@@ -53,23 +55,7 @@ class CreateQrCodeTable extends Migration
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
-
         });
-
-        switch(DB::connection()->getDriverName())
-        {
-            case 'mysql':
-                DB::statement('ALTER TABLE qr_code ADD COLUMN identifier_padding INT(10) AUTO_INCREMENT UNIQUE FIRST');
-                break;
-
-            case 'sqlite':
-                DB::statement('ALTER TABLE qr_code ADD COLUMN identifier_padding int DEFAULT 1');
-                break;
-
-            default:
-                throw new \Exception('Driver not supported.');
-                break;
-        }
 
         // This needs to be done here because migrations are run in order of
         // timestamps and qr code table gets created after virtualaccount.

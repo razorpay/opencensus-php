@@ -367,8 +367,9 @@ return [
     ],
 
     'bharat_qr' => [
-        'visa_code'       => env('BHARAT_QR_VISA_CODE'),
-        'mastercard_code' => env('BHARAT_QR_MASTER_CODE'),
+        'visa_acquirer_code'       => env('BHARAT_QR_VISA_ACQUIRER_CODE'),
+        'mastercard_acquirer_code' => env('BHARAT_QR_MASTERCARD_ACQUIRER_CODE'),
+        'identifier_padding'       => env('BHARAT_QR_IDENTIFIER_PADDING'),
     ],
 
     'proxy_enabled' => env('PROXY_ENABLED'),

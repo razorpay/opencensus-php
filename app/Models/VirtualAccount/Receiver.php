@@ -3,14 +3,12 @@
 namespace RZP\Models\VirtualAccount;
 
 use App;
-use Lib\CRC16;
 use RZP\Exception;
+use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\QrCode\Constants;
-use RZP\Models\QrCode\Entity as QrCode;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Receiver
@@ -96,7 +94,7 @@ class Receiver
 
     public function buildQrCode(Entity $virtualAccount)
     {
-        $qrCode = new QrCode;
+        $qrCode = new QrCode\Entity;
 
         $input = $this->getQrCodeEntityParams($virtualAccount);
 
@@ -108,13 +106,9 @@ class Receiver
 
         $qrCode->source()->associate($virtualAccount);
 
+        $qrString = (new Provider)->generateQrString($qrCode);
 
-        //This is done in order to generate identifier padding value
-        $this->repo->saveOrFail($qrCode);
-
-        $qrCode = $qrCode->fresh();
-
-        $qrCode = $this->generateDynamicQrString($qrCode);
+        $qrCode->setQrString($qrString);
 
         $this->repo->saveOrFail($qrCode);
 
@@ -124,26 +118,12 @@ class Receiver
     protected function getQrCodeEntityParams(Entity $virtualAccount)
     {
         $input = [
-            qrCode::AMOUNT                 => $virtualAccount->getAmountExpected(),
-            qrCode::QR_STRING              => Constants::VERSION_TAG,
+            // For now it is set bharat qr as default
+            QrCode\Entity::PROVIDER  => Provider::BHARAT_QR,
+            QrCode\Entity::AMOUNT    => $virtualAccount->getAmountExpected(),
         ];
 
         return $input;
-    }
-
-    protected function generateDynamicQrString($qrCode)
-    {
-        $qrString = $qrCode->getQrString();
-
-        $qrString .= $qrCode->getDynamicTagString() .'6304';
-
-        $crc = (new CRC16)->calculateCrc($qrString);
-
-        $qrString .= $crc;
-
-        $qrCode->setQrString($qrString);
-
-        return $qrCode;
     }
 
     protected function generateBankAccountInput()
@@ -307,7 +287,7 @@ class Receiver
 
             $availableLength = $totalLength - self::ROOT_LENGTH - strlen($handle);
 
-            $descriptor = $this->padWithRandomDigits($availableLength, self::ACCOUNT_NUMBER_CHAR_SPACE);
+            $descriptor = $this->padWithRandomDigits($availableLength);
         }
 
         return $descriptor;
@@ -318,21 +298,17 @@ class Receiver
         return Provider::DEFAULT_HANDLE_MAPPING[$root];
     }
 
-    protected function padWithRandomDigits(int $desiredLength, $charSpace, $str = '')
+    protected function padWithRandomDigits(int $desiredLength)
     {
-        $requiredLength = $desiredLength - strlen($str);
-
         $pad = '';
 
-        $charSpace = str_split($charSpace);
+        $charSpace = str_split(self::ACCOUNT_NUMBER_CHAR_SPACE);
 
-        while (strlen($pad) < $requiredLength)
+        while (strlen($pad) < $desiredLength)
         {
             $pad .= $charSpace[array_rand($charSpace)];
         }
 
-        $str = $pad . $str;
-
-        return $str;
+        return $pad;
     }
 }

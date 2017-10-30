@@ -2,14 +2,23 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use Config;
+use Lib\CRC16;
+use RZP\Base\Luhn;
 use RZP\Exception;
+use RZP\Models\QrCode;
 use RZP\Constants\Mode;
+use RZP\Models\BharatQr;
+use RZP\Models\Card\NetworkName;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Provider
 {
     const YESBANK   = 'yesbank';
     const KOTAK     = 'kotak';
+
+    // Qr Code Providers
+    const BHARAT_QR = 'bharat_qr';
 
     // Dashboard acts as a mock provider bank,
     // and is used to run tests.
@@ -163,4 +172,98 @@ class Provider
 
         return false;
     }
+
+    public function generateQrString(QrCode\Entity $qrCode)
+    {
+        $provider = $qrCode->getProvider();
+
+        switch ($provider)
+        {
+            case self::BHARAT_QR :
+                return $this->getBharatQrCode($qrCode);
+
+            default :
+                return '';
+        }
+    }
+
+    protected function getBharatQrCode($qrCode)
+    {
+        $visaIdentifier = $this->generateBharatQrMerchantIdentifier(NetworkName::VISA);
+
+        $masterCardIdentifier =  $this->generateBharatQrMerchantIdentifier(NetworkName::MC);
+
+        $visaTag = '02' . strlen($visaIdentifier) . $visaIdentifier;
+
+        $masterCardTag = '04' . strlen($masterCardIdentifier) . $masterCardIdentifier;
+
+        $tagArray = [
+            BharatQr\Constants::VERSION_TAG,
+            $visaTag,
+            $masterCardTag,
+            BharatQr\Constants::MERCHANT_CATEGORY_TAG,
+            BharatQr\Constants::CURRENCY_CODE_TAG,
+            $this->getBharatQrAmountTag($qrCode),
+            BharatQr\Constants::COUNTRY_CODE_TAG,
+            BharatQr\Constants::MERCHANT_NAME_TAG,
+            BharatQr\Constants::MERCHANT_CITY_TAG,
+            $this->getBharatQrAdditionalDetailTag($qrCode),
+        ];
+
+        $qrString =  implode('', $tagArray);
+
+        // This is the CRC tag
+        $qrString .= '6304';
+
+        $crc = (new CRC16)->calculateCrc($qrString);
+
+        $qrString .= $crc;
+
+        return $qrString;
+    }
+
+    protected function getBharatQrAdditionalDetailTag(QrCode\Entity $qrCode)
+    {
+        $idTag = '0514' . $qrCode->getId();
+
+        $additionalDetailsString = $idTag;
+
+        return '62' . strlen($additionalDetailsString) . $additionalDetailsString;
+    }
+
+    protected function getBharatQrAmountTag(QrCode\Entity $qrCode)
+    {
+        $amount = (string) ($qrCode->getFormattedAmount());
+
+        if (empty($amount) === true)
+        {
+            return '';
+        }
+
+        return '54' . str_pad(strlen($amount), 2, '0', STR_PAD_LEFT) . $amount;
+    }
+
+    /**
+     * This will generate merchant identifier using network
+     * network could be visa , mastercard or rupay
+     *
+     * @param string $network
+     * @return string
+     */
+    protected function generateBharatQrMerchantIdentifier(string $network)
+    {
+        $acquirerCode = $this->getBharatQrAcquirerCode($network);
+
+        $identifierPadding = Config::get('gateway.bharat_qr.identifier_padding');
+
+        $identifier  = $acquirerCode . '0' . str_pad(strlen($identifierPadding), 8, '0', STR_PAD_LEFT);
+
+        return $identifier . Luhn::computeCheckDigit($identifier);
+    }
+
+    protected function getBharatQrAcquirerCode(string $network)
+    {
+        return Config::get('gateway.bharat_qr.' . strtolower($network) . '_' . 'acquirer_code');
+    }
 }
+

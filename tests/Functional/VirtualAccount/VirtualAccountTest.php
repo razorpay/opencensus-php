@@ -65,9 +65,9 @@ class VirtualAccountTest extends TestCase
 
         $visaValue = $tlvArray['02'];
 
-        assert(16, strlen($masterCardValue));
+        $this->assertEquals(16, strlen($masterCardValue));
 
-        assert(16, strlen($visaValue));
+        $this->assertEquals(16, strlen($visaValue));
     }
 
     public function testCreateVirtualAccountWithBharatQrWithAmount()
