@@ -48,13 +48,6 @@ class Merchant extends Entity
         return $this->request('PUT', $relativeUrl, $body);
     }
 
-    public function editEmail($params)
-    {
-        $relativeUrl = $this->getEntityUrl().$this->id . '/email';
-
-        return $this->request('PUT', $relativeUrl, $params);
-    }
-
     public function setTerminal($params)
     {
         $relativeUrl = $this->getEntityUrl().$this->id.'/terminals';
@@ -81,12 +74,5 @@ class Merchant extends Entity
         $this->attributes['id'] = $id;
 
         return $this;
-    }
-
-    public function getUsers($merchantId)
-    {
-        $relativeUrl = $this->getEntityUrl().$merchantId.'/users';
-
-        return $this->request('GET', $relativeUrl);
     }
 }

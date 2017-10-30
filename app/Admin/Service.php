@@ -208,9 +208,7 @@ class Service extends Base\Service
     {
         $error = [];
 
-        $this->setApiCredentials();
-
-        $users = $this->api->merchant->getUsers($merchantId)->toArray();
+        $users = (new Merchant\Service)->getMerchantUsers($merchantId);
 
         $genericUsers = (new Helper)->createGenericUsers($users);
 
@@ -306,7 +304,7 @@ class Service extends Base\Service
         }
         else
         {
-            $users = $this->api->merchant->getUsers($id)->toArray();
+            $users = (new Merchant\Service)->getMerchantUsers($id);
 
             $genericUsers = (new Helper)->createGenericUsers($users);
 
@@ -414,23 +412,24 @@ class Service extends Base\Service
 
     public function postEditMerchantEmail($id, $input)
     {
-        $data = $error = [];
-
-        $this->setApiCredentials();
-
         $input[Merchant\Entity::EMAIL] = strtolower($input[Merchant\Entity::EMAIL]);
 
-        try
-        {
-            $data = $this->api->merchant->fetch($id)->editEmail($input)->toArray();
+        $editMerchantEmail = [
+            'route_name' => 'merchant_edit_email',
+            'url_params' => [
+                '{id}' => $id,
+            ],
+            'body'       => $input,
+        ];
 
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('PUT', $editMerchantEmail);
+
+        if (empty($error) === true)
+        {
             // Clear Merchant User Sessions because roles and new users will be added based on the email.
             $this->clearMerchantUserSessions($id);
-        }
-
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
         }
 
         return [$error, $data];
@@ -438,11 +437,11 @@ class Service extends Base\Service
 
     private function clearMerchantUserSessions($merchantId)
     {
-        $merchantUsers = $this->api->merchant->getUsers($merchantId);
+        $merchantUsers = (new Merchant\Service)->getMerchantUsers($merchantId);
 
         foreach ($merchantUsers as $merchantUser)
         {
-            (new SessionTable\Entity)->deleteAllOtherSessionsForUser($merchantUser->id);
+            (new SessionTable\Entity)->deleteAllOtherSessionsForUser($merchantUser['id']);
         }
     }
 
