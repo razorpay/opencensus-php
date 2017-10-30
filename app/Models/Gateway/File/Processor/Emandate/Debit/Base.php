@@ -2,13 +2,9 @@
 
 namespace RZP\Models\Gateway\File\Processor\EMandate\Debit;
 
-use Carbon\Carbon;
-
-use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception\GatewayFileException;
 use RZP\Gateway\Base\Action as GatewayAction;
-use RZP\Gateway\Netbanking;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\EMandate;
 use RZP\Models\Payment;
@@ -75,33 +71,7 @@ class Base extends EMandate\Base
                 continue;
             }
 
-            $gatewayPayment = new Netbanking\Base\Entity;
-
-            $gatewayPayment->setPaymentId($paymentId);
-
-            $gatewayPayment->setAction(GatewayAction::AUTHORIZE);
-
-            $gatewayPayment->setBank($payment->getBank());
-
-            $merchant = $payment->merchant;
-
-            if ($merchant->isTPVRequired() === true)
-            {
-                $gatewayPayment->setAccountNumber($payment->order->getAccountNumber());
-            }
-
-            $date = $date = Carbon::now(Timezone::IST)->format('d/m/Y H:m:s');
-
-            $attr = [
-                Netbanking\Base\Entity::CLIENT_CODE       => $this->getClientCode($payment),
-                Netbanking\Base\Entity::MERCHANT_CODE     => $payment->getMerchantId(),
-                Netbanking\Base\Entity::AMOUNT            => $payment->getAmount(),
-                Netbanking\Base\Entity::DATE              => $date,
-            ];
-
-            $gatewayPayment->fill($attr);
-
-            $this->repo->netbanking->saveOrFail($gatewayPayment);
+            $gatewayPayment = $this->createGatewayEntity($payment);
         }
     }
 }
