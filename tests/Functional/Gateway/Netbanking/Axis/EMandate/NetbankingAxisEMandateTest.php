@@ -2,13 +2,19 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking\Axis\EMandate;
 
+use Carbon\Carbon;
+use  Mail;
+
 use RZP\Constants\Entity;
+use RZP\Mail\Gateway\EMandate\Base as Email;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking\Axis\Emandate;
+use RZP\Mail\Gateway\EMandate\Constants as EmailConstants;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 use RZP\Models\Customer\Token;
+use RZP\Models\FileStore\Type;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment;
-use RZP\Models\FileStore\Type;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -128,6 +134,8 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $this->ba->appAuth();
 
+        Mail::fake();
+
         $content = $this->startTest();
 
         $this->assertEquals(1, count($content['items']));
@@ -159,6 +167,26 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $this->assertEquals($gatewayPayment['payment_id'], $debitPaymentId);
         $this->assertEquals($gatewayPayment['amount'], $debitPayment['amount']);
+
+        Mail::assertSent(Email::class, function ($mail) use ($file)
+        {
+            $key = Payment\Gateway::NETBANKING_AXIS . '_debit';
+
+            $today = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+            $expectedSubj = EmailConstants::SUBJECT_MAP[$key] . $today;
+
+            $this->assertEquals($expectedSubj, $mail->subject);
+
+            $this->assertNotNull($mail->viewData['file_name']);
+            $this->assertNotNull($mail->viewData['signed_url']);
+            $this->assertEquals(EmailConstants::BODY_MAP[$key], $mail->viewData['body']);
+
+            $this->assertNotEmpty($mail->attachments);
+
+            return ($mail->hasFrom('emandate@razorpay.com') and
+                ($mail->hasTo(EmailConstants::RECIPIENT_EMAILS_MAP[$key])));
+        });
     }
 
     protected function assertEmandateEntities()
