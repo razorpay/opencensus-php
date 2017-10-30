@@ -27,6 +27,8 @@ class CreateQrCodeTable extends Migration
 
             $table->char(QrCode::MERCHANT_ID, QrCode::ID_LENGTH);
 
+            $table->char(QrCode::PROVIDER, 50);
+
             $table->char(QrCode::ENTITY_ID, QrCode::ID_LENGTH);
 
             $table->string(QrCode::ENTITY_TYPE, 50);

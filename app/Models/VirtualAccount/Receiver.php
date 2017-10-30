@@ -3,7 +3,6 @@
 namespace RZP\Models\VirtualAccount;
 
 use App;
-use Lib\CRC16;
 use RZP\Exception;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
@@ -107,15 +106,9 @@ class Receiver
 
         $qrCode->source()->associate($virtualAccount);
 
-        //
-        // This is done in order to generate auto incrementing identifier
-        // padding value which is used to generate the QR string.
-        //
-        $this->repo->saveOrFail($qrCode);
+        $qrString = (new Provider)->generateQrString($qrCode);
 
-        $qrCode = $qrCode->fresh();
-
-        $qrCode = $this->generateDynamicQrString($qrCode);
+        $qrCode->setQrString($qrString);
 
         $this->repo->saveOrFail($qrCode);
 
@@ -125,26 +118,12 @@ class Receiver
     protected function getQrCodeEntityParams(Entity $virtualAccount)
     {
         $input = [
-            QrCode\Entity::AMOUNT      => $virtualAccount->getAmountExpected(),
-            QrCode\Entity::QR_STRING   => QrCode\Constants::VERSION_TAG,
+            // For now it is set bharat qr as default
+            QrCode\Entity::PROVIDER  => Provider::BHARAT_QR,
+            QrCode\Entity::AMOUNT    => $virtualAccount->getAmountExpected(),
         ];
 
         return $input;
-    }
-
-    protected function generateDynamicQrString(QrCode\Entity $qrCode)
-    {
-        $qrString = $qrCode->getQrString();
-
-        $qrString .= $qrCode->getDynamicTagString() . '6304';
-
-        $crc = (new CRC16)->calculateCrc($qrString);
-
-        $qrString .= $crc;
-
-        $qrCode->setQrString($qrString);
-
-        return $qrCode;
     }
 
     protected function generateBankAccountInput()
