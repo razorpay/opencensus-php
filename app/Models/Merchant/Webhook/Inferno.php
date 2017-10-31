@@ -108,6 +108,13 @@ class Inferno
 
     public function sendEmail($webhook, $type)
     {
+        $merchant = $webhook->merchant;
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
+
         $options = [
             'mode'         => $this->mode,
             'type'         => $type,
@@ -115,7 +122,7 @@ class Inferno
             'errorMessage' => $this->errorMessage
         ];
 
-        $merchant = $webhook->merchant->toArrayPublic();
+        $merchant = $merchant->toArrayPublic();
 
         $webhook = $webhook->toArrayPublic();
 
