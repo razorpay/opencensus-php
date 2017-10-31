@@ -17,6 +17,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Shared;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal\Category;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
@@ -26,6 +27,7 @@ class TransactionFilter extends Terminal\Filter
         'network',
         'bank',
         'recurring',
+        'gateway',
         'subscription',
         'tpv',
         'pharma',
@@ -97,6 +99,43 @@ class TransactionFilter extends Terminal\Filter
             $gateways = Gateway::getGatewaysForNetbankingBank($bank, $isTPV);
 
             return in_array($terminalGateway, $gateways);
+        }
+
+        return true;
+    }
+
+    /**
+     * Filter to remove cybersource shared terminals for non recurring payments
+     *
+     * @param  Terminal\Entity $terminal
+     */
+    public function gatewayFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        $merchant = $this->input['merchant'];
+
+        // This filter should run only in production environment, else tests for
+        // cybersource would fail.
+        if ($this->isLiveMode() === true)
+        {
+            if ($terminal->getGateway() === Gateway::CYBERSOURCE)
+            {
+                //
+                // For some merchants, due to business reasons we want payments
+                // to go through cybersource terminal
+                //
+                $merchantWhitelisted = (in_array($merchant->getId(),
+                                            Preferences::CYBERSOURCE_MERCHANT_WHITELIST,
+                                            true) === true);
+
+                if (($merchantWhitelisted === false) and
+                    ($payment->isRecurring() === false) and
+                    ($terminal->isDirectForMerchant($merchant) === false))
+                {
+                    return false;
+                }
+            }
         }
 
         return true;

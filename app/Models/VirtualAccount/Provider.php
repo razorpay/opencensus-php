@@ -266,4 +266,3 @@ class Provider
         return Config::get('gateway.bharat_qr.' . strtolower($network) . '_' . 'acquirer_code');
     }
 }
-

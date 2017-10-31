@@ -17,15 +17,31 @@ class Entity extends Base\PublicEntity
     const DOWNLOAD_FILE_URL         = 'download_file_url';
 
     const STATUS                    = 'status';
+    const PROCESSING                = 'processing';
     const TOTAL_COUNT               = 'total_count';
     const SUCCESS_COUNT             = 'success_count';
     const FAILURE_COUNT             = 'failure_count';
     const ATTEMPTS                  = 'attempts';
+
+    /**
+     * Fields amount and processed_amount represent the total amounnt across
+     * entities present in the batch input file, for batches like refund.
+     */
     const AMOUNT                    = 'amount';
     const PROCESSED_AMOUNT          = 'processed_amount';
+
     const COMMENT                   = 'comment';
     const PROCESSED_AT              = 'processed_at';
     const TYPE                      = 'type';
+
+    /**
+     * Fields sub_type is used for further classification of the batch.
+     * Currently being used for reconciliation batch and can have values like
+     * combined | payment | refund
+     */
+    const SUB_TYPE                  = 'sub_type';
+    const GATEWAY                   = 'gateway';
+    const FAILURE_REASON            = 'failure_reason';
 
     /**
      * Constants used in migration file.
@@ -60,6 +76,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::TYPE,
+        self::GATEWAY,
     ];
 
     protected $public = [
@@ -78,15 +95,20 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::ATTEMPTS          => 0,
-        self::STATUS            => Status::CREATED,
-        self::DOWNLOAD_FILE_URL => null,
-        self::SUCCESS_COUNT     => null,
-        self::FAILURE_COUNT     => null,
-        self::AMOUNT            => null,
-        self::PROCESSED_AMOUNT  => 0,
-        self::COMMENT           => null,
-        self::PROCESSED_AT      => null,
+        self::ATTEMPTS            => 0,
+        self::STATUS              => Status::CREATED,
+        self::PROCESSING          => 0,
+        self::DOWNLOAD_FILE_URL   => null,
+        self::TOTAL_COUNT         => 0,
+        self::SUCCESS_COUNT       => 0,
+        self::FAILURE_COUNT       => 0,
+        self::AMOUNT              => null,
+        self::PROCESSED_AMOUNT    => 0,
+        self::GATEWAY             => null,
+        self::FAILURE_REASON      => null,
+        self::SUB_TYPE            => null,
+        self::COMMENT             => null,
+        self::PROCESSED_AT        => null,
     ];
 
     protected $casts = [
@@ -96,7 +118,53 @@ class Entity extends Base\PublicEntity
         self::AMOUNT           => 'int',
         self::PROCESSED_AMOUNT => 'int',
         self::ATTEMPTS         => 'int',
+        self::PROCESSING       => 'bool',
     ];
+
+    /**
+     * Overridden
+     * Ref: validateInputByType
+     *
+     * @param  array  $input
+     * @return Entity
+     */
+    public function build(array $input = [])
+    {
+        $this->input = $input;
+
+        $this->modify($input);
+
+        $this->validateInputByType($input);
+
+        $this->generate($input);
+
+        $this->unsetInput('create', $input);
+
+        $this->fill($input);
+
+        return $this;
+    }
+
+    /**
+     * Does input validation for create based on batch type if defined else
+     * there is one default create rule.
+     *
+     * @param array $input
+     */
+    protected function validateInputByType(array $input)
+    {
+        $operation = 'default_create';
+
+        $type = $input[Entity::TYPE] ?? 'unknown';
+        $rule = camel_case($type) . 'CreateRules';
+
+        if (property_exists(Validator::class, $rule) === true)
+        {
+            $operation = $type . '_create';
+        }
+
+        $this->validateInput($operation, $input);
+    }
 
     // Relations
 
@@ -117,8 +185,16 @@ class Entity extends Base\PublicEntity
      */
     public function inputFile()
     {
+        //
+        // For files of reconciliation type batches, we use a different UFH type
+        // (hence S3 locations) for reasons.
+        //
+        $ufhType = ($this->isReconciliationType() === true) ?
+                        FileStore\Type::BATCH_RECON_INPUT :
+                        FileStore\Type::BATCH_INPUT;
+
         return $this->files()
-                    ->where(FileStore\Entity::TYPE, FileStore\Type::BATCH_INPUT)
+                    ->where(FileStore\Entity::TYPE, $ufhType)
                     ->latest()
                     ->first();
     }
@@ -154,14 +230,59 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getGateway()
+    {
+        return $this->getAttribute(self::GATEWAY);
+    }
+
     public function isProcessed(): bool
     {
         return ($this->getStatus() === Status::PROCESSED);
     }
 
-    public function isPaymentLinkType()
+    public function isPartiallyProcessed(): bool
+    {
+        return ($this->getStatus() === Status::PARTIALLY_PROCESSED);
+    }
+
+    public function isFailed(): bool
+    {
+        return ($this->getStatus() === Status::FAILED);
+    }
+
+    public function isProcessing(): bool
+    {
+        return $this->getAttribute(self::PROCESSING);
+    }
+
+    public function isProcessable(): bool
+    {
+        return (($this->isProcessed() === false) and ($this->isProcessing() === false));
+    }
+
+    public function getSuccessCount(): int
+    {
+        return $this->getAttribute(self::SUCCESS_COUNT);
+    }
+
+    public function getFailureCount(): int
+    {
+        return $this->getAttribute(self::FAILURE_COUNT);
+    }
+
+    public function getTotalCount(): int
+    {
+        return $this->getAttribute(self::TOTAL_COUNT);
+    }
+
+    public function isPaymentLinkType(): bool
     {
         return ($this->getType() === Type::PAYMENT_LINK);
+    }
+
+    public function isReconciliationType(): bool
+    {
+        return ($this->getType() === Type::RECONCILIATION);
     }
 
     /**
@@ -176,7 +297,6 @@ class Entity extends Base\PublicEntity
     public function getFilePrefix(string $status = null): string
     {
         $status = $status ?: $this->getStatus();
-
         if ($status === Status::CREATED)
         {
             return self::INPUT_FILE_PREFIX;
@@ -227,18 +347,18 @@ class Entity extends Base\PublicEntity
      * - To move temp php request to this location and pass the same to UFH
      * - To create output file at proper location.
      *
-     * @param string|null $status
+     * @param string    $prefix     prefix to use while forming the path
      *
      * @return string
      */
-    public function getLocalSaveDir(string $status = null): string
+    public function getLocalSaveDir(string $prefix): string
     {
-        return storage_path('files/filestore') . '/' . $this->getFilePrefix($status);
+        return storage_path('files/filestore') . '/' . $prefix;
     }
 
-    public function getLocalSavePath(string $status = null)
+    public function getLocalSavePath(string $prefix): string
     {
-        return $this->getLocalSaveDir($status) . $this->getFileKeyWithExt();
+        return $this->getLocalSaveDir($prefix) . $this->getFileKeyWithExt();
     }
 
     // ----------------------- End  Getters --------------------------
@@ -280,6 +400,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setProcessing(bool $value)
+    {
+        $this->setAttribute(self::PROCESSING, $value);
+    }
+
     public function setAttempts($attempts)
     {
         $this->setAttribute(self::ATTEMPTS, $attempts);
@@ -303,6 +428,21 @@ class Entity extends Base\PublicEntity
     public function incrementAttempts()
     {
         $this->increment(self::ATTEMPTS);
+    }
+
+    public function setFailureReason(string $failureReason)
+    {
+        $this->setAttribute(self::FAILURE_REASON, $failureReason);
+    }
+
+    public function unsetFailureReason()
+    {
+        $this->setAttribute(self::FAILURE_REASON, null);
+    }
+
+    public function setSubType(string $subType)
+    {
+        $this->setAttribute(self::SUB_TYPE, $subType);
     }
 
     // ----------------------- End Setters ---------------------------

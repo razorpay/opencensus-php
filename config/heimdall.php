@@ -37,6 +37,10 @@ return [
                 'description' => 'View a particular merchant details',
                 'assignable'  => true,
             ],
+            Permission::MANAGE_ONBOARDING_SUBMISSIONS => [
+                'description' => 'View and update product onboarding submissions and the activation statuses',
+                'assignable'  => true,
+            ]
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [
@@ -223,15 +227,19 @@ return [
         ],
 
         PermissionCategory::DISPUTE => [
-            Permission::CREATE_DISPUTE => [
-                'description'   => 'Create Dispute Permission',
-                'assignable'    => true,
-                'workflow'      => true,
+            Permission::CREATE_DISPUTE        => [
+                'description' => 'Create Dispute Permission',
+                'assignable'  => true,
+                'workflow'    => true,
             ],
-            Permission::EDIT_DISPUTE    => [
-                'description'   => 'Edit Dispute Permission',
-                'assignable'    => true,
-                'workflow'      => true,
+            Permission::EDIT_DISPUTE          => [
+                'description' => 'Edit Dispute Permission',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
+            Permission::CREATE_DISPUTE_REASON => [
+                'description' => 'Create Dispute Reason Permission',
+                'assignable'  => true,
             ],
         ],
 

@@ -30,6 +30,9 @@ class CreateDisputesTable extends Migration
 
             $table->char(Dispute::MERCHANT_ID, Merchant::ID_LENGTH);
 
+            $table->char(Dispute::PARENT_ID, Dispute::ID_LENGTH)
+                  ->nullable();
+
             $table->char(Dispute::PAYMENT_ID, Payment::ID_LENGTH);
 
             $table->char(Dispute::REASON_ID, Reason::ID_LENGTH);
@@ -109,6 +112,14 @@ class CreateDisputesTable extends Migration
                   ->on(Table::DISPUTE_REASON)
                   ->on_delete('restrict');
         });
+
+        Schema::table(Table::DISPUTE, function(Blueprint $table)
+        {
+            $table->foreign(Dispute::PARENT_ID)
+                  ->references(Dispute::ID)
+                  ->on(Table::DISPUTE)
+                  ->on_delete('restrict');
+        });
     }
 
     /**
@@ -121,6 +132,8 @@ class CreateDisputesTable extends Migration
         Schema::table(Table::DISPUTE, function($table)
         {
             $table->dropForeign(Table::DISPUTE.'_'.Dispute::MERCHANT_ID.'_foreign');
+
+            $table->dropForeign(Table::DISPUTE.'_'.Dispute::PARENT_ID . '_foreign');
 
             $table->dropForeign(Table::DISPUTE.'_'.Dispute::PAYMENT_ID.'_foreign');
 
