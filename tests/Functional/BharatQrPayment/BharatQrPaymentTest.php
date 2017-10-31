@@ -32,7 +32,11 @@ class BharatQrPaymentTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(true, $response['valid']);
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
 
         //Created Qr Entity As Expected
         $bharatQr = $this->getLastEntity('bharat_qr', true);
@@ -52,7 +56,11 @@ class BharatQrPaymentTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(true, $response['valid']);
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
 
@@ -74,5 +82,10 @@ class BharatQrPaymentTest extends TestCase
         $bankAccount = $response['receivers'][0];
 
         return $bankAccount;
+    }
+
+    protected function parseResponseXml(string $response): array
+    {
+        return (array) simplexml_load_string(trim($response));
     }
 }

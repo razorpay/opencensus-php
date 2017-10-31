@@ -16,7 +16,7 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function processPayment(array $input): array
+    public function processPayment(array $input)
     {
         $this->trace->info(
             TraceCode::BHARAT_QR_PAYMENT_PROCESS_REQUEST,
@@ -25,10 +25,22 @@ class Service extends Base\Service
 
         $valid = $this->core->processPayment($input);
 
-        return [
-            'valid'          => $valid,
-            'message'        => null,
-        ];
+        if ($valid === true)
+        {
+            $xml = '<RESPONSE>OK</RESPONSE>';
+        }
+        else
+        {
+            $xml = '<RESPONSE>NOK</RESPONSE>';
+        }
+
+
+        $response = \Response::make($xml);
+
+        $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
     }
 }
 
