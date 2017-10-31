@@ -2574,3 +2574,6 @@ ALTER TABLE merchant_details
 	ADD marketplace_activation_status VARCHAR(30) DEFAULT NULL AFTER locked,
 	ADD virtual_accounts_activation_status VARCHAR(30) DEFAULT NULL AFTER marketplace_activation_status,
 	ADD subscriptions_activation_status VARCHAR(30) DEFAULT NULL AFTER virtual_accounts_activation_status;
+
+ALTER TABLE virtual_accounts
+    ADD COLUMN qr_code_id CHAR(14) DEFAULT NULL after bank_account_id;
