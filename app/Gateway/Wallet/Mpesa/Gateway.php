@@ -6,13 +6,14 @@ use SoapFault;
 use SoapClient;
 use SoapHeader;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Exception;
 use SimpleXMLElement;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
+use Razorpay\Trace\Logger;
+use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Verify;
@@ -63,7 +64,9 @@ class Gateway extends Base\Gateway
         $this->assertPaymentId($input['payment']['id'],
                                $content[ResponseFields::TRANSACTION_REFERENCE]);
 
-        $this->assertAmount($input['payment']['amount'], (int) ($input['gateway']['txnAmt'] * 100));
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($input['gateway']['txnAmt'], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $wallet = $this->repo->findByPaymentIdAndAction(
                     $input['payment']['id'],
@@ -83,6 +86,8 @@ class Gateway extends Base\Gateway
      * prevent user tampering with the data while making a payment.
      *
      * @param array $input
+     * @param Base\Entity $wallet
+     * @throws Exception\GatewayErrorException
      */
     protected function verifyCallback(array $input, Base\Entity $wallet)
     {
@@ -222,26 +227,21 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        // Hardcoding these refunds for processing
-        $unprocessedRefunds = [
-            '89EjEZhXy1P1PY',
-            '89vusCkrDiFjPG',
-            '8a8vG9jPmmdVa3',
-            '8bvLSKxaWQACdJ',
-            '8c7YeFT8dwzg1P',
-            '8e6Fn5jlJynnd3',
-            '8fC4IPnITPqHt9',
-            '8gFtsmntN4VtVH',
-            '8gGLYRDZEAg3gU',
-            '8htVob7hAKtiPq',
-            '8jx8pnnsQbdcWT',
-            '8RiLxDLIbyX86n',
-            '8Ybeo1i6ArNMDi',
+        $processedRefunds = [
+            '897PijT4dsJKJI',
+            '89qPekio4ZuHYK',
+            '8bXyVNxWy8M596',
+            '8batpufoOmwBlz',
+            '8bb3Y0LjF4Wctc',
+            '8bbUlUpMxjIXvz',
+            '8brMCJoXOYkcVn',
+            '8ejXKlFFSMSmHn',
+            '8gFMNPoOUxnBTS',
         ];
 
-        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        if (in_array($input['payment']['id'], $processedRefunds) === true)
         {
-            return false;
+            return true;
         }
 
         throw new Exception\RuntimeException(
@@ -257,9 +257,29 @@ class Gateway extends Base\Gateway
     {
         $data = $this->getVerifyRequestData($verify);
 
-        $verify->verifyResponse = $this->sendSoapRequest($data,
-                                                   SoapAction::QUERY_API,
-                                                   SoapMethod::QUERY_PAYMENT_TRANSACTION);
+        try
+        {
+            $verify->verifyResponse = $this->sendSoapRequest($data,
+                                                             SoapAction::QUERY_API,
+                                                             SoapMethod::QUERY_PAYMENT_TRANSACTION);
+        }
+        catch (\Exception $e)
+        {
+            //
+            // When soap faults or soap error's happen during verify, we must retry the verification call
+            //
+
+            $data = [
+                'payment_id' => $verify->input['payment']['id'],
+                'gateway'    => $this->gateway,
+            ];
+
+            $this->trace->traceException($e, Logger::INFO, TraceCode::GATEWAY_VERIFY_ERROR, $data);
+
+            $data['error_message'] = $e->getMessage();
+
+            throw new Exception\PaymentVerificationException($data, $verify, VerifyAction::RETRY);
+        }
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -274,8 +294,6 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment(Verify $verify)
     {
-        $content = $verify->verifyResponseContent;
-
         $status = $this->getVerifyStatus($verify);
 
         $verify->status = $status;
@@ -402,7 +420,7 @@ class Gateway extends Base\Gateway
         // This is to maintain the backward compatibility
         // Current terminals have only `gateway_merchant_id` assigned
         // New terminals will have `gateway_merchant_id` and `gateway_merchant_id2`
-        // with values swaped. If it's an old terminal then `merchant_id2` will be empty
+        // with values swapped. If it's an old terminal then `merchant_id2` will be empty
         // and filler3 should not be sent in that case.
         if (empty($this->getMerchantId2()) === false)
         {
@@ -632,14 +650,6 @@ class Gateway extends Base\Gateway
             // We simply trace this at a warning level
             //
             $this->trace->warning(TraceCode::GATEWAY_SOAP_ERROR, $context);
-
-            // If the soap call fails during verify, we simply retry the verify call
-            if ($this->action === Action::VERIFY)
-            {
-                $verify = new Verify($this->gateway, $this->input);
-
-                throw new Exception\PaymentVerificationException($context, $verify, VerifyAction::RETRY);
-            }
         }
 
         return json_decode(json_encode($response), true);

@@ -30,7 +30,8 @@ class FirstDataGatewayTest extends TestCase
 
     public function testRecurringPayment()
     {
-        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+        list($terminal1, $terminal2) = $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+
         $this->fixtures->merchant->addFeatures('charge_at_will');
         $this->mockTokenex();
 
@@ -50,6 +51,16 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals($paymentEntity['token_id'], $token['id']);
         $this->assertEquals(true, $token['recurring']);
         $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
+
+        $this->mockServerRequestFunction(function ($body) use ($terminal1)
+        {
+            $hostedDataStoreId = $body['Transaction']['Payment']['HostedDataStoreID'];
+
+            $this->assertEquals(
+                $terminal1->getGatewayMerchantId(),
+                $hostedDataStoreId,
+                'wrong MID sent for recurring payment request');
+        });
 
         // Set payment for second recurring payment
         unset($payment['card']);
@@ -71,7 +82,7 @@ class FirstDataGatewayTest extends TestCase
         $token = $this->getLastEntity('token', true);
         $this->assertEquals($paymentEntity['token_id'], $token['id']);
         $this->assertEquals(true, $token['recurring']);
-        $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
+        $this->assertEquals('FDRcrgTrmlN3DS', $token['terminal_id']);
 
         // Transaction created at auth step itself, as recurring payment is a purchase request
         $transaction = $this->getLastEntity('transaction', true);
@@ -98,7 +109,11 @@ class FirstDataGatewayTest extends TestCase
         $token = $this->getLastEntity('token', true);
         $this->assertEquals($paymentEntity['token_id'], $token['id']);
         $this->assertEquals(true, $token['recurring']);
-        $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
+        $this->assertEquals('FDRcrgTrmlN3DS', $token['terminal_id']);
+
+        $gatewayToken = $this->getLastEntity('gateway_token', true);
+        $this->assertEquals($token['id'], 'token_'.$gatewayToken['token_id']);
+        $this->assertEquals('FDRcrgTrmlN3DS', $gatewayToken['terminal_id']);
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
         $refund = $this->getLastEntity('refund', true);

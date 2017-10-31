@@ -129,8 +129,8 @@ return [
 
     'batch' => [
         'connection' => 'sqs_multi_default',
-        'test'       => env('AWS_INVOICE_EMAILS_QUEUE'),
-        'live'       => env('AWS_INVOICE_EMAILS_QUEUE'),
+        'test'       => env('AWS_BATCH_QUEUE'),
+        'live'       => env('AWS_BATCH_QUEUE'),
     ],
 
     'capture' => [

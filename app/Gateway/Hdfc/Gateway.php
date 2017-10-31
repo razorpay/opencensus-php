@@ -377,31 +377,32 @@ class Gateway extends Base\Gateway
 
             $this->verifyAuthResponse($authResponse);
 
-            $this->assertAmount(
-                $input['payment']['amount'],
-                (int) ($input['gateway']['amt'] * 100));
+            $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+            $actualAmount = number_format($input['gateway']['amt'], 2, '.', '');
 
-            return $this->getCallbackResponseData($input);
+            $this->assertAmount($expectedAmount, $actualAmount);
         }
-
-        $this->validateCallbackGatewayFields($input, $network);
-
-        $this->validateParesStatusIfApplicable($input);
-
-        $this->id = $input['payment']['id'];
-
-        $this->model = $this->repo->findByGatewayPaymentIdOrFail(
-            $input['gateway']['MD']);
-
-        $paymentId = $this->model->getPaymentId();
-
-        if ($this->id !== $paymentId)
+        else
         {
-            throw new Exception\LogicException(
-                'app payment '. $this->id . ' should be equal to payment id . '. $paymentId);
-        }
+            $this->validateCallbackGatewayFields($input, $network);
 
-        $this->postAuthEnrolledRequest($input);
+            $this->validatePares($input);
+
+            $this->id = $input['payment']['id'];
+
+            $this->model = $this->repo->findByGatewayPaymentIdOrFail(
+                $input['gateway']['MD']);
+
+            $paymentId = $this->model->getPaymentId();
+
+            if ($this->id !== $paymentId)
+            {
+                throw new Exception\LogicException(
+                    'app payment '. $this->id . ' should be equal to payment id . '. $paymentId);
+            }
+
+            $this->postAuthEnrolledRequest($input);
+        }
 
         $acquirerData = $this->getAcquirerData($input, $this->model);
 
@@ -851,7 +852,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function validateParesStatusIfApplicable(array $input)
+    protected function validatePares(array $input)
     {
         if (isset($input['gateway']['PaRes']) === false)
         {
@@ -876,6 +877,33 @@ class Gateway extends Base\Gateway
             return;
         }
 
+        $this->checkForErrorInPares($PaRes, $input);
+
+        $this->checkValidParesStatus($PaRes);
+    }
+
+    protected function checkForErrorInPares(array $PaRes, array $input)
+    {
+        if (empty($PaRes['Message']['Error']['errorCode']) === false)
+        {
+            $code = $PaRes['Message']['Error']['errorCode'];
+
+            $desc = $PaRes['Message']['Error']['errorMessage'] ?? '';
+
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,
+                $code,
+                $desc,
+                [
+                    'issuer' => $input['card']['issuer'],
+                    'iin'    => $input['card']['iin']
+                ]
+            );
+        }
+    }
+
+    protected function checkValidParesStatus(array $PaRes)
+    {
         // We are doing this only for N right now as Y, A and U
         // depends on the processor
         if ((isset($PaRes['Message']['PARes']['TX']['status']) === true) and

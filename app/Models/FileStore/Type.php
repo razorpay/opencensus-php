@@ -13,6 +13,8 @@ class Type
     const KOTAK_NETBANKING_REFUND           = 'kotak_netbanking_refund';
 
     const HDFC_NETBANKING_REFUND            = 'hdfc_netbanking_refund';
+    const HDFC_EMANDATE_REGISTER            = 'hdfc_emandate_register';
+    const HDFC_EMANDATE_DEBIT               = 'hdfc_emandate_debit';
 
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
@@ -44,6 +46,7 @@ class Type
 
     const BATCH_INPUT                       = 'batch_input';
     const BATCH_OUTPUT                      = 'batch_output';
+    const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
 
     const BLANK                             = 'blank';
 
@@ -79,6 +82,7 @@ class Type
     const INVOICE_BUCKET_CONFIG                 = 'invoice_bucket_config';
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
+    const RECON_BUCKET_CONFIG                   = 'recon_bucket_config';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -93,6 +97,8 @@ class Type
             self::KOTAK_NETBANKING_CLAIM,
             self::KOTAK_NETBANKING_REFUND,
             self::HDFC_NETBANKING_REFUND,
+            self::HDFC_EMANDATE_REGISTER,
+            self::HDFC_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::FEDERAL_NETBANKING_REFUND,
@@ -124,6 +130,7 @@ class Type
         Constants\Entity::BATCH => [
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
+            self::RECONCILIATION_BATCH_INPUT,
         ],
 
         Constants\Entity::MERCHANT_DETAIL => [
@@ -154,6 +161,7 @@ class Type
      * Types allowed when no entity is associated
      */
     const SHARED_ACCOUNT_ALLOWED_TYPES = [
+        self::RECONCILIATION_BATCH_INPUT,
         self::BENEFICIARY_FILE,
         self::EMI_FILE,
         self::AXIS_EMI_FILE,
@@ -168,6 +176,8 @@ class Type
         self::KOTAK_NETBANKING_CLAIM,
         self::KOTAK_NETBANKING_REFUND,
         self::HDFC_NETBANKING_REFUND,
+        self::HDFC_EMANDATE_REGISTER,
+        self::HDFC_EMANDATE_DEBIT,
         self::CORPORATION_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
@@ -193,6 +203,8 @@ class Type
         self::SETTLEMENT_BUCKET_CONFIG => [
             self::KOTAK_NETBANKING_REFUND,
             self::HDFC_NETBANKING_REFUND,
+            self::HDFC_EMANDATE_REGISTER,
+            self::HDFC_EMANDATE_DEBIT,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,

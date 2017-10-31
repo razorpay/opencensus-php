@@ -669,6 +669,11 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::EXPIRED);
     }
 
+    public function hasCustomer(): bool
+    {
+        return $this->isAttributeNotNull(self::CUSTOMER_ID);
+    }
+
     public function hasCustomerBillingAddress(): bool
     {
         return ($this->getAttribute(self::CUSTOMER_BILLING_ADDR_ID) !== null);
@@ -752,41 +757,39 @@ class Entity extends Base\PublicEntity
 
     public function setCustomerDetails(Customer\Entity $customer)
     {
-        if (empty($customer))
-        {
-            return;
-        }
-
+        // Sets basic attributes
         $this->setCustomerName($customer->getName());
         $this->setCustomerContact($customer->getContact());
         $this->setCustomerEmail($customer->getEmail());
 
-        //
-        // Sets billing address
-        //
-
+        // Retrieves primary billing address and associates the same with invoice
         $repo = App::getFacadeRoot()['repo'];
 
-        $billingAddress = $repo->address
-                               ->fetchPrimaryAddressOfEntityOfType(
-                                    $customer,
-                                    Address\Type::BILLING_ADDRESS);
+        $billingAddress = $repo->address->fetchPrimaryAddressOfEntityOfType($customer, Address\Type::BILLING_ADDRESS);
 
-        if ($billingAddress !== null)
-        {
-            $this->setCustomerBillingAddrId($billingAddress->getId());
-        }
+        $this->customerBillingAddress()->associate($billingAddress);
+    }
+
+    public function associateAndSetCustomerDetails(Customer\Entity $customer)
+    {
+        $this->customer()->associate($customer);
+
+        $this->setCustomerDetails($customer);
+    }
+
+    public function unsetCustomerDetails()
+    {
+        $this->customer()->dissociate();
+        $this->customerBillingAddress()->dissociate();
+
+        $this->setCustomerName(null);
+        $this->setCustomerContact(null);
+        $this->setCustomerEmail(null);
     }
 
     public function setCustomerName($customerName)
     {
         $this->setAttribute(self::CUSTOMER_NAME, $customerName);
-    }
-
-    public function setCustomerBillingAddrId(string $customerBillingAddressId)
-    {
-        $this->setAttribute(
-            self::CUSTOMER_BILLING_ADDR_ID, $customerBillingAddressId);
     }
 
     public function setCustomerEmail($customerEmail)
@@ -925,26 +928,26 @@ class Entity extends Base\PublicEntity
      */
     protected function getCustomerDetailsAttribute(): array
     {
-        $customerDetails = [
+        $details = [
             Customer\Entity::NAME            => $this->getAttribute(self::CUSTOMER_NAME),
             Customer\Entity::EMAIL           => $this->getAttribute(self::CUSTOMER_EMAIL),
             Customer\Entity::CONTACT         => $this->getAttribute(self::CUSTOMER_CONTACT),
             Customer\Entity::BILLING_ADDRESS => null,
 
             // For backward compatibility.
-            self::CUSTOMER_NAME    => $this->getAttribute(self::CUSTOMER_NAME),
-            self::CUSTOMER_EMAIL   => $this->getAttribute(self::CUSTOMER_EMAIL),
-            self::CUSTOMER_CONTACT => $this->getAttribute(self::CUSTOMER_CONTACT),
+            self::CUSTOMER_NAME              => $this->getAttribute(self::CUSTOMER_NAME),
+            self::CUSTOMER_EMAIL             => $this->getAttribute(self::CUSTOMER_EMAIL),
+            self::CUSTOMER_CONTACT           => $this->getAttribute(self::CUSTOMER_CONTACT),
         ];
 
         if ($this->hasCustomerBillingAddress() === true)
         {
             $billingAddress = $this->customerBillingAddress->toArrayPublic();
 
-            $customerDetails[Customer\Entity::BILLING_ADDRESS] = $billingAddress;
+            $details[Customer\Entity::BILLING_ADDRESS] = $billingAddress;
         }
 
-        return $customerDetails;
+        return $details;
     }
 
     protected function getPaymentIdAttribute()
@@ -1185,8 +1188,7 @@ class Entity extends Base\PublicEntity
 
     public function customerBillingAddress()
     {
-        return $this->belongsTo(
-            'RZP\Models\Address\Entity', 'customer_billing_addr_id');
+        return $this->belongsTo('RZP\Models\Address\Entity', 'customer_billing_addr_id');
     }
 
     public function payments()

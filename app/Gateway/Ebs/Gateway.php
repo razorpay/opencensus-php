@@ -128,7 +128,9 @@ class Gateway extends Base\Gateway
         $this->verifySecureHash($input['gateway']);
 
         $this->assertPaymentId($input['payment']['id'], $input['gateway'][Resp::MERCHANT_REF_NO]);
-        $this->assertAmount($input['payment']['amount'], (int) ($input['gateway'][Resp::AMOUNT] * 100));
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($input['gateway'][Resp::AMOUNT], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
@@ -420,6 +422,44 @@ class Gateway extends Base\Gateway
         $verify->payment = $this->saveVerifyContentIfNeeded($gatewayPayment, $content);
 
         return $verify->status;
+    }
+
+    public function verifyRefund(array $input)
+    {
+        parent::verify($input);
+
+        // Hardcoding these refunds for processing
+        $unprocessedRefunds = [
+            '8SSbtyrGAntTkL',
+            '8SShzxcY41dwVX',
+            '8isATbpjCjzemn',
+            '8nmxz1O7qMMrbC',
+            '8nnx2FXXZBKoRq',
+            '8nrukT1CGNsB79',
+            '8nw7fwibP7uI6o',
+            '8omfRee2U6seQX',
+            '8omfsHke6Q1Hu9',
+            '8omghEFwLp63Kf',
+            '8owNdMYPBn5fJY',
+            '8p4NUngn9iGaaI',
+            '8p4QHner55GN0n',
+            '8qyNyJzcArBg99',
+        ];
+
+        $processedRefund = [];
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        {
+            return false;
+        }
+
+        if (in_array($input['refund']['id'], $processedRefund) === true)
+        {
+            return true;
+        }
+
+        throw new Exception\LogicException(
+            'Shouldn\'t reach here');
     }
 
     protected function getVerifyGatewayStatus($content)

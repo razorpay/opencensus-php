@@ -148,7 +148,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\PaymentVerificationException',
+            'class'                 => RZP\Exception\PaymentVerificationException::class,
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
@@ -181,54 +181,21 @@ return [
         'gateway_refunded' => true,
     ],
 
-    'testSoapTimeoutError' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => PublicErrorDescription::GATEWAY_ERROR_REQUEST_TIMEOUT,
-                ],
-            ],
-            'status_code' => 504,
-        ],
-        'exception' => [
-            'class'                 => RZP\Exception\GatewayTimeoutException::class,
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-        ],
-    ],
-
-    'testSoapError' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
-                ],
-            ],
-            'status_code' => 502,
-        ],
-        'exception' => [
-            'class'                 => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_SOAP_ERROR,
-        ],
-    ],
-
-    'testSoapSslError' => [
+    'testMpesaUpperCaseError' => [
         'response'  => [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => RZP\Exception\PaymentVerificationException::class,
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+            'class'                 => RZP\Exception\BadRequestException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED,
         ],
     ],
-
     'testAmountTampering' => [
         'response'  => [
             'content'     => [

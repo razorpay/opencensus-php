@@ -9,7 +9,7 @@
 #
 # Commented-out jobs are currently disabled on prod.
 
-BASE_URL="http://api.razorpay.dev/v1"
+BASE_URL="http://api.razorpay.in/v1"
 
 TMP_CRONTAB=/tmp/crontab
 

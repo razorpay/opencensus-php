@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
@@ -214,9 +215,10 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($attrs, $callbackData);
 
-        $actualAmount = (int) ($callbackData['AMT'] * 100);
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($callbackData['AMT'], 2, '.', '');
 
-        $this->assertAmount($input['payment']['amount'], $actualAmount);
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -828,6 +830,18 @@ class Gateway extends Base\Gateway
      */
     protected function getLiveSecret()
     {
+        //
+        // For SI terminals, there's no concept of
+        // master merchant ID or master key.
+        // Every terminal will have a different secret and
+        // hence we take it from the terminal and not from
+        // the config like we do for retail and corp.
+        //
+        if ($this->isRecurringBanking() === true)
+        {
+            return $this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET];
+        }
+
         switch ($this->getLiveMerchantId2())
         {
             case $this->config['live_merchant_id2']:

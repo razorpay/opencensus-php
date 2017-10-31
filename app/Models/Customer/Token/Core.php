@@ -9,16 +9,61 @@ use RZP\Models\Terminal;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function create($customer, $input)
+    /**
+     * TODO: merge create and this method
+     * currently this needs to be in transaction as we are creating
+     * new card entity as well with token creation without payment
+     *
+     * @param $customer
+     * @param $input
+     *
+     * @return mixed
+     */
+    public function createDirectToken(Customer\Entity $customer, array $input)
+    {
+        (new Validator)->validateInput(Validator::CREATE_DIRECT, $input);
+
+        $cardInput = $this->getCardInputForDirectToken($input);
+
+        return $this->repo->transaction(
+            function() use ($customer, $input, $cardInput)
+            {
+                //
+                // Doing this only for cards for now.
+                // Other types of tokens need to be thought out still.
+                //
+
+                $card = (new Card\Core)->create($cardInput, $customer->merchant);
+
+                return $this->create($customer, $input, $card);
+            });
+    }
+
+    /**
+     * @param  Customer\Entity $customer
+     * @param  array           $input
+     * @param Card\Entity|null $card
+     *
+     * @return Entity Below function is used to create token in payment flow where we
+     *
+     * Below function is used to create token in payment flow where we
+     * already have a card_id
+     */
+    public function create($customer, $input, Card\Entity $card = null)
     {
         $token = new Token\Entity;
 
-        if (isset($input[Token\Entity::CARD_ID]))
+        if ((isset($input[Token\Entity::CARD_ID]) === true) or
+            ($card !== null))
         {
-            $card = $this->repo->card->findOrFailPublic($input[Token\Entity::CARD_ID]);
+            if ($card === null)
+            {
+                $card = $this->repo->card->findOrFailPublic($input[Token\Entity::CARD_ID]);
+            }
 
             $token->card()->associate($card);
 
@@ -154,6 +199,67 @@ class Core extends Base\Core
         return $tokens;
     }
 
+    public function updateTokenFromNetbankingGatewayData(Entity $token, array $gatewayData)
+    {
+        if (empty($gatewayData[Entity::RECURRING_STATUS]) === false)
+        {
+            $gatewayRecurringStatus = $gatewayData[Entity::RECURRING_STATUS];
+
+            $token->setRecurringStatus($gatewayRecurringStatus);
+        }
+        else
+        {
+            //
+            // The recurring status should always be set for token update.
+            //
+            $this->trace->critical(
+                TraceCode::GATEWAY_RECURRING_STATUS_NOT_SET,
+                [
+                    'token'        => $token->toArray(),
+                    'gateway_data' => $gatewayData
+                ]);
+
+            return;
+        }
+
+        if ($gatewayRecurringStatus === RecurringStatus::CONFIRMED)
+        {
+            $token->setRecurring(true);
+
+            //
+            // Not all netbanking recurring have a gateway token.
+            // However, if a second recurring payment is attempted without a gateway token,
+            // we throw an exception or handle the case appropriately in the child gateway class.
+            //
+            if (empty($gatewayData[Entity::GATEWAY_TOKEN]) === false)
+            {
+                $gatewayToken = $gatewayData[Entity::GATEWAY_TOKEN];
+
+                $token->setGatewayToken($gatewayToken);
+            }
+        }
+        else if ($gatewayRecurringStatus === RecurringStatus::REJECTED)
+        {
+            if (empty($gatewayData[Entity::RECURRING_FAILURE_REASON]) === true)
+            {
+                //
+                // If it's rejected, there must always be a reason.
+                //
+
+                $this->trace->critical(
+                    TraceCode::GATEWAY_RECURRING_REJECTED_WITHOUT_REASON,
+                    [
+                        'token'        => $token->toArray(),
+                        'gateway_data' => $gatewayData
+                    ]);
+
+                return;
+            }
+
+            $token->setRecurringFailureReason($gatewayData[Entity::RECURRING_FAILURE_REASON]);
+        }
+    }
+
     protected function validateExistingToken($token)
     {
         $existingTokens = $this->repo->token->getByMethodAndCustomerId(
@@ -179,15 +285,6 @@ class Core extends Base\Core
 
     protected function validateExistingTokenNetbanking($existingTokens, $newToken)
     {
-        foreach ($existingTokens as $token)
-        {
-            if (($token->getBank()  === $newToken->getBank()) and
-                ($token->getGatewayToken() === $newToken->getGatewayToken()))
-            {
-                return $token;
-            }
-        }
-
         return null;
     }
 
@@ -203,5 +300,20 @@ class Core extends Base\Core
         }
 
         return null;
+    }
+
+    protected function getCardInputForDirectToken(array & $input)
+    {
+        $cardInput = array_pull($input, Entity::CARD);
+
+        $cardInput[Card\Entity::VAULT] = Card\Vault::TOKENEX;
+
+        $iin = substr($cardInput[Card\Entity::NUMBER], 0, 6);
+
+        $network = Card\Network::detectNetwork($iin);
+
+        $cardInput[Card\Entity::CVV] = Card\Entity::getDummyCvv($network);
+
+        return $cardInput;
     }
 }

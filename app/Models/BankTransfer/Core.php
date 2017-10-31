@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Refund as PaymentRefund;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
@@ -48,12 +49,14 @@ class Core extends Base\Core
      *
      * @return bool
      */
-    public function process(array $input)
+    public function process(array $input, string $provider = null)
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PROCESSING,
             $input
         );
+
+        $processor = new Processor($provider);
 
         try
         {
@@ -61,9 +64,9 @@ class Core extends Base\Core
 
             $this->mutex->acquireAndRelease(
                 $input[Entity::PAYEE_ACCOUNT],
-                function() use ($bankTransfer)
+                function() use ($processor, $bankTransfer)
                 {
-                    (new Processor)->process($bankTransfer);
+                    $processor->process($bankTransfer);
                 },
                 60,
                 ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -171,17 +174,13 @@ class Core extends Base\Core
 
         foreach ($refunds as $refund)
         {
-
-            // If refund was marked as failed after creating a fund
-            // transfer attempt then that means this failure was result
-            // of payout file recon. We aren't handling these just now.
-            if ($refund->fundTransferAttempts->isNotEmpty() === true)
+            if ($refund->isStatusFailed() === false)
             {
                 $this->trace->info(
                     TraceCode::REFUND_RETRY_SKIPPED,
                     [
-                        'refund_id'                 => $refund->getPublicId(),
-                        'fund_transfer_attempt_ids' => $refund->fundTransferAttempts->getIds(),
+                        'refund_id'     => $refund->getPublicId(),
+                        'refund_status' => $refund->getStatus(),
                     ]);
 
                 continue;
@@ -255,5 +254,16 @@ class Core extends Base\Core
         }
 
         return $refunds;
+    }
+
+    public function editPayerBankAccount(Entity $bankTransfer, array $input)
+    {
+        $payerBankAccount = $bankTransfer->payerBankAccount;
+
+        $payerBankAccount = $payerBankAccount->edit($input, 'editVirtualBankAccount');
+
+        $this->repo->saveOrFail($payerBankAccount);
+
+        return $bankTransfer;
     }
 }

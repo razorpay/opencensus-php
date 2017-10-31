@@ -762,13 +762,22 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
 
-        $data = [];
+        $this->doAuthPayment($payment);
 
-        // TPV payment should not be routed through either ecommerce or null terminal
-        $this->makeRequestAndCatchException(function () use ($payment)
-        {
-            $this->doAuthPayment($payment);
-        });
+        $payment2 = $this->getLastPayment(true);
+
+        $this->assertEquals('SharNbBdkTmnl1', $payment2['terminal_id']);
+
+        $this->fixtures->terminal->edit('SharNbBdkTmnl1',['enabled' => false]);
+
+        $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            RuntimeException::class);
     }
 
     public function testSecuritiesMerchantOnKKBKTerminalSelection()
@@ -936,38 +945,18 @@ class TerminalSelectionTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
-        $this->fixtures->create('terminal:shared_cybersource_axis_terminal');
-
-        $this->fixtures->create('gateway_rule', [
-            'method'           => 'card',
-            'merchant_id'      => '100000Razorpay',
-            'gateway'          => 'axis_migs',
-            'category2'        => 'pharma',
-            'type'             => 'filter',
-            'filter_type'      => 'reject',
-            'shared_terminal'  => 1,
-            'gateway_acquirer' => 'hdfc',
-            'group'            => 'pharma_filter',
+        $this->fixtures->create('terminal:shared_axis_terminal', [
+            'id' =>'1000AxisHdfcTl',
+            'gateway_acquirer' => 'hdfc'
         ]);
 
-        $this->fixtures->create('gateway_rule', [
-            'method'           => 'card',
-            'merchant_id'      => '100000Razorpay',
-            'gateway'          => 'cybersource',
-            'category2'        => 'pharma',
-            'type'             => 'filter',
-            'filter_type'      => 'reject',
-            'shared_terminal'  => 1,
-            'gateway_acquirer' => 'hdfc',
-            'group'            => 'pharma_filter',
-        ]);
+        $this->fixtures->create('terminal:shared_axis_terminal');
 
         $payment = $this->getDefaultPaymentArray();
         $this->doAuthAndCapturePayment($payment);
 
         $payment1 = $this->getLastEntity('payment', true);
-        $this->assertEquals('1000CybAxTrmnl', $payment1['terminal_id']);
+        $this->assertEquals('1000AxisMigsTl', $payment1['terminal_id']);
 
         $terminalAttrs = [
             'id' => 'DrctHDFCTermnl',

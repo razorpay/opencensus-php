@@ -39,27 +39,27 @@ class Batch extends Base
 
     public function createRefundWithOneAttempt(array $attributes = array())
     {
-        return $this->createProcessedEntity($attributes, Status::PROCESSING, 0, 0, 0);
+        return $this->createBatchEntityWithStatus($attributes, Status::PARTIALLY_PROCESSED, 0, 0, 0);
     }
 
     public function createRefundWithTwoAttempt(array $attributes = array())
     {
-         return $this->createProcessedEntity($attributes, Status::PROCESSING, 1, 0, 1);
+         return $this->createBatchEntityWithStatus($attributes, Status::PARTIALLY_PROCESSED, 1, 0, 1);
     }
 
     public function createRefundWithThreeAttempt(array $attributes = array())
     {
-         return $this->createProcessedEntity($attributes, Status::PROCESSING, 2, 0, 1);
+         return $this->createBatchEntityWithStatus($attributes, Status::PARTIALLY_PROCESSED, 2, 0, 1);
     }
 
     public function createRefundWithFourAttempt(array $attributes = array())
     {
-         return $this->createProcessedEntity($attributes, Status::PROCESSING, 3, 0, 1);
+         return $this->createBatchEntityWithStatus($attributes, Status::PARTIALLY_PROCESSED, 3, 0, 1);
     }
 
     public function createRefundWithProcessedEntries(array $attributes = array())
     {
-         return $this->createProcessedEntity($attributes, Status::PROCESSED, 3, 1, 0);
+         return $this->createBatchEntityWithStatus($attributes, Status::PROCESSED, 3, 1, 0);
     }
 
     public function create(array $attributes = array())
@@ -76,7 +76,7 @@ class Batch extends Base
         return $batch;
     }
 
-    protected function createProcessedEntity($attributes, $status, $attempts, $successCount, $failureCount)
+    protected function createBatchEntityWithStatus($attributes, $status, $attempts, $successCount, $failureCount)
     {
         $batch = $this->fixtures->create('batch:refund', $attributes);
 

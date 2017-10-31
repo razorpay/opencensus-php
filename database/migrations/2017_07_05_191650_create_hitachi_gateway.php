@@ -87,9 +87,9 @@ class CreateHitachiGateway extends Migration
     {
         Schema::table(Table::HITACHI, function(Blueprint $table)
         {
-            $table->dropForeign(Table::Hitachi . '_' . Hitachi::PAYMENT_ID . '_foreign');
+            $table->dropForeign(Table::HITACHI . '_' . Hitachi::PAYMENT_ID . '_foreign');
         });
 
-        Schema::drop(Table::Hitachi);
+        Schema::drop(Table::HITACHI);
     }
 }

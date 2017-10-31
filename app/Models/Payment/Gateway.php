@@ -132,6 +132,7 @@ class Gateway
     const REFUND_RETRY_GATEWAYS = [
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::BILLDESK,
+        Payment\Gateway::EBS,
         Payment\Gateway::HDFC,
         Payment\Gateway::MOBIKWIK,
         Payment\Gateway::WALLET_OLAMONEY,
@@ -360,10 +361,11 @@ class Gateway
         ],
         self::CYBERSOURCE => [
             Network::MC,
-            Network::VISA
+            Network::VISA,
         ],
         self::HITACHI => [
             Network::MC,
+            Network::VISA,
         ],
         self::FIRST_DATA => [
             Network::MC,
@@ -450,11 +452,31 @@ class Gateway
         Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS,
         Gateway::HDFC,
-        Gateway::NETBANKING_ICICI
+        Gateway::NETBANKING_ICICI,
+        Gateway::NETBANKING_HDFC,
     ];
 
     public static $eMandateBanks = [
-        IFSC::ICIC
+        IFSC::ICIC,
+        IFSC::HDFC,
+    ];
+
+    /**
+     * List of netbanking gateways that process recurring payments through file send
+     *
+     * @var array
+     */
+    public static $fileBasedEMandateDebitGateways = [
+        Gateway::NETBANKING_HDFC,
+    ];
+
+    /**
+     * List of netbanking gateways that process emandate registration through file send
+     *
+     * @var array
+     */
+    public static $fileBasedEMandateRegistrationGateways = [
+        Gateway::NETBANKING_HDFC,
     ];
 
     /**
@@ -540,6 +562,7 @@ class Gateway
     public static $refundFileNetbankingGateways = [
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        IFSC::CORP => Gateway::NETBANKING_CORPORATION,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
@@ -591,10 +614,6 @@ class Gateway
         Gateway::AXIS_MIGS
     ];
 
-    public static $shouldNotSetNon3DSTerminalsInTokenGateways = [
-        Gateway::FIRST_DATA,
-    ];
-
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];
@@ -626,9 +645,31 @@ class Gateway
         return $gatewayToBankMap[$gateway];
     }
 
-    public static function isRecurringGateway($gateway)
+    public static function isRecurringGateway($gateway): bool
     {
         return in_array($gateway, self::$recurringGateways, true);
+    }
+
+    /**
+     * Checks whether the bank requires a file-based system to register for eMandate
+     *
+     * @param string $gateway
+     *
+     * @return bool
+     */
+    public static function isFileBasedEMandateRegistrationGateway(string $gateway): bool
+    {
+        return (in_array($gateway, self::$fileBasedEMandateRegistrationGateways) === true);
+    }
+
+    /**
+     * @param string $gateway
+     *
+     * @return bool
+     */
+    public static function isFileBasedEMandateDebitGateway(string $gateway): bool
+    {
+        return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
     }
 
     /**

@@ -390,11 +390,11 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Customer\Entity::class, [
-            'id' => $faker->uniqueid,
+            'id'          => $faker->uniqueid,
             'merchant_id' => '10000000000000',
-            'name' => 'name',
-            'contact' => '9988776655',
-            'notes' => null,
+            'name'        => 'name',
+            'contact'     => '9988776655',
+            'notes'       => null,
         ]);
 
         $factory(\RZP\Models\Customer\Token\Entity::class, [
