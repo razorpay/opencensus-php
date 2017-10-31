@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\User;
 
 use DB;
+use Mail;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Hashing\BcryptHasher;
+use RZP\Mail\User\AccountVerification;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class UserTest extends TestCase
@@ -175,8 +177,8 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'password'              => 'hello',
-            'password_confirmation' => 'hello1'
+            'password'              => 'hello1234',
+            'password_confirmation' => 'hello123'
         ];
 
         $testData['request']['content'] = $content;
@@ -192,12 +194,26 @@ class UserTest extends TestCase
     {
         $user = $this->fixtures->create('user');
 
+        $ownerUser = $this->fixtures->create('user');
+
         $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $mappingData['user_id'] = $user['id'];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
 
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'role'        => 'owner1',
+            'role'        => 'manager',
             'merchant_id' => $merchant['id']
         ];
 
@@ -205,7 +221,9 @@ class UserTest extends TestCase
 
         $testData['request']['url'] = '/users/' . $user['id'] . '/attach';
 
-        $this->ba->appAuth();
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
 
         $this->startTest();
 
@@ -215,21 +233,31 @@ class UserTest extends TestCase
 
         $this->assertEquals(count($merchants), 2);
 
-        $this->assertEquals($merchants['owner1'], $merchant['id']);
+        $this->assertEquals($merchants['manager'], $merchant['id']);
     }
 
     public function testDetachMerchant()
     {
         $user = $this->fixtures->create('user');
 
+        $ownerUser = $this->fixtures->create('user');
+
         $merchant = $this->fixtures->create('merchant');
 
-        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'owner1');
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'owner');
 
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'role'        => 'owner1',
+            'role'        => 'owner',
             'merchant_id' => $merchant['id']
         ];
 
@@ -237,7 +265,9 @@ class UserTest extends TestCase
 
         $testData['request']['url'] = '/users/' . $user['id'] . '/detach';
 
-        $this->ba->appAuth();
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
 
         $this->startTest();
 
@@ -254,12 +284,22 @@ class UserTest extends TestCase
 
         $merchant = $this->fixtures->create('merchant');
 
+        $ownerUser = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
         $this->createUserMerchantMapping($user['id'], $merchant['id'], 'owner');
 
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'role'        => 'owner1',
+            'role'        => 'manager',
             'merchant_id' => $merchant['id']
         ];
 
@@ -267,7 +307,9 @@ class UserTest extends TestCase
 
         $testData['request']['url'] = '/users/' . $user['id'] . '/update';
 
-        $this->ba->appAuth();
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
 
         $this->startTest();
 
@@ -277,18 +319,65 @@ class UserTest extends TestCase
 
         $this->assertEquals(count($merchants), 2);
 
-        $this->assertEquals($merchants['owner1'], $merchant['id']);
+        $this->assertEquals($merchants['manager'], $merchant['id']);
+    }
+
+    public function testGetUserByEmail()
+    {
+        $user = $this->fixtures->create('user');
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url , $user['email']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $user['id'];
+
+        $this->startTest();
     }
 
     protected function createUserMerchantMapping(string $userId, string $merchantId, string $role)
     {
         DB::table('merchant_users')
-            ->insert([
+            ->insert(
+                [
                 'merchant_id' => $merchantId,
                 'user_id'     => $userId,
                 'role'        => $role,
                 'created_at'  => 1493805150,
                 'updated_at'  => 1493805150
-            ]);
+                ]
+            );
+    }
+
+    public function testResendVerificationMail()
+    {
+        Mail::fake();
+
+        $user = $this->fixtures->create('user', [
+            'id' => '12398102831231',
+            'confirm_token' => 'testingtestingtesting',
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        Mail::assertSent(AccountVerification::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('org', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+
+            $this->assertEquals('emails.user.account_verification', $mail->view);
+
+            return true;
+        });
     }
 }

@@ -66,6 +66,7 @@ class Core extends Base\Core
         if (isset($input['email']) === true)
         {
             $email['email'] = $input['email'];
+
             (new Validator)->validateInput('unique_email', $email);
         }
         else
@@ -73,7 +74,11 @@ class Core extends Base\Core
             $input['email'] = $aggregatorMerchant->getEmail();
         }
 
-        $subMerchant = (new Entity)->build($input);
+        $merchantData['name'] = $input['name'] ?? null;
+
+        (new Validator)->validateInput('edit_name', $merchantData);
+
+        $subMerchant = (new Merchant\Entity)->build($input);
 
         $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
@@ -202,7 +207,9 @@ class Core extends Base\Core
      *
      * @param \RZP\Models\Merchant\Entity $merchant
      * @param array $input
+     *
      * @return \RZP\Models\Merchant\Entity
+     * @throws BadRequestException
      */
     public function editEmail($merchant, $input)
     {
@@ -213,20 +220,17 @@ class Core extends Base\Core
                 'new_email' => $input['email']
             ]);
 
-        $tags = $merchant->tagNames();
-        foreach ($tags as $tag)
-        {
-            if (substr($tag, 0, 4) === "Ref-")
-            {
-                $parentId = substr($tag, 4);
-                $parent = $this->repo->merchant->find($parentId);
+        $parentId = $merchant->getReferrer();
 
-                if (($parent !== null) and
-                    strtolower($merchant->getEmail()) === strtolower($parent->getEmail()))
-                {
-                    throw new BadRequestException(ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
-                        Merchant\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
-                }
+        if (empty($parentId) === false)
+        {
+            $parent = $this->repo->merchant->find($parentId);
+
+            if ((empty($parent) === false) and
+                (strtolower($merchant->getEmail()) === strtolower($parent->getEmail())))
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
+                    Merchant\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
             }
         }
 
@@ -483,5 +487,69 @@ class Core extends Base\Core
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
 
         return $batches;
+    }
+
+    /**
+     * This handles 3 possible cases when changing user email.
+     * 1. There exists a team member with the new email
+     *    Here, we swap the roles of the team member(manager) with new email and the original owner
+     * 2. There exists a user(not team member) with the new email
+     *    Here, we change the original owner to manager and then add the user with new email as owner
+     * 3. The new email is unique so far
+     *    Here, we just change the email of the original user(owner).
+     *
+     * @param $merchant
+     * @param $originalEmail
+     * @param $newEmail
+     *
+     * @return bool
+     */
+    public function changeMerchantUsersEmail(Entity $merchant, string $originalEmail, string $newEmail)
+    {
+        $merchantUsersCount = $merchant->users()->count();
+
+        if ($merchantUsersCount === 0)
+        {
+            return false;
+        }
+
+        $teamUser = $merchant->users()->where('email', $newEmail)->first();
+
+        $existingUser = $this->repo->user->getUserFromEmail($newEmail);
+
+        $selfUser = $this->repo->user->getUserFromEmail($originalEmail);
+
+        $oldOwner = $merchant->primaryOwner();
+
+        if ((empty($oldOwner) === false) and ((empty($teamUser) === false) or (empty($existingUser) === false)))
+        {
+            // Assign Manager role to the old owner.
+            (new User\Core)->detachAndAttachMerchantUser($oldOwner, $merchant->getId(), 'manager');
+        }
+
+        if (empty($teamUser) === false)
+        {
+            // Assign Owner role to the team user.
+            (new User\Core)->detachAndAttachMerchantUser($teamUser, $merchant->getId(), 'owner');
+        }
+        elseif (empty($existingUser) === false)
+        {
+            // Assign owner to existing user.
+            $userMerchantMappingInputData = [
+                'action'      => 'attach',
+                'role'        => 'owner',
+                'merchant_id' => $merchant->getId(),
+            ];
+
+            (new User\Core)->updateUserMerchantMapping($existingUser, $userMerchantMappingInputData);
+        }
+        elseif (empty($selfUser) === false)
+        {
+            $userData = [
+                'email' => $newEmail,
+            ];
+
+            (new User\Core)->edit($selfUser, $userData);
+        }
     }
 }

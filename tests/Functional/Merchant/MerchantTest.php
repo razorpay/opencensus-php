@@ -300,6 +300,11 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditTestAccountMerchantEmail()
+    {
+        $this->startTest();
+    }
+
     public function testEditMerchantConfig()
     {
         $this->createMerchant();
@@ -1524,6 +1529,7 @@ class MerchantTest extends TestCase
 
     public function testCreateNbRecurringTokenPreferencesRoute()
     {
+        $this->markTestSkipped();
         $this->fixtures->create('terminal:shared_netbanking_icici_recurring_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -1584,29 +1590,21 @@ class MerchantTest extends TestCase
 
     public function testUpdateSubmerchantEmail()
     {
-        $merchant = Merchant\Entity::find("10000000000000");
-        $merchant->reTag(["Aggregator", "Referral"]);
-        $merchant->saveOrFail();
+        $user = $this->fixtures->create('user');
 
-        $this->fixtures->merchant->addFeatures(["aggregator"]);
-
-        $this->ba->proxyAuth();
-        $request = array(
-            'url'     => '/submerchants',
-            'method'  => 'post',
-            'content' => [
-                "id"     => "10000000000044",
-                "name"   => "Submerchant",
-                "org_id" => "100000razorpay"
-            ]);
-
-        $this->makeRequestAndGetContent($request);
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000044',
+            'name'   => 'Submerchant',
+            'org_id' => '100000razorpay',
+            'email'  => 'test@razorpay.com',
+        ]);
 
         $merchant = Merchant\Entity::find("10000000000044");
         $merchant->reTag(["ref-10000000000000"]);
         $merchant->saveOrFail();
 
         $this->ba->appAuth();
+
         $this->startTest();
     }
 }

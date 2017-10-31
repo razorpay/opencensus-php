@@ -131,7 +131,10 @@ class Entity extends Base\PublicEntity
 
     protected $revisionCreationsEnabled = true;
 
+    protected $generateIdOnCreate = true;
+
     protected static $generators = [
+        self::ID,
         self::TRANSACTION_REPORT_EMAIL,
         self::INVOICE_CODE,
     ];
@@ -294,7 +297,7 @@ class Entity extends Base\PublicEntity
 
     protected function generateInvoiceCode($input)
     {
-        $id = $input[self::ID];
+        $id = $this->getAttribute(self::ID);
 
         $first8 = substr($id, 0, 8);
 
@@ -356,6 +359,21 @@ class Entity extends Base\PublicEntity
     public function linkedAccountsRequireKyc(): bool
     {
         return $this->getAttribute(self::LINKED_ACCOUNT_KYC);
+    }
+
+    public function getReferrer()
+    {
+        $tagNames = $this->tagNames();
+
+        foreach ($tagNames as $tagName)
+        {
+            if (substr($tagName, 0, 4) === 'Ref-')
+            {
+                return substr($tagName, 4);
+            }
+        }
+
+        return null;
     }
 
     public function isEducationCategory()
@@ -1155,6 +1173,22 @@ class Entity extends Base\PublicEntity
     public function admins()
     {
         return $this->morphedByMany('\RZP\Models\Admin\Admin\Entity', 'entity', Table::MERCHANT_MAP);
+    }
+
+    /**
+     * Get the owners of the merchant.
+     */
+    public function owners()
+    {
+        return $this->users()->where('role','owner')->get();
+    }
+
+    /**
+     * Get the primary owner of the merchant.
+     */
+    public function primaryOwner()
+    {
+        return $this->owners()->first();
     }
 
     public function users()
