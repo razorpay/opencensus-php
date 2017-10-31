@@ -1396,6 +1396,7 @@ final class Route
         'onboarding_features_update_status'     => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_fetch_status'      => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_update'            => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
+        'onboarding_features_fetch_details'     => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
     ];
 
     public static $direct = [
