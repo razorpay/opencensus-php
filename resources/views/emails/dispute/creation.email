@@ -49,7 +49,7 @@
                               <tr>
                                 <td class="text-center">
                                   <h2 style="color: {{ $brand_text_color }}">
-                                      Chargeback Alert
+                                      Dispute Alert
                                   </h2>
                                 </td>
                               </tr>
@@ -66,7 +66,7 @@
                                 <td class="text-center">
                                   <div style="margin-top: 12px; color: {{ $brand_text_color }}">
                                     <div style="color: {{ $brand_text_color }}">
-                                        A chargeback has been raised for amount &#x20b9; {{ $amount }}
+                                        A dispute has been raised for amount &#x20b9; {{ $amount }}
                                     </div>
                                   </div>
                                 </td>
@@ -125,7 +125,7 @@
 
                 <td colspan="2" class="content" style="width: 85%;">
                     <div>
-                        <strong class="text-uppercase lh-26">Date of Chargeback</strong> <br> {{ $createdDate }}
+                        <strong class="text-uppercase lh-26">Date of Dispute</strong> <br> {{ $createdDate }}
                     </div>
                 </td>
 
@@ -140,7 +140,7 @@
 
                 <td colspan="2" class="content" style="width: 85%;">
                     <div>
-                        <strong class="text-uppercase lh-26">Chargeback Reason</strong> <br> {{ $dispute['reason_code'] }} : {{ $dispute['reason_description'] }}
+                        <strong class="text-uppercase lh-26">Dispute Reason</strong> <br> {{ $dispute['reason_description'] }}
                     </div>
                 </td>
 
@@ -174,10 +174,9 @@
                         <br>
                         Hello {{ $merchant['name'] }},
                         <br><br>
-                        We have received a chargeback against the payment ID mentioned above. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
+                        We have received a dispute against the payment ID mentioned above. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
                         <br><br>
                         Note: {{ $note }}
-                        Please refer to our <a href="https://razorpay.com/chargeback/">Chargeback Guide</a> for more details.
                         <br><br>
 
                     </div>
