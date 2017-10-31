@@ -419,4 +419,39 @@ return [
             ],
         ],
     ],
+
+    'testGetPreSignupDetails' => [
+        'request' => [
+            'content' => [],
+            'url'     => '/pre_signup',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'      => '1',
+                'transaction_volume' => '5',
+                'department'         => '6',
+                'contact_mobile'     => '8722627189',
+            ],
+        ],
+    ],
+
+    'testPutPreSignupDetails' => [
+        'request' => [
+            'content' => [
+                'business_type' => '2',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'      => '2',
+                'transaction_volume' => null,
+                'department'         => null,
+                'contact_mobile'     => null,
+                'role'               => null,
+            ],
+        ],
+    ],
 ];

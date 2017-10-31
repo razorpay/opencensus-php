@@ -47,7 +47,22 @@ return [
         'gstin'         => '29kjsngjk213922',
         'type'          => 'adjustment',
         'amount'        => -1300,
-        'tax'           => 0,
+        'tax'           => 123,
+    ],
+
+    'testFeeAdjustmentFailure'  => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 
     'testInvoiceEntityCreateForGivenMerchant' => [

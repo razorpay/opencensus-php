@@ -47,13 +47,6 @@ class BatchController extends Controller
         return ApiResponse::json($result);
     }
 
-    public function retryBatch($id)
-    {
-        $result = $this->service()->retryBatch($id);
-
-        return ApiResponse::json($result);
-    }
-
     /**
      * Ref: Batch/Core::retryBatchOutputFile
      *

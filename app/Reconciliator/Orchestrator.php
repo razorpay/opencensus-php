@@ -40,26 +40,27 @@ class Orchestrator extends Base\Core
      * Bank constants
      ******************/
 
-    const HDFC                = 'HDFC';
-    const AXIS                = 'Axis';
-    const KOTAK               = 'Kotak';
-    const BILLDESK            = 'BillDesk';
-    const PAYZAPP             = 'PayZapp';
-    const MOBIKWIK            = 'Mobikwik';
-    const PAYTM               = 'Paytm';
-    const OLAMONEY            = 'Olamoney';
-    const FREECHARGE          = 'Freecharge';
-    const NETBANKING_AXIS     = 'NetbankingAxis';
-    const NETBANKING_ICICI    = 'NetbankingIcici';
-    const NETBANKING_FEDERAL  = 'NetbankingFederal';
-    const NETBANKING_RBL      = 'NetbankingRbl';
-    const NETBANKING_INDUSIND = 'NetbankingIndusind';
-    const NETBANKING_PNB      = 'NetbankingPnb';
-    const VIRTUAL_ACC_KOTAK   = 'VirtualAccKotak';
-    const JIOMONEY            = 'Jiomoney';
-    const EBS                 = 'Ebs';
-    const FIRST_DATA          = 'FirstData';
-    const ADMIN               = 'admin';
+    const HDFC                   = 'HDFC';
+    const AXIS                   = 'Axis';
+    const KOTAK                  = 'Kotak';
+    const BILLDESK               = 'BillDesk';
+    const PAYZAPP                = 'PayZapp';
+    const MOBIKWIK               = 'Mobikwik';
+    const PAYTM                  = 'Paytm';
+    const OLAMONEY               = 'Olamoney';
+    const FREECHARGE             = 'Freecharge';
+    const NETBANKING_AXIS        = 'NetbankingAxis';
+    const NETBANKING_ICICI       = 'NetbankingIcici';
+    const NETBANKING_FEDERAL     = 'NetbankingFederal';
+    const NETBANKING_CORPORATION = 'NetbankingCorporation';
+    const NETBANKING_RBL         = 'NetbankingRbl';
+    const NETBANKING_INDUSIND    = 'NetbankingIndusind';
+    const NETBANKING_PNB         = 'NetbankingPnb';
+    const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
+    const JIOMONEY               = 'Jiomoney';
+    const EBS                    = 'Ebs';
+    const FIRST_DATA             = 'FirstData';
+    const ADMIN                  = 'admin';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -67,25 +68,26 @@ class Orchestrator extends Base\Core
      * List email addresses in lower case. Addresses are case insensitive, our checks are not.
      */
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC                => ['payoutreport@hdfcbank.com'],
-        self::AXIS                => ['pg.estatements@axisbank.com'],
-        self::BILLDESK            => [],
-        self::PAYZAPP             => [],
-        self::MOBIKWIK            => [],
-        self::PAYTM               => [],
-        self::KOTAK               => ['bankalerts@kotak.com'],
-        self::OLAMONEY            => ['olamoney-noreply@olacabs.com'],
-        self::FREECHARGE          => ['noreply@freechargemail.in'],
-        self::NETBANKING_AXIS     => ['it.rico@axisbank.com'],
-        self::NETBANKING_ICICI    => ['ubpshelp@icicibank.com'],
-        self::NETBANKING_FEDERAL  => ['fednetrm@federalbank.co.in'],
-        self::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
-        self::NETBANKING_INDUSIND => [],
-        self::NETBANKING_PNB      => [],
-        self::JIOMONEY            => [],
-        self::EBS                 => [],
-        self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],
-        self::VIRTUAL_ACC_KOTAK   => ['kmb.reports@kotak.com'],
+        self::HDFC                   => ['payoutreport@hdfcbank.com'],
+        self::AXIS                   => ['pg.estatements@axisbank.com'],
+        self::BILLDESK               => [],
+        self::PAYZAPP                => [],
+        self::MOBIKWIK               => [],
+        self::PAYTM                  => [],
+        self::KOTAK                  => ['bankalerts@kotak.com'],
+        self::OLAMONEY               => ['olamoney-noreply@olacabs.com'],
+        self::FREECHARGE             => ['noreply@freechargemail.in'],
+        self::NETBANKING_AXIS        => ['it.rico@axisbank.com'],
+        self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com'],
+        self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
+        self::NETBANKING_CORPORATION => ['epg@corpbank.co.in'],
+        self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
+        self::NETBANKING_INDUSIND    => [],
+        self::NETBANKING_PNB         => [],
+        self::JIOMONEY               => [],
+        self::EBS                    => [],
+        self::FIRST_DATA             => ['customer.care@icici.mailserv.in'],
+        self::VIRTUAL_ACC_KOTAK      => ['kmb.reports@kotak.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN               => ['prashanth.yv@razorpay.com'],
@@ -701,14 +703,24 @@ class Orchestrator extends Base\Core
                 {
                     $this->trace->traceException($ex);
 
-                    $this->messenger->raiseReconAlert(
-                        [
-                            'trace_code'   => TraceCode::RECON_FILE_SKIP,
-                            'message'      => 'Skipping file because unzip file caused an exception -> ' .
-                                                $ex->getMessage(),
-                            'file_details' => !empty($extractedFileDetails) ? $extractedFileDetails : null,
-                            'gateway'      => $this->gateway,
-                        ]);
+                    //
+                    // Axis sends hundreds of files daily with wrong password and one
+                    // file with the right password. We don't know which file has the
+                    // right password and which file has the wrong password.
+                    // Hence, we suppress all axis wrong password errors.
+                    //
+                    if (($this->gateway !== self::AXIS) and
+                        (str_contains($ex->getMessage(), 'Wrong password')))
+                    {
+                        $this->messenger->raiseReconAlert(
+                            [
+                                'trace_code'   => TraceCode::RECON_FILE_SKIP,
+                                'message'      => 'Skipping file because unzip file caused an exception -> ' .
+                                    $ex->getMessage(),
+                                'file_details' => !empty($extractedFileDetails) ? $extractedFileDetails : null,
+                                'gateway'      => $this->gateway,
+                            ]);
+                    }
 
                     $this->deleteFileLocallyIfPresent($zipFileDetails);
 
@@ -803,8 +815,7 @@ class Orchestrator extends Base\Core
      */
     protected function getFileContentInArrayAndSet($fileDetails)
     {
-        $fileType = self::getKeyFromSubArrayMatch(
-            $fileDetails[FileProcessor::MIME_TYPE], FileProcessor::FILE_TYPES_MAPPINGS);
+        $fileType = $this->gatewayReconciliator->getFileType($fileDetails[FileProcessor::MIME_TYPE]);
 
         $fileDetails[FileProcessor::FILE_TYPE] = $fileType;
 

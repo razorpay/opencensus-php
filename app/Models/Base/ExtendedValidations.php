@@ -11,11 +11,43 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 {
-    const EPOCH_DEFAULT_MIN = 946684800;  // Sat Jan  1 05:30:00 IST 2000
-    const EPOCH_DEFAULT_MAX = 2147483647; // Tue Jan 19 08:44:07 IST 2038, *MySQL max for Signed Int
+    const MYSQL_UNSIGNED_INT_MIN = 0;
+    const MYSQL_UNSIGNED_INT_MAX = 4294967295;
+
+    const MYSQL_SIGNED_INT_MIN   = -2147483648;
+    const MYSQL_SIGNED_INT_MAX   = 2147483647;
+
+    const EPOCH_DEFAULT_MIN      = 946684800;                  // Sat Jan  1 05:30:00 IST 2000
+    const EPOCH_DEFAULT_MAX      = self::MYSQL_SIGNED_INT_MAX; // Tue Jan 19 08:44:07 IST 2038, *MySQL max for Signed Int
+
+    /**
+     * Overridden from \Illuminate\Validation\Validator because we have added
+     * custom rules for integer data type. This list is used by framework for
+     * various operations on integer data type attributes under validations,
+     * e.g. getSize() method etc.
+     *
+     * @var array
+     */
+    protected $numericRules = [
+        'Numeric',
+        'Integer',
+        'MysqlSignedInt',
+        'MysqlUnsignedInt',
+    ];
 
     protected function validatePublicId($attribute, $id)
     {
+        //
+        // This is required because even if the validation
+        // rules have `string`, this might get executed first.
+        // If an array is sent, a server error is thrown
+        // because of preg_match
+        //
+        if (is_string($id) === false)
+        {
+            throw new BadRequestValidationFailureException("The $attribute must be a string");
+        }
+
         $match = preg_match('/\b[a-z]{0,5}_[a-zA-Z0-9]{14}\b/', $id);
 
         //
@@ -30,10 +62,40 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         return true;
     }
 
+    protected function validateSequentialArray($attribute, $value)
+    {
+        //
+        // `is_array` check is required because even if the validation
+        // rules have `array`, sequential_array might get executed first.
+        //
+        if ((is_array($value) === false) or
+            (is_sequential_array($value) === false))
+        {
+            throw new BadRequestValidationFailureException("$attribute must be an array");
+        }
+
+        return true;
+    }
+
+    protected function validateAssociativeArray($attribute, $value)
+    {
+        //
+        // `is_array` check is required because even if the validation
+        // rules have `array`, associative_array might get executed first.
+        //
+        if ((is_array($value) === false) or
+            (is_associative_array($value) === false))
+        {
+            throw new BadRequestValidationFailureException("$attribute must be an object");
+        }
+
+        return true;
+    }
+
     /**
      * Create basic contact validate
      *
-     * @param  string $attribute  Attrbute name
+     * @param  string $attribute  Attribute name
      * @param  string $contact    Contact number
      * @param  array  $parameters Parameter list
      *
@@ -290,13 +352,43 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         return true;
     }
 
+    protected function validateMysqlSignedInt(string $attribute, $value)
+    {
+        $isInteger = $this->validateInteger($attribute, $value);
+        $isInRange = $this->validateBetween(
+                                $attribute,
+                                $value,
+                                [
+                                    self::MYSQL_SIGNED_INT_MIN,
+                                    self::MYSQL_SIGNED_INT_MAX,
+                                ]);
+
+        return ($isInteger and $isInRange);
+    }
+
+    protected function validateMysqlUnsignedInt(string $attribute, $value)
+    {
+        $isInteger = $this->validateInteger($attribute, $value);
+        $isInRange = $this->validateBetween(
+                                $attribute,
+                                $value,
+                                [
+                                    self::MYSQL_UNSIGNED_INT_MIN,
+                                    self::MYSQL_UNSIGNED_INT_MAX,
+                                ]);
+
+        return ($isInteger and $isInRange);
+    }
+
     /**
      * Checks if the value is a supported utf8 encoded string
      * Currently we don't support utf8mb4 encoding and this method checks the same
      *
      * @param  string $attribute
-     * @param  mixed $value
-     * @return bool           validation result
+     * @param  mixed  $value
+     *
+     * @return bool validation result
+     * @throws BadRequestValidationFailureException
      */
     protected function validateUtf8(string $attribute, $value)
     {

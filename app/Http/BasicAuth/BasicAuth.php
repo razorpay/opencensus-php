@@ -213,6 +213,8 @@ class BasicAuth
 
     protected $orgId      = null;
 
+    protected $orgHostName = null;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -1092,10 +1094,17 @@ class BasicAuth
 
 // --------------------- Setters -----------------------------------------------
 
-    public function setMode($mode)
+    public function setMode(string $mode)
     {
         $this->mode = $mode;
         $this->app['rzp.mode'] = $mode;
+    }
+
+    public function setModeAndDbConnection(string $mode)
+    {
+        $this->setMode($mode);
+
+        \Database\DefaultConnection::set($mode);
     }
 
     /**
@@ -1456,5 +1465,25 @@ class BasicAuth
         }
 
         return $mode;
+    }
+
+    /**
+     * Each org can have multiple hostnames
+     * Keeping track of the hostname when request is received.
+     *
+     * @param $orgHostName
+     *
+     * @return $this
+     */
+    public function setOrgHostName($orgHostName)
+    {
+        $this->orgHostName = $orgHostName;
+
+        return $this;
+    }
+
+    public function getOrgHostName()
+    {
+        return $this->orgHostName;
     }
 }

@@ -44,6 +44,21 @@ class NetbankingFederalGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testPaymentNetbankingEntity');
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['AMT'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
     public function testTpvPayment()
     {
         $this->ba->privateAuth();
@@ -261,7 +276,7 @@ class NetbankingFederalGatewayTest extends TestCase
              function(& $content, $action = null) use ($status)
              {
                  $content = explode("\n", $content);
-                 
+
                  unset($content[1]);
                  $content = $content[0];
 

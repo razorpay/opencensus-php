@@ -753,7 +753,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->addTags($id, $input);
+        $response = $this->service()->addTags($id, $input, true);
 
         return ApiResponse::json($response);
     }
@@ -819,6 +819,31 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = (new Merchant\Service)->createBatches($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getPreSignupDetails()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getPreSignupDetails();
+
+        return $response;
+    }
+
+    public function putPreSignupDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->editPreSignupDetails($input);
+
+        return $response;
+    }
+
+    public function postSubMerchantUser($merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createSubMerchantUser($merchantId, $input);
 
         return ApiResponse::json($response);
     }

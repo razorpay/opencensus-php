@@ -81,7 +81,7 @@ Note: Docker for Mac suffers from heavy performance implications due to the natu
 ```
 $ make init
 ```
-[Optional Step] : If this fails saying certain files are missing, you can add the folloring in your docker container location : 
+[Optional Step] : If this fails saying certain files are missing, you can add the folloring in your docker container location :
 ```
 cd <PATH_TO_CONTAINERS>/Containers/com.docker.docker/Data/database/com.docker.driver.amd64-linux/
 mkdir disk
@@ -101,7 +101,7 @@ local file-system, spin up `mysql:5.6` container and establish connection
 to run the app locally.
 
 You should be able to access the app at:
-`http://api.razorpay.dev:28080/`
+`http://api.razorpay.in:28080/`
 
 #### Shutting down/Pausing the container
 

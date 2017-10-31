@@ -12,6 +12,7 @@ use RZP\Jobs\WebHook;
 use RZP\Tests\Functional\TestCase;
 use Http\Discovery\MessageFactoryDiscovery;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Merchant\Webhook\Inferno;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\RequestInterface;
@@ -19,9 +20,13 @@ use Http\Discovery\HttpClientDiscovery;
 use Http\Discovery\Strategy\MockClientStrategy;
 use Http\Client\Common\Exception\ClientErrorException;
 
+/**
+ * @group dns-sensitive
+ */
 class WebhookTest extends TestCase
 {
     use PaymentTrait;
+    use MocksDnsTrait;
 
     public function setUp()
     {
@@ -30,9 +35,26 @@ class WebhookTest extends TestCase
         parent::setUp();
 
         $this->ba->proxyAuth();
+
+        $this->setupMockDns();
     }
 
     public function testCreateWebhook()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateWebhookWithInternalIp()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateWebhookWithReservedIp()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateWebhookWithoutHost()
     {
         $this->startTest();
     }
@@ -96,7 +118,7 @@ class WebhookTest extends TestCase
 
         $this->assertEquals(['Razorpay-Webhook/v1'], $request->getHeader('User-Agent'));
         $this->assertEquals(['application/json'], $request->getHeader('Content-Type'));
-        $this->assertEquals('http://localhost/v1/dummy/route', (string) $request->getUri());
+        $this->assertEquals('http://example.com/v1/dummy/route', (string) $request->getUri());
 
         $body = (string) $request->getBody();
         $decodedBody = json_decode($body, true);

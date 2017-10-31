@@ -19,17 +19,20 @@ class MailTags
 
     const SETTLEMENT_FAILURE_EMAIL         = 'settlement_failure_email';
 
-    const HDFC_NETBANKING_REFUNDS_MAIL     = 'hdfc_netbanking_refunds_mail';
-    const AXIS_NETBANKING_REFUNDS_MAIL     = 'axis_netbanking_refunds_mail';
-    const AIRTEL_MONEY_REFUNDS_MAIL        = 'airtel_money_refunds_mail';
-    const ICICI_NETBANKING_REFUNDS_MAIL    = 'icici_netbanking_refunds_mail';
-    const FEDERAL_NETBANKING_REFUNDS_MAIL  = 'axis_netbanking_refunds_mail';
-    const KOTAK_NETBANKING_REFUNDS_MAIL    = 'kotak_netbanking_refunds_mail';
-    const RBL_NETBANKING_REFUNDS_MAIL      = 'rbl_netbanking_refunds_mail';
-    const INDUSIND_NETBANKING_REFUNDS_MAIL = 'indusind_netbanking_refunds_mail';
+    const CORPORATION_NETBANKING_REFUNDS_MAIL   = 'corporation_netbanking_refunds_mail';
+    const HDFC_NETBANKING_REFUNDS_MAIL          = 'hdfc_netbanking_refunds_mail';
+    const AXIS_NETBANKING_REFUNDS_MAIL          = 'axis_netbanking_refunds_mail';
+    const AIRTEL_MONEY_REFUNDS_MAIL             = 'airtel_money_refunds_mail';
+    const ICICI_NETBANKING_REFUNDS_MAIL         = 'icici_netbanking_refunds_mail';
+    const FEDERAL_NETBANKING_REFUNDS_MAIL       = 'axis_netbanking_refunds_mail';
+    const KOTAK_NETBANKING_REFUNDS_MAIL         = 'kotak_netbanking_refunds_mail';
+    const RBL_NETBANKING_REFUNDS_MAIL           = 'rbl_netbanking_refunds_mail';
+    const INDUSIND_NETBANKING_REFUNDS_MAIL      = 'indusind_netbanking_refunds_mail';
 
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL           = 'icici_upi_refunds_mail';
+    const BATCH_IRCTC_REFUNDS_FILE         = 'batch_irctc_refunds_file';
+    const BATCH_IRCTC_SETTLEMENT_FILE      = 'batch_irctc_settlement_file';
     const BATCH_REFUNDS_FILE               = 'batch_refunds_file';
     const BATCH_PAYMENT_LINK_FILE          = 'batch_payment_link_file';
 
@@ -50,6 +53,9 @@ class MailTags
     const SUBSCRIPTION_CARD_CHANGED        = 'subscription_card_changed';
     const SUBSCRIPTION_COMPLETED           = 'subscription_completed';
     const SUBSCRIPTION_INVOICE_CHARGED     = 'subscription_invoice_charged';
+
+    const HDFC_EMANDATE_REGISTER_MAIL      = 'hdfc_emandate_register_mail';
+    const HDFC_EMANDATE_DEBIT_MAIL         = 'hdfc_emandate_debit_mail';
 
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';

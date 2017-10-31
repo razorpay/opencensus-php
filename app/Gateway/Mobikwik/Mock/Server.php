@@ -24,6 +24,8 @@ class Server extends Base\Mock\Server
             'refid'         => '12345'
         );
 
+        $this->content($content);
+
         $content['checksum'] = $this->generateHash($content);
 
         $url = $input['redirecturl'] . '?' . http_build_query($content);

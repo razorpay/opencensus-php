@@ -5,11 +5,16 @@ namespace RZP\Tests\Functional\OAuth;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
+/**
+ * @group dns-sensitive
+ */
 class OAuthBearerAuthTest extends OAuthTestCase
 {
     use OAuthTrait;
+    use MocksDnsTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()

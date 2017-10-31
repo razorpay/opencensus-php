@@ -53,6 +53,9 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        throw new Exception\LogicException(
+            'Authorize function not implemented');
     }
 
     public function callback(array $input)

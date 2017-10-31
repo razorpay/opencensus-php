@@ -257,7 +257,7 @@ class Service extends Base\Service
 
         $invoice->getValidator()->validateInvoiceViewable();
 
-        return (new ViewDataSerializer($invoice))->get();
+        return (new ViewDataSerializer($invoice))->getWithSubscriptionIfApplicable();
     }
 
     public function getInvoicePdf(string $id): array

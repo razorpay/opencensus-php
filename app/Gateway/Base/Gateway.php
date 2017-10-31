@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
 
@@ -337,6 +338,19 @@ class Gateway
                 'Data tampering found.', null, [
                     'expected' => $expectedPaymentId,
                     'actual'   => $actualPaymentId
+                ]);
+        }
+    }
+
+    protected function assertAmount($expectedAmount, $actualAmount)
+    {
+        if ($expectedAmount !== $actualAmount)
+        {
+            throw new Exception\LogicException(
+                'Amount tampering found.',
+                ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED, [
+                    'expected' => $expectedAmount,
+                    'actual'   => $actualAmount
                 ]);
         }
     }
@@ -882,7 +896,7 @@ class Gateway
         return $request;
     }
 
-    protected function getDynamicMerchantName($merchant)
+    protected function getDynamicMerchantName(Merchant\Entity $merchant, $limit = 20) : string
     {
         $label = $merchant->getBillingLabel();
 
@@ -893,7 +907,7 @@ class Gateway
             $label = "Razorpay Payments";
         }
 
-        return str_limit($label, 20);
+        return str_limit($label, $limit);
     }
 
     protected function verifyOtpAttempts($payment, $limit = null)

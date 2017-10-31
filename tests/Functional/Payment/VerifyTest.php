@@ -815,8 +815,8 @@ class VerifyTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'error' => 1,
-            'filter'  => $filter,
+            'not_applicable' => 1,
+            'filter'         => $filter,
         ];
 
         $this->assertContent($content, $resultData);
@@ -862,8 +862,8 @@ class VerifyTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'timeout' => 1,
-            'filter'  => 'payments_failed',
+            'not_applicable' => 1,
+            'filter'         => 'payments_failed',
         ];
 
         $this->assertContent($content, $resultData);
@@ -1136,11 +1136,12 @@ class VerifyTest extends TestCase
         unset($content['verifiable_count']);
 
         $defaultParams = [
-            'success'       => 0,
-            'authorized'    => 0,
-            'timeout'       => 0,
-            'error'         => 0,
-            'bucket_filter' => [],
+            'success'        => 0,
+            'authorized'     => 0,
+            'timeout'        => 0,
+            'error'          => 0,
+            'not_applicable' => 0,
+            'bucket_filter'  => [],
         ];
 
         $total = array_sum($defaultParams);
@@ -1148,7 +1149,12 @@ class VerifyTest extends TestCase
         $defaultParams = array_merge($defaultParams, $param);
 
         $defaultParams['verified_payments'] = $defaultParams['success'] +
-            $defaultParams['authorized'] + $defaultParams['timeout'] + $defaultParams['error'];
+            $defaultParams['authorized'] + $defaultParams['timeout'] + $defaultParams['error'] + $defaultParams['not_applicable'];
+
+        if ($defaultParams['not_applicable'] === 0)
+        {
+            unset($defaultParams['not_applicable']);
+        }
 
         $this->assertEquals($defaultParams, $content);
     }

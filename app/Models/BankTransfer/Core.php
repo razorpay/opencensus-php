@@ -5,6 +5,8 @@ namespace RZP\Models\BankTransfer;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Refund as PaymentRefund;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
@@ -47,12 +49,14 @@ class Core extends Base\Core
      *
      * @return bool
      */
-    public function process(array $input)
+    public function process(array $input, string $provider = null)
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PROCESSING,
             $input
         );
+
+        $processor = new Processor($provider);
 
         try
         {
@@ -60,9 +64,9 @@ class Core extends Base\Core
 
             $this->mutex->acquireAndRelease(
                 $input[Entity::PAYEE_ACCOUNT],
-                function() use ($bankTransfer)
+                function() use ($processor, $bankTransfer)
                 {
-                    (new Processor)->process($bankTransfer);
+                    $processor->process($bankTransfer);
                 },
                 60,
                 ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -143,5 +147,123 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($bankTransfer);
         }
+    }
+
+    /**
+     * Processes refund retries, but skips those
+     * with fund_transfer_attempt already created.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function retryBankTransferRefund(array $input)
+    {
+        $refunds = $this->getRefundsToRetry($input);
+
+        $this->trace->info(
+            TraceCode::REFUND_RETRY_INITIATED,
+            [
+                'input'      => $input,
+                'refund_ids' => $refunds->getIds()
+            ]);
+
+        $status  = [];
+        $success = 0;
+        $failure = 0;
+
+        foreach ($refunds as $refund)
+        {
+            if ($refund->isStatusFailed() === false)
+            {
+                $this->trace->info(
+                    TraceCode::REFUND_RETRY_SKIPPED,
+                    [
+                        'refund_id'     => $refund->getPublicId(),
+                        'refund_status' => $refund->getStatus(),
+                    ]);
+
+                continue;
+            }
+
+            try
+            {
+                $processor = $this->getNewProcessor($refund->merchant);
+
+                $status[$refund->getPublicId()] = $processor->processRefundRetry($refund);
+
+                $success++;
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::INFO,
+                    TraceCode::PAYMENT_VERIFY_REFUND_EXCEPTION,
+                    [
+                        'refund_id'       => $refund->getPublicId(),
+                    ]);
+
+                $failure++;
+            }
+        }
+
+        return [
+            'successful'    => $success,
+            'failure'       => $failure,
+            'status'        => $status,
+        ];
+    }
+
+    /**
+     * New processor instance for retrying refund
+     *
+     * @param $merchant
+     *
+     * @return Payment\Processor\Processor
+     */
+    protected function getNewProcessor($merchant)
+    {
+        $processor = new Payment\Processor\Processor($merchant);
+
+        return $processor;
+    }
+
+    /**
+     * Fetches failed refunds to retry, or takes from input
+     *
+     * @param array $input
+     *
+     * @return mixed
+     */
+    protected function getRefundsToRetry(array $input)
+    {
+        if (isset($input['ids']) === true)
+        {
+            $refunds = $this->repo
+                            ->refund
+                            ->findManyByPublicIds($input['ids']);
+        }
+        else
+        {
+            $method = Payment\Method::BANK_TRANSFER;
+
+            $refunds = $this->repo
+                            ->refund
+                            ->fetchFailedRefundsByMethod($method);
+        }
+
+        return $refunds;
+    }
+
+    public function editPayerBankAccount(Entity $bankTransfer, array $input)
+    {
+        $payerBankAccount = $bankTransfer->payerBankAccount;
+
+        $payerBankAccount = $payerBankAccount->edit($input, 'editVirtualBankAccount');
+
+        $this->repo->saveOrFail($payerBankAccount);
+
+        return $bankTransfer;
     }
 }
