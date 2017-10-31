@@ -195,7 +195,7 @@ class RowProcessor extends BaseCore
 
     protected function isMailEnabled(): bool
     {
-        if ($this->merchant->isLinkedAccount() === true)
+        if ($this->entity->merchant->isLinkedAccount() === true)
         {
             return false;
         }
