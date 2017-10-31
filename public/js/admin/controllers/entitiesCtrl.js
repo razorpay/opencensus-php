@@ -334,6 +334,7 @@ app.controller('EntitiesCtrl', [
       file_store: {
         entity_id: ['Entity Id'],
         type: ['Type'],
+        merchant_id: ['Merchant Id'],
       },
       fund_transfer_attempt: {
         batch_fund_transfer_id: ['Batch Fund Transfer Id'],
