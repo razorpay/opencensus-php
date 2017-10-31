@@ -67,7 +67,7 @@ class Core extends Base\Core
 
         $processor = $this->app['gateway_file']->getProcessor($type, $target);
 
-        $processor->process($gatewayFile);
+        $processor->validateAndProcess($gatewayFile);
     }
 
     /**

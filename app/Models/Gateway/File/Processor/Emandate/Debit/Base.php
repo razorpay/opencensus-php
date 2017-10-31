@@ -47,7 +47,11 @@ abstract class Base extends EMandate\Base
         }
         catch (\Throwable $e)
         {
-            throw new GatewayFileException(ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA);
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
+                [
+                    'id' => $this->gatewayFile->getId()
+                ]);
         }
     }
 
