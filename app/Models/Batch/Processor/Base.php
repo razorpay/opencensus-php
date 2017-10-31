@@ -161,7 +161,7 @@ class Base extends BaseModel\Core
 
             $this->parseAndProcessBatchEntries();
         }
-        catch (\Throwable $e)
+        catch (\Throwable $ex)
         {
             $this->handleBatchProcessingException($e);
         }

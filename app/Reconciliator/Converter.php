@@ -96,18 +96,6 @@ class Converter
 
             $sheetArray = array_merge($sheetArray, $rows);
 
-            // foreach ($rows as $cellCollection)
-            // {
-            //     if ($this->shouldUseSpoutLib($fileDetails[FileProcessor::EXTENSION]) === true)
-            //     {
-            //         $sheetArray[] = $cellCollection;
-            //     }
-            //     else
-            //     {
-            //         $sheetArray[] = $cellCollection->all();
-            //     }
-            // }
-
             $fileContents[$sheetName] = $sheetArray;
         }
 
