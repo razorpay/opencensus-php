@@ -128,12 +128,12 @@
           angular.forEach(responses, function(val, key) {
             if (key === 'file' || key === 'file_name') {
               data[key] = val;
-            } else {
+            } else if (key !== 'vendor_agreement') {
               data['body[' + key + ']'] = val;
             }
           });
 
-          data['merchant_id'] = submission.merchant;
+          data['body[merchant_id]'] = submission.merchant;
           data['url_params[{feature}]'] = submission.featureFetchName;
 
           data = {

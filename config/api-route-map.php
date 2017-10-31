@@ -139,6 +139,8 @@ return [
 
         // Product Submissions
         'onboarding_features_fetch_submissions' => 'onboarding/features/submissions',
+
+        'onboarding_features_update'        => 'onboarding/features/{feature}/update',
     ],
 
     // auth
@@ -578,7 +580,6 @@ return [
         // Feature onboarding responses with questions 
         'onboarding_features_fetch_details' => 'onboarding/features',
         'onboarding_features_update_status' => 'onboarding/features/{feature}/status',
-        'onboarding_features_update'        => 'onboarding/features/{feature}',
 
         // Credits
         'credits_fetch_multiple'            => 'credits',
