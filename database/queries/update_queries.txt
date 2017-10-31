@@ -893,3 +893,234 @@ UPDATE files SET entity_type = "gateway_file" WHERE entity_type = "RZP\\Models\\
 
 # Update UPI ICICI refunds
 UPDATE refunds SET status = "processed", gateway_refunded = "1", updated_at = UNIX_TIMESTAMP() WHERE id IN ('8GkizdwgzWCrzH', '8iKIpCToR9g0dz', '8aKEcOKiqS1PUP', '8elcxCVHUFs4yx', '8ZkOuO9sxGYCcr', '8ZkO4vXwyEJKzh', '8a0eK6OTjpl02W', '8ZdXNYoENQHUYo', '8fSiRaFblH8ymJ', '8a4plWzVOVOlDu', '8a6Uta7JWyCxEs', '8a7j0bDoEMgUgG', '8fT3JXwIgxXe3O', '8ajZ5WebvxNVbp', '8etJLm4KkpMKQd', '8cwUGL1iqEBKpX', '8j7t4iE142yuBW', '8etKPOEmnqjbsi', '8fYX9dARKrHVlF', '8es0ntgDMMOydF', '8ekYb4GK6faiym', '8gLl5anEHtyynI', '8fTbCY90tTtMzv', '8fTKktVwY2sMjq', '8fWonszA8ajP9G', '8hWyDCqkfZFgoO', '8fY1g79otPcpD2', '8gHPlTrU11MnVY', '8jr5EH3daxuzqe', '8hueTuEFkvjy5I', '8hDcUxD86wTYG2', '8iGBqg915fA5c9', '8hyuB5MSKBKpie', '8iMD2BqFjeBPiN', '8iH6WGW0A04QXY', '8iidjNiqv71WZg', '8iLDQu8mssWX8s', '8kQnxxWTOJQ3jq', '8kQp43GHnlg5oR', '8mGmN962iOuYMD', '8igorTgIq3lfmZ', '8j9vByLHtzuCjx', '8imMfiEJpTz8vU', '8kj2fspRkj54t2', '8kibTFbFR2oxxW', '8kie59GmBc20DF', '8ja1rLYF8JjFr1', '8nTZbmT5BMS523', '8mzOVrgW09pIRH', '8n1pOAbxnqAi5G', '8n1oQwuLpw3RAu', '8mQiNngxIXRlrr', '8mCLwy59M1Wexg', '8mIoN7iRWc6Q1K', '8n6RPhEBcBCrCc') AND status = "failed";
+
+# VA refunds handling
+
+UPDATE refunds
+  SET status='failed'
+  WHERE id in ('8jA5cS6uJqy6NS', '8jAkw2yYIAVPOV', '8jD8nof12EaAL0', '8jOthdpTiiE6lm', '8jPv3MqvZvy422',
+               '8jQQjfoQ9qd1Nb', '8jQlsmt1KKJAOb', '8jUrNF64xJ3T81', '8jXFHfu3KKBhHr', '8jaeXkAXBTJFQr',
+               '8jcBbP5y23kv40', '8k3RhSbhtroO6x', '8npCPTe3AMnE8Z', '8oh9flofXtp9pA', '8ojbA0xNeq1d50');
+
+UPDATE refunds
+  SET status='failed'
+  WHERE id in ('8ohA4IKuW1pWKF', '8oy51H3ywaBh6X', '8oyFZQq0xIYx0y', '8p4Hkq1BfNSjRq', '8p4I8XLbPldlpe',
+               '8p4IUSe4dNqawl', '8uFOrtfba6p9wc', '8uGFQvBr5KLCpK', '8uGRx78lec99dn', '8uGSGEhGiROA4c',
+               '8uGShtH6aAfxfT', '8uGT8XbDuA4Zwr', '8uGTMhBSkfQja8', '8uGTZxaYT4apCa', '8uGTlV9WNuQGXq',
+               '8uGU6HOBfPHueW', '8uGULxTmAmNxRz', '8uGUa7wR8loS2H', '8uGUu4ZM3RqJFH', '8uGV8aExw8LCkb',
+               '8uGVLxVKpI9yuk', '8uGVfz1M9AS219', '8uGWC5IHv6TdQ1', '8uGWNJSo3Zi1Mc', '8uGXIFPayBbIDA',
+               '8uGXYnD1pDNE6C', '8uGXlhIRWVqOYu', '8uGYRXfNiJlbrT', '8uGYit4KrDWktx', '8uGYucje8RSYKB',
+               '8uGZ5d6HCxiMqn', '8uGZP3u8MYAqVW', '8uGZnEgfJB4ML8', '8uGaZmtVFNm3gP', '8uGbqnbZBrHF0X',
+               '8uGc2u04GjV0fV', '8uGcEY7puPphIq', '8uGd159A9BcOED', '8uGdEoJuOdv6f1', '8uGdP2CC7ly5E6',
+               '8uGdZUpNbmGtIf', '8uGdmVU4fwFU6A', '8uGdw1OOZ7V7f1', '8uGe6ae9Ba3y6p', '8uGeGlQFlMeOlF',
+               '8uGeRwGKK2PjVA', '8uGekzOOwkCvjC', '8uGf0Q57YtlzhE', '8uGf8uMgMfh96z', '8uGfJKSanM9HpR',
+               '8uGfZ1P8xwHdNs', '8uGfjxowmTKou8', '8uGfux1VMkbPJb', '8uGg2eYe6wZ9jH', '8uGgE4zkewtkdN',
+               '8uGgXmrCgQAPeg', '8uGgi8IfwFlIhp', '8uGhh4TAxJ9Fyj', '8uGhsafZPzf1gk', '8uGi7zpHFo8kxO',
+               '8uGiJqjBiHuRc8', '8uGiYgzW4zyt6m', '8uGikwjVDM1JB1', '8uGj6AHEvLlekM', '8uGjGHsauTMAsx',
+               '8uGkWdCTmvJNtS', '8uGkibD4oLmyEC', '8uGkrodqBYPYQa', '8uGkzXlMpVNnBN', '8uGlAEFYplO9UU',
+               '8uGlL8lTXLQ3KW', '8uGlWyWETp97pP', '8uGlj70VkEy6Cp', '8uGluFFT3VYv07', '8uGm56uTKEgTbf',
+               '8uGmH4YFJuyVYg', '8uGmVFoL8lriMQ', '8uGme9hEMZ3ADX', '8uGmn5I9g3pkyd', '8uGnI98KYJDAYa',
+               '8uGnRDU5LZ1y1V', '8uGnbBqkgC3FOT', '8uGnpOsudWvcdp', '8uGnz1G3AdHcKI', '8uJhimj03fFetk',
+               '8uJiWQqKcwx75X', '8uJimYKwvpXm4g', '8uJj0KeYRZylur', '8uJjDSaN6ts0lO', '8uJjRpSqugAOaz',
+               '8uJjkTBjv2VS5C', '8uJkD7bofY7B8M', '8uJkTwfroMw1Y0', '8uJkhLCNAb5MU1', '8uJkuMBzA0lJrx',
+               '8uKJIR6x8ZXwkW', '8u7KrMBnw5xw5x', '8uWi1z3q8ER5GF', '8uWuyIzzFTygrN', '8uX2fkCq1S6dBx',
+               '8uX3306octq8QT', '8uX3I2UAgu1Bs9', '8uX3Vu7IX0U6XJ', '8uX3l18CybHmqq', '8uX45ZqHuV6i54',
+               '8uXG5CXcgemuyZ', '8uXG5OqJWp6EGW', '8uafKzQOGmv7do', '8uafLDxrIRmaqL', '8kMGFWoRPlhsUI',
+               '8m0ikFO3nizNFj', '8m0j0uiE1q76f9', '8rNZ0jdckaaq9L', '8tN1G9MOTG5ChO', '8t8sTZDcPFobZt',
+               '8tMAPsAnrmxXuI', '8tm42irBYRLMur', '8uA5T2qQzyEn3a', '8uAljvZcFhN2RV', '8vL0ZVkW7BUtAb');
+
+# Marking old FTAs as failed
+
+# Update status of FTAs that failed with error
+#  "Activation Date should not be less then Application date ::
+#   Client disbursement date is less than client debit date"
+UPDATE
+    fund_transfer_attempts
+SET
+    status='failed',
+    bank_status_code='C',
+    failure_reason='Client disbursement date is less than client debit date'
+WHERE
+    id in ('8jA5cVfjSWjIOE', '8jAkw5yyfp0YpZ', '8jD8nsMw9MEqzI', '8jOthgxTJvXcog', '8jPv3OrarTJiNR',
+           '8jQQjkKqA3T4QL', '8jQlsqGf9FMP90', '8jUrNIAhXvq0A4', '8jXFHhpHlhuXSj', '8jaeXmsF1z1EW9',
+           '8jcBbSRUcOmWTt', '8k3RhcdVqwc8aG', '8npCPVdbeGitrX', '8oh9fpKO6tGsHM', '8ohA4NT1p1PKai',
+           '8ojbA9oez8TP4t', '8oy51K8A4KfguT', '8oyFZUNh19LZRn', '8p4HkuXnSgtlij', '8p4I8d2ORcmAxm',
+           '8p4IUYdCFR14Iv', '8uFOrzPwq5IzSE', '8uGFR2NTWmlT7p', '8uGRxDgTtiPL7j', '8uGSGJmal4W1VU',
+           '8uGSi1KqkHbivL', '8uGT8fwDfti0GU', '8uGTMnMAmlEysK', '8uGTa3rY7rLOQy', '8uGTlZuEt3v9Nr',
+           '8uGU6MXgpOWGDe', '8uGUM4IO8tc6TG', '8uGUaFQn5JZ90J', '8uGUu9Xo5mCUIG', '8uGV8eeys7YgLG',
+           '8uGVM2VxRs5TPY', '8uGVg5AxBqrXl4', '8uGWCAxDxHrkjx', '8uGWNObdemF0sg', '8uGXIMV7JaWOAh',
+           '8uGXYtdHvaN4p9', '8uGXlocYqteVwT', '8uGYRdeRHNfS6L', '8uGYiysI74baAB', '8uGYukBji9WD7W',
+           '8uGZ5kHpUNpciJ', '8uGZP9DFH5mzgl', '8uGZnL9E3Nyvtb', '8uGaZrPPZd3EWV', '8uGbqtVTjaGdWt',
+           '8uGc31vMPqcdNC', '8uGcEcqhMKzY3g', '8uGd1AWdwXIErA', '8uGdEsFGENS3a7', '8uGdP7geC7LJEr',
+           '8uGdZZfMgntzz1', '8uGdmcAsTT1dps', '8uGdw7UhGDXCD7', '8uGe6fkPKC6c7O', '8uGeGvb4KLRAPp',
+           '8uGeS1GSHpwi9g', '8uGel6vbJsw2Ck', '8uGf0V6JVAvY3t', '8uGf8yJk2mYhiq', '8uGfJQeYxFiKkm',
+           '8uGfZ7ZylstnNo', '8uGfk6rf9LATu4', '8uGfv2LAeJr76w', '8uGg2kTuvB1VhD', '8uGgE9hGpafJny',
+           '8uGgXrlaBSftdG', '8uGgiDfA73OfDq', '8uGhhAHe2u5nLS', '8uGhsgKVECxfGW', '8uGi85rthMYC8K',
+           '8uGiK8hsU81sfd', '8uGiYn8ZIc8vDi', '8uGil2EgfpIkMY', '8uGj6FXLtFUp7Z', '8uGjGO4hrGEksV',
+           '8uGkWjlwEWDyI0', '8uGkifcTM4QUgZ', '8uGkrt69PohQ2B', '8uGkzbQFNvnR5h', '8uGlAJMSNokVSJ',
+           '8uGlLE6fkQEzxy', '8uGlX2fsXxHutY', '8uGljE9T3uMgWW', '8uGluLbGU97Cej', '8uGm5Aq95EuS7M',
+           '8uGmH8WbUWiCmh', '8uGmVJyDbt8qGz', '8uGmeFbH3GTqZg', '8uGmn9vCciH4vz', '8uGnIEYc8IWUYu',
+           '8uGnRKT8X1gyXs', '8uGnbHPdieSMfk', '8uGnpYVG8ITFMF', '8uGnz6qRUOeGq4', '8uJhiqKCT49opB',
+           '8uJiWWggyGd6B8', '8uJimeAAJhUHoj', '8uJj0Qhd24Ac9o', '8uJjDXBG6wlmHx', '8uJjRuVZBCW3d0',
+           '8uJjkaDphMJHo9', '8uJkDDa9tURNNa', '8uJkU1iz8Vfexi', '8uJkhR1YpN1k5E', '8uJkuQiuHbZMs9',
+           '8uKJITtcETTttl', '8uMlPbQYajWxfl', '8uWi23MCsIjJx4', '8uWuyMwU0Vtnqs', '8uX2frrogfJo1y',
+           '8uX3358FdKA0B0', '8uX3I6YbzprjRj', '8uX3Vz6wmED0SK', '8uX3l6btZqWd0J', '8uX45fJv1wqpKX',
+           '8uXG5EkSRUrpBF', '8uXG5QvhcBokkI', '8uafL3m8gzFpm6', '8uafLIJ38GI6EB');
+
+UPDATE fund_transfer_attempts
+    SET utr='727605752845',
+    status='failed',
+    remarks='IMPS-RTN-INVALID A/C NUMBER OR IFSC CODE',
+    bank_status_code='P'
+    WHERE id='8kMGFdxQegQBAR';
+
+UPDATE fund_transfer_attempts
+    SET utr='728413758785',
+    status='failed',
+    remarks='IMPS-RTN-NRE ACCOUNT',
+    bank_status_code='P'
+    WHERE id='8nnQaxm00chHOC';
+
+UPDATE fund_transfer_attempts
+    SET utr='728413758783',
+    status='failed',
+    remarks='IMPS-RTN-NRE ACCOUNT',
+    bank_status_code='P'
+    WHERE id='8nnQb2AsKKTlYC';
+
+UPDATE fund_transfer_attempts
+    SET utr='729017471486',
+    status='failed',
+    remarks='IMPS-RTN-INVALID A/C NUMBER OR IFSC CODE',
+    bank_status_code='P'
+    WHERE id='8qFWRgfWt8gmHL';
+
+UPDATE fund_transfer_attempts
+    SET utr='729314189622',
+    status='failed',
+    remarks='IMPS-RTN-NRE ACCOUNT',
+    bank_status_code='P'
+    WHERE id='8rNZ0p7FwwBrYO';
+
+UPDATE fund_transfer_attempts
+    SET utr='729815214267',
+    status='failed',
+    remarks='IMPS-RTN-INVALID A/C NUMBER OR IFSC CODE',
+    bank_status_code='P'
+    WHERE id='8tN1GC9b3qFgwY';
+
+UPDATE fund_transfer_attempts
+    SET utr='729808127300',
+    status='failed',
+    remarks='IMPS-RTN-INVALID A/C NUMBER OR IFSC CODE',
+    bank_status_code='P'
+    WHERE id='8t8sTcDwxqC0lr';
+
+UPDATE fund_transfer_attempts
+    SET utr='729808127305',
+    status='failed',
+    remarks='IMPS-RTN-INVALID A/C NUMBER OR IFSC CODE',
+    bank_status_code='P'
+    WHERE id='8tBA1H6UDNAVVx';
+
+UPDATE fund_transfer_attempts
+    SET utr='729808127301',
+    status='failed',
+    remarks='IMPS-RTN-NRE ACCOUNT',
+    bank_status_code='P'
+    WHERE id='8tBA2GznHZFPEl';
+
+UPDATE fund_transfer_attempts
+    SET utr='729814200219',
+    status='failed',
+    remarks='IMPS-RTN-INVALID A/C NUMBER OR IFSC CODE',
+    bank_status_code='P'
+    WHERE id='8tMAPw4RNiDpYi';
+
+UPDATE fund_transfer_attempts
+    SET utr='729906326745',
+    status='failed',
+    remarks='IMPS-RTN-INVALID A/C NUMBER OR IFSC CODE',
+    bank_status_code='P'
+    WHERE id='8tZhASzzgR5hKK';
+
+UPDATE fund_transfer_attempts
+    SET utr='729906326754',
+    status='failed',
+    remarks='IMPS-RTN-NRE ACCOUNT',
+    bank_status_code='P'
+    WHERE id='8tZhBRYjqb2uIC';
+
+UPDATE fund_transfer_attempts
+    SET utr='729906326755',
+    status='failed',
+    remarks='IMPS-RTN-INVALID A/C NUMBER OR IFSC CODE',
+    bank_status_code='P'
+    WHERE id='8tZhBUyUuWhl29';
+
+UPDATE fund_transfer_attempts
+    SET utr='730015617459',
+    status='failed',
+    remarks='IMPS-RTN-INVALID A/C NUMBER OR IFSC CODE',
+    bank_status_code='P'
+    WHERE id='8uA5T6kd4InUiL';
+
+UPDATE fund_transfer_attempts
+    SET utr='730015617460',
+    status='failed',
+    remarks='IMPS-RTN-INVALID A/C NUMBER OR IFSC CODE',
+    bank_status_code='P'
+    WHERE id='8uAljzNkglNdm5';
+
+UPDATE fund_transfer_attempts
+    SET utr='730012573889',
+    status='failed',
+    remarks='IMPS-RTN-INVALID A/C NUMBER OR IFSC CODE',
+    bank_status_code='P'
+    WHERE id='8u7KrU9u7P8CMx';
+
+UPDATE fund_transfer_attempts
+    SET utr='730305029757',
+    status='failed',
+    remarks='IMPS-RTN-NRE ACCOUNT',
+    bank_status_code='P'
+    WHERE id='8uuC97Ix9c4SLf';
+
+UPDATE fund_transfer_attempts
+    SET utr='730305029764',
+    status='failed',
+    remarks='IMPS-RTN-INVALID A/C NUMBER OR IFSC CODE',
+    bank_status_code='P'
+    WHERE id='8uzszL994v9SrW';
+
+UPDATE fund_transfer_attempts
+    SET utr='730314124664',
+    status='failed',
+    remarks='IMPS-RTN-INVALID A/C NUMBER OR IFSC CODE',
+    bank_status_code='P'
+    WHERE id='8vL0ZXiZJ4sIQ4';
+
+UPDATE fund_transfer_attempts
+    SET utr='730312087328',
+    status='failed',
+    remarks='IMPS-RTN-NRE ACCOUNT',
+    bank_status_code='P'
+    WHERE id='8vJ9TnrG6wn1Fg';
+
+UPDATE fund_transfer_attempts
+    SET utr='730312087329',
+    status='failed',
+    remarks='IMPS-RTN-INVALID A/C NUMBER OR IFSC CODE',
+    bank_status_code='P'
+    WHERE id='8vJ9Tqng3KXuzK';
+
+UPDATE fund_transfer_attempts
+    SET status='failed',
+    bank_status_code='C'
+    WHERE id='8tm42l367rPoIT';
+
+UPDATE fund_transfer_attempts
+    SET status='failed',
+    remarks='CMS REVERSAL IFSC NOT FOUND IN MASTER',
+    bank_status_code='C'
+    WHERE id='8sw8WeiK3RYdes';

@@ -77,6 +77,7 @@ class Service extends Base\Service
                 // These gateways go through a reconciliation process
                 // Please refer POST /reconciliate
                 unset($gateways[IFSC::KKBK]);
+                unset($gateways[IFSC::CORP]);
                 unset($gateways[IFSC::UTIB]);
                 unset($gateways[IFSC::FDRL]);
                 unset($gateways[IFSC::RATN]);
@@ -128,12 +129,26 @@ class Service extends Base\Service
         {
             foreach ($gateways as $gatewayCode => $gateway)
             {
-                $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway, $email);
+                $returnValue[$gateway] = $this->generateRefundFileForGateway(
+                    $type,
+                    $gatewayCode,
+                    $from,
+                    $to,
+                    $gateway,
+                    $email
+                );
             }
         }
         else
         {
-            $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway, $email);
+            $returnValue[$gateway] = $this->generateRefundFileForGateway(
+                $type,
+                $gatewayCode,
+                $from,
+                $to,
+                $gateway,
+                $email
+            );
         }
 
         $this->trace->info(

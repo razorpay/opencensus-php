@@ -15,6 +15,7 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
         Entity::STATUS      => 'sometimes|in:created,processing,processed',
+        Entity::GATEWAY     => 'sometimes|string|max:30',
     ];
 
     protected function validateType($attribute, $value)
@@ -34,11 +35,10 @@ class Repository extends Base\Repository
      */
     public function fetchUnprocessedForCron($limit = 10): Base\PublicCollection
     {
-        $status = [Status::CREATED, Status::PROCESSING];
-
         return $this->newQuery()
                     ->whereIn(Entity::TYPE, Type::$cronGroup)
-                    ->whereIn(Entity::STATUS, $status)
+                    ->where(Entity::STATUS, Status::CREATED)
+                    ->where(Entity::PROCESSING, false)
                     ->oldest()
                     ->limit($limit)
                     ->get();

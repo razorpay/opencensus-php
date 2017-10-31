@@ -147,6 +147,8 @@ class AdminAccess
                 $org = $this->ba->fetchOrgByHostname($orgHostname);
 
                 $orgId = $org->getPublicId();
+
+                $this->ba->setOrgHostName($orgHostname);
             }
         }
 

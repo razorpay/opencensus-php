@@ -8,22 +8,28 @@ use RZP\Models\Merchant;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
+    protected static $createRules = [
         Entity::URL     => 'required|string|url|max:255|min:3',
         Entity::EVENTS  => 'required|array',
         Entity::SECRET  => 'sometimes|string|max:255',
-    );
+    ];
 
-    protected static $createValidators = array('events', 'url');
+    protected static $createValidators = [
+        'events',
+        'url',
+    ];
 
-    protected static $editRules = array(
+    protected static $editRules = [
         Entity::URL     => 'sometimes|filled|string|url|max:255|min:3',
         Entity::EVENTS  => 'sometimes|array',
         Entity::ACTIVE  => 'sometimes|in:0,1',
         Entity::SECRET  => 'sometimes|string|max:255',
-    );
+    ];
 
-    protected static $editValidators = array('events', 'url');
+    protected static $editValidators = [
+        'events',
+        'url',
+    ];
 
     // Refer: http://www-archive.mozilla.org/projects/netlib/PortBanning.html#portlist
     const RESTRICTED_PORTS = [
@@ -34,12 +40,64 @@ class Validator extends Base\Validator
         993, 995, 2049, 4045, 6000
     ];
 
+    private function validatePublicIp($url)
+    {
+        if ($this->validatePublicIpAddress($url) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'URL must point to a public IP address');
+        }
+    }
+
+    /**
+     * Do not allow internal or reserved IP addresses
+     *
+     * Fails validation for the following private IPv4 ranges:
+     *     10.0.0.0/8
+     *     172.16.0.0/12
+     *     192.168.0.0/16.
+     * Fails validation for the IPv6 addresses starting with FD or FC.
+     *
+     * Fails validation for the following reserved IPv4 ranges:
+     *     0.0.0.0/8
+     *     169.254.0.0/16
+     *     127.0.0.0/8
+     *     240.0.0.0/4.
+     * Fails validation for the following reserved IPv6 ranges:
+     *     ::1/128
+     *     ::/128
+     *     ::ffff:0:0/96
+     *     fe80::/10.
+     */
+    public function validatePublicIpAddress(string $url)
+    {
+        $components = parse_url($url);
+
+        $host = $components['host'];
+
+        // In case merchant isn't using a hostname (http://1.2.3.4/hello)
+        // this will return the hostname as the IP, and work as expected
+        $ip = gethostbyname($host);
+
+        $flags = FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
+
+        return (bool) filter_var(
+            $ip,
+            FILTER_VALIDATE_IP,
+            [
+                'flags' => $flags,
+            ]
+        );
+    }
+
     protected function validateUrl($input)
     {
         if (isset($input[Entity::URL]) === false)
         {
             return;
         }
+
+        $this->validatePublicIp($input[Entity::URL]);
 
         $components = parse_url($input[Entity::URL]);
 

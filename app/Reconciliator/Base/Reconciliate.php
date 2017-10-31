@@ -52,6 +52,9 @@ class Reconciliate
     const ARN                   = 'arn';
     const ACCOUNT_DETAILS       = 'account_details';
     const ACCOUNT_NUMBER        = 'account_number';
+    const ACCOUNT_TYPE          = 'account_type';
+    const ACCOUNT_SUBTYPE       = 'account_subtype';
+    const ACCOUNT_BRANCHCODE    = 'account_branchcode';
     const CREDIT_ACCOUNT_NUMBER = 'credit_account_number';
 
     /*************************
@@ -212,6 +215,14 @@ class Reconciliate
         }
 
         return $reconciliationType;
+    }
+
+    // This can be overriden from the child class
+    // If not overriden, it fetches the mapping from FileProcessor::FILE_TYPES_MAPPINGS
+    public function getFileType(string $mimeType)
+    {
+        return Orchestrator::getKeyFromSubArrayMatch(
+            $mimeType, FileProcessor::FILE_TYPES_MAPPINGS);
     }
 
     public function getReconciliationTypeFromFileName($fileName)

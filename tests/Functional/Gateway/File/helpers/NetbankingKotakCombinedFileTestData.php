@@ -7,8 +7,9 @@ return [
     'testGenerateKotakCombinedFileForNonTpv' => [
         'request' => [
             'content' => [
-                'type'    => 'combined',
-                'targets' => ['kotak'],
+                'type'     => 'combined',
+                'targets'  => ['kotak'],
+                'sub_type' => 'non_tpv',
                 'begin'    => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'      => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
@@ -28,6 +29,7 @@ return [
                         'attempts'            => 1,
                         'sender'              => 'refunds@razorpay.com',
                         'type'                => 'combined',
+                        'sub_type'            => 'non_tpv',
                         'target'              => 'kotak',
                         'entity'              => 'gateway_file',
                         'admin'               => true
@@ -40,11 +42,11 @@ return [
     'testGenerateKotakCombinedFileForTpv' => [
         'request' => [
             'content' => [
-                'type'    => 'combined',
-                'targets' => ['kotak'],
-                'begin'   => Carbon::today(Timezone::IST)->timestamp,
-                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp,
-                'tpv'     => '1'
+                'type'     => 'combined',
+                'targets'  => ['kotak'],
+                'sub_type' => 'tpv',
+                'begin'    => Carbon::today(Timezone::IST)->timestamp,
+                'end'      => Carbon::tomorrow(Timezone::IST)->timestamp,
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -62,9 +64,9 @@ return [
                         'attempts'            => 1,
                         'sender'              => 'refunds@razorpay.com',
                         'type'                => 'combined',
+                        'sub_type'            => 'tpv',
                         'target'              => 'kotak',
                         'entity'              => 'gateway_file',
-                        'tpv'                 => true,
                         'admin'               => true
                     ],
                 ],
