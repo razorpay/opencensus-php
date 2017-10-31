@@ -2,8 +2,10 @@
 
 namespace RZP\Mail\Invoice\Payment;
 
-use RZP\Constants\MailTags;
 use RZP\Mail\Payment\Base;
+use RZP\Constants\MailTags;
+use RZP\Mail\Base\Constants;
+use RZP\Models\Invoice\Type;
 
 /**
  * We are extending Mail\Payment\Base class here instead of Invoice|base
@@ -16,6 +18,36 @@ class Authorized extends Base
     public function setInvoiceDetails(array $invoiceData)
     {
         $this->invoiceData = $invoiceData;
+    }
+
+    protected function getSenderHeader(): string
+    {
+        return $this->invoiceData['merchant']['name'];
+    }
+
+    /**
+     * Overridden: For non-invoice types we have new format. Later we will
+     * fix the subject lines for invoice type as well, for now calling parent
+     * for invoice type.
+     */
+    protected function addSubject()
+    {
+        $type = $this->invoiceData['invoice']['type'];
+
+        if ($type === Type::INVOICE)
+        {
+            parent::addSubject();
+        }
+        else
+        {
+            $amount = $this->data['payment']['amount'];
+
+            $subject = "Payment of Rs. {$amount} is successful (via Razorpay)";
+
+            $this->subject($subject);
+        }
+
+        return $this;
     }
 
     protected function getAction()
