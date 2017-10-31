@@ -1,18 +1,27 @@
 server {
     listen 80;
-    server_name dashboard.razorpay.in dashboard-hdfc.razorpay.in;
+    {% if env == 'echo' %}
+    server_name {{ env }}-dashboard.razorpay.in;
+    {% elif env == 'dev' %}
+    server_name dashboard.razorpay.dev;
+    {% else %}
+    server_name dashboard.razorpay.com dashboard-hdfc.razorpay.in;
+{% endif %}
+
     root "/app/public";
 
     index index.html index.htm index.php;
 
     charset utf-8;
 
+    location /commit.txt { alias /app/public/commit.txt ;}
+
     location / {
         try_files $uri $uri/ /index.php?$query_string;
     }
 
-    access_log /var/log/nginx/dashboard.razorpay.in-access.log;
-    error_log  /var/log/nginx/dashboard.razorpay.in-error.log error;
+    access_log /var/log/nginx/NGINX_HOST-{{ env }}-dashboard.razorpay.in-access.log;
+    error_log  /var/log/nginx/NGINX_HOST-{{ env }}-dashboard.razorpay.in-error.log error;
 
     sendfile off;
 
