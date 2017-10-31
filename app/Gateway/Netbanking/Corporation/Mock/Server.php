@@ -5,7 +5,6 @@ namespace RZP\Gateway\Netbanking\Corporation\Mock;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking;
-use RZP\Gateway\Paytm;
 use RZP\Gateway\Netbanking\Corporation\RequestFields;
 use RZP\Gateway\Netbanking\Corporation\ResponseFields;
 use RZP\Gateway\Netbanking\Corporation\ResponseCodeMap;

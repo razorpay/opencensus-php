@@ -172,6 +172,8 @@ class RefundTest extends TestCase
 
         $this->ba->appAuth();
 
+        $this->testData[__FUNCTION__]['request']['url'] = "/batches/$batch->getPublicId()/process";
+
         $this->startTest();
     }
 
@@ -194,9 +196,18 @@ class RefundTest extends TestCase
 
         $batch = $this->fixtures->create('batch:refund_with_three_attempt', $entries);
 
+        $publicBatchId = $batch->getPublicId();
+
         $this->ba->appAuth();
 
+        $this->testData[__FUNCTION__]['request']['url'] = "/batches/$publicBatchId/process";
+
         $this->startTest();
+
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertEquals($batch['attempts'], 3);
+        $this->assertEquals($batch['status'], 'processed');
     }
 
     public function testProcessRefundWithThreeAttemptSuccess()
@@ -207,39 +218,18 @@ class RefundTest extends TestCase
 
         $payment = $this->capturePayment($entries[0]['Payment Id'], 50000);
 
+        $publicBatchId = $batch->getPublicId();
+
         $this->ba->appAuth();
 
-        $this->startTest();
-    }
-
-    public function testRetryRefund()
-    {
-        $entries = $this->getDefaultRefundFileEntries();
-
-        $batch = $this->fixtures->create('batch:refund_with_four_attempt', $entries);
-
-        $request = & $this->testData[__FUNCTION__]['request'];
-
-        $request['url'] = '/batches/' . 'batch_'.$batch->getId()  .'/retry';
-
-        $this->ba->proxyAuth();
+        $this->testData[__FUNCTION__]['request']['url'] = "/batches/$publicBatchId/process";
 
         $this->startTest();
-    }
 
-    public function testRetryRefundWithException()
-    {
-        $entries = $this->getDefaultRefundFileEntries();
+        $batch = $this->getLastEntity('batch', true);
 
-        $batch = $this->fixtures->create('batch:refund_with_processed_entries', $entries);
-
-        $request = & $this->testData[__FUNCTION__]['request'];
-
-        $request['url'] = '/batches/' . 'batch_'.$batch->getId()  .'/retry';
-
-        $this->ba->proxyAuth();
-
-        $this->startTest();
+        $this->assertEquals($batch['attempts'], 3);
+        $this->assertEquals($batch['status'], 'processed');
     }
 
     protected function getDefaultRefundFileEntries()
