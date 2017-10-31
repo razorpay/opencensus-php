@@ -215,7 +215,7 @@ class Core extends Base\Core
 
             // While updating the responses, the file gets overwritten,
             // so no need to delete the old file.
-            $this->processFiles($data, $merchant);
+            $this->processFiles($data, $merchant, $action);
 
             Accessor::for($merchant, Constants::ONBOARDING)
                     ->upsert($data)
@@ -382,8 +382,9 @@ class Core extends Base\Core
      *
      * @param   array               $input
      * @param   Merchant\Entity     $merchant
+     * @param   string              $action
      */
-    protected function processFiles(array & $input, Merchant\Entity $merchant)
+    protected function processFiles(array & $input, Merchant\Entity $merchant, string $action)
     {
         $featureName = Constants::MARKETPLACE;
 
@@ -391,6 +392,7 @@ class Core extends Base\Core
 
         $merchantId = $merchant->getId();
 
+        // If the input has a file, process it and update the file name in the input variable.
         if ((isset($input[$featureName]) === true) and
             (isset($input[$featureName][$question]) === true))
         {
@@ -405,6 +407,23 @@ class Core extends Base\Core
             $file = $this->createFile($extension, $file, $fileName, $settingKey, $merchant);
 
             $input[$featureName][$question] = FileStore\Entity::stripSignWithoutValidation($file['id']);
+        }
+        else
+        {
+            // If the operation is update and the file is not provided,
+            // fetch the value from the database and update it in the input variable,
+            // as the old entries will be removed before the new ones will be added
+            if ($action === Constants::UPDATE)
+            {
+                $settings = Accessor::for($merchant, Constants::ONBOARDING);
+
+                $settings = $settings->get($featureName)->toArray();
+
+                if (isset($settings[$question]))
+                {
+                    $input[$featureName][$question] = $settings[$question];
+                }
+            }
         }
     }
 
