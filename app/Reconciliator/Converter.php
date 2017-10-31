@@ -94,17 +94,19 @@ class Converter
 
             $sheetArray = [];
 
-            foreach ($rows as $cellCollection)
-            {
-                if ($this->shouldUseSpoutLib($fileDetails[FileProcessor::EXTENSION]) === true)
-                {
-                    $sheetArray[] = $cellCollection;
-                }
-                else
-                {
-                    $sheetArray[] = $cellCollection->all();
-                }
-            }
+            $sheetArray = array_merge($sheetArray, $rows);
+
+            // foreach ($rows as $cellCollection)
+            // {
+            //     if ($this->shouldUseSpoutLib($fileDetails[FileProcessor::EXTENSION]) === true)
+            //     {
+            //         $sheetArray[] = $cellCollection;
+            //     }
+            //     else
+            //     {
+            //         $sheetArray[] = $cellCollection->all();
+            //     }
+            // }
 
             $fileContents[$sheetName] = $sheetArray;
         }
@@ -271,7 +273,7 @@ class Converter
                         // way to get the sheet names. And we cannot let it return
                         // an array of sheets because chunk works only on a
                         // cell collection (rows) and not on a row collection (sheets)
-                        $allSheetsContent[$randomSheetName][] = $row;
+                        $allSheetsContent[$randomSheetName][] = $row->all();
                     }
                 },
                 false
@@ -299,7 +301,7 @@ class Converter
                     {
                         foreach ($results as $row)
                         {
-                            $allSheetsContent[$sheetName][] = $row;
+                            $allSheetsContent[$sheetName][] = $row->all();
                         }
                     },
                     false

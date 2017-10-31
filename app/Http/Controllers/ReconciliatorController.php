@@ -16,15 +16,15 @@ class ReconciliatorController extends Controller
     {
         $input = Request::all();
 
-        $summary = $this->service()->initiateReconciliationProcess($input);
+        $response = $this->service()->initiateReconciliationProcess($input);
 
-        return ApiResponse::generateResponse($summary);
+        return ApiResponse::generateResponse($response);
     }
 
     public function postReconciliateCancelledTransactions($gateway)
     {
-        $summary = $this->service()->reconciliateCancelledTransactions($gateway);
+        $response = $this->service()->reconciliateCancelledTransactions($gateway);
 
-        return ApiResponse::generateResponse($summary);
+        return ApiResponse::generateResponse($response);
     }
 }

@@ -123,8 +123,13 @@ class CombinedReconciliate extends Foundation\SubReconciliate
 
                 if ($entityType === self::NA)
                 {
+                    //
                     // This row probably doesn't have a payment and hence is not applicable for
-                    // reconciliation.
+                    // reconciliation. We mark it as a success row, as we are not doing any
+                    // processing on the row here
+                    //
+                    $this->successes[] = $row;
+
                     continue;
                 }
 
@@ -202,8 +207,6 @@ class CombinedReconciliate extends Foundation\SubReconciliate
     {
         foreach ($this->subReconciliatorObjects as $subReconciliatorObject)
         {
-            $this->total = array_merge($this->total, $subReconciliatorObject->getTotal());
-
             $this->successes = array_merge($this->successes, $subReconciliatorObject->getSuccesses());
 
             $this->failures = array_merge($this->failures, $subReconciliatorObject->getFailures());
