@@ -131,64 +131,64 @@ class NodalAccount extends NodalBase\NodalAccount
                     'Ben_UID'            => '777777777777',
                     'Seller_Code'        => '01',
                     'Mode_of_Pay'        => [
-                        'NEFT'=> [
-                            'YN'=> 'Y',
-                            'Limit'=> [
-                                'Daily'=> '100000',
-                                'Weekly'=> '700000',
-                                'Monthly'=> '3000000'
+                        'NEFT' => [
+                            'YN' => 'Y',
+                            'Limit' => [
+                                'Daily'   => '100000',
+                                'Weekly'  => '700000',
+                                'Monthly' => '3000000'
                             ]
                         ],
                         'RTGS'=> [
-                            'YN'=> 'Y',
-                            'Limit'=> [
-                                'Daily'=> '10000000',
-                                'Weekly'=> '70000000',
-                                'Monthly'=> '300000000'
+                            'YN' => 'Y',
+                            'Limit' => [
+                                'Daily'   => '10000000',
+                                'Weekly'  => '70000000',
+                                'Monthly' => '300000000'
                             ]
                         ],
-                        'DD'=> [
-                            'YN'=> 'Y',
-                            'Limit'=> [
-                                'Daily'=> '100',
-                                'Weekly'=> '1000',
-                                'Monthly'=> '10000'
+                        'DD' => [
+                            'YN' => 'Y',
+                            'Limit' => [
+                                'Daily'   => '100',
+                                'Weekly'  => '1000',
+                                'Monthly' => '10000'
                             ]
                         ],
-                        'FT'=> [
-                            'YN'=> 'Y',
-                            'Limit'=> [
-                                'Daily'=> '100',
-                                'Weekly'=> '1000',
-                                'Monthly'=> '10000'
+                        'FT' => [
+                            'YN' => 'Y',
+                            'Limit' => [
+                                'Daily'   => '100',
+                                'Weekly'  => '1000',
+                                'Monthly' => '10000'
                             ]
                         ],
-                        'IMPS'=> [
-                            'YN'=> 'Y',
-                            'Limit'=> [
-                                'Daily'=> '200000',
-                                'Weekly'=> '1400000',
-                                'Monthly'=> '6000000'
+                        'IMPS' => [
+                            'YN' => 'Y',
+                            'Limit' => [
+                                'Daily'   => '200000',
+                                'Weekly'  => '1400000',
+                                'Monthly' => '6000000'
                             ]
                         ]
                     ],
-                    'Bene_Type'=> 'Sole Proprietor',
-                    'Ben_SettlementTerms'=> 'Chanincludeged',
-                    'Ben_CommercialTerms'=> 'ABC001',
-                    'KYC_Document'=> [
+                    'Bene_Type'           => 'Sole Proprietor',
+                    'Ben_SettlementTerms' => 'Chanincludeged',
+                    'Ben_CommercialTerms' => 'ABC001',
+                    'KYC_Document' => [
                         'KYC_Doc_Id'      => 'Document1',
                         'KYC_Doc_Name'    => $input['kyc_doc_name'],
                         'KYC_Doc_Type'    => 'POI',
                         'KYC_Doc_Format'  => 'PDF',
                         'KYC_Doc_Content' => $input['kyc_doc_content']
                     ],
-                    'Remarks'=> 'NODAL BE NINQ UIRYPE NDINGAPPREJ',
-                    'Ben_Action'=> '0',
-                    'Nodal_Flag'=> 'N',
-                    'Ben_ID'=> ''
+                    'Remarks'    => 'NODAL BE NINQ UIRYPE NDINGAPPREJ',
+                    'Ben_Action' => '0',
+                    'Nodal_Flag' => 'N',
+                    'Ben_ID'     => ''
                 ],
-                'Signature'=> [
-                    'Signature'=> 'Signature001'
+                'Signature' => [
+                    'Signature' => 'Signature001'
                 ]
             ]
         ];

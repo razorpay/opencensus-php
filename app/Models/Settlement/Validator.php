@@ -24,6 +24,10 @@ class Validator extends Base\Validator
         Entity::CHANNEL => 'required|string'
     ];
 
+    protected static $nodalAddBeneficiaryRules = [
+        Entity::CHANNEL => 'required|string'
+    ];
+
     protected static $retryRules = [
         'settlement_ids'   => 'required|array',
         'settlement_ids.*' => 'required|alpha_dash|max:20',

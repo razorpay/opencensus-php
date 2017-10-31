@@ -929,6 +929,7 @@ final class Route
         'setl_delete_file',
         'setl_post_details_old',
         'setl_fixer',
+        'nodal_add_beneficiary',
         'nodal_initiate_transfer',
         'payment_verify',
         'payment_authorize_failed',
