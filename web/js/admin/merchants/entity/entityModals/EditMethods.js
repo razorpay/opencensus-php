@@ -2,7 +2,7 @@ import React from 'react';
 import BaseModal from 'ui/BaseModal';
 
 import Form from 'ui/Form';
-import { Switch } from 'ui/Field';
+import { SwitchField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
@@ -42,7 +42,7 @@ export default ({ props }) => {
       fields.push(
         <label key={method}>
           {method}
-          <Switch name={method} value={methods[method]} />
+          <SwitchField name={method} value={methods[method]} />
         </label>
       );
     }
