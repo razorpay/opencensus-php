@@ -151,6 +151,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EXPECTED);
     }
 
+    public function getProviderReferenceId()
+    {
+        return $this->getAttribute(self::PROVIDER_REFERENCE_ID);
+    }
+
     public function getMerchantReference()
     {
         return $this->getAttribute(self::MERCHANT_REFERENCE);

@@ -66,9 +66,7 @@ class Core extends Base\Core
                     ErrorCode::PROVIDER_REFERENCE_ID_NEEDS_TO_SENT);
             }
 
-            if ($bharatQr)
-
-             $this->mutex->acquireAndRelease(
+            $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
                 function() use ($bharatQr)
                 {
