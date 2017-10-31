@@ -217,6 +217,8 @@ class Core extends Base\Core
             // so no need to delete the old file.
             $this->processFiles($data, $merchant, $action);
 
+            $this->processOnboardingKeys($data, $merchant, $action);
+
             Accessor::for($merchant, Constants::ONBOARDING)
                     ->upsert($data)
                     ->save();
@@ -307,6 +309,37 @@ class Core extends Base\Core
     }
 
     /**
+     * When an admin updates the feature activation submissions,
+     * all the existing responses are fetched first and the only
+     * the keys present in the input are updated.
+     * The old keys for in settings table
+     *
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param string          $action
+     */
+    protected function processOnboardingKeys(array & $input, Merchant\Entity $merchant, string $action)
+    {
+        if ($action === Constants::UPDATE)
+        {
+            $featureName = array_keys($input)[0];
+
+            $settings = Accessor::for($merchant, Constants::ONBOARDING);
+
+            $settings = $settings->get($featureName)->toArray();
+
+            $inputKeys = $input[$featureName];
+
+            foreach($inputKeys as $inputKey => $inputValue)
+            {
+                $settings[$inputKey] = $inputValue;
+            }
+
+            $input[$featureName] = $settings;
+        }
+    }
+
+    /**
      * Send a slack notification on feature create/delete
      *
      * @param Entity $feature
@@ -392,7 +425,8 @@ class Core extends Base\Core
 
         $merchantId = $merchant->getId();
 
-        // If the input has a file, process it and update the file name in the input variable.
+        // If the input has a file, process it and
+        // update the file name in the input variable.
         if ((isset($input[$featureName]) === true) and
             (isset($input[$featureName][$question]) === true))
         {
@@ -407,23 +441,6 @@ class Core extends Base\Core
             $file = $this->createFile($extension, $file, $fileName, $settingKey, $merchant);
 
             $input[$featureName][$question] = FileStore\Entity::stripSignWithoutValidation($file['id']);
-        }
-        else
-        {
-            // If the operation is update and the file is not provided,
-            // fetch the value from the database and update it in the input variable,
-            // as the old entries will be removed before the new ones will be added
-            if ($action === Constants::UPDATE)
-            {
-                $settings = Accessor::for($merchant, Constants::ONBOARDING);
-
-                $settings = $settings->get($featureName)->toArray();
-
-                if (isset($settings[$question]))
-                {
-                    $input[$featureName][$question] = $settings[$question];
-                }
-            }
         }
     }
 
