@@ -193,27 +193,27 @@ class Provider
 
         $masterCardIdentifier =  $this->generateBharatQrMerchantIdentifier(NetworkName::MC);
 
-        $visaTag = '02' . strlen($visaIdentifier) . $visaIdentifier;
+        $visaTlv = BharatQr\Constants::VISA_TAG . strlen($visaIdentifier) . $visaIdentifier;
 
-        $masterCardTag = '04' . strlen($masterCardIdentifier) . $masterCardIdentifier;
+        $masterCardTlv = BharatQr\Constants::MASTERCARD_TAG . strlen($masterCardIdentifier) . $masterCardIdentifier;
 
         $tagArray = [
-            BharatQr\Constants::VERSION_TAG,
-            $visaTag,
-            $masterCardTag,
-            BharatQr\Constants::MERCHANT_CATEGORY_TAG,
-            BharatQr\Constants::CURRENCY_CODE_TAG,
-            $this->getBharatQrAmountTag($qrCode),
-            BharatQr\Constants::COUNTRY_CODE_TAG,
-            BharatQr\Constants::MERCHANT_NAME_TAG,
-            BharatQr\Constants::MERCHANT_CITY_TAG,
-            $this->getBharatQrAdditionalDetailTag($qrCode),
+            BharatQr\Constants::VERSION_TLV,
+            $visaTlv,
+            $masterCardTlv,
+            BharatQr\Constants::MERCHANT_CATEGORY_TLV,
+            BharatQr\Constants::CURRENCY_CODE_TLV,
+            $this->getBharatQrAmountTlv($qrCode),
+            BharatQr\Constants::COUNTRY_CODE_TLV,
+            BharatQr\Constants::MERCHANT_NAME_TLV,
+            BharatQr\Constants::MERCHANT_CITY_TLV,
+            $this->getBharatQrAdditionalDetailTlv($qrCode),
         ];
 
         $qrString =  implode('', $tagArray);
 
-        // This is the CRC tag
-        $qrString .= '6304';
+        // This is the CRC TL
+        $qrString .= BharatQr\Constants::CRC_TL;
 
         $crc = (new CRC16)->calculateCrc($qrString);
 
@@ -222,16 +222,16 @@ class Provider
         return $qrString;
     }
 
-    protected function getBharatQrAdditionalDetailTag(QrCode\Entity $qrCode)
+    protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode)
     {
-        $idTag = '0514' . $qrCode->getId();
+        $idTlv = BharatQr\Constants::ID_TL . $qrCode->getId();
 
-        $additionalDetailsString = $idTag;
+        $additionalDetailsString = $idTlv;
 
-        return '62' . strlen($additionalDetailsString) . $additionalDetailsString;
+        return BharatQr\Constants::ADDITIONAL_DETAIL_TAG . strlen($additionalDetailsString) . $additionalDetailsString;
     }
 
-    protected function getBharatQrAmountTag(QrCode\Entity $qrCode)
+    protected function getBharatQrAmountTlv(QrCode\Entity $qrCode)
     {
         $amount = (string) ($qrCode->getFormattedAmount());
 
@@ -240,12 +240,12 @@ class Provider
             return '';
         }
 
-        return '54' . str_pad(strlen($amount), 2, '0', STR_PAD_LEFT) . $amount;
+        return BharatQr\Constants::AMOUNT_TAG . str_pad(strlen($amount), 2, '0', STR_PAD_LEFT) . $amount;
     }
 
     /**
      * This will generate merchant identifier using network
-     * network could be visa , mastercard or rupay
+     * network could be Visa , MasterCard or Rupay
      *
      * @param string $network
      * @return string

@@ -63,6 +63,14 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals(16, strlen($masterCardValue));
 
         $this->assertEquals(16, strlen($visaValue));
+
+        $masterCardAcquirerCode = substr($masterCardValue, 0, 6);
+
+        $visaAcquirerCode = substr($visaValue, 0, 6);
+
+        $this->assertEquals('470100', $visaAcquirerCode);
+
+        $this->assertEquals('513344', $masterCardAcquirerCode);
     }
 
     public function testCreateVirtualAccountWithBharatQrWithAmount()
@@ -72,7 +80,7 @@ class VirtualAccountTest extends TestCase
             'amount_expected' => 10000,
         ]);
 
-        $expectedResponse = $this->testData['testCreateVirtualAccountWithBharatQr'];
+        $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 

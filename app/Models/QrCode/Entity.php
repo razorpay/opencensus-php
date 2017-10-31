@@ -3,6 +3,7 @@
 namespace RZP\Models\QrCode;
 
 use RZP\Models\Base;
+use RZP\Models\VirtualAccount\Provider;
 
 class Entity extends Base\PublicEntity
 {
@@ -35,7 +36,11 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::AMOUNT,
-        self::PROVIDER,
+        // This is not needed for now.
+        // As provider will be only bharat qr
+        // self::PROVIDER,
+        // This will be removed later as we will be
+        // providing qr code image
         self::QR_STRING,
         self::CREATED_AT,
     ];
@@ -96,6 +101,15 @@ class Entity extends Base\PublicEntity
     public function setQrString(string $qrString)
     {
         $this->setAttribute(self::QR_STRING, $qrString);
+    }
+
+    public function generateQrString()
+    {
+        $qrString = (new Provider)->generateQrString($this);
+
+        $this->setQrString($qrString);
+
+        return $this;
     }
 
     // --------------------- END SETTERS ---------------------

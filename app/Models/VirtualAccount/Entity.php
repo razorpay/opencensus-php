@@ -58,6 +58,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::STATUS,
         self::DESCRIPTION,
+        self::AMOUNT_EXPECTED,
         self::NOTES,
         self::AMOUNT_PAID,
         self::CUSTOMER_ID,
