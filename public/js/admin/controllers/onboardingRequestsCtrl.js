@@ -133,7 +133,7 @@
             }
           });
 
-          data['body[merchant_id]'] = submission.merchant;
+          data['merchant_id'] = submission.merchant;
           data['url_params[{feature}]'] = submission.featureFetchName;
 
           data = {
@@ -151,7 +151,7 @@
             '{feature}': submission.featureFetchName,
           };
 
-          request = $http.put('/admin/generic', data);
+          request = $http.post('/admin/generic', data);
         }
 
         request
