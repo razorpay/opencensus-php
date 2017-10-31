@@ -15,14 +15,17 @@ export default class ModalSlider extends Component {
   handleDocumentClick = event => {
     let target = event.target;
 
+    const powerselectMenu = document.querySelector(
+      'body > .tether-element > .PowerSelect__Menu'
+    );
+    const notification = document.querySelector(
+      'body .layout > .Notifications'
+    );
+
     // Fix for power-select dropdown and notification click in slider component
     if (
-      (document.querySelector('body > .tether-element') &&
-        document.querySelector('body > .tether-element').contains(target)) ||
-      (document.querySelector('body .layout > .Notifications') &&
-        document
-          .querySelector('body .layout > .Notifications')
-          .contains(target))
+      (powerselectMenu && powerselectMenu.contains(target)) ||
+      (notification && notification.contains(target))
     ) {
       return;
     }
