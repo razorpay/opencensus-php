@@ -126,11 +126,12 @@ export function SelectMethod(props) {
   );
 }
 
-export function FileField({ label, many = false, ...props }) {
+export function FileField({ label, many = false, infoMsg, ...props }) {
   return (
     <div className="field file-field">
       <label onClick={focusInput}>{label}</label>
       <input type="file" multiple={many} {...props} />
+      <div class="info">{infoMsg}</div>
     </div>
   );
 }

@@ -8,7 +8,7 @@ import { SelectField } from 'ui/Field';
 import { adminFetch, adminPost } from 'util/fetch';
 import AsyncButton from 'ui/AsyncButton';
 
-const method = {
+const methodMapping = {
   null: 'All',
   card: 'Card',
   netbanking: 'Netbanking',
@@ -84,9 +84,9 @@ export default class PricingPlanModal extends Component {
           </SelectField>
 
           <SelectField name="method" label="Method" defaultValue={''}>
-            {Object.keys(method).map(key => (
+            {Object.keys(methodMapping).map(key => (
               <option key={key} value={key}>
-                {method[key]}
+                {methodMapping[key]}
               </option>
             ))}
           </SelectField>
