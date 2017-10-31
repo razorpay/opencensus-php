@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Session;
 use App\User\Helper;
 use Illuminate\Auth\GenericUser as AuthGenericUser;
 

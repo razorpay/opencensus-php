@@ -2,8 +2,6 @@
 
 namespace App\Mailers;
 
-use App\Merchant\Entity as MerchantEntity;
-
 class ContactFormMailer extends Mailer
 {
     /**

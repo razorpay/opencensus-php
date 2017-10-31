@@ -7,7 +7,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
 import Amount from 'rzp/ui/Amount';
-import { isBlank } from 'rzp/utils/rzp-utils';
+import { isBlank, rupeesToPaise } from 'rzp/utils/rzp-utils';
 import {
   refundPayment,
   fetchItem as fetchPayment,
@@ -125,7 +125,7 @@ export default class RefundModal extends Component {
         action: () => {
           let payment = this.props.payment;
           let data = {
-            amount: props.amount * 100,
+            amount: rupeesToPaise(props.amount),
             comment: props.comment,
             reverse_all: props.reverse_all ? '1' : '0',
           };

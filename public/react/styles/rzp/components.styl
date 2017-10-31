@@ -446,6 +446,53 @@ a.breadcrumb__backNav--link {
   }
 }
 
+/* This banner is shown in testmode for subscription test charge attempt */
+.custom-banner {
+  color: #58666E;
+  display: table;
+  margin-top: 8px;
+  position: relative;
+
+  .btn, .info {
+    display: table-cell;
+    vertical-align: middle;
+  }
+
+  .btn {
+    padding: 9px;
+    width: 132px;
+  }
+
+  .info {
+    padding-left: 16px;
+  }
+
+
+  &.arrow-up {
+    &:after,
+    &:before {
+      content: '';
+      position: absolute;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: 11px solid #fcf8e3;
+      top: -10px;
+      left: 41%;
+    }
+
+
+    &:before {
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-bottom: 13px solid #faebcc;
+      top: -12px;
+      left: 41%;
+      margin-left: -1px;
+    }
+
+  }
+}
+
 /* Component: rzp/ui/Toggler/ContentToggler.js */
 div.rzp-content-toggler {
 

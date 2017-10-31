@@ -238,9 +238,6 @@
     max-width: 100%;
     padding: 24px;
   }
-  div.new-products-row {
-    height: 140px;
-  }
 }
 
 .onboarding-card.media {
@@ -307,13 +304,13 @@
 
   div.new-products-row {
 
-    height: 160px;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
 
     div.product-item {
-      height: 100%;
       padding-left: 10px;
-      display: inline-block;
-
+      flex: 1;
       &:first-child {
         padding-left: 0;
       }
@@ -395,6 +392,45 @@
         margin-bottom: 0;
       }
     }
+  }
+}
+
+.media.onboarding-card.servicetax-news {
+  min-height: inherit;
+  width: 100%;
+  padding: 24px;
+
+  img, >div {
+    vertical-align: middle;
+  }
+
+  img {
+    max-width: 75px;
+    width: 4em;
+    margin-right: 20px;
+  }
+
+  > div {
+    display: inline-block;
+    width: 73%;
+    margin-right: 12px;
+
+    .heading {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .news {
+      > a {
+        padding: 0;
+      }
+    }
+  }
+
+  a {
+    margin-top: 16px;
+    padding: 8px;
   }
 }
 
@@ -500,6 +536,11 @@
   padding: 8px;
   border-bottom: 1px solid #ebecee;
 
+  &.clickable:hover {
+    background-color: #f7f6f6;
+    cursor: pointer;
+  }
+
 // To highlight selected row
   &.active {
     background-color: rgba(255,255,215,0.75);
@@ -519,10 +560,6 @@
       font-size: 22px;
       padding: 10px;
       cursor: pointer;
-
-      &:hover {
-        color: #9bb2bf;
-      }
     }
   }
 
@@ -623,10 +660,10 @@ div.data-table.has-panel {
 @media (max-width: 996px) {
   div.new-products-row {
     height: auto !important;
+    flex-direction: column !important;
 
     div.product-item {
       width: 100% !important;
-      height: auto !important;
       margin-bottom: 10px;
       padding: 0 !important;
     }

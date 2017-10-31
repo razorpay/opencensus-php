@@ -15,6 +15,12 @@ export default class EntityDetailList extends Component {
     this.state = { curLimit: props.moreAfterlimit };
   }
 
+  countHaltedInvoices(items) {
+    return items.reduce((sum, item) => {
+      return sum + (item.subscription_status === 'halted' ? 1 : 0);
+    }, 0);
+  }
+
   getRowList() {
     const {
       loading,
@@ -22,9 +28,9 @@ export default class EntityDetailList extends Component {
       goToLink,
       activeSecEntityId,
       onManualAttempt,
-      subscriptionType,
       subscriptionchargeAt,
       subscriptionStatus,
+      subscriptionType,
       mode,
     } = this.props;
     let list = [];
@@ -34,11 +40,26 @@ export default class EntityDetailList extends Component {
       limit = items.length < this.state.curLimit ? items.length : limit;
     }
 
+    let totalHaltedInvoiceToCheck = this.countHaltedInvoices(items);
     let isChargeAttemptFailed = false;
     for (let index = 0; index < limit; index++) {
       let item = {};
       if (items.length) {
         item = items[index]; // 0th is latest item
+      }
+
+      let isInvoiceWithAttemptsFailed = 0;
+
+      if (item.subscription_status === 'halted' && item.status === 'issued') {
+        isInvoiceWithAttemptsFailed =
+          index < items.length - 1 && items[index + 1].status === 'paid'
+            ? 1
+            : 2;
+      } else if (totalHaltedInvoiceToCheck) {
+        if (item.subscription_status === 'halted') {
+          isInvoiceWithAttemptsFailed = totalHaltedInvoiceToCheck === 1 ? 1 : 2;
+          totalHaltedInvoiceToCheck--;
+        }
       }
 
       let isFirstInvoiceUpfront = false;
@@ -85,9 +106,11 @@ export default class EntityDetailList extends Component {
           loading={loading}
           isUpfront={isUpfrontInvoice}
           authAttempts={isChargeAttemptFailed ? this.props.authAttempts : null}
+          isInvoiceWithAttemptsFailed={isInvoiceWithAttemptsFailed}
           subscriptionchargeAt={subscriptionchargeAt}
           onManualAttempt={onManualAttempt}
           subscriptionStatus={subscriptionStatus}
+          subscriptionType={subscriptionType}
           mode={mode}
         />
       );

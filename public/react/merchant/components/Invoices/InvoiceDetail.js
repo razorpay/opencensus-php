@@ -169,14 +169,16 @@ export default props => {
 
                 <NestedEntityDetailRow label="Notes" value={invoice.notes} />
 
-                {!!invoice.user && (
-                  <EntityDetailRow label="Created By">
+                <EntityDetailRow label="Created By">
+                  {!!invoice.user ? (
                     <Definition>
                       {invoice.user.name}
                       {invoice.user.email}
                     </Definition>
-                  </EntityDetailRow>
-                )}
+                  ) : (
+                    'API'
+                  )}
+                </EntityDetailRow>
               </div>
             </div>
           </div>

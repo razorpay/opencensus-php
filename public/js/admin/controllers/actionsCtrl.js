@@ -7,13 +7,17 @@ app
     'transformRequestAsFormPost',
     '$modal',
     'admin',
+    'utils',
+    '$state',
     function(
       $scope,
       $http,
       alertsFactory,
       transformRequestAsFormPost,
       $modal,
-      admin
+      admin,
+      utils,
+      $state
     ) {
       admin.identity().then(function(data) {
         $scope.admin = data;
@@ -332,12 +336,16 @@ app
           modalInstance.result.then($scope.addEMI, $.noop);
         };
         $scope.confirmUser = function(email) {
-          var request = $http({
-            method: 'post',
-            url: '/admin/users/confirm',
-            data: {
+          var data = {
+            route_name: 'user_confirm_by_data',
+            body: {
               email: email,
             },
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: data,
           });
           request
             .success(function(data) {
@@ -439,6 +447,12 @@ app
             })
             .success(function onUpdateGSTINSuccess(data) {
               if (data.success) {
+                if (utils.isWorkflow(data.data)) {
+                  $state.go('app.workflows.actions.detail', {
+                    action_id: data.data.id,
+                  });
+                  return;
+                }
                 $scope.alerts.addAlert(
                   'success',
                   'Update GSTIN Successfull',

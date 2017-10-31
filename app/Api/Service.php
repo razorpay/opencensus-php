@@ -370,16 +370,6 @@ class Service extends Base\Service
     }
 
     /**
-     * Generic method to get an entity
-     */
-    public function getEntity($mode, $entity)
-    {
-      $this->setApiCredentials($this->merchantId, $mode);
-
-      return $this->api->$entity;
-    }
-
-    /**
      * Get the date ranges to be used in an invoice
      */
     protected function getDateRanges($year, $month)

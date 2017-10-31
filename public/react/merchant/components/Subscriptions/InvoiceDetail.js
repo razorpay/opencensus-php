@@ -135,7 +135,7 @@ export default class InvoiceDetail extends Component {
             <i class="icon icon-link text-primary icon--formal" />{' '}
             <span class="txn-details-title">
               <div class="txn-details-title--primary">
-                <Time value={invoice.issued_at} format="MMM DD, YYYY" />
+                <Time value={invoice.billing_start} format="MMM DD, YYYY" />
               </div>
               {curInvoiceIndex &&
                 <div class="txn-details-title--secondary">
@@ -171,46 +171,70 @@ export default class InvoiceDetail extends Component {
                   label={`${mode === 'test' ? 'Bill Date' : 'Created at'}`}
                   value={() =>
                     <Time
-                      value={
-                        mode === 'test' ? invoice.billing_start : invoice.date
-                      }
+                      value={invoice.billing_start}
                       format="DD MMM YYYY, hh:mm:ss a"
                     />}
                 />
 
-                {/* dummy invoice with 'next_due' status won't be added if subscription status is pending, so label will be 'Charge at'*/}
                 {
                   do {
                     if (
-                      invoice.status === 'next_due' ||
-                      (invoice.status === 'issued' &&
-                        subscription.status !== 'halted')
+                      invoice.status === 'next_due' &&
+                      subscription.status !== 'pending'
                     ) {
+                      <EntityDetailRow
+                        label="Charge at"
+                        value={() =>
+                          <div>
+                            <div>
+                              <Time
+                                value={
+                                  subscription.status === 'halted'
+                                    ? invoice.billing_start
+                                    : nextChargeAt
+                                }
+                                format="DD MMM YYYY, hh:mm:ss a"
+                              />
+                            </div>
+                          </div>}
+                      />;
+                    } else if (invoice.status === 'issued') {
                       <EntityDetailRow
                         label={`${subscription.status === 'pending'
                           ? 'Next Charge at'
                           : 'Charge at'}`}
                         value={() =>
                           <div>
-                            <Time
-                              value={nextChargeAt}
-                              format="DD MMM YYYY, hh:mm:ss a"
-                            />
+                            <div>
+                              <Time
+                                value={nextChargeAt}
+                                format="DD MMM YYYY, hh:mm:ss a"
+                              />
+                            </div>
 
-                            {invoice.status === 'issued' &&
-                              [
-                                'active',
-                                'pending',
-                                'halted',
-                                'completed',
-                                'cancelled',
-                              ].indexOf(subscription.status) > -1 &&
-                              <AsyncButton
-                                class="btn btn-default m-t"
-                                text=" Attempt Charge"
-                                pendingText="Attempting..."
-                                onClick={() => onManualAttempt(invoice.id)}
-                              />}
+                            {
+                              do {
+                                if (
+                                  [
+                                    'active',
+                                    'pending',
+                                    'halted',
+                                    'completed',
+                                  ].indexOf(subscription.status) > -1 ||
+                                  (subscription.status === 'cancelled' &&
+                                    (curInvoiceIndex > 1 ||
+                                      (subscription.type !== 3 &&
+                                        subscription.type !== 1)))
+                                ) {
+                                  <AsyncButton
+                                    class="btn btn-default m-t"
+                                    text=" Attempt Charge"
+                                    pendingText="Attempting..."
+                                    onClick={() => onManualAttempt(invoice.id)}
+                                  />;
+                                }
+                              }
+                            }
                           </div>}
                       />;
                     }
@@ -276,7 +300,7 @@ export default class InvoiceDetail extends Component {
       invoiceContent = <div class="empty-content" />;
     }
 
-    // For next_due invoice, issued_at is charge_at of subscription*
+    // For next_due invoice, billing_start is charge_at of subscription*
     return (
       <div class="content-wrapper content-sm txn-details">
         {isValidInvoice && isLoading

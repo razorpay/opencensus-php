@@ -114,6 +114,13 @@ export const without = (source, keys) => {
     return prev;
   }, {});
 };
+
+export const rupeesToPaise = amount => {
+  amount = (Number(amount) * 100).toFixed(0);
+
+  return Number(amount);
+};
+
 export const objectDiff = (oldObj = {}, newObj = {}) => {
   return Object.keys(newObj).reduce((prev, key) => {
     let value = newObj[key];

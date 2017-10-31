@@ -116,30 +116,6 @@ class Service extends Base\Service
         return $merchantDetails;
     }
 
-    public function saveDetailsOnAPI(array $input, $merchantId = null)
-    {
-        if ($merchantId === null)
-        {
-            $merchantId = $this->merchant->id;
-        }
-
-        $this->setApiCredentials($merchantId);
-
-        list($error, $merchantDetails) = $this->api
-                                              ->merchantDetail
-                                              ->submitDetails($input);
-
-        if (empty($error) === false)
-        {
-            Trace::debug('MISC_TRACE_CODE', [
-                    'error'     => "Error occured saving merchant details on API",
-                    'exception' => $error,
-            ]);
-        }
-
-        return [$error, $merchantDetails];
-    }
-
     public function updateMerchantByAdminOnAPI(array $input, $merchantId)
     {
         $this->setApiCredentials();

@@ -9,7 +9,6 @@ const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals)/;
 const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications|applications\/new)/;
 const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
-const INVOICES_ROUTES_OLD_REGEX = /^\/(invoices|items|customers)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
 const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads.*)?/;
 const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions|plans|addons)/;
@@ -35,10 +34,7 @@ export default class Sidebar extends Component {
   initializeRoutes(location) {
     let pathname = location.pathname;
     let routes = this.routes;
-    let isOldUIEnabled = this.props.user.isOldUIEnabled;
-    let invoicesRegex = isOldUIEnabled
-      ? INVOICES_ROUTES_OLD_REGEX
-      : INVOICES_ROUTES_REGEX;
+    let invoicesRegex = INVOICES_ROUTES_REGEX;
 
     if (TRANSACTIONS_ROUTES_REGEX.test(pathname)) {
       routes.transactions = pathname.match(TRANSACTIONS_ROUTES_REGEX)[0];
@@ -61,7 +57,6 @@ export default class Sidebar extends Component {
     let { user, logoURL } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
-    let isOldUIEnabled = user.isOldUIEnabled;
 
     return (
       <div class="sidebar">
@@ -76,147 +71,6 @@ export default class Sidebar extends Component {
             do {
               if (!isMerchant) {
                 null;
-              } else if (isOldUIEnabled) {
-                <div class="nav">
-                  <MainNavLink
-                    label="Home"
-                    icon="fa fa-area-chart text-info"
-                    to="/dashboard"
-                    exact
-                    notMyRole="sellerapp support"
-                  />
-
-                  <MainNavLink
-                    label="Payments"
-                    icon="fa fa-inr text-primary"
-                    to="/payments"
-                    notMyRole="sellerapp"
-                  />
-
-                  <MainNavLink
-                    label="Orders"
-                    icon="fa fa-archive text-success"
-                    to="/orders"
-                    notMyRole="sellerapp"
-                  />
-
-                  <MainNavLink
-                    label="Refunds"
-                    icon="fa fa-mail-reply text-warning"
-                    to="/refunds"
-                    notMyRole="sellerapp"
-                  />
-
-                  <MainNavLink
-                    label="Settlements"
-                    icon="fa fa-check-square-o text-success"
-                    to="/settlements"
-                    notMyRole="sellerapp support"
-                  />
-
-                  <MainNavLink
-                    label="Invoices"
-                    icon="fa fa-money text-primary"
-                    to={routes.invoices}
-                  />
-
-                  <MainNavLink
-                    label="Subscriptions"
-                    icon="icon icon-refresh text-warning"
-                    notMyRole="sellerapp support"
-                    to={routes.subscriptions}
-                    isNew={true}
-                  />
-
-                  <MainNavLink
-                    label="Route"
-                    icon="icon icon-store text-primary"
-                    to={routes.marketplace}
-                    notMyRole="sellerapp support"
-                    isNew={true}
-                  />
-
-                  <MainNavLink
-                    label="Smart Collect"
-                    icon="icon icon-account-balance text-success"
-                    to="/virtualaccounts"
-                    notMyRole="sellerapp support"
-                    isNew={true}
-                  />
-
-                  <MainNavLink
-                    label="Add Funds"
-                    icon="icon icon-wallet text-info"
-                    to="/addfunds"
-                    notMyRole="sellerapp"
-                  />
-
-                  <MainNavLink
-                    label="Reports"
-                    icon="fa fa-file-excel-o text-danger"
-                    to="/reports"
-                    notMyRole="sellerapp support"
-                  />
-
-                  <MainNavLink
-                    label="Manage Team"
-                    icon="fa fa-users text-info"
-                    to="/team"
-                    myRole="owner"
-                  />
-
-                  <MainNavLink
-                    label="Credits"
-                    icon="fa fa-credit-card text-warning"
-                    to="/credits"
-                    notMyRole="sellerapp support"
-                  />
-
-                  <MainNavLink
-                    label="Referrals"
-                    icon="fa fa-gift text-danger"
-                    to="/referrals"
-                    notMyRole="sellerapp support"
-                    featureEnabled="Referral"
-                  />
-
-                  <div class="divider-old" data-label="Settings" />
-
-                  <MainNavLink
-                    label="API Keys"
-                    icon="fa fa-key text-warning"
-                    to="/keys"
-                    myRole="owner admin"
-                  />
-
-                  <MainNavLink
-                    label="Activation"
-                    icon="fa fa-question-circle-o text-success"
-                    to="/activation"
-                    myRole="owner manager admin"
-                  />
-
-                  <MainNavLink
-                    label="Webhooks"
-                    icon="fa fa-share-alt text-warning"
-                    to="/webhooks"
-                    myRole="owner manager admin"
-                  />
-
-                  <MainNavLink
-                    id="profile-nav"
-                    label="Profile"
-                    icon="fa fa-user-o text-info"
-                    to="/profile"
-                  />
-
-                  <MainNavLink
-                    label="Configuration"
-                    icon="fa fa-cog text-warning"
-                    to="/config"
-                    myRole="owner manager admin"
-                  />
-                </div>;
               } else {
                 <div class="nav">
                   <MainNavLink

@@ -4,6 +4,20 @@
 // and resolve (on the backend) automagically.
 
 return [
+    // NoAuth
+    // For routes which are being hit without authentication, entry should be in
+    // both guest and also the respective auth
+    'guest' => [
+        // Confirm User
+        'user_confirm_by_data',
+        // Invitation fetch by token
+        'invitation_fetch_by_token',
+        // User Forgot Password
+        'user_reset_password_create',
+        // User Forgot Password Reset Password using Token
+        'user_reset_password_token',
+    ],
+
     // auth
     'admin' => [
         'org_create'                        => 'orgs',
@@ -88,7 +102,7 @@ return [
         // Create Schedule
         'schedule_create'                   => 'schedules',
         'schedule_assign'                   => 'merchants/{id}/schedules',
-        'schedule_fetch_multiple'           => 'schedules',
+        'setl_fetch_schedule'               => 'settlements/schedules',
 
         // Add Adjustment
         'adj_add'                           => 'adjustments',
@@ -98,6 +112,8 @@ return [
 
         // Fetch Merchants from ES
         'admin_fetch_merchants_new'         => 'admins/merchants',
+
+        'admin_fetch_all_entities'          => 'admin/entities/all',
 
         // Admin Payment Actions
         // Refund Authorized Payment
@@ -538,6 +554,20 @@ return [
             'url'       => 'feature/onboarding/{feature}/responses',
             'routeName' => 'feature_onboarding_fetch_responses'
         ],
+
+        // User Merchant Mapping Action
+        'user_merchant_mapping_action'      => 'users/{id}/{action}',
+
+        // Create SubMerchant
+        'merchant_sub_create'               => 'submerchants',
+        // Create SubMerchant User
+        'create_submerchant_user'           => [
+            'url'       => 'submerchant/user/{id}',
+            'routeName' => 'subuser_register'
+        ],
+
+        'merchant_pre_signup_details'       => 'pre_signup',
+        'merchant_edit_pre_signup_details'  => 'pre_signup',
     ],
 
     // auth
@@ -588,6 +618,23 @@ return [
             'routeName' => 'post_keys'
         ],
 
+        // User Signup
+        'user_register'                     => 'users/register',
+        // User Login
+        'user_login'                        => 'users/login',
+        // Resend Verification
+        'user_resend_verification'          => 'users/resend-verification',
+        // Fetch user
+        'user_fetch'                        => 'users/{id}',
+        // Fetch User by email
+        'user_fetch_email'                  => 'users/email/{email}',
+        // User change password
+        'user_change_password'              => 'users/{id}/password',
+        // Forgot Password
+        'user_reset_password_create'        => 'users/reset-password',
+        // User Forgot Password Reset Password using Token
+        'user_reset_password_token'         => 'users/reset-password-token',
+
         // Admin Routes
         // Pricing
         'pricing_get_merchant_plans'        => 'pricing/merchants',
@@ -627,9 +674,13 @@ return [
 
         // Get Merchant Users
         'merchant_fetch_users'              => 'merchants/{id}/users',
+        // Edit Merchant Email
+        'merchant_edit_email'               => 'merchants/{id}/email',
 
         // Accept/Reject Invitation
         'invitation_action'                 => 'invitations/{id}/{action}',
+        // Invitation fetch by token
+        'invitation_fetch_by_token'         => 'invitations/token/{token}',
 
         // Make test payment for Virtual Account
         'bank_transfer_process'             => 'ecollect/validate',
@@ -638,6 +689,8 @@ return [
         'admin_oauth_authenticate'          => 'admin/oauth_login',
         'admin_edit_app_auth'               => 'admin-app-auth/{id}',
         'admin_get_app_auth'                => 'current_admin',
+
+        'user_merchant_upgrade'             => 'users/upgrade-merchant',
     ],
 
     // auth
@@ -671,6 +724,9 @@ return [
         'admin_fetch_entity_by_id'          => 'admin/{type}/{id}',
         'admin_fetch_terminal_by_id'        => 'admin/terminal/{id}',
         'admin_fetch_entity_multiple'       => 'admin/{type}',
+
+        // Confirm User
+        'user_confirm_by_data'              => 'users/confirm_user_by_data',
 
         // Toggle Terminal
         'terminal_toggle'                   => 'terminals/{id}/toggle',

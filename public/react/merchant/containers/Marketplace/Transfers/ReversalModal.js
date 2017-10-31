@@ -6,7 +6,7 @@ import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Amount from 'rzp/ui/Amount';
-import { isBlank } from 'rzp/utils/rzp-utils';
+import { isBlank, rupeesToPaise } from 'rzp/utils/rzp-utils';
 import {
   fetchTransfer,
   fetchReversals,
@@ -100,7 +100,7 @@ export default class ReversalModal extends Component {
           let data = null;
           if (props.partial) {
             data = {
-              amount: props.amount * 100,
+              amount: rupeesToPaise(props.amount),
             };
           }
 

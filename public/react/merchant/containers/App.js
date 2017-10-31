@@ -53,10 +53,10 @@ export default class App extends Component {
 
         this.props.updateSession({ mode: currentMode });
         this.redirectToRoute(role);
+
         setTimeout(() => {
           this.initSmooch(user);
         });
-
         return data;
       }),
       this.fetchOrg().then(({ data }) => {
@@ -67,17 +67,19 @@ export default class App extends Component {
       }),
     ]).then(response => {
       // Fetch features before displaying other views
-      fetchFeaturesAjax(response[0].current).then(data => {
-        let user = new User(response[0]);
-        user.features = setFeatures(data.data.features);
+      fetchFeaturesAjax(response[0].current)
+        .catch(_ => _)
+        .then(data => {
+          let user = new User(response[0]);
+          user.features = setFeatures(data.success ? data.data.features : []);
 
-        this.props.updateSession({ user, mode: currentMode });
+          this.props.updateSession({ user, mode: currentMode });
 
-        let $splash = document.getElementById('splash');
-        $splash.parentElement.removeChild($splash);
+          let $splash = document.getElementById('splash');
+          $splash.parentElement.removeChild($splash);
 
-        this.setState({ isLoading: false });
-      });
+          this.setState({ isLoading: false });
+        });
     });
   }
 
@@ -112,12 +114,11 @@ export default class App extends Component {
 
   redirectToRoute(role) {
     let pathname = this.props.history.location.pathname;
-    let isOldUIEnabled = this.props.user.isOldUIEnabled;
 
     if (pathname === '/' || pathname === '/dashboard') {
       switch (role) {
         case 'sellerapp':
-          let url = isOldUIEnabled ? '/invoices' : '/paymentlinks';
+          let url = '/paymentlinks';
           return this.props.history.replace(url);
         case 'support':
           return this.props.history.replace('/payments');
@@ -146,7 +147,6 @@ export default class App extends Component {
               activated: data.activated,
               locked: data.locked,
               submitted: data.submitted,
-              isOldUIEnabled: data.isOldUIEnabled,
               role: role,
               userEmail: data.user.email,
               dashboardLink:

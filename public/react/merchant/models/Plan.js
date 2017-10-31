@@ -1,5 +1,6 @@
 import GenericEntity from './GenericEntity';
 import Subscription from './Subscription';
+import { rupeesToPaise } from 'rzp/utils/rzp-utils';
 
 export default class Plan extends GenericEntity {
   listRouteName = 'plan_fetch_multiple';
@@ -42,7 +43,7 @@ export default class Plan extends GenericEntity {
       let item = this.item;
       return {
         ...item,
-        amount: Number(item.amount) * 100,
+        amount: rupeesToPaise(item.amount),
       };
     }
     return super.serializeProperty(prop);

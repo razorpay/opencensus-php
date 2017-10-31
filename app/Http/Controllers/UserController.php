@@ -54,18 +54,6 @@ class UserController extends Controller
         return view('merchant.tmpgetIndex', $data);
     }
 
-    private function getPreSignupData($user)
-    {
-        $merchant = (new UserHelper)->getCurrentMerchant($user);
-
-        if ($merchant)
-        {
-            return (new Merchant\Service)->getPreSignupDetails($merchant->id);
-        }
-
-        return [];
-    }
-
     /**
      * Returns an empty success to keep the user session active..
      *
@@ -124,19 +112,6 @@ class UserController extends Controller
         }
 
         list($error, $data) = (new User\Service)->login($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    /**
-     * Confirms the user.
-     *
-     * @param string $token
-     * @return \Illuminate\Http\Response
-     */
-    public function getConfirm($token)
-    {
-        list($error, $data) = (new User\Service)->confirm($token);
 
         return AppResponse::jsonResponse($error, $data);
     }

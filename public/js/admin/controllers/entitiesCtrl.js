@@ -293,9 +293,34 @@ app.controller('EntitiesCtrl', [
       dispute: {
         merchant_id: ['Merchant ID'],
         payment_id: ['Payment ID'],
-        status: ['open', 'under_review', 'won', 'lost'],
-        phase: ['chargeback', 'pre_arbitration', 'arbitration'],
+        status: ['all', 'open', 'under_review', 'won', 'lost', 'closed'],
+        phase: [
+          'all',
+          'chargeback',
+          'pre_arbitration',
+          'arbitration',
+          'retrieval',
+          'fraud',
+        ],
         amount: ['Amount'],
+      },
+      dispute_reason: {
+        network: [
+          'all',
+          'RZP',
+          'JCB',
+          'Amex',
+          'Visa',
+          'RuPay',
+          'Maestro',
+          'Discover',
+          'Unionpay',
+          'Mastercard',
+        ],
+        code: ['Code'],
+        description: ['Description'],
+        gateway_code: ['Gateway Code'],
+        gateway_description: ['Gateway Description'],
       },
       emi_plan: {
         bank: ['Bank'],
@@ -309,6 +334,7 @@ app.controller('EntitiesCtrl', [
       file_store: {
         entity_id: ['Entity Id'],
         type: ['Type'],
+        merchant_id: ['Merchant Id'],
       },
       fund_transfer_attempt: {
         batch_fund_transfer_id: ['Batch Fund Transfer Id'],

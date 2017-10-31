@@ -31,11 +31,13 @@ export default class User {
           // Risky. fetchFeaturesAjax can make the request always in 'test'mode.
           // But hopefully, it will happen after cycle of App.js fetch User where it updatesSession with correct mode
           fetchFeaturesAjax(response.data.current)
+            .catch(_ => _)
             .then(data => {
               let newUser = new User(response.data);
-              newUser.features = setFeatures(data.data.features);
+              newUser.features = setFeatures(
+                data.success ? data.data.features : []
+              );
               response.data = newUser;
-
               resolve(response);
             })
             .catch(err => {
@@ -69,10 +71,6 @@ export default class User {
 
   get isSubmitted() {
     return !!parseInt(this.submitted);
-  }
-
-  get isOldUIEnabled() {
-    return (this.tags || []).indexOf('Oldui') !== -1;
   }
 
   get isMarketplaceEnabled() {

@@ -1208,6 +1208,16 @@
           </select>
         </div>
       </div>
+      <div class="form-group">
+        <label for="terminal_mode" class="col-lg-3 control-label">Mode:</label>
+        <div class="col-lg-9" >
+          <select class="form-control m-b" ng-model="terminal.terminal_mode">
+            <option value="3">Dual</option>
+            <option value="1">Auth-Capture</option>
+            <option value="2">Purchase</option>
+          </select>
+        </div>
+      </div>
       <div class="form-group" >
         <label for="non_recurring" class="col-lg-3 control-label">Non recurring</label>
         <div class="col-lg-9" >
@@ -2028,7 +2038,7 @@
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(tags)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-disabled="tags===''" ng-click="ok(tags)">OK</button>
   </div>
 </script>
 
