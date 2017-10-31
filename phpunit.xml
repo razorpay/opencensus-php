@@ -11,7 +11,7 @@
          syntaxCheck="false">
   <testsuites>
       <testsuite name="Application Test Suite">
-          <file>./tests/Functional/Merchant/MerchantTest.php</file>
+          <directory>./tests/</directory>
 
           <!--
             Following ES related tests are failing on wercker.

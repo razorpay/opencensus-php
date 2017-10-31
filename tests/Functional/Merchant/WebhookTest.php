@@ -9,10 +9,10 @@ use Mail;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
 use Http\Mock\Client;
 use RZP\Jobs\WebHook;
-use Symfony\Bridge\PhpUnit\DnsMock;
 use RZP\Tests\Functional\TestCase;
 use Http\Discovery\MessageFactoryDiscovery;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Merchant\Webhook\Inferno;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\RequestInterface;
@@ -26,6 +26,7 @@ use Http\Client\Common\Exception\ClientErrorException;
 class WebhookTest extends TestCase
 {
     use PaymentTrait;
+    use MocksDnsTrait;
 
     public function setUp()
     {
@@ -36,30 +37,6 @@ class WebhookTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->setupMockDns();
-    }
-
-    private function setupMockDns()
-    {
-        DnsMock::withMockedHosts(array(
-            'example.com' => [
-                [
-                    'type' => 'A',
-                    'ip' => '1.2.3.4',
-                ],
-            ],
-            '10.0.0.1.xip.io' => [
-                [
-                    'type'  => 'A',
-                    'ip'    => '10.0.0.1',
-                ],
-            ],
-            '169.254.169.254.xip.io'    => [
-                [
-                    'type'  =>  'A',
-                    'ip'    =>  '169.254.169.254',
-                ]
-            ],
-        ));
     }
 
     public function testCreateWebhook()
