@@ -4,10 +4,12 @@ namespace RZP\Models\Gateway\File;
 
 class Type
 {
-    const EMI      = 'emi';
-    const CLAIM    = 'claim';
-    const REFUND   = 'refund';
-    const COMBINED = 'combined';
+    const EMI               = 'emi';
+    const CLAIM             = 'claim';
+    const REFUND            = 'refund';
+    const COMBINED          = 'combined';
+    const EMANDATE_REGISTER = 'emandate_register';
+    const EMANDATE_DEBIT    = 'emandate_debit';
 
     // Sub types for gateway_file entity
     const TPV     = 'tpv';
@@ -18,6 +20,8 @@ class Type
         self::CLAIM,
         self::REFUND,
         self::COMBINED,
+        self::EMANDATE_REGISTER,
+        self::EMANDATE_DEBIT,
     ];
 
     const VALID_SUB_TYPES = [
@@ -27,7 +31,9 @@ class Type
 
     public static function isValidType(string $type)
     {
-        return (in_array($type, self::VALID_TYPES, true) === true);
+        $key = __CLASS__ . '::' . strtoupper($type);
+
+        return ((defined($key) === true) and (constant($key) === $type));
     }
 
     public static function isValidSubType(string $subType)

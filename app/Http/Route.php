@@ -296,9 +296,7 @@ final class Route
         'gateway_payment_callback_corporation'    => ['post',     'gateway/netbanking_corporation/callback',        'GatewayController@callbackCorporation'                             ],
 
         // File-based Emandate Routes
-        'emandate_registration_initiate'          => ['post',     'emandate/registration/initiate/{gateway}',       'EMandateController@postGenerateRegistrationFile'                   ],
         'emandate_registration_reconcile'         => ['post',     'emandate/registration/reconcile/{gateway}',      'EMandateController@postReconcileRegistrationFile'                  ],
-        'emandate_debit_initiate'                 => ['post',     'emandate/debit/initiate/{gateway}',              'EMandateController@postGenerateDebitFile'                          ],
         'emandate_debit_reconcile'                => ['post',     'emandate/debit/reconcile/{gateway}',             'EMandateController@postReconcileDebitFile'                         ],
 
         'reconciliate'                            => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
@@ -1085,9 +1083,7 @@ final class Route
         'user_merchant_upgrade',
         'user_resend_verification',
         'user_fetch_email',
-        'emandate_registration_initiate',
         'emandate_registration_reconcile',
-        'emandate_debit_initiate',
         'emandate_debit_reconcile',
         'user_reset_password_create',
         'user_reset_password_token',
@@ -1497,8 +1493,6 @@ final class Route
             'merchant_payout',
             'gateway_file_create',
             'reports_refund_irctc',
-            'emandate_registration_initiate',
-            'emandate_debit_initiate',
         ],
 
         'kotak' => [
