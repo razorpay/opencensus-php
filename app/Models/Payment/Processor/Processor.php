@@ -1625,6 +1625,12 @@ class Processor
             return false;
         }
 
+        // Bharat Qr payment
+        if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
+        {
+            return false;
+        }
+
         return true;
     }
 

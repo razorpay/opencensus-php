@@ -59,6 +59,15 @@ class Core extends Base\Core
         {
             $bharatQr = $this->create($input);
 
+            // @todo hande failed Payment
+            if (empty($bharatQr->getProviderReferenceId()) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::PROVIDER_REFERENCE_ID_NEEDS_TO_SENT);
+            }
+
+            if ($bharatQr)
+
              $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
                 function() use ($bharatQr)
@@ -72,7 +81,6 @@ class Core extends Base\Core
         }
         catch (\Exception $ex)
         {
-            s($ex->getMessage());
             $this->trace->traceException(
                 $ex, Trace::ERROR, TraceCode::BHARAT_QR_PAYMENT_PROCESSING_FAILED, $input);
 

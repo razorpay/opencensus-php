@@ -731,6 +731,11 @@ trait Refund
         {
             return $this->refundBankTransfer($payment, $data);
         }
+        else if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFUNDS_NOT_AVAILABLE_FOR_BHARAT_QR_PAYMENTS);
+        }
         else
         {
             throw new Exception\LogicException(
