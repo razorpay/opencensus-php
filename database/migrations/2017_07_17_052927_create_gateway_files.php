@@ -28,7 +28,7 @@ class CreateGatewayFiles extends Migration
 
             $table->string(GatewayFile::TARGET, 50);
 
-            $table->tinyInteger(GatewayFile::TPV)
+            $table->string(GatewayFile::SUB_TYPE, 25)
                   ->nullable();
 
             $table->string(GatewayFile::SENDER, 100);

@@ -220,45 +220,6 @@ class Service extends Base\Service
         }
     }
 
-    protected function buildReceivers(Entity $virtualAccount, array $receiverTypes)
-    {
-        $name = $virtualAccount->getName();
-
-        $descriptor = $virtualAccount->getDescriptor();
-
-        $receiverHelper = new Receiver($this->merchant, $name, $descriptor);
-
-        foreach ($receiverTypes as $receiverType)
-        {
-            $this->validateReceiver($receiverType);
-
-            $func = 'build' . studly_case($receiverType);
-
-            $receiver = $receiverHelper->$func($virtualAccount);
-
-            $association = camel_case($receiverType);
-
-            $virtualAccount->$association()->associate($receiver);
-        }
-    }
-
-    protected function validateReceiver(string $receiver)
-    {
-        switch ($receiver)
-        {
-            case Receiver::BANK_ACCOUNT:
-                $this->verifyBankTransferEnabled();
-                break;
-
-            case Receiver::QR_CODE:
-                $this->verifyBharatQrEnabled();
-                break;
-
-            default:
-                return;
-        }
-    }
-
     protected function verifyMerchantIsLiveForLiveRequest()
     {
         // On live request, ensure that merchant isn't blocked temporarily
@@ -268,40 +229,6 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED);
         }
-    }
-
-    protected function verifyBankTransferEnabled()
-    {
-        $merchantMethods = $this->getMethodsForMerchant($this->merchant);
-
-        if (($merchantMethods === null) or
-            ($merchantMethods->isBankTransferEnabled() === false))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BANK_TRANSFER_NOT_ENABLED_FOR_MERCHANT);
-        }
-    }
-
-    protected function verifyBharatQrEnabled()
-    {
-        $feature = Feature\Constants::BHARAT_QR;
-
-        if ($merchant->isFeatureEnabled($feature) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);
-        }
-
-    }
-
-    protected function getMethodsForMerchant(Merchant\Entity $merchant)
-    {
-        if ($merchant->hasRelation('methods') === false)
-        {
-            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
-        }
-
-        return $merchant->methods;
     }
 
     protected function getNewProcessor($merchant)

@@ -196,6 +196,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_BOOST_INVALID                        = 'TERMINAL_BOOST_INVALID';
     const TERMINAL_USED_BEFORE                          = 'TERMINAL_USED_BEFORE';
 
+    const REQUEST_THROTTLED                             = 'REQUEST_THROTTLED';
+
     const CARD_NETWORK_INVALID                          = 'CARD_NETWORK_INVALID';
 
     const CUSTOMER_EDIT                                 = 'CUSTOMER_EDIT';
@@ -696,11 +698,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_UPLOADING_FILE                          = 'BATCH_UPLOADING_FILE';
     const BATCH_UPLOAD_FILE                             = 'BATCH_UPLOAD_FILE';
     const BATCH_FILE_PROCESSING                         = 'BATCH_FILE_PROCESSING';
+    const BATCH_FILE_PROCESSING_ERROR                   = 'BATCH_FILE_PROCESSING_ERROR';
     const BATCH_FILE_PROCESSED                          = 'BATCH_FILE_PROCESSED';
     const BATCH_ALREADY_PROCESSED                       = 'BATCH_ALREADY_PROCESSED';
     const BATCH_PROCESSING_ENTRY                        = 'BATCH_PROCESSING_ENTRY';
     const BATCH_PROCESSING_ERROR                        = 'BATCH_PROCESSING_ERROR';
-    const BATCH_RETRY                                   = 'BATCH_RETRY';
+    const BATCH_PROCESS_ASYNC                           = 'BATCH_PROCESS_ASYNC';
     const BATCH_RETRY_OUTPUT_FILE                       = 'BATCH_RETRY_OUTPUT_FILE';
     const BATCH_DOWNLOAD                                = 'BATCH_DOWNLOAD';
     const BATCH_LIST                                    = 'BATCH_LIST';
@@ -709,7 +712,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_JOB_RECEIVED                            = 'BATCH_JOB_RECEIVED';
     const BATCH_JOB_HANDLED                             = 'BATCH_JOB_HANDLED';
     const BATCH_JOB_ERROR                               = 'BATCH_JOB_ERROR';
-
+    const IRCTC_BATCH_JOB_RECEIVED                      = 'IRCTC_BATCH_JOB_RECEIVED';
+    const IRCTC_BATCH_JOB_ERROR                         = 'IRCTC_BATCH_JOB_ERROR';
     const MUTEX_LOCK_ALREADY_RELEASED                   = 'MUTEX_LOCK_ALREADY_RELEASED';
     const MUTEX_UNABLE_TO_ACQUIRE                       = 'MUTEX_UNABLE_TO_ACQUIRE';
 
@@ -868,6 +872,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_ADJUSTMENT_MIGRATE_REQUEST            = 'DISPUTE_ADJUSTMENT_MIGRATE_REQUEST';
     const DISPUTE_ADJUSTMENT_MIGRATE_ERROR              = 'DISPUTE_ADJUSTMENT_MIGRATE_ERROR';
     const DISPUTE_REASON_CREATE                         = 'DISPUTE_REASON_CREATE';
+    const DISPUTE_SAME_PARENT_LINKING                   = 'DISPUTE_SAME_PARENT_LINKING';
 
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
@@ -887,6 +892,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SERVER_ERROR_MISSING_HANDLER                  = 'SERVER_ERROR_MISSING_HANDLER';
     const GATEWAY_FILE_CREATE_REQUEST                   = 'GATEWAY_FILE_CREATE_REQUEST';
+    const GATEWAY_FILES_CREATED                         = 'GATEWAY_FILES_CREATED';
     const GATEWAY_FILE_PROCESSING                       = 'GATEWAY_FILE_PROCESSING';
     const GATEWAY_FILE_DATA_GENERATION_ERROR            = 'GATEWAY_FILE_DATA_GENERATION_ERROR';
     const GATEWAY_FILE_ERROR_GENERATING_FILE            = 'GATEWAY_FILE_ERROR_GENERATING_FILE';
@@ -895,6 +901,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_FILE_JOB_RECEIVED                     = 'GATEWAY_FILE_JOB_RECEIVED';
     const GATEWAY_FILE_JOB_HANDLED                      = 'GATEWAY_FILE_JOB_HANDLED';
     const GATEWAY_FILE_JOB_ERROR                        = 'GATEWAY_FILE_JOB_ERROR';
+    const GATEWAY_FILE_REFUND_ENTITIES                  = 'GATEWAY_FILE_REFUND_ENTITIES';
+    const GATEWAY_FILE_CLAIM_ENTITIES                   = 'GATEWAY_FILE_CLAIM_ENTITIES';
 
     const VERIFY_ENROLLMENT_RESPONSE                    = 'VERIFY_ENROLLMENT_RESPONSE';
 
@@ -903,9 +911,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTINGS_DELETE_REQUEST                       = 'SETTINGS_DELETE_REQUEST';
 
     // Merchant feature trace codes
-    const FEATURE_ONBOARDING_RESPONSE_REQUEST           = 'FEATURE_ONBOARDING_RESPONSE_REQUEST';
+    const FEATURE_ONBOARDING_SUBMISSION_REQUEST         = 'FEATURE_ONBOARDING_SUBMISSION_REQUEST';
+    const FEATURE_ONBOARDING_SUBMISSION_APPROVED        = 'FEATURE_ONBOARDING_SUBMISSION_APPROVED';
     const FEATURE_ENABLED_MERCHANT_NOTIFIED             = 'FEATURE_ENABLED_MERCHANT_NOTIFIED';
     const FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED         = 'FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED';
+
+    const MAILCHIMP_JOB_ERROR                           = 'MAILCHIMP_JOB_ERROR';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
@@ -1020,7 +1031,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
         self::BATCH_ALREADY_PROCESSED                   => 'Batch File already processed',
         self::BATCH_PROCESSING_ERROR                    => 'Error in processing batch',
-        self::BATCH_RETRY                               => 'Manual retry for the batch file',
         self::BATCH_DOWNLOAD                            => 'Downloading the batch file',
         self::BATCH_LIST                                => 'Getting the batch files',
         self::BATCH_GET                                 => 'Get Batch by given id',

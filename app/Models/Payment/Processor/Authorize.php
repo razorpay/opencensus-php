@@ -2364,7 +2364,13 @@ trait Authorize
 
             $gatewayToken = $gatewayTokens->first();
 
-            $gatewayToken->terminal()->associate($payment->terminal);
+            //
+            // TODO: Remove the IF condition once it's fixed on FirstData side
+            //
+            if ($this->shouldSetTokenTerminal($token, $payment) === true)
+            {
+                $gatewayToken->terminal()->associate($payment->terminal);
+            }
 
             $this->repo->saveOrFail($gatewayToken);
         }

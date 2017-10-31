@@ -45,14 +45,14 @@ else
   cp dockerconf/api.docker.conf /etc/apache2/conf.d/api.conf
 
   # change log path
-  ACCESS_LOG_PATH="CustomLog /var/log/apache2/api.razorpay.dev.access.log custom_combined"
+  ACCESS_LOG_PATH="CustomLog /var/log/apache2/api.razorpay.in.access.log custom_combined"
   sed -i "s|CustomLog|${ACCESS_LOG_PATH}|g" /etc/apache2/conf.d/api.conf
 
   # change domain reference
   if [[ "${APP_CONTEXT}" != "prod" ]]; then
-    sed -i "s|api.razorpay.dev|${APP_CONTEXT}-api.razorpay.com|g" /etc/apache2/conf.d/api.conf
+    sed -i "s|api.razorpay.in|${APP_CONTEXT}-api.razorpay.com|g" /etc/apache2/conf.d/api.conf
   elif [[ "${APP_CONTEXT}" == "prod" ]]; then
-    sed -i "s|api.razorpay.dev|api.razorpay.com|g" /etc/apache2/conf.d/api.conf
+    sed -i "s|api.razorpay.in|api.razorpay.com|g" /etc/apache2/conf.d/api.conf
   fi
 
   # use alohomora to generate vault and env.php

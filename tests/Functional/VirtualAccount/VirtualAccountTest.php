@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\VirtualAccount;
 
 use Closure;
 use Mockery;
+use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
@@ -34,11 +35,7 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccount()
     {
-        $input = [
-            'amount_expected' => 10000,
-        ];
-
-        $response = $this->createVirtualAccount($input);
+        $response = $this->createVirtualAccount();
 
         $expectedResponse = $this->testData[__FUNCTION__];
 
@@ -47,11 +44,9 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccountWithBharatQr()
     {
-        $input = [
+        $response = $this->createVirtualAccount([
             'receiver_types'  => 'qr_code',
-        ];
-
-        $response = $this->createVirtualAccount($input);
+        ]);
 
         $expectedResponse = $this->testData[__FUNCTION__];
 
@@ -68,18 +63,24 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals(16, strlen($masterCardValue));
 
         $this->assertEquals(16, strlen($visaValue));
+
+        $masterCardAcquirerCode = substr($masterCardValue, 0, 6);
+
+        $visaAcquirerCode = substr($visaValue, 0, 6);
+
+        $this->assertEquals('470100', $visaAcquirerCode);
+
+        $this->assertEquals('513344', $masterCardAcquirerCode);
     }
 
     public function testCreateVirtualAccountWithBharatQrWithAmount()
     {
-        $input = [
-            'receiver_types' => 'qr_code',
+        $response = $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
             'amount_expected' => 10000,
-        ];
+        ]);
 
-        $response = $this->createVirtualAccount($input);
-
-        $expectedResponse = $this->testData['testCreateVirtualAccountWithBharatQr'];
+        $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
@@ -92,11 +93,7 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccountWithDescriptor()
     {
-        $input = [
-            'amount_expected' => 10000,
-        ];
-
-        $this->createVirtualAccount($input);
+        $this->createVirtualAccount();
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is unsetso default root is used with default handle
@@ -119,14 +116,9 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccountDescriptorLengths()
     {
-        $input = [
-            'amount_expected' => 10000,
-            'descriptor' => '9chardesc',
-        ];
-
         $this->fixtures->merchant->setHandle('hand');
 
-        $this->createVirtualAccount($input);
+        $this->createVirtualAccount(['descriptor' => '9chardesc']);
 
         $vba = $this->getLastEntity('bank_account', true);
         $this->assertEquals("RZRPHAND9CHARDESC", $vba['account_number']);
@@ -152,12 +144,7 @@ class VirtualAccountTest extends TestCase
     {
         $this->fixtures->merchant->setHandle('hand');
 
-        $input = [
-            'amount_expected' => 10000,
-            'descriptor' => 'samedesc',
-        ];
-
-        $this->createVirtualAccount($input);
+        $this->createVirtualAccount(['descriptor' => 'samedesc']);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -170,12 +157,7 @@ class VirtualAccountTest extends TestCase
     {
         $this->fixtures->merchant->setHandle('hand');
 
-        $input = [
-            'amount_expected' => 10000,
-            'descriptor' => 'samedesc',
-        ];
-
-        $virtualAccount = $this->createVirtualAccount($input);
+        $virtualAccount = $this->createVirtualAccount(['descriptor' => 'samedesc']);
 
         $this->closeVirtualAccount($virtualAccount['id']);
 
@@ -184,11 +166,7 @@ class VirtualAccountTest extends TestCase
 
     public function testFetchVirtualAccount()
     {
-        $input = [
-            'amount_expected' => 10000,
-        ];
-
-        $response = $this->createVirtualAccount($input);
+        $response = $this->createVirtualAccount();
 
         $response = $this->fetchVirtualAccount($response['id']);
 
@@ -199,19 +177,8 @@ class VirtualAccountTest extends TestCase
 
     public function testFetchVirtualAccounts()
     {
-        $input = [
-            'amount_expected' => 10000,
-            'name'            => 'First VA'
-        ];
-
-        $this->createVirtualAccount($input);
-
-        $input = [
-            'amount_expected' => 10000,
-            'name'            => 'Second VA'
-        ];
-
-        $this->createVirtualAccount($input);
+        $this->createVirtualAccount(['name' => 'First VA']);
+        $this->createVirtualAccount(['name' => 'Second VA']);
 
         $response = $this->fetchVirtualAccounts();
 
@@ -222,11 +189,7 @@ class VirtualAccountTest extends TestCase
 
     public function testEditVirtualAccount()
     {
-        $input = [
-            'amount_expected' => 10000,
-        ];
-
-        $virtualAccount = $this->createVirtualAccount($input);
+        $virtualAccount = $this->createVirtualAccount();
 
         $response = $this->closeVirtualAccount($virtualAccount['id']);
 
@@ -235,13 +198,11 @@ class VirtualAccountTest extends TestCase
 
     public function testVirtualAccountPay()
     {
-        $input = [
+        $virtualAccount = $this->createVirtualAccount([
             'amount_expected' => 10000,
-        ];
+        ]);
 
-        $virtualAccount = $this->createVirtualAccount($input);
-
-        $response = $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
 
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(5000, $virtualAccount['amount_paid']);
@@ -258,20 +219,18 @@ class VirtualAccountTest extends TestCase
 
     public function testVirtualAccountExcess()
     {
-        $input = [
+        $virtualAccount = $this->createVirtualAccount([
             'amount_expected' => 10000,
-        ];
+        ]);
 
-        $virtualAccount = $this->createVirtualAccount($input);
-
-        $response = $this->payVirtualAccount($virtualAccount['id'], ['amount' => 110]);
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 110]);
 
         // Account is paid in excess
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(11000, $virtualAccount['amount_paid']);
         $this->assertEquals('paid', $virtualAccount['status']);
 
-        $response = $this->refundVirtualAccountExcessPayments();
+        $this->refundVirtualAccountExcessPayments();
 
         // Payment is partially refunded
         $payment =  $this->getLastEntity('payment', true);
@@ -289,11 +248,7 @@ class VirtualAccountTest extends TestCase
 
     public function testFetchPaymentsForVirtualAccount()
     {
-        $input = [
-            'amount_expected' => 10000,
-        ];
-
-        $virtualAccount = $this->createVirtualAccount($input);
+        $virtualAccount = $this->createVirtualAccount();
 
         $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
 
@@ -306,12 +261,9 @@ class VirtualAccountTest extends TestCase
 
     public function testVirtualAccountForCustomer()
     {
-        $input = [
-            'amount_expected' => 10000,
+        $virtualAccount = $this->createVirtualAccount([
             'customer_id' => 'cust_100000customer',
-        ];
-
-        $virtualAccount = $this->createVirtualAccount($input);
+        ]);
 
         $this->assertEquals('cust_100000customer', $virtualAccount['customer_id']);
 
@@ -328,11 +280,7 @@ class VirtualAccountTest extends TestCase
 
     public function testWebhookOnVirtualAccountPay()
     {
-        $input = [
-            'amount_expected' => 10000,
-        ];
-
-        $virtualAccount = $this->createVirtualAccount($input);
+        $virtualAccount = $this->createVirtualAccount();
 
         $this->createWebhook(
             [
@@ -359,9 +307,7 @@ class VirtualAccountTest extends TestCase
 
     protected function mockInfernoFire(Closure $closure)
     {
-        $class = \RZP\Models\Merchant\Webhook\Inferno::class;
-
-        $inferno = Mockery::mock($class, [])->makePartial();
+        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
 
         $inferno->shouldReceive('fire')
                 ->once()
@@ -390,11 +336,11 @@ class VirtualAccountTest extends TestCase
 
             $index +=2;
 
-            $phpArray[$tlvTag] = substr($qrString, $index, $tlvLength);
+            $tlvArray[$tlvTag] = substr($qrString, $index, $tlvLength);
 
             $index += $tlvLength;
         }
 
-        return $phpArray;
+        return $tlvArray;
     }
 }

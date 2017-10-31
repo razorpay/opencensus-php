@@ -106,9 +106,7 @@ class Receiver
 
         $qrCode->source()->associate($virtualAccount);
 
-        $qrString = (new Provider)->generateQrString($qrCode);
-
-        $qrCode->setQrString($qrString);
+        $qrCode = $qrCode->generateQrString();
 
         $this->repo->saveOrFail($qrCode);
 

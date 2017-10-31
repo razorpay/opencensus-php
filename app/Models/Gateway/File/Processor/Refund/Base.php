@@ -23,7 +23,7 @@ class Base extends BaseProcessor
         $begin = $this->gatewayFile->getBegin();
         $end = $this->gatewayFile->getEnd();
 
-        $tpv = $this->gatewayFile->getTpv();
+        $tpv = $this->getTpv();
 
         if ($tpv === null)
         {
@@ -46,6 +46,13 @@ class Base extends BaseProcessor
                             $tpv
                         );
         }
+
+        $this->trace->info(TraceCode::GATEWAY_FILE_REFUND_ENTITIES, [
+            'gateway_file_id' => $this->gatewayFile->getId(),
+            'entity_ids'      => $refunds->pluck('id'),
+            'begin'           => $begin,
+            'end'             => $end,
+        ]);
 
         return $refunds;
     }
