@@ -3,7 +3,6 @@
 namespace App\Admin;
 
 use Auth;
-use App\Merchant\Entity as MerchantEntity;
 use App\MerchantDetails;
 
 trait Logger
@@ -17,13 +16,11 @@ trait Logger
 
     /**
      * Returns markdown
-     * @param  [type] $merchant [description]
+     * @param  [type] $id MerchantId [description]
      * @return [type]           [description]
      */
-    protected function getMerchantDashboardSlackText($merchant)
+    protected function getMerchantDashboardSlackText($id)
     {
-        $id = $merchant->id;
-
         $label = $this->getBillingLabel($id);
 
         $link = "https://dashboard.razorpay.com/admin#/app/merchants/$id/detail";
@@ -38,21 +35,11 @@ trait Logger
         return $merchantDetails['business_dba'];
     }
 
-    protected function logActionToSlack($merchant, $action, $data = [])
+    protected function logActionToSlack($merchantId, $action, $data = [])
     {
-        // We were passed a merchant id
-        if (is_string($merchant))
-        {
-            $merchant = MerchantEntity::find($merchant);
-        }
-        if (! $merchant)
-        {
-            return false;
-        }
-
         $adminId = Auth::guard('api')->user()->username;
 
-        $text = $this->getMerchantDashboardSlackText($merchant);
+        $text = $this->getMerchantDashboardSlackText($merchantId);
 
         $text .= " $action by $adminId";
 

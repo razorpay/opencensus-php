@@ -2038,7 +2038,7 @@
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(tags)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-disabled="tags===''" ng-click="ok(tags)">OK</button>
   </div>
 </script>
 

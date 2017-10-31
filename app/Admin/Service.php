@@ -42,15 +42,8 @@ class Service extends Base\Service
 {
     // 15 minutes
     const TIMEOUT = 900;
-    const ALREADY_ARCHIVED = 'Merchant already archived.';
-    const ALREADY_SUSPENDED = 'Merchant already suspended.';
-    const CANT_ARCHIVE_LIVE = 'Live merchants can not be archived.';
-    const CANT_ARCHIVE_MERCHANT = 'Merchant should have submitted the form, form should be locked and account should not be activated to archive a merchant';
-    const INVALID_CREDENTIALS = 'Username or password is invalid.';
     const PRIMARY_LOGIN_ERROR = "There is no user associated with this account.";
     const PAGE_SIZE = 1000;
-
-    const SELF_INVITE_NOT_ALLOWED = "You can't invite yourself";
 
     // This is the Admin\Logger trait
     use Logger;
@@ -126,7 +119,6 @@ class Service extends Base\Service
         }
 
         // Fetch the admin with the email
-        // $admin = Admin\Entity::where('email', $result->email)->first();
         // TODO: can throw exception
         $admin = $this->api
                       ->admin
@@ -216,9 +208,7 @@ class Service extends Base\Service
     {
         $error = [];
 
-        $this->setApiCredentials();
-
-        $users = $this->api->merchant->getUsers($merchantId)->toArray();
+        $users = (new Merchant\Service)->getMerchantUsers($merchantId);
 
         $genericUsers = (new Helper)->createGenericUsers($users);
 
@@ -253,13 +243,6 @@ class Service extends Base\Service
         }
 
         return $error;
-    }
-
-    public function getMerchantIdsToList(string $orgId, string $adminId)
-    {
-        $this->setAdminCredentials();
-
-        return $this->api->admin->fetchMerchantIds($orgId, $adminId);
     }
 
     public function getAdminActivity($id)
@@ -303,44 +286,6 @@ class Service extends Base\Service
         (new SessionTable\Entity)->deleteOneSessionForAdmin($sessionId);
     }
 
-    public function fetchMerchantActivationDetails($id)
-    {
-        $merchantDetails =  MerchantDetails\Entity::findorfail($id);
-
-        $response = $merchantDetails->filterDetails();
-
-        $files = [];
-
-        foreach ($response['files'] as $key => &$file)
-        {
-            $extension_position = strrpos($file, '.', -1);
-            $extension  = substr($file, $extension_position + 1);
-
-            $s3 = $this->getS3Client();
-
-            try
-            {
-                $cmd = $s3->getCommand('GetObject', [
-                    'Bucket' => config('aws.activation_bucket'),
-                    'Key'    => $id.'/'.$key.'.'.$extension
-                ]);
-
-                $request = $s3->createPresignedRequest($cmd, '+60 minutes');
-
-                $file = (string) $request->getUri();
-            }
-            catch (\Exception $e)
-            {
-                $file = 'ERROR: ' . $e->getMessage();
-            }
-
-            $files[$key] = $file;
-        }
-
-        $fileResponse['files'] = $files;
-        return $fileResponse;
-    }
-
     public function fetchMerchantDetails($id)
     {
         $response = [];
@@ -359,7 +304,7 @@ class Service extends Base\Service
         }
         else
         {
-            $users = $this->api->merchant->getUsers($id)->toArray();
+            $users = (new Merchant\Service)->getMerchantUsers($id);
 
             $genericUsers = (new Helper)->createGenericUsers($users);
 
@@ -423,11 +368,6 @@ class Service extends Base\Service
                 $error = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
             }
 
-            if (isset($input['name']))
-            {
-                $error = Merchant\Service::changeName($id, $input['name']);
-            }
-
             if ((isset($input['fee_bearer'])) and ($input['fee_bearer'] === 'customer'))
             {
                 $currentTags = (new Merchant\Service)->getMerchantTags($id);
@@ -472,35 +412,37 @@ class Service extends Base\Service
 
     public function postEditMerchantEmail($id, $input)
     {
-        $data = $error = [];
-        $this->setApiCredentials();
-
         $input[Merchant\Entity::EMAIL] = strtolower($input[Merchant\Entity::EMAIL]);
 
-        try
+        $editMerchantEmail = [
+            'route_name' => 'merchant_edit_email',
+            'url_params' => [
+                '{id}' => $id,
+            ],
+            'body'       => $input,
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('PUT', $editMerchantEmail);
+
+        if (empty($error) === true)
         {
-            $existingMerchant = Merchant\Entity::getMerchantFromEmail($input[Merchant\Entity::EMAIL]);
-
-            if ($existingMerchant !== null)
-            {
-                $error[] = "Merchant already exists with this email id.";
-                return [$error, $data];
-            }
-
-            $data = $this->api->merchant->fetch($id)->editEmail($input)->toArray();
-
-            // Only when it is changed we update on the dashboard side as well
-            list($e,) = (new Merchant\Service)->changeEmail($id, $input);
-            $this->logActionToSlack($id, Actions::EMAIL_EDITED, $input);
-            $error = $e;
-        }
-
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
+            // Clear Merchant User Sessions because roles and new users will be added based on the email.
+            $this->clearMerchantUserSessions($id);
         }
 
         return [$error, $data];
+    }
+
+    private function clearMerchantUserSessions($merchantId)
+    {
+        $merchantUsers = (new Merchant\Service)->getMerchantUsers($merchantId);
+
+        foreach ($merchantUsers as $merchantUser)
+        {
+            (new SessionTable\Entity)->deleteAllOtherSessionsForUser($merchantUser['id']);
+        }
     }
 
     protected function dropFields(array &$array, array $fields)
@@ -519,9 +461,12 @@ class Service extends Base\Service
 
         $mode = $input['mode'];
 
-        $input['mode'] = $input['terminal_mode'];
+        if (isset($input['terminal_mode']) === true)
+        {
+            $input['mode'] = $input['terminal_mode'];
 
-        unset($input['terminal_mode']);
+            unset($input['terminal_mode']);
+        }
 
         if (empty($error))
         {
@@ -691,10 +636,6 @@ class Service extends Base\Service
         }
         finally
         {
-            $merchant = Merchant\Entity::findorfail($id);
-
-            $this->activateMerchantOnDashboard($merchant);
-
             return [$error, $response->toArray()];
         }
     }
@@ -729,14 +670,6 @@ class Service extends Base\Service
             'business_website' => $merchantDetails['business_website'],
             'ref'              => $merchant['referrer'],
         ];
-    }
-
-    protected function activateMerchantOnDashboard($merchant)
-    {
-        $merchant->activated = 1;
-        $merchant->save();
-
-        return array();
     }
 
     public function generateMerchantHdfcExcel($id)
@@ -931,24 +864,6 @@ class Service extends Base\Service
         return $links;
     }
 
-    public function editName($merchantId, $input)
-    {
-        $response = $error = null;
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api->merchant->fetch($merchantId)->edit($input);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$response, $error];
-    }
-
     public function makeRawApiCall($path)
     {
         $input = \Input::all();
@@ -965,41 +880,6 @@ class Service extends Base\Service
 
         $request = new RawApiRequest($input, $path);
         return $request->send();
-    }
-
-    public function tagMerchant($merchantId, $input)
-    {
-        $error = (new Admin\Validator)->validateInput('add_tags', $input)->messages();
-
-        if (empty($error))
-        {
-            $merchant = Merchant\Entity::findOrFail($merchantId);
-
-            if (is_array($input['tags']) === false)
-            {
-                $inputTags = explode(',', $input['tags']);
-            }
-            else
-            {
-                $inputTags = $input['tags'];
-            }
-
-            (new Merchant\Service)->addMerchantTagsOnAPI($merchantId, $inputTags);
-
-            $output = [];
-
-            $output['tags'] = (new Merchant\Service)->getMerchantTags($merchantId);
-
-            $this->logActionToSlack($merchant, Actions::TAGGED, ['tags' => $input['tags']]);
-
-            $output = array_merge($merchant->toArray(), $output);
-
-            return [null, $output];
-        }
-        else
-        {
-            return [$error, null];
-        }
     }
 
     public function addEntityFeatures($entityType, $entityId, $input)
@@ -1043,13 +923,11 @@ class Service extends Base\Service
 
     private function retagMerchant($entityId, $features)
     {
-        $merchant = Merchant\Entity::findOrFail($entityId);
-
         $featureNames = $this->getFeatureNames($features['assigned_features']);
 
-        $merchantTags = (new Merchant\Service)->getMerchantTags($merchant->id);
+        $merchantTags = (new Merchant\Service)->getMerchantTags($entityId);
 
-        (new Merchant\Service)->addMerchantTagsOnAPI($merchant->id, array_merge($featureNames, $merchantTags));
+        (new Merchant\Service)->addMerchantTagsOnAPI($entityId, array_merge($featureNames, $merchantTags));
     }
 
     private function getFeatureNames($features)
@@ -1060,13 +938,6 @@ class Service extends Base\Service
         }, $features);
 
         return $featureNames;
-    }
-
-    public function confirmUser($email)
-    {
-        list($error, $data) = (new User\Service)->confirmUserByEmail($email);
-
-        return [$error, $data];
     }
 
     /**
@@ -1290,24 +1161,6 @@ class Service extends Base\Service
         }
     }
 
-    protected function getOrgFromCache($domain)
-    {
-        list($error, $data) = $this->getOrg($domain);
-
-        return $data;
-
-        // Disabling cache for now
-
-        // $cacheKey = $domain;
-        //
-        // if ($this->cache->has($cacheKey) === false)
-        // {
-        //     $this->getOrg($domain);
-        // }
-        //
-        // return $this->cache->get($cacheKey);
-    }
-
     public function getAdminData($admin)
     {
         $error = $data = null;
@@ -1321,9 +1174,9 @@ class Service extends Base\Service
             ];
 
             $requestConfig = [
-                'route_name'    => 'admin_get_app_auth',
-                'query_params'  => $params,
-                'mode'          => 'live'
+                'route_name' => 'admin_get_app_auth',
+                'body'       => $params,
+                'mode'       => 'live',
             ];
 
             $genericService = new Generic\Service;

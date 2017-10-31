@@ -21,7 +21,6 @@ use App\User\Helper;
 use App\MerchantDetails;
 use App\Mailers\UserMailer;
 use App\Providers\GenericUser;
-use DrewM\MailChimp\MailChimp;
 use App\Session as SessionTable;
 use Illuminate\Hashing\BcryptHasher;
 use Illuminate\Contracts\Cache\Store;
@@ -30,13 +29,10 @@ use Illuminate\Foundation\Application;
 
 class Service extends Base\Service
 {
-    const INVALID_CONFIRMATION_TOKEN = 'Invalid confirmation token or the merchant is already confirmed.';
-    const ACCOUNT_ALREADY_EXISTS     = 'You already have an account. Log in and accept the invite in you account settings page.';
     const OAUTH_SESSION_TOKEN         = 'oauth_session_token';
 
     // Users who signed up before this date
     // are not exposed to the pre signup flow
-
     const PRE_SIGNUP_TIMESTAMP = 1488306600;
 
     /**
@@ -58,41 +54,6 @@ class Service extends Base\Service
         $this->cache = $app['cache'];
     }
 
-    protected function getRef(array &$input)
-    {
-        $referer = false;
-
-        // Unset because we fail the build step otherwise
-        if (isset($input['ref']))
-        {
-            $referer = $input['ref'];
-            unset($input['ref']);
-        }
-
-        return $referer;
-    }
-
-    /**
-     * Gets the email for a given invitation token
-     * Throws a recoverable exception otherwise
-     * @param  string $token invitation token
-     * @return string $email
-     */
-    protected function getInvitationAndUserFromToken($token)
-    {
-        list($error, $invitation) = (new Invitation\Service)->getInvitationByTokenFromApi($token);
-
-        if (empty($error) === false)
-        {
-            // This error is a string
-            throw new RecoverableException($error[0]);
-        }
-
-        $user = User\Entity::where('email', $invitation['email'])->first();
-
-        return [$invitation, $user];
-    }
-
     /**
      * Main registration method. Contains most business logic for deciding what to
      * register and as what (user|merchant) and with what details. See
@@ -100,596 +61,37 @@ class Service extends Base\Service
      *
      * @param  array  $input [description]
      */
-    public function register(array $input)
+    public function register($input)
     {
-        $data = [];
-        $error = null;
-        $referer = $this->getRef($input);
+        $registerUser = [
+            'route_name' => 'user_register',
+            'body'       => $input
+        ];
 
-        $invitationToken = Input::get('invitation', null);
-        $invitation = $user = null;
+        $genericService = new Generic\Service;
 
-        // If we have an invitation token, the user may have created an account
-        // in the meantime. $user will be equal to the user with the same email
-        // as the invited user
-        if ($invitationToken)
+        list($error, $data) = $genericService->call('POST', $registerUser);
+
+        if (empty($error) === false)
         {
-            list($invitation, $user) = $this->getInvitationAndUserFromToken($invitationToken);
-            // Since input would be lacking an email in case registration is via
-            // the invitation
-            $input['email'] = $invitation['email'];
-        }
-
-        $heimdallInvitationToken = Input::get('merchant_invitation');
-
-        $adminId = NULL;
-
-        if ($heimdallInvitationToken)
-        {
-            // Check if this token is valid or not
-
-            $heimdallInvitationTokenInput = [
-                'route_name' => 'admin_lead_verify',
-
-                'url_params' => [
-                    '{token}' => $heimdallInvitationToken
-                ]
-            ];
-
-            $genericService = new Generic\Service;
-
-            list($tokenError, $tokenData) = $genericService->call('GET', $heimdallInvitationTokenInput);
-
-            if (empty($tokenError) and isset($tokenData['id']))
-            {
-                $adminId = $tokenData['admin_id'];
-
-                // Update sign up field against admin lead
-                $tokenSignUpUpdate = [
-                    'route_name' => 'merchant_admin_lead_put',
-
-                    'url_params' => [
-                        '{orgId}' => $tokenData['org_id'],
-                        '{id}'    => $tokenData['id'],
-                    ],
-
-                    'body' => [
-                        'signed_up' => 1
-                    ]
-                ];
-
-                list($signupTokenError, $signupTokenData) = $genericService->call('PUT', $tokenSignUpUpdate);
-            }
-        }
-
-        // $user would not be null in a very rare edge case here
-        // Which is two subsequent invitations without either being
-        // accepted. Once the second one is accepted, this block
-        // is ignored and the $user found above will be used
-        if (! $user)
-        {
-            $user = $this->buildUserEntity($input);
-
-            $userApiData = $this->getUserApiData($user);
-
-            try
-            {
-                $this->createUserOnApi($userApiData);
-            }
-            catch (\Exception $e)
-            {
-                $error[] = 'Error on creating User';
-            }
-        }
-
-        // These two branches are exclusive
-        // You cannot accept an invite and create a merchant account
-        // at the same time
-        if ($invitationToken)
-        {
-            $this->attachUserToInvite($user, $invitation);
-
-            $data['login'] = true;
-        }
-        else
-        {
-            // See HACKING.md in the root of the repo for a detailed note
-            $data = [
-                'business_name'  =>  $input['business_name'],
-                'contact_mobile' =>  Input::get('contact_mobile', null)
-            ];
-
-            list($error, $data) = $this->createMerchantFromUser($user, $data, $referer);
-
-            (new Merchant\Service)->createMerchantOnApi($data['id'], $adminId);
-
-            if ($referer)
-            {
-                (new Merchant\Service)->addMerchantTagsOnAPI($data['id'], ['ref-'.$referer]);
-            }
-
-            $this->attachMerchantUserOnApi($user->id, $data['id'], 'owner');
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                $error[0],
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
         }
 
         return [$error, $data];
     }
 
-    public function createUserOnApi($userApiData)
-    {
-        $this->setApiCredentials();
-
-        $response = $this->api->user->create($userApiData);
-
-        return $response;
-    }
-
-    public function editUserOnApi($userData, $userId)
-    {
-        $this->setApiCredentials();
-
-        $error = $response = [];
-
-        try
-        {
-            $response = $this->api->user->edit($userId, $userData);
-        }
-        catch (\Exception $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $response];
-    }
-
-    public function attachMerchantUserOnApi($userId, $merchantId, $role)
-    {
-        $this->setApiCredentials();
-
-        $error = $response = [];
-
-        try
-        {
-            $data = ['role' => $role, 'merchant_id' => $merchantId];
-
-            $response = $this->api->user->attach($userId, $data);
-        }
-        catch (\Exception $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $response];
-    }
-
-    public function updateMerchantUserMappingOnApi($userId, $merchantId, $role)
-    {
-        $this->setApiCredentials();
-
-        $error = $response = [];
-
-        try
-        {
-            $data = ['role' => $role, 'merchant_id' => $merchantId];
-
-            $response = $this->api->user->updateMapping($userId, $data);
-        }
-        catch (\Exception $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $response];
-    }
-
-    public function detachMerchantUserOnApi($userId, $merchantId)
-    {
-        $this->setApiCredentials();
-
-        $error = $response = [];
-
-        try
-        {
-            $data = ['merchant_id' => $merchantId];
-
-            $response = $this->api->user->detach($userId, $data);
-        }
-        catch (\Exception $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $response];
-    }
-
-    public function getUserApiData(Entity $user)
-    {
-        $userApiData = $user->toArray();
-
-        $userApiData['password'] = $user->getAuthPassword();
-        $userApiData['password_confirmation'] = $user->getAuthPassword();
-        $userApiData['remember_token'] = $user->getRememberToken();
-        $userApiData['confirm_token'] = $user->getConfirmToken();
-        $userApiData['name'] = '';
-        unset($userApiData['created_at']);
-        unset($userApiData['updated_at']);
-        unset($userApiData['confirmed']);
-
-        return $userApiData;
-    }
-
-    public function createUserForSubmerchant(array $input)
-    {
-        // id contains the merchant ID
-        // Even though this is ignored by eloquent because we
-        // have a generator, nice idea to drop it
-        unset($input['id']);
-        $user = $this->buildUserEntity($input);
-
-        if ($user->confirm_token !== null)
-        {
-            $user->token = $user->confirm_token;
-            (new UserMailer($user))->accountVerification()->queueAndDeliver();
-        }
-
-        unset($user->token);
-
-        return $user;
-    }
-
     /**
-     * This function is used to confirm a user by email.
-     * @param string $email
-     */
-    public function confirmUserByEmail($email)
-    {
-        $confirm_data = ['email' => $email];
-
-        list($error, $response) = $this->confirmUserByDataOnApi($confirm_data);
-
-        if (empty($error) === false)
-        {
-            return [['Email is invalid.'], []];
-        }
-
-        $user = User\Entity::where('email', $email)->first();
-
-        $user->confirm();
-
-        $this->subscribeToMailingList($user);
-
-        /*
-         * For handling the old code.
-         * For all those users who have registered earlier using old code and have not confirmed yet.
-         * [For them, on dashboard side we have created data. Creating data on Api side]
-         */
-        $merchant = $user->getOwnerMerchant();
-
-        if ($merchant !== null)
-        {
-            (new Merchant\Service)->createMerchantOnApi($merchant->id);
-        }
-
-        return [null, ['email' => $user->email]];
-    }
-
-    /**
-     * This function is used to confirm a user by token.
-     * @param string $token
-     */
-    public function confirm($token)
-    {
-        $confirm_data = ['confirm_token' => $token];
-
-        list($error, $response) = $this->confirmUserByDataOnApi($confirm_data);
-
-        if (empty($error) === false)
-        {
-            return [[static::INVALID_CONFIRMATION_TOKEN], []];
-        }
-
-        $user = User\Entity::getUserForConfirmation($token);
-
-        if (empty($user) === true)
-        {
-            return [[static::INVALID_CONFIRMATION_TOKEN], []];
-        }
-
-        $user->confirm();
-
-        $this->subscribeToMailingList($user);
-
-        return [null, ['email' => $user->email]];
-    }
-
-    public function confirmUserByDataOnApi($data)
-    {
-        $this->setApiCredentials();
-
-        $error = $response = [];
-        try
-        {
-            $response = $this->api->user->confirmByData($data);
-        }
-        catch (\Exception $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $response];
-    }
-
-    public function confirmUserOnApi($userId)
-    {
-        $this->setApiCredentials();
-
-        $response = $this->api->user->confirm($userId);
-
-        return $response;
-    }
-
-    /**
-     * Attach a user to a merchant using an invitation
-     */
-    protected function attachUserToInvite(User\Entity $user, array $invitation)
-    {
-        list($error, $response) = (new Invitation\Service)->acceptInvitationOnApi($invitation['id'], $user->id);
-
-        if (empty($error) === true)
-        {
-            $user->joinMerchantByIdWithRole($invitation['merchant_id'], $invitation['role']);
-
-            Session::put('current_merchant_id', $invitation['merchant_id']);
-
-            $user->confirm();
-
-            $this->confirmUserOnApi($user->id);
-
-            $this->subscribeToMailingList($user);
-        }
-    }
-
-    public function subscribeToMailingList(User\Entity $user)
-    {
-        $data = [
-            'name'  =>  $user->name,
-            'email' =>  $user->email
-        ];
-
-        Queue::push('App\User\Service@postToMailchimp', $data);
-    }
-
-    /**
-     * This method needs to be public
-     * Posts data to mailchimp
-     */
-    public function postToMailchimp($job, $data)
-    {
-        $config = Config::get('razorpay.mailchimp');
-
-        $apiKey = $config['api_key'];
-        $listId = $config['list_id'];
-
-        // Mock can be false or null for falsy cases
-        // Unset mock is considered true
-        if (! $config['mock'])
-        {
-            $mailchimp = new MailChimp($apiKey);
-            // TODO: Break down the name in 2 parts and send
-            // LNAME separately
-            $mailchimp->post("lists/$listId/members", [
-                'email_address' => $data['email'],
-                'status'        => 'subscribed',
-                'merge_fields'  => $this->breakName($data['name']),
-            ]);
-        }
-
-        $job->delete();
-    }
-
-    protected function breakName($name)
-    {
-        $data = ['FNAME' => $name];
-
-        $index = strpos($name, ' ');
-
-        if ($index !== false)
-        {
-            $data['FNAME'] = substr($name, 0, $index);
-            $data['LNAME'] = substr($name, $index + 1);
-        }
-
-        return $data;
-    }
-
-    /**
-     * Builds a new user entity from the input
-     * @param  array  $input array build for the user entity
-     * @return Models\User\Entity
-     */
-    protected function buildUserEntity(array $input)
-    {
-        $input['email'] = strtolower($input['email']);
-
-        // Now we can build a new user using the entire input
-        $user = new User\Entity;
-
-        $error = $user->build($input);
-
-        if (! empty($error))
-        {
-            $error = array_values($error);
-
-            throw new RecoverableException($error[0]);
-        }
-
-        $user->password = Hash::make($user->password);
-
-        $user->save();
-
-        return $user;
-    }
-
-    /**
-     * Create a merchant entity from a user entity
-     * @param  Models\User\Entity $user
-     * @param  string $businessName business name
-     * @param  string $referer      Could be false as well
-     * @return array containing some minor details
-     */
-    protected function createMerchantFromUser(User\Entity $user, array $data, $referer = false)
-    {
-        list($error, $merchant) = Merchant\Service::register($user, $data, $referer);
-
-        if (! empty($error))
-        {
-            return [$error, null];
-        }
-
-        $user->merchants()->attach($merchant, ['role' => 'owner']);
-
-        // Only send the confirmation email if the user isn't already confirmed
-        if ($user->getConfirmToken() != NULL)
-        {
-            $user->token = $user->getConfirmToken();
-
-            (new UserMailer($user))->accountVerification()->queueAndDeliver();
-        }
-
-        return [null, $this->signupPost($merchant, $user, $referer)];
-    }
-
-    /**
-     * Makes a call to sorting hat to post on Slack that a new merchant
-     * signed up
-     */
-    protected function signupPost($merchant, $user, $referer = '')
-    {
-        $phoneNumber = Input::get('contact_mobile', null);
-        $sortingHatData = $this->getSortingHatData($merchant, $user, $referer, $phoneNumber);
-        // We want to keep environment conditional checks as late as possible
-
-        if (config('slack.enable'))
-        {
-            Queue::push('App\User\Service@postToSortingHat', $sortingHatData);
-        }
-
-        // These are displayed on the frontend
-        return [
-            'id'    =>  $merchant->id,
-            'name'  =>  $merchant->name,
-            'email' =>  $user->email
-        ];
-    }
-
-    protected function getSortingHatData($merchant, $user, $referer, $phoneNumber)
-    {
-        $merchantLink = "https://dashboard.razorpay.com/admin#/app/merchants/{$merchant->id}/detail";
-        $message = "[New Signup]($merchantLink) as {$user->name}";
-
-        if ($referer)
-        {
-            $message .= " | REF: $referer";
-        }
-
-        if ($phoneNumber)
-        {
-            $message .= " | [Call - {$phoneNumber}](tel:$phoneNumber)";
-        }
-
-        return [
-            'id'            => $merchant->id,
-            'email'         => $user->email,
-            'name'          => $merchant->name,
-            'message'       => $message,
-            'token'         => Config::get('razorpay.sorting_hat.token')
-        ];
-    }
-
-    public function getZapierData($merchant, $input)
-    {
-        // This is the same format we'll set in the google spreadsheet
-        $timestamp = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")
-            ->format('j/m/Y');
-
-        $userName = $input['contact_name'] ?? '';
-
-        $phoneNumber = $input['contact_mobile'] ?? '';
-
-        $businessType = isset($input['business_type']) ? MerchantDetails\BusinessType::getType($input['business_type']) : '';
-
-        $transactionVolume = isset($input['transaction_volume']) ? MerchantDetails\TransactionVolume::getVolume($input['transaction_volume']) : '';
-
-        $role = isset($input['role']) ? MerchantDetails\Role::getType($input['role']) : '';
-
-        $department = isset($input['department']) ? MerchantDetails\Department::getType($input['department']) : '';
-
-        $referrer = $merchant->referrer ?? '';
-
-        return [
-            'id'                    => $merchant->id,
-            'email'                 => $merchant->email,
-            'individual'            => $userName,
-            'name'                  => $merchant->name,
-            'ref'                   => $referrer,
-            'timestamp'             => $timestamp,
-            'contact'               => $phoneNumber,
-            'business_type'         => $businessType,
-            'transaction_volume'    => $transactionVolume,
-            'role'                  => $role,
-            'department'            => $department
-        ];
-    }
-
-    /**
-     * This method needs to be public because it's called
-     * on a Queue
-     * @param  array $data data to send to Sorting Hat
-     */
-    public function postToSortingHat($job, $data)
-    {
-        $url = Config::get('razorpay.sorting_hat.url');
-
-        $headers = [];
-
-        $options = [
-            'timeout'   =>  30
-        ];
-
-        Requests::post($url, $headers, $data, $options);
-
-        $job->delete();
-    }
-
-    public function postToZapier($job, $data)
-    {
-        $url = Config::get('razorpay.zapier.signups');
-        Requests::post($url, [], $data);
-
-        $job->delete();
-    }
-
-    /**
-     * TODO: Cleanup this method
      * @param  array  $input [description]
-     * @return [type]        [description]
      */
     public function login(array $input)
     {
-        $error = (new Validator)->validateInput('login', $input)->messages();
-
         $res = null;
 
-        if (empty($error) === false)
-        {
-            return [['Email or password is invalid.'], null];
-        }
-
-        $credentials = [
-            'email'     => $input['email'],
-            'password'  => $input['password']
-        ];
-
-        list($error, $genericUser) = $this->loginOnApi($credentials);
+        list($error, $genericUser) = $this->loginOnApi($input);
 
         if (empty($error) === false)
         {
@@ -703,7 +105,7 @@ class Service extends Base\Service
         if (empty($error))
         {
             $res = [
-                'id'    =>  $genericUser->id,
+                'id' => $genericUser->id,
             ];
         }
 
@@ -719,24 +121,13 @@ class Service extends Base\Service
             return [["Password change forbidden on this account"], null];
         }
 
-        $dashboardUser = Entity::findOrFail($user->id);
+        list($error, $data) = $this->updatePasswordOnApi($user->id, $input);
 
-        $error = $dashboardUser->changePassword($input);
+        $currentSessionId = Session::getId();
 
-        //Any changes in user password
-        //are also reflected in the merchants table for now
-        DB::transaction(function() use ($dashboardUser, $user)
-        {
-            $dashboardUser->password = Hash::make($dashboardUser->password);
-            $dashboardUser->save();
+        (new SessionTable\Entity)->deleteAllOtherSessionsForUser($user->id, $currentSessionId);
 
-            $this->updatePasswordOnApi($dashboardUser);
-
-            $currentSessionId = Session::getId();
-            (new SessionTable\Entity)->deleteAllOtherSessionsForUser($user->getAuthIdentifier(), $currentSessionId);
-        });
-
-        return [$error, null];
+        return [$error, $data];
     }
 
     /**
@@ -766,90 +157,29 @@ class Service extends Base\Service
         return ["Couldn't find the merchant you are looking for."];
     }
 
-    /**
-     * Get all the merchants for the given user.
-     *
-     * @param  User\Entity  $user
-     * @return Merchant\Entity[]
-     */
-    public function getAllMerchantsForUser(User\Entity $user)
-    {
-        $error = array();
-
-        $merchants = $user->merchants()->get();
-
-        if($merchants->count() < 0)
-        {
-            $merchants = [];
-        }
-        else
-        {
-            $currentMerchantId = $user->getCurrentMerchantId();
-
-            foreach ($merchants as $merchant)
-            {
-                // Set current to a boolean
-                $merchant->current = ($merchant->id == $currentMerchantId);
-                $merchant->setVisible(['id','name','email','current']);
-            }
-        }
-
-        return $merchants;
-    }
-
-    /**
-     * Get the current merchant for the authenticated user.
-     *
-     * @param  User\Entity  $user
-     * @return \Illuminate\Http\Response
-     */
-    public function getOwnedMerchantForUser(User\Entity $user)
-    {
-        if ($user->currentMerchant->pivot->role !== 'owner')
-        {
-            $error = ["We couldn't find the merchant you are looking for."];
-            return [$error, null];
-        }
-
-        return array(null, $user->currentMerchant);
-    }
-
     public function upgradeUserToMerchant($input)
     {
         $authUser = Auth::user();
 
-        $error = (new User\Validator)->validateInput('upgrade', $input)->messages();
-
-        if (empty($error) === false)
-        {
-            return [$error, null];
-        }
-
         $data = [
-            'business_name' =>  $input['business_name']
+            'business_name' =>  $input['business_name'],
+            'user_id'       =>  $authUser->id,
         ];
 
-        $user = Entity::findOrFail($authUser->id);
+        $upgradeUserToMerchant = [
+            'route_name'    => 'user_merchant_upgrade',
+            'body'          => $data,
+        ];
 
-        // We don't have a referrer for the upgrade
-        list($error, $data) = $this->createMerchantFromUser($user, $data);
+        $genericService = new Generic\Service;
+
+        $genericUser = null;
+
+        list($error, $data) = $genericService->call('POST', $upgradeUserToMerchant);
 
         if (empty($error) === true)
         {
-            // $data['id'] is the newly created merchant Id
-            // This confirmation creates the Merchant Account on the API Side
-            // Make sure that the id is not submitted ever by the user
-            (new Merchant\Service)->createMerchantOnApi($data['id']);
-
-            $user->confirm();
-
-            $this->confirmUserOnApi($user->id);
-
-            $this->attachMerchantUserOnApi($user->id, $data['id'], 'owner');
-
-            $this->subscribeToMailingList($user);
-
-            list($error, $genericUser) = $this->getUserFromApi($user->id);
+            list($error, $genericUser) = $this->getUserFromApi($authUser->id);
 
             if (empty($error) === true)
             {
@@ -860,18 +190,40 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function updatePasswordOnApi($user)
+    public function updatePasswordOnApi($userId, $data)
     {
-        $this->setApiCredentials();
-
-        $params = [
-            'password'              => $user->password,
-            'password_confirmation' => $user->password,
+        $passwordData = [
+            'password'              => $data['password'],
+            'password_confirmation' => $data['password_confirmation'],
         ];
 
-        $response = $this->api->user->changePassword($user->id, $params);
+        if (isset($data['old_password']))
+        {
+            $passwordData['old_password'] = $data['old_password'];
+        }
 
-        return $response;
+        $updatePasswordOnApi = [
+            'route_name' => 'user_change_password',
+            'url_params' => [
+                '{id}'     => $userId,
+            ],
+            'body'       => $passwordData
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('PUT', $updatePasswordOnApi);
+
+        if (empty($error) === false)
+        {
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                $error[0],
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return [$error, $data];
     }
 
     /**
@@ -943,7 +295,7 @@ class Service extends Base\Service
 
         if ($data !== null)
         {
-            $user = (new Entity)->findOrFail($data['user_id']);
+            $user = $this->getUserFromApi($data['user_id']);
 
             $data['user'] = $user;
             $data['user']['merchant_id'] = $data['merchant_id'];
@@ -1075,43 +427,43 @@ class Service extends Base\Service
 
     public function loginOnApi(array $input)
     {
-        $error = [];
+        $loginOnApi = [
+            'route_name' => 'user_login',
+            'body' => $input
+        ];
+
+        $genericService = new Generic\Service;
 
         $genericUser = null;
 
-        $this->setApiCredentials();
+        list($error, $data) = $genericService->call('POST', $loginOnApi);
 
-        try
+        if (empty($error) === true)
         {
-            $response = $this->api->user->login($input)->toArray();
-
-            $genericUser = (new Helper)->createdGenericUser($response);
-        }
-        catch(\Razorpay\Api\Errors\Error $e)
-        {
-            $error[] = $e->getMessage();
+            $genericUser = (new Helper)->createdGenericUser($data);
         }
 
         return [$error, $genericUser];
     }
 
-    public function getUserFromApi($userId, array $input = [])
+    public function getUserFromApi($userId)
     {
-        $error = [];
+        $getUser = [
+            'route_name' => 'user_fetch',
+            'url_params' => [
+                '{id}' => $userId,
+            ],
+        ];
+
+        $genericService = new Generic\Service;
 
         $genericUser = null;
 
-        $this->setApiCredentials();
+        list($error, $data) = $genericService->call('GET', $getUser);
 
-        try
+        if (empty($error) === true)
         {
-            $response = $this->api->user->get($userId, $input)->toArray();
-
-            $genericUser = (new Helper)->createdGenericUser($response);
-        }
-        catch(\Razorpay\Api\Errors\Error $e)
-        {
-            $error[] = $e->getMessage();
+            $genericUser = (new Helper)->createdGenericUser($data);
         }
 
         return [$error, $genericUser];

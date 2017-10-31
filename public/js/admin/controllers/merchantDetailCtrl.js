@@ -210,16 +210,20 @@ app
       };
 
       $scope.tagMerchant = function(tags) {
-        // Tags will be a csv field
-        var request = $http({
-          url: '/admin/merchant/' + $scope.merchant.id + '/tags',
-          method: 'POST',
-          transformRequest: transformRequestAsFormPost,
-          data: {
+        var data = {
+          route_name: 'merchant_tag_add',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: {
             tags: tags,
           },
+        };
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: data,
         });
-
         request
           .success(function(data) {
             if (data.success) {
@@ -228,8 +232,8 @@ app
                 'Merchant tagged successfully.',
                 true
               );
-              $scope.merchant.details.tags = data.data.tags;
-              $scope.referer = getReferer(data.data.tags);
+              $scope.merchant.details.tags = data.data;
+              $scope.referer = getReferer(data.data);
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -1346,6 +1350,11 @@ app
           },
         });
         modalInstance.result.then(function(tags) {
+          if (tags) {
+            tags = tags.split(',');
+          } else {
+            tags = [];
+          }
           $scope.tagMerchant(tags);
         }, $.noop);
       };

@@ -5,6 +5,7 @@ use App;
 use Auth;
 use Input;
 use App\Api;
+use App\Generic;
 use App\Merchant;
 use App\MerchantDetails;
 use App\Http\AppResponse;
@@ -16,37 +17,7 @@ class MerchantController extends Controller
 {
     public function postResendConfirmation()
     {
-        $input = Input::all();
-
-        list($error, $data) = (new Merchant\Service)->resendConfirmation($input);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    /**
-     * Update a team member on the given merchant.
-     *
-     * @param  string  $userId
-     * @return \Illuminate\Http\Response
-     */
-    public function updateTeamMember($userId)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Merchant\Service)->updateTeamMemberForOwner($userId, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    /**
-     * Remove the team member on the given merchant.
-     *
-     * @param  string  $userId
-     * @return \Illuminate\Http\Response
-     */
-    public function removeTeamMember($userId)
-    {
-        $error = (new Merchant\Service)->removeTeamMemberForOwner($userId);
+        list($error, $data) = (new Merchant\Service)->resendConfirmation();
 
         return AppResponse::jsonResponse($error);
     }
@@ -207,37 +178,11 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    /**
-     * Registers a new user account for a
-     * sub-merchant with his own email.
-     */
-    public function postRegisterSubUser()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Merchant\Service)->registerSubMerchantUser($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postSignup()
     {
-        $id = Auth::user()->currentMerchant()->id;
-
         $input = Input::all();
 
-        list($error, $data) = (new Merchant\Service)->savePreSignupDetails($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getSignup()
-    {
-        $id = Auth::user()->currentMerchant()->id;
-
-        $error = $data = [];
-
-        $data = (new Merchant\Service)->getPreSignupDetails($id);
+        list($error, $data) = (new Merchant\Service)->savePreSignupDetails($input);
 
         return AppResponse::jsonResponse($error, $data);
     }
