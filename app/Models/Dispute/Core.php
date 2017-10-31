@@ -3,14 +3,17 @@
 namespace RZP\Models\Dispute;
 
 use DB;
+use Mail;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Admin\Action;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Mail\Dispute as DisputeMailer;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class Core extends Base\Core
@@ -45,6 +48,8 @@ class Core extends Base\Core
 
         $dispute = (new Entity)->build($input);
 
+        $merchant = $payment->merchant;
+
         $this->setRelationsAndDerivedAttributes($dispute, $parent, $payment, $reason);
 
         // entity id is required to create associated transaction
@@ -72,7 +77,7 @@ class Core extends Base\Core
             return $dispute;
         });
 
-        // TODO: Send email to merchant
+        $this->sendDisputeMailToMerchant($dispute, $merchant);
 
         return $dispute;
     }
@@ -368,5 +373,18 @@ class Core extends Base\Core
         $parent->getValidator()->validateDisputeCanBecomeParent();
 
         return $parent;
+    }
+
+    protected function sendDisputeMailToMerchant(Entity $dispute, Merchant\Entity $merchant)
+    {
+        $data = [
+            'merchant' => [
+                'name'      => $merchant->getName(),
+                'email'     => $merchant->getEmail(),
+            ],
+            'dispute' => $dispute->toArrayPublic(),
+        ];
+
+        Mail::queue(new DisputeMailer\Creation($data));
     }
 }
