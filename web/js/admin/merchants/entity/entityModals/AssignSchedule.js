@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import BaseModal from 'ui/BaseModal';
 
-import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
+import { closeModal, notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
 import { SelectField } from 'ui/Field';
