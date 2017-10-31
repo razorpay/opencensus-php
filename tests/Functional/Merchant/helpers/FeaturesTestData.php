@@ -518,8 +518,8 @@ return [
                 Constants::SETTLING_TO => 'Someone else',
                 'merchant_id'          => '10000000001017'
             ],
-            'url'     => '/onboarding/features/' . Constants::MARKETPLACE,
-            'method'  => 'PUT',
+            'url'     => '/onboarding/features/' . Constants::MARKETPLACE . '/update',
+            'method'  => 'POST',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
