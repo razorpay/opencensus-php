@@ -29,7 +29,7 @@ class Creation extends Base
         {
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader(MailTags::HEADER, MailTags::DISPUTE_CREATED_MAIL);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::DISPUTE_CREATED);
         });
 
         return $this;
