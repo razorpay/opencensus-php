@@ -46,6 +46,8 @@ return array(
     'rotate'  => true,
 
     'log_max_files' => 5,
+    
+    'logpath' => storage_path().'/logs/'.$hostname.'-trace.log',
 
     'logpath' => storage_path() . '/logs/' . $hostname . '-trace.log',
 
