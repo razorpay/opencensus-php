@@ -10,6 +10,9 @@
         $createdDate = date('jS F Y', $dispute['created_at']);
         $expiryDate = date('jS F Y', $dispute['expires_on']);
 
+        $amount = sprintf('%0.2f', ($dispute['amount'] / 100));
+        $amount = floatval($amount);
+
         $note = 'Kindly provide the requested documents in the required format before or on the due date, failing which the case will be lost and the corresponding amount would be debited from the current balance. ';
 
         if (($dispute['phase'] === 'retrieval') or ($dispute['phase'] === 'fraud'))
@@ -63,7 +66,7 @@
                                 <td class="text-center">
                                   <div style="margin-top: 12px; color: {{ $brand_text_color }}">
                                     <div style="color: {{ $brand_text_color }}">
-                                        A chargeback has been raised for amount &#x20b9; {{ $dispute['amount'] }}
+                                        A chargeback has been raised for amount &#x20b9; {{ $amount }}
                                     </div>
                                   </div>
                                 </td>
@@ -171,7 +174,7 @@
                         <br>
                         Hello {{ $merchant['name'] }},
                         <br><br>
-                        We have received a chargeback against the payment ID mentioned above. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive names as the Payment ID.
+                        We have received a chargeback against the payment ID mentioned above. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
                         <br><br>
                         Note: {{ $note }}
                         Please refer to our <a href="https://razorpay.com/chargeback/">Chargeback Guide</a> for more details.
