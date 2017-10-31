@@ -2578,6 +2578,9 @@ ALTER TABLE merchant_details
 ALTER TABLE virtual_accounts
     ADD COLUMN qr_code_id CHAR(14) DEFAULT NULL after bank_account_id;
 
+ALTER TABLE fund_transfer_attempts
+	ADD mode VARCHAR(30) DEFAULT NULL AFTER bank_status_code;
+
 ALTER TABLE gateway_files
     ADD COLUMN processing TINYINT(1) NOT NULL DEFAULT 0 AFTER status;
 

@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
     const FAILURE_REASON         = 'failure_reason';
     const TXT_FILE_ID            = 'txt_file_id';
     const EXCEL_FILE_ID          = 'excel_file_id';
+    const MODE                   = 'mode';
 
     protected $entity = 'fund_transfer_attempt';
 
@@ -134,6 +135,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
     }
 
+    public function getMode()
+    {
+        return $this->getAttribute(self::MODE);
+    }
+
     // ------------------------------- setters ---------------------------------
 
     public function setRemarks($remarks)
@@ -225,5 +231,10 @@ class Entity extends Base\PublicEntity
         $entity = E::getEntityClass($sourceType);
 
         $attributes[self::SOURCE] = $entity::getSignedId($sourceId);
+    }
+
+    public function setMode($mode)
+    {
+        return $this->setAttribute(self::MODE, $mode);
     }
 }

@@ -157,7 +157,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
             $totalAmount += $amount;
 
-            $type = $this->getPaymentType($ba, $amount, $attempt->getSourceType());
+            $type = $this->getPaymentType($ba, $amount, $attempt);
 
             $array = [
                 Headings::CLIENT_CODE             => 'RAZORNODAL',
@@ -234,7 +234,7 @@ class NodalAccount extends NodalBase\NodalAccount
         return [$version, $paymentRefNo, $source];
     }
 
-    protected function getPaymentType(BankAccount\Entity $ba, $amount, string $sourceType)
+    protected function getPaymentType(BankAccount\Entity $ba, $amount, Attempt\Entity $attempt)
     {
         $ifsc = $ba->getIfscCode();
 
@@ -243,10 +243,16 @@ class NodalAccount extends NodalBase\NodalAccount
         if (($ifscFirstFour === 'KKBK') or
             ($ifscFirstFour === 'VYSA'))
         {
-            $type = 'IFT';
+            return 'IFT';
         }
-        else if (($amount <= self::IMPS_AMOUNT) and
-                 ($sourceType !== Entity::SETTLEMENT))
+
+        if($attempt->getMode() != null)
+        {
+            return $attempt->getMode();
+        }
+
+        if (($amount <= self::IMPS_AMOUNT) and
+                 ($attempt->getSourceType() !== Entity::SETTLEMENT))
         {
             $type = 'IMPS';
         }
