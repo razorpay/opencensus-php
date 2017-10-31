@@ -5,6 +5,7 @@ const PAYMENT_FETCH = 'PAYMENT_FETCH';
 const PAYMENT_FETCH_CARD_DETAILS = 'PAYMENT_FETCH_CARD_DETAILS';
 const PAYMENT_FETCH_REFUNDS = 'PAYMENT_FETCH_REFUNDS';
 const PAYMENT_FETCH_TRANSFERS = 'PAYMENT_FETCH_TRANSFERS';
+const PAYMENT_FETCH_BANK_TRANSFER = 'PAYMENT_FETCH_BANK_TRANSFER';
 const PAYMENT_CAPTURE = 'PAYMENT_CAPTURE';
 const PAYMENT_REFUND = 'PAYMENT_REFUND';
 const PAYMENT_RESET = 'PAYMENT_RESET';
@@ -46,6 +47,13 @@ export const capturePayment = payment => {
   };
 };
 
+export const fetchBankTransfer = payment => {
+  return {
+    type: PAYMENT_FETCH_BANK_TRANSFER,
+    payload: payment.fetchBankTransfer(),
+  };
+};
+
 export const refundPayment = (payment, data) => {
   return {
     type: PAYMENT_REFUND,
@@ -78,6 +86,11 @@ let initialState = {
   transfers: {
     loading: false,
     items: [],
+    error: null,
+  },
+  bankTransfer: {
+    loading: false,
+    details: {},
     error: null,
   },
   error: null,
@@ -122,6 +135,27 @@ export default function(state = initialState, action) {
 
     case `${PAYMENT_FETCH_CARD_DETAILS}::ERROR`:
       return set(state, 'card', {
+        loading: false,
+        details: {},
+        error: action.payload.errors,
+      });
+
+    case `${PAYMENT_FETCH_BANK_TRANSFER}::PENDING`:
+      return set(state, 'bankTransfer', {
+        loading: true,
+        details: {},
+        error: null,
+      });
+
+    case `${PAYMENT_FETCH_BANK_TRANSFER}::SUCCESS`:
+      return set(state, 'bankTransfer', {
+        loading: false,
+        details: action.payload.data,
+        error: null,
+      });
+
+    case `${PAYMENT_FETCH_BANK_TRANSFER}::ERROR`:
+      return set(state, 'bankTransfer', {
         loading: false,
         details: {},
         error: action.payload.errors,
