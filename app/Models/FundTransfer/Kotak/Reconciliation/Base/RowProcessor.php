@@ -13,6 +13,7 @@ use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 use RZP\Models\Base\Core as BaseCore;
+use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\FundTransfer\Kotak\Headings;
 use RZP\Models\FundTransfer\Kotak\Reconciliation\Status;
 
@@ -206,6 +207,11 @@ class RowProcessor extends BaseCore
         }
 
         if ($this->mode === Mode::TEST)
+        {
+            return false;
+        }
+
+        if (Type::isNotifyType($this->entity->getEntity()) === false)
         {
             return false;
         }
