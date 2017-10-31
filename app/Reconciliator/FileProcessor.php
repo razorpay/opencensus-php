@@ -181,7 +181,7 @@ class FileProcessor
 
     public function isZipFile($file, string $fileLocationType): bool
     {
-         $fileExtension = $this->fileProcessor->getFileExtension($file, $fileLocationType);
+         $fileExtension = $this->getFileExtension($file, $fileLocationType);
 
          return (in_array($fileExtension, Validator::SUPPORTED_ZIP_EXTENSIONS, true) === true);
     }
