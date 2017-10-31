@@ -168,7 +168,7 @@ class DisputeTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function testDisputeCreateWithNonTransactionalInvalidDeductOnset()
+    public function testDisputeCreateNonTransactionalPhaseDeductAtOnset()
     {
         $this->updateCreateTestData();
 

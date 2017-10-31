@@ -297,7 +297,7 @@ return [
         ],
     ],
 
-    'testDisputeCreateWithNonTransactionalInvalidDeductOnset' => [
+    'testDisputeCreateNonTransactionalPhaseDeductAtOnset' => [
         'request' => [
             'method'  => 'post',
             'content' => [

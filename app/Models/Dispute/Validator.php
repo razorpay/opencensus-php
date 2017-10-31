@@ -29,6 +29,10 @@ class Validator extends Base\Validator
         Entity::PARENT_ID               => 'sometimes|alpha_num|size:14',
     ];
 
+    protected static $editValidators = [
+        'non_transactional_disputes_closure',
+    ];
+
     protected function validatePhase(string $attribute, string $value)
     {
         if (Phase::exists($value) === false)
@@ -112,15 +116,15 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateNonTransactionalDisputesAreClosedOnly(array $input)
+    protected function validateNonTransactionalDisputesClosure($input)
     {
         if (isset($input[Entity::STATUS]) === false)
         {
             return;
         }
 
-        if (($this->entity->isNonTransactionalDispute() === true) and
-            in_array($input[Entity::STATUS], Status::getTransactionalStatuses()))
+        if (($this->entity->isNonTransactional() === true) and
+            in_array($input[Entity::STATUS], Status::getTransactionalStatuses(),true))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Disputes of non-transactional kinds can only be closed.',
@@ -133,8 +137,8 @@ class Validator extends Base\Validator
     {
         if (isset($input[Entity::DEDUCT_AT_ONSET]) === true)
         {
-            if ((in_array($input[Entity::PHASE], Phase::getNonTransactionalPhases()) === true) and
-                $input[Entity::DEDUCT_AT_ONSET] == true)
+            if ((in_array($input[Entity::PHASE], Phase::getNonTransactionalPhases(),true) === true)
+                and $input[Entity::DEDUCT_AT_ONSET] == true)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Deduct at onset cannot be done for disputes in phase ' . $input[Entity::PHASE],

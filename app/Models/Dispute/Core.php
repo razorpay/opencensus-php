@@ -95,9 +95,7 @@ class Core extends Base\Core
         );
 
         $parent = $this->checkAndGetParent($input, $dispute);
-
-        $dispute->getValidator()->validateNonTransactionalDisputesAreClosedOnly($input);
-
+        
         $dispute->edit($input);
 
         $dispute->setAuditAction(Action::EDIT_DISPUTE);

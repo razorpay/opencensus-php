@@ -300,7 +300,7 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::WON);
     }
 
-    public function isNonTransactionalDispute(): bool
+    public function isNonTransactional(): bool
     {
         return (in_array($this->getPhase(), Phase::getNonTransactionalPhases(), true) === true);
     }
