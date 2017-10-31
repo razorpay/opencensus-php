@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\OAuth;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 /**
@@ -13,6 +14,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 class OAuthBearerAuthTest extends OAuthTestCase
 {
     use OAuthTrait;
+    use MocksDnsTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -74,21 +76,6 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->ba->oauthBearerAuth($accessToken);
 
         $this->startTest();
-    }
-
-    /**
-     * The next test makes a DNS lookup
-     */
-    private function setupMockDns()
-    {
-        DnsMock::withMockedHosts(array(
-            'example.com' => [
-                [
-                    'type' => 'A',
-                    'ip' => '1.2.3.4',
-                ],
-            ]
-        ));
     }
 
     public function testBearerAuthWriteAccess()

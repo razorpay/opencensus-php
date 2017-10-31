@@ -454,11 +454,14 @@ class Core extends Base\Core
     {
         $merchantId = $feature->getEntityId();
 
-        $featureName = $feature->getName();
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        if ($this->shouldUpdateFeatureOnboardingStatus($feature, $shouldSync) === true)
+        $featureName     = $feature->getName();
+
+        $isLiveMode = $this->isLiveMode();
+
+        if ($this->shouldUpdateFeatureOnboardingStatus($feature, $shouldSync, $isLiveMode) === true)
         {
-
             $this->updateFeatureActivationStatus(
                 $merchantId,
                 $featureName,
@@ -471,6 +474,8 @@ class Core extends Base\Core
                     Entity::NEW_FEATURE       => $featureName,
                 ]);
         }
+
+        $this->sendFeatureActivationEmail($merchant, $feature, $shouldSync, $isLiveMode);
     }
 
     /**
@@ -478,20 +483,114 @@ class Core extends Base\Core
      *
      * @param Entity $feature
      * @param bool   $shouldSync
+     * @param bool   $isLiveMode
      *
      * @return bool
      */
     protected function shouldUpdateFeatureOnboardingStatus(
         Entity $feature,
-        bool $shouldSync): bool
+        bool $shouldSync,
+        bool $isLiveMode): bool
     {
-        if (($feature->isProductFeature() === true) and
-            (($this->isLiveMode() === true) or ($shouldSync === true)))
+        // Notify the merchants, only if the feature is a ProductFeature
+        if ($feature->isProductFeature() === false)
         {
-            return true;
+            return false;
         }
 
-        return false;
+        if (($shouldSync === false) and ($isLiveMode === false))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param Entity          $feature
+     * @param bool            $shouldSync
+     * @param bool            $isLiveMode
+     */
+    protected function sendFeatureActivationEmail(
+        Merchant\Entity $merchant,
+        Entity $feature,
+        bool $shouldSync,
+        bool $isLiveMode)
+    {
+        $merchantId = $feature->getEntityId();
+
+        if ($this->shouldNotifyViaEmail($merchant, $feature, $shouldSync, $isLiveMode) === false)
+        {
+            $this->trace->info(
+                TraceCode::FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED,
+                [
+                    PublicEntity::MERCHANT_ID => $merchantId,
+                    Mode::LIVE                => $isLiveMode,
+                    Entity::NEW_FEATURE       => $feature,
+                ]);
+
+            return;
+        }
+
+        $merchantEmail   = $merchant->getEmail();
+
+        $featureName     = $feature->getName();
+
+        $visibleFeatures = Constants::$visibleFeaturesMap;
+
+        $data['feature']       = $visibleFeatures[$featureName]['display_name'];
+        $data['documentation'] = $visibleFeatures[$featureName]['documentation'];
+        $data['contact_name']  = $merchant->getName();
+        $data['contact_email'] = $merchantEmail;
+
+        $featureUpdateEmail = new FeatureEnabled($data);
+
+        Mail::queue($featureUpdateEmail);
+
+        $this->trace->info(
+            TraceCode::FEATURE_ENABLED_MERCHANT_NOTIFIED,
+            [
+                PublicEntity::MERCHANT_ID => $merchantId,
+                Mode::LIVE                => $isLiveMode,
+                Entity::NEW_FEATURE       => $feature,
+                Merchant\Entity::EMAIL    => $merchantEmail
+            ]);
+    }
+
+    /**
+     * Notify the merchant that the feature has been enabled on the live mode
+     *
+     * @param Merchant\Entity   $merchant
+     * @param bool              $shouldSync
+     * @param bool              $isLiveMode
+     *
+     * @return bool
+     */
+    protected function shouldNotifyViaEmail(
+        Merchant\Entity $merchant,
+        Entity $feature,
+        bool $shouldSync,
+        bool $isLiveMode): bool
+    {
+        // Notify the merchants, only if the feature is a ProductFeature
+        if ($feature->isProductFeature() === false)
+        {
+            return false;
+        }
+
+        if (($shouldSync === false) and ($isLiveMode === false))
+        {
+            return false;
+        }
+
+        // Do not email Linked Accounts
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /**

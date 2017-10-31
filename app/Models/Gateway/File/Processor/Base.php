@@ -170,7 +170,7 @@ abstract class Base extends Core
      */
     abstract public function checkIfValidDataAvailable(PublicCollection $entites);
 
-    abstract public function generateData(PublicCollection $entites): array;
+    abstract public function generateData(PublicCollection $entites);
 
     abstract public function createFile();
 

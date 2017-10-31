@@ -2253,15 +2253,10 @@ trait Authorize
             $this->updateTokenOnAuthorizedForNetbankingRecurring($token, $data, $payment);
         }
 
-        //
-        // For First Data second recurring payments
-        // we do not update the token's terminal
-        //
-        if ($this->shouldSetTokenTerminal($token, $payment) === true)
-        {
-            // TODO: Refactor this later
-            $token->terminal()->associate($payment->terminal);
-        }
+        // Not required as we only use terminals through
+        // gateway_token, and not through token itself.
+        // TODO: Remove this
+        $token->terminal()->associate($payment->terminal);
 
         $this->createAndSetTerminalInGatewayToken($payment, $token);
     }
@@ -2316,18 +2311,6 @@ trait Authorize
         (new Token\Core)->updateTokenFromNetbankingGatewayData($token, $gatewayData);
     }
 
-    protected function shouldSetTokenTerminal(Token\Entity $token, Payment\Entity $payment)
-    {
-        $gateway = $payment->getGateway();
-
-        $gatewayInArray = in_array($gateway, Payment\Gateway::$shouldNotSetNon3DSTerminalsInTokenGateways, true);
-
-        $shouldNotSetTokenTerminal = (($gatewayInArray === true) and
-                                      (empty($token->getTerminalId()) === false));
-
-        return ($shouldNotSetTokenTerminal === false);
-    }
-
     protected function createAndSetTerminalInGatewayToken(Payment\Entity $payment, Token\Entity $token)
     {
         $reference = $payment->getReferenceForGatewayToken();
@@ -2363,13 +2346,7 @@ trait Authorize
 
             $gatewayToken = $gatewayTokens->first();
 
-            //
-            // TODO: Remove the IF condition once it's fixed on FirstData side
-            //
-            if ($this->shouldSetTokenTerminal($token, $payment) === true)
-            {
-                $gatewayToken->terminal()->associate($payment->terminal);
-            }
+            $gatewayToken->terminal()->associate($payment->terminal);
 
             $this->repo->saveOrFail($gatewayToken);
         }

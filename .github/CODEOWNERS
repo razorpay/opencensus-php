@@ -209,3 +209,4 @@ tests/Functional/Gateway/Wallet/Sbibuddy/*              albin.george@razorpay.co
 
 composer.lock                                           nemo@razorpay.com
 wercker.yml                                             @razorpay/security                                      @razorpay/devops
+phpunit.xml                                             vivek.kumar@razorpay.com                                praveen.patlola@razorpay.com            gaurav.d@razorpay.com
