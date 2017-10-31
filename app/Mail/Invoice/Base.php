@@ -61,9 +61,7 @@ class Base extends Mailable
 
     protected function addSubject()
     {
-        $type = $this->data['invoice']['type'];
-
-        $subject = $this->getSubjectByType($type);
+        $subject = $this->getSubjectByInvoiceType();
 
         $this->subject($subject);
 
@@ -110,13 +108,12 @@ class Base extends Mailable
      * Returns subject to use for mails based on invoice's type.
      * The subject templates for mails per type has different placeholders.
      *
-     *
-     * @param string $type
-     *
      * @return string
      */
-    protected function getSubjectByType(string $type): string
+    protected function getSubjectByInvoiceType(): string
     {
+        $type = $this->data['invoice']['type'];
+
         $template = static::SUBJECT_TEMPLATES[$type];
 
         if ($type === Type::INVOICE)
@@ -127,7 +124,7 @@ class Base extends Mailable
         }
         else
         {
-            $args =[
+            $args = [
                 $this->data['invoice']['amount_formatted'],
             ];
         }

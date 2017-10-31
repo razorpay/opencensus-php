@@ -36,16 +36,14 @@ class Authorized extends Base
 
         if ($type === Type::INVOICE)
         {
-            parent::addSubject();
+            return parent::addSubject();
         }
-        else
-        {
-            $amount = $this->data['payment']['amount'];
 
-            $subject = "Payment of Rs. {$amount} is successful (via Razorpay)";
+        $amount = $this->data['payment']['amount'];
 
-            $this->subject($subject);
-        }
+        $subject = "Payment of Rs. {$amount} is successful (via Razorpay)";
+
+        $this->subject($subject);
 
         return $this;
     }
