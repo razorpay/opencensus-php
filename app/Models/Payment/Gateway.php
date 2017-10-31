@@ -615,10 +615,6 @@ class Gateway
         Gateway::AXIS_MIGS
     ];
 
-    public static $shouldNotSetNon3DSTerminalsInTokenGateways = [
-        Gateway::FIRST_DATA,
-    ];
-
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];
