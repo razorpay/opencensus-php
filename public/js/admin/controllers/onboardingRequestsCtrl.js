@@ -128,7 +128,7 @@
           angular.forEach(responses, function(val, key) {
             if (key === 'file' || key === 'file_name') {
               data[key] = val;
-            } else if (key !== 'vendor_agreement') {
+            } else {
               data['body[' + key + ']'] = val;
             }
           });
@@ -188,10 +188,17 @@
               $scope.featureDetails = featureDetails;
               $scope.transferToDDVals = transferToDDVals;
 
+              $scope.onAgreementChange = function onAgreementChange(
+                submission
+              ) {
+                delete submission.editVal.responses.vendor_agreement;
+              };
+
               $scope.onFileSelect = function onFileSelect($files, submission) {
                 var file = ($scope.submission.editVal.responses.file =
                   $files[0]);
-                $scope.submission.editVal.responses.file_name = file.name;
+                $scope.submission.editVal.responses.file_name =
+                  'vendor_agreement';
               };
 
               $scope.ok = function onSubmit(submission, form) {

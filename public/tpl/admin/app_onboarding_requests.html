@@ -173,19 +173,17 @@
            ng-if="submission.feature === featureDetails.marketplace.title">
         <label class="col-lg-3">Signed Vendor Agreement</label>
         <div class="col-lg-9">
-          <div>{{submission.editVal.responses.vendor_agreement }}</div>
-          <input type="hidden"
-                 name="file_name"
-                 value="{{ submission.editVal.responses.file_name }}"/>
-          <input type="hidden"
-                 name="route_name"
-                 value="onboarding_features_update"/>
-          <input type="hidden"
-                 name="url_params[{feature}]"
-                 value="{{ submission.featureFetchName }}"/>
+          <div ng-if="submission.editVal.responses.vendor_agreement">
+            <p>{{ submission.editVal.responses.vendor_agreement }}</p>
+            <a href="javascript:;"
+               class="text-primary"
+               ng-click="onAgreementChange(submission)">Change</a>
+          </div>
+
           <input ui-jq="filestyle"
                  name="file"
                  type="file"
+                 ng-if="!submission.editVal.responses.vendor_agreement"
                  ng-model="submission.editVal.responses.file"
                  ng-file-select="onFileSelect($files, submission)"/>
         </div>
