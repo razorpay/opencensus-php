@@ -93,6 +93,7 @@ class NodalAccount extends NodalBase\NodalAccount
                             AESEncryption::MODE   => AES::MODE_CBC,
                             AESEncryption::IV     => $this->iv,
                             AESEncryption::SECRET => $this->secret,])
+                        ->encode()
                         ->save();
 
         $fileInstance = $file->get();

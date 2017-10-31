@@ -2,17 +2,26 @@
 
 namespace RZP\Models\User;
 
+use Config;
+use Hash;
+
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+use Illuminate\Hashing\BcryptHasher;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use Illuminate\Hashing\BcryptHasher;
+use RZP\Jobs\RequestJob;
+use RZP\Jobs\MailChimpSubscribe;
+use RZP\Constants\Timezone;
 
 class Core extends Base\Core
 {
+    use DispatchesJobs;
+
     public function create(array $input)
     {
         $user = (new Entity)->build($input);
@@ -34,6 +43,13 @@ class Core extends Base\Core
                 'user_id'     => $user->getId(),
                 'input'       => $input,
             ]);
+
+        return $user;
+    }
+
+    public function getUserFromEmail(array $input)
+    {
+        $user = $this->repo->user->getUserFromEmail($input[Entity::EMAIL]);
 
         return $user;
     }
@@ -72,7 +88,19 @@ class Core extends Base\Core
 
     public function changePassword(Entity $user, array $input)
     {
-        $user->edit($input, 'change_password');
+        $oldPassword = $input[Entity::OLD_PASSWORD] ?? null;
+
+        if ((empty($oldPassword) === false) and
+            (Hash::check($oldPassword, $user->getPassword()) === false))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OLD_PASSWORD_MISMATCH);
+        }
+
+        (new Validator)->validateInput('change_password', $input);
+
+        $input[Entity::PASSWORD] = Hash::make($input[Entity::PASSWORD]);
+
+        $user->fill($input);
 
         $this->repo->saveOrFail($user);
 
@@ -112,7 +140,7 @@ class Core extends Base\Core
         $userArray = $user->toArrayPublic();
 
         $merchants = $user->merchants
-                          ->where(Merchant\Entity::SUSPENDED_AT, NULL)
+                          ->where(Merchant\Entity::SUSPENDED_AT, null)
                           ->callOnEveryItem('toArrayUser');
 
         $invitations = $user->invitations
@@ -187,5 +215,74 @@ class Core extends Base\Core
         $this->repo->sync($user, 'merchants', [$merchantId => $mappingParams], false);
 
         return $user->toArrayPublic();
+    }
+
+    public function postSortingHatData($data)
+    {
+        $url = Config::get('app.sorting_hat.url');
+
+        $request  = [
+            'method'    => 'post',
+            'url'       => $url,
+            'headers'   => [],
+            'content'   => $data,
+            'options'   => [
+                'timeout'   => 30
+            ]
+        ];
+
+        $job = new RequestJob($request);
+
+        $this->dispatch($job);
+    }
+
+    public function subscribeToMailingList($user)
+    {
+        $data = [
+            'name'  => $user['name'],
+            'email' => $user['email'],
+        ];
+
+        $job = new MailChimpSubscribe($data);
+
+        $this->dispatch($job);
+    }
+
+    /**
+     * @param $userId
+     * @param $expiryTime
+     *
+     * @return string
+     */
+    public function generateToken($userId, $expiryTime)
+    {
+        // Using encryption key and combination of userid and time.
+        return hash_hmac('sha256', 'password.reset' . '_' . $userId . '_' . $expiryTime, config('app.key'));
+    }
+
+    /**
+     * @param Entity $user
+     * @param string $merchantId
+     * @param string $role
+     *
+     * @return User
+     */
+    public function detachAndAttachMerchantUser(Entity $user, string $merchantId, string $role)
+    {
+        // Detach the existing merchant User.
+        $userMerchantMappingData = [
+            'action'      => 'detach',
+            'merchant_id' => $merchantId,
+        ];
+
+        $this->updateUserMerchantMapping($user, $userMerchantMappingData);
+
+        // Attach the merchant with the role.
+
+        $userMerchantMappingData['action'] = 'attach';
+
+        $userMerchantMappingData['role'] = $role;
+
+        return $this->updateUserMerchantMapping($user, $userMerchantMappingData);
     }
 }

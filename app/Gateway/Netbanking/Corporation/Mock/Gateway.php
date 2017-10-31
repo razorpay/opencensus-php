@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Netbanking\Corporation\Mock;
 
-use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking\Corporation;
 

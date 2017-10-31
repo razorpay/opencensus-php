@@ -27,4 +27,11 @@ class Repository extends Base\Repository
                     ->where(Entity::CONFIRM_TOKEN, '=', $token)
                     ->firstOrFailPublic();
     }
+
+    public function getUserFromEmail(string $email)
+    {
+        return $this->newQuery()
+                    ->where(Entity::EMAIL, '=', $email)
+                    ->first();
+    }
 }

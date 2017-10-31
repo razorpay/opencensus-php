@@ -1206,7 +1206,14 @@ class Service extends Base\Service
      */
     protected function sendAuthorizedPaymentsReminderMail($merchantId, $payments, $final)
     {
-        $merchant = (new Merchant\Entity)->findOrFail($merchantId)->toArray();
+        $merchant = (new Merchant\Entity)->findOrFail($merchantId);
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
+
+        $merchant = $merchant->toArray();
 
         $data = compact('merchant', 'payments', 'final');
 

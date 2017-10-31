@@ -43,9 +43,9 @@ class Service extends Base\Service
      * Creates a merchant and saves in database
      *
      * @param  array            $input
-     * @return Merchant\Entity
+     * @return array
      */
-    public function create(array $input)
+    public function create(array $input): array
     {
         if (empty($input[Entity::ADMINS]) === false)
         {
@@ -77,9 +77,24 @@ class Service extends Base\Service
         return $merchantData;
     }
 
-    public function createSubMerchant(array $input)
+    public function createSubMerchant(array $input): array
     {
         $merchant = $this->merchant;
+
+        $linkedAccount = (bool) ($input['account'] ?? false);
+
+        if (($linkedAccount === false) and
+            ($merchant->isFeatureEnabled(Feature\Constants::AGGREGATOR) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_AGGREGRATOR);
+        }
+
+        $ownerId = $input['user_id'];
+
+        unset($input['user_id']);
+
+        unset($input['account']);
 
         $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant);
 
@@ -90,11 +105,41 @@ class Service extends Base\Service
             $this->sendSubMerchantCreationMail($subMerchant, $merchant);
         }
 
+        if ($linkedAccount === false)
+        {
+            $this->addLinkedAccountReferral($merchant, $subMerchant);
+
+            $this->attachSubMerchantOwner($ownerId, $subMerchant);
+        }
+
         $subMerchantData = $this->saveMerchantAndApplyCoupon($subMerchant, $input);
 
         return $subMerchantData;
     }
 
+    /**
+     * @param string $ownerId
+     * @param Entity $subMerchant
+     */
+    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant)
+    {
+        $userMerchantMappingInputData = [
+            'action'      => 'attach',
+            'role'        => 'owner',
+            'merchant_id' => $subMerchant->id,
+        ];
+
+        (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
+    }
+
+    private function addLinkedAccountReferral($aggregratorMerchant, $account)
+    {
+        $tagInputData = [
+            'tags' => ['ref-'.$aggregratorMerchant->id],
+        ];
+
+        $this->addTags($account->id, $tagInputData);
+    }
     protected function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
     {
         $this->repo->saveOrFail($merchant);
@@ -178,11 +223,17 @@ class Service extends Base\Service
         Mail::queue($createSubMerchantMail);
     }
 
-    public function editEmail($id, array $input)
+    public function editEmail($id, array $input) :array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
+        $orignalEmail = $merchant->getEmail();
+
         $merchant = (new Merchant\Core)->editEmail($merchant, $input);
+
+        $newEmail = $merchant->getEmail();
+
+        (new Merchant\Core)->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail);
 
         return $merchant->toArrayPublic();
     }
@@ -1084,8 +1135,9 @@ class Service extends Base\Service
      * used for adding tags to merchant
      * @param string $id
      * @param array $input which contains the tags of the merchant
+     * @param bool $slackNotify
      */
-    public function addTags($id, $input)
+    public function addTags($id, $input, $slackNotify = false)
     {
         (new Validator)->validateInput('addTags', $input);
 
@@ -1098,6 +1150,11 @@ class Service extends Base\Service
         $merchant->retag($tags);
 
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
+        if ($slackNotify === true)
+        {
+            $this->logActionToSlack($merchant, SlackActions::TAGGED, $input);
+        }
 
         return $merchant->tagNames();
     }
@@ -1418,4 +1475,44 @@ class Service extends Base\Service
         return $this->app['eventManager']->query($input);
     }
 
+    /**
+     * Creates submerchant User and associates with the submerchant as owner.
+     * @param array $input
+     *
+     * @return array
+     */
+    public function createSubMerchantUser($merchantId, array $input): array
+    {
+        $subMerchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $input['email']  = $subMerchant->getEmail();
+
+        $input['merchant_id'] = $this->merchant->getId();
+
+        (new Merchant\Validator)->validateInput('createSubMerchantUser', $input);
+
+        unset($input['merchant_id']);
+
+        //Creates a user from the given data.
+        $userData = $this->formatUserCreationData($input, $subMerchant);
+
+        $subMerchantUser = (new User\Service)->create($userData);
+
+        $this->attachSubMerchantOwner($subMerchantUser['id'], $subMerchant);
+
+        (new User\Service)->sendConfirmationMail($subMerchantUser['id']);
+
+        return $subMerchantUser;
+    }
+
+    private function formatUserCreationData($input, $subMerchant)
+    {
+        return [
+            User\Entity::NAME                  => $subMerchant->getName(),
+            User\Entity::EMAIL                 => $input['email'],
+            User\Entity::PASSWORD              => $input['password'],
+            User\Entity::PASSWORD_CONFIRMATION => $input['password_confirmation'],
+            User\Entity::CAPTCHA_DISABLE       => User\Validator::DISABLE_CAPTCHA_SECRET,
+        ];
+    }
 }

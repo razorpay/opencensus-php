@@ -10,10 +10,8 @@ use RZP\Models\Gateway\File\Processor\EMandate;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
-class Base extends EMandate\Base
+abstract class Base extends EMandate\Base
 {
-    const STEP      = 'debit';
-
     public function fetchEntities(): PublicCollection
     {
         $begin = $this->gatewayFile->getBegin();

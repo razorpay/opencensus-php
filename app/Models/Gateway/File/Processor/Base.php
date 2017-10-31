@@ -4,9 +4,10 @@ namespace RZP\Models\Gateway\File\Processor;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Models\FileStore;
 use RZP\Models\Base\Core;
+use RZP\Models\FileStore;
 use RZP\Models\Gateway\File;
+use RZP\Models\Gateway\File\Type;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 
@@ -175,4 +176,20 @@ abstract class Base extends Core
     abstract public function createFile();
 
     abstract public function sendFile();
+
+    protected function getTpv()
+    {
+        $subType = $this->gatewayFile->getSubType();
+
+        if ($subType === Type::TPV)
+        {
+            return true;
+        }
+        else if ($subType === Type::NON_TPV)
+        {
+            return false;
+        }
+
+        return null;
+    }
 }

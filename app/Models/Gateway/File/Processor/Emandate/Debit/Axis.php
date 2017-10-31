@@ -21,6 +21,8 @@ class Axis extends Base
 
     const FILE_NAME = 'Axis_EMandate_Debit';
 
+    const STEP      = 'debit';
+
     protected function createGatewayEntity(Payment\Entity $payment): Netbanking\Base\Entity
     {
         $paymentId = $payment->getId();
