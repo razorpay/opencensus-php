@@ -53,6 +53,31 @@ return [
         ],
     ],
 
+    'testDisputeCreateWithoutMerchantEmail' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+                'skip_email'            => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'        => '10000000000000',
+                'amount'             => 100,
+                'currency'           => 'INR',
+                'phase'              => 'chargeback',
+                'status'             => 'open',
+                'reason_description' => 'This is a serious fraud',
+            ],
+        ],
+    ],
+
     'testDisputeCreateWithDeduct' => [
         'request' => [
             'method'  => 'post',
