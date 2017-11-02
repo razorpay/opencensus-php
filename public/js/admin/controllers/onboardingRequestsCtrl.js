@@ -103,7 +103,7 @@
             },
           };
 
-          request = $http.put('/admin/generic', data);
+          request = $http.post('/admin/generic', data);
 
           request
             .success(function(data) {
@@ -128,7 +128,7 @@
           angular.forEach(responses, function(val, key) {
             if (key === 'file' || key === 'file_name') {
               data[key] = val;
-            } else {
+            } else if (key !== 'vendor_agreement') {
               data['body[' + key + ']'] = val;
             }
           });
