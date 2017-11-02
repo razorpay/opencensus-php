@@ -263,7 +263,7 @@ class Processor
             'originalAmount'    => $input['amount'],
             'fees'              => $fee,
             'razorpay_fee'      => $fee - $tax,
-            'serviceTax'        => $tax,
+            'tax'               => $tax,
             'amount'            => $input['amount'] + $fee,
         );
 

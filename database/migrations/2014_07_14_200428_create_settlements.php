@@ -37,10 +37,6 @@ class CreateSettlements extends Migration
             $table->integer(Settlement::FEES)
                   ->unsigned();
 
-            $table->integer(Settlement::SERVICE_TAX)
-                  ->unsigned()
-                  ->nullable();
-
             $table->integer(Settlement::TAX)
                   ->unsigned()
                   ->nullable();
