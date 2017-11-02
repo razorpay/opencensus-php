@@ -59,7 +59,7 @@ class Core extends Base\Core
 
     public function addBeneficiary(array $input)
     {
-        (new Validator)->validateInput('nodal_add_beneficiary', $input);
+        (new Validator)->validateInput('rbl_add_beneficiary', $input);
 
         $channel = $input[Entity::CHANNEL];
 

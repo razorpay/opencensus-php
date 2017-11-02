@@ -24,13 +24,14 @@ class Validator extends Base\Validator
         Entity::CHANNEL => 'required|string'
     ];
 
-    protected static $nodalAddBeneficiaryRules = [
+    protected static $rblAddBeneficiaryRules = [
         Entity::CHANNEL   => 'required|string',
         'ben_ifsc'        => 'required_if:channel,rbl|string',
         'ben_acct_no'     => 'required_if:channel,rbl|integer',
         'ben_name'        => 'required_if:channel,rbl|string',
         'ben_address'     => 'required_if:channel,rbl|string',
         'ben_bankname'    => 'required_if:channel,rbl|string',
+        'ben_branchcd'    => 'required_if:channel,rbl|string',
         'ben_bankcd'      => 'required_if:channel,rbl|string',
         'ben_pan'         => 'required_if:channel,rbl|string',
         'kyc_doc_name'    => 'required_if:channel,rbl|string',

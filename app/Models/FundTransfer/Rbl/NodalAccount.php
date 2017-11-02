@@ -3,13 +3,13 @@
 namespace RZP\Models\FundTransfer\Rbl;
 
 use Requests;
+use Config;
+use Requests_Hooks;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\FundTransfer\Base as NodalBase;
 
 class NodalAccount extends NodalBase\NodalAccount
 {
-    const DEFAULT_MODE = Mode::RTGS;
-
     protected $headers = [];
 
     protected $options = [];
@@ -20,25 +20,104 @@ class NodalAccount extends NodalBase\NodalAccount
     {
         parent::__construct();
 
-        $username = Config::get('nodal.rbl.username');
+        $this->config = Config::get('nodal.rbl');
 
-        $password = Config::get('nodal.rbl.password');
+        $this->username = $this->config['username'];
 
-        $clientId = Config::get('nodal.rbl.client_id');
+        $this->password = $this->config['password'];
 
-        $clientSecret = Config::get('nodal.rbl.client_password');
+        $clientId = $this->config['client_id'];
 
-        $this->url = Config::get('nodal.rbl.url') . '?client_id=' . $clientId . 'client_secret=' . $clientSecret;
+        $clientSecret = $this->config['client_password'];
+
+        // TODO Fix URL
+        //  Config::get('nodal.rbl.url')
+        $this->url = 'https://apideveloper.rblbank.com/test/sb/rbl/api/v1.5/na-beneficiary/registration' . '?client_id=' . $clientId . '&client_secret=' . $clientSecret;
 
         $this->headers = [
             'Content-Type' => 'application/json'
         ];
 
-        $this->options = [
-            'auth' => [
-                $username, $password
-            ]
+        $this->options = $this->getRequestOptions();
+    }
+
+    protected function getRequestOptions()
+    {
+        $hooks = new Requests_Hooks();
+
+        $hooks->register('curl.before_send', [$this, 'setCurlSslOpts']);
+
+        $options = [
+            'auth'  => [
+                $this->username,
+                $this->password
+            ],
+            'hooks' => $hooks,
         ];
+
+        return $options;
+    }
+
+    public function setCurlSslOpts($curl)
+    {
+        curl_setopt($curl, CURLOPT_SSLCERT, $this->getClientCertificate());
+
+        curl_setopt($curl, CURLOPT_SSLKEY, $this->getClientCertificateKey());
+    }
+
+    public function getClientCertificate()
+    {
+        $certPath = $this->getGatewayCertDirPath();
+
+        $certFile = $certPath . '/' . $this->getClientCertificateName();
+
+        if (file_exists($certFile) === false)
+        {
+            $certFileHandler = fopen($certFile, 'w');
+
+            $encodedCert = $this->config['client_certificate'];
+
+            $key = base64_decode($encodedCert);
+
+            fwrite($certFileHandler, $key);
+        }
+
+        return $certFile;
+    }
+
+    protected function getClientCertificateKey()
+    {
+        $certPath = $this->getGatewayCertDirPath();
+
+        $certFile = $certPath . '/' . $this->getClientCertificateKeyName();
+
+        if (file_exists($certFile) === false)
+        {
+            $certFileHandler = fopen($certFile, 'w');
+
+            $encodedCert = $this->config['client_certificate_key'];
+
+            $key = base64_decode($encodedCert);
+
+            fwrite($certFileHandler, $key);
+        }
+
+        return $certFile;
+    }
+
+    protected function getClientCertificateName()
+    {
+        return $this->config['certificate_name'];
+    }
+
+    protected function getGatewayCertDirPath()
+    {
+        return $this->config['certificate_path'];
+    }
+
+    protected function getClientCertificateKeyName()
+    {
+        return $this->config['certificate_key_name'];
     }
 
     public function addBeneficiary(array $input)
@@ -55,12 +134,12 @@ class NodalAccount extends NodalBase\NodalAccount
         return $this->getResponse($content);
     }
 
-    protected function getResponse(string $content)
+    protected function getResponse(array $content)
     {
         $response = Requests::post(
             $this->url,
             $this->headers,
-            $content,
+            json_encode($content),
             $this->options);
 
         return json_decode($response->body, true);
