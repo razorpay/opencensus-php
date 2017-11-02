@@ -21,7 +21,7 @@ spec:
         name: api
     spec:
       nodeSelector:
-        node-role.kubernetes.io/node-components: ""
+        node-role.kubernetes.io/node-api: ""
       imagePullSecrets:
       - name: registry
       containers:
