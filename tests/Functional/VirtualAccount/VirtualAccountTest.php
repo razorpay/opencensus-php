@@ -11,6 +11,9 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
+/**
+ * @group dns-sensitive
+ */
 class VirtualAccountTest extends TestCase
 {
     use MocksDnsTrait;
