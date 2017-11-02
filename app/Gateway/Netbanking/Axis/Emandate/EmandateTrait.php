@@ -460,7 +460,7 @@ trait EmandateTrait
         ];
 
         // Amount is not part of the hash for verify
-        if ($this->action !== Action::VERIFY)
+        if ($this->action === Action::VERIFY)
         {
             unset($arrayToBeHashed[3]);
         }
