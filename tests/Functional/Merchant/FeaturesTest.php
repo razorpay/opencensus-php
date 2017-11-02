@@ -682,6 +682,8 @@ class FeaturesTest extends TestCase
 
     public function testPostOnboardingResponses()
     {
+        $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
+
         $this->postOnboardingResponses();
     }
 
