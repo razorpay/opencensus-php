@@ -18,9 +18,52 @@ use RZP\Models\Base\PublicCollection;
  */
 abstract class Base extends Core
 {
+    /**
+     * Mutex lock is acquired by default for 900s (15 minutes)
+     */
+    const MUTEX_LOCK_TIMEOUT = 900;
+
+    protected $mutex;
+
     protected $gatewayFile;
 
-    protected $data;
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
+    /**
+     * Before starting the file generation, we acquire a mutex lock over the
+     * gateway_file entity and check if it can be processed.This is to prevent
+     * parallel requests from operating on the same gateway_file entity
+     *
+     * @param  File\Entity $gatewayFile
+     */
+    public function validateAndProcess(File\Entity $gatewayFile)
+    {
+        $this->gatewayFile = $gatewayFile;
+
+        $this->mutex->acquireAndRelease(
+            $this->gatewayFile->getId(),
+            function ()
+            {
+                $this->gatewayFile->reload();
+
+                $this->gatewayFile->getValidator()->validateIfProcessable();
+
+                $this->gatewayFile->setProcessing(true);
+
+                $this->repo->saveOrFail($this->gatewayFile);
+
+                $this->process();
+            },
+            static::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_GATEWAY_FILE_ANOTHER_OPERATION_IN_PROGRESS
+        );
+    }
+
     /**
      * We perform the following steps to process the gateway_file entity
      * 1. Generate the required data
@@ -28,12 +71,8 @@ abstract class Base extends Core
      * 3. Send the mail to gateway
      * Each of the steps needs to be implemented for respective child classes
      */
-    public function process(File\Entity $gatewayFile)
+    protected function process()
     {
-        $this->gatewayFile = $gatewayFile;
-
-        $this->checkIfRetriable();
-
         try
         {
             $entites = $this->fetchEntities();
@@ -111,20 +150,9 @@ abstract class Base extends Core
     {
         $this->gatewayFile->incrementAttempts();
 
-        $this->repo->saveOrFail($this->gatewayFile);
-    }
+        $this->gatewayFile->setProcessing(false);
 
-    /**
-     * If it is a retry attempt for an existing gateway file, we check if it is
-     * in a valid state to be reried depending on the type of the gateway file
-     */
-    protected function checkIfRetriable()
-    {
-        if ($this->canRetry() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE);
-        }
+        $this->repo->saveOrFail($this->gatewayFile);
     }
 
     protected function isFileGenerated(): bool
@@ -140,18 +168,6 @@ abstract class Base extends Core
         }
 
         return false;
-    }
-
-    /**
-     * Checks if the given gateway file can be retried or not. Currently
-     * we consider that if the refund gateway_file entity is in acknowledged state
-     * then it cannot be retried further.
-     *
-     * @return bool Whether gateway_file entity can be processed again or not
-     */
-    protected function canRetry(): bool
-    {
-        return ($this->gatewayFile->isAcknowledged() !== true);
     }
 
     /**

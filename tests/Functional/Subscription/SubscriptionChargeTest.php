@@ -42,6 +42,8 @@ class SubscriptionChargeTest extends TestCase
 
         $this->mockTokenex();
 
+        $this->setupMockDns();
+
         Carbon::setTestNow();
     }
 
@@ -1531,8 +1533,6 @@ class SubscriptionChargeTest extends TestCase
 
     public function testChargeWebhookEventData()
     {
-        $this->setupMockDns();
-
         $this->createWebhook(
             [
                 'events' => [

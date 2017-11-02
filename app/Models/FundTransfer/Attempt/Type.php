@@ -17,6 +17,10 @@ class Type
         self::REFUND,
     ];
 
+    protected static $notifyTypes = [
+        self::SETTLEMENT,
+    ];
+
     public static function validateType(string $type)
     {
         if (in_array($type, self::$validTypes, true) === false)
@@ -24,5 +28,10 @@ class Type
             throw new Exception\InvalidArgumentException(
                 'Not a valid FundTransferAttempt type: ' . $type);
         }
+    }
+
+    public static function isNotifyType(string $type): bool
+    {
+        return (in_array($type, self::$notifyTypes, true) === true);
     }
 }
