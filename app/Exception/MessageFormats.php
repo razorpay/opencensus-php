@@ -151,7 +151,6 @@ trait MessageFormats
             ($this->messageFormat !== 'string'))
         {
             list($field, $desc) = $this->getFirstPair();
-
         }
 
         $this->error = new Error($code, $desc, $field);
