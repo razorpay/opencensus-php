@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
 
     // For emails
     const MERCHANT_EMAIL          = 'merchant_email';
+    const SKIP_EMAIL              = 'skip_email';
 
     /**
      *  Field for edit input, when accepted chargeback amount
