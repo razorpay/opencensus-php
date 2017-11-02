@@ -7,8 +7,8 @@ use RZP\Models\Invoice\Type;
 class Issued extends Base
 {
     const SUBJECT_TEMPLATES = [
-        Type::LINK    => ' Payment requested by %s',
-        Type::ECOD    => ' Payment requested by %s',
+        Type::LINK    => ' Requesting payment of Rs. %s (via Razorpay)',
+        Type::ECOD    => ' Requesting payment of Rs. %s (via Razorpay)',
         Type::INVOICE => ' Invoice from %s',
     ];
 
@@ -44,12 +44,5 @@ class Issued extends Base
         }
 
         return $this;
-    }
-
-    protected function getSubjectTemplate()
-    {
-        $type =  $this->data['invoice']['type'];
-
-        return self::SUBJECT_TEMPLATES[$type];
     }
 }
