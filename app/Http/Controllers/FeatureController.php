@@ -124,4 +124,11 @@ class FeatureController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function backfillFeatureActivationStatus()
+    {
+        $response = $this->service()->backfillFeatureActivationStatus();
+
+        return ApiResponse::json($response);
+    }
 }

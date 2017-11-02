@@ -285,7 +285,7 @@ class Core extends Base\Core
         }
 
         if (($status === MerchantDetail::APPROVED) and
-            ($merchant->isFeatureEnabled($featureName) === false))
+            ($this->isFeatureEnabledInMode(Mode::LIVE, $merchantId, $featureName) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_NOT_ASSIGNED,
@@ -304,6 +304,35 @@ class Core extends Base\Core
         $response = $merchantDetail->getFeatureOnboardingStatuses();
 
         return $response;
+    }
+
+    /**
+     * Returns true if the feature is enabled in the mode
+     *
+     * @param string $mode
+     * @param string $merchantId
+     * @param        $featureName
+     *
+     * @return bool
+     */
+    public function isFeatureEnabledInMode(string $mode, string $merchantId, $featureName)
+    {
+        $enabledFeatures = $this->getEnabledFeaturesInMode($mode, $merchantId);
+
+        return (in_array($featureName, $enabledFeatures, true) === true);
+    }
+
+    /**
+     * Returns an array of all the features enabled in a particular mode
+     *
+     * @param string $mode
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    protected function getEnabledFeaturesInMode(string $mode, string $merchantId): array
+    {
+        return $this->repo->feature->getEnabledFeaturesInMode($mode, $merchantId);
     }
 
     /**
