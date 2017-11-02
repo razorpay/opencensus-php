@@ -21,6 +21,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     {
         $this->testDataFilePath = __DIR__.'/helpers/OAuthBearerAuthTestData.php';
 
+        $this->setupMockDns();
+
         parent::setUp();
     }
 
