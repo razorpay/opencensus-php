@@ -202,8 +202,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'info_code'         => 'CARD_TRIVIA_ABSENT',
                     'row'               => $row,
                     'gateway'           => get_class()
-                ]
-            );
+                ]);
 
             // there is an anomaly if no card type is present in row
             return null;
@@ -233,8 +232,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'info_code'         => 'CARD_ISSUER_ABSENT',
                     'row'               => $row,
                     'gateway'           => get_class()
-                ]
-            );
+                ]);
 
             // there is an anomaly if no card category is present in row
             return null;
@@ -255,15 +253,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         if (empty($row[self::COLUMN_AUTH_CODE]) === true)
         {
-            $this->trace->info(
-                TraceCode::RECON_INFO_ALERT,
-                [
-                    'message'           => 'Unable to get the auth_code.',
-                    'info_code'         => 'AUTH_CODE_ABSENT',
-                    'row'               => $row,
-                    'gateway'           => get_class()
-                ]
-            );
+            $this->reportMissingColumn($row, self::COLUMN_AUTH_CODE);
 
             return null;
         }
@@ -275,15 +265,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         if (empty($row[self::COLUMN_ARN]) === true)
         {
-            $this->trace->info(
-                TraceCode::RECON_INFO_ALERT,
-                [
-                    'message'           => 'Unable to get the arn.',
-                    'info_code'         => 'ARN_ABSENT',
-                    'row'               => $row,
-                    'gateway'           => get_class()
-                ]
-            );
+            $this->reportMissingColumn($row, self::COLUMN_ARN);
 
             return null;
         }

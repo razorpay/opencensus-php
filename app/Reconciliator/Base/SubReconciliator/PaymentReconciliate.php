@@ -564,13 +564,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             $this->setPaymentReference2($rowDetails[BaseReconciliate::AUTH_CODE]);
         }
 
-        // Finally mark payment captures
         $this->markGatewayCapturedAsTrue();
 
         $this->repo->saveOrFail($this->payment);
     }
-
-
 
     /**
      * If IIN is missing, a new IIN is created with the card type (debit/credit)
@@ -1040,47 +1037,61 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
     }
 
+    /**
+     * Set reference1 if was not updated from api, And raise
+     * alert if saved value is not same as recon_value
+     *
+     * @param string $reference1
+     */
     protected function setPaymentReference1(string $reference1)
     {
         $dbReference1 = $this->payment->getReference1();
 
-        // Skip updating if pre saved value does not match upcoming
         if (empty($dbReference1) === true)
         {
             $this->payment->setReference1($reference1);
         }
-        else if ($dbReference1 !== $reference1)
+        else if ((empty($reference1) === false) and
+                 ($dbReference1 !== $reference1))
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code' => TraceCode::RECON_MISMATCH,
-                    'message'    => 'Reference1 is not same as in recon',
-                    'payment_id' => $this->payment->getId(),
-                    'db_value'   => $dbReference1,
-                    'incoming'   => $reference1
+                    'trace_code'       => TraceCode::RECON_MISMATCH,
+                    'message'          => 'Reference1 is not same as in recon',
+                    'payment_id'       => $this->payment->getId(),
+                    'api_reference1'   => $dbReference1,
+                    'recon_reference1' => $reference1
                 ]
             );
         }
     }
 
+    /**
+     * Set reference2 if was not updated from api, raise
+     * alert if saved value is not same as recon_value.
+     *
+     * Also checks if saved value is '00'(from first_data)
+     *
+     * @param string $reference2
+     */
     protected function setPaymentReference2(string $reference2)
     {
         $dbReference2 = $this->payment->getReference2();
 
-        // '00' check for first_data
         if ((empty($dbReference2) === true) or ($dbReference2 === '00'))
         {
             $this->payment->setReference2($reference2);
         }
-        else if ($dbReference2 !== $reference2)
+        else if ((empty($reference2) === false) and
+                 ($dbReference2 !== $reference2))
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code' => TraceCode::RECON_MISMATCH,
-                    'message'    => 'Reference2 is not same as in recon',
-                    'payment_id' => $this->payment->getId(),
-                    'db_value'   => $dbReference2,
-                    'incoming'   => $reference2
+                    'trace_code'       => TraceCode::RECON_MISMATCH,
+                    'message'          => 'Reference2 is not same as in recon',
+                    'payment_id'       => $this->payment->getId(),
+                    'api_reference2'   => $dbReference2,
+                    'recon_reference2' => $reference2
                 ]
             );
         }
@@ -1357,7 +1368,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
     }
 
-    protected function reportMissingColumn(array $row, $columnName)
+    /**
+     * @param array $row
+     * @param string $columnName
+     */
+    protected function reportMissingColumn(array $row, string $columnName)
     {
         $this->trace->info(
             TraceCode::RECON_INFO_ALERT,
@@ -1445,7 +1460,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
-     * If present ARN will be mapped to Reference2 of Payment
+     * If present ARN will be mapped to Reference1 of Payment
      *
      * @param $row
      * @return null
