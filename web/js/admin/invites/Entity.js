@@ -1,7 +1,13 @@
 import React, { Component } from 'react';
+import axios from 'axios';
 import Form from 'ui/Form';
 import Field from 'ui/Field';
-import { openModal } from 'common/modal';
+import {
+  openModal,
+  closeModal,
+  notifySuccess,
+  notifyError,
+} from 'common/modal';
 import { adminFetch, adminPost } from 'util/fetch';
 
 import InviteForm from './InviteForm';
@@ -27,7 +33,14 @@ class AddInvites extends Component {
       if (response) {
         newState.fields = response.fields;
         newState.fields.forEach(field => {
-          newState.merchant[field] = null;
+          //Add default values else null
+          if (field === 'promo_code') {
+            newState.merchant[field] = 'RP_StartUP';
+          } else if (field === 'merchant_type') {
+            newState.merchant[field] = 'stp';
+          } else {
+            newState.merchant[field] = null;
+          }
         });
       }
 
@@ -37,8 +50,25 @@ class AddInvites extends Component {
     });
   }
 
-  handleSave = body => {
-    console.log(body);
+  handleInvite = body => {
+    return axios({
+      url: '/admin/generic',
+      method: 'post',
+      params: {
+        route_name: 'admin_lead_create',
+      },
+      data: { body },
+    }).then(response => {
+      console.log(response);
+      if (response.data.success) {
+        notifySuccess(
+          `Success! Invitation has been sent to ${body.contact_email}`
+        );
+      } else {
+        closeModal();
+        response.data.errors.forEach(err => notifyError(err));
+      }
+    });
   };
 
   render() {
@@ -47,7 +77,7 @@ class AddInvites extends Component {
     }
 
     return (
-      <InviteForm fields={this.state.fields} handleSave={this.handleSave} />
+      <InviteForm fields={this.state.fields} onInvite={this.handleInvite} />
     );
   }
 }

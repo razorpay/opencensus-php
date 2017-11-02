@@ -3,7 +3,7 @@ import Form from 'ui/Form';
 import Field, { SelectField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 
-export default function InviteForm({ fields, handleSave }) {
+export default function InviteForm({ fields, onInvite }) {
   return (
     <div>
       <header>
@@ -13,7 +13,7 @@ export default function InviteForm({ fields, handleSave }) {
           onboarded through this solution
         </p>
       </header>
-      <Form>
+      <Form onSubmit={onInvite}>
         {fields.indexOf('channel_code') > -1 && (
           <div>
             <SelectField label="Channel Code" name="channel_code" required>
@@ -90,7 +90,12 @@ export default function InviteForm({ fields, handleSave }) {
         )}
 
         {fields.indexOf('contact_email') > -1 && (
-          <Field label="Contact Email" name="contact_email" required />
+          <Field
+            label="Contact Email"
+            name="contact_email"
+            required
+            type="email"
+          />
         )}
 
         {fields.indexOf('dba_name') > -1 && (
@@ -100,7 +105,7 @@ export default function InviteForm({ fields, handleSave }) {
           text="Save"
           class="btn"
           pendingClass="small spinner"
-          onSubmit={handleSave}
+          onSubmit={onInvite}
         />
       </Form>
     </div>
