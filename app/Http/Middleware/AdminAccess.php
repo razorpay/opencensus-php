@@ -75,11 +75,12 @@ class AdminAccess {
 
     private function policyChecker($admin, $routePermissions)
     {
-        $adminPermissions = $admin['permissions'];
+        $adminPermissions = $admin['permissions'] ?? [];
 
         if (in_array(self::WILDCARD_PERMISSION, $routePermissions, true) === true)
         {
             $this->validateWildCardPermissionRules($routePermissions);
+
             return true;
         }
 
