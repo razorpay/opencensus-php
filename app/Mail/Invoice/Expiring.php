@@ -23,19 +23,4 @@ class Expiring extends Base
 
         return $this;
     }
-
-    protected function addSubject()
-    {
-        $merchantName = $this->data['merchant']['name'];
-
-        $type = $this->data['invoice']['type'];
-
-        $template = static::SUBJECT_TEMPLATES[$type];
-
-        $subject = sprintf($template, $merchantName);
-
-        $this->subject($subject);
-
-        return $this;
-    }
 }
