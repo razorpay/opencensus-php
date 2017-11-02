@@ -7,8 +7,8 @@ use RZP\Models\Invoice\Type;
 class Expiring extends Base
 {
     const SUBJECT_TEMPLATES = [
-        Type::LINK    => ' Payment request from %s is expiring',
-        Type::ECOD    => ' Payment request from %s is expiring',
+        Type::LINK    => ' Payment request of Rs. %s is expiring (via Razorpay)',
+        Type::ECOD    => ' Payment request of Rs. %s is expiring (via Razorpay)',
         Type::INVOICE => ' Invoice from %s is expiring',
     ];
 
@@ -22,12 +22,5 @@ class Expiring extends Base
         $this->view('emails.invoice.customer.expiring');
 
         return $this;
-    }
-
-    protected function getSubjectTemplate()
-    {
-        $type =  $this->invoice['type'];
-
-        return self::SUBJECT_TEMPLATES[$type];
     }
 }

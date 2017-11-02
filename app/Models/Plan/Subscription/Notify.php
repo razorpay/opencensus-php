@@ -461,6 +461,11 @@ class Notify extends Processor\Notify
             return false;
         }
 
+        if ($this->subscription->isGlobal() === false)
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -468,7 +473,8 @@ class Notify extends Processor\Notify
     {
         $merchantTransactionReportEmail = $this->merchant->getTransactionReportEmail();
 
-        return (empty($merchantTransactionReportEmail) === false);
+        return ((empty($merchantTransactionReportEmail) === false) and
+                ($this->merchant->isLinkedAccount() === false));
     }
 
     protected function getMailableClass(string $event)

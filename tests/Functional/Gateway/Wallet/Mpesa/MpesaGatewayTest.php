@@ -303,7 +303,7 @@ class MpesaGatewayTest extends TestCase
 
     public function testSoapTimeoutError()
     {
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testVerifyMismatch'];
 
         $this->testAuthPayment();
 
@@ -321,7 +321,7 @@ class MpesaGatewayTest extends TestCase
 
     public function testSoapError()
     {
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testVerifyMismatch'];
 
         $this->testAuthPayment();
 
@@ -345,7 +345,7 @@ class MpesaGatewayTest extends TestCase
 
         $this->mockSoapSslError();
 
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testVerifyMismatch'];
 
         $this->runRequestResponseFlow(
             $data,

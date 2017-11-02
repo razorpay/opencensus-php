@@ -106,7 +106,7 @@ class DatabaseSeeder extends Seeder
                 [
                     'id'                => '70I6GMmOpMJp40',
                     'org_id'            => self::RAZORPAY_ORG_ID,
-                    'hostname'          => 'dashboard.razorpay.dev',
+                    'hostname'          => 'dashboard.razorpay.in',
                     'created_at'        => $currentTime,
                     'updated_at'        => $currentTime,
                 ]
@@ -116,7 +116,7 @@ class DatabaseSeeder extends Seeder
                 [
                     'id'                => '70I6bfuaPQ72xa',
                     'org_id'            => '6dLbNSpv5XbCOG',
-                    'hostname'          => 'dashboard-hdfc.razorpay.dev',
+                    'hostname'          => 'dashboard-hdfc.razorpay.in',
                     'created_at'        => $currentTime,
                     'updated_at'        => $currentTime,
                 ]

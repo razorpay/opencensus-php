@@ -27,6 +27,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         Orchestrator::NETBANKING_RBL,
         Orchestrator::NETBANKING_INDUSIND,
         Orchestrator::NETBANKING_BOB,
+        Orchestrator::NETBANKING_CORPORATION,
         Orchestrator::JIOMONEY,
         Orchestrator::VIRTUAL_ACC_KOTAK,
         Orchestrator::NETBANKING_PNB,
@@ -601,6 +602,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistDebitAccount($accountDetails, $gatewayPayment);
 
+        $this->persistAccountType($accountDetails, $gatewayPayment);
+
+        $this->persistAccountSubType($accountDetails, $gatewayPayment);
+
+        $this->persistAccountBranchcode($accountDetails, $gatewayPayment);
+
         $this->persistCreditAccount($accountDetails, $gatewayPayment);
     }
 
@@ -734,6 +741,42 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $accountNumber = $accountDetails[BaseReconciliate::ACCOUNT_NUMBER];
 
         $gatewayPayment->setAccountNumber($accountNumber);
+    }
+
+    protected function persistAccountType(array $accountDetails, PublicEntity $gatewayPayment)
+    {
+        if (empty($accountDetails[BaseReconciliate::ACCOUNT_TYPE]) === true)
+        {
+            return;
+        }
+
+        $accountType = $accountDetails[BaseReconciliate::ACCOUNT_TYPE];
+
+        $gatewayPayment->setAccountType($accountType);
+    }
+
+    protected function persistAccountSubType(array $accountDetails, PublicEntity $gatewayPayment)
+    {
+        if (empty($accountDetails[BaseReconciliate::ACCOUNT_SUBTYPE]) === true)
+        {
+            return;
+        }
+
+        $accountSubType = $accountDetails[BaseReconciliate::ACCOUNT_SUBTYPE];
+
+        $gatewayPayment->setAccountSubType($accountSubType);
+    }
+
+    protected function persistAccountBranchcode(array $accountDetails, PublicEntity $gatewayPayment)
+    {
+        if (empty($accountDetails[BaseReconciliate::ACCOUNT_BRANCHCODE]) === true)
+        {
+            return;
+        }
+
+        $accountBranchcode = $accountDetails[BaseReconciliate::ACCOUNT_BRANCHCODE];
+
+        $gatewayPayment->setAccountBranchcode($accountBranchcode);
     }
 
     /**

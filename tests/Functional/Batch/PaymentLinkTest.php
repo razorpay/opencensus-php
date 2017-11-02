@@ -52,6 +52,7 @@ class PaymentLinkTest extends TestCase
 
         // Gets last entity (Post queue processing) and asserts attributes
         $entities = $this->getLastEntity('batch', true);
+
         $this->assertEquals(2, $entities['success_count']);
         $this->assertEquals(1, $entities['failure_count']);
 

@@ -3,14 +3,17 @@
 namespace RZP\Models\Dispute;
 
 use DB;
+use Mail;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Admin\Action;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Mail\Dispute as DisputeMailer;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class Core extends Base\Core
@@ -41,9 +44,13 @@ class Core extends Base\Core
 
         (new Validator)->validatePaymentForDispute($input, $payment);
 
+        $parent = $this->checkAndGetParent($input);
+
         $dispute = (new Entity)->build($input);
 
-        $this->setRelationsAndDerivedAttributes($dispute, $payment, $reason);
+        $merchant = $payment->merchant;
+
+        $this->setRelationsAndDerivedAttributes($dispute, $parent, $payment, $reason);
 
         // entity id is required to create associated transaction
         $dispute->generateId();
@@ -70,7 +77,7 @@ class Core extends Base\Core
             return $dispute;
         });
 
-        // TODO: Send email to merchant
+        $this->sendDisputeMailToMerchant($dispute, $merchant, $input);
 
         return $dispute;
     }
@@ -88,13 +95,20 @@ class Core extends Base\Core
             array_merge($input, [Entity::ID => $dispute->getId()])
         );
 
+        $parent = $this->checkAndGetParent($input, $dispute);
+
         $dispute->edit($input);
 
         $dispute->setAuditAction(Action::EDIT_DISPUTE);
 
-        return $this->repo->transaction(function() use ($dispute)
+        if ($parent !== null)
         {
-            $this->handleDisputeClosure($dispute);
+            $dispute->parent()->associate($parent);
+        }
+
+        return $this->repo->transaction(function() use ($dispute, $input)
+        {
+            $this->handleDisputeClosure($dispute, $input);
 
             $this->repo->saveOrFail($dispute);
 
@@ -197,6 +211,7 @@ class Core extends Base\Core
 
     protected function setRelationsAndDerivedAttributes(
         Entity $dispute,
+        Entity $parent = null,
         Payment\Entity $payment,
         Reason\Entity $reason)
     {
@@ -213,9 +228,11 @@ class Core extends Base\Core
         $dispute->merchant()->associate($merchant);
 
         $dispute->reason()->associate($reason);
+
+        $dispute->parent()->associate($parent);
     }
 
-    protected function handleDisputeClosure(Entity $dispute)
+    protected function handleDisputeClosure(Entity $dispute, array $input)
     {
         if ($dispute->isClosed() === false)
         {
@@ -230,10 +247,9 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($payment);
 
-        if (($dispute->isLost() === true) and
-            ($dispute->getAmountDeducted() === 0))
+        if ($dispute->isLost() === true)
         {
-            $this->createNegativeAdjustmentAndUpdateDispute($dispute);
+            $this->handleLostDisputeAdjustments($dispute, $input);
         }
 
         if ($this->shouldReverse($dispute) === true)
@@ -242,17 +258,24 @@ class Core extends Base\Core
         }
     }
 
-    protected function createPositiveAdjustmentAndUpdateDispute(Entity $dispute)
+    protected function handleLostDisputeAdjustments(Entity $dispute, array $input)
     {
-        $input = [
-            Adjustment\Entity::CURRENCY    => $dispute->getCurrency(),
-            Adjustment\Entity::AMOUNT      => $dispute->getAmountDeducted(),
-            Adjustment\Entity::DESCRIPTION => self::CREDIT_ADJUSTMENT_DESCRIPTION,
-        ];
+        $acceptedDisputeAmount = $this->getAcceptedDisputeAmount($dispute, $input);
 
-        (new Adjustment\Core)->createDisputeAdjustment($input, $dispute);
+        if ($dispute->getAmountDeducted() === 0)
+        {
+            $this->createNegativeAdjustmentAndUpdateDispute($dispute, $acceptedDisputeAmount);
+        }
+        else
+        {
+            // If amount_deducted is not zero, it is equal to the disputed amount only
 
-        $dispute->setAmountReversed($dispute->getAmountDeducted());
+            if (($dispute->getAmountDeducted() - $acceptedDisputeAmount) > 0)
+            {
+                $this->createPositiveAdjustmentAndUpdateDispute($dispute,
+                    $dispute->getAmountDeducted() - $acceptedDisputeAmount);
+            }
+        }
     }
 
     protected function shouldReverse(Entity $dispute): bool
@@ -262,16 +285,116 @@ class Core extends Base\Core
                 ($dispute->getAmountReversed() === 0));
     }
 
-    protected function createNegativeAdjustmentAndUpdateDispute(Entity $dispute)
+    protected function createNegativeAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0)
     {
-        $dispute->setAmountDeducted($dispute->getAmount());
+        if ($amount === 0)
+        {
+            $amount = $dispute->getAmount();
+        }
 
         $input = [
             Adjustment\Entity::CURRENCY    => $dispute->getCurrency(),
-            Adjustment\Entity::AMOUNT      => 0 - $dispute->getAmount(),
+            Adjustment\Entity::AMOUNT      => 0 - $amount,
             Adjustment\Entity::DESCRIPTION => self::DEBIT_ADJUSTMENT_DESCRIPTION,
         ];
 
         (new Adjustment\Core)->createDisputeAdjustment($input, $dispute);
+
+        $dispute->setAmountDeducted($amount);
+    }
+
+    protected function createPositiveAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0)
+    {
+        if ($amount === 0)
+        {
+            $amount = $dispute->getAmountDeducted();
+        }
+
+        $input = [
+            Adjustment\Entity::CURRENCY    => $dispute->getCurrency(),
+            Adjustment\Entity::AMOUNT      => $amount,
+            Adjustment\Entity::DESCRIPTION => self::CREDIT_ADJUSTMENT_DESCRIPTION,
+        ];
+
+        (new Adjustment\Core)->createDisputeAdjustment($input, $dispute);
+
+        $dispute->setAmountReversed($amount);
+    }
+
+    protected function getAcceptedDisputeAmount(Entity $dispute, array $input)
+    {
+        if (isset($input[Entity::ACCEPTED_AMOUNT]) === false)
+        {
+            return $dispute->getAmount();
+        }
+
+        $dispute->getValidator()->validateAcceptedDisputeAmount($dispute->getAmount(), $input);
+
+        return $input[Entity::ACCEPTED_AMOUNT];
+    }
+
+    /**
+     *  Checks if the new parent is not same as existing parent
+     *  and is eligible to become a parent (has no child)
+     *
+     * @param array $input
+     * @param Entity|null $dispute
+     * @return null
+     */
+    protected function checkAndGetParent(array $input, Entity $dispute = null)
+    {
+        if (isset($input[Entity::PARENT_ID]) === false)
+        {
+            return null;
+        }
+
+        if ($dispute !== null)
+        {
+            // Check if new parent is existing parent
+
+            if (($dispute->isChildDispute() === true) and
+                ($dispute->getParentId() === $input[Entity::PARENT_ID]))
+            {
+                $this->trace->info(
+                    TraceCode::DISPUTE_SAME_PARENT_LINKING,
+                    [
+                        'input'      => $input,
+                        'dispute_id' => $dispute->getId()
+                    ]);
+
+                unset($input[Entity::PARENT_ID]);
+
+                return null;
+            }
+        }
+
+        $parent = $this->repo->dispute->findOrFailPublic($input[Entity::PARENT_ID]);
+
+        $parent->getValidator()->validateDisputeCanBecomeParent();
+
+        return $parent;
+    }
+
+    protected function sendDisputeMailToMerchant(
+        Entity $dispute,
+        Merchant\Entity $merchant,
+        array $input)
+    {
+        $email = $merchant->getEmail();
+
+        if (empty($input[Entity::MERCHANT_EMAIL]) === false)
+        {
+            $email = $input['merchant_email'];
+        }
+
+        $data = [
+            'merchant' => [
+                'name'      => $merchant->getName(),
+                'email'     => $email,
+            ],
+            'dispute' => $dispute->toArrayPublic(),
+        ];
+
+        Mail::queue(new DisputeMailer\Creation($data));
     }
 }

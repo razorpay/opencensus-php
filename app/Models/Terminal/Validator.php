@@ -50,6 +50,7 @@ class Validator extends Base\Validator
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::BILLDESK,
         Payment\Gateway::FIRST_DATA,
+        Payment\Gateway::NETBANKING_INDUSIND,
     ];
 
     protected static $createValidators = [
@@ -200,6 +201,10 @@ class Validator extends Base\Validator
     protected static $netbankingIciciEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID2    => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
+    ];
+
+    protected static $netbankingIndusindEditTerminalRules = [
+        Entity::TPV                     => 'sometimes|in:0,1,2'
     ];
 
     protected static $walletPayzappTerminalRules = [

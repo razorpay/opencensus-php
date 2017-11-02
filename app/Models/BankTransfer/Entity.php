@@ -234,7 +234,10 @@ class Entity extends Base\PublicEntity
         // This field is used in payment description, so we truncate to the limit
         //
 
-        $input[self::DESCRIPTION] = substr($input[self::DESCRIPTION], 0, self::MAX_DESCRIPTION_LENGTH);
+        if (isset($input[self::DESCRIPTION]) === true)
+        {
+            $input[self::DESCRIPTION] = substr($input[self::DESCRIPTION], 0, self::MAX_DESCRIPTION_LENGTH);
+        }
     }
 
     // -------------------------- Getters --------------------------------------

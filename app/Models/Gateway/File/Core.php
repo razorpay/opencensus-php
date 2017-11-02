@@ -45,6 +45,9 @@ class Core extends Base\Core
             $gatewayFile->reload();
         }
 
+        $this->trace->info(TraceCode::GATEWAY_FILES_CREATED,
+            $gatewayFiles->toArrayAdmin());
+
         return $gatewayFiles;
     }
 
@@ -56,17 +59,15 @@ class Core extends Base\Core
      */
     public function process(Entity $gatewayFile)
     {
-        $this->trace->info(TraceCode::GATEWAY_FILE_PROCESSING, [
-            'id'     => $gatewayFile->getId(),
-            'target' => $gatewayFile->getTarget(),
-        ]);
+        $this->trace->info(TraceCode::GATEWAY_FILE_PROCESSING,
+            $gatewayFile->toArrayAdmin());
 
         $type = $gatewayFile->getType();
         $target = $gatewayFile->getTarget();
 
         $processor = $this->app['gateway_file']->getProcessor($type, $target);
 
-        $processor->process($gatewayFile);
+        $processor->validateAndProcess($gatewayFile);
     }
 
     /**

@@ -6,7 +6,6 @@ use App;
 use Carbon\Carbon;
 
 use RZP\Base;
-use RZP\Base\JitValidator;
 use RZP\Exception;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -330,6 +329,12 @@ class Validator extends Base\Validator
         if ($subscription->hasBeenAuthenticated() === false)
         {
             throw new BadRequestValidationFailureException("Subscription with id $id is not authenticated yet");
+        }
+
+        if ($subscription->isGlobal() === false)
+        {
+            throw new BadRequestValidationFailureException('Hosted page is not available. ' .
+                'Please contact the merchant for further details.');
         }
     }
 }
