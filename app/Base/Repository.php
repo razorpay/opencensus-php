@@ -45,6 +45,7 @@ class Repository extends \Razorpay\Spine\Repository
     const TO           = 'to';
     const COUNT        = 'count';
     const SKIP         = 'skip';
+    const DELETED      = 'deleted';
 
     protected $app;
 
@@ -113,7 +114,14 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function findOrFailPublic($id, $columns = array('*'))
     {
-        return $this->newQuery()->findOrFailPublic($id, $columns);
+        $query = $this->newQuery();
+
+        if ($this->shouldIncludeTrashed())
+        {
+            $query->withTrashed();
+        }
+
+        return $query->findOrFailPublic($id, $columns);
     }
 
     public function findOrFailPublicWithRelations(

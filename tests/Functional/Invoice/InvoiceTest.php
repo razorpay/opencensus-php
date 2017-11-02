@@ -499,7 +499,8 @@ class InvoiceTest extends TestCase
         $this->startTest();
 
         $lineItems = $this->getEntities('line_item', [], true);
-        $this->assertEquals(4, $lineItems['count']);
+
+        $this->assertItemsCount($lineItems, 6, 2);
 
         $lineItemIds = collect($lineItems['items'])->pluck('id')->all();
 
@@ -1088,7 +1089,8 @@ class InvoiceTest extends TestCase
         $this->startTest();
 
         $lineItems = $this->getEntities('line_item', [], true);
-        $this->assertEquals(0, $lineItems['count']);
+
+        $this->assertItemsCount($lineItems, 1, 1);
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
@@ -1104,7 +1106,8 @@ class InvoiceTest extends TestCase
         $this->startTest();
 
         $lineItems = $this->getEntities('line_item', [], true);
-        $this->assertEquals(1, $lineItems['count']);
+
+        $this->assertItemsCount($lineItems, 3, 2);
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }

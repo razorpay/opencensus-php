@@ -57,7 +57,9 @@ class Service extends Base\Service
             $id = $entityClass::verifyIdAndSilentlyStripSign($id);
         }
 
-        $entity = $this->repo->$entity->findOrFailPublic($id);
+        $entity = $this->repo->$entity
+                             ->setWithTrashed(true)
+                             ->findOrFailPublic($id);
 
         return $entity;
     }
@@ -75,7 +77,9 @@ class Service extends Base\Service
             unset($input[Common::MERCHANT_ID]);
         }
 
-        $entities = $this->repo->$entity->fetch($input, $merchantId);
+        $entities = $this->repo->$entity
+                               ->setWithTrashed(true)
+                               ->fetch($input, $merchantId);
 
         return $entities->toArrayAdmin();
     }

@@ -114,4 +114,20 @@ trait CustomAssertions
     {
         return Hdfc\ErrorCode::$errorMessages[$actual['gateway_error_code']] ?? $actual['gateway_error_desc'];
     }
+
+    protected function assertItemsCount(array $content, $totalCount, $deletedCount = null)
+    {
+        $this->assertCount($totalCount, $content['items']);
+
+        if ($deletedCount !== null)
+        {
+            $deletedLineItems = array_filter($content['items'],
+                function($item)
+                {
+                    return $item['deleted_at'];
+                });
+
+            $this->assertCount($deletedCount, $deletedLineItems);
+        }
+    }
 }

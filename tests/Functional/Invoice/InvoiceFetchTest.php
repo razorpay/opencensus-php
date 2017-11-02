@@ -92,4 +92,13 @@ class InvoiceFetchTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testFetchForSoftDeletedInvoiceForAppAuth()
+    {
+        $this->ba->appAuth();
+
+        $this->createDraftInvoice(['deleted_at' => time()]);
+
+        $this->startTest();
+    }
 }

@@ -109,13 +109,21 @@ trait RepositoryFetch
 
     protected $merchantIdRequiredForMultipleFetch = true;
 
+    /**
+     * Set from service to enable with trashed by default
+     *
+     * @var bool
+     */
+    protected $withTrashed = false;
+
     public function fetchAndReturnPublicArray($id, $merchant)
     {
         return $this->findByPublicIdAndMerchant($id, $merchant)->toArrayPublic();
     }
 
     /**
-     * Retrieves the entities according to given fetch params
+     * Retrieves the entities according to given fetch params and current auth
+     *
      *
      * @param array       $params
      * @param string|null $merchantId
@@ -147,6 +155,11 @@ trait RepositoryFetch
         if (count($esParams) > 0)
         {
             return $this->runEsFetch($esParams, $merchantId, $expands);
+        }
+
+        if ($this->shouldIncludeTrashed())
+        {
+            $query->withTrashed();
         }
 
         // If above doesn't happen we build query for mysql fetch and return the
@@ -574,6 +587,28 @@ trait RepositoryFetch
     public function setMerchantIdRequiredForMultipleFetch($required)
     {
         $this->merchantIdRequiredForMultipleFetch = $required;
+    }
+
+    public function setWithTrashed(bool $withTrashed) : Repository
+    {
+        $this->withTrashed = true;
+
+        return $this;
+    }
+
+    protected function shouldIncludeTrashed() : bool
+    {
+        if ($this->withTrashed == true)
+        {
+            $entity = $this->getEntityClass();
+
+            return in_array(
+                \Illuminate\Database\Eloquent\SoftDeletes::class,
+                class_uses($entity),
+                true);
+        }
+
+        return false;
     }
 
     public function isMerchantIdRequiredForFetch()

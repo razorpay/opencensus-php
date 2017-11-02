@@ -177,4 +177,23 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testFetchForSoftDeletedInvoiceForAppAuth' => [
+        'request' => [
+            'url'     => '/admin/invoice',
+            'method'  => 'GET',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'count'  => 1,
+                'entity' => 'collection',
+                'items'  => [
+                    [
+                        'id' => 'inv_1000000invoice',
+                    ],
+                ],
+            ],
+        ],
+    ]
 ];
