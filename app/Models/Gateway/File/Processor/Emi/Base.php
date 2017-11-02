@@ -51,14 +51,14 @@ class Base extends BaseProcessor
 
     public function generateData(PublicCollection $emiPayments): array
     {
-        $this->data['items'] = $emiPayments->all();
+        $data['items'] = $emiPayments->all();
 
-        $this->data['password'] = $this->generateEmiFilePassword();
+        $data['password'] = $this->generateEmiFilePassword();
 
-        return $this->data;
+        return $data;
     }
 
-    public function createFile()
+    public function createFile($data)
     {
         if ($this->isFileGenerated() === true)
         {
@@ -67,7 +67,7 @@ class Base extends BaseProcessor
 
         try
         {
-            $fileData = $this->formatDataForFile();
+            $fileData = $this->formatDataForFile($data);
 
             $fileName = $this->getFileToWriteName();
 
@@ -83,7 +83,7 @@ class Base extends BaseProcessor
 
             if (static::COMPRESSION_REQUIRED === true)
             {
-                $creator->password($this->data['password'])
+                $creator->password($data['password'])
                         ->compress();
             }
 
@@ -110,13 +110,13 @@ class Base extends BaseProcessor
         }
     }
 
-    public function sendFile()
+    public function sendFile($data)
     {
         try
         {
-            $this->sendEmiPassword();
+            $this->sendEmiPassword($data);
 
-            $this->sendEmiFile();
+            $this->sendEmiFile($data);
 
             $this->gatewayFile->setFileSentAt(Carbon::now()->getTimestamp());
 
@@ -137,9 +137,9 @@ class Base extends BaseProcessor
         }
     }
 
-    protected function sendEmiFile()
+    protected function sendEmiFile($data)
     {
-        $mailData = $this->formatDataForMail();
+        $mailData = $this->formatDataForMail($data);
 
         $target = $this->gatewayFile->getTarget();
 
@@ -154,7 +154,7 @@ class Base extends BaseProcessor
         Mail::queue($emiFileMail);
     }
 
-    protected function formatDataForMail()
+    protected function formatDataForMail($data)
     {
         $file = $this->gatewayFile
                      ->files()
@@ -171,7 +171,7 @@ class Base extends BaseProcessor
         return $mailData;
     }
 
-    protected function sendEmiPassword()
+    protected function sendEmiPassword($data)
     {
         $target = $this->gatewayFile->getTarget();
 
@@ -179,7 +179,7 @@ class Base extends BaseProcessor
 
         $emiPasswordMail = new EmiMail\Password(
             ucfirst($target),
-            $this->data['password'],
+            $data['password'],
             $recipients
         );
 

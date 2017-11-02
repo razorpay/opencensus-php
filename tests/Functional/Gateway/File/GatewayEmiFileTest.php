@@ -56,7 +56,7 @@ class GatewayEmiFileTest extends TestCase
 
         $expectedFileContent = [
             'type'        => 'axis_emi_file',
-            'entity_type' => File\Entity::class,
+            'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'zip',
         ];
@@ -148,7 +148,7 @@ class GatewayEmiFileTest extends TestCase
 
         $expectedFileContent = [
             'type'        => 'indusind_emi_file',
-            'entity_type' => File\Entity::class,
+            'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'zip',
         ];
@@ -182,7 +182,7 @@ class GatewayEmiFileTest extends TestCase
 
         $expectedFileContent = [
             'type'        => 'kotak_emi_file',
-            'entity_type' => File\Entity::class,
+            'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'zip',
         ];
@@ -216,7 +216,7 @@ class GatewayEmiFileTest extends TestCase
 
         $expectedFileContent = [
             'type'        => 'rbl_emi_file',
-            'entity_type' => File\Entity::class,
+            'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'zip',
         ];
@@ -250,7 +250,7 @@ class GatewayEmiFileTest extends TestCase
 
         $expectedFileContent = [
             'type'        => 'scbl_emi_file',
-            'entity_type' => File\Entity::class,
+            'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'zip',
         ];

@@ -13,11 +13,11 @@ class Rbl extends Base
     const FILE_NAME   = 'Rbl_Emi_File';
     const DATE_FORMAT = 'd-M-y';
 
-    protected function formatDataForFile()
+    protected function formatDataForFile($data)
     {
         $formattedData = [];
 
-        foreach ($this->data['items'] as $emiPayment)
+        foreach ($data['items'] as $emiPayment)
         {
             $emiPlan = $emiPayment->emiPlan;
 

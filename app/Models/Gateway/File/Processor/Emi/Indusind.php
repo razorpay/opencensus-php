@@ -12,11 +12,11 @@ class Indusind extends Base
     const FILE_NAME   = 'IndusInd_Emi_File';
     const DATE_FORMAT = 'j/n/Y';
 
-    protected function formatDataForFile()
+    protected function formatDataForFile($data)
     {
         $formattedData = [];
 
-        foreach ($this->data['items'] as $emiPayment)
+        foreach ($data['items'] as $emiPayment)
         {
             $emiPlan = $emiPayment->emiPlan;
 

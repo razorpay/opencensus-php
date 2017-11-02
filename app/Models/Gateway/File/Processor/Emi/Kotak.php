@@ -12,11 +12,11 @@ class Kotak extends Base
     const FILE_NAME   = 'Kotak_Emi_File';
     const DATE_FORMAT = 'M d,Y h:i:s A';
 
-    protected function formatDataForFile()
+    protected function formatDataForFile($data)
     {
         $formattedData = [];
 
-        foreach ($this->data['items'] as $emiPayment)
+        foreach ($data['items'] as $emiPayment)
         {
             $date = $this->getFormattedDate($emiPayment->getCaptureTimestamp());
 
