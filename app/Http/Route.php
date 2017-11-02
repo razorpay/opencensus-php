@@ -1548,7 +1548,6 @@ final class Route
      */
     public static $throttledRoutes = [
         'dummy_route',
-        'payment_verify_multiple',
     ];
 
     /**
