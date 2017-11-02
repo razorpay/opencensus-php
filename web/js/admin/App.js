@@ -27,6 +27,7 @@ import RoleList from 'admin/roles/List';
 import PermissionsList from 'admin/permissions/List';
 import AuditLog from 'admin/auditlog/List';
 import OrgEntity from 'admin/organizations/Entity';
+import InvitesList from 'admin/invites/List';
 
 export default class App extends Component {
   render() {
@@ -56,6 +57,8 @@ export default class App extends Component {
             <Route path="/audit-log" component={AuditLog} />
 
             <Route path="/entity/:type/:mode/:id" component={GenericEntity} />
+
+            <Route path="/invites" component={InvitesList} />
 
             <Redirect to="/stats" />
           </Switch>
@@ -119,7 +122,7 @@ const links = [
 
   // user access management
   [
-    ['Invites', '/invite', 'view_merchant_invite', 'user-plus'],
+    ['Invites', '/invites', 'view_merchant_invite', 'user-plus'],
     ['Organisations', '/orgs', 'view_all_org', 'building'],
     ['Users', '/users', 'view_all_admin', 'user'],
     ['Roles', '/roles', 'view_all_role', 'user-support'],
