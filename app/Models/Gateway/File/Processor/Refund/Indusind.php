@@ -56,7 +56,7 @@ class Indusind extends Base
         return static::FILE_NAME . $time;
     }
 
-    public function sendFile(array $data)
+    public function sendFile($data)
     {
         return;
     }

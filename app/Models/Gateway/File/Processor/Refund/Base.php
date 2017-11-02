@@ -69,7 +69,7 @@ class Base extends BaseProcessor
     /**
      * Fetches all necessary refund related data required for generating the file
      */
-    public function generateData(PublicCollection $refunds): array
+    public function generateData(PublicCollection $refunds)
     {
         $gateway = static::GATEWAY;
 
@@ -111,7 +111,7 @@ class Base extends BaseProcessor
      * We create the required file and associate it with the gateway_file entity
      * Any exception during file generation etc is caught and handled accordingly
      */
-    public function createFile(array $data)
+    public function createFile($data)
     {
         // Don't process further if file is already generated
         if ($this->isFileGenerated() === true)
@@ -151,7 +151,7 @@ class Base extends BaseProcessor
         }
     }
 
-    public function sendFile(array $data)
+    public function sendFile($data)
     {
         try
         {

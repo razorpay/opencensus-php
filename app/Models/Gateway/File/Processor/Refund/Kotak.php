@@ -57,7 +57,7 @@ class Kotak extends Base
         return $formattedData;
     }
 
-    public function sendFile(array $data)
+    public function sendFile($data)
     {
         return;
     }

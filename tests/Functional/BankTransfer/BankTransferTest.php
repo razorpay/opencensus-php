@@ -420,6 +420,97 @@ class BankTransferTest extends TestCase
         $this->assertEquals('initiated', $attempt['status']);
     }
 
+    public function testBankTransferRefundRetryToDifferentAccount()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+
+        $utr = $response['transaction_id'];
+
+        // Customer bank account created
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
+        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+        $this->assertEquals('Name of account holder', $bankAccount['name']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $this->refundPayment($payment['id'], 4000000);
+
+        // Payment is refunded
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000000, $payment['amount_refunded']);
+
+        // Refund is created
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals(4000000, $refund['amount']);
+
+        // Transaction is created for refund
+        $transaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals('refund', $transaction['type']);
+        $this->assertEquals($refund['id'], $transaction['entity_id']);
+
+        // Fund transfer attempt created for refund
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('created', $attempt['status']);
+        $this->assertEquals($refund['id'], $attempt['source']);
+        $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
+        $this->assertStringEndsWith($utr, $attempt['narration']);
+
+        $content = $this->initiatePayouts();
+        $this->assertNotNull($content['kotak']['payout_text_file']);
+        $this->assertEquals(1, $content['kotak']['count']);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('initiated', $attempt['status']);
+
+        // Only failed refunds can be retried
+        $this->fixtures->refund->edit($refund['id'], ['status'=>'failed']);
+
+        $response = $this->retryFailedRefund($refund['id'], [
+            'bank_account' => [
+                'account_number'   => '1234567890987654321',
+                'ifsc_code'        => 'HDFC0000002',
+                'beneficiary_name' => 'New Bank Account',
+            ],
+        ]);
+
+        // Refund is now marked created again
+        $refund =  $this->getLastEntity('refund', true);
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals('created', $refund['status']);
+
+        // Another bank account created
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertEquals('HDFC0000002', $bankAccount['ifsc']);
+        $this->assertEquals('1234567890987654321', $bankAccount['account_number']);
+        $this->assertEquals('New Bank Account', $bankAccount['name']);
+
+        //  Another fund transfer attempt created for refund
+        $oldAttempt = $attempt;
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertNotEquals($oldAttempt['id'], $attempt['id']);
+        $this->assertEquals('created', $attempt['status']);
+        $this->assertEquals($refund['id'], $attempt['source']);
+        $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
+        $this->assertStringEndsWith($utr, $attempt['narration']);
+
+        $content = $this->initiatePayouts();
+        $this->assertNotNull($content['kotak']['payout_text_file']);
+        $this->assertEquals(1, $content['kotak']['count']);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('initiated', $attempt['status']);
+    }
+
     public function testBankTransferImpsFromRogueBank()
     {
         $accountNumber = $this->bankAccount['account_number'];

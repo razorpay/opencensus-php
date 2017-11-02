@@ -34,6 +34,10 @@ class Validator extends Base\Validator
         'receipt'       => 'sometimes|string|max:40',
     ];
 
+    protected static $retryRules = [
+        'bank_account' => 'sometimes|array',
+    ];
+
     protected static $verifyInternalRefundGateways = [
         Payment\Gateway::HDFC,
         Payment\Gateway::AXIS_MIGS
