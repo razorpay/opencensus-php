@@ -35,6 +35,9 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT              = 'updated_at';
     const RESOLVED_AT             = 'resolved_at';
 
+    // For emails
+    const MERCHANT_EMAIL          = 'merchant_email';
+
     /**
      *  Field for edit input, when accepted chargeback amount
      *  is lesser than disputed amount.

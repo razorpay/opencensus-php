@@ -79,11 +79,11 @@ abstract class Base extends Core
 
             $this->checkIfValidDataAvailable($entites);
 
-            $this->generateData($entites);
+            $data = $this->generateData($entites);
 
-            $this->createFile();
+            $this->createFile($data);
 
-            $this->sendFile();
+            $this->sendFile($data);
         }
         catch (Exception\GatewayFileException $e)
         {
@@ -187,11 +187,11 @@ abstract class Base extends Core
      */
     abstract public function checkIfValidDataAvailable(PublicCollection $entites);
 
-    abstract public function generateData(PublicCollection $entites);
+    abstract public function generateData(PublicCollection $entites): array;
 
-    abstract public function createFile();
+    abstract public function createFile(array $data);
 
-    abstract public function sendFile();
+    abstract public function sendFile(array $data);
 
     protected function getTpv()
     {

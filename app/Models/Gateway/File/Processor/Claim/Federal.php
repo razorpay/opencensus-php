@@ -8,7 +8,7 @@ class Federal extends Base
 {
     const GATEWAY = Payment\Gateway::NETBANKING_FEDERAL;
 
-    public function createFile()
+    public function createFile(array $data)
     {
         return;
     }
