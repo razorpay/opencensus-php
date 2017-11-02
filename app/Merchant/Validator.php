@@ -25,40 +25,4 @@ class Validator extends Base\Validator
         'category'                                  => '',
         'gateway_acquirer'                          => 'sometimes|string',
     );
-
-    protected static $banksRules = array(
-        'banks'                                      => 'required|array'
-    );
-
-    protected static $api_dashboard_mappings = array(
-            'id'        => 'id',
-            'name'      => 'name',
-            'email'     => 'email',
-            'activated' => 'activated'
-    );
-
-    protected static $keyRules = array(
-        'id'                    => 'required',
-        'merchant_id'           => 'required',
-        'delay_roll'            => 'required|in:0,1'
-    );
-
-    public static function buildKeyUpdateData($old_key_data)
-    {
-        return array(
-            'delay_roll'    =>  $old_key_data['delay_roll']
-        );
-    }
-
-    public static function checkAPIMatch($merchant, $api_response)
-    {
-        foreach (static::$api_dashboard_mappings as $key => $value)
-        {
-            if ($api_response[$key] !== $merchant[$value])
-            {
-                throw new \Exception(
-                    'Merchant data mismatch with api for '.$merchant['id'].' at '.$key);
-            }
-        }
-    }
 }

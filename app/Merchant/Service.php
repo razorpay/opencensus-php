@@ -22,6 +22,16 @@ use Razorpay\Api\Errors\Error as ApiError;
 
 class Service extends Base\Service
 {
+    const UPLOAD_KEYS = [
+        'business_proof'           => 'business_proof_url',
+        'business_operation_proof' => 'business_operation_proof_url',
+        'business_pan_proof'       => 'business_pan_url',
+        'address_proof'            => 'address_proof_url',
+        'promoter_proof'           => 'promoter_proof_url',
+        'promoter_pan_proof'       => 'promoter_pan_url',
+        'promoter_address_proof'   => 'promoter_address_url'
+    ];
+
     public function __construct()
     {
         $this->currentUser = Auth::user();
@@ -284,7 +294,7 @@ class Service extends Base\Service
     public function saveActivationFilesData($input)
     {
         if ((count($input) !== 1) or
-            (in_array(key($input), array_keys(MerchantDetails\Entity::UPLOAD_KEYS)) == false))
+            (in_array(key($input), array_keys(self::UPLOAD_KEYS)) === false))
         {
             throw new \Razorpay\Api\Errors\BadRequestError(
                 'Invalid parameters.',
@@ -293,7 +303,7 @@ class Service extends Base\Service
             );
         }
 
-        $field = MerchantDetails\Entity::UPLOAD_KEYS[key($input)];
+        $field = self::UPLOAD_KEYS[key($input)];
 
         $saveActivationFilesData = [
             'route_name' => 'merchant_activation_upload_file',
