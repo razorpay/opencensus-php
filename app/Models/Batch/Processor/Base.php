@@ -354,17 +354,25 @@ class Base extends BaseModel\Core
                     Batch\Status::PROCESSED;
 
         //
-        // But if we were able to process the file and there were failures, we
-        // mark it as partially_processed or processed depending on the type of
-        // the file.
+        // If we were able to successfully parse the file the total_count will be
+        // greater than 0. We only want to mark the file as processed / partially_processed
+        // in such a case
         //
-        if (($this->batch->getFailureCount() > 0)
-            or (($this->batch->getSuccessCount() === 0) and
-                ($this->batch->getFailureCount() === 0)))
+        if ($this->batch->getTotalCount() > 0)
         {
-            $status = ($this->shouldMarkProcessedOnFailures() === true) ?
-                        Batch\Status::PROCESSED :
-                        Batch\Status::PARTIALLY_PROCESSED;
+            //
+            // But if we were able to process the file and there were failures, we
+            // mark it as partially_processed or processed depending on the type of
+            // the file.
+            //
+            if (($this->batch->getFailureCount() > 0)
+                or (($this->batch->getSuccessCount() === 0) and
+                    ($this->batch->getFailureCount() === 0)))
+            {
+                $status = ($this->shouldMarkProcessedOnFailures() === true) ?
+                            Batch\Status::PROCESSED :
+                            Batch\Status::PARTIALLY_PROCESSED;
+            }
         }
 
         //
