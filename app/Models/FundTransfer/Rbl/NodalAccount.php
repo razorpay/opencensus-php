@@ -30,15 +30,40 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $clientSecret = $this->config['client_password'];
 
-        // TODO Fix URL
-        //  Config::get('nodal.rbl.url')
-        $this->url = 'https://apideveloper.rblbank.com/test/sb/rbl/api/v1.5/na-beneficiary/registration' . '?client_id=' . $clientId . '&client_secret=' . $clientSecret;
+        $clientCredArray = [
+            'client_id'     => $clientId,
+            'client_secret' => $clientSecret,
+        ];
+
+        $this->baseUrl = $this->config['url'];
+
+        $this->clientCreds = http_build_query($clientCredArray);
 
         $this->headers = [
             'Content-Type' => 'application/json'
         ];
 
         $this->options = $this->getRequestOptions();
+    }
+
+    public function addBeneficiary(array $input)
+    {
+        $content = $this->getAddBeneficiaryData($input);
+
+        // TODO fix this
+        $url = $this->baseUrl . 'test/sb/rbl/api/v1.5/na-beneficiary/registration?' . $this->clientCreds;
+
+        return $this->getResponse($content, $url);
+    }
+
+    public function initiateTransfer(string $amount)
+    {
+        $content = $this->getTransferData($amount);
+
+        // TODO fix this
+        $url = $this->baseUrl . 'sb/rbl/api/v1/payment_bid/pay' . $this->clientCreds;
+
+        return $this->getResponse($content, $url);
     }
 
     protected function getRequestOptions()
@@ -65,7 +90,7 @@ class NodalAccount extends NodalBase\NodalAccount
         curl_setopt($curl, CURLOPT_SSLKEY, $this->getClientCertificateKey());
     }
 
-    public function getClientCertificate()
+    protected function getClientCertificate()
     {
         $certPath = $this->getGatewayCertDirPath();
 
@@ -120,21 +145,7 @@ class NodalAccount extends NodalBase\NodalAccount
         return $this->config['certificate_key_name'];
     }
 
-    public function addBeneficiary(array $input)
-    {
-        $content = $this->getAddBeneficiaryData($input);
-
-        return $this->getResponse($content);
-    }
-
-    public function initiateTransfer(string $amount)
-    {
-        $content = $this->getTransferData($amount);
-
-        return $this->getResponse($content);
-    }
-
-    protected function getResponse(array $content)
+    protected function getResponse(array $content, string $url)
     {
         $response = Requests::post(
             $this->url,
@@ -175,7 +186,7 @@ class NodalAccount extends NodalBase\NodalAccount
             ]
         ];
 
-        return json_encode($content);
+        return $content;
     }
 
     protected function getAddBeneficiaryData(array $input)
