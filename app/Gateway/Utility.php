@@ -80,4 +80,9 @@ class Utility
 
         return (mb_substr($xml, 0, 5) === '<?xml');
     }
+
+    public static function stripEmailSpecialChars(string $email)
+    {
+        return preg_replace("/[^a-zA-Z0-9]+/", "", $email);
+    }
 }

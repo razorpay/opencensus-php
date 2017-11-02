@@ -33,11 +33,10 @@ abstract class Base extends EMandate\Base
         return $payments;
     }
 
-    public function generateData(PublicCollection $payments): array
+    public function generateData(PublicCollection $payments)
     {
         try
         {
-            // Set $this->data for later use
             $data = $payments;
 
             // Create gateway entities
@@ -73,7 +72,7 @@ abstract class Base extends EMandate\Base
                 continue;
             }
 
-            $gatewayPayment = $this->createGatewayEntity($payment);
+            $this->createGatewayEntity($payment);
         }
     }
 }

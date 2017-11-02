@@ -106,7 +106,7 @@ class Base extends BaseProcessor
         }
     }
 
-    public function generateData(PublicCollection $claims): array
+    public function generateData(PublicCollection $claims)
     {
         foreach ($claims as $claim)
         {
@@ -139,7 +139,7 @@ class Base extends BaseProcessor
         return $data;
     }
 
-    public function createFile(array $data)
+    public function createFile($data)
     {
         // Don't process further if file is already generated
         if ($this->isFileGenerated() === true)
@@ -179,7 +179,7 @@ class Base extends BaseProcessor
         }
     }
 
-    public function sendFile(array $data)
+    public function sendFile($data)
     {
         return;
     }
