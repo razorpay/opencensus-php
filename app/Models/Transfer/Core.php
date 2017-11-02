@@ -44,7 +44,6 @@ class Core extends Base\Core
 
         $validator->validateInput('create', $input);
 
-
         return $this->repo->transaction(function () use ($input, $merchant, $validator)
         {
             $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
