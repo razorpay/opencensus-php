@@ -10,7 +10,7 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
 import { isBlank } from 'rzp/utils/rzp-utils';
 import { saveInvoice } from 'merchant/modules/invoices/list';
-import { required, phone, email } from 'rzp/utils/validators';
+import { required, phone, email, amount } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
@@ -28,20 +28,20 @@ function validate(values) {
       (isBlank(customer.contact) && isBlank(customer.email))
     ) {
       errors.customer = {
-        contact: 'Please provide contact or email',
+        contact: 'Please enter a contact or email',
       };
     }
   }
 
   if (values.sms_notify && (isBlank(customer) || isBlank(customer.contact))) {
     errors.customer = {
-      contact: 'Please provide contact',
+      contact: 'Please enter a number',
     };
   }
 
   if (values.email_notify && (isBlank(customer) || isBlank(customer.email))) {
     errors.customer = {
-      email: 'Please provide email',
+      email: 'Please enter an email',
     };
   }
 
@@ -76,8 +76,12 @@ export default class CreatePaymentLink extends Component {
     super(...arguments);
     this.state = {
       errors: null,
+      isEmailSelected: false,
+      isPhoneSelected: false,
     };
     this.setExpiryDate = this.setExpiryDate.bind(this);
+    this.handleCommChange = this.handleCommChange.bind(this);
+    this.handleCheckboxToggle = this.handleCheckboxToggle.bind(this);
   }
 
   componentWillMount() {
@@ -87,7 +91,9 @@ export default class CreatePaymentLink extends Component {
       this.props.initialize({
         ...this.props.invoice,
         ...(expireBy && {
-          expire_by_date: moment(expireBy * 1000).startOf('day').unix(),
+          expire_by_date: moment(expireBy * 1000)
+            .startOf('day')
+            .unix(),
           expire_by: expireBy * 1000,
         }),
       });
@@ -110,7 +116,10 @@ export default class CreatePaymentLink extends Component {
         // and add the diff to selected date
         expiryWithTime =
           date * 1000 +
-          (expiryWithTime - moment(expiryWithTime).startOf('day').valueOf());
+          (expiryWithTime -
+            moment(expiryWithTime)
+              .startOf('day')
+              .valueOf());
       } else {
         // if `expiryDateWithTime` is not set and somebody selects a date
         // expiry time should be the EOD of the selected date (11:59 PM)
@@ -124,10 +133,29 @@ export default class CreatePaymentLink extends Component {
 
     this.props.change('expire_by', expiryWithTime);
   }
+  //Set communication mode(SMS or EMAIL)
+  handleCommChange(value, mode) {
+    var commStr = mode === 'p' ? 'isPhoneSelected' : 'isEmailSelected';
+    this.setState({
+      ...this.state,
+      ...{ [commStr]: value.length ? true : false },
+    });
+  }
+
+  handleCheckboxToggle(e, mode) {
+    this.handleCommChange(e.target.checked ? 'ok' : '', mode);
+  }
 
   save = props => {
     const params = { ...props };
-
+    const { isEmailSelected, isPhoneSelected } = this.state;
+    let notificationMSG = 'Payment link created successfully.';
+    if (isEmailSelected && isPhoneSelected) {
+      notificationMSG += ' ' + 'Sending via Email and SMS.';
+    } else {
+      if (isEmailSelected) notificationMSG += ' ' + 'Sending via Email.';
+      else if (isPhoneSelected) notificationMSG += ' ' + 'Sending via SMS';
+    }
     if (params.expire_by) {
       if (
         typeof params.expire_by === 'number' ||
@@ -146,7 +174,7 @@ export default class CreatePaymentLink extends Component {
         this.props.closeModal();
         this.props.showNotification({
           type: 'success',
-          message: 'Payment link saved successfully',
+          message: notificationMSG,
         });
       })
       .catch(({ errors }) => {
@@ -180,7 +208,7 @@ export default class CreatePaymentLink extends Component {
         >
           <div class="modal-body">
             <Alert type="error" message={this.state.errors} />
-            {isNewForm &&
+            {isNewForm && (
               <div>
                 <div class="form-group">
                   <label class="col-md-3 control-label help-label label-required">
@@ -193,7 +221,10 @@ export default class CreatePaymentLink extends Component {
                       component={InputField}
                       class="form-control"
                       autoFocus={true}
-                      validate={required('Please provide the amount')}
+                      validate={[
+                        required('Please enter the amount'),
+                        amount('Please enter a valid amount (example 123.45)'),
+                      ]}
                       disabled={isEdit}
                     />
                   </div>
@@ -210,7 +241,7 @@ export default class CreatePaymentLink extends Component {
                       tagName="textarea"
                       type="textarea"
                       class="form-control"
-                      validate={required('Please provide the description')}
+                      validate={required('Please enter the summary')}
                       disabled={isEdit}
                     />
                   </div>
@@ -265,7 +296,7 @@ export default class CreatePaymentLink extends Component {
                       onDateChange={this.setExpiryDate}
                     />
                   </div>
-                  {this.props.expireBy &&
+                  {this.props.expireBy && (
                     <div class="col-md-4">
                       <Field
                         name="expire_by"
@@ -274,9 +305,11 @@ export default class CreatePaymentLink extends Component {
                         dateFormat={false}
                         timeFormat={true}
                       />
-                    </div>}
+                    </div>
+                  )}
                 </div>
-              </div>}
+              </div>
+            )}
 
             <div class="form-group customer">
               <label class="col-md-3 control-label">Customer</label>
@@ -285,9 +318,12 @@ export default class CreatePaymentLink extends Component {
                   name="customer[contact]"
                   component={InputField}
                   class="form-control"
-                  placeholder="Customer phone"
-                  validate={phone('Please provide valid contact number')}
+                  placeholder="Phone"
+                  validate={phone('Please enter a valid number')}
                   disabled={isEdit}
+                  onChange={e => {
+                    this.handleCommChange(e.target.value, 'p');
+                  }}
                 />
               </div>
 
@@ -296,14 +332,17 @@ export default class CreatePaymentLink extends Component {
                   name="customer[email]"
                   component={InputField}
                   class="form-control"
-                  placeholder="Customer email"
-                  validate={email('Please provide valid email')}
+                  placeholder="Email"
+                  validate={email('Please enter a valid email')}
                   disabled={isEdit}
+                  onChange={e => {
+                    this.handleCommChange(e.target.value, 'e');
+                  }}
                 />
               </div>
             </div>
 
-            {!isNewForm &&
+            {!isNewForm && (
               <div>
                 <div class="form-group">
                   <label class="col-md-3 control-label help-label">
@@ -315,7 +354,7 @@ export default class CreatePaymentLink extends Component {
                       name="line_items[0][name]"
                       component={InputField}
                       class="form-control"
-                      validate={required('Please provide product/service name')}
+                      validate={required('Please enter a product/service name')}
                       disabled={isEdit}
                     />
                   </div>
@@ -331,7 +370,7 @@ export default class CreatePaymentLink extends Component {
                       name="line_items[0][amount]"
                       component={InputField}
                       class="form-control"
-                      validate={required('Please provide the amount')}
+                      validate={required('Please enter the amount')}
                       disabled={isEdit}
                     />
                   </div>
@@ -349,7 +388,8 @@ export default class CreatePaymentLink extends Component {
                     />
                   </div>
                 </div>
-              </div>}
+              </div>
+            )}
 
             <div class="form-group">
               <label class="col-md-3 control-label">Notify Customer</label>
@@ -360,6 +400,8 @@ export default class CreatePaymentLink extends Component {
                     component="input"
                     type="checkbox"
                     disabled={isEdit}
+                    checked={this.state.isPhoneSelected}
+                    onClick={e => this.handleCheckboxToggle(e, 'p')}
                   />
                   SMS
                 </label>
@@ -369,6 +411,8 @@ export default class CreatePaymentLink extends Component {
                     component="input"
                     type="checkbox"
                     disabled={isEdit}
+                    checked={this.state.isEmailSelected}
+                    onChange={e => this.handleCheckboxToggle(e, 'e')}
                   />
                   Email
                 </label>
@@ -389,7 +433,7 @@ export default class CreatePaymentLink extends Component {
               </div>
             </div>
 
-            {isTestMode &&
+            {isTestMode && (
               <div class="row">
                 <div class="col-md-8 col-md-offset-3">
                   <div class="alert alert-sm alert-warning">
@@ -398,7 +442,8 @@ export default class CreatePaymentLink extends Component {
                     {/* Also, SMS will not be sent in test mode */}
                   </div>
                 </div>
-              </div>}
+              </div>
+            )}
           </div>
 
           <div class="modal-footer">
@@ -413,8 +458,16 @@ export default class CreatePaymentLink extends Component {
             <AsyncButton
               type="submit"
               class="btn btn-primary"
-              text="Save"
-              pendingText="Saving..."
+              text={
+                this.state.isEmailSelected || this.state.isPhoneSelected
+                  ? 'Send Payment Link'
+                  : 'Create Payment Link'
+              }
+              pendingText={
+                this.state.isEmailSelected || this.state.isPhoneSelected
+                  ? 'Sending...'
+                  : 'Creating...'
+              }
               onClick={handleSubmit(this.save)}
             />
           </div>
