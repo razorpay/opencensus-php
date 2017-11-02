@@ -248,7 +248,7 @@ class UpiMindgateSbiGatewayTest extends TestCase
 
         $sheet = Excel::load($data[Payment\Gateway::UPI_SBI][Constants::FILE])->all()->toArray();
 
-        $key = strtolower(RefundFile::REFUND_REQ_AMT);
+        $key = str_replace(' ', '_', strtolower(RefundFile::REFUND_REQ_AMT));
 
         $count = [
             500 => 0,

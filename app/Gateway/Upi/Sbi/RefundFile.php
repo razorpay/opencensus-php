@@ -9,14 +9,13 @@ use RZP\Models\FileStore;
 
 class RefundFile extends Base\RefundFile
 {
-    // TODO: Fix these constants
-    const PG_MERCHANT_ID  = 'pgMerchantId';
-    const REFUND_REQ_NO   = 'refundReqNo';
-    const TRANS_REF_NO    = 'transRefNo';
-    const CUSTOMER_REF_NO = 'customerRefNo';
-    const ORDER_NO        = 'orderNo';
-    const REFUND_REQ_AMT  = 'refundReqAmt';
-    const REFUND_REMARK   = 'refundRemark';
+    const PG_MERCHANT_ID  = 'PG MERCHANT ID';
+    const REFUND_REQ_NO   = 'REFUND REQ NO';
+    const TRANS_REF_NO    = 'TRANS REF NO.';
+    const CUSTOMER_REF_NO = 'CUSTOMER REF NO.';
+    const ORDER_NO        = 'ORDER NO';
+    const REFUND_REQ_AMT  = 'REFUND REQ AMT';
+    const REFUND_REMARK   = 'REFUND REMARK';
 
     /**
      * Headers of the CSV file
