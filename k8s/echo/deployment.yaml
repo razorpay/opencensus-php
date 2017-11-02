@@ -32,7 +32,7 @@ spec:
               name: api
               key: APP_MODE
         name: api
-        image: razorpay/api:f9c0ef066b4160aef36170111faac90ed1dc3357
+        image: razorpay/api:4ca47058c1c9ddb6a43da3d284f406340ecf3286
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
@@ -50,7 +50,7 @@ spec:
             httpHeaders:
               - name: Host
                 value: echo-api.razorpay.in
-          initialDelaySeconds: 600
+          initialDelaySeconds: 60
           periodSeconds: 120
         livenessProbe:
           httpGet:
@@ -59,7 +59,7 @@ spec:
             httpHeaders:
               - name: Host
                 value: echo-api.razorpay.in
-          initialDelaySeconds: 600
+          initialDelaySeconds: 60
           periodSeconds: 2
         lifecycle:
           preStop:
