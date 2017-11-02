@@ -57,7 +57,7 @@ class Axis extends Base
         return $gatewayPayment;
     }
 
-    protected function formatDataForFile()
+    protected function formatDataForFile($payments)
     {
         $mode = $this->app['basicauth']->getMode();
 
@@ -66,8 +66,6 @@ class Axis extends Base
         $gateway->setMode($mode);
 
         $merchantId = $gateway->getEmandateMerchantId();
-
-        $payments = $this->data;
 
         $rows = [];
 
