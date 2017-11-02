@@ -17,6 +17,7 @@ import { titleCase } from 'rzp/utils/rzp-utils';
  * Description:
  * Given the `payment` parameter exactly the same as
  * fetch payments api and `card` parameter as fetch card details api,
+ * `bankTransfer` as fetch bank transfer api,
  * the content will be shown according to the Design^
  */
 export default ({ payment, card = {}, bankTransfer = {} }) => {
@@ -94,7 +95,10 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
         <span>Virtual Account</span>
         <Definition allowEmptyTitle={true}>
           {null}
-          <span>Virtual account description</span>
+          {!!(
+            bankTransfer.virtual_account &&
+            bankTransfer.virtual_account.description
+          ) && <span>Virtual account description</span>}
           {isDetailsLoading ? (
             <PlaceholderLoader />
           ) : (

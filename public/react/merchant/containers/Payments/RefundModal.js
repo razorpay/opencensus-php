@@ -23,28 +23,36 @@ import {
 } from 'merchant/modules/payments/details';
 import { closeModal } from 'rzp/modules/modals';
 
-function amountValidation(value, allValues, props) {
-  debugger;
+const isPartialPayment = props => {
+  const refundableAmount = props.payment.amount - props.payment.amount_refunded,
+    amountEntered = rupeesToPaise(props.payable_amount);
 
-  value = value || '';
+  return amountEntered < refundableAmount;
+};
+
+const amountValidation = props => {
+  const value = props.payable_amount || '';
 
   if (!value) {
     return 'Amount is required';
   }
 
-  if (isNaN(value) || (value.split('.')[1] || []).length > 2) {
+  if (isNaN(value) || (value.toString().split('.')[1] || []).length > 2) {
     return 'Amount can only be a Number with atmost 2 decimal places.';
   }
   if (value < 0) {
     return `Amount can't be negative.`;
   }
-  if (value > (props.payment.amount - props.payment.amount_refunded) / 100) {
-    return `Amount can't be greater than the amount paid (${(props.payment
-      .amount -
-      props.payment.amount_refunded) /
-      100}).`;
+
+  const refundableAmount = props.payment.amount - props.payment.amount_refunded;
+
+  if (rupeesToPaise(value) > refundableAmount) {
+    return (
+      `Amount can't be greater than the total Refundable` +
+      ` Amount (${paiseToRupees(refundableAmount)}).`
+    );
   }
-}
+};
 
 const RefundType = ({ partial, isTitleCase = false }) => {
   let text = partial ? 'partial' : 'full';
@@ -112,12 +120,15 @@ export default class RefundModal extends Component {
   }
 
   save = props => {
+    const partial = isPartialPayment(this.props),
+      hasAmountErrors = amountValidation(this.props);
+
+    if (hasAmountErrors) {
+      return;
+    }
+
     // For partial refund, if reverse all is checked, we cannot reverse when there is more than 1 transfer on the payment.
-    if (
-      props.partial &&
-      props.reverse_all &&
-      this.props.transfers.items.length > 1
-    ) {
+    if (partial && props.reverse_all && this.props.transfers.items.length > 1) {
       var errorMsg =
         'Reversals cannot be automated when partially refunding a payment that has more than 1 transfer.' +
         ' Create reversals manually before attempting the refund.';
@@ -148,7 +159,7 @@ export default class RefundModal extends Component {
             reverse_all: props.reverse_all ? '1' : '0',
           };
 
-          if (!props.partial) {
+          if (!partial) {
             data.amount = payment.amount - payment.amount_refunded;
           }
 
@@ -183,9 +194,8 @@ export default class RefundModal extends Component {
   render() {
     const { handleSubmit, payment, transfers } = this.props;
 
-    const refundableAmount = payment.amount - payment.amount_refunded,
-      amountEntered = rupeesToPaise(this.props.payable_amount),
-      partial = amountEntered < refundableAmount;
+    const amountError = amountValidation(this.props),
+      partial = isPartialPayment(this.props);
 
     return (
       <div>
@@ -205,17 +215,22 @@ export default class RefundModal extends Component {
                   component={InputField}
                   class="form-control"
                   type="number"
-                  validate={amountValidation}
                   placeholder="Enter the refund amount"
                 />
               </div>
-              <small class="help-block">
-                This will be a{' '}
-                <b>
-                  <RefundType partial={partial} /> refund
-                </b>.
-                {!partial && <span>Change amount for a partial refund.</span>}
-              </small>
+              {!!amountError ? (
+                <div class="InputField__ErrorText text-danger">
+                  {amountError}
+                </div>
+              ) : (
+                <small class="help-block">
+                  This will be a{' '}
+                  <b>
+                    <RefundType partial={partial} /> refund
+                  </b>.
+                  {!partial && <span>Change amount for a partial refund.</span>}
+                </small>
+              )}
             </div>
             {transfers.items.length > 0 && (
               <div class="form-group">
