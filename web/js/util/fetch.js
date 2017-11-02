@@ -33,10 +33,10 @@ export function adminPost(data) {
   });
 }
 
-export function adminPut(data) {
+export function adminPut(data, appendInUrl) {
   data = parseParams(data);
   return fetch({
-    url: '/admin/generic',
+    url: appendInUrl ? appendInUrl : '/admin/generic',
     method: 'put',
     data,
   });

@@ -19,7 +19,7 @@ export default ({ props }) => {
         delete body.mode;
 
         return adminPost({
-          route_name: '"adj_add"',
+          route_name: 'adj_add',
           merchant_id: props.details.id,
           mode,
           body,
