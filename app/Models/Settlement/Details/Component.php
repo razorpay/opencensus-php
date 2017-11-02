@@ -11,7 +11,7 @@ class Component
     const PAYMENT       = 'payment';
     const ADJUSTMENT    = 'adjustment';
     const FEE           = 'fee';
-    const SERVICE_TAX   = 'service_tax';
+    const TAX           = 'tax';
     const FEE_CREDITS   = 'fee_credits';
     const TRANSFER      = 'transfer';
     const REVERSAL      = 'reversal';
@@ -33,7 +33,7 @@ class Component
             self::REFUND,
             self::ADJUSTMENT,
             self::PAYOUT,
-            self::SERVICE_TAX,
+            self::TAX,
             self::FEE,
             self::FEE_CREDITS,
             self::TRANSFER,

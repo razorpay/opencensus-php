@@ -1168,3 +1168,5 @@ UPDATE
         '3374679333',
         '3396093976');
 
+# Update settlement details
+UPDATE settlement_details set component = 'tax' where component = 'service_tax';
