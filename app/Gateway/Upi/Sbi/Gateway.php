@@ -12,7 +12,6 @@ use RZP\Gateway\Base\Entity;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Models\Payment\Refund;
-use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Exception\GatewayErrorException;
@@ -387,7 +386,7 @@ class Gateway extends Base\Gateway
      * @param null $type
      * @return array
      */
-    protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
+    protected function getStandardRequestArray($content = [], $method = 'post', $type = null): array
     {
         $requestMsg = $this->encrypt($content);
 

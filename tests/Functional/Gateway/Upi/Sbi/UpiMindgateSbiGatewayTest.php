@@ -14,6 +14,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Upi\Sbi\RefundFile;
+use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Upi\Sbi\ResponseFields;
 use RZP\Gateway\Upi\Base\Entity as Upi;
 use RZP\Gateway\Upi\Sbi\Status as SbiStatus;
@@ -94,7 +95,7 @@ class UpiMindgateSbiGatewayTest extends TestCase
      */
     public function testFailedCollect()
     {
-        $this->payment[Payment\Entity::VPA] = 'failedcollect@sbi';
+        $this->payment[Payment\Entity::VPA] = Constants::FAILED_VPA;
 
         $data = $this->testData[__FUNCTION__];
 
@@ -110,7 +111,7 @@ class UpiMindgateSbiGatewayTest extends TestCase
      */
     public function testCollectRejectedFailure()
     {
-        $this->payment[Payment\Entity::VPA] = 'rejectedcollect@sbi';
+        $this->payment[Payment\Entity::VPA] = Constants::REJECTED_VPA;
 
         $response = $this->doAuthPayment($this->payment);
 
@@ -220,14 +221,14 @@ class UpiMindgateSbiGatewayTest extends TestCase
 
         $refundAmount = [50000, 50000, 10000];
 
-        foreach ($payments['items'] as $count => $payment)
+        foreach ($payments[PublicCollection::ITEMS] as $count => $payment)
         {
             $this->refundPayment($payment[Payment\Entity::ID], $refundAmount[$count]);
         }
 
         $refunds = $this->getEntities(Entity::REFUND, [], true);
 
-        foreach ($refunds['items'] as $refund)
+        foreach ($refunds[PublicCollection::ITEMS] as $refund)
         {
             $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 5;
             $this->fixtures->edit(Entity::REFUND, $refund[Refund\Entity::ID], [Refund\Entity::CREATED_AT => $createdAt]);
@@ -242,10 +243,10 @@ class UpiMindgateSbiGatewayTest extends TestCase
 
         $this->assertArrayHasKey(Payment\Gateway::UPI_SBI, $data);
 
-        $this->assertEquals(3, $data[Payment\Gateway::UPI_SBI]['count']);
-        $this->assertTrue(file_exists($data[Payment\Gateway::UPI_SBI]['file']));
+        $this->assertEquals(3, $data[Payment\Gateway::UPI_SBI][Constants::COUNT]);
+        $this->assertTrue(file_exists($data[Payment\Gateway::UPI_SBI][Constants::FILE]));
 
-        $sheet = Excel::load($data[Payment\Gateway::UPI_SBI]['file'])->all()->toArray();
+        $sheet = Excel::load($data[Payment\Gateway::UPI_SBI][Constants::FILE])->all()->toArray();
 
         $key = strtolower(RefundFile::REFUND_REQ_AMT);
 
@@ -279,7 +280,7 @@ class UpiMindgateSbiGatewayTest extends TestCase
         );
     }
 
-    protected function mockVerifyFailed($status = 'P')
+    protected function mockVerifyFailed($status = SbiStatus::PENDING)
     {
         $this->mockServerContentFunction(
             function(& $content, $action = null) use ($status)
