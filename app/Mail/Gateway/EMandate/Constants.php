@@ -20,13 +20,13 @@ class Constants extends Base\Constants
     const HEADER_MAP = [
         Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => 'HDFC EMandate Register',
         Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => 'HDFC EMandate Debit',
-        Gateway::NETBANKING_AXIS . '_' . self::DEBIT        => 'AXIS EMandate Debit',
+        Gateway::NETBANKING_AXIS . '_' . self::DEBIT        => 'Axis EMandate Debit',
     ];
 
     const SUBJECT_MAP = [
         Gateway::NETBANKING_HDFC . '_' . self::REGISTER     => 'HDFC EMandate Register File for ',
         Gateway::NETBANKING_HDFC . '_' . self::DEBIT        => 'HDFC EMandate Debit File for ',
-        Gateway::NETBANKING_AXIS . '_' . self::DEBIT        => 'AXIS EMandate Debit File for ',
+        Gateway::NETBANKING_AXIS . '_' . self::DEBIT        => 'Axis EMandate Debit File for ',
     ];
 
     const MAILTAG_MAP = [

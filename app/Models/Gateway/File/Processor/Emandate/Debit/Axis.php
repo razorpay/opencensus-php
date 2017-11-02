@@ -80,15 +80,15 @@ class Axis extends Base
             $token = $payment->getGlobalOrLocalTokenEntity();
 
             $row = [
-                Headings::PAYMENT_ID => $paymentId,
-                Headings::DEBIT_DATE => $debitDate,
-                Headings::MERCHANT_ID => $merchantId,
-                Headings::TOKEN_ID => $token['id'],
-                Headings::CUSTOMER_NAME => $token->customer['name'],
-                Headings::DEBIT_ACCOUNT => $token->getAccountNumber(),
-                Headings::AMOUNT => $payment->getAmount(),
-                Headings::ADDITIONAL_INFO_1 => '',
-                Headings::ADDITIONAL_INFO_2 => '',
+                Headings::PAYMENT_ID                  => $paymentId,
+                Headings::DEBIT_DATE                  => $debitDate,
+                Headings::MERCHANT_ID                 => $merchantId,
+                Headings::TOKEN_ID                    => $token['id'],
+                Headings::CUSTOMER_NAME               => $token->customer['name'],
+                Headings::DEBIT_ACCOUNT               => $token->getAccountNumber(),
+                Headings::AMOUNT                      => $payment->getAmount(),
+                Headings::ADDITIONAL_INFO_1           => '',
+                Headings::ADDITIONAL_INFO_2           => '',
                 Headings::UNDERLYING_REFERENCE_NUMBER => '',
             ];
 
