@@ -144,7 +144,7 @@ trait SettlementTrait
             $setlGatewayFee += $txn->getGatewayFee();
             $setlApiFee     += $txn->getApiFee();
             $setlFee        += $txn->getFee();
-            $tax            += $txn->getServiceTax();
+            $tax            += $txn->getTax();
 
             $setlTxns->push($txn);
             $i++;

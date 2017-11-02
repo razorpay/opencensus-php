@@ -9,7 +9,6 @@ return [
         'merchant_id' => "10000000000000",
         'amount' => 50000,
         'fee' => 1000,
-        'service_tax' => 0,
         'tax' => 0,
         'pricing_rule_id' => null,
         'debit' => 0,

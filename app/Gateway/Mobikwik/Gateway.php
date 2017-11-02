@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Trace\TraceCode;
+use RZP\Models\Feature;
 
 class Gateway extends Base\Gateway
 {
@@ -400,14 +401,14 @@ class Gateway extends Base\Gateway
         $content = array(
             'amount'       => $input['payment']['amount'] / 100,
             'cell'         => $this->getFormattedContact($input['payment']['contact']),
-            'merchantname' => $input['merchant']->getFilteredDba(),
+            'merchantname' => $this->getMobikwikMerchantName($input['merchant']),
             'mid'          => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'      => MessageCode::OTP_GENERATE,
             'tokentype'    => '0',
         );
 
         $content['checksum'] = $this->getHashOfArray($content);
-        $content['merchantAlias'] = $input['merchant']->getFilteredDba();
+        $content['merchantAlias'] = $this->getMobikwikMerchantName($input['merchant']);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -444,7 +445,7 @@ class Gateway extends Base\Gateway
             'amount'        => (string) ($input['payment']['amount'] / 100),
             'cell'          => $this->getFormattedContact($input['payment']['contact']),
             'comment'       => 'Order id - ' . $input['payment']['public_id'],
-            'merchantname'  => $input['merchant']->getFilteredDba(),
+            'merchantname'  => $this->getMobikwikMerchantName($input['merchant']),
             'mid'           => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'       => MessageCode::OTP_SUBMIT,
             'orderid'       => $input['payment']['id'],
@@ -552,7 +553,7 @@ class Gateway extends Base\Gateway
             'amount'        => $input['payment']['amount'] / 100,
             'cell'          => $this->getFormattedContact($input['payment']['contact']),
             'orderid'       => $input['payment']['id'],
-            'merchantname'  => $input['merchant']->getFilteredDba(),
+            'merchantname'  => $this->getMobikwikMerchantName($input['merchant']),
             'mid'           => $input['terminal']['gateway_merchant_id'],
             'redirecturl'   => $input['callbackUrl'],
         );
@@ -564,7 +565,7 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
         $content['checksum'] = $this->getHashForAuthorizeRequest($content);
-        $content['merchantAlias'] = $input['merchant']->getFilteredDba();
+        $content['merchantAlias'] = $this->getMobikwikMerchantName($input['merchant']);
 
         return $content;
     }
@@ -651,6 +652,21 @@ class Gateway extends Base\Gateway
         }
 
         return $terminal['gateway_merchant_id'];
+    }
+
+    protected function getMobikwikMerchantName($merchant) : string
+    {
+        if ($this->isMobikwikOffersEnabled($merchant) === true)
+        {
+            return $merchant->getFilteredDba();
+        }
+
+        return 'Razorpay';
+    }
+
+    protected function isMobikwikOffersEnabled($merchant) : bool
+    {
+        return ($merchant->isFeatureEnabled(Feature\Constants::MOBIKWIK_OFFERS) === true);
     }
 
     protected function verifySecureHash(array $content)

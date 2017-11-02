@@ -154,7 +154,8 @@ class Entity extends Base\PublicEntity
 
     public function fundTransferAttempts()
     {
-        return $this->morphMany('RZP\Models\FundTransfer\Attempt\Entity', 'source');
+        return $this->morphMany('RZP\Models\FundTransfer\Attempt\Entity', 'source')
+                    ->orderBy(self::CREATED_AT);
     }
 
     public function batchFundTransfer()
@@ -264,11 +265,6 @@ class Entity extends Base\PublicEntity
     }
 
     public function getFees()
-    {
-        return 0;
-    }
-
-    public function getServiceTax()
     {
         return 0;
     }

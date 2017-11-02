@@ -15,6 +15,11 @@ class Core extends Base\Core
 {
     protected $mutex;
 
+    const NRE_FAILURE_MESSAGES = [
+        'NEFT-RETURN Credit to NRI Account',
+        'IMPS-RTN-NRE ACCOUNT',
+    ];
+
     public function __construct()
     {
         parent::__construct();
@@ -174,7 +179,7 @@ class Core extends Base\Core
 
         foreach ($refunds as $refund)
         {
-            if ($refund->isStatusFailed() === false)
+            if ($this->skipRefund($refund) === true)
             {
                 $this->trace->info(
                     TraceCode::REFUND_RETRY_SKIPPED,
@@ -213,6 +218,24 @@ class Core extends Base\Core
             'failure'       => $failure,
             'status'        => $status,
         ];
+    }
+
+    protected function skipRefund(PaymentRefund\Entity $refund)
+    {
+        if ($refund->isStatusFailed() === false)
+        {
+            return true;
+        }
+
+        $latestAttempt = $refund->fundTransferAttempts->last();
+
+        if (($latestAttempt !== null) and
+            (in_array($latestAttempt->getRemarks(), self::NRE_FAILURE_MESSAGES, true)))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**

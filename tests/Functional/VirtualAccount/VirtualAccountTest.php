@@ -6,12 +6,17 @@ use Closure;
 use Mockery;
 use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
+/**
+ * @group dns-sensitive
+ */
 class VirtualAccountTest extends TestCase
 {
+    use MocksDnsTrait;
     use EntityActionTrait;
     use VirtualAccountTrait;
     use RequestResponseFlowTrait;
@@ -31,6 +36,8 @@ class VirtualAccountTest extends TestCase
         $this->ba->privateAuth();
 
         $this->customer = $this->getEntityById('customer', 'cust_100000customer');
+
+        $this->setupMockDns();
     }
 
     public function testCreateVirtualAccount()

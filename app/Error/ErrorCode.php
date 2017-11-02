@@ -490,6 +490,8 @@ class ErrorCode
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                                    = 'BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS';
     const BAD_REQUEST_GATEWAY_CANNOT_TOPUP                                          = 'BAD_REQUEST_GATEWAY_CANNOT_TOPUP';
 
+    const BAD_REQUEST_GATEWAY_FILE_ANOTHER_OPERATION_IN_PROGRESS                    = 'BAD_REQUEST_GATEWAY_FILE_ANOTHER_OPERATION_IN_PROGRESS';
+
     const BAD_REQUEST_KEY_EXPIRED                                                   = 'BAD_REQUEST_KEY_EXPIRED';
     const BAD_REQUEST_KEY_EXPIRING_SOON                                             = 'BAD_REQUEST_KEY_EXPIRING_SOON';
     const BAD_REQUEST_KEY_OF_DEMO_ACCOUNT                                           = 'BAD_REQUEST_KEY_OF_DEMO_ACCOUNT';
@@ -535,7 +537,6 @@ class ErrorCode
     const SERVER_ERROR_INVALID_RESPONSE                                             = 'SERVER_ERROR_INVALID_RESPONSE';
     const SERVER_ERROR_TOKEN_INVALID_RECURRING_STATUS                               = 'SERVER_ERROR_TOKEN_INVALID_RECURRING_STATUS';
     const SERVER_ERROR_ES_OPERATION_ERRORED                                         = 'SERVER_ERROR_ES_OPERATION_ERRORED';
-    const SERVER_ERROR_GATEWAY_FILE_GENERATION_ERROR                                = 'SERVER_ERROR_GATEWAY_FILE_GENERATION_ERROR';
     const SERVER_ERROR_SUBSCRIPTION_NOT_PENDING                                     = 'SERVER_ERROR_SUBSCRIPTION_NOT_PENDING';
     const SERVER_ERROR_TOO_MANY_SUBSCRIPTION_INVOICES_FOUND                         = 'SERVER_ERROR_TOO_MANY_SUBSCRIPTION_INVOICES_FOUND';
     const SERVER_ERROR_SUBSCRIPTION_INVOICE_BAD_STATUS                              = 'SERVER_ERROR_SUBSCRIPTION_INVOICE_BAD_STATUS';

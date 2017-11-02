@@ -111,7 +111,6 @@ class TransactionTest extends TestCase
 
         $testData = $this->testData['testTransactionCreateForOldPayment'];
         $testData['fee'] = $txn['fee'];
-        $testData['service_tax'] = $txn['service_tax'];
         $testData['tax'] = $txn['tax'];
 
         $this->assertArraySelectiveEquals($testData, $txn);

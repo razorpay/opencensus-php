@@ -5262,16 +5262,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "2.0.4",
+            "version": "2.0.6",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "15c22a89e221c034eb7d7405010a2a9d1b2d65ee"
+                "reference": "f8193bf83378007a4a8d8a41464b29678752885e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/15c22a89e221c034eb7d7405010a2a9d1b2d65ee",
-                "reference": "15c22a89e221c034eb7d7405010a2a9d1b2d65ee",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/f8193bf83378007a4a8d8a41464b29678752885e",
+                "reference": "f8193bf83378007a4a8d8a41464b29678752885e",
                 "shasum": ""
             },
             "require": {

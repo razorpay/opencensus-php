@@ -55,7 +55,7 @@ class SettlementTest extends TestCase
                 $this->assertEquals(2000, $txn->fee);
                 $this->assertEquals(8000, $txn->credit);
                 $this->assertEquals(0, $txn->debit);
-                $this->assertEquals(0, $txn->service_tax);
+                $this->assertEquals(0, $txn->tax);
             }
 
             $this->assertEquals(16000, $merchant->balance->getBalance());
@@ -754,7 +754,7 @@ class SettlementTest extends TestCase
                 'amount'        => 5000,
                 'status'        => 'created',
                 'fees'          => 0,
-                'service_tax'   => 0,
+                'tax'           => 0,
                 'utr'           => null,
                 'settled_on'    => null
             ]
