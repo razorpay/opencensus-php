@@ -52,6 +52,7 @@ class Constants
     const DISABLE_RUPAY                 = 'disable_rupay';
     const BLOCK_INTERNATIONAL_RECURRING = 'block_intl_recurring';
     const BHARAT_QR                     = 'bharat_qr';
+    const MOBIKWIK_OFFERS               = 'mobikwik_offers';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -102,6 +103,7 @@ class Constants
         self::DISABLE_RUPAY                 => true,
         self::BLOCK_INTERNATIONAL_RECURRING => false,
         self::BHARAT_QR                     => true,
+        self::MOBIKWIK_OFFERS               => true,
     ];
 
     // Keys used in the feature on-boarding workflow
@@ -140,24 +142,24 @@ class Constants
      */
     public static $visibleFeaturesMap = [
         self::NOFLASHCHECKOUT  => [
-            'feature'      => self::NOFLASHCHECKOUT,
-            'display_name' => 'No Flash Checkout',
-            'documentation'=> ''
+            'feature'       => self::NOFLASHCHECKOUT,
+            'display_name'  => 'No Flash Checkout',
+            'documentation' => ''
         ],
         self::MARKETPLACE      => [
-            'feature'      => self::MARKETPLACE,
-            'display_name' => 'Route',
-            'documentation'=> 'route'
+            'feature'       => self::MARKETPLACE,
+            'display_name'  => 'Route',
+            'documentation' => 'route'
         ],
         self::SUBSCRIPTIONS    => [
-            'feature'      => self::SUBSCRIPTIONS,
-            'display_name' => 'Subscriptions',
-            'documentation'=> 'subscriptions'
+            'feature'       => self::SUBSCRIPTIONS,
+            'display_name'  => 'Subscriptions',
+            'documentation' => 'subscriptions'
         ],
         self::VIRTUAL_ACCOUNTS => [
-            'feature'      => self::VIRTUAL_ACCOUNTS,
-            'display_name' => 'Smart Collect',
-            'documentation'=> 'smart-collect'
+            'feature'       => self::VIRTUAL_ACCOUNTS,
+            'display_name'  => 'Smart Collect',
+            'documentation' => 'smart-collect'
         ],
     ];
 

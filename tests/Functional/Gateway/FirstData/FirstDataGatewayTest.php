@@ -4,14 +4,26 @@ namespace RZP\Tests\Functional\Gateway\FirstData;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class FirstDataGatewayTest extends TestCase
 {
     use PaymentTrait;
+
+    /**
+     * Instance of a terminal from the fixtures
+     * @var Terminal
+     */
+    protected $sharedTerminal;
+
+    /**
+     * The payment array
+     * @var array
+     */
+    protected $payment;
 
     public function setUp()
     {

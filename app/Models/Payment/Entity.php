@@ -1180,8 +1180,7 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        // return $this->getAttribute(self::INTERNATIONAL);
-        return $this->card->isInternational();
+        return $this->getAttribute(self::INTERNATIONAL);
     }
 
     public function isOpenWalletPayment()

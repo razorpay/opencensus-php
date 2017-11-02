@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\File;
 use RZP\Base;
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\File\Constants;
@@ -35,6 +36,24 @@ class Validator extends Base\Validator
         Entity::SUB_TYPE,
         self::TIME_RANGE,
     ];
+
+    /**
+     * CHecks if the gateway_file entity can be processed based on the below conditions
+     * - Entity in acknowledged state can't be processed further
+     * - If the processing flag is set to true then it means it is under processing
+     *   and cannot be processed
+     *
+     * @throws BadRequestException
+     */
+    public function validateIfProcessable()
+    {
+        if (($this->entity->isAcknowledged() === true) or
+            ($this->entity->isProcessing() === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE);
+        }
+    }
 
     protected function validateType(string $attribute, string $type)
     {
