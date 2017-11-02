@@ -11,11 +11,12 @@ function toggleChecked(e) {
   sib.checked = !sib.checked;
 }
 
-export default function Field({ label, onChange, value, ...props }) {
+export default function Field({ label, onChange, value, infoMsg, ...props }) {
   return (
     <div class="field">
       <label onClick={focusInput}>{label}</label>
       <input {...props} value={value} onChange={onChange} />
+      <div class="info">{infoMsg}</div>
     </div>
   );
 }
