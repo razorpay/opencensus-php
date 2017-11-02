@@ -680,6 +680,11 @@ class FeaturesTest extends TestCase
         }
     }
 
+    public function testPostOnboardingResponses()
+    {
+        $this->postOnboardingResponses();
+    }
+
     public function updateMarketplaceOnboardingResponse()
     {
         $testData = $this->testData[__FUNCTION__];

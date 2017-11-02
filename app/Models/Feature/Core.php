@@ -415,9 +415,8 @@ class Core extends Base\Core
      *
      * @param   array               $input
      * @param   Merchant\Entity     $merchant
-     * @param   string              $action
      */
-    protected function processFiles(array & $input, Merchant\Entity $merchant, string $action)
+    protected function processFiles(array & $input, Merchant\Entity $merchant)
     {
         $featureName = Constants::MARKETPLACE;
 
