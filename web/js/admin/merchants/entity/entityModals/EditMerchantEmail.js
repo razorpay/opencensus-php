@@ -4,7 +4,7 @@ import BaseModal from 'ui/BaseModal';
 import Form from 'ui/Form';
 import Field from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
-import { notifyError, confirm, notifySuccess, closeModal } from 'common/modal';
+import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
 import { adminPut } from 'util/fetch';
 
