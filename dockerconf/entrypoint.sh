@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -euo pipefail
 # wait for db to be provisioned
 sleep 30
 
@@ -8,7 +8,7 @@ echo  "$(date) Fix permissions"
 cd /app/ && chmod 777 -R storage
 
 # Copy config
-if [[ "${APP_CONTEXT}" == "dev" ]]; then
+if [[ "${APP_MODE}" == "dev" ]]; then
   echo "$(date) Configuring App"
   cp dockerconf/api.docker.conf /etc/apache2/conf.d/api.conf && \
   cp environment/.env.sample environment/.env.docker && \
@@ -41,40 +41,49 @@ if [[ "${APP_CONTEXT}" == "dev" ]]; then
   echo 'memory_limit = 128M' | sed -E 's/memory_limit\s*=\s*\d*M/memory_limit = 3048M/g' /etc/php7/php.ini > /tmp/php.ini
   mv /tmp/php.ini /etc/php7/php.ini
 else
-  # copy apache2 config
-  cp dockerconf/api.docker.conf /etc/apache2/conf.d/api.conf
+  ALOHOMORA_BIN=$(which alohomora)
+  echo "casting alohomora - vault"
+  $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app api "environment/.env.vault.j2"
+  echo "casting alohomora - env.php"
+  $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app api "environment/env.php.j2"
+  echo "casting alohomora - apache"
+  sed -i "s|APACHE_HOST|$HOSTNAME|g" dockerconf/api.apache.conf.j2
+  $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app api "dockerconf/api.apache.conf.j2"
 
-  # change log path
-  ACCESS_LOG_PATH="CustomLog /var/log/apache2/api.razorpay.in.access.log custom_combined"
-  sed -i "s|CustomLog|${ACCESS_LOG_PATH}|g" /etc/apache2/conf.d/api.conf
-
-  # change domain reference
-  if [[ "${APP_CONTEXT}" != "prod" ]]; then
-    sed -i "s|api.razorpay.in|${APP_CONTEXT}-api.razorpay.com|g" /etc/apache2/conf.d/api.conf
-  elif [[ "${APP_CONTEXT}" == "prod" ]]; then
-    sed -i "s|api.razorpay.in|api.razorpay.com|g" /etc/apache2/conf.d/api.conf
-  fi
-
-  # use alohomora to generate vault and env.php
-  # TODO: APP_CONTEXT would be an arbitrary string when deployed in k8s
-  $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_CONTEXT --app $APP_NAME "environment/.env.vault.j2"
-  $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_CONTEXT --app $APP_NAME "environment/env.php.j2"
+  echo "copying apache config"
+  cp dockerconf/api.apache.conf /etc/apache2/conf.d/api.conf
 fi
 
 # DB Migrate
 echo  "$(date) DB Migrate"
-echo "$(date) Seeding live database"
-cd /app/ && \
-php artisan rzp:dbr --install --seed
-echo "$(date) Seeding Test database"
-APP_ENV=testing_docker php artisan rzp:dbr --install
-echo "$(date) Seeding Auth Live database"
-php artisan migrate --database auth --path vendor/razorpay/oauth/database/migrations
-echo "$(date) Seeding Auth Test database"
-APP_ENV=testing_docker php artisan migrate --database auth --path vendor/razorpay/oauth/database/migrations
+if [[ "$APP_MODE" == "dev" ]]; then
+  echo "$(date) Seeding live database"
+  cd /app/ && \
+  php artisan rzp:dbr --install --seed
+  echo "$(date) Seeding Test database"
+  APP_ENV=testing_docker php artisan rzp:dbr --install
+  echo "$(date) Seeding Auth Live database"
+  php artisan migrate --database auth --path vendor/razorpay/oauth/database/migrations
+  echo "$(date) Seeding Auth Test database"
+  APP_ENV=testing_docker php artisan migrate --database auth --path vendor/razorpay/oauth/database/migrations
+else
+  php artisan migrate --force && php artisan migrate --database=test --force
+  # Restart all queue worker processes
+  echo "Queue Restart"
+  php artisan queue:restart
+
+  # Clear and Re-cache Routes
+  echo "Route Cache"
+  php artisan route:cache
+fi
 
 echo "$(date) Starting Apache"
 export PATH=$PATH:/app/:/app/vendor/bin/
+
+if [[ -n "${GIT_COMMIT_HASH-}" ]]; then
+    echo "GIT_COMMIT_HASH=${GIT_COMMIT_HASH}" >> /app/.env.vault
+    echo "${GIT_COMMIT_HASH}" > /app/public/commit.txt
+fi
 
 # start httpd
 echo "$(date) Apache"
