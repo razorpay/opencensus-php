@@ -239,7 +239,7 @@ class Gateway extends Base\Gateway
         // Initially assume gatewaySuccess is false
         $verify->gatewaySuccess = false;
 
-        if (Status::isStatusCodeSuccess($verify->verifyResponseContent) === true)
+        if (Status::isSuccess($verify->verifyResponseContent[ResponseFields::STATUS]) === true)
         {
             $verify->gatewaySuccess = true;
         }
