@@ -43,7 +43,7 @@ class Gateway extends Base\Gateway
     {
         parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->setBankingTypeAndDomainType();
+        $this->setBankingTypeAndDomainType($input);
     }
 
     public function authorize(array $input)
@@ -507,9 +507,9 @@ class Gateway extends Base\Gateway
         return Status::getAuthSuccessStatus();
     }
 
-    protected function setBankingTypeAndDomainType()
+    protected function setBankingTypeAndDomainType($input)
     {
-        if ($this->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        if ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
         {
             $this->setBankingType(self::EMANDATE);
         }
