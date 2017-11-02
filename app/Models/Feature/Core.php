@@ -289,10 +289,14 @@ class Core extends Base\Core
         if (($status === MerchantDetail::APPROVED) and
             ($merchant->isFeatureEnabled($featureName) === false))
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_NOT_ASSIGNED,
-                $featureName,
-                [$featureName, $status]);
+            // Add the feature
+            $params = [
+                Entity::ENTITY_TYPE => Constants::MERCHANT,
+                Entity::ENTITY_ID   => $merchantId,
+                Entity::NAME        => $featureName
+            ];
+
+            $this->create($params);
         }
 
         $this->repo->merchant_detail->updateFeatureActivationStatus(
