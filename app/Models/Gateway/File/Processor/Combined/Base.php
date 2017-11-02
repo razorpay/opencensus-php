@@ -64,7 +64,7 @@ class Base extends BaseProcessor
         }
     }
 
-    public function generateData(PublicCollection $entities): array
+    public function generateData(PublicCollection $entities)
     {
         $refundFileProcessor = $this->getFileProcessor(Type::REFUND);
 
@@ -83,7 +83,7 @@ class Base extends BaseProcessor
         return $data;
     }
 
-    public function createFile(array $data)
+    public function createFile($data)
     {
         if (isset($data['refunds']) === true)
         {
@@ -100,7 +100,7 @@ class Base extends BaseProcessor
         }
     }
 
-    public function sendFile(array $data)
+    public function sendFile($data)
     {
         try
         {

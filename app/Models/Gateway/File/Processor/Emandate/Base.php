@@ -28,7 +28,7 @@ abstract class Base extends BaseProcessor
         }
     }
 
-    public function createFile(array $data)
+    public function createFile($data)
     {
         // Don't process further if file is already generated
         if ($this->isFileGenerated() === true)
@@ -77,7 +77,7 @@ abstract class Base extends BaseProcessor
         }
     }
 
-    public function sendFile(array $data)
+    public function sendFile($data)
     {
         try
         {
@@ -129,7 +129,7 @@ abstract class Base extends BaseProcessor
         return ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
     }
 
-    protected function formatDataForMail(array $data)
+    protected function formatDataForMail($data)
     {
         $file = $this->gatewayFile
                      ->files()
