@@ -8,12 +8,11 @@ use RZP\Models\FileStore;
 use RZP\Models\Payment\Gateway;
 
 use Mail;
+use Config;
 
 class RefundFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'BOB_Netbanking_Refunds';
-
-    const POOLING_ACCOUNT = '04170200001544';
 
     public function generate($input)
     {
@@ -47,8 +46,6 @@ class RefundFile extends Base\RefundFile
     {
         $totalAmount = 0;
 
-        $count = 0;
-
         $data = [];
 
         foreach ($input['data'] as $row)
@@ -65,7 +62,7 @@ class RefundFile extends Base\RefundFile
         array_unshift(
             $data,
             $this->getDataForRow(
-                self::POOLING_ACCOUNT,
+                Config::get('gateways.netbanking_corporation.pooling_account_number'),
                 $totalAmount,
                 Constants::REFUND_PARTICULARS_HEAD,
                 Constants::REFUND_DEBIT
