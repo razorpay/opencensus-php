@@ -131,6 +131,7 @@ class TransactionFilter extends Terminal\Filter
 
                 if (($merchantWhitelisted === false) and
                     ($payment->isRecurring() === false) and
+                    ($payment->isInternational() === false) and
                     ($terminal->isDirectForMerchant($merchant) === false))
                 {
                     return false;

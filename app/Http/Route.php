@@ -1340,7 +1340,6 @@ final class Route
         'merchant_fetch_bank_account'           => Permission::VIEW_MERCHANT_BANK_ACCOUNTS,
         'merchant_edit'                         => '*', // permission handled in code
         'adj_add'                               => Permission::ADD_MERCHANT_ADJUSTMENT,
-        'adj_add_fee'                           => Permission::ADD_MERCHANT_ADJUSTMENT,
         'merchant_add_bank_account'             => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'merchant_activate'                     => Permission::EDIT_ACTIVATE_MERCHANT,
         'admin_fetch_terminal_by_id'            => '*',
@@ -1390,7 +1389,7 @@ final class Route
         'settings_delete'                       => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'                    => '*',
         'merchant_activation_files'             => '*',
-        'dispute_reason_create'                 => '*',
+        'dispute_reason_create'                 => Permission::CREATE_DISPUTE_REASON,
         'user_confirm_by_data'                  => '*',
         'onboarding_features_fetch_submissions' => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_update_status'     => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
@@ -1548,7 +1547,6 @@ final class Route
      */
     public static $throttledRoutes = [
         'dummy_route',
-        'payment_verify_multiple',
     ];
 
     /**

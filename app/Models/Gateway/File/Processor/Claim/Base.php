@@ -113,7 +113,7 @@ class Base extends BaseProcessor
             $col['payment'] = $claim;
             $col['terminal'] = $claim->terminal->toArray();
 
-            $this->data[] = $col;
+            $data[] = $col;
         }
 
         $paymentIds = $claims->pluck('id')->toArray();
@@ -124,7 +124,7 @@ class Base extends BaseProcessor
 
         $gatewayEntities = $gatewayEntities->keyBy('payment_id');
 
-        $this->data = array_map(function($row) use ($gatewayEntities)
+        $data = array_map(function($row) use ($gatewayEntities)
         {
             $paymentId = $row['payment']['id'];
 
@@ -134,12 +134,12 @@ class Base extends BaseProcessor
             }
 
             return $row;
-        }, $this->data);
+        }, $data);
 
-        return $this->data;
+        return $data;
     }
 
-    public function createFile()
+    public function createFile(array $data)
     {
         // Don't process further if file is already generated
         if ($this->isFileGenerated() === true)
@@ -149,7 +149,7 @@ class Base extends BaseProcessor
 
         try
         {
-            $fileData = $this->formatDataForFile();
+            $fileData = $this->formatDataForFile($data);
 
             $fileName = $this->getFileToWriteNameWithoutExt();
 
@@ -171,20 +171,15 @@ class Base extends BaseProcessor
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException(
-                            $e,
-                            Trace::INFO,
-                            TraceCode::GATEWAY_FILE_ERROR_GENERATING_FILE,
-                            [
-                                'id' => $this->gatewayFile->getId()
-                            ]);
-
             throw new GatewayFileException(
-                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE);
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id' => $this->gatewayFile->getId()
+                ]);
         }
     }
 
-    public function sendFile()
+    public function sendFile(array $data)
     {
         return;
     }

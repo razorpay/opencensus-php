@@ -222,6 +222,27 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createOldFirstDataTerminal()
+    {
+        $termId = \RZP\Models\Terminal\Shared::FIRST_DATA_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'first_data',
+            'gateway_acquirer'          => 'icic',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'really_old',
+            'gateway_merchant_id2'      => 'really_old2',
+            'gateway_access_code'       => 'access_code',
+            'gateway_terminal_password' => 'terminal_password',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedBladeTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::BLADE_RAZORPAY_TERMINAL;
@@ -519,10 +540,10 @@ class Terminal extends Base
                 Type::NON_RECURRING => '1',
                 Type::RECURRING_3DS => '1'
             ],
-            'gateway_merchant_id'       => 'random',
+            'gateway_merchant_id'       => '3ds_gateway_merchant_id',
         ];
 
-        $this->createEntityInTestAndLive('terminal', $attributes);
+        $terminal1 = $this->createEntityInTestAndLive('terminal', $attributes);
 
         $attributes = [
             'id'                        => 'FDRcrgTrmlN3DS',
@@ -534,10 +555,13 @@ class Terminal extends Base
                 Type::RECURRING_NON_3DS => '1'
             ],
             'mode'                      => Mode::PURCHASE,
-            'gateway_merchant_id'       => 'random',
+            'gateway_merchant_id'       => 'non_3ds_gateway_merchant_id',
+            'gateway_merchant_id2'      => '3ds_gateway_merchant_id',
         ];
 
-        $this->createEntityInTestAndLive('terminal', $attributes);
+        $terminal2 = $this->createEntityInTestAndLive('terminal', $attributes);
+
+        return [$terminal1, $terminal2];
     }
 
     public function createSharedMigsRecurringTerminals()

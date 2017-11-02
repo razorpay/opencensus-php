@@ -18,11 +18,11 @@ class Icici extends Base
     const GATEWAY_CODE           = IFSC::ICIC;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
-    protected function formatDataForFile()
+    protected function formatDataForFile(array $data)
     {
         $formattedData = [];
 
-        foreach ($this->data as $index => $row)
+        foreach ($data as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment']['created_at'], Timezone::IST)->format('jS F Y');
@@ -44,7 +44,7 @@ class Icici extends Base
         return $formattedData;
     }
 
-    protected function formatDataForMail()
+    protected function formatDataForMail(array $data)
     {
         $file = $this->gatewayFile
                      ->files()
@@ -53,7 +53,7 @@ class Icici extends Base
 
         $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
 
-        $totalAmount = array_reduce($this->data, function ($carry, $item)
+        $totalAmount = array_reduce($data, function ($carry, $item)
         {
             $carry += ($item['refund']['amount'] / 100);
 
@@ -65,7 +65,7 @@ class Icici extends Base
         $mailData = [
             'file_name'  => $file->getLocation(),
             'signed_url' => $signedUrl,
-            'count'      => count($this->data),
+            'count'      => count($data),
             'amount'     => number_format($totalAmount, 2, '.', ''),
             'date'       => $today
         ];

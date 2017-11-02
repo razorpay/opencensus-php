@@ -81,23 +81,7 @@ return [
             ],
         ],
         'response' => [
-            'content' => [
-                'all_features'      => [
-                    'dummy',
-                    'webhooks',
-                    'aggregator',
-                    'tokens',
-                    's2swallet',
-                    's2supi',
-                    's2saeps',
-                    'noflashcheckout',
-                    'recurring',
-                    's2s',
-                    'invoice',
-                    'nozeropricing',
-                    'reverse',
-                ]
-            ]
+            'content' => []
         ]
     ],
 
@@ -642,5 +626,67 @@ return [
                 'status' => 'approved'
             ]
         ]
-    ]
+    ],
+
+    'testFetchMerchantFeatures' => [
+        'request'  => [
+            'url'    => '/features/10000000000000',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'assigned_features' => [],
+                'all_features' => [
+                    'dummy',
+                    'webhooks',
+                    'aggregator',
+                    'tokens',
+                    's2swallet',
+                    's2supi',
+                    's2saeps',
+                    'noflashcheckout',
+                    'recurring',
+                    's2s',
+                    'invoice',
+                    'nozeropricing',
+                    'reverse',
+                    'broking_report',
+                    'dsp_report',
+                    'rpp_report',
+                    'aggregator_report',
+                    'payment_email_fetch',
+                    'created_flow',
+                    'payout',
+                    'openwallet',
+                    'marketplace',
+                    'email_optional',
+                    'contact_optional',
+                    'subscriptions',
+                    'zoho',
+                    'expose_downtimes',
+                    'payment_failure_email',
+                    'virtual_accounts',
+                    'invoice_partial_payments',
+                    'hide_downtimes',
+                    'old_credits_flow',
+                    'charge_at_will',
+                    'e_mandate',
+                    'emi_merchant_subvention',
+                    'fss_risk_udf',
+                    'rule_filter',
+                    'tpv',
+                    'irctc_report',
+                    'disable_maestro',
+                    'disable_rupay',
+                    'block_intl_recurring',
+                    'bharat_qr',
+                    'mobikwik_offers',
+                ]
+            ]
+        ]
+    ],
 ];
