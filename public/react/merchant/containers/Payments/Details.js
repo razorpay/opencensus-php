@@ -185,6 +185,7 @@ export default class PaymentDetailsContainer extends Component {
       component: (
         <RefundModal payment={payment} onRefund={this.onPaymentRefund} />
       ),
+      size: 'small',
     });
   };
 

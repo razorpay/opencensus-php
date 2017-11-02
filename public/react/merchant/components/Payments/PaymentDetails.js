@@ -132,10 +132,14 @@ export default props => {
                 </EntityDetailRow>
 
                 <EntityDetailRow label="Customer">
-                  <Definition>
-                    {payment.email}
-                    {payment.contact}
-                  </Definition>
+                  {!payment.customer_id ? (
+                    <span>No customer linked</span>
+                  ) : (
+                    <Definition>
+                      {payment.email}
+                      {payment.contact}
+                    </Definition>
+                  )}
                 </EntityDetailRow>
 
                 <EntityDetailRow label="Total Fee">
