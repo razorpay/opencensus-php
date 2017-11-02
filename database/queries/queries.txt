@@ -2580,3 +2580,21 @@ ALTER TABLE virtual_accounts
 
 ALTER TABLE gateway_files
     ADD COLUMN processing TINYINT(1) NOT NULL DEFAULT 0 AFTER status;
+
+ALTER TABLE payments
+    DROP COLUMN service_tax;
+
+ALTER TABLE transactions
+    DROP COLUMN service_tax;
+
+ALTER TABLE settlements
+    DROP COLUMN service_tax;
+
+ALTER TABLE payouts
+    DROP COLUMN service_tax;
+
+ALTER TABLE transfers
+    DROP COLUMN service_tax;
+
+ALTER TABLE daily_settlements
+    DROP COLUMN service_tax;
