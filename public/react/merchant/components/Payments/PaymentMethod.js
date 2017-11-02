@@ -13,6 +13,7 @@ import { titleCase } from 'rzp/utils/rzp-utils';
  * Inputs:
  * @param {Object} payment
  * @param {Object} card
+ * @param {Object} bankTransfer
  *
  * Description:
  * Given the `payment` parameter exactly the same as
