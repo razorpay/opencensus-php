@@ -1124,3 +1124,47 @@ UPDATE fund_transfer_attempts
     remarks='CMS REVERSAL IFSC NOT FOUND IN MASTER',
     bank_status_code='C'
     WHERE id='8sw8WeiK3RYdes';
+
+# BEFORE #5703 IS DEPLOYED
+#
+# UPDATE
+#   terminals t2 INNER JOIN terminals t1
+#   ON
+#     t1.merchant_id=t2.merchant_id AND
+#     (t1.type=3 OR t1.type=2) AND
+#     t2.type=4 AND
+#     t1.gateway=t2.gateway AND
+#     t1.gateway='first_data'
+#   SET t2.gateway_merchant_id2=t1.gateway_merchant_id;
+#
+# ^This is the query that is to be run, but since only 7 terminals are
+# going to be affected, we selected first, then updated individually.
+
+UPDATE terminals SET gateway_merchant_id2='3300225673'
+    WHERE gateway_merchant_id='3300204071' AND type=4 AND deleted_at = NULL;
+UPDATE terminals SET gateway_merchant_id2='3300230288'
+    WHERE gateway_merchant_id='3300230378' AND type=4 AND deleted_at = NULL;
+UPDATE terminals SET gateway_merchant_id2='3300230223'
+    WHERE gateway_merchant_id='3300230224' AND type=4 AND deleted_at = NULL;
+UPDATE terminals SET gateway_merchant_id2='3300230668'
+    WHERE gateway_merchant_id='3300230669' AND type=4 AND deleted_at = NULL;
+UPDATE terminals SET gateway_merchant_id2='3387000778'
+    WHERE gateway_merchant_id='3387000801' AND type=4 AND deleted_at = NULL;
+UPDATE terminals SET gateway_merchant_id2='3300231186'
+    WHERE gateway_merchant_id='3300231185' AND type=4 AND deleted_at = NULL;
+UPDATE terminals SET gateway_merchant_id2='3387001866'
+    WHERE gateway_merchant_id='3387001867' AND type=4 AND deleted_at = NULL;
+
+# AFTER #5703 IS DEPLOYED
+UPDATE
+  terminals
+  SET gateway_merchant_id2 = NULL
+  WHERE
+    gateway='first_data' AND
+    gateway_merchant_id IN (
+        '3374679283',
+        '3374679291',
+        '3374679309',
+        '3374679333',
+        '3396093976');
+

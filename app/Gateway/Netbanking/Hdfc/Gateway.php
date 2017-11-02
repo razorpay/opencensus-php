@@ -87,6 +87,10 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            $input['gateway']);
+
         $this->validateCallbackChecksum($input);
 
         $this->assertPaymentId($input['payment']['id'], $input['gateway']['MerchRefNo']);
@@ -99,10 +103,6 @@ class Gateway extends Base\Gateway
 
         // Unset date because format of date returned is different than what we sent
         unset($input['gateway']['Date']);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            $input['gateway']);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
@@ -151,9 +151,16 @@ class Gateway extends Base\Gateway
 
     protected function validateCallbackChecksum($input)
     {
-        $expectedChecksum = $this->getCallbackChecksum($input['gateway']);
+        $checksum = $input['gateway']['CheckSum'] ?? null;
 
-        $checksum = $input['gateway']['CheckSum'];
+        // For an emandate/recurring payment, HDFC doesn't send back checksum
+        if (($checksum === null) and
+            ($this->isFirstRecurringPayment($input) === true))
+        {
+            return;
+        }
+
+        $expectedChecksum = $this->getCallbackChecksum($input['gateway']);
 
         if ($checksum !== $expectedChecksum)
         {
@@ -192,7 +199,7 @@ class Gateway extends Base\Gateway
             }
         }
 
-        if ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        if ($this->isFirstRecurringPayment($input) === true)
         {
             //
             // For e mandate registration we have to
@@ -207,6 +214,11 @@ class Gateway extends Base\Gateway
         $data['CheckSum'] = $this->generateHash($data);
 
         return $data;
+    }
+
+    protected function isFirstRecurringPayment(array $input): bool
+    {
+        return ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL);
     }
 
     protected function sendPaymentVerifyRequest($verify)

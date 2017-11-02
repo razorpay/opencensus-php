@@ -23,16 +23,8 @@ class Base extends Mailable
 
     protected function addSender()
     {
-        $email = Constants::MAIL_ADDRESSES[Constants::REPORTS];
-
-        $header = Constants::HEADERS[Constants::REPORTS];
-
-        if ($this->isMerchantEmail === false)
-        {
-            $email = Constants::MAIL_ADDRESSES[Constants::CARE];
-
-            $header = Constants::HEADERS[Constants::CARE];
-        }
+        $email  = $this->getSenderEmail();
+        $header = $this->getSenderHeader();
 
         $this->from($email, $header);
 
@@ -131,5 +123,19 @@ class Base extends Mailable
     public function isMerchantEmail()
     {
         return $this->isMerchantEmail;
+    }
+
+    protected function getSenderEmail(): string
+    {
+        return ($this->isMerchantEmail() === true) ?
+                    Constants::MAIL_ADDRESSES[Constants::CARE] :
+                    Constants::MAIL_ADDRESSES[Constants::REPORTS];
+    }
+
+    protected function getSenderHeader(): string
+    {
+        return ($this->isMerchantEmail() === true) ?
+                    Constants::HEADERS[Constants::CARE] :
+                    Constants::HEADERS[Constants::REPORTS];
     }
 }
