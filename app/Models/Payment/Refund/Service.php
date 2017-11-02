@@ -758,11 +758,11 @@ class Service extends Base\Service
         return $summary;
     }
 
-    public function retry($id)
+    public function retry(string $id, array $input)
     {
         $refund = $this->repo->refund->findByPublicId($id);
 
-        $refundStatus = $this->getNewProcessor($refund->merchant)->processRefundRetry($refund);
+        $refundStatus = $this->getNewProcessor($refund->merchant)->processRefundRetry($refund, $input);
 
         return [
             'refund_id' => $id,
