@@ -103,7 +103,7 @@
             },
           };
 
-          request = $http.post('/admin/generic', data);
+          request = $http.put('/admin/generic', data);
 
           request
             .success(function(data) {

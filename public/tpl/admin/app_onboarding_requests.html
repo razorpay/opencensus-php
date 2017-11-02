@@ -1,7 +1,7 @@
 <div ng-controller="OnboardingRequestsCtrl">
   <div class="bg-light lter b-b wrapper-md">
     <h1 class="m-n font-thin h3">
-      Onboarding Requests
+      Public Features
       <spinner class="inline"></spinner>
     </h1>
   </div>
@@ -174,9 +174,13 @@
         <label class="col-lg-3">Signed Vendor Agreement</label>
         <div class="col-lg-9">
           <div ng-if="submission.editVal.responses.vendor_agreement">
-            <p>{{ submission.editVal.responses.vendor_agreement }}</p>
+            <a href="{{submission.editVal.responses.vendor_agreement}}"
+               target="_blank"
+               class="text-primary">
+              <i class="fa fa-external-link" aria-hidden="true"></i> Vendor Agreement
+            </a>
             <a href="javascript:;"
-               class="text-primary"
+               class="text-warning"
                ng-click="onAgreementChange(submission)">Change</a>
           </div>
 
