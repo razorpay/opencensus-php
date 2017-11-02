@@ -7,18 +7,19 @@ use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
 use RZP\Mail\Invoice\Expired as InvoiceExpiredMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
 use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
 
-use RZP\Models\Base\UniqueIdEntity;
-
 class InvoiceTest extends TestCase
 {
     use InvoiceTestTrait;
     use PaymentTrait;
+    use MocksDnsTrait;
 
     const TEST_INV_ID = 'inv_1000000invoice';
 
@@ -39,6 +40,8 @@ class InvoiceTest extends TestCase
         $this->fixtures->create('user', ['id' => '1000000000user']);
 
         $this->ba->privateAuth();
+
+        $this->setupMockDns();
     }
 
     // ------------------------------------------------------------

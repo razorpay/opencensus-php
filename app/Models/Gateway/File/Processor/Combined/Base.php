@@ -72,39 +72,39 @@ class Base extends BaseProcessor
 
         if ($entities->get('refunds')->isNotEmpty() === true)
         {
-            $this->data['refunds'] = $refundFileProcessor->generateData($entities->get('refunds'));
+            $data['refunds'] = $refundFileProcessor->generateData($entities->get('refunds'));
         }
 
         if ($entities->get('claims')->isNotEmpty() === true)
         {
-            $this->data['claims'] = $claimFileProcessor->generateData($entities->get('claims'));
+            $data['claims'] = $claimFileProcessor->generateData($entities->get('claims'));
         }
 
-        return $this->data;
+        return $data;
     }
 
-    public function createFile()
+    public function createFile(array $data)
     {
-        if (isset($this->data['refunds']) === true)
+        if (isset($data['refunds']) === true)
         {
             $refundFileProcessor = $this->getFileProcessor(Type::REFUND);
 
-            $refundFileProcessor->createFile();
+            $refundFileProcessor->createFile($data['refunds']);
         }
 
-        if (isset($this->data['claims']) === true)
+        if (isset($data['claims']) === true)
         {
             $claimFileProcessor = $this->getFileProcessor(Type::CLAIM);
 
-            $claimFileProcessor->createFile();
+            $claimFileProcessor->createFile($data['claims']);
         }
     }
 
-    public function sendFile()
+    public function sendFile(array $data)
     {
         try
         {
-            $mailData = $this->formatDataForMail();
+            $mailData = $this->formatDataForMail($data);
 
             $dailyFileMail = new DailyFileMail($mailData);
 

@@ -28,7 +28,7 @@ abstract class Base extends BaseProcessor
         }
     }
 
-    public function createFile()
+    public function createFile(array $data)
     {
         // Don't process further if file is already generated
         if ($this->isFileGenerated() === true)
@@ -38,7 +38,7 @@ abstract class Base extends BaseProcessor
 
         try
         {
-            $fileData = $this->formatDataForFile();
+            $fileData = $this->formatDataForFile($data);
 
             $fileName = $this->getFileToWriteNameWithoutExt();
 
@@ -77,13 +77,13 @@ abstract class Base extends BaseProcessor
         }
     }
 
-    public function sendFile()
+    public function sendFile(array $data)
     {
         try
         {
             $recipients = $this->gatewayFile->getRecipients();
 
-            $mailData = $this->formatDataForMail();
+            $mailData = $this->formatDataForMail($data);
 
             $type = static::GATEWAY . '_' . static::STEP;
             $mailable = new EMandatMail($mailData, $type, $recipients);
@@ -129,7 +129,7 @@ abstract class Base extends BaseProcessor
         return ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
     }
 
-    protected function formatDataForMail()
+    protected function formatDataForMail(array $data)
     {
         $file = $this->gatewayFile
                      ->files()
