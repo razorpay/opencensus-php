@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Merchant\Detail;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
@@ -64,5 +63,47 @@ class Repository extends Base\Repository
                     ->skip($skip)
                     ->take($count)
                     ->get();
+    }
+
+    public function getFeatureOnboardingRequestsByStatus(string $status): Base\PublicCollection
+    {
+        return $this->newQueryWithConnection(Mode::LIVE)
+                    ->select(
+                        Entity::MERCHANT_ID,
+                        Entity::CONTACT_NAME,
+                        Entity::MARKETPLACE_ACTIVATION_STATUS,
+                        Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
+                        Entity::SUBSCRIPTIONS_ACTIVATION_STATUS)
+                    ->where(Entity::MARKETPLACE_ACTIVATION_STATUS, $status)
+                    ->orWhere(Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS, $status)
+                    ->orWhere(Entity::SUBSCRIPTIONS_ACTIVATION_STATUS, $status)
+                    ->get();
+    }
+
+    public function updateFeatureActivationStatus(
+        Merchant\Entity $merchant,
+        string $featureName,
+        string $status)
+    {
+        $merchantDetail = $merchant->merchantDetail;
+
+        $setFeatureActivationStatus = camel_case('set_' . $featureName . '_activation_status');
+
+        $merchantDetail->$setFeatureActivationStatus($status);
+
+        $this->saveOrFailTestAndLive($merchantDetail);
+    }
+
+    public function getFeatureActivationStatus(
+        Merchant\Entity $merchant,
+        string $featureName)
+    {
+        $merchantDetail = $merchant->merchantDetail;
+
+        $getFeatureActivationStatus = camel_case('get_' . $featureName . '_activation_status');
+
+        $status = $merchantDetail->$getFeatureActivationStatus();
+
+        return $status;
     }
 }

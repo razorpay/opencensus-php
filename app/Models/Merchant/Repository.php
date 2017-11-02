@@ -560,4 +560,12 @@ class Repository extends Base\Repository
         $model->__unset(Entity::ADMINS);
         $model->__unset(Entity::MERCHANT_DETAIL);
     }
+
+    public function getMerchantUserMapping(string $merchantId, string $userId)
+    {
+        return $this->find($merchantId)
+                    ->users()
+                    ->where('id', $userId)
+                    ->first();
+    }
 }

@@ -29,6 +29,6 @@ class Gateway extends Npci\Gateway
 
     protected function makeUrl(string $method, string $txnId)
     {
-        return "http://api.razorpay.dev/v1/upi_npci/$method/1.0/urn:txnid:$txnId";
+        return "http://api.razorpay.in/v1/upi_npci/$method/1.0/urn:txnid:$txnId";
     }
 }

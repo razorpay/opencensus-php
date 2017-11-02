@@ -7,18 +7,19 @@ use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
 use RZP\Mail\Invoice\Expired as InvoiceExpiredMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
 use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
 
-use RZP\Models\Base\UniqueIdEntity;
-
 class InvoiceTest extends TestCase
 {
     use InvoiceTestTrait;
     use PaymentTrait;
+    use MocksDnsTrait;
 
     const TEST_INV_ID = 'inv_1000000invoice';
 
@@ -39,6 +40,8 @@ class InvoiceTest extends TestCase
         $this->fixtures->create('user', ['id' => '1000000000user']);
 
         $this->ba->privateAuth();
+
+        $this->setupMockDns();
     }
 
     // ------------------------------------------------------------
@@ -2202,7 +2205,7 @@ class InvoiceTest extends TestCase
         $this->assertEquals($order['id'], $response['order_id']);
         $this->assertEquals($order['payment_capture'], true);
         $this->assertEquals($invoice['id'], 'inv_' . $lineItem['entity_id']);
-        $this->assertContains('http://dwarf.razorpay.dev/', $invoice['short_url']);
+        $this->assertContains('http://dwarf.razorpay.in/', $invoice['short_url']);
         $this->assertEquals('10000000000000', $invoice['merchant_id']);
     }
 

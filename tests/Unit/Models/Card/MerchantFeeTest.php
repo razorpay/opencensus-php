@@ -720,6 +720,8 @@ class MerchantFeeTest extends TestCase
 
             $payment = new Payment\Entity($paymentArray);
 
+            $payment->setAttribute(Payment\Entity::INTERNATIONAL, false);
+
             $payment->card = (new Card\Entity)->build($this->card);
 
             $payment->card->setNetwork('Visa');

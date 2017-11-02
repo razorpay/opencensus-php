@@ -552,6 +552,12 @@ class Notify
     {
         $merchantTransactionReportEmail = $this->merchant->getTransactionReportEmail();
 
+        // Do not email linked accounts
+        if ($this->merchant->isLinkedAccount() === true)
+        {
+            return false;
+        }
+
         return (($this->isEnabled() === true) and
                 (empty($merchantTransactionReportEmail) === false));
     }

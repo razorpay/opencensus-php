@@ -2,29 +2,26 @@
 
 namespace RZP\Models\Merchant;
 
-use Config;
 use ApiResponse;
-
-use RZP\Models\Base;
-use RZP\Models\User;
-use RZP\Models\Batch;
+use Config;
 use RZP\Constants\Mode;
-use RZP\Models\Pricing;
-use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
-use RZP\Jobs\IrctcBatch;
-use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
-use RZP\Jobs\MerchantSync;
-use RZP\Models\Transaction;
-use RZP\Models\BankAccount;
-use RZP\Models\Admin\Action;
+use RZP\Exception\BadRequestException;
 use RZP\Jobs\DispatchRouter;
+use RZP\Jobs\MerchantSync;
+use RZP\Models\Admin\Action;
 use RZP\Models\Admin\AdminLead;
-use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
+use RZP\Models\BankAccount;
+use RZP\Models\Base;
+use RZP\Models\Batch;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Pricing;
 use RZP\Models\Schedule\Task as ScheduleTask;
-
+use RZP\Models\Transaction;
+use RZP\Models\User;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -69,6 +66,7 @@ class Core extends Base\Core
         if (isset($input['email']) === true)
         {
             $email['email'] = $input['email'];
+
             (new Validator)->validateInput('unique_email', $email);
         }
         else
@@ -76,7 +74,11 @@ class Core extends Base\Core
             $input['email'] = $aggregatorMerchant->getEmail();
         }
 
-        $subMerchant = (new Entity)->build($input);
+        $merchantData['name'] = $input['name'] ?? null;
+
+        (new Validator)->validateInput('edit_name', $merchantData);
+
+        $subMerchant = (new Merchant\Entity)->build($input);
 
         $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
@@ -205,7 +207,9 @@ class Core extends Base\Core
      *
      * @param \RZP\Models\Merchant\Entity $merchant
      * @param array $input
+     *
      * @return \RZP\Models\Merchant\Entity
+     * @throws BadRequestException
      */
     public function editEmail($merchant, $input)
     {
@@ -215,6 +219,20 @@ class Core extends Base\Core
                 'old_email' => $merchant->getEmail(),
                 'new_email' => $input['email']
             ]);
+
+        $parentId = $merchant->getReferrer();
+
+        if (empty($parentId) === false)
+        {
+            $parent = $this->repo->merchant->find($parentId);
+
+            if ((empty($parent) === false) and
+                (strtolower($merchant->getEmail()) === strtolower($parent->getEmail())))
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
+                    Merchant\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
+            }
+        }
 
         $merchant->edit($input, 'editEmail');
 
@@ -453,12 +471,11 @@ class Core extends Base\Core
             $batchType =  $type . '_' . $key;
 
             $params = [
-                Batch\Entity::MERCHANT_ID => $merchant->getId(),
                 Batch\Entity::FILE        => $file,
                 Batch\Entity::TYPE        => $batchType
             ];
 
-            $batch = (new Batch\Core)->create($params);
+            $batch = (new Batch\Core)->create($params, $merchant);
 
             $batches[$batchType] = $batch->getId();
         }
@@ -470,5 +487,69 @@ class Core extends Base\Core
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
 
         return $batches;
+    }
+
+    /**
+     * This handles 3 possible cases when changing user email.
+     * 1. There exists a team member with the new email
+     *    Here, we swap the roles of the team member(manager) with new email and the original owner
+     * 2. There exists a user(not team member) with the new email
+     *    Here, we change the original owner to manager and then add the user with new email as owner
+     * 3. The new email is unique so far
+     *    Here, we just change the email of the original user(owner).
+     *
+     * @param $merchant
+     * @param $originalEmail
+     * @param $newEmail
+     *
+     * @return bool
+     */
+    public function changeMerchantUsersEmail(Entity $merchant, string $originalEmail, string $newEmail)
+    {
+        $merchantUsersCount = $merchant->users()->count();
+
+        if ($merchantUsersCount === 0)
+        {
+            return false;
+        }
+
+        $teamUser = $merchant->users()->where('email', $newEmail)->first();
+
+        $existingUser = $this->repo->user->getUserFromEmail($newEmail);
+
+        $selfUser = $this->repo->user->getUserFromEmail($originalEmail);
+
+        $oldOwner = $merchant->primaryOwner();
+
+        if ((empty($oldOwner) === false) and ((empty($teamUser) === false) or (empty($existingUser) === false)))
+        {
+            // Assign Manager role to the old owner.
+            (new User\Core)->detachAndAttachMerchantUser($oldOwner, $merchant->getId(), 'manager');
+        }
+
+        if (empty($teamUser) === false)
+        {
+            // Assign Owner role to the team user.
+            (new User\Core)->detachAndAttachMerchantUser($teamUser, $merchant->getId(), 'owner');
+        }
+        elseif (empty($existingUser) === false)
+        {
+            // Assign owner to existing user.
+            $userMerchantMappingInputData = [
+                'action'      => 'attach',
+                'role'        => 'owner',
+                'merchant_id' => $merchant->getId(),
+            ];
+
+            (new User\Core)->updateUserMerchantMapping($existingUser, $userMerchantMappingInputData);
+        }
+        elseif (empty($selfUser) === false)
+        {
+            $userData = [
+                'email' => $newEmail,
+            ];
+
+            (new User\Core)->edit($selfUser, $userData);
+        }
     }
 }

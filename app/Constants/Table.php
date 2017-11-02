@@ -25,6 +25,7 @@ class Table
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const REPORT                = 'reports';
+    const QR_CODE               = 'qr_code';
     const BALANCE               = 'balance';
     const PRICING               = 'pricing';
     const UPI_VPA               = 'upi_vpa';

@@ -294,8 +294,9 @@ return [
     ],
 
     'netbanking_corporation' => [
-        'test_merchant_id'  => env('NETBANKING_CORPORATION_GATEWAY_TEST_MERCHANT_ID'),
-        'test_hash_secret'  => env('NETBANKING_CORPORATION_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id'       => env('NETBANKING_CORPORATION_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'       => env('NETBANKING_CORPORATION_GATEWAY_TEST_HASH_SECRET'),
+        'pooling_account_number' => env('KOTAK_NODAL_ACCOUNT_NUMBER'),
     ],
 
     'netbanking_kotak' => [
@@ -364,6 +365,12 @@ return [
     ],
 
     'sharp' => [
+    ],
+
+    'bharat_qr' => [
+        'visa_acquirer_code'       => env('BHARAT_QR_VISA_ACQUIRER_CODE'),
+        'mastercard_acquirer_code' => env('BHARAT_QR_MASTERCARD_ACQUIRER_CODE'),
+        'identifier_padding'       => env('BHARAT_QR_IDENTIFIER_PADDING'),
     ],
 
     'proxy_enabled' => env('PROXY_ENABLED'),

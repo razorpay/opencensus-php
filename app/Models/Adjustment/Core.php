@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Adjustment;
 
-use DB;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Dispute;
@@ -26,55 +25,61 @@ class Core extends Base\Core
                 'merchant' => $merchant->getId()
             ]);
 
-        $adj = (new Adjustment\Entity)->build($input);
-
-        // Workflow
-        $this->app['workflow']
-             ->setEntityAndId($adj->getEntity(), $merchant->getId())
-             ->handle((new \stdClass), $adj);
-
-        return $this->transaction([$this, 'createAdjInTransaction'], $adj, $merchant);
-    }
-
-    public function createFeesAdjustment(array $input, Merchant\Entity $merchant): Entity
-    {
-        $this->trace->info(
-            TraceCode::FEE_ADJUSTMENT_CREATE_REQUEST,
-            [
-                'input' => $input,
-                'merchant' => $merchant->getId()
-            ]);
-
-        (new Validator)->validateInput('fee_adjustment', $input);
-
         // Create input for adjustment
         $adjInput = $input;
 
-        $amount = $adjInput[Entity::AMOUNT] ?? 0;
+        // Create input for Merchant Invoice
+        $merchantInvoiceInput = $input;
 
-        $tax =  $adjInput[MerchantInvoice\Entity::TAX] ?? 0;
+        // Checking validations on input array
+        (new Validator)->validateAdjusmentCreateInput($input);
 
-        $adjInput[Entity::AMOUNT] = $amount + $tax;
+        $amount = $input[Entity::AMOUNT] ?? 0;
+
+        $tax =  $input[MerchantInvoice\Entity::TAX] ?? 0;
+
+        $fees = $input['fees'] ?? 0;
+
+        $adjInput[Entity::AMOUNT] = $amount + $tax + $fees;
+
+        unset($adjInput['fees']);
+
+        unset($adjInput[MerchantInvoice\Entity::TAX]);
 
         $adj = (new Adjustment\Entity)->build($adjInput);
 
-        // Workflow
         $this->app['workflow']
              ->setEntityAndId($adj->getEntity(), $merchant->getId())
              ->handle((new \stdClass), $adj);
 
-        // 1. Create adjustment
-        // 2. Create Invoice entity for adjustment
-        $adjustment = $this->repo->transaction(function() use ($adj, $merchant, $input)
+        if (isset($input[Entity::AMOUNT]) === true)
         {
-            $adjustment = $this->createAdjInTransaction($adj, $merchant);
+            // Creating adjustment only, since no invoice record is reqd
+            return $this->transaction([$this, 'createAdjInTransaction'], $adj, $merchant);
+        }
+        else
+        {
+            // Creating merchant invoice entries too along with adj
+            // because of adjustment entries (fees and tax)
+            $merchantInvoiceInput[MerchantInvoice\Entity::TAX] = $tax;
 
-            (new Merchant\Invoice\Core)->createAdjustmentInvoiceEntity($adj, $input);
+            $merchantInvoiceInput[MerchantInvoice\Entity::AMOUNT] = $fees;
+
+            unset($merchantInvoiceInput['fees']);
+
+            $adjustment = $this->repo->transaction(function () use ($adj, $merchant, $merchantInvoiceInput)
+            {
+                // 1. Create adjustment
+                // 2. Create Invoice entity for adjustment
+                $adjustment = $this->createAdjInTransaction($adj, $merchant);
+
+                (new Merchant\Invoice\Core)->createAdjustmentInvoiceEntity($adj, $merchantInvoiceInput);
+
+                return $adjustment;
+            });
 
             return $adjustment;
-        });
-
-        return $adjustment;
+        }
     }
 
     public function createDisputeAdjustment(array $input, Dispute\Entity $dispute): Entity

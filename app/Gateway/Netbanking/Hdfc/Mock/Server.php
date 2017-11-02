@@ -32,7 +32,15 @@ class Server extends Base\Mock\Server
 
         $this->content($content);
 
-        $content['CheckSum'] = $this->getCallbackChecksum($content);
+        // Send checksum only if it's not an emandate/recurring payment
+        if (isset($input['ClientAccNum']) === true)
+        {
+            unset($content['CheckSum']);
+        }
+        else
+        {
+            $content['CheckSum'] = $this->getCallbackChecksum($content);
+        }
 
         $url = $input['DynamicUrl'];
         $url .= '?' . http_build_query($content);
