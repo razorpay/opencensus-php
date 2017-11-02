@@ -33,17 +33,17 @@ abstract class Base extends EMandate\Base
         return $payments;
     }
 
-    public function generateData(PublicCollection $payments)
+    public function generateData(PublicCollection $payments): array
     {
         try
         {
             // Set $this->data for later use
-            $this->data = $payments;
+            $data = $payments;
 
             // Create gateway entities
             $this->createGatewayEntities($payments);
 
-            return $this->data;
+            return $data;
         }
         catch (\Throwable $e)
         {
