@@ -3,7 +3,12 @@ import Form from 'ui/Form';
 import Field, { SelectField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 
-export default function InviteForm({ fields, onInvite }) {
+export default function InviteForm({
+  fields,
+  merchant_type,
+  promo_code,
+  onInvite,
+}) {
   return (
     <div>
       <header>
@@ -54,7 +59,12 @@ export default function InviteForm({ fields, onInvite }) {
         )}
 
         {fields.indexOf('promo_code') > -1 && (
-          <Field label="Promo Code" name="promo_code" required />
+          <Field
+            label="Promo Code"
+            name="promo_code"
+            required
+            defaultValue={promo_code}
+          />
         )}
 
         {fields.indexOf('lg_code') > -1 && (
@@ -70,7 +80,12 @@ export default function InviteForm({ fields, onInvite }) {
         )}
 
         {fields.indexOf('merchant_type') > -1 && (
-          <SelectField label="Type of Merchant" name="merchant_type" required>
+          <SelectField
+            label="Type of Merchant"
+            name="merchant_type"
+            defaultValue={merchant_type}
+            required
+          >
             <option value="stp">STP</option>
             <option value="nstp">NSTP</option>
           </SelectField>

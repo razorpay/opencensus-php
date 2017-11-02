@@ -16,7 +16,6 @@ class AddInvites extends Component {
   state = {
     pending: true,
     fields: null,
-    merchant: null,
   };
 
   componentWillMount() {
@@ -26,22 +25,10 @@ class AddInvites extends Component {
         entity: 'admin_lead',
       },
     }).then(response => {
-      let newState = {
-        merchant: {},
-      };
+      let newState = {};
 
       if (response) {
         newState.fields = response.fields;
-        newState.fields.forEach(field => {
-          //Add default values else null
-          if (field === 'promo_code') {
-            newState.merchant[field] = 'RP_StartUP';
-          } else if (field === 'merchant_type') {
-            newState.merchant[field] = 'stp';
-          } else {
-            newState.merchant[field] = null;
-          }
-        });
       }
 
       newState.pending = false;
@@ -59,7 +46,6 @@ class AddInvites extends Component {
       },
       data: { body },
     }).then(response => {
-      console.log(response);
       if (response.data.success) {
         notifySuccess(
           `Success! Invitation has been sent to ${body.contact_email}`
@@ -77,7 +63,13 @@ class AddInvites extends Component {
     }
 
     return (
-      <InviteForm fields={this.state.fields} onInvite={this.handleInvite} />
+      //Default values as props
+      <InviteForm
+        fields={this.state.fields}
+        onInvite={this.handleInvite}
+        merchant_type="stp"
+        promo_code="RP_StartUP"
+      />
     );
   }
 }
