@@ -780,7 +780,7 @@ trait Refund
      *
      * @return string
      */
-    public function processRefundRetry(Payment\Refund\Entity $refund, array $input)
+    public function processRefundRetry(Payment\Refund\Entity $refund, array $input = [])
     {
         $payment = $refund->payment;
 
