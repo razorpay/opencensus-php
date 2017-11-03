@@ -56,9 +56,15 @@ export function serialize(form) {
   return Array.prototype.reduce.call(
     form.querySelectorAll('[name]'),
     function(data, el) {
-      var { name, value } = el;
+      let { name, value } = el;
       if (el.type === 'checkbox') {
         value = el.checked ? '1' : '0';
+      }
+      if (el.type === 'select-multiple') {
+        value = [];
+        const selectedOptions = Array.from(el.selectedOptions);
+
+        selectedOptions.forEach(option => value.push(option.value));
       }
       if (value) {
         // item[foo] → item.foo
