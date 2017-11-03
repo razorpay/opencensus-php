@@ -16,6 +16,8 @@ WORKDIR /app
 
 RUN apk --update add python py-pip openssl ca-certificates && \
     apk --update add --virtual build-dependencies python-dev libffi-dev openssl-dev build-base  && \
+    wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 && \
+    chmod +x /usr/local/bin/dumb-init && \
     pip install razorpay.alohomora==0.2 && \
     apk del build-dependencies          && \
     rm -rf /var/cache/apk/*
@@ -25,4 +27,4 @@ RUN composer config -g github-oauth.github.com ${GIT_TOKEN} && \
 
 EXPOSE 80
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
