@@ -10,6 +10,11 @@ use RZP\Models\FundTransfer\Base as NodalBase;
 
 class NodalAccount extends NodalBase\NodalAccount
 {
+    //TODO change Url on basis of mode
+    const BEN_ADD_URL = '/test/sb/rbl/api/v1.5/na-beneficiary/registration?';
+
+    const FUND_TRANSFER_URL = '/sb/rbl/api/v1/payment_bid/pay';
+
     protected $headers = [];
 
     protected $options = [];
@@ -50,8 +55,7 @@ class NodalAccount extends NodalBase\NodalAccount
     {
         $content = $this->getAddBeneficiaryData($input);
 
-        // TODO fix this
-        $url = $this->baseUrl . 'test/sb/rbl/api/v1.5/na-beneficiary/registration?' . $this->clientCreds;
+        $url = $this->baseUrl . self::BEN_ADD_URL . $this->clientCreds;
 
         return $this->getResponse($content, $url);
     }
@@ -60,8 +64,7 @@ class NodalAccount extends NodalBase\NodalAccount
     {
         $content = $this->getTransferData($amount);
 
-        // TODO fix this
-        $url = $this->baseUrl . 'sb/rbl/api/v1/payment_bid/pay' . $this->clientCreds;
+        $url = $this->baseUrl . self::FUND_TRANSFER_URL . $this->clientCreds;
 
         return $this->getResponse($content, $url);
     }
@@ -98,13 +101,11 @@ class NodalAccount extends NodalBase\NodalAccount
 
         if (file_exists($certFile) === false)
         {
-            $certFileHandler = fopen($certFile, 'w');
+            $cert = $this->config['client_certificate'];
 
-            $encodedCert = $this->config['client_certificate'];
+            $cert = str_replace('\n', PHP_EOL, $cert);
 
-            $key = base64_decode($encodedCert);
-
-            fwrite($certFileHandler, $key);
+            file_put_contents($certFile, $cert);
         }
 
         return $certFile;
@@ -118,13 +119,11 @@ class NodalAccount extends NodalBase\NodalAccount
 
         if (file_exists($certFile) === false)
         {
-            $certFileHandler = fopen($certFile, 'w');
+            $key = $this->config['client_certificate_key'];
 
-            $encodedCert = $this->config['client_certificate_key'];
+            $key = str_replace('\n', PHP_EOL, $key);
 
-            $key = base64_decode($encodedCert);
-
-            fwrite($certFileHandler, $key);
+            file_put_contents($certFile, $key);
         }
 
         return $certFile;
@@ -148,7 +147,7 @@ class NodalAccount extends NodalBase\NodalAccount
     protected function getResponse(array $content, string $url)
     {
         $response = Requests::post(
-            $this->url,
+            $url,
             $this->headers,
             json_encode($content),
             $this->options);
@@ -201,27 +200,27 @@ class NodalAccount extends NodalBase\NodalAccount
                     'Approver_ID' => 'A001',
                 ],
                 'Body' => [
-                    'Ben_IFSC'           => $input['ben_ifsc'],
-                    'Ben_Acct_No'        => $input['ben_acct_no'],
-                    'Ben_Name'           => $input['ben_name'],
-                    'Ben_Address'        => $input['ben_address'],
+                    'Ben_IFSC'           => $input[RequestConstants::BEN_IFSC],
+                    'Ben_Acct_No'        => $input[RequestConstants::BEN_ACCT_NO],
+                    'Ben_Name'           => $input[RequestConstants::BEN_NAME],
+                    'Ben_Address'        => $input[RequestConstants::BEN_ADDRESS],
                     'Ben_State'          => 'karnataka',
                     'Ben_City'           => 'Bengaluru',
                     'Ben_PinCd'          => '560030',
                     'Ben_DOB'            => '1960-01-01',
-                    'Ben_BankName'       => $input['ben_bankname'],
-                    'Ben_BankCd'         => $input['ben_bankcd'],
-                    'Ben_BranchCd'       => $input['ben_branchcd'],
+                    'Ben_BankName'       => $input[RequestConstants::BEN_BANKNAME],
+                    'Ben_BankCd'         => $input[RequestConstants::BEN_BANKCD],
+                    'Ben_BranchCd'       => $input[RequestConstants::BEN_BRANCHCD],
                     'Ben_Email'          => 'test@razorpay.com',
                     'Ben_Mobile'         => '9876543210',
                     'Ben_TrnParticulars' => 'CHANGING',
                     'Ben_PartTrnRmks'    => 'CHANGING',
                     'Issue_BranchCd'     => '0070',
-                    'Ben_PAN'            => $input['ben_pan'],
+                    'Ben_PAN'            => $input[RequestConstants::BEN_PAN],
                     'Ben_UID'            => '777777777777',
                     'Seller_Code'        => '01',
                     'Mode_of_Pay'        => [
-                        'NEFT' => [
+                        Mode::NEFT => [
                             'YN' => 'Y',
                             'Limit' => [
                                 'Daily'   => '100000',
@@ -229,7 +228,7 @@ class NodalAccount extends NodalBase\NodalAccount
                                 'Monthly' => '3000000'
                             ]
                         ],
-                        'RTGS'=> [
+                        Mode::RTGS=> [
                             'YN' => 'Y',
                             'Limit' => [
                                 'Daily'   => '10000000',
@@ -237,7 +236,7 @@ class NodalAccount extends NodalBase\NodalAccount
                                 'Monthly' => '300000000'
                             ]
                         ],
-                        'DD' => [
+                        Mode::DD => [
                             'YN' => 'Y',
                             'Limit' => [
                                 'Daily'   => '100',
@@ -245,7 +244,7 @@ class NodalAccount extends NodalBase\NodalAccount
                                 'Monthly' => '10000'
                             ]
                         ],
-                        'FT' => [
+                        Mode::FT => [
                             'YN' => 'Y',
                             'Limit' => [
                                 'Daily'   => '100',
@@ -253,7 +252,7 @@ class NodalAccount extends NodalBase\NodalAccount
                                 'Monthly' => '10000'
                             ]
                         ],
-                        'IMPS' => [
+                        Mode::IMPS => [
                             'YN' => 'Y',
                             'Limit' => [
                                 'Daily'   => '200000',
@@ -267,10 +266,10 @@ class NodalAccount extends NodalBase\NodalAccount
                     'Ben_CommercialTerms' => 'ABC001',
                     'KYC_Document' => [
                         'KYC_Doc_Id'      => 'Document1',
-                        'KYC_Doc_Name'    => $input['kyc_doc_name'],
+                        'KYC_Doc_Name'    => $input[RequestConstants::KYC_DOC_NAME],
                         'KYC_Doc_Type'    => 'POI',
                         'KYC_Doc_Format'  => 'PDF',
-                        'KYC_Doc_Content' => $input['kyc_doc_content']
+                        'KYC_Doc_Content' => $input[RequestConstants::KYC_DOC_CONTENT]
                     ],
                     'Remarks'    => 'NODAL BE NINQ UIRYPE NDINGAPPREJ',
                     'Ben_Action' => '0',

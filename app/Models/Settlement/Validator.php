@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\FundTransfer\Rbl\RequestConstants;
 
 class Validator extends Base\Validator
 {
@@ -25,17 +26,17 @@ class Validator extends Base\Validator
     ];
 
     protected static $rblAddBeneficiaryRules = [
-        Entity::CHANNEL   => 'required|string',
-        'ben_ifsc'        => 'required_if:channel,rbl|string',
-        'ben_acct_no'     => 'required_if:channel,rbl|integer',
-        'ben_name'        => 'required_if:channel,rbl|string',
-        'ben_address'     => 'required_if:channel,rbl|string',
-        'ben_bankname'    => 'required_if:channel,rbl|string',
-        'ben_branchcd'    => 'required_if:channel,rbl|string',
-        'ben_bankcd'      => 'required_if:channel,rbl|string',
-        'ben_pan'         => 'required_if:channel,rbl|string',
-        'kyc_doc_name'    => 'required_if:channel,rbl|string',
-        'kyc_doc_content' => 'required_if:channel,rbl|string',
+        Entity::CHANNEL                   => 'required|string',
+        RequestConstants::BEN_IFSC        => 'required_if:channel,rbl|string',
+        RequestConstants::BEN_ACCT_NO     => 'required_if:channel,rbl|integer',
+        RequestConstants::BEN_NAME        => 'required_if:channel,rbl|string',
+        RequestConstants::BEN_ADDRESS     => 'required_if:channel,rbl|string',
+        RequestConstants::BEN_BANKNAME    => 'required_if:channel,rbl|string',
+        RequestConstants::BEN_BRANCHCD    => 'required_if:channel,rbl|string',
+        RequestConstants::BEN_BANKCD      => 'required_if:channel,rbl|string',
+        RequestConstants::BEN_PAN         => 'required_if:channel,rbl|string',
+        RequestConstants::KYC_DOC_NAME    => 'required_if:channel,rbl|string',
+        RequestConstants::KYC_DOC_CONTENT => 'required_if:channel,rbl|string',
     ];
 
     protected static $retryRules = [
