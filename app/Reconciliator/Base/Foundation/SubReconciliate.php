@@ -6,7 +6,6 @@ use App;
 
 use RZP\Models\Base;
 use RZP\Models\Batch;
-use RZP\Models\Payment;
 use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;

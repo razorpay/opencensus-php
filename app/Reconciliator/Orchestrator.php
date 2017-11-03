@@ -172,7 +172,7 @@ class Orchestrator extends Base\Core
                 // conversion to array might be different for different gateways.
                 $this->getFileContentInArrayAndSet($fileDetails);
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
                 $this->messenger->raiseReconAlert(
                     [
@@ -251,7 +251,7 @@ class Orchestrator extends Base\Core
 
                 $batches->push($batch);
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
                 $this->handleBatchCreationError($ex, $file, $fileDetails, $allFilesDetails);
 
@@ -358,7 +358,7 @@ class Orchestrator extends Base\Core
     }
 
     protected function handleBatchCreationError(
-        \Exception $ex,
+        \Throwable $ex,
         int $file,
         array $fileDetails,
         array & $allFilesDetails)

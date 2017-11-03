@@ -365,9 +365,9 @@ class Base extends BaseModel\Core
             // mark it as partially_processed or processed depending on the type of
             // the file.
             //
-            if (($this->batch->getFailureCount() > 0)
-                or (($this->batch->getSuccessCount() === 0) and
-                    ($this->batch->getFailureCount() === 0)))
+            if (($this->batch->getFailureCount() > 0) or
+                (($this->batch->getSuccessCount() === 0) and
+                ($this->batch->getFailureCount() === 0)))
             {
                 $status = ($this->shouldMarkProcessedOnFailures() === true) ?
                             Batch\Status::PROCESSED :
@@ -688,9 +688,11 @@ class Base extends BaseModel\Core
                                 Batch\Entity::INPUT_FILE_PREFIX :
                                 Batch\Entity::OUTPUT_FILE_PREFIX;
 
-        $name = $batchFilePrefix . $this->batch->getFileKey();
+        $batchFilePrefix = ($type === FileStore\Type::BATCH_INPUT) ?
+                                Batch\Entity::INPUT_FILE_PREFIX :
+                                Batch\Entity::OUTPUT_FILE_PREFIX;
 
-        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $name = $batchFilePrefix . $this->batch->getFileKey();
 
         return (new FileStore\Creator)
                     ->localFilePath($filePath)

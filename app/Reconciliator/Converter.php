@@ -92,11 +92,7 @@ class Converter
                 continue;
             }
 
-            $sheetArray = [];
-
-            $sheetArray = array_merge($sheetArray, $rows);
-
-            $fileContents[$sheetName] = $sheetArray;
+            $fileContents[$sheetName] = $rows;
         }
 
         return $fileContents;
@@ -230,7 +226,6 @@ class Converter
 
         return $data;
     }
-
 
     /**
      * If this function is being used, ensure that the sheet name is not being

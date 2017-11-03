@@ -2,7 +2,6 @@
 
 namespace RZP\Reconciliator\Base;
 
-use DB;
 use App;
 
 use RZP\Exception;
@@ -123,15 +122,16 @@ class Reconciliate
     }
 
     /**
-     * This is the start of the reconciliation. This is executed from the orchestrator.
-     * For each file, it figures out which type of reconciliation is it (nodal, payment, refund, combined)
-     * and calls the startReconciliation of the respective reconciliation type.
+     * This is the start of the reconciliation. This is executed from the reconciliation
+     * batch processor. For each file, it figures out which type of reconciliation it is
+     * (nodal, payment, refund, combined) and calls the startReconciliation of the
+     * respective reconciliation type.
      *
      * The logic here is exactly the same as in startReconciliate, except that we
      * pass the batch entity to the individual subreconciliators
      *
-     * @param array $allFilesContents
-     * @param array $batch
+     * @param array         $allFilesContents
+     * @param Batch\Entity  $batch
      */
     public function startReconciliationV2(array $allFilesContents, Batch\Entity $batch)
     {
@@ -220,6 +220,18 @@ class Reconciliate
     }
 
     /**
+     * Thus can be overridden from the child class.
+     * If not overriden, it fetches the mapping from FileProcessor::FILE_TYPES_MAPPINGS
+     *
+     * @param  string $mimeType
+     */
+    protected function getFileType(string $mimeType)
+    {
+        return get_key_from_subarray_match(
+            $mimeType, FileProcessor::FILE_TYPES_MAPPINGS);
+    }
+
+    /**
      * Gets the reconciliation type by either the sheet name in case of excel files
      * or by the file name in case of csv files.
      *
@@ -282,7 +294,7 @@ class Reconciliate
 
     /**
      * @param  array  $fileDetails  File metad data
-     * @return [type]              name of the file
+     * @return string               name of the file
      */
     protected function getFileName(array $fileDetails): string
     {
