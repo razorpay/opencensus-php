@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Sbi;
 
 use App;
+use RZP\Mail\System\Trace;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -24,8 +25,6 @@ class Gateway extends Base\Gateway
     const ACQUIRER = 'sbi';
 
     protected $gateway = Payment\Gateway::UPI_SBI;
-
-    const BANK = 'sbi';
 
     /**
      * This is what shows up as the payee
@@ -139,6 +138,7 @@ class Gateway extends Base\Gateway
         $expectedAmount = $this->formatAmount($input);
 
         $actualAmount = $response[ResponseFields::API_RESPONSE][ResponseFields::AMOUNT];
+
         $actualAmount = number_format($actualAmount, 2, '.', '');
 
         $this->assertAmount($expectedAmount, $actualAmount);
@@ -283,8 +283,10 @@ class Gateway extends Base\Gateway
 
             $errorMessage = Status::getMessage($status);
 
+            $traceCode = $this->getTraceCode();
+
             $this->trace->info(
-                TraceCode::GATEWAY_RESPONSE_STATUS_FAILURE,
+                $traceCode,
                 [
                     'status'       => $status,
                     'errorCode'    => $errorCode,
@@ -294,6 +296,30 @@ class Gateway extends Base\Gateway
 
             throw new GatewayErrorException($errorCode, $status, $errorMessage);
         }
+    }
+
+    protected function getTraceCode()
+    {
+        switch ($this->action)
+        {
+            case Action::AUTHORIZE:
+                $traceCode = TraceCode::PAYMENT_AUTHORIZE_FAILED;
+                break;
+
+            case Action::CALLBACK:
+                $traceCode = TraceCode::PAYMENT_CALLBACK_FAILURE;
+                break;
+
+            case Action::VERIFY:
+                $traceCode = TraceCode::GATEWAY_VERIFY_ERROR;
+                break;
+
+            default:
+                $traceCode = TraceCode::GATEWAY_RESPONSE_STATUS_FAILURE;
+                break;
+        }
+
+        return $traceCode;
     }
 
     protected function getAuthorizeRequestData(array $input): array

@@ -9,9 +9,12 @@ class Constants
      */
     const NOT_APPLICABLE   = 'NA';
 
+    /**
+     * Collect request expiry time in minutes
+     */
     const EXPIRY_TIME      = '1110';
+
     const TRANSACTION_NOTE = 'Collect from ';
-    const REFUND_REMARKS   = 'Refund transaction';
 
     // TODO: See if it makes sense to move the constants below to their own classes
 
