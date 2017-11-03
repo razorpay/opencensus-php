@@ -10,6 +10,8 @@
     function OnboardingRequestsCtrl($scope, $http, $modal, $q, $upload) {
       var statuses = ($scope.statuses = ['pending', 'rejected', 'approved']);
 
+      $scope.alerts.resetAlerts();
+
       var featureDetails = ($scope.featureDetails = {
         subscriptions: { title: 'Subscriptions' },
         marketplace: { title: 'Marketplace' },
@@ -42,6 +44,8 @@
       $scope.onboardingSubmissions = [];
 
       $scope.fetchSubmissions = function fetchRequests(status) {
+        $scope.alerts.resetAlerts();
+
         var data = {
           route_name: 'onboarding_features_fetch_submissions',
           query_params: { status: status },
@@ -106,15 +110,19 @@
           request = $http.put('/admin/generic', data);
 
           request
-            .success(function(data) {
+            .success(function onResponseStatusUpdateSuccess(data) {
               if (data.success) {
                 submission.status = status;
+                $scope.alerts.addAlert(
+                  'success',
+                  'Submission status changed successfully'
+                );
               } else {
                 addErrors(data.errors);
               }
             })
-            .error(function onFetchResponsesError(res) {
-              $scope.alerts.addAlert('danger', res ? res : null, true);
+            .error(function onResponseStatusUpdateFail(res) {
+              $scope.alerts.addAlert('danger', res ? res : null);
             });
 
           requests.push(request);
@@ -155,13 +163,18 @@
         }
 
         request
-          .success(function(data) {
-            if (data.success) {
+          .success(function onReponseUpdateSuccess(data) {
+            if (!data.success) {
               addErrors(data.errors);
+            } else {
+              $scope.alerts.addAlert(
+                'success',
+                'Submission responses saved successfully'
+              );
             }
           })
-          .error(function onFetchResponsesError(res) {
-            $scope.alerts.addAlert('danger', res ? res : null, true);
+          .error(function onReponseUpdateFail(res) {
+            $scope.alerts.addAlert('danger', res ? res : null);
           });
 
         requests.push(request);

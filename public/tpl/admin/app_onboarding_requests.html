@@ -11,12 +11,13 @@
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
       <div class="row wrapper">
-        <div class="col-sm-3">
+        <div class="col-sm-3 form-inline">
           <label>
             Status
           </label>
           <select ng-model="selectedStatus"
-                  ng-change="fetchSubmissions(selectedStatus)">
+                  ng-change="fetchSubmissions(selectedStatus)"
+                  class="form-control">
             <option ng-repeat="status in statuses"
                     value="{{status}}">
               {{ status }}
@@ -40,7 +41,10 @@
             <tr ng-repeat="submission in onboardingSubmissions"
                 ng-if="submission.status === selectedStatus">
               <td>
-                <code>{{ submission.merchant }}</code>
+                <a target="_blank"
+                   ui-sref="app.merchants.detail({id: submission.merchant})">
+                  <code>{{ submission.merchant }}</code>
+                </a>
               </td>
               <td>
                 {{ submission.feature }}
@@ -51,8 +55,9 @@
               <td>
                 <div>
                   <a href="javacript:;"
-                     ng-click="onEditFeature(submission)">
-                    Edit
+                     ng-click="onEditFeature(submission)"
+                     class="text-primary">
+                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit
                   </a>
                 </div>
               </td>
@@ -95,7 +100,8 @@
       <div class="form-group">
         <label class="col-lg-3">Status</label>
         <div class="col-lg-9">
-          <select ng-model="submission.editVal.status">
+          <select ng-model="submission.editVal.status"
+                  class="form-control">
             <option ng-repeat="status in statuses"
                     value="{{status}}"
                     ng-selected="status === submission.editVal.status">
@@ -160,7 +166,8 @@
         <label class="col-lg-3">Transferring to</label>
         <div class="col-lg-9">
           <select ng-model="submission.editVal.responses.settling_to"
-                  name="body[settling_to]">
+                  name="body[settling_to]"
+                  class="form-control">
             <option ng-repeat="item in transferToDDVals"
                     value="{{ item[0] }}"
                     ng-selected="submission.editVal.responses.settling_to === item[0]">
@@ -180,8 +187,8 @@
               <i class="fa fa-external-link" aria-hidden="true"></i> Vendor Agreement
             </a>
             <a href="javascript:;"
-               class="text-warning"
-               ng-click="onAgreementChange(submission)">Change</a>
+               class="text-info"
+               ng-click="onAgreementChange(submission)">&nbsp;&nbsp;Change</a>
           </div>
 
           <input ui-jq="filestyle"
