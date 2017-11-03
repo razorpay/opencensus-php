@@ -31,7 +31,6 @@ export default function OrgForm({
           <Field
             label="Email"
             name="email"
-            required
             defaultValue={org.email}
             type="email"
             required
