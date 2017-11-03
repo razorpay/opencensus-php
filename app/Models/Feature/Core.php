@@ -287,7 +287,7 @@ class Core extends Base\Core
         }
 
         if (($status === MerchantDetail::APPROVED) and
-            ($this->isFeatureEnabledInMode(Mode::LIVE, $merchantId, $featureName) === false))
+            ($merchant->isFeatureEnabled($featureName) === false))
         {
             // Add the feature
             $params = [
@@ -312,33 +312,44 @@ class Core extends Base\Core
         return $response;
     }
 
-    /**
-     * Returns true if the feature is enabled in the mode
-     *
-     * @param string $mode
-     * @param string $merchantId
-     * @param        $featureName
-     *
-     * @return bool
-     */
-    public function isFeatureEnabledInMode(string $mode, string $merchantId, $featureName)
+    public function backfillProductActivationRequests()
     {
-        $enabledFeatures = $this->getEnabledFeaturesInMode($mode, $merchantId);
+        $merchantRequests = $this->repo->feature->getProductRequestsSubmitted();
 
-        return (in_array($featureName, $enabledFeatures, true) === true);
-    }
+        foreach($merchantRequests as $merchantId => $productRequests)
+        {
+            $merchantId = strval($merchantId);
 
-    /**
-     * Returns an array of all the features enabled in a particular mode
-     *
-     * @param string $mode
-     * @param string $merchantId
-     *
-     * @return array
-     */
-    protected function getEnabledFeaturesInMode(string $mode, string $merchantId): array
-    {
-        return $this->repo->feature->getEnabledFeaturesInMode($mode, $merchantId);
+            $merchant = $this->repo->merchant->findByPublicId($merchantId);
+
+            $merchantDetail = $merchant->merchantDetail;
+
+            foreach($productRequests as $product)
+            {
+                $getProductActivationStatus = camel_case('get_' . $product . '_activation_status');
+
+                $productStatus = $merchantDetail->$getProductActivationStatus();
+
+                if ($productStatus === null)
+                {
+                    $featureEnabled = $this->repo->feature->isFeatureEnabledInMode(
+                        Mode::LIVE,
+                        $merchantId,
+                        $product);
+
+                    if ($featureEnabled === true)
+                    {
+                        $status = MerchantDetail::APPROVED;
+                    }
+                    else
+                    {
+                        $status = MerchantDetail::PENDING;
+                    }
+
+                    $this->updateFeatureActivationStatus($merchantId, $product, $status);
+                }
+            }
+        }
     }
 
     /**

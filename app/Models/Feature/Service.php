@@ -315,7 +315,7 @@ class Service extends Base\Service
 
     public function backfillFeatureActivationStatus()
     {
-        $this->repo->feature->backfillFeatureActivationStatus();
+        (new Core)->backfillProductActivationRequests();
 
         return [];
     }

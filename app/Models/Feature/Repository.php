@@ -5,9 +5,7 @@ namespace RZP\Models\Feature;
 use DB;
 
 use RZP\Constants\Mode;
-use RZP\Models\Feature;
 use RZP\Models\Base\EsRepository;
-use RZP\Models\Merchant\Detail as MerchantDetail;
 use RZP\Models\Base\Repository as BaseRepository;
 
 class Repository extends BaseRepository
@@ -69,7 +67,7 @@ class Repository extends BaseRepository
         }
     }
 
-    public function backfillFeatureActivationStatus()
+    public function getProductRequestsSubmitted()
     {
         $requests = DB::Connection('live')->select("
           SELECT * FROM
@@ -81,7 +79,7 @@ class Repository extends BaseRepository
         $merchantRequests = [];
 
         // Generate a merchant to products map
-        foreach($requests as $request)
+        foreach ($requests as $request)
         {
             $merchantId = $request->entity_id;
 
@@ -92,62 +90,28 @@ class Repository extends BaseRepository
             array_push($merchantRequests[$merchantId], $product);
         }
 
-        $featureCore = new Feature\Core;
-
-        foreach($merchantRequests as $merchantId => $productRequests)
-        {
-            $merchantId = strval($merchantId);
-
-            $merchant = $this->repo->merchant->findByPublicId($merchantId);
-
-            $merchantDetail = $merchant->merchantDetail;
-
-            foreach($productRequests as $product)
-            {
-                $getProductActivationStatus = camel_case('get_' . $product . '_activation_status');
-
-                $productStatus = $merchantDetail->$getProductActivationStatus();
-
-                if ($productStatus === null)
-                {
-                    $featureEnabled = $featureCore->isFeatureEnabledInMode(
-                        Mode::LIVE,
-                        $merchantId,
-                        $product);
-
-                    if ($featureEnabled === true)
-                    {
-                        $status = MerchantDetail\Entity::APPROVED;
-                    }
-                    else
-                    {
-                        $status = MerchantDetail\Entity::PENDING;
-                    }
-
-                    $featureCore->updateFeatureActivationStatus($merchantId, $product, $status);
-                }
-            }
-        }
+        return $merchantRequests;
     }
 
     /**
-     * Returns an array of features enabled in the mode
+     * Returns true if the features enabled in the mode passed
      *
      * @param string $mode
      * @param string $merchantId
+     * @param string $featureName
      *
-     * @return array
+     * @return bool
      */
-    public function getEnabledFeaturesInMode(string $mode, string $merchantId): array
+    public function isFeatureEnabledInMode(string $mode, string $merchantId, string $featureName): bool
     {
         $features = $this->newQueryWithConnection($mode)
                          ->select(Entity::NAME)
                          ->where(Entity::ENTITY_ID, $merchantId)
+                         ->where(Entity::NAME, $featureName)
                          ->get()
-                         ->pluck(Entity::NAME)
                          ->toArray();
 
-        return $features;
+        return (count($features) === 1);
     }
 
     /**
