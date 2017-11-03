@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env sh
 set -euo pipefail
 
 db_wait(){
@@ -130,9 +130,6 @@ initialize(){
   configure_db
   update_commit
 }
-
-start_apache
-
 
 ### Check that atleast either webapp or supervisor is specified
 if [ "$#" -eq 0 ]; then
