@@ -509,7 +509,10 @@ class Gateway extends Base\Gateway
 
     protected function setBankingTypeAndDomainType($input)
     {
-        if ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        if (
+            (isset($input['payment']) === true) and
+            ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        )
         {
             $this->setBankingType(self::EMANDATE);
         }
