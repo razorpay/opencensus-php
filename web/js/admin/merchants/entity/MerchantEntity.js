@@ -33,7 +33,7 @@ export default class MerchantEntity extends Component {
       merchantId: this.merchantId,
     });
 
-    parentProps = this.model.merchant;
+    parentProps = this.model;
   }
 
   downloadReports = () => {

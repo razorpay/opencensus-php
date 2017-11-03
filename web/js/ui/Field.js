@@ -44,7 +44,7 @@ export function SwitchField({ label, ...props }) {
 }
 
 export class Switch extends Component {
-  disabledValue = this.props.disabledValue;
+  disabledValue = this.props.disabledValue || '0';
   enabledValue = this.props.enabledValue || '1';
   buttonClass = this.props.knob ? 'checkbox knob' : 'checkbox';
 

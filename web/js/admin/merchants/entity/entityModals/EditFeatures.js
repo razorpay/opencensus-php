@@ -1,6 +1,116 @@
-import React from 'react';
+import React, { Component } from 'react';
 import BaseModal from 'ui/BaseModal';
 
-export default () => {
-  return <BaseModal header="Edit Features">Hello World</BaseModal>;
-};
+import Form from 'ui/Form';
+import Field, { SelectField, SwitchField } from 'ui/Field';
+import AsyncButton from 'ui/AsyncButton';
+import { notifyError, notifySuccess, closeModal } from 'common/modal';
+
+import { adminPost } from 'util/fetch';
+
+export default class EditFeatures extends Component {
+  state = { mode: 'test' };
+
+  onSubmit = body => {
+    const selectedFeatures = body.selectedFeatures;
+
+    const requestData = {
+      features: selectedFeatures,
+      mode: body.mode,
+    };
+
+    if (body.shouldSync === 1) {
+      requestData['mode'] = 'live';
+      requestData['should_sync'] = 1;
+    } else {
+      requestData['should_sync'] = 0;
+    }
+
+    const { props } = this.props;
+
+    return adminPost(
+      requestData,
+      '/admin/features/merchant/' + props.merchant.details.id
+    )
+      .then(response => {
+        if (response) {
+          notifySuccess('Merchant email updated successfully.');
+          closeModal();
+          if (body.shouldSync === 1) {
+            props.updateFeatures('live', selectedFeatures);
+            props.updateFeatures('test', selectedFeatures);
+          }
+        }
+      })
+      .catch(err => {
+        notifyError(JSON.stringify(err.response));
+      });
+  };
+
+  render() {
+    const { features } = this.props.props.merchant;
+    const curModeFeatures = features[this.state.mode];
+    let availableFeaturesInMode = [];
+
+    if (curModeFeatures) {
+      availableFeaturesInMode = curModeFeatures.all_features.filter(
+        f => curModeFeatures.assigned_features.indexOf(f) === -1
+      );
+    }
+
+    return (
+      <BaseModal header="Edit Features">
+        <Form>
+          <SelectField
+            name="mode"
+            label="Mode"
+            defaultValue="test"
+            onChange={e => this.setState({ mode: e.target.value })}
+          >
+            <option value="test">Test</option>
+            <option value="live">Live</option>
+          </SelectField>
+
+          <label>
+            Add to both Test and Live
+            <SwitchField name="shouldSync" />
+          </label>
+
+          <SelectField
+            name="selectedFeatures"
+            label="Features"
+            defaultValue={[]}
+            multiple
+          >
+            {curModeFeatures &&
+              availableFeaturesInMode.map(feature => {
+                return (
+                  <option key={feature} value={feature}>
+                    {feature}
+                  </option>
+                );
+              })}
+          </SelectField>
+
+          <Field
+            label="Assigned Features"
+            name="assigned_features"
+            defaultValue={
+              features[this.state.mode]
+                ? features[this.state.mode].assigned_features.join(',')
+                : ''
+            }
+            readOnly
+          />
+
+          <AsyncButton
+            text="OK"
+            class="btn"
+            pendingClass="small spinner"
+            onSubmit={this.onSubmit}
+          />
+        </Form>
+      </BaseModal>
+    );
+  }
+}
