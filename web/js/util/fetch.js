@@ -24,19 +24,19 @@ export function adminFetch(params) {
   });
 }
 
-export function adminPost(data) {
+export function adminPost(data, customUrl) {
   data = parseParams(data);
   return fetch({
-    url: '/admin/generic',
+    url: customUrl ? customUrl : '/admin/generic',
     method: 'post',
     data,
   });
 }
 
-export function adminPut(data, appendInUrl) {
+export function adminPut(data, customUrl) {
   data = parseParams(data);
   return fetch({
-    url: appendInUrl ? appendInUrl : '/admin/generic',
+    url: customUrl ? customUrl : '/admin/generic',
     method: 'put',
     data,
   });
