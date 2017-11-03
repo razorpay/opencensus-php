@@ -4,7 +4,7 @@ metadata:
   name: api
   namespace: delta
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -25,15 +25,17 @@ spec:
       imagePullSecrets:
       - name: registry
       containers:
-      - env:
+      - name: api-web
+        env:
         - name: APP_MODE
           valueFrom:
             configMapKeyRef:
               name: api
               key: APP_MODE
-        name: api
-        image: razorpay/api:4ca47058c1c9ddb6a43da3d284f406340ecf3286
+        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
         imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]
+        args: ["web"]
         ports:
         - containerPort: 80
           protocol: TCP
@@ -65,6 +67,234 @@ spec:
           preStop:
             exec:
               command: ["/bin/rm","-f","/app/public/commit.txt",";","sleep","5",";","/usr/sbin/apachectl","-k","graceful-stop"]
+      - name: api-sqs-main
+        env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: api
+              key: APP_MODE
+        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]
+        args: ["sqs", "10"]
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/bin/php","artisan","down"]
+      - name: api-sqs-gen-live
+        env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: api
+              key: APP_MODE
+        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]
+        args: ["sqs_multi_default", "api-gen-live", "10"]
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/bin/php", "artisan", "down"]
+      - name: api-sqs-gen-test
+        env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: api
+              key: APP_MODE
+        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]
+        args: ["sqs_multi_default", "api-gen-test", "20"]
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/bin/php", "artisan", "down"]
+      - name: api-sqs-webhooks-live
+        env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: api
+              key: APP_MODE
+        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]
+        args: ["sqs_multi_default", "webhooks-live", "10"]
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/bin/php", "artisan", "down"]
+      - name: api-sqs-webhooks-test
+        env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: api
+              key: APP_MODE
+        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]
+        args: ["sqs_multi_default", "webhooks-test", "20"]
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/bin/php", "artisan", "down"]
+      - name: api-sqs-webhooks-failure
+        env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: api
+              key: APP_MODE
+        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]
+        args: ["sqs_multi_default", "webhooks-failure", "10"]
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/bin/php", "artisan", "down"]
+      - name: api-sqs-invoice-email
+        env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: api
+              key: APP_MODE
+        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]
+        args: ["sqs_multi_default", "invoice-emails", "10"]
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/bin/php", "artisan", "down"]
+      - name: api-sqs-invoice-reports
+        env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: api
+              key: APP_MODE
+        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]
+        args: ["sqs_multi_default", "invoice-reports", "10"]
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/bin/php", "artisan", "down"]
+      - name: api-sqs-es-sync
+        env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: api
+              key: APP_MODE
+        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]
+        args: ["sqs_multi_default", "es-sync", "10"]
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/bin/php", "artisan", "down"]
+      - name: api-sqs-emails
+        env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: api
+              key: APP_MODE
+        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]
+        args: ["sqs_multi_default", "emails", "10"]
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/bin/php", "artisan", "down"]
+      - name: api-sqs-subscription-charge
+        env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: api
+              key: APP_MODE
+        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]
+        args: ["sqs_multi_default", "subscription-charge", "10"]
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/bin/php", "artisan", "down"]
+      - name: api-sqs-batch
+        env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: api
+              key: APP_MODE
+        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]
+        args: ["sqs_multi_default", "batch", "10"]
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/usr/bin/php", "artisan", "down"]
       terminationGracePeriodSeconds: 60
       volumes:
       - name: trace
