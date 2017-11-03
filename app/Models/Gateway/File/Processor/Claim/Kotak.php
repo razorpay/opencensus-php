@@ -20,11 +20,11 @@ class Kotak extends Base
     const FILE_TYPE         = FileStore\Type::KOTAK_NETBANKING_CLAIM;
     const GATEWAY           = Payment\Gateway::NETBANKING_KOTAK;
 
-    protected function formatDataForFile()
+    protected function formatDataForFile(array $data)
     {
         $formattedData = [];
 
-        foreach ($this->data as $index => $row)
+        foreach ($data as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], Timezone::IST)->format('d-M-Y');

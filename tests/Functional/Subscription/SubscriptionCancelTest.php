@@ -11,6 +11,9 @@ use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
+/**
+ * @group dns-sensitive
+ */
 class SubscriptionCancelTest extends TestCase
 {
     use PaymentTrait;

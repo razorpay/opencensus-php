@@ -11,7 +11,6 @@ class Validator extends Base\Validator
         Entity::AMOUNT          => 'required',
         Entity::STATUS          => 'required|in:created,failed,processed',
         Entity::FEES            => 'sometimes',
-        Entity::SERVICE_TAX     => 'sometimes',
         Entity::TAX             => 'sometimes',
         Entity::CHANNEL         => 'required|string|custom',
     ];

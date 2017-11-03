@@ -19,6 +19,8 @@ class Validator extends Base\Validator
         Entity::AMOUNT                 => 'required|integer|min:100',
         Entity::DEDUCT_AT_ONSET        => 'sometimes|boolean',
         Entity::PARENT_ID              => 'sometimes|alpha_num|size:14',
+        Entity::MERCHANT_EMAIL         => 'sometimes|email',
+        Entity::SKIP_EMAIL             => 'sometimes|boolean',
     ];
 
     protected static $editRules = [
