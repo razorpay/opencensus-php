@@ -24,7 +24,7 @@ export function adminFetch(params) {
   });
 }
 
-export function adminPost(data) {
+export function adminPost(data, customUrl) {
   //Send params if needed for post request
   let params = data.params || null;
   data = parseParams(data);
