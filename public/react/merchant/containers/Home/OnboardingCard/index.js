@@ -48,9 +48,9 @@ const ServiceTaxNews = ({ close }) => (
     <div>
       <div class="heading">Removal of 'service_tax' field from APIs</div>
       <div class="news">
-        On 1 November 2017, service_tax field will be removed from our APIs and
-        Reports. Read announcement to understand how it may affect you. If
-        you've read and understood this, you may{' '}
+        On 1 November 2017, "service_tax" field was replaced by "tax" in our
+        APIs and Reports. Read announcement to understand how it may affect you.
+        If you've read and understood this, you may{' '}
         <a class="btn-link" onClick={close}>
           close this message
         </a>.
@@ -80,7 +80,7 @@ export default class OnboardingCard extends Component {
     this.setState({
       showOnboarding: LocalStorageService.getItem('show_onboarding_card'),
       isFirstStep: LocalStorageService.getItem('onboarding_first_step'),
-      showServiceTaxNews: !LocalStorageService.getItem('show_service_tax_new'),
+      showServiceTaxNews: !LocalStorageService.getItem('hide_service_tax_news'),
     });
   }
 
@@ -95,7 +95,7 @@ export default class OnboardingCard extends Component {
   };
 
   closeServiceTaxNews = () => {
-    LocalStorageService.setItem('show_service_tax_news', false);
+    LocalStorageService.setItem('hide_service_tax_news', true);
     this.setState({ showServiceTaxNews: false });
   };
 
