@@ -81,7 +81,6 @@ export default class CreatePaymentLink extends Component {
     };
     this.setExpiryDate = this.setExpiryDate.bind(this);
     this.handleCommChange = this.handleCommChange.bind(this);
-    this.handleCheckboxToggle = this.handleCheckboxToggle.bind(this);
   }
 
   componentWillMount() {
@@ -135,27 +134,29 @@ export default class CreatePaymentLink extends Component {
   }
   //Set communication mode(SMS or EMAIL)
   handleCommChange(value, mode) {
-    var commStr = mode === 'p' ? 'isPhoneSelected' : 'isEmailSelected';
-    this.setState({
-      ...this.state,
-      ...{ [commStr]: value.length ? true : false },
-    });
-  }
+    var commStr = mode === 'p' ? 'sms_notify' : 'email_notify';
 
-  handleCheckboxToggle(e, mode) {
-    this.handleCommChange(e.target.checked ? 'ok' : '', mode);
+    return this.props.change(commStr, !!value.length);
   }
 
   save = props => {
     const params = { ...props };
     const { isEmailSelected, isPhoneSelected } = this.state;
-    let notificationMSG = 'Payment link created successfully.';
-    if (isEmailSelected && isPhoneSelected) {
-      notificationMSG += ' ' + 'Sending via Email and SMS.';
-    } else {
-      if (isEmailSelected) notificationMSG += ' ' + 'Sending via Email.';
-      else if (isPhoneSelected) notificationMSG += ' ' + 'Sending via SMS';
+    let notificationMSG = 'Payment link created successfully.',
+      notifyMedium = [];
+
+    if (props.sms_notify) {
+      notifyMedium.push('SMS');
     }
+
+    if (props.email_notify) {
+      notifyMedium.push('Email');
+    }
+
+    if (notifyMedium.length > 0) {
+      notificationMSG += ' Sending via ' + notifyMedium.join(' and ');
+    }
+
     if (params.expire_by) {
       if (
         typeof params.expire_by === 'number' ||
@@ -400,8 +401,6 @@ export default class CreatePaymentLink extends Component {
                     component="input"
                     type="checkbox"
                     disabled={isEdit}
-                    checked={this.state.isPhoneSelected}
-                    onClick={e => this.handleCheckboxToggle(e, 'p')}
                   />
                   SMS
                 </label>
@@ -411,8 +410,6 @@ export default class CreatePaymentLink extends Component {
                     component="input"
                     type="checkbox"
                     disabled={isEdit}
-                    checked={this.state.isEmailSelected}
-                    onChange={e => this.handleCheckboxToggle(e, 'e')}
                   />
                   Email
                 </label>
