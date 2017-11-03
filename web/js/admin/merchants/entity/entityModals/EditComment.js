@@ -13,7 +13,7 @@ export default ({ props }) => {
     const data = {
       route_name: 'merchant_activation_update',
       url_params: {
-        id: props.details.id,
+        id: props.merchant.details.id,
       },
       body: {
         comment: body.comment,

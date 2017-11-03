@@ -32,7 +32,7 @@ export default ({ props }) => {
       methods[method] = '0';
 
       if (methods.hasOwnProperty(method)) {
-        methods[method] = props.details.methods[method] ? '1' : '0';
+        methods[method] = props.merchant.details.methods[method] ? '1' : '0';
       }
     });
 
@@ -65,7 +65,7 @@ export default ({ props }) => {
     return adminPut({
       route_name: 'merchant_put_payment_methods',
       url_params: {
-        mid: props.details.id,
+        mid: props.merchant.details.id,
       },
       body,
     })

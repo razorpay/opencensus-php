@@ -17,7 +17,7 @@ export default ({ props }) => {
       route_name: 'credits_create',
       mode,
       url_params: {
-        id: props.details.id,
+        id: props.merchant.details.id,
       },
       body,
     })

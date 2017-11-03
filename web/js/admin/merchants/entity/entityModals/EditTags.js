@@ -16,7 +16,7 @@ export default ({ props }) => {
     return adminPost({
       route_name: 'merchant_tag_add',
       url_params: {
-        id: props.details.id,
+        id: props.merchant.details.id,
       },
       body: { tags },
     })
@@ -37,7 +37,7 @@ export default ({ props }) => {
         <Field
           label="Tags"
           name="tags"
-          defaultValue={toJS(props.details.tags).join(',')}
+          defaultValue={toJS(props.merchant.details.tags).join(',')}
         />
 
         <AsyncButton

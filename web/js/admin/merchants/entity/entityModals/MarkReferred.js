@@ -11,13 +11,13 @@ import { adminPost } from 'util/fetch';
 
 export default ({ props }) => {
   function onSubmit(body) {
-    const tags = toJS(props.details.tags);
+    const tags = toJS(props.merchant.details.tags);
     tags.push('ref-' + body.referral);
 
     return adminPost({
       route_name: 'merchant_tag_add',
       url_params: {
-        id: props.details.id,
+        id: props.merchant.details.id,
       },
       body: {
         tags: tags,

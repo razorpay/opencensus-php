@@ -14,7 +14,7 @@ export default ({ props }) => {
       {
         email: body.email,
       },
-      '/admin/merchant/' + props.details.id + '/email'
+      '/admin/merchant/' + props.merchant.details.id + '/email'
     )
       .then(response => {
         if (response) {

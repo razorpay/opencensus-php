@@ -20,7 +20,7 @@ export default ({ props }) => {
 
         return adminPost({
           route_name: 'adj_add',
-          merchant_id: props.details.id,
+          merchant_id: props.merchant.details.id,
           mode,
           body,
         })
