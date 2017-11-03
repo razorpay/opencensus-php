@@ -45,7 +45,7 @@ class Validator extends Base\Validator
         if ($this->validatePublicIpAddress($url) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'URL must point to a public IP address');
+                'URL must point to a public IP address: ' . $url);
         }
     }
 
