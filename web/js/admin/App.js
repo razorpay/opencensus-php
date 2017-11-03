@@ -16,6 +16,8 @@ import Profile from 'admin/profile';
 import MerchantEntity from 'admin/merchants/entity/MerchantEntity';
 import GenericEntity from 'admin/entities/Entity';
 
+import MerchantTeamDetails from 'admin/merchants/entity/MerchantTeamDetails';
+
 import WorkflowList from 'admin/workflows/List';
 // import RequestList from 'admin/workflows/RequestList';
 
@@ -35,6 +37,7 @@ export default class App extends Component {
       <div id="app-container">
         <main>
           <Switch location={this.location}>
+            <Route path="/merchants/:id/team" component={MerchantTeamDetails} />
             <Route path="/merchants/:id" component={MerchantEntity} />
             <Route path="/merchants" component={MerchantList} />
             <Route path="/stats" component={Stats} />

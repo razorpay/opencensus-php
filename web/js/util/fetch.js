@@ -29,17 +29,17 @@ export function adminPost(data) {
   let params = data.params || null;
   data = parseParams(data);
   return fetch({
-    url: '/admin/generic',
+    url: customUrl ? customUrl : '/admin/generic',
     method: 'post',
     data,
     params,
   });
 }
 
-export function adminPut(data) {
+export function adminPut(data, customUrl) {
   data = parseParams(data);
   return fetch({
-    url: '/admin/generic',
+    url: customUrl ? customUrl : '/admin/generic',
     method: 'put',
     data,
   });

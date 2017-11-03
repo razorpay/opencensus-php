@@ -13,7 +13,7 @@ export default ({ props }) => {
   function onSubmit(body) {
     return adminPut({
       route_name: '"merchant_edit_config"',
-      merchant_id: props.details.id,
+      merchant_id: props.merchant.details.id,
       body: {
         handle: body.handle,
       },

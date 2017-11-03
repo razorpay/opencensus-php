@@ -10,6 +10,7 @@ export default class Model extends BaseModel {
     offers: [],
     pricingPlans: {},
     scheduleTasks: {},
+    features: {},
     bankDetails: {},
     hasSettlementSchedule: undefined,
   };
@@ -42,6 +43,8 @@ export default class Model extends BaseModel {
 
       this.fetchPricingPlans();
       this.fetchScheduleTasks();
+      this.fetchFeatures('live');
+      this.fetchFeatures('test');
     });
   }
 
@@ -89,6 +92,35 @@ export default class Model extends BaseModel {
         this.merchant.pricingPlans = data;
       }
     });
+  }
+
+  @action
+  fetchFeatures(mode) {
+    const data = {
+      route_name: 'feature_get_multiple',
+      url_params: {
+        entityId: this.merchantId,
+      },
+      mode: mode,
+    };
+
+    return this.request(
+      'fetchMerchantFeatures',
+      this.fetchFn(data)
+    ).then(data => {
+      if (data) {
+        data.assigned_features = data.assigned_features.map(
+          feature => feature.name
+        );
+        this.merchant.features[mode] = data;
+      }
+    });
+  }
+
+  updateFeatures(mode, features) {
+    this.merchant.features[mode].assigned_features = this.merchant.features[
+      mode
+    ].assigned_features.concat(features);
   }
 
   @action
