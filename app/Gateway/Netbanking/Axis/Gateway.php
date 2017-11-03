@@ -538,6 +538,11 @@ class Gateway extends Base\Gateway
         {
             $domainType .= '_' . $this->action;
         }
+        else
+        {
+            // For EMandate, add test and live domain URLs
+            $domainType .= '_' . $this->getMode();
+        }
 
         $domainConstantName = strtoupper($domainType).'_DOMAIN';
 
