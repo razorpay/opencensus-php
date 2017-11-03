@@ -605,6 +605,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const WEBHOOK_FIRED                             = 'WEBHOOK_FIRED';
     const WEBHOOK_DEACTIVATE                        = 'WEBHOOK_DEACTIVATE';
     const WEBHOOK_RESPONSE_FAILURE                  = 'WEBHOOK_RESPONSE_FAILURE';
+    const WEBHOOK_PRIVATE_IP_FOUND                  = 'WEBHOOK_PRIVATE_IP_FOUND';
 
     const AWS_INSTANCE_DATA_RECORD_FAILURE          = 'AWS_INSTANCE_DATA_RECORD_FAILURE';
     const AWS_INSTANCE_DATA_WRITE_FAILURE           = 'AWS_INSTANCE_DATA_WRITE_FAILURE';

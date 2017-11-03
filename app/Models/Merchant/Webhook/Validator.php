@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
+use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
 {
@@ -68,6 +70,7 @@ class Validator extends Base\Validator
      *     ::/128
      *     ::ffff:0:0/96
      *     fe80::/10.
+     * @return bool
      */
     public function validatePublicIpAddress(string $url)
     {
@@ -81,13 +84,30 @@ class Validator extends Base\Validator
 
         $flags = FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
 
-        return (bool) filter_var(
+        $ret = (bool) filter_var(
             $ip,
             FILTER_VALIDATE_IP,
             [
                 'flags' => $flags,
             ]
         );
+
+        if ($ret === false)
+        {
+            $app = App::getFacadeRoot();
+
+            $trace = $app['trace'];
+
+            $trace->info(
+                TraceCode::WEBHOOK_PRIVATE_IP_FOUND, [
+                    'url'   =>  $url,
+                    'ip'    =>  $ip,
+                ]
+            );
+
+        }
+
+        return $ret;
     }
 
     protected function validateUrl($input)
