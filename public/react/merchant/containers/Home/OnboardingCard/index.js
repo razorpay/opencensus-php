@@ -10,11 +10,15 @@ import OnboardingIllustrationPNG from 'styles/assets/onboarding-illustration.svg
 import newProducts from 'merchant/containers/Banners/newProducts';
 import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
 
-const NewProducts = () => {
+const NewProducts = ({ close }) => {
   const productItemStyle = { width: `${100 / newProducts.length}%` };
 
   return (
     <div className="media-body">
+      <button class="close" onClick={close}>
+        <i class="icon icon-close" />
+      </button>
+
       <div className="media-heading">Explore Our Product Stack</div>
       <p>
         Presenting India’s first holistic converged payment solution for you.
@@ -81,6 +85,9 @@ export default class OnboardingCard extends Component {
       showOnboarding: LocalStorageService.getItem('show_onboarding_card'),
       isFirstStep: LocalStorageService.getItem('onboarding_first_step'),
       showServiceTaxNews: !LocalStorageService.getItem('hide_service_tax_news'),
+      showNewProductsBanner: !LocalStorageService.getItem(
+        'hide_newproducts_banner'
+      ),
     });
   }
 
@@ -97,6 +104,11 @@ export default class OnboardingCard extends Component {
   closeServiceTaxNews = () => {
     LocalStorageService.setItem('hide_service_tax_news', true);
     this.setState({ showServiceTaxNews: false });
+  };
+
+  closeNewProductsBanner = () => {
+    LocalStorageService.setItem('hide_newproducts_banner', true);
+    this.setState({ showNewProductsBanner: false });
   };
 
   render() {
@@ -194,11 +206,12 @@ export default class OnboardingCard extends Component {
             {FirstStep}
           </div>
         )}
-        {isOldUser && (
-          <div class={`media onboarding-card new-features`}>
-            <NewProducts />
-          </div>
-        )}
+        {isOldUser &&
+          this.state.showNewProductsBanner && (
+            <div class={`media onboarding-card new-features`}>
+              <NewProducts close={this.closeNewProductsBanner} />
+            </div>
+          )}
       </div>
     );
   }
