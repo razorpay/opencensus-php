@@ -161,7 +161,7 @@ class Base extends BaseModel\Core
 
             $this->parseAndProcessBatchEntries();
         }
-        catch (\Throwable $ex)
+        catch (\Throwable $e)
         {
             $this->handleBatchProcessingException($e);
         }
@@ -835,10 +835,10 @@ class Base extends BaseModel\Core
      *
      * @param \Throwable $ex
      */
-    protected function handleBatchProcessingException(\Throwable $ex)
+    protected function handleBatchProcessingException(\Throwable $e)
     {
         $this->trace->traceException(
-            $ex,
+            $e,
             Trace::ERROR,
             TraceCode::BATCH_FILE_PROCESSING_ERROR,
             [
@@ -870,17 +870,6 @@ class Base extends BaseModel\Core
         }
 
         $this->batch->setFailureReason($failureReason);
-    }
-
-    /**
-     * Method to configure any system limits before beginning batch processing
-     * To be implemented by respective processors
-     *
-     * @return null
-     */
-    protected function increaseAllowedSystemLimits()
-    {
-        return;
     }
 
     /**
