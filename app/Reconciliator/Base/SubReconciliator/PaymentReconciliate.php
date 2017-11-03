@@ -57,9 +57,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     public function __construct()
     {
-        $this->app = App::getFacadeRoot();
-        $this->repo = $this->app['repo'];
-        $this->trace = $this->app['trace'];
+        parent::__construct();
+
         $this->messenger = new Messenger;
 
         $this->paymentRepo     = $this->repo->payment;
@@ -187,6 +186,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
             throw $ex;
         }
+    }
+
+    public function resetProcessingAttributes()
+    {
+        $this->payment = null;
+        $this->paymentIin = null;
+        $this->paymentTransaction = null;
     }
 
     protected function runPreReconciledAtCheckRecon($rowDetails)

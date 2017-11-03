@@ -61,18 +61,18 @@ class Manual extends Base
     protected function setGatewayForManual(array $inputDetails)
     {
         // In manual, the input params should contain what gateway is it.
-        $gateway = $inputDetails[self::GATEWAY];
+        $this->gateway = $inputDetails[self::GATEWAY];
 
         // This is a validation for the value of the gateway input received.
-        if (array_key_exists($gateway, self::GATEWAY_SENDER_MAPPING) === false)
+        if (array_key_exists($this->gateway, self::GATEWAY_SENDER_MAPPING) === false)
         {
             throw new Exception\ReconciliationException(
                 'Invalid gateway param. Not in the allowed list of gateway params.',
-                ['gateway' => $gateway]
+                ['gateway' => $this->gateway]
             );
         }
 
         // Sets the gateway reconciliator object for the orchestrator.
-        $this->setGatewayReconciliatorObject($gateway);
+        $this->setGatewayReconciliatorObject();
     }
 }

@@ -16,11 +16,9 @@ use RZP\Models\Base\PublicCollection;
 
 class Orchestrator extends Base\Core
 {
-    const GATEWAY = 'gateway';
-
     /**
-     * This contains file details, sheet details and email details,
-     * whenever applicable. It does not contain the actual content.
+     * This contains file details, sheet details whenever applicable.
+     * It does not contain the actual content.
      * It's all meta data.
      */
     const EXTRA_DETAILS           = 'extra_details';
@@ -29,85 +27,11 @@ class Orchestrator extends Base\Core
     const FORCE_UPDATE            = 'force_update';
     const INPUT_DETAILS           = 'input_details';
 
-    /**************************
-     * Email details constants
-     **************************/
-    const EMAIL_DETAILS    = 'email_details';
-    const FROM             = 'from';
-    const TO               = 'to';
-    const SUBJECT          = 'subject';
-    const TIMESTAMP        = 'timestamp';
-    const BODY             = 'body';
-    const BODY_HTML_TEXT   = 'body_html_text';
-
-    /******************
-     * Bank constants
-     ******************/
-
-    const HDFC                   = 'HDFC';
-    const AXIS                   = 'Axis';
-    const KOTAK                  = 'Kotak';
-    const BILLDESK               = 'BillDesk';
-    const PAYZAPP                = 'PayZapp';
-    const MOBIKWIK               = 'Mobikwik';
-    const PAYTM                  = 'Paytm';
-    const OLAMONEY               = 'Olamoney';
-    const FREECHARGE             = 'Freecharge';
-    const NETBANKING_AXIS        = 'NetbankingAxis';
-    const NETBANKING_ICICI       = 'NetbankingIcici';
-    const NETBANKING_FEDERAL     = 'NetbankingFederal';
-    const NETBANKING_BOB         = 'NetbankingBob';
-    const NETBANKING_CORPORATION = 'NetbankingCorporation';
-    const NETBANKING_RBL         = 'NetbankingRbl';
-    const NETBANKING_INDUSIND    = 'NetbankingIndusind';
-    const NETBANKING_PNB         = 'NetbankingPnb';
-    const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
-    const JIOMONEY               = 'Jiomoney';
-    const EBS                    = 'Ebs';
-    const FIRST_DATA             = 'FirstData';
-    const ADMIN                  = 'admin';
-
-    /**
-     * Gateways for which we run validations on email content
-     */
-    const GATEWAY_EMAIL_VALIDATION = [
-        self::HDFC,
-        self::AXIS,
-        self::KOTAK,
-        self::OLAMONEY,
-        self::FREECHARGE,
-        self::FIRST_DATA,
-        self::NETBANKING_AXIS,
-        self::NETBANKING_ICICI,
-        self::NETBANKING_FEDERAL,
-        self::VIRTUAL_ACC_KOTAK,
-    ];
-
-    /**
-     * Banks or Wallets which do not give the MIS file in attachments but as a
-     * link
-     */
-    const LINK_BASED_BANKS = [
-        self::FREECHARGE,
-    ];
-
-    /*
-     *  These field can be force updated with passed with request
-     */
-    const REFUND_ARN = 'refund_arn';
-
-    const BATCH_RECON_GATEWAYS = [
-        self::JIOMONEY,
-        self::FIRST_DATA
-    ];
-
     /*********************
      * Instance variables
      *********************/
 
     protected $allFilesContents;
-    protected $allFilesDetails;
-    protected $inputDetails;
 
     /********************
      * Instance objects
@@ -119,12 +43,16 @@ class Orchestrator extends Base\Core
     protected $gatewayReconciliator;
     protected $messenger;
     protected $gateway;
+    protected $sharedMerchant;
+    protected $batchCore;
 
     public function __construct(string $gateway)
     {
         parent::__construct();
 
-        $this->setGatewayReconciliatorObject($gateway);
+        $this->gateway = $gateway;
+
+        $this->setGatewayReconciliatorObject();
 
         $this->increaseAllowedSystemLimits();
 
@@ -132,6 +60,12 @@ class Orchestrator extends Base\Core
         $this->validator     = new Validator;
         $this->fileProcessor = new FileProcessor;
         $this->converter     = new Converter;
+
+        $this->sharedMerchant = $this->repo
+                                     ->merchant
+                                     ->findOrFailPublic(Account::SHARED_ACCOUNT);
+
+        $this->batchCore = new Batch\Core;
     }
 
     /**
@@ -225,7 +159,7 @@ class Orchestrator extends Base\Core
     {
         $batches = new PublicCollection;
 
-        foreach ($allFilesDetails as $file => $fileDetails)
+        foreach ($allFilesDetails as $fileIndex => $fileDetails)
         {
             $this->trace->info(
                 TraceCode::RECON_FILE_DETAILS,
@@ -239,7 +173,7 @@ class Orchestrator extends Base\Core
 
             if ($skipFile === true)
             {
-                $this->handleFileSkip($file, $fileDetails, $allFilesDetails);
+                $this->handleFileSkip($fileIndex, $fileDetails, $allFilesDetails);
 
                 continue;
             }
@@ -253,7 +187,7 @@ class Orchestrator extends Base\Core
             }
             catch (\Throwable $ex)
             {
-                $this->handleBatchCreationError($ex, $file, $fileDetails, $allFilesDetails);
+                $this->handleBatchCreationError($ex, $fileIndex, $fileDetails, $allFilesDetails);
 
                 continue;
             }
@@ -281,16 +215,15 @@ class Orchestrator extends Base\Core
         return $result;
     }
 
-    protected function setGatewayReconciliatorObject($gateway)
+    protected function setGatewayReconciliatorObject()
     {
-        $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
-
-        $this->gateway = $gateway;
+        $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' .
+            $this->gateway . '\\' . 'Reconciliate';
 
         $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
     }
 
-    protected function shouldSkipFile($fileDetails)
+    protected function shouldSkipFile(array $fileDetails): bool
     {
         // Checks if this particular file needs to be excluded for the gateway
         $shouldExclude = $this->gatewayReconciliator->inExcludeList($fileDetails);
@@ -344,22 +277,20 @@ class Orchestrator extends Base\Core
      */
     protected function createBatchAndDispatchForProcessing(array $fileDetails): Batch\Entity
     {
-        $merchant = $this->repo->merchant->findOrFailPublic(Account::SHARED_ACCOUNT);
-
         $params = [
             Batch\Entity::TYPE        => Batch\Type::RECONCILIATION,
             Batch\Entity::GATEWAY     => $this->gateway,
             Batch\Entity::FILE        => $fileDetails
         ];
 
-        $batch = (new Batch\Core)->create($params, $merchant);
+        $batch = $this->batchCore->create($params, $this->sharedMerchant);
 
         return $batch;
     }
 
     protected function handleBatchCreationError(
         \Throwable $ex,
-        int $file,
+        int $fileIndex,
         array $fileDetails,
         array & $allFilesDetails)
     {
@@ -372,7 +303,7 @@ class Orchestrator extends Base\Core
                 'gateway'      => $this->gateway,
             ]);
 
-        $this->handleFileSkip($file, $fileDetails, $allFilesDetails);
+        $this->handleFileSkip($fileIndex, $fileDetails, $allFilesDetails);
     }
 
     /**
@@ -381,7 +312,7 @@ class Orchestrator extends Base\Core
      * @param $fileDetails
      * @throws Exception\ReconciliationException
      */
-    protected function getFileContentInArrayAndSet($fileDetails)
+    protected function getFileContentInArrayAndSet(array $fileDetails)
     {
         $this->trace->info(TraceCode::RECON_BEGIN_FILE_PARSING, [
             'gateway'      => $this->gateway,

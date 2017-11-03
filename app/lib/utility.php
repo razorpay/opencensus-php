@@ -398,7 +398,7 @@ if (! function_exists('encode_currency'))
 * @param $needle
 * @param array $haystack An associative array with array values.
 *                        ['a' => ['b', 'c'], 'd' => ['e', 'f']]
-* @return int|string|null
+* @return mixed
 */
 function get_key_from_subarray_match($needle, array $haystack)
 {

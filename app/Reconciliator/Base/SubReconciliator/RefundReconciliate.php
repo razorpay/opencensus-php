@@ -47,9 +47,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     public function __construct()
     {
-        $this->app = App::getFacadeRoot();
-        $this->repo = $this->app['repo'];
-        $this->trace = $this->app['trace'];
+        parent::__construct();
 
         $this->messenger = new Messenger();
     }
@@ -172,6 +170,12 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
             //return;
         }
+    }
+
+    public function resetProcessingAttributes()
+    {
+        $this->payment = null;
+        $this->refund = null;
     }
 
     protected function getRefundAmount(array $row)

@@ -10,7 +10,7 @@ use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class SubReconciliate
+class SubReconciliate extends Base\Core
 {
     const TOTAL_SUMMARY     = 'total_summary';
     const FAILURES_SUMMARY  = 'failures_summary';
@@ -63,6 +63,17 @@ class SubReconciliate
      * @var array
      */
     protected $extraDetails = [];
+    /**
+     * This method resets any instance attributes which could have been set during
+     * processing reconciliation of a particular row. In certain cases like combined
+     * reconciliate the  subreconciliator instances are reused so we don't want
+     * instance attributes to persist between specific runs. Implementation to be
+     * provided by child classes
+     */
+    public function resetProcessingAttributes()
+    {
+        return;
+    }
 
     protected function persistReconciledAt($entity)
     {

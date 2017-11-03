@@ -5,13 +5,14 @@ namespace RZP\Reconciliator\Base;
 use App;
 
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
 
-class Reconciliate
+class Reconciliate extends Base\Core
 {
     /***********************
      * Reconciliation Types
@@ -78,8 +79,8 @@ class Reconciliate
 
     public function __construct()
     {
-        $this->app = App::getFacadeRoot();
-        $this->repo = $this->app['repo'];
+        parent::__construct();
+
         $this->messenger = new Messenger;
     }
 
@@ -113,7 +114,7 @@ class Reconciliate
             $allSummaries[] = $summary;
         }
 
-        $this->app['trace']->info(
+        $this->trace->info(
             TraceCode::RECON_INFO_SUMMARY,
             $allSummaries
         );
@@ -155,7 +156,7 @@ class Reconciliate
             $this->subReconciliator->startReconciliationV2($fileContents, $batch);
         }
 
-        $this->app['trace']->info(
+        $this->trace->info(
             TraceCode::RECON_INFO_SUMMARY,
             [
                 'total_count'   => $batch->getTotalCount(),
@@ -225,10 +226,21 @@ class Reconciliate
      *
      * @param  string $mimeType
      */
-    protected function getFileType(string $mimeType)
+    public function getFileType(string $mimeType)
     {
         return get_key_from_subarray_match(
             $mimeType, FileProcessor::FILE_TYPES_MAPPINGS);
+    }
+
+    /**
+     * Stub method to be overriden by child classes to provide the reconciliation
+     * type for the particular gateway based on the fileName
+     *
+     * @param  string $fileName Name of the file or sheet in case of excel
+     */
+    protected function getTypeName($fileName)
+    {
+        return null;
     }
 
     /**

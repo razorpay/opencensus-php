@@ -19,13 +19,20 @@ class CombinedReconciliate extends Foundation\SubReconciliate
     protected $app;
     protected $repo;
 
+    /**
+     * In case of combined reconciliation, we need to  call the payment / refund
+     * reconciliators depending on the row. This map keeps track of the reconciliator
+     * objects created for each type so that they can be reused
+     *
+     * @var array
+     */
     protected $subReconciliatorObjects = [];
 
     public function __construct()
     {
+        parent::__construct();
+
         $this->messenger = new Messenger();
-        $this->app = App::getFacadeRoot();
-        $this->repo = $this->app['repo'];
     }
 
     /**
@@ -195,6 +202,8 @@ class CombinedReconciliate extends Foundation\SubReconciliate
         $subReconciliatorObject = new $subReconciliatorClassName;
 
         $this->subReconciliatorObjects[$entityType] = $subReconciliatorObject;
+
+        $subReconciliatorObject->resetProcessingAttributes();
 
         return $subReconciliatorObject;
     }

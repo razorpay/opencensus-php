@@ -134,25 +134,25 @@ class Mailgun extends Base
     protected function setGatewayFromEmail()
     {
         // For a particular gateway, reconciliation files can be sent from more than one email ID.
-        $gateway = $this->getGatewayFromEmail();
+        $this->gateway = $this->getGatewayFromEmail();
 
-        if ($gateway === Orchestrator::ADMIN)
+        if ($this->gateway === Orchestrator::ADMIN)
         {
-            $gateway = $this->emailDetails[self::SUBJECT];
+            $this->gateway = $this->emailDetails[self::SUBJECT];
 
-            if (in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)) === false)
+            if (in_array($this->gateway, array_keys(self::GATEWAY_SENDER_MAPPING)) === false)
             {
                 throw new Exception\LogicException(
                     '[Admin] Invalid/Unrecognized gateway sent in the subject line.',
                     null,
                     [
-                        'gateway'        => $gateway,
+                        'gateway'        => $this->gateway,
                         'valid_gateways' => array_keys(self::GATEWAY_SENDER_MAPPING),
                     ]);
             }
         }
 
-        $this->setGatewayReconciliatorObject($gateway);
+        $this->setGatewayReconciliatorObject();
     }
 
     protected function getGatewayFromEmail()

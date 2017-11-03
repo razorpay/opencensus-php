@@ -73,14 +73,12 @@ class Base extends Core
         return $this->gateway;
     }
 
-    protected function setGatewayReconciliatorObject($gateway)
+    protected function setGatewayReconciliatorObject()
     {
-        $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
-
-        $this->gateway = $gateway;
+        $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' .
+            $this->gateway . '\\' . 'Reconciliate';
 
         $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
-
     }
 
     /**
