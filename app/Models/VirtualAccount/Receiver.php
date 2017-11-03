@@ -108,6 +108,10 @@ class Receiver
 
         $qrCode = $qrCode->generateQrString();
 
+        $qrCodeImage = $qrCode->generateQrCode();
+
+        sd($qrCodeImage->writeString());
+
         $this->repo->saveOrFail($qrCode);
 
         return $qrCode;

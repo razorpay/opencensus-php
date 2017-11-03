@@ -233,7 +233,7 @@ class Generator extends Base\Core
         return $invoiceLink;
     }
 
-    protected function generateInvoiceSkeleton(array $input)
+    protected function generateQrCodeEntity(array $input)
     {
         //
         // If draft=1 in input, validate against createDraftRules else createIssuedRules.

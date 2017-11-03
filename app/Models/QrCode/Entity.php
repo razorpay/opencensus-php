@@ -3,6 +3,7 @@
 namespace RZP\Models\QrCode;
 
 use RZP\Models\Base;
+use Endroid\QrCode\QrCode;
 use RZP\Models\VirtualAccount\Provider;
 
 class Entity extends Base\PublicEntity
@@ -14,6 +15,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE               = 'entity_type';
     const AMOUNT                    = 'amount';
     const QR_STRING                 = 'qr_string';
+    const SHORT_URL                 = 'short_url';
 
     protected static $sign = 'qr';
 
@@ -43,6 +45,10 @@ class Entity extends Base\PublicEntity
         // providing qr code image
         self::QR_STRING,
         self::CREATED_AT,
+    ];
+
+     protected static $generators = [
+        self::SHORT_URL,
     ];
 
     protected $casts = [
@@ -92,6 +98,17 @@ class Entity extends Base\PublicEntity
         }
 
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    /**
+     * Returns string to be used a qrcode file path in s3 store.
+     * Format: qrcode/{qrcodeid}_{epoch}
+     *
+     * @return string
+     */
+    public function getQrCodeFilename(): string
+    {
+        return 'qrcode/'. $this->getId() . '_' . time();
     }
 
     // --------------------- END GETTERS ---------------------
