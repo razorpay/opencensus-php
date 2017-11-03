@@ -13,7 +13,9 @@ class NodalAccount extends NodalBase\NodalAccount
     //TODO change Url on basis of mode
     const BEN_ADD_URL = '/test/sb/rbl/api/v1.5/na-beneficiary/registration?';
 
-    const FUND_TRANSFER_URL = '/sb/rbl/api/v1/payment_bid/pay';
+    const FUND_TRANSFER_URL = '/test/sb/rbl/api/v1/payment_bid/pay?';
+
+    const TIMEOUT = '120';
 
     protected $headers = [];
 
@@ -76,11 +78,12 @@ class NodalAccount extends NodalBase\NodalAccount
         $hooks->register('curl.before_send', [$this, 'setCurlSslOpts']);
 
         $options = [
-            'auth'  => [
+            'hooks'   => $hooks,
+            'timeout' => self::TIMEOUT,
+            'auth'    => [
                 $this->username,
                 $this->password
             ],
-            'hooks' => $hooks,
         ];
 
         return $options;
@@ -160,10 +163,11 @@ class NodalAccount extends NodalBase\NodalAccount
         $content = [
             'Single_Payment_Corp_Req' => [
                 'Header' => [
-                    'TranID'     => rand(10000, 99999),
-                    'Corp_ID'    => 'RZPAY',
-                    'Maker_ID'   => 'M001',
-                    'Checker_ID' => 'C001',
+                    'TranID'      => (string) rand(10000, 99999),
+                    'Corp_ID'     => 'RZPAY',
+                    'Maker_ID'    => 'M001',
+                    'Checker_ID'  => 'C001',
+                    'Approver_ID' => 'A001',
                 ],
                 'Body' => [
                     'Amount'               => $amount,
@@ -193,7 +197,7 @@ class NodalAccount extends NodalBase\NodalAccount
         $content = [
             'Beneficiary_Nodal_Account_Registration_Req' => [
                 'Header' => [
-                    'TranID'      => rand(10000, 99999),
+                    'TranID'      => (string) rand(10000, 99999),
                     'Corp_ID'     => 'RZPAY',
                     'Maker_ID'    => 'M001',
                     'Checker_ID'  => 'C001',
