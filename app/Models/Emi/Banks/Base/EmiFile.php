@@ -18,6 +18,8 @@ use RZP\Encryption\Type;
 
 class EmiFile extends Base\Core
 {
+    protected $bankName;
+
     // Regenerated every time the EMI file is created
     protected $emiFilePassword;
 

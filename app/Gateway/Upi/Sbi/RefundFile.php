@@ -40,15 +40,7 @@ class RefundFile extends Base\RefundFile
 
     public function generate($input)
     {
-        $data = $this->getRefundData($input);
-
-        $fileName = $this->getFileToWriteNameWithoutExt();
-
-        $creator = $this->createFile(
-            FileStore\Format::CSV,
-            $data,
-            $fileName,
-            FileStore\Type::SBI_UPI_REFUND);
+        $creator = $this->getCreator($input);
 
         $file = $creator->get();
 
@@ -60,9 +52,30 @@ class RefundFile extends Base\RefundFile
             'signed_url' => $signedFileUrl,
         ];
 
-        // TODO: Upload the file
-
         return $fileData['file_path'];
+    }
+
+    protected function getCreator(array $input)
+    {
+        $data = $this->getRefundData($input);
+
+        $fileName = $this->getFileToWriteNameWithoutExt();
+
+        $store = FileStore\Store::S3;
+
+        $metadata = $this->getH2HMetadata();
+
+        $creator = new FileStore\Creator;
+
+        $creator->extension(FileStore\Format::CSV)
+                ->content($data)
+                ->name($fileName)
+                ->store($store)
+                ->type(FileStore\Type::SBI_UPI_REFUND)
+                ->metadata($metadata)
+                ->save();
+
+        return $creator;
     }
 
     protected function getRefundData(array $input)
@@ -106,5 +119,19 @@ class RefundFile extends Base\RefundFile
     protected function getGatewayClass()
     {
         return new Gateway();
+    }
+
+    /**
+     * TODO: Make changes for this
+     * @return array
+     */
+    protected function getH2HMetadata()
+    {
+        return [
+            'gid'   => '10000',
+            'uid'   => '10002',
+            'mtime' => Carbon::now()->getTimestamp(),
+            'mode'  => '33188'
+        ];
     }
 }
