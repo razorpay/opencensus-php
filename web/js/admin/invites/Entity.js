@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 import Form from 'ui/Form';
 import Field from 'ui/Field';
 import {
@@ -38,13 +37,11 @@ class AddInvites extends Component {
   }
 
   handleInvite = body => {
-    return axios({
-      url: '/admin/generic',
-      method: 'post',
+    return adminPost({
       params: {
         route_name: 'admin_lead_create',
       },
-      data: { body },
+      body,
     }).then(response => {
       if (response.data.success) {
         notifySuccess(

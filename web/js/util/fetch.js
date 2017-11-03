@@ -25,11 +25,14 @@ export function adminFetch(params) {
 }
 
 export function adminPost(data) {
+  //Send params if needed for post request
+  let params = data.params || null;
   data = parseParams(data);
   return fetch({
     url: '/admin/generic',
     method: 'post',
     data,
+    params,
   });
 }
 
