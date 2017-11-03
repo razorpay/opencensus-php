@@ -69,6 +69,8 @@ class Repository extends Base\Repository
         $transactionId = $this->dbColumn(Transaction\Entity::ID);
         $transactionData = $this->dbColumn('*');
 
+        s($timestamp);
+
         $txns = $this->newQuery()
                     ->select($transactionData)
                     ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
@@ -78,10 +80,12 @@ class Repository extends Base\Repository
                     ->where(Entity::CHANNEL, '=', $channel)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
-                    ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
+                    //->with('merchant', 'merchant.bankAccount', 'merchant.balance')
                     ->orderBy($transactionMerchantId)
                     ->orderBy($transactionId)
                     ->get();
+
+        sd($txns->toArray());
 
         return $txns;
     }

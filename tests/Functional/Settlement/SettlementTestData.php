@@ -51,4 +51,12 @@ return [
             'settlement_excel_file' => [],
         ]
     ],
+
+    'testSettlementForReversalOfDirectTransfer' => [
+        'method'  => 'POST',
+        'url'     => '/schedules/update_next_run/',
+        'content' => [
+            'type' => 'settlement',
+        ],
+    ],
 ];

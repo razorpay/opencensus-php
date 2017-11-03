@@ -906,6 +906,70 @@ class SettlementTest extends TestCase
         $this->assertEquals(7, $content['kotak']['transaction_count']);
     }
 
+    public function testSettlementForReversalOfDirectTransfer()
+    {
+        $payment = $this->createPaymentEntities(5);
+
+        // Get a timestamp of current day
+        $createdAt = Carbon::today(Timezone::IST)->getTimestamp() + 5;
+
+        // Create a linked account
+        $account = $this->fixtures->create('merchant:marketplace_account', ['balance' => 250000]);
+
+        // Update all next_run_at values
+        $this->ba->appAuth();
+        $request = $this->testData[__FUNCTION__];
+        $this->makeRequestAndGetContent($request);
+
+        // Create 2 direct transfers to the linked account
+        $transfer = $this->fixtures->times(2)->create(
+            'transfer:to_account',
+            [
+                'account'     => $account,
+                'source_id'   => $account->getId(),
+                'source_type' => 'merchant',
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
+            ]);
+
+        // Create one reversal, same day
+        $reversal = $this->fixtures->create(
+            'reversal',
+            [
+                'entity_type' => 'transfer',
+                'entity_id'   => $transfer[1]->getId(),
+                'amount'      => 1000,
+                'created_at'  => $createdAt + 10,
+                'updated_at'  => $createdAt + 20
+            ]);
+
+        $content = $this->initiateSettlements();
+
+        // 1 direct transfer txn alone
+        $this->assertEquals(2, $content['kotak']['transaction_count']);
+
+        $lastSetl = $this->getLastEntity('settlement', true);
+
+        // Assert linked account settlement
+        $this->assertEquals($transfer[1]['to_id'], $lastSetl['merchant_id']);
+
+        //
+        // transfer 1 -> credit 1000 + transfer 2 -> credit 1000
+        // reverse transfer 1 -> debit 1000
+        // total => 1000
+        //
+        $this->assertEquals(1000, $lastSetl['amount']);
+
+        sd($lastSetl);
+    }
+
+    public function testSettlementForReversalOfPaymentTransfer()
+    {
+
+    }
+
     public function testSettlementWithDispute()
     {
         // Create payment
