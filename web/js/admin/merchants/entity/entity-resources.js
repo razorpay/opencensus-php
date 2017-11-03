@@ -46,7 +46,7 @@ function _getPricingPlansFields() {
 
 /*---------------------------------------- UI resource --------------------------------------------*/
 export function getDetailsViewMap(merchant) {
-  const { details, terminals, pricingPlans, bankDetails } = merchant;
+  const { details, terminals, pricingPlans, bankDetails, features } = merchant;
   // console.log('DETAILS....', details);
 
   return [
@@ -60,7 +60,7 @@ export function getDetailsViewMap(merchant) {
     },
     {
       label: 'Tags',
-      value: '',
+      value: details && details.tags ? details.tags.join(', ') : '',
     },
     {
       label: 'Features',
