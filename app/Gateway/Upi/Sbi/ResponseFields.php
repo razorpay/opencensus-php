@@ -4,6 +4,10 @@ namespace RZP\Gateway\Upi\Sbi;
 
 class ResponseFields
 {
+    /**
+     * @see https://drive.google.com/a/razorpay.com/file/d/0B1kf6HOmx7JBUVJ3WUZmdGpnOXNWb21uZi1VWkpJdklVLUZJ/view?usp=sharing
+     */
+
     const MESSAGE                    = 'msg';
     const RESPONSE                   = 'resp';
     const API_RESPONSE               = 'apiResp';

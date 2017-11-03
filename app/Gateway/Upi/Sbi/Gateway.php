@@ -298,7 +298,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getTraceCode()
+    protected function getTraceCode(): string
     {
         switch ($this->action)
         {

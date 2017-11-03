@@ -4,6 +4,10 @@ namespace RZP\Gateway\Upi\Sbi;
 
 class RequestFields
 {
+    /**
+     * @see https://drive.google.com/a/razorpay.com/file/d/0B1kf6HOmx7JBUVJ3WUZmdGpnOXNWb21uZi1VWkpJdklVLUZJ/view?usp=sharing
+     */
+
     const PG_MERCHANT_ID             = 'pgMerchantId';
 
     /**
@@ -12,7 +16,7 @@ class RequestFields
     const PSP_REFERENCE_NO           = 'pspRefNo';
 
     /**
-     * RRN Number, which is unique in the UPI platform - mapped to Customer Reference ID
+     * Unique in the UPI platform - mapped to Customer Reference ID
      */
     const CUSTOMER_REFERENCE_NO      = 'custRefNo';
 
