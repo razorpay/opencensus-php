@@ -1,6 +1,51 @@
 import React from 'react';
 import BaseModal from 'ui/BaseModal';
 
-export default () => {
-  return <BaseModal header="Edit Merchant Email">Hello World</BaseModal>;
+import Form from 'ui/Form';
+import Field from 'ui/Field';
+import AsyncButton from 'ui/AsyncButton';
+import { notifyError, notifySuccess, closeModal } from 'common/modal';
+
+import { adminPut } from 'util/fetch';
+
+export default ({ props }) => {
+  function onSubmit(body) {
+    return adminPut(
+      {
+        email: body.email,
+      },
+      '/admin/merchant/' + props.merchant.details.id + '/email'
+    )
+      .then(response => {
+        if (response) {
+          notifySuccess('Merchant email updated successfully.');
+          closeModal();
+        }
+      })
+      .catch(err => {
+        notifyError(JSON.stringify(err.response));
+      });
+  }
+
+  return (
+    <BaseModal header="Edit Merchant Email">
+      <span>
+        <strong>
+          Warning: You need to be a superadmin in order to edit merchant email
+          address.
+        </strong>
+      </span>
+
+      <Form>
+        <Field label="Email" name="email" type="email" />
+
+        <AsyncButton
+          text="OK"
+          class="btn"
+          pendingClass="small spinner"
+          onSubmit={onSubmit}
+        />
+      </Form>
+    </BaseModal>
+  );
 };

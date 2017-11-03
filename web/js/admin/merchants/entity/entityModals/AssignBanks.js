@@ -63,7 +63,7 @@ export default class PricingPlanModal extends Component {
         return adminPost({
           route_name: 'merchant_set_banks',
           url_params: {
-            id: props.details.id,
+            id: props.merchant.details.id,
           },
           body: banksData,
         })

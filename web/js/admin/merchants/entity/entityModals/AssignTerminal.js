@@ -91,10 +91,9 @@ export default class AssignTerminal extends Component {
 
         closeModal();
 
-        const { props } = this.props;
         return adminFormUpload(
           body,
-          '/admin/merchant/' + props.details.id + '/terminal'
+          '/admin/merchant/' + props.merchant.details.id + '/terminal'
         )
           .then(response => {
             if (response.data.success) {

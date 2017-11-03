@@ -11,11 +11,12 @@ function toggleChecked(e) {
   sib.checked = !sib.checked;
 }
 
-export default function Field({ label, onChange, value, ...props }) {
+export default function Field({ label, onChange, value, infoMsg, ...props }) {
   return (
     <div class="field">
       <label onClick={focusInput}>{label}</label>
       <input {...props} value={value} onChange={onChange} />
+      <div class="info">{infoMsg}</div>
     </div>
   );
 }
@@ -43,7 +44,7 @@ export function SwitchField({ label, ...props }) {
 }
 
 export class Switch extends Component {
-  disabledValue = this.props.disabledValue;
+  disabledValue = this.props.disabledValue || '0';
   enabledValue = this.props.enabledValue || '1';
   buttonClass = this.props.knob ? 'checkbox knob' : 'checkbox';
 

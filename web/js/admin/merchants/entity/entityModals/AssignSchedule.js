@@ -50,7 +50,7 @@ export default class PricingPlanModal extends Component {
     return adminPost({
       route_name: 'schedule_assign',
       url_params: {
-        id: props.details.id,
+        id: props.merchant.details.id,
       },
       body: schedulePlanData,
     })
