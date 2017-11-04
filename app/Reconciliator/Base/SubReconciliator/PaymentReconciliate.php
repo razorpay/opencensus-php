@@ -896,15 +896,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->paymentIin->setType($reconCardType);
         }
-        else
-        {
-            $this->updateCardTypeIfRequired($iinCardType, $reconCardType);
-        }
-    }
-
-    protected function updateCardTypeIfRequired($iinCardType, $reconCardType)
-    {
-        if ($iinCardType !== $reconCardType)
+        else if ($iinCardType !== $reconCardType)
         {
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
@@ -1038,8 +1030,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
-     * Set reference1 if was not updated from api, And raise
-     * alert if saved value is not same as recon_value
+     * If reference1 is not already set in DB, set it from recon.
+     * If reference1 is already set, then it must be the same as
+     * what is present in recon. If it's not the same, raise an alert.
      *
      * @param string $reference1
      */
@@ -1056,21 +1049,22 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'       => TraceCode::RECON_MISMATCH,
-                    'message'          => 'Reference1 is not same as in recon',
-                    'payment_id'       => $this->payment->getId(),
-                    'api_reference1'   => $dbReference1,
-                    'recon_reference1' => $reference1
-                ]
-            );
+                    'trace_code'        => TraceCode::RECON_MISMATCH,
+                    'message'           => 'Reference1 is not same as in recon',
+                    'payment_id'        => $this->payment->getId(),
+                    'api_reference1'    => $dbReference1,
+                    'recon_reference1'  => $reference1
+                ]);
         }
     }
 
     /**
-     * Set reference2 if was not updated from api, raise
-     * alert if saved value is not same as recon_value.
+     * If reference2 is not already set in DB, set it from recon.
+     * If reference2 is already set, then it must be the same as
+     * what is present in recon. If it's not the same, raise an alert.
      *
-     * Also checks if saved value is '00'(from first_data)
+     * Not already set is defined by either `empty` or `00`.
+     * `00` is currently being stored for FirstData.
      *
      * @param string $reference2
      */
@@ -1087,13 +1081,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'       => TraceCode::RECON_MISMATCH,
-                    'message'          => 'Reference2 is not same as in recon',
-                    'payment_id'       => $this->payment->getId(),
-                    'api_reference2'   => $dbReference2,
-                    'recon_reference2' => $reference2
-                ]
-            );
+                    'trace_code'        => TraceCode::RECON_MISMATCH,
+                    'message'           => 'Reference2 is not same as in recon',
+                    'payment_id'        => $this->payment->getId(),
+                    'api_reference2'    => $dbReference2,
+                    'recon_reference2'  => $reference2
+                ]);
         }
     }
 
@@ -1381,8 +1374,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 'column_name'       => $columnName,
                 'row'               => $row,
                 'gateway'           => get_called_class()
-            ]
-        );
+            ]);
     }
 
     /**

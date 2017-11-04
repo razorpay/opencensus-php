@@ -149,22 +149,22 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         // Some hdfc reconciliation files have sb cess added to the service tax itself.
         // If sb cess is present separately, it means it's not added to the service tax.
 
-        $sbCess = $this->getSbCess();
-        $kkCess = $this->getKkCess();
+        $sbCess = $this->getSbCess($row);
+        $kkCess = $this->getKkCess($row);
 
         $serviceTax += $sbCess + $kkCess;
 
-        $igst = $this->getIgst();
-        $sgst = $this->getSgst();
-        $cgst = $this->getCgst();
-        $utgst = $this->getUtgst();
+        $igst = $this->getIgst($row);
+        $sgst = $this->getSgst($row);
+        $cgst = $this->getCgst($row);
+        $utgst = $this->getUtgst($row);
 
         $serviceTax += $igst + $sgst + $cgst + $utgst;
 
         return round($serviceTax);
     }
 
-    protected function getIgst()
+    protected function getIgst($row)
     {
         $columnIgst = null;
 
@@ -186,7 +186,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $igst;
     }
 
-    protected function getCgst()
+    protected function getCgst($row)
     {
         $columnCgst = null;
 
@@ -208,7 +208,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $cgst;
     }
 
-    protected function getSgst()
+    protected function getSgst($row)
     {
         $columnSgst = null;
 
@@ -230,7 +230,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $sgst;
     }
 
-    protected function getUtgst()
+    protected function getUtgst($row)
     {
         $columnUtgst = null;
 
@@ -252,7 +252,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $utgst;
     }
 
-    protected function getSbCess()
+    protected function getSbCess($row)
     {
         $columnSbCess = null;
 
@@ -274,7 +274,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $sbCess;
     }
 
-    protected function getKkCess()
+    protected function getKkCess($row)
     {
         $columnKkCess = null;
 
@@ -482,17 +482,18 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $columnArn = null;
 
-        foreach (self::COLUMN_ARN as $arn)
+        foreach (self::COLUMN_ARN as $carn)
         {
-            if (empty($row[$arn]) === false)
+            if (empty($row[$carn]) === false)
             {
-                $columnArn = $row[$arn];
+                $columnArn = $row[$carn];
 
                 break;
             }
         }
 
-        if ((empty($columnArn) === true) or (strpos($columnArn, 'onus') !== false))
+        if ((empty($columnArn) === true) or
+            (stripos($columnArn, 'onus') !== false))
         {
             return null;
         }
@@ -504,11 +505,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $columnAuthCode = null;
 
-        foreach (self::COLUMN_AUTH_CODE as $ac)
+        foreach (self::COLUMN_AUTH_CODE as $cac)
         {
-            if (empty($row[$ac]) === false)
+            if (empty($row[$cac]) === false)
             {
-                $columnAuthCode = $row[$ac];
+                $columnAuthCode = $row[$cac];
 
                 break;
             }
