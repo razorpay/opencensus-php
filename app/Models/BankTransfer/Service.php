@@ -204,4 +204,20 @@ class Service extends Base\Service
 
         return $bankTransfer->toArrayPublic();
     }
+
+    public function stripPayerBankAccounts(array $input)
+    {
+        $bankTransfers = $this->repo->bank_transfer->fetch($input);
+
+        foreach ($bankTransfers as $bankTransfer)
+        {
+            $payerAccount = $bankTransfer->getPayerAccount();
+
+            $this->core->editPayerBankAccount($bankTransfer, [
+                'account_number' => ltrim($payerAccount, '0'),
+            ]);
+        }
+
+        return $bankTransfers->getPublicIds();
+    }
 }

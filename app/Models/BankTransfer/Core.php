@@ -287,6 +287,13 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($payerBankAccount);
 
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED,
+            [
+                'bank_account' => $payerBankAccount->toArrayPublic(),
+                'input'        => $input,
+            ]);
+
         return $bankTransfer;
     }
 }
