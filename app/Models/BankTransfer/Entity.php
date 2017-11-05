@@ -84,7 +84,6 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::PAYMENT_ID,
-        self::PAYER_BANK_NAME,
         // This can be added later, upon request
         // self::MODE,
         // self::UTR,
@@ -265,7 +264,7 @@ class Entity extends Base\PublicEntity
 
     public function getPayerBankNameAttribute()
     {
-        $ifsc = $this->getAttribute(self::PAYEE_IFSC);
+        $ifsc = $this->getAttribute(self::PAYER_IFSC);
 
         if ($ifsc === null)
         {
