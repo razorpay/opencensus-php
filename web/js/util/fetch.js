@@ -27,7 +27,10 @@ export function adminFetch(params) {
 export function adminPost(data, customUrl) {
   //Send params if needed for post request
   let params = data.params || null;
+  delete data.params;
+
   data = parseParams(data);
+
   return fetch({
     url: customUrl ? customUrl : '/admin/generic',
     method: 'post',
