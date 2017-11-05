@@ -25,11 +25,18 @@ export default class PermissionsList extends Component {
 
   showRole = openRoleModal.bind(null, this.collection);
 
+  showEntity = showEntity.bind(null, this.collection);
+
   render() {
     return (
       <div class="list-container">
         <div class="box">
-          <header>Permissions</header>
+          <header>
+            Permissions
+            <div class="btn" onClick={this.showEntity}>
+              Add a Permission
+            </div>
+          </header>
           <Form onSubmit={this.onSubmit} class="filters">
             <Field name="q" label="Search" />
           </Form>
