@@ -272,7 +272,7 @@ trait EmandateTrait
      *
      * @param Verify $verify
      */
-    protected function setRecurringVerifyStatus(Verify $verify)
+    protected function setEmandateVerifyStatus(Verify $verify)
     {
         $this->checkApiSuccess($verify);
 

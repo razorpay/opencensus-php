@@ -152,7 +152,7 @@ class Gateway extends Base\Gateway
     {
         if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
         {
-            $this->setRecurringVerifyStatus($verify);
+            $this->setEmandateVerifyStatus($verify);
 
             $verify->payment = $this->saveEmandateVerifyResponseIfNeeded($verify);
 
