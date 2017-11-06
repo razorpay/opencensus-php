@@ -87,7 +87,7 @@ configure_db_dev(){
 }
 
 configure_db_cloud(){
-  php artisan migrate --force && php artisan migrate --database=test --force
+  # php artisan migrate --force && php artisan migrate --database=test --force
   # # Restart all queue worker processes
   # echo "Queue Restart"
   # php artisan queue:restart
