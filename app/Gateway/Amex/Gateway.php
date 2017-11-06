@@ -88,4 +88,9 @@ class Gateway extends AxisMigs\Gateway
             $content['vpc_SubMerchant_MerchantCategoryCode'] = $merchant['category'];
         }
     }
+
+    protected function shouldRaiseErrorForInternationalMerchant(array $input) : bool
+    {
+        return false;
+    }
 }

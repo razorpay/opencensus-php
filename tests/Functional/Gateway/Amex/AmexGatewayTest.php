@@ -140,24 +140,19 @@ class AmexGatewayTest extends TestCase
         });
     }
 
-    public function testFailureWhen3DSFailsForDomesticMerchant()
+    public function testSuccessWhen3DSFailsForDomesticMerchant()
     {
         $this->fixtures->merchant->disableInternational();
 
-        $testData = $this->testData[__FUNCTION__];
-
         $this->payment['card']['number'] = '345678000000007';
 
-        $this->runRequestResponseFlow($testData, function()
-        {
-            $this->doAuthPayment($this->payment);
-        });
+        $this->doAuthPayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment[Entity::TWO_FACTOR_AUTH], TwoFactorAuth::FAILED);
 
-        $this->assertEquals($payment['status'], 'failed');
+        $this->assertEquals($payment['status'], 'authorized');
     }
 
     public function testFailureWhen3DSFailsForRiskyMerchant()
