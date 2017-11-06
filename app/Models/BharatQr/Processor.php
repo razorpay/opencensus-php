@@ -94,9 +94,9 @@ class Processor extends VirtualAccount\Processor
 
     protected function checkIfDuplicateNotification(Entity $bharatQr)
     {
-        $merchantReference = $bharatQr->getMerchantReference();
+        $providerReferenceId = $bharatQr->getProviderReferenceId();
 
-        $bharatQrEntity = $this->repo->bharat_qr->findByMerchantReference($merchantReference);
+        $bharatQrEntity = $this->repo->bharat_qr->findByProviderReferenceId($providerReferenceId);
 
         if ($bharatQrEntity === null)
         {
@@ -150,22 +150,13 @@ class Processor extends VirtualAccount\Processor
         $this->merchant = $this->virtualAccount->merchant;
     }
 
-    protected function updateVirtualAccountAmount($amount)
-    {
-        $this->virtualAccount->incrementAmountPaid($amount);
-
-        $this->virtualAccount->incrementAmountReceived($amount);
-
-        $this->repo->saveOrFail($this->virtualAccount);
-    }
-
     protected function getVirtualAccountFromEntity($bharatQr)
     {
         $qrCodeId = $bharatQr->getMerchantReference();
 
         (new QrCode)->stripSignWithoutValidation($qrCodeId);
 
-        $qrCode = $this->repo->qr_code->findById($qrCodeId);
+        $qrCode = $this->repo->qr_code->find($qrCodeId);
 
         if ($qrCode === null)
         {

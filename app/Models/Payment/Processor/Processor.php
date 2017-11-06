@@ -1620,12 +1620,17 @@ class Processor
 
         if (($payment->isBankTransfer() === true) or
             // @todo to be changed after refactor
+            // gateway check won't work here because
+            // gateway is not set at this point
             (Route::currentRouteName() === 'bharat_qr_payment_process'))
         {
             return false;
         }
 
+        //
         // Bharat Qr payment
+        // This is required again for refunds. Route check for work here
+        //
         if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
         {
             return false;

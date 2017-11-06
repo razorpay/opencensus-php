@@ -734,7 +734,7 @@ trait Refund
         else if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_REFUNDS_NOT_AVAILABLE_FOR_BHARAT_QR_PAYMENTS);
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
         }
         else
         {

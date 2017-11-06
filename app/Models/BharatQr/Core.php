@@ -63,7 +63,7 @@ class Core extends Base\Core
             if (empty($bharatQr->getProviderReferenceId()) === true)
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::PROVIDER_REFERENCE_ID_NEEDS_TO_SENT);
+                    ErrorCode::BAD_REQUEST_PROVIDER_REFERENCE_ID_NEEDS_TO_SENT);
             }
 
             $this->mutex->acquireAndRelease(
@@ -77,7 +77,7 @@ class Core extends Base\Core
 
             $valid = true;
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $this->trace->traceException(
                 $ex, Trace::ERROR, TraceCode::BHARAT_QR_PAYMENT_PROCESSING_FAILED, $input);

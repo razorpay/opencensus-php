@@ -25,6 +25,14 @@ class Service extends Base\Service
 
         $valid = $this->core->processPayment($input);
 
+        $response = $this->getResponse($valid);
+
+        return $response;
+    }
+
+    protected function getResponse(bool $valid)
+    {
+
         if ($valid === true)
         {
             $xml = '<RESPONSE>OK</RESPONSE>';
@@ -43,4 +51,3 @@ class Service extends Base\Service
         return $response;
     }
 }
-

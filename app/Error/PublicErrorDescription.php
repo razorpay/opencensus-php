@@ -92,8 +92,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT                      = 'UPI transactions are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_BANK_TRANSFER_NOT_ENABLED_FOR_MERCHANT            = 'Bank transfers are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT                = 'Bharat Qr is not enabled for merchant';
-    const BAD_REQUEST_REFUNDS_NOT_AVAILABLE_FOR_BHARAT_QR_PAYMENTS              = 'A bharat qr payment can not be refunded';
-    const BAD_REQUEST_PROVIDER_REFERENCE_ID_NEEDS_TO_SENT                       = 'Provider reference is is required';
+    const BAD_REQUEST_PROVIDER_REFERENCE_ID_NEEDS_TO_SENT                       = 'Provider reference is required';
     const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED                                 = 'Bank not provided for net banking payment';
     const BAD_REQUEST_PAYMENT_INVALID_BANK_CODE                                 = 'Bank code provided for net banking payment is invalid';
     const BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE                      = 'Account Balance is insufficient';
