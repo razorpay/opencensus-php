@@ -683,13 +683,13 @@ class MerchantFeeTest extends TestCase
 
         $this->fixtures->merchant->setFeeBearer('customer');
 
-        $this->runMerchantFeeTestNetBWithException('100', 'HDFC', ['payment' => '1fq0OXpgrfrt4y']);
+        $this->runMerchantFeeTestNetB('100', 'HDFC', ['payment' => '1fq0OXpgrfrt4y']);
 
         $this->fixtures->merchant->setFeeBearer('platform');
 
         try
         {
-            $this->runMerchantFeeTestNetBWithException('100', 'HDFC', ['payment' => '1fq0OXpgrfrt4y']);
+            $this->runMerchantFeeTestNetB('100', 'HDFC', ['payment' => '1fq0OXpgrfrt4y']);
         }
         catch(Exception\BadRequestException $ex)
         {
@@ -901,34 +901,6 @@ class MerchantFeeTest extends TestCase
         $this->assertPricingRules($expectedRules, $feesSplit);
 
         return [$fee, $tax, $feesSplit];
-    }
-
-    protected function runMerchantFeeTestNetBWithException($amount, $bank, array $expectedRules)
-    {
-        $paymentArray = $this->getDefaultPaymentEntityArray();
-
-        $paymentArray['amount'] = $amount;
-
-        $paymentArray['bank'] = $bank;
-
-        $paymentArray[Payment\Entity::METHOD] = Payment\Method::NETBANKING;
-
-        $payment = new Payment\Entity($paymentArray);
-
-        $payment->setBaseAmount($amount);
-
-        try
-        {
-            list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
-
-            $this->assertPricingRules($expectedRules, $feesSplit);
-
-            return [$fee, $tax, $feesSplit];
-        }
-        catch(Exception\BadRequestException $ex)
-        {
-            throw $ex;
-        }
     }
 
     protected function runMerchantFeeTestWallet($wallet, array $expectedRules, $amount = 50000)
