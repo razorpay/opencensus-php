@@ -141,7 +141,33 @@ export default class MerchantEntity extends Component {
 
   // Enable / Disable receipt emails
   toggleReceiptEmail = () => {
-    console.log('Enable / Disable Receipt Email....');
+    const isReceiptEmailEnabled = this.model.merchant.details
+      .receipt_email_enabled;
+    let action, successMsg;
+
+    if (isReceiptEmailEnabled) {
+      action = 'disable_receipt_emails';
+      successMsg = 'Receipt email disabled successfully';
+    } else {
+      action = 'enable_receipt_emails';
+      successMsg = 'Receipt email enabled successfully';
+    }
+
+    adminPut({
+      route_name: 'merchant_action',
+      url_params: {
+        id: this.merchantId,
+      },
+      body: { action },
+    })
+      .then(response => {
+        closeModal();
+        notifySuccess(successMsg);
+        this.model.updateDetails(response);
+      })
+      .catch(err => {
+        notifyError(JSON.stringify(err.response));
+      });
   };
 
   toggleArchiveMerchant = () => {
@@ -231,13 +257,11 @@ export default class MerchantEntity extends Component {
           }
         }
 
-        {merchant.details.receipt_email_enabled == 0 && (
-          <div onClick={this.toggleReceiptEmail}>Enable Receipt Email</div>
-        )}
-
-        {merchant.details.receipt_email_enabled == 1 && (
-          <div onClick={this.toggleReceiptEmail}>Disable Receipt Email</div>
-        )}
+        {/* Toggle disbale or enable receipt email */}
+        <div onClick={this.toggleReceiptEmail}>
+          {merchant.details.receipt_email_enabled ? 'Disable' : 'Enable'}{' '}
+          Receipt Email
+        </div>
 
         <div onClick={actions.EditMethods}>Edit Methods</div>
         <div onClick={actions.AssignPricingPlan}>Assign Pricing</div>
