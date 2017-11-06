@@ -3,7 +3,6 @@
 namespace RZP\Tests\Unit\Models\Card;
 
 use Mockery;
-use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Card;
@@ -11,7 +10,6 @@ use RZP\Models\Pricing;
 use RZP\Models\Payment;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Models\Base\PublicCollection;
 
 class MerchantFeeTest extends TestCase
 {
@@ -240,6 +238,25 @@ class MerchantFeeTest extends TestCase
                 'max_fee'             => null,
             ]);
 
+        $pricingPlanNetB4 = new Pricing\Entity([
+            'id'                  => '1fq0OXpgrfrt4y',
+            'plan_id'             => '1hDYlICobzOCYy',
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => 'payment',
+            'payment_method'      => 'netbanking',
+            'payment_method_type' => null,
+            'payment_network'     => 'HDFC',
+            'payment_issuer'      => null,
+            'amount_range_active' => true,
+            'amount_range_min'    => 0,
+            'amount_range_max'    => 100000000000,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 500,
+            'international'       => 0,
+            'min_fee'             => 0,
+            'max_fee'             => null,
+        ]);
+
         $pricingPlanWallet = new Pricing\Entity([
                 'id'                  => '1fq0O3dewex3df',
                 'plan_id'             => '1hDYlICobzOCYt',
@@ -403,6 +420,7 @@ class MerchantFeeTest extends TestCase
             $pricingPlanNetB1,
             $pricingPlanNetB2,
             $pricingPlanNetB3,
+            $pricingPlanNetB4,
             $pricingPlanWallet,
             $pricingPlanWallet1,
             $pricingPlanWallet2,
@@ -657,7 +675,32 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantFeeTestNetB("200000", "SBMY", ["payment" => "1fq0OXpgrfrt4x"]);
 
         $this->runMerchantFeeTestNetB("200", "SBMY", ["payment" => "1fq0OXpgrfrt5x"]);
+    }
 
+    public function testNetBankingRuleSelectionForCustomerFeeBearer()
+    {
+        $this->fee->setPricingRepo($this->getMockPricingRepo());
+
+        $this->fixtures->merchant->setFeeBearer('customer');
+
+        $this->runMerchantFeeTestNetBWithException("100", "HDFC", ["payment" => "1fq0OXpgrfrt4y"]);
+
+        $this->fixtures->merchant->setFeeBearer('platform');
+
+        try
+        {
+            $this->runMerchantFeeTestNetBWithException("100", "HDFC", ["payment" => "1fq0OXpgrfrt4y"]);
+        }
+        catch(Exception\BadRequestException $ex)
+        {
+            $this->assertEquals("BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT", $ex->getCode());
+
+            $this->assertEquals("The fees calculated for payment is greater than the payment amount. Please provide a higher amount", $ex->getMessage());
+
+            return;
+        }
+
+        $this->fail();
     }
 
     public function testWalletRuleSelection()
@@ -856,6 +899,36 @@ class MerchantFeeTest extends TestCase
         list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
         $this->assertPricingRules($expectedRules, $feesSplit);
+
+        return [$fee, $tax, $feesSplit];
+    }
+
+    protected function runMerchantFeeTestNetBWithException($amount, $bank, array $expectedRules)
+    {
+        $paymentArray = $this->getDefaultPaymentEntityArray();
+
+        $paymentArray['amount'] = $amount;
+
+        $paymentArray['bank'] = $bank;
+
+        $paymentArray[Payment\Entity::METHOD] = Payment\Method::NETBANKING;
+
+        $payment = new Payment\Entity($paymentArray);
+
+        $payment->setBaseAmount($amount);
+
+        try
+        {
+            list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+
+            $this->assertPricingRules($expectedRules, $feesSplit);
+
+            return [$fee, $tax, $feesSplit];
+        }
+        catch(Exception\BadRequestException $ex)
+        {
+            throw $ex;
+        }
     }
 
     protected function runMerchantFeeTestWallet($wallet, array $expectedRules, $amount = 50000)
