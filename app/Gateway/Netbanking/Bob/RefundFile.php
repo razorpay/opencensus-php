@@ -62,7 +62,7 @@ class RefundFile extends Base\RefundFile
         array_unshift(
             $data,
             $this->getDataForRow(
-                Config::get('gateways.netbanking_corporation.pooling_account_number'),
+                Config::get('gateway.netbanking_bob.pooling_account_number'),
                 $totalAmount,
                 Constants::REFUND_PARTICULARS_HEAD,
                 Constants::REFUND_DEBIT
