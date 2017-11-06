@@ -313,11 +313,17 @@ class Core extends Base\Core
         return $response;
     }
 
+    /**
+     * Updates the status of the product activation requests received
+     * from the merchants to either approved or pending.
+     *
+     * TODO - Remove the functions in this flow, once the data has been backfilled
+     */
     public function backfillProductActivationRequests()
     {
         $merchantRequests = $this->repo->feature->getProductRequestsSubmitted();
 
-        foreach($merchantRequests as $merchantId => $productRequests)
+        foreach ($merchantRequests as $merchantId => $productRequests)
         {
             $merchantId = strval($merchantId);
 
@@ -325,7 +331,7 @@ class Core extends Base\Core
 
             $merchantDetail = $merchant->merchantDetail;
 
-            foreach($productRequests as $product)
+            foreach ($productRequests as $product)
             {
                 $getProductActivationStatus = camel_case('get_' . $product . '_activation_status');
 
