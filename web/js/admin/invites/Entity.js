@@ -38,9 +38,7 @@ class AddInvites extends Component {
 
   handleInvite = body => {
     return adminPost({
-      params: {
-        route_name: 'admin_lead_create',
-      },
+      route_name: 'admin_lead_create',
       body,
     }).then(response => {
       if (response.data.success) {

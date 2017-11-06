@@ -89,7 +89,7 @@ class EditRole extends Component {
     } else {
       body.permissions = this.state.selectedPerms;
       return adminPost({
-        params: { route_name: 'role_create' },
+        route_name: 'role_create',
         body,
       }).then(response => {
         if (response) {
