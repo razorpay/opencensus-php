@@ -51,8 +51,8 @@ export default class App extends Component {
 
             <Route path="/groups" component={GroupList} />
             <Route path="/users" component={UserList} />
+            <Route path="/orgs/:orgId" component={OrgEntity} />
             <Route path="/orgs" component={OrgsList} />
-            <Route path="/orgsEdit/:orgId?" component={OrgEntity} />
             <Route path="/fieldmaps/:orgId" component={FieldMaps} />
             <Route path="/roles" component={RoleList} />
             <Route path="/profile" component={Profile} />
