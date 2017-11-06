@@ -16,9 +16,9 @@ export default function fetch(options) {
     .catch(e => notifyError(e));
 }
 
-export function adminFetch(params) {
+export function adminFetch(params, customUrl) {
   return fetch({
-    url: '/admin/generic',
+    url: customUrl ? customUrl : '/admin/generic',
     params:
       typeof params === 'string' ? { route_name: params } : parseParams(params),
   });

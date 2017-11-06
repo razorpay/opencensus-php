@@ -17,6 +17,7 @@ import MerchantEntity from 'admin/merchants/entity/MerchantEntity';
 import GenericEntity from 'admin/entities/Entity';
 
 import MerchantTeamDetails from 'admin/merchants/entity/MerchantTeamDetails';
+import MerchantAnalyticStats from 'admin/merchants/entity/MerchantAnalyticStats';
 
 import WorkflowEntity from 'admin/workflows/Entity';
 import WorkflowList from 'admin/workflows/List';
@@ -39,6 +40,10 @@ export default class App extends Component {
         <main>
           <Switch location={this.location}>
             <Route path="/merchants/:id/team" component={MerchantTeamDetails} />
+            <Route
+              path="/merchants/:id/stats"
+              component={MerchantAnalyticStats}
+            />
             <Route path="/merchants/:id" component={MerchantEntity} />
             <Route path="/merchants" component={MerchantList} />
             <Route path="/stats" component={Stats} />

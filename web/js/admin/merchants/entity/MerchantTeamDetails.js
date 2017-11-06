@@ -39,7 +39,7 @@ export default class MerchantTeamDetails extends Component {
 
   render() {
     return (
-      <div class="entity-container box">
+      <div class="entity-container">
         <header class="heading">
           Merchant: {this.merchantId} (Team Details)
         </header>
