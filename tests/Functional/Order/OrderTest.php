@@ -351,6 +351,26 @@ class OrderTest extends TestCase
         $preferences = $this->startTest($testData);
     }
 
+    public function testPaymentWithIncorrectBankFromOrderBank()
+    {
+        $this->testCreateOrderWithBank();
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'KKBK';
+
+        $payment['order_id'] = $order['id'];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testCreateOrderWithOffer()
     {
         $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"]]);
