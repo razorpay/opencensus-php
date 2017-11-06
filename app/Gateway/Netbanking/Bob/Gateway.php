@@ -52,6 +52,16 @@ class Gateway extends Base\Gateway
 
         $content = $this->getCallbackContent($input);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'gateway'            => $this->gateway,
+                'gateway_response'   => $input['gateway'],
+                'decrypted_response' => $content,
+                'payment_id'         => $input['payment']['id']
+            ]
+        );
+
         $this->assertPaymentId($content[ResponseFields::PAYMENT_ID], $input['payment']['id']);
 
         $this->assertAmount($this->formatAmount($input['payment']['amount']), $content[ResponseFields::AMOUNT]);
@@ -239,7 +249,7 @@ class Gateway extends Base\Gateway
         // Initially assume gatewaySuccess is false
         $verify->gatewaySuccess = false;
 
-        if (Status::isSuccess($verify->verifyResponseContent[ResponseFields::STATUS]) === true)
+        if (Status::isSuccess($verify->verifyResponseContent[NetbankingEntity::STATUS]) === true)
         {
             $verify->gatewaySuccess = true;
         }
