@@ -196,7 +196,7 @@ class TransferTest extends TestCase
     {
         $transfer = $this->createTransfer('account');
 
-        $transferId = $this->fixtures->transfer->stripSign($transfer['id']);
+        $transferId = $this->fixtures->stripSign($transfer['id']);
 
         $transferPayment = $this->getEntities('payment', ['transfer_id' => $transferId], true)['items'][0];
 

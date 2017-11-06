@@ -682,7 +682,7 @@ class FeaturesTest extends TestCase
 
     public function testPostOnboardingResponses()
     {
-        $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
+        $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
 
         $this->postOnboardingResponses();
     }
@@ -737,7 +737,7 @@ class FeaturesTest extends TestCase
 
         $fileStoreId = $fileStoreData['id'];
 
-        $this->stripSign($fileStoreId);
+        $this->fixtures->stripSign($fileStoreId);
 
         return $fileStoreId;
     }
@@ -996,16 +996,5 @@ class FeaturesTest extends TestCase
     protected function getMarketplaceOnboardingResponseStatus()
     {
         $this->startTest();
-    }
-
-
-    protected function stripSign(& $id)
-    {
-        $ix = strpos($id, '_');
-
-        if ($ix !== false)
-        {
-            $id = substr($id, $ix + 1);
-        }
     }
 }
