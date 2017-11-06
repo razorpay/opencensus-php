@@ -61,7 +61,7 @@ trait EmandateTrait
 
         $data = [
             RequestFields::VERSION         => Constants::VERSION,
-            RequestFields::CORP_ID         => $this->getMerchantId(),
+            RequestFields::CORP_ID         => $this->getEmandateMerchantId(),
             RequestFields::TYPE            => Constants::TYPE,
             RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
@@ -122,6 +122,8 @@ trait EmandateTrait
             ]
         );
 
+        $this->validateCallbackChecksum($content);
+
         $this->assertPaymentId(
             $input['payment'][Payment\Entity::ID],
             $content[ResponseFields::REQUEST_ID]
@@ -131,8 +133,6 @@ trait EmandateTrait
             $this->formatAmount($input['payment'][Payment\Entity::AMOUNT]),
             $content[ResponseFields::AMOUNT]
         );
-
-        $this->validateCallbackChecksum($content);
 
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
@@ -233,7 +233,7 @@ trait EmandateTrait
 
         $data = [
             RequestFields::VERSION         => Constants::VERSION,
-            RequestFields::CORP_ID         => $this->getMerchantId(),
+            RequestFields::CORP_ID         => $this->getEmandateMerchantId(),
             RequestFields::TYPE            => Constants::TYPE,
             RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
