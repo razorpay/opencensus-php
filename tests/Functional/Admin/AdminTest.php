@@ -921,4 +921,69 @@ class AdminTest extends TestCase
         $this->assertCount(7, $result['fields']);
         $this->assertCount(120, $result['entities']);
     }
+
+    public function testDeletedEntityFetchForAdmin()
+    {
+        $org = $this->fixtures->org->create([
+                                                'auth_type' => 'google_auth',
+                                                'deleted_at' => time()
+                                             ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['auth_type'] = $org['auth_type'];
+        $content = $this->startTest();
+        $this->assertSame(0, $content['count']);
+
+        $testData['request']['content']['deleted'] = 0;
+        $content = $this->startTest();
+        $this->assertSame(0, $content['count']);
+
+        $testData['request']['content']['deleted'] = '1';
+        $content = $this->startTest();
+        $this->assertSame(1, $content['count']);
+
+        $testData['request']['content']['deleted'] = 11;
+        $this->makeRequestAndCatchException(function() use ($testData)
+        {
+            $this->runRequestResponseFlow($testData);
+        },
+        \RZP\Exception\BadRequestValidationFailureException::class);
+    }
+
+    public function testDeletedEntityFindForAdmin()
+    {
+        $org = $this->fixtures->org->create([
+                                                'auth_type' => 'google_auth',
+                                                'deleted_at' => time()
+                                            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] .= $org['id'];
+        $this->makeRequestAndCatchException(
+        function() use ($testData)
+        {
+            $this->runRequestResponseFlow($testData);
+        },
+        \RZP\Exception\BadRequestException::class);
+
+        $testData['request']['content']['deleted'] = 0;
+        $this->makeRequestAndCatchException(function() use ($testData)
+        {
+            $this->runRequestResponseFlow($testData);
+        },
+        \RZP\Exception\BadRequestException::class);
+
+        $testData['request']['content']['deleted'] = 1;
+        $content = $this->startTest();
+        $this->assertSame($org['public_id'], $content['id']);
+
+        $testData['request']['content']['deleted'] = 'true';
+        $this->makeRequestAndCatchException(function() use ($testData)
+        {
+            $this->runRequestResponseFlow($testData);
+        },
+        \RZP\Exception\BadRequestValidationFailureException::class);
+    }
 }

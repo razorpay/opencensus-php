@@ -178,6 +178,28 @@ return [
         ],
     ],
 
+    'testFetchAndFindForSoftDeletedForProxyAuth' => [
+        'request' => [
+            'url'     => '/invoices/',
+            'method'  => 'get',
+            'content' => [
+                'deleted' => 1
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\ExtraFieldsException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
     'testFetchForSoftDeletedInvoiceForAppAuth' => [
         'request' => [
             'url'     => '/admin/invoice',
@@ -185,15 +207,18 @@ return [
             'content' => []
         ],
         'response' => [
-            'content' => [
-                'count'  => 1,
-                'entity' => 'collection',
-                'items'  => [
-                    [
-                        'id' => 'inv_1000000invoice',
-                    ],
-                ],
-            ],
+            'content' => [],
         ],
-    ]
+    ],
+
+    'testFindByIdForSoftDeletedInvoiceForAppAuth' => [
+        'request' => [
+            'url'     => '/admin/invoice/',
+            'method'  => 'GET',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 ];

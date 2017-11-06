@@ -805,5 +805,27 @@ return [
                 'entities' => []
             ]
         ]
-    ]
+    ],
+
+    'testDeletedEntityFetchForAdmin' => [
+        'request' => [
+            'url'      => '/admin/org',
+            'method'   => 'get',
+            'content'  => [],
+        ],
+        'response' => [
+            'content'  => [],
+        ],
+    ],
+
+    'testDeletedEntityFindForAdmin' => [
+        'request' => [
+            'url'     => '/admin/org/',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content'  => [],
+        ],
+    ],
 ];

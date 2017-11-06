@@ -45,7 +45,9 @@ class AdminController extends Controller
 
     public function getEntityById($type, $id)
     {
-        $data = $this->service()->fetchEntityById($type, $id);
+        $input = Request::all();
+
+        $data = $this->service()->fetchEntityById($type, $id, $input);
 
         return ApiResponse::json($data);
     }

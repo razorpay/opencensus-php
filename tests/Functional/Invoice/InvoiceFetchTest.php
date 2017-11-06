@@ -93,12 +93,77 @@ class InvoiceFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchAndFindForSoftDeletedForProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $invoice = $this->createDraftInvoice(['deleted_at' => time()]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $invoice['public_id'];
+
+        $this->startTest();
+    }
+
     public function testFetchForSoftDeletedInvoiceForAppAuth()
     {
         $this->ba->appAuth();
 
         $this->createDraftInvoice(['deleted_at' => time()]);
 
-        $this->startTest();
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = $this->startTest();
+        $this->assertSame(0, $content['count']);
+
+        $testData['request']['content']['deleted'] = 0;
+        $content = $this->startTest();
+        $this->assertSame(0, $content['count']);
+
+        $testData['request']['content']['deleted'] = '1';
+        $content = $this->startTest();
+        $this->assertSame(1, $content['count']);
+
+        $testData['request']['content']['deleted'] = 'xyz';
+        $this->makeRequestAndCatchException(function() use ($testData)
+        {
+            $this->runRequestResponseFlow($testData);
+        },
+        \RZP\Exception\BadRequestValidationFailureException::class);
+    }
+
+    public function testFindByIdForSoftDeletedInvoiceForAppAuth()
+    {
+        $this->ba->appAuth();
+
+        $invoice = $this->createDraftInvoice(['deleted_at' => time()]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] .= $invoice['public_id'];
+        $this->makeRequestAndCatchException(function() use ($testData)
+        {
+            $this->runRequestResponseFlow($testData);
+        },
+        \RZP\Exception\BadRequestException::class);
+
+        $testData['request']['content']['deleted'] = 0;
+        $this->makeRequestAndCatchException(function() use ($testData)
+        {
+            $this->runRequestResponseFlow($testData);
+        },
+        \RZP\Exception\BadRequestException::class);
+
+        $testData['request']['content']['deleted'] = 1;
+        $content = $this->startTest();
+        $this->assertSame($invoice['public_id'], $content['id']);
+
+        $testData['request']['content']['deleted'] = 'true';
+        $this->makeRequestAndCatchException(function() use ($testData)
+        {
+            $this->runRequestResponseFlow($testData);
+        },
+        \RZP\Exception\BadRequestValidationFailureException::class);
     }
 }

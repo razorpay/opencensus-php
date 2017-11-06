@@ -114,14 +114,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function findOrFailPublic($id, $columns = array('*'))
     {
-        $query = $this->newQuery();
-
-        if ($this->shouldIncludeTrashed())
-        {
-            $query->withTrashed();
-        }
-
-        return $query->findOrFailPublic($id, $columns);
+        return $this->newQuery()->findOrFailPublic($id, $columns);
     }
 
     public function findOrFailPublicWithRelations(
