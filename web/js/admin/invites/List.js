@@ -7,14 +7,13 @@ import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import Field from 'ui/Field';
 
-import { showEntity } from './Entity';
+import { showEntity, showDetails } from './Entity';
 
 const fields = [
   ['Invitation ID', item => item.id],
   ['Merchant Email', item => item.email],
   ['Signed Up', item => (item.signed_up_at ? 'Yes' : 'No')],
   ['Created At', item => item.created_at],
-  ['', item => <div class="btn">Details</div>],
 ];
 
 @observer
@@ -43,7 +42,11 @@ export default class InvitesList extends Component {
             <Field label="Search" />
           </Form>
         </div>
-        <PageTable model={this.collection} fields={fields} />
+        <PageTable
+          model={this.collection}
+          fields={fields}
+          onClick={showDetails}
+        />
       </div>
     );
   }

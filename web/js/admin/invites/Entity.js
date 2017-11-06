@@ -10,6 +10,7 @@ import {
 import { adminFetch, adminPost } from 'util/fetch';
 
 import InviteForm from './InviteForm';
+import DetailsModal from './DetailsModal';
 
 class AddInvites extends Component {
   state = {
@@ -41,14 +42,15 @@ class AddInvites extends Component {
       route_name: 'admin_lead_create',
       body,
     }).then(response => {
-      if (response.data.success) {
+      if (response) {
+        this.props.collection.items.push(response);
         notifySuccess(
           `Success! Invitation has been sent to ${body.contact_email}`
         );
       } else {
-        closeModal();
-        response.data.errors.forEach(err => notifyError(err));
+        response.errors.forEach(err => notifyError(err));
       }
+      closeModal();
     });
   };
 
@@ -71,4 +73,8 @@ class AddInvites extends Component {
 
 export function showEntity(collection) {
   openModal(<AddInvites collection={collection} model={this} />);
+}
+
+export function showDetails() {
+  openModal(<DetailsModal model={this} />);
 }
