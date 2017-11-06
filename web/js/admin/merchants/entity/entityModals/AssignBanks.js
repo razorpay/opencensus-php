@@ -14,7 +14,7 @@ export default class PricingPlanModal extends Component {
   componentWillMount() {
     adminFetch({
       route_name: 'merchant_get_banks',
-      url_params: { id: this.props.props.details.id },
+      url_params: { id: this.props.props.merchant.details.id },
     }).then(data => {
       let merchantBanksMapping = {};
       let banksList = {};

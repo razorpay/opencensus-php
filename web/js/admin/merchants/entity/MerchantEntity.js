@@ -4,7 +4,13 @@ import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
 
 import { adminFetch, adminPut, adminPost } from 'util/fetch';
-import { closeModal, notifyError, notifySuccess, confirm } from 'common/modal';
+import {
+  openModal,
+  closeModal,
+  notifyError,
+  notifySuccess,
+  confirm,
+} from 'common/modal';
 import * as entityModals from './entityModals';
 import { getDetailsViewMap } from './entity-resources';
 import EntityRow from 'ui/EntityRow';
@@ -186,17 +192,46 @@ export default class MerchantEntity extends Component {
 
   // Suspend / Unsuspend merchant
   toggleSuspension = () => {
-    //TODO: Depending upon suspend/unsuspend, change this message;
-    const message =
-      'Are you sure you want to suspend merchant?(Make sure you have attempted all ways of convincing him before doing this)';
-    confirm(
-      message,
-      () => {
-        console.log('Suspend / Unsuspend Merchant....');
-      },
-      'Ok',
-      'Cancel'
-    );
+    const isAlreadySuspended = this.model.merchant.details.suspended_at != null;
+    let action, successMsg;
+
+    const request = (action, successMsg) => {
+      const data = {
+        route_name: 'merchant_action',
+        url_params: {
+          id: this.merchantId,
+        },
+        body: { action },
+      };
+
+      adminPut(data)
+        .then(response => {
+          closeModal();
+          notifySuccess(successMsg);
+          this.model.updateDetails(response);
+        })
+        .catch(err => {
+          notifyError(JSON.stringify(err.response));
+        });
+    };
+
+    if (isAlreadySuspended) {
+      successMsg = 'Merchant suspension removed successfully';
+      action = 'unsuspend';
+      request(action, successMsg);
+    } else {
+      successMsg = 'Merchant suspended successfully';
+      action = 'suspend';
+
+      confirm(
+        'Are you sure you want to suspend merchant?(Make sure you have attempted all ways of convincing him before doing this)',
+        () => {
+          request(action, successMsg);
+        },
+        'Ok',
+        'Cancel'
+      );
+    }
   };
 
   getActionList() {
@@ -286,12 +321,14 @@ export default class MerchantEntity extends Component {
           Merchant
         </div>
 
-        <div onClick={this.toggleSuspension}>
-          {merchant.details.suspended_at === null
-            ? 'Suspend'
-            : 'Unsuspend'}{' '}
-          Merchant
-        </div>
+        {typeof merchant.details.suspended_at !== 'undefined' && (
+          <div onClick={this.toggleSuspension}>
+            {merchant.details.suspended_at === null
+              ? 'Suspend'
+              : 'Unsuspend'}{' '}
+            Merchant
+          </div>
+        )}
         <div onClick={actions.MarkReferred}>Mark as Referred</div>
         <div onClick={actions.EditTags}>Tag Merchant</div>
         <div onClick={actions.EditFeatures}>Feature Merchant</div>
