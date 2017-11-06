@@ -78,7 +78,17 @@ const CreateTransferBtn = ({ onClick, text = 'Create Transfer' }) =>
   </button>;
 
 export default ({ payment, transfers, onCreateTransfer }) => {
-  const amountTransferred = payment.amount_transferred;
+  const amountTransferred = payment.amount_transferred,
+    paymentStatus = payment.status;
+
+  if (['created', 'authorized', 'failed'].indexOf(paymentStatus) >= 0) {
+    return (
+      <Definition>
+        <span>Not Applicable</span>
+        <span>Only captured payments can be transferred.</span>
+      </Definition>
+    );
+  }
 
   if (!transfers.items.length && !transfers.loading) {
     return (

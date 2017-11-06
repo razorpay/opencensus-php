@@ -24,6 +24,7 @@ export default props => {
   let {
     payment,
     card,
+    bankTransfer, //virtual account details
     refunds,
     transfers,
     isLoading,
@@ -111,7 +112,11 @@ export default props => {
                   </EntityDetailRow>
 
                   <EntityDetailRow label="Payment Method">
-                    <PaymentMethod payment={payment} card={card} />
+                    <PaymentMethod
+                      payment={payment}
+                      card={card}
+                      bankTransfer={bankTransfer}
+                    />
                   </EntityDetailRow>
 
                   <EntityDetailRow label="Created At">
@@ -126,10 +131,12 @@ export default props => {
                   </EntityDetailRow>
 
                   <EntityDetailRow label="Customer">
-                    <Definition>
-                      {payment.email}
-                      {payment.contact}
-                    </Definition>
+                    {!payment.customer_id
+                      ? <span>No customer linked</span>
+                      : <Definition>
+                          {payment.email}
+                          {payment.contact}
+                        </Definition>}
                   </EntityDetailRow>
 
                   <EntityDetailRow label="Total Fee">

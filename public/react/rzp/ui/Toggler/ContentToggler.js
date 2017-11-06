@@ -34,7 +34,7 @@ export default class ContentToggler extends BaseToggler {
     return (
       <div className="rzp-content-toggler">
         <div className="less-content" onClick={this.toggle}>
-          <div className="less-content-wrapper text-primary">
+          <div className="less-content-wrapper text-primary noselect">
             {lessContent}
           </div>
           {hasMore &&
