@@ -67,6 +67,7 @@ build:
           name: Composer set-up
           code: |
               composer config -g github-oauth.github.com $github_token
+              export COMPOSER_CACHE_DIR="$WERCKER_CACHE_DIR/composer"
               mkdir -p $COMPOSER_CACHE_DIR
               composer install --no-interaction
       - script:

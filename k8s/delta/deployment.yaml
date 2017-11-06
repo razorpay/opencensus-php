@@ -1,0 +1,77 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: api
+  namespace: delta
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      name: api
+  template:
+    metadata:
+      annotations:
+        iam.amazonaws.com/role: delta-api
+      labels:
+        name: api
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/node-components: ""
+      imagePullSecrets:
+      - name: registry
+      containers:
+      - env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: api
+              key: APP_MODE
+        name: api
+        image: razorpay/api:4ca47058c1c9ddb6a43da3d284f406340ecf3286
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        volumeMounts:
+          - name: trace
+            mountPath: /app/storage/logs/
+          - name: apache
+            mountPath: /var/log/apache/
+        readinessProbe:
+          httpGet:
+            path: /commit.txt
+            port: 80
+            httpHeaders:
+              - name: Host
+                value: delta-api.razorpay.in
+          initialDelaySeconds: 60
+          periodSeconds: 120
+        livenessProbe:
+          httpGet:
+            path: /commit.txt
+            port: 80
+            httpHeaders:
+              - name: Host
+                value: delta-api.razorpay.in
+          initialDelaySeconds: 60
+          periodSeconds: 2
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/rm","-f","/app/public/commit.txt",";","sleep","5",";","/usr/sbin/apachectl","-k","graceful-stop"]
+      terminationGracePeriodSeconds: 60
+      volumes:
+      - name: trace
+        hostPath:
+          path: /var/log/fluentd/splunk/api/trace
+      - name: apache
+        hostPath:
+          path: /var/log/fluentd/splunk/api/apache
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always

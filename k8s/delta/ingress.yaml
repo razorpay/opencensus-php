@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: traefik
+  generation: 1
+  name: api
+  namespace: delta
+spec:
+  rules:
+  - host: delta-api.razorpay.in
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: api
+          servicePort: 80

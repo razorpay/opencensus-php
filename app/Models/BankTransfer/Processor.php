@@ -274,6 +274,10 @@ class Processor extends Base\Core
 
             return false;
         }
+        else if ($this->virtualAccount->merchant->methods->isBankTransferEnabled() === false)
+        {
+            return false;
+        }
 
         return true;
     }
@@ -507,7 +511,7 @@ class Processor extends Base\Core
     {
         $label = $bankTransfer->getPayerName();
 
-        if (empty($label) === true)
+        if (empty(trim($label)) === true)
         {
             $label = $bankTransfer->merchant->getBillingLabel();
         }

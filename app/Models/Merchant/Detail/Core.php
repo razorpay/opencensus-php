@@ -174,7 +174,7 @@ class Core extends Base\Core
         return $customer;
     }
 
-    protected function postFormSubmissionToZapier($data)
+    public function postFormSubmissionToZapier($data)
     {
         if (Config::get('zapier.mock'))
         {

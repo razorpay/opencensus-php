@@ -444,7 +444,7 @@ class Core extends Base\Core
                 null,
                 [
                     'app_token_customer_id' => $appTokenCustomerId,
-                    'expected_customer_id' => $customerId()
+                    'expected_customer_id' => $customerId,
                 ]);
         }
 

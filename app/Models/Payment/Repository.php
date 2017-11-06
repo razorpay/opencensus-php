@@ -954,15 +954,6 @@ class Repository extends Base\Repository
                     ->sum(Entity::AMOUNT);
     }
 
-    public function updateTax(int $limit = 10000)
-    {
-        return $this->newQuery()
-                    ->whereNull(Entity::TAX)
-                    ->whereNotNull(Entity::SERVICE_TAX)
-                    ->limit($limit)
-                    ->update([Entity::TAX => DB::raw(Entity::SERVICE_TAX)]);
-    }
-
     public function fetchPendingEMandateRegistration(string $gateway, int $from, int $to)
     {
         $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
@@ -975,7 +966,10 @@ class Repository extends Base\Repository
 
         $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
 
+        $selectCols = $this->dbColumn('*');
+
         return $this->newQuery()
+                    ->select($selectCols)
                     ->join(
                           Table::TOKEN,
                           function ($join)
@@ -1007,15 +1001,18 @@ class Repository extends Base\Repository
 
         $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
 
+        $selectCols = $this->dbColumn('*');
+
         return $this->newQuery()
+                    ->select($selectCols)
                     ->join(
                         Table::TOKEN,
                         function ($join)
                         use ($tokenIdColumn)
-                         {
-                            $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
-                            $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
-                         })
+                        {
+                          $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
+                          $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
+                        })
                     ->where(Entity::RECURRING_TYPE, '=', RecurringType::AUTO)
                     ->where(Entity::STATUS, '=', Status::CREATED)
                     ->where($paymentRecurringColumn, '=', 1)
@@ -1024,7 +1021,7 @@ class Repository extends Base\Repository
                     ->whereBetween($paymentCreatedAtColumn, [$from, $to])
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::CONFIRMED)
                     ->where($tokenRecurringColumn, '=', 1)
-                    ->with(['localToken', 'globalToken'])
+                    ->with(['localToken', 'globalToken', 'merchant', 'order'])
                     ->get();
     }
 }

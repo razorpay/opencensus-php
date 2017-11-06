@@ -26,7 +26,7 @@ class Validator extends Base\Validator
         'Date'                  => 'required|',
         'MerchantRefNo'         => 'required|alpha_num|size:14',
         'TransactionId'         => 'required|in:XTXTV01',
-        'FlgVerify'             => 'required|in:Y',
+        'FlgVerify'             => 'required|in:Y,V',
         'ClientCode'            => 'required|alpha_num|max:40',
         'SuccessStaticFlag'     => 'required|in:N',
         'FailureStaticFlag'     => 'required|in:N',

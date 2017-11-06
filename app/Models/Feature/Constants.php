@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Feature;
 
+use RZP\Models\Merchant\Detail as MerchantDetail;
+
 class Constants
 {
     const ENTITY_IDS                    = 'entity_ids';
@@ -49,6 +51,13 @@ class Constants
     const DISABLE_MAESTRO               = 'disable_maestro';
     const DISABLE_RUPAY                 = 'disable_rupay';
     const BLOCK_INTERNATIONAL_RECURRING = 'block_intl_recurring';
+    const BHARAT_QR                     = 'bharat_qr';
+    const MOBIKWIK_OFFERS               = 'mobikwik_offers';
+    const ALLOW_DC_RECURRING            = 'allow_dc_recurring';
+
+    // Different actions for feature activation flow
+    const CREATE           = 'create';
+    const UPDATE           = 'update';
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -94,6 +103,9 @@ class Constants
         self::DISABLE_MAESTRO               => true,
         self::DISABLE_RUPAY                 => true,
         self::BLOCK_INTERNATIONAL_RECURRING => false,
+        self::BHARAT_QR                     => true,
+        self::MOBIKWIK_OFFERS               => true,
+        self::ALLOW_DC_RECURRING            => true,
     ];
 
     // Keys used in the feature on-boarding workflow
@@ -118,6 +130,11 @@ class Constants
     const AVAILABLE_RESPONSES = 'available_responses';
     const MANDATORY           = 'mandatory';
 
+    const ONBOARDING_STATUSES = [
+        MerchantDetail\Entity::PENDING,
+        MerchantDetail\Entity::REJECTED,
+        MerchantDetail\Entity::APPROVED,
+    ];
 
     /**
      * Features that are exposed to the merchant and can be
@@ -127,45 +144,35 @@ class Constants
      */
     public static $visibleFeaturesMap = [
         self::NOFLASHCHECKOUT  => [
-            'feature'      => self::NOFLASHCHECKOUT,
-            'display_name' => 'No Flash Checkout',
-            'documentation'=> ''
+            'feature'       => self::NOFLASHCHECKOUT,
+            'display_name'  => 'No Flash Checkout',
+            'documentation' => ''
         ],
         self::MARKETPLACE      => [
-            'feature'      => self::MARKETPLACE,
-            'display_name' => 'Route',
-            'documentation'=> 'route'
+            'feature'       => self::MARKETPLACE,
+            'display_name'  => 'Route',
+            'documentation' => 'route'
         ],
         self::SUBSCRIPTIONS    => [
-            'feature'      => self::SUBSCRIPTIONS,
-            'display_name' => 'Subscriptions',
-            'documentation'=> 'subscriptions'
+            'feature'       => self::SUBSCRIPTIONS,
+            'display_name'  => 'Subscriptions',
+            'documentation' => 'subscriptions'
         ],
         self::VIRTUAL_ACCOUNTS => [
-            'feature'      => self::VIRTUAL_ACCOUNTS,
-            'display_name' => 'Smart Collect',
-            'documentation'=> 'smart-collect'
+            'feature'       => self::VIRTUAL_ACCOUNTS,
+            'display_name'  => 'Smart Collect',
+            'documentation' => 'smart-collect'
         ],
     ];
 
     /*
-     * $notifyFeatures should be a subset of the visible features.
+     * PRODUCT_FEATURES should be a subset of the visible features.
      * If any of these features are enabled on live mode, the user
      * will be notified through an email.
+     * Product features can be enabled/disabled on test mode by the merchant,
+     * but not on the live mode.
      */
-    public static $notifyFeatures = [
-        self::MARKETPLACE,
-        self::SUBSCRIPTIONS,
-        self::VIRTUAL_ACCOUNTS
-    ];
-
-    /**
-     * Lists features that can be enabled/disabled on test mode by the merchant
-     * but not on live
-     *
-     * @var array
-     */
-    public static $featuresUneditableOnLive = [
+    const PRODUCT_FEATURES = [
         self::MARKETPLACE,
         self::SUBSCRIPTIONS,
         self::VIRTUAL_ACCOUNTS

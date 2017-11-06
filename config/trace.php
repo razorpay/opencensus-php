@@ -1,5 +1,12 @@
 <?php
 
+$hostname = 'localhost';
+
+if (getenv('HOSTNAME') !== false)
+{
+    $hostname = getenv('HOSTNAME');
+}
+
 return array(
 
     /*
@@ -11,7 +18,7 @@ return array(
 
     'fallbackEmail' => 'developers@razorpay.com',
 
-    'cloud' => env('CLOUD'),
+    'cloud' => ! env('APP_DEBUG', false),
 
     'sensitive_urls' => [
         'payments/create/jsonp',
@@ -39,6 +46,8 @@ return array(
     'rotate'  => true,
 
     'log_max_files' => 5,
+
+    'logpath' => storage_path() . '/logs/' . $hostname . '-trace.log',
 
     'trace_code_class' => RZP\Trace\TraceCode::class,
 );

@@ -18,6 +18,7 @@ return [
                 'password_confirmation' => 'hello123',
                 'contact_mobile'        => '123456789',
                 'confirm_token'         => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
             ],
         ],
         'response' => [
@@ -36,13 +37,13 @@ return [
         ],
         'response' => [
             'content' => [
-                'contact_mobile' => NULL,
+                'contact_mobile' => null,
                 'confirmed'      => true,
                 'merchants'      => [
                     [
                         'activated'    => false,
-                        'archived_at'  => NULL,
-                        'suspended_at' => NULL,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
                         'role'         => 'owner'
                     ]
                 ]
@@ -58,13 +59,13 @@ return [
         ],
         'response' => [
             'content' => [
-                'contact_mobile' => NULL,
+                'contact_mobile' => null,
                 'confirmed'      => true,
                 'merchants'      => [
                     [
                         'activated'    => false,
-                        'archived_at'  => NULL,
-                        'suspended_at' => NULL,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
                         'role'         => 'owner'
                     ]
                 ]
@@ -101,7 +102,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'contact_mobile' => NULL,
+                'contact_mobile' => null,
                 'confirmed'      => true
             ],
         ],
@@ -136,7 +137,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'contact_mobile' => NULL,
+                'contact_mobile' => null,
                 'confirmed'      => true
             ],
         ],
@@ -151,7 +152,7 @@ return [
         'response' => [
             'content' => [
                 'name'           => 'hello',
-                'contact_mobile' => NULL,
+                'contact_mobile' => null,
                 'confirmed'      => true
             ],
         ],
@@ -165,7 +166,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'contact_mobile' => NULL,
+                'contact_mobile' => null,
                 'confirmed'      => true
             ],
         ],
@@ -199,7 +200,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'contact_mobile' => NULL,
+                'contact_mobile' => null,
                 'confirmed'      => true
             ],
         ],
@@ -212,7 +213,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'contact_mobile' => NULL,
+                'contact_mobile' => null,
                 'confirmed'      => true
             ],
         ],
@@ -225,8 +226,31 @@ return [
         ],
         'response' => [
             'content' => [
-                'contact_mobile' => NULL,
+                'contact_mobile' => null,
                 'confirmed'      => true
+            ],
+        ],
+    ],
+
+    'testGetUserByEmail' => [
+        'request' => [
+            'url'    => '/users/email/%s',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testResendVerificationMail' => [
+        'request' => [
+            'url'     => '/users/resend-verification',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                "success" => true,
             ],
         ],
     ],

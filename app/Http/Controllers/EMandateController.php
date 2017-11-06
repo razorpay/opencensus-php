@@ -10,14 +10,7 @@ use RZP\Models\EMandate;
 
 class EMandateController extends Controller
 {
-    public function postGenerateRegistrationFile($gateway)
-    {
-        $input = Request::all();
-
-        $data = $this->service()->generateRegistrationFile($gateway, $input);
-
-        return ApiResponse::json($data);
-    }
+    protected $service = EMandate\Service::class;
 
     public function postReconcileRegistrationFile($gateway)
     {
@@ -31,15 +24,6 @@ class EMandateController extends Controller
         $input = Request::all();
 
         $data = $this->service()->reconcileRegistrationFile($gateway, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function postGenerateDebitFile($gateway)
-    {
-        $input = Request::all();
-
-        $data = $this->service()->generateDebitFile($gateway, $input);
 
         return ApiResponse::json($data);
     }

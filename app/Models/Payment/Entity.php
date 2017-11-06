@@ -97,7 +97,6 @@ class Entity extends Base\PublicEntity
     // This is the bucket for the next verify and not the current verify.
     const VERIFY_BUCKET         = 'verify_bucket';
     const CALLBACK_URL          = 'callback_url';
-    const SERVICE_TAX           = 'service_tax';
     const TAX                   = 'tax';
     const OTP_ATTEMPTS          = 'otp_attempts';
     const OTP_COUNT             = 'otp_count';
@@ -157,7 +156,6 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::CALLBACK_URL,
         self::FEE,
-        self::SERVICE_TAX,
         self::TAX,
         self::RECURRING,
         self::SAVE,
@@ -228,7 +226,6 @@ class Entity extends Base\PublicEntity
         self::RECURRING,
         self::SAVE,
         self::FEE,
-        self::SERVICE_TAX,
         self::TAX,
         self::OTP_ATTEMPTS,
         self::OTP_COUNT,
@@ -267,13 +264,12 @@ class Entity extends Base\PublicEntity
         self::TOKEN_ID,
         self::NOTES,
         self::FEE,
-        self::SERVICE_TAX,
+        self::TAX,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::ACQUIRER_DATA,
         // self::SUBSCRIPTION_ID,
         self::CREATED_AT,
-        self::TAX,
     ];
 
     /**
@@ -345,7 +341,7 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD_UNTIL        => null,
         self::SAVE                 => false,
         self::FEE                  => null,
-        self::SERVICE_TAX          => null,
+        self::TAX                  => null,
         self::OTP_ATTEMPTS         => null,
         self::OTP_COUNT            => null,
         self::EMI_PLAN_ID          => null,
@@ -368,7 +364,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_TRANSFERRED,
         self::AMOUNT_PAIDOUT,
         self::FEE,
-        self::SERVICE_TAX,
         self::TAX,
     ];
 
@@ -386,7 +381,6 @@ class Entity extends Base\PublicEntity
         self::SIGNED               => 'bool',
         self::AMOUNT               => 'int',
         self::FEE                  => 'int',
-        self::SERVICE_TAX          => 'int',
         self::TAX                  => 'int',
         self::SAVE                 => 'bool',
         self::INTERNATIONAL        => 'bool',
@@ -705,11 +699,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GATEWAY_CAPTURED, $gatewayCaptured);
     }
 
-    public function setServiceTax($serviceTax)
-    {
-        $this->setAttribute(self::SERVICE_TAX, $serviceTax);
-    }
-
     public function setTax($tax)
     {
         $this->setAttribute(self::TAX, $tax);
@@ -799,6 +788,16 @@ class Entity extends Base\PublicEntity
     public function setDisputed($disputed)
     {
         $this->setAttribute(self::DISPUTED, $disputed);
+    }
+
+    public function setReference1(string $reference1)
+    {
+        $this->setAttribute(self::REFERENCE1, $reference1);
+    }
+
+    public function setReference2(string $reference2)
+    {
+        $this->setAttribute(self::REFERENCE2, $reference2);
     }
 
     public function decrementAmountTransferred(int $amount)
@@ -1175,8 +1174,7 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        // return $this->getAttribute(self::INTERNATIONAL);
-        return $this->card->isInternational();
+        return $this->getAttribute(self::INTERNATIONAL);
     }
 
     public function isOpenWalletPayment()
@@ -1409,11 +1407,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE);
     }
 
-    public function getServiceTax()
-    {
-        return $this->getAttribute(self::SERVICE_TAX);
-    }
-
     public function getTax()
     {
         return $this->getAttribute(self::TAX);
@@ -1473,6 +1466,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::TWO_FACTOR_AUTH);
     }
+
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
@@ -1496,6 +1490,16 @@ class Entity extends Base\PublicEntity
     public function getTerminalId()
     {
         return $this->getAttribute(self::TERMINAL_ID);
+    }
+
+    public function getReference1()
+    {
+        return $this->getAttribute(self::REFERENCE1);
+    }
+
+    public function getReference2()
+    {
+        return $this->getAttribute(self::REFERENCE2);
     }
 
     public function isSecondRecurring()
@@ -1920,11 +1924,6 @@ class Entity extends Base\PublicEntity
     {
         $data = parent::toArrayReport();
 
-        $tax = $data[self::TAX];
-
-        // Add tax key at the end to maintain order of columns in the report
-        unset($data[self::TAX]);
-
         unset($data[self::CUSTOMER_ID]);
         unset($data[self::TOKEN_ID]);
 
@@ -1944,8 +1943,6 @@ class Entity extends Base\PublicEntity
         {
             $data['invoice_id'] = $this->getInvoiceId();
         }
-
-        $data[self::TAX] = $tax;
 
         return $data;
     }

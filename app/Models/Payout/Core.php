@@ -318,8 +318,6 @@ class Core extends Base\Core
 
         $payout->setFees($txn->getFee());
 
-        $payout->setServiceTax($txn->getServiceTax());
-
         $payout->setTax($txn->getTax());
 
         $this->validateMerchantBalance($payout);

@@ -27,6 +27,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_IGST               = ['igst_amt', 'IGST AMT'];
     const COLUMN_SGST               = ['sgst_amt', 'SGST AMT'];
     const COLUMN_UTGST              = ['utgst_amt', 'UTGST_AMT'];
+    const COLUMN_ARN                = ['arn_no', 'ARN NO'];
+    const COLUMN_AUTH_CODE          = ['approv_code', 'APPROV CODE'];
 
     const COLUMN_TERMINAL_NUMBER    = ['terminal_number', 'TERMINAL NUMBER'];
 
@@ -70,7 +72,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         // The newer files have the actual
         // payment ID itself, like for FSS.
         //
-        if (UniqueIdEntity::verifyUniqueId($paymentId, false) === true)
+        if (UniqueIdEntity::verifyUniqueId($ref, false) === true)
         {
             $paymentId = $ref;
         }
@@ -147,22 +149,22 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         // Some hdfc reconciliation files have sb cess added to the service tax itself.
         // If sb cess is present separately, it means it's not added to the service tax.
 
-        $sbCess = $this->getSbCess();
-        $kkCess = $this->getKkCess();
+        $sbCess = $this->getSbCess($row);
+        $kkCess = $this->getKkCess($row);
 
         $serviceTax += $sbCess + $kkCess;
 
-        $igst = $this->getIgst();
-        $sgst = $this->getSgst();
-        $cgst = $this->getCgst();
-        $utgst = $this->getUtgst();
+        $igst = $this->getIgst($row);
+        $sgst = $this->getSgst($row);
+        $cgst = $this->getCgst($row);
+        $utgst = $this->getUtgst($row);
 
         $serviceTax += $igst + $sgst + $cgst + $utgst;
 
         return round($serviceTax);
     }
 
-    protected function getIgst()
+    protected function getIgst($row)
     {
         $columnIgst = null;
 
@@ -184,7 +186,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $igst;
     }
 
-    protected function getCgst()
+    protected function getCgst($row)
     {
         $columnCgst = null;
 
@@ -206,7 +208,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $cgst;
     }
 
-    protected function getSgst()
+    protected function getSgst($row)
     {
         $columnSgst = null;
 
@@ -228,7 +230,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $sgst;
     }
 
-    protected function getUtgst()
+    protected function getUtgst($row)
     {
         $columnUtgst = null;
 
@@ -250,7 +252,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $utgst;
     }
 
-    protected function getSbCess()
+    protected function getSbCess($row)
     {
         $columnSbCess = null;
 
@@ -272,7 +274,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $sbCess;
     }
 
-    protected function getKkCess()
+    protected function getKkCess($row)
     {
         $columnKkCess = null;
 
@@ -474,6 +476,51 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return null;
+    }
+
+    protected function getArn($row)
+    {
+        $columnArn = null;
+
+        foreach (self::COLUMN_ARN as $carn)
+        {
+            if (empty($row[$carn]) === false)
+            {
+                $columnArn = $row[$carn];
+
+                break;
+            }
+        }
+
+        if ((empty($columnArn) === true) or
+            (stripos($columnArn, 'onus') !== false))
+        {
+            return null;
+        }
+
+        return trim(str_replace("'", '', $columnArn));
+    }
+
+    protected function getAuthCode($row)
+    {
+        $columnAuthCode = null;
+
+        foreach (self::COLUMN_AUTH_CODE as $cac)
+        {
+            if (empty($row[$cac]) === false)
+            {
+                $columnAuthCode = $row[$cac];
+
+                break;
+            }
+        }
+
+        if ((empty($columnAuthCode) === true))
+        {
+            return null;
+        }
+
+        return trim(str_replace("'", '', $columnAuthCode));
     }
 
     protected function isCybersource(array $row)

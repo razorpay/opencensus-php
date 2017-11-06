@@ -12,12 +12,13 @@ class Entity extends Base\PublicEntity
     const ID                  = 'id';
     const TYPE                = 'type';
     const TARGET              = 'target';
-    const TPV                 = 'tpv';
+    const SUB_TYPE            = 'sub_type';
     const SENDER              = 'sender';
     const RECIPIENTS          = 'recipients';
     const BEGIN               = 'begin';
     const END                 = 'end';
     const STATUS              = 'status';
+    const PROCESSING          = 'processing';
     const PARTIALLY_PROCESSED = 'partially_processed';
     const COMMENTS            = 'comments';
     const SCHEDULED           = 'scheduled';
@@ -36,7 +37,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::TYPE,
         self::TARGET,
-        self::TPV,
+        self::SUB_TYPE,
         self::SENDER,
         self::RECIPIENTS,
         self::COMMENTS,
@@ -50,12 +51,13 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::TYPE,
         self::TARGET,
-        self::TPV,
+        self::SUB_TYPE,
         self::SENDER,
         self::RECIPIENTS,
         self::BEGIN,
         self::END,
         self::STATUS,
+        self::PROCESSING,
         self::PARTIALLY_PROCESSED,
         self::COMMENTS,
         self::SCHEDULED,
@@ -72,10 +74,10 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::ATTEMPTS            => 'int',
-        self::TPV                 => 'boolean',
         self::RECIPIENTS          => 'array',
         self::SCHEDULED           => 'boolean',
-        self::PARTIALLY_PROCESSED => 'boolean'
+        self::PARTIALLY_PROCESSED => 'boolean',
+        self::PROCESSING          => 'boolean',
     ];
 
     protected $dates = [
@@ -94,6 +96,7 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED           => 1,
         self::PARTIALLY_PROCESSED => 0,
         self::ATTEMPTS            => 0,
+        self::PROCESSING          => 0,
     ];
 
     protected static $generators = [
@@ -165,9 +168,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
-    public function getTpv()
+    public function getSubType()
     {
-        return $this->getAttribute(self::TPV);
+        return $this->getAttribute(self::SUB_TYPE);
     }
 
     public function isAcknowledged(): bool
@@ -175,19 +178,36 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::ACKNOWLEDGED);
     }
 
+    /**
+     * We check if the file_generated_at attribute has been set indicating the file
+     * has been generated, during any of the processing attempts
+     *
+     * @return boolean
+     */
     public function isFileGenerated(): bool
     {
-        return ($this->getStatus() === Status::FILE_GENERATED);
+        return ($this->getAttribute(self::FILE_GENERATED_AT) !== null);
     }
 
+    /**
+     * We check if the file sending step was done by checking the sent_at attribute
+     * indicating if the file was sent during any of the processing attempts
+     *
+     * @return boolean
+     */
     public function isFileSent(): bool
     {
-        return ($this->getStatus() === Status::FILE_SENT);
+        return ($this->getAttribute(self::SENT_AT) !== null);
     }
 
     public function isFailed(): bool
     {
         return ($this->getStatus() === Status::FAILED);
+    }
+
+    public function isProcessing(): bool
+    {
+        return $this->getAttribute(self::PROCESSING);
     }
 
     public function getErrorCode()
@@ -247,6 +267,11 @@ class Entity extends Base\PublicEntity
     public function incrementAttempts()
     {
         $this->increment(self::ATTEMPTS);
+    }
+
+    public function setProcessing(bool $value)
+    {
+        $this->setAttribute(self::PROCESSING, $value);
     }
 
     //-----------------------------SETTERS END----------------------------------

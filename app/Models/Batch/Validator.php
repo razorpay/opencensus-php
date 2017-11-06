@@ -11,55 +11,63 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Feature\Constants as Feature;
 
+/**
+ * Class Validator
+ *
+ * @package RZP\Models\Batch
+ *
+ * @property Entity $entity
+ */
 class Validator extends Base\Validator
 {
-    protected static $createRules = [
-        Entity::FILE                 => 'required|file|max:1024|mime_types:'
-                                        . 'application/zip,'
-                                        . 'application/vnd.ms-excel,'
-                                        . 'application/vnd.oasis.opendocument.spreadsheet,'
-                                        . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
-                                        . 'application/octet-stream,'
-                                        . 'text/csv,'
-                                        . 'text/plain',
-        Entity::TYPE                 => 'required|string|max:25|custom',
-        Entity::MERCHANT_ID          => 'sometimes|string',
+    const DEFAULT_MIME_TYPES = 'application/zip,'
+                                    . 'application/vnd.ms-excel,'
+                                    . 'application/vnd.oasis.opendocument.spreadsheet,'
+                                    . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
+                                    . 'application/octet-stream,'
+                                    . 'text/csv,'
+                                    . 'text/plain';
 
-        //
-        // Type:payment_link specific input parameters
-        // With current approach extra input would be ignored
-        // but it's fine as this is proxy route.
-        //
+    //
+    // TODO:
+    // - Add comments
+    //
 
-        // @todo:  We should enhance it to do per type input validations later.
+    protected static $defaultCreateRules = [
+        Entity::TYPE                 => 'required|in:refund,irctc_refund,irctc_settlement,linked_account,virtual_bank_account',
+        Entity::FILE                 => 'required|file|max:1024|mime_types:' . self::DEFAULT_MIME_TYPES,
+    ];
 
+    protected static $paymentLinkCreateRules = [
+        Entity::TYPE                 => 'required|in:payment_link',
+        Entity::FILE                 => 'required|file|max:1024|mime_types:' . self::DEFAULT_MIME_TYPES,
         Invoice\Entity::DRAFT        => 'filled|in:0,1',
         Invoice\Entity::SMS_NOTIFY   => 'filled|in:0,1',
         Invoice\Entity::EMAIL_NOTIFY => 'filled|in:0,1',
     ];
 
-    protected function validateType(string $attribute, string $type)
-    {
-        if (Type::exists($type) === false)
-        {
-            throw new BadRequestException(
-                        ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TYPE,
-                        Entity::TYPE,
-                        [
-                            Entity::TYPE => $type,
-                        ]);
-        }
-    }
+    protected static $reconciliationCreateRules = [
+        Entity::TYPE                 => 'required|in:reconciliation',
+        Entity::GATEWAY              => 'required|string|max:25',
+        Entity::FILE                 => 'required|array'
+    ];
 
     /**
-     * Throws error if batch is already processed.
+     * Throws error if batch is not in a state which can be processed
      */
-    public function validateNotProcessedAlready()
+    public function validateIfProcessable()
     {
-        if ($this->entity->getStatus() === Status::PROCESSED)
+        if ($this->entity->isProcessed() === true)
         {
             throw new BadRequestException(
                         ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED,
+                        Entity::STATUS,
+                        $this->entity->toArray());
+        }
+        else if ($this->entity->isProcessing() === true)
+        {
+            throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING,
                         Entity::STATUS,
                         $this->entity->toArray());
         }
@@ -142,6 +150,7 @@ class Validator extends Base\Validator
      *   otherwise in creation by API flow. This approach let us re-use code.
      *
      * @param array           $entries
+     * @param array           $params
      * @param Merchant\Entity $merchant
      *
      * @throws BadRequestException

@@ -252,6 +252,19 @@ class OrderTest extends TestCase
         $this->fixtures->merchant->disableTPV();
     }
 
+    public function testCardPaymentForTPVMerchantWithoutOrder()
+    {
+        $this->fixtures->merchant->enableTPV();
+
+        $this->setUpSharpGateway();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
     public function testPaymentWithIncorrectBankForTPVMerchantWithOrder()
     {
         $this->fixtures->merchant->enableTPV();
@@ -888,8 +901,6 @@ class OrderTest extends TestCase
         if ($payment['amount'] === 50000)
         {
             $this->assertEquals(1173, $feesArray['input']['fee']);
-
-            $this->assertEquals(1.49, $feesArray['display']['service_tax']);
 
             $this->assertEquals(1.49, $feesArray['display']['tax']);
         }

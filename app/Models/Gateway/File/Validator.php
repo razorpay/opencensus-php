@@ -5,8 +5,10 @@ namespace RZP\Models\Gateway\File;
 use RZP\Base;
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Gateway\File\Constants;
 
 class Validator extends Base\Validator
 {
@@ -16,7 +18,7 @@ class Validator extends Base\Validator
         Entity::TYPE              => 'required|string|max:20|custom',
         Entity::TARGET            => 'required|string|max:50',
         Entity::SENDER            => 'filled|email|max:100',
-        Entity::TPV               => 'filled|boolean',
+        Entity::SUB_TYPE          => 'filled|string|max:25',
         Entity::RECIPIENTS        => 'filled|array',
         Entity::RECIPIENTS . '.*' => 'email',
         Entity::BEGIN             => 'required|epoch',
@@ -31,8 +33,27 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         Entity::TARGET,
+        Entity::SUB_TYPE,
         self::TIME_RANGE,
     ];
+
+    /**
+     * CHecks if the gateway_file entity can be processed based on the below conditions
+     * - Entity in acknowledged state can't be processed further
+     * - If the processing flag is set to true then it means it is under processing
+     *   and cannot be processed
+     *
+     * @throws BadRequestException
+     */
+    public function validateIfProcessable()
+    {
+        if (($this->entity->isAcknowledged() === true) or
+            ($this->entity->isProcessing() === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE);
+        }
+    }
 
     protected function validateType(string $attribute, string $type)
     {
@@ -53,6 +74,25 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 "$target is not a valid target for type $type");
+        }
+    }
+
+    protected function validateSubType(array $input)
+    {
+        $target = $input[Entity::TARGET];
+
+        $type = $input[Entity::TYPE];
+
+        $subType = $input[Entity::SUB_TYPE] ?? null;
+
+        // Currently subType is required only when target is Kotak as we need to specify
+        // tpv or non tpv
+        if (($target === Constants::KOTAK) and
+            ($type === Type::COMBINED) and
+            (Type::isValidSubType($subType) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "$subType is not a valid subType");
         }
     }
 
