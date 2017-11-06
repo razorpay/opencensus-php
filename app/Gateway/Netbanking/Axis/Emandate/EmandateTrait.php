@@ -197,7 +197,7 @@ trait EmandateTrait
                 $errorDescription,
                 [
                     'content'    => $content,
-                    'payment_id' => $input['payment'][Payment\Entity::ID]
+                    'payment_id' => $input['payment'][Payment\Entity::ID],
                     'gateway'    => $this->gateway
                 ]
             );
@@ -314,7 +314,7 @@ trait EmandateTrait
             ($paymentAmount !== $verify->verifyResponseContent[ResponseFields::AMOUNT]);
     }
 
-    protected function saveRecurringVerifyResponseIfNeeded(Verify $verify)
+    protected function saveEmandateVerifyResponseIfNeeded(Verify $verify)
     {
         $content = $verify->verifyResponseContent;
 

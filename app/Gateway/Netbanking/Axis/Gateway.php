@@ -154,7 +154,7 @@ class Gateway extends Base\Gateway
         {
             $this->setRecurringVerifyStatus($verify);
 
-            $verify->payment = $this->saveRecurringVerifyResponseIfNeeded($verify);
+            $verify->payment = $this->saveEmandateVerifyResponseIfNeeded($verify);
 
             return;
         }
