@@ -550,6 +550,7 @@ app.controller('EntitiesCtrl', [
       report: {
         merchant_id: ['Merchant Id'],
         type: [
+          'all',
           'merchant',
           'order',
           'payment',
