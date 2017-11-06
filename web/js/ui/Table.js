@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
+import { Link } from 'react-router-dom';
 
 import TransitionGroup from 'react-transition-group/TransitionGroup';
 import CSSTransition from 'react-transition-group/CSSTransition';
@@ -20,9 +21,11 @@ export default function Table({
   onClick,
   bordered,
   animateRow,
+  href,
   indexFn = defaultIndexFn,
 }) {
-  let trClass = onClick ? 'tr clickable' : 'tr';
+  let Row = href ? Link : 'div';
+  let rowClass = href || onClick ? 'tr clickable' : 'tr';
   let tableClass = 'table table-striped';
   if (bordered) {
     tableClass += ' table-bordered';
@@ -55,13 +58,17 @@ export default function Table({
               classNames="row"
               timeout={animObj}
             >
-              <div class={trClass} onClick={onClick && item::onClick}>
+              <Row
+                class={rowClass}
+                onClick={onClick && item::onClick}
+                to={href && href(item)}
+              >
                 {fields.map((field, index) => (
                   <div class="td" key={index}>
                     {field[1](item)}
                   </div>
                 ))}
-              </div>
+              </Row>
             </CSSTransition>
           );
         })}
@@ -75,7 +82,7 @@ export const DataTable = observer(Table);
 @observer
 export class PageTable extends Component {
   render() {
-    let { fields, model, onClick, info = true, title } = this.props;
+    let { fields, model, onClick, info = true, title, href } = this.props;
     let { pending, items, filters, animateItems } = model;
 
     pending = pending.fetch;
@@ -95,6 +102,7 @@ export class PageTable extends Component {
             fields={fields}
             onClick={onClick}
             items={items}
+            href={href}
           />
         </div>
       );

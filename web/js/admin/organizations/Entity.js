@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import axios from 'axios';
+import fetch from 'util/fetch';
 import { adminFetch, adminPut } from 'util/fetch';
 import OrgForm from './OrganizationForm';
 import PermissionsList from './PermissionsList';
@@ -156,7 +156,7 @@ export default class EditOrg extends Component {
       data.route_name = 'org_create';
 
       //custom post needed to normalize data
-      return axios({
+      return fetch({
         url: '/admin/generic',
         method: 'post',
         transformRequest: [
@@ -167,19 +167,9 @@ export default class EditOrg extends Component {
             return newData;
           },
         ],
-      })
-        .then(response => {
-          if (response.data.success) {
-            notifySuccess('Org successfully added!');
-          } else {
-            response.data.errors.map(err => {
-              notifyError(err);
-            });
-          }
-        })
-        .catch(() => {
-          notifyError('Something went wrong!');
-        });
+      }).then(data => {
+        notifySuccess('Org successfully added!');
+      });
     }
   };
 
@@ -192,7 +182,7 @@ export default class EditOrg extends Component {
 
   render() {
     if (this.state.pending) {
-      return <div class="spinner" />;
+      return <div class="table-pending" />;
     }
     return (
       <div>

@@ -18,6 +18,7 @@ import GenericEntity from 'admin/entities/Entity';
 
 import MerchantTeamDetails from 'admin/merchants/entity/MerchantTeamDetails';
 
+import WorkflowEntity from 'admin/workflows/Entity';
 import WorkflowList from 'admin/workflows/List';
 // import RequestList from 'admin/workflows/RequestList';
 
@@ -47,6 +48,7 @@ export default class App extends Component {
             <Route path="/actions" component={ActionsList} />
             <Route path="/email-logs" component={EmailLogsList} />
 
+            <Route path="/workflows/:id" component={WorkflowEntity} />
             <Route path="/workflows" component={WorkflowList} />
 
             <Route path="/groups" component={GroupList} />

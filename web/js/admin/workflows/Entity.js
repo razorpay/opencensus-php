@@ -13,9 +13,10 @@ export default class EditWorkflow extends Component {
     let { model } = this.props;
 
     return (
-      <div>
+      <div class="box">
         <header>{model ? 'Edit' : 'Create'} Workflow</header>
-        <Field label="name" name="name" />
+        <Field label="Workflow Name" name="name" />
+        <Field label="Actions List" name="name" />
       </div>
     );
   }
