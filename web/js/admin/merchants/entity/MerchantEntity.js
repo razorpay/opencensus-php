@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
 
-import { adminFetch, adminPut } from 'util/fetch';
+import { adminFetch, adminPut, adminPost } from 'util/fetch';
 import { closeModal, notifyError, notifySuccess, confirm } from 'common/modal';
 import * as entityModals from './entityModals';
 import { getDetailsViewMap } from './entity-resources';
@@ -46,9 +46,11 @@ export default class MerchantEntity extends Component {
     let action, confirmMsg;
     if (merchant.details.activated == 1 && !merchant.details.hold_funds) {
       confirmMsg = 'Are you sure you want to hold funds for this merchant?';
+      successMsg = 'Merchant funds put on hold successfully';
       action = 'hold_funds';
     } else if (merchant.details.hold_funds == 1) {
       confirmMsg = 'Are you sure you want to release funds for this merchant?';
+      successMsg = 'Merchant funds released successfully';
       action = 'release_funds';
     }
 
@@ -64,7 +66,7 @@ export default class MerchantEntity extends Component {
         })
           .then(response => {
             closeModal();
-            notifySuccess('Merchant funds put on hold successfully');
+            notifySuccess(successMsg);
             this.model.updateDetails(response);
           })
           .catch(err => {
@@ -108,7 +110,33 @@ export default class MerchantEntity extends Component {
 
   // Enable / Disable live transactions
   toggleLiveTransactions = () => {
-    console.log('Enable / Disable Live transactions....');
+    const merchant = this.model.merchant;
+    let routeName, successMsg;
+
+    if (merchant.details.activated == 1 && merchant.details.live == 0) {
+      successMsg = 'Live transactions enabeld successfully.';
+      routeName = 'merchant_live_enable';
+    } else if (merchant.details.live == 1) {
+      routeName = 'merchant_live_disable';
+      successMsg = 'Live transactions disabled successfully.';
+    }
+
+    return adminPost({
+      route_name: routeName,
+      url_params: {
+        id: this.merchantId,
+      },
+    })
+      .then(response => {
+        if (response) {
+          closeModal();
+          notifySuccess(successMsg);
+          this.model.updateDetails(response);
+        }
+      })
+      .catch(err => {
+        notifyError(JSON.stringify(err.response));
+      });
   };
 
   // Enable / Disable receipt emails
@@ -188,18 +216,20 @@ export default class MerchantEntity extends Component {
           }
         }
 
-        {merchant.details.activated == 1 &&
-          merchant.details.live == 0 && (
-            <div onClick={this.toggleLiveTransactions}>
-              Enable Live Transactions
-            </div>
-          )}
-
-        {merchant.details.live == 1 && (
-          <div onClick={this.toggleLiveTransactions}>
-            Disable Live Transactions
-          </div>
-        )}
+        {/* Toggle enable or disabled live transactions */}
+        {
+          do {
+            if (merchant.details.activated == 1 && merchant.details.live == 0) {
+              <div onClick={this.toggleLiveTransactions}>
+                Enable Live Transactions
+              </div>;
+            } else if (merchant.details.live == 1) {
+              <div onClick={this.toggleLiveTransactions}>
+                Disable Live Transactions
+              </div>;
+            }
+          }
+        }
 
         {merchant.details.receipt_email_enabled == 0 && (
           <div onClick={this.toggleReceiptEmail}>Enable Receipt Email</div>
