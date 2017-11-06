@@ -925,6 +925,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MAILCHIMP_JOB_ERROR                           = 'MAILCHIMP_JOB_ERROR';
 
+    const QR_CODE_URL                                   = 'QR_CODE_URL';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

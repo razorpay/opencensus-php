@@ -52,6 +52,8 @@ class Type
 
     const INVOICE_PDF                       = 'invoice_pdf';
 
+    const QR_CODE_IMAGES                    = 'qr_code_images';
+
     const REPORT                            = 'report';
 
     const FUND_TRANSFER_DEFAULT             = 'fund_transfer_default';
@@ -228,7 +230,11 @@ class Type
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
-            self::INVOICE_PDF
+            self::INVOICE_PDF,
+        ],
+
+        self::QR_CODE_BUCKET_CONFIG => [
+            self::QR_CODE_IMAGES,
         ],
 
         self::ACTIVATION_BUCKET_CONFIG => [

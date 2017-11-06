@@ -660,6 +660,8 @@ final class Route
         'feature_onboarding_fetch_responses'      => ['get',      'feature/onboarding/{feature}/responses',        'FeatureController@getOnboardingSubmissionsDeprecated'              ],
         'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                  'FeatureController@getOnboardingSubmissionsDeprecated'              ],
          'bharat_qr_payment_process'               => ['post',     'bharatqr/payment/process',                      'BharatQrController@processBharatQrPayment'                         ],
+        'qr_code_view'                            => ['get',       'qrcode/{id}',                                   '
+            QrCodeController@fetchQrCode'                                      ],
     ];
 
     public static $public = [
@@ -1432,6 +1434,7 @@ final class Route
         'upi_npci_request',
         'upi_zero_call',
         'mock_billdesk_payment',
+        'qr_code_view',
     ];
 
     public static $internalApps = [

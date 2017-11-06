@@ -98,21 +98,7 @@ class Receiver
 
         $input = $this->getQrCodeEntityParams($virtualAccount);
 
-        $qrCode = $qrCode->build($input);
-
-        $qrCode->generateId();
-
-        $qrCode->merchant()->associate($this->merchant);
-
-        $qrCode->source()->associate($virtualAccount);
-
-        $qrCode = $qrCode->generateQrString();
-
-        $qrCodeImage = $qrCode->generateQrCode();
-
-        sd($qrCodeImage->writeString());
-
-        $this->repo->saveOrFail($qrCode);
+        $qrCode = (new QrCode\Generator($this->merchant))->generate($input, $virtualAccount);
 
         return $qrCode;
     }

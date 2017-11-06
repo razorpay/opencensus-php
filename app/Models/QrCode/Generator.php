@@ -43,7 +43,7 @@ class Generator extends Base\Core
 
         $this->elfin = $this->app['elfin'];
 
-        $this->baseQrCodeUrl = 'abc.com';
+        $this->baseQrCodeUrl = $this->app['config']->get('app.url');
     }
 
     /**
@@ -57,12 +57,12 @@ class Generator extends Base\Core
     {
         $qrCodePublicId = $this->qrCode->getPublicId();
 
-        $invoiceLink = $this->baseQrCodeUrl . '/' . $qrCodePublicId;
+        $invoiceLink = $this->baseQrCodeUrl . '/qrcode/' . $qrCodePublicId;
 
         return $qrCodeLink;
     }
 
-    public function generate(array $input)
+    public function generate(array $input, $virtualAccount = null)
     {
         $qrCode = new QrCode\Entity;
 
@@ -76,15 +76,15 @@ class Generator extends Base\Core
 
         $qrCode = $qrCode->generateQrString();
 
-        $qrCodeImage = $qrCode->generateQrCode();
-
         $this->qrCode = $qrCode;
+
+        $this->setShortUrl();
 
         $this->repo->saveOrFail($qrCode);
 
-        $this->qrCode = $qrCode;
+        $qrCodeImage = $qrCode->generateQrCodeFile();
 
-        return $qrCode;
+        return $this->qrCode;
     }
 
     protected function setShortUrl()
@@ -94,10 +94,9 @@ class Generator extends Base\Core
         $shortenedUrl = $this->elfin->shorten($longUrl);
 
         $this->trace->info(
-            TraceCode::INVOICE_LINKS,
+            TraceCode::QR_CODE_URL,
             [
-                'invoice_id'     => $this->invoice->getId(),
-                'invoice_status' => $this->invoice->getStatus(),
+                'qr_code_id'     => $this->qrCode->getId(),
                 'short_url'      => $shortenedUrl,
                 'long_url'       => $longUrl,
             ]);
@@ -108,6 +107,8 @@ class Generator extends Base\Core
     protected function generateQrCodeFile()
     {
         $localFilePath = $this->generateQrCodeLocalFile();
+
+        $this->generateQrCodeFileOnS3($localFilePath);
     }
 
     protected function getLocalSaveDir(): string
@@ -129,16 +130,18 @@ class Generator extends Base\Core
         return $localFilePath;
     }
 
-    protected function getQrCodeFile($qrCode)
+    protected function generateQrCodeFileOnS3(string $localFilePath)
     {
-         return (new FileStore\Creator)
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+
+        return (new FileStore\Creator)
                     ->localFilePath($localFilePath)
                     ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$ext][5])
-                    ->name($qrCode->getQrCodeFileName())
+                    ->name($this->qrCode->getQrCodeFileName())
                     ->extension($ext)
-                    ->entity($qrCode)
+                    ->entity($this->qrCode)
                     ->merchant($this->merchant)
-                    ->type($type)
+                    ->type(FileStore\Type::QR_CODE_IMAGES)
                     ->save();
     }
 }

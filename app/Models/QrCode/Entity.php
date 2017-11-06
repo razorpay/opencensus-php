@@ -88,6 +88,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PROVIDER);
     }
 
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     public function getFormattedAmount()
     {
         $amount = $this->getAmount();
