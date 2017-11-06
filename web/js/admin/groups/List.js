@@ -5,7 +5,8 @@ import Field from 'ui/Field';
 import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
 import { observer } from 'mobx-react';
-import { showEntity } from './Entity';
+import { showEntity, removeEntity } from './Entity';
+import CollectionItem from 'model/collectionItem';
 
 @observer
 export default class WorkflowList extends Component {
@@ -14,6 +15,7 @@ export default class WorkflowList extends Component {
     data: {
       route_name: 'group_get_multiple',
     },
+    model: CollectionItem,
   });
 
   onSubmit = filters => this.collection.setFilters(filters);
@@ -47,5 +49,12 @@ const fields = [
   ['Id', item => item.id],
   ['Name', item => item.name],
   ['Description', item => item.description],
-  ['Action', item => <div class="link danger">Delete</div>],
+  [
+    'Action',
+    item => (
+      <div class="link danger" onClick={item::removeEntity}>
+        Delete
+      </div>
+    ),
+  ],
 ];
