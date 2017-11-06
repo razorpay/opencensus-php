@@ -60,7 +60,7 @@ export default class App extends Component {
 
             <Route path="/entity/:type/:mode/:id" component={GenericEntity} />
 
-            <Redirect to="/stats" />
+            <Redirect to="/merchants" />
           </Switch>
         </main>
         <header>
