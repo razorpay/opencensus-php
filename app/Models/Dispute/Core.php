@@ -42,11 +42,7 @@ class Core extends Base\Core
                 'payment_id' => $payment->getId()
             ]);
 
-        $validator = new Validator();
-
-        $validator->validatePaymentForDispute($input, $payment);
-
-        $validator->validateDeductOnsetForNonTransactionalPhase($input);
+        (new Validator)->validatePaymentForDispute($input, $payment);
 
         $parent = $this->checkAndGetParent($input);
 

@@ -32,6 +32,10 @@ class Validator extends Base\Validator
         Entity::PARENT_ID               => 'sometimes|alpha_num|size:14',
     ];
 
+    protected static $createValidators = [
+        'deduct_onset_for_non_transactional_phase',
+    ];
+
     protected static $editValidators = [
         'non_transactional_disputes_closure',
     ];
