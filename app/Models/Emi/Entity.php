@@ -55,11 +55,6 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::RATE,
         self::DURATION,
-        self::METHODS,
-        self::MIN_AMOUNT,
-        self::ISSUER_PLAN_ID,
-        self::SUBVENTION,
-        self::MERCHANT_PAYBACK,
     );
 
     protected $defaults = array(

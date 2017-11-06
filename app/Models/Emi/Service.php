@@ -39,16 +39,16 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        $emiPlans = $this->repo->emi_plan->findOrFail($id);
+        $emiPlan = $this->repo->emi_plan->findOrFail($id);
 
-        return $emiPlans->toArrayPublic();
+        return $emiPlan->toArrayAdmin();
     }
 
     public function addEmiPlan(array $input)
     {
         $emiPlan = (new Core)->addEmiPlan($input);
 
-        return $emiPlan->toArrayPublic();
+        return $emiPlan->toArrayAdmin();
     }
 
     public function deleteEmiPlan($id)
@@ -57,7 +57,7 @@ class Service extends Base\Service
 
         $this->repo->emi_plan->deleteOrFail($emiPlan);
 
-        return $emiPlan->toArrayPublic();
+        return $emiPlan->toArrayAdmin();
     }
 
     public function getEmiFiles(array $input)
