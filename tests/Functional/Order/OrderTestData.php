@@ -230,25 +230,7 @@ return [
             'content' => [
                 'methods' => [
                     'netbanking' => [
-                        'ALLA' => 'Allahabad Bank',
-                        'ANDB' => 'Andhra Bank',
                         'UTIB' => 'Axis Bank',
-                        'BKID' => 'Bank of India',
-                        'CIUB' => 'City Union Bank',
-                        'CORP' => 'Corporation Bank',
-                        'HDFC' => 'HDFC Bank',
-                        'ICIC' => 'ICICI Bank',
-                        'IBKL' => 'IDBI',
-                        'INDB' => 'Indusind Bank',
-                        'KVBL' => 'Karur Vysya Bank',
-                        'KKBK' => 'Kotak Mahindra Bank',
-                        'SBHY' => 'State Bank of Hyderabad',
-                        'SBIN' => 'State Bank of India',
-                        'SBMY' => 'State Bank of Mysore',
-                        'STBP' => 'State Bank of Patiala',
-                        'SBTR' => 'State Bank of Travancore',
-                        'SBBJ' => 'State Bank of Bikaner and Jaipur',
-                        'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
                     ],
                 ],
                 'order' => [
