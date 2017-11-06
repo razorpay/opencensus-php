@@ -32,7 +32,7 @@ spec:
             configMapKeyRef:
               name: api
               key: APP_MODE
-        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        image: razorpay/api:2d9fb20b8e96df2ae4e775cb6418a285af7c7095
         imagePullPolicy: IfNotPresent
         command: ["/entrypoint.sh"]
         args: ["web"]
