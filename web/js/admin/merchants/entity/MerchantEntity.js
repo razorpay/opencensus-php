@@ -4,7 +4,7 @@ import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
 
 import { adminFetch, adminPut } from 'util/fetch';
-import { notifyError, notifySuccess, confirm } from 'common/modal';
+import { closeModal, notifyError, notifySuccess, confirm } from 'common/modal';
 import * as entityModals from './entityModals';
 import { getDetailsViewMap } from './entity-resources';
 import EntityRow from 'ui/EntityRow';
@@ -40,22 +40,36 @@ export default class MerchantEntity extends Component {
     console.log('Downloading Reports....');
   };
 
-  holdFunds = () => {
-    confirm(
-      'Are you sure you want to hold funds for this merchant?',
-      () => {
-        console.log('Handle Hold Funds....');
-      },
-      'Ok',
-      'Cancel'
-    );
-  };
+  toggleFundsHoldOrRelease = () => {
+    const merchant = this.model.merchant;
 
-  releaseFunds = () => {
+    let action, confirmMsg;
+    if (merchant.details.activated == 1 && !merchant.details.hold_funds) {
+      confirmMsg = 'Are you sure you want to hold funds for this merchant?';
+      action = 'hold_funds';
+    } else if (merchant.details.hold_funds == 1) {
+      confirmMsg = 'Are you sure you want to release funds for this merchant?';
+      action = 'release_funds';
+    }
+
     confirm(
-      'Are you sure you want to hold funds for this merchant?',
+      confirmMsg,
       () => {
-        console.log('Release Merchant Funds....');
+        adminPut({
+          route_name: 'merchant_action',
+          url_params: {
+            id: this.merchantId,
+          },
+          body: { action },
+        })
+          .then(response => {
+            closeModal();
+            notifySuccess('Merchant funds put on hold successfully');
+            this.model.updateDetails(response);
+          })
+          .catch(err => {
+            notifyError(JSON.stringify(err.response));
+          });
       },
       'Ok',
       'Cancel'
@@ -148,6 +162,7 @@ export default class MerchantEntity extends Component {
           See Merchant Analytics Stats
         </Link>
 
+        {/* Lock or Unlock activation form */}
         {merchant.details.merchant_details && (
           <div onClick={this.toggleLockOnActivationForm}>
             {merchant.details.merchant_details.locked ? 'Unlock' : 'Lock'}{' '}
@@ -155,14 +170,23 @@ export default class MerchantEntity extends Component {
           </div>
         )}
 
-        {merchant.details.activated == 1 &&
-          merchant.details.hold_funds == 0 && (
-            <div onClick={this.holdFunds}>Hold Merchant Funds</div>
-          )}
-
-        {merchant.details.hold_funds == 1 && (
-          <div onClick={this.releaseFunds}>Release Merchant Funds</div>
-        )}
+        {/* Hold or Release funds */}
+        {
+          do {
+            if (
+              merchant.details.activated == 1 &&
+              !merchant.details.hold_funds
+            ) {
+              <div onClick={this.toggleFundsHoldOrRelease}>
+                Hold Merchant Funds
+              </div>;
+            } else if (merchant.details.hold_funds == 1) {
+              <div onClick={this.toggleFundsHoldOrRelease}>
+                Release Merchant Funds
+              </div>;
+            }
+          }
+        }
 
         {merchant.details.activated == 1 &&
           merchant.details.live == 0 && (

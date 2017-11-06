@@ -130,6 +130,12 @@ export default class Model extends BaseModel {
     this.merchant = { ...this.merchant }; // To force re-render the view
   }
 
+  updateDetails(data) {
+    // Value is changed and view is re-rendered
+    this.merchant.details = { ...this.merchant.details, ...data };
+    this.merchant = { ...this.merchant }; // To force re-render the view
+  }
+
   @action
   fetchScheduleTasks() {
     const data = {
