@@ -22,7 +22,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $status = [Bob\Status::SUCCESS];
 
-        return $this->repo->netbanking
+        return $this->repo
+                    ->netbanking
                     ->findByPaymentIdActionAndStatus(
                         $paymentId,
                         Action::AUTHORIZE,
