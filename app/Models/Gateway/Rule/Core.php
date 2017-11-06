@@ -62,11 +62,11 @@ class Core extends Base\Core
                         array $terminals,
                         array $input): Base\PublicCollection
     {
-        $ruleFetchParams = $this->getRuleFetchParams($terminals, $input);
+        $searchCriteria = $this->getRuleSearchCriteriaForPayment($terminals, $input);
 
         $applicableRules = $this->repo
                                 ->gateway_rule
-                                ->fetchApplicableRulesForPayment($ruleFetchParams);
+                                ->getRulesMatchingSearchCriteria($searchCriteria);
 
         if ($input['payment']->isMethodCardOrEmi() === true)
         {
@@ -112,8 +112,6 @@ class Core extends Base\Core
 
         if ($matchingRules->isNotEmpty() === true)
         {
-            $this->groupRulesBySpecificityScore($matchingRules, $rule);
-
             $totalExistingLoad = $matchingRules->sum(Entity::LOAD);
 
             $totalLoad = $rule->getLoad() + $totalExistingLoad;
@@ -140,7 +138,7 @@ class Core extends Base\Core
      * @param  array  $input     payment related input
      * @return array             array of parameters on which to build db query
      */
-    protected function getRuleFetchParams(array $terminals, array $input): array
+    protected function getRuleSearchCriteriaForPayment(array $terminals, array $input): array
     {
         $payment = $input['payment'];
 
@@ -219,9 +217,11 @@ class Core extends Base\Core
      */
     protected function getRulesWithMatchingCriteria(Entity $rule): Base\PublicCollection
     {
+        $ruleSearchCriteria = $rule->getSearchCriteria();
+
         $matchingRules = $this->repo
                               ->gateway_rule
-                              ->getRulesWithMatchingCriteria($rule);
+                              ->getRulesMatchingSearchCriteria($ruleSearchCriteria);
 
         if ($rule->isMethodCardOrEmi() === true)
         {

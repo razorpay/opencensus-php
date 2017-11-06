@@ -104,6 +104,17 @@ class Repository extends Base\Repository
         return $rules;
     }
 
+    public function getRulesMatchingSearchCriteria(array $criteria)
+    {
+        $query = $this->newQuery();
+
+        $this->buildSelectionQuery($query, $criteria);
+
+        $rules = $query->get();
+
+        return $rules;
+    }
+
     /**
      * Fetches rules for terminal selection as per the parameters provided
      *
@@ -181,6 +192,11 @@ class Repository extends Base\Repository
         }
     }
 
+    protected function addQueryForId($query, $params)
+    {
+        $query->where(Entity::ID, '!=', $params[Entity::ID]);
+    }
+
     /**
      * We always check for filter_type not equal to that of current rule, so as
      * to find rules with matching criteria but opposite filter action
@@ -205,36 +221,5 @@ class Repository extends Base\Repository
     protected function addQueryForMaxAmount($query, $params)
     {
         $query->where(Entity::MAX_AMOUNT, '>=', $params[Entity::MIN_AMOUNT]);
-    }
-
-    protected function getQueryAttributes(Entity $rule)
-    {
-        $attributesArray = ($rule->getType() === Entity::SORTER) ?
-                                $this->sorterQueryAttributes :
-                                $this->filterQueryAttributes;
-
-        return array_merge($this->defaultQueryAttributes, $attributesArray);
-    }
-
-    /**
-     * Generates query params from entity using only those entity keys which are
-     * present in queryAttributes and which are not null
-     *
-     * @param  Rule  $rule   rule entity to use for query
-     * @return array         query params
-     */
-    protected function getQueryParams(Entity $rule): array
-    {
-        $params = $rule->toArray();
-
-        $queryAttributes = $this->getQueryAttributes($rule);
-
-        $params = array_filter($params, function ($value, $key) use ($queryAttributes)
-        {
-            return ((in_array($key, $queryAttributes, true) === true) and
-                    ($value !== null));
-        }, ARRAY_FILTER_USE_BOTH);
-
-        return $params;
     }
 }

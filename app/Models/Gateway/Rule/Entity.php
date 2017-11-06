@@ -100,6 +100,35 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
     ];
 
+    const DEFAULT_SEARCH_ATTRIBUTES = [
+        self::ID,
+        self::TYPE,
+        self::GROUP,
+        self::METHOD,
+        self::METHOD_TYPE,
+        self::NETWORK,
+        self::ISSUER,
+        self::CURRENCY,
+        self::MIN_AMOUNT,
+        self::MAX_AMOUNT,
+        self::EMI_DURATION,
+        self::EMI_SUBVENTION,
+        self::INTERNATIONAL,
+    ];
+
+    const SORTER_SEARCH_ATTRIBUTES = [
+        self::MERCHANT_ID,
+    ];
+
+    const FILTER_SEARCH_ATTRIBUTES = [
+        self::GATEWAY,
+        self::FILTER_TYPE,
+        self::SHARED_TERMINAL,
+        self::NETWORK_CATEGORY,
+        self::GATEWAY_ACQUIRER,
+        self::CATEGORY2,
+    ];
+
     /**
      * Defines the attribute scores used for calculating how specific a rule
      * is for a given criteria. Each attribute is given a score in power of 2
@@ -371,7 +400,6 @@ class Entity extends Base\PublicEntity
 
     //----------------- Mutators End--------------------------------------------
 
-
     public function getIinsAttribute($value)
     {
         if (empty($value) === true)
@@ -382,14 +410,37 @@ class Entity extends Base\PublicEntity
         return json_decode($value, true);
     }
 
+    public function getSearchCriteria()
+    {
+        $searchAttributes = $this->getSearchAttributes();
+
+        $searchCriteria = array_filter($this->attributes, function ($value, $key) use ($searchAttributes)
+        {
+            return ((in_array($key, $searchAttributes, true) === true) and
+                    ($value !== null));
+        }, ARRAY_FILTER_USE_BOTH);
+
+        return $searchCriteria;
+    }
+
+    protected function getSearchAttributes()
+    {
+        $key = __CLASS__ . '::' . strtoupper($this->getType()) . '_SEARCH_ATTRIBUTES';
+
+        $searchAttributesForType = constant($key);
+
+        return array_merge(self::DEFAULT_SEARCH_ATTRIBUTES, $searchAttributesForType);
+    }
+
     public function calculateSpecificityScoreForCriteria(array $criteria)
     {
         $score = 0;
         foreach ($criteria as $attr => $value)
         {
-            if (($this->isAttributeNotNull($attr) === true) and
+            if (($this->isAttributeEmpty($attr) === false) and
                 ($value === $this->getAttribute($attr)))
             {
+                s($attr, $this->getAttribute($attr), self::ATTRIBUTE_SCORES[$attr]);
                 $score += self::ATTRIBUTE_SCORES[$attr];
             }
         }
@@ -494,5 +545,10 @@ class Entity extends Base\PublicEntity
         $isApplicableForSharedTerminal = $this->getAttribute(self::SHARED_TERMINAL);
 
         return ($isApplicableForSharedTerminal !== $terminal->isDirectForMerchant($merchant)) ? true : false;
+    }
+
+    protected function isAttributeEmpty($attr)
+    {
+        return (empty($this->getAttribute($attr)) === true);
     }
 }
