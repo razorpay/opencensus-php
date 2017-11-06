@@ -97,18 +97,20 @@ class Checkout
 
         $orderId = $input[Payment\Entity::ORDER_ID];
 
-        $data['order'] = (new Order\Core)->getFormattedDataForCheckout($orderId, $merchant);
+        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
 
-        $this->resetMethodsIfValidBanksPresent($data);
+        $data['order'] = (new Order\Core)->getFormattedDataForCheckout($order, $merchant);
+
+        $this->resetMethodsIfValidBanksPresent($data, $order);
     }
 
-    protected function resetMethodsIfValidBanksPresent(array & $data)
+    protected function resetMethodsIfValidBanksPresent(array & $data, Order\Entity $order)
     {
-        if(empty($data['order'][Order\Entity::BANK]) === false)
+        if($order->getBank() !== null)
         {
-            $bankCode = $data['order'][Order\Entity::BANK];
+            $bankCode = $order->getBank();
 
-            $bankName = $data['methods']['netbanking'][$data['order'][Order\Entity::BANK]];
+            $bankName = $data['methods']['netbanking'][$bankCode];
 
             $data['methods']['netbanking'] = [
                 $bankCode => $bankName,
