@@ -296,7 +296,8 @@ class Core extends Base\Core
                 Entity::NAME        => $featureName
             ];
 
-            $this->create($params);
+            // Adds to live mode
+            $this->create($params, true);
         }
 
         $this->repo->merchant_detail->updateFeatureActivationStatus(
@@ -353,10 +354,8 @@ class Core extends Base\Core
     }
 
     /**
-     * When an admin updates the feature activation submissions,
-     * all the existing responses are fetched first and the only
-     * the keys present in the input are updated.
-     * The old keys for in settings table
+     * Accessor class overwrites all the old responses submitted by the merchant with the new
+     * keys sent while updating. This function preserves the old keys and only updates the new ones.
      *
      * @param array           $input
      * @param Merchant\Entity $merchant
@@ -468,8 +467,10 @@ class Core extends Base\Core
 
         $merchantId = $merchant->getId();
 
+        //
         // If the input has a file, process it and
         // update the file name in the input variable.
+        //
         if ((isset($input[$featureName]) === true) and
             (isset($input[$featureName][$question]) === true))
         {
