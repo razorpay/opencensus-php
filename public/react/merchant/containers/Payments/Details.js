@@ -46,9 +46,13 @@ export default class PaymentDetailsContainer extends Component {
 
       if (payment.method === 'card' || payment.method === 'emi') {
         this.props.fetchCardDetails(payment);
+      } else if (payment.method === 'bank_transfer') {
+        this.props.fetchBankTransfer(payment);
       }
 
-      this.props.fetchTransfers(payment);
+      if (['created', 'authorized', 'failed'].indexOf(payment.status) < 0) {
+        this.props.fetchTransfers(payment);
+      }
     });
   };
 
@@ -111,7 +115,7 @@ export default class PaymentDetailsContainer extends Component {
     this.context
       .confirm({
         header: 'Are you sure you want to capture this payment?',
-        message: () =>
+        message: () => (
           <div class="text-semi-muted">
             <p>
               The payment amount is{' '}
@@ -119,7 +123,8 @@ export default class PaymentDetailsContainer extends Component {
                 <Amount value={payment.capturableAmount} />
               </b>
             </p>
-          </div>,
+          </div>
+        ),
         affirmativeLabel: 'Yes, Capture',
         affirmativePendingLabel: 'Capturing...',
         abortLabel: "No, don't!",
@@ -180,11 +185,20 @@ export default class PaymentDetailsContainer extends Component {
       component: (
         <RefundModal payment={payment} onRefund={this.onPaymentRefund} />
       ),
+      size: 'small',
     });
   };
 
   render() {
-    let { loading, error, payment, card, refunds, transfers } = this.props;
+    let {
+      loading,
+      error,
+      payment,
+      card,
+      refunds,
+      transfers,
+      bankTransfer,
+    } = this.props;
     let statusMsg = {};
 
     if (error) {
@@ -203,6 +217,7 @@ export default class PaymentDetailsContainer extends Component {
         <PaymentDetails
           payment={payment}
           card={card}
+          bankTransfer={bankTransfer}
           refunds={refunds}
           transfers={transfers}
           isLoading={loading}
@@ -214,24 +229,26 @@ export default class PaymentDetailsContainer extends Component {
         />
 
         <ShowWhen apiFeatureEnabled="Marketplace">
-          {this.state.secView === 'new_transfer' &&
+          {this.state.secView === 'new_transfer' && (
             <PaymentTransferNew
               paymentId={payment && payment.id}
               onClose={() => this.secClose(null)}
               onCreate={this.onCreateTransfer}
               ref={c => (this.transfersView = c)}
-            />}
+            />
+          )}
         </ShowWhen>
 
         <ShowWhen apiFeatureEnabled="Marketplace">
-          {this.state.secView === 'transfer' &&
+          {this.state.secView === 'transfer' && (
             <PaymentTransferDetails
               id={this.props.transfer_id}
               onClose={() => this.secClose(true)}
               ref={c => (this.transfersView = c)}
               onReverse={this.onTransferReverse}
               onRefund={this.onPaymentRefund}
-            />}
+            />
+          )}
         </ShowWhen>
       </div>
     );

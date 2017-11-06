@@ -1,13 +1,20 @@
+import AsyncButton from 'react-async-button';
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
+
+import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
 import Amount from 'rzp/ui/Amount';
-import { isBlank, rupeesToPaise } from 'rzp/utils/rzp-utils';
+import {
+  isBlank,
+  rupeesToPaise,
+  paiseToRupees,
+  titleCase,
+} from 'rzp/utils/rzp-utils';
 import {
   refundPayment,
   fetchItem as fetchPayment,
@@ -16,26 +23,45 @@ import {
 } from 'merchant/modules/payments/details';
 import { closeModal } from 'rzp/modules/modals';
 
-const amountValidation = (value, allValues, props) => {
-  value = value || '';
-  if (allValues.partial) {
-    if (!value) {
-      return 'Amount is required';
-    }
+const isPartialPayment = props => {
+  const refundableAmount = props.payment.amount - props.payment.amount_refunded,
+    amountEntered = rupeesToPaise(props.payable_amount);
 
-    if (isNaN(value) || (value.split('.')[1] || []).length > 2) {
-      return 'Amount can only be a Number with atmost 2 decimal places.';
-    }
-    if (value < 0) {
-      return `Amount can't be negative.`;
-    }
-    if (value > (props.payment.amount - props.payment.amount_refunded) / 100) {
-      return `Amount can't be greater than the amount paid (${(props.payment
-        .amount -
-        props.payment.amount_refunded) /
-        100}).`;
-    }
+  return amountEntered < refundableAmount;
+};
+
+const amountValidation = props => {
+  const value = props.payable_amount || '';
+
+  if (!value) {
+    return 'Amount is required';
   }
+
+  if (isNaN(value) || (value.toString().split('.')[1] || []).length > 2) {
+    return 'Amount can only be a Number with atmost 2 decimal places.';
+  }
+  if (value < 0) {
+    return `Amount can't be negative.`;
+  }
+
+  const refundableAmount = props.payment.amount - props.payment.amount_refunded;
+
+  if (rupeesToPaise(value) > refundableAmount) {
+    return (
+      `Amount can't be greater than the total Refundable` +
+      ` Amount (${paiseToRupees(refundableAmount)}).`
+    );
+  }
+};
+
+const RefundType = ({ partial, isTitleCase = false }) => {
+  let text = partial ? 'partial' : 'full';
+
+  if (isTitleCase) {
+    text = titleCase(text);
+  }
+
+  return <span>{text}</span>;
 };
 
 const selector = formValueSelector('refundModal');
@@ -94,12 +120,15 @@ export default class RefundModal extends Component {
   }
 
   save = props => {
+    const partial = isPartialPayment(this.props),
+      hasAmountErrors = amountValidation(this.props);
+
+    if (hasAmountErrors) {
+      return;
+    }
+
     // For partial refund, if reverse all is checked, we cannot reverse when there is more than 1 transfer on the payment.
-    if (
-      props.partial &&
-      props.reverse_all &&
-      this.props.transfers.items.length > 1
-    ) {
+    if (partial && props.reverse_all && this.props.transfers.items.length > 1) {
       var errorMsg =
         'Reversals cannot be automated when partially refunding a payment that has more than 1 transfer.' +
         ' Create reversals manually before attempting the refund.';
@@ -130,7 +159,7 @@ export default class RefundModal extends Component {
             reverse_all: props.reverse_all ? '1' : '0',
           };
 
-          if (!props.partial) {
+          if (!partial) {
             data.amount = payment.amount - payment.amount_refunded;
           }
 
@@ -165,6 +194,9 @@ export default class RefundModal extends Component {
   render() {
     const { handleSubmit, payment, transfers } = this.props;
 
+    const amountError = amountValidation(this.props),
+      partial = isPartialPayment(this.props);
+
     return (
       <div>
         <ModalHeader
@@ -172,124 +204,72 @@ export default class RefundModal extends Component {
           onCloseClick={this.props.closeModal}
         />
 
-        <form
-          class="form-horizontal payment-link-form"
-          onSubmit={handleSubmit(this.save)}
-        >
-          <div class="modal-body">
+        <div class="modal-body">
+          <form onSubmit={handleSubmit(this.save)}>
             <div class="form-group">
-              <label class="col-sm-4 control-label">
-                <div>Partial Refund</div>
-              </label>
-              <div class="col-sm-8">
+              <label class="label-required">Refund Amount</label>
+              <div class="input-group">
+                <div class="input-group-addon">INR</div>
+                <Field
+                  name="amount"
+                  component={InputField}
+                  class="form-control"
+                  type="number"
+                  placeholder="Enter the refund amount"
+                />
+              </div>
+              {!!amountError ? (
+                <div class="InputField__ErrorText text-danger">
+                  {amountError}
+                </div>
+              ) : (
+                <small class="help-block">
+                  This will be a{' '}
+                  <b>
+                    <RefundType partial={partial} /> refund
+                  </b>.
+                  {!partial && <span>Change amount for a partial refund.</span>}
+                </small>
+              )}
+            </div>
+            {transfers.items.length > 0 && (
+              <div class="form-group">
                 <div class="checkbox rzpCheckbox">
                   <Field
-                    name="partial"
-                    id="partial"
+                    name="reverse_all"
+                    id="reverse_all"
                     component="input"
                     type="checkbox"
                     class="form-control"
                   />
-                  <label for="partial" />
-                </div>
-              </div>
-            </div>
-            {this.props.partial ? (
-              <div class="form-group">
-                <label class="col-sm-4 control-label">
-                  <div>Amount</div>
-                  <small>(in INR)</small>
-                </label>
-                <div class="col-sm-8">
-                  <Field
-                    name="amount"
-                    component={InputField}
-                    class="form-control"
-                    validate={amountValidation}
-                    placeholder="Enter the refund amount"
-                  />
-                  <i />
-                </div>
-              </div>
-            ) : null}
-            {transfers.items.length > 0 ? (
-              <div class="form-group">
-                <label class="col-sm-4 control-label">
-                  <div>
-                    Reverse All{' '}
-                    <a href="https://razorpay.com/docs/route/operations/#reversals">
+                  <label for="reverse_all">
+                    Reverse all{' '}
+                    <a
+                      href="https://razorpay.com/docs/route/operations/#reversals"
+                      target="_blank"
+                    >
                       Route Transfers
-                    </a>
-                  </div>
-                </label>
-                <div class="col-sm-8">
-                  <div class="checkbox rzpCheckbox">
-                    <Field
-                      name="reverse_all"
-                      id="reverse_all"
-                      component="input"
-                      type="checkbox"
-                      class="form-control"
-                    />
-                    <label for="reverse_all" />
-                  </div>
+                    </a>{' '}
+                    as well
+                  </label>
                 </div>
               </div>
-            ) : null}
-
+            )}
             <div class="form-group">
-              <label class="col-sm-4 control-label">
-                <div>Comments</div>
-              </label>
-              <div class="col-sm-8">
-                <Field
-                  name="comment"
-                  component={InputField}
-                  class="form-control"
-                  placeholder="Add an optional comment"
-                />
-                <i />
-              </div>
+              <label>Comments (Optional)</label>
+              <Field
+                name="comment"
+                component={AutoResizeTextarea}
+                class="form-control"
+              />
             </div>
-
-            <div class="form-group">
-              <div class="col-sm-8 col-sm-offset-4">
-                The payment will be{' '}
-                {this.props.partial &&
-                (payment.amount - payment.amount_refunded) / 100 !==
-                  Number(this.props.payable_amount)
-                  ? 'partially '
-                  : 'completely '}
-                refunded with the refund amount set to{' '}
-                <b>
-                  {(this.props.partial
-                    ? this.props.payable_amount
-                    : (payment.amount - payment.amount_refunded) / 100) ||
-                    0}{' '}
-                  INR
-                </b>
-              </div>
+            <div class="Modal__actions">
+              <button class="btn btn-primary btn-block">
+                Issue <RefundType partial={partial} isTitleCase={true} /> refund
+              </button>
             </div>
-          </div>
-
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-default"
-              onClick={this.props.closeModal}
-            >
-              Cancel
-            </button>
-
-            <AsyncButton
-              type="submit"
-              class="btn btn-primary"
-              text="Refund"
-              pendingText="Refunding..."
-              onClick={handleSubmit(this.save)}
-            />
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     );
   }
