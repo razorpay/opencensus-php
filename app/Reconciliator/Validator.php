@@ -87,13 +87,16 @@ class Validator
 
     public function filterEmails(array $emailDetails)
     {
-        $from = $emailDetails[Orchestrator::FROM];
+        $from = $emailDetails[RequestProcessor\Mailgun::FROM];
         $validEmailIds = RequestProcessor\Base::GATEWAY_SENDER_MAPPING;
 
         if (get_key_from_subarray_match($from, $validEmailIds) === null)
         {
             throw new Exception\ReconciliationException(
-                'The sender email ID is not whitelisted.', [Orchestrator::EMAIL_DETAILS => $emailDetails]
+                'The sender email ID is not whitelisted.',
+                [
+                    RequestProcessor\Mailgun::EMAIL_DETAILS => $emailDetails
+                ]
             );
         }
     }
@@ -107,21 +110,26 @@ class Validator
 
     public function validateHdfcEmail(array $emailDetails)
     {
-        return $this->validateEmailSubject($emailDetails[Orchestrator::SUBJECT], Orchestrator::HDFC);
+        return $this->validateEmailSubject(
+                    $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+                    Orchestrator::HDFC);
     }
 
     public function validateKotakEmail(array $emailDetails)
     {
-        return $this->validateEmailSubject($emailDetails[Orchestrator::SUBJECT], Orchestrator::KOTAK);
+        return $this->validateEmailSubject(
+                    $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+                    Orchestrator::KOTAK);
     }
 
     public function validateFreechargeEmail(array $emailDetails)
     {
         $validSubject = $this->validateEmailSubject(
-            $emailDetails[Orchestrator::SUBJECT], Orchestrator::FREECHARGE);
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            Orchestrator::FREECHARGE);
 
         $validBody = $this->validateEmailBody(
-            $emailDetails[Orchestrator::BODY_HTML_TEXT],
+            $emailDetails[RequestProcessor\Mailgun::BODY_HTML_TEXT],
             Orchestrator::FREECHARGE);
 
         return ($validSubject and $validBody);
@@ -129,9 +137,13 @@ class Validator
 
     public function validateOlamoneyEmail(array $emailDetails)
     {
-        $validSubject = $this->validateEmailSubject($emailDetails[Orchestrator::SUBJECT], Orchestrator::OLAMONEY);
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            Orchestrator::OLAMONEY);
 
-        $validBody = $this->validateEmailBody($emailDetails[Orchestrator::BODY], Orchestrator::OLAMONEY);
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY],
+            Orchestrator::OLAMONEY);
 
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[Orchestrator::ATTACHMENT_COUNT],
@@ -143,10 +155,12 @@ class Validator
     public function validateNetbankingAxisEmail(array $emailDetails)
     {
         $validSubject = $this->validateEmailSubject(
-                                    $emailDetails[Orchestrator::SUBJECT],
+                                    $emailDetails[RequestProcessor\Mailgun::SUBJECT],
                                     Orchestrator::NETBANKING_AXIS);
 
-        $validBody = $this->validateEmailBody($emailDetails[Orchestrator::BODY], Orchestrator::NETBANKING_AXIS);
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY],
+            Orchestrator::NETBANKING_AXIS);
 
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[Orchestrator::ATTACHMENT_COUNT],
@@ -158,10 +172,12 @@ class Validator
     public function validateNetbankingIciciEmail(array $emailDetails)
     {
         $validSubject = $this->validateEmailSubject(
-                                $emailDetails[Orchestrator::SUBJECT],
+                                $emailDetails[RequestProcessor\Mailgun::SUBJECT],
                                 Orchestrator::NETBANKING_ICICI);
 
-        $validBody = $this->validateEmailBody($emailDetails[Orchestrator::BODY], Orchestrator::NETBANKING_ICICI);
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY],
+            Orchestrator::NETBANKING_ICICI);
 
         //
         // There isn't a need to validate the attachment count because
@@ -174,10 +190,12 @@ class Validator
     public function validateNetbankingFederalEmail(array $emailDetails)
     {
         $validSubject = $this->validateEmailSubject(
-                            $emailDetails[Orchestrator::SUBJECT],
+                            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
                             Orchestrator::NETBANKING_FEDERAL);
 
-        $validBody = $this->validateEmailBody($emailDetails[Orchestrator::BODY], Orchestrator::NETBANKING_FEDERAL);
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY],
+            Orchestrator::NETBANKING_FEDERAL);
 
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[Orchestrator::ATTACHMENT_COUNT],
@@ -189,11 +207,11 @@ class Validator
     public function validateVirtualAccKotakEmail(array $emailDetails)
     {
         $validSubject = $this->validateEmailSubject(
-                            $emailDetails[Orchestrator::SUBJECT],
+                            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
                             Orchestrator::VIRTUAL_ACC_KOTAK);
 
         $validBody = $this->validateEmailBody(
-                            $emailDetails[Orchestrator::BODY],
+                            $emailDetails[RequestProcessor\Mailgun::BODY],
                             Orchestrator::VIRTUAL_ACC_KOTAK);
 
         $validAttachmentCount = $this->validateAttachmentCount(
@@ -205,9 +223,11 @@ class Validator
 
     public function validateAxisEmail(array $emailDetails)
     {
-        $validSubject = $this->validateEmailSubject($emailDetails[Orchestrator::SUBJECT], Orchestrator::AXIS);
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            Orchestrator::AXIS);
 
-        $validBody = $this->validateEmailBody($emailDetails[Orchestrator::BODY], Orchestrator::AXIS);
+        $validBody = $this->validateEmailBody($emailDetails[RequestProcessor\Mailgun::BODY], Orchestrator::AXIS);
 
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[Orchestrator::ATTACHMENT_COUNT],
@@ -218,9 +238,13 @@ class Validator
 
     public function validateFirstDataEmail(array $emailDetails)
     {
-        $validSubject = $this->validateEmailSubject($emailDetails[Orchestrator::SUBJECT], Orchestrator::FIRST_DATA);
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            Orchestrator::FIRST_DATA);
 
-        $validBody = $this->validateEmailBody($emailDetails[Orchestrator::BODY_HTML_TEXT], Orchestrator::FIRST_DATA);
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY_HTML_TEXT],
+            Orchestrator::FIRST_DATA);
 
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[Orchestrator::ATTACHMENT_COUNT],
@@ -289,7 +313,10 @@ class Validator
             {
                 throw new Exception\ReconciliationException(
                     'The number of attachments found, does not match with the attachment-count input',
-                    ['attachments_found' => $foundAttachmentsCount, 'attachment_count' => $input['attachment-count']]
+                    [
+                        'attachments_found' => $foundAttachmentsCount,
+                        'attachment_count' => $input['attachment-count']
+                    ]
                 );
             }
         }
