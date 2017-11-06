@@ -183,6 +183,8 @@ class FeeCalculator
 
         $rules = $this->applyFiltersOnRules($pricing, $filters);
 
+        $this->traceAllRules($rules);
+
         $rulesCount = count($rules);
 
         $this->trace->debug(
@@ -539,6 +541,8 @@ class FeeCalculator
      */
     protected function chooseRuleWithAmountForMerchantSubvention($rules, $amount)
     {
+        $this->traceAllRules($rules);
+
         $relevantRule = null;
 
         // Either all the rules will be amount range active,
