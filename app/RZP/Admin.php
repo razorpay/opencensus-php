@@ -29,13 +29,6 @@ class Admin extends Entity
         return $this->request('GET', $relativeUrl, $options);
     }
 
-    public function fetchMerchantIds($orgId, $adminId)
-    {
-        $relativeUrl = "orgs/$orgId/admins/$adminId/merchant_ids";
-
-        return $this->request('GET', $relativeUrl);
-    }
-
     public function makeReconciliateRequest($input, $mode = 'live')
     {
         // Makes a guzzle file request

@@ -65,7 +65,6 @@ export default class App extends Component {
 
             <Route path="/invites" component={InvitesList} />
 
-            <Redirect to="/stats" />
             <Redirect to="/merchants" />
           </Switch>
         </main>

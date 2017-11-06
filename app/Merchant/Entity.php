@@ -30,11 +30,6 @@ class Entity extends Base\Entity
 
     protected static $generators = array('id');
 
-    protected static $test_merchant_ids = array(
-        '10000000000000',
-        '100DemoAccount'
-    );
-
     const AMEX  = 'AMEX';
     const DICL  = 'DICL';
     const DISC  = 'DISC';
@@ -50,9 +45,6 @@ class Entity extends Base\Entity
     const NETBANKING = 'NETBANKING';
     const WALLET  = 'WALLET';
     const UNKNOWN = 'UNKNOWN';
-
-    const AGGREGATOR    = 'Aggregator';
-    const MARKETPLACE   = 'Marketplace';
 
     protected static $api_mappings = array(
         'American Express'  =>  self::AMEX,
@@ -73,220 +65,6 @@ class Entity extends Base\Entity
         'Unknown'           =>  self::UNKNOWN
     );
 
-    /**
-     * Generate the user instance from the merchant instance
-     *
-     * @param Models\User\Entity $user
-     * @return App\Merchant\Entity $merchant
-     */
-    public static function createFromUser(User\Entity $user, $data)
-    {
-        $merchant = new static();
-
-        $merchant->id = Uuid::generate();
-        $merchant->name = $data['business_name'];
-        $merchant->email = $user->email;
-
-        return $merchant;
-    }
-
-    /**
-     * Create sub-merchant accounts
-     * @param  App\Merchant\Entity $aggregator Aggregator Merchant Entity
-     * @param  string          $businessName   Merchant Business Name
-     * @return App\Merchant\Entity Sub Merchant Entity
-     */
-    public static function createFromMerchant(Entity $aggregator, $businessName, $email, $isLinkedAccount = false)
-    {
-        $merchant = new static();
-
-        $merchant->id       = Uuid::generate();
-        $merchant->name     = $businessName;
-        $merchant->email    = $email;
-
-        return $merchant;
-    }
-
-    /**
-     * Take care while calling this method
-     *
-     * @param array $input array with new email address
-     */
-    public function changeEmail($input)
-    {
-        return $this->edit($input, 'changeEmail');
-    }
-
-    /**
-     * Take care while calling this method
-     * @param array $input array with new name
-     */
-    public function changeName($name)
-    {
-        return $this->edit([
-            'name' => $name
-        ], 'changeName');
-    }
-
-    /**
-     * Determine if the merchant has any users.
-     *
-     * @return bool
-     */
-    public function hasUsers()
-    {
-        return count($this->users) > 0;
-    }
-
-    /**
-     * Get all of the merchants for the user.
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function getAllMerchantsForUser($user)
-    {
-        $merchants = $user->merchants()->with('owner')->get();
-
-        foreach ($merchants as $merchant)
-        {
-            $merchant->owner->setVisible(['name']);
-        }
-
-        return $merchants;
-    }
-
-    /**
-     * Get the owners of the merchant.
-     */
-    public function owners()
-    {
-        return $this->users()->where('role','owner')->get();
-    }
-
-    /**
-     * Get the primary owner of the merchant.
-     */
-    public function primaryOwner()
-    {
-        return $this->owners()->first();
-    }
-
-    /**
-     * Get all of the users that belong to the merchant.
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function users()
-    {
-        return $this->belongsToMany(
-            User\Entity::class, 'merchant_users', 'merchant_id', 'user_id'
-        )->withPivot('role');
-    }
-
-    /**
-     * Get all of the pending invitations for the merchant.
-     */
-    public function invitations()
-    {
-        return $this->hasMany(Invitation\Entity::class)
-                    ->orderBy('created_at', 'desc');
-    }
-
-    /**
-     * Invite a user to the merchants by e-mail address.
-     *
-     * @param  string  $email
-     * @return App\Merchant\Entity
-     */
-    public function inviteUserByEmailWithRole($email, $role)
-    {
-        // First try to find if a user account exists for the user
-        $invitedUser = (new User\Entity)->where('email', $email)->first();
-
-        $invitation = $this->invitations()->create([
-            'user_id' => $invitedUser ? $invitedUser->id : null,
-            'email' => $email,
-            'token' => str_random(40),
-            'role' => $role,
-        ]);
-
-        return $invitation;
-    }
-
-    /**
-     * Attach a user to a given merchant based on their invitation.
-     *
-     * @param  App\Invitation\Entity  $invitation
-     * @param  Models\User\Entity  $user
-     * @return void
-     */
-    public static function attachUserToMerchantByInvitation(Invitation\Entity $invitation, User\Entity $user)
-    {
-        $user->joinMerchantByIdWithRole($invitation->merchant->id, $invitation->role);
-
-        $user->switchToMerchant($invitation->merchant);
-
-        $invitation->delete();
-    }
-
-    /**
-     * Remove a user from the merchant by their ID.
-     *
-     * @param  int  $userId
-     * @return void
-     */
-    public function removeUserById($userId)
-    {
-        $this->users()->detach([$userId]);
-
-        $removedUser = (new User\Entity)->find($userId);
-
-        if($removedUser)
-        {
-            $removedUser->refreshCurrentMerchant();
-        }
-    }
-
-    /**
-     * Generates UUid ID
-     */
-    public function generateId()
-    {
-        $this->setAttribute('id', Uuid::generate());
-    }
-
-    public function transactions()
-    {
-        return $this->hasMany(
-            __NAMESPACE__.'\Transaction'
-        );
-    }
-
-    public function hasInvitiationForEmail($email)
-    {
-        return $this->invitations()
-                    ->where('email', $email)
-                    ->exists();
-    }
-
-    public function hasUserForEmail($email)
-    {
-        return $this->users()
-                    ->where('email', $email)
-                    ->exists();
-    }
-
-    /**
-     * Gets a merchant, if there is any using the
-     * given email address
-     * @param  string $email
-     * @return Entity
-     */
-    public static function getMerchantFromEmail($email)
-    {
-        $data = static::whereEmail($email)->first();
-        return $data;
-    }
-
     public static function getAggregations($data, $mode)
     {
         $data = \DB::table('aggregations')
@@ -300,20 +78,17 @@ class Entity extends Base\Entity
     public static function getTransactionAggregations($mode, $sort, $filterTimestamp, $type, $merchantId)
     {
         $data = \DB::table('transactions')
-                    ->join('merchants', 'transactions.merchant_id', '=', 'merchants.id')
                     ->select(
                         \DB::raw(
                             'transactions.merchant_id,
                             SUM(transactions.amount) as total_amount,
-                            SUM(transactions.count) as total_count,
-                            merchants.name as merchant_name'
+                            SUM(transactions.count) as total_count'
                         )
                     )
                     ->where('transactions.mode', '=', $mode)
                     ->where('transactions.type', '=', $type)
                     ->where('transactions.created_at', '>=', $filterTimestamp)
                     ->where('transactions.merchant_id', '=', $merchantId)
-                    ->groupBy('transactions.merchant_id')
                     ->orderBy($sort, 'DESC')
                     ->get();
 
@@ -323,13 +98,11 @@ class Entity extends Base\Entity
     public static function getAllTransactionAggregations($mode, $sort, $count, $filterTimestamp, $type)
     {
         $data = \DB::table('transactions')
-                    ->join('merchants', 'transactions.merchant_id', '=', 'merchants.id')
                     ->select(
                         \DB::raw(
                             'transactions.merchant_id,
                             SUM(transactions.amount) as total_amount,
-                            SUM(transactions.count) as total_count,
-                            merchants.name as merchant_name'
+                            SUM(transactions.count) as total_count'
                         )
                     )
                     ->where('transactions.mode', '=', $mode)
@@ -419,100 +192,5 @@ class Entity extends Base\Entity
             ->where('merchant_id','=',$data['merchant_id'])
             ->where('mode', '=', $mode)
             ->update($obj);
-    }
-
-    /**
-     * Generates data required for merchant registration with the API
-     */
-    public function generateApiData()
-    {
-        return array(
-            'id'    => $this->id,
-            'name'  => $this->name,
-            'email' => $this->email
-        );
-    }
-
-    /**
-     * Get the unique identifier for the user.
-     *
-     * @return mixed
-     */
-    public function getAuthIdentifier()
-    {
-        return $this->getKey();
-    }
-
-    /**
-     * Get the token value for the "remember me" session.
-     *
-     * @return string
-     */
-    public function getRememberToken()
-    {
-        return $this->getAttribute('remember_token');
-    }
-
-    /**
-     * Set the token value for the "remember me" session.
-     *
-     * @param  string  $value
-     * @return void
-     */
-    public function setRememberToken($value)
-    {
-        $this->setAttribute('remember_token', $value);
-    }
-
-    /**
-     * Get the column name for the "remember me" token.
-     *
-     * @return string
-     */
-    public function getRememberTokenName()
-    {
-        return 'remember_token';
-    }
-
-    /**
-     * Get the e-mail address where password reminders are sent.
-     *
-     * @return string
-     */
-    public function getReminderEmail()
-    {
-        return $this->email;
-    }
-
-    public function isTestAccount()
-    {
-        return in_array($this->id, static::$test_merchant_ids);
-    }
-
-    public function isActive()
-    {
-        return ((int)$this->activated === 1);
-    }
-
-    public function setCustomId()
-    {
-        switch ($this->email)
-        {
-            case 'shk@razorpay.com':
-                $this->setAttribute('id', '100000Razorpay');
-                break;
-        }
-    }
-
-    public function archive()
-    {
-        $this->archived_at = time();
-        $this->save();
-    }
-
-    public function suspend()
-    {
-        $this->suspended_at = time();
-        $this->save();
     }
 }

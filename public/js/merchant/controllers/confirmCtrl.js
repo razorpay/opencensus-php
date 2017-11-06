@@ -36,9 +36,17 @@ app.controller('ConfirmCtrl', [
 
     $scope.alerts.resetAlerts();
 
+    var data = {
+      route_name: 'user_confirm_by_data',
+      body: {
+        confirm_token: token,
+      },
+    };
+
     var request = $http({
-      method: 'get',
-      url: '/user/confirm/' + token,
+      method: 'put',
+      url: '/guest/generic',
+      data: data,
     });
 
     request
@@ -68,9 +76,10 @@ app.controller('ConfirmCtrl', [
             });
           }, 3000);
         } else {
-          angular.forEach(data.errors, function(error, key) {
-            $scope.alerts.addAlert('danger', error);
-          });
+          $scope.alerts.addAlert(
+            'danger',
+            'Invalid confirmation token or the merchant is already confirmed.'
+          );
         }
       })
       .error(function() {

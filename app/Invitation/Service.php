@@ -11,15 +11,10 @@ use App\Merchant;
 use App\Invitation;
 use App\Mailers\MiscMailer;
 use App\Providers\GenericUser;
+use App\Generic;
 
 class Service extends Base\Service
 {
-    const NO_MERCHANTS_OWNED_BY_USER = "You don't own any merchants";
-    const SELF_INVITE_NOT_ALLOWED = "You can't invite yourself";
-    const ALREADY_INVITED = 'An invitation has already been sent to the user.';
-    const INVALID_INVITE = 'The invitation is invalid.';
-    const ALREADY_A_MEMBER = 'A user with this email is already a team member.';
-
     public function __construct()
     {
         $this->loggedInUser = Auth::user();
@@ -29,19 +24,28 @@ class Service extends Base\Service
      * Accept the given merchant invitation.
      *
      * @param  string  $inviteId
-     * @param  \Models\User\Entity  $user
+     * @param  $user
      * @return \Illuminate\Http\Response
      */
     public function acceptInvitationForUser($inviteId, $user)
     {
-        list($error, $response) = $this->acceptInvitationOnApi($inviteId, $user->id);
+        $acceptInvitationForUser = [
+            'route_name' => 'invitation_action',
+            'url_params' => [
+                '{id}'     => $inviteId,
+                '{action}' => 'accept'
+            ],
+            'body' => [
+                'user_id' => $user->id
+            ]
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('POST', $acceptInvitationForUser);
 
         if (empty($error) === true)
         {
-            $user = User\Entity::find($user->id);
-
-            $user->joinMerchantByIdWithRole($response['merchant_id'], $response['role']);
-
             list($error, $genericUser) = (new User\Service)->getUserFromApi($user->id);
 
             if (empty($error) === true)
@@ -49,84 +53,7 @@ class Service extends Base\Service
                 Session::put('dashboard_user_payload', $genericUser);
             }
         }
-    }
 
-    /**
-     * Get the invitation entity from the token
-     *
-     * @param string $invitationToken
-     * @return string $email
-     */
-    public function getInvitationFromToken($invitationToken)
-    {
-        $error = array();
-
-        $invitation = (new Invitation\Entity)->where('token', $invitationToken)->first();
-
-        if ($invitation)
-        {
-            return array($error, $invitation);
-        }
-
-        $error = [static::INVALID_INVITE];
-
-        return array($error, null);
-    }
-
-    protected function sendInvitationEmail($invitation)
-    {
-        $mailer = new MiscMailer();
-
-        $mailer->sendMemberInvitationEmail($invitation, $this->loggedInUser->toArray())
-               ->queueAndDeliver();
-    }
-
-    public function getInvitationById(string $inviteId)
-    {
-        return Entity::find($inviteId);
-    }
-
-    public function getInvitationByTokenFromApi(string $token)
-    {
-        $error = $response = [];
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api
-                             ->invitation
-                             ->fetchByToken($token)
-                             ->toArray();
-        }
-        catch(\Razorpay\Api\Errors\Error $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $response];
-    }
-
-    public function acceptInvitationOnApi(string $id, $userId)
-    {
-        $error = $response = [];
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $params = ['user_id' => $userId];
-
-            $response = $this->api
-                             ->invitation
-                             ->accept($id, $params)
-                             ->toArray();
-        }
-        catch(\Razorpay\Api\Errors\Error $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $response];
+        return [$error, $data];
     }
 }

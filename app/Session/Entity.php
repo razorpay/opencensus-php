@@ -102,7 +102,11 @@ class Entity extends Base\Entity
         }
     }
 
-    public function deleteAllOtherSessionsForUser($userId, $currentSessionId)
+    /**
+     * @param        $userId
+     * @param string $currentSessionId
+     */
+    public function deleteAllOtherSessionsForUser($userId, $currentSessionId = null)
     {
         $setKey = $this->getUserSessionKey($userId);
 
@@ -110,7 +114,7 @@ class Entity extends Base\Entity
 
         foreach ($sessionIds as $sessionId)
         {
-            if ($sessionId === $currentSessionId)
+            if (empty($currentSessionId) === false and ($sessionId === $currentSessionId))
             {
                 continue;
             }

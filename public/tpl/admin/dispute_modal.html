@@ -161,12 +161,34 @@
         </div>
       </div>
 
+      <!--Merchant Email-->
+      <div class="form-group">
+        <label class="col-lg-3 control-label">Merchant Email:</label>
+        <div class="col-lg-9">
+          <div class="input-group">
+            <input type="text" class="form-control m-b"
+                   ng-model="dispute.merchant_emails"
+                   ng-disabled="editMode">
+          </div>
+        </div>
+      </div>
+
       <!--Deduct on Onset-->
       <div class="form-group">
-        <label class="col-lg-3 control-label inactive">Deduct at Onset:</label>
+        <label class="col-lg-3 control-label">Deduct at Onset:</label>
         <div class="col-sm-8">
           <input type="checkbox" class="form-control m-b"
                  ng-model="dispute.deduct_at_onset"
+                 ng-disabled="editMode"/>
+        </div>
+      </div>
+
+      <!--Skip Merchant Email-->
+      <div class="form-group">
+        <label class="col-lg-3 control-label">Skip Merchant Email:</label>
+        <div class="col-sm-8">
+          <input type="checkbox" class="form-control m-b"
+                 ng-model="dispute.skip_email"
                  ng-disabled="editMode"/>
         </div>
       </div>
