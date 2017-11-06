@@ -98,6 +98,22 @@ class Checkout
         $orderId = $input[Payment\Entity::ORDER_ID];
 
         $data['order'] = (new Order\Core)->getFormattedDataForCheckout($orderId, $merchant);
+
+        $this->resetMethodsIfValidBanksPresent($data);
+    }
+
+    protected function resetMethodsIfValidBanksPresent(array & $data)
+    {
+        if(empty($data['order'][Order\Entity::BANK]) === false)
+        {
+            $bankCode = $data['order'][Order\Entity::BANK];
+
+            $bankName = $data['methods']['netbanking'][$data['order'][Order\Entity::BANK]];
+
+            $data['methods']['netbanking'] = [
+                $bankCode => $bankName,
+            ];
+        }
     }
 
     protected function checkAndAddDetailsForInvoice(

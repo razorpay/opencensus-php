@@ -96,6 +96,26 @@ return [
             ],
         ],
     ],
+    'testCreateOrderWithBank' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank'           => 'UTIB',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
     'testCreateTPVOrderWithInvalidAccountNumber' => [
         'request' => [
             'content' => [
@@ -234,6 +254,23 @@ return [
                 'order' => [
                     'bank'           => 'UTIB',
                     'account_number' => 'XXXXXXXXXXXXX40',
+                ],
+            ],
+        ],
+    ],
+
+    'testPreferencesForOrderWithBank' => [
+        'request' => [
+            'content' => [],
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'netbanking' => [
+                        'UTIB' => 'Axis Bank',
+                    ],
                 ],
             ],
         ],
