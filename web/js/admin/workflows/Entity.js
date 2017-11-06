@@ -4,15 +4,17 @@ import { observer } from 'mobx-react';
 import Field from 'ui/Field';
 
 export function showEntity() {
-  open(`/admin/_#/app/workflows/${this.id}/edit`);
+  return <EditWorkflow model={this} />;
 }
 
 @observer
 export default class EditWorkflow extends Component {
   render() {
+    let { model } = this.props;
+
     return (
       <div>
-        <header>{(this.id && 'Edit') || 'Create'} Workflow</header>
+        <header>{model ? 'Edit' : 'Create'} Workflow</header>
         <Field label="name" name="name" />
       </div>
     );

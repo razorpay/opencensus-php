@@ -5,7 +5,7 @@ import Field from 'ui/Field';
 import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
 import { observer } from 'mobx-react';
-import { showEntity } from './Entity';
+import { Link } from 'react-router-dom';
 
 @observer
 export default class WorkflowList extends Component {
@@ -24,19 +24,15 @@ export default class WorkflowList extends Component {
         <div class="box">
           <header>
             Workflows
-            <a class="btn" target="_blank" href={`/admin/_#/app/workflows/new`}>
+            <Link class="btn" to={'/workflows/new'}>
               Add New Workflow
-            </a>
+            </Link>
           </header>
           <Form onSubmit={this.onSubmit} class="filters">
             <Field name="q" label="Search" />
           </Form>
         </div>
-        <PageTable
-          model={this.collection}
-          fields={fields}
-          onClick={showEntity}
-        />
+        <PageTable model={this.collection} fields={fields} href={href} />
       </div>
     );
   }
@@ -48,3 +44,5 @@ const fields = [
   ['Created At', item => Date(item.created_at)],
   ['Last Updated', item => Date(item.updated_at)],
 ];
+
+const href = item => '/workflows/' + item.id;

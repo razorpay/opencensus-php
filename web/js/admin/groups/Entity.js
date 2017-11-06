@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Field, { SelectField, SelectMethod } from 'ui/Field';
-import { openSlider } from 'common/modal';
+import { replaceSlider } from 'common/modal';
 import Table from 'ui/Table';
 import { adminPost } from 'util/fetch';
 
@@ -101,7 +101,7 @@ class EditGroup extends Component {
 }
 
 export function showEntity(collection) {
-  openSlider(<EditGroup collection={collection} model={this} />);
+  replaceSlider(<EditGroup collection={collection} model={this} />);
 }
 
 const fields = [
