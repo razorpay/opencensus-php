@@ -117,6 +117,7 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
         $this->assertNotNull($netbanking['bank_payment_id']);
         $this->assertNotNull($netbanking['si_token']);
+        $this->assertEquals(Emandate\StatusCode::SUCCESS, $netbanking['status']);
 
         $token = $this->getLastEntity('token', true);
         $payment = $this->getLastEntity('payment', true);

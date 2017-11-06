@@ -344,6 +344,8 @@ trait EmandateTrait
             $attributes[Netbanking\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_REF_NO];
         }
 
+        $attributes[Netbanking\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::STATUS_CODE];
+
         return $attributes ?? [];
     }
 
