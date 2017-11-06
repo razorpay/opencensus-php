@@ -57,9 +57,10 @@ class Validator extends Base\Validator
 
         $this->validateOrderCurrency($payment->getCurrency());
 
-        $this->validateOrderBank($payment->getBank());
-
+        // TPV Check is done before check for generic order payment match.
         $this->validateMerchantSpecificData($payment);
+
+        $this->validateOrderBank($payment->getBank());
     }
 
     /**
@@ -141,9 +142,10 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateOrderBank(string $bank)
+    protected function validateOrderBank($bank)
     {
-        if ($this->entity->getBank() !== $bank)
+        if (($this->entity->getBank() !== null) and
+            ($this->entity->getBank() !== $bank))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK);
