@@ -46,6 +46,13 @@ class Entity extends Base\PublicEntity
 
     const DELETED_AT       = 'deleted_at';
 
+    //
+    // Constant denotes the range defined by
+    // min_amount and max_amount for a rule if
+    // either or both are present
+    //
+    const AMOUNT_RANGE = 'amount_range';
+
     const MAX_LOAD = 10000;
 
     // Rule types
@@ -91,6 +98,23 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION,
         self::IINS,
         self::CURRENCY,
+    ];
+
+    /**
+     * Defines the attribute scores used for calculating how specific a rule
+     * is for a given criteria. Each attribute is given a score in power of 2
+     * and two attributes cant have the same score.
+     */
+    const ATTRIBUTE_SCORES = [
+        self::CURRENCY      => 1,
+        self::INTERNATIONAL => 2,
+        self::METHOD_TYPE   => 4,
+        self::NETWORK       => 8,
+        self::ISSUER        => 16,
+        self::IINS          => 32,
+        self::AMOUNT_RANGE  => 64,
+        self::CATEGORY2     => 128,
+        self::MERCHANT_ID   => 256,
     ];
 
     protected $entity = 'gateway_rule';
@@ -356,6 +380,21 @@ class Entity extends Base\PublicEntity
         }
 
         return json_decode($value, true);
+    }
+
+    public function calculateSpecificityScoreForCriteria(array $criteria)
+    {
+        $score = 0;
+        foreach ($criteria as $attr => $value)
+        {
+            if (($this->isAttributeNotNull($attr) === true) and
+                ($value === $this->getAttribute($attr)))
+            {
+                $score += self::ATTRIBUTE_SCORES[$attr];
+            }
+        }
+
+        sd($score);
     }
 
     /**

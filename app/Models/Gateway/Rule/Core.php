@@ -112,6 +112,8 @@ class Core extends Base\Core
 
         if ($matchingRules->isNotEmpty() === true)
         {
+            $this->groupRulesBySpecificityScore($matchingRules, $rule);
+
             $totalExistingLoad = $matchingRules->sum(Entity::LOAD);
 
             $totalLoad = $rule->getLoad() + $totalExistingLoad;
@@ -227,6 +229,21 @@ class Core extends Base\Core
         }
 
         return $matchingRules;
+    }
+
+    protected function groupRulesBySpecificityScore(Base\PublicCollection $rules, Entity $rule)
+    {
+        $criteria = [];
+
+        foreach (Entity::ATTRIBUTE_SCORES as $attribute => $score)
+        {
+            $criteria[$attribute] = $rule->getAttribute($attribute);
+        }
+
+        foreach ($rules as $rule)
+        {
+            $rule->calculateSpecificityScoreForCriteria($criteria);
+        }
     }
 
     /**
