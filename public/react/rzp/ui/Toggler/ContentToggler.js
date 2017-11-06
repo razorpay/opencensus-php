@@ -37,15 +37,17 @@ export default class ContentToggler extends BaseToggler {
           <div className="less-content-wrapper text-primary noselect">
             {lessContent}
           </div>
-          {hasMore && (
+          {hasMore &&
             <div className="less-content-arrow text-primary">
               <i
                 className={'icon icon-chevron-' + (showMore ? 'up' : 'down')}
               />
-            </div>
-          )}
+            </div>}
         </div>
-        {showMore && <div className="more-content">{moreContent}</div>}
+        {showMore &&
+          <div className="more-content">
+            {moreContent}
+          </div>}
       </div>
     );
   }

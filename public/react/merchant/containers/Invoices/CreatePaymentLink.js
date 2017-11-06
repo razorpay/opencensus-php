@@ -90,9 +90,7 @@ export default class CreatePaymentLink extends Component {
       this.props.initialize({
         ...this.props.invoice,
         ...(expireBy && {
-          expire_by_date: moment(expireBy * 1000)
-            .startOf('day')
-            .unix(),
+          expire_by_date: moment(expireBy * 1000).startOf('day').unix(),
           expire_by: expireBy * 1000,
         }),
       });
@@ -115,10 +113,7 @@ export default class CreatePaymentLink extends Component {
         // and add the diff to selected date
         expiryWithTime =
           date * 1000 +
-          (expiryWithTime -
-            moment(expiryWithTime)
-              .startOf('day')
-              .valueOf());
+          (expiryWithTime - moment(expiryWithTime).startOf('day').valueOf());
       } else {
         // if `expiryDateWithTime` is not set and somebody selects a date
         // expiry time should be the EOD of the selected date (11:59 PM)
@@ -209,7 +204,7 @@ export default class CreatePaymentLink extends Component {
         >
           <div class="modal-body">
             <Alert type="error" message={this.state.errors} />
-            {isNewForm && (
+            {isNewForm &&
               <div>
                 <div class="form-group">
                   <label class="col-md-3 control-label help-label label-required">
@@ -297,7 +292,7 @@ export default class CreatePaymentLink extends Component {
                       onDateChange={this.setExpiryDate}
                     />
                   </div>
-                  {this.props.expireBy && (
+                  {this.props.expireBy &&
                     <div class="col-md-4">
                       <Field
                         name="expire_by"
@@ -306,11 +301,9 @@ export default class CreatePaymentLink extends Component {
                         dateFormat={false}
                         timeFormat={true}
                       />
-                    </div>
-                  )}
+                    </div>}
                 </div>
-              </div>
-            )}
+              </div>}
 
             <div class="form-group customer">
               <label class="col-md-3 control-label">Customer</label>
@@ -343,7 +336,7 @@ export default class CreatePaymentLink extends Component {
               </div>
             </div>
 
-            {!isNewForm && (
+            {!isNewForm &&
               <div>
                 <div class="form-group">
                   <label class="col-md-3 control-label help-label">
@@ -389,8 +382,7 @@ export default class CreatePaymentLink extends Component {
                     />
                   </div>
                 </div>
-              </div>
-            )}
+              </div>}
 
             <div class="form-group">
               <label class="col-md-3 control-label">Notify Customer</label>
@@ -430,7 +422,7 @@ export default class CreatePaymentLink extends Component {
               </div>
             </div>
 
-            {isTestMode && (
+            {isTestMode &&
               <div class="row">
                 <div class="col-md-8 col-md-offset-3">
                   <div class="alert alert-sm alert-warning">
@@ -439,8 +431,7 @@ export default class CreatePaymentLink extends Component {
                     {/* Also, SMS will not be sent in test mode */}
                   </div>
                 </div>
-              </div>
-            )}
+              </div>}
           </div>
 
           <div class="modal-footer">

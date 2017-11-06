@@ -84,7 +84,9 @@ export default class ActivationWizard extends Component {
         }
       >
         {icon[iconType]}
-        <span>{title}</span>
+        <span>
+          {title}
+        </span>
       </a>
     );
   }
@@ -94,20 +96,18 @@ export default class ActivationWizard extends Component {
     let info;
 
     if (data.submitted) {
-      info = data.activated ? (
-        <div class="alert alert-info text-center">
-          {accountId
-            ? 'The account has been activated'
-            : 'Your account is already activated'}
-        </div>
-      ) : (
-        <div class="alert alert-info">
-          Your activation form is submitted and is under review. The process can
-          take upto <b>2 working days</b>. If any clarification is needed, we
-          will contact you on your registered email address -{' '}
-          {data.contact_email}
-        </div>
-      );
+      info = data.activated
+        ? <div class="alert alert-info text-center">
+            {accountId
+              ? 'The account has been activated'
+              : 'Your account is already activated'}
+          </div>
+        : <div class="alert alert-info">
+            Your activation form is submitted and is under review. The process
+            can take upto <b>2 working days</b>. If any clarification is needed,
+            we will contact you on your registered email address -{' '}
+            {data.contact_email}
+          </div>;
     }
 
     return (
@@ -124,14 +124,14 @@ export default class ActivationWizard extends Component {
             activeTabClassName="active"
             disabledTabClassName="disabled"
           >
-            {this.activationForms.map((form, index) => (
+            {this.activationForms.map((form, index) =>
               <Tab key={form.name}>
                 {this.renderNavAnchor(index + 1, form.title)}
               </Tab>
-            ))}
+            )}
           </TabList>
 
-          {this.activationForms.map((form, index) => (
+          {this.activationForms.map((form, index) =>
             <TabPanel key={form.name}>
               <WizardItem
                 form={form.name}
@@ -142,7 +142,7 @@ export default class ActivationWizard extends Component {
                 linkedAccountKyc={this.state.linkedAccountKyc}
               />
             </TabPanel>
-          ))}
+          )}
         </Tabs>
       </div>
     );

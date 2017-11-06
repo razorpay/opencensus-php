@@ -61,7 +61,11 @@ const RefundType = ({ partial, isTitleCase = false }) => {
     text = titleCase(text);
   }
 
-  return <span>{text}</span>;
+  return (
+    <span>
+      {text}
+    </span>
+  );
 };
 
 const selector = formValueSelector('refundModal');
@@ -218,21 +222,20 @@ export default class RefundModal extends Component {
                   placeholder="Enter the refund amount"
                 />
               </div>
-              {!!amountError ? (
-                <div class="InputField__ErrorText text-danger">
-                  {amountError}
-                </div>
-              ) : (
-                <small class="help-block">
-                  This will be a{' '}
-                  <b>
-                    <RefundType partial={partial} /> refund
-                  </b>.
-                  {!partial && <span>Change amount for a partial refund.</span>}
-                </small>
-              )}
+              {!!amountError
+                ? <div class="InputField__ErrorText text-danger">
+                    {amountError}
+                  </div>
+                : <small class="help-block">
+                    This will be a{' '}
+                    <b>
+                      <RefundType partial={partial} /> refund
+                    </b>.
+                    {!partial &&
+                      <span>Change amount for a partial refund.</span>}
+                  </small>}
             </div>
-            {transfers.items.length > 0 && (
+            {transfers.items.length > 0 &&
               <div class="form-group">
                 <div class="checkbox rzpCheckbox">
                   <Field
@@ -253,8 +256,7 @@ export default class RefundModal extends Component {
                     as well
                   </label>
                 </div>
-              </div>
-            )}
+              </div>}
             <div class="form-group">
               <label>Comments (Optional)</label>
               <Field

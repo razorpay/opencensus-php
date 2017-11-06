@@ -46,7 +46,10 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
             ? paymentMethodText + ' ' + titleCase(paymentMethod)
             : 'UPI'}
         </span>
-        {paymentMethod === 'upi' && <span>{payment.vpa}</span>}
+        {paymentMethod === 'upi' &&
+          <span>
+            {payment.vpa}
+          </span>}
       </Definition>
     );
   } else if (paymentMethod === 'card' || paymentMethod === 'emi') {
@@ -68,11 +71,21 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
             {cardDetails.issuer ? cardDetails.issuer + ', ' : ''}
             {cardDetails.network + ' ending '}
           </span>
-          <b>{cardDetails.last4}</b>
+          <b>
+            {cardDetails.last4}
+          </b>
         </span>
       ),
-      customer = <span>Name on card - {cardDetails.name}</span>,
-      cardId = <code>{cardDetails.id}</code>;
+      customer = (
+        <span>
+          Name on card - {cardDetails.name}
+        </span>
+      ),
+      cardId = (
+        <code>
+          {cardDetails.id}
+        </code>
+      );
 
     el = (
       <ContentToggler>
@@ -100,39 +113,39 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
             bankTransfer.virtual_account &&
             bankTransfer.virtual_account.description
           ) && <span>Virtual account description</span>}
-          {isDetailsLoading ? (
-            <PlaceholderLoader />
-          ) : (
-            <div>
-              <div className="row m-b">
-                <div className="col-sm-12">
-                  <Link
-                    to={`/virtualaccounts/${bankTransfer.virtual_account_id}`}
-                  >
-                    <code>{bankTransfer.virtual_account_id}</code>
-                  </Link>
+          {isDetailsLoading
+            ? <PlaceholderLoader />
+            : <div>
+                <div className="row m-b">
+                  <div className="col-sm-12">
+                    <Link
+                      to={`/virtualaccounts/${bankTransfer.virtual_account_id}`}
+                    >
+                      <code>
+                        {bankTransfer.virtual_account_id}
+                      </code>
+                    </Link>
+                  </div>
                 </div>
-              </div>
-              <div className="row">
-                <div className="col-sm-4 col-xs-5">Payer Name:</div>
-                <div className="col-sm-8 col-xs-7">
-                  {bankTransfer.payer_bank_account.name}
+                <div className="row">
+                  <div className="col-sm-4 col-xs-5">Payer Name:</div>
+                  <div className="col-sm-8 col-xs-7">
+                    {bankTransfer.payer_bank_account.name}
+                  </div>
                 </div>
-              </div>
-              <div className="row">
-                <div className="col-sm-4 col-xs-5">Payer a/c:</div>
-                <div className="col-sm-8 col-xs-7">
-                  {bankTransfer.payer_bank_account.account_number}
+                <div className="row">
+                  <div className="col-sm-4 col-xs-5">Payer a/c:</div>
+                  <div className="col-sm-8 col-xs-7">
+                    {bankTransfer.payer_bank_account.account_number}
+                  </div>
                 </div>
-              </div>
-              <div className="row">
-                <div className="col-sm-4 col-xs-5">Payer IFSC:</div>
-                <div className="col-sm-8 col-xs-7">
-                  {bankTransfer.payer_bank_account.ifsc}
+                <div className="row">
+                  <div className="col-sm-4 col-xs-5">Payer IFSC:</div>
+                  <div className="col-sm-8 col-xs-7">
+                    {bankTransfer.payer_bank_account.ifsc}
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
+              </div>}
         </Definition>
       </ContentToggler>
     );
