@@ -99,7 +99,7 @@
                 <code>{{value}}</code>
               </a>
               <!-- References to other entities -->
-              <a target="_blank" ui-sref="{{getState(key, false)}}" ng-show="getState(key)!=='.'">
+              <a target="_blank" ui-sref="{{getState(key, false, row.entity_type || row.type)}}" ng-show="getState(key)!=='.'">
                 <code>{{value}}</code>
               </a>
 
