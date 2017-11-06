@@ -10,6 +10,8 @@ use RZP\Models\EMandate;
 
 class EMandateController extends Controller
 {
+    protected $service = EMandate\Service::class;
+
     public function postReconcileRegistrationFile($gateway)
     {
         if (Request::hasFile('file') === false)

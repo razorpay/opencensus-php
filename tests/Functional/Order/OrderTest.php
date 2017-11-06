@@ -252,6 +252,19 @@ class OrderTest extends TestCase
         $this->fixtures->merchant->disableTPV();
     }
 
+    public function testCardPaymentForTPVMerchantWithoutOrder()
+    {
+        $this->fixtures->merchant->enableTPV();
+
+        $this->setUpSharpGateway();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
     public function testPaymentWithIncorrectBankForTPVMerchantWithOrder()
     {
         $this->fixtures->merchant->enableTPV();

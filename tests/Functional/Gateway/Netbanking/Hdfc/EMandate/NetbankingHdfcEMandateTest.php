@@ -11,6 +11,7 @@ use RZP\Models\Gateway\File;
 use RZP\Models\Customer\Token;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Gateway\EMandate\Base as Email;
+use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\EMandate\Constants as EmailConstants;
 
@@ -60,6 +61,68 @@ class NetbankingHdfcEMandateTest extends TestCase
         $this->assertEquals($this->payment['account_number'], $token[Token\Entity::ACCOUNT_NUMBER]);
 
         $this->assertTestResponse($token, 'matchInitiatedToken');
+    }
+
+    public function testPaymentVerify()
+    {
+        $payment = $this->payment;
+
+        $payment = $this->doAuthPayment($payment);
+
+        $this->verifyPayment($payment['razorpay_payment_id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(1, $payment['verified']);
+    }
+
+    public function testSecondRecurringPaymentVerify()
+    {
+        $payment = $this->payment;
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenId = $paymentEntity[Payment\Entity::TOKEN_ID];
+
+        $this->fixtures->edit(
+            'token',
+            $tokenId,
+            [
+                Token\Entity::RECURRING => 1,
+                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED
+            ]);
+
+        $payment[Payment\Entity::TOKEN] = $tokenId;
+
+        // Second recurring payment request
+        $this->doS2SRecurringPayment($payment);
+
+        $secondPayment = $this->getLastEntity('payment', true);
+
+        $secondPaymentId = substr($secondPayment['id'], 4);
+
+        $this->fixtures->create('netbanking',
+            [
+                Netbanking::PAYMENT_ID          => $secondPaymentId,
+                Netbanking::BANK                => $secondPayment['bank'],
+                Netbanking::AMOUNT              => $secondPayment['amount'],
+                Netbanking::CAPS_PAYMENT_ID     => strtoupper($secondPaymentId),
+            ]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($secondPayment)
+            {
+                $this->verifyPayment($secondPayment['id']);
+            });
+
+        $secondPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Verify\Status::UNKNOWN, $secondPayment['verified']);
     }
 
     public function testEMandateRegistration()

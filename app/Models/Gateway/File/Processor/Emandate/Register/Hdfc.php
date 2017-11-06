@@ -17,9 +17,9 @@ use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as Headings;
 
 class Hdfc extends Base
 {
-    const DAILY         = 'daily';
+    const ADHOC         = 'As & when Presented';
     const MAX_END_DATE  = '31/12/2099';
-    const FIXED         = 'Fixed';
+    const MAXIMUM       = 'Maximum';
 
     const STEP          = 'register';
     const GATEWAY       = Payment\Gateway::NETBANKING_HDFC;
@@ -57,35 +57,35 @@ class Hdfc extends Base
     {
         $rows = [];
 
-        foreach ($payments as $i => $payment)
+        foreach ($payments as $payment)
         {
-            $paymentId = $payment->getId();
-
-            $startDate = Carbon::createFromTimestamp($payment->getCreatedAt(), Timezone::IST)->format('d/m/Y');
-
             $token = $payment->getGlobalOrLocalTokenEntity();
+
+            $startDate = Carbon::createFromTimestamp($token->getCreatedAt(), Timezone::IST)->format('d/m/Y');
 
             $customer = $token->customer;
 
+            $tokenId = $token->getId();
+
             $row = [
                 Headings::CLIENT_NAME                   => 'RAZORPAY',
-                Headings::MERCHANT_UNIQUE_REFERENCE_NO  => $paymentId,
+                Headings::MERCHANT_UNIQUE_REFERENCE_NO  => $tokenId,
                 Headings::CUSTOMER_NAME                 => $customer->getName(),
                 Headings::CUSTOMER_ACCOUNT_NUMBER       => $token->getAccountNumber(),
                 Headings::AMOUNT                        => $this->getFormattedAmount($payment->getAmount()),
-                Headings::AMOUNT_TYPE                   => self::FIXED,
+                Headings::AMOUNT_TYPE                   => self::MAXIMUM,
                 Headings::START_DATE                    => $startDate,
                 Headings::END_DATE                      => self::MAX_END_DATE,
-                Headings::FREQUENCY                     => self::DAILY,
-                Headings::MANDATE_SERIAL_NUMBER         => $i+1,
-                Headings::MANDATE_ID                    => $token->getId(),
-                Headings::MERCHANT_REQUEST_NO           => $paymentId,
+                Headings::FREQUENCY                     => self::ADHOC,
+                Headings::MANDATE_SERIAL_NUMBER         => $tokenId,
+                Headings::MANDATE_ID                    => $tokenId,
+                Headings::MERCHANT_REQUEST_NO           => $tokenId,
             ];
 
             $rows[] = $row;
-        }
 
-        $this->trace->info(TraceCode::EMANDATE_REGISTER_REQUEST_FILE_DATA, ['rows' => $rows]);
+            $this->trace->info(TraceCode::EMANDATE_REGISTER_REQUEST_ROW, ['row' => $row]);
+        }
 
         return $rows;
     }

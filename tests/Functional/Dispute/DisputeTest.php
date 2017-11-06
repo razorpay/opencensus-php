@@ -199,6 +199,13 @@ class DisputeTest extends TestCase
         $this->startTest();
     }
 
+    public function testDisputeCreateWithInvalidMerchantEmail2()
+    {
+        $this->updateCreateTestData();
+
+        $this->startTest();
+    }
+
     public function testDisputeEdit()
     {
         $this->updateEditTestData();
