@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
 
-import { adminFetch } from 'util/fetch';
-import { openModal, confirm } from 'common/modal';
+import { adminFetch, adminPut } from 'util/fetch';
+import { notifyError, notifySuccess, confirm } from 'common/modal';
 import * as entityModals from './entityModals';
 import { getDetailsViewMap } from './entity-resources';
 import EntityRow from 'ui/EntityRow';
@@ -67,8 +67,29 @@ export default class MerchantEntity extends Component {
   };
 
   // Lock / Unlock activation form
-  toggleActivationFormLock = () => {
-    console.log('Toggle Actionvation Form Lock....');
+  toggleLockOnActivationForm = () => {
+    const isCurrentlyLocked = this.model.merchant.details.merchant_details
+      .locked;
+    adminPut({
+      route_name: 'merchant_activation_update',
+      url_params: {
+        id: this.merchantId,
+      },
+      body: {
+        locked: isCurrentlyLocked ? 0 : 1, // If already locked then send opposite
+      },
+    })
+      .then(response => {
+        notifySuccess(
+          `Activation Form is now ${isCurrentlyLocked
+            ? 'Unlocked'
+            : 'Locked'} successfully`
+        );
+        this.model.updateMerchantDetails(response);
+      })
+      .catch(err => {
+        notifyError(JSON.stringify(err.response));
+      });
   };
 
   // Enable / Disable live transactions
@@ -111,8 +132,7 @@ export default class MerchantEntity extends Component {
   };
 
   getActionList() {
-    let { merchant } = this.props;
-    merchant = { details: {} }; // Dummy
+    const merchant = this.model.merchant;
 
     return (
       <aside class="">
@@ -128,9 +148,12 @@ export default class MerchantEntity extends Component {
           See Merchant Analytics Stats
         </Link>
 
-        <div onClick={this.toggleActivationFormLock}>
-          {merchant.details.lock === 0 ? 'Lock' : 'Unlock'} Activation Form
-        </div>
+        {merchant.details.merchant_details && (
+          <div onClick={this.toggleLockOnActivationForm}>
+            {merchant.details.merchant_details.locked ? 'Unlock' : 'Lock'}{' '}
+            Activation Form
+          </div>
+        )}
 
         {merchant.details.activated == 1 &&
           merchant.details.hold_funds == 0 && (
