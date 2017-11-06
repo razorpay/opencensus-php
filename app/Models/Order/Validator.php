@@ -57,6 +57,8 @@ class Validator extends Base\Validator
 
         $this->validateOrderCurrency($payment->getCurrency());
 
+        $this->validateOrderBank($payment->getBank());
+
         $this->validateMerchantSpecificData($payment);
     }
 
@@ -136,6 +138,15 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH);
+        }
+    }
+
+    protected function validateOrderBank(string $bank)
+    {
+        if ($this->entity->getBank() !== $bank)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK);
         }
     }
 

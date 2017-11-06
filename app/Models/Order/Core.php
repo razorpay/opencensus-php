@@ -89,6 +89,12 @@ class Core extends Base\Core
                 Entity::ACCOUNT_NUMBER => $order->getMaskedAccountNumber(),
             ];
         }
+        else if ($order->getBank() !== null)
+        {
+            $data += [
+                Entity::BANK           => $order->getBank(),
+            ];
+        }
 
         return $data;
     }
