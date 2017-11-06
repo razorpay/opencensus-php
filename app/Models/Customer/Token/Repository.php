@@ -4,6 +4,7 @@ namespace RZP\Models\Customer\Token;
 
 use RZP\Models\Base;
 use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Method;
 use RZP\Exception;
 use RZP\Models\Customer;
 
@@ -86,6 +87,17 @@ class Repository extends Base\Repository
                     ->where(Entity::CUSTOMER_ID, '=', $customer->getId())
                     ->where(Entity::MERCHANT_ID, '=', $customer->merchant->getId())
                     ->get();
+    }
+
+    public function getInitiatedTokenByIdAndAccountNumber(string $tokenId, string $accountNumber)
+    {
+        return $this->newQuery()
+                    ->where(Entity::RECURRING_STATUS, RecurringStatus::INITIATED)
+                    ->where(Entity::RECURRING, 0)
+                    ->where(Entity::METHOD, Method::NETBANKING)
+                    ->where(Entity::ID, $tokenId)
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->firstOrFail();
     }
 
     public function isMerchantIdRequiredForFetch()

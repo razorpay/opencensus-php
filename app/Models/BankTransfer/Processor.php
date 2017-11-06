@@ -274,6 +274,10 @@ class Processor extends Base\Core
 
             return false;
         }
+        else if ($this->virtualAccount->merchant->methods->isBankTransferEnabled() === false)
+        {
+            return false;
+        }
 
         return true;
     }

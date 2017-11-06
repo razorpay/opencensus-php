@@ -40,8 +40,6 @@ class PaymentCreateConvenienceFeeTest extends TestCase
         {
             $this->assertEquals($feesArray['input']['fee'], 1173);
 
-            $this->assertEquals($feesArray['display']['service_tax'], 1.49);
-
             $this->assertEquals($feesArray['display']['tax'], 1.49);
         }
 
@@ -68,8 +66,6 @@ class PaymentCreateConvenienceFeeTest extends TestCase
         $payment = $this->getLastPayment();
 
         $this->assertEquals($payment['fee'], 1000);
-
-        $this->assertEquals($payment['service_tax'], 0);
 
         $this->assertEquals($payment['tax'], 0);
     }
@@ -183,8 +179,6 @@ class PaymentCreateConvenienceFeeTest extends TestCase
         $this->assertEquals($payment['order_id'], $order['id']);
 
         $this->assertEquals($payment['fee'], 1000);
-
-        $this->assertEquals($payment['service_tax'], 0);
 
         $this->assertEquals($payment['tax'], 0);
     }

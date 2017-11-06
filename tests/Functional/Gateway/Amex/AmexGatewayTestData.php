@@ -147,23 +147,6 @@ return [
         ],
     ],
 
-    'testFailureWhen3DSFailsForDomesticMerchant' => [
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'International card is not allowed.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED,
-            'twoFaError' => true,
-        ],
-    ],
-
     'testFailureWhen3DSFailsForRiskyMerchant' => [
         'response' => [
             'content' => [

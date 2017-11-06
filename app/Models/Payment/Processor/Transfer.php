@@ -34,8 +34,6 @@ trait Transfer
 
         $this->repo->saveOrFail($txn);
 
-        $payment->setServiceTax($txn->getServiceTax());
-
         $payment->setTax($txn->getTax());
 
         if ($this->merchant->isFeeBearerCustomer() === false)

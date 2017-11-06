@@ -81,11 +81,14 @@ class Validator extends Base\Validator
     {
         $target = $input[Entity::TARGET];
 
+        $type = $input[Entity::TYPE];
+
         $subType = $input[Entity::SUB_TYPE] ?? null;
 
         // Currently subType is required only when target is Kotak as we need to specify
         // tpv or non tpv
         if (($target === Constants::KOTAK) and
+            ($type === Type::COMBINED) and
             (Type::isValidSubType($subType) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
