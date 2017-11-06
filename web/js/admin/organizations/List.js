@@ -21,7 +21,7 @@ const fields = [
 const Actions = ({ item }) => (
   <div>
     <div class="link">
-      <Link to={`/orgsEdit/${item.id}`}>Edit</Link>
+      <Link to={`/orgs/${item.id}`}>Edit</Link>
     </div>
     <div class="link">
       <Link to={`/fieldmaps/${item.id}`}>FieldMaps</Link>
@@ -48,7 +48,7 @@ class OrganizationsList extends Component {
           <header>
             Organizations
             <button class="btn">
-              <Link to={'/orgsEdit'}>Add an Organization</Link>
+              <Link to={'/orgs/new'}>Add an Organization</Link>
             </button>
           </header>
           <Form onSubmit={this.onSubmit} class="filters">

@@ -15,12 +15,10 @@ export default function OrgForm({
   handleSave,
 }) {
   return (
-    <div>
+    <div class="box">
+      <header>{org.id ? `Edit Org - ${org.id}` : 'Add an Organization'}</header>
       <Form onSubmit={handleSave}>
         <div class="orgs-form-container">
-          <header>
-            {org.id ? `Edit Org - ${org.id}` : 'Add an Organization'}
-          </header>
           <input
             type="hidden"
             name="id"

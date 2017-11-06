@@ -16,7 +16,10 @@ export default class EditOrg extends Component {
   };
 
   componentWillMount() {
-    let { orgId } = this.props.match.params || {};
+    let { orgId } = this.props.match.params;
+    if (orgId === 'new') {
+      orgId = null;
+    }
     let requests = [
       this._fetchFn('permission_get_by_type', { type: 'all' }),
       ...(orgId
