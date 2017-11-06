@@ -235,6 +235,14 @@ class Gateway extends Base\Gateway
         $payment = $verify->payment;
         $input = $verify->input;
 
+        // Throw exception as verify is not available for second recurring request
+        if (($input['payment']['recurring_type'] === Payment\RecurringType::AUTO) and
+            ($input['payment']['recurring'] === true))
+        {
+            throw new Exception\PaymentVerificationException(
+                [], $verify, Payment\Verify\Action::FINISH);
+        }
+
         // Using created_at because this value must match the one that we sent in payment request
         $date = Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)
                       ->format('d/m/Y H:m:s');
