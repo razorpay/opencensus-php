@@ -36,7 +36,7 @@ class Entity extends Base\PublicEntity
     const RESOLVED_AT             = 'resolved_at';
 
     // For emails
-    const MERCHANT_EMAIL          = 'merchant_email';
+    const MERCHANT_EMAILS         = 'merchant_emails';
     const SKIP_EMAIL              = 'skip_email';
 
     /**
