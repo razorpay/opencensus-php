@@ -1170,3 +1170,5 @@ UPDATE
 
 # Update settlement details
 UPDATE settlement_details set component = 'tax' where component = 'service_tax';
+
+UPDATE billdesk SET RefundId = 'JYBK57559528701' WHERE id = 2455304;
