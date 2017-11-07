@@ -13,7 +13,7 @@ use RZP\Mail\Emi as EmiMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class EmiPaymentTest extends TestCase
+class EMIPaymentTest extends TestCase
 {
     use PaymentTrait;
 
@@ -67,8 +67,6 @@ class EmiPaymentTest extends TestCase
 
     public function testEmiFileGenerate()
     {
-        Mail::fake();
-
         $emiPlan = $this->emiPlan;
 
         //Making transactions hapen yesterday
@@ -77,21 +75,6 @@ class EmiPaymentTest extends TestCase
         $this->fixtures->merchant->enableEmi();
 
         $this->ba->publicAuth();
-
-        //Kotak Card
-        $this->makeEmiPaymentOnCard('4280951000002433', 9, $yesterdayAtTen, 1, 'capp_1000000custapp');
-
-        //Axis Card
-        $this->makeEmiPaymentOnCard('4111460212312338', 3, $yesterdayAtTen);
-
-        //IndusInd Card
-        $this->makeEmiPaymentOnCard('4147720000000009', 9, $yesterdayAtTen);
-
-        //RBL Card
-        $this->makeEmiPaymentOnCard('5243730000000008', 9, $yesterdayAtTen);
-
-        //Standard Chartered card
-        $this->makeEmiPaymentOnCard('4028740000000001', 9, $yesterdayAtTen);
 
         //ICICI Card
         $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen);
@@ -102,7 +85,6 @@ class EmiPaymentTest extends TestCase
         //ICICI Merchant subvention Card
         $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen, 0, null, null, true);
 
-
         $request = array(
             'method' => 'POST',
             'url' => '/emi/generate/excel',
@@ -112,25 +94,10 @@ class EmiPaymentTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(count($content), 7);
+        $this->assertEquals(count($content), 2);
 
-        $this->assertEquals(true, File::exists($this->zipFileName($content['KKBK'])));
-        $this->assertEquals(true, File::exists($this->zipFileName($content['UTIB'])));
-        $this->assertEquals(true, File::exists($this->zipFileName($content['INDB'])));
-        $this->assertEquals(true, File::exists($this->zipFileName($content['RATN'])));
-        $this->assertEquals(true, File::exists($this->zipFileName($content['SCBL'])));
         $this->assertEquals(true, File::exists($content['ICIC']));
         $this->assertEquals(true, File::exists($content['YESB']));
-
-        $this->checkPasswordProtectedZip($this->zipFileName($content['KKBK']));
-        $this->checkPasswordProtectedZip($this->zipFileName($content['UTIB']));
-        $this->checkPasswordProtectedZip($this->zipFileName($content['INDB']));
-        $this->checkPasswordProtectedZip($this->zipFileName($content['RATN']));
-        $this->checkPasswordProtectedZip($this->zipFileName($content['SCBL']));
-
-        Mail::assertSent(EmiMail\File::class);
-
-        Mail::assertSent(EmiMail\Password::class);
 
         $this->fixtures->merchant->disableEmi();
 
