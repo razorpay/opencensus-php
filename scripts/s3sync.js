@@ -33,7 +33,7 @@ var params = {
   s3Params: {
     Bucket: ENV.AWS_CDN_BUCKET,
     ACL: 'public-read',
-    CacheControl: 'max-age=2700, must-revalidate',
+    CacheControl: 'max-age=31536000, public',
     // other options supported by putObject, except Body and ContentLength.
     // See: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#putObject-property
   },
@@ -49,6 +49,11 @@ glob(ENV.TARGET_DIR + '/**', {}, function(error, files) {
       if (ext && ext !== 'map') {
         // ignore mapfiles
         var fileParams = JSON.parse(JSON.stringify(params));
+
+        if (f.endsWith('-entry.js')) {
+          fileParams.s3Params.CacheControl = 'no-store, must-revalidate';
+        }
+
         fileParams.localFile = f;
         if (ext == 'css' || ext == 'js' || ext === 'html') {
           fileParams.s3Params.ContentEncoding = 'gzip';
