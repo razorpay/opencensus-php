@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Gateway\Upi\Sbi;
 
 use Excel;
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
@@ -125,7 +126,7 @@ class UpiMindgateSbiGatewayTest extends TestCase
 
         $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
 
-        $data = $this->testData['testFailedCollect'];
+        $data = $this->testData['testRejectedCollect'];
 
         $this->runRequestResponseFlow(
             $data,

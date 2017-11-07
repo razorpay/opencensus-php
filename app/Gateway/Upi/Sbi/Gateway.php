@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Upi\Sbi;
 
 use App;
-use RZP\Mail\System\Trace;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -12,7 +11,6 @@ use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Entity;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
-use RZP\Models\Payment\Refund;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Exception\GatewayErrorException;
@@ -50,9 +48,6 @@ class Gateway extends Base\Gateway
         ResponseFields::STATUS                 => Base\Entity::STATUS_CODE,
     ];
 
-    // TODO: Ensure that request / response traced in encrypted and decrypted format
-    // TODO: Ensure payment id present in all traces
-
     public function __construct()
     {
         parent::__construct();
@@ -76,11 +71,11 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
-        $request = $this->getAuthorizeRequestData($input);
+        $request = $this->getAuthorizeRequest($input);
 
         $response = $this->sendGatewayRequest($request);
 
-        $response = $this->parseGatewayResponse($response->body);
+        $response = $this->parseGatewayResponse($response->body, TraceCode::GATEWAY_PAYMENT_RESPONSE);
 
         $this->assertPaymentIdAndAmount($input, $response);
 
@@ -152,7 +147,7 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $request = $this->getPaymentVerifyRequestArray($verify);
+        $request = $this->getPaymentVerifyRequest($verify);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -163,14 +158,6 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment(Verify $verify)
     {
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            [
-                'content'    => $verify->verifyResponseContent,
-                'gateway'    => $this->gateway,
-                'payment_id' => $verify->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
-            ]);
-
         $this->setVerifyAmountMismatch($verify);
 
         $this->setVerifyStatus($verify);
@@ -180,7 +167,7 @@ class Gateway extends Base\Gateway
      * @param Verify $verify
      * @return array
      */
-    protected function getPaymentVerifyRequestArray(Verify $verify): array
+    protected function getPaymentVerifyRequest(Verify $verify): array
     {
         $input = $verify->input;
 
@@ -322,7 +309,7 @@ class Gateway extends Base\Gateway
         return $traceCode;
     }
 
-    protected function getAuthorizeRequestData(array $input): array
+    protected function getAuthorizeRequest(array $input): array
     {
         $content = [
             RequestFields::ADDITIONAL_INFO  => [
@@ -340,14 +327,6 @@ class Gateway extends Base\Gateway
             ],
             RequestFields::TRANSACTION_NOTE => Constants::TRANSACTION_NOTE . $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
         ];
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
-            [
-                'gateway'    => $this->gateway,
-                'payment_id' => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
-                'content'    => $content
-            ]);
 
         return $this->getStandardRequestArray($content);
     }
@@ -377,26 +356,29 @@ class Gateway extends Base\Gateway
 
     /**
      * @param string $body
+     * @param string $traceCode
      * @return array
      */
-    protected function parseGatewayResponse(string $body): array
+    protected function parseGatewayResponse(string $body, $traceCode = TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE): array
     {
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE,
+        $this->trace->info($traceCode,
             [
-                'response'  => $body,
-                'encrypted' => true,
-                'gateway'   => $this->gateway,
+                'encrypted'  => true,
+                'response'   => $body,
+                'gateway'    => $this->gateway,
+                'payment_id' => $this->input['payment']['id']
             ]);
 
         $encryptedResponse = json_decode($body, true)[ResponseFields::RESPONSE];
 
         $response = $this->decrypt($encryptedResponse);
 
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE,
+        $this->trace->info($traceCode,
             [
-                'response'  => $response,
-                'encrypted' => false,
-                'gateway'   => $this->gateway,
+                'encrypted'  => false,
+                'response'   => $response,
+                'gateway'    => $this->gateway,
+                'payment_id' => $this->input['payment']['id']
             ]);
 
         return $response;
@@ -414,6 +396,17 @@ class Gateway extends Base\Gateway
      */
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null): array
     {
+        $traceCode = $this->getTraceCode();
+
+        $this->trace->info(
+            $traceCode,
+            [
+                'encrypted'  => false,
+                'gateway'    => $this->gateway,
+                'payment_id' => $this->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
+                'content'    => $content
+            ]);
+
         $requestMsg = $this->encrypt($content);
 
         $json = [
@@ -426,6 +419,15 @@ class Gateway extends Base\Gateway
         $request = parent::getStandardRequestArray($content, $method, $type);
 
         $request['headers']['Content-Type'] = 'application/json';
+
+        $this->trace->info(
+            $traceCode,
+            [
+                'encrypted'  => false,
+                'gateway'    => $this->gateway,
+                'payment_id' => $this->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
+                'request'    => $request
+            ]);
 
         return $request;
     }
@@ -443,11 +445,6 @@ class Gateway extends Base\Gateway
             Base\Entity::VPA                 => $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA],
             Base\Entity::ACTION              => $this->action,
         ];
-
-        if ($this->action === Action::REFUND)
-        {
-            $attributes[Base\Entity::REFUND_ID] = $input[ConstantsEntity::REFUND][Refund\Entity::ID];
-        }
 
         return $attributes;
     }

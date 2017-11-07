@@ -258,6 +258,10 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY                      = 'A terminal for this gateway for this merchant already exists';
     const BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT                    = 'This operation is not allowed for test accounts';
 
+    const BAD_REQUEST_TRANSACTION_PENDING                                       = 'Transaction pending waiting for response';
+    const BAD_REQUEST_PAYMENT_EXPIRED                                           = 'Collect request expired';
+    const BAD_REQUEST_PAYMENT_REJECTED                                          = 'Collect request rejected by customer';
+
     const BAD_REQUEST_PAYMENT_VERIFICATION_FAILED                               = 'Payment verification with gateway failed';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL                       = 'Payment declined by gateway. Most probably due to customer clicking the cancel button on 3dSecure page';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY                               = 'Payment declined';
