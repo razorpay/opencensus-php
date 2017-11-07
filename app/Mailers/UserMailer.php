@@ -26,24 +26,4 @@ class UserMailer extends Mailer
 
         $this->org = $org;
     }
-
-    /**
-     * Responsible for sending out an account confirmation email to the user
-     *
-     * @return self
-     */
-    public function accountVerification()
-    {
-        $this->subject = $this->org['business_name'] . ' | Confirm Your Email';
-
-        $this->view = 'emails.confirmation';
-        $this->mailTag = MailTags::ACCOUNT_CONFIRMATION_MAIL;
-
-        $this->data['org'] = $this->org;
-
-        $this->fromEmail = $this->org['from_email'];
-        $this->fromName = $this->org['display_name'];
-
-        return $this;
-    }
 }

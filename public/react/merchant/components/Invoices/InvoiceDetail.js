@@ -57,6 +57,8 @@ export default props => {
   let isPaid = status === 'paid';
   let isCancelled = status === 'cancelled';
   let isExpired = status === 'expired';
+  let isSmsOrEmailSent =
+    invoice.sms_status === 'sent' || invoice.email_status === 'sent';
 
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -76,7 +78,7 @@ export default props => {
                       class="btn btn-primary btn-sm"
                       onClick={props.onIssue}
                     >
-                      Send Link
+                      {isSmsOrEmailSent ? 'Send Again' : 'Send Link'}
                     </button>
                   )}
 

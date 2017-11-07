@@ -23,16 +23,8 @@ class InvitationsController extends Controller
     {
         $user = Auth::user();
 
-        $error = $this->service->acceptInvitationForUser($inviteId, $user);
+        list($error, $data) = $this->service->acceptInvitationForUser($inviteId, $user);
 
         return AppResponse::jsonResponse($error);
     }
-
-    public function fetchByToken($token)
-    {
-        list($error, $invitation) = $this->service->getInvitationByTokenFromApi($token);
-
-        return AppResponse::jsonResponse($error, $invitation);
-    }
-
 }

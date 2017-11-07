@@ -30,24 +30,6 @@ class MerchantDetail extends Entity
         return [ $error, $response ];
     }
 
-    public function submitDetails(array $input)
-    {
-        $error = $response = null;
-
-        try
-        {
-            $relativeUrl = 'merchant/activation';
-
-            $response = $this->request('POST', $relativeUrl, $input)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = [ $e->getMessage() ];
-        }
-
-        return [ $error, $response ];
-    }
-
     public function updateDetailsByAdmin($merchantId, array $input)
     {
         $error = $response = null;

@@ -334,6 +334,7 @@ app.controller('EntitiesCtrl', [
       file_store: {
         entity_id: ['Entity Id'],
         type: ['Type'],
+        merchant_id: ['Merchant Id'],
       },
       fund_transfer_attempt: {
         batch_fund_transfer_id: ['Batch Fund Transfer Id'],
@@ -546,6 +547,19 @@ app.controller('EntitiesCtrl', [
         transaction_id: ['Transaction Id'],
         notes: ['Notes'],
       },
+      report: {
+        merchant_id: ['Merchant Id'],
+        type: [
+          'all',
+          'merchant',
+          'order',
+          'payment',
+          'refund',
+          'reversal',
+          'settlement',
+          'transaction',
+        ],
+      },
       reversal: {
         merchant_id: ['Merchant Id'],
         transfer_id: ['Transfer Id'],
@@ -648,6 +662,7 @@ app.controller('EntitiesCtrl', [
       },
       wallet: {
         payment_id: ['Payment Id'],
+        gateway_payment_id: ['Gateway Payment Id'],
         wallet: walletList,
       },
       webhook: {

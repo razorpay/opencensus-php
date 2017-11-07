@@ -21,10 +21,6 @@ return [
 
     //User Providers
     'providers' => [
-        'users' => [
-            'driver' => 'eloquent',
-            'model'  => App\User\Entity::class,
-        ],
         'api' => [
             'driver' => 'api',
             'model'  => Illuminate\Auth\GenericUser::class

@@ -46,9 +46,13 @@ export default class PaymentDetailsContainer extends Component {
 
       if (payment.method === 'card' || payment.method === 'emi') {
         this.props.fetchCardDetails(payment);
+      } else if (payment.method === 'bank_transfer') {
+        this.props.fetchBankTransfer(payment);
       }
 
-      this.props.fetchTransfers(payment);
+      if (['created', 'authorized', 'failed'].indexOf(payment.status) < 0) {
+        this.props.fetchTransfers(payment);
+      }
     });
   };
 
@@ -180,11 +184,20 @@ export default class PaymentDetailsContainer extends Component {
       component: (
         <RefundModal payment={payment} onRefund={this.onPaymentRefund} />
       ),
+      size: 'small',
     });
   };
 
   render() {
-    let { loading, error, payment, card, refunds, transfers } = this.props;
+    let {
+      loading,
+      error,
+      payment,
+      card,
+      refunds,
+      transfers,
+      bankTransfer,
+    } = this.props;
     let statusMsg = {};
 
     if (error) {
@@ -203,6 +216,7 @@ export default class PaymentDetailsContainer extends Component {
         <PaymentDetails
           payment={payment}
           card={card}
+          bankTransfer={bankTransfer}
           refunds={refunds}
           transfers={transfers}
           isLoading={loading}

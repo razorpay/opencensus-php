@@ -121,6 +121,12 @@ export const rupeesToPaise = amount => {
   return Number(amount);
 };
 
+export const paiseToRupees = amount => {
+  amount = (Number(amount) / 100).toFixed(2);
+
+  return Number(amount);
+};
+
 export const objectDiff = (oldObj = {}, newObj = {}) => {
   return Object.keys(newObj).reduce((prev, key) => {
     let value = newObj[key];

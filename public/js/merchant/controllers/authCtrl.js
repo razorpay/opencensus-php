@@ -140,10 +140,16 @@ app
         $scope.signup.data.invitation = $location.search().invitation;
 
         // Get invitation details
-        $http({
-          url: '/user/invitations/token/' + $scope.signup.data.invitation,
-          method: 'GET',
-        })
+        var data = {
+          route_name: 'invitation_fetch_by_token',
+          url_params: {
+            '{token}': $scope.signup.data.invitation,
+          },
+        };
+        var request = $http.get('/guest/generic', {
+          params: data,
+        });
+        request
           .success(function(data) {
             if (data.success) {
               $scope.signup.data.email = data.data.email;
@@ -669,9 +675,6 @@ app
           method: 'post',
           url: '/user/resend',
           transformRequest: transformRequestAsFormPost,
-          data: {
-            email: $scope.signup.data.email || $scope.login.data.email,
-          },
         };
 
         var request = $http(payload);
@@ -694,17 +697,17 @@ app
           return true;
         }
 
-        // todo show spinner
-        var payload = {
-          method: 'post',
-          url: '/user/password/reset',
-          transformRequest: transformRequestAsFormPost,
-          data: {
+        var data = {
+          route_name: 'user_reset_password_create',
+          body: {
             email: $scope.login.data.email,
           },
         };
-
-        var request = $http(payload);
+        var request = $http({
+          method: 'post',
+          url: '/guest/generic',
+          data: data,
+        });
         request.success(function(data) {
           if (data.success) {
             $scope.alerts.addAlert(

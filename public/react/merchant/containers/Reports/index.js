@@ -38,7 +38,9 @@ const selector = formValueSelector('generateReports');
     entity: 'payment',
     type: 'daily',
     date: moment(),
-    invoiceDate: moment().subtract(1, 'months').startOf('month'), // Merchant can not download invoice of current month
+    invoiceDate: moment()
+      .subtract(1, 'months')
+      .startOf('month'), // Merchant can not download invoice of current month
   },
 })
 export default class ReportsContainer extends Component {
@@ -82,14 +84,6 @@ export default class ReportsContainer extends Component {
         merchantAccounts: merchantAccounts,
         merchantSelected: merchantAccounts[0],
       });
-    }
-
-    if (user.isGSTDisabled) {
-      // If GST is disabled, Select June. Invoice date can not be july or after
-      this.props.change(
-        'invoiceDate',
-        moment().set('month', 5).startOf('month')
-      );
     }
 
     // Select default report type
@@ -262,17 +256,28 @@ export default class ReportsContainer extends Component {
   };
 
   validateInvoiceMonthYear = current => {
-    const isGSTEnabled = !this.props.user.isGSTDisabled;
+    const isGSTDisabled = this.props.user.isGSTDisabled;
 
-    const currDate = new Date(),
-      tillPrevMonth =
-        currDate.getFullYear() === current.year()
-          ? isGSTEnabled
-            ? current.month() < currDate.getMonth()
-            : current.month() < 6 // 6 = July
-          : true;
+    const currentMonth = current.month(),
+      currentYear = current.year();
 
-    return validYear(current) && tillPrevMonth;
+    const currDate = new Date();
+
+    if (
+      currentYear === currDate.getFullYear() &&
+      currentMonth > currDate.getMonth() - 1
+    ) {
+      return false;
+    }
+
+    // disable invoice download for july(6)  and august(7)
+    // for the year of 2017
+    const isValidMonth =
+      isGSTDisabled && current.year() === 2017
+        ? currentMonth !== 6 && currentMonth !== 7
+        : true;
+
+    return validYear(current) && isValidMonth;
   };
 
   render() {
@@ -294,59 +299,58 @@ export default class ReportsContainer extends Component {
                 : '--desktop'}`}
             >
               <div class="title">SELECT REPORT TYPE</div>
-              {this.isMobileDevice
-                ? <PowerSelect
-                    options={this.entityOptions}
-                    searchEnabled={false}
-                    selected={this.state.entity}
-                    showClear={false}
-                    onChange={({ option }) => {
-                      this.setState({ entity: option }); // only for powerselect view otherwise not consumed elsewhere
-                      this.props.change('entity', option.value); // programmatically set redux-form 'entity' otherwise, powerselect closes before redux-form is updated
-                    }}
-                    optionComponent={({ option }) =>
-                      <div class="reports-entity-options">
-                        <Field
-                          name="entity"
-                          value={option.value}
-                          id={option.id}
-                          component="input"
-                          type="radio"
-                          class="report-type form-control"
-                        />
-                        <label for={option.id}>
-                          {option.label}
-                        </label>
-                      </div>}
-                    selectedOptionComponent={({ option }) =>
-                      <div>
-                        {option.label}
-                      </div>}
-                  />
-                : <div>
-                    {this.entityOptions.map((option, index) =>
-                      <div class="reports-entity-options" key={index}>
-                        <Field
-                          name="entity"
-                          value={option.value}
-                          id={option.id}
-                          component="input"
-                          type="radio"
-                          class="report-type form-control"
-                        />
-                        <label for={option.id}>
-                          {option.label}
-                        </label>
-                      </div>
-                    )}
-                  </div>}
+              {this.isMobileDevice ? (
+                <PowerSelect
+                  options={this.entityOptions}
+                  searchEnabled={false}
+                  selected={this.state.entity}
+                  showClear={false}
+                  onChange={({ option }) => {
+                    this.setState({ entity: option }); // only for powerselect view otherwise not consumed elsewhere
+                    this.props.change('entity', option.value); // programmatically set redux-form 'entity' otherwise, powerselect closes before redux-form is updated
+                  }}
+                  optionComponent={({ option }) => (
+                    <div class="reports-entity-options">
+                      <Field
+                        name="entity"
+                        value={option.value}
+                        id={option.id}
+                        component="input"
+                        type="radio"
+                        class="report-type form-control"
+                      />
+                      <label for={option.id}>{option.label}</label>
+                    </div>
+                  )}
+                  selectedOptionComponent={({ option }) => (
+                    <div>{option.label}</div>
+                  )}
+                />
+              ) : (
+                <div>
+                  {this.entityOptions.map((option, index) => (
+                    <div class="reports-entity-options" key={index}>
+                      <Field
+                        name="entity"
+                        value={option.value}
+                        id={option.id}
+                        component="input"
+                        type="radio"
+                        class="report-type form-control"
+                      />
+                      <label for={option.id}>{option.label}</label>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             {/*Report Generate Panel*/}
             <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12 report-generate-panel">
-              {!this.isMobileDevice &&
+              {!this.isMobileDevice && (
                 <div class="form-heading">
                   {this.props.entity && this.getEntityLabel(this.props.entity)}
-                </div>}
+                </div>
+              )}
               <div class="form-element">
                 <div class="title">
                   {user.isMarketplaceEnabled &&
@@ -359,99 +363,92 @@ export default class ReportsContainer extends Component {
                 {user.isMarketplaceEnabled &&
                 ['transaction', 'payment', 'refund', 'settlement'].indexOf(
                   this.props.entity
-                ) > -1
-                  ? <div class="custom-select" style={{ position: 'relative' }}>
-                      <i class="icon icon-search custom-icon" />
-                      <div
-                        class="typeAheadSkin"
-                        ref={typeAheadSkin => {
-                          this.typeAheadSkin = typeAheadSkin;
-                        }}
-                      >
-                        {this.state.merchantSelected
-                          ? <div>
-                              <b style={{ marginRight: '5px' }}>
-                                {this.state.merchantSelected.name}
-                              </b>
-                              <span>
-                                - {this.state.merchantSelected.id}
-                              </span>
-                              <span
-                                class={`${this.isMobileDevice
-                                  ? this.state.merchantSelected.tagIcon +
-                                    ' icon'
-                                  : ''} custom-tag`}
-                              >
-                                {this.isMobileDevice
-                                  ? ''
-                                  : this.state.merchantSelected.tag}
-                              </span>
-                            </div>
-                          : null}
-                      </div>
-
-                      <TypeAhead
-                        options={this.state.merchantAccounts}
-                        placeholder="Search for merchant Name/Email/Merchant ID"
-                        optionLabelPath="name"
-                        onClick={() => {
-                          this.typeAheadSkin.classList.add('hide');
-                        }}
-                        searchIndices={['name', 'id', 'email']}
-                        selected={this.state.merchantSelected}
-                        showClear={false}
-                        optionComponent={({ option }) =>
-                          <div style={{ padding: 5 }}>
-                            <b style={{ marginRight: '5px' }}>
-                              {option.name}
-                            </b>
-                            <span>
-                              - {option.id}
-                            </span>
-                            <span
-                              class={`${this.isMobileDevice
-                                ? option.tagIcon + ' icon'
-                                : ''} custom-tag`}
-                            >
-                              {this.isMobileDevice ? '' : option.tag}
-                            </span>
-                          </div>}
-                        selectedOptionComponent={({ option }) =>
-                          <div>
-                            <b style={{ marginRight: '5px' }}>
-                              {option.name}
-                            </b>
-                            <span>
-                              - {option.id}
-                            </span>
-                          </div>}
-                        onChange={({ option }) => {
-                          if (option) {
-                            this.setState({ merchantSelected: option });
-                            this.typeAheadSkin.classList.remove('hide');
-                          }
-                        }}
-                      />
+                ) > -1 ? (
+                  <div class="custom-select" style={{ position: 'relative' }}>
+                    <i class="icon icon-search custom-icon" />
+                    <div
+                      class="typeAheadSkin"
+                      ref={typeAheadSkin => {
+                        this.typeAheadSkin = typeAheadSkin;
+                      }}
+                    >
+                      {this.state.merchantSelected ? (
+                        <div>
+                          <b style={{ marginRight: '5px' }}>
+                            {this.state.merchantSelected.name}
+                          </b>
+                          <span>- {this.state.merchantSelected.id}</span>
+                          <span
+                            class={`${this.isMobileDevice
+                              ? this.state.merchantSelected.tagIcon + ' icon'
+                              : ''} custom-tag`}
+                          >
+                            {this.isMobileDevice
+                              ? ''
+                              : this.state.merchantSelected.tag}
+                          </span>
+                        </div>
+                      ) : null}
                     </div>
-                  : <div class="account">
-                      <strong>
-                        {user.name || user.user.name}
-                      </strong>
-                    </div>}
+
+                    <TypeAhead
+                      options={this.state.merchantAccounts}
+                      placeholder="Search for merchant Name/Email/Merchant ID"
+                      optionLabelPath="name"
+                      onClick={() => {
+                        this.typeAheadSkin.classList.add('hide');
+                      }}
+                      searchIndices={['name', 'id', 'email']}
+                      selected={this.state.merchantSelected}
+                      showClear={false}
+                      optionComponent={({ option }) => (
+                        <div style={{ padding: 5 }}>
+                          <b style={{ marginRight: '5px' }}>{option.name}</b>
+                          <span>- {option.id}</span>
+                          <span
+                            class={`${this.isMobileDevice
+                              ? option.tagIcon + ' icon'
+                              : ''} custom-tag`}
+                          >
+                            {this.isMobileDevice ? '' : option.tag}
+                          </span>
+                        </div>
+                      )}
+                      selectedOptionComponent={({ option }) => (
+                        <div>
+                          <b style={{ marginRight: '5px' }}>{option.name}</b>
+                          <span>- {option.id}</span>
+                        </div>
+                      )}
+                      onChange={({ option }) => {
+                        if (option) {
+                          this.setState({ merchantSelected: option });
+                          this.typeAheadSkin.classList.remove('hide');
+                        }
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div class="account">
+                    <strong>{user.name || user.user.name}</strong>
+                  </div>
+                )}
 
                 {user.isMarketplaceEnabled &&
-                  this.linkedAccountOptions.indexOf(this.props.entity) !== -1 &&
-                  <small class="help-block">
-                    <i class="icon icon-info-circle" />
-                    <span>
-                      You can also select a linked account from the list
-                    </span>
-                  </small>}
+                  this.linkedAccountOptions.indexOf(this.props.entity) !==
+                    -1 && (
+                    <small class="help-block">
+                      <i class="icon icon-info-circle" />
+                      <span>
+                        You can also select a linked account from the list
+                      </span>
+                    </small>
+                  )}
               </div>
 
               <div class="form-element">
                 <div class="title">PERIOD</div>
-                {entity === 'invoice' ||
+                {entity === 'invoice' || (
                   <div class="col-sm-3 col-xs-12">
                     <div class="form-group form-control">
                       <Field name="type" class="fix-select" component="select">
@@ -459,9 +456,10 @@ export default class ReportsContainer extends Component {
                         <option value="monthly">Monthly</option>
                       </Field>
                     </div>
-                  </div>}
+                  </div>
+                )}
 
-                {(type === 'monthly' || entity === 'invoice') &&
+                {(type === 'monthly' || entity === 'invoice') && (
                   <div class="col-sm-4 col-xs-12">
                     <div class="form-group">
                       <Field
@@ -478,23 +476,25 @@ export default class ReportsContainer extends Component {
                         timeFormat={false}
                       />
                     </div>
-                  </div>}
+                  </div>
+                )}
 
                 {type === 'daily' &&
-                  entity !== 'invoice' &&
-                  <div class="col-sm-4 col-xs-12">
-                    <div class="form-group">
-                      <Field
-                        name="date"
-                        dateFormat="DD MMM, YYYY"
-                        closeOnSelect={true}
-                        component={ReduxDatetime}
-                        placeholder="Select Date-Month-Year"
-                        isValidDate={validYear}
-                        timeFormat={false}
-                      />
+                  entity !== 'invoice' && (
+                    <div class="col-sm-4 col-xs-12">
+                      <div class="form-group">
+                        <Field
+                          name="date"
+                          dateFormat="DD MMM, YYYY"
+                          closeOnSelect={true}
+                          component={ReduxDatetime}
+                          placeholder="Select Date-Month-Year"
+                          isValidDate={validYear}
+                          timeFormat={false}
+                        />
+                      </div>
                     </div>
-                  </div>}
+                  )}
               </div>
 
               <div class="form-element">
@@ -505,11 +505,12 @@ export default class ReportsContainer extends Component {
                   pendingText="Generating..."
                 />
 
-                {this.props.entity === 'transaction' &&
+                {this.props.entity === 'transaction' && (
                   <footer style={{ marginTop: '16' }}>
                     Combined reports will include transactions on the given
                     date, as well as payments settled on that given date.
-                  </footer>}
+                  </footer>
+                )}
               </div>
             </div>
           </div>

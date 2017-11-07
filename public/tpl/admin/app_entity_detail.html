@@ -22,7 +22,7 @@
     <div class="row wrapper">
       <div class="list-group">
         <div class="list-group-item clearfix" ng-repeat="(key, value) in entity"
-             ng-init="valueType = getType(key, value);state=getState(key);" ui-sref="{{state}}">
+             ng-init="valueType = getType(key, value);state=getState(key, false, key === 'entity_id' && (entity.entity_type || entity.type));" ui-sref="{{state}}">
           {{key|titlecase}}
           <span class="pull-right {{displayClass(key, value)}}" title="{{value}}">
             {{displayValue(key, value, entity)}}
