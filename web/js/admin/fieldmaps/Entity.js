@@ -5,6 +5,7 @@ import { openModal, closeModal, notifySuccess } from 'common/modal';
 import { adminPost, adminPut, adminDelete } from 'util/fetch';
 
 import FieldMapForm from './FieldMapForm';
+import { prevent } from 'util/index';
 
 export default class EditFieldMaps extends Component {
   save = data => {
@@ -48,7 +49,8 @@ export default class EditFieldMaps extends Component {
   }
 }
 
-export function removeEntity() {
+export function removeEntity(e) {
+  prevent(e);
   adminDelete({
     route_name: 'org_fieldmap_delete',
     url_params: {

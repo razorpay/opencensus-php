@@ -16,18 +16,11 @@ const fields = [
   ['Fields', item => item.fields.join(',')],
   [
     'Actions',
-    item => {
-      return (
-        <div>
-          <div class="link" onClick={item::showEntity}>
-            Edit
-          </div>
-          <div class="link danger" onClick={item::removeEntity}>
-            Delete
-          </div>
-        </div>
-      );
-    },
+    item => (
+      <div class="link danger" onClick={item::removeEntity}>
+        Delete
+      </div>
+    ),
   ],
 ];
 
@@ -68,7 +61,11 @@ export default class FieldMaps extends Component {
             <Field label="Search" />
           </Form>
         </div>
-        <PageTable model={this.collection} fields={fields} />
+        <PageTable
+          model={this.collection}
+          fields={fields}
+          onClick={showEntity}
+        />
       </div>
     );
   }
