@@ -1180,3 +1180,6 @@ where utr = 'KKBKR22017110300419148' limit 1;
 UPDATE fund_transfer_attempts
 SET status = 'failed', failure_reason = 'RTGS Return'
 where utr = 'KKBKR22017110300419148' limit 1;
+
+# Fix Route settlement bug
+UPDATE transactions SET settled_at=1509942600 WHERE id='8wulvPuP2Xu7Mj';
