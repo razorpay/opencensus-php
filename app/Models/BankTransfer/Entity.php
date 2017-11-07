@@ -35,6 +35,8 @@ class Entity extends Base\PublicEntity
     const PAYEE_IFSC         = 'payee_ifsc';
 
     const VIRTUAL_ACCOUNT_ID = 'virtual_account_id';
+    const VIRTUAL_ACCOUNT    = 'virtual_account';
+
     const AMOUNT             = 'amount';
 
     // Modes: NEFT, RTGS, IMPS, IFT
@@ -82,13 +84,14 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::PAYMENT_ID,
-        self::VIRTUAL_ACCOUNT_ID,
-        self::AMOUNT,
-        self::PAYER_BANK_ACCOUNT,
         self::PAYER_BANK_NAME,
         // This can be added later, upon request
         // self::MODE,
         // self::UTR,
+        self::AMOUNT,
+        self::PAYER_BANK_ACCOUNT,
+        self::VIRTUAL_ACCOUNT_ID,
+        self::VIRTUAL_ACCOUNT,
     ];
 
     protected $appends = [
