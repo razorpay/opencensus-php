@@ -86,6 +86,9 @@ build:
           channel:  tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
+      - script:
+          name: Save trace
+          code: cp storage/logs/* $WERCKER_REPORT_ARTIFACTS_DIR/
 dockerhub-push:
     box:
       id: razorpay/containers:base-php7
