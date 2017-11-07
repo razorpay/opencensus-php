@@ -64,7 +64,7 @@ class Checkout
 
         $data = $this->getMerchantPreferencesData($merchant, $mode);
 
-        $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
+        $data[Entity::METHODS] = (new Methods\Core)->getFormattedMethods($merchant);
 
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
@@ -104,17 +104,23 @@ class Checkout
         $this->resetMethodsIfValidBanksPresent($data, $order);
     }
 
-    protected function resetMethodsIfValidBanksPresent(array & $data, Order\Entity $order)
+    protected function resetMethodsIfValidBanksPresent(
+        array & $data,
+        Order\Entity $order)
     {
         if($order->getBank() !== null)
         {
             $bankCode = $order->getBank();
 
-            $bankName = $data['methods']['netbanking'][$bankCode];
+            // Order bank should be present in the list of netbanking banks.
+            if (isset($data['methods']['netbanking'][$bankCode]) === true)
+            {
+                $bankName = $data['methods']['netbanking'][$bankCode];
 
-            $data['methods']['netbanking'] = [
-                $bankCode => $bankName,
-            ];
+                $data['methods']['netbanking'] = [
+                    $bankCode => $bankName,
+                ];
+            }
         }
     }
 
