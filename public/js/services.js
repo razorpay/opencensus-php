@@ -677,7 +677,7 @@ angular
   // rather than the key
   .factory('getState', [
     function() {
-      return function(type, force) {
+      return function(type, force, entityType) {
         var state = '.';
         switch (type) {
           case 'merchant_id':
@@ -714,7 +714,7 @@ angular
               var key = type.slice(0, -3);
               state =
                 'app.entitiesdetail({id:value, mode:mode, type: "' +
-                key +
+                (entityType || key) +
                 '"})';
             }
         }
