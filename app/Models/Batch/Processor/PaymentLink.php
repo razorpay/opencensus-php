@@ -33,4 +33,17 @@ class PaymentLink extends Base
         $entry[Header::PAYMENT_LINK_ID]     = $invoice->getPublicId();
         $entry[Header::SHORT_URL]           = $invoice->getShortUrl();
     }
+
+    /**
+     * Overrides: We don't set amount aggregate as it crosses MySQL limit
+     * in case of batch payment link inputs.
+     *
+     * @param array $entries
+     */
+    protected function fillBatchEntityWithInputFileDetails(array $entries)
+    {
+        $totalCount  = count($entries);
+
+        $this->batch->setTotalCount($totalCount);
+    }
 }

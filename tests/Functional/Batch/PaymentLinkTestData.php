@@ -23,7 +23,7 @@ return [
                 'success_count'    => 0,
                 'failure_count'    => 0,
                 'attempts'         => 0,
-                'amount'           => 300,
+                'amount'           => null,
                 'processed_amount' => 0,
                 'processed_at'     => null,
             ],
