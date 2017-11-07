@@ -8,6 +8,8 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
+use Endroid\QrCode\QrCode;
 use RZP\Exception\LogicException;
 use RZP\Services\Elfin\Service as Elfin;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -57,14 +59,14 @@ class Generator extends Base\Core
     {
         $qrCodePublicId = $this->qrCode->getPublicId();
 
-        $invoiceLink = $this->baseQrCodeUrl . '/qrcode/' . $qrCodePublicId;
+        $qrCodeLink = $this->baseQrCodeUrl . '/qrcode/' . $qrCodePublicId;
 
         return $qrCodeLink;
     }
 
     public function generate(array $input, $virtualAccount = null)
     {
-        $qrCode = new QrCode\Entity;
+        $qrCode = new Entity;
 
         $qrCode = $qrCode->build($input);
 
@@ -82,7 +84,7 @@ class Generator extends Base\Core
 
         $this->repo->saveOrFail($qrCode);
 
-        $qrCodeImage = $qrCode->generateQrCodeFile();
+        $qrCodeImage = $this->generateQrCodeFile();
 
         return $this->qrCode;
     }
@@ -113,7 +115,7 @@ class Generator extends Base\Core
 
     protected function getLocalSaveDir(): string
     {
-        return storage_path('files/filestore') . '/' . 'qrcode';
+        return storage_path('files/filestore');
     }
 
     protected function generateQrCodeLocalFile()
@@ -123,7 +125,7 @@ class Generator extends Base\Core
 
         $qrCodeImage->setSize(300);
 
-        $localFilePath = $this->getLocalSaveDir() . '/' . $this->qrCode->getId() . 'png';
+        $localFilePath = $this->getLocalSaveDir() . '/' . $this->qrCode->getId() . '.png';
 
         $qrCodeImage->writeFile($localFilePath);
 
@@ -132,11 +134,11 @@ class Generator extends Base\Core
 
     protected function generateQrCodeFileOnS3(string $localFilePath)
     {
-        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $ext = pathinfo($localFilePath, PATHINFO_EXTENSION);
 
         return (new FileStore\Creator)
                     ->localFilePath($localFilePath)
-                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$ext][5])
+                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$ext][0])
                     ->name($this->qrCode->getQrCodeFileName())
                     ->extension($ext)
                     ->entity($this->qrCode)

@@ -3,7 +3,7 @@
 namespace RZP\Models\QrCode;
 
 use RZP\Models\Base;
-use Endroid\QrCode\QrCode;
+use RZP\Models\FileStore;
 use RZP\Models\VirtualAccount\Provider;
 
 class Entity extends Base\PublicEntity
@@ -31,24 +31,15 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::AMOUNT,
         self::PROVIDER,
+        self::SHORT_URL,
         self::QR_STRING,
         self::CREATED_AT,
     ];
 
     protected $public = [
         self::ID,
-        self::AMOUNT,
-        // This is not needed for now.
-        // As provider will be only bharat qr
-        // self::PROVIDER,
-        // This will be removed later as we will be
-        // providing qr code image
-        self::QR_STRING,
-        self::CREATED_AT,
-    ];
-
-     protected static $generators = [
         self::SHORT_URL,
+        self::CREATED_AT,
     ];
 
     protected $casts = [
@@ -69,9 +60,27 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    public function files()
+    {
+        return $this->morphMany('RZP\Models\FileStore\Entity', 'entity');
+    }
+
     // --------------------- END RELATIONS ---------------------
 
     // --------------------- GETTERS ---------------------
+
+    /**
+     * Gets the most recent invoice pdf file
+     *
+     * @return FileStore\Entity
+     */
+    public function qrCodeFile(): FileStore\Entity
+    {
+        return $this->files()
+                    ->where(FileStore\Entity::TYPE, '=', FileStore\Type::QR_CODE_IMAGES)
+                    ->latest()
+                    ->first();
+    }
 
     public function getAmount()
     {
@@ -119,6 +128,11 @@ class Entity extends Base\PublicEntity
     // --------------------- END GETTERS ---------------------
 
     // --------------------- SETTERS ---------------------
+
+    public function setShortUrl(string $shortUrl)
+    {
+        $this->setAttribute(self::SHORT_URL, $shortUrl);
+    }
 
     public function setQrString(string $qrString)
     {

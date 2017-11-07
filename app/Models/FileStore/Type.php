@@ -149,6 +149,10 @@ class Type
             self::INVOICE_PDF,
         ],
 
+        Constants\Entity::QR_CODE => [
+            self::QR_CODE_IMAGES,
+        ],
+
         Constants\Entity::BATCH_FUND_TRANSFER => [
             self::FUND_TRANSFER_DEFAULT,
             self::FUND_TRANSFER_H2H,
@@ -231,10 +235,6 @@ class Type
 
         self::INVOICE_BUCKET_CONFIG => [
             self::INVOICE_PDF,
-        ],
-
-        self::QR_CODE_BUCKET_CONFIG => [
-            self::QR_CODE_IMAGES,
         ],
 
         self::ACTIVATION_BUCKET_CONFIG => [

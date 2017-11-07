@@ -7,12 +7,10 @@ use Response;
 
 class QrCodeController extends Controller
 {
-    public function fetchQrCode()
+    public function fetchQrCode(string $id)
     {
-        $input = Request::all();
+        $response = $this->service()->fetchQrCode($id);
 
-        $response = $this->service()->fetchQrCode($input);
-
-        return Response::download($path, "$displayName");
+        return Response::download($response, "abc");
     }
 }

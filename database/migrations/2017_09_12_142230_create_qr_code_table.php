@@ -39,6 +39,9 @@ class CreateQrCodeTable extends Migration
 
             $table->text(QrCode::QR_STRING);
 
+            $table->string(Entity::SHORT_URL, 255)
+                  ->nullable();
+
             $table->integer(QrCode::CREATED_AT);
 
             $table->integer(QrCode::UPDATED_AT);
