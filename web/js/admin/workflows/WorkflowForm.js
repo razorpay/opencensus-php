@@ -26,10 +26,7 @@ export default class WorkflowForm extends Component {
       allPerms,
       allRoles,
       selectedPerms,
-      selectedRoles,
       onSelectPerms,
-      onSelectRoles,
-      onDeleteRoles,
       onStepsAdd,
     } = this.props;
 
@@ -63,12 +60,7 @@ export default class WorkflowForm extends Component {
           <div class="btn">Save Changes</div>
           {levels.length
             ? levels.map((level, idx) => (
-                <Level
-                  key={idx}
-                  allRoles={allRoles}
-                  selectedRoles={selectedRoles}
-                  onSelectRoles={onSelectRoles}
-                />
+                <Level key={idx} allRoles={allRoles} level={level} />
               ))
             : null}
         </div>

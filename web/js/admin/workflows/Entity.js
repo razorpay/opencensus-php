@@ -40,10 +40,10 @@ export default class EditWorkflow extends Component {
   }
 
   addSteps = () => {
-    let { levels } = this.state;
+    let levels = [...this.state.levels];
     levels.push({
       op_type: 'and',
-      level: ++levels.length,
+      level: levels.length + 1,
       steps: [],
     });
     this.setState({ levels });
@@ -68,12 +68,15 @@ export default class EditWorkflow extends Component {
     });
   };
 
-  selectRoles = e => {
-    this.state.allRoles.some(p => {
-      if (p.id === e.target.value) {
+  selectRoles = (e, levelIdx) => {
+    let levels = [...this.state.levels];
+
+    this.state.allRoles.some(a => {
+      if (a.id === e.target.value) {
+        levels[levelIdx].steps = levels[levelIdx].steps.concat(a);
         this.setState({
-          selectedRoles: this.state.selectedRoles.concat(p),
-          allRoles: this.state.allRoles.filter(q => q.id !== p.id),
+          levels: levels,
+          allRoles: this.state.allRoles.filter(q => q.id !== a.id),
         });
         return 1;
       }
@@ -100,8 +103,6 @@ export default class EditWorkflow extends Component {
         onStepsAdd={this.addSteps}
         onSelectPerms={this.selectPerms}
         onDeletePerms={this.deletePerms}
-        onSelectRoles={this.selectRoles}
-        onDeleteRoles={this.deleteRoles}
       />
     );
   }
