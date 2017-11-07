@@ -41,7 +41,11 @@ export default class EditWorkflow extends Component {
 
   addSteps = () => {
     let { levels } = this.state;
-    levels.push('asdasdsad');
+    levels.push({
+      op_type: 'and',
+      level: ++levels.length,
+      steps: [],
+    });
     this.setState({ levels });
   };
 
