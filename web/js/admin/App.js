@@ -21,7 +21,6 @@ import MerchantAnalyticStats from 'admin/merchants/entity/MerchantAnalyticStats'
 
 import WorkflowEntity from 'admin/workflows/Entity';
 import WorkflowList from 'admin/workflows/List';
-import WorkflowRequestsList from 'admin/workflowRequests/List';
 // import RequestList from 'admin/workflows/RequestList';
 
 import GroupList from 'admin/groups/List';
@@ -56,7 +55,6 @@ export default class App extends Component {
 
             <Route path="/workflows/:id" component={WorkflowEntity} />
             <Route path="/workflows" component={WorkflowList} />
-            <Route path="/requests" component={WorkflowRequestsList} />
 
             <Route path="/groups" component={GroupList} />
             <Route path="/users" component={UserList} />
