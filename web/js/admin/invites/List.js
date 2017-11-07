@@ -5,7 +5,7 @@ import CollectionItem from 'model/collectionItem';
 import { adminFetch } from 'util/fetch';
 import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
-import Field from 'ui/Field';
+import Field, { DateTimeField } from 'ui/Field';
 
 import { showEntity, showDetails } from './Entity';
 
@@ -13,7 +13,7 @@ const fields = [
   ['Invitation ID', item => item.id],
   ['Merchant Email', item => item.email],
   ['Signed Up', item => (item.signed_up_at ? 'Yes' : 'No')],
-  ['Created At', item => item.created_at],
+  ['Created At', item => new Date(item.created_at * 1000).toTimeString()],
 ];
 
 @observer
