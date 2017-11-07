@@ -4,13 +4,6 @@ import Table from 'ui/Table';
 import { SelectField } from 'ui/Field';
 
 export default class Level extends Component {
-  getRoleName = step => {
-    let { allRoles } = this.props;
-    let roleIdx = allRoles.findIndex(a => a.id === step.role_id);
-
-    return allRoles[roleIdx].name;
-  };
-
   fields = () => {
     let { onDeleteRole, onReviewerCountUpdate, level } = this.props;
     let levelNum = level.level;
@@ -37,6 +30,20 @@ export default class Level extends Component {
         ),
       ],
     ];
+  };
+
+  getRoleName = step => {
+    let { allRoles } = this.props;
+    let roleIdx = allRoles.findIndex(a => a.id === step.role_id);
+
+    return allRoles[roleIdx].name;
+  };
+
+  getPotentialRoles = () => {
+    let { allRoles, level } = this.props;
+    return allRoles.filter(
+      a => level.steps.findIndex(l => l.role_id === a.id) < 0
+    );
   };
 
   render() {
@@ -69,11 +76,11 @@ export default class Level extends Component {
         </SelectField>
 
         <SelectField
-          label="Add a checker Role."
+          label="Add a checker Role"
           onChange={e => onRoleSelect(e, level.level)}
         >
           <option value="" />
-          {allRoles.map(role => (
+          {this.getPotentialRoles().map(role => (
             <option value={role.id} key={role.id}>
               {role.name}
             </option>
