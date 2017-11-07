@@ -20,11 +20,11 @@ class Rbl extends Base
     const FILE_TYPE = FileStore\Type::RBL_NETBANKING_CLAIM;
     const GATEWAY   = Payment\Gateway::NETBANKING_RBL;
 
-    protected function formatDataForFile()
+    protected function formatDataForFile(array $data)
     {
         $formattedData = [];
 
-        foreach ($this->data as $index => $row)
+        foreach ($data as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
                         $row['payment'][Payment\Entity::CREATED_AT],

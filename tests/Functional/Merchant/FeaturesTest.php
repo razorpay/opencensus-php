@@ -662,6 +662,21 @@ class FeaturesTest extends TestCase
         Mail::assertNotSent(FeatureEnabledEmail::class);
     }
 
+    public function testFetchMerchantFeatures()
+    {
+        $content = $this->startTest();
+
+        $featuresWithValues = count(Constants::$featureValueMap);
+
+        $featuresInResponse = count($content['all_features']);
+
+        $this->assertEquals($featuresWithValues, $featuresInResponse);
+    }
+
+    /*
+     * Helpers
+     */
+
     public function createMarketplaceOnboardingResponse(string $merchantId, bool $expectError = false)
     {
         $this->ba->proxyAuth('rzp_live_' . $merchantId);
@@ -670,11 +685,12 @@ class FeaturesTest extends TestCase
 
         if ($expectError === true)
         {
+            $errorDesc = PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_ACTIVATION_FORM_ALREADY_SUBMITTED;
             $testData['response'] = [
                 'content' => [
                     'error' => [
                         'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_ACTIVATION_FORM_ALREADY_SUBMITTED
+                        'description' => $errorDesc,
                     ],
                 ],
                 'status_code' => 400,

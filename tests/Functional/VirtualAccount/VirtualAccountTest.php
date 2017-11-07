@@ -4,13 +4,19 @@ namespace RZP\Tests\Functional\VirtualAccount;
 
 use Closure;
 use Mockery;
+use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
+/**
+ * @group dns-sensitive
+ */
 class VirtualAccountTest extends TestCase
 {
+    use MocksDnsTrait;
     use EntityActionTrait;
     use VirtualAccountTrait;
     use RequestResponseFlowTrait;
@@ -23,11 +29,15 @@ class VirtualAccountTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
+        $this->fixtures->merchant->addFeatures('bharat_qr');
+
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
         $this->ba->privateAuth();
 
         $this->customer = $this->getEntityById('customer', 'cust_100000customer');
+
+        $this->setupMockDns();
     }
 
     public function testCreateVirtualAccount()
@@ -37,6 +47,55 @@ class VirtualAccountTest extends TestCase
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testCreateVirtualAccountWithBharatQr()
+    {
+        $response = $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+        ]);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $qrString = $response['receivers'][0]['qr_string'];
+
+        $tlvArray = $this->getTagMappedValues($qrString);
+
+        $masterCardValue = $tlvArray['04'];
+
+        $visaValue = $tlvArray['02'];
+
+        $this->assertEquals(16, strlen($masterCardValue));
+
+        $this->assertEquals(16, strlen($visaValue));
+
+        $masterCardAcquirerCode = substr($masterCardValue, 0, 6);
+
+        $visaAcquirerCode = substr($visaValue, 0, 6);
+
+        $this->assertEquals('470100', $visaAcquirerCode);
+
+        $this->assertEquals('513344', $masterCardAcquirerCode);
+    }
+
+    public function testCreateVirtualAccountWithBharatQrWithAmount()
+    {
+        $response = $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+            'amount_expected' => 10000,
+        ]);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $qrString = $response['receivers'][0]['qr_string'];
+
+        $tlvArray = $this->getTagMappedValues($qrString);
+
+        $this->assertEquals($tlvArray['54'], '100.00');
     }
 
     public function testCreateVirtualAccountWithDescriptor()
@@ -146,9 +205,11 @@ class VirtualAccountTest extends TestCase
 
     public function testVirtualAccountPay()
     {
-        $virtualAccount = $this->createVirtualAccount();
+        $virtualAccount = $this->createVirtualAccount([
+            'amount_expected' => 10000,
+        ]);
 
-        $response = $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
 
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(5000, $virtualAccount['amount_paid']);
@@ -165,16 +226,18 @@ class VirtualAccountTest extends TestCase
 
     public function testVirtualAccountExcess()
     {
-        $virtualAccount = $this->createVirtualAccount();
+        $virtualAccount = $this->createVirtualAccount([
+            'amount_expected' => 10000,
+        ]);
 
-        $response = $this->payVirtualAccount($virtualAccount['id'], ['amount' => 110]);
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 110]);
 
         // Account is paid in excess
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(11000, $virtualAccount['amount_paid']);
         $this->assertEquals('paid', $virtualAccount['status']);
 
-        $response = $this->refundVirtualAccountExcessPayments();
+        $this->refundVirtualAccountExcessPayments();
 
         // Payment is partially refunded
         $payment =  $this->getLastEntity('payment', true);
@@ -205,7 +268,9 @@ class VirtualAccountTest extends TestCase
 
     public function testVirtualAccountForCustomer()
     {
-        $virtualAccount = $this->createVirtualAccount(['customer_id' => 'cust_100000customer']);
+        $virtualAccount = $this->createVirtualAccount([
+            'customer_id' => 'cust_100000customer',
+        ]);
 
         $this->assertEquals('cust_100000customer', $virtualAccount['customer_id']);
 
@@ -249,9 +314,7 @@ class VirtualAccountTest extends TestCase
 
     protected function mockInfernoFire(Closure $closure)
     {
-        $class = \RZP\Models\Merchant\Webhook\Inferno::class;
-
-        $inferno = Mockery::mock($class, [])->makePartial();
+        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
 
         $inferno->shouldReceive('fire')
                 ->once()
@@ -260,5 +323,31 @@ class VirtualAccountTest extends TestCase
                     Mockery::on($closure));
 
         $this->app->instance('webhook.inferno', $inferno);
+    }
+
+    protected function getTagMappedValues(string $qrString)
+    {
+        $tlvArray = [];
+
+        $length = strlen($qrString);
+
+        $index = 0;
+
+        while ($index < $length)
+        {
+            $tlvTag = substr($qrString, $index, 2);
+
+            $index += 2;
+
+            $tlvLength = (int) substr($qrString, $index, 2);
+
+            $index +=2;
+
+            $tlvArray[$tlvTag] = substr($qrString, $index, $tlvLength);
+
+            $index += $tlvLength;
+        }
+
+        return $tlvArray;
     }
 }

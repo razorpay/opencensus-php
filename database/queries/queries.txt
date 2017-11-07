@@ -2574,3 +2574,27 @@ ALTER TABLE merchant_details
 	ADD marketplace_activation_status VARCHAR(30) DEFAULT NULL AFTER locked,
 	ADD virtual_accounts_activation_status VARCHAR(30) DEFAULT NULL AFTER marketplace_activation_status,
 	ADD subscriptions_activation_status VARCHAR(30) DEFAULT NULL AFTER virtual_accounts_activation_status;
+
+ALTER TABLE virtual_accounts
+    ADD COLUMN qr_code_id CHAR(14) DEFAULT NULL after bank_account_id;
+
+ALTER TABLE gateway_files
+    ADD COLUMN processing TINYINT(1) NOT NULL DEFAULT 0 AFTER status;
+
+ALTER TABLE payments
+    DROP COLUMN service_tax;
+
+ALTER TABLE transactions
+    DROP COLUMN service_tax;
+
+ALTER TABLE settlements
+    DROP COLUMN service_tax;
+
+ALTER TABLE payouts
+    DROP COLUMN service_tax;
+
+ALTER TABLE transfers
+    DROP COLUMN service_tax;
+
+ALTER TABLE daily_settlements
+    DROP COLUMN service_tax;

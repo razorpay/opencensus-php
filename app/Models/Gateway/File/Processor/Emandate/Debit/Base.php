@@ -37,17 +37,20 @@ abstract class Base extends EMandate\Base
     {
         try
         {
-            // Set $this->data for later use
-            $this->data = $payments;
+            $data = $payments;
 
             // Create gateway entities
             $this->createGatewayEntities($payments);
 
-            return $this->data;
+            return $data;
         }
         catch (\Throwable $e)
         {
-            throw new GatewayFileException(ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA);
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
+                [
+                    'id' => $this->gatewayFile->getId()
+                ]);
         }
     }
 
@@ -69,7 +72,7 @@ abstract class Base extends EMandate\Base
                 continue;
             }
 
-            $gatewayPayment = $this->createGatewayEntity($payment);
+            $this->createGatewayEntity($payment);
         }
     }
 }

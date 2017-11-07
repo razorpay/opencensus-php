@@ -169,7 +169,6 @@ class CaptureTest extends TestCase
 
         $this->assertEquals($transaction['credit'], 976400);
         $this->assertEquals($transaction['fee'], 23600);
-        $this->assertEquals($transaction['service_tax'], 3600);
         $this->assertEquals($transaction['tax'], 3600);
         $this->assertEquals($transaction['credit_type'], 'default');
         $this->assertEquals($transaction['fee_bearer'], 'platform');
@@ -702,7 +701,6 @@ class CaptureTest extends TestCase
 
         $this->assertEquals($transaction['credit'], 1000000);
         $this->assertEquals($transaction['fee'], 23600);
-        $this->assertEquals($transaction['service_tax'], 3600);
         $this->assertEquals($transaction['tax'], 3600);
         $this->assertEquals($transaction['fee_credits'], 23600);
         $this->assertEquals($transaction['credit_type'], 'fee');
@@ -830,7 +828,6 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['credit'], 1000000);
         $this->assertEquals($transaction['fee'], 0);
         $this->assertTrue($transaction['gratis']);
-        $this->assertEquals($transaction['service_tax'], 0);
         $this->assertEquals($transaction['tax'], 0);
         $this->assertEquals($transaction['credit_type'], 'amount');
         $this->assertEquals($transaction['fee_bearer'], 'platform');
@@ -980,7 +977,6 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['credit'], 1000000);
         $this->assertEquals($transaction['fee'], 0);
         $this->assertTrue($transaction['gratis']);
-        $this->assertEquals($transaction['service_tax'], 0);
         $this->assertEquals($transaction['tax'], 0);
         $this->assertEquals($transaction['credit_type'], 'amount');
         $this->assertEquals($transaction['fee_bearer'], 'customer');
@@ -1063,7 +1059,6 @@ class CaptureTest extends TestCase
 
         $this->assertEquals($transaction['credit'], 1000000);
         $this->assertEquals($transaction['fee'], 0);
-        $this->assertEquals($transaction['service_tax'], 0);
         $this->assertEquals($transaction['tax'], 0);
         $this->assertTrue($transaction['gratis']);
         $this->assertEquals($transaction['credit_type'], 'amount');
@@ -1109,7 +1104,6 @@ class CaptureTest extends TestCase
 
         $this->assertEquals($transaction['credit'], 1000000);
         $this->assertEquals($transaction['fee'], 23600);
-        $this->assertEquals($transaction['service_tax'], 3600);
         $this->assertEquals($transaction['tax'], 3600);
         $this->assertEquals($transaction['fee_credits'], 23600);
         $this->assertEquals($transaction['credit_type'], 'fee');
@@ -1147,7 +1141,6 @@ class CaptureTest extends TestCase
 
         $this->assertEquals($transaction['credit'], 1000000);
         $this->assertEquals($transaction['fee'], 23600);
-        $this->assertEquals($transaction['service_tax'], 3600);
         $this->assertEquals($transaction['tax'], 3600);
         $this->assertEquals($transaction['credit_type'], 'default');
         $this->assertEquals($transaction['fee_bearer'], 'platform');

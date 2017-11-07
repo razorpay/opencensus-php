@@ -31,9 +31,6 @@ class Service extends Base\Service
 
         $this->verifyMerchantIsLiveForLiveRequest();
 
-        // @TODO: Change/Update this when more methods are added for Virtual Accounts
-        $this->verifyBankTransferEnabled();
-
         $customer = $this->getCustomerIfGiven($input);
 
         $this->setDefaultReceiverTypesIfNeeded($input);
@@ -232,28 +229,6 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED);
         }
-    }
-
-    protected function verifyBankTransferEnabled()
-    {
-        $merchantMethods = $this->getMethodsForMerchant($this->merchant);
-
-        if (($merchantMethods === null) or
-            ($merchantMethods->isBankTransferEnabled() === false))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BANK_TRANSFER_NOT_ENABLED_FOR_MERCHANT);
-        }
-    }
-
-    protected function getMethodsForMerchant(Merchant\Entity $merchant)
-    {
-        if ($merchant->hasRelation('methods') === false)
-        {
-            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
-        }
-
-        return $merchant->methods;
     }
 
     protected function getNewProcessor($merchant)

@@ -44,6 +44,7 @@ class MailTags
 
     const INVOICE                          = 'invoice';
     const ECOD                             = 'ecod';
+    const LINK                             = 'link';
 
     const SUBSCRIPTION_AUTHENTICATED       = 'subscription_authenticated';
     const SUBSCRIPTION_CHARGED             = 'subscription_charged';
@@ -90,6 +91,9 @@ class MailTags
 
     // Merchant feature tags
     const FEATURE_ENABLED                  = 'feature_enabled';
+
+    // Dispute tags
+    const DISPUTE_CREATED                  = 'dispute_created';
 
     /**
      * Email tags that should respond to the mailgun failure webhook

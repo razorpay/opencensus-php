@@ -23,6 +23,10 @@ class Service extends Base\Service
      */
     public function reconcileRegistrationFile(string $gateway, array $input)
     {
+        $this->trace->info(
+            TraceCode::EMANDATE_REGISTER_RECON_REQUEST,
+            ['gateway'   => $gateway]);
+
         (new Validator)->validateRegistrationGateway($gateway);
 
         $response = $this->app['gateway']->call(
@@ -30,7 +34,6 @@ class Service extends Base\Service
                             Payment\Action::RECONCILE_REGISTER_EMANDATE,
                             $input,
                             $this->mode);
-
 
         return $response;
     }

@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\File;
 use RZP\Base;
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\File\Constants;
@@ -36,6 +37,24 @@ class Validator extends Base\Validator
         self::TIME_RANGE,
     ];
 
+    /**
+     * CHecks if the gateway_file entity can be processed based on the below conditions
+     * - Entity in acknowledged state can't be processed further
+     * - If the processing flag is set to true then it means it is under processing
+     *   and cannot be processed
+     *
+     * @throws BadRequestException
+     */
+    public function validateIfProcessable()
+    {
+        if (($this->entity->isAcknowledged() === true) or
+            ($this->entity->isProcessing() === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE);
+        }
+    }
+
     protected function validateType(string $attribute, string $type)
     {
         if (Type::isValidType($type) === false)
@@ -62,11 +81,14 @@ class Validator extends Base\Validator
     {
         $target = $input[Entity::TARGET];
 
+        $type = $input[Entity::TYPE];
+
         $subType = $input[Entity::SUB_TYPE] ?? null;
 
         // Currently subType is required only when target is Kotak as we need to specify
         // tpv or non tpv
         if (($target === Constants::KOTAK) and
+            ($type === Type::COMBINED) and
             (Type::isValidSubType($subType) === false))
         {
             throw new Exception\BadRequestValidationFailureException(

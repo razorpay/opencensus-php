@@ -2,9 +2,11 @@
 
 namespace RZP\Tests\Functional\Dispute;
 
+use Mail;
 use RZP\Models\Dispute\Entity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Mail\Dispute\Creation as DisputeCreationMail;
 
 class DisputeTest extends TestCase
 {
@@ -42,7 +44,30 @@ class DisputeTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
 
         $this->assertEquals('payment', $txn['type']);
+    }
 
+    public function testDisputeCreateMerchantMail()
+    {
+        Mail::fake();
+
+        $testData = $this->updateCreateTestData();
+
+        $testData['response']['content']['payment_id'] = $this->payment->getId();
+
+        $this->startTest($testData);
+
+        Mail::assertSent(DisputeCreationMail::class);
+    }
+
+    public function testDisputeCreateWithoutMerchantEmail()
+    {
+        Mail::fake();
+
+        $testData = $this->updateCreateTestData();
+
+        $this->startTest($testData);
+
+        Mail::assertNotSent(DisputeCreationMail::class);
     }
 
     public function testDisputeCreateWithDeduct()
@@ -165,6 +190,20 @@ class DisputeTest extends TestCase
         $testData['request']['content']['parent_id'] = $disputeParent->getId();
 
         $this->startTest($testData);
+    }
+
+    public function testDisputeCreateWithInvalidMerchantEmail()
+    {
+        $this->updateCreateTestData();
+
+        $this->startTest();
+    }
+
+    public function testDisputeCreateWithInvalidMerchantEmail2()
+    {
+        $this->updateCreateTestData();
+
+        $this->startTest();
     }
 
     public function testDisputeEdit()

@@ -43,6 +43,9 @@ class CreateGatewayFiles extends Migration
             $table->string(GatewayFile::STATUS, 20)
                   ->default('created');
 
+            $table->tinyInteger(GatewayFile::PROCESSING)
+                  ->default(0);
+
             $table->tinyInteger(GatewayFile::PARTIALLY_PROCESSED)
                   ->default(0);
 

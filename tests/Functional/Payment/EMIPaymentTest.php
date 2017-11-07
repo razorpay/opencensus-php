@@ -136,8 +136,6 @@ class EmiPaymentTest extends TestCase
 
         $this->deleteAlltheGenerateFiles($content);
 
-        unlink($content['ICIC']);
-
         unlink($content['YESB']);
     }
 

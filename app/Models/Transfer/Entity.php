@@ -18,24 +18,24 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const ID                      = 'id';
-    const MERCHANT_ID             = 'merchant_id';
-    const TO_ID                   = 'to_id';
-    const TO_TYPE                 = 'to_type';
-    const SOURCE_ID               = 'source_id';
-    const SOURCE_TYPE             = 'source_type';
-    const AMOUNT                  = 'amount';
-    const CURRENCY                = 'currency';
-    const REVERSAL_STATUS         = 'reversal_status';
-    const AMOUNT_REVERSED         = 'amount_reversed';
-    const NOTES                   = 'notes';
-    const FEES                    = 'fees';
-    const SERVICE_TAX             = 'service_tax';
-    const TAX                     = 'tax';
-    const ON_HOLD                 = 'on_hold';
-    const ON_HOLD_UNTIL           = 'on_hold_until';
-    const TRANSACTION_ID          = 'transaction_id';
-    const RECIPIENT_SETTLEMENT_ID = 'recipient_settlement_id';
+    const ID                        = 'id';
+    const MERCHANT_ID               = 'merchant_id';
+    const TO_ID                     = 'to_id';
+    const TO_TYPE                   = 'to_type';
+    const SOURCE_ID                 = 'source_id';
+    const SOURCE_TYPE               = 'source_type';
+    const AMOUNT                    = 'amount';
+    const CURRENCY                  = 'currency';
+    const REVERSAL_STATUS           = 'reversal_status';
+    const AMOUNT_REVERSED           = 'amount_reversed';
+    const NOTES                     = 'notes';
+    const FEES                      = 'fees';
+    const TAX                       = 'tax';
+    const ON_HOLD                   = 'on_hold';
+    const ON_HOLD_UNTIL             = 'on_hold_until';
+    const TRANSACTION_ID            = 'transaction_id';
+    const RECIPIENT_SETTLEMENT_ID   = 'recipient_settlement_id';
+    const RECIPIENT_SETTLEMENT      = 'recipient_settlement';
 
     // Report fields
     const SETTLEMENT_INITIATED_ON = 'settlement_initiated_on';
@@ -48,7 +48,6 @@ class Entity extends Base\PublicEntity
 
     // Expanded relation keys
     const TO                   = 'to';
-    const RECIPIENT_SETTLEMENT = 'recipient_settlement';
 
     // Append attributes
     const RECIPIENT_DETAILS = 'recipient_details';
@@ -82,14 +81,13 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REVERSED,
         self::NOTES,
         self::FEES,
-        self::SERVICE_TAX,
+        self::TAX,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
         self::TRANSACTION_ID,
         self::RECIPIENT_SETTLEMENT_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::TAX,
     ];
 
     protected $public = [
@@ -103,13 +101,12 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REVERSED,
         self::NOTES,
         self::FEES,
-        self::SERVICE_TAX,
+        self::TAX,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
         self::RECIPIENT_SETTLEMENT_ID,
         self::RECIPIENT_SETTLEMENT,
         self::CREATED_AT,
-        self::TAX
     ];
 
     protected $publicSetters = [
@@ -127,20 +124,18 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::AMOUNT          => 'int',
-        self::AMOUNT_REVERSED => 'int',
-        self::FEES            => 'int',
-        self::SERVICE_TAX     => 'int',
-        self::TAX             => 'int',
-        self::ON_HOLD         => 'bool',
-        self::ON_HOLD_UNTIL   => 'int',
+        self::AMOUNT                 => 'int',
+        self::AMOUNT_REVERSED        => 'int',
+        self::FEES                   => 'int',
+        self::TAX                    => 'int',
+        self::ON_HOLD                => 'bool',
+        self::ON_HOLD_UNTIL          => 'int',
     ];
 
     protected $amounts = [
         self::AMOUNT,
         self::AMOUNT_REVERSED,
         self::FEES,
-        self::SERVICE_TAX,
         self::TAX,
     ];
 
@@ -244,11 +239,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEES);
     }
 
-    public function getServiceTax()
-    {
-        return $this->getAttribute(self::SERVICE_TAX);
-    }
-
     public function getTax()
     {
         return $this->getAttribute(self::TAX);
@@ -318,11 +308,6 @@ class Entity extends Base\PublicEntity
     public function setFees(int $fees)
     {
         $this->setAttribute(self::FEES, $fees);
-    }
-
-    public function setServiceTax(int $serviceTax)
-    {
-        $this->setAttribute(self::SERVICE_TAX, $serviceTax);
     }
 
     public function setTax(int $tax)

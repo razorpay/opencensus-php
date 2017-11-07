@@ -185,6 +185,7 @@ final class Route
         'bank_transfer_notify'                    => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
         'bank_transfer_refund_retry'              => ['post',     'bank_transfers/refunds/retry',                   'BankTransferController@retryBankTransferRefund'                    ],
         'bank_transfer_edit_payer_account'        => ['put',      'bank_transfers/{id}/payer_bank_account',         'BankTransferController@editPayerBankAccount'                       ],
+        'bank_transfer_strip_payer_accounts'      => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
         'bank_transfer_insert'                    => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
@@ -951,6 +952,7 @@ final class Route
         'bank_transfer_notify',
         'bank_transfer_refund_retry',
         'bank_transfer_edit_payer_account',
+        'bank_transfer_strip_payer_accounts',
         'bank_transfer_insert',
         'iin_fetch_by_iin',
         'card_update_saved',
@@ -1340,7 +1342,6 @@ final class Route
         'merchant_fetch_bank_account'           => Permission::VIEW_MERCHANT_BANK_ACCOUNTS,
         'merchant_edit'                         => '*', // permission handled in code
         'adj_add'                               => Permission::ADD_MERCHANT_ADJUSTMENT,
-        'adj_add_fee'                           => Permission::ADD_MERCHANT_ADJUSTMENT,
         'merchant_add_bank_account'             => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'merchant_activate'                     => Permission::EDIT_ACTIVATE_MERCHANT,
         'admin_fetch_terminal_by_id'            => '*',
@@ -1390,7 +1391,7 @@ final class Route
         'settings_delete'                       => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'                    => '*',
         'merchant_activation_files'             => '*',
-        'dispute_reason_create'                 => '*',
+        'dispute_reason_create'                 => Permission::CREATE_DISPUTE_REASON,
         'user_confirm_by_data'                  => '*',
         'onboarding_features_fetch_submissions' => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_update_status'     => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
@@ -1548,7 +1549,6 @@ final class Route
      */
     public static $throttledRoutes = [
         'dummy_route',
-        'payment_verify_multiple',
     ];
 
     /**
