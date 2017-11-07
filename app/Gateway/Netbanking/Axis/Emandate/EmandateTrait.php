@@ -159,7 +159,9 @@ trait EmandateTrait
 
             // SI registration specific callback attributes
             Netbanking\Entity::SI_TOKEN        => $content[ResponseFields::CUSTOMER_REF_NO],
-            Netbanking\Entity::SI_STATUS       => StatusCode::getEmandateStatus($content[ResponseFields::MANDATE_NUMBER]),
+            Netbanking\Entity::SI_STATUS       => StatusCode::getEmandateStatus(
+                                                      $content[ResponseFields::MANDATE_NUMBER]
+                                                  ),
             Netbanking\Entity::SI_MSG          => $content[ResponseFields::REMARKS],
         ];
     }
@@ -340,7 +342,10 @@ trait EmandateTrait
             $attributes[Netbanking\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_REF_NO];
         }
 
-        $attributes[Netbanking\Entity::STATUS] = $content[ResponseFields::STATUS_CODE];
+        if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
+        {
+            $attributes[Netbanking\Entity::STATUS] = $content[ResponseFields::STATUS_CODE];
+        }
 
         return $attributes ?? [];
     }
