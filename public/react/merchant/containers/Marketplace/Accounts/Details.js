@@ -35,16 +35,20 @@ export default class AccountDetailsModal extends Component {
         />
 
         <div class="modal-body">
-          {loading
-            ? <div class="page-spinner-container">
-                <Spinner />
-              </div>
-            : this.state.errors
-                ? <Alert type="error" message={this.state.errors} />
-                : <ActivationWizard
-                    accountId={this.props.accountId}
-                    data={data}
-                  />}
+          {loading ? (
+            <div class="page-spinner-container">
+              <Spinner />
+            </div>
+          ) : this.state.errors ? (
+            <Alert type="error" message={this.state.errors} />
+          ) : (
+            <ActivationWizard
+              accountId={this.props.accountId}
+              data={data}
+              callback={() =>
+                this.props.fetchAccounts(this.props.skip, this.props.count)}
+            />
+          )}
         </div>
       </div>
     );
