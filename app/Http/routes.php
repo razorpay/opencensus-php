@@ -25,7 +25,6 @@ Route::group(['middleware' => ['web']], function () {
 
     // Org
     Route::group(['prefix' => 'admin'], function () {
-        Route::get('/auth', 'AdminController@initiateAuth');
         Route::get('/org', 'AdminController@getOrg');
         Route::post('/signin', 'AdminController@postSignin');
     });
