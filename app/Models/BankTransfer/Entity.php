@@ -227,7 +227,10 @@ class Entity extends Base\PublicEntity
         // testBankTransferFloatingPointImprecision exists to check against this.
         //
 
-        $input[self::AMOUNT] = (int) number_format(($input[self::AMOUNT] * 100), 0, '.', '');
+        if (isset($input[self::AMOUNT]) === true)
+        {
+            $input[self::AMOUNT] = (int) number_format(($input[self::AMOUNT] * 100), 0, '.', '');
+        }
 
     }
 
