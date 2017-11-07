@@ -75,14 +75,9 @@ class Sorter extends Base\Core
 
         if (($verbose === true) and (empty($terminals) === false))
         {
-            $terminalIds = [];
+            $terminalData = array_pluck($terminals, 'gateway', 'id');
 
-            foreach ($terminals as $terminal)
-            {
-                $terminalIds[] = $terminal->getId();
-            }
-
-            $traceData = ['count' => count($terminals), 'terminals' => $terminalIds, 'msg' => $msg];
+            $traceData = ['count' => count($terminals), 'terminals' => $terminalData, 'msg' => $msg];
 
             $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }

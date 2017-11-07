@@ -8,4 +8,5 @@ class Result
     const ERROR         = 'error';
     const AUTHORIZED    = 'authorized';
     const TIMEOUT       = 'timeout';
+    const UNKNOWN       = 'unknown';
 }

@@ -41,6 +41,16 @@ if (window.CheckoutBridge) {
   } catch (e) {}
 }
 
+var iosCheckoutBridgeNew = ((window.webkit || {}).messageHandlers || {})
+  .CheckoutBridge;
+
+if (iosCheckoutBridgeNew) {
+  iosCheckoutBridgeNew.postMessage({
+    action: 'success',
+    body: JSON.parse(data)
+  });
+}
+
 function g(id) {
   return document.getElementById(id);
 }

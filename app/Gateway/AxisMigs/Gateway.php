@@ -982,7 +982,7 @@ class Gateway extends Base\Gateway
             if (($authStatus === Payment\TwoFactorAuth::FAILED) or
                 ($authStatus === Payment\TwoFactorAuth::UNKNOWN))
             {
-                if ($input['merchant']['international'] === false)
+                if ($this->shouldRaiseErrorForInternationalMerchant($input))
                 {
                     $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED;
                 }
@@ -1190,5 +1190,10 @@ class Gateway extends Base\Gateway
         $cardExp = substr($input['card']['expiry_year'], 2,2) . $expiryMonth;
 
         return $cardExp;
+    }
+
+    protected function shouldRaiseErrorForInternationalMerchant(array $input) : bool
+    {
+        return ($input['merchant']['international'] === false);
     }
 }

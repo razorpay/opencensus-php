@@ -265,13 +265,17 @@ class Processor extends Base\Core
         if ($this->virtualAccount === null)
         {
             $this->trace->info(
-                TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
+                TraceCode::BANK_TRANSFER_VIRTUAL_ACCOUNT_NOT_FOUND,
                 [
                     'message'      => 'Invalid account number',
                     'bankTransfer' => $bankTransfer->toArray(),
                 ]
             );
 
+            return false;
+        }
+        else if ($this->virtualAccount->merchant->methods->isBankTransferEnabled() === false)
+        {
             return false;
         }
 
@@ -507,7 +511,7 @@ class Processor extends Base\Core
     {
         $label = $bankTransfer->getPayerName();
 
-        if (empty($label) === true)
+        if (empty(trim($label)) === true)
         {
             $label = $bankTransfer->merchant->getBillingLabel();
         }
