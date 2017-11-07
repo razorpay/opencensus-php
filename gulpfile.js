@@ -5,10 +5,12 @@ const glob = require('glob').sync;
 const path = require('path');
 const { execSync } = require('child_process');
 
-execSync(`
-  mkdir -p public/dist/css;
-  cp web/entry/* public/dist/
-`);
+function createBaseDir() {
+  execSync(`
+    mkdir -p public/dist/css;
+    cp web/entry/* public/dist/
+  `);
+}
 
 function handleError(err) {
   console.log(err.toString());
@@ -53,5 +55,6 @@ gulp.task('watch', () => {
 
 gulp.task('default', () => {
   execSync('rm -rf public/dist');
+  createBaseDir();
   iconFont(compileCss);
 });

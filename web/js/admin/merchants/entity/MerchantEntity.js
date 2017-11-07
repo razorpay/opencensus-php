@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
 
-import { adminFetch } from 'util/fetch';
-import { openModal, confirm } from 'common/modal';
+import { adminFetch, adminPut, adminPost } from 'util/fetch';
+import { closeModal, notifyError, notifySuccess, confirm } from 'common/modal';
 import * as entityModals from './entityModals';
 import { getDetailsViewMap } from './entity-resources';
 import EntityRow from 'ui/EntityRow';
@@ -40,22 +40,38 @@ export default class MerchantEntity extends Component {
     console.log('Downloading Reports....');
   };
 
-  holdFunds = () => {
-    confirm(
-      'Are you sure you want to hold funds for this merchant?',
-      () => {
-        console.log('Handle Hold Funds....');
-      },
-      'Ok',
-      'Cancel'
-    );
-  };
+  toggleFundsHoldOrRelease = () => {
+    const merchant = this.model.merchant;
 
-  releaseFunds = () => {
+    let action, confirmMsg;
+    if (merchant.details.activated == 1 && !merchant.details.hold_funds) {
+      confirmMsg = 'Are you sure you want to hold funds for this merchant?';
+      successMsg = 'Merchant funds put on hold successfully';
+      action = 'hold_funds';
+    } else if (merchant.details.hold_funds == 1) {
+      confirmMsg = 'Are you sure you want to release funds for this merchant?';
+      successMsg = 'Merchant funds released successfully';
+      action = 'release_funds';
+    }
+
     confirm(
-      'Are you sure you want to hold funds for this merchant?',
+      confirmMsg,
       () => {
-        console.log('Release Merchant Funds....');
+        adminPut({
+          route_name: 'merchant_action',
+          url_params: {
+            id: this.merchantId,
+          },
+          body: { action },
+        })
+          .then(response => {
+            closeModal();
+            notifySuccess(successMsg);
+            this.model.updateDetails(response);
+          })
+          .catch(err => {
+            notifyError(JSON.stringify(err.response));
+          });
       },
       'Ok',
       'Cancel'
@@ -67,18 +83,91 @@ export default class MerchantEntity extends Component {
   };
 
   // Lock / Unlock activation form
-  toggleActivationFormLock = () => {
-    console.log('Toggle Actionvation Form Lock....');
+  toggleLockOnActivationForm = () => {
+    const isCurrentlyLocked = this.model.merchant.details.merchant_details
+      .locked;
+    adminPut({
+      route_name: 'merchant_activation_update',
+      url_params: {
+        id: this.merchantId,
+      },
+      body: {
+        locked: isCurrentlyLocked ? 0 : 1, // If already locked then send opposite
+      },
+    })
+      .then(response => {
+        notifySuccess(
+          `Activation Form is now ${isCurrentlyLocked
+            ? 'Unlocked'
+            : 'Locked'} successfully`
+        );
+        this.model.updateMerchantDetails(response);
+      })
+      .catch(err => {
+        notifyError(JSON.stringify(err.response));
+      });
   };
 
   // Enable / Disable live transactions
   toggleLiveTransactions = () => {
-    console.log('Enable / Disable Live transactions....');
+    const merchant = this.model.merchant;
+    let routeName, successMsg;
+
+    if (merchant.details.activated == 1 && merchant.details.live == 0) {
+      successMsg = 'Live transactions enabeld successfully.';
+      routeName = 'merchant_live_enable';
+    } else if (merchant.details.live == 1) {
+      routeName = 'merchant_live_disable';
+      successMsg = 'Live transactions disabled successfully.';
+    }
+
+    return adminPost({
+      route_name: routeName,
+      url_params: {
+        id: this.merchantId,
+      },
+    })
+      .then(response => {
+        if (response) {
+          closeModal();
+          notifySuccess(successMsg);
+          this.model.updateDetails(response);
+        }
+      })
+      .catch(err => {
+        notifyError(JSON.stringify(err.response));
+      });
   };
 
   // Enable / Disable receipt emails
   toggleReceiptEmail = () => {
-    console.log('Enable / Disable Receipt Email....');
+    const isReceiptEmailEnabled = this.model.merchant.details
+      .receipt_email_enabled;
+    let action, successMsg;
+
+    if (isReceiptEmailEnabled) {
+      action = 'disable_receipt_emails';
+      successMsg = 'Receipt email disabled successfully';
+    } else {
+      action = 'enable_receipt_emails';
+      successMsg = 'Receipt email enabled successfully';
+    }
+
+    adminPut({
+      route_name: 'merchant_action',
+      url_params: {
+        id: this.merchantId,
+      },
+      body: { action },
+    })
+      .then(response => {
+        closeModal();
+        notifySuccess(successMsg);
+        this.model.updateDetails(response);
+      })
+      .catch(err => {
+        notifyError(JSON.stringify(err.response));
+      });
   };
 
   toggleArchiveMerchant = () => {
@@ -111,8 +200,7 @@ export default class MerchantEntity extends Component {
   };
 
   getActionList() {
-    let { merchant } = this.props;
-    merchant = { details: {} }; // Dummy
+    const merchant = this.model.merchant;
 
     return (
       <aside class="">
@@ -128,39 +216,52 @@ export default class MerchantEntity extends Component {
           See Merchant Analytics Stats
         </Link>
 
-        <div onClick={this.toggleActivationFormLock}>
-          {merchant.details.lock === 0 ? 'Lock' : 'Unlock'} Activation Form
-        </div>
-
-        {merchant.details.activated == 1 &&
-          merchant.details.hold_funds == 0 && (
-            <div onClick={this.holdFunds}>Hold Merchant Funds</div>
-          )}
-
-        {merchant.details.hold_funds == 1 && (
-          <div onClick={this.releaseFunds}>Release Merchant Funds</div>
-        )}
-
-        {merchant.details.activated == 1 &&
-          merchant.details.live == 0 && (
-            <div onClick={this.toggleLiveTransactions}>
-              Enable Live Transactions
-            </div>
-          )}
-
-        {merchant.details.live == 1 && (
-          <div onClick={this.toggleLiveTransactions}>
-            Disable Live Transactions
+        {/* Lock or Unlock activation form */}
+        {merchant.details.merchant_details && (
+          <div onClick={this.toggleLockOnActivationForm}>
+            {merchant.details.merchant_details.locked ? 'Unlock' : 'Lock'}{' '}
+            Activation Form
           </div>
         )}
 
-        {merchant.details.receipt_email_enabled == 0 && (
-          <div onClick={this.toggleReceiptEmail}>Enable Receipt Email</div>
-        )}
+        {/* Hold or Release funds */}
+        {
+          do {
+            if (
+              merchant.details.activated == 1 &&
+              !merchant.details.hold_funds
+            ) {
+              <div onClick={this.toggleFundsHoldOrRelease}>
+                Hold Merchant Funds
+              </div>;
+            } else if (merchant.details.hold_funds == 1) {
+              <div onClick={this.toggleFundsHoldOrRelease}>
+                Release Merchant Funds
+              </div>;
+            }
+          }
+        }
 
-        {merchant.details.receipt_email_enabled == 1 && (
-          <div onClick={this.toggleReceiptEmail}>Disable Receipt Email</div>
-        )}
+        {/* Toggle enable or disabled live transactions */}
+        {
+          do {
+            if (merchant.details.activated == 1 && merchant.details.live == 0) {
+              <div onClick={this.toggleLiveTransactions}>
+                Enable Live Transactions
+              </div>;
+            } else if (merchant.details.live == 1) {
+              <div onClick={this.toggleLiveTransactions}>
+                Disable Live Transactions
+              </div>;
+            }
+          }
+        }
+
+        {/* Toggle disbale or enable receipt email */}
+        <div onClick={this.toggleReceiptEmail}>
+          {merchant.details.receipt_email_enabled ? 'Disable' : 'Enable'}{' '}
+          Receipt Email
+        </div>
 
         <div onClick={actions.EditMethods}>Edit Methods</div>
         <div onClick={actions.AssignPricingPlan}>Assign Pricing</div>

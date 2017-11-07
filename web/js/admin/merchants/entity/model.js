@@ -118,9 +118,22 @@ export default class Model extends BaseModel {
   }
 
   updateFeatures(mode, features) {
+    // Value is changed but view is not re-rendered.
     this.merchant.features[mode].assigned_features = this.merchant.features[
       mode
     ].assigned_features.concat(features);
+  }
+
+  updateMerchantDetails(data) {
+    // Value is changed and view is re-rendered
+    this.merchant.details.merchant_details = data;
+    this.merchant = { ...this.merchant }; // To force re-render the view
+  }
+
+  updateDetails(data) {
+    // Value is changed and view is re-rendered
+    this.merchant.details = { ...this.merchant.details, ...data };
+    this.merchant = { ...this.merchant }; // To force re-render the view
   }
 
   @action

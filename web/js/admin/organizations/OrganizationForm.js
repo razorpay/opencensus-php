@@ -1,6 +1,6 @@
 import React from 'react';
 import Form from 'ui/Form';
-import Field, { SelectField, CheckField, FileField } from 'ui/Field';
+import Field, { SelectField, CheckField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import PermissionsList from './PermissionsList';
 

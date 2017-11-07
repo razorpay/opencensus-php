@@ -1,0 +1,344 @@
+import React, { Component } from 'react';
+import { observer } from 'mobx-react';
+
+import Amount from 'ui/Amount';
+
+import fetch, { adminPost } from 'util/fetch';
+import { openModal, confirm } from 'common/modal';
+
+import AsyncButton from 'ui/AsyncButton';
+import { FromField, ToField } from 'ui/Field';
+import Form from 'ui/Form';
+import EntityRow from 'ui/EntityRow';
+import Table from 'ui/Table';
+
+@observer
+export default class MerchantTeamDetails extends Component {
+  state = {};
+
+  constructor(props) {
+    super();
+    this.merchantId = props.match.params.id;
+  }
+
+  componentWillMount() {
+    this.fetchDetails();
+  }
+
+  fetchAllAggregations() {
+    const query_params = {
+      count: 10,
+      duration_count: 1,
+      page: this.merchantId,
+      sort: 'total_amount',
+      type: 'month',
+    };
+
+    fetch({
+      url: '/admin/live/merchants/aggregations',
+      params: query_params,
+    }).then(data => {
+      const aggregations = {
+        data: data.data.data,
+        stats: {
+          count: data.data.data.length,
+          countStart: data.data.from,
+          countEnd: data.data.to,
+        },
+        allowPrev: data.data.prev_page_url !== null,
+        allowNext: data.data.next_page_url !== null,
+      };
+
+      this.setState({
+        aggregations,
+      });
+    });
+  }
+
+  fetchAllAggregationsForMerchant() {
+    const query_params = {
+      sort: 'total_amount',
+      duration_count: 1,
+      type: 'month',
+    };
+
+    fetch({
+      url: `/admin/live/merchants/${this.merchantId}/aggregations`,
+      params: query_params,
+    }).then(data => {
+      const aggregations = {
+        data: data.data.data,
+        stats: {
+          count: 1,
+          countStart: 1,
+          countEnd: 1,
+        },
+      };
+
+      this.setState({
+        aggregations,
+      });
+    });
+  }
+
+  fetchDetails() {
+    const today = new Date();
+    const from_timestamp = new Date().setDate(today.getDate() - 7) / 1000;
+    const to_timestamp = Math.round(today.getTime()) / 1000;
+
+    const requestData = {
+      filters: {
+        default: [
+          {
+            merchant_id: [this.merchantId],
+            created_at: {
+              gte: from_timestamp,
+              lte: to_timestamp,
+            },
+          },
+        ],
+        filter_success_trans: [
+          {
+            merchant_id: [this.merchantId],
+            created_at: {
+              gte: from_timestamp,
+              lte: to_timestamp,
+            },
+            status: ['captured', 'authorized'],
+          },
+        ],
+      },
+      aggregations: {
+        total_payments: {
+          agg_type: 'count',
+          details: {
+            index: 'payment',
+            column: 'base_amount',
+          },
+        },
+        total_settlements: {
+          agg_type: 'count',
+          details: {
+            index: 'settlement',
+            column: 'base_amount',
+          },
+        },
+        total_refunds: {
+          agg_type: 'count',
+          details: {
+            index: 'refund',
+            column: 'base_amount',
+          },
+        },
+        payments_volume: {
+          agg_type: 'sum',
+          details: {
+            index: 'payment',
+            column: 'base_amount',
+          },
+        },
+        recent_balance: {
+          agg_type: 'recent',
+          details: {
+            index: 'balance',
+            column: 'base_amount',
+          },
+        },
+        recent_payments: {
+          agg_type: 'recent',
+          details: {
+            index: 'payment',
+            column: 'base_amount',
+            result_fields: ['id', 'status', 'created_at'],
+          },
+        },
+        recent_refunds: {
+          agg_type: 'recent',
+          details: {
+            index: 'refund',
+            column: 'base_amount',
+            result_fields: ['id', 'status', 'created_at'],
+          },
+        },
+        recent_settlements: {
+          agg_type: 'recent',
+          details: {
+            index: 'settlement',
+            column: 'base_amount',
+            result_fields: ['id', 'status', 'created_at'],
+          },
+        },
+        recent_transactions: {
+          agg_type: 'recent',
+          details: {
+            index: 'transaction',
+            result_fields: ['created_at'],
+          },
+        },
+        payment_method_bars: {
+          agg_type: 'percent',
+          details: {
+            index: 'payments',
+            column: 'base_amount',
+            group_by: ['method'],
+          },
+        },
+        transaction_histogram: {
+          agg_type: 'sum',
+          details: {
+            index: 'transaction',
+            column: 'base_amount',
+            group_by: ['histogram_daily'],
+          },
+        },
+        successful_transaction: {
+          agg_type: 'count',
+          filter_key: 'filter_success_trans',
+          details: {
+            index: 'transaction',
+            column: 'base_amount',
+            group_by: ['histogram_weekly'],
+          },
+        },
+      },
+    };
+
+    adminPost({
+      route_name: 'merchant_analytics',
+      merchant_id: this.merchantId,
+      body: requestData,
+    })
+      .then(response => {
+        if (response) {
+          notifySuccess('Adjustment added successfully.');
+          closeModal();
+        }
+      })
+      .catch(err => {
+        notifyError(JSON.stringify(err.response));
+      });
+  }
+
+  onSubmit(body) {}
+
+  render() {
+    const { merchant_analytics } = this.props;
+
+    return (
+      <div class="entity-container">
+        <header class="heading">
+          Merchant: {this.merchantId} (Team Details)
+        </header>
+
+        <div class="box">
+          <Form>
+            <FromField />
+            <ToField />
+
+            <AsyncButton
+              text="Fetch Stats"
+              class="btn"
+              pendingClass="small spinner"
+              onSubmit={this.onSubmit}
+            />
+          </Form>
+        </div>
+
+        <div class="box">
+          <div class="heading">Payment Details</div>
+          <EntityRow label={'Property'} value={'Value'} />
+          <EntityRow
+            label={'Payments Volume'}
+            value={
+              <Amount value={merchant_analytics.payments_volume[0].value} />
+            }
+          />
+          <EntityRow
+            label={'Total Payments'}
+            value={
+              <Amount value={merchant_analytics.total_payments[0].value} />
+            }
+          />
+          <EntityRow
+            label={'Total Refunds'}
+            value={<Amount value={merchant_analytics.total_refunds[0].value} />}
+          />
+          <EntityRow
+            label={'Total Settlements'}
+            value={
+              <Amount value={merchant_analytics.total_settlements[0].value} />
+            }
+          />
+          <EntityRow
+            label={'Recent Balance'}
+            value={
+              <Amount value={merchant_analytics.recent_balance[0].value} />
+            }
+          />
+        </div>
+
+        <div class="box">
+          <div class="heading">Payment Method Bars</div>
+          <Table
+            items={merchant_analytics.payment_method_bars}
+            fields={_getMethodsFields()}
+          />
+        </div>
+
+        <div class="box">
+          <div class="heading">Recent Payments</div>
+          <Table
+            items={merchant_analytics.recent_payments}
+            fields={_getGenericFields()}
+          />
+        </div>
+
+        <div class="box">
+          <div class="heading">Recent Refunds</div>
+          <Table
+            items={merchant_analytics.recent_refunds}
+            fields={_getGenericFields()}
+          />
+        </div>
+
+        <div class="box">
+          <div class="heading">Recent Settlements</div>
+          <Table
+            items={merchant_analytics.recent_settlements}
+            fields={_getGenericFields()}
+          />
+        </div>
+
+        <div class="box">
+          <div class="heading">Recent Transactions</div>
+          <Table
+            items={merchant_analytics.recent_transactions}
+            fields={_getGenericFields()}
+          />
+        </div>
+      </div>
+    );
+  }
+}
+
+/* Resources */
+
+function _getMethodsFields() {
+  return [
+    ['Method', item => item.method],
+    ['Percent', item => item.percent],
+    ['Doc Count', item => item.doc_count],
+  ];
+}
+
+function _getGenericFields() {
+  return [
+    ['Id', item => item.id],
+    ['Status', item => item.status],
+    ['Created', item => item.created_at],
+  ];
+}
+
+function _getPendingInvitesFields() {
+  return [['Email', item => item.email], ['Role', item => item.role]];
+}

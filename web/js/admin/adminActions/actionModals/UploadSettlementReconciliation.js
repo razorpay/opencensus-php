@@ -13,7 +13,7 @@ export default function UploadSettlementReconciliation() {
     <Form>
       <header>{UploadSettlementReconciliation.title}</header>
       <SelectMode />
-      <FileField label="Attach File" type="file" name="file" />
+      <FileField label="Attach File" name="file" />
       <AsyncButton
         text="Upload"
         class="btn"

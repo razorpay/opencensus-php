@@ -174,7 +174,6 @@ export default class AssignTerminal extends Component {
 
           <FileField
             label="Gateway Client Certificate"
-            type="file"
             name="file"
             infoMsg="Certificate file for FirstData"
           />

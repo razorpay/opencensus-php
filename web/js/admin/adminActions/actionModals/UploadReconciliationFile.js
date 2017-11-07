@@ -51,12 +51,7 @@ export default function UploadReconciliationFile() {
           </option>
         ))}
       </SelectField>
-      <FileField
-        label="Attach Multiple Files"
-        type="file"
-        name="files"
-        many={true}
-      />
+      <FileField multiple label="Attach Multiple Files" name="files" />
       <AsyncButton
         text="Upload"
         class="btn"
