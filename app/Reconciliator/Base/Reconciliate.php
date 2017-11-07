@@ -225,8 +225,9 @@ class Reconciliate extends Base\Core
      * If not overriden, it fetches the mapping from FileProcessor::FILE_TYPES_MAPPINGS
      *
      * @param  string $mimeType
+     * @return string
      */
-    public function getFileType(string $mimeType)
+    public function getFileType(string $mimeType): string
     {
         return get_key_from_subarray_match(
             $mimeType, FileProcessor::FILE_TYPES_MAPPINGS);
@@ -240,7 +241,7 @@ class Reconciliate extends Base\Core
      */
     protected function getTypeName($fileName)
     {
-        return null;
+        return;
     }
 
     /**
@@ -280,9 +281,7 @@ class Reconciliate extends Base\Core
 
     /**
      * Sets the subtype for the batch based on the reconciliation sub type. However if
-     * the file is an excel, we always set the sub_type to combined, as excel can have
-     * multiple sheets for payment / refund recon etc, however we process it in a single
-     * batch. Later we can do something like split different sheets into separate files.
+     * the file is an excel with multiple sheets, we always set the sub_type to combined.
      *
      * @param  Batch\Entity $batch              Batch entity for recon
      * @param  string       $reconciliationType Recon type determined for the file
@@ -293,8 +292,9 @@ class Reconciliate extends Base\Core
                             string $reconciliationType,
                             array $extraDetails)
     {
-        if ($extraDetails[FileProcessor::FILE_DETAILS]
-                [FileProcessor::FILE_TYPE] === FileProcessor::EXCEL)
+        if (($extraDetails[FileProcessor::FILE_DETAILS]
+                [FileProcessor::FILE_TYPE] === FileProcessor::EXCEL) and
+            ($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_COUNT] > 0))
         {
             $batch->setSubType(self::COMBINED);
         }

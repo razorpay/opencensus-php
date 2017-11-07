@@ -186,7 +186,10 @@ class CombinedReconciliate extends Foundation\SubReconciliate
 
     /**
      * For the given reconciliation request for the gateway, we maintain a map of
-     * the subreconciliator objects created for a given type so that they can be reused
+     * the subreconciliator objects created for a given type so that they can be reused.
+     * This is required because in combined reconciliate, we call the individual
+     * payment / refund reconciliators for each row. Hence we need to preserve these
+     * objects to get the success and failure count at the end of processing.
      *
      * @param  string $entityType Recon entity type
      */

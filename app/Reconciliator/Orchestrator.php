@@ -46,13 +46,13 @@ class Orchestrator extends Base\Core
     protected $sharedMerchant;
     protected $batchCore;
 
-    public function __construct(string $gateway)
+    public function __construct(string $gateway, $gatewayReconciliator)
     {
         parent::__construct();
 
         $this->gateway = $gateway;
 
-        $this->setGatewayReconciliatorObject();
+        $this->gatewayReconciliator = $gatewayReconciliator;
 
         $this->increaseAllowedSystemLimits();
 
@@ -215,14 +215,6 @@ class Orchestrator extends Base\Core
         return $result;
     }
 
-    protected function setGatewayReconciliatorObject()
-    {
-        $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' .
-            $this->gateway . '\\' . 'Reconciliate';
-
-        $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
-    }
-
     protected function shouldSkipFile(array $fileDetails): bool
     {
         // Checks if this particular file needs to be excluded for the gateway
@@ -294,6 +286,8 @@ class Orchestrator extends Base\Core
         array $fileDetails,
         array & $allFilesDetails)
     {
+        $this->trace->traceException($ex);
+
         $this->messenger->raiseReconAlert(
             [
                 'trace_code'   => TraceCode::RECON_BATCH_CREATION_FAILED,

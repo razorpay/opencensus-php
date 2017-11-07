@@ -133,7 +133,9 @@ class Service extends Base\Service
 
         $gateway = $requestProcessor->getGateway();
 
-        $orchestrator = new Orchestrator($gateway);
+        $gatewayReconciliator = $requestProcessor->getGatewayReconciliator();
+
+        $orchestrator = new Orchestrator($gateway, $gatewayReconciliator);
 
         //
         // This is a temporary logic. Plan is to move all gateay reconciliation

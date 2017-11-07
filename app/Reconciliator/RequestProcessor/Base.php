@@ -73,6 +73,11 @@ class Base extends Core
         return $this->gateway;
     }
 
+    public function getGatewayReconciliator()
+    {
+        return $this->gatewayReconciliator;
+    }
+
     protected function setGatewayReconciliatorObject()
     {
         $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' .
@@ -139,7 +144,7 @@ class Base extends Core
                 }
                 catch (\Exception $ex)
                 {
-                    $this->handleZipProcessingException($ex);
+                    $this->handleZipProcessingException($ex, $zipFilesDetails);
                 }
             }
             else
@@ -156,7 +161,7 @@ class Base extends Core
     /**
      * @param  \Exception $ex
      */
-    protected function handleZipProcessingException(\Exception $ex)
+    protected function handleZipProcessingException(\Exception $ex, array $zipFilesDetails)
     {
         $this->trace->traceException($ex);
 

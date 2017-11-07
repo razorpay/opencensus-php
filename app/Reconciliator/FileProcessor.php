@@ -26,6 +26,7 @@ class FileProcessor
     const FILE_TYPE               = 'file_type';
     const FILE_DETAILS            = 'file_details';
     const SHEET_NAME              = 'sheet_name';
+    const SHEET_COUNT             = 'sheet_count';
 
     const ZIP_EXTENSION           = 'zip';
 

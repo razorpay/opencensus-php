@@ -98,20 +98,19 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_ID,
     ];
 
-    protected $publicSetters = [
+    protected $publicSetters = array(
         self::ID,
         self::ENTITY,
         self::ENTITY_ID,
-        self::SETTLEMENT_ID
-    ];
+        self::SETTLEMENT_ID);
 
-    protected $dates = [
+    protected $dates = array(
         self::CREATED_AT,
         self::UPDATED_AT,
         self::SETTLED_AT,
-    ];
+    );
 
-    protected $defaults = [
+    protected $defaults = array(
         self::GRATIS                => false,
         self::GATEWAY_SETTLED_AT    => null,
         self::GATEWAY_AMOUNT        => null,
@@ -131,15 +130,15 @@ class Entity extends Base\PublicEntity
         self::FEE_MODEL             => Merchant\FeeModel::NA,
         self::FEE_BEARER            => Merchant\FeeBearer::NA,
         self::CREDIT_TYPE           => CreditType::DEFAULT,
-    ];
+    );
 
-    protected $amounts = [
+    protected $amounts = array(
         self::AMOUNT,
         self::DEBIT,
         self::CREDIT,
         self::FEE,
         self::TAX,
-    ];
+    );
 
     protected $casts = [
         self::CREDIT              => 'int',
@@ -274,63 +273,78 @@ class Entity extends Base\PublicEntity
 
 /* ----------------------------- Accessors -----------------------------------*/
 
-    //
-    // These accessor methods are added as we want to convert null to the desired
-    // type if a value is null. null values are not handled by casts
-    //
-
-    protected function getApiFeeAttribute($apiFee)
+    protected function getApiFeeAttribute()
     {
-        return (int) $apiFee;
+        return (int) $this->attributes[self::API_FEE];
     }
 
-    protected function getGatewayFeeAttribute($gatewayFee)
+    protected function getGatewayFeeAttribute()
     {
-        return (int) $gatewayFee;
+        return (int) $this->attributes[self::GATEWAY_FEE];
     }
 
-    protected function getGatewayServiceTaxAttribute($gatewayServiceTax)
+    protected function getGatewayServiceTaxAttribute()
     {
-        return (int) $gatewayServiceTax;
+        return (int) $this->attributes[self::GATEWAY_SERVICE_TAX];
     }
 
-    protected function getBalanceAttribute($balance)
+    protected function getBalanceAttribute()
     {
-        return (int) $balance;
+        return (int) $this->attributes[self::BALANCE];
     }
 
-    protected function getEscrowBalanceAttribute($escrowBalance)
+    protected function getEscrowBalanceAttribute()
     {
-        return (int) $escrowBalance;
+        return (int) $this->attributes[self::ESCROW_BALANCE];
     }
 
-    protected function getTaxAttribute($tax)
+    protected function getSettledAttribute()
     {
-        return (int) $tax;
+        return (bool) $this->attributes[self::SETTLED];
     }
 
-    protected function getSettledAttribute($settled)
+    protected function getSettledAtAttribute()
     {
-        return (bool) $settled;
+        $settledAt = $this->attributes[self::SETTLED_AT];
+
+        if ($settledAt === null)
+        {
+            return null;
+        }
+
+        return (int) $settledAt;
     }
 
-    protected function getFeeBearerAttribute($bearer)
+    protected function getGatewaySettledAtAttribute()
     {
-        return Merchant\FeeBearer::getBearerStringForValue($bearer);
+        $gatewaySettledAt = $this->attributes[self::GATEWAY_SETTLED_AT];
+
+        if ($gatewaySettledAt === null)
+        {
+            return null;
+        }
+
+        return (int) $gatewaySettledAt;
     }
 
-    protected function getFeeModelAttribute($feeModel)
+    protected function getTaxAttribute()
     {
-        return Merchant\FeeModel::getFeeModelStringForValue($feeModel);
+        return (int) $this->attributes[self::TAX];
     }
-
-/* --------------------------- End Accessors ---------------------------------*/
-
-/* --------------------------- Mutators --------------------------------------*/
 
     protected function setFeeBearerAttribute($bearer)
     {
         $this->attributes[self::FEE_BEARER] = Merchant\FeeBearer::getValueForBearerString($bearer);
+    }
+
+    protected function getFeeBearerAttribute()
+    {
+        return Merchant\FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
+    }
+
+    protected function getFeeModelAttribute()
+    {
+        return Merchant\FeeModel::getFeeModelStringForValue($this->attributes[self::FEE_MODEL]);
     }
 
     protected function setFeeModelAttribute($feeModel)
@@ -338,7 +352,8 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::FEE_MODEL] = Merchant\FeeModel::getValueForFeeModelString($feeModel);
     }
 
-/* ----------------------------- Mutators end --------------------------------*/
+/* --------------------------- End Accessors ---------------------------------*/
+
 
     public function getGateway()
     {
@@ -574,7 +589,7 @@ class Entity extends Base\PublicEntity
 
     public function isSettled()
     {
-        return $this->getAttribute(self::SETTLED);
+        return $this->getSettledAttribute();
     }
 
     public function isFeeBearerCustomer()

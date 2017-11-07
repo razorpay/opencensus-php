@@ -52,13 +52,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
     }
 
     /**
-     * This is the start of the actual reconciliation for refunds.
-     * Reconciliation is done for each row in the file content.
-     * Validates payment status.
-     * Sets the reconciled_at.
+     * Runs the same reconciliation process, though here we always update the batch with recon
+     * summary, regardless of any exception thrown during the process.
      *
-     * @param array $fileContents
-     * @return array
+     * @param array          $fileContents      file contents to be processed
+     * @param Batch\Entity   $batch             Batch entity for the current run
      */
     public function startReconciliation($fileContents)
     {

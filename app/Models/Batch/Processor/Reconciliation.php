@@ -221,9 +221,12 @@ class Reconciliation extends Base
 
         $excelArray = $this->converter->convertExcelToArray($inputFileDetails, $sheetNames, $startRow);
 
+        $sheetCount = count(array_keys($excelArray));
+
         foreach ($excelArray as $sheetName => $sheetData)
         {
             $inputFileDetails[FileProcessor::SHEET_NAME] = $sheetName;
+            $inputFileDetails[FileProcessor::SHEET_COUNT] = $sheetCount;
 
             $totalCount += count($sheetData);
 
