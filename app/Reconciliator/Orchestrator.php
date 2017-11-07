@@ -9,6 +9,7 @@ use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Base\JitValidator;
 use RZP\Base\RuntimeManager;
 use RZP\Models\FileStore\Format;
 use Razorpay\Trace\Logger as Trace;
@@ -24,6 +25,8 @@ class Orchestrator extends Base\Core
      */
     const EXTRA_DETAILS    = 'extra_details';
     const ATTACHMENT_COUNT = 'attachment_count';
+    const FORCE_UPDATE     = 'force_update';
+    const MANUAL_DETAILS   = 'manual_details';
 
     /**************************
      * Email details constants
@@ -124,6 +127,7 @@ class Orchestrator extends Base\Core
     protected $allFilesContents;
     protected $allFilesDetails;
     protected $emailDetails;
+    protected $manualDetails;
 
     /********************
      * Instance objects
@@ -300,13 +304,13 @@ class Orchestrator extends Base\Core
         // Also, adds attachment-count to input, if not present already.
         $this->validator->validateAttachments($input);
 
-        $inputDetails = $this->getManualInputDetails($input);
+        $this->manualDetails = $this->getManualInputDetails($input);
 
         // Figures out the gateway and
         // sets the gateway reconciliator object for the orchestrator
-        $this->setGatewayForManual($inputDetails);
+        $this->setGatewayForManual();
 
-        $allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input);
+        $allFilesDetails = $this->getFileDetailsFromInput($this->manualDetails, $input);
 
         return $allFilesDetails;
     }
@@ -482,20 +486,35 @@ class Orchestrator extends Base\Core
     }
 
     /**
-     * Gets the required details from the input, structured.
+     * Validates and Gets the required details from the input, structured.
      * This includes the gateway for which the reconciliation
      * needs to be done and the number of attachments. This is an
      * optional parameter.
+     * Check if force-update is passed, otherwise set it to []
+     * The gateway should be present in the GATEWAY_SENDER_MAPPING list.
      *
      * @param array $input
      * @return array Structured input details
      */
     protected function getManualInputDetails(array $input)
     {
+        $inputDetailsRules = [
+            self::ATTACHMENT_COUNT    => 'required|integer|min:0|max:10',
+            self::GATEWAY             => 'required|in:' . implode(',', array_keys(self::GATEWAY_SENDER_MAPPING)),
+            self::FORCE_UPDATE        => 'sometimes|array',
+            self::FORCE_UPDATE . '.*' => 'sometimes|in:arn'
+        ];
+
         $inputDetails = [
             self::ATTACHMENT_COUNT => $input['attachment-count'],
             self::GATEWAY          => $input['gateway'],
+            self::FORCE_UPDATE     => $input['force_update'] ?? []
         ];
+
+        (new JitValidator)->rules($inputDetailsRules)
+                          ->caller($this)
+                          ->input($inputDetails)
+                          ->validate();
 
         return $inputDetails;
     }
@@ -536,26 +555,15 @@ class Orchestrator extends Base\Core
     }
 
     /**
-     * Uses the gateway input sent in the route, to set the gateway
-     * reconciliator object for the class. The gateway should be
-     * present in the GATEWAY_SENDER_MAPPING list.
+     * Uses the gateway input sent in the route, to set
+     * the gateway reconciliator object for the class.
      *
      * @param array $inputDetails
-     * @throws Exception\ReconciliationException
      */
-    protected function setGatewayForManual(array $inputDetails)
+    protected function setGatewayForManual()
     {
         // In manual, the input params should contain what gateway is it.
-        $gateway = $inputDetails[self::GATEWAY];
-
-        // This is a validation for the value of the gateway input received.
-        if (array_key_exists($gateway, self::GATEWAY_SENDER_MAPPING) === false)
-        {
-            throw new Exception\ReconciliationException(
-                'Invalid gateway param. Not in the allowed list of gateway params.',
-                ['gateway' => $gateway]
-            );
-        }
+        $gateway = $this->manualDetails[self::GATEWAY];
 
         // Sets the gateway reconciliator object for the orchestrator.
         $this->setGatewayReconciliatorObject($gateway);
@@ -966,6 +974,8 @@ class Orchestrator extends Base\Core
         $arrayContent[self::EXTRA_DETAILS][FileProcessor::FILE_DETAILS] = $fileDetails;
 
         $arrayContent[self::EXTRA_DETAILS][self::EMAIL_DETAILS] = $this->emailDetails;
+
+        $arrayContent[self::EXTRA_DETAILS][self::MANUAL_DETAILS] = $this->manualDetails;
     }
 
     /**

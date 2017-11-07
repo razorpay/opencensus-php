@@ -80,6 +80,9 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     public function runReconciliate($row, $extraDetails)
     {
+        // TODO: Set extraDetails while creating the object, since it doesn't change with row
+        $this->extraDetails = $extraDetails;
+
         $rowDetails = $this->getRowDetailsStructured($row);
 
         if (empty($rowDetails) === true)
@@ -456,24 +459,28 @@ class RefundReconciliate extends Foundation\SubReconciliate
             {
                 //
                 // If the ARN in DB doesn't match the ARN from row,
-                // there are two possibilities
+                // there are three possibilities
                 // - the value is NA
                 //   don't do anything
                 //   just continue and override it after this block.
-                // - the value is not NA
+                // - the value is not NA and force update is disabled
                 //   raise an alert and return.
+                // - If force update enabled, let recon
                 //
-                $this->messenger->raiseReconAlert(
-                    [
-                        'trace_code'    => TraceCode::RECON_MISMATCH,
-                        'message'       => 'Arn number for the refund entity does not match',
-                        'row'           => $rowDetails,
-                        'refund_id'     => $refund->getId(),
-                        'gateway'       => get_called_class(),
-                        'refund_arn'    => $currentArn,
-                    ]);
+                if ($this->shouldForceUpdate(BaseReconciliate::ARN) === false)
+                {
+                    $this->messenger->raiseReconAlert(
+                        [
+                            'trace_code'    => TraceCode::RECON_MISMATCH,
+                            'message'       => 'Arn number for the refund entity does not match',
+                            'row'           => $rowDetails,
+                            'refund_id'     => $refund->getId(),
+                            'gateway'       => get_called_class(),
+                            'refund_arn'    => $currentArn,
+                        ]);
 
-                return;
+                    return;
+                }
             }
         }
 

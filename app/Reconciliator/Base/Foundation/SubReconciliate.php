@@ -2,11 +2,12 @@
 
 namespace RZP\Reconciliator\Base\Foundation;
 
-use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
-use RZP\Exception\LogicException;
-use RZP\Models\Payment;
-use RZP\Models\Base;
 use App;
+use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Exception\LogicException;
+use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class SubReconciliate
 {
@@ -38,6 +39,14 @@ class SubReconciliate
      * @var $failures
      */
     protected $failures;
+
+    /**
+     * Contains details for files, email or manual details
+     * Manual details is being used to check for force_update
+     *
+     * @var $extraDetails
+     */
+    protected $extraDetails;
 
     protected function persistReconciledAt($entity)
     {
@@ -145,5 +154,21 @@ class SubReconciliate
     protected function getGatewaySettledAt(array $row)
     {
         return null;
+    }
+
+    /**
+     * Method check if FORCE_UPDATE for argument fields
+     * is passed in MANUAL_DETAILS.
+     *
+     * @param string $field
+     * @return bool
+     */
+    protected function shouldForceUpdate(string $field) : bool
+    {
+        $forceUpdatable = array_get($this->extraDetails,
+                                    Orchestrator::MANUAL_DETAILS. '.' .Orchestrator::FORCE_UPDATE,
+                                    []);
+
+        return in_array($field, $forceUpdatable, true);
     }
 }
