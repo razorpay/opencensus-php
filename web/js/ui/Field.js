@@ -11,13 +11,21 @@ function toggleChecked(e) {
   sib.checked = !sib.checked;
 }
 
-export default function Field({ tag = 'input', label, infoMsg, ...props }) {
+export default function Field({
+  tag = 'input',
+  label,
+  infoMsg,
+  required,
+  ...props
+}) {
   let Tag = tag;
   return (
     <div class="field">
-      <label onClick={focusInput}>{label}</label>
+      <label class={required ? 'required' : ''} onClick={focusInput}>
+        {label}
+      </label>
       <Tag {...props} />
-      <div class="info">{infoMsg}</div>
+      {infoMsg && <div class="info">{infoMsg}</div>}
     </div>
   );
 }
@@ -31,20 +39,44 @@ export const DataListField = _ => <Field {..._} tag="datalist" />;
 export const FromField = _ => <DateTimeField {..._} name="from" label="From" />;
 export const ToField = _ => <DateTimeField {..._} name="to" label="To" />;
 
-export function CheckField({ label, ...props }) {
+export function TimeField({ label, required, ...props }) {
   return (
     <div class="field">
-      <label onClick={toggleChecked}>{label}</label>
+      {label && (
+        <label class={required ? 'required' : ''} onClick={toggleChecked}>
+          {label}
+        </label>
+      )}
+      <input type="time" name="start_at_time" {...props} />
+    </div>
+  );
+}
+
+export function CheckField({ label, required, ...props }) {
+  return (
+    <div class="field">
+      <label class={required ? 'required' : ''} onClick={toggleChecked}>
+        {label}
+      </label>
       <input {...props} type="checkbox" />
     </div>
   );
 }
 
-export function SwitchField({ label, ...props }) {
+export function SwitchField({
+  label,
+  disabledLabel,
+  enabledLabel,
+  required,
+  ...props
+}) {
   return (
     <div class="field">
-      <label>{label}</label>
+      <label class={required ? 'required' : ''}>{label}</label>
+
+      {disabledLabel && <span>{disabledLabel}</span>}
       <Switch knob {...props} />
+      {enabledLabel && <span>{enabledLabel}</span>}
     </div>
   );
 }

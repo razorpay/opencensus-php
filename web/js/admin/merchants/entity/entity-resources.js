@@ -44,6 +44,97 @@ function _getPricingPlansFields() {
   ];
 }
 
+// mapping used in multiple files
+const utilMapping = {
+  network: {
+    AMEX: 'American Express',
+    DICL: 'Diners Club',
+    DISC: 'Discover',
+    JCB: 'JCB',
+    MAES: 'Maestro',
+    MC: 'MasterCard',
+    RUPAY: 'RuPay',
+    VISA: 'Visa',
+    UNP: 'Union Pay',
+  },
+  method: {
+    card: 'Card',
+    wallet: 'Wallet',
+    netbanking: 'Netbanking',
+    upi: 'UPI',
+    emi: 'EMI',
+  },
+  gatewayAcquirer: {
+    axis: 'Axis',
+    hdfc: 'HDFC',
+    amex: 'Amex',
+    icic: 'ICICI',
+  },
+  gatewayCard: {
+    first_data: 'First Data',
+    hdfc: 'FSS',
+    axis_migs: 'Axis Migs',
+    cybersource: 'Cybersource',
+    amex: 'Amex',
+    sharp: 'Sharp',
+  },
+  gatewayEmi: {
+    amex: 'Amex',
+    hdfc: 'FSS',
+    first_data: 'First Data',
+    sharp: 'Sharp',
+  },
+  gatewayNB: {
+    netbanking_hdfc: 'HDFC Netbanking',
+    netbanking_corporation: 'Corporation Netbanking',
+    netbanking_kotak: 'Kotak Netbanking',
+    netbanking_icici: 'ICICI Netbanking',
+    netbanking_axis: 'Axis Netbanking',
+    netbanking_federal: 'Federal Netbanking',
+    netbanking_airtel: 'Airtel Netbanking',
+    netbanking_rbl: 'RBL netbanking',
+    netbanking_indusind: 'IndusInd netbanking',
+    billdesk: 'Billdesk',
+    ebs: 'Ebs',
+    sharp: 'Sharp',
+  },
+  gatewayWallet: {
+    mobikwik: 'Mobikwik',
+    wallet_airtelmoney: 'Airtelmoney',
+    wallet_freecharge: 'Freecharge',
+    wallet_jiomoney: 'Jiomoney',
+    wallet_olamoney: 'Olamoney',
+    wallet_payumoney: 'Payumoney',
+    wallet_payzapp: 'Payzapp',
+    wallet_mpesa: 'Mpesa',
+    wallet_sbibuddy: 'SbiBuddy',
+    wallet_openwallet: 'Openwallet',
+    sharp: 'Sharp',
+  },
+  gatewayUpi: {
+    upi_idfc: 'IDFC UPI',
+    upi_icici: 'ICICI UPI',
+    upi_mindgate: 'Mindgate/HDFC UPI',
+    sharp: 'Sharp',
+  },
+  wallet: {
+    payzapp: 'Payzapp',
+    mobikwik: 'Mobikwik',
+    payumoney: 'Payumoney',
+    olamoney: 'Olamoney',
+    airtelmoney: 'Airtelmoney',
+    freecharge: 'Freecharge',
+    jiomoney: 'Jiomoney',
+    openwallet: 'Openwallet',
+    mpesa: 'Mpesa',
+    paytm: 'Paytm',
+  },
+};
+
+export function getMappingFor(key) {
+  return utilMapping[key];
+}
+
 /*---------------------------------------- UI resource --------------------------------------------*/
 export function getDetailsViewMap(merchant) {
   const { details, terminals, pricingPlans, bankDetails, features } = merchant;
