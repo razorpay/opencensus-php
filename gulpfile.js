@@ -48,6 +48,7 @@ function iconFont(cb) {
 }
 
 gulp.task('watch', () => {
+  createBaseDir();
   iconFont(compileCss);
   gulp.watch('web/css/**/*.styl', compileCss);
   gulp.watch('web/icons/*.svg', _ => iconFont(compileCss));

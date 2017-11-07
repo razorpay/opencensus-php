@@ -36,9 +36,9 @@ export default class PlanList extends Component {
               Add New
             </div>
           </header>
-          <Form onSubmit={this.onSubmit} class="filters">
+          <div class="filters">
             <Field name="q" label="Search" />
-          </Form>
+          </div>
         </div>
         <PageTable
           model={this.collection}

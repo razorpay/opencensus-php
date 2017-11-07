@@ -9,7 +9,7 @@ const rows = Object.keys(actionModals).map(key => actionModals[key]);
 export default class AdminActionsList extends Component {
   render() {
     return (
-      <div className="box">
+      <div className="limited box">
         <header>Actions</header>
         <Table fields={fields} items={rows} onClick={onClick} />
       </div>

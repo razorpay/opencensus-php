@@ -130,9 +130,11 @@ class ActivityLogModal extends Component {
       [
         'Device',
         item =>
-          `${item.parsed_user_agent.ua.family}(${item.parsed_user_agent.ua
-            .major}.${item.parsed_user_agent.ua.minor}.${item.parsed_user_agent
-            .ua.patch}) ${item.parsed_user_agent.os.family}`,
+          `${item.parsed_user_agent.ua.family}(${
+            item.parsed_user_agent.ua.major
+          }.${item.parsed_user_agent.ua.minor}.${
+            item.parsed_user_agent.ua.patch
+          }) ${item.parsed_user_agent.os.family}`,
       ],
       ['IP address', item => item.ip_address],
       ['Date/Time', item => item.parsed_last_activity],
@@ -208,7 +210,7 @@ export default class Profile extends Component {
     ];
 
     return (
-      <div class="box">
+      <div class="limited box">
         <header>Admin Profile</header>
         <Duplex fields={fields} model={user} />
         {org.auth_type === 'password' && (
