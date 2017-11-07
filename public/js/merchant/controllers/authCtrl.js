@@ -623,7 +623,9 @@ app
 
                   var hostname = parser.hostname || window.location.hostname;
 
-                  if (/^(beta-auth|auth).razorpay.(com|dev)$/.test(hostname)) {
+                  if (
+                    /^(stage-auth|auth).razorpay.(com|dev|in)$/.test(hostname)
+                  ) {
                     window.location.href = parser.href;
                     return false;
                   }
