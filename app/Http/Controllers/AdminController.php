@@ -60,12 +60,12 @@ class AdminController extends Controller
         // If already logged in
         if (Auth::guard('api')->check())
         {
-            $admin = Auth::guard('api')->user();
+            $admin = $this->getAdmin()->getData(true);
 
             return view('admin.index', [
                 'cdn' => \Config::get('app.cdn_dashboard_url'),
                 'org'   => $org,
-                'user'  => $admin,
+                'user'  => $admin['data'],
             ]);
         }
 
