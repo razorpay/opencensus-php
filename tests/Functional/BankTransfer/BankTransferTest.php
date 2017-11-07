@@ -664,6 +664,17 @@ class BankTransferTest extends TestCase
                 'account_number' => '9876543210123456789',
                 'ifsc'           => 'HDFC0000001',
             ],
+            'virtual_account'    => [
+                'name' => "Test Merchant",
+                'entity' => "virtual_account",
+                'status' => "active",
+                'receivers' => [
+                    [
+                        'entity'         => 'bank_account',
+                        'ifsc'           => 'RAZR0000001',
+                    ],
+                ],
+            ],
         ];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
