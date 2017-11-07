@@ -11,17 +11,23 @@ function toggleChecked(e) {
   sib.checked = !sib.checked;
 }
 
-export default function Field({ label, onChange, value, infoMsg, ...props }) {
+export default function Field({ tag = 'input', label, infoMsg, ...props }) {
+  let Tag = tag;
   return (
     <div class="field">
       <label onClick={focusInput}>{label}</label>
-      <input {...props} value={value} onChange={onChange} />
+      <Tag {...props} />
       <div class="info">{infoMsg}</div>
     </div>
   );
 }
 
-export const DateTimeField = props => <Field {...props} type="date" />;
+export const SelectField = _ => <Field {..._} tag="select" />;
+export const TextAreaField = _ => <Field {..._} tag="textarea" />;
+export const FileField = _ => <Field {..._} type="file" />;
+export const DateTimeField = _ => <Field {..._} type="date" />;
+export const DataListField = _ => <Field {..._} tag="datalist" />;
+
 export const FromField = _ => <DateTimeField {..._} name="from" label="From" />;
 export const ToField = _ => <DateTimeField {..._} name="to" label="To" />;
 
@@ -87,24 +93,6 @@ export class Switch extends Component {
   }
 }
 
-export function SelectField({ label, children, ...props }) {
-  return (
-    <div class="field select-field">
-      <label onClick={focusInput}>{label}</label>
-      <select {...props}>{children}</select>
-    </div>
-  );
-}
-
-export function TextAreaField({ label, children, ...props }) {
-  return (
-    <div class="field text-area-field">
-      <label onClick={focusInput}>{label}</label>
-      <textarea {...props}>{children}</textarea>
-    </div>
-  );
-}
-
 export function SelectMode({ defaultValue }) {
   return (
     <SelectField name="mode" label="Mode" defaultValue={defaultValue}>
@@ -124,15 +112,5 @@ export function SelectMethod(props) {
         </option>
       ))}
     </SelectField>
-  );
-}
-
-export function FileField({ label, many = false, infoMsg, ...props }) {
-  return (
-    <div className="field file-field">
-      <label onClick={focusInput}>{label}</label>
-      <input type="file" multiple={many} {...props} />
-      <div class="info">{infoMsg}</div>
-    </div>
   );
 }
