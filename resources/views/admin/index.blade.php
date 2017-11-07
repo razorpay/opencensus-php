@@ -1,7 +1,7 @@
 @include('partials/head')
 <script>
-  var org = {!! json_encode($org['data']) !!};
-  var user = {!! json_encode($user['data']) !!};
+  var org = {!! json_encode($org) !!};
+  var user = {!! json_encode($user) !!};
 </script>
 </head>
 <body>
