@@ -40,12 +40,24 @@ export default class Level extends Component {
   };
 
   render() {
-    let { level, allRoles, onRoleSelect, onOpTypeUpdate } = this.props;
+    let {
+      level,
+      allRoles,
+      onRoleSelect,
+      onOpTypeUpdate,
+      onLevelDelete,
+    } = this.props;
 
     return (
-      <div class="box">
+      <div class="box level-container">
         <header>
-          <label htmlFor="">Step {level.level}</label>
+          Step {level.level}
+          <div
+            class="link danger level-delete-btn"
+            onClick={e => onLevelDelete(level.level)}
+          >
+            x
+          </div>
         </header>
         <SelectField
           label="Operation Type"

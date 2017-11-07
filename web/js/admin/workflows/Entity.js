@@ -63,13 +63,16 @@ export default class EditWorkflow extends Component {
     this.setState({ levels });
   };
 
-  updateLevel = data => {
+  deleteLevel = levelNum => {
     let { levels } = this.state;
-    let idx = levels.findIndex(l => l.level === data.level);
 
-    levels[idx] = data;
-
-    this.setState(levels);
+    levels = levels.filter(l => l.level !== levelNum);
+    //remap levelnum once deleted
+    levels = levels.map((l, idx) => {
+      l.level = idx + 1;
+      return l;
+    });
+    this.setState({ levels });
   };
 
   selectRole = (e, levelNum) => {
@@ -194,9 +197,9 @@ export default class EditWorkflow extends Component {
                 allRoles={allRoles}
                 onRoleSelect={this.selectRole}
                 onDeleteRole={this.deleteRole}
-                onLevelUpdate={this.updateLevel}
                 onOpTypeUpdate={this.updateOpType}
                 onReviewerCountUpdate={this.updateReviewerCount}
+                onLevelDelete={this.deleteLevel}
               />
             ))
           : null}
