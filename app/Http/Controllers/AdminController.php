@@ -63,7 +63,7 @@ class AdminController extends Controller
             $admin = Auth::guard('api')->user();
 
             return view('admin.index', [
-                'entry' => \Config::get('app.entry_asset_url'),
+                'cdn' => \Config::get('app.cdn_dashboard_url'),
                 'org'   => $org,
                 'user'  => $admin,
             ]);
