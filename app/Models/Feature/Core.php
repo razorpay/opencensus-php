@@ -379,7 +379,7 @@ class Core extends Base\Core
 
             $inputKeys = $input[$featureName];
 
-            foreach($inputKeys as $inputKey => $inputValue)
+            foreach ($inputKeys as $inputKey => $inputValue)
             {
                 $settings[$inputKey] = $inputValue;
             }
