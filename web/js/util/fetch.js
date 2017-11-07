@@ -42,10 +42,6 @@ export function adminPut(data, customUrl) {
   });
 }
 
-export function adminUserConfirm(params, config) {
-  return axios.post('/admin/users/confirm', params);
-}
-
 export function adminFormUpload(form, url) {
   //Let axios decide which "Content-Type" to send
   let fData = createFormData(form);

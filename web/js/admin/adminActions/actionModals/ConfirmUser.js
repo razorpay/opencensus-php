@@ -3,8 +3,8 @@ import Form from 'ui/Form';
 import Field from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 
-import { adminUserConfirm } from 'util/fetch';
-import { notifyError, notifySuccess, closeModal } from 'common/modal';
+import { adminPut } from 'util/fetch';
+import { notifySuccess, closeModal } from 'common/modal';
 
 ConfirmUser.title = 'Confirm User';
 export default function ConfirmUser() {
@@ -17,20 +17,16 @@ export default function ConfirmUser() {
         class="btn"
         pendingClass="small spinner"
         type="submit"
-        onSubmit={data => {
-          data.email = data.email || '';
-          return adminUserConfirm(data)
-            .then(response => {
-              if (response.data.success) {
-                notifySuccess('User confirmed successfully.');
-                closeModal();
-              } else {
-                response.data.errors.map(error => notifyError(error));
-              }
-            })
-            .catch(err => {
-              notifyError(JSON.stringify(err.response.statusText));
-            });
+        onSubmit={body => {
+          let data = { body };
+          data.route_name = 'user_confirm_by_data';
+
+          return adminPut(data).then(response => {
+            if (response) {
+              notifySuccess('User confirmed successfully.');
+              closeModal();
+            }
+          });
         }}
       />
     </Form>
