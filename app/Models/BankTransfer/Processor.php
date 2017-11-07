@@ -42,7 +42,7 @@ class Processor extends VirtualAccount\Processor
      *
      * @return Entity|null
      */
-    public function process($bankTransfer)
+    public function process(Base\PublicEntity $bankTransfer)
     {
         $this->setUtrInTestMode($bankTransfer);
 
