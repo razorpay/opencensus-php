@@ -265,7 +265,7 @@ class Processor extends Base\Core
         if ($this->virtualAccount === null)
         {
             $this->trace->info(
-                TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
+                TraceCode::BANK_TRANSFER_VIRTUAL_ACCOUNT_NOT_FOUND,
                 [
                     'message'      => 'Invalid account number',
                     'bankTransfer' => $bankTransfer->toArray(),
