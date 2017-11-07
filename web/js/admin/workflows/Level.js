@@ -1,64 +1,29 @@
 import React, { Component } from 'react';
-import { SelectField } from 'ui/Field';
+
 import Table from 'ui/Table';
+import { SelectField } from 'ui/Field';
 
 export default class Level extends Component {
-  state = {
-    allRoles: this.props.allRoles || [],
-    approvalCount: 1,
-    level: this.props.level || {},
+  getRoleName = step => {
+    let { allRoles } = this.props;
+    let roleIdx = allRoles.findIndex(a => a.id === step.role_id);
+
+    return allRoles[roleIdx].name;
   };
 
-  updateOpType = e => {
-    this.setState({
-      level: {
-        ...this.state.level,
-        op_type: e.target.value,
-      },
-    });
-  };
+  fields = () => {
+    let { onDeleteRole, onReviewerCountUpdate, level } = this.props;
+    let levelNum = level.level;
 
-  updateApprovalNum = e => {
-    this.setState({
-      approvalCount: e.target.value,
-    });
-  };
-
-  selectRoles = e => {
-    let { allRoles, level } = this.state;
-
-    allRoles.some(a => {
-      if (a.id === e.target.value) {
-        level.steps = level.steps.concat(a);
-        this.setState({
-          level: level,
-          allRoles: this.state.allRoles.filter(q => q.id !== a.id),
-        });
-        return 1;
-      }
-    });
-  };
-
-  deleteRoles = role => {
-    let { allRoles, level } = this.state;
-
-    level.steps = level.steps.filter(s => s.id !== role.id);
-    this.setState({
-      allRoles: this.state.allRoles.concat(role),
-      level: level,
-    });
-  };
-
-  fields = item => {
     return [
-      ['Role', item => item.name],
+      ['Role', item => this.getRoleName(item)],
       [
         'Minimum approvals',
         item => (
           <input
             type="Number"
-            defaultValue={this.state.approvalCount}
-            onChange={this.updateApprovalNum}
+            value={item.reviewer_count}
+            onChange={e => onReviewerCountUpdate(e, item, levelNum)}
             min="1"
           />
         ),
@@ -66,7 +31,7 @@ export default class Level extends Component {
       [
         '',
         item => (
-          <div class="link danger" onClick={e => this.deleteRoles(item)}>
+          <div class="link danger" onClick={e => onDeleteRole(item, levelNum)}>
             Delete
           </div>
         ),
@@ -75,7 +40,8 @@ export default class Level extends Component {
   };
 
   render() {
-    let { allRoles, level } = this.state;
+    let { level, allRoles, onRoleSelect, onOpTypeUpdate } = this.props;
+
     return (
       <div class="box">
         <header>
@@ -84,13 +50,16 @@ export default class Level extends Component {
         <SelectField
           label="Operation Type"
           value={level.op_type}
-          onChange={this.updateOpType}
+          onChange={e => onOpTypeUpdate(e, level.level)}
         >
           <option value="and">AND</option>
           <option value="or">OR</option>
         </SelectField>
 
-        <SelectField label="Add a checker Role." onChange={this.selectRoles}>
+        <SelectField
+          label="Add a checker Role."
+          onChange={e => onRoleSelect(e, level.level)}
+        >
           <option value="" />
           {allRoles.map(role => (
             <option value={role.id} key={role.id}>

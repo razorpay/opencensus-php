@@ -1,45 +1,59 @@
 import React, { Component } from 'react';
-import { openModal } from 'common/modal';
+import { openModal, notifyDone } from 'common/modal';
 import { observer } from 'mobx-react';
-import { adminFetch } from 'util/fetch';
+import { adminFetch, adminPost, adminPut } from 'util/fetch';
 
+import user from 'admin/user';
+import Level from './Level';
 import WorkflowForm from './WorkflowForm';
 
 @observer
 export default class EditWorkflow extends Component {
   state = {
+    id: '',
     name: '',
-    allPerms: [],
-    selectedPerms: [],
-    allRoles: [],
-    selectedRoles: [],
     levels: [],
+    permissions: [],
+    allRoles: [],
+    allPerms: [],
     pending: true,
   };
 
   componentWillMount() {
-    let { model } = this.props;
-    if (!model) {
-      let requests = [
-        adminFetch({ route_name: 'role_get_multiple' }),
-        adminFetch({
-          count: 1000,
-          query_params: { type: 'workflow' },
-          route_name: 'permission_get_multiple',
-        }),
-      ];
+    let { id } = this.props.match.params;
 
-      Promise.all(requests).then(([allRoles, allPerms]) => {
-        this.setState({
-          allPerms: allPerms.items,
-          allRoles: allRoles.items,
-          pending: false,
-        });
-      });
+    let requests = [
+      adminFetch({ route_name: 'role_get_multiple' }),
+      adminFetch({
+        count: 1000,
+        query_params: { type: 'workflow' },
+        route_name: 'permission_get_multiple',
+      }),
+    ];
+
+    if (id !== 'new') {
+      requests.push(
+        adminFetch({
+          route_name: 'workflow_get',
+          url_params: { id },
+        })
+      );
     }
+
+    Promise.all(requests).then(([allRoles, allPerms, workflow = null]) => {
+      this.setState({
+        allPerms: allPerms.items,
+        allRoles: allRoles.items,
+        ...(id !== 'new' && { id }),
+        ...(workflow && { name: workflow.name }),
+        ...(workflow && { permissions: workflow.permissions }),
+        ...(workflow && { levels: workflow.levels }),
+        pending: false,
+      });
+    });
   }
 
-  addSteps = () => {
+  addLevel = () => {
     let levels = [...this.state.levels];
     levels.push({
       op_type: 'and',
@@ -49,11 +63,43 @@ export default class EditWorkflow extends Component {
     this.setState({ levels });
   };
 
+  updateLevel = data => {
+    let { levels } = this.state;
+    let idx = levels.findIndex(l => l.level === data.level);
+
+    levels[idx] = data;
+
+    this.setState(levels);
+  };
+
+  selectRole = (e, levelNum) => {
+    let { allRoles, levels } = this.state;
+    let idx = levels.findIndex(l => l.level === levelNum);
+    let roleIdx = allRoles.findIndex(aRole => aRole.id === e.target.value);
+
+    levels[idx].steps.push({
+      role_id: allRoles[roleIdx].id,
+      reviewer_count: 1,
+    });
+
+    this.setState({ levels });
+  };
+
+  deleteRole = (step, levelNum) => {
+    let { levels } = this.state;
+    let idx = levels.findIndex(l => l.level === levelNum);
+
+    levels[idx].steps = levels[idx].steps.filter(
+      s => s.role_id !== step.role_id
+    );
+    this.setState({ levels });
+  };
+
   selectPerms = e => {
     this.state.allPerms.some(p => {
       if (p.id === e.target.value) {
         this.setState({
-          selectedPerms: this.state.selectedPerms.concat(p),
+          permissions: this.state.permissions.concat(p),
           allPerms: this.state.allPerms.filter(q => q.id !== p.id),
         });
         return 1;
@@ -64,34 +110,69 @@ export default class EditWorkflow extends Component {
   deletePerms = perm => {
     this.setState({
       allPerms: this.state.allPerms.concat(perm),
-      selectedPerms: this.state.selectedPerms.filter(q => q.id !== perm.id),
+      permissions: this.state.permissions.filter(q => q.id !== perm.id),
     });
   };
 
-  selectRoles = (e, levelIdx) => {
-    let levels = [...this.state.levels];
+  updateReviewerCount = (e, step, levelNum) => {
+    let { levels } = this.state;
+    let idx = levels.findIndex(l => l.level === levelNum);
+    let stepIdx = levels[idx].steps.findIndex(s => s.role_id === step.role_id);
 
-    this.state.allRoles.some(a => {
-      if (a.id === e.target.value) {
-        levels[levelIdx].steps = levels[levelIdx].steps.concat(a);
-        this.setState({
-          levels: levels,
-          allRoles: this.state.allRoles.filter(q => q.id !== a.id),
-        });
-        return 1;
-      }
-    });
+    levels[idx].steps[stepIdx].reviewer_count = e.target.value;
+
+    this.setState({ levels });
   };
 
-  deleteRoles = role => {
-    this.setState({
-      allRoles: this.state.allRoles.concat(perm),
-      selectedRoles: this.state.selectedRoles.filter(q => q.id !== perm.id),
+  updateOpType = (e, levelNum) => {
+    let { levels } = this.state;
+    let idx = levels.findIndex(level => level.level === levelNum);
+
+    levels[idx].op_type = e.target.value;
+    this.setState({ levels });
+  };
+
+  save = body => {
+    let { id } = this.props.match.params;
+    let data = { body };
+
+    data.body.permissions = this.state.permissions;
+    data.body.levels = this.state.levels.map(l => {
+      l.steps = l.steps.map(s => ({
+        role_id: s.role_id,
+        reviewer_count: s.reviewer_count,
+      }));
+      return l;
     });
+
+    data.body.permissions = this.state.permissions.map(s => s.id);
+
+    if (id !== 'new') {
+      data.route_name = 'workflow_update';
+      data.url_params = {
+        id,
+      };
+
+      return adminPut(data).then(response => {
+        if (response) {
+          notifyDone();
+        }
+      });
+    } else {
+      data.body.org_id = user.org_id;
+      data.route_name = 'workflow_create';
+
+      return adminPost(data).then(response => {
+        if (response) {
+          notifyDone();
+        }
+      });
+    }
   };
 
   render() {
     let { model } = this.props;
+    let { levels, allRoles } = this.state;
 
     if (this.state.pending) {
       return <div class="spinner" />;
@@ -100,10 +181,26 @@ export default class EditWorkflow extends Component {
     return (
       <WorkflowForm
         {...this.state}
-        onStepsAdd={this.addSteps}
         onSelectPerms={this.selectPerms}
         onDeletePerms={this.deletePerms}
-      />
+        onLevelAdd={this.addLevel}
+        onSubmit={this.save}
+      >
+        {levels.length
+          ? levels.map((level, idx) => (
+              <Level
+                key={idx}
+                level={level}
+                allRoles={allRoles}
+                onRoleSelect={this.selectRole}
+                onDeleteRole={this.deleteRole}
+                onLevelUpdate={this.updateLevel}
+                onOpTypeUpdate={this.updateOpType}
+                onReviewerCountUpdate={this.updateReviewerCount}
+              />
+            ))
+          : null}
+      </WorkflowForm>
     );
   }
 }

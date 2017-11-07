@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import Field, { SelectField } from 'ui/Field';
-import Table from 'ui/Table';
 
-import Level from './Level';
+import Form from 'ui/Form';
+import Table from 'ui/Table';
+import AsyncButton from 'ui/AsyncButton';
+import Field, { SelectField } from 'ui/Field';
 
 export default class WorkflowForm extends Component {
   permFields = item => {
@@ -22,48 +23,51 @@ export default class WorkflowForm extends Component {
 
   render() {
     let {
-      levels,
+      id,
+      name,
       allPerms,
-      allRoles,
-      selectedPerms,
+      permissions,
       onSelectPerms,
-      onStepsAdd,
+      onLevelAdd,
+      onSubmit,
+      children,
     } = this.props;
 
     return (
       <div class="workflow-container box">
-        <header>Create Workflow:</header>
-        {/* <header>{model ? "Edit" : "Create"} Workflow</header> */}
-        <div class="split">
-          <Field label="Workflow Name" name="name" />
-          <SelectField label="Actions List" onChange={onSelectPerms} value="">
-            <option value="" />
-            {allPerms.map(perm => (
-              <option value={perm.id} key={perm.id}>
-                {perm.name}
-              </option>
-            ))}
-          </SelectField>
-          {selectedPerms.length ? (
-            <Table
-              items={selectedPerms}
-              fields={this.permFields()}
-              bordered={true}
+        <Form onSubmit={onSubmit}>
+          <header>
+            {id ? `Edit - ${id}` : 'Create Workflow'}
+            <div class="btn" onClick={onLevelAdd}>
+              + Add a Step
+            </div>
+            <AsyncButton
+              text="Save Changes"
+              class="btn"
+              pendingClass="small spinner"
+              onSubmit={onSubmit}
             />
-          ) : null}
-        </div>
-        <div class="split">
-          <div class="level-container" />
-          <div class="btn" onClick={onStepsAdd}>
-            + Add a Step
+          </header>
+          <div class="split">
+            <Field label="Workflow Name" name="name" defaultValue={name} />
+            <SelectField label="Actions List" onChange={onSelectPerms} value="">
+              <option value="" />
+              {allPerms.map(perm => (
+                <option value={perm.id} key={perm.id}>
+                  {perm.name}
+                </option>
+              ))}
+            </SelectField>
+            {permissions.length ? (
+              <Table
+                items={permissions}
+                fields={this.permFields()}
+                bordered={true}
+              />
+            ) : null}
           </div>
-          <div class="btn">Save Changes</div>
-          {levels.length
-            ? levels.map((level, idx) => (
-                <Level key={idx} allRoles={allRoles} level={level} />
-              ))
-            : null}
-        </div>
+          <div class="split">{children && children.map(child => child)}</div>
+        </Form>
       </div>
     );
   }
