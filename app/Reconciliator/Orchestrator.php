@@ -381,33 +381,19 @@ class Orchestrator extends Base\Core
             $sheetsContents = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames, $startRow);
         }
 
-        foreach ($sheetsContents as $sheetName => $rows)
+        foreach ($sheetsContents as $sheetName => $sheetData)
         {
-            if (empty($rows) === true)
+            if (empty($sheetData) === true)
             {
                 // This would happen when the sheet name sent, does not exist
                 continue;
             }
 
-            $sheetArray = [];
-
-            foreach ($rows as $cellCollection)
-            {
-                if ($spoutLib === true)
-                {
-                    $sheetArray[] = $cellCollection;
-                }
-                else
-                {
-                    $sheetArray[] = $cellCollection->all();
-                }
-            }
-
             $fileDetails[FileProcessor::SHEET_NAME] = $sheetName;
 
-            $this->setExtraDetails($sheetArray, $fileDetails);
+            $this->setExtraDetails($sheetData, $fileDetails);
 
-            $this->allFilesContents[] = $sheetArray;
+            $this->allFilesContents[] = $sheetData;
         }
     }
 
