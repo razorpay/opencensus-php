@@ -39,25 +39,13 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    /**
-     * @param array $input
-     *
-     * @return Entity
-     */
-    public function create(array $input)
-    {
-        $bharatQr = (new Entity)->build($input);
-
-        return $bharatQr;
-    }
-
     public function processPayment(array $input)
     {
         $input = $this->getBharatQrInputParams($input);
 
         try
         {
-            $bharatQr = $this->create($input);
+            $bharatQr = (new Entity)->build($input);
 
             // @todo hande failed Payment
             if (empty($bharatQr->getProviderReferenceId()) === true)
@@ -72,7 +60,7 @@ class Core extends Base\Core
                 {
                     (new Processor)->process($bharatQr);
                 },
-                60,
+                Constants::MUTEX_TIMEOUT,
                 ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
             $valid = true;
@@ -91,16 +79,12 @@ class Core extends Base\Core
 
     protected function getBharatQrInputParams(array $input)
     {
-        $defaultInput = [
-            Entity::METHOD   => Method::CARD,
-        ];
-
         $input = $this->getMappedAttributes($input);
 
-        //As the amount sent by hitachi notification is string with format 1.00
-        $input[Entity::AMOUNT] = (int) ($input[Entity::AMOUNT] * 100);
+        // For now notification only comes for card method
+        $input[Entity::METHOD] = Method::CARD;
 
-        return array_merge($defaultInput, $input);
+        return $input;
     }
 
     protected function getMappedAttributes(array $attributes)

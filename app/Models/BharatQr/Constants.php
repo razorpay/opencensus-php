@@ -16,4 +16,5 @@ class Constants
     const ID_TL                 = '0514';
     const ADDITIONAL_DETAIL_TAG = '62';
     const AMOUNT_TAG            = '54';
+    const MUTEX_TIMEOUT         = 60;
 }

@@ -138,7 +138,6 @@ class Entity extends Base\PublicEntity
         //
 
         $input[self::AMOUNT] = (int) number_format(($input[self::AMOUNT] * 100), 0, '.', '');
-
     }
 
     public function setExpected(bool $expected)

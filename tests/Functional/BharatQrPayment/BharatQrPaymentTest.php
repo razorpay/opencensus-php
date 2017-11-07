@@ -12,7 +12,7 @@ class BharatQrPaymentTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/BharatQrPaymentTestData.php';
+        $this->testDataFilePath = __DIR__ . '/BharatQrPaymentTestData.php';
 
         parent::setUp();
 
@@ -46,6 +46,7 @@ class BharatQrPaymentTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('card', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(200, $payment['amount']);
 
         $this->assertEquals($bharatQr['payment_id'], $payment['id']);
         $this->assertEquals($bharatQr['expected'], true);

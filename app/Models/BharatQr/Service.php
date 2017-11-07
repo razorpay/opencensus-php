@@ -32,7 +32,6 @@ class Service extends Base\Service
 
     protected function getResponse(bool $valid)
     {
-
         if ($valid === true)
         {
             $xml = '<RESPONSE>OK</RESPONSE>';
@@ -42,10 +41,10 @@ class Service extends Base\Service
             $xml = '<RESPONSE>NOK</RESPONSE>';
         }
 
-
         $response = \Response::make($xml);
 
         $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
+
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;

@@ -1618,10 +1618,10 @@ class Processor
             return false;
         }
 
+        // @todo route check to be changed after refactor
+        // gateway check won't work here because
+        // gateway is not set at this point
         if (($payment->isBankTransfer() === true) or
-            // @todo to be changed after refactor
-            // gateway check won't work here because
-            // gateway is not set at this point
             (Route::currentRouteName() === 'bharat_qr_payment_process'))
         {
             return false;

@@ -34,9 +34,9 @@ class Processor extends VirtualAccount\Processor
      *
      * @param Entity $bharatQr
      *
-     * @return Entity|null
+     * @return Entity
      */
-    public function process($bharatQr)
+    public function process(Base\PublicEntity $bharatQr)
     {
         $isPaymentExpected = $this->isPaymentExpected($bharatQr);
 
@@ -150,7 +150,7 @@ class Processor extends VirtualAccount\Processor
         $this->merchant = $this->virtualAccount->merchant;
     }
 
-    protected function getVirtualAccountFromEntity($bharatQr)
+    protected function getVirtualAccountFromEntity(Base\PublicEntity $bharatQr)
     {
         $qrCodeId = $bharatQr->getMerchantReference();
 
@@ -194,11 +194,12 @@ class Processor extends VirtualAccount\Processor
 
     protected function bharatQrPaymentArray(Entity $bharatQr): array
     {
-        $paymentArray[Payment\Entity::CURRENCY] = Currency::INR;
-        $paymentArray[Payment\Entity::METHOD]   = $bharatQr->getMethod();
-
-        $paymentArray[Payment\Entity::AMOUNT]      = $bharatQr->getAmount();
-        $paymentArray[Payment\Entity::DESCRIPTION] = "";
+        $paymentArray = [
+            Payment\Entity::CURRENCY    => Currency::INR,
+            Payment\Entity::METHOD      => $bharatQr->getMethod(),
+            Payment\Entity::AMOUNT      => $bharatQr->getAmount(),
+            Payment\Entity::DESCRIPTION => "Bharat Qr Payment",
+        ];
 
 
         // TODO: find a better method to do this. This is done in order to bypass validation
@@ -218,16 +219,14 @@ class Processor extends VirtualAccount\Processor
 
     protected function getDummyCardDetails(Entity $bharatQr)
     {
-        //TODO: Handle the null checks in card validation
-        $card[Card\Entity::NUMBER] = $this->getLuhnValidCardNumberFromBharatQr($bharatQr);
-
-        $card[Card\Entity::CVV] = '123';
-
-        $card[Card\Entity::NAME] = 'Random';
-
-        $card[Card\Entity::EXPIRY_MONTH] = '11';
-
-        $card[Card\Entity::EXPIRY_YEAR] = '2037';
+        // TODO: Handle the null checks in card validation
+        $card = [
+            Card\Entity::NUMBER       => $this->getLuhnValidCardNumberFromBharatQr($bharatQr),
+            Card\Entity::CVV          => '123',
+            Card\Entity::NAME         => 'Random',
+            Card\Entity::EXPIRY_MONTH => '11',
+            Card\Entity::EXPIRY_YEAR  => '2037',
+        ];
 
         return $card;
     }

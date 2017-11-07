@@ -84,6 +84,12 @@ class CreateBharatQrTable extends Migration
 
             $table->integer(BharatQr::UPDATED_AT);
 
+            $table->index(BharatQr::PROVIDER_REFERENCE_ID);
+
+            $table->index(BharatQr::MERCHANT_REFERENCE);
+
+            $table->index(BharatQr::CREATED_AT);
+
             $table->foreign(BharatQr::VIRTUAL_ACCOUNT_ID)
                   ->references(VirtualAccount::ID)
                   ->on(Table::VIRTUAL_ACCOUNT)

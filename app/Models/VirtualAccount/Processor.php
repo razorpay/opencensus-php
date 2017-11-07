@@ -45,9 +45,9 @@ abstract class Processor extends Base\Core
      /**
      *@todo need to make this generic
      */
-    abstract public function process($entity);
+    abstract public function process(Base\PublicEntity $entity);
 
-    abstract protected function getVirtualAccountFromEntity($entity);
+    abstract protected function getVirtualAccountFromEntity(Base\PublicEntity $entity);
 
      /**
      * A receiver is expected if there exists an active VA
@@ -58,7 +58,7 @@ abstract class Processor extends Base\Core
      *
      * @return bool
      */
-    protected function isPaymentExpected($entity): bool
+    protected function isPaymentExpected(Base\PublicEntity $entity): bool
     {
         $this->setVirtualAccount($entity);
 
@@ -85,7 +85,7 @@ abstract class Processor extends Base\Core
      *
      * @param Entity $bankTransfer
      */
-    protected function preProcessUnexpectedPayment($entity)
+    protected function preProcessUnexpectedPayment(Base\PublicEntity $entity)
     {
         $entity->setExpected(false);
 
@@ -114,7 +114,7 @@ abstract class Processor extends Base\Core
      *
      * @param Entity
      */
-    protected function setVirtualAccount($entity)
+    protected function setVirtualAccount(Base\PublicEntity $entity)
     {
         $this->virtualAccount = $this->getVirtualAccountFromEntity($entity);
     }
@@ -139,7 +139,7 @@ abstract class Processor extends Base\Core
      *
      * @param Entity
      */
-    protected function updateVirtualAccount($entity)
+    protected function updateVirtualAccount(Base\PublicEntity $entity)
     {
         $this->virtualAccount->incrementAmountPaid($entity->getAmount());
 
