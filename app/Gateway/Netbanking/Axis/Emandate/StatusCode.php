@@ -50,8 +50,6 @@ class StatusCode
 
     public static function isEmandateRegistrationSuccess(string $statusCode)
     {
-        assert(is_int($statusCode));
-
         return ($statusCode !== self::EMANDATE_FAILURE);
     }
 
