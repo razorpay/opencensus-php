@@ -2,7 +2,6 @@
 
 namespace RZP\Models\BankTransfer;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -78,18 +77,15 @@ class Core extends Base\Core
 
             $valid = true;
         }
-        catch (Exception\BadRequestValidationFailureException $ex)
+        catch (\Throwable $ex)
         {
-            // Returning anything other than a 200 causes Kotak to retry here.
-            //
-            // However, validation failures are due to Kotak sending the request
-            // in wrong format, or (more frequently) the wrong request altogether.
-            // So retrying doesn't help us, and will cause unnecessary errors.
-            // Best to trace, and return false, to stop the request.
+            // Any exception is critical, as bank transfers are never
+            // supposed to fail. Trace accordingly, as then rethrow
+            // the exception, so that Kotak retries the request.
             $this->trace->traceException(
-                $ex, Trace::ERROR, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
+                $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
 
-            $valid = false;
+            throw $ex;
         }
 
         return $valid;
@@ -286,6 +282,13 @@ class Core extends Base\Core
         $payerBankAccount = $payerBankAccount->edit($input, 'editVirtualBankAccount');
 
         $this->repo->saveOrFail($payerBankAccount);
+
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED,
+            [
+                'bank_account' => $payerBankAccount->toArrayPublic(),
+                'input'        => $input,
+            ]);
 
         return $bankTransfer;
     }

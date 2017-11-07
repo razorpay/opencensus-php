@@ -34,6 +34,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_SETTLED_AT    = 'settlement_date';
     const COLUMN_MSG_TYPE      = 'msg_type';
     const COLUMN_MID           = 'mid';
+    const COLUMN_ARN           = 'arn';
+    const COLUMN_AUTH_CODE     = 'appr_code';
 
     const PREAUTH              = 'PREAUTH';
     const CYBS                 = 'CYBS';
@@ -377,6 +379,29 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $gatewaySettledAt;
     }
 
+    protected function getArn($row)
+    {
+        if (empty($row[self::COLUMN_ARN]) === true)
+        {
+            $this->reportMissingColumn($row, self::COLUMN_ARN);
+
+            return null;
+        }
+
+        return $row[self::COLUMN_ARN];
+    }
+
+    protected function getAuthCode($row)
+    {
+        if (empty($row[self::COLUMN_AUTH_CODE]) === true)
+        {
+            $this->reportMissingColumn($row, self::COLUMN_AUTH_CODE);
+
+            return null;
+        }
+
+        return $row[self::COLUMN_AUTH_CODE];
+    }
 
     protected function isCybersource(array $row)
     {
@@ -392,7 +417,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $mid = $row[self::COLUMN_MID];
         }
 
-        if ((stripos($msgType, self::PREAUTH) === true) or
+        if ((stripos($msgType, self::PREAUTH) !== false) or
             (ends_with($mid, self::CYBS) === true))
         {
             return true;

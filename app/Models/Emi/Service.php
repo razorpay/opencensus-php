@@ -31,7 +31,7 @@ class Service extends Base\Service
             // all plans of a bank will have same min amount
             $plans[$issuer][Emi\Entity::MIN_AMOUNT] = $amount;
 
-            $plans[$issuer]['plans'][$duration] = $plan->getRate()/100;
+            $plans[$issuer]['plans'][$duration] = $plan->getRate() / 100;
         }
 
         return $plans;
@@ -66,8 +66,15 @@ class Service extends Base\Service
 
         $email = $input['email'] ?? null;
 
-        // default list of banks
-        $emiFileBanks = Payment\Gateway::$emiBanksUsingCardTerminals;
+        //
+        // Only ICIC and YESB emi files will be sent via this route now, as they
+        // are sent via FTP. All other emi files which are sent via mail
+        // use gateway_file.
+        //
+        $emiFileBanks = [
+            IFSC::ICIC,
+            IFSC::YESB,
+        ];
 
         // if input bank is set, emi file to be processed for only that bank
         if (isset($input['bank']))

@@ -790,6 +790,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::DISPUTED, $disputed);
     }
 
+    public function setReference1(string $reference1)
+    {
+        $this->setAttribute(self::REFERENCE1, $reference1);
+    }
+
+    public function setReference2(string $reference2)
+    {
+        $this->setAttribute(self::REFERENCE2, $reference2);
+    }
+
     public function decrementAmountTransferred(int $amount)
     {
         $this->decrement(self::AMOUNT_TRANSFERRED, $amount);
@@ -1456,6 +1466,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::TWO_FACTOR_AUTH);
     }
+
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
@@ -1479,6 +1490,16 @@ class Entity extends Base\PublicEntity
     public function getTerminalId()
     {
         return $this->getAttribute(self::TERMINAL_ID);
+    }
+
+    public function getReference1()
+    {
+        return $this->getAttribute(self::REFERENCE1);
+    }
+
+    public function getReference2()
+    {
+        return $this->getAttribute(self::REFERENCE2);
     }
 
     public function isSecondRecurring()

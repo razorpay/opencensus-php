@@ -52,6 +52,15 @@ class BankTransferController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function stripPayerBankAccounts()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->stripPayerBankAccounts($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function insertBankTransfer(string $provider)
     {
         $input = Request::all();
