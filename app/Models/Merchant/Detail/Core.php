@@ -181,7 +181,7 @@ class Core extends Base\Core
             return;
         }
 
-        $url = Config::get('zapier' . $zapierAction);
+        $url = Config::get('zapier.' . $zapierAction);
 
         $request = [
             'url'     => $url,
