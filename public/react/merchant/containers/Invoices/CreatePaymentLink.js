@@ -76,8 +76,8 @@ export default class CreatePaymentLink extends Component {
     super(...arguments);
     this.state = {
       errors: null,
-      isEmailSelected: false,
-      isPhoneSelected: false,
+      email_notify: false,
+      sms_notify: false,
     };
     this.setExpiryDate = this.setExpiryDate.bind(this);
     this.handleCommChange = this.handleCommChange.bind(this);
@@ -90,7 +90,9 @@ export default class CreatePaymentLink extends Component {
       this.props.initialize({
         ...this.props.invoice,
         ...(expireBy && {
-          expire_by_date: moment(expireBy * 1000).startOf('day').unix(),
+          expire_by_date: moment(expireBy * 1000)
+            .startOf('day')
+            .unix(),
           expire_by: expireBy * 1000,
         }),
       });
@@ -113,7 +115,10 @@ export default class CreatePaymentLink extends Component {
         // and add the diff to selected date
         expiryWithTime =
           date * 1000 +
-          (expiryWithTime - moment(expiryWithTime).startOf('day').valueOf());
+          (expiryWithTime -
+            moment(expiryWithTime)
+              .startOf('day')
+              .valueOf());
       } else {
         // if `expiryDateWithTime` is not set and somebody selects a date
         // expiry time should be the EOD of the selected date (11:59 PM)
@@ -130,13 +135,12 @@ export default class CreatePaymentLink extends Component {
   //Set communication mode(SMS or EMAIL)
   handleCommChange(value, mode) {
     var commStr = mode === 'p' ? 'sms_notify' : 'email_notify';
-
+    this.setState({ [commStr]: !!value.length });
     return this.props.change(commStr, !!value.length);
   }
 
   save = props => {
     const params = { ...props };
-    const { isEmailSelected, isPhoneSelected } = this.state;
     let notificationMSG = 'Payment link created successfully.',
       notifyMedium = [];
 
@@ -180,6 +184,24 @@ export default class CreatePaymentLink extends Component {
       });
   };
 
+  generateCtaText = () => {
+    let { invoice } = this.props;
+    let { sms_notify, email_notify } = this.state;
+    let ctaText = {};
+
+    if (invoice) {
+      ctaText = { btn: 'Save Payment Link', pending: 'Saving...' };
+    } else {
+      if (email_notify || sms_notify) {
+        ctaText = { btn: 'Send Payment Link', pending: 'Sending...' };
+      } else {
+        ctaText = { btn: 'Create Payment Link', pending: 'Creating...' };
+      }
+    }
+
+    return ctaText;
+  };
+
   render() {
     const { handleSubmit, invoice } = this.props;
     let isTestMode = this.props.mode === 'test';
@@ -190,6 +212,7 @@ export default class CreatePaymentLink extends Component {
     let isCancelled = status === 'cancelled';
     let isExpired = status === 'expired';
     let locked = isPaid || isExpired || isCancelled;
+    let ctaText = this.generateCtaText();
 
     return (
       <div>
@@ -204,7 +227,7 @@ export default class CreatePaymentLink extends Component {
         >
           <div class="modal-body">
             <Alert type="error" message={this.state.errors} />
-            {isNewForm &&
+            {isNewForm && (
               <div>
                 <div class="form-group">
                   <label class="col-md-3 control-label help-label label-required">
@@ -292,7 +315,7 @@ export default class CreatePaymentLink extends Component {
                       onDateChange={this.setExpiryDate}
                     />
                   </div>
-                  {this.props.expireBy &&
+                  {this.props.expireBy && (
                     <div class="col-md-4">
                       <Field
                         name="expire_by"
@@ -301,9 +324,11 @@ export default class CreatePaymentLink extends Component {
                         dateFormat={false}
                         timeFormat={true}
                       />
-                    </div>}
+                    </div>
+                  )}
                 </div>
-              </div>}
+              </div>
+            )}
 
             <div class="form-group customer">
               <label class="col-md-3 control-label">Customer</label>
@@ -336,7 +361,7 @@ export default class CreatePaymentLink extends Component {
               </div>
             </div>
 
-            {!isNewForm &&
+            {!isNewForm && (
               <div>
                 <div class="form-group">
                   <label class="col-md-3 control-label help-label">
@@ -382,7 +407,8 @@ export default class CreatePaymentLink extends Component {
                     />
                   </div>
                 </div>
-              </div>}
+              </div>
+            )}
 
             <div class="form-group">
               <label class="col-md-3 control-label">Notify Customer</label>
@@ -422,7 +448,7 @@ export default class CreatePaymentLink extends Component {
               </div>
             </div>
 
-            {isTestMode &&
+            {isTestMode && (
               <div class="row">
                 <div class="col-md-8 col-md-offset-3">
                   <div class="alert alert-sm alert-warning">
@@ -431,7 +457,8 @@ export default class CreatePaymentLink extends Component {
                     {/* Also, SMS will not be sent in test mode */}
                   </div>
                 </div>
-              </div>}
+              </div>
+            )}
           </div>
 
           <div class="modal-footer">
@@ -446,16 +473,8 @@ export default class CreatePaymentLink extends Component {
             <AsyncButton
               type="submit"
               class="btn btn-primary"
-              text={
-                this.state.isEmailSelected || this.state.isPhoneSelected
-                  ? 'Send Payment Link'
-                  : 'Create Payment Link'
-              }
-              pendingText={
-                this.state.isEmailSelected || this.state.isPhoneSelected
-                  ? 'Sending...'
-                  : 'Creating...'
-              }
+              text={ctaText.btn}
+              pendingText={ctaText.pending}
               onClick={handleSubmit(this.save)}
             />
           </div>
