@@ -511,12 +511,18 @@ class Processor extends Base\Core
     {
         $label = $bankTransfer->getPayerName();
 
+        $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+
+        // Label could be empty AFTER the preg_replace step
         if (empty(trim($label)) === true)
         {
             $label = $bankTransfer->merchant->getBillingLabel();
+
+            // Still necessary to sanitize merchant name
+            $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
         }
 
-        return substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $label), 0, 39);
+        return substr($label, 0, 39);
     }
 
     /**
