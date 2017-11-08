@@ -333,7 +333,6 @@ return [
         'test_hash_secret'        => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
         'test_merchant_id'        => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
         'test_merchant_id_rec'    => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_REC'),
-        'live_merchant_id_rec'    => env('NETBANKING_AXIS_GATEWAY_LIVE_MERCHANT_ID_REC'),
         'test_hash_secret_rec'    => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_REC'),
         'test_hash_secret_encrec' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_ENCREC'),
     ],
