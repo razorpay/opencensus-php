@@ -56,7 +56,9 @@ class VirtualAccountTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
-        $qrString = $response['receivers'][0]['qr_string'];
+        $qrCode = $this->getLastEntity('qr_code', true);
+
+        $qrString = $qrCode['qr_string'];
 
         $tlvArray = $this->getTagMappedValues($qrString);
 
@@ -88,7 +90,9 @@ class VirtualAccountTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
-        $qrString = $response['receivers'][0]['qr_string'];
+        $qrCode = $this->getLastEntity('qr_code', true);
+
+        $qrString = $qrCode['qr_string'];
 
         $tlvArray = $this->getTagMappedValues($qrString);
 
