@@ -44,6 +44,30 @@ function _getPricingPlansFields() {
   ];
 }
 
+function _getTerminalFields() {
+  return [
+    ['Terminal Id', item => item.id],
+    ['Mode', item => item.mode],
+    ['Gateway', item => item.gateway],
+    ['Deleted', item => !!item.deleted_at],
+    ['Enabled', item => item.enabled],
+    ['Category', item => item.category],
+    ['Network Category', item => item.network_category],
+    ['Merchant Id', item => item.gateway_merchant_id],
+    ['Merchant Id 2', item => item.gateway_merchant_id2],
+    ['Acquirer', item => item.acquirer],
+    ['Terminal Id', item => item.terminal_id],
+    ['Card Allowed', item => item.card_allowed],
+    ['Netbanking', item => item.netbanking],
+    ['Emi', item => item.emi],
+    ['Emi Duration (Months)', item => item.emi_duration],
+    ['Shared', item => item.shared],
+    ['Tpv', item => item.tpv],
+    ['Currency', item => item.currency],
+    ['Created At', item => item.created_at],
+  ];
+}
+
 // mapping used in multiple files
 const utilMapping = {
   network: {
@@ -333,6 +357,13 @@ export function getDetailsViewMap(merchant) {
     {
       label: 'Terminal',
       value: () => <button class="btn-default">Show/Hide</button>,
+      toggleChildren: function() {
+        return (
+          <div>
+            <Table items={terminals.items} fields={_getTerminalFields()} />
+          </div>
+        );
+      },
     },
     {
       label: 'Gateway Rules',

@@ -6,7 +6,7 @@ export default class Model extends BaseModel {
   @observable
   merchant = {
     details: {},
-    terminals: {},
+    terminals: { items: [], count: 0 },
     offers: [],
     pricingPlans: {},
     scheduleTasks: {},
@@ -41,8 +41,13 @@ export default class Model extends BaseModel {
         this.merchant.details = data;
       }
 
+      // TODO: Ensure rendering happpens on resolve of each below otherwise data will update but not merchant object, hence no re-rendering. Or take out each property instead of putting inside merchant object
       this.fetchPricingPlans();
       this.fetchScheduleTasks();
+
+      this.fetchTerminals('live');
+      this.fetchTerminals('test');
+
       this.fetchFeatures('live');
       this.fetchFeatures('test');
     });
@@ -90,6 +95,29 @@ export default class Model extends BaseModel {
     ).then(data => {
       if (data) {
         this.merchant.pricingPlans = data;
+      }
+    });
+  }
+
+  @action
+  fetchTerminals(mode) {
+    const data = {
+      route_name: 'merchant_get_terminals',
+      url_params: {
+        id: this.merchantId,
+      },
+      mode,
+    };
+
+    return this.request(
+      'fetchMerchantTerminals',
+      this.fetchFn(data)
+    ).then(data => {
+      if (data) {
+        this.merchant.terminals.items = this.merchant.terminals.items.concat(
+          data.items
+        );
+        this.merchant.terminals.count += data.count;
       }
     });
   }
