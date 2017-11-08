@@ -2,6 +2,8 @@
 
 namespace RZP\Models\BankTransfer;
 
+use Config;
+
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -84,6 +86,18 @@ class Core extends Base\Core
             // the exception, so that Kotak retries the request.
             $this->trace->traceException(
                 $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
+
+            $data = array_merge($input, ['message' => $ex->getMessage()]);
+
+            $this->app['slack']->queue(
+                TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
+                $data,
+                [
+                    'channel'  => Config::get('slack.channels.virtual_accounts'),
+                    'username' => 'Scrooge',
+                    'icon'     => ':x:'
+                ]
+            );
 
             throw $ex;
         }
