@@ -2,16 +2,13 @@
 
 namespace RZP\Gateway\Upi\Sbi;
 
-use RZP\Gateway\Base\AESCrypto;
+use RZP\Gateway\Upi\Mindgate\Crypto as BaseCrypto;
 
-class Crypto extends AESCrypto
+class Crypto extends BaseCrypto
 {
-    public function __construct($mode, $masterKey, $initializationVector = '')
-    {
-        $masterKey = hex2bin($masterKey);
-
-        parent::__construct($mode, $masterKey, $initializationVector);
-    }
+    /**
+     * TODO: Refactor Base\AesCrypto later
+     */
 
     // TODO: Verify this
     public function encryptString(string $string)

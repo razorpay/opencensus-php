@@ -325,7 +325,7 @@ class Gateway extends Base\Gateway
      */
     public function getAesCrypto(): Crypto
     {
-        return (new Crypto(AES::MODE_ECB, $this->getSecret()));
+        return (new Crypto($this->getSecret()));
     }
 
     /**
