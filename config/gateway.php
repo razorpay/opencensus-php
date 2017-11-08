@@ -335,9 +335,7 @@ return [
         'test_merchant_id_rec'    => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_REC'),
         'live_merchant_id_rec'    => env('NETBANKING_AXIS_GATEWAY_LIVE_MERCHANT_ID_REC'),
         'test_hash_secret_rec'    => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_REC'),
-        'live_hash_secret_rec'    => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_REC'),
         'test_hash_secret_encrec' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_ENCREC'),
-        'live_hash_secret_encrec' => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_ENCREC'),
     ],
 
     'netbanking_airtel' => [

@@ -485,7 +485,7 @@ trait EmandateTrait
             return $this->config['test_hash_secret_encrec'];
         }
 
-        return $this->input['terminal']->getGatewaySecureSecretAttribute();
+        return $this->getLiveSecret();
     }
 
     protected function getEmandateChecksumSecret() : string
@@ -495,7 +495,7 @@ trait EmandateTrait
             return $this->config['test_hash_secret_rec'];
         }
 
-        return $this->input['terminal']->getGatewayTerminalPasswordAttribute();
+        return $this->input['terminal']['gateway_terminal_password'];
     }
 
     public function getEmandateMerchantId()
