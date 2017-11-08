@@ -69,6 +69,8 @@ class Converter
      * @param  array  $fileDetails details of the file being processed
      * @param  array  $sheetNames  sheet names to be considered
      * @param  int    $startRow
+     *
+     * @return array
      */
     public function convertExcelToArray(array $fileDetails, $sheetNames, int $startRow)
     {

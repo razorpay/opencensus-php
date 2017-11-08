@@ -366,7 +366,7 @@ class Reconciliate extends Base\Core
      *
      * @param array $fileDetails
      *
-     * @return int number of lines to skip from end
+     * @return array number of lines to skip from top and bottom
      */
     public function getNumLinesToSkip(array $fileDetails)
     {

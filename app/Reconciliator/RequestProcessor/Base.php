@@ -144,7 +144,7 @@ class Base extends Core
                 }
                 catch (\Exception $ex)
                 {
-                    $this->handleZipProcessingException($ex, $zipFilesDetails);
+                    $this->handleZipProcessingException($ex, $zipFileDetails);
                 }
             }
             else
@@ -161,7 +161,7 @@ class Base extends Core
     /**
      * @param  \Exception $ex
      */
-    protected function handleZipProcessingException(\Exception $ex, array $zipFilesDetails)
+    protected function handleZipProcessingException(\Exception $ex, array $zipFileDetails)
     {
         $this->trace->traceException($ex);
 
@@ -221,21 +221,21 @@ class Base extends Core
         return $allExtractedFilesDetails;
     }
 
-    protected function getFileDetailsFromAllZipFiles($zipFilesDetails)
+    protected function getFileDetailsFromAllZipFiles($zipFileDetails)
     {
         $allExtractedFileDetails = [];
 
-        foreach ($zipFilesDetails as $zipFileDetails)
+        foreach ($zipFileDetails as $zf)
         {
             try
             {
-                $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
+                $extractedFileDetails = $this->getFileDetailsFromZipFile($zf);
             }
             catch (\Exception $ex)
             {
                 $level = Trace::ERROR;
 
-                if ($this->gateway === self::AXIS)
+                if ($this->gateway === Orchestrator::AXIS)
                 {
                     $level = Trace::INFO;
                 }
@@ -246,7 +246,7 @@ class Base extends Core
                     TraceCode::RECON_INFO_ALERT,
                     [
                         'message'           => 'Unable to extract zip file',
-                        'zip_file_details'  => $zipFileDetails,
+                        'zip_file_details'  => $zf,
                         'gateway'           => $this->gateway,
                     ]);
 

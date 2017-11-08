@@ -115,8 +115,9 @@ class CombinedReconciliate extends Foundation\SubReconciliate
      * subreconciliate objects and  at the end of the reconciliation, we update the
      * summary count to the batch
      *
-     * @param array         $fileContents       input file contents
-     * @param Batch\Entity  $batch              batch entity for reconciliation
+     * @param array $fileContents input file contents
+     * @param Batch\Entity $batch batch entity for reconciliation
+     * @throws ReconciliationException
      */
     public function startReconciliationV2(array $fileContents, Batch\Entity $batch)
     {
@@ -192,6 +193,7 @@ class CombinedReconciliate extends Foundation\SubReconciliate
      * objects to get the success and failure count at the end of processing.
      *
      * @param  string $entityType Recon entity type
+     * @return Foundation\SubReconciliate
      */
     protected function getSubReconciliatorObject(string $entityType)
     {

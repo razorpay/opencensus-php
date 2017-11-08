@@ -56,7 +56,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
      * summary, regardless of any exception thrown during the process.
      *
      * @param array          $fileContents      file contents to be processed
-     * @param Batch\Entity   $batch             Batch entity for the current run
      */
     public function startReconciliation($fileContents)
     {
@@ -77,10 +76,13 @@ class RefundReconciliate extends Foundation\SubReconciliate
     /**
      * This method is called during batch processing. Instead of throwing an unhandled
      * exception for a row, we suppress it and only the recon summary is updated
-     * @param array $fileContents
+     *
+     * @param array         $fileContents
+     * @param Batch\Entity  $batch
+     *
      * @return array
      */
-    public function startReconciliationV2($fileContents, Batch\Entity $batch)
+    public function startReconciliationV2(array $fileContents, Batch\Entity $batch)
     {
         $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
         unset($fileContents[Orchestrator::EXTRA_DETAILS]);

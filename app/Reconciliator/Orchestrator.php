@@ -75,6 +75,10 @@ class Orchestrator extends Base\Core
      * Calls the gateway reconciliator with
      * all the file details and file contents.
      *
+     * @param array $allFilesDetails
+     *
+     * @return array
+     *
      * @throws Exception\ReconciliationException
      */
     public function orchestrate(array $allFilesDetails)
@@ -152,6 +156,10 @@ class Orchestrator extends Base\Core
      * Deletes the file from local storage.
      * Creates a batch entity with the reconciliation details
      * and queues it for processing
+     *
+     * @param array $allFilesDetails
+     *
+     * @return array
      *
      * @throws Exception\ReconciliationException
      */
