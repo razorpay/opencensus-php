@@ -22,7 +22,7 @@ class Server extends Base\Mock\Server
     {
         parent::__construct();
 
-        // TODO: Verify this
+        // TODO: Verify this, currently setting this so that getGatewayInstance works correctly
         $this->ns = $this->ns ?? __NAMESPACE__;
 
         $this->repo = $this->app['repo']->upi;

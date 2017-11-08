@@ -17,27 +17,6 @@ class RefundFile extends Base\RefundFile
     const REFUND_REQ_AMT  = 'REFUND REQ AMT';
     const REFUND_REMARK   = 'REFUND REMARK';
 
-    /**
-     * Headers of the CSV file
-     * @var array
-     */
-    protected static $headers = [
-        self::PG_MERCHANT_ID,
-        self::REFUND_REQ_NO,
-        self::TRANS_REF_NO,
-        self::CUSTOMER_REF_NO,
-        self::ORDER_NO,
-        self::REFUND_REQ_AMT,
-        self::REFUND_REMARK
-    ];
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = $this->app['repo']->upi;
-    }
-
     public function generate($input)
     {
         $creator = $this->getCreator($input);
@@ -84,13 +63,11 @@ class RefundFile extends Base\RefundFile
 
         foreach ($input['data'] as $row)
         {
-            $upi = $this->repo->findByPaymentIdAndActionOrFail($row['payment']['id'], Base\Action::AUTHORIZE);
-
             $data[] = [
                 self::PG_MERCHANT_ID  => $this->getMerchantId(),
                 self::REFUND_REQ_NO   => $row['refund']['id'],
-                self::TRANS_REF_NO    => $upi->getNpciReferenceId(), // TODO: Verify this - UPI TXN REF NO
-                self::CUSTOMER_REF_NO => $upi->getGatewayPaymentId(),
+                self::TRANS_REF_NO    => $row['gateway']['npci_reference_id'], // TODO: Verify this - UPI TXN REF NO
+                self::CUSTOMER_REF_NO => $row['gateway']['gateway_payment_id'],
                 self::ORDER_NO        => $row['payment']['id'],
                 self::REFUND_REQ_AMT  => $row['refund']['amount'] / 100,
                 self::REFUND_REMARK   => 'Refund'

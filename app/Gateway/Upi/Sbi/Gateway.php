@@ -6,7 +6,6 @@ use App;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
-use phpseclib\Crypt\AES;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Entity;
 use RZP\Gateway\Base\Action;

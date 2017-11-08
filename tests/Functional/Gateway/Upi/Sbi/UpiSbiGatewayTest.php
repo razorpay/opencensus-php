@@ -4,7 +4,6 @@ namespace RZP\Tests\Functional\Gateway\Upi\Sbi;
 
 use Excel;
 use Carbon\Carbon;
-use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
@@ -21,7 +20,7 @@ use RZP\Gateway\Upi\Base\Entity as Upi;
 use RZP\Gateway\Upi\Sbi\Status as SbiStatus;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class UpiMindgateSbiGatewayTest extends TestCase
+class UpiSbiGatewayTest extends TestCase
 {
     use PaymentTrait;
 
@@ -84,9 +83,6 @@ class UpiMindgateSbiGatewayTest extends TestCase
         $upiEntity = $this->getLastEntity(Entity::UPI, true);
         $this->assertNotNull($upiEntity[Upi::NPCI_REFERENCE_ID]);
         $this->assertNotNull($upiEntity[Upi::GATEWAY_PAYMENT_ID]);
-
-        // Add a capture as well, just for completeness sake
-        $this->capturePayment($paymentId, $payment[Payment\Entity::AMOUNT]);
     }
 
     /**
@@ -144,7 +140,7 @@ class UpiMindgateSbiGatewayTest extends TestCase
      */
     public function testPaymentVerify()
     {
-        $this->testPayment();
+        $this->createCapturedPayment();
 
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
 
@@ -163,7 +159,7 @@ class UpiMindgateSbiGatewayTest extends TestCase
 
     public function testPaymentPendingVerifyFailed()
     {
-        $this->testPayment();
+        $this->createCapturedPayment();
 
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
 
@@ -204,7 +200,7 @@ class UpiMindgateSbiGatewayTest extends TestCase
             $data,
             function()
             {
-                $this->testPayment();
+                $this->createCapturedPayment();
             });
     }
 
@@ -212,9 +208,9 @@ class UpiMindgateSbiGatewayTest extends TestCase
     public function testRefundFileFlow()
     {
         // Create 3 payments
-        $this->testPayment();
-        $this->testPayment();
-        $this->testPayment();
+        $this->createCapturedPayment();
+        $this->createCapturedPayment();
+        $this->createCapturedPayment();
 
         // Refund 2 fully and the other one partially
         $payments = $this->getEntities(Entity::PAYMENT, [], true);
@@ -235,7 +231,7 @@ class UpiMindgateSbiGatewayTest extends TestCase
         }
 
         // Refund a 4th payment
-        $this->testPayment();
+        $this->createCapturedPayment();
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
         $this->refundPayment($payment[Payment\Entity::ID]);
 
@@ -265,6 +261,24 @@ class UpiMindgateSbiGatewayTest extends TestCase
         // We assert that there are 2 refunds of 500 rupees, and 1 of 100
         $this->assertEquals(2, $count[500]);
         $this->assertEquals(1, $count[100]);
+    }
+
+    protected function createCapturedPayment()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response[Constants::PAYMENT_ID];
+
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        // Add a capture as well, just for completeness sake
+        $this->capturePayment($paymentId, $payment[Payment\Entity::AMOUNT]);
     }
 
     protected function mockAmountMismatch()
