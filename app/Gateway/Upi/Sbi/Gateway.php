@@ -58,7 +58,10 @@ class Gateway extends Base\Gateway
         // to be able to get the test secret for decryption. Setting $this->mode below.
         //
 
-        $mode = $this->app['rzp.mode'];
+        // TODO: This will not work, as the above case happens in direct auth, and we won't get mode
+
+        // Setting Test for now so that UAT can be tested
+        $mode = $this->app['rzp.mode'] ?? Mode::TEST;
 
         $this->setMode($mode);
     }
