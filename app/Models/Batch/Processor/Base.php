@@ -470,16 +470,18 @@ class Base extends BaseModel\Core
         //
         $ext = pathinfo($this->inputFileLocalPath, PATHINFO_EXTENSION);
 
+        $dir = $this->batch->getLocalSaveDir(Batch\Entity::OUTPUT_FILE_PREFIX);
+
         switch ($ext)
         {
             case FileStore\Format::TXT:
                 $txt = $this->generateText($entries, '|');
-                $this->outputFileLocalPath = $this->createTxtFile($this->getFileName($ext), $txt);
+                $this->outputFileLocalPath = $this->createTxtFile($this->getFileName($ext), $txt, $dir);
                 return;
 
             case FileStore\Format::CSV:
                 $txt = $this->generateText($entries, ',');
-                $this->outputFileLocalPath = $this->createTxtFile($this->getFileName($ext), $txt);
+                $this->outputFileLocalPath = $this->createTxtFile($this->getFileName($ext), $txt, $dir);
                 return;
 
             case FileStore\Format::XLSX:
@@ -489,11 +491,7 @@ class Base extends BaseModel\Core
                                     [],
                                     $this->batch->getType()
                                  )
-                                 ->store(
-                                    $ext,
-                                    $this->batch->getLocalSaveDir(Batch\Entity::OUTPUT_FILE_PREFIX),
-                                    true
-                                );
+                                 ->store($ext, $dir, true);
                 $this->outputFileLocalPath = $fileMeta['full'];
                 return;
 

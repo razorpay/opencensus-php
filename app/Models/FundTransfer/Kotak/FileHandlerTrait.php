@@ -431,9 +431,13 @@ trait FileHandlerTrait
         return $presignedUrl;
     }
 
-    public function createTxtFile($name, $txt)
+    public function createTxtFile(string $name, string $txt, string $dir = null)
     {
-        $fullpath = $this->getFullFilePath($name);
+        //
+        // If directory is not provided(default case) usage /settlement else
+        // the one provided.
+        //
+        $fullpath = ($dir === null) ? $this->getFullFilePath($name) : "{$dir}/{$name}";
 
         $dir = dirname($fullpath);
 
