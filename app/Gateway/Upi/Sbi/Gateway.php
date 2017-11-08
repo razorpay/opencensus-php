@@ -236,23 +236,9 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        // TODO: Ensure this is correct
-        try
-        {
-            //
-            // If Response status checking passes, we set gateway success to true
-            //
-            $this->checkResponseStatus($content[ResponseFields::API_RESPONSE][ResponseFields::STATUS]);
+        $status = $content[ResponseFields::API_RESPONSE][ResponseFields::STATUS];
 
-            $verify->gatewaySuccess = true;
-        }
-        catch (\Exception $e)
-        {
-            //
-            // If an exception is thrown in checkResponseStatus, we leave $verify->gatewaySuccess = false
-            //
-            return;
-        }
+        $verify->gatewaySuccess = (Status::isStatusSuccess($status) === true);
     }
 
     // TODO: Validate VPA before sending collect request and don't create payment entity if VPA is invalid
@@ -269,43 +255,8 @@ class Gateway extends Base\Gateway
 
             $errorMessage = Status::getMessage($status);
 
-            $traceCode = $this->getTraceCode();
-
-            $this->trace->info(
-                $traceCode,
-                [
-                    'status'       => $status,
-                    'errorCode'    => $errorCode,
-                    'errorMessage' => $errorMessage,
-                    'gateway'      => $this->gateway
-                ]);
-
             throw new GatewayErrorException($errorCode, $status, $errorMessage);
         }
-    }
-
-    protected function getTraceCode(): string
-    {
-        switch ($this->action)
-        {
-            case Action::AUTHORIZE:
-                $traceCode = TraceCode::PAYMENT_AUTHORIZE_FAILED;
-                break;
-
-            case Action::CALLBACK:
-                $traceCode = TraceCode::PAYMENT_CALLBACK_FAILURE;
-                break;
-
-            case Action::VERIFY:
-                $traceCode = TraceCode::GATEWAY_VERIFY_ERROR;
-                break;
-
-            default:
-                $traceCode = TraceCode::GATEWAY_RESPONSE_STATUS_FAILURE;
-                break;
-        }
-
-        return $traceCode;
     }
 
     protected function getRequestTraceCode(): string
