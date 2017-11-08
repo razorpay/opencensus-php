@@ -2,7 +2,6 @@
 
 namespace RZP\Models\BankTransfer;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -14,6 +13,11 @@ use Razorpay\Trace\Logger as Trace;
 class Core extends Base\Core
 {
     protected $mutex;
+
+    const NRE_FAILURE_MESSAGES = [
+        'NEFT-RETURN Credit to NRI Account',
+        'IMPS-RTN-NRE ACCOUNT',
+    ];
 
     public function __construct()
     {
@@ -73,18 +77,15 @@ class Core extends Base\Core
 
             $valid = true;
         }
-        catch (Exception\BadRequestValidationFailureException $ex)
+        catch (\Throwable $ex)
         {
-            // Returning anything other than a 200 causes Kotak to retry here.
-            //
-            // However, validation failures are due to Kotak sending the request
-            // in wrong format, or (more frequently) the wrong request altogether.
-            // So retrying doesn't help us, and will cause unnecessary errors.
-            // Best to trace, and return false, to stop the request.
+            // Any exception is critical, as bank transfers are never
+            // supposed to fail. Trace accordingly, as then rethrow
+            // the exception, so that Kotak retries the request.
             $this->trace->traceException(
-                $ex, Trace::ERROR, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
+                $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
 
-            $valid = false;
+            throw $ex;
         }
 
         return $valid;
@@ -174,7 +175,7 @@ class Core extends Base\Core
 
         foreach ($refunds as $refund)
         {
-            if ($refund->isStatusFailed() === false)
+            if ($this->skipRefund($refund) === true)
             {
                 $this->trace->info(
                     TraceCode::REFUND_RETRY_SKIPPED,
@@ -213,6 +214,24 @@ class Core extends Base\Core
             'failure'       => $failure,
             'status'        => $status,
         ];
+    }
+
+    protected function skipRefund(PaymentRefund\Entity $refund)
+    {
+        if ($refund->isStatusFailed() === false)
+        {
+            return true;
+        }
+
+        $latestAttempt = $refund->fundTransferAttempts->last();
+
+        if (($latestAttempt !== null) and
+            (in_array($latestAttempt->getRemarks(), self::NRE_FAILURE_MESSAGES, true)))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -263,6 +282,13 @@ class Core extends Base\Core
         $payerBankAccount = $payerBankAccount->edit($input, 'editVirtualBankAccount');
 
         $this->repo->saveOrFail($payerBankAccount);
+
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED,
+            [
+                'bank_account' => $payerBankAccount->toArrayPublic(),
+                'input'        => $input,
+            ]);
 
         return $bankTransfer;
     }

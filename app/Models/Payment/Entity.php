@@ -77,7 +77,6 @@ class Entity extends Base\PublicEntity
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
     const BANK                  = 'bank';
-    const CARD                  = 'card';
     const CARD_ID               = 'card_id';
     const WALLET                = 'wallet';
     const EMI_PLAN_ID           = 'emi_plan_id';
@@ -114,6 +113,10 @@ class Entity extends Base\PublicEntity
 
     // Query params
     const TRANSFERRED           = 'transferred';
+
+    // Relations
+    const CARD                  = 'card';
+    const EMI_PLAN              = 'emi_plan';
 
     // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';
@@ -269,6 +272,7 @@ class Entity extends Base\PublicEntity
         self::ERROR_DESCRIPTION,
         self::ACQUIRER_DATA,
         // self::SUBSCRIPTION_ID,
+        self::EMI_PLAN,
         self::CREATED_AT,
     ];
 
@@ -788,6 +792,16 @@ class Entity extends Base\PublicEntity
     public function setDisputed($disputed)
     {
         $this->setAttribute(self::DISPUTED, $disputed);
+    }
+
+    public function setReference1(string $reference1)
+    {
+        $this->setAttribute(self::REFERENCE1, $reference1);
+    }
+
+    public function setReference2(string $reference2)
+    {
+        $this->setAttribute(self::REFERENCE2, $reference2);
     }
 
     public function decrementAmountTransferred(int $amount)
@@ -1456,6 +1470,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::TWO_FACTOR_AUTH);
     }
+
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
@@ -1479,6 +1494,16 @@ class Entity extends Base\PublicEntity
     public function getTerminalId()
     {
         return $this->getAttribute(self::TERMINAL_ID);
+    }
+
+    public function getReference1()
+    {
+        return $this->getAttribute(self::REFERENCE1);
+    }
+
+    public function getReference2()
+    {
+        return $this->getAttribute(self::REFERENCE2);
     }
 
     public function isSecondRecurring()

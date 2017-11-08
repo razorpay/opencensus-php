@@ -61,7 +61,7 @@ trait EmandateTrait
 
         $data = [
             RequestFields::VERSION         => Constants::VERSION,
-            RequestFields::CORP_ID         => $this->getMerchantId(),
+            RequestFields::CORP_ID         => $this->getEmandateMerchantId(),
             RequestFields::TYPE            => Constants::TYPE,
             RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
@@ -122,6 +122,8 @@ trait EmandateTrait
             ]
         );
 
+        $this->validateCallbackChecksum($content);
+
         $this->assertPaymentId(
             $input['payment'][Payment\Entity::ID],
             $content[ResponseFields::REQUEST_ID]
@@ -131,8 +133,6 @@ trait EmandateTrait
             $this->formatAmount($input['payment'][Payment\Entity::AMOUNT]),
             $content[ResponseFields::AMOUNT]
         );
-
-        $this->validateCallbackChecksum($content);
 
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
@@ -159,11 +159,9 @@ trait EmandateTrait
 
             // SI registration specific callback attributes
             Netbanking\Entity::SI_TOKEN        => $content[ResponseFields::CUSTOMER_REF_NO],
-
-            // If the registration fails, the value in mandate number would be 0,
-            // else, it would be the mandate number. So, we're storing this value in SI_STATUS
-            Netbanking\Entity::SI_STATUS       => $content[ResponseFields::MANDATE_NUMBER],
-
+            Netbanking\Entity::SI_STATUS       => StatusCode::getEmandateStatus(
+                                                      $content[ResponseFields::MANDATE_NUMBER]
+                                                  ),
             Netbanking\Entity::SI_MSG          => $content[ResponseFields::REMARKS],
         ];
     }
@@ -189,9 +187,16 @@ trait EmandateTrait
         {
             $errorCode = StatusCode::getErrorCodeMap($statusCode);
 
-            $errorDescription = StatusCode::getErrorDescriptionMap($statusCode);
-
-            throw new GatewayErrorException($errorCode, $statusCode, $errorDescription, $content);
+            throw new GatewayErrorException(
+                $errorCode,
+                $statusCode,
+                '',
+                [
+                    'content'    => $content,
+                    'payment_id' => $input['payment'][Payment\Entity::ID],
+                    'gateway'    => $this->gateway
+                ]
+            );
         }
     }
 
@@ -233,7 +238,7 @@ trait EmandateTrait
 
         $data = [
             RequestFields::VERSION         => Constants::VERSION,
-            RequestFields::CORP_ID         => $this->getMerchantId(),
+            RequestFields::CORP_ID         => $this->getEmandateMerchantId(),
             RequestFields::TYPE            => Constants::TYPE,
             RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
@@ -263,7 +268,7 @@ trait EmandateTrait
      *
      * @param Verify $verify
      */
-    protected function setRecurringVerifyStatus(Verify $verify)
+    protected function setEmandateVerifyStatus(Verify $verify)
     {
         $this->checkApiSuccess($verify);
 
@@ -305,7 +310,7 @@ trait EmandateTrait
             ($paymentAmount !== $verify->verifyResponseContent[ResponseFields::AMOUNT]);
     }
 
-    protected function saveRecurringVerifyResponseIfNeeded(Verify $verify)
+    protected function saveEmandateVerifyResponseIfNeeded(Verify $verify)
     {
         $content = $verify->verifyResponseContent;
 
@@ -333,6 +338,11 @@ trait EmandateTrait
         if (empty($bankPaymentId) === true)
         {
             $attributes[Netbanking\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_REF_NO];
+        }
+
+        if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
+        {
+            $attributes[Netbanking\Entity::STATUS] = $content[ResponseFields::STATUS_CODE];
         }
 
         return $attributes ?? [];
@@ -397,7 +407,7 @@ trait EmandateTrait
 
     protected function getEncryptor()
     {
-        $aes = new AESCrypto(AES::MODE_ECB, $this->getRecSecret(true));
+        $aes = new AESCrypto(AES::MODE_ECB, $this->getEmandateSecret());
 
         return $aes;
     }
@@ -456,11 +466,11 @@ trait EmandateTrait
             $data[RequestFields::REQUEST_ID],
             $data[RequestFields::CUSTOMER_REF_NO],
             $data[RequestFields::AMOUNT] ?? null,
-            $this->getRecSecret(),
+            $this->getEmandateChecksumSecret(),
         ];
 
         // Amount is not part of the hash for verify
-        if ($this->action !== Action::VERIFY)
+        if ($this->action === Action::VERIFY)
         {
             unset($arrayToBeHashed[3]);
         }
@@ -468,18 +478,24 @@ trait EmandateTrait
         return $this->generateHash($arrayToBeHashed);
     }
 
-    protected function getRecSecret(bool $encryption = false) : string
+    protected function getEmandateSecret() : string
     {
-        if ($encryption === true)
+        if ($this->mode === Mode::TEST)
         {
-            $key = ($this->mode === Mode::TEST) ? 'test_hash_secret_encrec' : 'live_hash_secret_encrec';
-        }
-        else
-        {
-            $key = ($this->mode === Mode::TEST) ? 'test_hash_secret_rec' : 'live_hash_secret_rec';
+            return $this->config['test_hash_secret_encrec'];
         }
 
-        return $this->config[$key];
+        return $this->getLiveSecret();
+    }
+
+    protected function getEmandateChecksumSecret() : string
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_hash_secret_rec'];
+        }
+
+        return $this->input['terminal']['gateway_terminal_password'];
     }
 
     public function getEmandateMerchantId()
@@ -488,9 +504,7 @@ trait EmandateTrait
         {
             return $this->config['test_merchant_id_rec'];
         }
-        else
-        {
-            return $this->config['live_merchant_id_rec'];
-        }
+
+        return $this->getLiveMerchantId();
     }
 }

@@ -1,4 +1,4 @@
-Subscription is cancelled. Like a wow!
+Subscription is cancelled.
 
 --
 Team Razorpay

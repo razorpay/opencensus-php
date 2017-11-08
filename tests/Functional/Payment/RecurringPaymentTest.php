@@ -40,6 +40,30 @@ class RecurringPaymentTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
     }
 
+    public function testDebitCardRecurringFirstPaymentCreatePublicAuth()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+        $this->fixtures->iin->create([
+            'iin' => '402790',
+            'country' => 'IN',
+            'network' => 'Visa',
+            'type' => 'debit'
+        ]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+        $payment['card']['number'] = '4027902780181358';
+
+        $this->makeRequestAndCatchException(function () use ($payment) {
+            $this->doAuthPayment($payment);
+        }, \RZP\Exception\BadRequestException::class);
+
+        $this->fixtures->merchant->addFeatures([Feature::ALLOW_DC_RECURRING]);
+
+        $this->doAuthPayment($payment);
+    }
+
     public function testRecurringInternationalPaymentWhenAllowed()
     {
         $this->ba->publicAuth();

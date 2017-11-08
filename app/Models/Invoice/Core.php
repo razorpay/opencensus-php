@@ -520,9 +520,10 @@ class Core extends Base\Core
         ];
 
         // Add order data
+        $order = $this->repo->order->findByPublicIdAndMerchant($publicOrderId, $merchant);
 
         $data['order'] = (new Order\Core)->getFormattedDataForCheckout(
-                                                $publicOrderId,
+                                                $order,
                                                 $merchant);
 
         // Add customer data if available

@@ -1,4 +1,4 @@
-Subscription is authenticated. Like a wow!
+Subscription is authenticated.
 
 --
 Team Razorpay

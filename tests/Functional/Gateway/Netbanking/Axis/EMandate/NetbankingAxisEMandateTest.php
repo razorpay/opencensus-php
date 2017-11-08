@@ -58,6 +58,24 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->assertEMandateEntities();
     }
 
+    public function testEmandateInitialPaymentFailure()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'emandateauth')
+            {
+                $content[Emandate\ResponseFields::STATUS_CODE] = Emandate\StatusCode::FAILED;
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doAuthPayment($this->payment);
@@ -193,16 +211,19 @@ class NetbankingAxisEMandateTest extends TestCase
     {
         $netbanking = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
-        $this->assertNotNull($netbanking['bank_payment_id']);
-        $this->assertNotNull($netbanking['si_token']);
-
         $token = $this->getLastEntity('token', true);
+
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('pay_' . $netbanking['payment_id'], $payment['id']);
+        $this->assertNotNull($netbanking['si_token']);
+
+        $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
+        $this->assertEquals(Emandate\StatusCode::EMANDATE_REGISTRATION_SUCCESS, $netbanking['si_status']);
+        $this->assertEquals(Emandate\StatusCode::SUCCESS, $netbanking['status']);
+        $this->assertEquals($payment['id'], 'pay_' . $netbanking['payment_id']);
+        $this->assertEquals($token['gateway_token'], $netbanking['si_token']);
+
         $this->assertEquals($payment['token_id'], $token['id']);
-        $this->assertEquals($netbanking['si_token'], $token['gateway_token']);
 
         $this->assertEquals(Token\RecurringStatus::CONFIRMED, $token[Token\Entity::RECURRING_STATUS]);
         $this->assertEquals(self::ACCOUNT_NUMBER, $token[Token\Entity::ACCOUNT_NUMBER]);

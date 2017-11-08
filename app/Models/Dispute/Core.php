@@ -380,11 +380,16 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         array $input)
     {
+        if (empty($input[Entity::SKIP_EMAIL]) === false)
+        {
+            return;
+        }
+
         $email = $merchant->getEmail();
 
-        if (empty($input[Entity::MERCHANT_EMAIL]) === false)
+        if (empty($input[Entity::MERCHANT_EMAILS]) === false)
         {
-            $email = $input['merchant_email'];
+            $email = $input[Entity::MERCHANT_EMAILS];
         }
 
         $data = [

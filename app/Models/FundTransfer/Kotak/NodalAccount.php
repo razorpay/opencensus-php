@@ -159,19 +159,13 @@ class NodalAccount extends NodalBase\NodalAccount
 
             $type = $this->getPaymentType($ba, $amount, $attempt->getSourceType());
 
-            // Hack to handle Zendesk Ticket #107931
-            // Customer NRE account, cannot receive IMPS
-            if ($source->getId() === '8rNZ0jdckaaq9L')
-            {
-                $type = 'NEFT';
-            }
-
             $array = [
                 Headings::CLIENT_CODE             => 'RAZORNODAL',
                 Headings::PRODUCT_CODE            => 'REFUND',
                 Headings::PAYMENT_TYPE            => $type,
                 Headings::PAYMENT_REF_NO          => $paymentRefNo,
                 Headings::PAYMENT_DATE            => $this->date,
+                Headings::INSTRUMENT_DATE         => $this->date,
                 Headings::DR_AC_NO                => static::$nodalAccountNumber,
                 Headings::AMOUNT                  => (string) $amount,
                 Headings::BANK_CODE_INDICATOR     => 'M',

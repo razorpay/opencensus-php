@@ -43,7 +43,7 @@ class Gateway extends Base\Gateway
     {
         parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->setBankingTypeAndDomainType();
+        $this->setBankingTypeAndDomainType($input);
     }
 
     public function authorize(array $input)
@@ -152,9 +152,9 @@ class Gateway extends Base\Gateway
     {
         if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
         {
-            $this->setRecurringVerifyStatus($verify);
+            $this->setEmandateVerifyStatus($verify);
 
-            $verify->payment = $this->saveRecurringVerifyResponseIfNeeded($verify);
+            $verify->payment = $this->saveEmandateVerifyResponseIfNeeded($verify);
 
             return;
         }
@@ -206,20 +206,10 @@ class Gateway extends Base\Gateway
                 Payment\Verify\Action::RETRY);
         }
 
-        if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
+        if ((isset($response[ResponseFields::PAYMENT_STATUS]) === true) and
+            ($response[ResponseFields::PAYMENT_STATUS] === Status::SUCCESS))
         {
-            if (Emandate\StatusCode::isSuccess($response[Emandate\ResponseFields::STATUS_CODE]))
-            {
-                $verify->gatewaySuccess = true;
-            }
-        }
-        else
-        {
-            if ((isset($response[ResponseFields::PAYMENT_STATUS]) === true) and
-                ($response[ResponseFields::PAYMENT_STATUS] === Status::SUCCESS))
-            {
-                $verify->gatewaySuccess = true;
-            }
+            $verify->gatewaySuccess = true;
         }
     }
 
@@ -507,9 +497,12 @@ class Gateway extends Base\Gateway
         return Status::getAuthSuccessStatus();
     }
 
-    protected function setBankingTypeAndDomainType()
+    protected function setBankingTypeAndDomainType($input)
     {
-        if ($this->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        if (
+            (isset($input['payment']) === true) and
+            ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        )
         {
             $this->setBankingType(self::EMANDATE);
         }
@@ -534,6 +527,11 @@ class Gateway extends Base\Gateway
         if ($domainType !== self::EMANDATE)
         {
             $domainType .= '_' . $this->action;
+        }
+        else
+        {
+            // For EMandate, add test and live domain URLs
+            $domainType .= '_' . $this->getMode();
         }
 
         $domainConstantName = strtoupper($domainType).'_DOMAIN';

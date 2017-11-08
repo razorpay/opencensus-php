@@ -8,7 +8,10 @@ class Url
 
     const RETAIL_VERIFY_DOMAIN    = 'https://www.axisbiconnect.co.in/';
 
-    const EMANDATE_DOMAIN         = 'https://uat-etendering.axisbank.co.in/index.php/api'; // TODO: This is UAT only, work on this
+    const EMANDATE_TEST_DOMAIN    = 'https://uat-etendering.axisbank.co.in/index.php/api';
+
+    // TODO: Change to live URL
+    const EMANDATE_LIVE_DOMAIN    = 'https://uat-etendering.axisbank.co.in/index.php/api';
 
     const AUTHORIZE_RETAIL        = 'wps/portal/rBanking/AxisSMRetailLogin/axissmretailpage?AuthenticationFG.MENU_ID=CIMSHP&AuthenticationFG.CALL_MODE=2&CATEGORY_ID=IRCSM';
 

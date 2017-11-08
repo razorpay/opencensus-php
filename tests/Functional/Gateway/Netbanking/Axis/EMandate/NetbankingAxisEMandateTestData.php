@@ -18,6 +18,21 @@ return [
         'entity'          => 'netbanking',
     ],
 
+    'testEmandateInitialPaymentFailure' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        ],
+    ],
+
     'testPaymentVerify' => [
         'TYP' => 'TEST',
         'STC' => '000',
