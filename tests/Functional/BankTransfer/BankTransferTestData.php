@@ -215,7 +215,7 @@ return [
             'url' => '/ecollect/validate',
             'method' => 'post',
             'content' => [
-                'payee_ifsc'     => 'IFSC0009876',
+                'payee_account'  => 'RZP1234567890',
                 'payer_account'  => '765432346787812',
                 'payer_ifsc'     => 'HDFC0000001',
                 'mode'           => 'neft',
@@ -229,7 +229,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The payee account field is required.',
+                    'description' => 'The payee ifsc field is required.',
                 ],
             ],
             'status_code' => 400,
