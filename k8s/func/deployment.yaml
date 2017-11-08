@@ -34,7 +34,6 @@ spec:
               key: APP_MODE
         image: razorpay/api:2d9fb20b8e96df2ae4e775cb6418a285af7c7095
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
         args: ["web"]
         ports:
         - containerPort: 80
@@ -76,7 +75,6 @@ spec:
               key: APP_MODE
         image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
         args: ["sqs", "10"]
         ports:
         - containerPort: 80
@@ -95,7 +93,6 @@ spec:
               key: APP_MODE
         image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "api-gen-live", "10"]
         ports:
         - containerPort: 80
@@ -114,7 +111,6 @@ spec:
               key: APP_MODE
         image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "api-gen-test", "20"]
         ports:
         - containerPort: 80
@@ -133,7 +129,6 @@ spec:
               key: APP_MODE
         image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "webhooks-live", "10"]
         ports:
         - containerPort: 80
@@ -152,7 +147,6 @@ spec:
               key: APP_MODE
         image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "webhooks-test", "20"]
         ports:
         - containerPort: 80
@@ -171,7 +165,6 @@ spec:
               key: APP_MODE
         image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "webhooks-failure", "10"]
         ports:
         - containerPort: 80
@@ -190,7 +183,6 @@ spec:
               key: APP_MODE
         image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "invoice-emails", "10"]
         ports:
         - containerPort: 80
@@ -209,7 +201,6 @@ spec:
               key: APP_MODE
         image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "invoice-reports", "10"]
         ports:
         - containerPort: 80
@@ -228,7 +219,6 @@ spec:
               key: APP_MODE
         image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "es-sync", "10"]
         ports:
         - containerPort: 80
@@ -247,7 +237,6 @@ spec:
               key: APP_MODE
         image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "emails", "10"]
         ports:
         - containerPort: 80
@@ -266,7 +255,6 @@ spec:
               key: APP_MODE
         image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "subscription-charge", "10"]
         ports:
         - containerPort: 80
@@ -285,7 +273,6 @@ spec:
               key: APP_MODE
         image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "batch", "10"]
         ports:
         - containerPort: 80
