@@ -56,6 +56,8 @@ function validate(values) {
       // `expireByDate` is the expiry date wihtout any info about the time
       // (start of the day)
       expireByDate: selector(state, 'expire_by_date'),
+      emailNotify: selector(state, 'email_notify'),
+      smsNotify: selector(state, 'sms_notify'),
     };
   },
   { saveInvoice, showNotification }
@@ -76,8 +78,6 @@ export default class CreatePaymentLink extends Component {
     super(...arguments);
     this.state = {
       errors: null,
-      email_notify: false,
-      sms_notify: false,
     };
     this.setExpiryDate = this.setExpiryDate.bind(this);
     this.handleCommChange = this.handleCommChange.bind(this);
@@ -135,7 +135,7 @@ export default class CreatePaymentLink extends Component {
   //Set communication mode(SMS or EMAIL)
   handleCommChange(value, mode) {
     var commStr = mode === 'p' ? 'sms_notify' : 'email_notify';
-    this.setState({ [commStr]: !!value.length });
+
     return this.props.change(commStr, !!value.length);
   }
 
@@ -185,14 +185,13 @@ export default class CreatePaymentLink extends Component {
   };
 
   generateCtaText = () => {
-    let { invoice } = this.props;
-    let { sms_notify, email_notify } = this.state;
+    let { invoice, smsNotify, emailNotify } = this.props;
     let ctaText = {};
 
     if (invoice) {
       ctaText = { btn: 'Save Payment Link', pending: 'Saving...' };
     } else {
-      if (email_notify || sms_notify) {
+      if (smsNotify || emailNotify) {
         ctaText = { btn: 'Send Payment Link', pending: 'Sending...' };
       } else {
         ctaText = { btn: 'Create Payment Link', pending: 'Creating...' };
