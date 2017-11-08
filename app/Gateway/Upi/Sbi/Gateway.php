@@ -42,9 +42,8 @@ class Gateway extends Base\Gateway
         Base\Entity::ACTION                    => Base\Entity::ACTION,
 
         // Mapping response fields to entity variables
-        ResponseFields::NPCI_TRANSACTION_ID    => Base\Entity::NPCI_REFERENCE_ID,
-        ResponseFields::CUSTOMER_REFERENCE_NO  => Base\Entity::CUSTOMER_REFERENCE_ID,
-        ResponseFields::UPI_TRANS_REFERENCE_NO => Base\Entity::GATEWAY_PAYMENT_ID,
+        ResponseFields::CUSTOMER_REFERENCE_NO  => Base\Entity::GATEWAY_PAYMENT_ID,
+        ResponseFields::UPI_TRANS_REFERENCE_NO => Base\Entity::NPCI_REFERENCE_ID,
         ResponseFields::STATUS                 => Base\Entity::STATUS_CODE,
     ];
 
@@ -84,7 +83,7 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayEntityResponse($gatewayPayment, $response[ResponseFields::API_RESPONSE]);
 
-        $this->checkResponseStatus($response[ResponseFields::API_RESPONSE]);
+        $this->checkResponseStatus($response[ResponseFields::API_RESPONSE][ResponseFields::STATUS]);
 
         $vpa = $this->terminal->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA;
 
@@ -112,9 +111,9 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
                                                                       Action::AUTHORIZE);
 
-        assertTrue($content[ResponseFields::UPI_TRANS_REFERENCE_NO] === $gatewayPayment->getGatewayPaymentId());
+        assertTrue($content[ResponseFields::UPI_TRANS_REFERENCE_NO] === $gatewayPayment->getNpciReferenceId());
 
-        $this->checkResponseStatus($content);
+        $this->checkResponseStatus($content[ResponseFields::STATUS]);
 
         // Authorization was successful
         $this->updateGatewayEntityResponse($gatewayPayment, $content);
@@ -181,7 +180,7 @@ class Gateway extends Base\Gateway
 
         $request = [
             RequestFields::REQUEST_INFO          => $requestInfo,
-            RequestFields::CUSTOMER_REFERENCE_NO => $verify->payment->getCustomerReferenceID(),
+            RequestFields::CUSTOMER_REFERENCE_NO => $verify->payment->getGatewayPaymentId(),
         ];
 
         return $this->getStandardRequestArray($request);
@@ -243,7 +242,7 @@ class Gateway extends Base\Gateway
             //
             // If Response status checking passes, we set gateway success to true
             //
-            $this->checkResponseStatus($content[ResponseFields::API_RESPONSE]);
+            $this->checkResponseStatus($content[ResponseFields::API_RESPONSE][ResponseFields::STATUS]);
 
             $verify->gatewaySuccess = true;
         }
@@ -259,14 +258,11 @@ class Gateway extends Base\Gateway
     // TODO: Validate VPA before sending collect request and don't create payment entity if VPA is invalid
 
     /**
-     * @param array $response
      * @param string $status
      * @throws GatewayErrorException
      */
-    protected function checkResponseStatus(array $response, $status = ResponseFields::STATUS)
+    protected function checkResponseStatus(string $status)
     {
-        $status = $response[$status];
-
         if (Status::isStatusSuccess($status) === false)
         {
             $errorCode = Status::getErrorCode($status);
@@ -450,7 +446,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             $traceCode,
             [
-                'encrypted'  => false,
+                'encrypted'  => true,
                 'gateway'    => $this->gateway,
                 'payment_id' => $this->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
                 'request'    => $request

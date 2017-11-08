@@ -83,7 +83,6 @@ class UpiMindgateSbiGatewayTest extends TestCase
 
         $upiEntity = $this->getLastEntity(Entity::UPI, true);
         $this->assertNotNull($upiEntity[Upi::NPCI_REFERENCE_ID]);
-        $this->assertNotNull($upiEntity[Upi::CUSTOMER_REFERENCE_ID]);
         $this->assertNotNull($upiEntity[Upi::GATEWAY_PAYMENT_ID]);
 
         // Add a capture as well, just for completeness sake
