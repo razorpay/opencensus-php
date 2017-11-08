@@ -134,7 +134,7 @@ class Validator extends Base\Validator
             in_array($input[Entity::STATUS], Status::getTransactionalStatuses(),true))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Disputes of non-transactional kinds can only be closed.',
+                'Non-transactional disputes can only be closed.',
                 Entity::STATUS,
                 $input);
         }
@@ -142,16 +142,23 @@ class Validator extends Base\Validator
 
     public function validateDeductOnsetForNonTransactionalPhase(array $input)
     {
-        if (isset($input[Entity::DEDUCT_AT_ONSET]) === true)
+        if (isset($input[Entity::DEDUCT_AT_ONSET]) === false)
         {
-            if ((in_array($input[Entity::PHASE], Phase::getNonTransactionalPhases(),true) === true)
-                and $input[Entity::DEDUCT_AT_ONSET] == true)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Deduct at onset cannot be done for disputes in phase ' . $input[Entity::PHASE],
-                    Entity::DEDUCT_AT_ONSET,
-                    $input);
-            }
+            return;
+        }
+
+        $shouldDeductOnset = filter_var($input[Entity::DEDUCT_AT_ONSET],
+            FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+        $nonTransactionalPhases = Phase::getNonTransactionalPhases();
+
+        if ((in_array($input[Entity::PHASE], $nonTransactionalPhases,true) === true)
+            and  $shouldDeductOnset === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Deduct at onset cannot be done for disputes in phase ' . $input[Entity::PHASE],
+                Entity::DEDUCT_AT_ONSET,
+                $input);
         }
     }
 }

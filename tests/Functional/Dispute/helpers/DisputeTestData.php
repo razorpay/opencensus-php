@@ -758,7 +758,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Disputes of non-transactional kinds can only be closed.',
+                    'description' => 'Non-transactional disputes can only be closed.',
                 ],
             ],
             'status_code' => 400,

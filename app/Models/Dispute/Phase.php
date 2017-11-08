@@ -10,6 +10,10 @@ class Phase
     const RETRIEVAL       = 'retrieval';
     const FRAUD           = 'fraud';
 
+    /**
+     * $nonTransactionalPhase are phases where no transactions
+     * should be done as part of dispute adjustments on closure
+     */
     protected static $nonTransactionalPhase = [
         self::RETRIEVAL,
         self::FRAUD,

@@ -306,7 +306,9 @@ class Entity extends Base\PublicEntity
 
     public function isNonTransactional(): bool
     {
-        return (in_array($this->getPhase(), Phase::getNonTransactionalPhases(), true) === true);
+        $nonTransactionalPhases = Phase::getNonTransactionalPhases();
+
+        return (in_array($this->getPhase(), $nonTransactionalPhases, true) === true);
     }
 
 }
