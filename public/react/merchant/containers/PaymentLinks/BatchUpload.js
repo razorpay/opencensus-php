@@ -5,9 +5,7 @@ import { withRouter } from 'react-router-dom';
 import BatchUpload from 'merchant/components/Batch/Upload';
 
 import { showNotification } from 'rzp/modules/notifications';
-import {
-  uploadPaymentLinkBatch as uploadBatch,
-} from 'merchant/modules/batches';
+import { uploadPaymentLinkBatch as uploadBatch } from 'merchant/modules/batches';
 
 @withRouter
 @connect(state => state.session, { uploadBatch, showNotification })
@@ -16,7 +14,12 @@ export default class BatchUploadContainer extends Component {
     let isProceedDialogType = false;
     // Api must give this flag. Currently hard coded for uber
     if (
-      ['82LK42BGTN2bOe', '7SVOQZGZuwHr4I'].indexOf(this.props.user.current) > -1
+      [
+        '82LK42BGTN2bOe',
+        '7SVOQZGZuwHr4I',
+        '7vBeJaXip39KHa',
+        '85S1EUFiCl3ZJy',
+      ].indexOf(this.props.user.current) > -1
     ) {
       isProceedDialogType = true;
     }

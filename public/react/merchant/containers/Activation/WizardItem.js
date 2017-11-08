@@ -90,6 +90,12 @@ export default class WizardItem extends Component {
     return this._save(props)
       .then(response => {
         let step = this.props.step;
+
+        // For updating the accounts list view on success of activation
+        if (step === this.finalStep && this.props.callback) {
+          this.props.callback();
+        }
+
         let message =
           step === this.finalStep
             ? 'Form submitted Successfully!'
@@ -176,9 +182,7 @@ export default class WizardItem extends Component {
             >
               <div class="row">
                 <div class="col-md-offset-3 col-md-9">
-                  <h4 class="wizard-header">
-                    {this.props.pageTitle}
-                  </h4>
+                  <h4 class="wizard-header">{this.props.pageTitle}</h4>
                   <Alert type="error" message={this.state.errors} />
                 </div>
               </div>

@@ -160,6 +160,10 @@ return [
             'url'       => 'payments/{id}/card',
             'routeName' => 'card_get_single'
         ],
+        'payment_bank_transfer_fetch'       => [
+            'url'       => 'payments/{id}/bank_transfer',
+            'routeName' => 'payment_bank_transfer_fetch'
+        ],
         'payment_fetch_refunds'             => [
             'url'       => 'payments/{id}/refunds',
             'routeName' => 'payment_get_refunds'

@@ -80,6 +80,18 @@ export default class Payment extends GenericEntity {
     return this.makeGenericAjaxCall({ data });
   }
 
+  fetchBankTransfer() {
+    const data = {};
+
+    data.url_params = JSON.stringify({
+      '{id}': this.id,
+    });
+
+    data.route_name = 'payment_bank_transfer_fetch';
+
+    return this.makeGenericAjaxCall({ data });
+  }
+
   didDeserialize() {
     let session = this.getSession();
     this.capturableAmount = this.amount;

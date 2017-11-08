@@ -347,7 +347,7 @@ app.controller('EntitiesCtrl', [
       gateway_downtime: {
         method: methodList,
         gateway: gatewayList,
-        bank: ['Bank'],
+        issuer: ['Issuer'],
       },
       gateway_file: {
         type: ['all', 'emi', 'refund', 'combined'],
@@ -547,6 +547,19 @@ app.controller('EntitiesCtrl', [
         transaction_id: ['Transaction Id'],
         notes: ['Notes'],
       },
+      report: {
+        merchant_id: ['Merchant Id'],
+        type: [
+          'all',
+          'merchant',
+          'order',
+          'payment',
+          'refund',
+          'reversal',
+          'settlement',
+          'transaction',
+        ],
+      },
       reversal: {
         merchant_id: ['Merchant Id'],
         transfer_id: ['Transfer Id'],
@@ -649,6 +662,7 @@ app.controller('EntitiesCtrl', [
       },
       wallet: {
         payment_id: ['Payment Id'],
+        gateway_payment_id: ['Gateway Payment Id'],
         wallet: walletList,
       },
       webhook: {

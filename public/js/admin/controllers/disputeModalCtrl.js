@@ -84,6 +84,13 @@ app.controller('DisputeModalCtrl', [
       $scope.dispute.amount = $scope.dispute.amount * 100;
       $scope.dispute.deduct_at_onset = $scope.dispute.deduct_at_onset ? 1 : 0;
       $scope.dispute.skip_email = $scope.dispute.skip_email ? 1 : 0;
+      if ($scope.dispute.merchant_emails) {
+        $scope.dispute.merchant_emails = $scope.dispute.merchant_emails
+          .split(',')
+          .map(function(item) {
+            return item.trim();
+          });
+      }
 
       // Pruning as Edit mode needs only 3 fields in req payload
       if ($scope.editMode) {

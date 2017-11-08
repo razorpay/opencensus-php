@@ -426,36 +426,6 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function tagMerchant(array $input)
-    {
-        if ($this->currentUser === null)
-        {
-            return [[], []];
-        }
-
-        $currentMerchant = $this->currentUser->currentMerchant();
-
-        $merchantTags = $this->getMerchantTags($currentMerchant->id);
-
-        $allTags = [];
-
-        if (empty($merchantTags) === false)
-        {
-            $allTags = array_map('strtolower', $merchantTags);
-        }
-
-        $newAllTags = array_diff($allTags, ['newui']);
-
-        if ((isset($input['newui']) === true) and ($input['newui'] === 'true'))
-        {
-            $newAllTags[] = 'newui';
-        }
-
-        $this->addMerchantTagsOnAPI($currentMerchant->id, $newAllTags);
-
-        return [[], $currentMerchant->toArray()];
-    }
-
     public function getMerchantUsers($merchantId) {
         $getMerchantUsers = [
             'route_name' => 'merchant_fetch_users',

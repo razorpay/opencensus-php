@@ -10,21 +10,27 @@ import OnboardingIllustrationPNG from 'styles/assets/onboarding-illustration.svg
 import newProducts from 'merchant/containers/Banners/newProducts';
 import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
 
-const NewProducts = () => {
+const NewProducts = ({ close }) => {
   const productItemStyle = { width: `${100 / newProducts.length}%` };
 
   return (
     <div className="media-body">
+      <button class="close" onClick={close}>
+        <i class="icon icon-close" />
+      </button>
+
       <div className="media-heading">Explore Our Product Stack</div>
       <p>
         Presenting India’s first holistic converged payment solution for you.
         Check our brand new products.
       </p>
       <div className="new-products-row">
-        {newProducts.map((product, key) => (
+        {newProducts.map((product, key) =>
           <div key={key} className={`product-item`} style={productItemStyle}>
             <MediaCard title={product.name} symbol={product.symbol}>
-              <div className="text-small m-b">{product.description}</div>
+              <div className="text-small m-b">
+                {product.description}
+              </div>
               <div className="links">
                 <Link to={product.link}>Try Now</Link>
                 <span className="text-fade" style={{ padding: '0 4px' }}>
@@ -36,21 +42,21 @@ const NewProducts = () => {
               </div>
             </MediaCard>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
 };
 
-const ServiceTaxNews = ({ close }) => (
+const ServiceTaxNews = ({ close }) =>
   <div class="media onboarding-card servicetax-news">
     <img src={require('styles/assets/remove-service-tax.svg')} />
     <div>
       <div class="heading">Removal of 'service_tax' field from APIs</div>
       <div class="news">
-        On 1 November 2017, service_tax field will be removed from our APIs and
-        Reports. Read announcement to understand how it may affect you. If
-        you've read and understood this, you may{' '}
+        On 1 November 2017, "service_tax" field was replaced by "tax" in our
+        APIs and Reports. Read announcement to understand how it may affect you.
+        If you've read and understood this, you may{' '}
         <a class="btn-link" onClick={close}>
           close this message
         </a>.
@@ -63,8 +69,7 @@ const ServiceTaxNews = ({ close }) => (
     >
       View Announcement <i class="icon icon-chevron-right" />
     </a>
-  </div>
-);
+  </div>;
 
 @connect(state => state.session)
 export default class OnboardingCard extends Component {
@@ -80,7 +85,10 @@ export default class OnboardingCard extends Component {
     this.setState({
       showOnboarding: LocalStorageService.getItem('show_onboarding_card'),
       isFirstStep: LocalStorageService.getItem('onboarding_first_step'),
-      showServiceTaxNews: !LocalStorageService.getItem('show_service_tax_new'),
+      showServiceTaxNews: !LocalStorageService.getItem('hide_service_tax_news'),
+      showNewProductsBanner: !LocalStorageService.getItem(
+        'hide_newproducts_banner'
+      ),
     });
   }
 
@@ -95,8 +103,13 @@ export default class OnboardingCard extends Component {
   };
 
   closeServiceTaxNews = () => {
-    LocalStorageService.setItem('show_service_tax_news', false);
+    LocalStorageService.setItem('hide_service_tax_news', true);
     this.setState({ showServiceTaxNews: false });
+  };
+
+  closeNewProductsBanner = () => {
+    LocalStorageService.setItem('hide_newproducts_banner', true);
+    this.setState({ showNewProductsBanner: false });
   };
 
   render() {
@@ -137,11 +150,11 @@ export default class OnboardingCard extends Component {
       } else {
         FirstStep = (
           <div class="media-body">
-            {user.isActivated ? (
-              <button class="close" onClick={this.closeOnboarding}>
-                <i class="icon icon-close" />
-              </button>
-            ) : null}
+            {user.isActivated
+              ? <button class="close" onClick={this.closeOnboarding}>
+                  <i class="icon icon-close" />
+                </button>
+              : null}
             <div class="media-heading">Your Next Steps...</div>
             <p>
               Your Razorpay account is created. Now, you can browse through the
@@ -153,26 +166,24 @@ export default class OnboardingCard extends Component {
               </div>
 
               <div class="col-sm-6">
-                {payments.length ? (
-                  <PaymentsReceivedStep />
-                ) : (
-                  <KeyGenerationStep
-                    user={user}
-                    mode={mode}
-                    modeFormatted={modeFormatted}
-                  />
-                )}
+                {payments.length
+                  ? <PaymentsReceivedStep />
+                  : <KeyGenerationStep
+                      user={user}
+                      mode={mode}
+                      modeFormatted={modeFormatted}
+                    />}
               </div>
             </div>
 
-            {user.isActivated ? (
-              <div style={{ marginTop: '12px' }}>
-                You may now{' '}
-                <a onClick={this.closeOnboarding}>close this card</a>
-                . You can access the <a>documentation</a> from topbar, if
-                needed.
-              </div>
-            ) : null}
+            {user.isActivated
+              ? <div style={{ marginTop: '12px' }}>
+                  You may now{' '}
+                  <a onClick={this.closeOnboarding}>close this card</a>
+                  . You can access the <a>documentation</a> from topbar, if
+                  needed.
+                </div>
+              : null}
           </div>
         );
       }
@@ -181,10 +192,9 @@ export default class OnboardingCard extends Component {
     return (
       <div>
         {isOldUser &&
-          this.state.showServiceTaxNews && (
-            <ServiceTaxNews close={this.closeServiceTaxNews} />
-          )}
-        {FirstStep && (
+          this.state.showServiceTaxNews &&
+          <ServiceTaxNews close={this.closeServiceTaxNews} />}
+        {FirstStep &&
           <div
             class={`media onboarding-card ${isFirstStep ? 'first-step' : ''}`}
           >
@@ -192,13 +202,12 @@ export default class OnboardingCard extends Component {
               <img class="media-object" src={OnboardingIllustrationPNG} />
             </div>
             {FirstStep}
-          </div>
-        )}
-        {isOldUser && (
+          </div>}
+        {isOldUser &&
+          this.state.showNewProductsBanner &&
           <div class={`media onboarding-card new-features`}>
-            <NewProducts />
-          </div>
-        )}
+            <NewProducts close={this.closeNewProductsBanner} />
+          </div>}
       </div>
     );
   }
