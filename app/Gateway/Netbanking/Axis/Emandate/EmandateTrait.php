@@ -480,16 +480,18 @@ trait EmandateTrait
 
     protected function getRecSecret(bool $encryption = false) : string
     {
-        if ($encryption === true)
+        if ($this->mode === Mode::TEST)
         {
-            $key = ($this->mode === Mode::TEST) ? 'test_hash_secret_encrec' : 'live_hash_secret_encrec';
-        }
-        else
-        {
-            $key = ($this->mode === Mode::TEST) ? 'test_hash_secret_rec' : 'live_hash_secret_rec';
+            $key = (($encryption === true) ? 'test_hash_secret_encrec' : 'test_hash_secret_rec');
+
+            return $this->config[$key];
         }
 
-        return $this->config[$key];
+        return (
+                ($encryption === true) ?
+                ($this->input['terminal']->getGatewaySecureSecretAttribute()) :
+                ($this->input['terminal']->getGatewayTerminalPasswordAttribute())
+        );
     }
 
     public function getEmandateMerchantId()
@@ -498,9 +500,7 @@ trait EmandateTrait
         {
             return $this->config['test_merchant_id_rec'];
         }
-        else
-        {
-            return $this->config['live_merchant_id_rec'];
-        }
+
+        return $this->getLiveMerchantId();
     }
 }
