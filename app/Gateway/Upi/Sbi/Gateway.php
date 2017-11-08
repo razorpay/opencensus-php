@@ -312,6 +312,30 @@ class Gateway extends Base\Gateway
         return $traceCode;
     }
 
+    protected function getRequestTraceCode(): string
+    {
+        switch ($this->action)
+        {
+            case Action::AUTHORIZE:
+                $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST;
+                break;
+
+            case Action::CALLBACK:
+                $traceCode = TraceCode::GATEWAY_PAYMENT_CALLBACK;
+                break;
+
+            case Action::VERIFY:
+                $traceCode = TraceCode::GATEWAY_PAYMENT_VERIFY;
+                break;
+
+            default:
+                $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST;
+                break;
+        }
+
+        return $traceCode;
+    }
+
     protected function getAuthorizeRequest(array $input): array
     {
         $content = [
@@ -399,7 +423,7 @@ class Gateway extends Base\Gateway
      */
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null): array
     {
-        $traceCode = $this->getTraceCode();
+        $traceCode = $this->getRequestTraceCode();
 
         $this->trace->info(
             $traceCode,
