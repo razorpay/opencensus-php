@@ -312,12 +312,5 @@ class Service extends Base\Service
 
         return $response;
     }
-
-    public function backfillFeatureActivationStatus()
-    {
-        (new Core)->backfillProductActivationRequests();
-
-        return [];
-    }
 }
 

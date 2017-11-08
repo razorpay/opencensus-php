@@ -67,53 +67,6 @@ class Repository extends BaseRepository
         }
     }
 
-    public function getProductRequestsSubmitted()
-    {
-        $requests = DB::Connection('live')->select("
-          SELECT * FROM
-            (SELECT SUBSTRING_INDEX(`key`, '.', 1) AS product, entity_id
-              FROM settings
-              GROUP BY product, entity_id) AS products
-        ");
-
-        $merchantRequests = [];
-
-        // Generate a merchant to products map
-        foreach ($requests as $request)
-        {
-            $merchantId = $request->entity_id;
-
-            $product = $request->product;
-
-            $merchantRequests[$merchantId] = $merchantRequests[$merchantId] ?? [];
-
-            array_push($merchantRequests[$merchantId], $product);
-        }
-
-        return $merchantRequests;
-    }
-
-    /**
-     * Returns true if the features enabled in the mode passed
-     *
-     * @param string $mode
-     * @param string $merchantId
-     * @param string $featureName
-     *
-     * @return bool
-     */
-    public function isFeatureEnabledInMode(string $mode, string $merchantId, string $featureName): bool
-    {
-        $features = $this->newQueryWithConnection($mode)
-                         ->select(Entity::NAME)
-                         ->where(Entity::ENTITY_ID, $merchantId)
-                         ->where(Entity::NAME, $featureName)
-                         ->get()
-                         ->toArray();
-
-        return (count($features) === 1);
-    }
-
     /**
      * Save feature with sync: Adds features to test and live
      * DB's if they don't already exist
