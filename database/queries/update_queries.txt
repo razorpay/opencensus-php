@@ -1183,3 +1183,6 @@ where utr = 'KKBKR22017110300419148' limit 1;
 
 # Fix Route settlement bug
 UPDATE transactions SET settled_at=1509942600 WHERE id='8wulvPuP2Xu7Mj';
+
+# Fix user email case.
+UPDATE users AS u SET u.email = Lower(u.email) WHERE u.email != Lower(u.email) LIMIT 100;
