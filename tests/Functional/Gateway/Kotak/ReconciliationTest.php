@@ -75,6 +75,9 @@ class ReconciliationTest extends TestCase
             $this->assertNotNull($setl[$key]);
         }
 
+        $merchant = $this->getEntityById('merchant','10000000000000', true);
+        $this->assertEquals(false, $merchant['hold_funds']);
+
         $batch = $this->getLastEntity('batch_fund_transfer', true);
 
         $this->assertEquals(1, $batch['processed_count']);
