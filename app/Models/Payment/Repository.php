@@ -34,7 +34,7 @@ class Repository extends Base\Repository
         Entity::EMAIL              => 'sometimes|email',
         Entity::ORDER_ID           => 'sometimes|string|size:20',
         Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1',
-        self::EXPAND . '.*'        => 'string|in:card,',
+        self::EXPAND . '.*'        => 'string|in:card',
     ];
 
     // These are proxy allowed params to search on.
@@ -44,6 +44,7 @@ class Repository extends Base\Repository
         Entity::NOTES              => 'sometimes|string|max:500',
         Entity::INVOICE_ID         => 'sometimes|string|min:14|max:18',
         Entity::SUBSCRIPTION_ID    => 'sometimes|string|min:14|max:18',
+        self::EXPAND . '.*'        => 'string|in:card,emi_plan',
     ];
 
     // These are admin allowed params to search on.
