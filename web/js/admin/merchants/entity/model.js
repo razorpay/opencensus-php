@@ -1,6 +1,8 @@
 import { observable, action, transaction } from 'mobx';
-import { notifyError } from 'common/modal';
+import { notifySuccess } from 'common/modal';
 import BaseModel from 'model/base';
+
+import { adminDelete } from 'util/fetch';
 
 export default class Model extends BaseModel {
   @observable
@@ -13,6 +15,7 @@ export default class Model extends BaseModel {
     scheduleTasks: {},
     features: {},
     bankDetails: {},
+    creditsLogs: {},
     hasSettlementSchedule: undefined,
   };
 
@@ -162,11 +165,52 @@ export default class Model extends BaseModel {
 
     return this.request('fetchGatewayRules', this.fetchFn(data)).then(data => {
       if (data) {
-        console.log('.....', data);
         this.merchant.gatewayRules = data.items;
       }
     });
   }
+
+  @action
+  fetchCreditsLogs = mode => {
+    const data = {
+      route_name: 'credits_fetch_multiple',
+      merchant_id: this.merchantId,
+      mode,
+    };
+
+    return this.request('fetchGatewayRules', this.fetchFn(data)).then(data => {
+      if (data) {
+        this.merchant.creditsLogs = {
+          ...this.merchant.creditsLogs,
+          [mode]: data.items,
+        }; // This syntax is needed for allow re-render. Simple assigning won't re-render
+      }
+    });
+  };
+
+  @action
+  deleteCreditLogs = (creditId, mode) => {
+    creditId = creditId.split('_')[1];
+
+    const data = {
+      route_name: 'credits_delete',
+      url_params: {
+        mid: this.merchantId,
+        id: creditId,
+      },
+      mode,
+    };
+
+    return this.request(
+      'deleteCreditLogs',
+      adminDelete(data).then(data => {
+        if (data.success) {
+          notifySuccess('Credit Log deleted successfully');
+          this.fetchCreditsLogs(mode);
+        }
+      })
+    );
+  };
 
   updateFeatures(mode, features) {
     // Value is changed but view is not re-rendered.

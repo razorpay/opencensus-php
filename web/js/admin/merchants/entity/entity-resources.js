@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';
 import Table from 'ui/Table';
+import CreditsDetails from './CreditsDetails';
 
 /*---------------------------------------- Functionality ------------------------------------------*/
 
@@ -89,6 +90,30 @@ function _getOfferFields() {
     ['Starts At', item => item.starts_at],
     ['Display Text', item => item.display_text],
   ];
+}
+
+export function _getCreditsFields(deleteCreditLogs) {
+  // Delete btn is based on mode(state of component where this table is used )
+  return mode => {
+    return [
+      ['Id', item => item.id],
+      ['Campaign', item => item.campaign],
+      ['Type', item => item.type],
+      ['Value', item => item.value],
+      ['Created At', item => item.created_at],
+      [
+        'Delete',
+        item => (
+          <div
+            class="link danger"
+            onClick={() => deleteCreditLogs(item.id, mode)}
+          >
+            Delete
+          </div>
+        ),
+      ],
+    ];
+  };
 }
 
 // mapping used in multiple files
@@ -183,7 +208,7 @@ export function getMappingFor(key) {
 }
 
 /*---------------------------------------- UI resource --------------------------------------------*/
-export function getDetailsViewMap(merchant) {
+export function getDetailsViewMap(model) {
   const {
     details,
     terminals,
@@ -192,8 +217,8 @@ export function getDetailsViewMap(merchant) {
     features,
     gatewayRules,
     offers,
-  } = merchant;
-  console.log('GATEWAY RULES......', gatewayRules);
+    creditsLogs,
+  } = model.merchant;
 
   return [
     {
@@ -421,6 +446,13 @@ export function getDetailsViewMap(merchant) {
     {
       label: 'Credits',
       value: () => <button class="btn-default">Show/Hide</button>,
+      toggleChildren: () => (
+        <CreditsDetails
+          creditsLogs={creditsLogs}
+          fetchCreditsLogs={model.fetchCreditsLogs}
+          getCreditsFields={_getCreditsFields(model.deleteCreditLogs)}
+        />
+      ),
     },
   ];
 }

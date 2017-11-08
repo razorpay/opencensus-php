@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { observer } from 'mobx-react';
-import { toJS } from 'mobx';
 
 import { adminFetch, adminPut, adminPost } from 'util/fetch';
 import {
@@ -345,7 +344,7 @@ export default class MerchantEntity extends Component {
   }
 
   getMainContent() {
-    const detailsMap = getDetailsViewMap(toJS(this.model.merchant));
+    const detailsMap = getDetailsViewMap(this.model);
 
     return (
       <main class="">
