@@ -91,6 +91,7 @@ app.controller('EntitiesCtrl', [
       'netbanking_pnb',
       'paytm',
       'sharp',
+      'upi_sbi',
       'upi_icici',
       'upi_mindgate',
       'wallet_payumoney',
