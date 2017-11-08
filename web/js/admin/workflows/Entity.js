@@ -186,7 +186,6 @@ export default class EditWorkflow extends Component {
         {...this.state}
         onSelectPerms={this.selectPerms}
         onDeletePerms={this.deletePerms}
-        onLevelAdd={this.addLevel}
         onSubmit={this.save}
       >
         {levels.length
@@ -203,6 +202,9 @@ export default class EditWorkflow extends Component {
               />
             ))
           : null}
+        <div class="btn" onClick={this.addLevel}>
+          + Add a Step
+        </div>
       </WorkflowForm>
     );
   }

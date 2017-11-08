@@ -19,8 +19,6 @@ export default class PlanList extends Component {
     },
   });
 
-  onSubmit = filters => this.collection.setFilters(filters);
-
   newPricingEntity = e =>
     openPricingEntity.call({
       collection: this.collection,
@@ -36,9 +34,6 @@ export default class PlanList extends Component {
               Add New
             </div>
           </header>
-          <div class="filters">
-            <Field name="q" label="Search" />
-          </div>
         </div>
         <PageTable
           model={this.collection}

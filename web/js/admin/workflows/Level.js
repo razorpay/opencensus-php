@@ -63,7 +63,7 @@ export default class Level extends Component {
             class="link danger level-delete-btn"
             onClick={e => onLevelDelete(level.level)}
           >
-            x
+            &times;
           </div>
         </header>
         <SelectField

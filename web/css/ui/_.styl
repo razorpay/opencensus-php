@@ -16,6 +16,7 @@ img
   max-height: 100%
 
 html
+  min-width: 800px
   height: 100%
   font-size: 14px
   color: #414141
@@ -111,7 +112,7 @@ a
   &.limited
     margin: 30px auto
     max-width: 600px
-  > header
+  > header:not(:only-child)
     border-bottom: 2px solid #eee
 
 .box-icon

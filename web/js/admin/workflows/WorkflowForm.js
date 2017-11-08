@@ -38,9 +38,6 @@ export default class WorkflowForm extends Component {
         <Form onSubmit={onSubmit}>
           <header>
             {id ? `Edit - ${id}` : 'Create Workflow'}
-            <div class="btn" onClick={onLevelAdd}>
-              + Add a Step
-            </div>
             <AsyncButton
               text="Save Changes"
               class="btn"
@@ -50,7 +47,7 @@ export default class WorkflowForm extends Component {
           </header>
           <div class="split">
             <Field label="Workflow Name" name="name" defaultValue={name} />
-            <SelectField label="Actions List" onChange={onSelectPerms} value="">
+            <SelectField label="Add Action" onChange={onSelectPerms} value="">
               <option value="" />
               {allPerms.map(perm => (
                 <option value={perm.id} key={perm.id}>
