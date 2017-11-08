@@ -96,9 +96,15 @@ class RowProcessor extends Base\RowProcessor
             ($bankStatusCode === Status::PROCESSED))
         {
             $this->firstFailure = true;
+
+            // setting merchant hold_funds true temporarily; this will
+            // be set for test and live separately afterwards
+            $this->reconEntity->merchant->setHoldFunds(true);
         }
 
         $this->reconEntity->saveOrFail();
+
+        $this->reconEntity->merchant->saveOrFail();
     }
 
     protected function updateSourceEntity()

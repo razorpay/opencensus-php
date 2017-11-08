@@ -132,6 +132,9 @@ class ReconciliationTest extends TestCase
 
         $this->assertNull($settlement[Settlement\Entity::SETTLED_ON]);
 
+        $merchant = $this->getEntityById('merchant','10000000000000', true);
+        $this->assertEquals(true, $merchant['hold_funds']);
+
         // Validate settlement attempt entity
         $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconFailure');
