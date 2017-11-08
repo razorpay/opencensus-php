@@ -49,6 +49,24 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->assertEMandateEntities();
     }
 
+    public function testEmandateInitialPaymentFailure()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'emandateauth')
+            {
+                $content[Emandate\ResponseFields::STATUS_CODE] = Emandate\StatusCode::FAILED;
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doAuthPayment($this->payment);
