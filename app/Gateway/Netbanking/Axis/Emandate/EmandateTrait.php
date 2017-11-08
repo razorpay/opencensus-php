@@ -187,12 +187,10 @@ trait EmandateTrait
         {
             $errorCode = StatusCode::getErrorCodeMap($statusCode);
 
-            $errorDescription = StatusCode::getErrorDescriptionMap($statusCode);
-
             throw new GatewayErrorException(
                 $errorCode,
                 $statusCode,
-                $errorDescription,
+                '',
                 [
                     'content'    => $content,
                     'payment_id' => $input['payment'][Payment\Entity::ID],
