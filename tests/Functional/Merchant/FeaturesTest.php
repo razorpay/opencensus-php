@@ -378,47 +378,6 @@ class FeaturesTest extends TestCase
     }
 
     /**
-     * Post a request for product activation
-     */
-    public function testPostOnboardingResponses()
-    {
-        $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
-
-        $url = storage_path("files/" . Constants::ONBOARDING .  "/" . Constants::VENDOR_AGREEMENT . ".pdf");
-
-        $uploadedFile = $this->createUploadedFile($url);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $request = $testData['request'];
-
-        $request['files'][Constants::VENDOR_AGREEMENT] = $uploadedFile;
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertTrue($response);
-
-        $testData = $this->testData['getOnboardingResponses'];
-
-        $request = $testData['request'];
-
-        $expectedResponse = $testData['response']['content'];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertArraySelectiveEquals($expectedResponse, $response);
-
-        $fileStoreData = $this->getLastEntity('file_store', true, MODE::LIVE);
-
-        $testData = $this->testData['testFileStoreData'];
-
-        $expectedOutput = $testData['response']['content'];
-
-        $this->assertArraySelectiveEquals($expectedOutput, $fileStoreData);
-    }
-
-
-    /**
      * Post a request for subscriptions activation
      */
     public function testPostSubscriptionsOnboardingResponses()
@@ -584,7 +543,7 @@ class FeaturesTest extends TestCase
     {
         $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
 
-        $this->createMarketplaceOnboardingResponse($merchantId);
+        $filestoreEntityId = $this->postOnboardingResponses();
 
         $this->ba->adminAuth('test', null, 'org_100000razorpay');
 
@@ -592,7 +551,13 @@ class FeaturesTest extends TestCase
 
         $this->ba->proxyAuth('rzp_live_' . $merchantId);
 
-        $this->startTest();
+        $testData = $this->testData[__FUNCTION__];
+
+        // tests that if while updating the submission response, the file is not updated,
+        // the previously stored file details are preserved.
+        $testData['response']['content'][Constants::VENDOR_AGREEMENT] = $filestoreEntityId;
+
+        $this->startTest($testData);
     }
 
     public function testResendOnboardingResponses()
@@ -715,6 +680,13 @@ class FeaturesTest extends TestCase
         }
     }
 
+    public function testPostOnboardingResponses()
+    {
+        $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
+
+        $this->postOnboardingResponses();
+    }
+
     public function updateMarketplaceOnboardingResponse()
     {
         $testData = $this->testData[__FUNCTION__];
@@ -724,6 +696,50 @@ class FeaturesTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertTrue($response);
+    }
+
+    /**
+     * Post a request for product activation
+     */
+    protected function postOnboardingResponses()
+    {
+        $url = storage_path("files/" . Constants::ONBOARDING .  "/" . Constants::VENDOR_AGREEMENT . ".pdf");
+
+        $uploadedFile = $this->createUploadedFile($url);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $request['files'][Constants::VENDOR_AGREEMENT] = $uploadedFile;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response);
+
+        $testData = $this->testData['getOnboardingResponses'];
+
+        $request = $testData['request'];
+
+        $expectedResponse = $testData['response']['content'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $fileStoreData = $this->getLastEntity('file_store', true, MODE::LIVE);
+
+        $testData = $this->testData['testFileStoreData'];
+
+        $expectedOutput = $testData['response']['content'];
+
+        $this->assertArraySelectiveEquals($expectedOutput, $fileStoreData);
+
+        $fileStoreId = $fileStoreData['id'];
+
+        $this->fixtures->stripSign($fileStoreId);
+
+        return $fileStoreId;
     }
 
     protected function verifyMarketplaceOnboardingResponseStatus(string $status)
@@ -947,6 +963,7 @@ class FeaturesTest extends TestCase
         $this->fixtures->on(Mode::LIVE)->create('merchant', $attributes);
 
         $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $detailsAttributes);
+
         $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $detailsAttributes);
 
         $this->ba->proxyAuth('rzp_live_' . $merchantId);
@@ -980,5 +997,4 @@ class FeaturesTest extends TestCase
     {
         $this->startTest();
     }
-
 }

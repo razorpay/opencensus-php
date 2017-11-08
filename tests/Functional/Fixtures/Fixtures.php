@@ -244,4 +244,14 @@ class Fixtures
 
         $this->connection($this->defaultConn);
     }
+
+    public function stripSign(& $id)
+    {
+        $ix = strpos($id, '_');
+
+        if ($ix !== false)
+        {
+            $id = substr($id, $ix + 1);
+        }
+    }
 }

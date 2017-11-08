@@ -1168,3 +1168,21 @@ UPDATE
         '3374679333',
         '3396093976');
 
+# Update settlement details
+UPDATE settlement_details set component = 'tax' where component = 'service_tax';
+
+UPDATE billdesk SET RefundId = 'JYBK57559528701' WHERE id = 2455304;
+
+UPDATE settlements
+SET status = 'failed', failure_reason = 'RTGS Return'
+where utr = 'KKBKR22017110300419148' limit 1;
+
+UPDATE fund_transfer_attempts
+SET status = 'failed', failure_reason = 'RTGS Return'
+where utr = 'KKBKR22017110300419148' limit 1;
+
+# Fix Route settlement bug
+UPDATE transactions SET settled_at=1509942600 WHERE id='8wulvPuP2Xu7Mj';
+
+# Fix user email case.
+UPDATE users AS u SET u.email = Lower(u.email) WHERE u.email != Lower(u.email) LIMIT 100;

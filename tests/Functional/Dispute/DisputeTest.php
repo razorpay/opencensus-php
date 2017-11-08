@@ -59,6 +59,17 @@ class DisputeTest extends TestCase
         Mail::assertSent(DisputeCreationMail::class);
     }
 
+    public function testDisputeCreateWithoutMerchantEmail()
+    {
+        Mail::fake();
+
+        $testData = $this->updateCreateTestData();
+
+        $this->startTest($testData);
+
+        Mail::assertNotSent(DisputeCreationMail::class);
+    }
+
     public function testDisputeCreateWithDeduct()
     {
         $testData = $this->updateCreateTestData();
@@ -179,6 +190,20 @@ class DisputeTest extends TestCase
         $testData['request']['content']['parent_id'] = $disputeParent->getId();
 
         $this->startTest($testData);
+    }
+
+    public function testDisputeCreateWithInvalidMerchantEmail()
+    {
+        $this->updateCreateTestData();
+
+        $this->startTest();
+    }
+
+    public function testDisputeCreateWithInvalidMerchantEmail2()
+    {
+        $this->updateCreateTestData();
+
+        $this->startTest();
     }
 
     public function testDisputeEdit()

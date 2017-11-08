@@ -33,11 +33,11 @@ class Axis extends Base
         'REFUND Amount',
     ];
 
-    protected function formatDataForFile()
+    protected function formatDataForFile(array $data)
     {
         $formattedData = [];
 
-        foreach ($this->data as $row)
+        foreach ($data as $row)
         {
             $date = Carbon::createFromTimestamp(
                     $row['payment']['created_at'], 'Asia/Kolkata')
@@ -62,7 +62,7 @@ class Axis extends Base
         return $formattedData;
     }
 
-    public function sendFile()
+    public function sendFile($data)
     {
         return;
     }

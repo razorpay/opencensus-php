@@ -2,14 +2,12 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use Config;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
-use Config;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
-use RZP\Models\Merchant\Repository;
-use RZP\Models\Merchant\EsRepository;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Methods\Entity as MerchantMethodEntity;
 
@@ -460,6 +458,11 @@ class Merchant extends Base
     public function setHandle($handle, $id = '10000000000000')
     {
         return $this->edit($id, ['handle' => $handle]);
+    }
+
+    public function setFeeBearer($feebearer, $id = '10000000000000')
+    {
+        return $this->edit($id, ['fee_bearer' => $feebearer]);
     }
 
     /**

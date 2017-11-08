@@ -15,6 +15,9 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
 use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
 
+/**
+ * @group dns-sensitive
+ */
 class InvoiceTest extends TestCase
 {
     use InvoiceTestTrait;

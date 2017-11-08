@@ -53,6 +53,31 @@ return [
         ],
     ],
 
+    'testDisputeCreateWithoutMerchantEmail' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+                'skip_email'            => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'        => '10000000000000',
+                'amount'             => 100,
+                'currency'           => 'INR',
+                'phase'              => 'chargeback',
+                'status'             => 'open',
+                'reason_description' => 'This is a serious fraud',
+            ],
+        ],
+    ],
+
     'testDisputeCreateWithDeduct' => [
         'request' => [
             'method'  => 'post',
@@ -311,6 +336,62 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The parent dispute is linked to another dispute entity.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisputeCreateWithInvalidMerchantEmail' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+                'merchant_emails'      => 'wrongEmail',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The merchant emails must be an array.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisputeCreateWithInvalidMerchantEmail2' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+                'merchant_emails'      => ['right@email.com', 'andWrong'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The merchant_emails.1 must be a valid email address.',
                 ],
             ],
             'status_code' => 400,

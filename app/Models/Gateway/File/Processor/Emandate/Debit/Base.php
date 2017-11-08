@@ -37,13 +37,12 @@ abstract class Base extends EMandate\Base
     {
         try
         {
-            // Set $this->data for later use
-            $this->data = $payments;
+            $data = $payments;
 
             // Create gateway entities
             $this->createGatewayEntities($payments);
 
-            return $this->data;
+            return $data;
         }
         catch (\Throwable $e)
         {
@@ -73,7 +72,7 @@ abstract class Base extends EMandate\Base
                 continue;
             }
 
-            $gatewayPayment = $this->createGatewayEntity($payment);
+            $this->createGatewayEntity($payment);
         }
     }
 }

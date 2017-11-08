@@ -64,7 +64,7 @@ class Checkout
 
         $data = $this->getMerchantPreferencesData($merchant, $mode);
 
-        $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
+        $data[Entity::METHODS] = (new Methods\Core)->getFormattedMethods($merchant);
 
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
@@ -97,7 +97,31 @@ class Checkout
 
         $orderId = $input[Payment\Entity::ORDER_ID];
 
-        $data['order'] = (new Order\Core)->getFormattedDataForCheckout($orderId, $merchant);
+        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
+
+        $data['order'] = (new Order\Core)->getFormattedDataForCheckout($order, $merchant);
+
+        $this->resetMethodsIfValidBanksPresent($data, $order);
+    }
+
+    protected function resetMethodsIfValidBanksPresent(
+        array & $data,
+        Order\Entity $order)
+    {
+        if($order->getBank() !== null)
+        {
+            $bankCode = $order->getBank();
+
+            // Order bank should be present in the list of netbanking banks.
+            if (isset($data['methods']['netbanking'][$bankCode]) === true)
+            {
+                $bankName = $data['methods']['netbanking'][$bankCode];
+
+                $data['methods']['netbanking'] = [
+                    $bankCode => $bankName,
+                ];
+            }
+        }
     }
 
     protected function checkAndAddDetailsForInvoice(

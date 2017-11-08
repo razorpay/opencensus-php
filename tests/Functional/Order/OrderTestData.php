@@ -96,6 +96,26 @@ return [
             ],
         ],
     ],
+    'testCreateOrderWithBank' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank'           => 'UTIB',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
     'testCreateTPVOrderWithInvalidAccountNumber' => [
         'request' => [
             'content' => [
@@ -210,30 +230,29 @@ return [
             'content' => [
                 'methods' => [
                     'netbanking' => [
-                        'ALLA' => 'Allahabad Bank',
-                        'ANDB' => 'Andhra Bank',
                         'UTIB' => 'Axis Bank',
-                        'BKID' => 'Bank of India',
-                        'CIUB' => 'City Union Bank',
-                        'CORP' => 'Corporation Bank',
-                        'HDFC' => 'HDFC Bank',
-                        'ICIC' => 'ICICI Bank',
-                        'IBKL' => 'IDBI',
-                        'INDB' => 'Indusind Bank',
-                        'KVBL' => 'Karur Vysya Bank',
-                        'KKBK' => 'Kotak Mahindra Bank',
-                        'SBHY' => 'State Bank of Hyderabad',
-                        'SBIN' => 'State Bank of India',
-                        'SBMY' => 'State Bank of Mysore',
-                        'STBP' => 'State Bank of Patiala',
-                        'SBTR' => 'State Bank of Travancore',
-                        'SBBJ' => 'State Bank of Bikaner and Jaipur',
-                        'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
                     ],
                 ],
                 'order' => [
                     'bank'           => 'UTIB',
                     'account_number' => 'XXXXXXXXXXXXX40',
+                ],
+            ],
+        ],
+    ],
+
+    'testPreferencesForOrderWithBank' => [
+        'request' => [
+            'content' => [],
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'netbanking' => [
+                        'UTIB' => 'Axis Bank',
+                    ],
                 ],
             ],
         ],
@@ -259,7 +278,21 @@ return [
             ],
         ],
     ],
-
+    'testPaymentWithIncorrectBankFromOrderBank' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK
+        ]
+    ],
     'testCreateOrderWithNotApplicableOffer' => [
         'request' => [
             'content' => [

@@ -8,7 +8,7 @@ use RZP\Constants\Timezone;
 
 class Rbl extends Base
 {
-    protected function formatDataForMail()
+    protected function formatDataForMail(array $data)
     {
         $amount = [
             'claims'  => 0,
@@ -24,30 +24,30 @@ class Rbl extends Base
         $claimsFile = [];
         $refundFile = [];
 
-        if (isset($this->data['refunds']) === true)
+        if (isset($data['refunds']) === true)
         {
-            $amount['refunds'] = array_reduce($this->data['refunds'], function ($sum, $item)
+            $amount['refunds'] = array_reduce($data['refunds'], function ($sum, $item)
             {
                 $sum += ($item['refund']['amount'] / 100);
 
                 return $sum;
             });
 
-            $count['refunds'] = count($this->data['refunds']);
+            $count['refunds'] = count($data['refunds']);
 
             $refundsFile = $this->getFileData(FileStore\Type::RBL_NETBANKING_REFUND);
         }
 
-        if (isset($this->data['claims']) === true)
+        if (isset($data['claims']) === true)
         {
-            $amount['claims'] = array_reduce($this->data['claims'], function ($sum, $item)
+            $amount['claims'] = array_reduce($data['claims'], function ($sum, $item)
             {
                 $sum += ($item['payment']->getAmount() / 100);
 
                 return $sum;
             });
 
-            $count['claims'] = count($this->data['claims']);
+            $count['claims'] = count($data['claims']);
 
             $claimsFile = $this->getFileData(FileStore\Type::RBL_NETBANKING_CLAIM);
         }
