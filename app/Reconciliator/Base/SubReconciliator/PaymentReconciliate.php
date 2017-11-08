@@ -14,6 +14,7 @@ use RZP\Reconciliator\Messenger;
 use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Models\Base\PublicCollection;
+use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
@@ -21,17 +22,16 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 class PaymentReconciliate extends Foundation\SubReconciliate
 {
     const GATEWAY_FEES_ABSENT_GATEWAYS = [
-        Orchestrator::KOTAK,
-        Orchestrator::NETBANKING_AXIS,
-        Orchestrator::NETBANKING_ICICI,
-        Orchestrator::NETBANKING_FEDERAL,
-        Orchestrator::NETBANKING_RBL,
-        Orchestrator::NETBANKING_INDUSIND,
-        Orchestrator::NETBANKING_BOB,
-        Orchestrator::NETBANKING_CORPORATION,
-        Orchestrator::JIOMONEY,
-        Orchestrator::VIRTUAL_ACC_KOTAK,
-        Orchestrator::NETBANKING_PNB,
+        RequestProcessor\Base::KOTAK,
+        RequestProcessor\Base::NETBANKING_AXIS,
+        RequestProcessor\Base::NETBANKING_ICICI,
+        RequestProcessor\Base::NETBANKING_FEDERAL,
+        RequestProcessor\Base::NETBANKING_RBL,
+        RequestProcessor\Base::NETBANKING_INDUSIND,
+        RequestProcessor\Base::NETBANKING_CORPORATION,
+        RequestProcessor\Base::JIOMONEY,
+        RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
+        RequestProcessor\Base::NETBANKING_PNB,
     ];
 
     /*******************

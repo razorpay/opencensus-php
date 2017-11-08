@@ -30,43 +30,43 @@ class Validator
     ];
 
     const GATEWAY_SUBJECT_REGEX = [
-        Orchestrator::HDFC               => "/^'{0,1}Email MPR as of [0-9]{2}-"
+        RequestProcessor\Base::HDFC               => "/^'{0,1}Email MPR as of [0-9]{2}-"
                                             . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
-        Orchestrator::KOTAK              => "/^PG Transaction File/",
-        Orchestrator::OLAMONEY           => "/^Merchant Settlement File/",
-        Orchestrator::FREECHARGE         => "/^Merchant (Transaction|Settlement) Report/",
-        Orchestrator::NETBANKING_AXIS    => "/^MIS file for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}, "
+        RequestProcessor\Base::KOTAK              => "/^PG Transaction File/",
+        RequestProcessor\Base::OLAMONEY           => "/^Merchant Settlement File/",
+        RequestProcessor\Base::FREECHARGE         => "/^Merchant (Transaction|Settlement) Report/",
+        RequestProcessor\Base::NETBANKING_AXIS    => "/^MIS file for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}, "
                                             . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/",
-        Orchestrator::NETBANKING_ICICI   => "/^Payment Through Internet Banking Center Razorpay/",
-        Orchestrator::NETBANKING_FEDERAL => "/^MIS Report File Dated "
+        RequestProcessor\Base::NETBANKING_ICICI   => "/^Payment Through Internet Banking Center Razorpay/",
+        RequestProcessor\Base::NETBANKING_FEDERAL => "/^MIS Report File Dated "
                                             . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}---razorpay/",
-        Orchestrator::AXIS               => "/^Axis Estatement [0-9]{2}-"
+        RequestProcessor\Base::AXIS               => "/^Axis Estatement [0-9]{2}-"
                                             . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
-        Orchestrator::FIRST_DATA         => "/Statement for Merchant MID No. razorpay/",
-        Orchestrator::VIRTUAL_ACC_KOTAK  => "/^RAZOR_VA_REPORT$/",
+        RequestProcessor\Base::FIRST_DATA         => "/Statement for Merchant MID No. razorpay/",
+        RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => "/^RAZOR_VA_REPORT$/",
     ];
 
     const GATEWAY_BODY_REGEX = [
-        Orchestrator::OLAMONEY           => "/^Please find settlement report for /",
-        Orchestrator::FREECHARGE         => "/Please view your (transaction|settlement) report/",
-        Orchestrator::NETBANKING_AXIS    => "/Kindly find attached below the MIS for "
+        RequestProcessor\Base::OLAMONEY           => "/^Please find settlement report for /",
+        RequestProcessor\Base::FREECHARGE         => "/Please view your (transaction|settlement) report/",
+        RequestProcessor\Base::NETBANKING_AXIS    => "/Kindly find attached below the MIS for "
                                             . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/",
-        Orchestrator::NETBANKING_ICICI   => "/Please find below the payment report for the day./",
-        Orchestrator::NETBANKING_FEDERAL => "/^MIS Report File Dated "
+        RequestProcessor\Base::NETBANKING_ICICI   => "/Please find below the payment report for the day./",
+        RequestProcessor\Base::NETBANKING_FEDERAL => "/^MIS Report File Dated "
                                             . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/",
-        Orchestrator::AXIS               => "/Please find attached the settlement file for today."
+        RequestProcessor\Base::AXIS               => "/Please find attached the settlement file for today."
                                             . " You net amount settled is/",
-        Orchestrator::FIRST_DATA         => "/the statement of transactions for MID (.)*razorpay/",
-        Orchestrator::VIRTUAL_ACC_KOTAK  => "/Please find the hourly report of Virtual Accounts./",
+        RequestProcessor\Base::FIRST_DATA         => "/the statement of transactions for MID (.)*razorpay/",
+        RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => "/Please find the hourly report of Virtual Accounts./",
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
-        Orchestrator::OLAMONEY           => 1,
-        Orchestrator::NETBANKING_AXIS    => 1,
-        Orchestrator::NETBANKING_FEDERAL => 1,
-        Orchestrator::AXIS               => 1,
-        Orchestrator::FIRST_DATA         => 1,
-        Orchestrator::VIRTUAL_ACC_KOTAK  => 1,
+        RequestProcessor\Base::OLAMONEY           => 1,
+        RequestProcessor\Base::NETBANKING_AXIS    => 1,
+        RequestProcessor\Base::NETBANKING_FEDERAL => 1,
+        RequestProcessor\Base::AXIS               => 1,
+        RequestProcessor\Base::FIRST_DATA         => 1,
+        RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -112,25 +112,25 @@ class Validator
     {
         return $this->validateEmailSubject(
                     $emailDetails[RequestProcessor\Mailgun::SUBJECT],
-                    Orchestrator::HDFC);
+                    RequestProcessor\Base::HDFC);
     }
 
     public function validateKotakEmail(array $emailDetails)
     {
         return $this->validateEmailSubject(
                     $emailDetails[RequestProcessor\Mailgun::SUBJECT],
-                    Orchestrator::KOTAK);
+                    RequestProcessor\Base::KOTAK);
     }
 
     public function validateFreechargeEmail(array $emailDetails)
     {
         $validSubject = $this->validateEmailSubject(
             $emailDetails[RequestProcessor\Mailgun::SUBJECT],
-            Orchestrator::FREECHARGE);
+            RequestProcessor\Base::FREECHARGE);
 
         $validBody = $this->validateEmailBody(
             $emailDetails[RequestProcessor\Mailgun::BODY_HTML_TEXT],
-            Orchestrator::FREECHARGE);
+            RequestProcessor\Base::FREECHARGE);
 
         return ($validSubject and $validBody);
     }
@@ -139,15 +139,15 @@ class Validator
     {
         $validSubject = $this->validateEmailSubject(
             $emailDetails[RequestProcessor\Mailgun::SUBJECT],
-            Orchestrator::OLAMONEY);
+            RequestProcessor\Base::OLAMONEY);
 
         $validBody = $this->validateEmailBody(
             $emailDetails[RequestProcessor\Mailgun::BODY],
-            Orchestrator::OLAMONEY);
+            RequestProcessor\Base::OLAMONEY);
 
         $validAttachmentCount = $this->validateAttachmentCount(
-            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
-            Orchestrator::OLAMONEY);
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::OLAMONEY);
 
         return ($validSubject and $validAttachmentCount and $validBody);
     }
@@ -156,15 +156,15 @@ class Validator
     {
         $validSubject = $this->validateEmailSubject(
                                     $emailDetails[RequestProcessor\Mailgun::SUBJECT],
-                                    Orchestrator::NETBANKING_AXIS);
+                                    RequestProcessor\Base::NETBANKING_AXIS);
 
         $validBody = $this->validateEmailBody(
             $emailDetails[RequestProcessor\Mailgun::BODY],
-            Orchestrator::NETBANKING_AXIS);
+            RequestProcessor\Base::NETBANKING_AXIS);
 
         $validAttachmentCount = $this->validateAttachmentCount(
-            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
-            Orchestrator::NETBANKING_AXIS);
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::NETBANKING_AXIS);
 
         return ($validSubject and $validAttachmentCount and $validBody);
     }
@@ -173,11 +173,11 @@ class Validator
     {
         $validSubject = $this->validateEmailSubject(
                                 $emailDetails[RequestProcessor\Mailgun::SUBJECT],
-                                Orchestrator::NETBANKING_ICICI);
+                                RequestProcessor\Base::NETBANKING_ICICI);
 
         $validBody = $this->validateEmailBody(
             $emailDetails[RequestProcessor\Mailgun::BODY],
-            Orchestrator::NETBANKING_ICICI);
+            RequestProcessor\Base::NETBANKING_ICICI);
 
         //
         // There isn't a need to validate the attachment count because
@@ -191,15 +191,15 @@ class Validator
     {
         $validSubject = $this->validateEmailSubject(
                             $emailDetails[RequestProcessor\Mailgun::SUBJECT],
-                            Orchestrator::NETBANKING_FEDERAL);
+                            RequestProcessor\Base::NETBANKING_FEDERAL);
 
         $validBody = $this->validateEmailBody(
             $emailDetails[RequestProcessor\Mailgun::BODY],
-            Orchestrator::NETBANKING_FEDERAL);
+            RequestProcessor\Base::NETBANKING_FEDERAL);
 
         $validAttachmentCount = $this->validateAttachmentCount(
-            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
-            Orchestrator::NETBANKING_FEDERAL);
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::NETBANKING_FEDERAL);
 
         return ($validSubject and $validAttachmentCount and $validBody);
     }
@@ -208,15 +208,15 @@ class Validator
     {
         $validSubject = $this->validateEmailSubject(
                             $emailDetails[RequestProcessor\Mailgun::SUBJECT],
-                            Orchestrator::VIRTUAL_ACC_KOTAK);
+                            RequestProcessor\Base::VIRTUAL_ACC_KOTAK);
 
         $validBody = $this->validateEmailBody(
                             $emailDetails[RequestProcessor\Mailgun::BODY],
-                            Orchestrator::VIRTUAL_ACC_KOTAK);
+                            RequestProcessor\Base::VIRTUAL_ACC_KOTAK);
 
         $validAttachmentCount = $this->validateAttachmentCount(
-            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
-            Orchestrator::VIRTUAL_ACC_KOTAK);
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::VIRTUAL_ACC_KOTAK);
 
         return ($validSubject and $validAttachmentCount and $validBody);
     }
@@ -225,13 +225,15 @@ class Validator
     {
         $validSubject = $this->validateEmailSubject(
             $emailDetails[RequestProcessor\Mailgun::SUBJECT],
-            Orchestrator::AXIS);
+            RequestProcessor\Base::AXIS);
 
-        $validBody = $this->validateEmailBody($emailDetails[RequestProcessor\Mailgun::BODY], Orchestrator::AXIS);
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY],
+            RequestProcessor\Base::AXIS);
 
         $validAttachmentCount = $this->validateAttachmentCount(
-            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
-            Orchestrator::AXIS);
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::AXIS);
 
         return ($validSubject and $validAttachmentCount and $validBody);
     }
@@ -240,15 +242,15 @@ class Validator
     {
         $validSubject = $this->validateEmailSubject(
             $emailDetails[RequestProcessor\Mailgun::SUBJECT],
-            Orchestrator::FIRST_DATA);
+            RequestProcessor\Base::FIRST_DATA);
 
         $validBody = $this->validateEmailBody(
             $emailDetails[RequestProcessor\Mailgun::BODY_HTML_TEXT],
-            Orchestrator::FIRST_DATA);
+            RequestProcessor\Base::FIRST_DATA);
 
         $validAttachmentCount = $this->validateAttachmentCount(
-            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
-            Orchestrator::FIRST_DATA);
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::FIRST_DATA);
 
         return ($validSubject and $validAttachmentCount and $validBody);
     }

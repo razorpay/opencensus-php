@@ -19,8 +19,8 @@ class Service extends Base\Service
      * List og gateways where we are doing recon processing via batch.
      */
     const BATCH_RECON_GATEWAYS = [
-        Orchestrator::JIOMONEY,
-        Orchestrator::FIRST_DATA
+        RequestProcessor\Base::JIOMONEY,
+        RequestProcessor\Base::FIRST_DATA
     ];
 
     public function initiateReconciliationProcess(array $input)

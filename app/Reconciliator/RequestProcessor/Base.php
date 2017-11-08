@@ -19,34 +19,60 @@ class Base extends Core
 
     const ATTACHMENT_COUNT = 'attachment_count';
 
-     /**
+    /******************
+     * Gateway constants
+     ******************/
+
+    const HDFC                   = 'HDFC';
+    const AXIS                   = 'Axis';
+    const KOTAK                  = 'Kotak';
+    const BILLDESK               = 'BillDesk';
+    const PAYZAPP                = 'PayZapp';
+    const MOBIKWIK               = 'Mobikwik';
+    const PAYTM                  = 'Paytm';
+    const OLAMONEY               = 'Olamoney';
+    const FREECHARGE             = 'Freecharge';
+    const NETBANKING_AXIS        = 'NetbankingAxis';
+    const NETBANKING_ICICI       = 'NetbankingIcici';
+    const NETBANKING_FEDERAL     = 'NetbankingFederal';
+    const NETBANKING_CORPORATION = 'NetbankingCorporation';
+    const NETBANKING_RBL         = 'NetbankingRbl';
+    const NETBANKING_INDUSIND    = 'NetbankingIndusind';
+    const NETBANKING_PNB         = 'NetbankingPnb';
+    const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
+    const JIOMONEY               = 'Jiomoney';
+    const EBS                    = 'Ebs';
+    const FIRST_DATA             = 'FirstData';
+    const ADMIN                  = 'admin';
+
+    /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
      * The banks send their MIS files through this sender address.
      * List email addresses in lower case. Addresses are case insensitive, our checks are not.
      */
     const GATEWAY_SENDER_MAPPING = [
-        Orchestrator::HDFC                => ['payoutreport@hdfcbank.com'],
-        Orchestrator::AXIS                => ['pg.estatements@axisbank.com'],
-        Orchestrator::BILLDESK            => [],
-        Orchestrator::PAYZAPP             => [],
-        Orchestrator::MOBIKWIK            => [],
-        Orchestrator::PAYTM               => [],
-        Orchestrator::KOTAK               => ['bankalerts@kotak.com'],
-        Orchestrator::OLAMONEY            => ['olamoney-noreply@olacabs.com'],
-        Orchestrator::FREECHARGE          => ['noreply@freechargemail.in'],
-        Orchestrator::NETBANKING_AXIS     => ['it.rico@axisbank.com'],
-        Orchestrator::NETBANKING_ICICI    => ['ubpshelp@icicibank.com'],
-        Orchestrator::NETBANKING_FEDERAL  => ['fednetrm@federalbank.co.in'],
-        Orchestrator::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
-        Orchestrator::NETBANKING_INDUSIND => [],
-        Orchestrator::NETBANKING_PNB      => [],
-        Orchestrator::JIOMONEY            => [],
-        Orchestrator::EBS                 => [],
-        Orchestrator::FIRST_DATA          => ['customer.care@icici.mailserv.in'],
-        Orchestrator::VIRTUAL_ACC_KOTAK   => ['kmb.reports@kotak.com'],
+        self::HDFC                => ['payoutreport@hdfcbank.com'],
+        self::AXIS                => ['pg.estatements@axisbank.com'],
+        self::BILLDESK            => [],
+        self::PAYZAPP             => [],
+        self::MOBIKWIK            => [],
+        self::PAYTM               => [],
+        self::KOTAK               => ['bankalerts@kotak.com'],
+        self::OLAMONEY            => ['olamoney-noreply@olacabs.com'],
+        self::FREECHARGE          => ['noreply@freechargemail.in'],
+        self::NETBANKING_AXIS     => ['it.rico@axisbank.com'],
+        self::NETBANKING_ICICI    => ['ubpshelp@icicibank.com'],
+        self::NETBANKING_FEDERAL  => ['fednetrm@federalbank.co.in'],
+        self::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
+        self::NETBANKING_INDUSIND => [],
+        self::NETBANKING_PNB      => [],
+        self::JIOMONEY            => [],
+        self::EBS                 => [],
+        self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],
+        self::VIRTUAL_ACC_KOTAK   => ['kmb.reports@kotak.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        Orchestrator::ADMIN               => ['saurav.chowdhury@razorpay.com'],
+        self::ADMIN               => ['saurav.chowdhury@razorpay.com'],
     ];
 
     protected $validator;

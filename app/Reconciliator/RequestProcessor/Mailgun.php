@@ -23,20 +23,20 @@ class Mailgun extends Base
      * Gateways for which we run validations on email content
      */
     const GATEWAY_EMAIL_VALIDATION = [
-        Orchestrator::HDFC,
-        Orchestrator::AXIS,
-        Orchestrator::KOTAK,
-        Orchestrator::OLAMONEY,
-        Orchestrator::FREECHARGE,
-        Orchestrator::FIRST_DATA,
-        Orchestrator::NETBANKING_AXIS,
-        Orchestrator::NETBANKING_ICICI,
-        Orchestrator::NETBANKING_FEDERAL,
-        Orchestrator::VIRTUAL_ACC_KOTAK,
+        self::HDFC,
+        self::AXIS,
+        self::KOTAK,
+        self::OLAMONEY,
+        self::FREECHARGE,
+        self::FIRST_DATA,
+        self::NETBANKING_AXIS,
+        self::NETBANKING_ICICI,
+        self::NETBANKING_FEDERAL,
+        self::VIRTUAL_ACC_KOTAK,
     ];
 
     const LINK_BASED_GATEWAYS = [
-        Orchestrator::FREECHARGE,
+        self::FREECHARGE,
     ];
 
     protected $emailDetails;
@@ -136,7 +136,7 @@ class Mailgun extends Base
         // For a particular gateway, reconciliation files can be sent from more than one email ID.
         $this->gateway = $this->getGatewayFromEmail();
 
-        if ($this->gateway === Orchestrator::ADMIN)
+        if ($this->gateway === self::ADMIN)
         {
             $this->gateway = $this->emailDetails[self::SUBJECT];
 
