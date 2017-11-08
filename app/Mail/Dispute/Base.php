@@ -38,6 +38,15 @@ class Base extends Mailable
         return $this;
     }
 
+    protected function addCc()
+    {
+        $email = Constants::MAIL_ADDRESSES[Constants::DISPUTES];
+
+        $this->cc($email);
+
+        return $this;
+    }
+
     protected function addReplyTo()
     {
         $email = Constants::MAIL_ADDRESSES[Constants::DISPUTES];

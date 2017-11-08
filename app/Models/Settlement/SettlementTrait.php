@@ -266,6 +266,15 @@ trait SettlementTrait
      */
     protected function shouldSettle($merchant): bool
     {
+        //
+        // Skip settlements for Moneyview
+        // Details in: https://github.com/razorpay/api/issues/5830
+        //
+        if ($merchant->getId() === '8hXTLsmoM3F6PH')
+        {
+            return false;
+        }
+
         $shouldSettle = true;
 
         $today = Carbon::today(Timezone::IST);

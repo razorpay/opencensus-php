@@ -320,6 +320,7 @@ class Verify extends Base\Core
             Result::SUCCESS       => 0,
             Result::TIMEOUT       => 0,
             Result::ERROR         => 0,
+            Result::UNKNOWN       => 0,
         ];
 
         $notApplicable = 0;
@@ -535,6 +536,8 @@ class Verify extends Base\Core
                     break;
 
                 case Action::FINISH:
+                    $result = Result::UNKNOWN;
+
                     $this->updateVerifyBucket($payment, $filter, self::LAST);
 
                     break;

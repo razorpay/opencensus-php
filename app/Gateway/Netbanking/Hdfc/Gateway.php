@@ -149,6 +149,24 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function reconcileDebitEmandate(array $input)
+    {
+        parent::reconcileDebitEmandate($input);
+
+        $response = (new EMandateDebitReconFile)->process($input);
+
+        return $response;
+    }
+
+    public function reconcileRegisterEmandate(array $input)
+    {
+        parent::reconcileRegisterEmandate($input);
+
+        $response = (new EMandateRegistrationReconFile)->process($input);
+
+        return $response;
+    }
+
     protected function validateCallbackChecksum($input)
     {
         $checksum = $input['gateway']['CheckSum'] ?? null;
@@ -225,6 +243,14 @@ class Gateway extends Base\Gateway
     {
         $payment = $verify->payment;
         $input = $verify->input;
+
+        // Throw exception as verify is not available for second recurring request
+        if (($input['payment']['recurring_type'] === Payment\RecurringType::AUTO) and
+            ($input['payment']['recurring'] === true))
+        {
+            throw new Exception\PaymentVerificationException(
+                [], $verify, Payment\Verify\Action::FINISH);
+        }
 
         // Using created_at because this value must match the one that we sent in payment request
         $date = Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)

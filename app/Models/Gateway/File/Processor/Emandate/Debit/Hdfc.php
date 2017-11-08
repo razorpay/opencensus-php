@@ -15,7 +15,7 @@ use RZP\Models\Payment;
 
 class Hdfc extends Base
 {
-    const DAILY         = 'daily';
+    const ADHOC         = 'As & when Presented';
     const MAX_END_DATE  = '31/12/2099';
 
     const STEP          = 'debit';
@@ -87,7 +87,7 @@ class Hdfc extends Base
                 Headings::ACCOUNT_NO          => $token->getAccountNumber(),
                 Headings::AMOUNT              => $this->getFormattedAmount($payment->getAmount()),
                 Headings::SIP_DATE            => $startDate,
-                Headings::FREQUENCY           => self::DAILY,
+                Headings::FREQUENCY           => self::ADHOC,
                 Headings::FROM_DATE           => $startDate,
                 Headings::TO_DATE             => self::MAX_END_DATE,
             ];
