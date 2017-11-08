@@ -1186,3 +1186,14 @@ UPDATE transactions SET settled_at=1509942600 WHERE id='8wulvPuP2Xu7Mj';
 
 # Fix user email case.
 UPDATE users AS u SET u.email = Lower(u.email) WHERE u.email != Lower(u.email) LIMIT 100;
+
+# Corrects Bank Transfer IMPS Bank Codes used in bank accounts
+UPDATE bank_accounts INNER JOIN bank_transfers
+  ON bank_accounts.id=bank_transfers.payer_bank_account_id
+  SET bank_accounts.ifsc_code = 'UTBI0XCNA10'
+  WHERE bank_transfers.mode='imps' and bank_transfers.payer_ifsc like 'UBI%';
+
+UPDATE bank_accounts INNER JOIN bank_transfers
+  ON bank_accounts.id=bank_transfers.payer_bank_account_id
+  SET bank_accounts.ifsc_code = 'UBIN0538167'
+  WHERE bank_transfers.mode='imps' and bank_transfers.payer_ifsc like 'UOB%';
