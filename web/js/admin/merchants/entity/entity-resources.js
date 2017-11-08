@@ -82,6 +82,15 @@ function _getGatewayFields() {
   ];
 }
 
+function _getOfferFields() {
+  return [
+    ['Offer Id', item => item.id],
+    ['Name', item => item.name],
+    ['Starts At', item => item.starts_at],
+    ['Display Text', item => item.display_text],
+  ];
+}
+
 // mapping used in multiple files
 const utilMapping = {
   network: {
@@ -182,6 +191,7 @@ export function getDetailsViewMap(merchant) {
     bankDetails,
     features,
     gatewayRules,
+    offers,
   } = merchant;
   console.log('GATEWAY RULES......', gatewayRules);
 
@@ -387,7 +397,7 @@ export function getDetailsViewMap(merchant) {
       },
     },
     {
-      label: 'Gateway Rules',
+      label: 'Gateway Rules (Live)',
       value: () => <button class="btn-default">Show/Hide</button>,
       toggleChildren: function() {
         return (
@@ -398,8 +408,15 @@ export function getDetailsViewMap(merchant) {
       },
     },
     {
-      label: 'Offers',
+      label: 'Offers (Live)',
       value: () => <button class="btn-default">Show/Hide</button>,
+      toggleChildren: function() {
+        return (
+          <div>
+            <Table items={offers} fields={_getOfferFields()} />
+          </div>
+        );
+      },
     },
     {
       label: 'Credits',
