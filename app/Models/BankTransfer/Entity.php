@@ -131,7 +131,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected static $modifiers = [
-        self::AMOUNT,
         self::DESCRIPTION,
     ];
 
@@ -213,9 +212,9 @@ class Entity extends Base\PublicEntity
         $array[self::MODE] = strtoupper($array[self::MODE]);
     }
 
-    // -------------------------- Modifiers ------------------------------------
+    // -------------------------- Mutators -------------------------------------
 
-    public function modifyAmount(array & $input)
+    public function setAmountAttribute(float $amount)
     {
         //
         // If you're wondering why this is here, run "(int) (579.3 * 100)" in tinker
@@ -226,12 +225,12 @@ class Entity extends Base\PublicEntity
         // testBankTransferFloatingPointImprecision exists to check against this.
         //
 
-        if (isset($input[self::AMOUNT]) === true)
-        {
-            $input[self::AMOUNT] = (int) number_format(($input[self::AMOUNT] * 100), 0, '.', '');
-        }
+        $amount = (int) number_format(($amount * 100), 0, '.', '');
 
+        $this->attributes[self::AMOUNT] = $amount;
     }
+
+    // -------------------------- Modifiers ------------------------------------
 
     public function modifyDescription(array & $input)
     {
