@@ -200,6 +200,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CARD_NETWORK_INVALID                          = 'CARD_NETWORK_INVALID';
 
+    const CUSTOMER_CREATE                               = 'CUSTOMER_CREATE';
     const CUSTOMER_EDIT                                 = 'CUSTOMER_EDIT';
     const CUSTOMER_TOKEN_EDIT                           = 'CUSTOMER_TOKEN_EDIT';
     const CARD_NUMBER_SCRUBBED                          = 'CARD_NUMBER_SCRUBBED';
