@@ -27,7 +27,7 @@ class TerminalLoadSorter extends Terminal\Sorter
      */
     public function gatewaySorter($terminals)
     {
-        if ($this->rules->isEmpty() === true)
+        if (emoty($this->rules) === true)
         {
             return $terminals;
         }

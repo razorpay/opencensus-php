@@ -8,47 +8,6 @@ class Repository extends Base\Repository
 {
     protected $entity = 'gateway_rule';
 
-    /**
-     * Attributes used for fetching rules matching the criteria defined by these
-     * keys. These are used while checking for rxisting rules satisfying given criteria
-     * during new rule creation or update
-     */
-    protected $defaultQueryAttributes = [
-        Entity::TYPE,
-        Entity::GROUP,
-        Entity::METHOD,
-        Entity::METHOD_TYPE,
-        Entity::NETWORK,
-        Entity::ISSUER,
-        Entity::CURRENCY,
-        Entity::MIN_AMOUNT,
-        Entity::MAX_AMOUNT,
-        Entity::EMI_DURATION,
-        Entity::EMI_SUBVENTION,
-        Entity::INTERNATIONAL,
-    ];
-
-    /**
-     * Attributes to be used while checking for sorter rules matching given criteria
-     * apart from defaultQueryAttributes
-     */
-    protected $sorterQueryAttributes = [
-        Entity::MERCHANT_ID,
-    ];
-
-    /**
-     * Attributes to be used while querying for filter rules matching given criteria
-     * apart from defaultQueryAttributes
-     */
-    protected $filterQueryAttributes = [
-        Entity::GATEWAY,
-        Entity::FILTER_TYPE,
-        Entity::SHARED_TERMINAL,
-        Entity::NETWORK_CATEGORY,
-        Entity::GATEWAY_ACQUIRER,
-        Entity::CATEGORY2,
-    ];
-
     protected $entityFetchParamRules = [
         Entity::GATEWAY          => 'sometimes|string|max:25',
         Entity::MERCHANT_ID      => 'sometimes|alpha_num|size:14',
@@ -71,60 +30,11 @@ class Repository extends Base\Repository
         Entity::CATEGORY2        => 'sometimes|string',
     ];
 
-    /**
-     * Fetches rules with criteria matching given rule's criteria
-     * Example - If we have rule R1 for gateway A with network null, and we are
-     * defining new rule R2 for gateway B with network VISA. For a VISA payment
-     * both rules R1 and R2 will be applicable, i.e rule R1's criteria satisfies
-     * R2's criteria.
-     *
-     * This method computes the total load across all such rules which match the
-     * new rule's criteria
-     *
-     * @param  Entity $rule New rule entity
-     * @return int          Total load across matching rules
-    */
-    public function getRulesWithMatchingCriteria(Entity $rule)
-    {
-        $params = $this->getQueryParams($rule);
-
-        $query = $this->newQuery();
-
-        $this->buildSelectionQuery($query, $params);
-
-        // If the rule against which we are matching is an existing rule, we exclude
-        // it in the query
-        if ($rule->exists === true)
-        {
-            $query->where(Entity::ID, '!=', $rule->getId());
-        }
-
-        $rules = $query->get();
-
-        return $rules;
-    }
-
-    public function getRulesMatchingSearchCriteria(array $criteria)
+    public function fetchRulesForSearchCriteria(array $criteria): Base\PublicCollection
     {
         $query = $this->newQuery();
 
         $this->buildSelectionQuery($query, $criteria);
-
-        $rules = $query->get();
-
-        return $rules;
-    }
-
-    /**
-     * Fetches rules for terminal selection as per the parameters provided
-     *
-     * @param  array  $params Query parameter values
-     */
-    public function fetchApplicableRulesForPayment(array $params): Base\PublicCollection
-    {
-        $query = $this->newQuery();
-
-        $this->buildSelectionQuery($query, $params);
 
         $rules = $query->get();
 

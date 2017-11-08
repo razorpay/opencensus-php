@@ -196,22 +196,14 @@ class Selector extends Base\Core
         return $verbose;
     }
 
-    protected function getRulesForSorting(Base\PublicCollection $rules): Base\PublicCollection
+    protected function getRulesForSorting(Base\PublicCollection $rules): array
     {
         $sorterRules = $rules->filter(function ($rule)
         {
             return ($rule->isSorter() === true);
         });
 
-        $merchantSpecificRules = $rules->filter(function ($rule)
-        {
-            return ($rule->getMerchantId() === $this->input['merchant']->getId());
-        });
-
-        if ($merchantSpecificRules->isNotEmpty() === true)
-        {
-            return $merchantSpecificRules;
-        }
+        $sorterRules = $sorterRules->groupBySpecificityScore();
 
         return $sorterRules;
     }

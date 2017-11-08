@@ -23,7 +23,7 @@ class Sorter extends Base\Core
 
     protected $rules;
 
-    public function __construct(array $input, Options $options, Base\PublicCollection $rules)
+    public function __construct(array $input, Options $options, array $rules)
     {
         parent::__construct();
 

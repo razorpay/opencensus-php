@@ -100,6 +100,11 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
     ];
 
+    /**
+     * Attributes used for fetching rules matching the criteria defined by these
+     * keys. These are used while checking for rxisting rules satisfying given criteria
+     * during new rule creation or update
+     */
     const DEFAULT_SEARCH_ATTRIBUTES = [
         self::ID,
         self::TYPE,
@@ -116,10 +121,19 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
     ];
 
+    /**
+     * Attributes to be used while checking for sorter rules matching given criteria
+     * apart from defaultQueryAttributes
+     */
     const SORTER_SEARCH_ATTRIBUTES = [
         self::MERCHANT_ID,
     ];
 
+
+    /**
+     * Attributes to be used while querying for filter rules matching given criteria
+     * apart from defaultQueryAttributes
+     */
     const FILTER_SEARCH_ATTRIBUTES = [
         self::GATEWAY,
         self::FILTER_TYPE,
@@ -228,6 +242,12 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::MIN_AMOUNT => 0,
     ];
+
+    // ---------------------Overridden--------------------------
+    public function newCollection(array $models = array())
+    {
+        return new Collection($models);
+    }
 
     public function getLoad()
     {
@@ -432,20 +452,25 @@ class Entity extends Base\PublicEntity
         return array_merge(self::DEFAULT_SEARCH_ATTRIBUTES, $searchAttributesForType);
     }
 
-    public function calculateSpecificityScoreForCriteria(array $criteria)
+    public function calculateSpecificityScore(): int
     {
-        $score = 0;
-        foreach ($criteria as $attr => $value)
+        $totalScore = 0;
+
+        foreach (self::ATTRIBUTE_SCORES as $attr => $score)
         {
-            if (($this->isAttributeEmpty($attr) === false) and
-                ($value === $this->getAttribute($attr)))
+            $func = 'getScoreFor' . studly_case($attr);
+
+            if (method_exists($this, $func) === true)
             {
-                s($attr, $this->getAttribute($attr), self::ATTRIBUTE_SCORES[$attr]);
-                $score += self::ATTRIBUTE_SCORES[$attr];
+                $totalScore += $this->$func();
+            }
+            else if ($this->isAttributeNotNull($attr) === true)
+            {
+                $totalScore += $score;
             }
         }
 
-        sd($score);
+        return $totalScore;
     }
 
     /**
@@ -547,8 +572,24 @@ class Entity extends Base\PublicEntity
         return ($isApplicableForSharedTerminal !== $terminal->isDirectForMerchant($merchant)) ? true : false;
     }
 
-    protected function isAttributeEmpty($attr)
+    protected function getScoreForIins(): int
     {
-        return (empty($this->getAttribute($attr)) === true);
+        if (empty(self::IINS) === false)
+        {
+            return self::ATTRIBUTE_SCORES[self::IINS];
+        }
+
+        return 0;
+    }
+
+    protected function getScoreForAmountRange(): int
+    {
+        if (($this->isAttributeNotNull(self::MIN_AMOUNT) === true) or
+            ($this->isAttributeNotNull(self::MAX_AMOUNT) === true))
+        {
+            return self::ATTRIBUTE_SCORES[self::AMOUNT_RANGE];
+        }
+
+        return 0;
     }
 }

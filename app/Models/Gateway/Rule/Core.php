@@ -21,7 +21,9 @@ class Core extends Base\Core
 
         $validatorMethod = $this->getValidatorMethod($rule);
 
-        $this->$validatorMethod($rule);
+        $matchingRules = $this->getRulesWithMatchingCriteria($rule);
+
+        $this->$validatorMethod($rule, $matchingRules);
 
         $this->repo->saveOrFail($rule);
 
@@ -41,9 +43,11 @@ class Core extends Base\Core
 
         $rule->edit($input);
 
-        $validatorMethod = $this->getValidatorMethod($rule);
+        $matchingRules = $this->getRulesWithMatchingCriteria($rule);
 
-        $this->$validatorMethod($rule);
+        $validatorMethod = $this->getValidatorMethod($rule, $matchingRules);
+
+        $this->$validatorMethod($rule, $matchingRules);
 
         $this->repo->saveOrFail($rule);
 
@@ -66,7 +70,7 @@ class Core extends Base\Core
 
         $applicableRules = $this->repo
                                 ->gateway_rule
-                                ->getRulesMatchingSearchCriteria($searchCriteria);
+                                ->fetchRulesForSearchCriteria($searchCriteria);
 
         if ($input['payment']->isMethodCardOrEmi() === true)
         {
@@ -85,10 +89,8 @@ class Core extends Base\Core
      * present in same group
      * @param  Entity $rule Rule entity being created
      */
-    protected function validateFilterRule(Entity $rule)
+    protected function validateFilterRule(Entity $rule, Base\PublicCollection $matchingRules)
     {
-        $matchingRules = $this->getRulesWithMatchingCriteria($rule);
-
         if ($matchingRules->isNotEmpty() === true)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -106,12 +108,14 @@ class Core extends Base\Core
      * @param  Entity $rule  New rule
      * @param  array  $input Request data
      */
-    protected function validateSorterRule(Entity $rule)
+    protected function validateSorterRule(Entity $rule, Base\PublicCollection $matchingRules)
     {
-        $matchingRules = $this->getRulesWithMatchingCriteria($rule);
-
         if ($matchingRules->isNotEmpty() === true)
         {
+            $ruleSpecificityScore = $rule->calculateSpecificityScore();
+
+            $matchingRules = $matchingRules->getRulesWithSpecificityScore($ruleSpecificityScore);
+
             $totalExistingLoad = $matchingRules->sum(Entity::LOAD);
 
             $totalLoad = $rule->getLoad() + $totalExistingLoad;
@@ -217,11 +221,11 @@ class Core extends Base\Core
      */
     protected function getRulesWithMatchingCriteria(Entity $rule): Base\PublicCollection
     {
-        $ruleSearchCriteria = $rule->getSearchCriteria();
+        $searchCriteria = $rule->getSearchCriteria();
 
         $matchingRules = $this->repo
                               ->gateway_rule
-                              ->getRulesMatchingSearchCriteria($ruleSearchCriteria);
+                              ->fetchRulesForSearchCriteria($searchCriteria);
 
         if ($rule->isMethodCardOrEmi() === true)
         {
@@ -229,21 +233,6 @@ class Core extends Base\Core
         }
 
         return $matchingRules;
-    }
-
-    protected function groupRulesBySpecificityScore(Base\PublicCollection $rules, Entity $rule)
-    {
-        $criteria = [];
-
-        foreach (Entity::ATTRIBUTE_SCORES as $attribute => $score)
-        {
-            $criteria[$attribute] = $rule->getAttribute($attribute);
-        }
-
-        foreach ($rules as $rule)
-        {
-            $rule->calculateSpecificityScoreForCriteria($criteria);
-        }
     }
 
     /**
