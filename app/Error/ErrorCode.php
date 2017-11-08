@@ -429,6 +429,14 @@ class ErrorCode
     const BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE                                   = 'BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE                        = 'BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE';
 
+    const BAD_REQUEST_ACCOUNT_CLOSED                                                = 'BAD_REQUEST_ACCOUNT_CLOSED';
+    const BAD_REQUEST_ACCOUNT_NUMBER_MISMATCH                                       = 'BAD_REQUEST_ACCOUNT_NUMBER_MISMATCH';
+    const BAD_REQUEST_ACCOUNT_BLOCKED                                               = 'BAD_REQUEST_ACCOUNT_BLOCKED';
+    const BAD_REQUEST_ACCOUNT_DORMANT                                               = 'BAD_REQUEST_ACCOUNT_DORMANT';
+    const BAD_REQUEST_NO_DR_ALLOWED                                                 = 'BAD_REQUEST_NO_DR_ALLOWED';
+    const BAD_REQUEST_TRANSACTION_AMOUT_GREATER_THAN_REGISTERED_AMOUNT              = 'BAD_REQUEST_TRANSACTION_AMOUT_GREATER_THAN_REGISTERED_AMOUNT';
+    const BAD_REQUEST_FREQUENCY_DEBIT_LIMIT_EXCEEDED                                = 'BAD_REQUEST_FREQUENCY_DEBIT_LIMIT_EXCEEDED';
+
     const BAD_REQUEST_PRICING_ID_REQURED                                            = 'BAD_REQUEST_PRICING_ID_REQURED';
     const BAD_REQUEST_PRICING_PLAN_ALREADY_EXISTS                                   = 'BAD_REQUEST_PRICING_PLAN_ALREADY_EXISTS';
     const BAD_REQUEST_PRICING_RATE_NOT_DEFINED                                      = 'BAD_REQUEST_PRICING_RATE_NOT_DEFINED';

@@ -40,6 +40,10 @@ class Service extends Base\Service
 
     public function reconcileDebitFile(string $gateway, array $input)
     {
+        $this->trace->info(
+            TraceCode::EMANDATE_DEBIT_RECON_REQUEST,
+            ['gateway'   => $gateway]);
+
         (new Validator)->validateDebitGateway($gateway);
 
         $response = $this->app['gateway']->call(

@@ -286,6 +286,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_DEBIT_RECON_REQUEST                  = 'EMANDATE_DEBIT_RECON_REQUEST';
     const EMANDATE_DEBIT_RECON_FAILED                   = 'EMANDATE_DEBIT_RECON_FAILED';
     const EMANDATE_DEBIT_RECON_ROW                      = 'EMANDATE_DEBIT_RECON_ROW';
+    const EMANDATE_DEBIT_RESPONSE                       = 'EMANDATE_DEBIT_RESPONSE';
 
     const EMANDATE_REGISTER_REQUEST                     = 'EMANDATE_REGISTER_REQUEST';
     const EMANDATE_REGISTER_REQUEST_ROW                 = 'EMANDATE_REGISTER_REQUEST_ROW';

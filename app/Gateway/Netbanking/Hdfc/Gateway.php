@@ -149,6 +149,15 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function reconcileDebitEmandate(array $input)
+    {
+        parent::reconcileDebitEmandate($input);
+
+        $response = (new EMandateDebitReconFile)->process($input);
+
+        return $response;
+    }
+
     public function reconcileRegisterEmandate(array $input)
     {
         parent::reconcileRegisterEmandate($input);
