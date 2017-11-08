@@ -265,7 +265,7 @@ class Processor extends Base\Core
         if ($this->virtualAccount === null)
         {
             $this->trace->info(
-                TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
+                TraceCode::BANK_TRANSFER_VIRTUAL_ACCOUNT_NOT_FOUND,
                 [
                     'message'      => 'Invalid account number',
                     'bankTransfer' => $bankTransfer->toArray(),
@@ -511,12 +511,18 @@ class Processor extends Base\Core
     {
         $label = $bankTransfer->getPayerName();
 
-        if (empty($label) === true)
+        $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+
+        // Label could be empty AFTER the preg_replace step
+        if (empty(trim($label)) === true)
         {
             $label = $bankTransfer->merchant->getBillingLabel();
+
+            // Still necessary to sanitize merchant name
+            $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
         }
 
-        return substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $label), 0, 39);
+        return substr($label, 0, 39);
     }
 
     /**

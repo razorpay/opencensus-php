@@ -165,6 +165,7 @@ class NodalAccount extends NodalBase\NodalAccount
                 Headings::PAYMENT_TYPE            => $type,
                 Headings::PAYMENT_REF_NO          => $paymentRefNo,
                 Headings::PAYMENT_DATE            => $this->date,
+                Headings::INSTRUMENT_DATE         => $this->date,
                 Headings::DR_AC_NO                => static::$nodalAccountNumber,
                 Headings::AMOUNT                  => (string) $amount,
                 Headings::BANK_CODE_INDICATOR     => 'M',

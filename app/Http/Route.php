@@ -185,6 +185,7 @@ final class Route
         'bank_transfer_notify'                    => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
         'bank_transfer_refund_retry'              => ['post',     'bank_transfers/refunds/retry',                   'BankTransferController@retryBankTransferRefund'                    ],
         'bank_transfer_edit_payer_account'        => ['put',      'bank_transfers/{id}/payer_bank_account',         'BankTransferController@editPayerBankAccount'                       ],
+        'bank_transfer_strip_payer_accounts'      => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
         'bank_transfer_insert'                    => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
@@ -324,7 +325,7 @@ final class Route
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
         'reports_public_entity_file'              => ['get',      'reports/{entity}/file',                          'MerchantController@getPublicEntityReportUrl'                       ],
-        'reports_refund_irctc'                    => ['get',      'reports/refund/irctc',                          'MerchantController@getIrctcRefundReport'                           ],
+        'reports_refund_irctc'                    => ['get',      'reports/refund/irctc',                           'MerchantController@getIrctcRefundReport'                           ],
         'customer_create'                         => ['post',     'customers',                                      'CustomerController@createLocalCustomer'                            ],
         'customer_update'                         => ['put',      'customers/{id}',                                 'CustomerController@updateCustomer'                                 ],
         'customer_fetch_by_id'                    => ['get',      'customers/{id}',                                 'CustomerController@getCustomer'                                    ],
@@ -651,15 +652,17 @@ final class Route
         'onboarding_features_fetch_details'       => ['get',      'onboarding/features',                            'FeatureController@getOnboardingDetails'                            ],
         'onboarding_features_fetch_submission'    => ['get',      'onboarding/features/{feature}',                  'FeatureController@getOnboardingSubmissions'                        ],
         'onboarding_features_create'              => ['post',     'onboarding/features/{feature}',                  'FeatureController@postOnboardingSubmissions'                       ],
-        'onboarding_features_update'              => ['put',      'onboarding/features/{feature}',                  'FeatureController@updateOnboardingSubmissions'                     ],
+        'onboarding_features_update'              => ['post',     'onboarding/features/{feature}/update',           'FeatureController@updateOnboardingSubmissions'                     ],
         'onboarding_features_fetch_submissions'   => ['get',      'onboarding/features/submissions',                'FeatureController@getFeatureOnboardingRequests'                    ],
         'onboarding_features_update_status'       => ['put',      'onboarding/features/{feature}/status',           'FeatureController@updateFeatureActivationStatus'                   ],
-        'onboarding_features_fetch_status'        => ['get',      'onboarding/features/{feature}/status',           'FeatureController@getFeatureActivationStatus'                   ],
+        'onboarding_features_fetch_status'        => ['get',      'onboarding/features/{feature}/status',           'FeatureController@getFeatureActivationStatus'                      ],
+        'onboarding_features_backfill_status'     => ['post',     'onboarding/features/backfill',                   'FeatureController@backfillFeatureActivationStatus'                 ],
+
 
         // Deprecated routes - maintaining for BC - Remove after dashboard changes
-        'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                  'FeatureController@postOnboardingSubmissions'                       ],
-        'feature_onboarding_fetch_responses'      => ['get',      'feature/onboarding/{feature}/responses',        'FeatureController@getOnboardingSubmissionsDeprecated'              ],
-        'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                  'FeatureController@getOnboardingSubmissionsDeprecated'              ],
+        'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                   'FeatureController@postOnboardingSubmissions'                       ],
+        'feature_onboarding_fetch_responses'      => ['get',      'feature/onboarding/{feature}/responses',         'FeatureController@getOnboardingSubmissionsDeprecated'              ],
+        'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                   'FeatureController@getOnboardingSubmissionsDeprecated'              ],
     ];
 
     public static $public = [
@@ -951,6 +954,7 @@ final class Route
         'bank_transfer_notify',
         'bank_transfer_refund_retry',
         'bank_transfer_edit_payer_account',
+        'bank_transfer_strip_payer_accounts',
         'bank_transfer_insert',
         'iin_fetch_by_iin',
         'card_update_saved',
@@ -1087,6 +1091,7 @@ final class Route
         'emandate_debit_reconcile',
         'user_reset_password_create',
         'user_reset_password_token',
+        'onboarding_features_backfill_status'
     ];
 
     public static $proxy = [
@@ -1395,6 +1400,7 @@ final class Route
         'onboarding_features_update_status'     => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_fetch_status'      => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_update'            => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
+        'onboarding_features_fetch_details'     => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
     ];
 
     public static $direct = [
