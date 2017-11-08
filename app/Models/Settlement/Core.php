@@ -5,8 +5,8 @@ namespace RZP\Models\Settlement;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
@@ -82,8 +82,8 @@ class Core extends Base\Core
     public function sendSettlementProcessedWebhook(Entity $settlement, array $transactions)
     {
         $eventPayload = [
-            Core::MAIN => $settlement,
-            Core::WITH => [
+            Entity::MAIN => $settlement,
+            Entity::WITH => [
                 'transactions' => $transactions,
             ]
         ];
