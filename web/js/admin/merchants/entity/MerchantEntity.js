@@ -144,6 +144,26 @@ export default class MerchantEntity extends Component {
       });
   };
 
+  merchantAction(action, successMsg) {
+    const data = {
+      route_name: 'merchant_action',
+      url_params: {
+        id: this.merchantId,
+      },
+      body: { action },
+    };
+
+    adminPut(data)
+      .then(response => {
+        closeModal();
+        notifySuccess(successMsg);
+        this.model.updateDetails(response);
+      })
+      .catch(err => {
+        notifyError(JSON.stringify(err.response));
+      });
+  }
+
   // Enable / Disable receipt emails
   toggleReceiptEmail = () => {
     const isReceiptEmailEnabled = this.model.merchant.details
@@ -158,35 +178,7 @@ export default class MerchantEntity extends Component {
       successMsg = 'Receipt email enabled successfully';
     }
 
-    adminPut({
-      route_name: 'merchant_action',
-      url_params: {
-        id: this.merchantId,
-      },
-      body: { action },
-    })
-      .then(response => {
-        closeModal();
-        notifySuccess(successMsg);
-        this.model.updateDetails(response);
-      })
-      .catch(err => {
-        notifyError(JSON.stringify(err.response));
-      });
-  };
-
-  toggleArchiveMerchant = () => {
-    //TODO: Depending upon archive/unarchive, change this message;
-    const message =
-      'Are you sure you want to archive merchant?(Make sure you have attempted all ways of convincing him before doing this)';
-    confirm(
-      message,
-      () => {
-        console.log('Archive / Unarchive Merchant....');
-      },
-      'Ok',
-      'Cancel'
-    );
+    this.merchantAction(action, successMsg);
   };
 
   // Suspend / Unsuspend merchant
@@ -195,23 +187,7 @@ export default class MerchantEntity extends Component {
     let action, successMsg;
 
     const request = (action, successMsg) => {
-      const data = {
-        route_name: 'merchant_action',
-        url_params: {
-          id: this.merchantId,
-        },
-        body: { action },
-      };
-
-      adminPut(data)
-        .then(response => {
-          closeModal();
-          notifySuccess(successMsg);
-          this.model.updateDetails(response);
-        })
-        .catch(err => {
-          notifyError(JSON.stringify(err.response));
-        });
+      this.merchantAction(action, successMsg);
     };
 
     if (isAlreadySuspended) {
@@ -231,6 +207,33 @@ export default class MerchantEntity extends Component {
         'Cancel'
       );
     }
+  };
+
+  // Archive / Unarchive merchant
+  toggleArchiveMerchant = () => {
+    const isAlreadyArchived = this.model.merchant.details.archived_at !== null;
+    let action, confirmMsg, successMsg;
+
+    if (isAlreadyArchived) {
+      action = 'unarchive';
+      confirmMsg =
+        'Are you sure you want to unarchive merchant? (Make sure you have attempted all ways of convincing him before doing this)';
+      successMsg = 'Merchant unarchived successfully';
+    } else {
+      action = 'archive';
+      confirmMsg =
+        'Are you sure you want to archive merchant? (Make sure you have attempted all ways of convincing him before doing this)';
+      successMsg = 'Merchant archived successfully';
+    }
+
+    confirm(
+      confirmMsg,
+      () => {
+        this.merchantAction(action, successMsg);
+      },
+      'Ok',
+      'Cancel'
+    );
   };
 
   getActionList() {
