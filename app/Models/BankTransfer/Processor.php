@@ -38,9 +38,9 @@ class Processor extends VirtualAccount\Processor
      *       - No
      *         - Process payment toward demo merchant, auto-refund it later.
      *
-     * @param Entity $bankTransfer
+     * @param Entity|Base\PublicEntity $bankTransfer
      *
-     * @return Entity|null
+     * @return null|Entity
      */
     public function process(Base\PublicEntity $bankTransfer)
     {

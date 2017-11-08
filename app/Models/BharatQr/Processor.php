@@ -32,40 +32,30 @@ class Processor extends VirtualAccount\Processor
      *   - No
      *     - Process payment toward demo merchant, auto-refund it later.
      *
-     * @param Entity $bharatQr
+     * @param Base\PublicEntity|Entity $bharatQr
      *
      * @return Entity
      */
     public function process(Base\PublicEntity $bharatQr)
     {
-        $isPaymentExpected = $this->isPaymentExpected($bharatQr);
-
         $isDuplicateNotification = $this->checkIfDuplicateNotification($bharatQr);
 
-        if (($isPaymentExpected === true) and
-            ($isDuplicateNotification === false))
+        if ($isDuplicateNotification === true)
         {
-            $bharatQr->setExpected(true);
+            // If we get a duplicate notification, just ignore.
 
-            $this->setMerchant();
+            return null;
         }
-        else if ($isPaymentExpected === false)
-        {
-            $this->preProcessUnexpectedPayment($bharatQr);
-        }
-        else
-        {
-            //
-            // The transfer is an expected one, i.e. it is made to a valid account
-            // but the merchant_reference is a duplicate, indicating that a payment is being processed
-            // for a second time. In this case, we do not create anything but a
-            // bharat_qr entity, marked as unexpected.
-            //
-            $bharatQr->setExpected(false);
 
-            $this->repo->saveOrFail($bharatQr);
+        $isPaymentExpected = $this->isPaymentExpected($bharatQr);
 
-            return $bharatQr;
+        $bharatQr->setExpected($isPaymentExpected);
+
+        $this->setMerchant($isPaymentExpected);
+
+        if ($isPaymentExpected === false)
+        {
+            $this->createAndSetVirtualAccount($bharatQr->getAmount());
         }
 
         $this->processBharatQr($bharatQr);
@@ -145,9 +135,18 @@ class Processor extends VirtualAccount\Processor
         }
     }
 
-    protected function setMerchant()
+    protected function setMerchant(bool $paymentExpected)
     {
-        $this->merchant = $this->virtualAccount->merchant;
+        if ($paymentExpected === true)
+        {
+            $this->merchant = $this->virtualAccount->merchant;
+        }
+        else
+        {
+            $defaultMerchantId = self::getDefaultMerchantId();
+
+            $this->merchant = $this->repo->merchant->findByPublicId($defaultMerchantId);
+        }
     }
 
     protected function getVirtualAccountFromEntity(Base\PublicEntity $bharatQr)

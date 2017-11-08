@@ -78,12 +78,12 @@ abstract class Processor extends Base\Core
         return true;
     }
 
-     /**
+    /**
      * For unexpected virtual account payment, we set the merchant to
      * the demo merchant. A new VA is created specifically
      * for this payment, to be closed immediately afterwards.
      *
-     * @param Entity $bankTransfer
+     * @param Base\PublicEntity $entity
      */
     protected function preProcessUnexpectedPayment(Base\PublicEntity $entity)
     {
@@ -112,7 +112,7 @@ abstract class Processor extends Base\Core
     /**
      * Set the VA for future processing.
      *
-     * @param Entity
+     * @param Base\PublicEntity $entity
      */
     protected function setVirtualAccount(Base\PublicEntity $entity)
     {
