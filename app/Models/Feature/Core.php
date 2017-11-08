@@ -314,6 +314,52 @@ class Core extends Base\Core
     }
 
     /**
+     * Updates the status of the product activation requests received
+     * from the merchants to either approved or pending.
+     *
+     * TODO - Remove the functions in this flow, once the data has been backfilled
+     */
+    public function backfillProductActivationRequests()
+    {
+        $merchantRequests = $this->repo->feature->getProductRequestsSubmitted();
+
+        foreach ($merchantRequests as $merchantId => $productRequests)
+        {
+            $merchantId = strval($merchantId);
+
+            $merchant = $this->repo->merchant->findByPublicId($merchantId);
+
+            $merchantDetail = $merchant->merchantDetail;
+
+            foreach ($productRequests as $product)
+            {
+                $getProductActivationStatus = camel_case('get_' . $product . '_activation_status');
+
+                $productStatus = $merchantDetail->$getProductActivationStatus();
+
+                if ($productStatus === null)
+                {
+                    $featureEnabled = $this->repo->feature->isFeatureEnabledInMode(
+                        Mode::LIVE,
+                        $merchantId,
+                        $product);
+
+                    if ($featureEnabled === true)
+                    {
+                        $status = MerchantDetail::APPROVED;
+                    }
+                    else
+                    {
+                        $status = MerchantDetail::PENDING;
+                    }
+
+                    $this->updateFeatureActivationStatus($merchantId, $product, $status);
+                }
+            }
+        }
+    }
+
+    /**
      * Accessor class overwrites all the old responses submitted by the merchant with the new
      * keys sent while updating. This function preserves the old keys and only updates the new ones.
      *

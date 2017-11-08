@@ -6,7 +6,6 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Models\FileStore;
 
 class Service extends Base\Service
 {
@@ -312,6 +311,13 @@ class Service extends Base\Service
         $response['status'] = $status;
 
         return $response;
+    }
+
+    public function backfillFeatureActivationStatus()
+    {
+        (new Core)->backfillProductActivationRequests();
+
+        return [];
     }
 }
 
