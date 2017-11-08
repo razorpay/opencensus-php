@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Services\EsClient;
@@ -19,7 +20,7 @@ class EsController extends Controller
      *
      * @var array
      */
-    const ALLOWED_DEBUG_METHODS =[
+    const ALLOWED_DEBUG_METHODS = [
         'cat',
         'mget',
         'search',
@@ -35,7 +36,7 @@ class EsController extends Controller
      * @param string $method
      *
      * @return ApiResponse
-     * @throws BadRequestException
+     * @throws \Throwable
      */
     public function debug(string $method)
     {
