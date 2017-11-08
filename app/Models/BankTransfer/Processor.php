@@ -246,7 +246,7 @@ class Processor extends VirtualAccount\Processor
      *
      * @return VirtualAccount\Entity|null
      */
-    protected function getVirtualAccountFromEntity($entity)
+    protected function getVirtualAccountFromEntity(Base\PublicEntity $entity)
     {
         //@todo Put assert on entity type
         $accountNumber = $entity->getPayeeAccount();

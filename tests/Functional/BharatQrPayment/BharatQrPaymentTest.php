@@ -98,9 +98,9 @@ class BharatQrPaymentTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $bharatQr = $this->getLastEntity('bharat_qr', true);
+        $bharatQr = $this->getEntities('bharat_qr', [], true);
 
-        $this->assertEquals(false, $bharatQr['expected']);
+        $this->assertEquals(count($bharatQr['items']) , 1);
     }
 
     protected function createVirtualAccount()

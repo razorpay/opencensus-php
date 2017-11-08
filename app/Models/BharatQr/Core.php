@@ -43,6 +43,11 @@ class Core extends Base\Core
     {
         $input = $this->getBharatQrInputParams($input);
 
+        $this->trace->info(
+            TraceCode::BHARAT_QR_PAYMENT_PROCESS_REQUEST,
+            $input
+        );
+
         try
         {
             $bharatQr = (new Entity)->build($input);

@@ -82,7 +82,7 @@ class Processor extends VirtualAccount\Processor
         ];
     }
 
-    protected function checkIfDuplicateNotification(Entity $bharatQr)
+    protected function checkIfDuplicateNotification(Base\PublicEntity $bharatQr)
     {
         $providerReferenceId = $bharatQr->getProviderReferenceId();
 
@@ -100,7 +100,7 @@ class Processor extends VirtualAccount\Processor
         return true;
     }
 
-    protected function processBharatQr(Entity $bharatQr)
+    protected function processBharatQr(Base\PublicEntity $bharatQr)
     {
         $paymentProcessor = new PaymentProcessor($this->merchant);
 
@@ -118,7 +118,7 @@ class Processor extends VirtualAccount\Processor
 
             $bharatQr->payment()->associate($payment);
 
-            $payment->setGatewayViaQr(Payment\Gateway::BHARAT_QR);
+            $payment->setGatewayBharatQr();
 
             $bharatQr->virtualAccount()->associate($this->virtualAccount);
 
