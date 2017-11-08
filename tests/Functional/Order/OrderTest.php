@@ -65,6 +65,13 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testCreateOrderWithBank()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
     public function testCreateTPVOrderWithInvalidAccountNumber()
     {
         $this->startTest();
@@ -252,6 +259,19 @@ class OrderTest extends TestCase
         $this->fixtures->merchant->disableTPV();
     }
 
+    public function testCardPaymentForTPVMerchantWithoutOrder()
+    {
+        $this->fixtures->merchant->enableTPV();
+
+        $this->setUpSharpGateway();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
     public function testPaymentWithIncorrectBankForTPVMerchantWithOrder()
     {
         $this->fixtures->merchant->enableTPV();
@@ -316,6 +336,39 @@ class OrderTest extends TestCase
         $preferences = $this->startTest($testData);
 
         $this->fixtures->merchant->disableTPV();
+    }
+
+    public function testPreferencesForOrderWithBank()
+    {
+        $this->testCreateOrderWithBank();
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->ba->publicAuth();
+
+        $testData['request']['content'] = ['key_id' => $this->ba->getKey(), 'order_id' => $order['id']];
+
+        $preferences = $this->startTest($testData);
+    }
+
+    public function testPaymentWithIncorrectBankFromOrderBank()
+    {
+        $this->testCreateOrderWithBank();
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'KKBK';
+
+        $payment['order_id'] = $order['id'];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testCreateOrderWithOffer()

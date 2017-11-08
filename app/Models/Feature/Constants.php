@@ -53,6 +53,7 @@ class Constants
     const BLOCK_INTERNATIONAL_RECURRING = 'block_intl_recurring';
     const BHARAT_QR                     = 'bharat_qr';
     const MOBIKWIK_OFFERS               = 'mobikwik_offers';
+    const ALLOW_DC_RECURRING            = 'allow_dc_recurring';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -104,6 +105,7 @@ class Constants
         self::BLOCK_INTERNATIONAL_RECURRING => false,
         self::BHARAT_QR                     => true,
         self::MOBIKWIK_OFFERS               => true,
+        self::ALLOW_DC_RECURRING            => true,
     ];
 
     // Keys used in the feature on-boarding workflow

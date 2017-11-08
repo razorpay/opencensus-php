@@ -14,6 +14,7 @@ class Constants
     const FEDERAL         = 'federal';
     const INDUSIND        = 'indusind';
     const RBL             = 'rbl';
+    const SCBL            = 'scbl';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -30,6 +31,7 @@ class Constants
             self::KOTAK,
             self::AXIS,
             self::RBL,
+            self::SCBL,
         ],
         Type::COMBINED => [
             self::KOTAK,
@@ -76,5 +78,13 @@ class Constants
         Type::EMANDATE_DEBIT => [
             self::HDFC => ['hdfc.emandate@razorpay.com'],
         ],
+
+        Type::EMI => [
+            self::AXIS     => ['axiscards.emi@razorpay.com'],
+            self::INDUSIND => ['indusind.emi@razorpay.com'],
+            self::KOTAK    => ['kotakcards.emi@razorpay.com'],
+            self::RBL      => ['Rblcards.emi@razorpay.com'],
+            self::SCBL     => ['scbl.emi@razorpay.com'],
+        ]
     ];
 }
