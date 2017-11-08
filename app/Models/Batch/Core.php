@@ -51,8 +51,9 @@ class Core extends Base\Core
     }
 
     /**
-     * Returns signed URL of the batch's most recent file (so processed else
-     * the input one itself).
+     * Returns signed URL of the batch's most recent file
+     * If batch is processed that will be the output file, else the batch input
+     * file is returned.
      *
      * @param Entity $batch
      *
