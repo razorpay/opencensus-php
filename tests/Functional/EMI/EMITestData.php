@@ -9,41 +9,41 @@ return [
     'testAddEmiPlans' => [
         'request' => [
             'content' => [
-                'bank' => 'HDFC',
-                'duration' => 3,
-                'rate' => 1045,
-                'methods' => 'card',
+                'bank'       => 'HDFC',
+                'duration'   => 3,
+                'rate'       => 1045,
+                'methods'    => 'card',
                 'min_amount' => 400000,
             ],
             'method' => 'POST',
-            'url' => '/emi',
+            'url'    => '/emi',
         ],
         'response' => [
             'content' => [
-                'bank' => 'HDFC',
-                'duration' => 3,
-                'rate' => 1045,
-                'methods' => 'card',
-                'min_amount' => 400000
+                'bank'       => 'HDFC',
+                'duration'   => 3,
+                'rate'       => 1045,
+                'methods'    => 'card',
+                'min_amount' => 400000,
             ],
         ],
     ],
 
-    'testFetchAllEmiPlans' => [
+    'testFetchAllEmiPlansOnPublicAuth' => [
         'request' => [
             'content' => [
             ],
-            'url' => '/emi',
+            'url'    => '/emi',
             'method' => 'get',
         ],
         'response' => [
             'content' => [
                 'HDFC' => [
-                    'min_amount' => 400000,
+                    'min_amount' => 500000,
                     'plans' => [
-                        3 => 10.45
-                    ]
-                ]
+                        9 => 12,
+                    ],
+                ],
             ],
         ],
     ],
@@ -52,16 +52,48 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/emi/{id}',
+            'url'    => '/emi/10101010101010',
             'method' => 'get'
         ],
         'response' => [
             'content' => [
-                'bank' => 'HDFC',
-                'rate' => 1045,
-                'duration' => 3,
-                'methods' => 'card',
-                'min_amount' => 400000
+                'bank'             => 'HDFC',
+                'network'          => null,
+                'rate'             => 1200,
+                'duration'         => 9,
+                'methods'          => 'card',
+                'min_amount'       => 500000,
+                'issuer_plan_id'   => null,
+                'subvention'       => 'customer',
+                'merchant_payback' => 0,
+                'issuer_name'      => 'HDFC Bank',
+                'entity'           => 'emi_plan',
+                'admin'            => true,
+            ],
+        ],
+    ],
+
+    'testFetchEmiPlanUsingPlanIdAndAssertIssuerNameForNetwork' => [
+        'request' => [
+            'content' => [
+            ],
+            'url'    => '/emi/10101010101010',
+            'method' => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'bank'             => null,
+                'network'          => 'AMEX',
+                'rate'             => 1200,
+                'duration'         => 9,
+                'methods'          => 'card',
+                'min_amount'       => 500000,
+                'issuer_plan_id'   => null,
+                'subvention'       => 'customer',
+                'merchant_payback' => 0,
+                'issuer_name'      => 'American Express',
+                'entity'           => 'emi_plan',
+                'admin'            => true,
             ],
         ],
     ],
@@ -70,16 +102,16 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/emi/{id}',
+            'url'    => '/emi/10101010101010',
             'method' => 'delete'
         ],
         'response' => [
             'content' => [
-                'bank' => 'HDFC',
-                'rate' => 1045,
-                'duration' => 3,
-                'methods' => 'card',
-                'min_amount' => 400000
+                'bank'       => 'HDFC',
+                'rate'       => 1200,
+                'duration'   => 9,
+                'methods'    => 'card',
+                'min_amount' => 500000
             ],
         ],
     ],
