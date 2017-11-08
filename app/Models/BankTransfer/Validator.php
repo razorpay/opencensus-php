@@ -18,7 +18,7 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::PAYER_NAME     => 'sometimes|string|max:100',
-        Entity::PAYER_ACCOUNT  => 'sometimes|string|max:20',
+        Entity::PAYER_ACCOUNT  => 'sometimes|string|max:40',
         Entity::PAYER_IFSC     => 'sometimes|string',
         Entity::PAYEE_ACCOUNT  => 'required|string|max:20',
         Entity::PAYEE_IFSC     => 'required|string|size:'.self::IFSC_LENGTH,
@@ -61,7 +61,7 @@ class Validator extends Base\Validator
     {
         $bankTransfer = $payment->bankTransfer;
 
-        if (empty($bankTransfer->getPayerAccount()) === true)
+        if ($bankTransfer->payerBankAccount === null)
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,

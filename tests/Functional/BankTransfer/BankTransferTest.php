@@ -507,7 +507,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('initiated', $attempt['status']);
     }
 
-    public function testBankTransferImpsFromRogueBank()
+    public function testBankTransferImpsFromRogueBankNullAccount()
     {
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
@@ -545,6 +545,49 @@ class BankTransferTest extends TestCase
         $data = $this->testData['bankTransferImpsFailedRefund'];
 
         // IMPS refunds are not permitted when we don't even have an account number
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->refundPayment($payment['id'], 4000000);
+        });
+    }
+
+    public function testBankTransferImpsFromRogueBankInvalidAccount()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['payee_account'] = $accountNumber;
+
+        $request['content']['payee_ifsc'] = $ifsc;
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals('533/1 NEFT CASH FOR NON CUSTOMER', $bankTransfer['payer_account']);
+        $this->assertEquals('RTGS', $bankTransfer['mode']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        // Customer bank account did not get created
+        $this->assertNull($bankTransfer['payer_bank_account_id']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $data = $this->testData['bankTransferImpsFailedRefund'];
+
+        // Refunds are not permitted when we haven't created a payer bank account
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->refundPayment($payment['id'], 4000000);
         });

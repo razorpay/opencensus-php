@@ -2598,3 +2598,6 @@ ALTER TABLE transfers
 
 ALTER TABLE daily_settlements
     DROP COLUMN service_tax;
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN payer_account varchar(40) NOT NULL;
