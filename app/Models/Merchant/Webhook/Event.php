@@ -34,6 +34,7 @@ class Event
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
     const TOKEN_CONFIRMED           = 'token.confirmed';
     const TOKEN_REJECTED            = 'token.rejected';
+    const SETTLEMENT_PROCESSED      = 'settlement.processed';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -56,6 +57,7 @@ class Event
         // self::SUBSCRIPTION_EXPIRED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
+        self::SETTLEMENT_PROCESSED
     ];
 
     protected static $bitMap = [
@@ -78,6 +80,7 @@ class Event
         self::INVOICE_PARTIALLY_PAID    => 0x17,
         self::TOKEN_CONFIRMED           => 0x18,
         self::TOKEN_REJECTED            => 0x19,
+        self::SETTLEMENT_PROCESSED      => 0x20,
     ];
 
     /**
@@ -106,6 +109,7 @@ class Event
         // self::SUBSCRIPTION_EXPIRED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
+        self::SETTLEMENT_PROCESSED
     ];
 
     protected static $bitPosition = [
@@ -129,6 +133,7 @@ class Event
         self::INVOICE_PARTIALLY_PAID    => 18,
         self::TOKEN_CONFIRMED           => 19,
         self::TOKEN_REJECTED            => 20,
+        self::SETTLEMENT_PROCESSED      => 21,
     ];
 
     /**
@@ -157,6 +162,7 @@ class Event
         // self::SUBSCRIPTION_EXPIRED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
+        self::SETTLEMENT_PROCESSED,
     ];
 
     /**
@@ -182,6 +188,7 @@ class Event
         // self::SUBSCRIPTION_EXPIRED      => Entity::SUBSCRIPTION,
         self::TOKEN_CONFIRMED           => Entity::TOKEN,
         self::TOKEN_REJECTED            => Entity::TOKEN,
+        self::SETTLEMENT_PROCESSED      => Entity::SETTLEMENT,
     ];
 
     public static $eventsToFeatureMap = [

@@ -2,21 +2,19 @@
 
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
 
-use Carbon\Carbon;
-use Excel;
 use Mail;
+use Carbon\Carbon;
 
-use RZP\Constants\Entity as EntityConstants;
-use RZP\Constants\MailTags;
-use RZP\Constants\Mode;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Mail\Settlement as SettlementMail;
 use RZP\Models\Base;
-use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
-use RZP\Models\FundTransfer\Kotak;
-use RZP\Models\Settlement\SlackNotification;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\FundTransfer\Kotak;
+use RZP\Mail\Settlement as SettlementMail;
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 class Processor extends Base\Core
 {
@@ -153,6 +151,8 @@ class Processor extends Base\Core
 
             throw $e;
         }
+
+        (new FundTransferAttempt\Core)->notifyMarketplaceMerchantViaWebhook($this->allEntities);
 
         $summary = $this->getSummary();
 

@@ -575,4 +575,30 @@ return [
         ],
         // 'webhook_id' => '4WVwsVEmeO3wwp',
     ],
+
+    'testTransferSettlementWebhook' => [
+        'event' => [
+            'entity'    => 'event',
+            'event'     => 'settlement.processed',
+            'contains' => [
+                'settlement',
+                'transactions'
+            ],
+            'payload' => [
+                'settlement' => [
+                    'entity' => [
+                        'entity' => 'settlement',
+                        'amount' => 2500
+                    ]
+                ],
+                'transactions' => [
+                    [
+                        'type' => 'payment',
+                        'amount' => 2500,
+
+                    ]
+                ]
+            ],
+        ]
+    ]
 ];

@@ -306,6 +306,13 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onSettlementProcessed($settlement)
+    {
+        $payload = $this->getSettlementPayload($settlement);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function getP2pPayload($p2p)
     {
         $source = $p2p->source;
@@ -427,6 +434,18 @@ class ApiEventSubscriber extends Base\Core
         return $payload;
     }
 
+    protected function getSettlementPayload($settlement)
+    {
+        $payload = [
+            Constants\Entity::SETTLEMENT => [
+                'entity' => $settlement->toArrayPublic(),
+            ],
+            'transactions' => $this->withPayload['transactions']
+        ];
+
+        return $payload;
+    }
+
     protected function prepareAndDispatchWebhook(array $payload)
     {
         $data = $this->getWebhookData($payload);
@@ -440,7 +459,8 @@ class ApiEventSubscriber extends Base\Core
     {
         $eventFired = $this->event;
         $entity = $this->mainEntity;
-        $webhook = $entity->merchant->webhook;
+        $merchant = $this->getMerchantFromEntity($entity);
+        $webhook = $merchant->webhook;
 
         $attributes = array(
             Event\Entity::EVENT       => $eventFired,
@@ -459,7 +479,7 @@ class ApiEventSubscriber extends Base\Core
 
         $event->setPayload($payload);
 
-        $event->merchant()->associate($entity->merchant);
+        $event->merchant()->associate($merchant);
 
         $data = array(
             'mode'          => $this->getMode(),
@@ -490,10 +510,24 @@ class ApiEventSubscriber extends Base\Core
 
     protected function isWebhookEnabledForEvent(Base\PublicEntity $entity)
     {
-        $webhook = $this->repo->webhook->findByMerchant($entity->merchant);
+        $merchant = $this->getMerchantFromEntity($entity);
+
+        $webhook = $this->repo->webhook->findByMerchant($merchant);
 
         return (($webhook !== null) and
                 ($webhook->isActive()) and
                 ($webhook->isEventEnabled($this->event)));
+    }
+
+    protected function getMerchantFromEntity(Base\PublicEntity $entity)
+    {
+        $merchant = $entity->merchant;
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $merchant = $merchant->parent;
+        }
+
+        return $merchant;
     }
 }

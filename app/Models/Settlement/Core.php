@@ -72,4 +72,22 @@ class Core extends Base\Core
 
         return $response;
     }
+
+    /**
+     * Sends a webhook to the merchantg for successfully settled payments
+     *
+     * @param Entity $settlement
+     * @param array  $transactions
+     */
+    public function sendSettlementProcessedWebhook(Entity $settlement, array $transactions)
+    {
+        $eventPayload = [
+            Core::MAIN => $settlement,
+            Core::WITH => [
+                'transactions' => $transactions,
+            ]
+        ];
+
+        $this->app['events']->fire('api.settlement.processed', $eventPayload);
+    }
 }

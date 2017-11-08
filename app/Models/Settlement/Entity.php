@@ -31,6 +31,10 @@ class Entity extends Base\PublicEntity
     const PROCESSED_AT           = 'processed_at';
     const SETTLED_ON             = 'settled_on';
 
+    // Constants used in sending settlement webhooks
+    const MAIN = 'main';
+    const WITH = 'with';
+
     protected static $sign = 'setl';
 
     protected $entity = 'settlement';
