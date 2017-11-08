@@ -10,6 +10,7 @@ use Illuminate\Console\Command;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 
 /**
  * Earlier for batch entries we had S3 URLs in table for input and output files.
@@ -160,16 +161,20 @@ class MigrateOldBatchToUfh extends Command
         $this->trace->debug(
             TraceCode::BATCH_MIGRATE_DEBUG,
             [
-                'type' => 's3_meta',
-                'body' => $s3Meta,
+                'operation' => 's3_meta',
+                'id'        => $batch->getId(),
+                'body'      => [
+                    's3_request_params' => $s3RequestParams,
+                    's3_response'       => $s3Meta,
+                ],
             ]);
 
-        $now = Carbon::now()->timestamp;
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
 
         $ufhCreateParams = [
             FileStore\Entity::ID          => FileStore\Entity::generateUniqueId(),
             FileStore\Entity::MERCHANT_ID => $batch->getMerchantId(),
-            FileStore\Entity::TYPE        => FileStore\Type::BATCH_INPUT,
+            FileStore\Entity::TYPE        => $type,
             FileStore\Entity::ENTITY_ID   => $batch->getId(),
             FileStore\Entity::ENTITY_TYPE => $batch->getEntity(),
             FileStore\Entity::EXTENSION   => FileStore\Format::XLSX,
@@ -178,7 +183,7 @@ class MigrateOldBatchToUfh extends Command
             FileStore\Entity::NAME        => $filePrefix . $batch->getFileKey(),
             FileStore\Entity::STORE       => FileStore\Store::S3,
             FileStore\Entity::LOCATION    => $filePrefix . $batch->getFileKeyWithExt(),
-            FileStore\Entity::BUCKET      => 'settlement_bucket',
+            FileStore\Entity::BUCKET      => $this->bucket,
             FileStore\Entity::REGION      => $this->region,
             FileStore\Entity::CREATED_AT  => $now,
             FileStore\Entity::UPDATED_AT  => $now,
@@ -187,8 +192,9 @@ class MigrateOldBatchToUfh extends Command
         $this->trace->debug(
             TraceCode::BATCH_MIGRATE_DEBUG,
             [
-                'type' => 'ufh_create_input',
-                'body' => $ufhCreateParams,
+                'operation' => "ufh_create_{$type}",
+                'id'        => $batch->getId(),
+                'body'      => $ufhCreateParams,
             ]);
 
         $entity = (new FileStore\Entity)->forceFill($ufhCreateParams);
@@ -206,7 +212,14 @@ class MigrateOldBatchToUfh extends Command
         {
             $this->error($e);
 
-            $this->trace->traceException($e, null, TraceCode::BATCH_MIGRATE_DEBUG);
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::BATCH_MIGRATE_DEBUG,
+                [
+                    'operation' => "ufh_create_{$type}_save",
+                    'id'        => $batch->getId(),
+                ]);
 
             return;
         }
