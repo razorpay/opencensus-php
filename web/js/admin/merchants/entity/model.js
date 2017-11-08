@@ -6,6 +6,7 @@ export default class Model extends BaseModel {
   @observable
   merchant = {
     details: {},
+    gatewayRules: {},
     terminals: { items: [], count: 0 },
     offers: [],
     pricingPlans: {},
@@ -44,6 +45,7 @@ export default class Model extends BaseModel {
       // TODO: Ensure rendering happpens on resolve of each below otherwise data will update but not merchant object, hence no re-rendering. Or take out each property instead of putting inside merchant object
       this.fetchPricingPlans();
       this.fetchScheduleTasks();
+      this.fetchGatewayRules();
 
       this.fetchTerminals('live');
       this.fetchTerminals('test');
@@ -141,6 +143,27 @@ export default class Model extends BaseModel {
           feature => feature.name
         );
         this.merchant.features[mode] = data;
+      }
+    });
+  }
+
+  @action
+  fetchGatewayRules() {
+    const data = {
+      route_name: 'admin_fetch_entity_multiple',
+      url_params: {
+        type: 'gateway_rule',
+      },
+      query_params: {
+        merchant_id: this.merchantId,
+      },
+      mode: 'live',
+    };
+
+    return this.request('fetchGatewayRules', this.fetchFn(data)).then(data => {
+      if (data) {
+        console.log('.....', data);
+        this.merchant.gatewayRules = data.items;
       }
     });
   }

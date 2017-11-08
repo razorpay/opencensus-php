@@ -68,6 +68,20 @@ function _getTerminalFields() {
   ];
 }
 
+function _getGatewayFields() {
+  return [
+    ['Rule ID', item => item.id],
+    ['Gateway', item => item.gateway],
+    ['Gateway Acquirer', item => item.gateway_acquirer],
+    ['Method', item => item.method],
+    ['Method Type', item => item.method_type],
+    ['Network', item => item.network],
+    ['Issuer', item => item.issuer],
+    ['International', item => item.international],
+    ['Load', item => item.load],
+  ];
+}
+
 // mapping used in multiple files
 const utilMapping = {
   network: {
@@ -161,8 +175,15 @@ export function getMappingFor(key) {
 
 /*---------------------------------------- UI resource --------------------------------------------*/
 export function getDetailsViewMap(merchant) {
-  const { details, terminals, pricingPlans, bankDetails, features } = merchant;
-  // console.log('DETAILS....', details);
+  const {
+    details,
+    terminals,
+    pricingPlans,
+    bankDetails,
+    features,
+    gatewayRules,
+  } = merchant;
+  console.log('GATEWAY RULES......', gatewayRules);
 
   return [
     {
@@ -368,6 +389,13 @@ export function getDetailsViewMap(merchant) {
     {
       label: 'Gateway Rules',
       value: () => <button class="btn-default">Show/Hide</button>,
+      toggleChildren: function() {
+        return (
+          <div>
+            <Table items={gatewayRules} fields={_getGatewayFields()} />
+          </div>
+        );
+      },
     },
     {
       label: 'Offers',
