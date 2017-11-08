@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Constants\Entity;
+use RZP\Dashboard\Settlement;
 use RZP\Exception;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Kotak\Headings;
@@ -93,18 +94,20 @@ class RowProcessor extends Base\RowProcessor
         if (($status === Attempt\Status::FAILED) and
             (empty($utr) === false) and
             (in_array(Attempt\Entity::STATUS, array_keys($dirtyAttributes)) === true) and
-            ($bankStatusCode === Status::PROCESSED))
-        {
+            ($bankStatusCode === Status::PROCESSED)) {
             $this->firstFailure = true;
 
             // setting merchant hold_funds true temporarily; this will
             // be set for test and live separately afterwards
-            $this->reconEntity->merchant->setHoldFunds(true);
+            if ($this->source->getEntity() === Entity::SETTLEMENT)
+            {
+                $this->reconEntity->merchant->setHoldFunds(true);
+
+                $this->reconEntity->merchant->saveOrFail();
+            }
         }
 
         $this->reconEntity->saveOrFail();
-
-        $this->reconEntity->merchant->saveOrFail();
     }
 
     protected function updateSourceEntity()
