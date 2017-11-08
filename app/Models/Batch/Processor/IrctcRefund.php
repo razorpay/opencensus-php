@@ -50,8 +50,16 @@ class IrctcRefund extends Base
         // In case the payment is not captured, we need to capture the payment before initiating the refund
         if ($payment->hasBeenCaptured() === false)
         {
+            $amount = $payment->getAmount();
+
+            // The payment amount is inclusive of fees, so we need to capture with the original amount.
+            if ($payment->merchant->isFeeBearerCustomer() === true)
+            {
+                $amount = $amount - $payment->getFee();
+            }
+
             $params = [
-                Payment\Entity::AMOUNT      => $payment->getAmount(),
+                Payment\Entity::AMOUNT      => $amount,
                 Payment\Entity::CURRENCY    => $payment->getCurrency()
             ];
 
