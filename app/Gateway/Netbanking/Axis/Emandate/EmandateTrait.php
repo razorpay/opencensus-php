@@ -407,7 +407,7 @@ trait EmandateTrait
 
     protected function getEncryptor()
     {
-        $aes = new AESCrypto(AES::MODE_ECB, $this->getRecSecret(true));
+        $aes = new AESCrypto(AES::MODE_ECB, $this->getEmandateSecret());
 
         return $aes;
     }
@@ -466,7 +466,7 @@ trait EmandateTrait
             $data[RequestFields::REQUEST_ID],
             $data[RequestFields::CUSTOMER_REF_NO],
             $data[RequestFields::AMOUNT] ?? null,
-            $this->getRecSecret(),
+            $this->getEmandateChecksumSecret(),
         ];
 
         // Amount is not part of the hash for verify
@@ -478,20 +478,24 @@ trait EmandateTrait
         return $this->generateHash($arrayToBeHashed);
     }
 
-    protected function getRecSecret(bool $encryption = false) : string
+    protected function getEmandateSecret() : string
     {
         if ($this->mode === Mode::TEST)
         {
-            $key = (($encryption === true) ? 'test_hash_secret_encrec' : 'test_hash_secret_rec');
-
-            return $this->config[$key];
+            return $this->config['test_hash_secret_encrec'];
         }
 
-        return (
-                ($encryption === true) ?
-                ($this->input['terminal']->getGatewaySecureSecretAttribute()) :
-                ($this->input['terminal']->getGatewayTerminalPasswordAttribute())
-        );
+        return $this->input['terminal']->getGatewaySecureSecretAttribute();
+    }
+
+    protected function getEmandateChecksumSecret() : string
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_hash_secret_rec'];
+        }
+
+        return $this->input['terminal']->getGatewayTerminalPasswordAttribute();
     }
 
     public function getEmandateMerchantId()
