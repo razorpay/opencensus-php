@@ -84,7 +84,7 @@ class Axis extends Base
                 Headings::TOKEN_ID                    => $token->getId(),
                 Headings::CUSTOMER_NAME               => $token->customer->getName(),
                 Headings::DEBIT_ACCOUNT               => $token->getAccountNumber(),
-                Headings::AMOUNT                      => $this->formatAmount($payment->getAmount()),
+                Headings::AMOUNT                      => $gateway->formatAmount($payment->getAmount()),
                 Headings::ADDITIONAL_INFO_1           => '',
                 Headings::ADDITIONAL_INFO_2           => '',
                 Headings::UNDERLYING_REFERENCE_NUMBER => '',
@@ -95,10 +95,4 @@ class Axis extends Base
 
         return $rows;
     }
-
-    protected function formatAmount(int $amount): string
-    {
-        return $amount / 100;
-    }
-
 }

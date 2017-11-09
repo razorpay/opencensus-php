@@ -577,7 +577,7 @@ class Gateway extends Base\Gateway
      * @param  int $amount amount in paise (100)
      * @return string amount in Rupees
      */
-    protected function formatAmount(int $amount): string
+    public function formatAmount(int $amount): string
     {
         return $amount / 100;
     }

@@ -15,6 +15,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\FileStore\Type;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment;
+use RZP\Models\FileStore\Format;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -171,7 +172,7 @@ class NetbankingAxisEMandateTest extends TestCase
             'type'        => Type::AXIS_EMANDATE_DEBIT,
             'entity_type' => Entity::GATEWAY_FILE,
             'entity_id'   => $content['id'],
-            'extension'   => 'csv',
+            'extension'   => Format::CSV,
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
