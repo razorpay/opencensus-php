@@ -66,6 +66,8 @@ class IrctcRefund extends Base
             $paymentProcessor->capture($payment, $params);
         }
 
+        $payment->reload();
+
         $input = $this->getRefundParams($entry);
 
         $input[Refund\Entity::AMOUNT]  = intval($entry[Batch\Header::REFUND_AMOUNT] * 100);
