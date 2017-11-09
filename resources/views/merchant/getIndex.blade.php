@@ -1,4 +1,4 @@
-@include('partials/head')
+@include('partials/header')
 
 @if ($isConfirmed and $isPreSignupComplete)
   <% for (var css in htmlWebpackPlugin.files.css) { %>
