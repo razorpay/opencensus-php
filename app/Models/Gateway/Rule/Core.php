@@ -5,8 +5,6 @@ namespace RZP\Models\Gateway\Rule;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Currency\Currency;
@@ -21,7 +19,7 @@ class Core extends Base\Core
 
         $validatorMethod = $this->getValidatorMethod($rule);
 
-        $matchingRules = $this->getRulesWithMatchingCriteria($rule);
+        $matchingRules = $this->getRulesWithMatchingRuleCriteria($rule);
 
         $this->$validatorMethod($rule, $matchingRules);
 
@@ -43,7 +41,7 @@ class Core extends Base\Core
 
         $rule->edit($input);
 
-        $matchingRules = $this->getRulesWithMatchingCriteria($rule);
+        $matchingRules = $this->getRulesWithMatchingRuleCriteria($rule);
 
         $validatorMethod = $this->getValidatorMethod($rule, $matchingRules);
 
@@ -87,7 +85,10 @@ class Core extends Base\Core
      * as new rule, and same gateway but opposite filter type in the same group
      * Ror e.g select rule for gateway A and reject rule for gateway A cannot be
      * present in same group
-     * @param  Entity $rule Rule entity being created
+     *
+     * @param  Entity                   $rule           Rule entity being created
+     * @param  Base\PublicCollection    $matchingRules  Set of matching rules for the given criteria
+     * @throws Exception\BadRequestValidationFailureException
      */
     protected function validateFilterRule(Entity $rule, Base\PublicCollection $matchingRules)
     {
@@ -105,8 +106,10 @@ class Core extends Base\Core
      * terminal sorting whose total load exceeds the distribution space of 100
      * as we are treating load values as percentages
      *
-     * @param  Entity $rule  New rule
-     * @param  array  $input Request data
+     * @param  Entity                   $rule           New rule
+     * @param  Base\PublicCollection    $matchingRules  Set of matching rules for the given criteria
+     * @param  array                    $input          Request data
+     * @throws Exception\BadRequestValidationFailureException
      */
     protected function validateSorterRule(Entity $rule, Base\PublicCollection $matchingRules)
     {
@@ -135,8 +138,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Forms the query param array for fetching rules from db during terminal
-     * selction
+     * Forms the search criteria to be used for fetching relevant rules during a payment
      *
      * @param  array  $terminals set of all terminals
      * @param  array  $input     payment related input
@@ -213,13 +215,13 @@ class Core extends Base\Core
     }
 
     /**
-     * Fetches rules whose applicability criteria for a particular payment, overlaps
-     * with the applicablity criteria for the rule being compared against
+     * Fetches rules whose applicability criteria is the same as that of the rule passed
      *
      * @param  Entity $rule             Rule entity against which we need to check overlap
+     *
      * @return Base\PublicCollection    rules which have matching criteria
      */
-    protected function getRulesWithMatchingCriteria(Entity $rule): Base\PublicCollection
+    protected function getRulesWithMatchingRuleCriteria(Entity $rule): Base\PublicCollection
     {
         $searchCriteria = $rule->getSearchCriteria();
 

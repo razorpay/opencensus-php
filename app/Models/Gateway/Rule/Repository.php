@@ -30,6 +30,11 @@ class Repository extends Base\Repository
         Entity::CATEGORY2        => 'sometimes|string',
     ];
 
+    /**
+     * Fetches rules matching a given search criteria
+     * @param  array                    $criteria
+     * @return Base\PublicCollection
+     */
     public function fetchRulesForSearchCriteria(array $criteria): Base\PublicCollection
     {
         $query = $this->newQuery();
@@ -102,6 +107,13 @@ class Repository extends Base\Repository
         }
     }
 
+    /**
+     * If ID is present in the search criteria,we fetch all other rules which dont have the ID
+     * ID will be present only if an existing rule is being edited
+     *
+     * @param Querybuilder $query
+     * @param array        $params
+     */
     protected function addQueryForId($query, $params)
     {
         $query->where(Entity::ID, '!=', $params[Entity::ID]);

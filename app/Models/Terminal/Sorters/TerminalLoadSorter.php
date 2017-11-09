@@ -40,15 +40,7 @@ class TerminalLoadSorter extends Terminal\Sorter
             // sorting using rules
             $verbose = true;
 
-            // if ($verbose === true)
-            // {
-            //     $this->trace->info(
-            //         TraceCode::GATEWAY_SORTER_RULES,
-            //         [
-            //             'rules'          => $this->rules->pluck(Rule\Entity::ID)->toArray(),
-            //             'chance_percent' => $this->options->getChance(),
-            //         ]);
-            // }
+            $this->traceSorterRules($verbose);
 
             $chancePercent = $this->options->getChance();
 
@@ -63,6 +55,11 @@ class TerminalLoadSorter extends Terminal\Sorter
                                             $rules,
                                             $verbose);
 
+                //
+                // If we are able to get boosted teerminals at any specificity level
+                // we select those and dont consider other rules with lower specificity
+                // score
+                //
                 if (empty($boostedTerminals) === false)
                 {
                     break;
@@ -96,9 +93,10 @@ class TerminalLoadSorter extends Terminal\Sorter
      * terminals to that rule (if any) are boosted over other terminals
      *
      * @param  Base\PublicCollection $terminals     collection of available terminals
-     * @param  Base\PublicCollection $rules         collection of applicable rules
      * @param  int                   $chancePercent randomly selected chance value
      *                                              (between 0 - 10000)
+     * @param  Base\PublicCollection $rules         collection of applicable rules
+     *
      * @return array                            map of rule_id => terminals
      */
     protected function getBoostedTerminals(
@@ -143,6 +141,26 @@ class TerminalLoadSorter extends Terminal\Sorter
        }
 
        return [];
+    }
+
+    protected function traceSorterRules(bool $verbose = false)
+    {
+        if ($verbose === true)
+        {
+            $ruleIds = [];
+
+            foreach ($this->rules as $score => $rules)
+            {
+                $ruleIds = array_merge($ruleIds, $rules->pluck(Rule\Entity::ID)->toArray());
+            }
+
+            $this->trace->info(
+                TraceCode::GATEWAY_SORTER_RULES,
+                [
+                    'rule_ids'       => $ruleIds,
+                    'chance_percent' => $this->options->getChance(),
+                ]);
+        }
     }
 
     protected function traceBoostedTerminals(array $terminals, int $chancePercent, bool $verbose = false)

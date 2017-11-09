@@ -2,13 +2,14 @@
 
 namespace RZP\Models\Gateway\Rule;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
@@ -101,9 +102,7 @@ class Entity extends Base\PublicEntity
     ];
 
     /**
-     * Attributes used for fetching rules matching the criteria defined by these
-     * keys. These are used while checking for rxisting rules satisfying given criteria
-     * during new rule creation or update
+     * Attributes which define search criteria for both sorter / filter rules
      */
     const DEFAULT_SEARCH_ATTRIBUTES = [
         self::ID,
@@ -122,8 +121,7 @@ class Entity extends Base\PublicEntity
     ];
 
     /**
-     * Attributes to be used while checking for sorter rules matching given criteria
-     * apart from defaultQueryAttributes
+     * Attributes which define search criteria for sorter rules.
      */
     const SORTER_SEARCH_ATTRIBUTES = [
         self::MERCHANT_ID,
@@ -131,8 +129,7 @@ class Entity extends Base\PublicEntity
 
 
     /**
-     * Attributes to be used while querying for filter rules matching given criteria
-     * apart from defaultQueryAttributes
+     * Attributes which define search criteria for filter rules.
      */
     const FILTER_SEARCH_ATTRIBUTES = [
         self::GATEWAY,
@@ -144,9 +141,9 @@ class Entity extends Base\PublicEntity
     ];
 
     /**
-     * Defines the attribute scores used for calculating how specific a rule
-     * is for a given criteria. Each attribute is given a score in power of 2
-     * and two attributes cant have the same score.
+     * Defines the attribute scores used for calculating
+     * specificity score for a rule. Each attribute is given
+     * a score in power of 2 and two attributes cant have the same score.
      */
     const ATTRIBUTE_SCORES = [
         self::CURRENCY      => 1,
@@ -244,6 +241,14 @@ class Entity extends Base\PublicEntity
     ];
 
     // ---------------------Overridden--------------------------
+
+    /**
+     * We are using custom collection class for this entity with some custom methods
+     *
+     * @param  array  $models models which are part of the collection
+     *
+     * @return Collectio
+     */
     public function newCollection(array $models = array())
     {
         return new Collection($models);
@@ -420,6 +425,7 @@ class Entity extends Base\PublicEntity
 
     //----------------- Mutators End--------------------------------------------
 
+    //---------------------------Accessors--------------------------------------
     public function getIinsAttribute($value)
     {
         if (empty($value) === true)
@@ -429,8 +435,15 @@ class Entity extends Base\PublicEntity
 
         return json_decode($value, true);
     }
+    //-------------------------Accessors End------------------------------------
 
-    public function getSearchCriteria()
+    /**
+     * From the list of all attributes of the rule entity, gets the list of
+     * attributes which should be used for searching for matching rules
+     *
+     * @return array
+     */
+    public function getSearchCriteria(): array
     {
         $searchAttributes = $this->getSearchAttributes();
 
@@ -443,7 +456,12 @@ class Entity extends Base\PublicEntity
         return $searchCriteria;
     }
 
-    protected function getSearchAttributes()
+    /**
+     * Gets the relevant search attributes depending on the type of the rule
+     *
+     * @return array
+     */
+    protected function getSearchAttributes(): array
     {
         $key = __CLASS__ . '::' . strtoupper($this->getType()) . '_SEARCH_ATTRIBUTES';
 
@@ -452,18 +470,37 @@ class Entity extends Base\PublicEntity
         return array_merge(self::DEFAULT_SEARCH_ATTRIBUTES, $searchAttributesForType);
     }
 
+    /**
+     * Computes the specificity score for a rule, by adding up the scores of all the
+     * non null attributes of the entity which are also present in the ATTRIBUTE_SCORES
+     * array.
+     *
+     * For e.g a rule for VISA card merchant m1 will have score computed as follows
+     * 8 (network = VISA) + 256 (merchant_id = M1) = 264
+     *
+     * @return int      specificity score of the rule
+     */
     public function calculateSpecificityScore(): int
     {
         $totalScore = 0;
 
         foreach (self::ATTRIBUTE_SCORES as $attr => $score)
         {
+            //
+            // For certain attributes (iins, min / max amount) we need to do some
+            // special handling to get the score. In such cases we call the special
+            // method if defined.
+            //
             $func = 'getScoreFor' . studly_case($attr);
 
             if (method_exists($this, $func) === true)
             {
                 $totalScore += $this->$func();
             }
+            //
+            // If the attribute value is not null, we add up the score of that
+            // attribute to the total score.
+            //
             else if ($this->isAttributeNotNull($attr) === true)
             {
                 $totalScore += $score;
@@ -572,6 +609,12 @@ class Entity extends Base\PublicEntity
         return ($isApplicableForSharedTerminal !== $terminal->isDirectForMerchant($merchant)) ? true : false;
     }
 
+    /**
+     * We only add the score for merchant_id if rule does not belong to the shared
+     * merchant
+     *
+     * @return int
+     */
     protected function getScoreForMerchantId(): int
     {
         if ($this->getMerchantId() !== Account::SHARED_ACCOUNT)
@@ -582,6 +625,11 @@ class Entity extends Base\PublicEntity
         return 0;
     }
 
+    /**
+     * Since iins is stored as an array, we only add the score if it is not empty
+     *
+     * @return int
+     */
     protected function getScoreForIins(): int
     {
         if (empty($this->getIins()) === false)
@@ -592,6 +640,12 @@ class Entity extends Base\PublicEntity
         return 0;
     }
 
+    /**
+     * We add the score for amount_range if either min_amount or max_amount has
+     * a non-empty value
+     *
+     * @return int
+     */
     protected function getScoreForAmountRange(): int
     {
         if ((empty($this->getAttribute(self::MIN_AMOUNT)) === false) or

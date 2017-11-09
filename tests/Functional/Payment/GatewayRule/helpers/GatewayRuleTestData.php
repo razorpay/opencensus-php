@@ -561,7 +561,7 @@ return [
                     'type'        => 'sorter',
                     'merchant_id' => '10000000000000',
                     'gateway'     => 'hdfc',
-                    'network'     => null,
+                    'network'     => 'VISA',
                     'min_amount'  => 0,
                     'load'        => 60
                 ],
@@ -1062,6 +1062,7 @@ return [
                     'type'        => 'sorter',
                     'merchant_id' => '10000000000000',
                     'gateway'     => 'axis_migs',
+                    'network'     => 'VISA',
                     'min_amount'  => 0,
                     'load'        => 50
                 ]
