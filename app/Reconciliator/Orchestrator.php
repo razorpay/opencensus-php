@@ -26,7 +26,7 @@ class Orchestrator extends Base\Core
     const EXTRA_DETAILS    = 'extra_details';
     const ATTACHMENT_COUNT = 'attachment_count';
     const FORCE_UPDATE     = 'force_update';
-    const MANUAL_DETAILS   = 'manual_details';
+    const INPUT_DETAILS    = 'input_details';
 
     /**************************
      * Email details constants
@@ -126,8 +126,7 @@ class Orchestrator extends Base\Core
 
     protected $allFilesContents;
     protected $allFilesDetails;
-    protected $emailDetails;
-    protected $manualDetails;
+    protected $inputDetails;
 
     /********************
      * Instance objects
@@ -177,15 +176,13 @@ class Orchestrator extends Base\Core
             if ($this->isManualRequest($input) === true)
             {
                 $this->trace->traceException(
-                    $e, Trace::ERROR, TraceCode::RECON_ALERT,
-                    (array) json_decode($e->getMessage()));
+                    $e, Trace::ERROR, TraceCode::RECON_ALERT);
 
                 throw $e;
             }
 
             $this->trace->traceException(
-                $e, Trace::DEBUG, TraceCode::RECON_ALERT,
-                (array) json_decode($e->getMessage()));
+                $e, Trace::DEBUG, TraceCode::RECON_ALERT);
 
             // We do not throw an exception as route is hit via Mailgun,
             // and Mailgun will attempt retrying, which we don't want.
@@ -304,13 +301,13 @@ class Orchestrator extends Base\Core
         // Also, adds attachment-count to input, if not present already.
         $this->validator->validateAttachments($input);
 
-        $this->manualDetails = $this->getManualInputDetails($input);
+        $this->inputDetails = $this->getManualInputDetails($input);
 
         // Figures out the gateway and
         // sets the gateway reconciliator object for the orchestrator
         $this->setGatewayForManual();
 
-        $allFilesDetails = $this->getFileDetailsFromInput($this->manualDetails, $input);
+        $allFilesDetails = $this->getFileDetailsFromInput($this->inputDetails, $input);
 
         return $allFilesDetails;
     }
@@ -325,9 +322,9 @@ class Orchestrator extends Base\Core
     protected function mailGunEntry(array $input)
     {
         // Gets the email details and validates the email details.
-        $this->emailDetails = $this->getEmailDetails($input);
+        $this->inputDetails = $this->getEmailDetails($input);
 
-        $this->validator->filterEmails($this->emailDetails);
+        $this->validator->filterEmails($this->inputDetails);
 
         // Figures out the gateway and sets the gateway reconciliator object for
         // the orchestrator, using the input details.
@@ -353,11 +350,11 @@ class Orchestrator extends Base\Core
             //
             $this->validator->validateAttachments($input);
 
-            $this->emailDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
+            $this->inputDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
         }
 
         $allFilesDetails = $this->getFileDetailsFromInput(
-            $this->emailDetails, $input, $fileLocationType);
+            $this->inputDetails, $input, $fileLocationType);
 
         return $allFilesDetails;
     }
@@ -511,6 +508,8 @@ class Orchestrator extends Base\Core
             self::FORCE_UPDATE     => $input['force_update'] ?? []
         ];
 
+        (new Validator)->validateInput('inputDetails');
+
         (new JitValidator)->rules($inputDetailsRules)
                           ->caller($this)
                           ->input($inputDetails)
@@ -557,13 +556,11 @@ class Orchestrator extends Base\Core
     /**
      * Uses the gateway input sent in the route, to set
      * the gateway reconciliator object for the class.
-     *
-     * @param array $inputDetails
      */
     protected function setGatewayForManual()
     {
         // In manual, the input params should contain what gateway is it.
-        $gateway = $this->manualDetails[self::GATEWAY];
+        $gateway = $this->inputDetails[self::GATEWAY];
 
         // Sets the gateway reconciliator object for the orchestrator.
         $this->setGatewayReconciliatorObject($gateway);
@@ -584,7 +581,7 @@ class Orchestrator extends Base\Core
 
         if ($gateway === self::ADMIN)
         {
-            $gateway = $this->emailDetails[self::SUBJECT];
+            $gateway = $this->inputDetails[self::SUBJECT];
 
             if (in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)) === false)
             {
@@ -603,7 +600,7 @@ class Orchestrator extends Base\Core
 
     protected function getGatewayFromEmail()
     {
-        $fromEmailId = $this->emailDetails[self::FROM];
+        $fromEmailId = $this->inputDetails[self::FROM];
 
         $gateway = $this->getKeyFromSubArrayMatch($fromEmailId, self::GATEWAY_SENDER_MAPPING);
 
@@ -617,7 +614,7 @@ class Orchestrator extends Base\Core
         if (($this->gatewayEmailValidationIsNeeded($gateway) === true) and
             ($this->gatewayEmailIsValid($gateway) === false))
         {
-            $formattedMailDetails = $this->emailDetails;
+            $formattedMailDetails = $this->inputDetails;
             unset($formattedMailDetails[self::BODY]);
             unset($formattedMailDetails[self::BODY_HTML_TEXT]);
 
@@ -640,7 +637,7 @@ class Orchestrator extends Base\Core
     {
         $gatewayEmailValidator = 'validate' . studly_case($gateway) . 'Email';
 
-        $valid = $this->validator->$gatewayEmailValidator($this->emailDetails);
+        $valid = $this->validator->$gatewayEmailValidator($this->inputDetails);
 
         return $valid;
     }
@@ -973,9 +970,7 @@ class Orchestrator extends Base\Core
     {
         $arrayContent[self::EXTRA_DETAILS][FileProcessor::FILE_DETAILS] = $fileDetails;
 
-        $arrayContent[self::EXTRA_DETAILS][self::EMAIL_DETAILS] = $this->emailDetails;
-
-        $arrayContent[self::EXTRA_DETAILS][self::MANUAL_DETAILS] = $this->manualDetails;
+        $arrayContent[self::EXTRA_DETAILS][self::INPUT_DETAILS] = $this->inputDetails;
     }
 
     /**

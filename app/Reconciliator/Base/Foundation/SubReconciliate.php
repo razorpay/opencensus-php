@@ -165,10 +165,13 @@ class SubReconciliate
      */
     protected function shouldForceUpdate(string $field) : bool
     {
-        $forceUpdatable = array_get($this->extraDetails,
-                                    Orchestrator::MANUAL_DETAILS. '.' .Orchestrator::FORCE_UPDATE,
-                                    []);
+        $forceUpdateFields = $this->extraDetails[Orchestrator::INPUT_DETAILS][Orchestrator::FORCE_UPDATE] ?? [];
 
-        return in_array($field, $forceUpdatable, true);
+        return in_array($field, $forceUpdateFields, true);
+    }
+
+    public function setExtraDetails(array $extraDetails)
+    {
+        $this->extraDetails = $extraDetails;
     }
 }
