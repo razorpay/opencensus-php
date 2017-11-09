@@ -41,7 +41,7 @@ export default class App extends Component {
     return (
       <div id="app-container">
         <main>
-          <ErrorBoundary location={this.location}>
+          <ErrorBoundary resetOnProps location={this.location}>
             <Switch location={this.location}>
               <Route
                 path="/merchants/:id/team"

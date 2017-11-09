@@ -11,21 +11,21 @@ export default class ErrorBoundary extends Component {
   }
 
   componentWillReceiveProps(props) {
-    this.setState({ error: false, info: null });
+    if (this.props.resetOnProps) {
+      this.setState({ error: false, info: null });
+    }
   }
 
   render() {
     if (this.state.error) {
       return (
-        <div class="limited box">
-          <alert-warn>
-            <p>
-              <b>An Error Occured</b>
-            </p>
-            <pre>{this.state.error.toString()}</pre>
-            <pre>{this.state.info.componentStack.replace(/^\n/gm, '')}</pre>
-          </alert-warn>
-        </div>
+        <alert-warn>
+          <p>
+            <b>An Error Occured</b>
+          </p>
+          <pre>{this.state.error.toString()}</pre>
+          <pre>{this.state.info.componentStack.replace(/^\n/gm, '')}</pre>
+        </alert-warn>
       );
     }
     return this.props.children;

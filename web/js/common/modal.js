@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ErrorBoundary from 'common/ErrorBoundary';
 import TransitionGroup from 'react-transition-group/TransitionGroup';
 import CSSTransition from 'react-transition-group/CSSTransition';
 
@@ -137,7 +138,7 @@ const Modal = ({ modal }) => (
     >
       &times;
     </div>
-    {modal}
+    <ErrorBoundary children={modal} />
   </div>
 );
 
