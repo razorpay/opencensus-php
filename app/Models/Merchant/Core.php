@@ -500,7 +500,7 @@ class Core extends Base\Core
     {
         $payouts = $this->repo->payout->fetchProcessedPayouts($from, $to, $merchant->getId());
 
-        $recipients = $merchant['transaction_report_email'];
+        $recipients = $merchant->getTransactionReportEmail();
 
         if (empty($email) === false)
         {
@@ -511,8 +511,13 @@ class Core extends Base\Core
 
         foreach ($payouts as $payout)
         {
-            $body = 'Payout Processed<br />';
-            $body = $body . 'Total Amount : Rs.' . $payout->getAmount()/100 . '<br />';
+            if (empty($payout->getUtr()) === true)
+            {
+                continue;
+            }
+
+            $body = 'Settlement Processed<br />';
+            $body = $body . 'Total Amount : Rs.' . number_format($payout->getAmount() / 100, 2, '.', '') . '<br />';
             $body = $body . 'UTR : ' . $payout->getUtr() . '<br />';
 
             $mailData = ['body'  =>  $body];

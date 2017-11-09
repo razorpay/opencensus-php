@@ -120,8 +120,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $payoutMailRules = [
-        'merchants' => 'required|array',
-        'email'     => 'sometimes'
+        'merchant_ids' => 'required|array',
+        'email'        => 'sometimes'
     ];
 
     protected static $irctcRules = [

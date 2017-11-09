@@ -1247,14 +1247,14 @@ class Service extends Base\Service
 
     public function sendPayoutMailForMultipleMerchants(array $input)
     {
-        (new Validator)->validateInput('payoutMail', $input);
-
         $this->trace->info(
             TraceCode::MERCHANT_PAYOUT_NOTIFICATION_REQUEST,
             $input
         );
 
-        $merchantIds = $input['merchants'];
+        (new Validator)->validateInput('payout_mail', $input);
+
+        $merchantIds = $input['merchant_ids'];
 
         $email = $input['email'] ?? null;
 
@@ -1281,6 +1281,8 @@ class Service extends Base\Service
             }
             catch (\Exception $ex)
             {
+                $this->trace->traceException($ex);
+
                 $failedCount++;
 
                 $failedIds[] = $merchantId;
