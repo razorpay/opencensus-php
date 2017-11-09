@@ -8,7 +8,6 @@ import { notifyError, notifySuccess } from 'common/modal';
 
 export default class EditOrg extends Component {
   state = {
-    org: null,
     permissions: null,
     selectedPerms: null,
     workflowPerms: null,
@@ -46,11 +45,13 @@ export default class EditOrg extends Component {
           workflowPerms[wPerm.id] = true;
         });
       }
+
+      this.org = org || {};
+
       this.setState({
         selectedPerms,
         workflowPerms,
         permissions,
-        org: org || {},
         pending: false,
       });
     });
@@ -130,7 +131,7 @@ export default class EditOrg extends Component {
       data['content_type'] = 'application/json';
       data['route_name'] = 'org_edit';
       data['url_params'] = {
-        id: this.state.org.id,
+        id: this.org.id,
       };
 
       delete data.body.id;
@@ -188,6 +189,7 @@ export default class EditOrg extends Component {
       <div>
         <OrgForm
           {...this.state}
+          org={this.org}
           handleSave={this.handleSave}
           handleAllSelect={this.handleAllSelect}
           handlePermissionSelect={this.handlePermissionSelect}

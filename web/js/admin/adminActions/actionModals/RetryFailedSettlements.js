@@ -2,7 +2,7 @@ import React from 'react';
 import { TextAreaField } from 'ui/Field';
 import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
-import { notifyError, notifySuccess, closeModal } from 'common/modal';
+import { notifySuccess, closeModal } from 'common/modal';
 
 import { adminPost } from 'util/fetch';
 

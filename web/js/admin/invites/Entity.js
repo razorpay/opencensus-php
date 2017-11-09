@@ -1,12 +1,7 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Field from 'ui/Field';
-import {
-  openModal,
-  closeModal,
-  notifySuccess,
-  notifyError,
-} from 'common/modal';
+import { openModal, closeModal, notifySuccess } from 'common/modal';
 import { adminFetch, adminPost } from 'util/fetch';
 
 import InviteForm from './InviteForm';
@@ -15,7 +10,6 @@ import DetailsModal from './DetailsModal';
 class AddInvites extends Component {
   state = {
     pending: true,
-    fields: null,
   };
 
   componentWillMount() {
@@ -25,15 +19,11 @@ class AddInvites extends Component {
         entity: 'admin_lead',
       },
     }).then(response => {
-      let newState = {};
-
       if (response) {
-        newState.fields = response.fields;
+        this.fields = response.fields;
       }
 
-      newState.pending = false;
-
-      this.setState(newState);
+      this.setState({ pending: false });
     });
   }
 
@@ -60,7 +50,7 @@ class AddInvites extends Component {
     return (
       //Default values as props
       <InviteForm
-        fields={this.state.fields}
+        fields={this.fields}
         onInvite={this.handleInvite}
         merchant_type="stp"
         promo_code="RP_StartUP"

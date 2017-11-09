@@ -4,7 +4,7 @@ import Field, { SelectField, CheckField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 
 import { adminPost } from 'util/fetch';
-import { notifyError, notifySuccess, closeModal } from 'common/modal';
+import { notifySuccess, closeModal } from 'common/modal';
 
 const options = {
   banks: [

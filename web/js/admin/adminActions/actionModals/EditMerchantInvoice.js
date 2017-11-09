@@ -2,7 +2,7 @@ import React from 'react';
 import Field, { SelectField, SelectMode } from 'ui/Field';
 import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
-import { notifyError, notifySuccess, closeModal } from 'common/modal';
+import { notifySuccess, closeModal } from 'common/modal';
 
 import { adminPut } from 'util/fetch';
 

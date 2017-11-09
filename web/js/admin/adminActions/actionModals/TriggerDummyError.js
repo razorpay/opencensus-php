@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import AsyncButton from 'ui/AsyncButton';
-import { notifyError, notifySuccess, closeModal } from 'common/modal';
+import { notifySuccess, closeModal } from 'common/modal';
 
 import { adminFetch } from 'util/fetch';
 

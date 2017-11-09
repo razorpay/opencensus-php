@@ -3,7 +3,7 @@ import axios from 'axios';
 import { SelectMode, FileField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import Form from 'ui/Form';
-import { notifyError, notifySuccess, closeModal } from 'common/modal';
+import { notifySuccess, closeModal } from 'common/modal';
 
 import { adminFormUpload } from 'util/fetch';
 
