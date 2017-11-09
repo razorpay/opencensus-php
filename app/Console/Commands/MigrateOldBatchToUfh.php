@@ -78,6 +78,9 @@ class MigrateOldBatchToUfh extends Command
         $config    = $app['config'];
         $awsConfig = $config['aws'];
 
+        // We use bucket_region to construct the s3 instance
+        $awsConfig['region'] = $awsConfig['bucket_region'];
+
         $this->s3 = (new Aws\Sdk($awsConfig))->createClient('s3');
 
         $this->bucket = $awsConfig['settlement_bucket'];
@@ -178,7 +181,7 @@ class MigrateOldBatchToUfh extends Command
             FileStore\Entity::ENTITY_ID   => $batch->getId(),
             FileStore\Entity::ENTITY_TYPE => $batch->getEntity(),
             FileStore\Entity::EXTENSION   => FileStore\Format::XLSX,
-            FileStore\Entity::MIME        => $s3Meta['ContentType'],
+            FileStore\Entity::MIME        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             FileStore\Entity::SIZE        => $s3Meta['ContentLength'],
             FileStore\Entity::NAME        => $filePrefix . $batch->getFileKey(),
             FileStore\Entity::STORE       => FileStore\Store::S3,
