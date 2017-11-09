@@ -9,7 +9,7 @@ export default function DetailsModal({ model }) {
     merchant_name,
   } = model.form_data;
 
-  items = [
+  let items = [
     ['Contact Email', contact_email],
     ['Contact Name', contact_name],
     ['DBA Name', dba_name],
