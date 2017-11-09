@@ -52,7 +52,7 @@ class Core extends Base\Core
         {
             $bharatQr = (new Entity)->build($input);
 
-            // @todo hande failed Payment
+            // TODO: handle failed Payment
             if (empty($bharatQr->getProviderReferenceId()) === true)
             {
                 throw new Exception\BadRequestException(

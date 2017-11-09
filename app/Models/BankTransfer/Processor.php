@@ -242,13 +242,13 @@ class Processor extends VirtualAccount\Processor
      * Given a bank transfer, locate the bank account that is
      * being paid, and the associated active VA, if present.
      *
-     * @param Entity $bankTransfer
+     * @param Base\PublicEntity $entity
      *
-     * @return VirtualAccount\Entity|null
+     * @return null|VirtualAccount\Entity
      */
     protected function getVirtualAccountFromEntity(Base\PublicEntity $entity)
     {
-        //@todo Put assert on entity type
+        // TODO: Put assert on entity type
         $accountNumber = $entity->getPayeeAccount();
 
         $bankAccount = $this->getBankAccountFromNumber($accountNumber);

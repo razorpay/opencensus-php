@@ -42,19 +42,23 @@ abstract class Processor extends Base\Core
         $this->provider = $provider;
     }
 
-     /**
-     *@todo need to make this generic
+    /**
+     * TODO: need to make this generic
+     *
+     * @param Base\PublicEntity $entity
+     *
+     * @return
      */
     abstract public function process(Base\PublicEntity $entity);
 
     abstract protected function getVirtualAccountFromEntity(Base\PublicEntity $entity);
 
-     /**
+    /**
      * A receiver is expected if there exists an active VA
      * to receive it. If such a VA does not exist, or exists but
      * has been closed/paid, the payment is to be refunded.
      *
-     * @param Entity
+     * @param Base\PublicEntity $entity
      *
      * @return bool
      */
@@ -137,7 +141,7 @@ abstract class Processor extends Base\Core
      * Post-processing, VA amount fields are to be updated.
      * Status change is done inside incrementAmountPaid.
      *
-     * @param Entity
+     * @param Base\PublicEntity $entity
      */
     protected function updateVirtualAccount(Base\PublicEntity $entity)
     {

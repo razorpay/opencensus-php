@@ -108,7 +108,7 @@ class Processor extends VirtualAccount\Processor
                     $bharatQr,
                     $paymentProcessor)
         {
-            $paymentInput = $this->bharatQrPaymentArray($bharatQr);
+            $paymentInput = $this->getBharatQrPaymentArray($bharatQr);
 
             $res = $paymentProcessor->process($paymentInput);
 
@@ -170,7 +170,11 @@ class Processor extends VirtualAccount\Processor
     }
 
     /**
-     *@todo Need a better way to handle this
+     * TODO: Need a better way to handle this
+     *
+     * @param Entity $bharatQr
+     *
+     * @return string
      */
     protected function getLuhnValidCardNumberFromBharatQr(Entity $bharatQr)
     {
@@ -191,7 +195,7 @@ class Processor extends VirtualAccount\Processor
         return $finalCardNumber;
     }
 
-    protected function bharatQrPaymentArray(Entity $bharatQr): array
+    protected function getBharatQrPaymentArray(Entity $bharatQr): array
     {
         $paymentArray = [
             Payment\Entity::CURRENCY    => Currency::INR,
@@ -199,7 +203,6 @@ class Processor extends VirtualAccount\Processor
             Payment\Entity::AMOUNT      => $bharatQr->getAmount(),
             Payment\Entity::DESCRIPTION => "Bharat Qr Payment",
         ];
-
 
         // TODO: find a better method to do this. This is done in order to bypass validation
         $paymentArray['card'] = $this->getDummyCardDetails($bharatQr);
