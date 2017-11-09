@@ -81,6 +81,20 @@ function _getOfferFields() {
   ];
 }
 
+function _getSettlementScheduleFields() {
+  return [
+    ['Schedule Name', item => item.schedule_name],
+    ['Type', item => item.type],
+    ['Method', item => item.method || '-'],
+    ['Schedule Id', item => item.schedule_id],
+    ['Next Run At', item => formatDate(item.next_run_at)],
+  ];
+}
+
+function openSettlementSchedule() {
+  window.open(`/admin#/entity/schedule/live/${this.schedule_id}`);
+}
+
 function _getCreditsFields(deleteCreditLogs) {
   // Delete btn is based on mode(state of component where this table is used )
   return mode => {
@@ -221,6 +235,8 @@ export function getDetailsViewMap(model) {
     pricingPlans,
     bankDetails,
     features,
+    scheduleTasks,
+    hasSettlementSchedule,
     gatewayRules,
     offers,
     creditsLogs,
@@ -386,6 +402,21 @@ export function getDetailsViewMap(model) {
     {
       label: 'Settlement Schedule',
       value: () => <button class="btn-default">Show/Hide</button>,
+      toggleChildren: function() {
+        return (
+          <div>
+            {false && hasSettlementSchedule ? (
+              <Table
+                onClick={openSettlementSchedule}
+                items={scheduleTasks.items}
+                fields={_getSettlementScheduleFields()}
+              />
+            ) : (
+              'No Settlement Schedule Assigned'
+            )}
+          </div>
+        );
+      },
     },
     {
       label: 'Methods',
