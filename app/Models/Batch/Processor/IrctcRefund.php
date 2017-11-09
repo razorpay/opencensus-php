@@ -13,7 +13,7 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class IrctcRefund extends Base
 {
-    const FILE_TO_WRITE_NAME        = 'deltarefund_RZRPAY_';
+    const FILE_TO_WRITE_NAME        = 'refund_RZRPAY_';
 
     const FILE_TO_WRITE_NAME_IN_UAT = 'deltarefund_WUATRZRPAY_';
 
