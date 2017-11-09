@@ -1,5 +1,6 @@
 export const testMerchantId = '10000000000000';
 
+// TODO: All below mappings exists in 'entity-resources.js' as well. "Check if they've exactly same data". Merge Accordingly.
 export const methods = {
   card: 'Card',
   emi: 'EMI',

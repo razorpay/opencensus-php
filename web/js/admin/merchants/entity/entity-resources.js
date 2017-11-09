@@ -227,6 +227,23 @@ export function getMappingFor(key) {
   return utilMapping[key];
 }
 
+const _getMethods = {
+  amex: 'Amex',
+  debit_card: 'Debit Card',
+  credit_card: 'Credit Card',
+  netbanking: 'Netbanking',
+  airtelmoney: 'AirtelMoney',
+  freecharge: 'Freecharge',
+  mobikwik: 'Mobikwik',
+  olamoney: 'Olamoney',
+  payumoney: 'PayUMoney',
+  payzapp: 'Payzapp',
+  jiomoney: 'Jiomoney',
+  sbibuddy: 'SBI Buddy',
+  upi: 'UPI',
+  emi: 'EMI',
+};
+
 /*---------------------------------------- UI resource --------------------------------------------*/
 export function getDetailsViewMap(model) {
   const {
@@ -421,6 +438,17 @@ export function getDetailsViewMap(model) {
     {
       label: 'Methods',
       value: () => <button class="btn-default">Show/Hide</button>,
+      toggleChildren: function() {
+        return Object.keys(_getMethods).map(method => (
+          <EntityRow
+            key={method}
+            label={_getMethods[method]}
+            value={
+              details.methods ? _getBoolIcon(details.methods[method]) : '-'
+            }
+          />
+        ));
+      },
     },
     {
       label: 'Archived',
