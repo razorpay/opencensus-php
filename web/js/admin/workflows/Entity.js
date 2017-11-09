@@ -1,25 +1,29 @@
 import React, { Component } from 'react';
 import { openModal, notifyDone } from 'common/modal';
+import { observable, action, extendObservable, toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { adminFetch, adminPost, adminPut } from 'util/fetch';
 
+import Form from 'ui/Form';
+import Field, { SelectField, Switch } from 'ui/Field';
+import Table from 'ui/Table';
+import AsyncButton from 'ui/AsyncButton';
+
 import user from 'admin/user';
-import Level from './Level';
-import WorkflowForm from './WorkflowForm';
+import Levels from './Level';
 
 @observer
 export default class EditWorkflow extends Component {
-  state = {
-    id: '',
-    name: '',
-    levels: [],
-    permissions: [],
-    allRoles: [],
-    allPerms: [],
-    pending: true,
-  };
+  // all available roles
+  allRoles = observable.shallowArray();
+  allPerms = observable.shallowArray();
+
+  // selected actions
+  permissions = observable.shallowArray();
+  @observable levels = [];
 
   componentWillMount() {
+    extendObservable(this, { pending: true });
     let { id } = this.props.match.params;
 
     let requests = [
@@ -40,172 +44,127 @@ export default class EditWorkflow extends Component {
       );
     }
 
-    Promise.all(requests).then(([allRoles, allPerms, workflow = null]) => {
-      this.setState({
-        allPerms: allPerms.items,
-        allRoles: allRoles.items,
-        ...(id !== 'new' && { id }),
-        ...(workflow && { name: workflow.name }),
-        ...(workflow && { permissions: workflow.permissions }),
-        ...(workflow && { levels: workflow.levels }),
-        pending: false,
-      });
-    });
+    Promise.all(requests).then(
+      action(([allRoles, allPerms, workflow]) => {
+        this.pending = false;
+        this.allRoles.replace(allRoles.items);
+        this.allPerms.replace(allPerms.items);
+        if (workflow) {
+          this.permissions.replace(
+            workflow.permissions.map(p =>
+              this.allPerms.find(q => q.id === p.id)
+            )
+          );
+          this.levels.replace(workflow.levels);
+          this.workflow = workflow;
+        }
+      })
+    );
   }
 
-  addLevel = () => {
-    let levels = [...this.state.levels];
-    levels.push({
-      op_type: 'and',
-      level: levels.length + 1,
-      steps: [],
-    });
-    this.setState({ levels });
-  };
-
-  deleteLevel = levelNum => {
-    let { levels } = this.state;
-
-    levels = levels.filter(l => l.level !== levelNum);
-    //remap levelnum once deleted
-    levels = levels.map((l, idx) => {
-      l.level = idx + 1;
-      return l;
-    });
-    this.setState({ levels });
-  };
-
-  selectRole = (e, levelNum) => {
-    let { allRoles, levels } = this.state;
-    let idx = levels.findIndex(l => l.level === levelNum);
-    let roleIdx = allRoles.findIndex(aRole => aRole.id === e.target.value);
-
-    levels[idx].steps.push({
-      role_id: allRoles[roleIdx].id,
-      reviewer_count: 1,
-    });
-
-    this.setState({ levels });
-  };
-
-  deleteRole = (step, levelNum) => {
-    let { levels } = this.state;
-    let idx = levels.findIndex(l => l.level === levelNum);
-
-    levels[idx].steps = levels[idx].steps.filter(
-      s => s.role_id !== step.role_id
+  selectPerm = e =>
+    this.allPerms.some(
+      p => p.id === e.target.value && this.permissions.push(p)
     );
-    this.setState({ levels });
+
+  deletePerm = e => {
+    this.allPerms.some(
+      p =>
+        p.id === e.target.getAttribute('data-id') && this.permissions.remove(p)
+    );
   };
 
-  selectPerms = e => {
-    this.state.allPerms.some(p => {
-      if (p.id === e.target.value) {
-        this.setState({
-          permissions: this.state.permissions.concat(p),
-          allPerms: this.state.allPerms.filter(q => q.id !== p.id),
-        });
-        return 1;
-      }
-    });
-  };
-
-  deletePerms = perm => {
-    this.setState({
-      allPerms: this.state.allPerms.concat(perm),
-      permissions: this.state.permissions.filter(q => q.id !== perm.id),
-    });
-  };
-
-  updateReviewerCount = (e, step, levelNum) => {
-    let { levels } = this.state;
-    let idx = levels.findIndex(l => l.level === levelNum);
-    let stepIdx = levels[idx].steps.findIndex(s => s.role_id === step.role_id);
-
-    levels[idx].steps[stepIdx].reviewer_count = e.target.value;
-
-    this.setState({ levels });
-  };
-
-  updateOpType = (e, levelNum) => {
-    let { levels } = this.state;
-    let idx = levels.findIndex(level => level.level === levelNum);
-
-    levels[idx].op_type = e.target.value;
-    this.setState({ levels });
-  };
+  actionFields = [
+    ['Actions', p => p.name],
+    [
+      '',
+      p => (
+        <div class="link danger" data-id={p.id} onClick={this.deletePerm}>
+          Remove
+        </div>
+      ),
+    ],
+  ];
 
   save = body => {
     let { id } = this.props.match.params;
     let data = { body };
 
-    data.body.permissions = this.state.permissions;
-    data.body.levels = this.state.levels.map(l => {
+    data.body.permissions = this.permissions.map(p => p.id);
+    data.body.levels = toJS(this.levels);
+    data.body.levels.forEach((l, index) => {
       l.steps = l.steps.map(s => ({
         role_id: s.role_id,
         reviewer_count: s.reviewer_count,
       }));
-      return l;
+      l.level = index + 1;
     });
 
-    data.body.permissions = this.state.permissions.map(s => s.id);
+    let requestFn;
 
-    if (id !== 'new') {
+    if (id === 'new') {
+      requestFn = adminPost;
+      data.route_name = 'workflow_create';
+      data.body.org_id = user.org_id;
+    } else {
+      requestFn = adminPut;
       data.route_name = 'workflow_update';
       data.url_params = {
         id,
       };
-
-      return adminPut(data).then(response => {
-        if (response) {
-          notifyDone();
-        }
-      });
-    } else {
-      data.body.org_id = user.org_id;
-      data.route_name = 'workflow_create';
-
-      return adminPost(data).then(response => {
-        if (response) {
-          notifyDone();
-        }
-      });
     }
+
+    return requestFn(data).then(r => r && notifyDone());
   };
 
   render() {
-    let { model } = this.props;
-    let { levels, allRoles } = this.state;
+    let {
+      pending,
+      workflow,
+      allPerms,
+      allRoles,
+      roleMap,
+      permissions,
+      levels,
+    } = this;
 
-    if (this.state.pending) {
+    if (pending) {
       return <div class="spinner" />;
     }
 
     return (
-      <WorkflowForm
-        {...this.state}
-        onSelectPerms={this.selectPerms}
-        onDeletePerms={this.deletePerms}
-        onSubmit={this.save}
-      >
-        {levels.length
-          ? levels.map((level, idx) => (
-              <Level
-                key={idx}
-                level={level}
-                allRoles={allRoles}
-                onRoleSelect={this.selectRole}
-                onDeleteRole={this.deleteRole}
-                onOpTypeUpdate={this.updateOpType}
-                onReviewerCountUpdate={this.updateReviewerCount}
-                onLevelDelete={this.deleteLevel}
-              />
-            ))
-          : null}
-        <div class="btn" onClick={this.addLevel}>
-          + Add a Step
+      <div class="columns box-container">
+        <div class="column box">
+          <header>
+            {workflow ? `Edit - ${workflow.id}` : 'Create Workflow'}
+          </header>
+          <Form onSubmit={this.save}>
+            <Field
+              label="Workflow Name"
+              name="name"
+              defaultValue={workflow && workflow.name}
+            />
+            <SelectField label="Add Action" onChange={this.selectPerm} value="">
+              <option value="" />
+              {allPerms.map(
+                p =>
+                  permissions.indexOf(p) < 0 && (
+                    <option value={p.id} key={p.id}>
+                      {p.name}
+                    </option>
+                  )
+              )}
+            </SelectField>
+            <button>Save</button>
+          </Form>
+          <Table
+            animateRow={false}
+            fields={this.actionFields}
+            items={permissions}
+          />
         </div>
-      </WorkflowForm>
+        <Levels levels={levels} roles={allRoles} />
+      </div>
     );
   }
 }

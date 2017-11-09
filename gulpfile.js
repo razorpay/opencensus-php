@@ -36,6 +36,7 @@ function compileCss(o) {
 function iconFont(cb) {
   iconFontGenerator.generate(
     {
+      cssTemplate: 'web/templates/icons.hbs',
       classPrefix: 'i',
       silent: false,
       types: ['woff', 'woff2'],

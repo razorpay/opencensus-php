@@ -1,5 +1,4 @@
 import { observable, extendObservable } from 'mobx';
-import { notifyError } from 'common/modal';
 
 export default class BaseModel {
   constructor() {

@@ -6,9 +6,7 @@ export default function fetch(options) {
   return axios(options)
     .then(({ data }) => {
       if (!data.success) {
-        data.errors.map(err => {
-          notifyError(err);
-        });
+        notifyError(data.errors.join('\n'));
       } else {
         return data.data;
       }
