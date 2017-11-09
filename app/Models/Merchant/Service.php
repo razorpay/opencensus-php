@@ -1254,7 +1254,7 @@ class Service extends Base\Service
             $input
         );
 
-        $merchantIds = $input['merchant_ids'];
+        $merchantIds = $input['merchants'];
 
         $email = $input['email'] ?? null;
 
@@ -1325,7 +1325,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        list($from, $to) = $this->getTimestamps($input);
+        list($from, $to) = $this->getTimestamps();
 
         $processed = $this->core()->sendPayoutMail($merchant, $from, $to, $email);
 
