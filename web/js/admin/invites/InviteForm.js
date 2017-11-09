@@ -11,13 +11,11 @@ export default function InviteForm({
 }) {
   return (
     <div>
-      <header>
-        Invitation details
-        <p>
-          Smarthub: Education, Society &amp; Government merchants should NOT be
-          onboarded through this solution
-        </p>
-      </header>
+      <header>Invitation details</header>
+      <alert-warn>
+        Smarthub: Education, Society &amp; Government merchants should NOT be
+        onboarded through this solution
+      </alert-warn>
       <Form onSubmit={onInvite}>
         {fields.indexOf('channel_code') > -1 && (
           <div>

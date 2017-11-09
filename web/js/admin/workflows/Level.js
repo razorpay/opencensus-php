@@ -75,7 +75,7 @@ class Level extends Component {
           class="link danger"
           onClick={e => this.props.level.steps.remove(item)}
         >
-          Delete
+          Remove
         </div>
       ),
     ],

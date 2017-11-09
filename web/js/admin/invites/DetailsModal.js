@@ -1,4 +1,5 @@
 import React from 'react';
+import Table from 'ui/Table';
 
 export default function DetailsModal({ model }) {
   let {
@@ -7,31 +8,20 @@ export default function DetailsModal({ model }) {
     dba_name,
     merchant_name,
   } = model.form_data;
+
+  items = [
+    ['Contact Email', contact_email],
+    ['Contact Name', contact_name],
+    ['DBA Name', dba_name],
+    ['Merchant Name', 'merchant_name'],
+  ];
+
+  let fields = [['Field', item => item[0]], ['Value', item => item[1]]];
+
   return (
     <div>
       <header>Invitations Details</header>
-      <div class="table table-striped">
-        <div class="tr thead">
-          <div class="th">Field</div>
-          <div class="th">Value</div>
-        </div>
-        <div class="tr">
-          <div class="td">Contact Email</div>
-          <div class="td">contact_email</div>
-        </div>
-        <div class="tr">
-          <div class="td">Contact Name</div>
-          <div class="td">contact_name</div>
-        </div>
-        <div class="tr">
-          <div class="td">DBA Name</div>
-          <div class="td">dba_name</div>
-        </div>
-        <div class="tr">
-          <div class="td">Merchant Name</div>
-          <div class="td">merchant_name</div>
-        </div>
-      </div>
+      <Table items={items} fields={fields} />
     </div>
   );
 }
