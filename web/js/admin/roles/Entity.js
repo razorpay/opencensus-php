@@ -14,8 +14,6 @@ import RolesForm from './RolesForm';
 
 class EditRole extends Component {
   state = {
-    name: '',
-    description: '',
     allPerms: null,
     selectedPerms: null,
     pending: true,
@@ -32,14 +30,14 @@ class EditRole extends Component {
       if (response) {
         allPerms = response.items;
         if (model) {
+          this.name = model.name;
+          this.description = model.name;
           model.permissions.forEach(perm => {
             selectedPerms[perm.id] = true;
           });
         }
 
         this.setState({
-          name: model ? model.name : '',
-          description: model ? model.description : '',
           pending: false,
           allPerms,
           selectedPerms,
@@ -125,16 +123,15 @@ class EditRole extends Component {
   };
 
   render() {
-    let state = { ...this.state };
-    delete state.pending;
-
     if (this.state.pending) {
       return <div class="spinner" />;
     }
 
     return (
       <RolesForm
-        {...state}
+        {...this.state}
+        name={this.name}
+        description={this.description}
         onSubmit={this.save}
         onSelect={this.handleSelect}
         onSelectAll={this.handleAllSelect}

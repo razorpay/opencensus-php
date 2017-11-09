@@ -5,6 +5,7 @@ import Field, { CheckField } from 'ui/Field';
 import OrgTable from './OrgTable';
 import Table from 'ui/Table';
 import { adminFetch, adminPut, adminPost, adminDelete } from 'util/fetch';
+import { prevent } from 'util/index';
 
 export default class EditPerm extends Component {
   state = {
@@ -152,7 +153,8 @@ export default class EditPerm extends Component {
 export function showEntity(collection) {
   openModal(<EditPerm collection={collection} model={this} />);
 }
-export function removeEntity() {
+export function removeEntity(e) {
+  prevent(e);
   let params = {
     route_name: 'permission_delete',
     url_params: {

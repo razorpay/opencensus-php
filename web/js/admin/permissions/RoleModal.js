@@ -4,6 +4,7 @@ import Table from 'ui/Table';
 import { adminFetch } from 'util/fetch';
 import { openModal } from 'common/modal';
 import Collection from 'model/collection';
+import { prevent } from 'util/index';
 
 export default class RoleModal extends Component {
   constructor() {
@@ -40,7 +41,8 @@ export default class RoleModal extends Component {
   }
 }
 
-export function openRoleModal() {
+export function openRoleModal(e) {
+  prevent(e);
   openModal(<RoleModal model={this} />);
 }
 

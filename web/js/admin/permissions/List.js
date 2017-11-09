@@ -41,7 +41,11 @@ export default class PermissionsList extends Component {
             <Field name="q" label="Search" />
           </Form>
         </div>
-        <PageTable model={this.collection} fields={fields} />
+        <PageTable
+          model={this.collection}
+          fields={fields}
+          onClick={showEntity}
+        />
       </div>
     );
   }
@@ -58,9 +62,6 @@ const Actions = ({ item }) => (
   <div>
     <div class="link" onClick={item::openRoleModal}>
       Roles
-    </div>
-    <div class="link" onClick={item::showEntity}>
-      Edit
     </div>
     <div class="link danger" onClick={item::removeEntity}>
       Delete
