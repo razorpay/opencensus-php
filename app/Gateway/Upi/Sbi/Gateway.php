@@ -4,7 +4,6 @@ namespace RZP\Gateway\Upi\Sbi;
 
 use App;
 use RZP\Models\Payment;
-use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Entity;
@@ -45,24 +44,6 @@ class Gateway extends Base\Gateway
         ResponseFields::UPI_TRANS_REFERENCE_NO => Base\Entity::NPCI_REFERENCE_ID,
         ResponseFields::STATUS                 => Base\Entity::STATUS_CODE,
     ];
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        //
-        // When this class is instantiated during the async callback flow via test cases,
-        // $this->mode is not set, and is therefore null. But we need mode to be set
-        // to be able to get the test secret for decryption. Setting $this->mode below.
-        //
-
-        // TODO: This will not work, as the above case happens in direct auth, and we won't get mode
-
-        // Setting Test for now so that UAT can be tested
-        $mode = $this->app['rzp.mode'] ?? Mode::TEST;
-
-        $this->setMode($mode);
-    }
 
     public function authorize(array $input)
     {
@@ -339,7 +320,7 @@ class Gateway extends Base\Gateway
                 'encrypted'  => true,
                 'response'   => $body,
                 'gateway'    => $this->gateway,
-                'payment_id' => $this->input['payment']['id']
+                'payment_id' => $this->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
             ]);
 
         $encryptedResponse = json_decode($body, true)[ResponseFields::RESPONSE];
@@ -351,17 +332,16 @@ class Gateway extends Base\Gateway
                 'encrypted'  => false,
                 'response'   => $response,
                 'gateway'    => $this->gateway,
-                'payment_id' => $this->input['payment']['id']
+                'payment_id' => $this->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
             ]);
 
         return $response;
     }
 
     /**
-     * @override
-     *
      * This method encrypts the request content before converting the request into standard form for Sbi's API's
      *
+     * @override
      * @param array $content
      * @param string $method
      * @param null $type
@@ -439,18 +419,6 @@ class Gateway extends Base\Gateway
         return number_format($input[ConstantsEntity::PAYMENT][Payment\Entity::AMOUNT] / 100, '2', '.', '');
     }
 
-    public function getMerchantId(): string
-    {
-        $merchantId = $this->getLiveMerchantId();
-
-        if ($this->mode === Mode::TEST)
-        {
-            $merchantId = $this->getTestMerchantId();
-        }
-
-        return $merchantId;
-    }
-
     /**
      * @param $input
      * @return array
@@ -471,5 +439,29 @@ class Gateway extends Base\Gateway
     public function getPaymentIdFromServerCallback(array $response): string
     {
         return $response[ResponseFields::API_RESPONSE][ResponseFields::PSP_REFERENCE_NO];
+    }
+
+    /**
+     * Mode isn't set during the async callback flow, and we would need merchantId
+     * based on whether the mode is live or test. However, we are setting the same
+     * look up key in the vault file, but the key will be mapped to the live or test
+     * merchant_id / hash_secret based on the environment. Since, this is handled by the
+     * vault file logic, we are pulling out the merchant_id / hash_secret in the getters below
+     */
+
+    /**
+     * @return string
+     */
+    public function getMerchantId(): string
+    {
+        return $this->config['merchant_id'];
+    }
+
+    /**
+     * @return string
+     */
+    public function getSecret(): string
+    {
+        return $this->config['hash_secret'];
     }
 }
