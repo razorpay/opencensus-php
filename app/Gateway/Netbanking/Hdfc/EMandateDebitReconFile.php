@@ -13,8 +13,6 @@ class EMandateDebitReconFile extends Base\EMandateDebitReconFile
 {
     use FileHandlerTrait;
 
-    protected $fileContents;
-
     protected $errors = [];
 
     const PROCESS = 'process';

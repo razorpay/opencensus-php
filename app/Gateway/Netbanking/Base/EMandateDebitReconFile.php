@@ -15,6 +15,8 @@ class EMandateDebitReconFile extends Base\Core
 {
     protected $gateway = Payment\Gateway::NETBANKING_HDFC;
 
+    protected $fileContents;
+
     public function __construct()
     {
         parent::__construct();
