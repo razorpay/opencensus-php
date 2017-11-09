@@ -598,7 +598,9 @@ class Gateway extends Base\Gateway
             return false;
         }
 
-        if (strtolower($content['message']) === Status::NO_RECORDS)
+        $msg = strtolower($content['message']);
+
+        if (in_array($msg, [Status::NO_RECORDS, Status::NO_RECORDS2], true) === true)
         {
             return false;
         }
