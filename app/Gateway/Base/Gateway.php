@@ -4,6 +4,7 @@ namespace RZP\Gateway\Base;
 
 use Crypt;
 use Cache;
+use RZP\Http\Route;
 use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -138,7 +139,7 @@ class Gateway
     /**
      * Api Route instance
      *
-     * @var RZP\Http\Route
+     * @var Route
      */
     protected $route;
 
@@ -533,7 +534,7 @@ class Gateway
         return $response;
     }
 
-    protected function validateResponse($response)
+    protected function validateResponse(\Requests_Response $response)
     {
         if (in_array($response->status_code, [503, 504], true) === true)
         {

@@ -155,7 +155,7 @@ class Server extends Base\Core
         return $ns;
     }
 
-    protected function setNamespace($ns)
+    public function setNamespace($ns)
     {
         $this->ns = $ns;
     }
