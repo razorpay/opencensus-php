@@ -13,9 +13,7 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class IrctcRefund extends Base
 {
-    const FILE_TO_WRITE_NAME        = 'refund_RZRPAY_';
-
-    const FILE_TO_WRITE_NAME_IN_UAT = 'deltarefund_WUATRZRPAY_';
+    const FILE_TO_WRITE_NAME        = 'refundvalidation_RZRPAY_BRDS_';
 
     protected function processEntry(array & $entry)
     {
@@ -134,11 +132,6 @@ class IrctcRefund extends Base
         $time = Carbon::now(Timezone::IST)->format('Ymd');
 
         $prefix = self::FILE_TO_WRITE_NAME;
-
-        if ($this->mode === Mode::TEST)
-        {
-            $prefix = self::FILE_TO_WRITE_NAME_IN_UAT;
-        }
 
         $name = $prefix . $time . '_V1';
 
