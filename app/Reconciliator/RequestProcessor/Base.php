@@ -113,16 +113,16 @@ class Base extends Core
     }
 
     /**
-     * @param        $inputDetails
-     * @param        $input
-     * @param string $fileLocationType
+     * @param   array        $inputDetails
+     * @param   array        $input
+     * @param   string       $fileLocationType
      *
      * @return array
      */
     protected function getFileDetailsFromInput(
-        $inputDetails,
-        $input,
-        $fileLocationType = FileProcessor::UPLOADED)
+        array $inputDetails,
+        array $input,
+        string $fileLocationType = FileProcessor::UPLOADED)
     {
         $allFilesDetails = [];
 
@@ -221,7 +221,7 @@ class Base extends Core
      * @return array File details of all the files present in the zip file.
      * @throws Exception\ReconciliationException
      */
-    protected function getFileDetailsFromZipFile($zipFileDetails)
+    protected function getFileDetailsFromZipFile(array $zipFileDetails)
     {
         $allExtractedFilesDetails = [];
 
@@ -247,7 +247,7 @@ class Base extends Core
         return $allExtractedFilesDetails;
     }
 
-    protected function getFileDetailsFromAllZipFiles($zipFileDetails)
+    protected function getFileDetailsFromAllZipFiles(array $zipFileDetails)
     {
         $allExtractedFileDetails = [];
 
@@ -285,6 +285,14 @@ class Base extends Core
         return $allExtractedFileDetails;
     }
 
+    /**
+     * Fetches the documents from the link, stores them in tmp
+     * after extraction if necessary, deletes the zip file, keeping
+     * the imp files
+     *
+     * @param  array $input
+     * @return array
+     */
     protected function fetchAndStoreLinkDocuments(array & $input)
     {
         if (empty($input['attachment-count']) === true)
@@ -329,11 +337,11 @@ class Base extends Core
      * Returns true only if all the files are zip files.
      * Returns false otherwise.
      *
-     * @param $extractedFileDetails
-     * @return true if all the files are zip files
-     *         false, otherwise.
+     * @param  array    $extractedFileDetails
+     * @return bool     true if all the files are zip files
+     *                  false, otherwise.
      */
-    protected function isTwoLevelZip($extractedFileDetails)
+    protected function isTwoLevelZip(array $extractedFileDetails): bool
     {
         foreach ($extractedFileDetails as $efd)
         {

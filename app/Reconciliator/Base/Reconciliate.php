@@ -229,8 +229,7 @@ class Reconciliate extends Base\Core
      */
     public function getFileType(string $mimeType): string
     {
-        return get_key_from_subarray_match(
-            $mimeType, FileProcessor::FILE_TYPES_MAPPINGS);
+        return get_key_from_subarray_match($mimeType, FileProcessor::FILE_TYPES_MAPPINGS);
     }
 
     /**
@@ -288,9 +287,9 @@ class Reconciliate extends Base\Core
      * @param  array        $extraDetails       Extra file metadata
      */
     protected function updateBatchWithReconciliationType(
-                            Batch\Entity $batch,
-                            string $reconciliationType,
-                            array $extraDetails)
+        Batch\Entity $batch,
+        string $reconciliationType,
+        array $extraDetails)
     {
         if (($extraDetails[FileProcessor::FILE_DETAILS]
                 [FileProcessor::FILE_TYPE] === FileProcessor::EXCEL) and

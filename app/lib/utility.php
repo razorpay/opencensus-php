@@ -400,15 +400,18 @@ if (! function_exists('encode_currency'))
 *                        ['a' => ['b', 'c'], 'd' => ['e', 'f']]
 * @return mixed
 */
-function get_key_from_subarray_match($needle, array $haystack)
+if (! function_exists('get_key_from_subarray_match'))
 {
-    foreach ($haystack as $key => $subArray)
+    function get_key_from_subarray_match($needle, array $haystack)
     {
-        if (in_array($needle, $subArray, true) === true)
+        foreach ($haystack as $key => $subArray)
         {
-            return $key;
+            if (in_array($needle, $subArray, true) === true)
+            {
+                return $key;
+            }
         }
-    }
 
-    return null;
+        return null;
+    }
 }

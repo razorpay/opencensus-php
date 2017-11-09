@@ -63,11 +63,6 @@ class Mailgun extends Base
 
         if (in_array($this->gateway, self::LINK_BASED_GATEWAYS, true))
         {
-            //
-            // Fetches the documents from the link, stores them in tmp
-            // after extraction if necessary, deletes the zip file, keeping
-            // the imp files
-            //
             $this->fetchAndStoreLinkDocuments($input);
 
             $fileLocationType = FileProcessor::STORAGE;
