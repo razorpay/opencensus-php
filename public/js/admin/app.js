@@ -305,6 +305,14 @@ var app = angular
           url: '/list',
           templateUrl: 'tpl/admin/app_email_logs_list.html',
         })
+        .state('app.onboardingRequests', {
+          url: '/onboarding_requests',
+          template: '<div ui-view class="fade-in-down smooth"></div>',
+        })
+        .state('app.onboardingRequests.list', {
+          url: '/list',
+          templateUrl: 'tpl/admin/app_onboarding_requests.html',
+        })
         .state('app.workflows', {
           url: '/workflows',
           template: '<div ui-view class=""></div>',
