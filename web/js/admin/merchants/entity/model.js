@@ -52,7 +52,7 @@ export default class Model extends BaseModel {
       this.fetchGatewayRules();
 
       this.fetchTerminals('live');
-      this.fetchTerminals('test');
+      // this.fetchTerminals('test');
 
       this.fetchFeatures('live');
       this.fetchFeatures('test');
@@ -120,9 +120,7 @@ export default class Model extends BaseModel {
       this.fetchFn(data)
     ).then(data => {
       if (data) {
-        this.merchant.terminals.items = this.merchant.terminals.items.concat(
-          data.items
-        );
+        this.merchant.terminals.items = data.items;
         this.merchant.terminals.count += data.count;
       }
     });

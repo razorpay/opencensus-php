@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { titleCase } from 'util/index';
+import { titleCase, formatDate } from 'util/index';
 
 import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';
@@ -54,21 +54,7 @@ function _getTerminalFields() {
     ['Mode', item => item.mode],
     ['Gateway', item => item.gateway],
     ['Deleted', item => !!item.deleted_at],
-    ['Enabled', item => item.enabled],
-    ['Category', item => item.category],
-    ['Network Category', item => item.network_category],
-    ['Merchant Id', item => item.gateway_merchant_id],
-    ['Merchant Id 2', item => item.gateway_merchant_id2],
-    ['Acquirer', item => item.acquirer],
-    ['Terminal Id', item => item.terminal_id],
-    ['Card Allowed', item => item.card_allowed],
-    ['Netbanking', item => item.netbanking],
-    ['Emi', item => item.emi],
-    ['Emi Duration (Months)', item => item.emi_duration],
-    ['Shared', item => item.shared],
-    ['Tpv', item => item.tpv],
-    ['Currency', item => item.currency],
-    ['Created At', item => item.created_at],
+    ['Created At', item => formatDate(item.created_at)],
   ];
 }
 
@@ -90,7 +76,7 @@ function _getOfferFields() {
   return [
     ['Offer Id', item => item.id],
     ['Name', item => item.name],
-    ['Starts At', item => item.starts_at],
+    ['Starts At', item => formatDate(item.starts_at)],
     ['Display Text', item => item.display_text],
   ];
 }
@@ -103,7 +89,7 @@ function _getCreditsFields(deleteCreditLogs) {
       ['Campaign', item => item.campaign],
       ['Type', item => item.type],
       ['Value', item => item.value],
-      ['Created At', item => item.created_at],
+      ['Created At', item => formatDate(item.created_at)],
       [
         'Delete',
         item => (
@@ -327,17 +313,17 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Registration Date',
-      value: details.created_at,
+      value: formatDate(details.created_at),
     },
     {
       label: 'Submission Date',
       value: details.merchant_details
-        ? details.merchant_details.submitted_at
+        ? formatDate(details.merchant_details.submitted_at)
         : null,
     },
     {
       label: 'Activation Date',
-      value: details.activated_at,
+      value: formatDate(details.activated_at),
     },
     {
       label: 'Confirmed',
@@ -439,7 +425,7 @@ export function getDetailsViewMap(model) {
       },
     },
     {
-      label: 'Terminal',
+      label: 'Terminal (Live)',
       value: () => <button class="btn-default">Show/Hide</button>,
       toggleChildren: function() {
         return (
