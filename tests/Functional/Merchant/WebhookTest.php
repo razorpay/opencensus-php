@@ -571,13 +571,24 @@ class WebhookTest extends TestCase
         self::fail();
     }
 
+    /**
+     * Tests if a webhook is triggered to the merchant when a settlement is processed.
+     */
     public function testTransferSettlementWebhook()
     {
         $this->ba->privateAuth();
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
-        $this->createPaymentAndTransferEntities(1);
+        $payment = $this->createPaymentEntities(1);
+
+        $account2 = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+
+        $this->createTransferEntity($payment, $account2);
+
+        $account3 = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000003']);
+
+        $this->createTransferEntity($payment, $account3);
 
         $this->createWebhook(
             [
@@ -605,6 +616,9 @@ class WebhookTest extends TestCase
         // Generate settlement reconciliation file
         $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile);
 
+        // After settlements are initiated, the settlementFile is deleted. Read it to a local variable.
+        $settlementReconFileData = file_get_contents($setlReconciliationFile);
+
         // Reconcile settlements
         $this->reconcileSettlements($setlReconciliationFile);
 
@@ -625,11 +639,19 @@ class WebhookTest extends TestCase
 
         // Validate settlement-transaction entity
         $txn = $this->getLastEntity('transaction', true);
+
         $this->assertEquals('settlement', $txn['type']);
+
         $this->assertNotNull($txn['reconciled_at']);
+
+        // After settlements are reconciled, the settlementReconFile is deleted. Restore it.
+        file_put_contents($setlReconciliationFile, $settlementReconFileData);
+
+        // Reconciling the same settlement file should not trigger the webhook again.
+        $this->reconcileSettlements($setlReconciliationFile);
     }
 
-    protected function createPaymentAndTransferEntities(int $count)
+    protected function createPaymentEntities(int $count)
     {
         $createdAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 5;
         $capturedAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 10;
@@ -644,28 +666,16 @@ class WebhookTest extends TestCase
             ]
         );
 
+        return $payment;
+    }
+
+    protected function createTransferEntity($payment, $account)
+    {
         $createdAt = Carbon::today(Timezone::IST)->subDays(20)->timestamp + 5;
 
-        $account2 = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
-
-        $account3 = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000003']);
-
         $this->fixtures->create('transfer:to_account',
             [
-                'account'       => $account2,
-                'source_id'     => $payment->getId(),
-                'source_type'   => 'payment',
-                'amount'        => 2500,
-                'currency'      => 'INR',
-                'on_hold'       => '0',
-                'on_hold_until' => Carbon::today(Timezone::IST)->timestamp - 600,
-                'created_at'    => $createdAt,
-                'updated_at'    => $createdAt + 10
-            ]);
-
-        $this->fixtures->create('transfer:to_account',
-            [
-                'account'       => $account3,
+                'account'       => $account,
                 'source_id'     => $payment->getId(),
                 'source_type'   => 'payment',
                 'amount'        => 2500,
