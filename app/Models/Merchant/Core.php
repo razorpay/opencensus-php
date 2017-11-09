@@ -494,6 +494,39 @@ class Core extends Base\Core
         return $batches;
     }
 
+    public function sendPayoutMail($merchant, $from, $to, $email)
+    {
+        $payouts = $this->repo->payout->fetchProcessedPayouts($from, $to, $merchant->getId());
+
+        $recipients = $merchant['transaction_report_email'];
+
+        if (empty($email) === false)
+        {
+            $recipients = [$email];
+        }
+
+        $processed = false;
+
+        foreach ($payouts as $payout)
+        {
+            $body = 'Payout Processed<br />';
+            $body = $body . 'Total Amount : Rs.' . $payout->getAmount()/100 . '<br />';
+            $body = $body . 'UTR : ' . $payout->getUtr() . '<br />';
+
+            $mailData = ['body'  =>  $body];
+
+            $payoutMail = new PayoutMail(
+                $mailData,
+                $recipients);
+
+            Mail::queue($payoutMail);
+
+            $processed = true;
+        }
+
+        return $processed;
+    }
+
     /**
      * This handles 3 possible cases when changing user email.
      * 1. There exists a team member with the new email
