@@ -363,6 +363,7 @@ export default class MerchantEntity extends Component {
                 key={item.label}
                 label={item.label}
                 value={item.value}
+                className={item.class}
               >
                 {item.children()}
               </ToggleEntityRow>

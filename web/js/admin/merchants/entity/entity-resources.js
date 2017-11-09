@@ -32,6 +32,17 @@ function _getBoolIcon(value) {
   return () => <i class={`i i-${value ? 'yes' : 'no'}`} />;
 }
 
+function _getGroupsFields() {
+  return [
+    ['Group', item => item.name],
+    ['Description', item => item.description],
+  ];
+}
+
+function _getAdminsFields(adminsMap) {
+  return [['Role', item => adminsMap[item.id]], ['Name', item => item.name]];
+}
+
 function _getPricingPlansFields() {
   return [
     ['Payment Method', item => item.payment_method],
@@ -256,17 +267,26 @@ export function getDetailsViewMap(model) {
     gatewayRules,
     offers,
     creditsLogs,
+    adminsMap,
   } = model.merchant;
 
   return [
     {
       label: 'Group Details',
-      value: () => <button class="btn-default">Show/Hide</button>,
+      children: () => (
+        <div>
+          <Table items={details.groups} fields={_getGroupsFields()} />
+        </div>
+      ),
     },
     {
       label: 'Admins',
-      value: () => <button class="btn-default">Show/Hide</button>,
       class: 'highlight',
+      children: () => (
+        <div>
+          <Table items={details.admins} fields={_getAdminsFields(adminsMap)} />
+        </div>
+      ),
     },
     {
       label: 'Tags',

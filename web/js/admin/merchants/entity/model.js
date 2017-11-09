@@ -17,6 +17,7 @@ export default class Model extends BaseModel {
     features: {},
     bankDetails: {},
     creditsLogs: {},
+    adminsMap: {},
     hasSettlementSchedule: undefined,
   };
 
@@ -50,6 +51,8 @@ export default class Model extends BaseModel {
       this.fetchPricingPlans();
       this.fetchScheduleTasks();
       this.fetchGatewayRules();
+
+      this.fetchAdmins();
 
       this.fetchTerminals('live');
       // this.fetchTerminals('test');
@@ -166,6 +169,23 @@ export default class Model extends BaseModel {
       if (data) {
         this.merchant.gatewayRules = data.items;
       }
+    });
+  }
+
+  @action
+  fetchAdmins() {
+    const data = {
+      route_name: 'admin_get_multiple',
+    };
+
+    return this.request('fetchAdmins', this.fetchFn(data)).then(data => {
+      const adminMap = {};
+
+      data.items.map(admin => {
+        return (adminMap[admin.id] = admin.roles[0].name);
+      });
+
+      this.merchant.adminsMap = adminMap;
     });
   }
 
