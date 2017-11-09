@@ -69,8 +69,6 @@ class Repository extends Base\Repository
         $transactionId = $this->dbColumn(Transaction\Entity::ID);
         $transactionData = $this->dbColumn('*');
 
-        s($timestamp);
-
         $txns = $this->newQuery()
                     ->select($transactionData)
                     ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
@@ -84,8 +82,6 @@ class Repository extends Base\Repository
                     ->orderBy($transactionMerchantId)
                     ->orderBy($transactionId)
                     ->get();
-
-        sd($txns->toArray());
 
         return $txns;
     }

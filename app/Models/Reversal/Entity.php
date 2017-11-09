@@ -11,17 +11,17 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const ID                = 'id';
-    const MERCHANT_ID       = 'merchant_id';
-    const ENTITY_ID         = 'entity_id';
-    const ENTITY_TYPE       = 'entity_type';
-    const AMOUNT            = 'amount';
-    const CURRENCY          = 'currency';
-    const NOTES             = 'notes';
-    const TRANSACTION_ID    = 'transaction_id';
+    const ID             = 'id';
+    const MERCHANT_ID    = 'merchant_id';
+    const ENTITY_ID      = 'entity_id';
+    const ENTITY_TYPE    = 'entity_type';
+    const AMOUNT         = 'amount';
+    const CURRENCY       = 'currency';
+    const NOTES          = 'notes';
+    const TRANSACTION_ID = 'transaction_id';
 
     // response attribute const
-    const TRANSFER_ID       = 'transfer_id';
+    const TRANSFER_ID = 'transfer_id';
 
     protected static $sign = 'rvrsl';
 
@@ -59,7 +59,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::AMOUNT    => 'int',
+        self::AMOUNT => 'int',
     ];
 
     protected $amounts = [
@@ -73,7 +73,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::NOTES     => [],
+        self::NOTES => [],
     ];
 
     // -------------------- Relations ---------------------------
@@ -88,9 +88,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    public function source()
+    public function entity()
     {
-        return $this->morphTo('source', 'entity_type', 'entity_id');
+        return $this->morphTo();
     }
 
     // -------------------- End Relations -----------------------
@@ -117,10 +117,10 @@ class Entity extends Base\PublicEntity
 
     public function setPublicTransferIdAttribute(array & $array)
     {
-       if ($this->getAttribute(self::ENTITY_TYPE) === EntityConstant::TRANSFER)
+        if ($this->getAttribute(self::ENTITY_TYPE) === EntityConstant::TRANSFER)
         {
             $array[self::TRANSFER_ID] = Transfer\Entity::getSignedId(
-                                                $this->getAttribute(self::ENTITY_ID));
+                $this->getAttribute(self::ENTITY_ID));
         }
     }
 

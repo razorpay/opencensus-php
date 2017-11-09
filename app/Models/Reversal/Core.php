@@ -52,7 +52,7 @@ class Core extends Base\Core
 
         $reversal->merchant()->associate($merchant);
 
-        $reversal->source()->associate($transfer);
+        $reversal->entity()->associate($transfer);
 
         $txn = (new Transaction\Core)->createFromTransferReversal($reversal);
 
