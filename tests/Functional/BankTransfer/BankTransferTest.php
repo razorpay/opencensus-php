@@ -114,6 +114,7 @@ class BankTransferTest extends TestCase
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals('initiated', $attempt['status']);
+        $this->assertEquals('NEFT', $attempt['mode']);
     }
 
     public function testBankTransferImps()

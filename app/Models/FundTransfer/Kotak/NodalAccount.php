@@ -15,6 +15,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\FileStore;
 use RZP\Models\FundTransfer;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\FundTransfer\Base as NodalBase;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
@@ -97,7 +98,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
             $amount = $source->getAmount() / 100;
 
-            $type = $this->getPaymentType($ba, $amount, $entity->getSourceType());
+            $type = $this->getPaymentType($ba, $amount, $entity);
 
             $this->updateSummary($type, $amount);
 
@@ -243,22 +244,22 @@ class NodalAccount extends NodalBase\NodalAccount
         if (($ifscFirstFour === 'KKBK') or
             ($ifscFirstFour === 'VYSA'))
         {
-            return 'IFT';
-        }
-
-        if($attempt->getMode() != null)
-        {
-            return $attempt->getMode();
+            $type = FundTransfer\Mode::IFT;
         }
 
         if (($amount <= self::IMPS_AMOUNT) and
-                 ($attempt->getSourceType() !== Entity::SETTLEMENT))
+            ($attempt->getSourceType() !== Type::SETTLEMENT))
         {
-            $type = 'IMPS';
+            $type = FundTransfer\Mode::IMPS;
         }
         else
         {
             $type = $this->getTransferMode($amount);
+        }
+
+        if ($attempt->getMode() != null)
+        {
+            $type = $attempt->getMode();
         }
 
         return $type;

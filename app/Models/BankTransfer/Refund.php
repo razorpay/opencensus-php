@@ -75,7 +75,7 @@ class Refund extends Base\Core
 
         $fundTransferAttempt->setSourceType(FundTransferAttempt\Type::REFUND);
         $fundTransferAttempt->setSourceId($input['refund']['id']);
-        $fundTransferAttempt->setMode($bankTransfer->getMode());
+        $fundTransferAttempt->setMode(strtoupper($bankTransfer->getMode()));
 
         $fundTransferAttempt->merchant()->associate($bankTransfer->merchant);
 

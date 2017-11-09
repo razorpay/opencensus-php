@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const CHANNEL                = 'channel';
     const VERSION                = 'version';
     const BANK_STATUS_CODE       = 'bank_status_code';
+    const MODE                   = 'mode';
     const STATUS                 = 'status';
     const UTR                    = 'utr';
     const NARRATION              = 'narration';
@@ -26,7 +27,6 @@ class Entity extends Base\PublicEntity
     const FAILURE_REASON         = 'failure_reason';
     const TXT_FILE_ID            = 'txt_file_id';
     const EXCEL_FILE_ID          = 'excel_file_id';
-    const MODE                   = 'mode';
 
     protected $entity = 'fund_transfer_attempt';
 
@@ -46,6 +46,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::VERSION,
         self::BANK_STATUS_CODE,
+        self::MODE,
         self::STATUS,
         self::UTR,
         self::NARRATION,
