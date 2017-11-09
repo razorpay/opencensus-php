@@ -1,6 +1,5 @@
 import React from 'react';
-const _getFormattedAmount = amount =>
-  (amount / 100).toFixed(2).replace(/(.{1,2})(?=.(..)+(\...)$)/g, '$1,');
+import { getFormattedAmount } from 'util/index';
 
 const currencies = {
   INR: '₹',
@@ -8,7 +7,7 @@ const currencies = {
 };
 
 export default ({ value, currency = 'INR', className, ...attrs }) => {
-  const amount = _getFormattedAmount(value);
+  const amount = getFormattedAmount(value);
 
   return (
     <span class={`rzp-amount ${className ? className : ''}`} {...attrs}>

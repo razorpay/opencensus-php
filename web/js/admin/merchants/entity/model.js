@@ -3,6 +3,7 @@ import { notifySuccess } from 'common/modal';
 import BaseModel from 'model/base';
 
 import { adminDelete } from 'util/fetch';
+import { titleCase, removeFromArray } from 'util/index';
 
 export default class Model extends BaseModel {
   @observable
@@ -145,7 +146,7 @@ export default class Model extends BaseModel {
         data.assigned_features = data.assigned_features.map(
           feature => feature.name
         );
-        this.merchant.features[mode] = data;
+        this.merchant.features = { ...this.merchant.features, [mode]: data }; // To allow re-render when 2nd api request modifies features.
       }
     });
   }
@@ -212,11 +213,56 @@ export default class Model extends BaseModel {
     );
   };
 
+  @action
+  deleteFeature = (featureName, featureMode) => {
+    const data = {
+      route_name: 'feature_delete',
+      url_params: {
+        entityId: this.merchantId,
+        featureName,
+      },
+      mode: featureMode,
+    };
+
+    return this.request(
+      'deleteFeature',
+      adminDelete(data).then(data => {
+        console.log('DATA...', data);
+
+        notifySuccess(
+          `${titleCase(
+            featureMode
+          )} feature '${featureName}' removed successfully`
+        );
+
+        // Update assigned_features for that mode and allow re-render
+        const modeFeatures = this.merchant.features[featureMode]
+          .assigned_features;
+        const index = modeFeatures.indexOf(featureName);
+
+        if (index > -1) {
+          // If item is not found then re-render won't happen
+          const modeUpdatedFeatures = removeFromArray(modeFeatures, index);
+          const newFeatures = {
+            assigned_features: modeUpdatedFeatures,
+            all_features: this.merchant.features[featureMode].all_features,
+          };
+
+          this.merchant.features = {
+            ...this.merchant.features,
+            [featureMode]: newFeatures,
+          }; // To allow re-render
+        }
+      })
+    );
+  };
+
   updateFeatures(mode, features) {
-    // Value is changed but view is not re-rendered.
     this.merchant.features[mode].assigned_features = this.merchant.features[
       mode
     ].assigned_features.concat(features);
+
+    this.merchant.features = { ...this.merchant.features };
   }
 
   updateMerchantDetails(data) {

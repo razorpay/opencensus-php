@@ -1,10 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { titleCase } from 'util/index';
 
 import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';
 import Table from 'ui/Table';
+
 import CreditsDetails from './CreditsDetails';
+import FeaturesDetails from './FeaturesDetails';
 
 /*---------------------------------------- Functionality ------------------------------------------*/
 
@@ -92,7 +95,7 @@ function _getOfferFields() {
   ];
 }
 
-export function _getCreditsFields(deleteCreditLogs) {
+function _getCreditsFields(deleteCreditLogs) {
   // Delete btn is based on mode(state of component where this table is used )
   return mode => {
     return [
@@ -108,6 +111,23 @@ export function _getCreditsFields(deleteCreditLogs) {
             class="link danger"
             onClick={() => deleteCreditLogs(item.id, mode)}
           >
+            Delete
+          </div>
+        ),
+      ],
+    ];
+  };
+}
+
+function _getFeaturesFields(deleteFeature) {
+  // Delete btn is based on mode(state of component where this table is used )
+  return mode => {
+    return [
+      [`${titleCase(mode)} Mode Features`, item => item],
+      [
+        'Action',
+        item => (
+          <div class="link danger" onClick={() => deleteFeature(item, mode)}>
             Delete
           </div>
         ),
@@ -220,6 +240,8 @@ export function getDetailsViewMap(model) {
     creditsLogs,
   } = model.merchant;
 
+  // console.log('FEATURES...', features);
+
   return [
     {
       label: 'Group Details',
@@ -236,6 +258,12 @@ export function getDetailsViewMap(model) {
     {
       label: 'Features',
       value: () => <button class="btn-default">Show/Hide</button>,
+      toggleChildren: () => (
+        <FeaturesDetails
+          features={features}
+          getFeaturesFields={_getFeaturesFields(model.deleteFeature)}
+        />
+      ),
     },
     {
       label: 'Balance(Test)',
