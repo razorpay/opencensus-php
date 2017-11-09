@@ -23,40 +23,6 @@ class Axis extends Base
 
     const STEP      = 'debit';
 
-    protected function createGatewayEntity(Payment\Entity $payment): Netbanking\Base\Entity
-    {
-        $paymentId = $payment->getId();
-
-        $gatewayPayment = new Netbanking\Base\Entity;
-
-        $gatewayPayment->setPaymentId($paymentId);
-
-        $gatewayPayment->setAction(GatewayAction::AUTHORIZE);
-
-        $gatewayPayment->setBank($payment->getBank());
-
-        $merchant = $payment->merchant;
-
-        if ($merchant->isTPVRequired() === true)
-        {
-            $gatewayPayment->setAccountNumber($payment->order->getAccountNumber());
-        }
-
-        $date = $date = Carbon::now(Timezone::IST)->format('d/m/Y H:m:s');
-
-        $attr = [
-            Netbanking\Base\Entity::MERCHANT_CODE => $payment->getMerchantId(),
-            Netbanking\Base\Entity::AMOUNT        => $payment->getAmount(),
-            Netbanking\Base\Entity::DATE          => $date,
-        ];
-
-        $gatewayPayment->fill($attr);
-
-        $this->repo->netbanking->saveOrFail($gatewayPayment);
-
-        return $gatewayPayment;
-    }
-
     protected function formatDataForFile($payments)
     {
         $mode = $this->app['basicauth']->getMode();
