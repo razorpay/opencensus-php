@@ -44,24 +44,22 @@ export default class EditUser extends Component {
 
     Promise.all(requests.map(r => adminFetch(r))).then(
       action(([allGroups, allRoles, fieldMaps, user = null]) => {
-        let self = this;
-
         //create map of all roles {role_id: role_name}
-        allRoles.items.forEach(r => self.allRoles.set(r.id, r.name));
+        allRoles.items.forEach(r => this.allRoles.set(r.id, r.name));
 
         //create map of all groups {group_id: group_obj}
-        allGroups.items.forEach(g => self.allGroups.set(g.id, g));
+        allGroups.items.forEach(g => this.allGroups.set(g.id, g));
 
         if (user) {
           //create map of selected groups {group_id: group_obj}
-          user.groups.forEach(g => self.groups.set(g.id, g));
+          user.groups.forEach(g => this.groups.set(g.id, g));
 
           //If user, than remove selected roles from all roles map
           user.roles.forEach(r => {
-            self.allRoles.delete(r.id);
-            self.roles.set(r.id, r.name);
+            this.allRoles.delete(r.id);
+            this.roles.set(r.id, r.name);
           });
-          self.user = user;
+          this.user = user;
         }
 
         this.fields = fieldMaps.fields;
