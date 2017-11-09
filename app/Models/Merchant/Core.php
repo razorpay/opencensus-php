@@ -464,24 +464,28 @@ class Core extends Base\Core
 
         $merchant->getValidator()->validateInput($type, $input);
 
-        $batches  = [];
+        $batches = $this->repo->transaction(function() use ($input, $type, $merchant)
+                   {
+                        $batches = [];
 
-        $this->repo->transaction(function() use ($input, $type, $merchant)
-        {
-            foreach ($input as $key => $file)
-            {
-                $batchType =  $type . '_' . $key;
+                        foreach ($input as $key => $file)
+                        {
+                            $batchType =  $type . '_' . $key;
 
-                $params = [
-                    Batch\Entity::FILE        => $file,
-                    Batch\Entity::TYPE        => $batchType
-                ];
+                            $params = [
+                                Batch\Entity::FILE        => $file,
+                                Batch\Entity::TYPE        => $batchType
+                            ];
 
-                $batch = (new Batch\Core)->create($params, $merchant);
+                            $batch = (new Batch\Core)->create($params, $merchant);
 
-                $batches[$batchType] = $batch->getId();
-            }
-        });
+                            $batches[$batchType] = $batch->getId();
+                        }
+
+                        return $batches;
+                    });
+
+        sd($batches);
 
         $class = 'RZP\\Jobs\\' . studly_case($type) . 'Batch';
 
