@@ -32,7 +32,7 @@ class Core extends Base\Core
     // to determine if we should create new latest pdf in sync or use already
     // created one. Whenever invoice gets updated we update pdf version over queue.
     //
-    const MAX_EXPECTED_QUEUE_DELAY     = 360; // In seconds (= 6 minutes)
+    const MAX_EXPECTED_QUEUE_DELAY     = 60; // In seconds (= 1 min)
 
     protected $lineItemCore;
     protected $pdfGenerator;
@@ -345,7 +345,9 @@ class Core extends Base\Core
 
         if ($medium === NotifyMedium::EMAIL)
         {
-            $pdfPath = $this->getFreshInvoicePdf($invoice);
+            $pdf = $this->getFreshInvoicePdf($invoice);
+
+            $pdfPath = ($pdf !== null) ? $pdf->getFullFilePath() : null;
         }
 
         $response = (new Notifier($invoice, $pdfPath))->$func();
@@ -575,15 +577,9 @@ class Core extends Base\Core
     }
 
     /**
-     * Gets fresh invoice pdf.
-     * Considers MAX_EXPECTED_QUEUE_DELAY as the max time our queue can take to
-     * process job and update the invoice, and if pdf needs to be viewed (sync
-     * call, non frequent) directly we use this method to ensure we see the updated
-     * version.
-     *
      * @param Entity $invoice
      *
-     * @return string|null
+     * @return FileStore\Entity|null
      */
     public function getFreshInvoicePdf(Entity $invoice)
     {
@@ -592,57 +588,32 @@ class Core extends Base\Core
             return null;
         }
 
+        // If requested withing expected queue delay, create fresh pdf and return
         $now = Carbon::now()->getTimestamp();
 
         if ($now - $invoice->getUpdatedAt() <= self::MAX_EXPECTED_QUEUE_DELAY)
         {
-            $this->trace->debug(TraceCode::INVOICE_PDF_GEN_SYNC, ['id' => $invoice->getId()]);
+            $this->trace->debug(TraceCode::INVOICE_PDF_GEN_SYNC, [Entity::ID => $invoice->getId()]);
 
             return $this->createInvoicePdf($invoice);
         }
-        else
-        {
-            return $this->getInvoicePdfIfExistsOrCreate($invoice);
-        }
-    }
 
-    public function getInvoicePdfIfExistsOrCreate(Entity $invoice)
-    {
-        if ($invoice->isTypeInvoice() === false)
-        {
-            return null;
-        }
-
-        $pdfPath = $this->getInvoicePdf($invoice);
-
-        if ($pdfPath !== null)
-        {
-            return $pdfPath;
-        }
-
-        return $this->createInvoicePdf($invoice);
-    }
-
-    public function getInvoicePdf(Entity $invoice)
-    {
-        if ($invoice->isTypeInvoice() === false)
-        {
-            return null;
-        }
-
+        // Else return existing pdf. Now in case it doesn't exist still, create
         $pdf = $invoice->pdf();
 
         if ($pdf === null)
         {
-            return null;
+            $pdf = $this->createInvoicePdf($invoice);
         }
 
-        return (new FileStore\Accessor)
-                    ->id($pdf->getId())
-                    ->merchantId($invoice->getMerchantId())
-                    ->getFile();
+        return $pdf;
     }
 
+    /**
+     * @param Entity $invoice
+     *
+     * @return FileStore\Entity|null
+     */
     public function createInvoicePdf(Entity $invoice)
     {
         if ($invoice->isTypeInvoice() === false)
@@ -654,10 +625,21 @@ class Core extends Base\Core
         // Single PdfGenerator instance created as part of this class's member,
         // used multiple times in following line with retry.
         //
-
         $this->setPdfGenerator($invoice);
 
         return $this->generatePdfWithRetry($invoice->getId());
+    }
+
+    /**
+     * @param Entity $invoice
+     *
+     * @return string|null
+     */
+    public function createInvoicePdfAndGetFilePath(Entity $invoice)
+    {
+        $pdf = $this->createInvoicePdf($invoice);
+
+        return ($pdf !== null) ? $pdf->getFullFilePath() : null;
     }
 
     /**

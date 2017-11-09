@@ -2,6 +2,9 @@
 
 namespace RZP\Models\BankTransfer;
 
+use Cache;
+use Config;
+
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -79,11 +82,7 @@ class Core extends Base\Core
         }
         catch (\Throwable $ex)
         {
-            // Any exception is critical, as bank transfers are never
-            // supposed to fail. Trace accordingly, as then rethrow
-            // the exception, so that Kotak retries the request.
-            $this->trace->traceException(
-                $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
+            $this->alertException($ex, $input);
 
             throw $ex;
         }
@@ -99,6 +98,42 @@ class Core extends Base\Core
     public function refund(array $data)
     {
         (new Refund)->process($data);
+    }
+
+    /**
+     * Trace to splunk, and also send an alert to Slack.
+     *
+     * @param  \Throwable $ex
+     * @param  array      $input
+     */
+    protected function alertException(\Throwable $ex, array $input)
+    {
+        // Any exception is critical, as bank transfers are never
+        // supposed to fail. Trace accordingly, as then rethrow
+        // the exception, so that Kotak retries the request.
+        $this->trace->traceException(
+            $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
+
+        // To avoid overloading Slack with errors messages (Kotak does retry)
+        // we cache a specific alert for an hour. Payee Account is always set.
+        $cacheKey = 'slack.bank_transfer_processing_failed.' . $input[Entity::PAYEE_ACCOUNT];
+
+        if (Cache::get($cacheKey) === null)
+        {
+            $data = array_merge($input, ['message' => $ex->getMessage()]);
+
+            $this->app['slack']->queue(
+                TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
+                $data,
+                [
+                    'channel'  => Config::get('slack.channels.virtual_accounts'),
+                    'username' => 'Scrooge',
+                    'icon'     => ':x:'
+                ]
+            );
+
+            Cache::put($cacheKey, $ex->getMessage(), 60);
+        }
     }
 
     /**

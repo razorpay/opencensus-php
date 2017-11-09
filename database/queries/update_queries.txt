@@ -1186,3 +1186,30 @@ UPDATE transactions SET settled_at=1509942600 WHERE id='8wulvPuP2Xu7Mj';
 
 # Fix user email case.
 UPDATE users AS u SET u.email = Lower(u.email) WHERE u.email != Lower(u.email) LIMIT 100;
+
+# Corrects Bank Transfer IMPS Bank Codes used in bank accounts
+UPDATE bank_accounts INNER JOIN bank_transfers
+  ON bank_accounts.id=bank_transfers.payer_bank_account_id
+  SET bank_accounts.ifsc_code = 'UTBI0XCNA10'
+  WHERE bank_transfers.mode='imps' and bank_transfers.payer_ifsc like 'UBI%';
+
+UPDATE bank_accounts INNER JOIN bank_transfers
+  ON bank_accounts.id=bank_transfers.payer_bank_account_id
+  SET bank_accounts.ifsc_code = 'UBIN0538167'
+  WHERE bank_transfers.mode='imps' and bank_transfers.payer_ifsc like 'UOB%';
+
+# Corrects refund status of refunds that Kotak notified as successful,
+# but which actually failed. This does not include the IMPS cases.
+UPDATE refunds
+    SET status='failed'
+    WHERE id in ('8vNkBhJKtEePDD','8x4CxVvdqBBnHd');
+
+UPDATE fund_transfer_attempts
+    SET status='failed',
+    remarks='IFSC DOES NOT RTGSINW-0015311497'
+    WHERE id='8vNkBqtFRdrgIC';
+
+UPDATE fund_transfer_attempts
+    SET status='failed',
+    remarks='RBI REJ SERVICE BRANCH IFSC'
+    WHERE id='8x4CxaQZhSgUb4';
