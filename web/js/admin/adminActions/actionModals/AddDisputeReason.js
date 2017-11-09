@@ -47,21 +47,15 @@ export default function AddDisputeReason() {
           return adminPost({
             body,
             route_name: 'dispute_reason_create',
-          })
-            .then(response => {
-              if (response.data.success) {
-                notifySuccess(
-                  'Dispute Reason added successfully. Response: ' +
-                    JSON.stringify(response.data.data)
-                );
-                closeModal();
-              } else {
-                response.data.errors.map(error => notifyError(error));
-              }
-            })
-            .catch(err => {
-              notifyError(JSON.stringify(err.response));
-            });
+          }).then(response => {
+            if (response) {
+              notifySuccess(
+                'Dispute Reason added successfully. Response: ' +
+                  JSON.stringify(response)
+              );
+              closeModal();
+            }
+          });
         }}
       />
     </Form>

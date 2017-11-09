@@ -36,14 +36,6 @@ export default function UploadReconciliationFile() {
     <Form>
       <header>{UploadReconciliationFile.title}</header>
       <SelectMode />
-      {/* <Field
-        name="name"
-        label="File Count"
-        name="c"
-        type="number"
-        min="1"
-        max="10"
-      /> */}
       <SelectField label="Gateway" name="gateway">
         {gateWayOptions.map((opt, idx) => (
           <option key={idx} value={opt.replace(/\s/g, '')}>
@@ -67,18 +59,15 @@ export default function UploadReconciliationFile() {
             if (files[i]) form['attachment-' + (i + 1)] = files[i];
           }
 
-          return adminFormUpload(form, '/admin/' + data.mode + '/reconciliate')
-            .then(response => {
-              if (response.data.success) {
-                notifySuccess('Reconciliation Response successful');
-                closeModal();
-              } else {
-                response.data.errors.map(error => notifyError(error));
-              }
-            })
-            .catch(err => {
-              notifyError('The API request failed on the dashboard side.');
-            });
+          return adminFormUpload(
+            form,
+            '/admin/' + data.mode + '/reconciliate'
+          ).then(response => {
+            if (response) {
+              notifySuccess('Reconciliation Response successful');
+              closeModal();
+            }
+          });
         }}
       />
     </Form>

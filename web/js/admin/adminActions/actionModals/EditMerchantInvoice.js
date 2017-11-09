@@ -36,18 +36,12 @@ export default function EditMerchantInvoice() {
             body: { invoice_number: data.invoiceNumber },
             mode: data.mode,
             route_name: 'merchant_invoice_update_gstin',
-          })
-            .then(response => {
-              if (response.data.success) {
-                notifySuccess('Update GSTIN Successfull');
-                closeModal();
-              } else {
-                response.data.errors.map(error => notifyError(error));
-              }
-            })
-            .catch(err => {
-              notifyError(JSON.stringify(err.response));
-            });
+          }).then(response => {
+            if (response) {
+              notifySuccess('Update GSTIN Successfull');
+              closeModal();
+            }
+          });
         }}
       />
     </Form>

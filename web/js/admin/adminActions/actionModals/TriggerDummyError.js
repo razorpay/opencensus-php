@@ -17,18 +17,12 @@ export default function TriggerDummyError() {
         class="btn"
         pendingClass="small spinner"
         onSubmit={() => {
-          return adminFetch('dummy_critical_error')
-            .then(response => {
-              if (response.data.success) {
-                notifySuccess('Error triggerred successfully');
-                closeModal();
-              } else {
-                notifyError('Error not triggerred successfully');
-              }
-            })
-            .catch(err => {
-              notifyError(JSON.stringify(err.response));
-            });
+          return adminFetch('dummy_critical_error').then(response => {
+            if (response) {
+              notifySuccess('Error triggerred successfully');
+              closeModal();
+            }
+          });
         }}
       />
     </div>

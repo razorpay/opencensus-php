@@ -25,20 +25,12 @@ export default function AuthorizeFailedPayment() {
               },
               mode: data.mode,
               route_name: 'payment_authorize_failed',
-            })
-              .then(response => {
-                if (response.data.success) {
-                  notifySuccess(
-                    'Payment Authorized Successfully:' + response.data.payment
-                  );
-                  closeModal();
-                } else {
-                  response.data.errors.map(error => notifyError(error));
-                }
-              })
-              .catch(err => {
-                notifyError(JSON.stringify(err.response));
-              });
+            }).then(response => {
+              if (response) {
+                notifySuccess('Payment Authorized Successfully.');
+                closeModal();
+              }
+            });
           }}
         />
       </Form>

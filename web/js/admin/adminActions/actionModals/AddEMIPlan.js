@@ -79,18 +79,12 @@ export default function AddEMIPlan() {
           return adminPost({
             body,
             route_name: 'emi_plan_add',
-          })
-            .then(response => {
-              if (response.data.success) {
-                notifySuccess('EMI Plan added successfully');
-                closeModal();
-              } else {
-                response.data.errors.map(error => notifyError(error));
-              }
-            })
-            .catch(err => {
-              notifyError(JSON.stringify(err.response));
-            });
+          }).then(response => {
+            if (response) {
+              notifySuccess('EMI Plan added successfully');
+              closeModal();
+            }
+          });
         }}
       />
     </Form>

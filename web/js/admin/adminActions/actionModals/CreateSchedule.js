@@ -40,18 +40,12 @@ export default function CreateSchedule() {
           return adminPost({
             body,
             route_name: 'schedule_create',
-          })
-            .then(response => {
-              if (response.data.success) {
-                notifySuccess('Schedule added successfully');
-                closeModal();
-              } else {
-                response.data.errors.map(error => notifyError(error));
-              }
-            })
-            .catch(err => {
-              notifyError(JSON.stringify(err.response));
-            });
+          }).then(response => {
+            if (response) {
+              notifySuccess('Schedule added successfully');
+              closeModal();
+            }
+          });
         }}
       />
     </Form>

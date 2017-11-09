@@ -28,15 +28,15 @@ export default function AddIINRule() {
   return (
     <Form>
       <header>{AddIINRule.title}</header>
-      <Field label="IIN (6 digit)" name="iin" />
-      <SelectField label="Network" name="network">
+      <Field label="IIN (6 digit)" name="iin" required />
+      <SelectField label="Network" name="network" required>
         {options.network.map((opt, idx) => (
           <option key={idx} value={opt}>
             {opt}
           </option>
         ))}
       </SelectField>
-      <SelectField label="Type" name="type">
+      <SelectField label="Type" name="type" required>
         {options.type.map((opt, idx) => (
           <option key={idx} value={opt}>
             {opt}
@@ -44,13 +44,13 @@ export default function AddIINRule() {
         ))}
       </SelectField>
       <br />
-      <Field label="Country (2 Character)" name="country" />
-      <Field label="Category" name="category" />
-      <Field label="Issuer" name="issuer" />
+      <Field label="Country (2 Character)" name="country" required />
+      <Field label="Category" name="category" required />
+      <Field label="Issuer" name="issuer" required />
       <br />
       <Field label="Issuer Name" name="issuer_name" />
-      <CheckField label="EMI" name="emi" />
       <Field label="Trivia" name="trivia" />
+      <CheckField label="EMI" name="emi" />
       <AsyncButton
         text="OK"
         class="btn"
@@ -60,18 +60,12 @@ export default function AddIINRule() {
           return adminPost({
             route_name: 'iin_add',
             body,
-          })
-            .then(response => {
-              if (response.data.success) {
-                notifySuccess('IIN added successfully.');
-                closeModal();
-              } else {
-                response.data.errors.map(error => notifyError(error));
-              }
-            })
-            .catch(err => {
-              notifyError(JSON.stringify(err.response));
-            });
+          }).then(response => {
+            if (response) {
+              notifySuccess('IIN added successfully.');
+              closeModal();
+            }
+          });
         }}
       />
     </Form>

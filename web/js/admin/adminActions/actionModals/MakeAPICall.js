@@ -12,14 +12,13 @@ export default class MakeAPICall extends Component {
     this.state = {
       auth: '',
     };
-    this.handleAuthChange = this.handleAuthChange.bind(this);
   }
 
-  handleAuthChange(e) {
+  handleAuthChange = e => {
     this.setState({
       auth: e.target.value,
     });
-  }
+  };
 
   render() {
     return (
@@ -60,18 +59,14 @@ export default class MakeAPICall extends Component {
               form.file = null;
               form.file_name = null;
               form.content_type = 'application/x-www-form-urlencoded';
-              return adminFormUpload(form, '/api/' + data.url)
-                .then(response => {
-                  if (response.data.success) {
+              return adminFormUpload(form, '/api/' + data.url).then(
+                response => {
+                  if (response) {
                     notifySuccess('API Request successful');
                     closeModal();
-                  } else {
-                    response.data.errors.map(error => notifyError(error));
                   }
-                })
-                .catch(err => {
-                  notifyError('The API request failed on the dashboard side.');
-                });
+                }
+              );
             }}
           />
         </Form>

@@ -68,22 +68,14 @@ export default function GenerateRefundsExcel() {
           return adminPost({
             body,
             route_name: 'refund_generate_excel',
-          })
-            .then(response => {
-              if (response.data.success) {
-                notifySuccess(
-                  'Refunds Excel Generated (count = ' +
-                    response.data.count +
-                    ')'
-                );
-                closeModal();
-              } else {
-                response.data.errors.map(error => notifyError(error));
-              }
-            })
-            .catch(err => {
-              notifyError(JSON.stringify(err.response));
-            });
+          }).then(response => {
+            if (response) {
+              notifySuccess(
+                'Refunds Excel Generated (count = ' + response.count + ')'
+              );
+              closeModal();
+            }
+          });
         }}
       />
     </Form>

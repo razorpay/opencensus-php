@@ -28,18 +28,14 @@ export default function UploadSettlementReconciliation() {
             file_name: 'file',
           };
 
-          return adminFormUpload(form, '/settlements/reconcile')
-            .then(response => {
-              if (response.data.success) {
+          return adminFormUpload(form, '/settlements/reconcile').then(
+            response => {
+              if (response) {
                 notifySuccess('API Request successful');
                 closeModal();
-              } else {
-                response.data.errors.map(error => notifyError(error));
               }
-            })
-            .catch(err => {
-              notifyError('The API request failed on the dashboard side.');
-            });
+            }
+          );
         }}
       />
     </Form>

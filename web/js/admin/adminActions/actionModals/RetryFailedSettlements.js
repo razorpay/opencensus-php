@@ -30,18 +30,12 @@ export default function RetryFailedSettlements() {
             return adminPost({
               body,
               route_name: 'setl_retry',
-            })
-              .then(response => {
-                if (response.data.success) {
-                  notifySuccess(response.data.data.message);
-                  closeModal();
-                } else {
-                  response.data.errors.map(error => notifyError(error));
-                }
-              })
-              .catch(err => {
-                notifyError(JSON.stringify(err.response));
-              });
+            }).then(response => {
+              if (response) {
+                notifySuccess(response.message);
+                closeModal();
+              }
+            });
           }}
         />
       </Form>
