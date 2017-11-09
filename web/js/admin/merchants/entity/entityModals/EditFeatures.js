@@ -34,11 +34,13 @@ export default class EditFeatures extends Component {
     )
       .then(response => {
         if (response) {
-          notifySuccess('Merchant email updated successfully.');
+          notifySuccess('Merchant features updated successfully.');
           closeModal();
           if (body.shouldSync === 1) {
             props.updateFeatures('live', selectedFeatures);
             props.updateFeatures('test', selectedFeatures);
+          } else {
+            props.updateFeatures(body.mode, selectedFeatures);
           }
         }
       })
