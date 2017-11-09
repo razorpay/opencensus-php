@@ -923,6 +923,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MAILCHIMP_JOB_ERROR                           = 'MAILCHIMP_JOB_ERROR';
 
+    // To log various debugs for a migrate command
+    const BATCH_MIGRATE_DEBUG                           = 'BATCH_MIGRATE_DEBUG';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
