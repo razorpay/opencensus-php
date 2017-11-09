@@ -160,7 +160,12 @@ class Network
 
     public static function getCode($fullName)
     {
-        return NetworkName::$codes[$fullName];
+        if (isset(NetworkName::$codes[$fullName]))
+        {
+            return NetworkName::$codes[$fullName];
+        }
+
+        return NetworkName::UNKNOWN;
     }
 
     public static function getColorCode($networkCode)
