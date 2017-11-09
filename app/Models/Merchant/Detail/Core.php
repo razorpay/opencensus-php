@@ -52,9 +52,9 @@ class Core extends Base\Core
                 $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
             }
 
-            $response = $this->createResponse($merchantDetails);
-
             $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
+
+            $response = $this->createResponse($merchantDetails);
 
             $activationProgress = $response['verification']['activation_progress'];
 
@@ -265,6 +265,10 @@ class Core extends Base\Core
             $bankCore->createOrChangeBankAccount($bankData, $merchant);
 
             (new Merchant\Activate)->autoActivate($merchant);
+
+            $merchantDetails->setLocked(true);
+
+            $this->repo->saveOrFail($merchantDetails);
 
             return true;
         }
