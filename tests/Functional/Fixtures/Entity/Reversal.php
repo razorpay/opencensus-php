@@ -26,13 +26,12 @@ class Reversal extends Base
         $this->fixtures->create(
             'refund:from_transfer_payment',
             [
+                'amount'        => $reversal->getAmount(),
                 'payment'       => $payment,
                 'created_at'    => $reversal->getCreatedAt(),
             ]);
 
         $txn = $this->createTransactionOnReversal($reversal);
-
-        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $reversal->getCreatedAt());
 
         $txn->saveOrFail();
 
@@ -40,5 +39,4 @@ class Reversal extends Base
 
         return $reversal;
     }
-
 }

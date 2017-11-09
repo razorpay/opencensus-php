@@ -2,19 +2,17 @@
 
 namespace RZP\Tests\Functional\Settlement;
 
+use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use Mail;
 
+use RZP\Models\Merchant\Account;
+use RZP\Tests\Functional\TestCase;
+use RZP\Models\Settlement\Holidays;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Settlement\AxisSettlement as AxisSettlementMail;
 use RZP\Mail\Settlement\IciciSettlement as IciciSettlementMail;
 use RZP\Mail\Settlement\KotakSettlement as KotakSettlementMail;
-use RZP\Mail\Settlement\KotakPayout as KotakPayoutMail;
-use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\Merchant\Account;
-use RZP\Models\Settlement\Entity as SettlementEntity;
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class SettlementTest extends TestCase
 {
@@ -907,18 +905,13 @@ class SettlementTest extends TestCase
 
     public function testSettlementForReversalOfDirectTransfer()
     {
-        $payment = $this->createPaymentEntities(5);
+        $this->createPaymentEntities(2);
 
-        // Get a timestamp of current day
-        $createdAt = Carbon::today(Timezone::IST)->getTimestamp() + 5;
+        // Get a timestamp of 2 days ago
+        $createdAt = Carbon::today(Timezone::IST)->subDays(2)->getTimestamp() + 5;
 
         // Create a linked account
         $account = $this->fixtures->create('merchant:marketplace_account', ['balance' => 250000]);
-
-        // Update all next_run_at values
-        $this->ba->appAuth();
-        $request = $this->testData[__FUNCTION__];
-        $this->makeRequestAndGetContent($request);
 
         // Create 2 direct transfers to the linked account
         $transfer = $this->fixtures->times(2)->create(
@@ -939,15 +932,22 @@ class SettlementTest extends TestCase
             [
                 'entity_type' => 'transfer',
                 'entity_id'   => $transfer[1]->getId(),
-                'amount'      => 1000,
+                'amount'      => 500,
                 'created_at'  => $createdAt + 10,
                 'updated_at'  => $createdAt + 20
             ]);
 
+        // Initiate immediate settlement, Reversal should not be settled
         $content = $this->initiateSettlements();
 
-        // 1 direct transfer txn alone
-        $this->assertEquals(2, $content['kotak']['transaction_count']);
+        //
+        // Total 7. Following transactions should have settled:
+        // 2 payment txns
+        // 2 transfers
+        // 2 transfer payment (linked account)
+        // 1 reversal refund  (linked account)
+        //
+        $this->assertEquals(7, $content['kotak']['transaction_count']);
 
         $lastSetl = $this->getLastEntity('settlement', true);
 
@@ -955,13 +955,29 @@ class SettlementTest extends TestCase
         $this->assertEquals($transfer[1]['to_id'], $lastSetl['merchant_id']);
 
         //
-        // transfer 1 -> credit 1000 + transfer 2 -> credit 1000
-        // reverse transfer 1 -> debit 1000
-        // total => 1000
+        // transfer payment 1 -> credit 1000 + transfer payment 2 -> credit 1000
+        // reversal refund -> debit 500
+        // total => 1500
         //
-        $this->assertEquals(1000, $lastSetl['amount']);
+        $this->assertEquals(1500, $lastSetl['amount']);
 
-        sd($lastSetl);
+        // Set time to 3 working days from now and initiate settlements
+        $settlementAfterT3 = Carbon::createFromTimestamp($createdAt, Timezone::IST);
+        $nextWorkingDay = Holidays::getNthWorkingDayFrom($settlementAfterT3, 3);
+        Carbon::setTestNow($nextWorkingDay->setTime(8, 0));
+
+        $content = $this->initiateSettlements();
+        $this->assertEquals(1, $content['kotak']['transaction_count']);
+
+        // Assert master account settlement
+        $lastSetl = $this->getLastEntity('settlement', true);
+        $this->assertEquals($transfer[1]['merchant_id'], $lastSetl['merchant_id']);
+
+        // Reversal to be settled => 500
+        $this->assertEquals(500, $lastSetl['amount']);
+
+        // Reset carbon time
+        Carbon::setTestNow();
     }
 
     public function testSettlementForReversalOfPaymentTransfer()

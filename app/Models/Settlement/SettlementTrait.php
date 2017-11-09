@@ -338,6 +338,10 @@ trait SettlementTrait
 
     /**
      * Returns the list of all channels for which settlments needs to be done
+     *
+     * @param string|null $channel
+     *
+     * @return array
      */
     protected function getArrayedChannels($channel = null)
     {

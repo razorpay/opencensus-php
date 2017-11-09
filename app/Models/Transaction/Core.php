@@ -1184,7 +1184,7 @@ class Core extends Base\Core
         // `source` will always be `Transfer/Entity` since this flow
         // is invoked only on Transfer Reversal creation
         //
-        $transfer = $reversal->source;
+        $transfer = $reversal->entity;
 
         if ($transfer->isPaymentTransfer() === true)
         {

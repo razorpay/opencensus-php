@@ -29,7 +29,7 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::SETTLED         => 'sometimes|in:0,1',
         Entity::ON_HOLD         => 'sometimes|in:0,1',
-        Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment',
+        Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment,reversal,transfer',
         Entity::SETTLEMENT_ID   => 'sometimes|alpha_dash|min:14|max:19',
         Entity::ENTITY_ID       => 'sometimes|alpha_dash|min:14',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',

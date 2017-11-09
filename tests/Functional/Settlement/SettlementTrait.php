@@ -41,8 +41,8 @@ trait SettlementTrait
         $paymentCreatedOn = $prevWorkingDay->copy();
 
         return [
-           'payment_settlement_on'    => $prevWorkingDay->addHours(7)->format('j M Y'),
-           'payment_created_at' => $paymentCreatedOn->subDays(8)->format('j M Y h:i:s'),
+            'payment_settlement_on' => $prevWorkingDay->addHours(7)->format('j M Y'),
+            'payment_created_at'    => $paymentCreatedOn->subDays(8)->format('j M Y h:i:s'),
         ];
     }
 
