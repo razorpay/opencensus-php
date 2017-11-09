@@ -15,8 +15,6 @@
 // here
 Route::group(['middleware' => ['web']], function () {
     Route::get('/', 'UserController@getIndex')->name('dashboard');
-    Route::get('/admin/_', 'AdminController@getAngular');
-    Route::get('/admin', 'AdminController@getIndex');
     Route::get('/status', 'AdminController@getStatus');
 
     // This is for enabling CORS support on contact form submissions
@@ -27,6 +25,8 @@ Route::group(['middleware' => ['web']], function () {
     Route::group(['prefix' => 'admin'], function () {
         Route::get('/org', 'AdminController@getOrg');
         Route::post('/signin', 'AdminController@postSignin');
+        Route::get('/', 'AdminController@getIndex');
+        Route::get('/_', 'AdminController@getAngular');
     });
 
     Route::group(['prefix' => 'user'], function()

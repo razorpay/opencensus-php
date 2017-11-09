@@ -88,7 +88,9 @@ class AdminController extends Controller
         }
 
         // Password login by default
-        return redirect('/admin#/access/auth/password');
+        return view('admin.login', [
+            'org' => $org
+        ]);
     }
 
     public function getAngular()
