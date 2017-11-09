@@ -485,8 +485,6 @@ class Core extends Base\Core
                         return $batches;
                     });
 
-        sd($batches);
-
         $class = 'RZP\\Jobs\\' . studly_case($type) . 'Batch';
 
         $job = new $class($this->mode, $batches);
