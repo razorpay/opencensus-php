@@ -461,18 +461,23 @@ class Service extends Base\Service
 
         $mode = $input['mode'];
 
+        // only first data sends terminal_mode.
+        // mode should not be sent when terminal_mode is nor sent from client.
         if (isset($input['terminal_mode']) === true)
         {
             $input['mode'] = $input['terminal_mode'];
 
             unset($input['terminal_mode']);
         }
+        else
+        {
+            unset($input['mode']);
+        }
 
         if (empty($error))
         {
             $this->dropFields($input, [
                 'gateway_terminal_password_confirmation',
-                'mode',
             ]);
 
             $this->setApiCredentials(null, $mode);
