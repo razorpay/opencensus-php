@@ -36,15 +36,26 @@
     background: #3498db;
     color: #fff;
   }
+  [disabled] {
+    opacity: .75;
+  }
+  #error {
+    color: #ea212d;
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 20px;
+    white-space: pre;
+  }
 </style>
 </head>
 <body>
 <form class="container" action="/admin/signin" method="post" onsubmit="return false">
   <b>Admin Login</b>
   <img alt="Logo" src="{{$org['login_logo_url']}}">
-  <input autofocus name="username" placeholder="Username">
-  <input type="password" name="password" placeholder="Password">
+  <input required autofocus name="username" placeholder="Username">
+  <input required type="password" name="password" placeholder="Password">
   <input type="submit" value="Login">
+  <div id="error"></div>
 </form>
 <script>
 function readCookie(name) {
@@ -56,21 +67,36 @@ function readCookie(name) {
     if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
   }
 }
+var xhr;
+var error = document.querySelector('#error');
 document.forms[0].onsubmit = function(e) {
   e.preventDefault();
+  if (xhr) {
+    return;
+  }
   xhr = new XMLHttpRequest()
   var data = 'username=' + encodeURIComponent(document.querySelector('input').value) +
     '&password=' + encodeURIComponent(document.querySelector('input[type=password]').value)
 
+  var submitBtn = document.querySelector('input[type=submit]');
+  submitBtn.disabled = true
+
   xhr.onreadystatechange = function() {
     if (xhr.readyState === 4) {
-      debugger
+      var text = xhr.responseText;
+      xhr = null;
+      submitBtn.disabled = false
+      text = JSON.parse(text);
+      if (text.success) {
+        return location.reload();
+      }
+      error.innerHTML = text.errors.join('\n');
+      error.style.display = 'block';
     }
   }
   xhr.open(this.method, this.action)
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
   xhr.setRequestHeader('X-XSRF-TOKEN', readCookie('XSRF-TOKEN'))
-  xhr.setRequestHeader('Accept', 'application/json, text/plain, */*')
   xhr.send(data)
 }
 </script>
