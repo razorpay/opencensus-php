@@ -11,7 +11,14 @@ class Creation extends Base
     {
         $merchantName = $this->data['merchant']['name'];
 
-        $this->subject('Alert - A dispute has been received against ' . $merchantName);
+        $amount = sprintf('%0.2f', ($this->data['dispute']['amount'] / 100));
+
+        $amount = floatval($amount);
+
+        $subject = 'Dispute raised for Rs. ' . $amount . ' on pay_'
+            . $this->data['dispute']['payment_id'] . ' against ' . $merchantName;
+
+        $this->subject($subject);
 
         return $this;
     }

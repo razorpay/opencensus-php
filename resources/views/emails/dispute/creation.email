@@ -92,12 +92,28 @@
                 <td colspan="2" class="content" style="
                     width: 85%;
                     padding-bottom: 24px;">
-                    <strong class="text-uppercase lh-26">Payment ID / Reference ID</strong> <br> pay_{{ $dispute['payment_id'] }} / {{ $dispute['id'] }}
+                    <strong class="text-uppercase lh-26">Payment ID</strong> <br> pay_{{ $dispute['payment_id'] }}
                 </td>
 
                 <td class="last" style="
                     background-color: {{ $brand_color }};
                     color: {{ $brand_text_color }};">
+                </td>
+
+            </tr>
+
+
+            <tr>
+                <td class="first">
+                </td>
+
+                <td colspan="2" class="content" style="width: 85%; padding-bottom: 0px; padding-top: 0px;">
+                    <div>
+                        <strong class="text-uppercase lh-26">Dispute ID</strong> <br> {{ $dispute['id'] }}
+                    </div>
+                </td>
+
+                <td class="last">
                 </td>
 
             </tr>
