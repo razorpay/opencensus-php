@@ -1,83 +1,163 @@
 import React, { Component } from 'react';
-import Form from 'ui/Form';
-import Field, { SelectField, CheckField } from 'ui/Field';
-import { openModal } from 'common/modal';
-import { adminFetch, adminPost } from 'util/fetch';
+import { observable, extendObservable, action } from 'mobx';
+import { observer } from 'mobx-react';
+import { adminFetch, adminPost, adminPut } from 'util/fetch';
+import { notifyDone } from 'common/modal';
+import UserForm from './UserForm';
 
-class EditUser extends Component {
-  save = body => {
-    let params = {
-      content_type: 'application/json',
-      route_name: 'admin_edit',
-    };
-    if (this.props.model) {
-      params.url_params = {
-        adminId: this.props.model.id,
-      };
-    }
+@observer
+export default class EditUser extends Component {
+  // all available roles
+  allRoles = observable.map();
+  allGroups = observable.map();
 
-    return adminPost({ body, params });
+  // selected actions
+  groups = observable.map();
+  roles = observable.map();
+
+  fetchFieldMapsParams = {
+    route_name: 'org_fieldmap_get_by_entity',
+    url_params: {
+      entity: 'admin',
+    },
+  };
+
+  fetchUserParams = {
+    route_name: 'admin_get',
+    url_params: {
+      adminId: this.props.match.params.id,
+    },
   };
 
   componentWillMount() {
+    extendObservable(this, { pending: true });
+    let { id } = this.props.match.params;
     let requests = [
       'group_get_multiple',
-      {
-        route_name: 'org_fieldmap_get_by_entity',
-        url_params: {
-          entity: 'admin',
-        },
-      },
+      'role_get_multiple',
+      this.fetchFieldMapsParams,
     ];
 
-    if (this.props.model) {
-      requests.push({
-        route_name: 'admin_get',
-        url_params: {
-          adminId: this.props.model.id,
-        },
-      });
+    if (id !== 'new') {
+      requests.push(this.fetchUserParams);
     }
 
-    Promise.all(
-      requests.map(r => adminFetch(r))
-    ).then(([groups, fieldMaps, model]) => {
-      console.log(groups, fieldMaps, model);
-    });
+    Promise.all(requests.map(r => adminFetch(r))).then(
+      action(([allGroups, allRoles, fieldMaps, user = null]) => {
+        let self = this;
+
+        //create map of all roles {role_id: role_name}
+        allRoles.items.forEach(r => self.allRoles.set(r.id, r.name));
+
+        //create map of all groups {group_id: group_obj}
+        allGroups.items.forEach(g => self.allGroups.set(g.id, g));
+
+        if (user) {
+          //create map of selected groups {group_id: group_obj}
+          user.groups.forEach(g => self.groups.set(g.id, g));
+
+          //If user, than remove selected roles from all roles map
+          user.roles.forEach(r => {
+            self.allRoles.delete(r.id);
+            self.roles.set(r.id, r.name);
+          });
+          self.user = user;
+        }
+
+        this.fields = fieldMaps.fields;
+        this.pending = false;
+      })
+    );
   }
 
+  selectAllGroups = e => {
+    let { groups, allGroups } = this;
+    groups.clear();
+    if (e.target.checked) {
+      allGroups.entries().forEach(g => groups.set(g[0], g[1]));
+    }
+  };
+
+  toggleGroup = groupId => {
+    let { groups, allGroups } = this;
+    let isThere = groups.has(groupId);
+
+    if (isThere) {
+      groups.delete(groupId);
+    } else {
+      groups.set(groupId, allGroups.get(groupId));
+    }
+  };
+
+  updateRole = (roleId, shouldRemove = false) => {
+    let { allRoles, roles } = this;
+
+    if (shouldRemove) {
+      allRoles.set(roleId, roles.get(roleId));
+      roles.delete(roleId);
+    } else {
+      roles.set(roleId, allRoles.get(roleId));
+      allRoles.delete(roleId);
+    }
+  };
+
+  save = body => {
+    let { id } = this.props.match.params;
+    let { groups, roles } = this;
+    let data = { body };
+    let request = null;
+
+    if (id !== 'new') {
+      data.route_name = 'admin_edit';
+      data.url_params = { adminId: id };
+      request = adminPut;
+    } else {
+      data.route_name = 'admin_create';
+      request = adminPost;
+    }
+
+    data.body.groups = groups.keys();
+    data.body.roles = roles.keys();
+
+    return request(data).then(response => {
+      if (response) {
+        notifyDone();
+      }
+    });
+  };
+
   render() {
-    let { name, allow_all_merchants, disabled } = this.props.model || {};
+    let {
+      fields,
+      user,
+      roles,
+      groups,
+      allGroups,
+      allRoles,
+      updateRole,
+      toggleGroup,
+      selectAllGroups,
+      save,
+      pending,
+    } = this;
+
+    if (pending) {
+      return <div class="spinner" />;
+    }
 
     return (
-      <div>
-        <header>Edit User</header>
-        <Form onSubmit={this.save}>
-          <Field name="name" label="Full Name" required defaultValue={name} />
-          <CheckField
-            name="allow_all_merchants"
-            label="Allow All Merchants"
-            defaultValue={allow_all_merchants}
-          />
-          <CheckField
-            name="disabled"
-            label="Disabled"
-            defaultValue={disabled}
-          />
-          <br />
-          <button>Save</button>
-        </Form>
-      </div>
+      <UserForm
+        fields={fields}
+        user={user}
+        groups={groups}
+        roles={roles}
+        allGroups={allGroups}
+        allRoles={allRoles}
+        updateRole={updateRole}
+        toggleGroup={toggleGroup}
+        selectAllGroups={selectAllGroups}
+        onSubmit={save}
+      />
     );
   }
 }
-
-export function showEntity(collection) {
-  openModal(<EditUser collection={collection} model={this} />);
-}
-
-const fields = [
-  ['Group Id', item => item.id],
-  ['Name', item => item.name],
-  ['Description', item => item.description],
-];

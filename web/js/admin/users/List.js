@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import Field from 'ui/Field';
@@ -12,7 +13,7 @@ import { notifyDone } from 'common/modal';
 import { prevent } from 'util/index';
 
 @observer
-export default class WorkflowList extends Component {
+export default class UserList extends Component {
   collection = new Collection({
     fetchFn: adminFetch,
     data: {
@@ -22,7 +23,6 @@ export default class WorkflowList extends Component {
   });
 
   onSubmit = filters => this.collection.setFilters(filters);
-  showEntity = showEntity.bind(null, this.collection);
 
   render() {
     return (
@@ -30,19 +30,15 @@ export default class WorkflowList extends Component {
         <div class="box">
           <header>
             Users
-            <div class="btn" onClick={this.showEntity}>
-              Add User
+            <div class="btn">
+              <Link to="/users/new">Add User</Link>
             </div>
           </header>
           <Form onSubmit={this.onSubmit} class="filters">
             <Field name="q" label="Search" />
           </Form>
         </div>
-        <PageTable
-          model={this.collection}
-          fields={fields}
-          onClick={showEntity}
-        />
+        <PageTable model={this.collection} fields={fields} href={href} />
       </div>
     );
   }
@@ -80,3 +76,5 @@ export function removeEntity(e) {
     }
   });
 }
+
+const href = item => `/users/${item.id}`;
