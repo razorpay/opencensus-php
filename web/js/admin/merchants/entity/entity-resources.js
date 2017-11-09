@@ -258,8 +258,6 @@ export function getDetailsViewMap(model) {
     creditsLogs,
   } = model.merchant;
 
-  console.log('hasSettlementSchedule...', hasSettlementSchedule);
-
   return [
     {
       label: 'Group Details',
@@ -268,6 +266,7 @@ export function getDetailsViewMap(model) {
     {
       label: 'Admins',
       value: () => <button class="btn-default">Show/Hide</button>,
+      class: 'highlight',
     },
     {
       label: 'Tags',
@@ -275,7 +274,7 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Features',
-      toggleChildren: () => (
+      children: () => (
         <FeaturesDetails
           features={features}
           getFeaturesFields={_getFeaturesFields(model.deleteFeature)}
@@ -416,26 +415,24 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Settlement Schedule',
-      toggleChildren: function() {
-        return (
-          <div>
-            {hasSettlementSchedule ? (
-              <Table
-                onClick={openSettlementSchedule}
-                items={scheduleTasks.items}
-                fields={_getSettlementScheduleFields()}
-              />
-            ) : (
-              'No Settlement Schedule Assigned'
-            )}
-          </div>
-        );
-      },
+      children: () => (
+        <div>
+          {hasSettlementSchedule ? (
+            <Table
+              onClick={openSettlementSchedule}
+              items={scheduleTasks.items}
+              fields={_getSettlementScheduleFields()}
+            />
+          ) : (
+            'No Settlement Schedule Assigned'
+          )}
+        </div>
+      ),
     },
     {
       label: 'Methods',
-      toggleChildren: function() {
-        return Object.keys(_getMethods).map(method => (
+      children: () =>
+        Object.keys(_getMethods).map(method => (
           <EntityRow
             key={method}
             label={_getMethods[method]}
@@ -443,8 +440,7 @@ export function getDetailsViewMap(model) {
               details.methods ? _getBoolIcon(details.methods[method]) : '-'
             }
           />
-        ));
-      },
+        )),
     },
     {
       label: 'Archived',
@@ -465,52 +461,49 @@ export function getDetailsViewMap(model) {
     // TODO: Convert this in ToggleEntityRow container. Check EntityRow.js TODO
     {
       label: 'Pricing Plan',
-      toggleChildren: function() {
-        return (
-          <div>
-            <EntityRow label="Plan Id" value={pricingPlans.id} />
-            <EntityRow label="Plan Name" value={pricingPlans.name} />
-            <Table
-              items={pricingPlans.rules}
-              fields={_getPricingPlansFields()}
-            />
-          </div>
-        );
-      },
+      children: () => (
+        <div>
+          <EntityRow
+            label="Plan Id"
+            value={pricingPlans.id}
+            className="separate"
+          />
+          <EntityRow
+            label="Plan Name"
+            value={pricingPlans.name}
+            className="separate"
+          />
+          <Table items={pricingPlans.rules} fields={_getPricingPlansFields()} />
+        </div>
+      ),
     },
     {
       label: 'Terminal (Live)',
-      toggleChildren: function() {
-        return (
-          <div>
-            <Table items={terminals.items} fields={_getTerminalFields()} />
-          </div>
-        );
-      },
+      children: () => (
+        <div>
+          <Table items={terminals.items} fields={_getTerminalFields()} />
+        </div>
+      ),
     },
     {
       label: 'Gateway Rules (Live)',
-      toggleChildren: function() {
-        return (
-          <div>
-            <Table items={gatewayRules} fields={_getGatewayFields()} />
-          </div>
-        );
-      },
+      children: () => (
+        <div>
+          <Table items={gatewayRules} fields={_getGatewayFields()} />
+        </div>
+      ),
     },
     {
       label: 'Offers (Live)',
-      toggleChildren: function() {
-        return (
-          <div>
-            <Table items={offers} fields={_getOfferFields()} />
-          </div>
-        );
-      },
+      children: () => (
+        <div>
+          <Table items={offers} fields={_getOfferFields()} />
+        </div>
+      ),
     },
     {
       label: 'Credits',
-      toggleChildren: () => (
+      children: () => (
         <CreditsDetails
           creditsLogs={creditsLogs}
           fetchCreditsLogs={model.fetchCreditsLogs}

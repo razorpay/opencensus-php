@@ -357,14 +357,14 @@ export default class MerchantEntity extends Component {
         </div>
 
         {detailsMap.map(item => {
-          if (item.toggleChildren) {
+          if (item.children) {
             return (
               <ToggleEntityRow
                 key={item.label}
                 label={item.label}
                 value={item.value}
               >
-                {item.toggleChildren()}
+                {item.children()}
               </ToggleEntityRow>
             );
           } else {
@@ -373,6 +373,7 @@ export default class MerchantEntity extends Component {
                 key={item.label}
                 label={item.label}
                 value={item.value}
+                className={item.class}
               />
             );
           }

@@ -24,11 +24,14 @@ export default class ToggleEntityRow extends Component {
   };
 
   render() {
-    let { label, value, toggleChildren } = this.props;
+    let { label, value, className = '', otherProps } = this.props;
 
     return (
-      <div>
-        <div class="row-item clickable" onClick={this.handleRowClick}>
+      <div {...otherProps}>
+        <div
+          class={`row-item clickable ${className}`}
+          onClick={this.handleRowClick}
+        >
           {typeof label === 'function' ? (
             label()
           ) : (

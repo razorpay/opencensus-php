@@ -7,13 +7,13 @@ import React from 'react';
      Label: string / fn.
      Value: string / fn.
 */
-export default ({ label, value, ...otherProps }) => {
+export default ({ label, value, className = '', ...otherProps }) => {
   if (value === null || value === undefined || value === '') {
     value = '--';
   }
 
   return (
-    <div class="row-item" {...otherProps}>
+    <div class={`row-item ${className}`} {...otherProps}>
       {typeof label === 'function' ? (
         label()
       ) : (

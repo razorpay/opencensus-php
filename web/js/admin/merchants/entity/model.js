@@ -303,7 +303,6 @@ export default class Model extends BaseModel {
       if (data) {
         for (let key in data.items) {
           if (data.items[key]['type'] === 'settlement') {
-            console.log('......');
             this.merchant.hasSettlementSchedule = true;
             break;
           }
