@@ -4,6 +4,8 @@ import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 import MainNavLink from 'admin/components/MainNavLink';
 import ShowWhen from 'admin/components/ShowWhen';
 
+import Profile from 'admin/profile';
+
 import MerchantList from 'admin/merchants/MerchantList';
 import Stats from 'admin/stats';
 import PlanList from 'admin/plans/List';
@@ -11,7 +13,7 @@ import GatewayRulesList from 'admin/gatewayrules/List';
 import Entities from 'admin/entities/List';
 import ActionsList from 'admin/adminActions/ActionsList';
 import EmailLogsList from 'admin/emailLogs/EmailLogsList';
-import Profile from 'admin/profile';
+import PublicFeatures from 'admin/publicfeatures/List';
 
 import MerchantEntity from 'admin/merchants/entity/MerchantEntity';
 import GenericEntity from 'admin/entities/Entity';
@@ -52,6 +54,7 @@ export default class App extends Component {
             <Route path="/entities" component={Entities} />
             <Route path="/actions" component={ActionsList} />
             <Route path="/email-logs" component={EmailLogsList} />
+            <Route path="/public-features" component={PublicFeatures} />
 
             <Route path="/workflows/:id" component={WorkflowEntity} />
             <Route path="/workflows" component={WorkflowList} />
@@ -122,6 +125,12 @@ const links = [
     ['Entities', '/entities', 'view_all_entity'],
     ['Actions', '/actions', 'view_actions'],
     ['Email Logs', '/email-logs', 'view_email_logs', 'email'],
+    [
+      'Public Features',
+      '/public-features',
+      'manage_onboarding_submissions',
+      'magic-hat',
+    ],
   ],
 
   // workflow
