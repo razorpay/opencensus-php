@@ -27,7 +27,7 @@ class TerminalLoadSorter extends Terminal\Sorter
      */
     public function gatewaySorter($terminals)
     {
-        if (emoty($this->rules) === true)
+        if (empty($this->rules) === true)
         {
             return $terminals;
         }
@@ -40,22 +40,34 @@ class TerminalLoadSorter extends Terminal\Sorter
             // sorting using rules
             $verbose = true;
 
-            if ($verbose === true)
-            {
-                $this->trace->info(
-                    TraceCode::GATEWAY_SORTER_RULES,
-                    [
-                        'rules'          => $this->rules->pluck(Rule\Entity::ID)->toArray(),
-                        'chance_percent' => $this->options->getChance(),
-                    ]);
-            }
+            // if ($verbose === true)
+            // {
+            //     $this->trace->info(
+            //         TraceCode::GATEWAY_SORTER_RULES,
+            //         [
+            //             'rules'          => $this->rules->pluck(Rule\Entity::ID)->toArray(),
+            //             'chance_percent' => $this->options->getChance(),
+            //         ]);
+            // }
 
             $chancePercent = $this->options->getChance();
 
-            $boostedTerminals = $this->getBoostedTerminals(
+            $boostedTerminals = [];
+            $nonBoostedTerminals = [];
+
+            foreach ($this->rules as $score => $rules)
+            {
+                $boostedTerminals = $this->getBoostedTerminals(
                                             $terminals,
                                             $chancePercent,
+                                            $rules,
                                             $verbose);
+
+                if (empty($boostedTerminals) === false)
+                {
+                    break;
+                }
+            }
 
             if (empty($boostedTerminals) === true)
             {
@@ -92,11 +104,12 @@ class TerminalLoadSorter extends Terminal\Sorter
     protected function getBoostedTerminals(
                             array $terminals,
                             int $chancePercent,
+                            Base\PublicCollection $rules,
                             bool $verbose = false)
     {
        $totalLoad = 0;
 
-       foreach ($this->rules as $rule)
+       foreach ($rules as $rule)
        {
             $totalLoad += $rule->getLoad();
 
@@ -129,7 +142,7 @@ class TerminalLoadSorter extends Terminal\Sorter
             }
        }
 
-       return null;
+       return [];
     }
 
     protected function traceBoostedTerminals(array $terminals, int $chancePercent, bool $verbose = false)

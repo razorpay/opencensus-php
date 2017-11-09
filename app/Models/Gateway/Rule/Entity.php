@@ -2,13 +2,13 @@
 
 namespace RZP\Models\Gateway\Rule;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
-
 use RZP\Models\Base;
-use RZP\Models\Payment\Gateway;
-use RZP\Models\Payment\Method;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Merchant\Account;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
@@ -572,9 +572,19 @@ class Entity extends Base\PublicEntity
         return ($isApplicableForSharedTerminal !== $terminal->isDirectForMerchant($merchant)) ? true : false;
     }
 
+    protected function getScoreForMerchantId(): int
+    {
+        if ($this->getMerchantId() !== Account::SHARED_ACCOUNT)
+        {
+            return self::ATTRIBUTE_SCORES[self::MERCHANT_ID];
+        }
+
+        return 0;
+    }
+
     protected function getScoreForIins(): int
     {
-        if (empty(self::IINS) === false)
+        if (empty($this->getIins()) === false)
         {
             return self::ATTRIBUTE_SCORES[self::IINS];
         }
@@ -584,8 +594,8 @@ class Entity extends Base\PublicEntity
 
     protected function getScoreForAmountRange(): int
     {
-        if (($this->isAttributeNotNull(self::MIN_AMOUNT) === true) or
-            ($this->isAttributeNotNull(self::MAX_AMOUNT) === true))
+        if ((empty($this->getAttribute(self::MIN_AMOUNT)) === false) or
+            (empty($this->getAttribute(self::MAX_AMOUNT)) === false))
         {
             return self::ATTRIBUTE_SCORES[self::AMOUNT_RANGE];
         }
