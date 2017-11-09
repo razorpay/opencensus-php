@@ -3,12 +3,12 @@
 namespace RZP\Models\BankTransfer;
 
 use Razorpay\IFSC\IFSC;
+
 use RZP\Constants;
-use RZP\Models\Bank\IFSC as IFSCCode;
-use RZP\Models\BankAccount;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
+use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
 
 /**
@@ -133,7 +133,6 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = [
         self::DESCRIPTION,
-        self::PAYER_ACCOUNT
     ];
 
     protected $defaults = [
@@ -243,40 +242,6 @@ class Entity extends Base\PublicEntity
         if (isset($input[self::DESCRIPTION]) === true)
         {
             $input[self::DESCRIPTION] = substr($input[self::DESCRIPTION], 0, self::MAX_DESCRIPTION_LENGTH);
-        }
-    }
-
-    /**
-     * For Canara bank accounts, account number needs to have leading zeros truncated.
-     *
-     * @param array $input
-     */
-    public function modifyPayerAccount(array & $input)
-    {
-        $stripLeadingZerosForIFSC = [
-            IFSCCode::CNRB
-        ];
-
-        // IMPS IFSC codes for which to trim leading 0s
-        $stripLeadingZerosForIFSCShort = [
-            "CNB"
-        ];
-
-        $inputIfsc = $input[self::PAYER_IFSC];
-
-        if ($input[self::MODE] === Mode::IMPS)
-        {
-            $haystack   = $stripLeadingZerosForIFSCShort;
-            $needle     = substr($inputIfsc, 0, -10);;
-        } else
-        {
-            $haystack   = $stripLeadingZerosForIFSC;
-            $needle     = substr($inputIfsc, 0, 4);
-        }
-
-        if (in_array($needle, $haystack))
-        {
-            $input[self::PAYER_ACCOUNT] = ltrim($input[self::PAYER_ACCOUNT], '0');
         }
     }
 

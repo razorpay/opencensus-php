@@ -117,7 +117,7 @@ return [
             'payee_ifsc'     => null,
             'payer_name'     => 'Name of account holder',
             'payer_account'  => '00000000000123456',
-            'payer_ifsc'     => 'CNB9876543210',
+            'payer_ifsc'     => 'ABC9876543210',
             'mode'           => 'imps',
             'transaction_id' => strtoupper(random_alphanum_string(22)),
             'time'           => 148415544000,
@@ -191,6 +191,23 @@ return [
             'time'           => 148415544000,
             'amount'         => 50000,
             'description'    => 'IMPS payment of 50,000 rupees, with nonsense account number',
+        ],
+    ],
+
+    'testBankTransferImpsFromRogueBankStripAccount' => [
+        'url'     => '/ecollect/validate',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '00000000000123456',
+            'payer_ifsc'     => 'CNB9876543210',
+            'mode'           => 'imps',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 50000,
+            'description'    => 'IMPS payment of 50,000 rupees, with leading zeroes',
         ],
     ],
 
