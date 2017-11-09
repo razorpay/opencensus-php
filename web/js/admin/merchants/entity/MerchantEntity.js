@@ -13,6 +13,7 @@ import {
 import * as entityModals from './entityModals';
 import { getDetailsViewMap } from './entity-resources';
 import EntityRow from 'ui/EntityRow';
+import ToggleEntityRow from 'ui/ToggleEntityRow';
 import Model from './model';
 
 let parentProps;
@@ -356,18 +357,15 @@ export default class MerchantEntity extends Component {
         </div>
 
         {detailsMap.map(item => {
-          if (typeof item.value === 'function') {
-            //TODO: Display the value directly (That value is to be something like ListViewToggler)
-
+          if (item.toggleChildren) {
             return (
-              <EntityRow
+              <ToggleEntityRow
                 key={item.label}
                 label={item.label}
                 value={item.value}
-                toggleChildren={
-                  item.toggleChildren ? item.toggleChildren() : undefined
-                }
-              />
+              >
+                {item.toggleChildren()}
+              </ToggleEntityRow>
             );
           } else {
             return (

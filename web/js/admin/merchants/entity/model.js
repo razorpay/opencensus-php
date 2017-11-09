@@ -300,9 +300,10 @@ export default class Model extends BaseModel {
       }
 
       // Check if merchant has Settlement Schedule
-      if (this.merchant.scheduleTasks) {
-        for (let key in this.merchant.scheduleTasks.items) {
-          if (this.merchant.scheduleTasks.items[key]['type'] === 'settlement') {
+      if (data) {
+        for (let key in data.items) {
+          if (data.items[key]['type'] === 'settlement') {
+            console.log('......');
             this.merchant.hasSettlementSchedule = true;
             break;
           }

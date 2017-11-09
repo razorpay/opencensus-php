@@ -23,7 +23,8 @@ export default ({ props }) => {
     })
       .then(response => {
         if (response) {
-          notifySuccess('Merchant email updated successfully.');
+          notifySuccess('Credits updated successfully.');
+          // TODO: Update credits in the model
           closeModal();
         }
       })

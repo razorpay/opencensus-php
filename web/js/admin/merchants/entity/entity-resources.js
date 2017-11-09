@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { titleCase, formatDate } from 'util/index';
 
 import Amount from 'ui/Amount';
@@ -30,7 +29,7 @@ function _getRiskRating(value) {
 }
 
 function _getBoolIcon(value) {
-  return () => <span>{value ? '✓' : 'x'}</span>;
+  return () => <i class={`i i-${value ? 'yes' : 'no'}`} />;
 }
 
 function _getPricingPlansFields() {
@@ -259,7 +258,7 @@ export function getDetailsViewMap(model) {
     creditsLogs,
   } = model.merchant;
 
-  // console.log('FEATURES...', features);
+  console.log('hasSettlementSchedule...', hasSettlementSchedule);
 
   return [
     {
@@ -276,7 +275,6 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Features',
-      value: () => <button class="btn-default">Show/Hide</button>,
       toggleChildren: () => (
         <FeaturesDetails
           features={features}
@@ -314,9 +312,9 @@ export function getDetailsViewMap(model) {
       label: 'Website',
       value: details.website
         ? () => (
-            <Link to={details.website} target="_blank">
+            <a href={details.website} target="_blank">
               {details.website}
-            </Link>
+            </a>
           )
         : null,
     },
@@ -418,11 +416,10 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Settlement Schedule',
-      value: () => <button class="btn-default">Show/Hide</button>,
       toggleChildren: function() {
         return (
           <div>
-            {false && hasSettlementSchedule ? (
+            {hasSettlementSchedule ? (
               <Table
                 onClick={openSettlementSchedule}
                 items={scheduleTasks.items}
@@ -437,7 +434,6 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Methods',
-      value: () => <button class="btn-default">Show/Hide</button>,
       toggleChildren: function() {
         return Object.keys(_getMethods).map(method => (
           <EntityRow
@@ -469,7 +465,6 @@ export function getDetailsViewMap(model) {
     // TODO: Convert this in ToggleEntityRow container. Check EntityRow.js TODO
     {
       label: 'Pricing Plan',
-      value: () => <button class="btn-default">Show/Hide</button>,
       toggleChildren: function() {
         return (
           <div>
@@ -485,7 +480,6 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Terminal (Live)',
-      value: () => <button class="btn-default">Show/Hide</button>,
       toggleChildren: function() {
         return (
           <div>
@@ -496,7 +490,6 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Gateway Rules (Live)',
-      value: () => <button class="btn-default">Show/Hide</button>,
       toggleChildren: function() {
         return (
           <div>
@@ -507,7 +500,6 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Offers (Live)',
-      value: () => <button class="btn-default">Show/Hide</button>,
       toggleChildren: function() {
         return (
           <div>
@@ -518,7 +510,6 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Credits',
-      value: () => <button class="btn-default">Show/Hide</button>,
       toggleChildren: () => (
         <CreditsDetails
           creditsLogs={creditsLogs}
