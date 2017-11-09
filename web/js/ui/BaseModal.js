@@ -10,7 +10,7 @@ import React, { Component } from 'react';
 */
 export default ({ header, children, customClass = '' }) => (
   <div class={`base-modal ${customClass}`}>
-    <div class="modal-header">{header}</div>
+    <header>{header}</header>
     <div class="modal-body">{children}</div>
   </div>
 );

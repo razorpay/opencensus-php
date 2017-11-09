@@ -3,6 +3,7 @@ import { Route, matchPath, Switch, Redirect, Link } from 'react-router-dom';
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 import MainNavLink from 'admin/components/MainNavLink';
 import ShowWhen from 'admin/components/ShowWhen';
+import ErrorBoundary from 'common/ErrorBoundary';
 
 import Profile from 'admin/profile';
 
@@ -40,41 +41,46 @@ export default class App extends Component {
     return (
       <div id="app-container">
         <main>
-          <Switch location={this.location}>
-            <Route path="/merchants/:id/team" component={MerchantTeamDetails} />
-            <Route
-              path="/merchants/:id/stats"
-              component={MerchantAnalyticStats}
-            />
-            <Route path="/merchants/:id" component={MerchantEntity} />
-            <Route path="/merchants" component={MerchantList} />
-            <Route path="/stats" component={Stats} />
-            <Route path="/pricing-plans" component={PlanList} />
-            <Route path="/gateway-rules" component={GatewayRulesList} />
-            <Route path="/entities" component={Entities} />
-            <Route path="/actions" component={ActionsList} />
-            <Route path="/email-logs" component={EmailLogsList} />
-            <Route path="/public-features" component={PublicFeatures} />
+          <ErrorBoundary location={this.location}>
+            <Switch location={this.location}>
+              <Route
+                path="/merchants/:id/team"
+                component={MerchantTeamDetails}
+              />
+              <Route
+                path="/merchants/:id/stats"
+                component={MerchantAnalyticStats}
+              />
+              <Route path="/merchants/:id" component={MerchantEntity} />
+              <Route path="/merchants" component={MerchantList} />
+              <Route path="/stats" component={Stats} />
+              <Route path="/pricing-plans" component={PlanList} />
+              <Route path="/gateway-rules" component={GatewayRulesList} />
+              <Route path="/entities" component={Entities} />
+              <Route path="/actions" component={ActionsList} />
+              <Route path="/email-logs" component={EmailLogsList} />
+              <Route path="/public-features" component={PublicFeatures} />
 
-            <Route path="/workflows/:id" component={WorkflowEntity} />
-            <Route path="/workflows" component={WorkflowList} />
+              <Route path="/workflows/:id" component={WorkflowEntity} />
+              <Route path="/workflows" component={WorkflowList} />
 
-            <Route path="/groups" component={GroupList} />
-            <Route path="/users" component={UserList} />
-            <Route path="/orgs/:orgId" component={OrgEntity} />
-            <Route path="/orgs" component={OrgsList} />
-            <Route path="/fieldmaps/:orgId" component={FieldMaps} />
-            <Route path="/roles" component={RoleList} />
-            <Route path="/profile" component={Profile} />
-            <Route path="/permissions" component={PermissionsList} />
-            <Route path="/audit-log" component={AuditLog} />
+              <Route path="/groups" component={GroupList} />
+              <Route path="/users" component={UserList} />
+              <Route path="/orgs/:orgId" component={OrgEntity} />
+              <Route path="/orgs" component={OrgsList} />
+              <Route path="/fieldmaps/:orgId" component={FieldMaps} />
+              <Route path="/roles" component={RoleList} />
+              <Route path="/profile" component={Profile} />
+              <Route path="/permissions" component={PermissionsList} />
+              <Route path="/audit-log" component={AuditLog} />
 
-            <Route path="/entity/:type/:mode/:id" component={GenericEntity} />
+              <Route path="/entity/:type/:mode/:id" component={GenericEntity} />
 
-            <Route path="/invites" component={InvitesList} />
+              <Route path="/invites" component={InvitesList} />
 
-            <Redirect to="/merchants" />
-          </Switch>
+              <Redirect to="/merchants" />
+            </Switch>
+          </ErrorBoundary>
         </main>
         <header>
           <div id="profile-icon">

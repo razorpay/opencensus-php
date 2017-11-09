@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import { SelectField } from 'ui/Field';
 import Collection from 'model/collection';
