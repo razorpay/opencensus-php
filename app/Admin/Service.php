@@ -467,6 +467,10 @@ class Service extends Base\Service
 
             unset($input['terminal_mode']);
         }
+        else
+        {
+            unset($input['mode']);
+        }
 
         if (empty($error))
         {
