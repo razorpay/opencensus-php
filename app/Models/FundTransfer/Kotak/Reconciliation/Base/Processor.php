@@ -11,6 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer\Kotak;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Settlement as SettlementMail;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Settlement\SlackNotification;
@@ -114,11 +115,17 @@ class Processor extends Base\Core
     {
         $this->repo->beginTransaction();
 
+        $reconciledData = [];
+
         try
         {
             foreach ($data as $row)
             {
-                $entity = $this->reconcileEntity($row);
+                $reconciledRowDetails = $this->reconcileEntity($row);
+
+                $reconciledData[] = $reconciledRowDetails;
+
+                $entity = $reconciledRowDetails['entity'];
 
                 if ($entity === null)
                 {
@@ -152,16 +159,34 @@ class Processor extends Base\Core
             throw $e;
         }
 
-        (new FundTransferAttempt\Core)->notifyMarketplaceMerchantViaWebhook($this->allEntities);
-
         $summary = $this->getSummary();
 
         (new SlackNotification)->success('setl_reconciliation', $summary);
 
+        // Isolating the webhook flow in a try-catch, so that the original settlement cycle stays unaffected
+        try
+        {
+            (new FundTransferAttempt\Core)->notifyMarketplaceMerchantViaWebhook($reconciledData);
+        }
+        catch (\Exception $e)
+        {
+            // Log only the entity ids instead of the entire entities
+            foreach($this->allEntities as $entity)
+            {
+                $entities[] = $entity->getId();
+            }
+
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::SETTLEMENT_PROCESSED_WEBHOOOK_FAILED,
+                ['entities' => $entities]);
+        }
+
         return $summary;
     }
 
-    protected function reconcileEntity($row)
+    protected function reconcileEntity($row): array
     {
         $version = $this->getSettlementVersion($row);
 
@@ -169,9 +194,9 @@ class Processor extends Base\Core
                                     ucwords($version) .
                                     '\\RowProcessor';
 
-        $reconciledEntity = (new $versionRowProcessorClass($row))->process($this->reconciledAt);
+        $reconciledRowDetails = (new $versionRowProcessorClass($row))->process($this->reconciledAt);
 
-        return $reconciledEntity;
+        return $reconciledRowDetails;
     }
 
     protected function updateBatchFundTransferStats($reconciledEntity)

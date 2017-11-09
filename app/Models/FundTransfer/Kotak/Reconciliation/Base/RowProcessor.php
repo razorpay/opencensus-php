@@ -53,6 +53,13 @@ class RowProcessor extends BaseCore
      */
     protected $firstFailure = false;
 
+
+    /**
+     * Denotes if the webhook should be fired.
+     * If the entity was updated earlier, this will be set to false.
+     */
+    protected $fireWebhook = false;
+
     protected $dashboardUrl;
 
     public function __construct($row)
@@ -60,6 +67,8 @@ class RowProcessor extends BaseCore
         parent::__construct();
 
         $this->row = $row;
+
+        $this->fireWebhook = false;
 
         $this->dashboardUrl = $this->app['config']->get('applications.dashboard.url');
     }
@@ -81,7 +90,7 @@ class RowProcessor extends BaseCore
             $this->sendReconciliationFailureEmail();
         }
 
-        return $this->entity;
+        return ['entity' => $this->entity, 'fire_webhook' => $this->fireWebhook];
     }
 
     protected function parseRow()
@@ -158,6 +167,13 @@ class RowProcessor extends BaseCore
                     'Old status: ' . $oldStatus . ' New status: ' . $status .
                     'Entity Id: ' . $this->reconEntity->getPublicId());
             }
+
+            //
+            // Set the fire webhook flag as true only for the settlements that
+            // have to be updated in the current settlement cycle. For the settlements
+            // that have been settled in the previous cycles, this flag stays false.
+            //
+            $this->fireWebhook = true;
         }
 
         $this->parsedData['failure_reason'] = $failureReason;

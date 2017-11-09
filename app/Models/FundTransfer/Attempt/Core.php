@@ -8,12 +8,16 @@ use RZP\Models\Settlement;
 
 class Core extends Base\Core
 {
-    public function notifyMarketplaceMerchantViaWebhook($entities)
+    public function notifyMarketplaceMerchantViaWebhook($reconciledRows)
     {
         $settlementCore = new Settlement\Core;
 
-        foreach ($entities as $entity)
+        foreach ($reconciledRows as $reconciledRow)
         {
+            $entity = $reconciledRow['entity'];
+
+            $fireWebhook = $reconciledRow['fire_webhook'];
+
             // Allow only the settlement entities
             if ($entity->getEntityName() !== Constants\Entity::SETTLEMENT)
             {
@@ -30,6 +34,11 @@ class Core extends Base\Core
             if ($entity->isStatusProcessed() === false)
             {
                 continue;
+            }
+
+            if ($fireWebhook === false)
+            {
+                return;
             }
 
             $setlTxns = $entity->setlTransactions;

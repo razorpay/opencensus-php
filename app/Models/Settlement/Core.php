@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
@@ -74,7 +75,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Sends a webhook to the merchantg for successfully settled payments
+     * Sends a webhook to the merchant for successfully settled payments
      *
      * @param Entity $settlement
      * @param array  $transactions
@@ -89,5 +90,11 @@ class Core extends Base\Core
         ];
 
         $this->app['events']->fire('api.settlement.processed', $eventPayload);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_PROCESSED_WEBHOOOK_SENT,
+            [
+                'settlement_id' => $settlement->getId()
+            ]);
     }
 }
