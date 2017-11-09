@@ -64,6 +64,11 @@ class RowProcessor extends Base\RowProcessor
     {
         $this->updateReconEntity();
 
+        if ($this->updateMerchantHoldFunds === true)
+        {
+            $this->updateMerchantEntity();
+        }
+
         $this->updateSourceEntity();
 
         $this->updateTransactionEntity();
@@ -95,19 +100,25 @@ class RowProcessor extends Base\RowProcessor
             (in_array(Attempt\Entity::STATUS, array_keys($dirtyAttributes)) === true) and
             ($bankStatusCode === Status::PROCESSED))
         {
-            $this->firstFailure = true;
+            if (in_array(Attempt\Entity::STATUS, array_keys($dirtyAttributes)) === true)
+            {
+                $this->firstFailure = true;
+            }
 
-            // setting merchant hold_funds true temporarily; this will
-            // be set for test and live separately afterwards
             if ($this->source->getEntity() === Entity::SETTLEMENT)
             {
-                $this->reconEntity->merchant->setHoldFunds(true);
-
-                $this->reconEntity->merchant->saveOrFail();
+                $this->updateMerchantHoldFunds = true;
             }
         }
 
         $this->reconEntity->saveOrFail();
+    }
+
+    protected function updateMerchantEntity()
+    {
+        $this->reconEntity->merchant->setHoldFunds(true);
+
+        $this->reconEntity->merchant->saveOrFail();
     }
 
     protected function updateSourceEntity()
