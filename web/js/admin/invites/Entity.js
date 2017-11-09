@@ -44,13 +44,11 @@ class AddInvites extends Component {
     }).then(response => {
       if (response) {
         this.props.collection.items.push(response);
+        closeModal();
         notifySuccess(
           `Success! Invitation has been sent to ${body.contact_email}`
         );
-      } else {
-        response.errors.forEach(err => notifyError(err));
       }
-      closeModal();
     });
   };
 
