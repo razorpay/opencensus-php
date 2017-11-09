@@ -1,0 +1,208 @@
+<div ng-controller="OnboardingRequestsCtrl">
+  <div class="bg-light lter b-b wrapper-md">
+    <h1 class="m-n font-thin h3">
+      Public Features
+      <spinner class="inline"></spinner>
+    </h1>
+  </div>
+  <div class="wrapper-md">
+    <div class="panel panel-default">
+      <div class="text-center m-t">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
+      <div class="row wrapper">
+        <div class="col-sm-3 form-inline">
+          <label>
+            Status
+          </label>
+          <select ng-model="selectedStatus"
+                  ng-change="fetchSubmissions(selectedStatus)"
+                  class="form-control">
+            <option ng-repeat="status in statuses"
+                    value="{{status}}">
+              {{ status }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table ui-jq="footable" data-page="false"
+               class="merchants-table footable-loaded
+                      footable table-responsive table b-t b-light">
+          <thead>
+            <tr>
+              <th>Merchant Id</th>
+              <th>Feature</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="submission in onboardingSubmissions"
+                ng-if="submission.status === selectedStatus">
+              <td>
+                <a target="_blank"
+                   ui-sref="app.merchants.detail({id: submission.merchant})">
+                  <code>{{ submission.merchant }}</code>
+                </a>
+              </td>
+              <td>
+                {{ submission.feature }}
+              </td>
+              <td>
+                {{ submission.status }}
+              </td>
+              <td>
+                <div>
+                  <a href="javacript:;"
+                     ng-click="onEditFeature(submission)"
+                     class="text-primary">
+                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit
+                  </a>
+                </div>
+              </td>
+            </tr>
+            <tr ng-if="onboardingSubmissions.length === 0">
+              <td colspan="4">
+                <center>No Submissions found</center>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+</div>
+<script type="text/ng-template" id="updateSubmission.html">
+  <div class="modal-header">
+    <h3 class="modal-title">
+      Edit Submission
+    </h3>
+  </div>
+  <div class="modal-body iin-modal">
+    <div ng-if="!submission.editVal.responses">
+      <center><b>Processing...</b></center>
+    </div>
+    <form class="form-horizontal"
+          ng-if="submission.editVal.responses"
+          name="submissionform">
+      <div class="form-group">
+        <label class="col-lg-3">Merchant Id</label>
+        <div class="col-lg-9" >
+          <code>{{ submission.merchant }}</code>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-3">Feature</label>
+        <div class="col-lg-9">
+          <span>{{ submission.feature }}</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-lg-3">Status</label>
+        <div class="col-lg-9">
+          <select ng-model="submission.editVal.status"
+                  class="form-control">
+            <option ng-repeat="status in statuses"
+                    value="{{status}}"
+                    ng-selected="status === submission.editVal.status">
+              {{ status }}
+            </option>
+          </select>   
+        </div>
+      </div>
+      <div class="form-group"
+           ng-if="submission.feature === featureDetails.va.title ||
+                  submission.feature === featureDetails.marketplace.title">
+        <label class="col-lg-3">Use Case</label>
+        <div class="col-lg-9">
+          <textarea rows="4"
+                    name="body[use_case]"
+                    class="form-control"
+                    ng-model="submission.editVal.responses.use_case"
+                    ></textarea>
+        </div>
+      </div>
+      <div class="form-group"
+           ng-if="submission.feature === featureDetails.va.title">
+        <label class="col-lg-3">Expected Monthly Revenue</label>
+        <div class="col-lg-9">
+          <input type="text"
+                 class="form-control"
+                 ng-model="submission.editVal.responses.expected_monthly_revenue"/>
+        </div>
+      </div>
+      <div class="form-group"
+           ng-if="submission.feature === featureDetails.subscriptions.title">
+        <label class="col-lg-3">Business Model</label>
+        <div class="col-lg-9">
+          <textarea rows="4"
+                    class="form-control"
+                    ng-model="submission.editVal.responses.business_model"
+                    ></textarea>
+        </div>
+      </div>
+      <div class="form-group"
+           ng-if="submission.feature === featureDetails.subscriptions.title">
+        <label class="col-lg-3">Subscription Plans</label>
+        <div class="col-lg-9">
+          <textarea rows="4"
+                    class="form-control"
+                    ng-model="submission.editVal.responses.sample_plans"
+                    ></textarea>
+        </div>
+      </div>
+      <div class="form-group"
+           ng-if="submission.feature === featureDetails.subscriptions.title">
+        <label class="col-lg-3">Website Details</label>
+        <div class="col-lg-9">
+          <textarea rows="4"
+                    class="form-control"
+                    ng-model="submission.editVal.responses.website_details"
+                    ></textarea>
+        </div>
+      </div>
+      <div class="form-group"
+           ng-if="submission.feature === featureDetails.marketplace.title">
+        <label class="col-lg-3">Transferring to</label>
+        <div class="col-lg-9">
+          <select ng-model="submission.editVal.responses.settling_to"
+                  name="body[settling_to]"
+                  class="form-control">
+            <option ng-repeat="item in transferToDDVals"
+                    value="{{ item[0] }}"
+                    ng-selected="submission.editVal.responses.settling_to === item[0]">
+              {{ item[1] }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"
+           ng-if="submission.feature === featureDetails.marketplace.title">
+        <label class="col-lg-3">Signed Vendor Agreement</label>
+        <div class="col-lg-9">
+          <div ng-if="submission.editVal.responses.vendor_agreement">
+            <a href="{{submission.editVal.responses.vendor_agreement}}"
+               target="_blank"
+               class="text-primary">
+              <i class="fa fa-external-link" aria-hidden="true"></i> Vendor Agreement
+            </a>
+            <a href="javascript:;"
+               class="text-info"
+               ng-click="onAgreementChange(submission)">&nbsp;&nbsp;Change</a>
+          </div>
+
+          <input ui-jq="filestyle"
+                 name="file"
+                 type="file"
+                 ng-if="!submission.editVal.responses.vendor_agreement"
+                 ng-model="submission.editVal.responses.file"
+                 ng-file-select="onFileSelect($files, submission)"/>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok(submission, submissionform)">Save</button>
+  </div>
+</script>
