@@ -118,6 +118,8 @@ class IrctcRefund extends Base
                 // Else a proper error description would be set.
                 $entry[Batch\Header::ERROR_DESCRIPTION] = 'Success';
             }
+
+            unset($entry[Batch\Header::ERROR_CODE]);
         }
 
         $this->batch->setProcessedAmount($processedAmount);
