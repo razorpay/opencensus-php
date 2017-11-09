@@ -105,6 +105,15 @@ class MigrateOldBatchToUfh extends Command
 
             $this->info('Total: ' . $count);
 
+            $this->trace->debug(
+                TraceCode::BATCH_MIGRATE_DEBUG,
+                [
+                    'operation' => 'fetch_for_migration',
+                    'body'      => [
+                        'ids' => $batches->getIds(),
+                    ],
+                ]);
+
             if ($count === 0)
             {
                 break;
@@ -156,7 +165,17 @@ class MigrateOldBatchToUfh extends Command
         {
             $this->error($e);
 
-            $this->trace->traceException($e, null, TraceCode::BATCH_MIGRATE_DEBUG);
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::BATCH_MIGRATE_DEBUG,
+                [
+                    'operation' => "s3_meta_fetch",
+                    'id'        => $batch->getId(),
+                    'body'      => [
+                        's3_request_params' => $s3RequestParams,
+                    ],
+                ]);
 
             return;
         }
@@ -188,6 +207,7 @@ class MigrateOldBatchToUfh extends Command
             FileStore\Entity::LOCATION    => $filePrefix . $batch->getFileKeyWithExt(),
             FileStore\Entity::BUCKET      => $this->bucket,
             FileStore\Entity::REGION      => $this->region,
+            FileStore\Entity::METADATA    => [],
             FileStore\Entity::CREATED_AT  => $now,
             FileStore\Entity::UPDATED_AT  => $now,
         ];
@@ -222,6 +242,7 @@ class MigrateOldBatchToUfh extends Command
                 [
                     'operation' => "ufh_create_{$type}_save",
                     'id'        => $batch->getId(),
+                    'body'      => $ufhCreateParams,
                 ]);
 
             return;
