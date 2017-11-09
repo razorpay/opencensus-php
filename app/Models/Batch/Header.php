@@ -149,7 +149,7 @@ class Header
                 self::CANCELLATION_DATE,
                 self::PAYMENT_AMOUNT,
                 self::CANCELLATION_ID,
-                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ],
         ],
 

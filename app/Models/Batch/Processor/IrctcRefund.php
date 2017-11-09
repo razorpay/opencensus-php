@@ -113,9 +113,11 @@ class IrctcRefund extends Base
             if ($entry[Batch\Header::STATUS] === Batch\Status::SUCCESS)
             {
                 $processedAmount += $entry[Batch\Header::REFUND_AMOUNT];
-            }
 
-            unset($entry[Batch\Header::ERROR_DESCRIPTION]);
+                // In case success, we want last column should be `success`
+                // Else a proper error description would be set.
+                $entry[Batch\Header::ERROR_DESCRIPTION] = 'Success';
+            }
         }
 
         $this->batch->setProcessedAmount($processedAmount);
