@@ -1265,6 +1265,11 @@ trait Authorize
         {
             $data = array('payment' => $payment->toArray());
 
+            if ($payment->getGlobalOrLocalTokenEntity() !== null)
+            {
+                $data['token'] = $payment->getGlobalOrLocalTokenEntity();
+            }
+
             if ($payment->isMethodCardOrEmi())
             {
                 $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
