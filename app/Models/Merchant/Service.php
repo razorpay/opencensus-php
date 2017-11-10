@@ -1254,18 +1254,20 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('payout_mail', $input);
 
-        $merchantIds = $input['merchant_ids'];
-
-        $email = $input['email'] ?? null;
+        $merchantsData = $input['content'];
 
         $successCount = $failedCount = 0;
 
         $failedIds = [];
 
-        foreach ($merchantIds as $merchantId)
+        foreach ($merchantsData as $merchantData)
         {
             try
             {
+                $merchantId = $merchantData['merchant_id'];
+
+                $email = $merchantData['email'] ?? null;
+
                 $processed = $this->sendPayoutMail($merchantId, $email);
 
                 if ($processed === true)
@@ -1289,7 +1291,7 @@ class Service extends Base\Service
             }
         }
 
-        $response['total'] = count($merchantIds);
+        $response['total'] = count($merchantsData);
         $response['success'] = $successCount;
         $response['failed'] = $failedCount;
         $response['failedIds'] = $failedIds;

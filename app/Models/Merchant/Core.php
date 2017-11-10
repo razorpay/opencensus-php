@@ -496,7 +496,7 @@ class Core extends Base\Core
         return $batches;
     }
 
-    public function sendPayoutMail($merchant, $from, $to, $email)
+    public function sendPayoutMail(Entity $merchant, int $from, int $to, string $email)
     {
         $payouts = $this->repo->payout->fetchProcessedPayouts($from, $to, $merchant->getId());
 
@@ -504,22 +504,25 @@ class Core extends Base\Core
 
         if (empty($email) === false)
         {
-            $recipients = [$email];
+            array_push($recipients, $email);
         }
 
         $processed = false;
 
         foreach ($payouts as $payout)
         {
-            if (empty($payout->getUtr()) === true)
-            {
-                continue;
-            }
-
             $body = 'Settlement Processed<br />';
             $body = $body . 'Total Amount : Rs.' . number_format($payout->getAmount() / 100, 2, '.', '') . '<br />';
-            $body = $body . 'UTR : ' . $payout->getUtr() . '<br />';
-            $body = $body . 'Bank Account Number :' . $merchant->bankAccount->getAccountNumber() . '<br />';
+
+            if (empty($payout->getUtr()) === false)
+            {
+                $body = $body . 'UTR : ' . $payout->getUtr() . '<br />';
+            }
+
+            if (empty($merchant->bankAccount) === false)
+            {
+                $body = $body . 'Bank Account Number :' . $merchant->bankAccount->getAccountNumber() . '<br />';
+            }
 
             $mailData = ['body'  =>  $body];
 
