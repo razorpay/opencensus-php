@@ -158,9 +158,6 @@ class ReconciliationTest extends TestCase
 
         // Resetting time
         Carbon::setTestNow();
-        
-        // Resetting merchant
-        $this->fixtures->merchant->holdFunds(Account::TEST_ACCOUNT, false);
 
         Mail::assertSent(SettlementFailureMail::class);
 
@@ -191,6 +188,9 @@ class ReconciliationTest extends TestCase
         $firstAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $oldBatchFundTransferId = $settlement['batch_fund_transfer_id'];
+
+        // Resetting merchant
+        $this->fixtures->merchant->holdFunds(Account::TEST_ACCOUNT, false);
 
         $content = $this->retryIntiateSettlements([$settlement['id']]);
 

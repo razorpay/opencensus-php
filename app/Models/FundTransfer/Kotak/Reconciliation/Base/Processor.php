@@ -114,15 +114,20 @@ class Processor extends Base\Core
 
     protected function startReconciliation($data)
     {
-        $summary = $this->repo->transactionOnLiveAndTest(function() use ($data) {
-
-            try {
-                foreach ($data as $row) {
+        $summary = $this->repo->transactionOnLiveAndTest(function() use ($data)
+        {
+            try
+            {
+                foreach ($data as $row)
+                {
                     $entity = $this->reconcileEntity($row);
 
-                    if ($entity === null) {
+                    if ($entity === null)
+                    {
                         $this->unprocessedIds[] = $row[Kotak\Headings::PAYMENT_REF_NO] ?? 'null';
-                    } else {
+                    }
+                    else
+                    {
                         $this->allEntities[] = $entity;
 
                         $this->updateBatchFundTransferStats($entity);
@@ -130,17 +135,16 @@ class Processor extends Base\Core
                 }
 
                 // Update batch stats post reconciliations
-                foreach ($this->batchFundTransferStats as $batchId => $attrs) {
+                foreach ($this->batchFundTransferStats as $batchId => $attrs)
+                {
                     $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
                     $batchEntity->setProcessedCount($attrs['processed_count']);
                     $batchEntity->setProcessedAmount($attrs['processed_amount']);
                     $batchEntity->saveOrFail();
                 }
-
-                //$this->repo->commit();
-            } catch (\Exception $e) {
-                //$this->repo->rollback();
-
+            }
+            catch (\Exception $e)
+            {
                 (new SlackNotification)->failure('setl_reconciliation', $e);
 
                 throw $e;
@@ -152,6 +156,7 @@ class Processor extends Base\Core
 
             return $summary;
         });
+        
         return $summary;
     }
 
