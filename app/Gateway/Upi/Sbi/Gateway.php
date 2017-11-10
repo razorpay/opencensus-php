@@ -172,7 +172,7 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent[ResponseFields::API_RESPONSE];
 
-        $actualAmount = number_format($content[ResponseFields::AMOUNT] / 100, 2, '.', '');
+        $actualAmount = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
 
         $verify->amountMismatch = ($paymentAmount !== $actualAmount);
     }

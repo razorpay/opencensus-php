@@ -121,7 +121,7 @@ class Server extends Base\Mock\Server
             ResponseFields::UPI_TRANS_REFERENCE_NO => $gatewayPayment->getGatewayPaymentId(),
             ResponseFields::NPCI_TRANSACTION_ID    => 99999999999,
             ResponseFields::CUSTOMER_REFERENCE_NO  => $gatewayPayment->getGatewayPaymentId(),
-            ResponseFields::AMOUNT                 => $gatewayPayment->getAmount(),
+            ResponseFields::AMOUNT                 => $gatewayPayment->getAmount() / 100,
             ResponseFields::TRANSACTION_AUTH_DATE  => Carbon::now(Timezone::IST)->toDateTimeString(),
             ResponseFields::RESPONSE_CODE          => '00',
             ResponseFields::APPROVAL_NUMBER        => random_int(100000, 999999),
