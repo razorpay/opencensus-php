@@ -815,6 +815,11 @@ class Orchestrator extends Base\Core
      */
     protected function getFileContentInArrayAndSet($fileDetails)
     {
+        $this->trace->info(TraceCode::RECON_BEGIN_FILE_PARSING, [
+            'gateway'      => $this->gateway,
+            'file_details' => $fileDetails,
+        ]);
+
         $fileType = $this->gatewayReconciliator->getFileType($fileDetails[FileProcessor::MIME_TYPE]);
 
         $fileDetails[FileProcessor::FILE_TYPE] = $fileType;
@@ -843,6 +848,12 @@ class Orchestrator extends Base\Core
                 ['file_details' => $fileDetails]
             );
         }
+
+        $this->trace->info(TraceCode::RECON_END_FILE_PARSING, [
+            'gateway'      => $this->gateway,
+            'file_details' => $fileDetails,
+        ]);
+
     }
 
     protected function setGatewayReconciliatorObject($gateway)
@@ -1057,5 +1068,12 @@ class Orchestrator extends Base\Core
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setTimeLimit(3600);
+
+        //
+        // In certain cases XLS parsing takes a long time. We are setting
+        // the execution time to 30 min here to prevent the execution
+        // from being terminated.
+        //
+        RuntimeManager::setMaxExecTime(1800);
     }
 }
