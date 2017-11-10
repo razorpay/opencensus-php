@@ -107,7 +107,7 @@
                 <td class="first">
                 </td>
 
-                <td colspan="2" class="content" style="width: 85%; padding-bottom: 0px; padding-top: 0px;">
+                <td colspan="2" class="content" style="width: 85%; padding-bottom: 0px; padding-top: 24px;">
                     <div>
                         <strong class="text-uppercase lh-26">Dispute ID</strong> <br> {{ $dispute['id'] }}
                     </div>
