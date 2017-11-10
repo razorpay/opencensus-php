@@ -246,8 +246,7 @@ class NodalAccount extends NodalBase\NodalAccount
         {
             $type = FundTransfer\Mode::IFT;
         }
-
-        if (($amount <= self::IMPS_AMOUNT) and
+        else if (($amount <= self::IMPS_AMOUNT) and
             ($attempt->getSourceType() !== Type::SETTLEMENT))
         {
             $type = FundTransfer\Mode::IMPS;
@@ -257,6 +256,7 @@ class NodalAccount extends NodalBase\NodalAccount
             $type = $this->getTransferMode($amount);
         }
 
+        // Mode will be present only for attempts of type Refund
         if ($attempt->getMode() != null)
         {
             $type = $attempt->getMode();
