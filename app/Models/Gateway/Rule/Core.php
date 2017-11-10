@@ -41,9 +41,9 @@ class Core extends Base\Core
 
         $rule->edit($input);
 
-        $matchingRules = $this->getRulesWithMatchingRuleCriteria($rule);
+        $validatorMethod = $this->getValidatorMethod($rule);
 
-        $validatorMethod = $this->getValidatorMethod($rule, $matchingRules);
+        $matchingRules = $this->getRulesWithMatchingRuleCriteria($rule);
 
         $this->$validatorMethod($rule, $matchingRules);
 

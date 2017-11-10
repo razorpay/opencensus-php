@@ -19,7 +19,6 @@ return [
                     'issuer'           => 'HDFC',
                     'currency'         => 'INR',
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -35,7 +34,6 @@ return [
                     'issuer'           => 'HDFC',
                     'currency'         => 'INR',
                     'international'    => false,
-                    'gateway_acquirer' => 'axis',
                     'min_amount'       => 0,
                     'load'             => 50,
                     'admin'            => true
@@ -55,7 +53,6 @@ return [
                     'min_amount'       => 100,
                     'max_amount'       => 500,
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -70,7 +67,6 @@ return [
                     'network'          => 'VISA',
                     'issuer'           => 'HDFC',
                     'international'    => false,
-                    'gateway_acquirer' => 'axis',
                     'min_amount'       => 1,
                     'max_amount'       => 5,
                     'load'             => 50,
@@ -89,7 +85,6 @@ return [
                     'network'          => 'VISA',
                     'issuer'           => 'HDFC',
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -120,7 +115,6 @@ return [
                     'network'          => 'VISA',
                     'issuer'           => 'HDFC',
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -151,7 +145,6 @@ return [
                     'network'          => 'VISA',
                     'issuer'           => 'HDFC',
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -182,7 +175,6 @@ return [
                     'network'          => 'xyz',
                     'issuer'           => 'HDFC',
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -213,7 +205,6 @@ return [
                     'network'          => 'DICL',
                     'issuer'           => 'HDFC',
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -244,7 +235,6 @@ return [
                     'network'          => 'VISA',
                     'issuer'           => 'XYZ',
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -276,7 +266,6 @@ return [
                     'network'          => 'VISA',
                     'issuer'           => 'ICIC',
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -301,14 +290,14 @@ return [
             'request' => [
                 'content' => [
                     'merchant_id'      => '10000000000000',
-                    'type'             => 'sorter',
+                    'type'             => 'filter',
+                    'filter_type'      => 'select',
                     'gateway'          => 'hdfc',
                     'method'           => 'card',
                     'network'          => 'VISA',
                     'issuer'           => 'ICIC',
                     'international'    => 0,
                     'gateway_acquirer' => 'axis',
-                    'load'             => 50
                 ],
                 'url' => '/gateway/rules',
                 'method' => 'POST',
