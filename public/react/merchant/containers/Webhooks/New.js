@@ -146,6 +146,12 @@ export default class AddWebhook extends Component {
                     <WebhookEventCheckbox eventName="subscription.completed" />
                   </div>
                 </ShowWhen>
+
+                <ShowWhen apiFeatureEnabled="Marketplace">
+                  <div>
+                    <WebhookEventCheckbox eventName="settlement.processed" />
+                  </div>
+                </ShowWhen>
               </div>
             </div>
           </div>
