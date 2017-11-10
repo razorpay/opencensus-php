@@ -1200,6 +1200,8 @@ class Core extends Base\Core
             //
             $transferSettledAt = $transfer->transaction->getSettledAt();
 
+            s(Carbon::createFromTimestamp($transferSettledAt, Timezone::IST));
+
             return max($transferSettledAt, $nextSettlementTime);
         }
         else if ($transfer->isDirectTransfer() === true)

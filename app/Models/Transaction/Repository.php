@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Transaction;
 
+use Carbon\Carbon;
 use DB;
 
 use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Gateway\Billdesk;
 use RZP\Models\Base;
@@ -69,6 +71,8 @@ class Repository extends Base\Repository
         $transactionId = $this->dbColumn(Transaction\Entity::ID);
         $transactionData = $this->dbColumn('*');
 
+        s(Carbon::createFromTimestamp($timestamp, Timezone::IST));
+
         $txns = $this->newQuery()
                     ->select($transactionData)
                     ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
@@ -78,7 +82,7 @@ class Repository extends Base\Repository
                     ->where(Entity::CHANNEL, '=', $channel)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
-                    //->with('merchant', 'merchant.bankAccount', 'merchant.balance')
+                    ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
                     ->orderBy($transactionMerchantId)
                     ->orderBy($transactionId)
                     ->get();

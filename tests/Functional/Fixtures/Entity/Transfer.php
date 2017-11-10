@@ -34,8 +34,6 @@ class Transfer extends Base
 
         $txn = $this->createTransactionOnTransfer($transfer);
 
-        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $transfer->getCreatedAt());
-
         $txn->saveOrFail();
 
         $transfer->saveOrFail();
