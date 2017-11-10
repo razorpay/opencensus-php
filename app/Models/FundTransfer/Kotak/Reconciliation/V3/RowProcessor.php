@@ -64,10 +64,7 @@ class RowProcessor extends Base\RowProcessor
     {
         $this->updateReconEntity();
 
-        if ($this->updateMerchantHoldFunds === true)
-        {
-            $this->updateMerchantEntity();
-        }
+        $this->updateMerchantEntity();
 
         $this->updateSourceEntity();
 
@@ -104,9 +101,11 @@ class RowProcessor extends Base\RowProcessor
                 $this->firstFailure = true;
             }
 
+            // Merchant is put on hold if a settlement failed
+            // This is to avoid further failures on same merchant
             if ($this->source->getEntity() === Entity::SETTLEMENT)
             {
-                $this->updateMerchantHoldFunds = true;
+                $this->holdFunds = true;
             }
         }
 
@@ -115,9 +114,12 @@ class RowProcessor extends Base\RowProcessor
 
     protected function updateMerchantEntity()
     {
-        $this->reconEntity->merchant->setHoldFunds(true);
+        if ($this->holdFunds === true)
+        {
+            $this->reconEntity->merchant->setHoldFunds(true);
 
-        $this->reconEntity->merchant->saveOrFail();
+            $this->reconEntity->merchant->saveOrFail();
+        }
     }
 
     protected function updateSourceEntity()

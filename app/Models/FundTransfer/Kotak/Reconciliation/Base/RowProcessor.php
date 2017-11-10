@@ -55,7 +55,7 @@ class RowProcessor extends BaseCore
 
     protected $dashboardUrl;
 
-    protected $updateMerchantHoldFunds = false;
+    protected $holdFunds = false;
 
     public function __construct($row)
     {
