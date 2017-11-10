@@ -86,11 +86,13 @@ class Core extends Base\Core
             return;
         }
 
-        $paymentTxns = $this->getPaymentTransactions($settlement);
+        $accountId = Merchant\AccountEntity::getSignedId($settlement->merchant_id);
 
         $eventPayload = [
             Entity::MAIN => $settlement,
-            Entity::WITH => [ ]
+            Entity::WITH => [
+                'account_id' => $accountId
+            ]
         ];
 
         $this->app['events']->fire('api.settlement.processed', $eventPayload);
@@ -126,29 +128,5 @@ class Core extends Base\Core
         }
 
         return true;
-    }
-
-    /**
-     * Returns all the transactions of type payment that have been processed in the settlement
-     *
-     * @param Entity $settlement
-     *
-     * @return array
-     */
-    protected function getPaymentTransactions(Entity $settlement): array
-    {
-        $setlTxns = $settlement->setlTransactions;
-
-        $paymentTxns = [];
-
-        foreach ($setlTxns as $txn)
-        {
-            if ($txn->isTypePayment() === true)
-            {
-                $paymentTxns[] = $txn;
-            }
-        }
-
-        return $paymentTxns;
     }
 }

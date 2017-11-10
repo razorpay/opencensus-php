@@ -439,7 +439,8 @@ class ApiEventSubscriber extends Base\Core
         $payload = [
             Constants\Entity::SETTLEMENT => [
                 'entity' => $settlement->toArrayPublic(),
-            ]
+            ],
+            'account_id' => $this->withPayload['account_id']
         ];
 
         return $payload;

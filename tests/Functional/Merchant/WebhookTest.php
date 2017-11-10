@@ -605,6 +605,8 @@ class WebhookTest extends TestCase
 
             $this->assertEquals('settlement.processed', $data['event']['event']);
 
+            $this->assertArrayHasKey('account_id', $data['event']['payload']);
+
             $this->assertArraySelectiveEquals($testData, $data);
 
             return true;

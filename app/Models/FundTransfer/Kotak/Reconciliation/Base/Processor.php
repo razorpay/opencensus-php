@@ -174,12 +174,9 @@ class Processor extends Base\Core
         catch (\Exception $e)
         {
             // Log only the entity ids instead of the entire entities
-            foreach($this->allEntities as $entity)
-            {
-                $entities = array_map(function($entity) {
-                    return $entity->getId();
-                }, $this->allEntities);
-            }
+            $entities = array_map(function($entity) {
+                return $entity->getId();
+            }, $this->allEntities);
 
             $this->trace->traceException(
                 $e,
