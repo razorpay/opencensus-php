@@ -112,52 +112,46 @@ class Processor extends Base\Core
         return $response;
     }
 
-    protected function startReconciliation($data): array
+    protected function startReconciliation($data)
     {
-        $this->repo->beginTransaction();
+        $summary = $this->repo->transactionOnLiveAndTest(function() use ($data) {
 
-        try
-        {
-            foreach ($data as $row)
-            {
-                $entity = $this->reconcileEntity($row);
+            try {
+                foreach ($data as $row) {
+                    $entity = $this->reconcileEntity($row);
 
-                if ($entity === null)
-                {
-                    $this->unprocessedIds[] = $row[Kotak\Headings::PAYMENT_REF_NO] ?? 'null';
+                    if ($entity === null) {
+                        $this->unprocessedIds[] = $row[Kotak\Headings::PAYMENT_REF_NO] ?? 'null';
+                    } else {
+                        $this->allEntities[] = $entity;
+
+                        $this->updateBatchFundTransferStats($entity);
+                    }
                 }
-                else
-                {
-                    $this->allEntities[] = $entity;
 
-                    $this->updateBatchFundTransferStats($entity);
+                // Update batch stats post reconciliations
+                foreach ($this->batchFundTransferStats as $batchId => $attrs) {
+                    $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
+                    $batchEntity->setProcessedCount($attrs['processed_count']);
+                    $batchEntity->setProcessedAmount($attrs['processed_amount']);
+                    $batchEntity->saveOrFail();
                 }
+
+                //$this->repo->commit();
+            } catch (\Exception $e) {
+                //$this->repo->rollback();
+
+                (new SlackNotification)->failure('setl_reconciliation', $e);
+
+                throw $e;
             }
 
-            // Update batch stats post reconciliations
-            foreach ($this->batchFundTransferStats as $batchId => $attrs)
-            {
-                $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
-                $batchEntity->setProcessedCount($attrs['processed_count']);
-                $batchEntity->setProcessedAmount($attrs['processed_amount']);
-                $batchEntity->saveOrFail();
-            }
+            $summary = $this->getSummary();
 
-            $this->repo->commit();
-        }
-        catch (\Exception $e)
-        {
-            $this->repo->rollback();
+            (new SlackNotification)->success('setl_reconciliation', $summary);
 
-            (new SlackNotification)->failure('setl_reconciliation', $e);
-
-            throw $e;
-        }
-
-        $summary = $this->getSummary();
-
-        (new SlackNotification)->success('setl_reconciliation', $summary);
-
+            return $summary;
+        });
         return $summary;
     }
 
