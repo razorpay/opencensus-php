@@ -108,7 +108,7 @@ class IrctcRefund extends Base
 
         $processedAmount = 0;
 
-        foreach ($entries as $entry)
+        foreach ($entries as & $entry)
         {
             if ($entry[Batch\Header::STATUS] === Batch\Status::SUCCESS)
             {
