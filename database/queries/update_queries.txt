@@ -1213,3 +1213,5 @@ UPDATE fund_transfer_attempts
     SET status='failed',
     remarks='RBI REJ SERVICE BRANCH IFSC'
     WHERE id='8x4CxaQZhSgUb4';
+
+UPDATE billdesk SET RefundId = 'JSBI57924526691' WHERE id = 2502509;
