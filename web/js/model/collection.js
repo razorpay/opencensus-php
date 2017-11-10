@@ -52,11 +52,7 @@ export default class Collection extends BaseModel {
       if (data) {
         let Model = this.model;
         if (Model) {
-          if (typeof Model === 'function') {
-            data.items = data.items.map(i => new Model(this, i));
-          } else {
-            data.items = data.items.map(i => Model(this, i));
-          }
+          data.items = data.items.map(i => new Model(this, i));
         }
         this.items.replace(data.items);
         this.animateItems = false;

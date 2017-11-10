@@ -162,11 +162,12 @@ class ActivityLogModal extends Component {
     ];
     return (
       <div>
+        <header>Activity Log</header>
         <DataTable fields={fields} items={this.log} />
         <button
           onClick={_ => {
             confirm(
-              'Are you sure you want to delete all other sessions you are signed in with?"',
+              'Are you sure you want to delete all other sessions you are signed in with?',
               ::this.deleteOtherSessions,
               'Ok',
               'Cancel'
@@ -186,11 +187,7 @@ export default class Profile extends Component {
     return fetch({
       url: 'admin/activity',
     }).then(log => {
-      openModal(
-        <BaseModal header="Activity Log">
-          <ActivityLogModal log={log} />
-        </BaseModal>
-      );
+      openModal(<ActivityLogModal log={log} />);
     });
   }
 
