@@ -4,8 +4,8 @@
 
 $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
 
-$key_id = $_GET['key'] ?? 'rzp_test_1DP5mmOlF5G5ag';
-$secret = 'thisissupersecret';
+$key_id = $_GET['key'] ?? 'rzp_live_4dngATlGkC5Wa';
+$secret = 'XvLXaKrJf5iSyY8N0QuwTAcJ';
 
 $private_url = $key_id.':'.$secret.'@'.$baseurl;
 
