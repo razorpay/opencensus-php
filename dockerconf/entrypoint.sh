@@ -67,7 +67,7 @@ configure_cloud(){
 
   ## Enable newrelic only for prod
   if [[ "${APP_MODE}" == "prod" ]] || [[ "${APP_MODE}" == "perf" ]]; then
-    $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_ENV --app api "dockerconf/newrelic.ini.j2"
+    $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app api "dockerconf/newrelic.ini.j2"
     cp dockerconf/newrelic.ini /etc/php7/conf.d/newrelic.ini
   fi
 }
