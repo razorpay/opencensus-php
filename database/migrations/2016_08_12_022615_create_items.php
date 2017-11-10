@@ -34,7 +34,8 @@ class CreateItems extends Migration
             $table->string(Entity::DESCRIPTION, 2048)
                   ->nullable();
 
-            $table->integer(Entity::AMOUNT);
+            $table->integer(Entity::AMOUNT)
+                  ->unsigned();
 
             $table->char(Entity::CURRENCY, 3);
 

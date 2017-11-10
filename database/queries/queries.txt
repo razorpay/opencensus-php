@@ -2604,3 +2604,24 @@ ALTER TABLE daily_settlements
 
 ALTER TABLE bank_transfers
     MODIFY COLUMN payer_account varchar(40) NOT NULL;
+
+#
+# Makes amount field of items, line_items, invoices unsigned and not null in
+# consistence with payment, orders and other tables.
+#
+# Some new amount fields were added later with default null but now they should
+# be not null.
+#
+
+ALTER TABLE items
+    MODIFY COLUMN amount INT(11) UNSIGNED NOT NULL;
+
+ALTER TABLE line_items
+    MODIFY COLUMN amount INT(11) UNSIGNED NOT NULL,
+    MODIFY COLUMN gross_amount INT(11) UNSIGNED NOT NULL,
+    MODIFY COLUMN tax_amount INT(11) UNSIGNED NOT NULL,
+    MODIFY COLUMN net_amount INT(11) UNSIGNED NOT NULL;
+
+ALTER TABLE invoices
+    MODIFY COLUMN gross_amount INT(11) UNSIGNED DEFAULT NULL,
+    MODIFY COLUMN tax_amount INT(11) UNSIGNED DEFAULT NULL;

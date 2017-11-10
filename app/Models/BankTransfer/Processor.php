@@ -541,12 +541,11 @@ class Processor extends Base\Core
     {
         $account = $bankTransfer->getPayerAccount();
 
-        if (empty($account) === true)
-        {
-            return null;
-        }
+        $account = preg_replace('/[^a-zA-Z0-9]+/', '', $account);
 
-        return preg_replace('/[^a-zA-Z0-9]+/', '', $account);
+        $account = BankCodes::modifyPayerAccountIfNeeded($account, $bankTransfer);
+
+        return $account;
     }
 
     /**
