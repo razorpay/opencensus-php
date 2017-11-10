@@ -125,6 +125,7 @@ class Entity
     const UPI_NPCI               = 'upi_npci';
     const AXIS_MIGS              = 'axis_migs';
     const FIRST_DATA             = 'first_data';
+    const FSS                    = 'fss';
     const AXIS_GENIUS            = 'axis_genius';
     const NETBANKING             = 'netbanking';
     const CYBERSOURCE            = 'cybersource';
@@ -230,6 +231,7 @@ class Entity
         self::NETBANKING             => \RZP\Gateway\Netbanking\Base::class,
         self::AXIS_GENIUS            => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE            => \RZP\Gateway\Cybersource::class,
+        self::FSS                    => \RZP\Gateway\FSS::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Payzapp::class,
         self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Olamoney::class,
         self::WALLET_JIOMONEY        => \RZP\Gateway\Wallet\Jiomoney::class,
