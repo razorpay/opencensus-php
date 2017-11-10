@@ -871,7 +871,6 @@ final class Route
         'device_customer_fetch',
     ];
 
-    // TODO: Remove this group, routes and it's handling from BasicAuth later
     public static $publicCallback = [
         'payment_callback_with_key_post',
         'payment_callback_with_key_get',
@@ -2432,11 +2431,17 @@ final class Route
         return $schema . $host . $urlSegment;
     }
 
-    public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '', $route = 'payment_callback_post')
+    public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '', $route = 'payment_callback_with_key_post')
     {
         if ($key === '')
         {
             $key = $this->ba->getPublicKey();
+        }
+
+        if (($key === '') and
+            (in_array($route, self::$publicCallback, true) === true))
+        {
+            $route = str_replace('with_key_', '', $route);
         }
 
         $url = $this->getUrl($route, $parameters, $key);
@@ -2457,7 +2462,7 @@ final class Route
 
         $parameters = ['id' => $pid, 'hash' => $hash];
 
-        return $this->getUrl('payment_callback_post', $parameters, $key);
+        return $this->getUrlWithPublicCallbackAuth($parameters);
     }
 
     public function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
