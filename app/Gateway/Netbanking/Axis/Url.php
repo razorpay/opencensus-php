@@ -10,8 +10,7 @@ class Url
 
     const EMANDATE_TEST_DOMAIN    = 'https://uat-etendering.axisbank.co.in/index.php/api';
 
-    // TODO: Change to live URL
-    const EMANDATE_LIVE_DOMAIN    = 'https://uat-etendering.axisbank.co.in/index.php/api';
+    const EMANDATE_LIVE_DOMAIN    = 'https://easypay.axisbank.co.in/index.php/api';
 
     const AUTHORIZE_RETAIL        = 'wps/portal/rBanking/AxisSMRetailLogin/axissmretailpage?AuthenticationFG.MENU_ID=CIMSHP&AuthenticationFG.CALL_MODE=2&CATEGORY_ID=IRCSM';
 
