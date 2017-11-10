@@ -182,7 +182,7 @@ class Base extends BaseModel\Core
         }
         catch (\Throwable $e)
         {
-            $this->handleBatchProcessingException($ex);
+            $this->handleBatchProcessingException($e);
         }
         finally
         {
@@ -782,7 +782,7 @@ class Base extends BaseModel\Core
      *
      * @param \Throwable $e Exception encountered while processing the batch
      */
-    protected function handleBatchProcessingException(\Throwable $e)
+    protected function handleBatchProcessingException(\Throwable $ex)
     {
         $this->trace->traceException(
             $ex,
@@ -790,7 +790,7 @@ class Base extends BaseModel\Core
             TraceCode::BATCH_FILE_PROCESSING_ERROR,
             [
                 Batch\Entity::ID   => $this->batch->getId(),
-                Batch\Entity::Type => $this->batch->getType(),
+                Batch\Entity::TYPE => $this->batch->getType(),
             ]);
 
         //
