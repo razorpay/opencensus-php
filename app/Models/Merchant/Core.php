@@ -519,6 +519,7 @@ class Core extends Base\Core
             $body = 'Settlement Processed<br />';
             $body = $body . 'Total Amount : Rs.' . number_format($payout->getAmount() / 100, 2, '.', '') . '<br />';
             $body = $body . 'UTR : ' . $payout->getUtr() . '<br />';
+            $body = $body . 'Bank Account Number :' . $merchant->bankAccount->getAccountNumber() . '<br />';
 
             $mailData = ['body'  =>  $body];
 
