@@ -192,7 +192,7 @@ class ReconciliationFileTest extends TestCase
         $entries[0][HDFCPaymentRecon::COLUMN_ARN[0]] .= str_random(2);
 
         $file = $this->writeToExcelFile($entries, 'fss');
-        $this->runForFiles([$file], 'HDFC', ['arn']);
+        $this->runForFiles([$file], 'HDFC', ['refund_arn']);
 
         $updatedRefund1 = $this->getEntityById('refund', $refund1['id'], true);
 

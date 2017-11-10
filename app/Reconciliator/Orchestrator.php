@@ -9,7 +9,6 @@ use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Base\JitValidator;
 use RZP\Base\RuntimeManager;
 use RZP\Models\FileStore\Format;
 use Razorpay\Trace\Logger as Trace;
@@ -118,6 +117,15 @@ class Orchestrator extends Base\Core
      */
     const LINK_BASED_BANKS = [
         self::FREECHARGE,
+    ];
+
+    /*
+     *  These field can be force updated with passed with request
+     */
+    const REFUND_ARN = 'refund_arn';
+
+    const ALLOWED_FORCE_UPDATE = [
+        self::REFUND_ARN
     ];
 
     /*********************
@@ -495,25 +503,13 @@ class Orchestrator extends Base\Core
      */
     protected function getManualInputDetails(array $input)
     {
-        $inputDetailsRules = [
-            self::ATTACHMENT_COUNT    => 'required|integer|min:0|max:10',
-            self::GATEWAY             => 'required|in:' . implode(',', array_keys(self::GATEWAY_SENDER_MAPPING)),
-            self::FORCE_UPDATE        => 'sometimes|array',
-            self::FORCE_UPDATE . '.*' => 'sometimes|in:arn'
-        ];
-
         $inputDetails = [
             self::ATTACHMENT_COUNT => $input['attachment-count'],
             self::GATEWAY          => $input['gateway'],
             self::FORCE_UPDATE     => $input['force_update'] ?? []
         ];
 
-        (new Validator)->validateInput('inputDetails');
-
-        (new JitValidator)->rules($inputDetailsRules)
-                          ->caller($this)
-                          ->input($inputDetails)
-                          ->validate();
+        (new Validator)->validateManualInput($inputDetails);
 
         return $inputDetails;
     }

@@ -64,7 +64,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      */
     public function startReconciliation($fileContents)
     {
-        $this->extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
+        $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
         unset($fileContents[Orchestrator::EXTRA_DETAILS]);
 
         foreach ($fileContents as $row)
@@ -464,7 +464,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                 //   raise an alert and return.
                 // - If force update enabled, let recon
                 //
-                if ($this->shouldForceUpdate(BaseReconciliate::ARN) === false)
+                if ($this->shouldForceUpdate(Orchestrator::REFUND_ARN) === false)
                 {
                     $this->messenger->raiseReconAlert(
                         [
