@@ -2,12 +2,22 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking\Axis\EMandate;
 
+use Carbon\Carbon;
+use  Mail;
+
 use RZP\Constants\Entity;
+use RZP\Mail\Gateway\EMandate\Base as Email;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking\Axis\Emandate;
+use RZP\Mail\Gateway\EMandate\Constants as EmailConstants;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
+use RZP\Models\Customer\Token;
+use RZP\Models\FileStore\Type;
+use RZP\Models\Gateway\File;
+use RZP\Models\Payment;
+use RZP\Models\FileStore\Format;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Customer\Token;
 
 class NetbankingAxisEMandateTest extends TestCase
 {
@@ -127,6 +137,76 @@ class NetbankingAxisEMandateTest extends TestCase
         });
     }
 
+    public function testEmandateDebit()
+    {
+        $payment = $this->payment;
+
+        $this->doAuthPayment($payment);
+
+        $token = $this->getLastEntity('token', true);
+
+        $payment[Payment\Entity::TOKEN] = $token['id'];
+
+        $this->doS2SRecurringPayment($payment);
+
+        $debitPayment = $this->getLastEntity('payment', true);
+
+        $this->ba->appAuth();
+
+        Mail::fake();
+
+        $content = $this->startTest();
+
+        $this->assertEquals(1, count($content['items']));
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => Type::AXIS_EMANDATE_DEBIT,
+            'entity_type' => Entity::GATEWAY_FILE,
+            'entity_id'   => $content['id'],
+            'extension'   => Format::CSV,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        // Verify gateway payment entity
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'matchAuthGatewayPayment');
+
+        $debitPaymentId = substr($debitPayment['id'], 4);
+
+        $this->assertEquals($gatewayPayment['payment_id'], $debitPaymentId);
+        $this->assertEquals($gatewayPayment['amount'], $debitPayment['amount']);
+
+        Mail::assertSent(Email::class, function ($mail) use ($file)
+        {
+            $key = Payment\Gateway::NETBANKING_AXIS . '_debit';
+
+            $today = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+            $expectedSubj = EmailConstants::SUBJECT_MAP[$key] . $today;
+
+            $this->assertEquals($expectedSubj, $mail->subject);
+
+            $this->assertNotNull($mail->viewData['file_name']);
+            $this->assertNotNull($mail->viewData['signed_url']);
+            $this->assertEquals(EmailConstants::BODY_MAP[$key], $mail->viewData['body']);
+
+            $this->assertNotEmpty($mail->attachments);
+
+            return ($mail->hasFrom('emandate@razorpay.com') and
+                ($mail->hasTo(EmailConstants::RECIPIENT_EMAILS_MAP[$key])));
+        });
+    }
 
     protected function assertEmandateEntities()
     {

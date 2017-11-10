@@ -122,7 +122,7 @@ class Job extends BaseJob implements ShouldQueue
 
     protected function handleUpdated()
     {
-        $pdfPath = $this->core->createInvoicePdf($this->invoice);
+        $pdfPath = $this->core->createInvoicePdfAndGetFilePath($this->invoice);
 
         return (new Invoice\Notifier($this->invoice, $pdfPath))
                     ->notifyInvoiceIssuedToCustomer();
@@ -130,7 +130,7 @@ class Job extends BaseJob implements ShouldQueue
 
     protected function handleIssued()
     {
-        $pdfPath = $this->core->createInvoicePdf($this->invoice);
+        $pdfPath = $this->core->createInvoicePdfAndGetFilePath($this->invoice);
 
         return (new Invoice\Notifier($this->invoice, $pdfPath))
                     ->notifyInvoiceIssuedToCustomer();

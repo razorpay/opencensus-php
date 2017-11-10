@@ -114,6 +114,7 @@ class BankTransferTest extends TestCase
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals('initiated', $attempt['status']);
+        $this->assertEquals('NEFT', $attempt['mode']);
     }
 
     public function testBankTransferImps()
@@ -593,6 +594,43 @@ class BankTransferTest extends TestCase
         });
     }
 
+    public function testBankTransferImpsFromRogueBankStripAccount()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['payee_account'] = $accountNumber;
+
+        $request['content']['payee_ifsc'] = $ifsc;
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals('00000000000123456', $bankTransfer['payer_account']);
+        $this->assertEquals('IMPS', $bankTransfer['mode']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        // Customer bank account created, but with the zeroes stripped
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertEquals('CNRB0000002', $bankAccount['ifsc']);
+        $this->assertEquals('123456', $bankAccount['account_number']);
+        $this->assertEquals('Name of account holder', $bankAccount['name']);
+    }
+
     public function testBankTransferSpecialCharsInAccNumber()
     {
         $accountNumber = $this->bankAccount['account_number'];
@@ -650,7 +688,7 @@ class BankTransferTest extends TestCase
 
         // Customer bank account created
         $bankAccount = $this->getLastEntity('bank_account', true);
-        $this->assertEquals('CNRB0000002', $bankAccount['ifsc']);
+        $this->assertNull($bankAccount['ifsc']);
         $this->assertEquals('00000000000123456', $bankAccount['account_number']);
 
         $response = $this->makeRequestAndGetContent([
@@ -661,7 +699,7 @@ class BankTransferTest extends TestCase
         $this->assertContains($bankTransfer['id'], $response);
 
         $bankAccount = $this->getLastEntity('bank_account', true);
-        $this->assertEquals('CNRB0000002', $bankAccount['ifsc']);
+        $this->assertNull($bankAccount['ifsc']);
         $this->assertEquals('123456', $bankAccount['account_number']);
     }
 

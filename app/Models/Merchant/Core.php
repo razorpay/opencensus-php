@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use ApiResponse;
 use Config;
+use Mail;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
@@ -22,6 +23,7 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Transaction;
 use RZP\Models\User;
 use RZP\Trace\TraceCode;
+use RZP\Mail\Payout\Payout as PayoutMail;
 
 class Core extends Base\Core
 {
@@ -464,21 +466,26 @@ class Core extends Base\Core
 
         $merchant->getValidator()->validateInput($type, $input);
 
-        $batches  = [];
+        $batches = $this->repo->transaction(function() use ($input, $type, $merchant)
+                   {
+                        $batches = [];
 
-        foreach ($input as $key => $file)
-        {
-            $batchType =  $type . '_' . $key;
+                        foreach ($input as $key => $file)
+                        {
+                            $batchType =  $type . '_' . $key;
 
-            $params = [
-                Batch\Entity::FILE        => $file,
-                Batch\Entity::TYPE        => $batchType
-            ];
+                            $params = [
+                                Batch\Entity::FILE        => $file,
+                                Batch\Entity::TYPE        => $batchType
+                            ];
 
-            $batch = (new Batch\Core)->create($params, $merchant);
+                            $batch = (new Batch\Core)->create($params, $merchant);
 
-            $batches[$batchType] = $batch->getId();
-        }
+                            $batches[$batchType] = $batch->getId();
+                        }
+
+                        return $batches;
+                    });
 
         $class = 'RZP\\Jobs\\' . studly_case($type) . 'Batch';
 
@@ -487,6 +494,48 @@ class Core extends Base\Core
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
 
         return $batches;
+    }
+
+    public function sendPayoutMail(Entity $merchant, int $from, int $to, string $email)
+    {
+        $payouts = $this->repo->payout->fetchProcessedPayouts($from, $to, $merchant->getId());
+
+        $recipients = $merchant->getTransactionReportEmail();
+
+        if (empty($email) === false)
+        {
+            array_push($recipients, $email);
+        }
+
+        $processed = false;
+
+        foreach ($payouts as $payout)
+        {
+            $body = 'Settlement Processed<br />';
+            $body = $body . 'Total Amount : Rs.' . number_format($payout->getAmount() / 100, 2, '.', '') . '<br />';
+
+            if (empty($payout->getUtr()) === false)
+            {
+                $body = $body . 'UTR : ' . $payout->getUtr() . '<br />';
+            }
+
+            if (empty($merchant->bankAccount) === false)
+            {
+                $body = $body . 'Bank Account Number :' . $merchant->bankAccount->getAccountNumber() . '<br />';
+            }
+
+            $mailData = ['body'  =>  $body];
+
+            $payoutMail = new PayoutMail(
+                $mailData,
+                $recipients);
+
+            Mail::queue($payoutMail);
+
+            $processed = true;
+        }
+
+        return $processed;
     }
 
     /**

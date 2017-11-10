@@ -132,6 +132,9 @@ class Entity extends Base\PublicEntity
         self::GLOBAL_CARD_ID    => null,
         self::VAULT             => null,
         self::VAULT_TOKEN       => null,
+        self::ISSUER            => null,
+        self::COUNTRY           => null,
+        self::TRIVIA            => null,
     ];
 
     public function merchant()

@@ -2,9 +2,10 @@
 
 namespace RZP\Models\BankTransfer;
 
+use Razorpay\IFSC\IFSC;
+
 use RZP\Constants;
 use RZP\Models\Base;
-use Razorpay\IFSC\IFSC;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;

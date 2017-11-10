@@ -4,6 +4,8 @@ namespace RZP\Models\BankTransfer;
 
 use App;
 
+use RZP\Models\Bank\IFSC;
+
 class BankCodes
 {
     //
@@ -95,6 +97,14 @@ class BankCodes
         'YBL'   => self::IFSC_YESB,
     ];
 
+    const STRIP_LEADING_ZEROES_BANKS_IMPS = [
+        'CNB'
+    ];
+
+    const STRIP_LEADING_ZEROES_BANKS_NEFT = [
+        IFSC::CNRB,
+    ];
+
     public static function getIfscForBankCode(string $bankCode)
     {
         $ifsc = self::CODE_TO_IFSC_MAPPING[$bankCode] ?? null;
@@ -125,5 +135,39 @@ class BankCodes
         }
 
         return $ifsc;
+    }
+
+    /**
+     * Some banks send account number is an altered form, eg. there may be leading
+     * zeroes. These need to be removed before creating the bank account entity.
+     *
+     * Identify the bank requires us to check Payer IFSC. If it's IMPS, it's not
+     * actually an IFSC, it's one of the bank codes given above. Check both.
+     *
+     * @param  string $account
+     * @param  Entity $bankTransfer
+     * @return string $account
+     */
+    public static function modifyPayerAccountIfNeeded(string $account, Entity $bankTransfer)
+    {
+        $ifsc = $bankTransfer->getPayerIfsc();
+
+        $haystack = self::STRIP_LEADING_ZEROES_BANKS_NEFT;
+
+        $needle = substr($ifsc, 0, 4);
+
+        if ($bankTransfer->getMode() === Mode::IMPS)
+        {
+            $haystack = self::STRIP_LEADING_ZEROES_BANKS_IMPS;
+
+            $needle = substr($ifsc, 0, -10);
+        }
+
+        if (in_array($needle, $haystack, true) === true)
+        {
+            $account = ltrim($account, '0');
+        }
+
+        return $account;
     }
 }

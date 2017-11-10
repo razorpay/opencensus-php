@@ -63,7 +63,7 @@ class IrctcRefund extends Base
                 Payment\Entity::CURRENCY    => $payment->getCurrency()
             ];
 
-            $paymentProcessor->capture($payment, $params);
+            $payment = $paymentProcessor->capture($payment, $params);
         }
 
         $input = $this->getRefundParams($entry);

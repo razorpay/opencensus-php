@@ -207,6 +207,7 @@ final class Route
         'merchant_activation_update'              => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
         'merchant_activation_migrate'             => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'merchant_batches'                        => ['post',     'merchant/{id}/batches',                          'MerchantController@createBatches'                                  ],
+        'merchant_payout_mail'                    => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
         'pricing_get_plans'                       => ['get',      'pricing',                                        'PricingController@getPricingPlans'                                 ],
         'pricing_get_merchant_plans'              => ['get',      'pricing/merchants',                              'PricingController@getMerchantPricingPlans'                         ],
@@ -384,7 +385,8 @@ final class Route
         'otp_verify'                              => ['post',     'otp/verify',                                     'CustomerController@verifyOtp'                                      ],
         'otp_verify_app'                          => ['post',     'otp/verify/app',                                 'CustomerController@verifyOtpApp'                                   ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                              'CustomerController@updateSmsStatus'                                ],
-        'es_debug_read'                           => ['post',     'es/debug/{method}',                              'EsController@debug'                                                ],
+        'es_debug_get'                            => ['post',     'es/debug/{method}',                              'EsController@debug'                                                ],
+        'es_aliases_post'                         => ['post',     'es/aliases',                                     'EsController@postAliases'                                          ],
         'gateway_add_priorities'                  => ['post',     'gateway/priorities/{method}',                    'GatewayController@createGatewayPriority'                           ],
         'gateway_fetch_priorities'                => ['get',      'gateway/priorities',                             'GatewayController@getGatewayPriority'                              ],
         'gateway_update_priorities'               => ['patch',    'gateway/priorities/{method}/add',                'GatewayController@addOrUpdateGatewayPriority'                      ],
@@ -656,8 +658,6 @@ final class Route
         'onboarding_features_fetch_submissions'   => ['get',      'onboarding/features/submissions',                'FeatureController@getFeatureOnboardingRequests'                    ],
         'onboarding_features_update_status'       => ['put',      'onboarding/features/{feature}/status',           'FeatureController@updateFeatureActivationStatus'                   ],
         'onboarding_features_fetch_status'        => ['get',      'onboarding/features/{feature}/status',           'FeatureController@getFeatureActivationStatus'                      ],
-        'onboarding_features_backfill_status'     => ['post',     'onboarding/features/backfill',                   'FeatureController@backfillFeatureActivationStatus'                 ],
-
 
         // Deprecated routes - maintaining for BC - Remove after dashboard changes
         'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                   'FeatureController@postOnboardingSubmissions'                       ],
@@ -972,7 +972,8 @@ final class Route
         'emi_generate_excel',
         'refund_verify',
         'payment_capture_verify',
-        'es_debug_read',
+        'es_debug_get',
+        'es_aliases_post',
         'dummy_critical_error',
         'reconciliate',
         'credits_create',
@@ -1091,7 +1092,7 @@ final class Route
         'emandate_debit_reconcile',
         'user_reset_password_create',
         'user_reset_password_token',
-        'onboarding_features_backfill_status'
+        'merchant_payout_mail',
     ];
 
     public static $proxy = [
@@ -1497,6 +1498,7 @@ final class Route
             'merchant_payout',
             'gateway_file_create',
             'reports_refund_irctc',
+            'merchant_payout_mail',
         ],
 
         'kotak' => [

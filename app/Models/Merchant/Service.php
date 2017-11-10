@@ -1245,6 +1245,66 @@ class Service extends Base\Service
         return $batches;
     }
 
+    public function sendPayoutMailForMultipleMerchants(array $input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_PAYOUT_NOTIFICATION_REQUEST,
+            $input
+        );
+
+        (new Validator)->validateInput('payout_mail', $input);
+
+        $merchantsData = $input['content'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantsData as $merchantData)
+        {
+            try
+            {
+                $merchantId = $merchantData['merchant_id'];
+
+                $email = $merchantData['email'] ?? null;
+
+                $processed = $this->sendPayoutMail($merchantId, $email);
+
+                if ($processed === true)
+                {
+                    $successCount++;
+                }
+                else
+                {
+                    $failedCount++;
+
+                    $failedIds[] = $merchantId;
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response['total'] = count($merchantsData);
+        $response['success'] = $successCount;
+        $response['failed'] = $failedCount;
+        $response['failedIds'] = $failedIds;
+
+        $this->trace->info(
+            TraceCode::MERCHANT_PAYOUT_NOTIFICATION_RESPONSE,
+            $response
+        );
+
+        return $response;
+
+    }
+
     /**
      * Return all submerchants of the master merchant (for aggregator model only)
      *
@@ -1262,6 +1322,26 @@ class Service extends Base\Service
         $merchants = $this->fetchReferredMerchants();
 
         return array_merge([$merchantId], $merchants->pluck('id')->toArray());
+    }
+
+
+    protected function sendPayoutMail(string $merchantId, string $email = null)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        list($from, $to) = $this->getTimestamps();
+
+        $processed = $this->core()->sendPayoutMail($merchant, $from, $to, $email);
+
+        return $processed;
+    }
+
+    private function getTimestamps()
+    {
+        $from = Carbon::today(Timezone::IST)->getTimestamp();
+        $to = Carbon::tomorrow(Timezone::IST)->getTimestamp() - 1;
+
+        return [$from, $to];
     }
 
     /**
