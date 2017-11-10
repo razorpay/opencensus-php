@@ -158,6 +158,9 @@ class ReconciliationTest extends TestCase
 
         // Resetting time
         Carbon::setTestNow();
+        
+        // Resetting merchant
+        $this->fixtures->merchant->holdFunds(Account::TEST_ACCOUNT, false);
 
         Mail::assertSent(SettlementFailureMail::class);
 
