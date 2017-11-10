@@ -800,6 +800,8 @@ final class Route
         'payment_cancel',
         'payment_add_metadata',
         'payment_get_status',
+        'payment_callback_post',
+        'payment_callback_get',
         'invoice_get_status',
         'invoice_send_notification',
         'invoice_get_pdf',
@@ -869,6 +871,7 @@ final class Route
         'device_customer_fetch',
     ];
 
+    // TODO: Remove this group, routes and it's handling from BasicAuth later
     public static $publicCallback = [
         'payment_callback_with_key_post',
         'payment_callback_with_key_get',
@@ -2429,7 +2432,7 @@ final class Route
         return $schema . $host . $urlSegment;
     }
 
-    public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '', $route = 'payment_callback_with_key_post')
+    public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '', $route = 'payment_callback_post')
     {
         if ($key === '')
         {
@@ -2454,7 +2457,7 @@ final class Route
 
         $parameters = ['id' => $pid, 'hash' => $hash];
 
-        return $this->getUrl('payment_callback_with_key_post', $parameters, $key);
+        return $this->getUrl('payment_callback_post', $parameters, $key);
     }
 
     public function getUrlWithAuth($relativeUrl, $key = '', $secret = '')

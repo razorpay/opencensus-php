@@ -46,7 +46,7 @@ use RZP\Models\User\Entity as User;
  */
 class BasicAuth
 {
-    const HMAC_ALGO = 'sha256';
+    const HMAC_ALGO               = 'sha256';
 
     /**
      * To support Account Auth: Allows API requests to be served under the
@@ -56,14 +56,14 @@ class BasicAuth
      * On admin auth                    - set to any merchant under the current org
      * For private auth (marketplace)   - set to any linked account under the merchant
      */
-    const ACCOUNT_HEADER_KEY = 'X-Razorpay-Account';
+    const ACCOUNT_HEADER_KEY      = 'X-Razorpay-Account';
 
     /**
      * Dashboard headers are prefixed with following literal.
      */
     const DASHBOARD_HEADER_PREFIX = 'x-dashboard';
 
-    const ADMIN_TOKEN_HEADER = 'X-Admin-Token';
+    const ADMIN_TOKEN_HEADER      = 'X-Admin-Token';
 
     /**
      * The application instance.
@@ -402,11 +402,17 @@ class BasicAuth
     {
         $this->setType(Type::PUBLIC_AUTH);
 
-        $key = $this->request->input('key_id');
+        $hasKeyInQueryParams = $this->request->has('key_id');
+        $hasKeyInBasicAuth   = $this->request->getUser() !== null;
 
-        if ($key === null)
+        if (($hasKeyInQueryParams === false) and
+            ($hasKeyInBasicAuth === false))
         {
-            $res = $this->setCredentials();
+            return $this->keylessPublicAuth();
+        }
+        else if ($hasKeyInQueryParams === true)
+        {
+            $res = $this->setKeyFromQueryParams();
 
             if ($res !== null)
             {
@@ -415,7 +421,7 @@ class BasicAuth
         }
         else
         {
-            $res = $this->setKeyFromQueryParams();
+            $res = $this->setCredentials();
 
             if ($res !== null)
             {
@@ -438,6 +444,44 @@ class BasicAuth
         }
 
         $this->fetchMerchantOfKey($this->key);
+    }
+
+    /**
+     * If key was not provided we try to check if there is any
+     * identifier in request input with which we can set merchant
+     * instance variable.
+     *
+     * Also mode is expected in header or query parameter else defaults to live.
+     *
+     * If we're not able to retrieve merchant then we just throw 401 which
+     * would have happened otherwise.
+     */
+    public function keylessPublicAuth()
+    {
+        //
+        // TODOs (To discuss):
+        // - If we should have a group $publicKeyless which is subset
+        //   of $public in Route and do the check here OR just let the flow be
+        //   for all $public routes?
+        // - If we should try to detect mode as fallback from identifiers by
+        //   querying both databases or just fallback on live mode if same not
+        //   provided in query parameter or header?
+        //
+
+        $handler = new KeylessPublicAuth;
+
+        $mode = $handler->retrieveMode();
+
+        $this->setModeAndDbConnection($mode);
+
+        $merchant = $handler->retrieveMerchant();
+
+        if (is_null($merchant) === true)
+        {
+            return ApiResponse::httpAuthExpected();
+        }
+
+        $this->setMerchant($merchant);
     }
 
     public function directAuth()
@@ -1103,6 +1147,8 @@ class BasicAuth
 
     public function setMode(string $mode)
     {
+        Mode::validate($mode);
+
         $this->mode = $mode;
         $this->app['rzp.mode'] = $mode;
     }

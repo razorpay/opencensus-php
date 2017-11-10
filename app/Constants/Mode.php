@@ -2,6 +2,8 @@
 
 namespace RZP\Constants;
 
+use RZP\Exception\LogicException;
+
 class Mode
 {
     const TEST = 'test';
@@ -9,6 +11,25 @@ class Mode
 
     public static function exists(string $mode = null): bool
     {
-        return defined(get_class() . '::' . strtoupper($mode));
+        $key = __CLASS__ . '::' . strtoupper($mode);
+
+        return ((defined($key) === true) and (constant($key) === $mode));
+    }
+
+    /**
+     * Throws LogicException instead of BadRequestException. Reason being this
+     * enum class unline others is used internally only and so throwing former
+     * exception is more correct.
+     *
+     * @param string $mode
+     *
+     * @throws LogicException
+     */
+    public static function validate(string $mode)
+    {
+        if (self::exists($mode) === false)
+        {
+            throw new LogicException("Invalid mode: $mode");
+        }
     }
 }
