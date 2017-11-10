@@ -34,7 +34,7 @@ class Payout extends Mailable
 
     protected function addSubject()
     {
-        $this->subject('Payout Successfully Processed');
+        $this->subject('Settlement Successfully Processed');
 
         return $this;
     }
