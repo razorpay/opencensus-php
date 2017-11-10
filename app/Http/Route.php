@@ -658,8 +658,6 @@ final class Route
         'onboarding_features_fetch_submissions'   => ['get',      'onboarding/features/submissions',                'FeatureController@getFeatureOnboardingRequests'                    ],
         'onboarding_features_update_status'       => ['put',      'onboarding/features/{feature}/status',           'FeatureController@updateFeatureActivationStatus'                   ],
         'onboarding_features_fetch_status'        => ['get',      'onboarding/features/{feature}/status',           'FeatureController@getFeatureActivationStatus'                      ],
-        'onboarding_features_backfill_status'     => ['post',     'onboarding/features/backfill',                   'FeatureController@backfillFeatureActivationStatus'                 ],
-
 
         // Deprecated routes - maintaining for BC - Remove after dashboard changes
         'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                   'FeatureController@postOnboardingSubmissions'                       ],
@@ -1094,8 +1092,7 @@ final class Route
         'emandate_debit_reconcile',
         'user_reset_password_create',
         'user_reset_password_token',
-        'onboarding_features_backfill_status',
-        'merchant_payout_mail'
+        'merchant_payout_mail',
     ];
 
     public static $proxy = [
