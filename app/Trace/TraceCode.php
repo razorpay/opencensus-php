@@ -570,6 +570,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_TRANSFER_PROVIDER_VALIDATION_FAILED  = 'BANK_TRANSFER_PROVIDER_VALIDATION_FAILED';
     const BANK_TRANSFER_IFSC_CODE_MISSING           = 'BANK_TRANSFER_IFSC_CODE_MISSING';
     const BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED   = 'BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED';
+    const BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED  = 'BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';
@@ -658,10 +659,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HARVESTER_FAILURE                         = 'HARVESTER_FAILURE';
 
     // ES related trace codes
-    const ES_CAT_RESPONSE                           = 'ES_CAT_RESPONSE';
-    const ES_MAPPING_RESPONSE                       = 'ES_MAPPING_RESPONSE';
-    const ES_SETTINGS_RESPONSE                      = 'ES_SETTINGS_RESPONSE';
+    const ES_DEBUG_RESPONSE                         = 'ES_DEBUG_RESPONSE';
     const ES_DEBUG_FAILED                           = 'ES_DEBUG_FAILED';
+    const ES_ALIASES_WRITE_OP_REQUEST               = 'ES_ALIASES_WRITE_OP_REQUEST';
+    const ES_ALIASES_WRITE_OP_FAILED                = 'ES_ALIASES_WRITE_OP_FAILED';
+    const ES_ALIASES_WRITE_OP_RESPONSE              = 'ES_ALIASES_WRITE_OP_RESPONSE';
     const ES_SYNC_PUSH_PAYLOAD                      = 'ES_SYNC_PUSH_PAYLOAD';
     const ES_SYNC_PUSH_FAILED                       = 'ES_SYNC_PUSH_FAILED';
     const ES_SYNC_FAILED                            = 'ES_SYNC_FAILED';
@@ -921,6 +923,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED         = 'FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED';
 
     const MAILCHIMP_JOB_ERROR                           = 'MAILCHIMP_JOB_ERROR';
+
+    // To log various debugs for a migrate command
+    const BATCH_MIGRATE_DEBUG                           = 'BATCH_MIGRATE_DEBUG';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

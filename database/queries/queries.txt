@@ -2578,6 +2578,9 @@ ALTER TABLE merchant_details
 ALTER TABLE virtual_accounts
     ADD COLUMN qr_code_id CHAR(14) DEFAULT NULL after bank_account_id;
 
+ALTER TABLE fund_transfer_attempts
+	ADD mode VARCHAR(30) DEFAULT NULL AFTER bank_status_code;
+
 ALTER TABLE gateway_files
     ADD COLUMN processing TINYINT(1) NOT NULL DEFAULT 0 AFTER status;
 
@@ -2598,3 +2601,27 @@ ALTER TABLE transfers
 
 ALTER TABLE daily_settlements
     DROP COLUMN service_tax;
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN payer_account varchar(40) NOT NULL;
+
+#
+# Makes amount field of items, line_items, invoices unsigned and not null in
+# consistence with payment, orders and other tables.
+#
+# Some new amount fields were added later with default null but now they should
+# be not null.
+#
+
+ALTER TABLE items
+    MODIFY COLUMN amount INT(11) UNSIGNED NOT NULL;
+
+ALTER TABLE line_items
+    MODIFY COLUMN amount INT(11) UNSIGNED NOT NULL,
+    MODIFY COLUMN gross_amount INT(11) UNSIGNED NOT NULL,
+    MODIFY COLUMN tax_amount INT(11) UNSIGNED NOT NULL,
+    MODIFY COLUMN net_amount INT(11) UNSIGNED NOT NULL;
+
+ALTER TABLE invoices
+    MODIFY COLUMN gross_amount INT(11) UNSIGNED DEFAULT NULL,
+    MODIFY COLUMN tax_amount INT(11) UNSIGNED DEFAULT NULL;
