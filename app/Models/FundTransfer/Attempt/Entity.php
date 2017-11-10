@@ -2,9 +2,10 @@
 
 namespace RZP\Models\FundTransfer\Attempt;
 
-use RZP\Constants\Entity as E;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
+use RZP\Constants\Entity as E;
 
 class Entity extends Base\PublicEntity
 {

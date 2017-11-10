@@ -78,14 +78,25 @@ class Core extends Base\Core
      * Sends a webhook to the merchant for successfully settled payments
      *
      * @param Entity $settlement
-     * @param array  $transactions
      */
-    public function sendSettlementProcessedWebhook(Entity $settlement, array $transactions)
+    public function triggerSettlementWebhook(Entity $settlement)
     {
+        if ($this->shouldSendWebhook($settlement) === false)
+        {
+            return;
+        }
+
+        $paymentTxns = $this->getPaymentTransactions($settlement);
+
+        if (empty($paymentTxns) === true)
+        {
+            return;
+        }
+
         $eventPayload = [
             Entity::MAIN => $settlement,
             Entity::WITH => [
-                'transactions' => $transactions,
+                'transactions' => $paymentTxns,
             ]
         ];
 
@@ -96,5 +107,55 @@ class Core extends Base\Core
             [
                 'settlement_id' => $settlement->getId()
             ]);
+    }
+
+    /**
+     * Returns false,
+     *   if the settlement was not processed, or,
+     *   if the settlement was not made for a linked account.
+     *
+     * @param Entity $settlement
+     *
+     * @return bool
+     */
+    protected function shouldSendWebhook(Entity $settlement): bool
+    {
+        // Proceed only if the settlement has successfully processed
+        if ($settlement->isStatusProcessed() === false)
+        {
+            return false;
+        }
+
+        // Proceed only if the settlement was made to a linked account
+        if ($settlement->merchant->isLinkedAccount() === false)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns all the transactions of type payment that have been processed in the settlement
+     *
+     * @param Entity $settlement
+     *
+     * @return array
+     */
+    protected function getPaymentTransactions(Entity $settlement): array
+    {
+        $setlTxns = $settlement->setlTransactions;
+
+        $paymentTxns = [];
+
+        foreach ($setlTxns as $txn)
+        {
+            if ($txn->isTypePayment() === true)
+            {
+                $paymentTxns[] = $txn;
+            }
+        }
+
+        return $paymentTxns;
     }
 }
