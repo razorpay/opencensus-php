@@ -42,6 +42,8 @@ class MailTags
     const FAILED_TO_AUTHORIZED             = 'failed_to_authorized';
     const CARD_SAVING                      = 'card_saving';
 
+    const PAYOUT_SUCCESSFUL                = 'payout_successful';
+
     const INVOICE                          = 'invoice';
     const ECOD                             = 'ecod';
     const LINK                             = 'link';
