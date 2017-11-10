@@ -207,6 +207,7 @@ final class Route
         'merchant_activation_update'              => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
         'merchant_activation_migrate'             => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'merchant_batches'                        => ['post',     'merchant/{id}/batches',                          'MerchantController@createBatches'                                  ],
+        'merchant_payout_mail'                    => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
         'pricing_get_plans'                       => ['get',      'pricing',                                        'PricingController@getPricingPlans'                                 ],
         'pricing_get_merchant_plans'              => ['get',      'pricing/merchants',                              'PricingController@getMerchantPricingPlans'                         ],
@@ -1093,7 +1094,8 @@ final class Route
         'emandate_debit_reconcile',
         'user_reset_password_create',
         'user_reset_password_token',
-        'onboarding_features_backfill_status'
+        'onboarding_features_backfill_status',
+        'merchant_payout_mail'
     ];
 
     public static $proxy = [
@@ -1499,6 +1501,7 @@ final class Route
             'merchant_payout',
             'gateway_file_create',
             'reports_refund_irctc',
+            'merchant_payout_mail',
         ],
 
         'kotak' => [
