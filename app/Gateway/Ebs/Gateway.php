@@ -98,9 +98,7 @@ class Gateway extends Base\Gateway
 
         if ($this->checkForSharedTerminal($terminal) === false)
         {
-            $merchant = $input['merchant'];
-
-            $referer = $merchant->getWebsite();
+            $referer = $terminal->merchant->getWebsite();
         }
 
         $this->referer = $referer;
