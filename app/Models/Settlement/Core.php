@@ -88,16 +88,9 @@ class Core extends Base\Core
 
         $paymentTxns = $this->getPaymentTransactions($settlement);
 
-        if (empty($paymentTxns) === true)
-        {
-            return;
-        }
-
         $eventPayload = [
             Entity::MAIN => $settlement,
-            Entity::WITH => [
-                'transactions' => $paymentTxns,
-            ]
+            Entity::WITH => [ ]
         ];
 
         $this->app['events']->fire('api.settlement.processed', $eventPayload);

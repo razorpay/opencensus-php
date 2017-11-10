@@ -191,6 +191,13 @@ class Processor extends Base\Core
         return $summary;
     }
 
+    /**
+     * Reconciles the entity.
+     *
+     * @param $row
+     *
+     * @return array
+     */
     protected function reconcileEntity($row): array
     {
         $version = $this->getSettlementVersion($row);

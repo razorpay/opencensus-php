@@ -581,21 +581,13 @@ return [
             'entity'    => 'event',
             'event'     => 'settlement.processed',
             'contains' => [
-                'settlement',
-                'transactions'
+                'settlement'
             ],
             'payload' => [
                 'settlement' => [
                     'entity' => [
                         'entity' => 'settlement',
                         'amount' => 2500
-                    ]
-                ],
-                'transactions' => [
-                    [
-                        'type' => 'payment',
-                        'amount' => 2500,
-
                     ]
                 ]
             ],

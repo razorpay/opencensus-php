@@ -73,6 +73,15 @@ class RowProcessor extends BaseCore
         $this->dashboardUrl = $this->app['config']->get('applications.dashboard.url');
     }
 
+    /**
+     * Returns an array with the following 2 keys
+     * - entity
+     * - fire_webhook
+     *
+     * @param $reconciledAt
+     *
+     * @return array
+     */
     public function process($reconciledAt)
     {
         $this->reconciledAt = $reconciledAt;

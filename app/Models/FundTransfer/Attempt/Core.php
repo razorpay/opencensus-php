@@ -20,6 +20,7 @@ class Core extends Base\Core
     {
         foreach ($reconciledRows as $reconciledRow)
         {
+            // Entity could be of class Settlement, Refund etc
             $entity = $reconciledRow['entity'];
 
             $fireWebhook = $reconciledRow['fire_webhook'];
