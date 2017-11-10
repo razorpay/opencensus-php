@@ -239,3 +239,26 @@ export const getCustomerDisplayName = ({ name, contact, email }) => {
     ? ')'
     : ''}`;
 };
+
+export const getEMI = (principle, length, rate) => {
+  /*
+   * Calculates EMI given amount, interestRate and Number of months
+   *
+   * @param {Number} amount
+   * @param {Number} interestRate
+   * @param {Number} numMonths
+   *
+   * `amount` must be in paise , `interestRate` is a number
+   * representing the percentage and `numMonths` is positive integer >=1
+   */
+
+  if (!rate) {
+    return Math.ceil(principle / length);
+  }
+
+  rate /= 1200;
+
+  var multiplier = Math.pow(1 + rate, length);
+
+  return parseInt(principle * rate * multiplier / (multiplier - 1), 10);
+};
