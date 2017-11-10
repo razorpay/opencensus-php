@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
+import Amount from 'rzp/ui/Amount';
 import React from 'react';
 
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import Definition from 'rzp/ui/Definition';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { titleCase, getEMI } from 'rzp/utils/rzp-utils';
 
 /*
  * Design:
@@ -28,7 +29,7 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
       wallet: 'wallet',
       upi: 'vpa',
     },
-    cardDetails = card.details || {};
+    cardDetails = card || {};
 
   let el = null;
 
@@ -46,16 +47,18 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
             ? paymentMethodText + ' ' + titleCase(paymentMethod)
             : 'UPI'}
         </span>
-        {paymentMethod === 'upi' &&
-          <span>
-            {payment.vpa}
-          </span>}
+        {paymentMethod === 'upi' && <span>{payment.vpa}</span>}
       </Definition>
     );
   } else if (paymentMethod === 'card' || paymentMethod === 'emi') {
     if (Object.keys(card) === 0 || card.loading) {
       return <PlaceholderLoader />;
     }
+
+    const emiPlan = payment.emi_plan,
+      emi =
+        !!emiPlan &&
+        getEMI(payment.amount, emiPlan.duration, emiPlan.rate / 100);
 
     const cardTitle = (
         <span>
@@ -71,21 +74,21 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
             {cardDetails.issuer ? cardDetails.issuer + ', ' : ''}
             {cardDetails.network + ' ending '}
           </span>
-          <b>
-            {cardDetails.last4}
-          </b>
+          <b>{cardDetails.last4}</b>
         </span>
       ),
-      customer = (
+      customer = <span>Name on card - {cardDetails.name}</span>,
+      emiInfo = emi !== false && (
         <span>
-          Name on card - {cardDetails.name}
+          <span>{emiPlan.duration} Months EMI at</span>
+          <span> {emiPlan.rate / 100}%</span>
+          <span>
+            {' '}
+            (<Amount value={emi} />)
+          </span>
         </span>
       ),
-      cardId = (
-        <code>
-          {cardDetails.id}
-        </code>
-      );
+      cardId = <code>{cardDetails.id}</code>;
 
     el = (
       <ContentToggler>
@@ -94,6 +97,7 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
           {null}
           {cardInfo}
           {customer}
+          {emiInfo}
           {cardId}
         </Definition>
       </ContentToggler>
@@ -113,39 +117,39 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
             bankTransfer.virtual_account &&
             bankTransfer.virtual_account.description
           ) && <span>Virtual account description</span>}
-          {isDetailsLoading
-            ? <PlaceholderLoader />
-            : <div>
-                <div className="row m-b">
-                  <div className="col-sm-12">
-                    <Link
-                      to={`/virtualaccounts/${bankTransfer.virtual_account_id}`}
-                    >
-                      <code>
-                        {bankTransfer.virtual_account_id}
-                      </code>
-                    </Link>
-                  </div>
+          {isDetailsLoading ? (
+            <PlaceholderLoader />
+          ) : (
+            <div>
+              <div className="row m-b">
+                <div className="col-sm-12">
+                  <Link
+                    to={`/virtualaccounts/${bankTransfer.virtual_account_id}`}
+                  >
+                    <code>{bankTransfer.virtual_account_id}</code>
+                  </Link>
                 </div>
-                <div className="row">
-                  <div className="col-sm-4 col-xs-5">Payer Name:</div>
-                  <div className="col-sm-8 col-xs-7">
-                    {bankTransfer.payer_bank_account.name}
-                  </div>
+              </div>
+              <div className="row">
+                <div className="col-sm-4 col-xs-5">Payer Name:</div>
+                <div className="col-sm-8 col-xs-7">
+                  {bankTransfer.payer_bank_account.name}
                 </div>
-                <div className="row">
-                  <div className="col-sm-4 col-xs-5">Payer a/c:</div>
-                  <div className="col-sm-8 col-xs-7">
-                    {bankTransfer.payer_bank_account.account_number}
-                  </div>
+              </div>
+              <div className="row">
+                <div className="col-sm-4 col-xs-5">Payer a/c:</div>
+                <div className="col-sm-8 col-xs-7">
+                  {bankTransfer.payer_bank_account.account_number}
                 </div>
-                <div className="row">
-                  <div className="col-sm-4 col-xs-5">Payer IFSC:</div>
-                  <div className="col-sm-8 col-xs-7">
-                    {bankTransfer.payer_bank_account.ifsc}
-                  </div>
+              </div>
+              <div className="row">
+                <div className="col-sm-4 col-xs-5">Payer IFSC:</div>
+                <div className="col-sm-8 col-xs-7">
+                  {bankTransfer.payer_bank_account.ifsc}
                 </div>
-              </div>}
+              </div>
+            </div>
+          )}
         </Definition>
       </ContentToggler>
     );

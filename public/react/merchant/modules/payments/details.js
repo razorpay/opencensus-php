@@ -15,7 +15,7 @@ export const fetchItem = id => {
 
   return {
     type: PAYMENT_FETCH,
-    payload: payment.fetch(id),
+    payload: payment.fetch(id, {}, { expand: ['card', 'emi_plan'] }),
   };
 };
 
