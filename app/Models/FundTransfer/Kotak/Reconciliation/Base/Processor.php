@@ -163,7 +163,7 @@ class Processor extends Base\Core
 
         (new SlackNotification)->success('setl_reconciliation', $summary);
 
-        // Isolating the webhook flow in a try-catch, so that the original settlement cycle stays unaffected
+        // Isolating the webhook flow in a try-catch, to keep the original settlement cycle unaffected
         try
         {
             (new FundTransferAttempt\Core)->notifyMarketplaceMerchantViaWebhook($reconciledData);
@@ -173,7 +173,9 @@ class Processor extends Base\Core
             // Log only the entity ids instead of the entire entities
             foreach($this->allEntities as $entity)
             {
-                $entities[] = $entity->getId();
+                $entities = array_map(function($entity) {
+                    return $entity->getId();
+                }, $this->allEntities);
             }
 
             $this->trace->traceException(

@@ -6,13 +6,13 @@ use Illuminate\Events\Dispatcher;
 
 use App;
 use RZP\Constants;
-use RZP\Jobs\WebHook;
 use RZP\Models\Base;
-use RZP\Models\Customer\Token;
+use RZP\Jobs\WebHook;
 use RZP\Models\Event;
-use RZP\Models\Payment;
 use RZP\Models\Invoice;
+use RZP\Models\Merchant;
 use RZP\Jobs\DispatchRouter;
+use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 
 class ApiEventSubscriber extends Base\Core
@@ -519,6 +519,14 @@ class ApiEventSubscriber extends Base\Core
                 ($webhook->isEventEnabled($this->event)));
     }
 
+    /**
+     * Returns the settlement entity's merchant.
+     * If the merchant is a linked account, returns the parent merchant.
+     *
+     * @param Base\PublicEntity $entity
+     *
+     * @return Merchant\Entity
+     */
     protected function getMerchantFromEntity(Base\PublicEntity $entity)
     {
         $merchant = $entity->merchant;
