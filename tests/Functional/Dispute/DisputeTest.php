@@ -529,6 +529,24 @@ class DisputeTest extends TestCase
         $this->startTest($testdata);
     }
 
+    public function testDisputeFetchForMerchant()
+    {
+        $this->ba->proxyAuth();
+
+        $disputes[0] = $this->fixtures->create('dispute');
+
+        $disputes[1] = $this->fixtures->create('dispute');
+
+        $testData = $this->updateFetchTestData($disputes[0]->merchant->getId());
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals($disputes[0]->getId(), $content[1]['id']);
+        $this->assertEquals($disputes[1]->getId(), $content[0]['id']);
+        $this->assertEquals($disputes[0]->payment->getId(), $content[1]['payment_id']);
+        $this->assertEquals($disputes[1]->payment->getId(), $content[0]['payment_id']);
+    }
+
     // ---------------------------- helper methods-------------------------------
 
     protected function updateCreateTestData(string $paymentId = null): array
@@ -568,6 +586,19 @@ class DisputeTest extends TestCase
         $testData = &$this->testData[$name];
 
         $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
+
+        return $testData;
+    }
+
+    protected function updateFetchTestData(string $merchantId): array
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+        $name = $trace[1]['function'];
+
+        $testData = &$this->testData[$name];
+
+        $testData['request']['url'] = '/merchant/'. $merchantId .'/disputes/';
 
         return $testData;
     }
