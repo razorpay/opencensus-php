@@ -3,6 +3,7 @@
 namespace RZP\Models\Dispute;
 
 use RZP\Models\Base;
+use RZP\Models\Base\PublicCollection;
 
 class Service extends Base\Service
 {
@@ -28,7 +29,7 @@ class Service extends Base\Service
         return $dispute->toArrayPublic();
     }
 
-    public function fetchForMerchant(string $merchantId): array
+    public function fetchForMerchant(string $merchantId): PublicCollection
     {
         $disputes = $this->repo->dispute->fetch([], $merchantId);
 
