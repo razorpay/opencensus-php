@@ -28,6 +28,13 @@ class Service extends Base\Service
         return $dispute->toArrayPublic();
     }
 
+    public function fetchForMerchant(string $merchantId): array
+    {
+        $disputes = $this->repo->dispute->fetch([], $merchantId);
+
+        return $disputes;
+    }
+
     public function migrateOldAdjustments($file): array
     {
         return $this->core()->migrateOldAdjustments($file);

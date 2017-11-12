@@ -19,6 +19,13 @@ class DisputeController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchForMerchant(string $merchantId)
+    {
+        $disputes = $this->service()->fetchForMerchant($merchantId);
+
+        return ApiResponse::json($disputes);
+    }
+
     public function migrateOldAdjustments()
     {
         if (Request::hasFile('file') === false)
