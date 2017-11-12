@@ -42,10 +42,6 @@ export default class MerchantEntity extends Component {
     parentProps = this.model;
   }
 
-  downloadReports = () => {
-    console.log('Downloading Reports....');
-  };
-
   toggleFundsHoldOrRelease = () => {
     const merchant = this.model.merchant;
 
@@ -103,9 +99,9 @@ export default class MerchantEntity extends Component {
     })
       .then(response => {
         notifySuccess(
-          `Activation Form is now ${isCurrentlyLocked
-            ? 'Unlocked'
-            : 'Locked'} successfully`
+          `Activation Form is now ${
+            isCurrentlyLocked ? 'Unlocked' : 'Locked'
+          } successfully`
         );
         this.model.updateMerchantDetails(response);
       })
@@ -326,9 +322,7 @@ export default class MerchantEntity extends Component {
 
         {typeof merchant.details.suspended_at !== 'undefined' && (
           <div onClick={this.toggleSuspension}>
-            {merchant.details.suspended_at === null
-              ? 'Suspend'
-              : 'Unsuspend'}{' '}
+            {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}{' '}
             Merchant
           </div>
         )}
@@ -340,7 +334,7 @@ export default class MerchantEntity extends Component {
         <div onClick={this.captureScreenshot}>Capture Screenshots</div>
         <div onClick={actions.AddCredits}>Add Credits</div>
 
-        <div class="btn-primary" onClick={this.downloadReports}>
+        <div class="btn-primary" onClick={actions.GenerateReports}>
           Download Report
         </div>
       </aside>

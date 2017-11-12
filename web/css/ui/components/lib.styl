@@ -70,7 +70,7 @@ header
 }
 
 .label-semi-muted {
-  color: #58666E;
+  color: $color-semi-muted;
   background-color: #D8E1E3;
 }
 
@@ -129,3 +129,44 @@ alert-warn
 
 .rotate
   transform: rotate(-180deg);
+
+
+// Custom select TypeAhead component
+.custom-select
+  position: relative;
+
+  input
+    width: 100%;
+
+  .custom-icon, .typeAheadSkin
+    position: absolute;
+    pointer-events: none;
+
+  .custom-icon
+    top: 11px;
+    left: 8px;
+    font-size: 20px;
+    z-index: 1;
+    color: #e0e0e0;
+
+  .typeAheadSkin
+    z-index: 2;
+    background-color: #fff;
+    top: 10px;
+    width: 87%;
+    margin-left: 30px;
+    font-size: 12px;
+
+  .PowerSelect__TriggerInput
+    padding-left: 32px
+
+.PowerSelect__Option
+  padding: 0 5px;
+  font-size: 14px;
+  border: 1px solid #eaeff0;
+  background-color: #fff;
+  line-height: 28px;
+  cursor: pointer
+
+  &--highlighted
+    background-color: #f1f1f1;
