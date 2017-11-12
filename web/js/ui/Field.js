@@ -52,6 +52,21 @@ export function TimeField({ label, required, ...props }) {
   );
 }
 
+export function RadioField({ label, value, defaultValue, ...props }) {
+  return (
+    <div class="field">
+      <input
+        type="radio"
+        id={value}
+        value={value}
+        {...props}
+        defaultChecked={defaultValue === value}
+      />
+      <label for={value}>{label}</label>
+    </div>
+  );
+}
+
 export function CheckField({ label, required, ...props }) {
   return (
     <div class="field">

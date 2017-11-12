@@ -60,6 +60,12 @@ export function serialize(form) {
       if (el.type === 'checkbox') {
         value = el.checked ? '1' : '0';
       }
+      if (el.type === 'radio') {
+        if (!el.checked) {
+          return data;
+        }
+        value = el.value;
+      }
       if (el.type === 'select-multiple') {
         value = [];
         const selectedOptions = Array.from(el.selectedOptions);
