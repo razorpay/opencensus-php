@@ -541,10 +541,11 @@ class DisputeTest extends TestCase
 
         $content = $this->runRequestResponseFlow($testData);
 
-        $this->assertEquals($disputes[0]->getId(), $content[1]['id']);
-        $this->assertEquals($disputes[1]->getId(), $content[0]['id']);
-        $this->assertEquals($disputes[0]->payment->getId(), $content[1]['payment_id']);
-        $this->assertEquals($disputes[1]->payment->getId(), $content[0]['payment_id']);
+        $this->assertEquals(2, $content['count']);
+        $this->assertEquals($disputes[0]->getId(), Entity::stripDefaultSign($content['items'][1]['id']));
+        $this->assertEquals($disputes[1]->getId(), Entity::stripDefaultSign($content['items'][0]['id']));
+        $this->assertEquals($disputes[0]->payment->getId(), $content['items'][1]['payment_id']);
+        $this->assertEquals($disputes[1]->payment->getId(), $content['items'][0]['payment_id']);
     }
 
     // ---------------------------- helper methods-------------------------------

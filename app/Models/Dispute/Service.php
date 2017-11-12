@@ -29,11 +29,11 @@ class Service extends Base\Service
         return $dispute->toArrayPublic();
     }
 
-    public function fetchForMerchant(string $merchantId): PublicCollection
+    public function fetchForMerchant(string $merchantId): array
     {
         $disputes = $this->repo->dispute->fetch([], $merchantId);
 
-        return $disputes;
+        return $disputes->toArrayPublic();
     }
 
     public function migrateOldAdjustments($file): array
