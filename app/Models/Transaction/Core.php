@@ -399,13 +399,13 @@ class Core extends Base\Core
      * Calculate Fee for Amount Credit
      * Credit = amount, fee & ST = 0
      *
-     * @param Base\Entity         $entity
-     * @param  Transaction\Entity $transaction
+     * @param Base\PublicEntity  $entity
+     * @param Transaction\Entity $transaction
      *
      * @return array
      */
     protected function calculateFeeForAmountCredit(
-        Base\Entity $entity,
+        Base\PublicEntity $entity,
         Transaction\Entity $transaction)
     {
         $amount = $entity->getBaseAmount();
@@ -437,13 +437,13 @@ class Core extends Base\Core
      * Calculate Fee for Fee Credit
      * credit = amount, fee_credit = fee
      *
-     * @param Base\Entity         $entity
-     * @param  Transaction\Entity $transaction
+     * @param Base\PublicEntity  $entity
+     * @param Transaction\Entity $transaction
      *
      * @return array
      */
     protected function calculateFeeForFeeCredit(
-        Base\Entity $entity,
+        Base\PublicEntity $entity,
         Transaction\Entity $transaction)
     {
         $amount = $entity->getBaseAmount();
@@ -463,18 +463,18 @@ class Core extends Base\Core
      * Calculate Prepaid Fee for Default credit type
      * credit = amount - fee
      *
-     * @param Base\Entity         $entity
-     * @param Transaction\Entity  $transaction
+     * @param Payment\Entity     $payment
+     * @param Transaction\Entity $transaction
      *
      * @return array
      */
     protected function calculateFeeForPrepaidDefault(
-        Base\Entity $entity,
+        Payment\Entity $payment,
         Transaction\Entity $transaction)
     {
-        $amount = $entity->getBaseAmount();
+        $amount = $payment->getBaseAmount();
 
-        list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($entity);
+        list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($payment);
 
         $credit = $amount - $fee;
 
@@ -486,9 +486,11 @@ class Core extends Base\Core
     /**
      * Calculate Postpaid Fee for Default credit type
      * credit = amount
-     * @param  Payment\Entity     $payment     [description]
-     * @param  Transaction\Entity $transaction [description]
-     * @return [type]                          [description]
+     *
+     * @param  Payment\Entity     $payment
+     * @param  Transaction\Entity $transaction
+     *
+     * @return array
      */
     protected function calculateFeeForPostpaidDefault(
         Payment\Entity $payment,
@@ -862,7 +864,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    protected function calculateMerchantFees(Base\Entity $entity)
+    protected function calculateMerchantFees(Base\PublicEntity $entity)
     {
         return (new Pricing\Fee)->calculateMerchantFees($entity);
     }
