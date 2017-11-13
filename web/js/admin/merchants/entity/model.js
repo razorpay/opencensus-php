@@ -39,27 +39,26 @@ export default class Model extends BaseModel {
       merchant_id: this.merchantId,
     };
 
-    return this.request(
-      'fetchMerchantDetails',
-      this.fetchFn(data)
-    ).then(data => {
-      if (data) {
-        this.merchant.details = data;
+    return this.request('fetchMerchantDetails', this.fetchFn(data)).then(
+      data => {
+        if (data) {
+          this.merchant.details = data;
+        }
+
+        // TODO: Ensure rendering happpens on resolve of each below otherwise data will update but not merchant object, hence no re-rendering. Or take out each property instead of putting inside merchant object
+        this.fetchPricingPlans();
+        this.fetchScheduleTasks();
+        this.fetchGatewayRules();
+
+        this.fetchAdmins();
+
+        this.fetchTerminals('live');
+        // this.fetchTerminals('test');
+
+        this.fetchFeatures('live');
+        this.fetchFeatures('test');
       }
-
-      // TODO: Ensure rendering happpens on resolve of each below otherwise data will update but not merchant object, hence no re-rendering. Or take out each property instead of putting inside merchant object
-      this.fetchPricingPlans();
-      this.fetchScheduleTasks();
-      this.fetchGatewayRules();
-
-      this.fetchAdmins();
-
-      this.fetchTerminals('live');
-      // this.fetchTerminals('test');
-
-      this.fetchFeatures('live');
-      this.fetchFeatures('test');
-    });
+    );
   }
 
   @action
@@ -98,14 +97,13 @@ export default class Model extends BaseModel {
       },
     };
 
-    return this.request(
-      'fetchMerchantPricingPlans',
-      this.fetchFn(data)
-    ).then(data => {
-      if (data) {
-        this.merchant.pricingPlans = data;
+    return this.request('fetchMerchantPricingPlans', this.fetchFn(data)).then(
+      data => {
+        if (data) {
+          this.merchant.pricingPlans = data;
+        }
       }
-    });
+    );
   }
 
   @action
@@ -118,15 +116,14 @@ export default class Model extends BaseModel {
       mode,
     };
 
-    return this.request(
-      'fetchMerchantTerminals',
-      this.fetchFn(data)
-    ).then(data => {
-      if (data) {
-        this.merchant.terminals.items = data.items;
-        this.merchant.terminals.count += data.count;
+    return this.request('fetchMerchantTerminals', this.fetchFn(data)).then(
+      data => {
+        if (data) {
+          this.merchant.terminals.items = data.items;
+          this.merchant.terminals.count += data.count;
+        }
       }
-    });
+    );
   }
 
   @action
@@ -139,17 +136,16 @@ export default class Model extends BaseModel {
       mode: mode,
     };
 
-    return this.request(
-      'fetchMerchantFeatures',
-      this.fetchFn(data)
-    ).then(data => {
-      if (data) {
-        data.assigned_features = data.assigned_features.map(
-          feature => feature.name
-        );
-        this.merchant.features = { ...this.merchant.features, [mode]: data }; // To allow re-render when 2nd api request modifies features.
+    return this.request('fetchMerchantFeatures', this.fetchFn(data)).then(
+      data => {
+        if (data) {
+          data.assigned_features = data.assigned_features.map(
+            feature => feature.name
+          );
+          this.merchant.features = { ...this.merchant.features, [mode]: data }; // To allow re-render when 2nd api request modifies features.
+        }
       }
-    });
+    );
   }
 
   @action
@@ -179,13 +175,17 @@ export default class Model extends BaseModel {
     };
 
     return this.request('fetchAdmins', this.fetchFn(data)).then(data => {
-      const adminMap = {};
+      const adminsMap = {};
 
       data.items.map(admin => {
-        return (adminMap[admin.id] = admin.roles[0].name);
+        adminsMap[admin.id] = {
+          role: admin.roles[0].name,
+          email: admin.email,
+          name: admin.name,
+        };
       });
 
-      this.merchant.adminsMap = adminMap;
+      this.merchant.adminsMap = adminsMap;
     });
   }
 
@@ -248,9 +248,9 @@ export default class Model extends BaseModel {
         console.log('DATA...', data);
 
         notifySuccess(
-          `${titleCase(
-            featureMode
-          )} feature '${featureName}' removed successfully`
+          `${titleCase(featureMode)} feature '${
+            featureName
+          }' removed successfully`
         );
 
         // Update assigned_features for that mode and allow re-render

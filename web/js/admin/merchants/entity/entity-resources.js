@@ -5,8 +5,8 @@ import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';
 import Table from 'ui/Table';
 
-import CreditsDetails from './CreditsDetails';
-import FeaturesDetails from './FeaturesDetails';
+import CreditsDetails from './helpers/CreditsDetails';
+import FeaturesDetails from './helpers/FeaturesDetails';
 
 /*---------------------------------------- Functionality ------------------------------------------*/
 
@@ -16,7 +16,7 @@ export function openMerchantEntity() {
 }
 
 /*---------------------------------------- Getters ------------------------------------------------*/
-function _getRiskRating(value) {
+export function getRiskRating(value) {
   const riskMap = {
     1: ['Very Low', 'success'],
     2: ['Low', 'success'],
@@ -24,6 +24,10 @@ function _getRiskRating(value) {
     4: ['High', 'danger'],
     5: ['Very High', 'danger'],
   };
+
+  if (!value) {
+    return riskMap;
+  }
 
   return riskMap[value];
 }
@@ -40,7 +44,10 @@ function _getGroupsFields() {
 }
 
 function _getAdminsFields(adminsMap) {
-  return [['Role', item => adminsMap[item.id]], ['Name', item => item.name]];
+  return [
+    ['Role', item => (adminsMap[item.id] ? adminsMap[item.id].role : '')],
+    ['Name', item => item.name],
+  ];
 }
 
 function _getPricingPlansFields() {
@@ -411,7 +418,7 @@ export function getDetailsViewMap(model) {
       label: 'Risk Rating',
       value: details.merchant_details
         ? () => {
-            const riskRate = _getRiskRating(details.risk_rating);
+            const riskRate = getRiskRating(details.risk_rating);
 
             return (
               <span class={`status-label label-${riskRate[1]}`}>
