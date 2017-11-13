@@ -108,7 +108,7 @@ class Constants
         self::BHARAT_QR                     => true,
         self::MOBIKWIK_OFFERS               => true,
         self::ALLOW_DC_RECURRING            => true,
-        self::SKIP_HOLD_FUNDS_ON_PAYOUT     => false,
+        self::SKIP_HOLD_FUNDS_ON_PAYOUT     => true,
     ];
 
     // Keys used in the feature on-boarding workflow
