@@ -38,4 +38,8 @@ class Fields
     const REQUEST           = 'request';
 
     const UDF5              = 'udf5';
+
+    const TRAN_DATA         = 'trandata';
+
+    const TRANPORTAL_ID     = 'tranportalId';
 }

@@ -7,6 +7,7 @@ use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Gateway\Base;
+use phpseclib\Crypt\TripleDES;
 
 class Gateway extends Base\Gateway
 {
@@ -17,23 +18,40 @@ class Gateway extends Base\Gateway
         parent::authorize($input);
         sd($input);
 
-        $contentArray = $this->getAuthRequestContentArray($input);
+        $contentArray = $this->getAuthRequestContent($input);
+
+        $request = $this->getStandardRequestArray($contentArray, 'get', 'PURCHASE');
+
+        $this->traceGatewayPaymentRequest($request, $input);
+
+        return $request;
+    }
+
+    protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
+    {
+        $request = parent::getStandardRequestArray([], $method, $type);
+
+        $request['url'] .= http_build_query($content);
+
+        return $request;
     }
 
     /**
      * Gets all the required fields for making auth request.
      *
      * @param array $input
+     *
+     * @return array
      */
-    private function getAuthRequestContentArray(array $input)
+    private function getAuthRequestContent(array $input)
     {
-        $content = [
+        $requestContent = [
             Fields::CARD          => $input[E::CARD][Card\Entity::NUMBER],
             Fields::MEMBER        => $input[E::CARD][Card\Entity::NAME],
             Fields::EXPIRY_MONTH  => $input[E::CARD][Card\Entity::EXPIRY_MONTH],
             Fields::EXPIRY_YEAR   => $input[E::CARD][Card\Entity::EXPIRY_YEAR],
             Fields::CVV           => $input[E::CARD][Card\Entity::CVV],
-//            Fields::TYPE          => $input[E::CARD][Card\Entity::TYPE], // Not mandatory.
+            // Fields::TYPE          => $input[E::CARD][Card\Entity::TYPE], // Not mandatory.
 
             Fields::AMOUNT        => $input[E::PAYMENT][Payment\Entity::AMOUNT],
             Fields::CURRENCY_CODE => Constants::CURRENCY_CODE,
@@ -49,6 +67,28 @@ class Gateway extends Base\Gateway
             Fields::PASSWORD      => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD],
         ];
 
-        $requestBuffer = Utility::createRequestXml($content);
+        // Entire request content is wrapped in xml.
+        $requestBuffer = Utility::createRequestXml($requestContent);
+
+        // Encrypted request content
+        $tranData = $this->getHashOfString($requestBuffer);
+
+        $content = [
+            Fields::TRAN_DATA => $tranData,
+            Fields::ERROR_URL => $input['callbackUrl'],
+            Fields::RESPONSE_URL => $input['callbackUrl'],
+            Fields::TRANPORTAL_ID => $input[E::TERMINAL][Terminal\Entity::TERMINAL_ID],
+        ];
+
+        return $content;
+    }
+
+    protected function getHashOfString($str)
+    {
+        $secretKey = $this->getSecret();
+
+        $crypto = new TripleDESCrypto(TripleDES::MODE_ECB, $secretKey);
+
+        return $crypto->encryptString($str);
     }
 }
