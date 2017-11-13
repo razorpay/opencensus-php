@@ -121,6 +121,19 @@ class VirtualAccountTest extends TestCase
         $this->assertRegexp("/11111100[0-9]{9}$/", $vba['account_number']);
     }
 
+    public function testCreateVirtualAccountOldFormat()
+    {
+        $this->fixtures->merchant->setHandle('hand');
+
+        $response = $this->createVirtualAccountOldFormat([
+            'descriptor' => 'desc1234'
+        ]);
+
+        $vba = $this->getLastEntity('bank_account', true);
+        // Handle is set so standard root is used with given descriptor
+        $this->assertEquals("RZRPHANDDESC1234", $vba['account_number']);
+    }
+
     public function testCreateVirtualAccountDescriptorErrors()
     {
         $data = $this->testData[__FUNCTION__]['alphaWithoutHandle'];

@@ -243,6 +243,8 @@ class Service extends Base\Service
         {
             $input[Entity::RECEIVERS][Entity::BANK_ACCOUNT] = [
                 Entity::DESCRIPTOR => $input[Entity::DESCRIPTOR],
+                // Default behaviour of old API format should not change
+                Entity::NUMERIC    => false,
             ];
 
             // unset($input[Entity::DESCRIPTOR]);
