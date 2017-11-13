@@ -176,7 +176,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        assert($payment['verified'] === 0);
+        assert($payment['verified'] === null);
 
         $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 0]);
     }
