@@ -26,12 +26,6 @@ module.exports = {
     modules: ['web/js', 'node_modules'],
   },
 
-  resolveLoader: {
-    alias: {
-      'dot-loader': __dirname + '/web/webpack/dot-loader.js',
-    },
-  },
-
   stats: {
     assets: false,
     children: false,
@@ -45,21 +39,12 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.jst$/,
-        loader: 'dot-loader',
-      },
-      {
         test: /\.js$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
-            presets: [
-              'env',
-              ['es2015', { loose: true, modules: false }],
-              'react',
-              'stage-0',
-            ],
+            presets: ['env', 'react', 'stage-0'],
             plugins: ['transform-decorators-legacy', 'react-html-attrs'],
           },
         },
