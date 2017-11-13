@@ -388,6 +388,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ADJUSTMENT_SPLIT_ERROR                        = 'ADJUSTMENT_SPLIT_ERROR';
 
     const VERIFY_LOCKED_PAYMENTS                        = 'VERIFY_LOCKED_PAYMENTS';
+    const VERIFY_ACTION                                 = 'VERIFY_ACTION';
     const VERIFY_GATEWAY_BLOCK                          = 'VERIFY_GATEWAY_BLOCK';
     const VERIFY_PROCESSED_SUMMARY                      = 'VERIFY_PROCESSED_SUMMARY';
     const PAYMENT_VERIFY_RESULT                         = 'PAYMENT_VERIFY_RESULT';
