@@ -110,6 +110,20 @@
 
             </tr>
 
+            <tr>
+                <td class="first">
+                </td>
+
+                <td colspan="2" class="content" style="width: 85%; padding-bottom: 24px; padding-top: 0px;">
+                    <div>
+                        <strong class="text-uppercase lh-26">Gateway case ID</strong> <br> {{ $dispute['gateway_dispute_id'] }}
+                    </div>
+                </td>
+
+                <td class="last">
+                </td>
+
+            </tr>
 
             <tr>
                 <td class="first">
@@ -163,7 +177,7 @@
 
                 <td colspan="2" class="content" style="width: 85%; padding-bottom: 24px !important">
                     <div>
-                        <strong class="text-uppercase lh-26">Deadline of resolution</strong> <br> {{ $expiryDate }}
+                        <strong class="text-uppercase lh-26">Deadline for resolution</strong> <br> {{ $expiryDate }}
                     </div>
                 </td>
 
