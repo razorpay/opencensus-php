@@ -4,6 +4,7 @@ namespace RZP\Reconciliator;
 
 use App;
 use Razorpay\Trace\Logger as Trace;
+use Symfony\Component\HttpFoundation\File\File;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -12,6 +13,7 @@ use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\FileStore\Format;
 use RZP\Models\Merchant\Account;
+use RZP\Reconciliator\FileProcessor;
 use RZP\Models\Base\PublicCollection;
 
 class Orchestrator extends Base\Core
@@ -277,10 +279,12 @@ class Orchestrator extends Base\Core
      */
     protected function createBatchAndDispatchForProcessing(array $fileDetails): Batch\Entity
     {
+        $file = new File($fileDetails[FileProcessor::FILE_PATH]);
+
         $params = [
             Batch\Entity::TYPE        => Batch\Type::RECONCILIATION,
             Batch\Entity::GATEWAY     => $this->gateway,
-            Batch\Entity::FILE        => $fileDetails
+            Batch\Entity::FILE        => $file
         ];
 
         $batch = $this->batchCore->create($params, $this->sharedMerchant);

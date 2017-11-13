@@ -13,18 +13,18 @@ class Manual extends Base
      * @param array $input The input received from the route.
      * @return array Details of all the files received from the input.
      */
-    public function process(array $input)
+    public function process(array $input): array
     {
         // Validates the input received.
         // All the attachment files names should start with 'attachment-'
         // Also, adds attachment-count to input, if not present already.
         $this->validator->validateAttachments($input);
 
-        $inputDetails = $this->getManualInputDetails($input);
+        $inputDetails = $this->getInputDetails($input);
 
         // Figures out the gateway and
         // sets the gateway reconciliator object for the orchestrator
-        $this->setGatewayForManual($inputDetails);
+        $this->setGatewayFromInput($inputDetails);
 
         $allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input);
 
@@ -40,7 +40,7 @@ class Manual extends Base
      * @param array $input
      * @return array Structured input details
      */
-    protected function getManualInputDetails(array $input): array
+    protected function getInputDetails(array $input): array
     {
         $inputDetails = [
             self::ATTACHMENT_COUNT => $input['attachment-count'],
@@ -58,7 +58,7 @@ class Manual extends Base
      * @param array $inputDetails
      * @throws Exception\ReconciliationException
      */
-    protected function setGatewayForManual(array $inputDetails)
+    protected function setGatewayFromInput(array $inputDetails)
     {
         // In manual, the input params should contain what gateway is it.
         $this->gateway = $inputDetails[self::GATEWAY];
