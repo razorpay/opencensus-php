@@ -5577,11 +5577,7 @@
                 "source": "https://github.com/razorpay/upi-clients/tree/master",
                 "issues": "https://github.com/razorpay/upi-clients/issues"
             },
-<<<<<<< HEAD
-            "time": "2017-08-10 18:30:30"
-=======
             "time": "2017-08-10T18:30:30+00:00"
->>>>>>> bharat_qr_notification
         },
         {
             "name": "react/promise",

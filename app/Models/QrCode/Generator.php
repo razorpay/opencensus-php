@@ -5,6 +5,7 @@ namespace RZP\Models\QrCode;
 use Config;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -37,6 +38,9 @@ class Generator extends Base\Core
      */
     protected $baseQrCodeUrl;
 
+    const SHORT_MODE_LIVE = 'l';
+    const SHORT_MODE_TEST = 't';
+
     public function __construct(Merchant\Entity $merchant)
     {
         parent::__construct();
@@ -59,7 +63,16 @@ class Generator extends Base\Core
     {
         $qrCodePublicId = $this->qrCode->getPublicId();
 
-        $qrCodeLink = $this->baseQrCodeUrl . '/qrcode/' . $qrCodePublicId;
+        if ($this->mode === Mode::LIVE)
+        {
+            $shortMode = self::SHORT_MODE_LIVE;
+        }
+        else
+        {
+            $shortMode = self::SHORT_MODE_TEST;
+        }
+
+        $qrCodeLink = $this->baseQrCodeUrl . '/qrcode/' . $shortMode . '/' . $qrCodePublicId;
 
         return $qrCodeLink;
     }
