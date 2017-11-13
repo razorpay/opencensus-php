@@ -318,7 +318,8 @@ class Validator
     {
         $rules = self::MANUAL_INPUT_RULES;
 
-        $rules[Orchestrator::GATEWAY] .= implode(',',array_keys(Orchestrator::GATEWAY_SENDER_MAPPING));
+        $rules[Orchestrator::GATEWAY] .= implode(',', array_keys(Orchestrator::GATEWAY_SENDER_MAPPING));
+
         $rules[Orchestrator::FORCE_UPDATE . '.*'] .= implode(',', Orchestrator::ALLOWED_FORCE_UPDATE);
 
         (new JitValidator)->caller($this)

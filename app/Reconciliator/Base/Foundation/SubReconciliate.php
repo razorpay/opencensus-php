@@ -44,9 +44,9 @@ class SubReconciliate
      * Contains details for files, email or manual details
      * Manual details is being used to check for force_update
      *
-     * @var $extraDetails
+     * @var array
      */
-    protected $extraDetails;
+    protected $extraDetails = [];
 
     protected function persistReconciledAt($entity)
     {
