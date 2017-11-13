@@ -23,6 +23,6 @@ class Fetch extends BaseFetch
             Entity::TYPE,
             Entity::STATE,
             Entity::COUNTRY,
-        ]
+        ],
     ];
 }
