@@ -1184,8 +1184,6 @@ class Core extends Base\Core
                 $amount = $transfer->getBaseAmount();
                 $debit = abs($amount + $fee);
 
-                list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($transfer);
-
                 $transaction->setCreditType(Transaction\CreditType::DEFAULT);
 
                 return [$debit, $fee, $tax, $feesSplit];
