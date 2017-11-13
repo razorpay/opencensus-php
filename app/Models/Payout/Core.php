@@ -348,8 +348,8 @@ class Core extends Base\Core
 
     protected function validateMerchantStatus(Merchant\Entity $merchant)
     {
-        // If merchant payout_on_hold is false, then we don't check the merchant funds_on_hold and proceed with payout creation
-        if (($merchant->isFeatureEnabled(MerchantFeature\Constants::PAYOUT_ON_HOLD) === true) and
+        // If SKIP_HOLD_FUNDS_ON_PAYOUT feature is enabled for merchant, then we don't check the merchant funds_on_hold and proceed with payout creation
+        if (($merchant->isFeatureEnabled(MerchantFeature\Constants::SKIP_HOLD_FUNDS_ON_PAYOUT) === false) and
             ($merchant->getHoldFunds() === true))
         {
             throw new Exception\BadRequestException(

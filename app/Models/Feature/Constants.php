@@ -54,7 +54,7 @@ class Constants
     const BHARAT_QR                     = 'bharat_qr';
     const MOBIKWIK_OFFERS               = 'mobikwik_offers';
     const ALLOW_DC_RECURRING            = 'allow_dc_recurring';
-    const PAYOUT_ON_HOLD                = 'payout_on_hold';
+    const SKIP_HOLD_FUNDS_ON_PAYOUT     = 'skip_hold_funds_on_payout';
 
 
     // Different actions for feature activation flow
@@ -108,7 +108,7 @@ class Constants
         self::BHARAT_QR                     => true,
         self::MOBIKWIK_OFFERS               => true,
         self::ALLOW_DC_RECURRING            => true,
-        self::PAYOUT_ON_HOLD                => false,
+        self::SKIP_HOLD_FUNDS_ON_PAYOUT     => false,
     ];
 
     // Keys used in the feature on-boarding workflow
