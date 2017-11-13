@@ -50,6 +50,7 @@ export default class TransferDetailsContainer extends Component {
       component: (
         <ReversalModal transfer={transfer} onReverse={this.props.onReverse} />
       ),
+      size: 'small',
     });
   };
 
