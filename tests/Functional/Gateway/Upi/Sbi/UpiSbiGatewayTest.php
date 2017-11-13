@@ -192,15 +192,23 @@ class UpiSbiGatewayTest extends TestCase
 
     public function testAmountAssertionFailure()
     {
-        $this->mockAmountMismatch();
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response[Constants::PAYMENT_ID];
+
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
+
+        $content = $this->getS2SAmountMismatchContent($upiEntity, $payment);
 
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow(
             $data,
-            function()
+            function() use ($content)
             {
-                $this->createCapturedPayment();
+                $this->makeS2SCallbackAndGetContent($content);
             });
     }
 
@@ -281,19 +289,6 @@ class UpiSbiGatewayTest extends TestCase
         $this->capturePayment($paymentId, $payment[Payment\Entity::AMOUNT]);
     }
 
-    protected function mockAmountMismatch()
-    {
-        $this->mockServerContentFunction(
-            function(& $content, $action = null)
-            {
-                if ($action === 'auth_decrypted')
-                {
-                    $content[ResponseFields::AMOUNT] = 1;
-                }
-            }
-        );
-    }
-
     protected function mockVerifyFailed($status = SbiStatus::PENDING)
     {
         $this->mockServerContentFunction(
@@ -331,5 +326,25 @@ class UpiSbiGatewayTest extends TestCase
         $response = $this->getPaymentStatus($id);
 
         $this->assertEquals($status, $response[Payment\Entity::STATUS]);
+    }
+
+    protected function getS2SAmountMismatchContent(array $upiEntity, array $payment)
+    {
+        $mockServer = $this->mockServer();
+
+        $content = $mockServer->getAsyncCallbackContent($upiEntity, $payment);
+
+        $decryptedResp = $mockServer->decrypt($content[ResponseFields::MESSAGE], ResponseFields::RESPONSE);
+
+        $decryptedResp[ResponseFields::API_RESPONSE][ResponseFields::AMOUNT] = 1;
+
+        $encryptedResp = [ResponseFields::RESPONSE => $mockServer->encrypt($decryptedResp)];
+
+        $response = \Response::make($encryptedResp);
+
+        $response->headers->set('Content-Type', 'application/text; charset=UTF-8');
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return [ResponseFields::MESSAGE => $response->content()];
     }
 }

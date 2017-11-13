@@ -1288,7 +1288,6 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'razorpay upi mindgate sbi',
             'gateway_terminal_id'       => 'nodal account upi sbi',
             'gateway_merchant_id2'      => 'razorpay@sbibank',
-            'gateway_terminal_password' => 'razorpay_password',
             'upi'                       => 1,
             'gateway_acquirer'          => 'sbi',
         ];

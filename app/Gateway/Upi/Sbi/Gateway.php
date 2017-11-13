@@ -59,13 +59,11 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($response->body, TraceCode::GATEWAY_PAYMENT_RESPONSE);
 
-        $this->assertPaymentIdAndAmount($input, $response);
-
         $this->updateGatewayEntityResponse($gatewayPayment, $response[ResponseFields::API_RESPONSE]);
 
         $this->checkResponseStatus($response[ResponseFields::API_RESPONSE][ResponseFields::STATUS]);
 
-        $vpa = $this->terminal->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA;
+        $vpa = $input['terminal']['gateway_merchant_id2'] ?? self::DEFAULT_PAYEE_VPA;
 
         return [
             'data'   => [
@@ -289,7 +287,6 @@ class Gateway extends Base\Gateway
     {
         $json = json_encode($content);
 
-        // TODO: Ensure this is correct
         return $this->getAesCrypto()->encryptString($json);
     }
 

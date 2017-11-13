@@ -1643,7 +1643,6 @@ class DatabaseSeeder extends Seeder
             'gateway_merchant_id'       => 'razorpay_upi_mindgate_sbi',
             'gateway_terminal_id'       => '1234',
             'gateway_merchant_id2'      => 'razorpay@sbibank',
-            'gateway_terminal_password' => Crypt::encrypt('demo_account_upi_mindgate_sbi_terminal_pass'),
             'created_at'                => time(),
             'updated_at'                => time(),
         ]);
