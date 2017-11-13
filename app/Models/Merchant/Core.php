@@ -522,7 +522,14 @@ class Core extends Base\Core
             if (empty($merchant->bankAccount) === false)
             {
                 $body = $body . 'Bank Account Number :' . $merchant->bankAccount->getAccountNumber() . '<br />';
+                $body = $body . 'Bank IFSC Code :' . $merchant->bankAccount->getIfscCode() . '<br />';
             }
+
+            $body = $body . '<br />'
+                          . 'Razorpay Software Pvt Ltd' . '<br />'
+                          . 'Bank Account Number : 7911547334' . '<br />'
+                          . 'Bank IFSC Code : KKBK0000958' . '<br />';
+
 
             $mailData = ['body'  =>  $body];
 
