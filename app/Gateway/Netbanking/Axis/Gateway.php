@@ -13,25 +13,47 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Netbanking\Axis\Emandate;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
+use RZP\Gateway\Netbanking\Axis\Emandate\EmandateTrait;
 
 class Gateway extends Base\Gateway
 {
+    use EmandateTrait;
     use AuthorizeFailed;
 
     protected $gateway = 'netbanking_axis';
 
     protected $bank = 'axis';
 
+    protected $bankingType = self::RETAIL;
+
+    protected $sortRequestContent = false;
+
     protected $map = [
-        RequestFields::AMOUNT             => 'amount',
-        RequestFields::MERCHANT_REFERENCE => 'payment_id',
-        RequestFields::ITEM_CODE          => 'reference1'
+        RequestFields::AMOUNT                   => Base\Entity::AMOUNT,
+        RequestFields::MERCHANT_REFERENCE       => Base\Entity::PAYMENT_ID,
+        RequestFields::ITEM_CODE                => Base\Entity::REFERENCE1,
+
+        // E Mandate specific fields
+        Emandate\RequestFields::CUSTOMER_REF_NO => Base\Entity::SI_TOKEN
     ];
+
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        parent::setGatewayParams($input, $mode, $terminal);
+
+        $this->setBankingTypeAndDomainType($input);
+    }
 
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        if ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        {
+            return $this->authorizeRecurring($input);
+        }
 
         $content = $this->getPaymentRequestData($input);
 
@@ -51,8 +73,15 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
-                           ['gateway_response' => $input['gateway'],
-                            'payment_id'       => $input['payment']['id']]);
+                           [
+                                'gateway_response' => $input['gateway'],
+                                'payment_id'       => $input['payment']['id'],
+                            ]);
+
+        if ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        {
+            return $this->handleEmandateCallback($input);
+        }
 
         $content = $this->getDataFromResponse($input['gateway']);
 
@@ -90,6 +119,13 @@ class Gateway extends Base\Gateway
 
     public function sendPaymentVerifyRequest(Verify $verify)
     {
+        if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
+        {
+            $this->sendEmandatePaymentVerifyRequest($verify);
+
+            return;
+        }
+
         $content = $this->getPaymentVerifyData($verify);
 
         $request = $this->getStandardRequestArray($content);
@@ -100,19 +136,29 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
+        $verify->verifyResponseContent = $this->parseResponseXml($response->body);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'response_body' => $response->body,
+                'content'       => $verify->verifyResponseContent,
                 'payment_id'    => $verify->input['payment']['id'],
                 'status_code'   => $response->status_code
             ]);
-
-        $verify->verifyResponseContent = $this->parseResponseXml($response->body);
     }
 
     public function verifyPayment(Verify $verify)
     {
+        if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
+        {
+            $this->setEmandateVerifyStatus($verify);
+
+            $verify->payment = $this->saveEmandateVerifyResponseIfNeeded($verify);
+
+            return;
+        }
+
         $this->setVerifyStatus($verify);
 
         $verify->payment = $this->saveVerifyResponseIfNeeded($verify);
@@ -134,6 +180,16 @@ class Gateway extends Base\Gateway
         $verify->status = $status;
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
+
+        $this->setVerifyAmountMismatch($verify);
+    }
+
+    protected function setVerifyAmountMismatch(Verify $verify)
+    {
+        $paymentAmount = $this->formatAmount($verify->input['payment'][Payment\Entity::AMOUNT]);
+
+        $verify->amountMismatch =
+            ($paymentAmount !== $verify->verifyResponseContent[ResponseFields::VERIFY_RESPONSE_AMT]);
     }
 
     protected function checkGatewaySuccess(Verify $verify)
@@ -168,7 +224,7 @@ class Gateway extends Base\Gateway
             RequestFields::VERIFY_ITC      => $this->getVerifyItc($verify),
             RequestFields::VERIFY_PRN      => $input['payment']['id'],
             RequestFields::VERIFY_DATE     => $date,
-            RequestFields::VERIFY_AMT      => $input['payment']['amount'] / 100,
+            RequestFields::VERIFY_AMT      => $this->formatAmount($input['payment']['amount']),
         ];
 
         return $data;
@@ -253,7 +309,7 @@ class Gateway extends Base\Gateway
         return [
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
             RequestFields::ITEM_CODE          => $this->getMerchantId(),
-            RequestFields::AMOUNT             => $input['payment']['amount'] / 100
+            RequestFields::AMOUNT             => $this->formatAmount($input['payment']['amount']),
         ];
     }
 
@@ -307,11 +363,18 @@ class Gateway extends Base\Gateway
         }
     }
 
-
-    protected function checkResponseStatus(array $attrs, array $content)
+    /**
+     * The default success status is Y, but this method accepts the any possible success value to ensure usability
+     *
+     * @param array $attributes
+     * @param array $content
+     * @param string $status
+     * @throws Exception\GatewayErrorException
+     */
+    protected function checkResponseStatus(array $attributes, array $content, string $status = Status::YES)
     {
-        if ((isset($attrs['status']) === false) or
-            ($attrs['status'] !== Status::YES))
+        if ((isset($attributes[Base\Entity::STATUS]) === false) or
+            ($attributes[Base\Entity::STATUS] !== $status))
         {
             $this->trace->error(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
@@ -325,9 +388,9 @@ class Gateway extends Base\Gateway
     protected function getCallbackAttributes(array $content)
     {
         return [
-            'received'        => true,
-            'status'          => $content[ResponseFields::STATUS],
-            'bank_payment_id' => $content[ResponseFields::BANK_REFERENCE_ID],
+            Base\Entity::RECEIVED        => true,
+            Base\Entity::STATUS          => $content[ResponseFields::STATUS],
+            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REFERENCE_ID],
         ];
     }
 
@@ -434,18 +497,64 @@ class Gateway extends Base\Gateway
         return Status::getAuthSuccessStatus();
     }
 
+    protected function setBankingTypeAndDomainType($input)
+    {
+        if (
+            (isset($input['payment']) === true) and
+            ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        )
+        {
+            $this->setBankingType(self::EMANDATE);
+        }
+
+         $this->setDomainType();
+    }
+
+    protected function setDomainType()
+    {
+        $this->domainType = $this->getBankingType();
+    }
+
     /*
      *  Overriding parent class's method
      */
     protected function getUrlDomain()
     {
-        $this->domainType = $this->action;
+        $urlClass = $this->getGatewayNamespace() . '\Url';
 
-        return parent::getUrlDomain();
+        $domainType = $this->domainType ?? $this->mode;
+
+        if ($domainType !== self::EMANDATE)
+        {
+            $domainType .= '_' . $this->action;
+        }
+        else
+        {
+            // For EMandate, add test and live domain URLs
+            $domainType .= '_' . $this->getMode();
+        }
+
+        $domainConstantName = strtoupper($domainType).'_DOMAIN';
+
+        return constant($urlClass . '::' .$domainConstantName);
+    }
+
+    protected function getRelativeUrl($type)
+    {
+        $ns = $this->getGatewayNamespace();
+
+        $domainType = strtoupper($this->domainType);
+
+        return constant($ns.'\Url::'.$type.'_'.$domainType);
     }
 
     public function getMerchantId()
     {
+        if ($this->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        {
+            return $this->getEmandateMerchantId();
+        }
+
         if ($this->mode === Mode::TEST)
         {
             return $this->getTestMerchantId();
@@ -461,5 +570,15 @@ class Gateway extends Base\Gateway
         assert ($this->mode === Mode::LIVE);
 
         return $this->config['live_hash_secret'];
+    }
+
+    /**
+     * Formats amount to 2 decimal places
+     * @param  int $amount amount in paise (100)
+     * @return string amount in Rupees
+     */
+    protected function formatAmount(int $amount): string
+    {
+        return $amount / 100;
     }
 }

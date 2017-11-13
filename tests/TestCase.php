@@ -2,7 +2,6 @@
 
 namespace RZP\Tests;
 
-use Redis;
 use Mockery;
 use Request;
 use ReflectionObject;
@@ -12,8 +11,6 @@ use Illuminate\Foundation\Testing\TestCase as IlluminateTestCase;
  * Base test case class provided bdy laravel all, test cases inherit it
  * ALl test cases follow, GIVEN, WHEN, THEN structure
  */
-
-use Laracasts\TestDummy\Factory;
 
 class TestCase extends IlluminateTestCase
 {

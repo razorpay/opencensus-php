@@ -14,6 +14,8 @@ class Gateway extends \RZP\Gateway\Base\Gateway
 
     const CORPORATE = 'corporate';
 
+    const EMANDATE = 'emandate';
+
     protected function createGatewayPaymentEntity($attributes)
     {
         $attr = $this->getMappedAttributes($attributes);

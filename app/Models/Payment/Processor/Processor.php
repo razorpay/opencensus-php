@@ -264,7 +264,7 @@ class Processor
             'originalAmount'    => $input['amount'],
             'fees'              => $fee,
             'razorpay_fee'      => $fee - $tax,
-            'serviceTax'        => $tax,
+            'tax'               => $tax,
             'amount'            => $input['amount'] + $fee,
         );
 
@@ -1039,7 +1039,8 @@ class Processor
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
-            if ($this->merchant->isTPVRequired() === true)
+            if (($this->merchant->isTPVRequired() === true) and
+                ($payment->isNetbanking() === true))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,

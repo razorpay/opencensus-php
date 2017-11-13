@@ -119,6 +119,12 @@ class Validator extends Base\Validator
         'data'        => 'required|array'
     ];
 
+    protected static $payoutMailRules = [
+        'content'               => 'required|array',
+        'content.*.merchant_id' => 'required',
+        'content.*.email'       => 'required',
+    ];
+
     protected static $irctcRules = [
         'refund'     => 'sometimes|filled|file|mimes:txt|max:1024',
         'settlement' => 'sometimes|filled|file|mimes:txt|max:1024',

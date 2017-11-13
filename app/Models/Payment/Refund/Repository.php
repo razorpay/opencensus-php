@@ -472,7 +472,8 @@ class Repository extends Base\Repository
                        ->where($refundStatus, '=', Status::FAILED)
                        ->where($paymentMethod, '=', $method)
                        ->with(['payment','payment.terminal'])
-                       ->limit(50);
+                       ->inRandomOrder()
+                       ->limit(200);
 
         return $query->get();
     }

@@ -63,26 +63,29 @@ return [
     ],
 
     'testSubmitAutoActivate' => [
-        'request' => [
+        'request'  => [
             'content' => [
-                'bank_account_name' => 'Test',
+                'bank_account_name'   => 'Test',
                 'bank_account_number' => '111000',
-                'bank_branch_ifsc' => 'SBIN0007105',
-                'bank_account_type' => 'savings',
-                'business_name' => 'Test',
-                'business_type' => 1,
-                'submit' => true
+                'bank_branch_ifsc'    => 'SBIN0007105',
+                'bank_account_type'   => 'savings',
+                'business_name'       => 'Test',
+                'business_type'       => 1,
+                'submit'              => true
             ],
-            'url' => '/merchant/activation',
-            'method' => 'POST'
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
         ],
         'response' => [
             'content' => [
-                'submitted' => true,
-                'verification' => [
+                'submitted'      => true,
+                'verification'   => [
                     'status' => 'pending'
                 ],
-                'can_submit' => true,
+                'can_submit'     => true,
+                'activated'      => 1,
+                'locked'         => true,
+                'auto_activated' => true
             ],
         ],
     ],

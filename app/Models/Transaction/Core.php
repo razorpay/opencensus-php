@@ -267,7 +267,6 @@ class Core extends Base\Core
             Transaction\Entity::DEBIT               => 0,
             Transaction\Entity::CREDIT              => 0,
             Transaction\Entity::FEE                 => 0,
-            Transaction\Entity::SERVICE_TAX         => 0,
             Transaction\Entity::TAX                 => 0,
             Transaction\Entity::AMOUNT              => $amount,
         ];
@@ -325,7 +324,6 @@ class Core extends Base\Core
         $txn->setCredit($credit);
         $txn->setDebit(0);
         $txn->setFee($fee);
-        $txn->setServiceTax($tax);
         $txn->setTax($tax);
 
         return [$txn, $feesSplit];
@@ -554,7 +552,6 @@ class Core extends Base\Core
             Transaction\Entity::AMOUNT          => $refund->getBaseAmount(),
             Transaction\Entity::TYPE            => Transaction\Type::REFUND,
             Transaction\Entity::FEE             => 0,
-            Transaction\Entity::SERVICE_TAX     => 0,
             Transaction\Entity::TAX             => 0,
             Transaction\Entity::DEBIT           => $refund->getBaseAmount(),
             Transaction\Entity::CREDIT          => 0,
@@ -655,7 +652,6 @@ class Core extends Base\Core
             Transaction\Entity::SETTLED         => 0,
             Transaction\Entity::SETTLED_AT      => $settledAt,
             Transaction\Entity::FEE             => 0,
-            Transaction\Entity::SERVICE_TAX     => 0,
             Transaction\Entity::TAX             => 0,
             Transaction\Entity::AMOUNT          => abs($amount),
             Transaction\Entity::TYPE            => Transaction\Type::ADJUSTMENT,
@@ -723,7 +719,6 @@ class Core extends Base\Core
             Transaction\Entity::SETTLED       => 0,
             Transaction\Entity::SETTLED_AT    => $settledAt,
             Transaction\Entity::FEE           => $fee,
-            Transaction\Entity::SERVICE_TAX   => $tax,
             Transaction\Entity::TAX           => $tax,
             Transaction\Entity::AMOUNT        => $amount,
             Transaction\Entity::TYPE          => Transaction\Type::TRANSFER,
@@ -772,7 +767,6 @@ class Core extends Base\Core
             Transaction\Entity::SETTLED       => 0,
             Transaction\Entity::SETTLED_AT    => $nowTimestamp,
             Transaction\Entity::FEE           => 0,
-            Transaction\Entity::SERVICE_TAX   => 0,
             Transaction\Entity::TAX           => 0,
             Transaction\Entity::AMOUNT        => $amount,
             Transaction\Entity::TYPE          => Transaction\Type::REVERSAL,
@@ -805,7 +799,7 @@ class Core extends Base\Core
             Entity::SETTLED       => 0,
             Entity::SETTLED_AT    => $nowTimestamp,
             Entity::FEE           => 0,
-            Entity::SERVICE_TAX   => 0,
+            Entity::TAX           => 0,
             Entity::AMOUNT        => $dispute->getAmountDeducted(),
             Entity::TYPE          => Type::DISPUTE,
             Entity::CHANNEL       => Channel::KOTAK,
@@ -846,7 +840,6 @@ class Core extends Base\Core
             Transaction\Entity::SETTLED             => 0,
             Transaction\Entity::SETTLED_AT          => $settledAt,
             Transaction\Entity::FEE                 => $fee,
-            Transaction\Entity::SERVICE_TAX         => $tax,
             Transaction\Entity::TAX                 => $tax,
             Transaction\Entity::AMOUNT              => $payoutAmount,
             Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,

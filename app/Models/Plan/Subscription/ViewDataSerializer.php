@@ -112,6 +112,7 @@ class ViewDataSerializer extends Base\Core
             'status'                => $subscriptionArray[Entity::STATUS],
             'quantity'              => $subscriptionArray[Entity::QUANTITY],
             'charge_at'             => $chargeAt,
+            'card_change_status'    => $this->subscription->isCardChangeStatus(),
             'card_change_amount'    => (new Core)->getAuthTransactionAmountForCardChange($this->subscription),
             'addons'                => $this->repo->addon->getUnusedAddonsForSubscription($this->subscription),
         ];

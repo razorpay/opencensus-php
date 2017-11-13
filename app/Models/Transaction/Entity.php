@@ -23,7 +23,6 @@ class Entity extends Base\PublicEntity
     const CREDIT              = 'credit';
     const CURRENCY            = 'currency';
     const FEE                 = 'fee';
-    const SERVICE_TAX         = 'service_tax';
     const TAX                 = 'tax';
     const PRICING_RULE_ID     = 'pricing_rule_id';
     const BALANCE             = 'balance';
@@ -66,7 +65,6 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_FEE,
         self::GATEWAY_SERVICE_TAX,
         self::GATEWAY_SETTLED_AT,
-        self::SERVICE_TAX,
         self::TAX,
         self::GRATIS,
         self::FEE_CREDITS,
@@ -92,28 +90,28 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::FEE,
-        self::SERVICE_TAX,
+        self::TAX,
         self::ON_HOLD,
         self::SETTLED,
         self::CREATED_AT,
         self::SETTLED_AT,
         self::SETTLEMENT_ID,
-        self::TAX,
     ];
 
-    protected $publicSetters = array(
+    protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::ENTITY_ID,
-        self::SETTLEMENT_ID);
+        self::SETTLEMENT_ID
+    ];
 
-    protected $dates = array(
+    protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
         self::SETTLED_AT,
-    );
+    ];
 
-    protected $defaults = array(
+    protected $defaults = [
         self::GRATIS                => false,
         self::GATEWAY_SETTLED_AT    => null,
         self::GATEWAY_AMOUNT        => null,
@@ -129,38 +127,31 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD               => 0,
         self::SETTLED               => 0,
         self::PRICING_RULE_ID       => null,
-        self::SERVICE_TAX           => null,
         self::TAX                   => null,
         self::FEE_MODEL             => Merchant\FeeModel::NA,
         self::FEE_BEARER            => Merchant\FeeBearer::NA,
         self::CREDIT_TYPE           => CreditType::DEFAULT,
-    );
+    ];
 
-    protected $amounts = array(
+    protected $amounts = [
         self::AMOUNT,
         self::DEBIT,
         self::CREDIT,
         self::FEE,
-        self::SERVICE_TAX,
         self::TAX,
-    );
+    ];
 
     protected $casts = [
         self::CREDIT              => 'int',
         self::DEBIT               => 'int',
         self::AMOUNT              => 'int',
         self::FEE                 => 'int',
-        self::SERVICE_TAX         => 'int',
-        self::TAX                 => 'int',
-        self::BALANCE             => 'int',
         self::GATEWAY_AMOUNT      => 'int',
-        self::GATEWAY_FEE         => 'int',
-        self::GATEWAY_SERVICE_TAX => 'int',
         self::GRATIS              => 'bool',
         self::FEE_CREDITS         => 'int',
-        self::FEE_MODEL           => 'int',
-        self::FEE_BEARER          => 'int',
         self::ON_HOLD             => 'bool',
+        self::SETTLED_AT          => 'int',
+        self::GATEWAY_SETTLED_AT  => 'int',
     ];
 
     public function merchant()
@@ -283,83 +274,63 @@ class Entity extends Base\PublicEntity
 
 /* ----------------------------- Accessors -----------------------------------*/
 
-    protected function getApiFeeAttribute()
+    //
+    // These accessor methods are added as we want to convert null to the desired
+    // type if a value is null. null values are not handled by casts
+    //
+
+    protected function getApiFeeAttribute($apiFee)
     {
-        return (int) $this->attributes[self::API_FEE];
+        return (int) $apiFee;
     }
 
-    protected function getGatewayFeeAttribute()
+    protected function getGatewayFeeAttribute($gatewayFee)
     {
-        return (int) $this->attributes[self::GATEWAY_FEE];
+        return (int) $gatewayFee;
     }
 
-    protected function getGatewayServiceTaxAttribute()
+    protected function getGatewayServiceTaxAttribute($gatewayServiceTax)
     {
-        return (int) $this->attributes[self::GATEWAY_SERVICE_TAX];
+        return (int) $gatewayServiceTax;
     }
 
-    protected function getBalanceAttribute()
+    protected function getBalanceAttribute($balance)
     {
-        return (int) $this->attributes[self::BALANCE];
+        return (int) $balance;
     }
 
-    protected function getEscrowBalanceAttribute()
+    protected function getEscrowBalanceAttribute($escrowBalance)
     {
-        return (int) $this->attributes[self::ESCROW_BALANCE];
+        return (int) $escrowBalance;
     }
 
-    protected function getSettledAttribute()
+    protected function getTaxAttribute($tax)
     {
-        return (bool) $this->attributes[self::SETTLED];
+        return (int) $tax;
     }
 
-    protected function getSettledAtAttribute()
+    protected function getSettledAttribute($settled)
     {
-        $settledAt = $this->attributes[self::SETTLED_AT];
-
-        if ($settledAt === null)
-        {
-            return null;
-        }
-
-        return (int) $settledAt;
+        return (bool) $settled;
     }
 
-    protected function getGatewaySettledAtAttribute()
+    protected function getFeeBearerAttribute($bearer)
     {
-        $gatewaySettledAt = $this->attributes[self::GATEWAY_SETTLED_AT];
-
-        if ($gatewaySettledAt === null)
-        {
-            return null;
-        }
-
-        return (int) $gatewaySettledAt;
+        return Merchant\FeeBearer::getBearerStringForValue($bearer);
     }
 
-    protected function getServiceTaxAttribute()
+    protected function getFeeModelAttribute($feeModel)
     {
-        return (int) $this->attributes[self::SERVICE_TAX];
+        return Merchant\FeeModel::getFeeModelStringForValue($feeModel);
     }
 
-    protected function getTaxAttribute()
-    {
-        return (int) $this->attributes[self::TAX];
-    }
+/* --------------------------- End Accessors ---------------------------------*/
+
+/* --------------------------- Mutators --------------------------------------*/
 
     protected function setFeeBearerAttribute($bearer)
     {
         $this->attributes[self::FEE_BEARER] = Merchant\FeeBearer::getValueForBearerString($bearer);
-    }
-
-    protected function getFeeBearerAttribute()
-    {
-        return Merchant\FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
-    }
-
-    protected function getFeeModelAttribute()
-    {
-        return Merchant\FeeModel::getFeeModelStringForValue($this->attributes[self::FEE_MODEL]);
     }
 
     protected function setFeeModelAttribute($feeModel)
@@ -367,8 +338,7 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::FEE_MODEL] = Merchant\FeeModel::getValueForFeeModelString($feeModel);
     }
 
-/* --------------------------- End Accessors ---------------------------------*/
-
+/* ----------------------------- Mutators end --------------------------------*/
 
     public function getGateway()
     {
@@ -400,11 +370,6 @@ class Entity extends Base\PublicEntity
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
-    }
-
-    public function getServiceTax()
-    {
-        return $this->getAttribute(self::SERVICE_TAX);
     }
 
     public function getTax()
@@ -535,13 +500,6 @@ class Entity extends Base\PublicEntity
         $array[self::SETTLEMENT_ID] = $sign . $array[self::SETTLEMENT_ID];
     }
 
-    public function setServiceTax($servicetax)
-    {
-        assertTrue($servicetax >= 0);
-
-        $this->setAttribute(self::SERVICE_TAX, $servicetax);
-    }
-
     public function setTax($tax)
     {
         assertTrue($tax >= 0);
@@ -616,7 +574,7 @@ class Entity extends Base\PublicEntity
 
     public function isSettled()
     {
-        return $this->getSettledAttribute();
+        return $this->getAttribute(self::SETTLED);
     }
 
     public function isFeeBearerCustomer()
@@ -634,11 +592,6 @@ class Entity extends Base\PublicEntity
         $reportTxn = parent::toArrayReport();
 
         unset($reportTxn[self::ID]);
-
-        $tax = $reportTxn[self::TAX];
-
-         // Add tax key at the end to maintain order of columns in the report
-        unset($reportTxn[self::TAX]);
 
         $reportTxn[Payment\Entity::DESCRIPTION] = null;
         $reportTxn[Payment\Entity::NOTES] = null;
@@ -724,8 +677,6 @@ class Entity extends Base\PublicEntity
 
             $this->fillPaymentDetails($payment, $reportTxn);
         }
-
-        $reportTxn[self::TAX] = $tax;
 
         return $reportTxn;
     }

@@ -28,11 +28,11 @@ class Axis extends Base
         'DateTime',
     ];
 
-    protected function formatDataForFile()
+    protected function formatDataForFile(array $data)
     {
         $formattedData = [];
 
-        foreach ($this->data as $row)
+        foreach ($data as $row)
         {
             $date = Carbon::createFromTimestamp(
                     $row['payment']['created_at'], Timezone::IST)

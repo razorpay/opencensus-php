@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\LineItem;
+use RZP\Models\FileStore;
 
 class Service extends Base\Service
 {
@@ -260,19 +261,27 @@ class Service extends Base\Service
         return (new ViewDataSerializer($invoice))->getWithSubscriptionIfApplicable();
     }
 
-    public function getInvoicePdf(string $id): array
+    /**
+     * @param string       $id
+     * @param bool|boolean $download
+     *
+     * @return string|null
+     */
+    public function getInvoicePdfSignedUrl(string $id, bool $download = false)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
-                                            $id,
-                                            $this->merchant,
-                                            $this->userId,
-                                            $this->userRole);
+        $invoice = $this->repo
+                        ->invoice
+                        ->findByPublicIdAndMerchantAndUser(
+                            $id,
+                            $this->merchant,
+                            $this->userId,
+                            $this->userRole);
 
-        $displayName = $invoice->getPdfDisplayName();
+        $pdf = $this->core->getFreshInvoicePdf($invoice);
 
-        $path = $this->core->getFreshInvoicePdf($invoice);
+        $downloadAs = $download ? $invoice->getPdfDisplayName() : null;
 
-        return [$displayName, $path];
+        return (new FileStore\Accessor)->getSignedUrlOfFile($pdf, $downloadAs);
     }
 
     public function issueInvoicesOfBatch(string $batchId, array $input): array

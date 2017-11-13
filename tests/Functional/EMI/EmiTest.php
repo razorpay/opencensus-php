@@ -20,14 +20,17 @@ class EmiTest extends TestCase
 
     public function testAddEmiPlans()
     {
-        $emiPlan = $this->startTest();
-
-        return $emiPlan;
+        $this->startTest();
     }
 
-    public function testFetchAllEmiPlans()
+    /**
+     * By default all tests are run on app auth. On public auth
+     * there is one route where we return massaged data in different format
+     * for checkout to use.
+     */
+    public function testFetchAllEmiPlansOnPublicAuth()
     {
-        $this->testAddEmiPlans();
+        $this->fixtures->create('emi_plan');
 
         $this->ba->publicAuth();
 
@@ -36,27 +39,27 @@ class EmiTest extends TestCase
 
     public function testFetchEmiPlanUsingPlanId()
     {
-        $this->testAddEmiPlans();
+        $this->fixtures->create('emi_plan');
 
-        $emi = $this->getLastEntity('emi_plan', true);
+        $this->startTest();
+    }
 
-        $request = &$this->testData['testFetchEmiPlanUsingPlanId']['request'];
-
-        $request['url'] = '/emi/'.$emi['id'];
+    public function testFetchEmiPlanUsingPlanIdAndAssertIssuerNameForNetwork()
+    {
+        $this->fixtures->create(
+            'emi_plan',
+            [
+                'bank'    => null,
+                'network' => 'AMEX',
+            ]);
 
         $this->startTest();
     }
 
     public function testDeleteEmiPlan()
     {
-        $this->testAddEmiPlans();
+        $this->fixtures->create('emi_plan');
 
-        $emi = $this->getLastEntity('emi_plan', true);
-
-        $request = &$this->testData['testDeleteEmiPlan']['request'];
-        $request['url'] = '/emi/'.$emi['id'];
-
-        $this->ba->appAuth();
-        $emiPlan = $this->startTest();
+        $this->startTest();
     }
 }
