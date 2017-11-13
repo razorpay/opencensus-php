@@ -4,9 +4,22 @@ namespace RZP\Tests\Functional\Helpers\VirtualAccount;
 
 trait VirtualAccountTrait
 {
-    private function createVirtualAccount(array $input = [])
+    private function createVirtualAccount(
+        array $input = [],
+        $numeric = true,
+        $descriptor = null)
     {
-        $defaultValues = $this->getDefaultVirtualAccountArray();
+        $defaultValues = $this->getDefaultVirtualAccountRequestArray();
+
+        if ($numeric === false)
+        {
+            $defaultValues['receivers']['bank_account']['numeric'] = 0;
+        }
+
+        if ($descriptor !== null)
+        {
+            $defaultValues['receivers']['bank_account']['descriptor'] = $descriptor;
+        }
 
         $attributes = array_merge($defaultValues, $input);
 
@@ -150,15 +163,31 @@ trait VirtualAccountTrait
         ];
     }
 
-    private function getDefaultVirtualAccountArray()
+    private function getOldVirtualAccountRequestArray()
     {
         return [
-            'name'            => 'Test virtual account',
-            'description'     => 'VA for tests',
-            'receiver_types'  => [
+            'name'           => 'Test virtual account',
+            'description'    => 'VA for tests',
+            'receiver_types' => [
                 'bank_account'
             ],
-            'notes'           => [
+            'notes'          => [
+                'a' => 'b',
+            ],
+        ];
+    }
+
+    private function getDefaultVirtualAccountRequestArray()
+    {
+        return [
+            'name'        => 'Test virtual account',
+            'description' => 'VA for tests',
+            'receivers'   => [
+                'types' => [
+                    'bank_account',
+                ],
+            ],
+            'notes'       => [
                 'a' => 'b',
             ],
         ];

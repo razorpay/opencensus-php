@@ -12,7 +12,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::NAME            => 'sometimes|filled|string|max:40',
-        Entity::DESCRIPTOR      => 'sometimes|nullable|alpha_num|custom',
+        Entity::DESCRIPTOR      => 'sometimes|nullable|alpha_num',
         Entity::AMOUNT_EXPECTED => 'sometimes|filled|integer|min:0',
         Entity::DESCRIPTION     => 'sometimes|nullable|string|max:2048',
         Entity::CUSTOMER_ID     => 'sometimes|filled|public_id|size:19',
@@ -32,13 +32,16 @@ class Validator extends Base\Validator
         Entity::RECEIVER_TYPES
     ];
 
-    protected function validateDescriptor($attribute, $descriptor)
+    public static function validateDescriptor($descriptor, $handle)
     {
-        $merchant = $this->entity->merchant;
+        if ($descriptor === null)
+        {
+            return;
+        }
 
         $descriptorLength = strlen($descriptor);
 
-        $handleLength = strlen($merchant->getHandle());
+        $handleLength = strlen($handle);
 
         $rootLength = Receiver::ROOT_LENGTH;
 

@@ -30,9 +30,12 @@ class Receiver
     const ACCOUNT_NUMBER_LENGTH     = 17;
 
     const DEFAULT_BANK_ACCOUNT_OPTIONS = [
-        Entity::DESCRIPTOR => null,
-        Entity::NUMERIC    => true,
+        self::DESCRIPTOR => null,
+        self::NUMERIC    => true,
     ];
+
+    const NUMERIC    = 'numeric';
+    const DESCRIPTOR = 'descriptor';
 
     // No 0s and Os
     // No 1s and Is
@@ -133,9 +136,9 @@ class Receiver
 
         $details = Provider::DEFAULT_DETAILS[$provider];
 
-        $options = array_merge(self::DEFAULT_BANK_ACCOUNT_OPTIONS, $options);
+        $this->setOptions($options);
 
-        $accountNumber = $this->generateAccountNumberForProvider($provider, $options);
+        $accountNumber = $this->generateAccountNumberForProvider($provider);
 
         $merchantDetails = [
             BankAccount::ACCOUNT_NUMBER     => $accountNumber,
@@ -143,6 +146,39 @@ class Receiver
         ];
 
         return array_merge($details, $merchantDetails);
+    }
+
+    /**
+     * Numeric accounts are the default.
+     * Descriptor cannot be used with numeric.
+     * Merchants without handle set are not allowed non-numeric accounts
+     *
+     * @param array $options
+     */
+    protected function setOptions(array $options)
+    {
+        $options = array_merge(self::DEFAULT_BANK_ACCOUNT_OPTIONS, $options);
+
+        $this->numeric = boolval($options[self::NUMERIC]);
+
+        $this->descriptor = $options[self::DESCRIPTOR];
+
+        $handle = $this->merchant->getHandle();
+
+        Validator::validateDescriptor($this->descriptor, $handle);
+
+        if (($this->numeric === true) and
+            ($this->descriptor !== null))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_WITH_NUMERIC);
+        }
+        else if (($this->numeric === false) and
+                 ($handle === null))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ALPHA_SANS_HANDLE);
+        }
     }
 
     protected function selectProvider()
@@ -157,7 +193,7 @@ class Receiver
         return $provider;
     }
 
-    protected function generateAccountNumberForProvider(string $provider, $options)
+    protected function generateAccountNumberForProvider(string $provider)
     {
         $bankCode = Provider::getBankCode($provider);
 
@@ -232,22 +268,18 @@ class Receiver
         return $accountNumber;
     }
 
-    // If handle is not set, we use the default numeric root,
-    // and later add the default handle.
-    //
-    // If handle is set, and it contains alphabets,
-    // we use the alpha root (RZRP)
+    // By default, we use the default numeric root and later add default handle.
+    // Use the alphabetical roots when non-numeric is explicitly requested.
     //
     protected function getRoot(string $provider)
     {
         $root = Provider::ROOT[$provider]['default'];
 
-        $handle = $this->merchant->getHandle();
-
-        if (($handle !== null) and
-            (preg_match("/[a-z]/i", $handle) === 1))
+        if ($this->numeric === false)
         {
             $root = Provider::ROOT[$provider]['alpha'];
+
+            $handle = $this->merchant->getHandle();
 
             if (strlen($handle) !== self::STANDARD_HANDLE_LENGTH)
             {
@@ -261,13 +293,13 @@ class Receiver
     // If handle is not set, we use the default numeric root,
     // and now add the default handle.
     //
-    // If handle is set, we use it.
+    // If non-numeric is requested, we use merchant handle.
     //
     protected function getHandle(string $root)
     {
         $merchantHandle = $this->merchant->getHandle();
 
-        if ($merchantHandle === null)
+        if ($this->numeric === true)
         {
             $merchantHandle = $this->getDefaultHandle($root);
         }
@@ -285,7 +317,7 @@ class Receiver
     {
         $descriptor = $this->descriptor;
 
-        if (($handle === null) or
+        if (($this->numeric === true) or
             ($descriptor === null))
         {
             $totalLength = self::ACCOUNT_NUMBER_LENGTH;
@@ -321,8 +353,7 @@ class Receiver
     {
         $charSpace = self::ACCOUNT_NUMBER_NUM_CHAR_SPACE;
 
-        if (($this->merchant->getHandle() !== null) and
-            (preg_match("/[a-z]/i", $this->merchant->getHandle()) === true))
+        if ($this->numeric === false)
         {
             $charSpace = self::ACCOUNT_NUMBER_ALPHANUM_CHAR_SPACE;
         }

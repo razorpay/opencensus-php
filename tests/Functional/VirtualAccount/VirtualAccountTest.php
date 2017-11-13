@@ -106,34 +106,41 @@ class VirtualAccountTest extends TestCase
         // Handle is unset so default root is used with default handle
         $this->assertRegexp("/11111100[0-9]{9}$/", $vba['account_number']);
 
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() {
-            $this->createVirtualAccount(['descriptor' => 'desc1234']);
-        });
-
         $this->fixtures->merchant->setHandle('hand');
 
-        $this->createVirtualAccount(['descriptor' => 'desc1234']);
+        $this->createVirtualAccount([], false, 'desc1234');
 
         $vba = $this->getLastEntity('bank_account', true);
-        // Handle is set so standard root is used with given handle
+        // Handle is set so standard root is used with given descriptor
         $this->assertEquals("RZRPHANDDESC1234", $vba['account_number']);
 
-        $this->fixtures->merchant->setHandle('3333');
-
-        $this->createVirtualAccount(['descriptor' => 'desc5678']);
+        $this->createVirtualAccount([], true);
 
         $vba = $this->getLastEntity('bank_account', true);
-        // Handle is set so standard root is used with given handle
-        $this->assertEquals("11113333DESC5678", $vba['account_number']);
+        // Handle is set, but numeric accounts can still be created
+        $this->assertRegexp("/11111100[0-9]{9}$/", $vba['account_number']);
+    }
+
+    public function testCreateVirtualAccountDescriptorErrors()
+    {
+        $data = $this->testData[__FUNCTION__]['alphaWithoutHandle'];
+
+        $this->runRequestResponseFlow($data, function() {
+            $this->createVirtualAccount([], false, 'desc1234');
+        });
+
+        $data = $this->testData[__FUNCTION__]['numericWithDescriptor'];
+
+        $this->runRequestResponseFlow($data, function() {
+            $this->createVirtualAccount([], true, 'desc1234');
+        });
     }
 
     public function testCreateVirtualAccountDescriptorLengths()
     {
         $this->fixtures->merchant->setHandle('hand');
 
-        $this->createVirtualAccount(['descriptor' => '9chardesc']);
+        $this->createVirtualAccount([], false, '9chardesc');
 
         $vba = $this->getLastEntity('bank_account', true);
         $this->assertEquals("RZRPHAND9CHARDESC", $vba['account_number']);
@@ -141,14 +148,14 @@ class VirtualAccountTest extends TestCase
         // Only upto nine chars allows in descriptor
         $data = $this->testData[__FUNCTION__];
         $this->runRequestResponseFlow($data, function() {
-            $this->createVirtualAccount(['descriptor' => '10chardesc']);
+            $this->createVirtualAccount([], false, '10chardesc');
         });
 
         // Shortening handle to 3 characters
         $this->fixtures->merchant->setHandle('han');
 
         // Now 10 characters are allows
-        $this->createVirtualAccount(['descriptor' => '10chardesc']);
+        $this->createVirtualAccount([], false, '10chardesc');
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is set so standard root is used with given handle

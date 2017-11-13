@@ -117,6 +117,40 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccountDescriptorErrors' => [
+        'alphaWithoutHandle' => [
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'Alphabetical account numbers cannot be used as '.
+                                         'merchant handle is not set for your account.',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class' => 'RZP\Exception\BadRequestException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ALPHA_SANS_HANDLE,
+            ],
+        ],
+        'numericWithDescriptor' => [
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'Descriptor cannot be used for numeric accounts.',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class' => 'RZP\Exception\BadRequestException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_WITH_NUMERIC,
+            ],
+        ],
+    ],
+
     'testCreateVirtualAccountDescriptorLengths' => [
         'response' => [
             'content' => [
