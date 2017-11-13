@@ -56,17 +56,9 @@
 
                               <tr>
                                 <td class="text-center">
-                                  <div style="color: {{ $brand_text_color }} ; padding-top:10px ">
-                                      Payment ID : pay_{{ $dispute['payment_id'] }}
-                                  </div>
-                                </td>
-                              </tr>
-
-                              <tr>
-                                <td class="text-center">
                                   <div style="margin-top: 12px; color: {{ $brand_text_color }}">
                                     <div style="color: {{ $brand_text_color }}">
-                                        A dispute has been raised for amount &#x20b9; {{ $amount }}
+                                        A dispute has been raised for Rs. {{ $amount }}
                                     </div>
                                   </div>
                                 </td>
