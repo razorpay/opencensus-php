@@ -20,6 +20,7 @@ import {
 
 import { closeModal } from 'rzp/modules/modals';
 
+// returns value in paise
 const getReversibleAmount = transfer => {
   return transfer.amount - transfer.amount_reversed;
 };
@@ -172,7 +173,7 @@ export default class ReversalModal extends Component {
     const { handleSubmit, transfer } = this.props;
 
     const amountError = amountValidation(this.props),
-      partial = isPartialTransfer(this.props);
+      isPartial = isPartialTransfer(this.props);
 
     return (
       <div>
@@ -206,7 +207,7 @@ export default class ReversalModal extends Component {
                   <b>
                     <ReversalType {...this.props} /> reversal
                   </b>.
-                  {!partial && (
+                  {!isPartial && (
                     <span> Change amount for a partial reversal.</span>
                   )}
                 </small>
