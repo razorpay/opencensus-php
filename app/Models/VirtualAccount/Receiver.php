@@ -29,6 +29,11 @@ class Receiver
     const DESCRIPTOR_LENGTH         = 9;
     const ACCOUNT_NUMBER_LENGTH     = 17;
 
+    const DEFAULT_BANK_ACCOUNT_OPTIONS = [
+        Entity::DESCRIPTOR => null,
+        Entity::NUMERIC    => true,
+    ];
+
     // No 0s and Os
     // No 1s and Is
     // No 5s and Ss
@@ -48,8 +53,7 @@ class Receiver
 
     public function __construct(
         Merchant\Entity $merchant,
-        string $name = null,
-        string $descriptor = null)
+        string $name = null)
     {
         $this->app = App::getFacadeRoot();
 
@@ -65,8 +69,6 @@ class Receiver
         $this->merchant = $merchant;
 
         $this->name = $name;
-
-        $this->descriptor = $descriptor;
     }
 
     public static function areTypesValid(array $receiverTypes): bool
@@ -76,11 +78,11 @@ class Receiver
         return (empty($invalidTypes) === true);
     }
 
-    public function buildBankAccount(Entity $virtualAccount)
+    public function buildBankAccount(Entity $virtualAccount, array $options)
     {
         $bankAccount = new BankAccount;
 
-        $bankAccountInput = $this->generateBankAccountInput();
+        $bankAccountInput = $this->generateBankAccountInput($options);
 
         $bankAccount = $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
 
@@ -125,13 +127,15 @@ class Receiver
         return $input;
     }
 
-    protected function generateBankAccountInput()
+    protected function generateBankAccountInput(array $options)
     {
         $provider = $this->selectProvider();
 
         $details = Provider::DEFAULT_DETAILS[$provider];
 
-        $accountNumber = $this->generateAccountNumberForProvider($provider);
+        $options = array_merge(self::DEFAULT_BANK_ACCOUNT_OPTIONS, $options);
+
+        $accountNumber = $this->generateAccountNumberForProvider($provider, $options);
 
         $merchantDetails = [
             BankAccount::ACCOUNT_NUMBER     => $accountNumber,
@@ -153,7 +157,7 @@ class Receiver
         return $provider;
     }
 
-    protected function generateAccountNumberForProvider(string $provider)
+    protected function generateAccountNumberForProvider(string $provider, $options)
     {
         $bankCode = Provider::getBankCode($provider);
 

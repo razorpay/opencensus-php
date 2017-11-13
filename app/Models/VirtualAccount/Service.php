@@ -33,6 +33,8 @@ class Service extends Base\Service
 
         $customer = $this->getCustomerIfGiven($input);
 
+        $this->modifyRequestFromOldFormat($input);
+
         $virtualAccount = $this->core->create($input, $this->merchant, $customer);
 
         $this->trace->info(
@@ -214,6 +216,47 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED);
         }
+    }
+
+    protected function modifyRequestFromOldFormat(array & $input)
+    {
+        if ($this->isOldFormat($input) === false)
+        {
+            return;
+        }
+
+        $types = $input[Entity::RECEIVER_TYPES];
+
+        unset($input[Entity::RECEIVER_TYPES]);
+
+        if (is_array($types) === false)
+        {
+            $types = [$types];
+        }
+
+        $input[Entity::RECEIVERS] = [
+            Entity::TYPES => $types,
+        ];
+
+        if ((in_array(Receiver::BANK_ACCOUNT, $types, true) === true) and
+            (isset($input[Entity::DESCRIPTOR]) === true))
+        {
+            $input[Entity::RECEIVERS][Entity::BANK_ACCOUNT] = [
+                Entity::DESCRIPTOR => $input[Entity::DESCRIPTOR],
+            ];
+
+            // unset($input[Entity::DESCRIPTOR]);
+        }
+    }
+
+    protected function isOldFormat(array $input)
+    {
+        if (isset($input[Entity::RECEIVER_TYPES]) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getNewProcessor($merchant)
