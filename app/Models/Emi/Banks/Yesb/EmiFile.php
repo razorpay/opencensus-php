@@ -123,7 +123,7 @@ class EmiFile extends Base\EmiFile
 
         $this->totalTransactions = $totalTransactions;
 
-        $this->totalAmount = $totalAmount;
+        $this->totalAmount = $this->getFormattedAmount($totalAmount);
 
         return $data;
     }
