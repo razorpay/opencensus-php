@@ -3,20 +3,21 @@
 namespace RZP\Models\Payout;
 
 use Carbon\Carbon;
-use RZP\Error\ErrorCode;
+
 use RZP\Exception;
-use RZP\Constants\Mode;
-use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
-use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
-use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Transaction;
-use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Models\FundTransfer\Kotak;
+use RZP\Models\Feature as MerchantFeature;
 use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+
 
 class Core extends Base\Core
 {
@@ -25,6 +26,8 @@ class Core extends Base\Core
     const MUTEX_RESOURCE        = 'PAYOUT_PROCESSING';
 
     const MUTEX_LOCK_TIMEOUT    = 900;
+
+    const MAX_PAYOUT_AMOUNT     = 500000000; // 50 Lakhs
 
     public function __construct()
     {
@@ -108,7 +111,9 @@ class Core extends Base\Core
         }
         else
         {
-            $amount = $merchant->balance->getBalance();
+            $merchantBalance = $merchant->balance->getBalance();
+
+            $amount = ($merchantBalance > self::MAX_PAYOUT_AMOUNT) ? self::MAX_PAYOUT_AMOUNT : $merchantBalance;
         }
 
         if ((isset($input[Entity::MIN_AMOUNT]) === true) and
@@ -343,9 +348,9 @@ class Core extends Base\Core
 
     protected function validateMerchantStatus(Merchant\Entity $merchant)
     {
-        $onHold = $merchant->getHoldFunds();
-
-        if ($onHold === true)
+        // If merchant payout_on_hold is false, then we don't check the merchant funds_on_hold and proceed with payout creation
+        if (($merchant->isFeatureEnabled(MerchantFeature::PAYOUT_ON_HOLD) === true) and
+            ($merchant->getHoldFunds() === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);
