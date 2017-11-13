@@ -521,11 +521,18 @@ class Base extends BaseModel\Core
         }
     }
 
+    /**
+     * While creating the batch we parse the file and validate each entry in the file.
+     * Post validation, we fill the batch entity with total_count and other metadata
+     *
+     * @param  string $filePath
+     * @param  array  $input
+     */
     protected function parseInputFileAndValidateEntries(string $filePath, array $input)
     {
         $entries = $this->parseFile($filePath);
 
-        $entries = $this->validateEntries($entries, $input);
+        $this->validateEntries($entries, $input);
 
         $this->fillBatchEntityWithInputFileDetails($entries);
     }
@@ -855,6 +862,17 @@ class Base extends BaseModel\Core
         }
 
         $this->batch->setFailureReason($failureReason);
+    }
+
+    /**
+     * Method to configure any system limits before beginning batch processing
+     * To be implemented by respective processors
+     *
+     * @return null
+     */
+    protected function increaseAllowedSystemLimits()
+    {
+        return;
     }
 
     /**
