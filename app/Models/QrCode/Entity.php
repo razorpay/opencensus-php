@@ -70,7 +70,7 @@ class Entity extends Base\PublicEntity
     // --------------------- GETTERS ---------------------
 
     /**
-     * Gets the most recent invoice pdf file
+     * Gets the most recent qrcode file
      *
      * @return FileStore\Entity
      */
