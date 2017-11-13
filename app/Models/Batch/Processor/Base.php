@@ -521,6 +521,32 @@ class Base extends BaseModel\Core
         }
     }
 
+    protected function parseInputFileAndValidateEntries(string $filePath, array $input)
+    {
+        $entries = $this->parseFile($filePath);
+
+        $entries = $this->validateEntries($entries, $input);
+
+        $this->fillBatchEntityWithInputFileDetails($entries);
+    }
+
+    /**
+     * Fills Batch entity with details extracted from the input file.
+     * Eg.
+     * - Total row count
+     * - Aggregate sum of amount field
+     *
+     * @param array $entries
+     */
+    protected function fillBatchEntityWithInputFileDetails(array $entries)
+    {
+        $totalAmount = array_sum(array_column($entries, Batch\Header::AMOUNT));
+        $totalCount  = count($entries);
+
+        $this->batch->setAmount($totalAmount);
+        $this->batch->setTotalCount($totalCount);
+    }
+
     /**
      * While creating the batch we parse the file and validate each entry in the file.
      * Post validation, we fill the batch entity with total_count and other metadata
