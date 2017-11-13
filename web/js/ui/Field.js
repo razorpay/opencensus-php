@@ -19,7 +19,12 @@ export default function Field({ tag = 'input', label, infoMsg, ...props }) {
         {label}
       </label>
       <Tag {...props} />
-      {infoMsg && <div class="info">{infoMsg}</div>}
+      {infoMsg && (
+        <div class="info-block">
+          <i class="i i-info-circle" />
+          {infoMsg}
+        </div>
+      )}
     </div>
   );
 }
