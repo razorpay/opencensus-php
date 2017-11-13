@@ -2,7 +2,10 @@
 
 namespace RZP\Gateway\Netbanking\Axis\Mock;
 
+use Carbon\Carbon;
 use RZP\Gateway\Base;
+use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Netbanking\Axis\Status;
 use RZP\Gateway\Netbanking\Axis\Emandate;
@@ -13,6 +16,8 @@ use RZP\Gateway\Netbanking\Axis\ResponseFields;
 class Server extends Base\Mock\Server
 {
     use EmandateTrait;
+
+    protected $bankingType = 'retail';
 
     public function authorize($input)
     {
@@ -65,13 +70,36 @@ class Server extends Base\Mock\Server
 
     protected function getDecryptedMockAuthData($input)
     {
-        $masterKey = $this->getGatewayInstance()->getSecret();
+        $data = $this->getDecryptedDataForBankingType($input);
+
+        // Since there is no way to identify based on parameter if the
+        // corporate netbanking was to be employed, this can be checked
+        // by trying to decrypt the payment using the corporate key
+        if (empty($data) === true)
+        {
+            $dataCorporate = $this->getDecryptedDataForBankingType($input, 'corporate');
+
+            if (empty($dataCorporate) === false)
+            {
+                $this->bankingType = 'corporate';
+
+                $data = $dataCorporate;
+            }
+        }
+
+        return $data;
+    }
+
+    protected function getDecryptedDataForBankingType($input, $bankingType = null)
+    {
+        $masterKey = $this->getGatewayInstance($bankingType)->getSecret();
 
         $crypto = new AESCrypto($masterKey);
 
         $decryptedString = $crypto->decryptString($input[RequestFields::ENCRYPTED_STRING]);
 
         $toReplace   = ['~', '$'];
+
         $willReplace = ['=', '&'];
 
         $decryptedString = str_replace($toReplace, $willReplace, $decryptedString);
@@ -83,6 +111,27 @@ class Server extends Base\Mock\Server
 
     protected function createResponse($data)
     {
+        $content = $this->getBaseResponseForBankingType($data);
+
+        // for test cases
+        $this->content($content);
+
+        $masterKey = $this->getMasterKeyFromGateway();
+
+        // Make sure this is correct, there is some lack of clarity here
+        $query = http_build_query($content);
+
+        $crypto = new AESCrypto($masterKey);
+
+        $encryptedString = $crypto->encryptString($query);
+
+        $response[ResponseFields::ENCRYPTED_STRING] = $encryptedString;
+
+        return $response;
+    }
+
+    protected function getBaseResponseForBankingType($data)
+    {
         $response =  [
             ResponseFields::STATUS             => Status::YES,
             ResponseFields::MERCHANT_REFERENCE => $data[RequestFields::MERCHANT_REFERENCE],
@@ -93,21 +142,36 @@ class Server extends Base\Mock\Server
             ResponseFields::FLAG               => Status::SUCCESS,
         ];
 
-        // for test cases
-        $this->content($response);
+        if ($this->bankingType === 'corporate')
+        {
+            $response[ResponseFields::PAID] = Status::YES;
+        }
 
-        // Make sure this is correct, there is some lack of clarity here
-        $query = http_build_query($response);
+        return $response;
+    }
 
-        $masterKey = $this->getGatewayInstance()->getSecret();
+    public function getS2sResponseForPayment($gatewayPayment)
+    {
+        $tranDateTime = Carbon::createFromTimestamp(
+                        $gatewayPayment['created_at'] + 10,
+                        Timezone::IST)
+                        ->format('d/m/y+h:m:s');
 
-        $crypto = new AESCrypto($masterKey);
-
-        $encryptedString = $crypto->encryptString($query);
-
-        $content[ResponseFields::ENCRYPTED_STRING] = $encryptedString;
+        $content = [
+            ResponseFields::BANK_REFERENCE_ID  => $gatewayPayment['bank_payment_id'],
+            ResponseFields::PAID               => Status::YES,
+            ResponseFields::TRAN_DATE_TIME     => $tranDateTime,
+            ResponseFields::AMOUNT             => $gatewayPayment['amount'],
+            ResponseFields::ITEM_CODE          => $gatewayPayment['reference1'],
+            ResponseFields::MERCHANT_REFERENCE => $gatewayPayment['payment_id'],
+        ];
 
         return $content;
+    }
+
+    protected function getMasterKeyFromGateway()
+    {
+        return $this->getGatewayInstance($this->bankingType)->getSecret();
     }
 
     protected function getVerifyXml($input)
