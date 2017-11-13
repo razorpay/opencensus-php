@@ -36,4 +36,6 @@ class Fields
     const PASSWORD          = 'password';
 
     const REQUEST           = 'request';
+
+    const UDF5              = 'udf5';
 }
