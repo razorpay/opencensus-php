@@ -17,7 +17,7 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Processor extends VirtualAccount\Processor
 {
-    const RANDOM_CARD_PADDING = '12345';
+    const RANDOM_CARD_PADDING = '00000';
 
     /**
      * Entry point for  BharatQr  process flow.
@@ -159,7 +159,7 @@ class Processor extends VirtualAccount\Processor
 
         if ($qrCode === null)
         {
-            return $qrCode;
+            return null;
         }
 
         $virtualAccount = $this->repo
@@ -224,10 +224,10 @@ class Processor extends VirtualAccount\Processor
         // TODO: Handle the null checks in card validation
         $card = [
             Card\Entity::NUMBER       => $this->getLuhnValidCardNumberFromBharatQr($bharatQr),
-            Card\Entity::CVV          => '123',
-            Card\Entity::NAME         => 'Random',
-            Card\Entity::EXPIRY_MONTH => '11',
-            Card\Entity::EXPIRY_YEAR  => '2037',
+            Card\Entity::CVV          => Constants::CARD_CVV,
+            Card\Entity::NAME         => Constants::CARD_NAME,
+            Card\Entity::EXPIRY_MONTH => Constants::CARD_EXPIRY_MONTH,
+            Card\Entity::EXPIRY_YEAR  => Constants::CARD_EXPIRY_YEAR,
         ];
 
         return $card;

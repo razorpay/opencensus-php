@@ -3686,7 +3686,7 @@ trait Authorize
         // TODO: To be changed after refactor
         //
         if (($payment->isBankTransfer() === true) or
-            (Route::currentRouteName() === 'bharat_qr_payment_process'))
+            (Route::currentRouteName() === 'gateway_payment_callback_bharatqr'))
         {
             return false;
         }

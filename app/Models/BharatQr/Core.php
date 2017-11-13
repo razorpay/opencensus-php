@@ -7,30 +7,12 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Models\Payment\Method;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\VirtualAccount\Provider;
 
 class Core extends Base\Core
 {
     protected $mutex;
-
-    protected $map = [
-        NotificationParams::F002        => Entity::CARD_NUMBER,
-        NotificationParams::F003        => Entity::CARD_NETWORK,
-        NotificationParams::F004        => Entity::AMOUNT,
-        NotificationParams::F011        => Entity::TRACE_NUMBER,
-        NotificationParams::F012        => Entity::TRANSACTION_TIME,
-        NotificationParams::F013        => Entity::TRANSACTION_DATE,
-        NotificationParams::F037        => Entity::RRN,
-        NotificationParams::F038        => Entity::PROVIDER_REFERENCE_ID,
-        NotificationParams::F039        => Entity::STATUS_CODE,
-        NotificationParams::F041        => Entity::GATEWAY_TERMINAL_ID,
-        NotificationParams::F042        => Entity::GATEWAY_MERCHANT_ID,
-        NotificationParams::F102        => Entity::GATEWAY_TERMINAL_DESC,
-        NotificationParams::PURCHASE_ID => Entity::MERCHANT_REFERENCE,
-        NotificationParams::SENDER_NAME => Entity::CUSTOMER_NAME,
-    ];
 
     public function __construct()
     {
@@ -41,8 +23,6 @@ class Core extends Base\Core
 
     public function processPayment(array $input)
     {
-        $input = $this->getBharatQrInputParams($input);
-
         $this->trace->info(
             TraceCode::BHARAT_QR_PAYMENT_PROCESS_REQUEST,
             $input
@@ -51,13 +31,6 @@ class Core extends Base\Core
         try
         {
             $bharatQr = (new Entity)->build($input);
-
-            // TODO: handle failed Payment
-            if (empty($bharatQr->getProviderReferenceId()) === true)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PROVIDER_REFERENCE_ID_NEEDS_TO_SENT);
-            }
 
             $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
@@ -79,35 +52,5 @@ class Core extends Base\Core
         }
 
         return $valid;
-    }
-
-
-    protected function getBharatQrInputParams(array $input)
-    {
-        $input = $this->getMappedAttributes($input);
-
-        // For now notification only comes for card method
-        $input[Entity::METHOD] = Method::CARD;
-
-        return $input;
-    }
-
-    protected function getMappedAttributes(array $attributes)
-    {
-        $attr = [];
-
-        $map = $this->map;
-
-        foreach ($attributes as $key => $value)
-        {
-            if (isset($map[$key]))
-            {
-                $newKey = $map[$key];
-
-                $attr[$newKey] = $value;
-            }
-        }
-
-        return $attr;
     }
 }

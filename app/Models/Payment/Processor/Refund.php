@@ -32,6 +32,12 @@ trait Refund
      */
     protected function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
     {
+        if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
+        }
+
         if ($payment->isDisputed() === true)
         {
             throw new Exception\BadRequestException(
@@ -730,11 +736,6 @@ trait Refund
         else if ($payment->isBankTransfer() === true)
         {
             return $this->refundBankTransfer($payment, $data);
-        }
-        else if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
         }
         else
         {

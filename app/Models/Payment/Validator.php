@@ -120,7 +120,7 @@ class Validator extends Base\Validator
         //
         // TODO: To be changed after refactor. No validation required for Bharat qr
         //
-        if (Route::currentRouteName() === 'bharat_qr_payment_process')
+        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
         {
             return;
         }
@@ -339,7 +339,7 @@ class Validator extends Base\Validator
         //
         // TODO: To be changed after refactor. No validation required for Bharat qr
         //
-        if (Route::currentRouteName() === 'bharat_qr_payment_process')
+        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
         {
             return;
         }

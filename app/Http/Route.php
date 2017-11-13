@@ -186,7 +186,7 @@ final class Route
         'bank_transfer_refund_retry'              => ['post',     'bank_transfers/refunds/retry',                   'BankTransferController@retryBankTransferRefund'                    ],
         'bank_transfer_edit_payer_account'        => ['put',      'bank_transfers/{id}/payer_bank_account',         'BankTransferController@editPayerBankAccount'                       ],
         'bank_transfer_insert'                    => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
-        'bharat_qr_payment_process'               => ['post',     'bharatqr/payment/process',                      'BharatQrController@processBharatQrPayment'                         ],
+        'gateway_payment_callback_bharatqr'       => ['post',     'payment/callback/bharatqr',                      'BharatQrController@processBharatQrPayment'                         ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
         'virtual_account_fetch'                   => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
@@ -1087,7 +1087,7 @@ final class Route
         'emandate_debit_reconcile',
         'user_reset_password_create',
         'user_reset_password_token',
-        'bharat_qr_payment_process',
+        'gateway_payment_callback_bharatqr',
     ];
 
     public static $proxy = [
@@ -1506,7 +1506,7 @@ final class Route
         ],
 
         'bharatqr' => [
-            'bharat_qr_payment_process',
+            'gateway_payment_callback_bharatqr',
         ],
 
         'mailgun' => [

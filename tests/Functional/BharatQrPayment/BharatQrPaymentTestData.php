@@ -15,7 +15,7 @@ return [
     ],
 
     'testQrPaymentProcess' => [
-        'url'     => '/bharatqr/payment/process',
+        'url'     => '/payment/callback/bharatqr',
         'method'  => 'post',
         'content' => [
             'F002'       => '423156XXXXXX1234',

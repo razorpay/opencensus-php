@@ -12,7 +12,8 @@ class Validator extends Base\Validator
         Entity::VPA                   => 'sometimes|string',
         Entity::CARD_NUMBER           => 'sometimes|string',
         Entity::CARD_NETWORK          => 'sometimes|string',
-        Entity::PROVIDER_REFERENCE_ID => 'sometimes|string',
+        // TODO: Failed payments to be handled in separate PR
+        Entity::PROVIDER_REFERENCE_ID => 'required|string',
         Entity::MERCHANT_REFERENCE    => 'sometimes|string',
         Entity::TRACE_NUMBER          => 'sometimes|string',
         Entity::RRN                   => 'required|string',

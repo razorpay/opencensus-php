@@ -1637,7 +1637,7 @@ class Processor
         // would have been set already.
         // The gateway would be set AFTER the payment is created and processed.
         //
-        if (Route::currentRouteName() === 'bharat_qr_payment_process')
+        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
         {
             return false;
         }
