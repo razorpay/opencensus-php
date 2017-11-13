@@ -4,6 +4,7 @@ namespace RZP\Models\VirtualAccount;
 
 use App;
 use RZP\Exception;
+use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -14,15 +15,17 @@ class Receiver
 {
     const BANK_ACCOUNT      = 'bank_account';
     // const VPA               = 'vpa';
+    const QR_CODE           = 'qr_code';
 
     const TYPES = [
         self::BANK_ACCOUNT,
         // self::VPA,
+        self::QR_CODE,
     ];
 
     const ROOT_LENGTH               = 4;
     // Handle length can be 3 also
-    // const HANDLE_LENGTH             = 4;
+    const STANDARD_HANDLE_LENGTH    = 4;
     const DESCRIPTOR_LENGTH         = 9;
     const ACCOUNT_NUMBER_LENGTH     = 17;
 
@@ -87,6 +90,38 @@ class Receiver
         $this->repo->saveOrFail($bankAccount);
 
         return $bankAccount;
+    }
+
+    public function buildQrCode(Entity $virtualAccount)
+    {
+        $qrCode = new QrCode\Entity;
+
+        $input = $this->getQrCodeEntityParams($virtualAccount);
+
+        $qrCode = $qrCode->build($input);
+
+        $qrCode->generateId();
+
+        $qrCode->merchant()->associate($this->merchant);
+
+        $qrCode->source()->associate($virtualAccount);
+
+        $qrCode = $qrCode->generateQrString();
+
+        $this->repo->saveOrFail($qrCode);
+
+        return $qrCode;
+    }
+
+    protected function getQrCodeEntityParams(Entity $virtualAccount)
+    {
+        $input = [
+            // For now it is set bharat qr as default
+            QrCode\Entity::PROVIDER  => Provider::BHARAT_QR,
+            QrCode\Entity::AMOUNT    => $virtualAccount->getAmountExpected(),
+        ];
+
+        return $input;
     }
 
     protected function generateBankAccountInput()
@@ -201,9 +236,15 @@ class Receiver
     {
         $root = Provider::ROOT[$provider]['standard'];
 
-        if ($this->merchant->getHandle() === null)
+        $handle = $this->merchant->getHandle();
+
+        if ($handle === null)
         {
             $root = Provider::ROOT[$provider]['default'];
+        }
+        else if (strlen($handle) !== self::STANDARD_HANDLE_LENGTH)
+        {
+            $root = Provider::ROOT[$provider]['special'];
         }
 
         return $root;
@@ -255,21 +296,17 @@ class Receiver
         return Provider::DEFAULT_HANDLE_MAPPING[$root];
     }
 
-    protected function padWithRandomDigits(int $desiredLength, $str = '')
+    protected function padWithRandomDigits(int $desiredLength)
     {
-        $requiredLength = $desiredLength - strlen($str);
-
         $pad = '';
 
         $charSpace = str_split(self::ACCOUNT_NUMBER_CHAR_SPACE);
 
-        while (strlen($pad) < $requiredLength)
+        while (strlen($pad) < $desiredLength)
         {
             $pad .= $charSpace[array_rand($charSpace)];
         }
 
-        $str = $pad . $str;
-
-        return $str;
+        return $pad;
     }
 }

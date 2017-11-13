@@ -598,7 +598,14 @@ class Gateway extends Base\Gateway
             return false;
         }
 
-         throw new Exception\LogicException(
+        $msg = strtolower($content['message']);
+
+        if (in_array($msg, [Status::NO_RECORDS, Status::NO_RECORDS2], true) === true)
+        {
+            return false;
+        }
+
+        throw new Exception\LogicException(
                 'Shouldn\'t reach here',
                 null,
                 [

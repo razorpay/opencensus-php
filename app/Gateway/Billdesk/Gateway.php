@@ -114,7 +114,11 @@ class Gateway extends Base\Gateway
                     $content['ErrorDescription']);
         }
 
-        assertTrue($content['CustomerID'] === $input['payment']['id']);
+        $this->assertPaymentId($input['payment']['id'], $content['CustomerID']);
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($content['TxnAmount'], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -964,7 +968,6 @@ class Gateway extends Base\Gateway
         {
             $content['MerchantID'] = $this->getTestMerchantId();
             $content['SecurityID'] = $this->getTestAccessCode();
-            $content['TxnAmount'] = '5.00';
         }
 
         return $content;

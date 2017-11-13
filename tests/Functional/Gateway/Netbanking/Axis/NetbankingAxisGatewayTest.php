@@ -50,6 +50,21 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->assertEquals($gatewayMerchantId, $gatewayEntity['reference1']);
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['AMT'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
     public function testTpvPayment()
     {
         $this->fixtures->create('terminal:shared_netbanking_axis_tpv_terminal');

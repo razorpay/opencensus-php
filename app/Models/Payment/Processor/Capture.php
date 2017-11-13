@@ -620,8 +620,6 @@ trait Capture
 
         list($txn, $feesSplit) = $txnCore->createOrUpdateFromPaymentCaptured($payment);
 
-        $payment->setServiceTax($txn->getServiceTax());
-
         $payment->setTax($txn->getTax());
 
         if ($this->merchant->isFeeBearerCustomer() === false)

@@ -199,6 +199,11 @@ trait Refund
     {
         $payment = $refund->payment;
 
+        if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
         $this->setPaymentAndRefundInfo($refund, $payment);
 
         $gateway = $payment->getGateway();
@@ -771,16 +776,19 @@ trait Refund
      * - no need to update payment - marked as refunded
      *
      * @param Payment\Refund\Entity $refund
+     * @param array $input Values passed in API input
      *
      * @return string
      */
-    public function processRefundRetry(Payment\Refund\Entity $refund)
+    public function processRefundRetry(Payment\Refund\Entity $refund, array $input = [])
     {
         $payment = $refund->payment;
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
+
+        $data = array_merge($data, $input);
 
         if ($refund->isProcessed() === true)
         {
@@ -797,7 +805,7 @@ trait Refund
                 $payment->getId(),
                 function() use ($data, $payment)
                 {
-                    return $this->callGatewayRefundFunction($payment, $data);
+                    return $this->callRefundFunction($payment, $data);
                 });
         }
         else

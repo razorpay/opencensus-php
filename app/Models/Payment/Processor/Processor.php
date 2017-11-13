@@ -263,7 +263,7 @@ class Processor
             'originalAmount'    => $input['amount'],
             'fees'              => $fee,
             'razorpay_fee'      => $fee - $tax,
-            'serviceTax'        => $tax,
+            'tax'               => $tax,
             'amount'            => $input['amount'] + $fee,
         );
 
@@ -762,6 +762,7 @@ class Processor
      *                             action
      *
      * @return array or null
+     * @throws Exception\GatewayErrorException
      * @throws Exception\LogicException
      */
     protected function callGatewayFunction($action, array $gatewayData)
@@ -1037,7 +1038,8 @@ class Processor
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
-            if ($this->merchant->isTPVRequired() === true)
+            if (($this->merchant->isTPVRequired() === true) and
+                ($payment->isNetbanking() === true))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
@@ -1607,6 +1609,15 @@ class Processor
 
     protected function shouldHitGateway(Payment\Entity $payment)
     {
+        if ($payment->isFileBasedEmandateDebitPayment() === true)
+        {
+            //
+            // If the payment is a second recurring payment of a file-based emandate bank
+            // we do not hit the gateway, we send a debit request asynchronously
+            //
+            return false;
+        }
+
         if ($payment->isBankTransfer() === true)
         {
             return false;

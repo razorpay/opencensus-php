@@ -61,6 +61,8 @@ class Server extends Base\Mock\Server
                     Carbon::now(), DateFormat::TRAN_DATE_FORMAT),
             ];
 
+            $this->content($hashContent);
+
             $content = array_merge($content, $hashContent);
 
             $content[ResponseFields::HASH] = $this->generateHash($hashContent);
@@ -81,7 +83,7 @@ class Server extends Base\Mock\Server
             ResponseFields::STATUS       => Status::SUCCESS,
             ResponseFields::CODE         => ResponseCode::SUCCESS_CODE,
             ResponseFields::FDC_TXN_ID   => $this->getArtlTxnId(),
-            ResponseFields::TXN_AMT      => number_format(($input['amount']/100), 2),
+            ResponseFields::TXN_AMT      => number_format(($input['amount'] / 100), 2),
             ResponseFields::FDC_TXN_DATE => $this->getFormattedDate(
                 Carbon::now(),
                 DateFormat::FDC_TXN_DATE_FORMAT),

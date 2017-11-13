@@ -6,10 +6,12 @@ use Carbon\Carbon;
 use RZP\Constants\Entity;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Models\Customer\Token\RecurringStatus;
+use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Customer\GatewayToken\Entity as GatewayToken;
@@ -38,7 +40,7 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->fixtures->create(Entity::CUSTOMER);
 
-        $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
+        $this->fixtures->merchant->addFeatures([Constants::CHARGE_AT_WILL, Constants::E_MANDATE]);
 
         $this->payment = $this->getNetbankingRecurringPaymentArray(IFSC::ICIC);
         unset($this->payment[Entity::CARD]);
@@ -223,9 +225,11 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->doAuthPayment($payment);
 
-        $data = $this->testData[__FUNCTION__];
+        $firstPayment = $this->getLastEntity('payment', true);
 
-        $this->mockSiRecurringGatewayTokenNotSet(false);
+        $payment[Payment::TOKEN] = $firstPayment['token_id'];
+
+        $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow(
             $data,
@@ -470,6 +474,30 @@ class NetbankingIciciEMandateTest extends TestCase
             {
                 $this->doAuthPayment($payment);
             });
+    }
+
+    public function testAuthorizeFailedRegistrationPayment()
+    {
+        $this->mockFailedPayment();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->payment;
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->authorizeFailedPayment($payment[Payment::ID]);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(PaymentStatus::AUTHORIZED, $payment[Payment::STATUS]);
     }
 
     protected function assertSiNullGatewayToken()
@@ -752,6 +780,15 @@ class NetbankingIciciEMandateTest extends TestCase
             {
                 $content['SCHSTATUS'] = 'N';
                 $content['SCHMSG'] = '';
+            });
+    }
+
+    protected function mockFailedPayment()
+    {
+        $this->mockServerContentFunction(
+            function(&$content, $action = null)
+            {
+                $content['PAID'] = 'N';
             });
     }
 

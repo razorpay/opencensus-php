@@ -28,6 +28,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchProcessedPayouts($from, $to, $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CREATED_AT, '>', $from)
+                    ->where(Entity::CREATED_AT, '<', $to)
+                    ->where(Entity::STATUS, '=', Status::PROCESSED)
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->get();
+    }
+
     public function updateStatus(Base\PublicCollection $payouts, string $status)
     {
         if ($payouts->count() === 0)

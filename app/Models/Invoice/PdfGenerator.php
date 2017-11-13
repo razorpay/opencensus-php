@@ -45,7 +45,7 @@ class PdfGenerator extends Base\Core
         $this->cache = Cache::getFacadeRoot();
     }
 
-    public function generate()
+    public function generate(): FileStore\Entity
     {
         $viewPayload = (new ViewDataSerializer($this->invoice))->get();
 
@@ -74,7 +74,7 @@ class PdfGenerator extends Base\Core
                     ->merchant($this->invoice->merchant)
                     ->type(FileStore\Type::INVOICE_PDF)
                     ->save()
-                    ->getFullFilePath();
+                    ->getFileInstance();
     }
 
     protected function getPdfContent(string $html): string

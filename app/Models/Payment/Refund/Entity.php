@@ -152,6 +152,12 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Batch\Entity', self::BATCH_ID);
     }
 
+    public function fundTransferAttempts()
+    {
+        return $this->morphMany('RZP\Models\FundTransfer\Attempt\Entity', 'source')
+                    ->orderBy(self::CREATED_AT);
+    }
+
     public function batchFundTransfer()
     {
         return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
@@ -263,11 +269,6 @@ class Entity extends Base\PublicEntity
         return 0;
     }
 
-    public function getServiceTax()
-    {
-        return 0;
-    }
-
     public function getTax()
     {
         return 0;
@@ -356,7 +357,7 @@ class Entity extends Base\PublicEntity
         // 'RailYatri', 'Treebo', 'Goibibo',
         // 'Goeventz', 'RentoMojo', 'Voonik',
         // 'Zomato', 'Swiggy', 'Yatra'
-        //
+        // 'Mr Button'
 
         $merchantIds = [
             '10000000000000', '6gn7Xc2gqK40c9', '4uObL8AHBqFNnP',
@@ -364,6 +365,7 @@ class Entity extends Base\PublicEntity
             '5yvFZKqbBjEBsr', '3d2EGdZF6CAYVc', '6ZLE5BE57SExGF',
             '6B94xSUfS76yht', '4bnk7yysqr5Wx5', '4zGGr9ZwCTH1gh',
             '6H7N6hlcv29OMG', '8S0i1kWYyF2woQ', '87qTXzFTBLFN7i',
+            '5PKFA3s9dpIwPn'
         ];
 
         $currentMerchantId = $this->getMerchantId();
@@ -396,7 +398,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECEIPT, $value);
     }
 
-    public function setUtr($value)
+    public function setUtr(string $value = null)
     {
         $this->setAttribute(self::REFERENCE1, $value);
     }

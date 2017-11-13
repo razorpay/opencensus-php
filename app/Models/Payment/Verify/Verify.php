@@ -98,7 +98,7 @@ class Verify extends Base\Core
 
     /**
      * No of Timeout that should occur in GATEWAY_TIMEOUT_BUCKET_INTERVAL
-     * for gayeway to be blocked
+     * for gateway to be blocked
      */
     const GATEWAY_TIMEOUT_THRESHOLD = 10;
 
@@ -320,6 +320,7 @@ class Verify extends Base\Core
             Result::SUCCESS       => 0,
             Result::TIMEOUT       => 0,
             Result::ERROR         => 0,
+            Result::UNKNOWN       => 0,
         ];
 
         $notApplicable = 0;
@@ -332,6 +333,13 @@ class Verify extends Base\Core
 
         foreach ($lockedPayments as $payment)
         {
+            if ($this->isGatewayBlocked($payment->getGateway()) === true)
+            {
+                $notApplicable++;
+
+                continue;
+            }
+
             $verifyResult = $this->verifyPayment($payment, $filter);
 
             if ($verifyResult === Result::AUTHORIZED)
@@ -528,6 +536,8 @@ class Verify extends Base\Core
                     break;
 
                 case Action::FINISH:
+                    $result = Result::UNKNOWN;
+
                     $this->updateVerifyBucket($payment, $filter, self::LAST);
 
                     break;
@@ -567,13 +577,6 @@ class Verify extends Base\Core
             // Just continue
             $result = Result::ERROR;
         }
-
-        $this->trace->info(
-            TraceCode::PAYMENT_VERIFY_RESULT,
-            [
-                'payment_id'    => $payment->getId(),
-                'result'        => $result,
-            ]);
 
         return $result;
     }
@@ -632,6 +635,18 @@ class Verify extends Base\Core
         }
 
         return array_merge($verifyDisabledGateways, $blockedGateways);
+    }
+
+    protected function isGatewayBlocked(string $gateway)
+    {
+        $blockedGateways = $this->getBlockedGateways();
+
+        if (in_array($gateway, $blockedGateways, true) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function authorizePayment(

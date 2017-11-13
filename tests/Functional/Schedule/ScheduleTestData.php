@@ -49,6 +49,31 @@ return [
         ],
     ],
 
+    'testFetchSettlementSchedules' => [
+        'request' => [
+            'url' => '/settlements/schedules',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' =>  [
+                     [
+                        'name'        => 'Basic T3',
+                        'merchant_id' => '100000Razorpay',
+                        'period'      => 'daily',
+                        'interval'    => 1,
+                        'anchor'      => null,
+                        'hour'        => 5,
+                        'delay'       => 3,
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'testDeleteScheduleInUse' => [
         'response'  => [
             'content'     => [

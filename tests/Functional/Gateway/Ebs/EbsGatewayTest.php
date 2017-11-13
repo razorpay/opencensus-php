@@ -19,7 +19,6 @@ class EbsGatewayTest extends TestCase
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal');
 
-
         $this->gateway = 'ebs';
     }
 
@@ -49,6 +48,25 @@ class EbsGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentEbsEntity'], $payment);
+    }
+
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['Amount'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'ANDB';
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testPaymentForBankWith302Redirect()
@@ -246,6 +264,14 @@ class EbsGatewayTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+
+        $payment['card'] = [
+            'number'            => '4012001038443335',
+            'name'              => 'Harshil',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2017',
+            'cvv'               => '566',
+        ];
 
         $data = $this->testData['testErrorOnCard'];
 

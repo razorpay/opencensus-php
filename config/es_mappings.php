@@ -265,7 +265,7 @@ return [
                 'type'   => 'date',
                 'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
             ],
-            'merchant_details' => [
+            'merchant_detail' => [
                 'properties' => [
                     'merchant_id' => [
                         'type'  => 'keyword',

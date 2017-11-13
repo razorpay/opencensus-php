@@ -7,6 +7,7 @@ use RZP\Constants\Timezone;
 
 use RZP\Models\Card;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 
 class Entity extends Base\PublicEntity
@@ -43,6 +44,7 @@ class Entity extends Base\PublicEntity
     const DUMMY_EXPIRY_YEAR  = '2021';
     const DUMMY_EXPIRY_MONTH = '12';
     const DUMMY_CVV          = '123';
+    const DUMMY_CVV_AMEX     = '1234';
 
     const NETWORK_CODE      = 'network_code';
 
@@ -130,6 +132,9 @@ class Entity extends Base\PublicEntity
         self::GLOBAL_CARD_ID    => null,
         self::VAULT             => null,
         self::VAULT_TOKEN       => null,
+        self::ISSUER            => null,
+        self::COUNTRY           => null,
+        self::TRIVIA            => null,
     ];
 
     public function merchant()
@@ -525,11 +530,13 @@ class Entity extends Base\PublicEntity
 
     public function isRecurringSupported()
     {
+        $isDebitSupported = $this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING);
+
         $isCreditCard = ($this->getType() === Card\Type::CREDIT);
 
         $isSupportedNetwork = in_array($this->getNetworkCode(), Card\Network::$recurringNetworks);
 
-        return (($isCreditCard === true) and ($isSupportedNetwork === true));
+        return ((($isDebitSupported === true) or ($isCreditCard === true)) and ($isSupportedNetwork === true));
     }
 
     public function isBlocked()
@@ -581,5 +588,17 @@ class Entity extends Base\PublicEntity
         unset($attributes[self::ID]);
 
         return $attributes;
+    }
+
+    public static function getDummyCvv(string $network = null)
+    {
+        $dummyCvv = self::DUMMY_CVV;
+
+        if ($network === Network::AMEX)
+        {
+            $dummyCvv = self::DUMMY_CVV_AMEX;
+        }
+
+        return $dummyCvv;
     }
 }

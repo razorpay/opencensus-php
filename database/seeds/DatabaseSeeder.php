@@ -106,7 +106,7 @@ class DatabaseSeeder extends Seeder
                 [
                     'id'                => '70I6GMmOpMJp40',
                     'org_id'            => self::RAZORPAY_ORG_ID,
-                    'hostname'          => 'dashboard.razorpay.dev',
+                    'hostname'          => 'dashboard.razorpay.in',
                     'created_at'        => $currentTime,
                     'updated_at'        => $currentTime,
                 ]
@@ -116,7 +116,7 @@ class DatabaseSeeder extends Seeder
                 [
                     'id'                => '70I6bfuaPQ72xa',
                     'org_id'            => '6dLbNSpv5XbCOG',
-                    'hostname'          => 'dashboard-hdfc.razorpay.dev',
+                    'hostname'          => 'dashboard-hdfc.razorpay.in',
                     'created_at'        => $currentTime,
                     'updated_at'        => $currentTime,
                 ]
@@ -1408,6 +1408,21 @@ class DatabaseSeeder extends Seeder
                 'type'                      => 6,
             ]
         );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => Terminal\Shared::NETBANKING_HDFC_REC_TERMINAL,
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NETBANKING_HDFC,
+                'card'                      => '0',
+                'netbanking'                => '1',
+                'gateway_merchant_id'       => 'test_merchant_netbanking_hdfc_recurring',
+                'recurring'                 => 1,
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                'type'                      => 6,
+            ]
+        );
     }
 
     protected function createNetbankingAirtelTerminals()
@@ -1442,6 +1457,21 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+            ]
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                    'id'                        => Terminal\Shared::NETBANKING_AXIS_REC_TERMINAL,
+                    'merchant_id'               => Account::TEST_ACCOUNT,
+                    'gateway'                   => Gateway::NETBANKING_AXIS,
+                    'card'                      => '0',
+                    'netbanking'                => '1',
+                    'gateway_merchant_id'       => 'test_merchant_netbanking_axis_recurring',
+                    'recurring'                 => 1,
+                    'created_at'                => time(),
+                    'updated_at'                => time(),
+                    'type'                      => 6,
             ]
         );
     }

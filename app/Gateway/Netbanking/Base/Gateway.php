@@ -14,6 +14,8 @@ class Gateway extends \RZP\Gateway\Base\Gateway
 
     const CORPORATE = 'corporate';
 
+    const EMANDATE = 'emandate';
+
     protected function createGatewayPaymentEntity($attributes)
     {
         $attr = $this->getMappedAttributes($attributes);
@@ -97,6 +99,26 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         $class = $namespace . '\\' . 'ClaimsFile';
 
         return (new $class)->generate($input);
+    }
+
+    public function initiateRegisterEmandate(array $input)
+    {
+        $this->input = $input;
+    }
+
+    public function reconcileRegisterEmandate(array $input)
+    {
+        $this->input = $input;
+    }
+
+    public function initiateDebitEmandate(array $input)
+    {
+        $this->input = $input;
+    }
+
+    public function reconcileDebitEmandate(array $input)
+    {
+        $this->input = $input;
     }
 
     public function setBankingType($bankingType)

@@ -8,22 +8,29 @@ use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Netbanking\Axis\Status;
+use RZP\Gateway\Netbanking\Axis\Emandate;
 use RZP\Gateway\Netbanking\Axis\AESCrypto;
-use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Gateway\Netbanking\Axis\RequestFields;
 use RZP\Gateway\Netbanking\Axis\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
+    use EmandateTrait;
+
     protected $bankingType = 'retail';
 
     public function authorize($input)
     {
         parent::authorize($input);
 
+        if (isset($input[Emandate\RequestFields::DATA]) === true)
+        {
+            return $this->handleEmandateAuthFlow($input);
+        }
+
         $this->validateAuthorizeInput($input);
 
-        $decryptedData = $this->getDecryptedData($input);
+        $decryptedData = $this->getDecryptedMockAuthData($input);
 
         $decryptedData = $this->setTestData($decryptedData);
 
@@ -49,6 +56,11 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
+        if (isset($input[Emandate\RequestFields::DATA]) === true)
+        {
+            return $this->handleEmandateVerifyFlow($input);
+        }
+
         $this->validateActionInput($input);
 
         $response = $this->getVerifyXml($input);
@@ -56,7 +68,7 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
-    protected function getDecryptedData($input)
+    protected function getDecryptedMockAuthData($input)
     {
         $data = $this->getDecryptedDataForBankingType($input);
 

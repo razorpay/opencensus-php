@@ -228,6 +228,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BENEFICIARY_NAME);
     }
 
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
     public function getAccountNumber()
     {
         return $this->getAttribute(self::ACCOUNT_NUMBER);

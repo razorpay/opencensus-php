@@ -793,11 +793,9 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function retryFailedRefund($id)
+    protected function retryFailedRefund($id, $content = [])
     {
         $this->ba->appAuth();
-
-        $content = [];
 
         $request = array(
             'method'  => 'POST',
@@ -1060,6 +1058,8 @@ trait PaymentTrait
     {
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'netbanking';
+
+        unset($payment['card']);
 
         if ($bank !== null)
         {
