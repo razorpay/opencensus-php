@@ -16,4 +16,9 @@ class Constants
     const ID_TL                 = '0514';
     const ADDITIONAL_DETAIL_TAG = '62';
     const AMOUNT_TAG            = '54';
+    const MUTEX_TIMEOUT         = 60;
+    const CARD_CVV              = '123';
+    const CARD_NAME             = 'Random';
+    const CARD_EXPIRY_MONTH     = '11';
+    const CARD_EXPIRY_YEAR      = '2037';
 }

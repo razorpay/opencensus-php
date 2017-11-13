@@ -65,9 +65,9 @@ trait FileHandlerTrait
         return $url;
     }
 
-    public function writeToExcelFile($data, $name, $dir = 'files/settlement')
+    public function writeToExcelFile($data, $name, $dir = 'files/settlement', $sheetName = 'Sheet 1')
     {
-        $fullpath = $this->createExcelFile($data, $name, $dir);
+        $fullpath = $this->createExcelFile($data, $name, $dir, $sheetName);
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -92,13 +92,13 @@ trait FileHandlerTrait
         return $url;
     }
 
-    public function createExcelFile($data, $name, $dir)
+    public function createExcelFile($data, $name, $dir, $sheetName = 'Sheet 1')
     {
         \Config::set('excel::export.calculate', true);
 
         $columnFormat = $this->getColumnFormatForExcel();
 
-        $excel = $this->createExcelObject($data, $name, $columnFormat);
+        $excel = $this->createExcelObject($data, $name, $columnFormat, $sheetName);
 
         $fileMetadata = $excel->store('xlsx', storage_path($dir), true);
 
@@ -431,9 +431,13 @@ trait FileHandlerTrait
         return $presignedUrl;
     }
 
-    public function createTxtFile($name, $txt)
+    public function createTxtFile(string $name, string $txt, string $dir = null)
     {
-        $fullpath = $this->getFullFilePath($name);
+        //
+        // If directory is not provided(default case) usage /settlement else
+        // the one provided.
+        //
+        $fullpath = ($dir === null) ? $this->getFullFilePath($name) : "{$dir}/{$name}";
 
         $dir = dirname($fullpath);
 

@@ -105,7 +105,7 @@ class Base
 
     public function editEntity($entity, $id, array $attributes = array())
     {
-        $this->stripSign($id);
+        $this->fixtures->stripSign($id);
 
         if (E::isEntitySyncedInLiveAndTest($entity))
         {
@@ -214,16 +214,6 @@ class Base
         {
             return call_user_func($callable);
         });
-    }
-
-    public function stripSign(& $id)
-    {
-        $ix = strpos($id, '_');
-
-        if ($ix !== false)
-        {
-            $id = substr($id, $ix + 1);
-        }
     }
 
     protected function eloquentUnguard()

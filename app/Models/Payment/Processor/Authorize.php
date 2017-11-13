@@ -249,7 +249,7 @@ trait Authorize
         throw $e;
     }
 
-    protected function updatePaymentAuthFailed(Exception\BaseException $e)
+    public function updatePaymentAuthFailed(Exception\BaseException $e)
     {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
@@ -271,7 +271,7 @@ trait Authorize
      *
      * @return array
      */
-    protected function processAuth(Payment\Entity $payment): array
+    public function processAuth(Payment\Entity $payment): array
     {
         $this->updateAndNotifyPaymentAuthorized();
 
@@ -1265,6 +1265,11 @@ trait Authorize
         $this->repo->transaction(function() use ($payment)
         {
             $data = array('payment' => $payment->toArray());
+
+            if ($payment->getGlobalOrLocalTokenEntity() !== null)
+            {
+                $data['token'] = $payment->getGlobalOrLocalTokenEntity();
+            }
 
             if ($payment->isMethodCardOrEmi())
             {
@@ -3681,10 +3686,12 @@ trait Authorize
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
     {
+        //
         // No gateway for bank transfer or Bharat Qr, everything is internal
+        // TODO: To be changed after refactor
+        //
         if (($payment->isBankTransfer() === true) or
-            // @todo to be changed after refactor
-            (Route::currentRouteName() === 'bharat_qr_payment_process'))
+            (Route::currentRouteName() === 'gateway_payment_callback_bharatqr'))
         {
             return false;
         }

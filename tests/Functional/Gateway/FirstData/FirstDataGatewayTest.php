@@ -662,4 +662,16 @@ class FirstDataGatewayTest extends TestCase
         // it also makes sure that the first TransactionValues is picked if there are many
         $this->assertEquals('543210', $gatewayPayment['auth_code']);
     }
+
+    public function testPaymentForMissingIin()
+    {
+        $iinCode = '466522';
+
+        $iin = $this->getEntityById('iin', $iinCode);
+        $this->assertArrayHasKey('error', $iin);
+
+        $this->payment['card']['number'] = $iinCode . '00000000000';
+
+        $this->doAuthPayment($this->payment);
+    }
 }

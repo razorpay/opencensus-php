@@ -8,10 +8,10 @@ class Repository extends Base\Repository
 {
     protected $entity = 'bharat_qr';
 
-    public function findByMerchantReference(string $merchantReference)
+    public function findByProviderReferenceId(string $providerReferenceId)
     {
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_REFERENCE, '=', $merchantReference)
+                    ->where(Entity::PROVIDER_REFERENCE_ID, '=', $providerReferenceId)
                     ->first();
     }
 }

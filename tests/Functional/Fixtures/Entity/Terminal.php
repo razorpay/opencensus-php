@@ -480,7 +480,7 @@ class Terminal extends Base
         $attributes['id'] = 'FssRecurringTl';
 
         $attributes['type'] = [
-            Type::RECURRING_3DS => '1',
+            Type::RECURRING_3DS     => '1',
             Type::RECURRING_NON_3DS => '1',
         ];
 
@@ -1061,6 +1061,29 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingAxisRecurringTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'netbanking_axis',
+            'netbanking'                => 1,
+            'shared'                    => 1,
+            'gateway_acquirer'          => 'hdfc',
+            'gateway_merchant_id'       => 'razorpay_submerchant',
+            'gateway_merchant_id2'      => 'razorpay_axis',
+            'gateway_secure_secret'     => 'razorpay_password',
+        ];
+
+        // Add fss recurring supports both 3ds and non3ds terminal;
+        $attributes['id'] = 'NAxRecurringTl';
+        $attributes['type'] = [
+            Type::RECURRING_3DS     => '1',
+            Type::RECURRING_NON_3DS => '1',
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
     public function createSharedNetbankingAxisTpvTerminal(array $attributes = [])

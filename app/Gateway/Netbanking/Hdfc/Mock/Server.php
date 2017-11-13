@@ -68,7 +68,7 @@ class Server extends Base\Mock\Server
             'FailureStaticFlag' => 'N',
             'Date'              => $input['Date'],
             'TransactionId'     => 'XTXTV01',
-            'flgVerify'         => 'Y',
+            'flgVerify'         => $input['FlgVerify'],
             'BankRefNo'         => $payment['bank_payment_id'],
             'flgSuccess'        => 'S',
             'Message'           => $payment['error_message'],

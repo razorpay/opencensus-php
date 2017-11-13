@@ -454,11 +454,13 @@ class Gateway
         Gateway::AXIS_MIGS,
         Gateway::HDFC,
         Gateway::NETBANKING_ICICI,
+        Gateway::NETBANKING_AXIS,
         Gateway::NETBANKING_HDFC,
     ];
 
     public static $eMandateBanks = [
         IFSC::ICIC,
+        IFSC::UTIB,
         IFSC::HDFC,
     ];
 
@@ -469,6 +471,7 @@ class Gateway
      */
     public static $fileBasedEMandateDebitGateways = [
         Gateway::NETBANKING_HDFC,
+        Gateway::NETBANKING_AXIS,
     ];
 
     /**

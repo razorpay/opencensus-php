@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "2b1a297d5b179ac9047d44f2be1a2a52",
+    "content-hash": "5ee93e508a2e81bb5025831bdb77eaaa",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -1400,16 +1400,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.8.0",
+            "version": "8.8.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "54c69fcb45c3a39d9a206398f57fe18809401eda"
+                "reference": "a0405e2b3de6497174db4a3fcfa9bfd67f4ef282"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/54c69fcb45c3a39d9a206398f57fe18809401eda",
-                "reference": "54c69fcb45c3a39d9a206398f57fe18809401eda",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/a0405e2b3de6497174db4a3fcfa9bfd67f4ef282",
+                "reference": "a0405e2b3de6497174db4a3fcfa9bfd67f4ef282",
                 "shasum": ""
             },
             "require": {
@@ -1420,7 +1420,7 @@
             "require-dev": {
                 "pear/pear-core-minimal": "^1.9",
                 "pear/pear_exception": "^1.0",
-                "pear/versioncontrol_git": "dev-master",
+                "pear/versioncontrol_git": "^0.5",
                 "phing/phing": "^2.7",
                 "phpunit/phpunit": "^4.8|^5.0",
                 "satooshi/php-coveralls": "^1.0",
@@ -1464,7 +1464,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2017-08-22T10:35:52+00:00"
+            "time": "2017-10-30T15:09:43+00:00"
         },
         {
             "name": "giggsey/locale",
@@ -5471,16 +5471,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "2.0.4",
+            "version": "2.0.6",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "15c22a89e221c034eb7d7405010a2a9d1b2d65ee"
+                "reference": "f8193bf83378007a4a8d8a41464b29678752885e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/15c22a89e221c034eb7d7405010a2a9d1b2d65ee",
-                "reference": "15c22a89e221c034eb7d7405010a2a9d1b2d65ee",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/f8193bf83378007a4a8d8a41464b29678752885e",
+                "reference": "f8193bf83378007a4a8d8a41464b29678752885e",
                 "shasum": ""
             },
             "require": {
@@ -5530,10 +5530,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/2.0.4",
+                "source": "https://github.com/razorpay/trace/tree/2.0.6",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2017-10-03T14:26:14+00:00"
+            "time": "2017-10-24T13:59:57+00:00"
         },
         {
             "name": "razorpay/upi-clients",
@@ -5577,7 +5577,11 @@
                 "source": "https://github.com/razorpay/upi-clients/tree/master",
                 "issues": "https://github.com/razorpay/upi-clients/issues"
             },
+<<<<<<< HEAD
             "time": "2017-08-10 18:30:30"
+=======
+            "time": "2017-08-10T18:30:30+00:00"
+>>>>>>> bharat_qr_notification
         },
         {
             "name": "react/promise",

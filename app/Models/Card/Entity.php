@@ -7,6 +7,7 @@ use RZP\Constants\Timezone;
 
 use RZP\Models\Card;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 
 class Entity extends Base\PublicEntity
@@ -131,6 +132,9 @@ class Entity extends Base\PublicEntity
         self::GLOBAL_CARD_ID    => null,
         self::VAULT             => null,
         self::VAULT_TOKEN       => null,
+        self::ISSUER            => null,
+        self::COUNTRY           => null,
+        self::TRIVIA            => null,
     ];
 
     public function merchant()
@@ -526,11 +530,13 @@ class Entity extends Base\PublicEntity
 
     public function isRecurringSupported()
     {
+        $isDebitSupported = $this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING);
+
         $isCreditCard = ($this->getType() === Card\Type::CREDIT);
 
         $isSupportedNetwork = in_array($this->getNetworkCode(), Card\Network::$recurringNetworks);
 
-        return (($isCreditCard === true) and ($isSupportedNetwork === true));
+        return ((($isDebitSupported === true) or ($isCreditCard === true)) and ($isSupportedNetwork === true));
     }
 
     public function isBlocked()

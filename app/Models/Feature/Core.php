@@ -215,7 +215,9 @@ class Core extends Base\Core
 
             // While updating the responses, the file gets overwritten,
             // so no need to delete the old file.
-            $this->processFiles($data, $merchant);
+            $this->processFiles($data, $merchant, $action);
+
+            $this->processOnboardingKeys($data, $merchant, $action);
 
             Accessor::for($merchant, Constants::ONBOARDING)
                     ->upsert($data)
@@ -287,10 +289,15 @@ class Core extends Base\Core
         if (($status === MerchantDetail::APPROVED) and
             ($merchant->isFeatureEnabled($featureName) === false))
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_NOT_ASSIGNED,
-                $featureName,
-                [$featureName, $status]);
+            // Add the feature
+            $params = [
+                Entity::ENTITY_TYPE => Constants::MERCHANT,
+                Entity::ENTITY_ID   => $merchantId,
+                Entity::NAME        => $featureName
+            ];
+
+            // Adds to live mode
+            $this->create($params, true);
         }
 
         $this->repo->merchant_detail->updateFeatureActivationStatus(
@@ -304,6 +311,35 @@ class Core extends Base\Core
         $response = $merchantDetail->getFeatureOnboardingStatuses();
 
         return $response;
+    }
+
+    /**
+     * Accessor class overwrites all the old responses submitted by the merchant with the new
+     * keys sent while updating. This function preserves the old keys and only updates the new ones.
+     *
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param string          $action
+     */
+    protected function processOnboardingKeys(array & $input, Merchant\Entity $merchant, string $action)
+    {
+        if ($action === Constants::UPDATE)
+        {
+            $featureName = array_keys($input)[0];
+
+            $settings = Accessor::for($merchant, Constants::ONBOARDING);
+
+            $settings = $settings->get($featureName)->toArray();
+
+            $inputKeys = $input[$featureName];
+
+            foreach ($inputKeys as $inputKey => $inputValue)
+            {
+                $settings[$inputKey] = $inputValue;
+            }
+
+            $input[$featureName] = $settings;
+        }
     }
 
     /**
@@ -391,6 +427,10 @@ class Core extends Base\Core
 
         $merchantId = $merchant->getId();
 
+        //
+        // If the input has a file, process it and
+        // update the file name in the input variable.
+        //
         if ((isset($input[$featureName]) === true) and
             (isset($input[$featureName][$question]) === true))
         {

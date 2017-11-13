@@ -42,23 +42,27 @@ abstract class Processor extends Base\Core
         $this->provider = $provider;
     }
 
-     /**
-     *@todo need to make this generic
+    /**
+     * TODO: need to make this generic
+     *
+     * @param Base\PublicEntity $entity
+     *
+     * @return
      */
-    abstract public function process($entity);
+    abstract public function process(Base\PublicEntity $entity);
 
-    abstract protected function getVirtualAccountFromEntity($entity);
+    abstract protected function getVirtualAccountFromEntity(Base\PublicEntity $entity);
 
-     /**
+    /**
      * A receiver is expected if there exists an active VA
      * to receive it. If such a VA does not exist, or exists but
      * has been closed/paid, the payment is to be refunded.
      *
-     * @param Entity
+     * @param Base\PublicEntity $entity
      *
      * @return bool
      */
-    protected function isPaymentExpected($entity): bool
+    protected function isPaymentExpected(Base\PublicEntity $entity): bool
     {
         $this->setVirtualAccount($entity);
 
@@ -78,14 +82,14 @@ abstract class Processor extends Base\Core
         return true;
     }
 
-     /**
+    /**
      * For unexpected virtual account payment, we set the merchant to
      * the demo merchant. A new VA is created specifically
      * for this payment, to be closed immediately afterwards.
      *
-     * @param Entity $bankTransfer
+     * @param Base\PublicEntity $entity
      */
-    protected function preProcessUnexpectedPayment($entity)
+    protected function preProcessUnexpectedPayment(Base\PublicEntity $entity)
     {
         $entity->setExpected(false);
 
@@ -112,9 +116,9 @@ abstract class Processor extends Base\Core
     /**
      * Set the VA for future processing.
      *
-     * @param Entity
+     * @param Base\PublicEntity $entity
      */
-    protected function setVirtualAccount($entity)
+    protected function setVirtualAccount(Base\PublicEntity $entity)
     {
         $this->virtualAccount = $this->getVirtualAccountFromEntity($entity);
     }
@@ -137,9 +141,9 @@ abstract class Processor extends Base\Core
      * Post-processing, VA amount fields are to be updated.
      * Status change is done inside incrementAmountPaid.
      *
-     * @param Entity
+     * @param Base\PublicEntity $entity
      */
-    protected function updateVirtualAccount($entity)
+    protected function updateVirtualAccount(Base\PublicEntity $entity)
     {
         $this->virtualAccount->incrementAmountPaid($entity->getAmount());
 

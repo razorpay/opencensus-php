@@ -52,7 +52,6 @@ class Validator extends Base\Validator
         'save'                       => 'sometimes|in:0,1',
         'recurring'                  => 'sometimes_if:method,card,netbanking|in:0,1',
         'fee'                        => 'sometimes|filled|integer|max:50000000',
-        Entity::SERVICE_TAX          => 'sometimes|filled|integer|max:50000000',
         Entity::TAX                  => 'sometimes|filled|integer|max:50000000',
         'on_hold'                    => 'sometimes_if:method,transfer|boolean',
         'on_hold_until'              => 'sometimes_if:method,transfer|nullable|epoch',
@@ -117,8 +116,10 @@ class Validator extends Base\Validator
 
     protected function validateEmail(array $input)
     {
-        // @todo to be changed after refactor. No validation required for Bharat qr
-        if (Route::currentRouteName() === 'bharat_qr_payment_process')
+        //
+        // TODO: To be changed after refactor. No validation required for Bharat qr
+        //
+        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
         {
             return;
         }
@@ -334,8 +335,10 @@ class Validator extends Base\Validator
 
     protected function validateContact($input)
     {
-        // @todo to be changed after refactor. No validation required for Bharat qr
-        if (Route::currentRouteName() === 'bharat_qr_payment_process')
+        //
+        // TODO: To be changed after refactor. No validation required for Bharat qr
+        //
+        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
         {
             return;
         }

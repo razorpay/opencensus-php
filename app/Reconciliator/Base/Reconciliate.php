@@ -56,6 +56,7 @@ class Reconciliate
     const ACCOUNT_SUBTYPE       = 'account_subtype';
     const ACCOUNT_BRANCHCODE    = 'account_branchcode';
     const CREDIT_ACCOUNT_NUMBER = 'credit_account_number';
+    const AUTH_CODE             = 'auth_code';
 
     /*************************
      * Card types

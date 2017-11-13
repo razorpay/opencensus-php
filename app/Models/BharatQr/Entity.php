@@ -94,6 +94,8 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    // ----------------------- Relations -----------------------
+
     public function payment()
     {
         return $this->belongsTo('RZP\Models\Payment\Entity');
@@ -104,7 +106,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\virtualAccount\Entity', self::VIRTUAL_ACCOUNT_ID, self::ID);
     }
 
-    // ----------------------- Public Setters ----------------------------------
+    // ----------------------- Public Setters -----------------------
 
     public function setPublicVirtualAccountIdAttribute(array & $array)
     {
@@ -126,7 +128,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    // -------------------------- Modifiers ------------------------------------
+    // ----------------------- Modifiers -----------------------
 
     public function modifyAmount(array & $input)
     {
@@ -138,18 +140,16 @@ class Entity extends Base\PublicEntity
         //
 
         $input[self::AMOUNT] = (int) number_format(($input[self::AMOUNT] * 100), 0, '.', '');
-
     }
+
+    // ----------------------- Setters -----------------------
 
     public function setExpected(bool $expected)
     {
         $this->setAttribute(self::EXPECTED, $expected);
     }
 
-    public function isExpected()
-    {
-        return $this->getAttribute(self::EXPECTED);
-    }
+    // ----------------------- Getters -----------------------
 
     public function getProviderReferenceId()
     {
@@ -174,5 +174,10 @@ class Entity extends Base\PublicEntity
     public function getCardNumber()
     {
         return $this->getAttribute(self::CARD_NUMBER);
+    }
+
+    public function isExpected()
+    {
+        return $this->getAttribute(self::EXPECTED);
     }
 }

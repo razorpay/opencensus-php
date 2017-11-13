@@ -32,6 +32,12 @@ trait Refund
      */
     protected function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
     {
+        if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
+        }
+
         if ($payment->isDisputed() === true)
         {
             throw new Exception\BadRequestException(
@@ -731,11 +737,6 @@ trait Refund
         {
             return $this->refundBankTransfer($payment, $data);
         }
-        else if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_REFUNDS_NOT_AVAILABLE_FOR_BHARAT_QR_PAYMENTS);
-        }
         else
         {
             throw new Exception\LogicException(
@@ -781,16 +782,19 @@ trait Refund
      * - no need to update payment - marked as refunded
      *
      * @param Payment\Refund\Entity $refund
+     * @param array $input Values passed in API input
      *
      * @return string
      */
-    public function processRefundRetry(Payment\Refund\Entity $refund)
+    public function processRefundRetry(Payment\Refund\Entity $refund, array $input = [])
     {
         $payment = $refund->payment;
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
+
+        $data = array_merge($data, $input);
 
         if ($refund->isProcessed() === true)
         {

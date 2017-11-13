@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\QrPayment;
 
+use RZP\Exception;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -11,7 +12,7 @@ class BharatQrPaymentTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/BharatQrPaymentTestData.php';
+        $this->testDataFilePath = __DIR__ . '/BharatQrPaymentTestData.php';
 
         parent::setUp();
 
@@ -45,6 +46,7 @@ class BharatQrPaymentTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('card', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(200, $payment['amount']);
 
         $this->assertEquals($bharatQr['payment_id'], $payment['id']);
         $this->assertEquals($bharatQr['expected'], true);
@@ -69,6 +71,36 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals('authorized', $payment['status']);
 
         $this->assertEquals($bharatQr['expected'], false);
+    }
+
+    public function testFailedPayment()
+    {
+        $request = $this->testData['testQrPaymentProcess'];
+
+        unset($request['content']['F038']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('NOK', $response[0]);
+    }
+
+    public function testDuplicateNotification()
+    {
+        $request = $this->testData['testQrPaymentProcess'];
+
+        $request['content']['PurchaseID'] = $this->qrCode['id'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $bharatQr = $this->getEntities('bharat_qr', [], true);
+
+        $this->assertEquals(count($bharatQr['items']) , 1);
     }
 
     protected function createVirtualAccount()
