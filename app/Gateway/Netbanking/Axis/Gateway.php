@@ -44,14 +44,12 @@ class Gateway extends Base\Gateway
     {
         parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->setBankingTypeAndDomainType($terminal, $input);
+        $this->setBankingTypeAndDomainType($input, $terminal);
     }
 
     public function authorize(array $input)
     {
         parent::authorize($input);
-
-        $this->setDomainType();
 
         if ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
         {
@@ -64,12 +62,13 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($entityAttributes);
 
-        $request = $this->getStandardRequestArray($content, 'post', $this->getActionType());
+        $request = $this->getStandardRequestArray($content, 'post');
 
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
     }
+
 
     protected function getActionType()
     {
@@ -141,9 +140,8 @@ class Gateway extends Base\Gateway
 
     public function sendPaymentVerifyRequest(Verify $verify)
     {
-        $this->setDomainType();
-
         $this->handleCorporatePaymentVerify($verify);
+
         if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
         {
             $this->sendEmandatePaymentVerifyRequest($verify);
@@ -153,7 +151,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentVerifyData($verify);
 
-        $request = $this->getStandardRequestArray($content ,'post', $this->getActionType());
+        $request = $this->getStandardRequestArray($content ,'post');
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -543,7 +541,7 @@ class Gateway extends Base\Gateway
         return Status::getAuthSuccessStatus();
     }
 
-   protected function setBankingTypeAndDomainType($input, $terminal)
+    protected function setBankingTypeAndDomainType($input, $terminal)
     {
         if (
             (isset($input['payment']) === true) and
