@@ -602,8 +602,9 @@ return [
         'response' => [
             'content' => [
                 [
-                    "merchant_id"                        => "10000000001017",
-                    "marketplace_activation_status"      => "approved"
+                    'merchant_id' => '10000000001017',
+                    'product'     => 'marketplace',
+                    'status'      => 'approved'
                 ]
             ]
         ]

@@ -7,7 +7,7 @@ use DB;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
-use RZP\Models\Feature;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class Repository extends Base\Repository
 {
@@ -75,16 +75,17 @@ class Repository extends Base\Repository
             $status = $filters['status'];
         }
 
-        if (isset($filters['offset']) === true)
+        if (isset($filters['product']) === true)
         {
-            $offset = $filters['offset'];
-        }
-        if (isset($filters['limit']) === true)
-        {
-            $limit = $filters['limit'];
+            $product = $filters['product'];
         }
 
-        if ((isset($filters['product']) === false) or ($filters['product'] === Feature\Constants::MARKETPLACE))
+        //
+        // Add Marketplace results,
+        // - If the product filter is not present, or,
+        // - If the product filter is set to marketplace
+        //
+        if ((isset($product) === false) or ($product === FeatureConstants::MARKETPLACE))
         {
             $marketplaceRecords = $this->newQueryWithConnection(Mode::LIVE)
                 ->select(
@@ -94,20 +95,21 @@ class Repository extends Base\Repository
                     DB::raw(Entity::MARKETPLACE_ACTIVATION_STATUS . " as 'status'"))
                 ->whereNotNull(Entity::MARKETPLACE_ACTIVATION_STATUS);
 
+            // Filter with status
             if (isset($status) === true)
             {
                 $marketplaceRecords->where(Entity::MARKETPLACE_ACTIVATION_STATUS, $status);
             }
-
-            if (isset($filters['product']) === true)
-            {
-                $records = $marketplaceRecords;
-            }
         }
 
-        if ((isset($filters['product']) === false) or ($filters['product'] === Feature\Constants::VIRTUAL_ACCOUNTS))
+        //
+        // Add Virtual Accounts results,
+        // - If the product filter is not present, or,
+        // - If the product filter is set to virtual_accounts
+        //
+        if ((isset($product) === false) or ($product === FeatureConstants::VIRTUAL_ACCOUNTS))
         {
-            $virtualAccountRecords = $this->newQueryWithConnection(Mode::LIVE)
+            $virtualAccountsRecords = $this->newQueryWithConnection(Mode::LIVE)
                 ->select(
                     Entity::MERCHANT_ID,
                     Entity::CONTACT_NAME,
@@ -115,20 +117,21 @@ class Repository extends Base\Repository
                     DB::raw(Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS . " as 'status'"))
                 ->whereNotNull(Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS);
 
+            // Filter with status
             if (isset($status) === true)
             {
-                $virtualAccountRecords->where(Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS, $status);
-            }
-
-            if (isset($filters['product']) === true)
-            {
-                $records = $virtualAccountRecords;
+                $virtualAccountsRecords->where(Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS, $status);
             }
         }
 
-        if ((isset($filters['product']) === false) or ($filters['product'] === Feature\Constants::SUBSCRIPTIONS))
+        //
+        // Add Subscriptions results,
+        // - If the product filter is not present, or,
+        // - If the product filter is set to subscriptions
+        //
+        if ((isset($product) === false) or ($product === FeatureConstants::SUBSCRIPTIONS))
         {
-            $subscriptionRecords = $this->newQueryWithConnection(Mode::LIVE)
+            $subscriptionsRecords = $this->newQueryWithConnection(Mode::LIVE)
                 ->select(
                     Entity::MERCHANT_ID,
                     Entity::CONTACT_NAME,
@@ -136,21 +139,24 @@ class Repository extends Base\Repository
                     DB::raw(Entity::SUBSCRIPTIONS_ACTIVATION_STATUS . " as 'status'"))
                 ->whereNotNull(Entity::SUBSCRIPTIONS_ACTIVATION_STATUS);
 
+            // Filter with status
             if (isset($status) === true)
             {
-                $subscriptionRecords->where(Entity::SUBSCRIPTIONS_ACTIVATION_STATUS, $status);
-            }
-
-            if (isset($filters['product']) === true)
-            {
-                $records = $subscriptionRecords;
+                $subscriptionsRecords->where(Entity::SUBSCRIPTIONS_ACTIVATION_STATUS, $status);
             }
         }
 
-        if (isset($filters['product']) === false)
+        if (isset($product) === true)
         {
-            $records = $marketplaceRecords->union($subscriptionRecords)
-                                          ->union($virtualAccountRecords);
+            $productRecords = camel_case($product . '_records');
+
+            // $marketplaceRecords, $virtualAccountsRecords, $subscriptionsRecords
+            $records = $$productRecords;
+        }
+        else
+        {
+            $records = $marketplaceRecords->union($virtualAccountsRecords)
+                                          ->union($subscriptionsRecords);
         }
 
         if (isset($filters['offset']) === true)

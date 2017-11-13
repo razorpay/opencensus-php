@@ -586,9 +586,9 @@ class FeaturesTest extends TestCase
 
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
-        // Test fetch by status API
+        // Test fetch by status and product API
         // Test auto approving of a request, when added in Live mode
-        $this->verifyMarketplaceOnboardingResponseStatus('approved');
+        $this->verifyMarketplaceOnboardingResponseStatus('approved', Constants::MARKETPLACE);
 
         // Test the fetch status route
         $this->getMarketplaceOnboardingResponseStatus();
@@ -742,13 +742,20 @@ class FeaturesTest extends TestCase
         return $fileStoreId;
     }
 
-    protected function verifyMarketplaceOnboardingResponseStatus(string $status)
+    protected function verifyMarketplaceOnboardingResponseStatus(string $status, string $product = null)
     {
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['content']['status'] = $status;
 
-        $testData['response']['content'][0]['marketplace_activation_status'] = $status;
+        $testData['response']['content'][0]['status'] = $status;
+
+        if ($product !== null)
+        {
+            $testData['request']['content']['product'] = $product;
+
+            $testData['response']['content'][0]['product'] = $product;
+        }
 
         $this->startTest($testData);
     }
