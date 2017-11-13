@@ -208,52 +208,6 @@ class Processor extends VirtualAccount\Processor
     }
 
     /**
-<<<<<<< HEAD
-=======
-     * A bank transfer is expected if there exists an active VA
-     * to receive it. If such a VA does not exist, or exists but
-     * has been closed/paid, the payment is to be refunded.
-     *
-     * @param Entity $bankTransfer
-     *
-     * @return bool
-     */
-    protected function isTransferExpected(Entity $bankTransfer): bool
-    {
-        $this->setVirtualAccount($bankTransfer);
-
-        if ($this->virtualAccount === null)
-        {
-            $this->trace->info(
-                TraceCode::BANK_TRANSFER_VIRTUAL_ACCOUNT_NOT_FOUND,
-                [
-                    'message'      => 'Invalid account number',
-                    'bankTransfer' => $bankTransfer->toArray(),
-                ]
-            );
-
-            return false;
-        }
-        else if ($this->virtualAccount->merchant->methods->isBankTransferEnabled() === false)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Set the VA for future processing.
-     *
-     * @param Entity $bankTransfer
-     */
-    protected function setVirtualAccount(Entity $bankTransfer)
-    {
-        $this->virtualAccount = $this->getVirtualAccountFromBankTransfer($bankTransfer);
-    }
-
-    /**
->>>>>>> master
      * Set the merchant for future processing.
      * Use the owner of the VA for this.
      */
