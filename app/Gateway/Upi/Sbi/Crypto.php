@@ -10,7 +10,6 @@ class Crypto extends BaseCrypto
      * TODO: Refactor Base\AesCrypto later
      */
 
-    // TODO: Verify this
     public function encryptString(string $string)
     {
         $cipherText = parent::encryptString($string);

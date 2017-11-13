@@ -79,10 +79,12 @@ class RefundFile extends Base\RefundFile
 
     protected function getFileToWriteNameWithoutExt()
     {
+        $time = Carbon::now(Timezone::IST);
+
         $fileArray = [
             $this->getMerchantId(),
-            Carbon::now(Timezone::IST)->format('dmY'),
-            Carbon::now(Timezone::IST)->format('Hi')
+            $time->format('dmY'),
+            $time->format('Hi')
         ];
 
         return implode('_', $fileArray);

@@ -12,11 +12,9 @@ class Constants
     /**
      * Collect request expiry time in minutes
      */
-    const EXPIRY_TIME      = '1110';
+    const EXPIRY_TIME      = '5';
 
     const TRANSACTION_NOTE = 'Collect from ';
-
-    // TODO: See if it makes sense to move the constants below to their own classes
 
     /**
      * Used in refund API - always P2P

@@ -32,7 +32,7 @@ class Status
 
     public static function isStatusSuccess(string $status)
     {
-        return $status === self::SUCCESS;
+        return ($status === self::SUCCESS);
     }
 
     public static function getMessage(string $status)

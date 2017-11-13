@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Payment;
 
-use Illuminate\Auth\Access\Gate;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC as BaseIFSC;
 
@@ -10,7 +9,6 @@ use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
-use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Netbanking;

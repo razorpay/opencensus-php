@@ -34,7 +34,7 @@ class Server extends Base\Mock\Server
 
         $request = $this->decrypt($input);
 
-        $this->validateSbiUpiAuthInput($request);
+        $this->validateAuthorizeInput($request);
 
         $response = $this->getAuthorizeResponseArray($request);
 
@@ -74,9 +74,6 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input, 'verify');
 
-        $this->validateActionInput($input[RequestFields::REQUEST_INFO], 'verify_request_info');
-
-        // TODO: Ensure that this is correct
         $content = $this->getVerifyResponseContent($input);
 
         $this->content($content, 'verify');
@@ -193,16 +190,5 @@ class Server extends Base\Mock\Server
         $this->content($content, 'auth_decrypted');
 
         return [ResponseFields::API_RESPONSE => $content];
-    }
-
-    protected function validateSbiUpiAuthInput(array $input)
-    {
-        $this->validateAuthorizeInput($input);
-
-        $this->validateActionInput($input[RequestFields::ADDITIONAL_INFO], 'auth_additional_info');
-
-        $this->validateActionInput($input[RequestFields::PAYER_TYPE], 'auth_payer_type');
-
-        $this->validateActionInput($input[RequestFields::REQUEST_INFO], 'auth_request_info');
     }
 }

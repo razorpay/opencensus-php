@@ -8,53 +8,24 @@ use RZP\Gateway\Upi\Sbi\RequestFields;
 
 class Validator extends Base\Validator
 {
-    // TODO: Stronger validations for auth request
-
     protected static $authRules = [
-        RequestFields::ADDITIONAL_INFO  => 'required|array',
-        RequestFields::AMOUNT           => 'required',
-        RequestFields::EXPIRY_TIME      => 'required|string|in:1110',
-        RequestFields::PAYER_TYPE       => 'required|array',
-        RequestFields::REQUEST_INFO     => 'required|array',
-        RequestFields::TRANSACTION_NOTE => 'required|string',
+        RequestFields::ADDITIONAL_INFO                                          => 'required|array',
+        RequestFields::ADDITIONAL_INFO . '.' . RequestFields::ADDITIONAL_INFO9  => 'required|string|in:NA',
+        RequestFields::ADDITIONAL_INFO . '.' . RequestFields::ADDITIONAL_INFO10 => 'required|string|in:NA',
+        RequestFields::AMOUNT                                                   => 'required|string',
+        RequestFields::EXPIRY_TIME                                              => 'required|string|in:5',
+        RequestFields::PAYER_TYPE                                               => 'required|array|size:1',
+        RequestFields::PAYER_TYPE . '.' . RequestFields::VIRTUAL_ADDRESS        => 'required|string',
+        RequestFields::REQUEST_INFO                                             => 'required|array|size:2',
+        RequestFields::REQUEST_INFO . '.' . RequestFields::PG_MERCHANT_ID       => 'required|string',
+        RequestFields::REQUEST_INFO . '.' . RequestFields::PSP_REFERENCE_NO     => 'required|string|size:14',
+        RequestFields::TRANSACTION_NOTE                                         => 'required|string',
     ];
-
-    /**
-     * @var array Validates additional info key in auth request
-     */
-    protected static $authAdditionalInfoRules = [
-        RequestFields::ADDITIONAL_INFO9  => 'required|string|in:NA',
-        RequestFields::ADDITIONAL_INFO10 => 'required|string|in:NA',
-    ];
-
-    /**
-     * @var array Validates payer type key in auth request
-     */
-    protected static $authPayerTypeRules = [
-        RequestFields::VIRTUAL_ADDRESS => 'required|string',
-    ];
-
-    /**
-     * @var array Validates request info key in auth request
-     */
-    protected static $authRequestInfoRules = [
-        RequestFields::PG_MERCHANT_ID   => 'required|string',
-        RequestFields::PSP_REFERENCE_NO => 'required|string|size:14'
-    ];
-
-    // TODO: Stronger validations for verify request
 
     protected static $verifyRules = [
-        RequestFields::REQUEST_INFO          => 'required|array',
-        RequestFields::CUSTOMER_REFERENCE_NO => 'required|string',
-    ];
-
-    /**
-     * @var array Validates request info key in verify request
-     * TODO: Re-use code above?
-     */
-    protected static $verifyRequestInfoRules = [
-        RequestFields::PG_MERCHANT_ID   => 'required|string',
-        RequestFields::PSP_REFERENCE_NO => 'required|string|size:14'
+        RequestFields::REQUEST_INFO                                         => 'required|array|size:2',
+        RequestFields::CUSTOMER_REFERENCE_NO                                => 'required|string',
+        RequestFields::REQUEST_INFO . '.' . RequestFields::PG_MERCHANT_ID   => 'required|string',
+        RequestFields::REQUEST_INFO . '.' . RequestFields::PSP_REFERENCE_NO => 'required|string|size:14'
     ];
 }
