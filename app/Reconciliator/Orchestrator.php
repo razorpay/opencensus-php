@@ -22,10 +22,11 @@ class Orchestrator extends Base\Core
      * whenever applicable. It does not contain the actual content.
      * It's all meta data.
      */
-    const EXTRA_DETAILS    = 'extra_details';
-    const ATTACHMENT_COUNT = 'attachment_count';
-    const FORCE_UPDATE     = 'force_update';
-    const INPUT_DETAILS    = 'input_details';
+    const EXTRA_DETAILS           = 'extra_details';
+    const ATTACHMENT_COUNT        = 'attachment_count';
+    const ATTACHMENT_HYPHEN_COUNT = 'attachment-count';
+    const FORCE_UPDATE            = 'force_update';
+    const INPUT_DETAILS           = 'input_details';
 
     /**************************
      * Email details constants
@@ -504,9 +505,9 @@ class Orchestrator extends Base\Core
     protected function getManualInputDetails(array $input)
     {
         $inputDetails = [
-            self::ATTACHMENT_COUNT => $input['attachment-count'],
-            self::GATEWAY          => $input['gateway'],
-            self::FORCE_UPDATE     => $input['force_update'] ?? []
+            self::ATTACHMENT_COUNT => $input[self::ATTACHMENT_HYPHEN_COUNT],
+            self::GATEWAY          => $input[self::GATEWAY],
+            self::FORCE_UPDATE     => $input[self::FORCE_UPDATE] ?? []
         ];
 
         (new Validator)->validateManualInput($inputDetails);
