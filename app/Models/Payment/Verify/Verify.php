@@ -524,6 +524,13 @@ class Verify extends Base\Core
 
             $result = Result::ERROR;
 
+            $this->trace->info(
+                TraceCode::VERIFY_ACTION,
+                [
+                    'action' => $action
+                ]
+            );
+
             switch ($action)
             {
                 case Action::BLOCK:
