@@ -185,6 +185,10 @@ return [
         'test_hash_secret' => env('EBS_GATEWAY_TEST_HASH_SECRET', 'secret'),
     ],
 
+    'fss' => [
+        'test_hash_secret' => env('FSS_GATEWAY_TEST_HASH_SECRET', 'secret'),
+    ],
+
     'mobikwik' => [
         'test_hash_secret'  => env('MOBIKWIK_GATEWAY_TEST_HASH_SECRET'),
         'test_merchant_id'  => 'MBK9002',
