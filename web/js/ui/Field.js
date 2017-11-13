@@ -11,17 +11,11 @@ function toggleChecked(e) {
   sib.checked = !sib.checked;
 }
 
-export default function Field({
-  tag = 'input',
-  label,
-  infoMsg,
-  required,
-  ...props
-}) {
+export default function Field({ tag = 'input', label, infoMsg, ...props }) {
   let Tag = tag;
   return (
     <div class="field">
-      <label class={required ? 'required' : ''} onClick={focusInput}>
+      <label class={props.required ? 'required' : ''} onClick={focusInput}>
         {label}
       </label>
       <Tag {...props} />
@@ -39,11 +33,11 @@ export const DataListField = _ => <Field {..._} tag="datalist" />;
 export const FromField = _ => <DateTimeField {..._} name="from" label="From" />;
 export const ToField = _ => <DateTimeField {..._} name="to" label="To" />;
 
-export function TimeField({ label, required, ...props }) {
+export function TimeField({ label, ...props }) {
   return (
     <div class="field">
       {label && (
-        <label class={required ? 'required' : ''} onClick={toggleChecked}>
+        <label class={props.required ? 'required' : ''} onClick={toggleChecked}>
           {label}
         </label>
       )}
@@ -67,10 +61,10 @@ export function RadioField({ label, value, defaultValue, ...props }) {
   );
 }
 
-export function CheckField({ label, required, ...props }) {
+export function CheckField({ label, ...props }) {
   return (
     <div class="field">
-      <label class={required ? 'required' : ''} onClick={toggleChecked}>
+      <label class={props.required ? 'required' : ''} onClick={toggleChecked}>
         {label}
       </label>
       <input {...props} type="checkbox" />
@@ -78,16 +72,10 @@ export function CheckField({ label, required, ...props }) {
   );
 }
 
-export function SwitchField({
-  label,
-  disabledLabel,
-  enabledLabel,
-  required,
-  ...props
-}) {
+export function SwitchField({ label, disabledLabel, enabledLabel, ...props }) {
   return (
     <div class="field">
-      <label class={required ? 'required' : ''}>{label}</label>
+      <label class={props.required ? 'required' : ''}>{label}</label>
 
       {disabledLabel && <span>{disabledLabel}</span>}
       <Switch knob {...props} />
