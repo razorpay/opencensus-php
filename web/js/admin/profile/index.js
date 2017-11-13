@@ -147,11 +147,10 @@ class ActivityLogModal extends Component {
                 class="i-trash"
                 style={{ cursor: 'pointer' }}
                 onClick={_ => {
-                  confirm(
-                    'Are you sure you want to delete this session?',
-                    this.deleteSession.bind(this, item),
-                    'Ok',
-                    'Cancel'
+                  confirm('Are you sure you want to delete this session?').then(
+                    _ => {
+                      this.deleteSession.bind(this, item);
+                    }
                   );
                 }}
               />
@@ -167,11 +166,8 @@ class ActivityLogModal extends Component {
         <button
           onClick={_ => {
             confirm(
-              'Are you sure you want to delete all other sessions you are signed in with?',
-              ::this.deleteOtherSessions,
-              'Ok',
-              'Cancel'
-            );
+              'Are you sure you want to delete all other sessions you are signed in with?'
+            ).then(::this.deleteOtherSessions);
           }}
         >
           Sign out all other sessions

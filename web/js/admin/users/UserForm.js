@@ -191,7 +191,7 @@ export default class UserForm extends Component {
               key="2"
               items={allGroups.map(g => g[1])}
               fields={this.groupFields()}
-              bordered={true}
+              border={true}
             />,
           ]}
           <div class="user-form-btn">

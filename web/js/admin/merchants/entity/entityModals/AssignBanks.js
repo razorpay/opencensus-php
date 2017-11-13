@@ -54,30 +54,27 @@ export default class PricingPlanModal extends Component {
 
     return confirm(
       'Any previously assigned banks for the merchant will be replace with selected.',
-      () => {
-        closeModal();
-        const banksData = {
-          banks: Object.keys(body),
-        };
+      'Submit'
+    ).then(_ => {
+      const banksData = {
+        banks: Object.keys(body),
+      };
 
-        return adminPost({
-          route_name: 'merchant_set_banks',
-          url_params: {
-            id: props.merchant.details.id,
-          },
-          body: banksData,
+      return adminPost({
+        route_name: 'merchant_set_banks',
+        url_params: {
+          id: props.merchant.details.id,
+        },
+        body: banksData,
+      })
+        .then(response => {
+          notifySuccess('Pricing Plan assigned successfully.');
+          closeModal();
         })
-          .then(response => {
-            notifySuccess('Pricing Plan assigned successfully.');
-            closeModal();
-          })
-          .catch(err => {
-            notifyError(JSON.stringify(err.response));
-          });
-      },
-      'Submit',
-      'Cancel'
-    );
+        .catch(err => {
+          notifyError(JSON.stringify(err.response));
+        });
+    });
   };
 
   render() {

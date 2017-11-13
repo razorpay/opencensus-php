@@ -26,7 +26,7 @@ export default class AsyncButton extends Component {
         this.setState({
           pending: true,
         });
-        returnValue.then(_ => {
+        returnValue.catch(_ => _).then(_ => {
           this.setState({
             pending: false,
           });

@@ -37,7 +37,7 @@ export default class EditFieldMaps extends Component {
           'Field Map added successfully. Response: ' + JSON.stringify(response)
         );
         if (!id) {
-          this.props.model.items.push(response);
+          this.props.model.push(response);
         }
         closeModal();
       }

@@ -19,15 +19,20 @@ export default function Table({
   fields,
   items,
   onClick,
-  bordered,
+  stripe = true,
+  border,
   animateRow,
   href,
   indexFn = defaultIndexFn,
 }) {
   let Row = href ? Link : 'div';
   let rowClass = href || onClick ? 'tr clickable' : 'tr';
-  let tableClass = 'table table-striped';
-  if (bordered) {
+
+  let tableClass = 'table';
+  if (stripe) {
+    tableClass += ' table-striped';
+  }
+  if (border) {
     tableClass += ' table-bordered';
   }
 
@@ -64,9 +69,7 @@ export default function Table({
                 to={href && href(item)}
               >
                 {fields.map((field, index) => (
-                  <div class="td" key={index}>
-                    {field[1](item)}
-                  </div>
+                  <Value key={index} item={item} valueFn={field[1]} />
                 ))}
               </Row>
             </CSSTransition>
@@ -77,12 +80,19 @@ export default function Table({
   );
 }
 
+@observer
+class Value extends Component {
+  render() {
+    return <div class="td">{this.props.valueFn(this.props.item)}</div>;
+  }
+}
+
 export const DataTable = observer(Table);
 
 @observer
 export class PageTable extends Component {
   render() {
-    let { fields, model, onClick, info = true, title, href } = this.props;
+    let { model, info = true, title, ...props } = this.props;
     let { pending, items, filters, animateItems } = model;
 
     pending = pending.fetch;
@@ -97,13 +107,7 @@ export class PageTable extends Component {
               Results {filters.skip + 1} &ndash; {filters.skip + items.length}
             </div>
           )}
-          <Table
-            animateRow={animateItems}
-            fields={fields}
-            onClick={onClick}
-            items={items}
-            href={href}
-          />
+          <Table animateRow={animateItems} items={items} {...props} />
         </div>
       );
     }

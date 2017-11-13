@@ -12,31 +12,27 @@ export default ({ props }) => {
   function handleConfirm(body) {
     return confirm(
       'Adjustment once assigned can not be changed, ensure you have checked all values.',
-      () => {
-        closeModal();
+      'Submit'
+    ).then(_ => {
+      const mode = body.mode;
+      delete body.mode;
 
-        const mode = body.mode;
-        delete body.mode;
-
-        return adminPost({
-          route_name: 'adj_add',
-          merchant_id: props.merchant.details.id,
-          mode,
-          body,
+      return adminPost({
+        route_name: 'adj_add',
+        merchant_id: props.merchant.details.id,
+        mode,
+        body,
+      })
+        .then(response => {
+          if (response) {
+            notifySuccess('Adjustment added successfully.');
+            closeModal();
+          }
         })
-          .then(response => {
-            if (response) {
-              notifySuccess('Adjustment added successfully.');
-              closeModal();
-            }
-          })
-          .catch(err => {
-            notifyError(JSON.stringify(err.response));
-          });
-      },
-      'Submit',
-      'Cancel'
-    );
+        .catch(err => {
+          notifyError(JSON.stringify(err.response));
+        });
+    });
   }
 
   return (

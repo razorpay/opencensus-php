@@ -15,21 +15,30 @@ class ModalStore {
   openModal = modal => this.modals.push(modal);
   closeModal = _ => this.modals.pop();
 
-  confirm = (message, onAction, confirmLabel = 'Yes', rejectLabel = 'Cancel') =>
-    this.modals.push(
-      <div class="confirm-modal">
-        <header>Confirm</header>
-        <div class="message">{message}</div>
-        <div class="action-buttons">
-          <button onClick={onAction} class="btn-confirm">
-            {confirmLabel}
-          </button>
-          <button onClick={this.closeModal} class="btn-reject">
-            {rejectLabel}
-          </button>
+  confirm = (message, confirmLabel = 'Yes', rejectLabel = 'Cancel') => {
+    return new Promise((resolve, reject) => {
+      this.modals.push(
+        <div class="confirm-modal">
+          <header>Confirm</header>
+          <div class="message">{message}</div>
+          <div class="action-buttons">
+            <button
+              onClick={_ => this.closeModal() & resolve()}
+              class="btn-confirm"
+            >
+              {confirmLabel}
+            </button>
+            <button
+              onClick={_ => this.closeModal() & reject()}
+              class="btn-reject"
+            >
+              {rejectLabel}
+            </button>
+          </div>
         </div>
-      </div>
-    );
+      );
+    });
+  };
 
   replaceSlider = slider => this.sliders.replace([slider]);
   openSlider = slider => this.sliders.push(slider);

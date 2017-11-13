@@ -76,42 +76,37 @@ export default class AssignTerminal extends Component {
 
     return confirm(
       'Any previously assigned plan for the merchant will be replace with selected.',
-      () => {
-        // Check file validation
-        let file = body.file[0];
-        if (
-          body.gateway === 'first_data' &&
-          file.type !== 'application/x-pkcs12'
-        ) {
-          notifyError(JSON.stringify('Invalid certificate file'));
+      'Submit'
+    ).then(_ => {
+      let file = body.file[0];
+      if (
+        body.gateway === 'first_data' &&
+        file.type !== 'application/x-pkcs12'
+      ) {
+        notifyError(JSON.stringify('Invalid certificate file'));
 
-          return;
-        }
-        body.gateway_client_certificate = file;
+        return;
+      }
+      body.gateway_client_certificate = file;
 
-        closeModal();
+      return adminFormUpload(
+        body,
+        '/admin/merchant/' + props.merchant.details.id + '/terminal'
+      )
+        .then(response => {
+          if (response.data.success) {
+            notifySuccess('Terminal assigned successfully.');
+            closeModal();
 
-        return adminFormUpload(
-          body,
-          '/admin/merchant/' + props.merchant.details.id + '/terminal'
-        )
-          .then(response => {
-            if (response.data.success) {
-              notifySuccess('Terminal assigned successfully.');
-              closeModal();
-
-              // Post success calculations in 'merchant.terminals' in model
-            } else {
-              response.data.errors.map(error => notifyError(error));
-            }
-          })
-          .catch(err => {
-            notifyError(JSON.stringify(err.response));
-          });
-      },
-      'Submit',
-      'Cancel'
-    );
+            // Post success calculations in 'merchant.terminals' in model
+          } else {
+            response.data.errors.map(error => notifyError(error));
+          }
+        })
+        .catch(err => {
+          notifyError(JSON.stringify(err.response));
+        });
+    });
   };
 
   render() {

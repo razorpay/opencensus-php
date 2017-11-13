@@ -56,28 +56,22 @@ export default class MerchantEntity extends Component {
       action = 'release_funds';
     }
 
-    confirm(
-      confirmMsg,
-      () => {
-        adminPut({
-          route_name: 'merchant_action',
-          url_params: {
-            id: this.merchantId,
-          },
-          body: { action },
+    confirm(confirmMsg).then(_ => {
+      adminPut({
+        route_name: 'merchant_action',
+        url_params: {
+          id: this.merchantId,
+        },
+        body: { action },
+      })
+        .then(response => {
+          notifySuccess(successMsg);
+          this.model.updateDetails(response);
         })
-          .then(response => {
-            closeModal();
-            notifySuccess(successMsg);
-            this.model.updateDetails(response);
-          })
-          .catch(err => {
-            notifyError(JSON.stringify(err.response));
-          });
-      },
-      'Ok',
-      'Cancel'
-    );
+        .catch(err => {
+          notifyError(JSON.stringify(err.response));
+        });
+    });
   };
 
   captureScreenshot = () => {
@@ -152,7 +146,6 @@ export default class MerchantEntity extends Component {
 
     adminPut(data)
       .then(response => {
-        closeModal();
         notifySuccess(successMsg);
         this.model.updateDetails(response);
       })
@@ -183,26 +176,19 @@ export default class MerchantEntity extends Component {
     const isAlreadySuspended = this.model.merchant.details.suspended_at != null;
     let action, successMsg;
 
-    const request = (action, successMsg) => {
-      this.merchantAction(action, successMsg);
-    };
-
     if (isAlreadySuspended) {
       successMsg = 'Merchant suspension removed successfully';
       action = 'unsuspend';
-      request(action, successMsg);
+      request();
     } else {
       successMsg = 'Merchant suspended successfully';
       action = 'suspend';
 
       confirm(
-        'Are you sure you want to suspend merchant?(Make sure you have attempted all ways of convincing him before doing this)',
-        () => {
-          request(action, successMsg);
-        },
-        'Ok',
-        'Cancel'
-      );
+        'Are you sure you want to suspend merchant?(Make sure you have attempted all ways of convincing him before doing this)'
+      ).then(_ => {
+        this.merchantAction(action, successMsg);
+      });
     }
   };
 
@@ -223,14 +209,7 @@ export default class MerchantEntity extends Component {
       successMsg = 'Merchant archived successfully';
     }
 
-    confirm(
-      confirmMsg,
-      () => {
-        this.merchantAction(action, successMsg);
-      },
-      'Ok',
-      'Cancel'
-    );
+    confirm(confirmMsg).then(_ => this.merchantAction(action, successMsg));
   };
 
   getActionList() {

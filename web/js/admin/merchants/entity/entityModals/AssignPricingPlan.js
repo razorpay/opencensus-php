@@ -31,35 +31,32 @@ export default class PricingPlanModal extends Component {
 
     return confirm(
       'Any previously assigned plan for the merchant will be replace with selected.',
-      () => {
-        closeModal();
-        const pricingData = {
-          pricing_plan_id: body.pricing_plan_id,
-          pricing_plan_name: this.state.pricingPlans[body.id],
-        };
+      'Submit'
+    ).then(_ => {
+      const pricingData = {
+        pricing_plan_id: body.pricing_plan_id,
+        pricing_plan_name: this.state.pricingPlans[body.id],
+      };
 
-        return adminPost({
-          route_name: 'merchant_assign_pricing',
-          url_params: {
-            id: props.merchant.details.id,
-          },
-          body: pricingData,
+      return adminPost({
+        route_name: 'merchant_assign_pricing',
+        url_params: {
+          id: props.merchant.details.id,
+        },
+        body: pricingData,
+      })
+        .then(response => {
+          if (response.data.success) {
+            notifySuccess('Pricing Plan assigned successfully.');
+            closeModal();
+          } else {
+            response.data.errors.map(error => notifyError(error));
+          }
         })
-          .then(response => {
-            if (response.data.success) {
-              notifySuccess('Pricing Plan assigned successfully.');
-              closeModal();
-            } else {
-              response.data.errors.map(error => notifyError(error));
-            }
-          })
-          .catch(err => {
-            notifyError(JSON.stringify(err.response));
-          });
-      },
-      'Submit',
-      'Cancel'
-    );
+        .catch(err => {
+          notifyError(JSON.stringify(err.response));
+        });
+    });
   };
 
   render() {

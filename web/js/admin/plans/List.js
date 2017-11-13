@@ -13,10 +13,6 @@ export default class PlanList extends Component {
       route_name: 'pricing_get_merchant_plans',
     },
     fetchFn: adminFetch,
-    model: (collection, item) => {
-      item.collection = collection;
-      return item;
-    },
   });
 
   newPricingEntity = e =>

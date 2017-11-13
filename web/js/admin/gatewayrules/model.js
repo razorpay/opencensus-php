@@ -1,7 +1,7 @@
 import { prevent } from 'util/index';
 import CollectionItem from 'model/collectionItem';
 import { adminPost, adminDelete } from 'util/fetch';
-import { toJS } from 'mobx';
+import { closeModal, notifyDone, confirm } from 'common/modal';
 
 const defaultProps = {
   type: '',
@@ -26,7 +26,9 @@ export default class GatewayRule extends CollectionItem {
       })
     ).then(data => {
       if (data) {
-        this.collection.items.push(this);
+        closeModal();
+        notifyDone();
+        this.collection.push(data);
         return data;
       }
     });
@@ -34,18 +36,20 @@ export default class GatewayRule extends CollectionItem {
 
   delete(e) {
     prevent(e);
-    return this.request(
-      adminDelete({
-        route_name: 'gateway_delete_rule',
-        mode: this.collection.filters.mode,
-        url_params: {
-          id: this.id,
-        },
-      })
-    ).then(data => {
-      if (data) {
-        this.collection.items.remove(this);
-      }
+    return confirm('Delete Rule?').then(_ => {
+      return this.request(
+        adminDelete({
+          route_name: 'gateway_delete_rule',
+          mode: this.collection.filters.mode,
+          url_params: {
+            id: this.id,
+          },
+        })
+      ).then(data => {
+        if (data) {
+          this.collection.items.remove(this);
+        }
+      });
     });
   }
 }

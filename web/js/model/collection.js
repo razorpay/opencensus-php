@@ -1,5 +1,6 @@
 import { observable, observe } from 'mobx';
 import BaseModel from './base';
+import CollectionItem from './collectionItem';
 
 const defaultFilters = {
   count: 20,
@@ -50,14 +51,20 @@ export default class Collection extends BaseModel {
       })
     ).then(data => {
       if (data) {
-        let Model = this.model;
-        if (Model) {
-          data.items = data.items.map(i => new Model(this, i));
-        }
+        let Model = this.model || CollectionItem;
+        data.items = data.items.map(i => new Model(this, i));
         this.items.replace(data.items);
         this.animateItems = false;
       }
       return data;
     });
+  }
+
+  push(item) {
+    this.items.push(new (this.model || CollectionItem)(this, item));
+  }
+
+  remove(item) {
+    return this.items.remove(item);
   }
 }

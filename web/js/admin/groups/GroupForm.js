@@ -56,7 +56,7 @@ export default class GroupForm extends Component {
                 <Table
                   fields={fields.concat([this.deleteParentField()])}
                   items={parents}
-                  bordered={true}
+                  border={true}
                   key="table"
                 />,
               ]
@@ -68,7 +68,7 @@ export default class GroupForm extends Component {
                 <Table
                   fields={fields}
                   items={group.sub_groups}
-                  bordered={true}
+                  border={true}
                   key="table"
                 />,
               ]
