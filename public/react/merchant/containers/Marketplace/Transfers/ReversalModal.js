@@ -6,7 +6,12 @@ import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Amount from 'rzp/ui/Amount';
-import { isBlank, rupeesToPaise } from 'rzp/utils/rzp-utils';
+import {
+  isBlank,
+  rupeesToPaise,
+  paiseToRupees,
+  titleCase,
+} from 'rzp/utils/rzp-utils';
 import {
   fetchTransfer,
   fetchReversals,
@@ -15,43 +20,67 @@ import {
 
 import { closeModal } from 'rzp/modules/modals';
 
-const amountValidation = (value, allValues, props) => {
-  value = value || '';
-  if (allValues.partial) {
-    if (!value) {
-      return 'Amount is required';
-    }
+// returns value in paise
+const getReversibleAmount = transfer => {
+  return transfer.amount - transfer.amount_reversed;
+};
 
-    if (isNaN(value) || (value.split('.')[1] || []).length > 2) {
-      return 'Amount can only be a Number with atmost 2 decimal places.';
-    }
-    if (value < 0) {
-      return `Amount can't be negative.`;
-    }
-    if (
-      value >
-      (props.transfer.amount - props.transfer.amount_reversed) / 100
-    ) {
-      return `Amount can't be greater than the transfer amount(${(props.transfer
-        .amount -
-        props.transfer.amount_reversed) /
-        100}).`;
-    }
+const isPartialTransfer = props => {
+  const amountEntered = rupeesToPaise(props.amountEntered),
+    reversibleAmount = getReversibleAmount(props.transfer);
+
+  return amountEntered < reversibleAmount;
+};
+
+const amountValidation = props => {
+  const value = props.amountEntered || '';
+
+  if (!value) {
+    return 'Amount is required';
   }
+
+  if (isNaN(value) || (value.toString().split('.')[1] || []).length > 2) {
+    return 'Amount can only be a Number with atmost 2 decimal places.';
+  }
+
+  if (value < 0) {
+    return `Amount can't be negative.`;
+  }
+
+  const reversableAmount = getReversibleAmount(props.transfer);
+
+  if (rupeesToPaise(value) > reversableAmount) {
+    return (
+      `Amount can't be greater than the total Reversible` +
+      ` Amount (${paiseToRupees(reversableAmount)}).`
+    );
+  }
+};
+
+const ReversalType = props => {
+  const { isTitleCase } = props;
+
+  let reversalType = isPartialTransfer(props) ? 'partial' : 'full';
+
+  if (isTitleCase) {
+    reversalType = titleCase(reversalType);
+  }
+
+  return <span>{reversalType}</span>;
 };
 
 const selector = formValueSelector('reversalModal');
 @connect(
   state => {
     let partial = selector(state, 'partial');
-    let reversable_amount = selector(state, 'amount');
+    let amountEntered = selector(state, 'amount');
 
     return {
       ...state.session,
       ...state.transfer,
       user: state.session.user,
       partial,
-      reversable_amount,
+      amountEntered,
     };
   },
   {
@@ -98,7 +127,7 @@ export default class ReversalModal extends Component {
           let transfer = this.props.transfer;
 
           let data = null;
-          if (props.partial) {
+          if (isPartialTransfer(this.props)) {
             data = {
               amount: rupeesToPaise(props.amount),
             };
@@ -143,6 +172,9 @@ export default class ReversalModal extends Component {
   render() {
     const { handleSubmit, transfer } = this.props;
 
+    const amountError = amountValidation(this.props),
+      isPartial = isPartialTransfer(this.props);
+
     return (
       <div>
         <ModalHeader
@@ -150,103 +182,54 @@ export default class ReversalModal extends Component {
           onCloseClick={this.props.closeModal}
         />
 
-        <form
-          class="form-horizontal payment-link-form"
-          onSubmit={handleSubmit(this.save)}
-        >
-          <div class="modal-body">
-            <div class="form-group">
-              <label class="col-sm-4 control-label">
-                <div>Partial Reversal</div>
-              </label>
-              <div class="col-sm-8">
-                <div class="checkbox rzpCheckbox">
-                  <Field
-                    name="partial"
-                    id="partial"
-                    component="input"
-                    type="checkbox"
-                    class="form-control"
-                  />
-                  <label for="partial" />
-                </div>
-              </div>
-            </div>
-            {this.props.partial ? (
-              <div class="form-group">
-                <label class="col-sm-4 control-label">
-                  <div>Amount</div>
-                  <small>(in INR)</small>
-                </label>
-                <div class="col-sm-8">
-                  <Field
-                    name="amount"
-                    component={InputField}
-                    autoComplete="off"
-                    class="form-control"
-                    validate={amountValidation}
-                    placeholder="Enter the reversal amount"
-                  />
-                  <i />
-                </div>
-              </div>
-            ) : null}
-
-            <div class="form-group">
-              <div class="col-sm-8 col-sm-offset-4">
-                The transfer amount will be{' '}
-                <b>
-                  {this.props.partial &&
-                  (transfer.amount - transfer.amount_reversed) / 100 !==
-                    Number(this.props.reversable_amount)
-                    ? 'partially '
-                    : 'completely '}
-                  reversed{' '}
-                </b>if the reversal amount set to{' '}
-                <b>
-                  {(this.props.partial
-                    ? this.props.reversable_amount
-                    : (transfer.amount - transfer.amount_reversed) / 100) ||
-                    0}{' '}
-                  INR
-                </b>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="col-sm-4 control-label">
-                <div>Comments</div>
-              </label>
-              <div class="col-sm-8">
+        <div className="modal-body">
+          <form onSubmit={handleSubmit(this.save)}>
+            <div className="form-group">
+              <label className="label-required">Reversal Amount</label>
+              <div className="input-group">
+                <div className="input-group-addon">INR</div>
                 <Field
-                  name="comment"
+                  name="amount"
                   component={InputField}
-                  class="form-control"
-                  placeholder="Add an optional comment"
+                  type="number"
+                  autoComplete="off"
+                  className="form-control"
+                  placeholder="Enter the reversal amount"
                 />
-                <i />
               </div>
+              {!!amountError ? (
+                <div class="InputField__ErrorText text-danger">
+                  {amountError}
+                </div>
+              ) : (
+                <small class="help-block">
+                  This will be a{' '}
+                  <b>
+                    <ReversalType {...this.props} /> reversal
+                  </b>.
+                  {!isPartial && (
+                    <span> Change amount for a partial reversal.</span>
+                  )}
+                </small>
+              )}
             </div>
-          </div>
-
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-default"
-              onClick={this.props.closeModal}
-            >
-              Cancel
-            </button>
-
-            <AsyncButton
-              type="submit"
-              class="btn btn-primary"
-              text="Reverse"
-              pendingText="Reversing..."
-              onClick={handleSubmit(this.save)}
-            />
-          </div>
-        </form>
+            <div className="form-group">
+              <label>Comments (Optional)</label>
+              <Field
+                name="comment"
+                component={InputField}
+                class="form-control"
+                placeholder="Add an optional comment"
+              />
+            </div>
+            <div class="Modal__actions">
+              <button class="btn btn-primary btn-block">
+                Create <ReversalType {...this.props} isTitleCase={true} />{' '}
+                Reversal
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     );
   }
