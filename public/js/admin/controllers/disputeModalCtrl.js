@@ -105,6 +105,10 @@ app.controller('DisputeModalCtrl', [
         if ($scope.dispute.status) {
           editModeDisputeFields.status = $scope.dispute.status;
         }
+        if ($scope.dispute.accepted_amount) {
+          editModeDisputeFields.accepted_amount =
+            $scope.dispute.accepted_amount * 100;
+        }
 
         $scope.dispute = editModeDisputeFields;
       }
