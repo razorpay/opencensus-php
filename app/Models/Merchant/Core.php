@@ -530,16 +530,21 @@ class Core extends Base\Core
                 $body = $body . 'UTR : ' . $payout->getUtr() . '<br />';
             }
 
-            if (empty($merchant->bankAccount) === false)
+            if (empty($payout->destination) === false)
             {
-                $body = $body . 'Bank Account Number :' . $merchant->bankAccount->getAccountNumber() . '<br />';
-                $body = $body . 'Bank IFSC Code :' . $merchant->bankAccount->getIfscCode() . '<br />';
+                $body = $body . '<br />' . $payout->destination->getBeneficiaryName() . '<br />';
+                $body = $body . 'Bank Account Number : ' . $payout->destination->getAccountNumber() . '<br />';
+                $body = $body . $payout->destination->getBeneficiaryAddress1() . '<br />';
+                $body = $body . $payout->destination->getBeneficiaryAddress2() . '<br />';
+                $body = $body . $payout->destination->getBeneficiaryAddress3() . '<br />';
             }
 
             $body = $body . '<br />'
                           . 'Razorpay Software Pvt Ltd' . '<br />'
                           . 'Bank Account Number : 7911547334' . '<br />'
-                          . 'Bank IFSC Code : KKBK0000958' . '<br />';
+                          . 'Kotak Mahindra Bank 5 C/ II, <br />'
+                          . 'MITTAL COURT,224, NARIMAN POINT,MUMBAI - 400 021, <br/>'
+                          . 'GREATER BOMBAY,MAHARASHTRA <br /><br />';
 
             if (array_key_exists($merchantId, self::MASTER_ID_MAPPING) === true)
             {
@@ -548,7 +553,7 @@ class Core extends Base\Core
 
             $dateOfDeposit = Carbon::createFromTimestamp($payout->getCreatedAt(), Timezone::IST)->format('d-m-Y');
 
-            $dateOfCredit = Carbon::createFromTimestamp($payout->getProcessedAt(), Timezone::IST)->format('d-m-Y');
+            $dateOfCredit = Carbon::createFromTimestamp($payout->getCreatedAt(), Timezone::IST)->format('d-m-Y');
 
             $body = $body . 'Date Of Deposit : ' . $dateOfDeposit . '<br />';
 
