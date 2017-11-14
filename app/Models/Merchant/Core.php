@@ -5,8 +5,10 @@ namespace RZP\Models\Merchant;
 use ApiResponse;
 use Config;
 use Mail;
+use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\MerchantSync;
@@ -28,6 +30,13 @@ use RZP\Mail\Payout\Payout as PayoutMail;
 class Core extends Base\Core
 {
     use Notify;
+
+    // This is used in case for
+    // IRCTC for sending payout
+    // mails
+    const MASTER_ID_MAPPING = [
+        '8YPFnW5UOM91H7' => 'WMRAZOR00000',
+    ];
 
     public function create($input)
     {
@@ -502,6 +511,8 @@ class Core extends Base\Core
 
         $recipients = $merchant->getTransactionReportEmail();
 
+        $merchantId = $merchant->getId();
+
         if (empty($email) === false)
         {
             array_push($recipients, $email);
@@ -530,6 +541,18 @@ class Core extends Base\Core
                           . 'Bank Account Number : 7911547334' . '<br />'
                           . 'Bank IFSC Code : KKBK0000958' . '<br />';
 
+            if (array_key_exists($merchantId, self::MASTER_ID_MAPPING) === true)
+            {
+                $body = $body . 'Master ID :' . self::MASTER_ID_MAPPING[$merchantId] . '<br />';
+            }
+
+            $dateOfDeposit = Carbon::createFromTimestamp($payout->getCreatedAt(), Timezone::IST)->format('d-m-Y');
+
+            $dateOfCredit = Carbon::createFromTimestamp($payout->getProcessedAt(), Timezone::IST)->format('d-m-Y');
+
+            $body = $body . 'Date Of Deposit : ' . $dateOfDeposit . '<br />';
+
+            $body = $body . 'Date Of Credit : ' . $dateOfCredit . '<br />';
 
             $mailData = ['body'  =>  $body];
 
