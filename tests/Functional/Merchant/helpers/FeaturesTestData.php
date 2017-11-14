@@ -592,7 +592,7 @@ return [
             'content' => [
                 'status' => 'approved'
             ],
-            'url'     => '/onboarding/features/submissions',
+            'url'     => '/onboarding/features/submissions/fetch',
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',

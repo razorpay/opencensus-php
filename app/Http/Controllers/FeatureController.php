@@ -98,6 +98,21 @@ class FeatureController extends Controller
         return ApiResponse::json($response);
     }
 
+    /**
+     * This function will be deprecated by getFeatureOnboardingRequests.
+     * Currently, maintained for Backward Compatibility
+     *
+     * @return mixed
+     */
+    public function getFeatureOnboardingRequestsByStatus()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getFeatureOnboardingRequestsByStatus($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getFeatureOnboardingRequests()
     {
         $input = Request::all();

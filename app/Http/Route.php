@@ -655,7 +655,8 @@ final class Route
         'onboarding_features_fetch_submission'    => ['get',      'onboarding/features/{feature}',                  'FeatureController@getOnboardingSubmissions'                        ],
         'onboarding_features_create'              => ['post',     'onboarding/features/{feature}',                  'FeatureController@postOnboardingSubmissions'                       ],
         'onboarding_features_update'              => ['post',     'onboarding/features/{feature}/update',           'FeatureController@updateOnboardingSubmissions'                     ],
-        'onboarding_features_fetch_submissions'   => ['get',      'onboarding/features/submissions',                'FeatureController@getFeatureOnboardingRequests'                    ],
+        'onboarding_features_fetch_submissions'   => ['get',      'onboarding/features/submissions',                'FeatureController@getFeatureOnboardingRequestsByStatus'            ],
+        'onboarding_features_get_submissions'     => ['get',      'onboarding/features/submissions/fetch',          'FeatureController@getFeatureOnboardingRequests'                    ],
         'onboarding_features_update_status'       => ['put',      'onboarding/features/{feature}/status',           'FeatureController@updateFeatureActivationStatus'                   ],
         'onboarding_features_fetch_status'        => ['get',      'onboarding/features/{feature}/status',           'FeatureController@getFeatureActivationStatus'                      ],
 
@@ -1261,6 +1262,7 @@ final class Route
         'merchant_batches',
         'admin_fetch_all_entities',
         'onboarding_features_fetch_submissions',
+        'onboarding_features_get_submissions',
         'onboarding_features_update_status',
         'onboarding_features_fetch_status',
         'onboarding_features_update'
@@ -1398,6 +1400,7 @@ final class Route
         'dispute_reason_create'                 => Permission::CREATE_DISPUTE_REASON,
         'user_confirm_by_data'                  => '*',
         'onboarding_features_fetch_submissions' => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
+        'onboarding_features_get_submissions'   => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_update_status'     => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_fetch_status'      => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_update'            => Permission::MANAGE_ONBOARDING_SUBMISSIONS,

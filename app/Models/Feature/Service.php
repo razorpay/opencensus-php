@@ -260,6 +260,22 @@ class Service extends Base\Service
 
     /**
      * Returns the feature activation requests based on the status
+     * This function will be deprecated by getFeatureOnboardingRequests.
+     * Currently, maintained for Backward Compatibility.
+     *
+     * @param array $input
+     *
+     * @return mixed
+     */
+    public function getFeatureOnboardingRequestsByStatus(array $input)
+    {
+        $merchantDetails = $this->repo->merchant_detail->getFeatureOnboardingRequestsByStatus($input);
+
+        return $merchantDetails;
+    }
+
+    /**
+     * Returns the feature activation requests based on the status
      *
      * @param array $input
      *
@@ -267,7 +283,7 @@ class Service extends Base\Service
      */
     public function getFeatureOnboardingRequests(array $input)
     {
-        $merchantDetails = $this->repo->merchant_detail->getFeatureOnboardingRequestsByStatus($input);
+        $merchantDetails = $this->repo->merchant_detail->getFeatureOnboardingRequests($input);
 
         return $merchantDetails;
     }

@@ -68,7 +68,30 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getFeatureOnboardingRequestsByStatus(array $filters): Base\PublicCollection
+    /**
+     * This function will be deprecated. Use the getFeatureOnboardingRequests function instead.
+     * Currently, maintained for Backward Compatibility.
+     *
+     * @param string $status
+     *
+     * @return Base\PublicCollection
+     */
+    public function getFeatureOnboardingRequestsByStatus(string $status): Base\PublicCollection
+    {
+        return $this->newQueryWithConnection(Mode::LIVE)
+            ->select(
+                Entity::MERCHANT_ID,
+                Entity::CONTACT_NAME,
+                Entity::MARKETPLACE_ACTIVATION_STATUS,
+                Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
+                Entity::SUBSCRIPTIONS_ACTIVATION_STATUS)
+            ->where(Entity::MARKETPLACE_ACTIVATION_STATUS, $status)
+            ->orWhere(Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS, $status)
+            ->orWhere(Entity::SUBSCRIPTIONS_ACTIVATION_STATUS, $status)
+            ->get();
+    }
+
+    public function getFeatureOnboardingRequests(array $filters): Base\PublicCollection
     {
         if (isset($filters['status']) === true)
         {
