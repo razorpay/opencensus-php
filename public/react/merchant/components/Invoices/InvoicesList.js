@@ -18,15 +18,11 @@ const InvoiceListItem = props => {
           do {
             if (['link', 'ecod'].indexOf(invoice.type) !== -1) {
               <NavLink to={`/paymentlinks/${invoice.id}`}>
-                <code>
-                  {invoice.id}
-                </code>
+                <code>{invoice.id}</code>
               </NavLink>;
             } else {
               <NavLink to={`/invoices/${invoice.id}`}>
-                <code>
-                  {invoice.id}
-                </code>
+                <code>{invoice.id}</code>
               </NavLink>;
             }
           }
@@ -36,11 +32,9 @@ const InvoiceListItem = props => {
         <Time value={invoice.date} />
       </td>
       <td class="text-right">
-        <Amount value={invoice.amount} />
+        <Amount value={invoice.amount} currency={invoice.currency} />
       </td>
-      <td>
-        {invoice.receipt}
-      </td>
+      <td>{invoice.receipt}</td>
       <td>
         {getCustomerDisplayName({
           name: customer.customer_name,
@@ -48,9 +42,7 @@ const InvoiceListItem = props => {
           email: customer.customer_email,
         })}
       </td>
-      <td>
-        {invoice.short_url && <CopyLink url={invoice.short_url} />}
-      </td>
+      <td>{invoice.short_url && <CopyLink url={invoice.short_url} />}</td>
       <td>
         <InvoiceStatusLabel status={invoice.status} />
       </td>
@@ -84,12 +76,8 @@ export default props => {
       <table class="table table-hover">
         <thead>
           <tr>
-            <th>
-              {label} Id
-            </th>
-            <th>
-              {label} Date
-            </th>
+            <th>{label} Id</th>
+            <th>{label} Date</th>
             <th class="text-right">Amount</th>
             <th>Receipt No.</th>
             <th>Customer</th>
@@ -104,14 +92,14 @@ export default props => {
           rows={invoices}
           emptyTableMsg="No data found!"
         >
-          {invoices.map(invoice =>
+          {invoices.map(invoice => (
             <InvoiceListItem
               key={invoice.id}
               invoice={invoice}
               onEditClick={() => props.onEdit(invoice)}
               onDeleteClick={() => props.onDelete(invoice)}
             />
-          )}
+          ))}
         </TableBody>
       </table>
     </div>

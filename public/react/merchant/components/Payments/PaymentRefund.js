@@ -65,7 +65,8 @@ const RefundsList = ({ refunds }) => {
 export default ({ payment, refunds, openRefundModal }) => {
   const paymentStatus = payment.status,
     refundStatus = payment.refund_status,
-    refundAmount = payment.amount_refunded;
+    refundAmount = payment.amount_refunded,
+    currency = payment.currency;
 
   if (['created', 'authorized', 'failed'].indexOf(paymentStatus) >= 0) {
     return (
@@ -78,16 +79,18 @@ export default ({ payment, refunds, openRefundModal }) => {
     return (
       <div>
         <div className="m-b">
-          {refundStatus === 'partial'
-            ? <Definition>
-                <span>
-                  <Amount value={refundAmount} /> Refunded
-                </span>
-                <span>
-                  Partially refunded in <NumRefunds refunds={refunds} />
-                </span>
-              </Definition>
-            : <Definition>No refunds issued yet</Definition>}
+          {refundStatus === 'partial' ? (
+            <Definition>
+              <span>
+                <Amount value={refundAmount} currency={currency} /> Refunded
+              </span>
+              <span>
+                Partially refunded in <NumRefunds refunds={refunds} />
+              </span>
+            </Definition>
+          ) : (
+            <Definition>No refunds issued yet</Definition>
+          )}
         </div>
         {
           <ShowWhen myRole="owner manager operations admin">

@@ -10,9 +10,8 @@ import {
 import { titleCase, formatFromNow } from 'rzp/utils/rzp-utils';
 
 const StatusLabel = ({ status, entity, children, ...otherProps }) => {
-  let Label = entity === 'settlement'
-    ? SettlementStatusLabel
-    : PaymentStatusLabel;
+  let Label =
+    entity === 'settlement' ? SettlementStatusLabel : PaymentStatusLabel;
   status = status || 'refunded';
 
   return (
@@ -41,7 +40,9 @@ export default ({ entity, data, loading }) => {
             {
               do {
                 if (loading) {
-                  <div class="centered"><LoaderDots /></div>;
+                  <div class="centered">
+                    <LoaderDots />
+                  </div>;
                 } else if (items.length) {
                   <div class="table-responsive EntityTable">
                     <table class="table table-hover table-noborder">
@@ -64,7 +65,10 @@ export default ({ entity, data, loading }) => {
                                   data-tip={titleCase(item.status) || null}
                                   data-place="bottom"
                                 >
-                                  <Amount value={item.amount} />
+                                  <Amount
+                                    value={item.amount}
+                                    currency={item.currency}
+                                  />
                                 </StatusLabel>
                               </td>
                             </tr>

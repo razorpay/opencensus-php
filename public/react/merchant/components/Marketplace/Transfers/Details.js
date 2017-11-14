@@ -35,24 +35,27 @@ const SettlementText = ({ data, transfer, onEdit }) => {
   return (
     <div>
       <div>
-        {data.onHold === 'false'
-          ? <span className="text-success">Scheduled</span>
-          : data.holdUntil
-            ? <span className="text-warning transfer-scheduled-text">
-                Scheduled for&nbsp;
-                <Time value={data.date.toDate() / 1000} format="Do MMM YYYY" />
-              </span>
-            : <span className="text-danger">On Hold</span>}
+        {data.onHold === 'false' ? (
+          <span className="text-success">Scheduled</span>
+        ) : data.holdUntil ? (
+          <span className="text-warning transfer-scheduled-text">
+            Scheduled for&nbsp;
+            <Time value={data.date.toDate() / 1000} format="Do MMM YYYY" />
+          </span>
+        ) : (
+          <span className="text-danger">On Hold</span>
+        )}
         <span>&nbsp;&nbsp;</span>
         <a href className="btn-link" onClick={onEdit}>
           change
         </a>
       </div>
-      {data.onHold === 'false' &&
+      {data.onHold === 'false' && (
         <div className="text-fade">
           Transfers scheduled to settle on bank holidays will get settled on the
           next working day.
-        </div>}
+        </div>
+      )}
     </div>
   );
 };
@@ -80,7 +83,8 @@ export default class TransferDetails extends Component {
       ...initialState,
       onHold: (transfer.on_hold
         ? transfer.on_hold_until ? 'on_hold_until' : 'on_hold'
-        : false).toString(),
+        : false
+      ).toString(),
       holdUntil: transfer.on_hold_until,
       date: transfer.on_hold_until
         ? moment((transfer.on_hold_until + 600) * 1000)
@@ -172,232 +176,239 @@ export default class TransferDetails extends Component {
       onClose,
     } = this.props;
 
-    const nextWorkingDate = nextWorkingDay(moment().startOf('day').toDate(), 3);
+    const nextWorkingDate = nextWorkingDay(
+      moment()
+        .startOf('day')
+        .toDate(),
+      3
+    );
 
     return (
       <div class="content-wrapper content-sm txn-details">
-        {isLoading
-          ? <div class="page-spinner-container">
-              <Spinner />
+        {isLoading ? (
+          <div class="page-spinner-container">
+            <Spinner />
+          </div>
+        ) : (
+          <div class="panel panel-default SliderPanel">
+            <div class="panel-heading">
+              {onClose && (
+                <button
+                  type="button"
+                  class="close close-secondary"
+                  onClick={onClose}
+                >
+                  <i class="icon icon-arrow-back" />
+                  <i class="icon icon-close" />
+                </button>
+              )}
+              Transfer ID: <strong>{transfer.id}</strong>
             </div>
-          : <div class="panel panel-default SliderPanel">
-              <div class="panel-heading">
-                {onClose &&
-                  <button
-                    type="button"
-                    class="close close-secondary"
-                    onClick={onClose}
-                  >
-                    <i class="icon icon-arrow-back" />
-                    <i class="icon icon-close" />
-                  </button>}
-                Transfer ID: <strong>{transfer.id}</strong>
-              </div>
 
-              <div class="SliderPanel__Body">
-                <div class="panel-body">
-                  <EntityDetailRow label="Linked Account">
-                    <Definition>
-                      <span>
-                        {transfer.recipient_details.name}
-                      </span>
-                      {transfer.recipient_details.email &&
-                        <span>
-                          {transfer.recipient_details.email}
-                        </span>}
-                      <code>
-                        {transfer.recipient}
-                      </code>
-                    </Definition>
-                  </EntityDetailRow>
+            <div class="SliderPanel__Body">
+              <div class="panel-body">
+                <EntityDetailRow label="Linked Account">
+                  <Definition>
+                    <span>{transfer.recipient_details.name}</span>
+                    {transfer.recipient_details.email && (
+                      <span>{transfer.recipient_details.email}</span>
+                    )}
+                    <code>{transfer.recipient}</code>
+                  </Definition>
+                </EntityDetailRow>
 
-                  <EntityDetailRow label="Amount">
-                    <ContentToggler>
-                      <Amount value={transfer.amount} />
-                      <div className="m-t">
-                        <Fee
-                          totalFee={transfer.fees}
-                          rzpFee={transfer.fees - transfer.tax}
-                          tax={transfer.tax}
+                <EntityDetailRow label="Amount">
+                  <ContentToggler>
+                    <Amount
+                      value={transfer.amount}
+                      currency={transfer.currency}
+                    />
+                    <div className="m-t">
+                      <Fee
+                        totalFee={transfer.fees}
+                        rzpFee={transfer.fees - transfer.tax}
+                        tax={transfer.tax}
+                        currency={transfer.currency}
+                      />
+                    </div>
+                  </ContentToggler>
+                </EntityDetailRow>
+
+                <EntityDetailRow
+                  label="Created At"
+                  value={() => (
+                    <Time
+                      value={transfer.created_at}
+                      format="DD MMM YYYY, hh:mm:ss a"
+                    />
+                  )}
+                />
+
+                <EntityDetailRow label="Settlement">
+                  {this.state.editView ? (
+                    <form onSubmit={this.onSubmit} name="updatePaymentTransfer">
+                      <p>
+                        <b>Change settlement schedule</b>
+                      </p>
+                      <div class="RadioButton">
+                        <label>
+                          <input
+                            type="radio"
+                            name="onHold"
+                            value="on_hold_until"
+                            checked={this.state.onHold === 'on_hold_until'}
+                            onChange={this.onScheduleChange}
+                          />
+                          <div>
+                            <div class="RadioButton__button" />
+                            <div class="RadioButton__label">
+                              <div>
+                                <span>Schedule settlement on</span>
+                              </div>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                      <div className="transfers-onhold-datepicker">
+                        <SingleDatePicker
+                          id="holdUntil"
+                          name="holdUntil"
+                          numberOfMonths={1}
+                          disabled={this.state.onHold !== 'on_hold_until'}
+                          isDayBlocked={date => {
+                            date = date
+                              .clone()
+                              .startOf('day')
+                              .toDate();
+
+                            return date < nextWorkingDate || isHoliday(date);
+                          }}
+                          date={this.state.date}
+                          onDateChange={this.onDateChange}
+                          focused={this.state.focused}
+                          onFocusChange={({ focused }) =>
+                            this.setState({ focused })}
+                        />
+                        {this.state.dateError && (
+                          <div className="text-small text-danger text-right">
+                            Please select a schedule date
+                          </div>
+                        )}
+                      </div>
+                      <div class="RadioButton">
+                        <label>
+                          <input
+                            type="radio"
+                            name="onHold"
+                            value="on_hold"
+                            checked={this.state.onHold === 'on_hold'}
+                            onChange={this.onScheduleChange}
+                          />
+                          <div>
+                            <div class="RadioButton__button" />
+                            <div class="RadioButton__label">
+                              <span>Put on hold</span>
+                              <div class="text-fade">
+                                The settlement will be on hold till specified
+                                otherwise.
+                              </div>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                      <div class="RadioButton">
+                        <label>
+                          <input
+                            type="radio"
+                            name="onHold"
+                            value={'false'}
+                            checked={this.state.onHold === 'false'}
+                            onChange={this.onScheduleChange}
+                          />
+                          <div>
+                            <div class="RadioButton__button" />
+                            <div class="RadioButton__label">
+                              <span>Settle Now</span>
+                              <div class="text-fade">
+                                This transfer will be settled in next available
+                                settlement slot
+                              </div>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                      {this.state.errors && (
+                        <div>
+                          {this.state.errors.map((item, key) => {
+                            return (
+                              <Alert key={key} type="error" message={item} />
+                            );
+                          })}
+                        </div>
+                      )}
+                      <div class="btn-toolbar text-center">
+                        <button
+                          type="button"
+                          className="btn btn-default btn-half"
+                          onClick={this.onDismiss}
+                        >
+                          Discard
+                        </button>
+                        <AsyncButton
+                          type="submit"
+                          className="btn btn-primary btn-half"
+                          text="Save"
+                          pendingText="Saving..."
+                          onClick={this.onSubmit}
                         />
                       </div>
-                    </ContentToggler>
-                  </EntityDetailRow>
-
-                  <EntityDetailRow
-                    label="Created At"
-                    value={() =>
-                      <Time
-                        value={transfer.created_at}
-                        format="DD MMM YYYY, hh:mm:ss a"
-                      />}
-                  />
-
-                  <EntityDetailRow label="Settlement">
-                    {this.state.editView
-                      ? <form
-                          onSubmit={this.onSubmit}
-                          name="updatePaymentTransfer"
-                        >
-                          <p>
-                            <b>Change settlement schedule</b>
-                          </p>
-                          <div class="RadioButton">
-                            <label>
-                              <input
-                                type="radio"
-                                name="onHold"
-                                value="on_hold_until"
-                                checked={this.state.onHold === 'on_hold_until'}
-                                onChange={this.onScheduleChange}
-                              />
-                              <div>
-                                <div class="RadioButton__button" />
-                                <div class="RadioButton__label">
-                                  <div>
-                                    <span>Schedule settlement on</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </label>
-                          </div>
-                          <div className="transfers-onhold-datepicker">
-                            <SingleDatePicker
-                              id="holdUntil"
-                              name="holdUntil"
-                              numberOfMonths={1}
-                              disabled={this.state.onHold !== 'on_hold_until'}
-                              isDayBlocked={date => {
-                                date = date.clone().startOf('day').toDate();
-
-                                return (
-                                  date < nextWorkingDate || isHoliday(date)
-                                );
-                              }}
-                              date={this.state.date}
-                              onDateChange={this.onDateChange}
-                              focused={this.state.focused}
-                              onFocusChange={({ focused }) =>
-                                this.setState({ focused })}
-                            />
-                            {this.state.dateError &&
-                              <div className="text-small text-danger text-right">
-                                Please select a schedule date
-                              </div>}
-                          </div>
-                          <div class="RadioButton">
-                            <label>
-                              <input
-                                type="radio"
-                                name="onHold"
-                                value="on_hold"
-                                checked={this.state.onHold === 'on_hold'}
-                                onChange={this.onScheduleChange}
-                              />
-                              <div>
-                                <div class="RadioButton__button" />
-                                <div class="RadioButton__label">
-                                  <span>Put on hold</span>
-                                  <div class="text-fade">
-                                    The settlement will be on hold till
-                                    specified otherwise.
-                                  </div>
-                                </div>
-                              </div>
-                            </label>
-                          </div>
-                          <div class="RadioButton">
-                            <label>
-                              <input
-                                type="radio"
-                                name="onHold"
-                                value={'false'}
-                                checked={this.state.onHold === 'false'}
-                                onChange={this.onScheduleChange}
-                              />
-                              <div>
-                                <div class="RadioButton__button" />
-                                <div class="RadioButton__label">
-                                  <span>Settle Now</span>
-                                  <div class="text-fade">
-                                    This transfer will be settled in next
-                                    available settlement slot
-                                  </div>
-                                </div>
-                              </div>
-                            </label>
-                          </div>
-                          {this.state.errors &&
-                            <div>
-                              {this.state.errors.map((item, key) => {
-                                return (
-                                  <Alert
-                                    key={key}
-                                    type="error"
-                                    message={item}
-                                  />
-                                );
-                              })}
-                            </div>}
-                          <div class="btn-toolbar text-center">
-                            <button
-                              type="button"
-                              className="btn btn-default btn-half"
-                              onClick={this.onDismiss}
-                            >
-                              Discard
-                            </button>
-                            <AsyncButton
-                              type="submit"
-                              className="btn btn-primary btn-half"
-                              text="Save"
-                              pendingText="Saving..."
-                              onClick={this.onSubmit}
-                            />
-                          </div>
-                        </form>
-                      : <SettlementText
-                          data={this.state}
-                          transfer={transfer}
-                          onEdit={this.onEdit}
-                        />}
-                  </EntityDetailRow>
-
-                  <EntityDetailRow
-                    label="Source ID"
-                    value={() =>
-                      <div>
-                        <Link to={`/payments/${transfer.source}`}>
-                          {transfer.source}
-                        </Link>
-                      </div>}
-                  />
-
-                  <EntityDetailRow label="Reversal">
-                    <TransferReversal
+                    </form>
+                  ) : (
+                    <SettlementText
+                      data={this.state}
                       transfer={transfer}
-                      reversals={reversals}
-                      openTransferReversalModal={openReversalModal}
+                      onEdit={this.onEdit}
                     />
-                  </EntityDetailRow>
+                  )}
+                </EntityDetailRow>
 
-                  {/* Notes */}
-                  <EntityDetailRow label="Notes">
-                    {transfer.notes &&
-                      (Object.keys(transfer.notes).length === 0
-                        ? '--'
-                        : Object.keys(transfer.notes).map((key, index) =>
-                            <div className="m-b" key={index}>
-                              <Definition>
-                                {key}
-                                {String(transfer.notes[key])}
-                              </Definition>
-                            </div>
-                          ))}
-                  </EntityDetailRow>
-                </div>
+                <EntityDetailRow
+                  label="Source ID"
+                  value={() => (
+                    <div>
+                      <Link to={`/payments/${transfer.source}`}>
+                        {transfer.source}
+                      </Link>
+                    </div>
+                  )}
+                />
+
+                <EntityDetailRow label="Reversal">
+                  <TransferReversal
+                    transfer={transfer}
+                    reversals={reversals}
+                    openTransferReversalModal={openReversalModal}
+                  />
+                </EntityDetailRow>
+
+                {/* Notes */}
+                <EntityDetailRow label="Notes">
+                  {transfer.notes &&
+                    (Object.keys(transfer.notes).length === 0
+                      ? '--'
+                      : Object.keys(transfer.notes).map((key, index) => (
+                          <div className="m-b" key={index}>
+                            <Definition>
+                              {key}
+                              {String(transfer.notes[key])}
+                            </Definition>
+                          </div>
+                        )))}
+                </EntityDetailRow>
               </div>
-            </div>}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

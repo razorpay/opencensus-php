@@ -75,7 +75,10 @@ export default props => {
               <div class="list-group pair-row-container">
                 <EntityDetailRow label="Amount">
                   <b>
-                    <Amount value={payment.amount} />
+                    <Amount
+                      value={payment.amount}
+                      currency={payment.currency}
+                    />
                   </b>
                 </EntityDetailRow>
 

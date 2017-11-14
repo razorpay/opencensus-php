@@ -22,34 +22,35 @@ import './styles.styl';
  * <Fee totalFee={} rzpFee={} tax={}/>
  */
 
-const FeeTable = ({ rows }) =>
+const FeeTable = ({ rows }) => (
   <table>
     <tbody>
-      {rows.map((item, index) =>
+      {rows.map((item, index) => (
         <tr key={index}>
-          <td>
-            {item[0]}
-          </td>
-          <td>
-            {item[1]}
-          </td>
+          <td>{item[0]}</td>
+          <td>{item[1]}</td>
         </tr>
-      )}
+      ))}
     </tbody>
-  </table>;
+  </table>
+);
 
-export default ({ totalFee = 0, rzpFee = 0, tax = 0 }) => {
+export default ({ totalFee = 0, rzpFee = 0, tax = 0, currency = 'INR' }) => {
   return (
     <div className="rzp-fee">
       <div className="m-b text-small">
-        <FeeTable rows={[['Total Fee', <Amount value={totalFee} />]]} />
+        <FeeTable
+          rows={[
+            ['Total Fee', <Amount value={totalFee} currency={currency} />],
+          ]}
+        />
       </div>
       <div className="text-fade">
         <Blockquote>
           <FeeTable
             rows={[
-              ['Razorpay Fee', <Amount value={rzpFee} />],
-              ['GST(18%)', <Amount value={tax} />],
+              ['Razorpay Fee', <Amount value={rzpFee} currency={currency} />],
+              ['GST(18%)', <Amount value={tax} currency={currency} />],
             ]}
           />
         </Blockquote>

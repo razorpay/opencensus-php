@@ -45,12 +45,11 @@ const TransfersList = ({ transfers, payment }) => {
 
   var paymentTransferId = {
     ...transferId,
-    value: item =>
+    value: item => (
       <Link to={`/payments/${payment.id}/` + `${item.id}`}>
-        <code>
-          {item.id}
-        </code>
-      </Link>,
+        <code>{item.id}</code>
+      </Link>
+    ),
   };
 
   return (
@@ -72,10 +71,11 @@ const TransfersList = ({ transfers, payment }) => {
   );
 };
 
-const CreateTransferBtn = ({ onClick, text = 'Create Transfer' }) =>
+const CreateTransferBtn = ({ onClick, text = 'Create Transfer' }) => (
   <button className="btn btn-default" onClick={onClick}>
     {text}
-  </button>;
+  </button>
+);
 
 export default ({ payment, transfers, onCreateTransfer }) => {
   const amountTransferred = payment.amount_transferred,
@@ -96,8 +96,9 @@ export default ({ payment, transfers, onCreateTransfer }) => {
         <p>
           No transfers created{`${payment.status === 'captured' ? ' yet' : ''}`}
         </p>
-        {payment.status === 'captured' &&
-          <CreateTransferBtn onClick={onCreateTransfer} />}
+        {payment.status === 'captured' && (
+          <CreateTransferBtn onClick={onCreateTransfer} />
+        )}
       </div>
     );
   }
@@ -110,21 +111,24 @@ export default ({ payment, transfers, onCreateTransfer }) => {
             <NumTransfers transfers={transfers} /> created
           </span>
           <span>
-            {transfers.loading
-              ? <LoaderDots />
-              : <Amount value={amountTransferred} />}
+            {transfers.loading ? (
+              <LoaderDots />
+            ) : (
+              <Amount value={amountTransferred} currency={payment.currency} />
+            )}
             <span style={{ marginLeft: '4px' }}>Net Transferred</span>
           </span>
         </Definition>
       </div>
       {payment.status === 'captured' &&
-        payment.amount !== amountTransferred &&
-        <div className="m-b">
-          <CreateTransferBtn
-            text="Create another transfer"
-            onClick={onCreateTransfer}
-          />
-        </div>}
+        payment.amount !== amountTransferred && (
+          <div className="m-b">
+            <CreateTransferBtn
+              text="Create another transfer"
+              onClick={onCreateTransfer}
+            />
+          </div>
+        )}
       <TransfersList transfers={transfers} payment={payment} />
     </div>
   );
