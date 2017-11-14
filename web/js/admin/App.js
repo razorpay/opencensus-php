@@ -19,6 +19,7 @@ import PublicFeatures from 'admin/publicfeatures/List';
 import MerchantEntity from 'admin/merchants/entity/MerchantEntity';
 import GenericEntity from 'admin/entities/Entity';
 
+import MerchantActivationForm from 'admin/merchants/entity/MerchantActivationForm';
 import MerchantTeamDetails from 'admin/merchants/entity/MerchantTeamDetails';
 import MerchantAnalyticStats from 'admin/merchants/entity/MerchantAnalyticStats';
 
@@ -44,6 +45,10 @@ export default class App extends Component {
         <main>
           <ErrorBoundary resetOnProps location={this.location}>
             <Switch location={this.location}>
+              <Route
+                path="/merchants/:id/activation"
+                component={MerchantActivationForm}
+              />
               <Route
                 path="/merchants/:id/team"
                 component={MerchantTeamDetails}
