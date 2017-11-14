@@ -26,9 +26,9 @@ class Core extends Base\Core
     {
         if (isset($input[Payment\Entity::GATEWAY]) === true)
         {
-            $amount = $this->getAmountFromPaymentsForLastDay($input);
-
             $gateway = $input[Payment\Entity::GATEWAY];
+
+            $amount = $this->getAmountFromPaymentsForLastDay($gateway);
 
             $channel = Channel::getChannelFromGateway($gateway);
         }
@@ -66,10 +66,8 @@ class Core extends Base\Core
         return (new $nodalClass())->addBeneficiary($input);
     }
 
-    protected function getAmountFromPaymentsForLastDay(array $input)
+    protected function getAmountFromPaymentsForLastDay(string $gateway)
     {
-        $gateway = $input[Payment\Entity::GATEWAY];
-
         $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
 
         $to = Carbon::today(Timezone::IST)->getTimestamp() - 1;
