@@ -21,7 +21,7 @@ class EMandateDebitReconFile extends Base\EMandateDebitReconFile
     const REJECT  = 'reject';
 
 
-    protected function updatePaymentEntity(array $row)
+    protected function updatePaymentEntities(array $row)
     {
         $paymentId = trim($row[Headings::TRANSACTION_REF_NO]);
 
@@ -78,7 +78,7 @@ class EMandateDebitReconFile extends Base\EMandateDebitReconFile
         ];
     }
 
-    protected function isStatusProcess(Base\Entity $gatewayPayment): bool
+    protected function isAuthorized(Base\Entity $gatewayPayment): bool
     {
         return ($gatewayPayment->getStatus() === self::PROCESS);
     }

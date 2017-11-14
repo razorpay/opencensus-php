@@ -67,7 +67,7 @@ class EMandateDebitReconFile extends Base\Core
 
             try
             {
-                $this->updatePaymentEntity($row);
+                $this->updatePaymentEntities($row);
 
                 $processedCount++;
             }
@@ -86,12 +86,12 @@ class EMandateDebitReconFile extends Base\Core
 
     protected function updatePayment(Base\Entity $gatewayPayment, Payment\Entity $payment)
     {
-        if ($this->isStatusProcess($gatewayPayment) === false)
+        if ($this->isAuthorized($gatewayPayment) === false)
         {
             return $this->processAuthorizedPayment($payment);
         }
 
-        $this->processFailedPayment($payment, $gatewayPayment);
+        return $this->processFailedPayment($payment, $gatewayPayment);
     }
 
     protected function processAuthorizedPayment(Payment\Entity $payment)
