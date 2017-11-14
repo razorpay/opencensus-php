@@ -331,20 +331,14 @@ class Gateway extends Base\Gateway
             Fields::MERCHANT_ID      => $this->getMerchantId(),
             Fields::MERCHANT_TRAN_ID => $payment['id'],
             Fields::MERCHANT_NAME    => 'Razorpay',
-            // Do not change this.
-            // Note and sub-merchant name fields only support alphanumeric hence replacing all
-            // the spaces to empty string here.
             Fields::NOTE             => $this->getPaymentRemark($input),
+            // sub-merchant name field only supports alphanumeric
+            // hence replacing all the spaces to empty string here.
             Fields::SUBMERCHANT_NAME => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
             Fields::PAYER_VA_REQ     => $input['payment']['vpa'],
             Fields::SUBMERCHANT_ID   => $this->getSubMerchantId($input),
             Fields::TERMINAL_ID      => $this->getTerminalId($input),
         ];
-
-        if ($input['merchant']->getId() !== Merchant\Account::DEMO_PAGE_ACCOUNT)
-        {
-            $data[Fields::NOTE] = preg_replace('/\s+/', '', $data[Fields::NOTE]);
-        }
 
         $content = $this->transformRequestArrayToContent($data);
 
@@ -366,7 +360,7 @@ class Gateway extends Base\Gateway
     {
         $mcc = (string) $input['merchant']->getCategory();
 
-        //Dafault merchant category code is 5411
+        //Default merchant category code is 5411
         if ($mcc === '1234')
         {
             $mcc = '5411';
@@ -388,12 +382,7 @@ class Gateway extends Base\Gateway
         $paymentDescription = $input['payment']['description'] ?? '';
         $filteredPaymentDescription = Payment\Entity::getFilteredDescription($paymentDescription);
 
-        $description = $input['merchant']->getFilteredDba();
-
-        if ($input['merchant']->getId() === Merchant\Account::DEMO_PAGE_ACCOUNT)
-        {
-            $description = $description . ' ' . $filteredPaymentDescription;
-        }
+        $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
 
         return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
     }
