@@ -101,6 +101,7 @@ final class FactoryData
             'iin'               => 411111,
             'length'            => '16',
             'issuer'            => 'hdfc',
+            'emi'               => false,
             'international'     => false,
             'vault_token'       => 'NDExMTExMTExMTExMTExMQ==',
             'vault'             => 'tokenex',
@@ -224,9 +225,9 @@ final class FactoryData
             'amount' => $faker->randomNumber,
             'currency' => 'INR',
             'channel' => 'kotak',
-            'description' => $faker->string,
-            'transaction_id' => 'factory:\RZP\Models\Transaction\Entity',
-            'settlement_id' => 'factory:\RZP\Models\Settlement\Entity'
+            'description' => $faker->text,
+            'transaction_id' => 'factory:RZP\Models\Transaction\Entity',
+            'settlement_id' => 'factory:RZP\Models\Settlement\Entity'
         ]);
 
         $factory(\RZP\Gateway\Hdfc\Entity::class, [
@@ -297,11 +298,11 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Emi\Entity::class, [
-            'id' => 10101010101010,
-            'duration' => 9,
-            'rate' => 1200,
-            'bank' => 'HDFC',
-            'methods' => 'card',
+            'id'         => '10101010101010',
+            'duration'   => 9,
+            'rate'       => 1200,
+            'bank'       => 'HDFC',
+            'methods'    => 'card',
             'min_amount' => 500000,
         ]);
 
@@ -389,11 +390,11 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Customer\Entity::class, [
-            'id' => $faker->uniqueid,
+            'id'          => $faker->uniqueid,
             'merchant_id' => '10000000000000',
-            'name' => 'name',
-            'contact' => '9988776655',
-            'notes' => null,
+            'name'        => 'name',
+            'contact'     => '9988776655',
+            'notes'       => null,
         ]);
 
         $factory(\RZP\Models\Customer\Token\Entity::class, [
@@ -401,11 +402,13 @@ final class FactoryData
             'merchant_id' => '10000000000000',
             'customer_id' => '100000customer',
             'wallet'      => 'paytm',
-            'method'      => 'wallet',
-            'bank'        => null,
+            'method'      => 'netbanking',
+            'bank'        => 'ICIC',
             'card_id'     => null,
             'recurring'   => false,
             'used_count'  => 0,
+            'token'       => $faker->uniqueid,
+            'used_at'     => null,
         ]);
 
         $factory(\RZP\Models\Customer\AppToken\Entity::class, [
@@ -516,9 +519,8 @@ final class FactoryData
         $factory(\RZP\Models\Admin\Admin\Token\Entity::class, [
             'id'            => $faker->uniqueid,
             'admin_id'      => 'RazorpayUserId',
-            'token'         => $faker->name(20),
             'created_at'    => $faker->timestamp,
-            'expires_at'    => $faker->timestamp
+            'expires_at'    => Carbon::now()->addDays(30)->getTimestamp(),
         ]);
 
         $factory(\RZP\Models\Merchant\Detail\Entity::class, [
@@ -585,7 +587,7 @@ final class FactoryData
             'merchant_id'       => '10000000000000',
             'item_id'           => '1000000000item',
             'invoice_id'        => '1000000invoice',
-            'subscription_id'   => '10subscription,'
+            'subscription_id'   => '10subscription',
         ]);
 
         $factory(\RZP\Models\Device\Entity::class, [
@@ -818,6 +820,12 @@ final class FactoryData
         $factory(\RZP\Models\Workflow\Action\Checker\Entity::class, [
             'id'                => $faker->uniqueid,
             'name'              => \RZP\Models\Workflow\Action\State\Entity::OPEN,
+        ]);
+
+        $factory(\RZP\Models\Gateway\File\Entity::class, [
+            'id'         => $faker->uniqueid,
+            'created_at' => $faker->timestamp,
+            'updated_at' => $faker->timestamp,
         ]);
     }
 }

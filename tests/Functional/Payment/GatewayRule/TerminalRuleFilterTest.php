@@ -144,6 +144,28 @@ class TerminalRuleFilterTest extends TestCase
         }
     }
 
+    public function testDomesticPaymentFilter()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_first_data_terminal', [
+            'international' => 1,
+        ]);
+
+        $this->fixtures->create('terminal:shared_first_data_terminal', [
+            'id' => '1USDFrstDataTl',
+            'international' => 1,
+            'currency' => 'USD',
+        ]);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $testCases = $this->testData[__FUNCTION__];
+
+        $test = $this->testData[__FUNCTION__];
+
+        $this->runTestCase($test, $merchant);
+    }
+
     public function testCurrencyFilter()
     {
         $this->fixtures->create('terminal:shared_hdfc_terminal');
@@ -317,7 +339,14 @@ class TerminalRuleFilterTest extends TestCase
 
         $paymentArray = array_merge($paymentArray, $options);
 
+
         $payment = (new Payment\Entity)->fill($paymentArray);
+
+        if (isset($paymentArray['international']) === true)
+        {
+            $payment->setAttribute(Payment\Entity::INTERNATIONAL, $paymentArray['international']);
+        }
+
         $payment->merchant()->associate($merchant);
 
         $method = $payment->getMethod();

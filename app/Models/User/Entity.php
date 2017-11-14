@@ -2,6 +2,7 @@
 
 namespace RZP\Models\User;
 
+use Hash;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
@@ -18,6 +19,11 @@ class Entity extends Base\PublicEntity
     const CONTACT_MOBILE        = 'contact_mobile';
     const REMEMBER_TOKEN        = 'remember_token';
     const CONFIRM_TOKEN         = 'confirm_token';
+    const CAPTCHA               = 'captcha';
+    const CAPTCHA_DISABLE       = 'captcha_disable';
+
+    const TOKEN                 = 'token';
+    const EXPIRY_TIME           = 'expiryTime';
 
     const ACTION                = 'action';
     const USER_ID               = 'user_id';
@@ -32,22 +38,22 @@ class Entity extends Base\PublicEntity
     protected $entity = 'user';
 
     protected $fillable = [
-    	self::ID,
-    	self::NAME,
-    	self::EMAIL,
-    	self::PASSWORD,
-    	self::CONTACT_MOBILE,
-    	self::REMEMBER_TOKEN,
-    	self::CONFIRM_TOKEN
+        self::ID,
+        self::NAME,
+        self::EMAIL,
+        self::PASSWORD,
+        self::CONTACT_MOBILE,
+        self::REMEMBER_TOKEN,
+        self::CONFIRM_TOKEN
     ];
 
     protected $public = [
-    	self::ID,
-    	self::NAME,
-    	self::EMAIL,
-    	self::CONTACT_MOBILE,
+        self::ID,
+        self::NAME,
+        self::EMAIL,
+        self::CONTACT_MOBILE,
         self::CONFIRMED,
-    	self::CREATED_AT,
+        self::CREATED_AT,
     ];
 
     protected $hidden = [
@@ -56,9 +62,63 @@ class Entity extends Base\PublicEntity
         self::CONFIRM_TOKEN,
     ];
 
-    protected $generateIdOnCreate = false;
+    protected static $generators = [
+        self::ID,
+        self::CONFIRM_TOKEN,
+        self::PASSWORD,
+    ];
+
+    protected static $modifiers = [
+        self::EMAIL,
+    ];
+
+    protected static $unsetCreateInput = [
+        self::PASSWORD,
+    ];
+
+    protected $generateIdOnCreate = true;
 
     protected $appends = [self::CONFIRMED];
+
+    // --------------------- Modifiers ---------------------------------------------
+
+    /**
+     * Modifies the email to have lower.
+     * @param $input
+     */
+    protected function modifyEmail(& $input)
+    {
+        if (empty($input[self::EMAIL]) === false)
+        {
+            $input[self::EMAIL] = mb_strtolower($input[self::EMAIL]);
+        }
+    }
+
+    // --------------------- Modifiers Ends ----------------------------------------
+
+    /**
+     * Generates a one time use token of the given length
+     */
+    protected function generateOneTimeUseToken($length)
+    {
+        $bytes = random_bytes($length / 2);
+        $token = bin2hex($bytes);
+
+        return $token;
+    }
+
+    protected function generatePassword(array $input)
+    {
+        $this->setAttribute(self::PASSWORD, Hash::make($input[self::PASSWORD]));
+    }
+
+    /**
+     * Generates confirmation token
+     */
+    protected function generateConfirmToken()
+    {
+        $this->setAttribute(self::CONFIRM_TOKEN, $this->generateOneTimeUseToken(32));
+    }
 
     public function merchants()
     {
@@ -81,6 +141,11 @@ class Entity extends Base\PublicEntity
     public function getPassword()
     {
         return $this->getAttribute(self::PASSWORD);
+    }
+
+    public function getConfirmToken()
+    {
+        return $this->getAttribute(self::CONFIRM_TOKEN);
     }
 
     public function getConfirmedAttribute()

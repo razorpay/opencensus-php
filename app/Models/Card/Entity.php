@@ -7,6 +7,7 @@ use RZP\Constants\Timezone;
 
 use RZP\Models\Card;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 
 class Entity extends Base\PublicEntity
@@ -42,6 +43,8 @@ class Entity extends Base\PublicEntity
 
     const DUMMY_EXPIRY_YEAR  = '2021';
     const DUMMY_EXPIRY_MONTH = '12';
+    const DUMMY_CVV          = '123';
+    const DUMMY_CVV_AMEX     = '1234';
 
     const NETWORK_CODE      = 'network_code';
 
@@ -106,6 +109,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::NAME,
+        self::IIN,
         self::LAST4,
         self::NETWORK,
         self::TYPE,
@@ -119,6 +123,7 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
+        self::IIN,
     ];
 
     protected $defaults = [
@@ -127,6 +132,9 @@ class Entity extends Base\PublicEntity
         self::GLOBAL_CARD_ID    => null,
         self::VAULT             => null,
         self::VAULT_TOKEN       => null,
+        self::ISSUER            => null,
+        self::COUNTRY           => null,
+        self::TRIVIA            => null,
     ];
 
     public function merchant()
@@ -185,35 +193,41 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function modifyExpiryYear(& $input)
+    public static function modifyMaestro(& $input)
     {
         $iin = substr($input['number'] ?? null, 0, 6);
         $cardNetwork = Network::detectNetwork($iin);
 
-        if (($cardNetwork === Network::MAES) and
-            (empty($input['expiry_year']) === true))
+        if ($cardNetwork === Network::MAES)
         {
-            $input['expiry_year'] = self::DUMMY_EXPIRY_YEAR;
-        }
+            if (empty($input[Entity::EXPIRY_YEAR]) === true)
+            {
+                $input[Entity::EXPIRY_YEAR] = self::DUMMY_EXPIRY_YEAR;
+            }
 
+            if (empty($input[Entity::EXPIRY_MONTH]) === true)
+            {
+                $input[Entity::EXPIRY_MONTH] = self::DUMMY_EXPIRY_MONTH;
+            }
+
+            if (empty($input[Entity::CVV]) === true)
+            {
+                $input[Entity::CVV] = self::DUMMY_CVV;
+            }
+        }
+    }
+
+    public function modifyExpiryYear(& $input)
+    {
         if ((isset($input['expiry_year'])) and
             (strlen($input['expiry_year']) === 2))
         {
-            $input['expiry_year'] = '20'.$input['expiry_year'];
+            $input['expiry_year'] = '20' . $input['expiry_year'];
         }
     }
 
     public function modifyExpiryMonth(& $input)
     {
-        $iin = substr($input['number'] ?? null, 0, 6);
-        $cardNetwork = Network::detectNetwork($iin);
-
-        if (($cardNetwork === Network::MAES) and
-            (empty($input['expiry_month']) === true))
-        {
-            $input['expiry_month'] = self::DUMMY_EXPIRY_MONTH;
-        }
-
         if (isset($input['expiry_month']))
         {
             $input['expiry_month'] = ltrim($input['expiry_month'], '0');
@@ -320,8 +334,8 @@ class Entity extends Base\PublicEntity
         $month = $this->getExpiryMonth();
 
         return Carbon::createFromDate($year, $month, 1, Timezone::IST)
-                        ->endOfMonth()
-                        ->getTimestamp();
+                     ->endOfMonth()
+                     ->getTimestamp();
     }
 
     public function getTypeElseDefault()
@@ -394,10 +408,10 @@ class Entity extends Base\PublicEntity
 
     public function setPublicIssuerAttribute(array & $array)
     {
-        //
         // Allowing only for policy bazaar and shared merchant account
-        //
-        $allowedMerchantIds = ['7LAuMvKMcy7s0f', Merchant\Account::SHARED_ACCOUNT];
+        $allowedMerchantIds = [
+            '7LAuMvKMcy7s0f', '10000000000000', Merchant\Account::SHARED_ACCOUNT
+        ];
 
         $cardMerchant = $this->getMerchantId();
 
@@ -405,6 +419,30 @@ class Entity extends Base\PublicEntity
             (in_array($cardMerchant, $allowedMerchantIds, true) === false))
         {
             unset($array[self::ISSUER]);
+        }
+    }
+
+    public function setPublicIinAttribute(array & $array)
+    {
+        // Allowing only for akbar travels and shared merchant account
+        $allowedMerchantIds = [
+            '62UtF084z3H6RT',
+            '6o1ohA0HNz3B2S',
+            '6z1Uc42LAxBGpl',
+            Merchant\Account::TEST_ACCOUNT,
+            Merchant\Account::SHARED_ACCOUNT,
+        ];
+
+        $cardMerchant = $this->getMerchantId();
+
+        // Allowing for Admin and App Auth(Priviledge)
+        $app = \App::getFacadeRoot();
+        $auth = $app['basicauth'];
+
+        if (($auth->isPrivilegeAuth() === false) and
+            (in_array($cardMerchant, $allowedMerchantIds, true) === false))
+        {
+            unset($array[self::IIN]);
         }
     }
 
@@ -492,11 +530,13 @@ class Entity extends Base\PublicEntity
 
     public function isRecurringSupported()
     {
+        $isDebitSupported = $this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING);
+
         $isCreditCard = ($this->getType() === Card\Type::CREDIT);
 
         $isSupportedNetwork = in_array($this->getNetworkCode(), Card\Network::$recurringNetworks);
 
-        return (($isCreditCard === true) and ($isSupportedNetwork === true));
+        return ((($isDebitSupported === true) or ($isCreditCard === true)) and ($isSupportedNetwork === true));
     }
 
     public function isBlocked()
@@ -548,5 +588,17 @@ class Entity extends Base\PublicEntity
         unset($attributes[self::ID]);
 
         return $attributes;
+    }
+
+    public static function getDummyCvv(string $network = null)
+    {
+        $dummyCvv = self::DUMMY_CVV;
+
+        if ($network === Network::AMEX)
+        {
+            $dummyCvv = self::DUMMY_CVV_AMEX;
+        }
+
+        return $dummyCvv;
     }
 }

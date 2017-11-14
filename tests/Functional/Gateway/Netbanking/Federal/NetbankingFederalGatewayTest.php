@@ -28,7 +28,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $this->fixtures->create('terminal:shared_netbanking_federal_terminal');
+        $this->terminal = $this->fixtures->create('terminal:shared_netbanking_federal_terminal');
     }
 
     public function testPayment()
@@ -44,10 +44,23 @@ class NetbankingFederalGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testPaymentNetbankingEntity');
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['AMT'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
     public function testTpvPayment()
     {
-        $terminal = $this->fixtures->create('terminal:shared_netbanking_federal_tpv_terminal');
-
         $this->ba->privateAuth();
 
         $this->fixtures->merchant->enableTPV();
@@ -62,7 +75,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['terminal_id'], $terminal->getId());
+        $this->assertEquals($payment['terminal_id'], $this->terminal->getId());
 
         $this->fixtures->merchant->disableTPV();
 
@@ -262,9 +275,14 @@ class NetbankingFederalGatewayTest extends TestCase
          $this->mockServerContentFunction(
              function(& $content, $action = null) use ($status)
              {
-                $content .= '\n' . $content;
+                 $content = explode("\n", $content);
 
-                $content[strlen($content) - 1] = $status;
+                 unset($content[1]);
+                 $content = $content[0];
+
+                 $content .= "\n" . $content;
+
+                 $content[strlen($content) - 1] = $status;
              });
      }
 
@@ -390,7 +408,7 @@ class NetbankingFederalGatewayTest extends TestCase
         {
             if ($action === 'verify')
             {
-                $content = '||||';
+                $content = "||||";
             }
         });
     }

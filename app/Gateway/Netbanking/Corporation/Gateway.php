@@ -66,6 +66,10 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::PAYMENT_ID]
         );
 
+        $this->assertAmount(
+            $this->formatAmount($input['payment']['amount']), $content[ResponseFields::AMOUNT]
+        );
+
         $this->verifyCallback($input, $content);
 
         // Saving callback response only if the verification passes
@@ -93,16 +97,11 @@ class Gateway extends Base\Gateway
             // Setting this as the merchant code shared with us
             RequestFields::CUSTOMER_ID          => $this->getMerchantId(),
             RequestFields::MERCHANT_CODE        => $this->getMerchantId(),
-            RequestFields::AMOUNT               => $input['payment']['amount'] / 100,
+            RequestFields::AMOUNT               => $this->formatAmount($input['payment']['amount']),
             RequestFields::PAYMENT_ID           => $input['payment']['id'],
             RequestFields::MODE_OF_TRANSACTION  => Constants::MODE_OF_TRANSACTION_PAYMENT,
             RequestFields::FUND_TRANSFER        => Constants::FUND_TRANSFER,
         ];
-
-        if ($input['merchant']->isTPVRequired())
-        {
-            $data[RequestFields::ACCOUNT_NUMBER] = $input['order']['account_number'];
-        }
 
         return $data;
     }
@@ -208,9 +207,8 @@ class Gateway extends Base\Gateway
             $attributes[Base\Entity::STATUS] = $content[ResponseFields::VERIFY_RESULT];
         }
 
-        if (isset($content[ResponseFields::VERIFY_BANK_REF_NUMBER]) === true and
-            empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true
-        )
+        if ((isset($content[ResponseFields::VERIFY_BANK_REF_NUMBER]) === true) and
+            (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true))
         {
             $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::VERIFY_BANK_REF_NUMBER];
         }
@@ -260,9 +258,6 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED);
         }
-
-        // Setting this back to a callback request once the verification in callback is done
-        parent::callback($input);
     }
 
     protected function parseVerifyResponse($content)
@@ -277,7 +272,7 @@ class Gateway extends Base\Gateway
         $data = [
             RequestFields::VERIFY_MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::VERIFY_PAYMENT_ID            => $input['payment']['id'],
-            RequestFields::VERIFY_AMOUNT                => $input['payment']['amount'] / 100,
+            RequestFields::VERIFY_AMOUNT                => $this->formatAmount($input['payment']['amount']),
             RequestFields::VERIFY_MODE_OF_TRANSACTION   => RequestFields::VERIFY_MODE_OF_TRANSACTION_VALUE
         ];
 
@@ -288,12 +283,7 @@ class Gateway extends Base\Gateway
             RequestFields::VERIFY_DATA          => $encryptedString
         ];
 
-        // If this is getting called from the callback request,
-        // for fetching the verify URL correctly, we need to set the
-        // current action as verify.
-        parent::verify($this->input);
-
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content, 'post', Action::VERIFY);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -315,8 +305,7 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         if ((isset($content[ResponseFields::VERIFY_RESULT]) === true) and
-            $content[ResponseFields::VERIFY_RESULT] === ResponseCodeMap::RESULT_SUCCESS
-        )
+            ($content[ResponseFields::VERIFY_RESULT] === ResponseCodeMap::RESULT_SUCCESS))
         {
             $verify->gatewaySuccess = true;
         }
@@ -343,6 +332,11 @@ class Gateway extends Base\Gateway
         }
 
         return $mid;
+    }
+
+    public function formatAmount(int $amount): string
+    {
+        return number_format($amount / 100, 2, '.', '');
     }
 
     // -------------------------- General helper methods end ----------------------

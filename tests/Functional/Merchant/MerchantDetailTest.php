@@ -3,12 +3,12 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
-use Mockery;
-use Carbon\Carbon;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
+
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+
 
 class MerchantDetailTest extends TestCase
 {
@@ -45,6 +45,21 @@ class MerchantDetailTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
 
         $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
+    public function testSubmitAutoActivate()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->fixtures->edit('merchant', $merchantId, ['linked_account_kyc' => 0, 'parent_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
     }
@@ -272,6 +287,34 @@ class MerchantDetailTest extends TestCase
         $merchant->admins()->attach($admin);
 
         $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
+        $this->startTest();
+    }
+
+    public function testGetPreSignupDetails()
+    {
+        $this->fixtures->create('merchant', ['id'    => '10000000000155',
+                                             'email' => 'razorpay@razorpay.com']);
+        $merchantDetailData = [
+            'merchant_id'        => '10000000000155',
+            'business_type'      => "1",
+            'transaction_volume' => "5",
+            'department'         => "6",
+            'contact_mobile'     => "8722627189",
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailData);
+
+        $this->ba->proxyAuth('rzp_live_10000000000155');
+
+        $this->startTest();
+    }
+
+    public function testPutPreSignupDetails()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_live_'.$merchantDetail['merchant_id']);
 
         $this->startTest();
     }

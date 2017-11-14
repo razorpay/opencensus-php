@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Terminal\TpvType;
 use RZP\Models\Emi\Subvention as EmiSubvention;
 
 class Entity extends Base\PublicEntity
@@ -157,7 +158,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_SECURE_SECRET     => null,
         self::GATEWAY_RECON_PASSWORD    => null,
         self::EMI                       => false,
-        self::TPV                       => false,
+        self::TPV                       => 0,
         self::TYPE                      => [
             Type::NON_RECURRING => '1'
         ],
@@ -180,7 +181,7 @@ class Entity extends Base\PublicEntity
         self::UPI                       => 'boolean',
         self::AEPS                      => 'boolean',
         self::ENABLED                   => 'boolean',
-        self::TPV                       => 'boolean',
+        self::TPV                       => 'int',
         self::TYPE                      => 'int',
         self::MODE                      => 'int',
         self::CORPORATE                 => 'boolean',
@@ -672,6 +673,20 @@ class Entity extends Base\PublicEntity
         return ($this->isTpv() === false);
     }
 
+    public function isTpvAllowed() : bool
+    {
+        $tpv = $this->getAttribute(self::TPV);
+
+        return TpvType::isTpvAllowed($tpv);
+    }
+
+    public function isNonTpvAllowed() : bool
+    {
+        $tpv = $this->getAttribute(self::TPV);
+
+        return TpvType::isNonTpvAllowed($tpv);
+    }
+
     public function isValidEmiTerminal($gateway, $emiDuration, $subvention)
     {
         if (($this->isEmiEnabled()) and
@@ -695,6 +710,12 @@ class Entity extends Base\PublicEntity
     public function isNonRecurring()
     {
         return ($this->isTypeApplicable(Type::NON_RECURRING) === true);
+    }
+
+    public function isRecurring()
+    {
+        return (($this->is3DSRecurring() === true) or
+                ($this->isNon3DSRecurring() === true));
     }
 
     public function is3DSRecurring()

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\Invoice;
+use RZP\Models\Merchant;
 use RZP\Models\Plan\Subscription;
 
 class Entity extends Base\PublicEntity
@@ -55,6 +56,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::ITEM,
+        self::QUANTITY,
         self::CREATED_AT,
         self::SUBSCRIPTION_ID,
         self::INVOICE_ID,
@@ -78,15 +80,21 @@ class Entity extends Base\PublicEntity
         self::QUANTITY => 'int',
     ];
 
-    protected $relations = [
-        self::ITEM,
-    ];
-
     // -------------------------- Getters --------------------------
 
     public function getQuantity()
     {
         return $this->getAttribute(self::QUANTITY);
+    }
+
+    public function hasInvoice()
+    {
+        return $this->isAttributeNotNull(self::INVOICE_ID);
+    }
+
+    public function getInvoiceId()
+    {
+        return $this->getAttribute(self::INVOICE_ID);
     }
 
     // -------------------------- Getters Ends --------------------------
@@ -140,4 +148,14 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------- End Relations -----------------------
+
+    public function setAssociations(
+        Merchant\Entity $merchant,
+        Item\Entity $item,
+        Subscription\Entity $subscription)
+    {
+        $this->merchant()->associate($merchant);
+        $this->item()->associate($item);
+        $this->subscription()->associate($subscription);
+    }
 }

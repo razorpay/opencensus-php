@@ -5,7 +5,6 @@ namespace RZP\Gateway;
 use Config;
 use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Models\Payment;
 use RZP\Constants\Entity;
 use RZP\Gateway\Base\Mock;
 
@@ -178,9 +177,9 @@ class GatewayManager extends \Illuminate\Support\Manager
      * server function results, then use this function to set the mock
      * object as the corresponding server instead of the default one.
      *
-     * @param   $driver
-     * @param   $server Mocked server object
-     * @return  $server Mocked server object
+     * @param $driver
+     * @param Mock\Server|null $server
+     * @return Mock\Server
      */
     public function setServer($driver, Mock\Server $server = null)
     {
@@ -193,7 +192,7 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     /**
      * Resets the mocked server for this driver to the default
-     * mock server availbale.
+     * mock server available.
      * @param  string $driver [description]
      */
     public function resetServer($driver)

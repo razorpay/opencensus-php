@@ -2,20 +2,19 @@
 
 namespace RZP\Models\Merchant\Methods;
 
-use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Methods;
-use RZP\Models\Payment;
-use RZP\Models\Payment\Processor\Netbanking;
-use RZP\Models\Pricing;
-use RZP\Models\Terminal;
-use RZP\Trace\TraceCode;
-use RZP\Models\Bank;
-use RZP\Models\Emi;
-
 use Config;
+
+use RZP\Exception;
+use RZP\Models\Emi;
+use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Methods;
+use RZP\Models\Feature\Constants;
+use RZP\Models\Payment\Processor\Netbanking;
+
 
 class Core extends Base\Core
 {
@@ -101,7 +100,7 @@ class Core extends Base\Core
 
     public function getFormattedMethods(Merchant\Entity $merchant)
     {
-        $data = array(
+        $data = [
             'entity'        => 'methods',
             'card'          => true,
             'amex'          => false,
@@ -109,35 +108,41 @@ class Core extends Base\Core
             'wallet'        => [],
             'emi'           => false,
             'upi'           => false,
-        );
+        ];
 
         $methods = $this->getMethods($merchant);
 
-        if ($methods !== null)
+        $data['card'] = $methods->isCardEnabled();
+        $data['amex'] = $methods->isAmexEnabled();
+        $netbankingEnabled = $methods->isNetbankingEnabled();
+
+        if ($netbankingEnabled === true)
         {
-            $data['card'] = $methods->isCardEnabled();
-            $data['amex'] = $methods->isAmexEnabled();
-            $netbankingEnabled = $methods->isNetbankingEnabled();
-            if ($netbankingEnabled === true)
-            {
-                $banks = $methods->getSupportedBanks();
+            $banks = $methods->getSupportedBanks();
 
-                $allSupportedBanks = Netbanking::removeDefaultDisableBanks($banks);
+            $allSupportedBanks = Netbanking::removeDefaultDisableBanks($banks);
 
-                $data['netbanking'] = $this->getBankNames($allSupportedBanks);
-            }
-            $data['wallet'] = $methods->getEnabledWallets();
-            $data['upi'] = $methods->isUpiEnabled();
-            $emi = $methods->isEmiEnabled();
+            $data['netbanking'] = $this->getBankNames($allSupportedBanks);
+        }
 
-            if ($emi === true)
-            {
-                $data['emi'] = $emi;
+        $data['wallet'] = $methods->getEnabledWallets();
+        $data['upi'] = $methods->isUpiEnabled();
+        $emi = $methods->isEmiEnabled();
 
-                $data['emi_subvention'] = $merchant->getEmiSubvention();
+        if ($emi === true)
+        {
+            $data['emi'] = $emi;
 
-                $data['emi_plans'] = (new Emi\Service)->all();
-            }
+            $data['emi_subvention'] = $merchant->getEmiSubvention();
+
+            $data['emi_plans'] = (new Emi\Service)->all();
+        }
+
+        if ($merchant->isFeatureEnabled(Constants::E_MANDATE) === true)
+        {
+            $eMandateBanks = Payment\Gateway::$eMandateBanks;
+            // TODO: Figure out the key to expose here!
+            // $data['emandate_banks'] = $this->getBankNames($eMandateBanks);
         }
 
         return $data;
@@ -181,7 +186,7 @@ class Core extends Base\Core
 
         $methods->merchant()->associate($merchant);
 
-        // No default methods are enabled for Marketplace accounts
+        // No default methods are enabled for linked accounts
         if ($merchant->isLinkedAccount() === false)
         {
             $methods->setCreditCard(true);
@@ -192,8 +197,20 @@ class Core extends Base\Core
             $methods->setOlamoney(true);
             $methods->setFreecharge(true);
             $methods->setAirtelmoney(true);
+            $methods->setBankTransfer(true);
             // Initializing Disabled bank with empty array
             $methods->setDisabledBanks([]);
+        }
+        else
+        {
+            //
+            // The following methods are enabled true by default
+            // and we're disabling for linked accounts
+            //
+            $methods->setNetbanking(false);
+            $methods->setCreditCard(false);
+            $methods->setDebitCard(false);
+            $methods->setUpi(false);
         }
 
         $this->repo->saveOrFail($methods);
@@ -251,7 +268,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Method reads disbaled_banks from database and
+     * Method reads disabled_banks from database and
      * subtract them from all enabled banks
      * @param $methods
      * @return array

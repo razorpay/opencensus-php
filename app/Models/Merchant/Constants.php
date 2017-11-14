@@ -7,6 +7,11 @@ namespace RZP\Models\Merchant;
  */
 final class Constants
 {
+    const INDIVIDUAL                              = 'individual';
+    const CONTACT                                 = 'contact';
+    const TIMESTAMP                               = 'timestamp';
+    const REF                                     = 'ref';
+
     /**
      * Step Map gives information on attributes filled by merchant Step wise.
      * this is used to let merchant know what all the steps are finished and
@@ -79,5 +84,27 @@ final class Constants
 
         Detail\Entity::ADDRESS_PROOF_URL           => 3,
         Detail\Entity::PROMOTER_PAN_URL            => 3,
+    ];
+
+    const UPLOAD_KEYS = [
+        Detail\Entity::BUSINESS_PROOF_URL   => 'business_proof',
+        Detail\Entity::BUSINESS_PAN_URL     => 'business_pan_proof',
+        Detail\Entity::ADDRESS_PROOF_URL    => 'address_proof',
+        Detail\Entity::PROMOTER_ADDRESS_URL => 'promoter_address_proof',
+    ];
+
+    const UPLOAD_KEYS_ACCOUNT = [
+        Detail\Entity::ADDRESS_PROOF_URL    => 'address_proof',
+        Detail\Entity::PROMOTER_PAN_URL     => 'promoter_pan_proof',
+    ];
+
+    const PRE_SIGNUP_FIELDS = [
+        Detail\Entity::BUSINESS_TYPE,
+        Detail\Entity::TRANSACTION_VOLUME,
+        Detail\Entity::ROLE,
+        Detail\Entity::DEPARTMENT,
+        Detail\Entity::CONTACT_NAME,
+        Detail\Entity::BUSINESS_NAME,
+        Detail\Entity::CONTACT_MOBILE,
     ];
 }

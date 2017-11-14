@@ -7,7 +7,7 @@ use RZP\Error\PublicErrorDescription;
 return [
     'testCreateAdminLead' => [
         'request' => [
-            'url' => '/orgs/%s/admin-lead',
+            'url' => '/admin-lead',
             'method' => 'post',
             'content' => [
                 'channel_code'  => 'RZP001',
@@ -30,7 +30,7 @@ return [
 
     'testSelfInviteProhibited' => [
         'request' => [
-            'url' => '/orgs/%s/admin-lead',
+            'url' => '/admin-lead',
             'method' => 'post',
             'content' => [
                 'channel_code'  => 'RZP001',
@@ -71,7 +71,7 @@ return [
 
     'testPutAdminLead' => [
         'request' => [
-            'url' => '/orgs/%s/admin-lead/%s',
+            'url' => '/admin-lead/%s',
             'method' => 'put',
             'content' => [
                 'signed_up' => true,

@@ -86,11 +86,6 @@ class Event
         return $event;
     }
 
-    public static function isCustomerReceiptEmailRequired(string $event)
-    {
-        return (in_array($event, self::CUSTOMER_EMAIL_EVENTS, true) === true);
-    }
-
     public static function getAction(string $event, array $data)
     {
         switch ($event)

@@ -29,6 +29,55 @@ return [
         ],
     ],
 
+    'testDisputeCreateMerchantMail' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'        => '10000000000000',
+                'amount'             => 100,
+                'currency'           => 'INR',
+                'phase'              => 'chargeback',
+                'status'             => 'open',
+                'reason_description' => 'This is a serious fraud',
+            ],
+        ],
+    ],
+
+    'testDisputeCreateWithoutMerchantEmail' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+                'skip_email'            => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'        => '10000000000000',
+                'amount'             => 100,
+                'currency'           => 'INR',
+                'phase'              => 'chargeback',
+                'status'             => 'open',
+                'reason_description' => 'This is a serious fraud',
+            ],
+        ],
+    ],
+
     'testDisputeCreateWithDeduct' => [
         'request' => [
             'method'  => 'post',
@@ -246,6 +295,113 @@ return [
         ],
     ],
 
+    'testDisputeCreateWithParent' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'        => '10000000000000',
+                'amount'             => 100,
+                'currency'           => 'INR',
+                'phase'              => 'chargeback',
+                'status'             => 'open',
+                'reason_description' => 'This is a serious fraud',
+            ],
+        ],
+    ],
+
+    'testDisputeCreateWithDuplicateParent' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The parent dispute is linked to another dispute entity.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisputeCreateWithInvalidMerchantEmail' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+                'merchant_emails'      => 'wrongEmail',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The merchant emails must be an array.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisputeCreateWithInvalidMerchantEmail2' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+                'merchant_emails'      => ['right@email.com', 'andWrong'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The merchant_emails.1 must be a valid email address.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testDisputeEdit' => [
         'request' => [
             'method'  => 'patch',
@@ -266,7 +422,7 @@ return [
         ],
     ],
 
-    'testDisputeEditClose' => [
+    'testDisputeEditWon' => [
         'request' => [
             'method'  => 'patch',
             'content' => [
@@ -282,6 +438,26 @@ return [
                 'currency'    => 'INR',
                 'phase'       => 'chargeback',
                 'status'      => 'won'
+            ],
+        ],
+    ],
+
+    'testDisputeEditClose' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'                 => 'closed',
+                'expires_on'             => '1912162918',
+                'gateway_dispute_status' => 'processing'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'amount'      => 1000000,
+                'currency'    => 'INR',
+                'phase'       => 'chargeback',
+                'status'      => 'closed'
             ],
         ],
     ],
@@ -416,6 +592,131 @@ return [
         ],
         'response' => [
             'content' => [],
+        ],
+    ],
+
+    'testDisputeEditForNoInitialParent' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testDisputeEditWithExistingParent' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testDisputeEditReplaceParent' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testDisputeEditReplaceParentWithAlreadyLinkedParent' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The parent dispute is linked to another dispute entity.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisputeLostPartiallyAccepted' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'                    => 'lost',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testDisputeLostPartiallyAcceptedForNoOnsetDeduct' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'                    => 'lost',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testDisputeLostPartiallyAcceptedWithInvalidAcceptedAmount' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'                    => 'lost',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Accepted chargeback amount cannot be greater than disputed amount.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisputeLostPartiallyAcceptedWithZeroAcceptedAmount' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'                    => 'lost',
+                'accepted_amount'           => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The accepted amount must be at least 100.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];

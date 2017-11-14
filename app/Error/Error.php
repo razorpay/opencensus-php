@@ -65,6 +65,20 @@ class Error extends Support\Fluent
         $this->attributes[$key] = $value;
     }
 
+
+    public function isInvalidTerminalError()
+    {
+        $terminalRelatedErrors = [
+            ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL,
+            ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
+            ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_SECRET,
+        ];
+
+        $internalCode = $this->getInternalErrorCode();
+
+        return in_array($internalCode, $terminalRelatedErrors, true);
+    }
+
     protected function setInternalErrorCode($code)
     {
         self::checkErrorCode($code);
@@ -228,6 +242,8 @@ class Error extends Support\Fluent
             case ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED:
             case ErrorCode::BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED:
             case ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID:
+            case ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID:
+            case ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_SCOPE_INVALID:
                 $httpStatusCode = 401;
                 break;
             case ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED:

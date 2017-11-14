@@ -20,7 +20,7 @@
 * Add laravel/homestead box. (Manual download recommended.)
 * Clone Homestead repo & follow setup instructions.
 * Map api to /path/to/api in folders [ ~/.homestead/Homestead.yaml ], with "nfs" enabled.
-* Map api.razorpay.dev to /path/to/api/public in sites [ ~/.homestead/Homestead.yaml ]
+* Map api.razorpay.in to /path/to/api/public in sites [ ~/.homestead/Homestead.yaml ]
 * Follow Common Instructions
 * Follow Common Test Setup Instructions
 
@@ -34,7 +34,6 @@
 
 ### ( OSX )
 *  Copy the contents of `api.razorpay.com.conf` to `httpd-vhosts.conf` and update the directory location where your project lies.
-*  In `/etc/hosts`, add `api.razorpay.dev` to the list of domains that loopback to your own machine.
 * Follow Common Instructions
 * Follow Common Test Setup Instructions
 * Install coreutils `brew install coreutils --with-default-names`
@@ -63,7 +62,7 @@
 
 ### Common Test Setup Instructions
 
-* Create two seperate databases for testing (separate from the development ones). (sample names: `api_testing_live`, `api_testing_test`)
+* Create three separate databases for testing (separate from the development ones). (sample names: `api_testing_live`, `api_testing_test`, `auth_test`)
 * Copy over `environment/.env.sample` to `.env.testing` and provide the database information
 * For above step, if you have sqlite set-up. Google how to do that with laravel.
 * Install php unit `sudo apt-get install phpunit`

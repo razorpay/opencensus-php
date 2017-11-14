@@ -99,7 +99,17 @@ class Core extends Base\Core
     {
         $transfer->edit($input);
 
-        if ($transfer->getOnHold() === false)
+        //
+        // `on_hold` is a required attribute for PATCH request, and
+        // affects the value of `on_hold_until` when not sent:
+        //
+        // - Sending `on_hold`=true without `on_hold_until` will
+        //   reset the `on_hold_until` timestamp, basically moving
+        //   the transfer to an indefinite hold state.
+        // - Sending `on_hold`=false without `on_hold_until` will
+        //   release the transfer for settlement
+        //
+        if (isset($input[Entity::ON_HOLD_UNTIL]) === false)
         {
             $transfer->setOnHoldUntil(null);
         }
@@ -150,8 +160,6 @@ class Core extends Base\Core
         $txn = (new Transaction\Core)->createFromTransfer($transfer);
 
         $transfer->setFees($txn->getFee());
-
-        $transfer->setServiceTax($txn->getServiceTax());
 
         $transfer->setTax($txn->getTax());
 

@@ -3,7 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Config;
-use Conner\Tagging\Taggable;
+
 use RZP\Models\User;
 use RZP\Models\Base;
 use RZP\Models\Emi;
@@ -13,8 +13,13 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
+use RZP\Models\Merchant\Detail;
+use Conner\Tagging\Taggable;
 use RZP\Exception\LogicException;
 
+/**
+ * @property Detail\Entity $merchantDetail
+ */
 class Entity extends Base\PublicEntity
 {
     use Taggable;
@@ -41,6 +46,7 @@ class Entity extends Base\PublicEntity
     const SCOPE                     = 'scope';
     const FEE_BEARER                = 'fee_bearer';
     const FEE_MODEL                 = 'fee_model';
+    const LINKED_ACCOUNT_KYC        = 'linked_account_kyc';
     const BRAND_COLOR               = 'brand_color';
     const HANDLE                    = 'handle';
     const RISK_RATING               = 'risk_rating';
@@ -68,6 +74,12 @@ class Entity extends Base\PublicEntity
     const REFERRER                  = 'referrer';
     // List of tags this entity is tagged as.
     const TAG_LIST                  = 'tag_list';
+
+    /**
+     * Constants for merchant analytics keys
+     */
+    const FILTERS                   = 'filters';
+    const KEY_MERCHANT_ID           = 'merchant_id';
 
     //
     // Configs
@@ -100,6 +112,7 @@ class Entity extends Base\PublicEntity
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
     const ACTION                    = 'action';
+    const MEDIUM_SIZE               = 'medium';
     const MERCHANT_DETAIL           = 'merchant_detail';
     const GROUPS                    = 'groups';
     const ADMINS                    = 'admins';
@@ -118,7 +131,10 @@ class Entity extends Base\PublicEntity
 
     protected $revisionCreationsEnabled = true;
 
+    protected $generateIdOnCreate = true;
+
     protected static $generators = [
+        self::ID,
         self::TRANSACTION_REPORT_EMAIL,
         self::INVOICE_CODE,
     ];
@@ -150,6 +166,7 @@ class Entity extends Base\PublicEntity
         self::CONVERT_CURRENCY,
         self::AUTO_REFUND_DELAY,
         self::MAX_PAYMENT_AMOUNT,
+        self::LINKED_ACCOUNT_KYC,
         self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::AUTO_CAPTURE_LATE_AUTH,
@@ -181,6 +198,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY,
         self::CATEGORY2,
         self::INTERNATIONAL,
+        self::LINKED_ACCOUNT_KYC,
         self::FEE_BEARER,
         self::FEE_MODEL,
         self::BILLING_LABEL,
@@ -195,6 +213,7 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR,
         self::HANDLE,
         self::RISK_RATING,
+        self::RISK_THRESHOLD,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::SUSPENDED_AT,
@@ -218,6 +237,7 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR            => null,
         self::HANDLE                 => null,
         self::RISK_RATING            => 3,
+        self::LINKED_ACCOUNT_KYC     => 0,
         self::RISK_THRESHOLD         => null,
         self::LOGO_URL               => null,
         self::MAX_PAYMENT_AMOUNT     => null,
@@ -242,6 +262,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL             => 'bool',
         self::RECEIPT_EMAIL_ENABLED     => 'bool',
         self::HOLD_FUNDS                => 'bool',
+        self::LINKED_ACCOUNT_KYC        => 'bool',
         self::CATEGORY                  => 'int',
         self::SETTLEMENT_SCHEDULE       => 'int',
         self::RISK_THRESHOLD            => 'int',
@@ -322,15 +343,37 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LIVE);
     }
 
-    // Is the merchant a linked-account under Marketplace
-    public function isLinkedAccount()
+    /**
+     * Is the merchant a linked-account under Marketplace?
+     */
+    public function isLinkedAccount(): bool
     {
         return $this->isAttributeNotNull(self::PARENT_ID);
     }
 
-    public function isMarketplace()
+    public function isMarketplace(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::MARKETPLACE);
+    }
+
+    public function linkedAccountsRequireKyc(): bool
+    {
+        return $this->getAttribute(self::LINKED_ACCOUNT_KYC);
+    }
+
+    public function getReferrer()
+    {
+        $tagNames = $this->tagNames();
+
+        foreach ($tagNames as $tagName)
+        {
+            if (substr($tagName, 0, 4) === 'Ref-')
+            {
+                return substr($tagName, 4);
+            }
+        }
+
+        return null;
     }
 
     public function isEducationCategory()
@@ -346,11 +389,11 @@ class Entity extends Base\PublicEntity
         return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
     }
 
-    public function isFeatureEnabled($feature)
+    public function isFeatureEnabled(string $featureName): bool
     {
         $assignedFeatures = $this->getEnabledFeatures();
 
-        return (in_array($feature, $assignedFeatures, true) === true);
+        return (in_array($featureName, $assignedFeatures, true) === true);
     }
 
     /**
@@ -1064,13 +1107,14 @@ class Entity extends Base\PublicEntity
      * we need to verify the bank account number of customer during payment
      * which is not required for a normal payment flow.
      *
+     * This now enforced via a feature flag, because certain merchants
+     * from mutual_funds do not require the
+     *
      * @return boolean
      */
     public function isTPVRequired()
     {
-        $category2 = $this->getCategory2();
-
-        return Terminal\Category::isMerchantCategoryTpv($category2);
+        return ($this->isFeatureEnabled(Feature\Constants::TPV) === true);
     }
 
     public function isTestAccount()
@@ -1131,6 +1175,22 @@ class Entity extends Base\PublicEntity
         return $this->morphedByMany('\RZP\Models\Admin\Admin\Entity', 'entity', Table::MERCHANT_MAP);
     }
 
+    /**
+     * Get the owners of the merchant.
+     */
+    public function owners()
+    {
+        return $this->users()->where('role','owner')->get();
+    }
+
+    /**
+     * Get the primary owner of the merchant.
+     */
+    public function primaryOwner()
+    {
+        return $this->owners()->first();
+    }
+
     public function users()
     {
         return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS)
@@ -1174,14 +1234,16 @@ class Entity extends Base\PublicEntity
     public function toArrayUser()
     {
         $attributes = [
-            self::ID           => $this->getAttribute(self::ID),
-            self::NAME         => $this->getAttribute(self::NAME),
-            self::EMAIL        => $this->getAttribute(self::EMAIL),
-            self::ACTIVATED    => $this->getAttribute(self::ACTIVATED),
-            self::ARCHIVED_AT  => $this->getAttribute(self::ARCHIVED_AT),
-            self::SUSPENDED_AT => $this->getAttribute(self::SUSPENDED_AT),
-            self::CREATED_AT   => $this->getAttribute(self::CREATED_AT),
-            self::UPDATED_AT   => $this->getAttribute(self::UPDATED_AT),
+            self::ID            => $this->getAttribute(self::ID),
+            self::NAME          => $this->getAttribute(self::NAME),
+            self::BILLING_LABEL => $this->getAttribute(self::BILLING_LABEL),
+            self::EMAIL         => $this->getAttribute(self::EMAIL),
+            self::ACTIVATED     => $this->getAttribute(self::ACTIVATED),
+            self::ARCHIVED_AT   => $this->getAttribute(self::ARCHIVED_AT),
+            self::SUSPENDED_AT  => $this->getAttribute(self::SUSPENDED_AT),
+            self::LOGO_URL      => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
+            self::CREATED_AT    => $this->getAttribute(self::CREATED_AT),
+            self::UPDATED_AT    => $this->getAttribute(self::UPDATED_AT),
         ];
 
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;

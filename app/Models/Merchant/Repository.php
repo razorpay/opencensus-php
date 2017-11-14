@@ -11,6 +11,7 @@ use RZP\Models\Pricing;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Balance;
 
 class Repository extends Base\Repository
@@ -119,9 +120,9 @@ class Repository extends Base\Repository
     public function fetchRecentMerchants()
     {
         // 00:00 Today
-        $today = \Carbon\Carbon::today("Asia/Kolkata")->getTimestamp();
+        $today = \Carbon\Carbon::today(Timezone::IST)->getTimestamp();
 
-        $start = \Carbon\Carbon::today("Asia/Kolkata")->subWeeks(3);
+        $start = \Carbon\Carbon::today(Timezone::IST)->subWeeks(3);
 
         return $this->newQuery()->whereBetween(Entity::CREATED_AT, [$start, $today]);
     }
@@ -164,12 +165,8 @@ class Repository extends Base\Repository
 
                 foreach ($methods as $method => $value)
                 {
-                    $queryValue = null;
-
-                    if ($value === 'true')
-                        $queryValue = '1';
-                    else if ($value === 'false')
-                        $queryValue = '0';
+                    // Filter can accept 'true'/'false' along with 0/1 & true/false
+                    $queryValue = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 
                     $join->where($method, '=', $queryValue);
                 }
@@ -562,5 +559,13 @@ class Repository extends Base\Repository
         $model->__unset(Entity::GROUPS);
         $model->__unset(Entity::ADMINS);
         $model->__unset(Entity::MERCHANT_DETAIL);
+    }
+
+    public function getMerchantUserMapping(string $merchantId, string $userId)
+    {
+        return $this->find($merchantId)
+                    ->users()
+                    ->where('id', $userId)
+                    ->first();
     }
 }

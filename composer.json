@@ -40,7 +40,10 @@
         "laravel/tinker": "1.0.1",
         "graham-campbell/throttle": "^5.3",
         "rtconner/laravel-tagging": "~2.2",
-        "razorpay/trace": "~2.0",
+        "razorpay/trace": "2.0.6",
+        "anlutro/l4-settings": "^0.5.0",
+        "razorpay/oauth": "dev-master",
+        "drewm/mailchimp-api": "^2.1",
         "razorpay/ufh-sdk-php": "dev-master"
     },
     "repositories": [
@@ -58,8 +61,12 @@
         },
         {
             "type": "vcs",
+            "url": "git@github.com:razorpay/oauth.git"
+        },
+        {
+            "type": "vcs",
             "url": "git@github.com:razorpay/ufh-sdk-php.git"
-        }
+        },
     ],
     "require-dev": {
         "kint-php/kint": "1.*",
@@ -70,14 +77,11 @@
         "orchestra/testbench": "3.*",
         "php-http/mock-client": "^0.3.3",
         "symfony/dom-crawler": "3.*",
-        "phpunit/phpunit": "^6.2"
+        "phpunit/phpunit": "^6.2",
+        "symfony/phpunit-bridge": "3.3.*@dev"
     },
     "autoload": {
-        "classmap": [
-            "database",
-            "tests",
-            "app/Models/Customer"
-        ],
+        "classmap": ["database", "tests", "app/Models/Customer"],
         "psr-4": {
             "RZP\\": "app/"
         }
@@ -86,9 +90,7 @@
         "post-root-package-install": [
             "php -r \"copy('environment/.env.sample', 'environment/.env');\""
         ],
-        "post-create-project-cmd": [
-            "php artisan key:generate"
-        ],
+        "post-create-project-cmd": ["php artisan key:generate"],
         "post-install-cmd": [
             "Illuminate\\Foundation\\ComposerScripts::postInstall",
             "php artisan optimize"

@@ -36,6 +36,11 @@ class ItemTest extends TestCase
         $this->assertResponseWithLastEntity('item', __FUNCTION__);
     }
 
+    public function testCreateItemWithoutCurrency()
+    {
+        $this->startTest();
+    }
+
     public function testCreateItemWithTaxId()
     {
         $this->startTest();
@@ -119,6 +124,13 @@ class ItemTest extends TestCase
         $this->assertResponseWithLastEntity('item', __FUNCTION__);
     }
 
+    public function testUpdateItemOfTypeNonInvoice()
+    {
+        $this->fixtures->create('item', ['type' => 'plan']);
+
+        $this->startTest();
+    }
+
     public function testDeleteItem()
     {
         $this->fixtures->create('item');
@@ -134,6 +146,13 @@ class ItemTest extends TestCase
     {
         $this->fixtures->create('item');
         $this->fixtures->create('line_item');
+
+        $this->startTest();
+    }
+
+    public function testDeleteItemOfTypeNonInvoice()
+    {
+        $this->fixtures->create('item', ['type' => 'plan']);
 
         $this->startTest();
     }

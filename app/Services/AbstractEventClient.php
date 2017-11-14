@@ -5,8 +5,9 @@ namespace RZP\Services;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Method;
 use RZP\Jobs\RequestJob;
+use RZP\Constants\Timezone;
+use RZP\Models\Payment\Method;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 abstract class AbstractEventClient extends Base\Core
@@ -25,7 +26,7 @@ abstract class AbstractEventClient extends Base\Core
 
     const REQUEST_TIMEOUT = 20;
 
-    const TIMEZONE = 'Asia/Kolkata';
+    const TIMEZONE = Timezone::IST;
 
     /**
      * List of sensitive keys to exclude from sengding to external services

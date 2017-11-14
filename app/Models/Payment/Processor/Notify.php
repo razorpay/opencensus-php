@@ -3,17 +3,18 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
-use Carbon\Carbon;
 use Mail;
-use RZP\Constants\MailTags;
+use Carbon\Carbon;
+
 use RZP\Constants\Mode;
-use RZP\Jobs\Invoice\Job as InvoiceJob;
-use RZP\Jobs\DispatchRouter;
-use RZP\Mail\Payment as PaymentMail;
-use RZP\Models\Invoice;
-use RZP\Models\Invoice\ViewDataSerializer;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
+use RZP\Jobs\DispatchRouter;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Mail\Payment as PaymentMail;
+use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Models\Invoice\ViewDataSerializer;
 
 class Notify
 {
@@ -33,8 +34,15 @@ class Notify
     const HIGH_RISK_RATING     = 4;
     const MAX_HIGH_RISK_RATING = 5;
 
+    /**
+     * @var Payment\Entity
+     */
     protected $payment;
+    /**
+     * @var Payment\Refund\Entity
+     */
     protected $refund;
+    protected $merchant;
     protected $mode;
     protected $trace;
     protected $template;
@@ -52,6 +60,8 @@ class Notify
 
         $this->payment = $payment;
 
+        $this->merchant = $this->payment->merchant;
+
         if ($this->payment->hasInvoice())
         {
             $this->invoice = $this->payment->invoice;
@@ -66,8 +76,6 @@ class Notify
 
     /**
      * Regenerates the entire template
-     *
-     * @return null
      */
     protected function refreshTemplate()
     {
@@ -88,10 +96,9 @@ class Notify
     /**
      * Sends out mails for a particular event trigger
      *
-     * @param  string $event
-     * @return null
+     * @param string $event
      */
-    protected function notifyViaMail($event)
+    protected function notifyViaMail(string $event)
     {
         $mailableClass = $this->getMailableClass($event);
 
@@ -229,50 +236,31 @@ class Notify
      * This is the primary public method for this class
      *
      * @param  string $event Trigger notifications for this event
-     * @return null
      */
-    public function trigger($event)
+    public function trigger(string $event)
     {
-        /**
-         * This is wrapped in a try-catch block as this is not
-         * critical path for the payment operation
-         * We should continue running even if this raises critical error.
-         */
+        //
+        // This is wrapped in a try-catch block as this is not
+        // critical path for the payment operation.
+        // We should continue running even if this raises critical error.
+        //
         try
         {
-            // If it's invoice payment authorization:
-            // - dispatch a queue job which updates the invoice pdf,
-            // - if invoice's email_notify is set to '0', just return.
+            $this->dispatchInvoiceJobIfApplicable($event);
 
-            if ($event === Payment\Event::INVOICE_PAYMENT_AUTHORIZED)
-            {
-                $job = new InvoiceJob(
-                            $this->mode,
-                            InvoiceJob::AUTHORIZED,
-                            $this->invoice->getId());
-
-                (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
-            }
-
-            // Send out notification for Slack
             $this->notifyViaSlack($event);
 
-            // Mails use the entire template
-            // So there is no need to get separate data for each
             $this->notifyViaMail($event);
         }
         catch (\Exception $e)
         {
-            // Shouldn't fail for any reason
-            $this->trace->error(
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
                 TraceCode::PAYMENT_NOTIFY_FAILED,
                 [
                     'payment_id' => $this->payment->getPublicId(),
-                    'message'    => 'Payment Notify raised an exception'
-                ]
-            );
-
-            $this->trace->traceException($e);
+                ]);
         }
     }
 
@@ -281,7 +269,7 @@ class Notify
         $website = $this->template['merchant']['website'];
         $text    = $this->template['merchant']['billing_label'];
 
-        $dashboardLink = $this->payment->merchant->getDashboardEntityLink();
+        $dashboardLink = $this->merchant->getDashboardEntityLink();
         $merchantId = $this->template['merchant']['id'];
 
         // If we don't have billing label or website, just send to dashboard
@@ -366,7 +354,7 @@ class Notify
             $data['orderId'] = $orderId;
         }
 
-        // This is for both pyaments and refund
+        // This is for both payments and refund
         if (isset($data['timestamp']))
         {
             unset($data['timestamp']);
@@ -400,11 +388,11 @@ class Notify
                 'phone' => $this->payment->getContact()
             ],
             'merchant'  => [
-                'billing_label' => $this->payment->merchant->getBillingLabel(),
-                'website'       => $this->payment->merchant->getWebsite(),
+                'billing_label' => $this->merchant->getBillingLabel(),
+                'website'       => $this->merchant->getWebsite(),
                 // This is the reporting email address for the merchant
-                'email'         => $this->payment->merchant->getTransactionReportEmail(),
-                'id'            => $this->payment->merchant->getId(),
+                'email'         => $this->merchant->getTransactionReportEmail(),
+                'id'            => $this->merchant->getId(),
             ],
             'payment'   => [
                 'id'              => $this->payment->getId(),
@@ -418,7 +406,7 @@ class Notify
                 // note that payment method is unavailable to the merchant
                 'method'    => $this->payment->getMethodWithDetail(),
                 'orderId'   => $this->payment->getOrderId(),
-                'risk'      => $this->payment->merchant->getRiskRating()
+                'risk'      => $this->merchant->getRiskRating()
             ],
         ];
 
@@ -499,7 +487,7 @@ class Notify
             // Convert timestamps to readable versions
             if ($this->isTimestamp($key, $value))
             {
-                $data[$key] = Carbon::createFromTimestamp($value, "Asia/Kolkata")->format('j M Y h:i a');
+                $data[$key] = Carbon::createFromTimestamp($value, Timezone::IST)->format('j M Y h:i a');
             }
         }
 
@@ -516,13 +504,13 @@ class Notify
      */
     protected function flatten(array $array, $prefix = '')
     {
-        $result = array();
+        $result = [];
 
         foreach ($array as $key => $value)
         {
             if (is_array($value))
             {
-                $result = $result + $this->flatten($value, $prefix . $key . '.');
+                $result += $this->flatten($value, $prefix . $key . '.');
             }
             else
             {
@@ -536,7 +524,7 @@ class Notify
     /**
      * Decides if we send a mail to customer for a payment event
      *
-     * @param PaymentMail\Base|Mailable $mailable Mailable object being sent
+     * @param PaymentMail\Base $mailable Mailable object being sent
      *
      * @return bool
      */
@@ -551,7 +539,7 @@ class Notify
 
         // If the merchant has disabled customer emails
         // And this was a customer receipt email don't send a mail
-        if (($this->payment->merchant->isReceiptEmailsEnabled() === false) and
+        if (($this->merchant->isReceiptEmailsEnabled() === false) and
             ($mailable->isCustomerReceiptEmail() === true))
         {
             return false;
@@ -562,7 +550,13 @@ class Notify
 
     protected function isMerchantMailEnabled(PaymentMail\Base $mailable)
     {
-        $merchantTransactionReportEmail = $this->payment->merchant->getTransactionReportEmail();
+        $merchantTransactionReportEmail = $this->merchant->getTransactionReportEmail();
+
+        // Do not email linked accounts
+        if ($this->merchant->isLinkedAccount() === true)
+        {
+            return false;
+        }
 
         return (($this->isEnabled() === true) and
                 (empty($merchantTransactionReportEmail) === false));
@@ -576,9 +570,11 @@ class Notify
      */
     protected function isEnabled()
     {
+        //
         // We only send notifications if Mode is not TEST
         // or if the env=dev or env=testing
         // so env=dev or env=testing overrides TEST mode
+        //
         if ($this->app->environment('dev', 'testing'))
         {
             return true;
@@ -599,7 +595,8 @@ class Notify
      */
     protected function isSlackEnabled()
     {
-        return ($this->isEnabled() and $this->slackEnabled);
+        return (($this->isEnabled() === true) and
+                ($this->slackEnabled === true));
     }
 
     protected function getMailableClass(string $event)
@@ -613,5 +610,21 @@ class Notify
             return 'RZP\\Mail\\Invoice\\Payment\\' . $event;
         }
         return 'RZP\\Mail\\Payment\\' . studly_case($event);
+    }
+
+    /**
+     * Dispatches invoice job on payment capture event. One purpose for now is
+     * to update the pdf version of invoice with paid amount details.
+     *
+     * @param string $event
+     */
+    protected function dispatchInvoiceJobIfApplicable(string $event)
+    {
+        if ($event === Payment\Event::INVOICE_PAYMENT_CAPTURED)
+        {
+            $job = new InvoiceJob($this->mode, InvoiceJob::CAPTURED, $this->invoice->getId());
+
+            (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+        }
     }
 }

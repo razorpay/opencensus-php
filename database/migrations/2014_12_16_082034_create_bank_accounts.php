@@ -34,11 +34,12 @@ class CreateBankAccounts extends Migration
                   ->nullable()
                   ->unique();
 
-            $table->char(BankAccount::IFSC_CODE, BankAccount::IFSC_CODE_LENGTH);
+            $table->char(BankAccount::IFSC_CODE, BankAccount::IFSC_CODE_LENGTH)
+                  ->nullable();
 
             $table->string(BankAccount::ACCOUNT_NUMBER, 40);
 
-            $table->string(BankAccount::BENEFICIARY_NAME, 40);
+            $table->string(BankAccount::BENEFICIARY_NAME, 120);
 
             $table->string(BankAccount::BENEFICIARY_ADDRESS1, 30)
                   ->nullable();

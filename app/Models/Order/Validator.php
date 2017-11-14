@@ -57,7 +57,10 @@ class Validator extends Base\Validator
 
         $this->validateOrderCurrency($payment->getCurrency());
 
+        // TPV Check is done before check for generic order payment match.
         $this->validateMerchantSpecificData($payment);
+
+        $this->validateOrderBank($payment->getBank());
     }
 
     /**
@@ -114,7 +117,12 @@ class Validator extends Base\Validator
             ($orderAmountDue !== $paymentAmount))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH);
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH,
+                'amount',
+                [
+                    'order_amount'   => $orderAmountDue,
+                    'payment_amount' => $paymentAmount,
+                ]);
         }
 
         if (($partialPaymentAllowed === true) and
@@ -131,6 +139,16 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH);
+        }
+    }
+
+    protected function validateOrderBank($bank)
+    {
+        if (($this->entity->getBank() !== null) and
+            ($this->entity->getBank() !== $bank))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK);
         }
     }
 

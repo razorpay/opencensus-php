@@ -74,6 +74,21 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->fixtures->terminal->edit($this->sharedTerminal->getId(), ['corporate' => 0]);
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['AMT'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
@@ -123,6 +138,9 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testRefundExcelFile()
     {
+        // Will remove test in separate pr
+        $this->markTestSkipped();
+
         Mail::fake();
 
         // Generate 2 payments

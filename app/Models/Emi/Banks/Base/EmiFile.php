@@ -14,6 +14,7 @@ use RZP\Models\Card;
 use RZP\Models\Emi\Banks\Base\EmiMode;
 use RZP\Models\FileStore;
 use RZP\Trace\TraceCode;
+use RZP\Encryption\Type;
 
 class EmiFile extends Base\Core
 {
@@ -22,7 +23,11 @@ class EmiFile extends Base\Core
 
     protected $shouldCompress = true;
 
+    protected $shouldEncrypt = false;
+
     protected $transferMode = EmiMode::MAIL;
+
+    protected $encryptionType = Type::PGP_ENCRYPTION;
 
     const EMI_FILE_PASSWORD_LENGTH = 7;
 
@@ -69,6 +74,11 @@ class EmiFile extends Base\Core
                 ->type($this->type)
                 ->metadata($metadata);
 
+        if ($this->shouldEncrypt === true)
+        {
+            $creator->encrypt($this->encryptionType, $this->getEncryptionParams());
+        }
+
         if ($this->shouldCompress === true)
         {
             $creator->password($this->emiFilePassword)
@@ -105,6 +115,8 @@ class EmiFile extends Base\Core
             $this->transferMode = EmiMode::MAIL;
 
             $this->shouldCompress = true;
+
+            $this->shouldEncrypt = false;
         }
     }
 
@@ -145,13 +157,13 @@ class EmiFile extends Base\Core
 
     protected function fetchAndSendPassword()
     {
-        // skip password generation and sending for sftp
+        $this->emiFilePassword = $this->generateEmiFilePassword();
+
+        // skip password sending for sftp
         if ($this->transferMode === EmiMode::SFTP)
         {
             return;
         }
-
-        $this->emiFilePassword = $this->generateEmiFilePassword();
 
         $this->sendEmiPassword();
     }
@@ -198,5 +210,11 @@ class EmiFile extends Base\Core
             $this->emailIdsToSendTo);
 
         Mail::queue($emiPasswordMail);
+    }
+
+    //Should be implemented in child class
+    protected function getEncryptionParams()
+    {
+        return [];
     }
 }

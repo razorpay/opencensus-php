@@ -114,14 +114,18 @@ class Gateway extends Base\Gateway
                     $content['ErrorDescription']);
         }
 
-        assertTrue($content['CustomerID'] === $input['payment']['id']);
+        $this->assertPaymentId($input['payment']['id'], $content['CustomerID']);
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($content['TxnAmount'], 2, '.', '');
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $this->assertAmount($expectedAmount, $actualAmount);
+
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    protected function getAcquirerData($gatewayPayment)
+    protected function getAcquirerData($input, $gatewayPayment)
     {
         return [
             'acquirer' => [
@@ -964,7 +968,6 @@ class Gateway extends Base\Gateway
         {
             $content['MerchantID'] = $this->getTestMerchantId();
             $content['SecurityID'] = $this->getTestAccessCode();
-            $content['TxnAmount'] = '5.00';
         }
 
         return $content;
@@ -1099,13 +1102,13 @@ class Gateway extends Base\Gateway
             // If merchant is tpv then terminal should also be tpv
             if ($this->input['merchant']->isTPVRequired())
             {
-                assert ($this->input['terminal']->isTpv() === true);
+                assert ($this->input['terminal']->isTpvAllowed() === true);
 
                 return true;
             }
 
             // If merchant is not tpv then terminal should also not be tpv
-            assert ($this->input['terminal']->isNotTpv() === true);
+            assert ($this->input['terminal']->isNonTpvAllowed() === true);
         }
 
         return false;

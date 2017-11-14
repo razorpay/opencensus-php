@@ -2,26 +2,29 @@
 
 namespace RZP\Models\Payment;
 
-use RZP\Constants\Mode;
 use RZP\Exception;
+use Razorpay\IFSC\IFSC as BaseIFSC;
+
+use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
-use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Models\Settlement;
-use RZP\Models\Payment;
-use Razorpay\IFSC\IFSC as BaseIFSC;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Gateway
 {
     const AMEX                   = 'amex';
     const ATOM                   = 'atom';
+    const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
     const BILLDESK               = 'billdesk';
     const BLADE                  = 'blade';
     const CYBERSOURCE            = 'cybersource';
+    const HITACHI                = 'hitachi';
     const EBS                    = 'ebs';
     const FIRST_DATA             = 'first_data';
     const HDFC                   = 'hdfc';
@@ -40,7 +43,6 @@ class Gateway
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_ICICI              = 'upi_icici';
-    const UPI_IDFC               = 'upi_idfc';
     const AEPS_ICICI             = 'aeps_icici';
 
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
@@ -131,6 +133,7 @@ class Gateway
     const REFUND_RETRY_GATEWAYS = [
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::BILLDESK,
+        Payment\Gateway::EBS,
         Payment\Gateway::HDFC,
         Payment\Gateway::MOBIKWIK,
         Payment\Gateway::WALLET_OLAMONEY,
@@ -142,6 +145,7 @@ class Gateway
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::WALLET_PAYZAPP,
+        Payment\Gateway::WALLET_MPESA,
     ];
 
     public static $channels = [
@@ -178,6 +182,7 @@ class Gateway
         self::UPI_ICICI           => Settlement\Channel::KOTAK,
         self::AEPS_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE         => Settlement\Channel::KOTAK,
+        self::HITACHI             => Settlement\Channel::KOTAK,
     ];
 
     /**
@@ -197,6 +202,7 @@ class Gateway
             self::CYBERSOURCE,
             self::FIRST_DATA,
             self::BLADE,
+            self::HITACHI,
         ],
 
         Method::NETBANKING => [
@@ -238,7 +244,6 @@ class Gateway
         Method::UPI => [
             self::UPI_MINDGATE,
             self::UPI_ICICI,
-            self::UPI_IDFC,
         ],
 
         Method::AEPS => [
@@ -276,6 +281,7 @@ class Gateway
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
         ],
         self::WALLET_OPENWALLET     => [],
+        self::HITACHI               => [],
     ];
 
     /**
@@ -289,6 +295,7 @@ class Gateway
         self::AXIS_MIGS,
         self::AMEX,
         self::WALLET_OPENWALLET,
+        self::HITACHI,
     ];
 
 
@@ -302,7 +309,6 @@ class Gateway
     public static $asynchronous = [
         self::UPI_MINDGATE,
         self::UPI_ICICI,
-        self::UPI_IDFC,
         self::SHARP,
     ];
 
@@ -356,7 +362,11 @@ class Gateway
         ],
         self::CYBERSOURCE => [
             Network::MC,
-            Network::VISA
+            Network::VISA,
+        ],
+        self::HITACHI => [
+            Network::MC,
+            Network::VISA,
         ],
         self::FIRST_DATA => [
             Network::MC,
@@ -383,7 +393,6 @@ class Gateway
     public static $upiToGatewayMap = [
         Upi::HDFC   => Gateway::UPI_MINDGATE,
         Upi::ICICI  => Gateway::UPI_ICICI,
-        Upi::IDFC   => Gateway::UPI_IDFC,
     ];
 
     public static $acquirerToCodeMap = [
@@ -427,7 +436,6 @@ class Gateway
         self::WALLET_SBIBUDDY,
         self::WALLET_MPESA,
         self::UPI_ICICI,
-        self::UPI_IDFC,
     ];
 
     public static $verifyDisabled = [
@@ -445,6 +453,34 @@ class Gateway
         Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS,
         Gateway::HDFC,
+        Gateway::NETBANKING_ICICI,
+        Gateway::NETBANKING_AXIS,
+        Gateway::NETBANKING_HDFC,
+    ];
+
+    public static $eMandateBanks = [
+        IFSC::ICIC,
+        IFSC::UTIB,
+        IFSC::HDFC,
+    ];
+
+    /**
+     * List of netbanking gateways that process recurring payments through file send
+     *
+     * @var array
+     */
+    public static $fileBasedEMandateDebitGateways = [
+        Gateway::NETBANKING_HDFC,
+        Gateway::NETBANKING_AXIS,
+    ];
+
+    /**
+     * List of netbanking gateways that process emandate registration through file send
+     *
+     * @var array
+     */
+    public static $fileBasedEMandateRegistrationGateways = [
+        Gateway::NETBANKING_HDFC,
     ];
 
     /**
@@ -454,6 +490,10 @@ class Gateway
      * @var array
      */
     public static $s2sCallbackGateways = [
+        // Corporate response is provided through
+        // s2s callback.
+        Gateway::NETBANKING_AXIS,
+
         Gateway::BILLDESK,
         Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,
@@ -530,6 +570,7 @@ class Gateway
     public static $refundFileNetbankingGateways = [
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        IFSC::CORP => Gateway::NETBANKING_CORPORATION,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
@@ -559,6 +600,7 @@ class Gateway
         IFSC::RATN,
         IFSC::SCBL,
         IFSC::UTIB,
+        IFSC::YESB,
     ];
 
     public static $emiBanksUsingCardTerminals = [
@@ -568,6 +610,7 @@ class Gateway
         IFSC::UTIB,
         IFSC::SCBL,
         IFSC::ICIC,
+        IFSC::YESB,
     ];
 
     public static $emiBankToGatewayMap = [
@@ -610,9 +653,43 @@ class Gateway
         return $gatewayToBankMap[$gateway];
     }
 
-    public static function isRecurringGateway($gateway)
+    public static function isRecurringGateway($gateway): bool
     {
         return in_array($gateway, self::$recurringGateways, true);
+    }
+
+    /**
+     * Checks whether the bank requires a file-based system to register for eMandate
+     *
+     * @param string $gateway
+     *
+     * @return bool
+     */
+    public static function isFileBasedEMandateRegistrationGateway(string $gateway): bool
+    {
+        return (in_array($gateway, self::$fileBasedEMandateRegistrationGateways) === true);
+    }
+
+    /**
+     * @param string $gateway
+     *
+     * @return bool
+     */
+    public static function isFileBasedEMandateDebitGateway(string $gateway): bool
+    {
+        return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
+    }
+
+    /**
+     * @param string $bank
+     *
+     * @return bool
+     */
+    public static function isRecurringSupportedOnBank(string $bank) : bool
+    {
+        $gateway = self::$netbankingToGatewayMap[$bank];
+
+        return self::isRecurringGateway($gateway);
     }
 
     public static function getChannel($gateway)
@@ -661,11 +738,11 @@ class Gateway
     {
         if (self::isValidGateway($gateway) === false)
         {
-            throw new Exception\LogicException(
-                'Unknown gateway',
-                null,
+            throw new Exception\BadRequestValidationFailureException(
+                'Gateway is invalid',
+                'gateway',
                 [
-                    'gateway' => $gateway,
+                    'gateway' => $gateway
                 ]);
         }
     }

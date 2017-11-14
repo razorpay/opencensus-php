@@ -4,9 +4,10 @@ namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\FileStore;
-use RZP\Jobs\DispatchRouter;
 use RZP\Base\RuntimeManager;
+use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
@@ -14,62 +15,21 @@ class Core extends Base\Core
 {
     use FileHandlerTrait;
 
-    public function create(array $input): Entity
+    public function create(array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
         $batch = (new Entity)->build($input);
 
-        $batch->merchant()->associate($this->merchant);
+        $batch->merchant()->associate($merchant);
 
-        //
-        // Does following inside transaction:
-        // - Uploads file to s3 and gets FileStore\Entity created
-        // - Validates the file
-        // - Updates batch entity with aggregate details of file (if applicable)
-        // - Saves batch entity
-        //
-        $this->repo->transaction(function () use ($batch, $input)
-        {
-            $processor = Processor\Base::get($batch);
+        $processor = Processor\Base::get($batch);
 
-            $inputFile = $input[Entity::FILE];
-
-            $file = $processor->saveInputFile($inputFile);
-
-            $entries = $processor->parseInputFileAndValidate($file->getPathname(), $input);
-
-            $this->fillBatchEntityWithInputFileDetails($batch, $entries);
-
-            $this->repo->saveOrFail($batch);
-        });
+        $processor->storeInputFileAndSaveBatch($input);
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
 
         $this->dispatchOnQueueForProcessingIfApplicable($batch, $input);
-
-        return $batch;
-    }
-
-    /**
-     * Retry batch entity.
-     *
-     * - Only sets the status to PROCESSING so it gets picked by
-     *   the next cron run.
-     *
-     * @param Entity $batch
-     *
-     * @return Entity
-     */
-    public function retryBatch(Entity $batch): Entity
-    {
-        $batch->getValidator()->validateNotProcessedAlready();
-
-        $batch->setStatus(Status::PROCESSING);
-
-        $this->repo->saveOrFail($batch);
-
-        $this->trace->info(TraceCode::BATCH_RETRY, $batch->toArrayPublic());
 
         return $batch;
     }
@@ -106,10 +66,11 @@ class Core extends Base\Core
         $file = ($batch->getStatus() === Status::CREATED) ?
                     $batch->inputFile() : $batch->outputFile();
 
+        //
         // Backward compatibility:
         // - If file relation exists use that else to handle BC
         //   form the AWS key and get the signed URL as done previously.
-
+        //
         if ($file === null)
         {
             $signedUrl = $this->getSignedUrlOfBatchFile($batch);
@@ -144,87 +105,26 @@ class Core extends Base\Core
 
         foreach ($batches as $batch)
         {
-            $this->processBatch($batch);
+            try
+            {
+                Processor\Base::get($batch)->validateAndProcess();
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e);
+            }
         }
 
         return $batches;
     }
 
-    /**
-     * Processes individual batch via API
-     *
-     * @param Entity $batch
-     *
-     * @return Entity
-     */
-    public function processBatchViaApi(Entity $batch)
+    public function processBatchAsync(Entity $batch): Entity
     {
-        return $this->processBatch($batch, true);
-    }
+        $this->trace->info(TraceCode::BATCH_PROCESS_ASYNC, $batch->toArrayPublic());
 
-    /**
-     * Process a particular batch entity.
-     *
-     * @param Entity $batch
-     * @param boolean $bubbleEx - When called iteratively over batch collection
-     *                            we don't break execution. But when called via
-     *                            API for individual batch we bubble exception
-     *                            to response.
-     *
-     * @return Entity
-     */
-    public function processBatch(Entity $batch, bool $bubbleEx = false): Entity
-    {
-        try
-        {
-            $batch->getValidator()->validateNotProcessedAlready();
-
-            Processor\Base::get($batch)->process();
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::BATCH_PROCESSING_ERROR,
-                [
-                    'batch' => $batch->toArray(),
-                ]);
-
-            // Even if there is any error during processing of batch
-            // we for now still set the status as PROCESSED.
-
-            $batch->setStatus(Status::PROCESSED);
-
-            $this->repo->saveOrFail($batch);
-
-            if ($bubbleEx === true)
-            {
-                throw $e;
-            }
-        }
+        $this->queueBatchForProcessing($batch);
 
         return $batch;
-    }
-
-    /**
-     * Fills Batch entity with details extracted from the input file.
-     * Eg.
-     * - Total row count
-     * - Aggregate sum of amount field
-     *
-     * @param Entity $batch
-     * @param array $entries
-     */
-    protected function fillBatchEntityWithInputFileDetails(
-        Entity $batch,
-        array $entries)
-    {
-        $totalAmount = array_sum(array_column($entries, Header::AMOUNT));
-        $totalCount  = count($entries);
-
-        $batch->setAmount($totalAmount);
-        $batch->setTotalCount($totalCount);
     }
 
     /**
@@ -256,20 +156,18 @@ class Core extends Base\Core
      * @param Entity $batch
      * @param array  $input
      */
-    protected function dispatchOnQueueForProcessingIfApplicable(
-        Entity $batch,
-        array $input)
+    protected function dispatchOnQueueForProcessingIfApplicable(Entity $batch, array $input)
     {
-        if (Type::isQueueGroup($batch->getType()) === false)
+        if (Type::isQueueGroup($batch->getType()) === true)
         {
-            return;
+            unset($input[Entity::FILE]);
+
+            $this->queueBatchForProcessing($batch, $input);
         }
+    }
 
-        unset($input[Entity::FILE]);
-
-        // For now this is being pushed onto invoice_emails queue only and
-        // later we might have a new queue for this purpose only.
-
+    protected function queueBatchForProcessing(Entity $batch, array $input = [])
+    {
         $job = new BatchJob($this->mode, $batch->getId(), $input);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);

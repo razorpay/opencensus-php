@@ -9,6 +9,7 @@ use Hash;
 use Mail;
 use Event;
 use Str;
+use Request;
 
 use RZP\Constants\HashAlgo;
 use RZP\Error;
@@ -33,9 +34,16 @@ class Service extends Base\Service
 
     const TOKEN = 'token';
 
-    public function authenticate(string $orgId, array $input)
+    public function __construct()
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        parent::__construct();
+
+        $this->adminOrgId = $this->app['basicauth']->getAdminOrgId();
+    }
+
+    public function authenticate(array $input)
+    {
+        $orgId = $this->app['basicauth']->getOrgId();
 
         return $this->login($orgId, $input);
     }
@@ -57,7 +65,8 @@ class Service extends Base\Service
         try
         {
             $authPolicy = new AuthPolicy\Service;
-            $authPolicy->validateLogin($admin, $input['password']);
+
+            $authPolicy->validateBeforeLogin($admin);
         }
         catch (Exception\RecoverableException $ex)
         {
@@ -68,7 +77,7 @@ class Service extends Base\Service
         {
             $data = $this->generateLoginToken($admin);
 
-            $authPolicy->validateLogin($admin, $input['password'], 'after');
+            $authPolicy->validateAfterLogin($admin);
 
             $this->fireAdminAction($admin, Action::LOGIN);
 
@@ -166,16 +175,16 @@ class Service extends Base\Service
 
     public function resetPassword(string $orgId, array $input)
     {
-        $validator = new Validator();
-
         $org = $this->repo->org->findByPublicId($orgId);
 
         $input[Org\Entity::AUTH_TYPE] = $org->getAuthType();
 
-        $validator->validateInput('reset', $input);
-
         // Get admin
         $admin = $this->getAdminFromEmail($orgId, $input['email']);
+
+        $validator = new Validator($admin);
+
+        $validator->validateInput('reset', $input);
 
         $key = $this->getCacheKeyForResetToken($org->getId(), $admin->getId());
 
@@ -236,6 +245,16 @@ class Service extends Base\Service
         $this->handleAuthFailure($admin, Action::LOGIN_FAIL_OAUTH);
     }
 
+    /**
+     * Here we are generating a bearer token
+     * and savnig bcrypted token and considering token Id as principal.
+     * Ref https://security.stackexchange.com/a/94792
+     * concat bearer token and principal and sending to client as admin token.
+     * last 14 characters of the token will be extracted and will be matched bycrypting the token.
+     *
+     * @param $admin
+     * @return mixed
+     */
     private function generateLoginToken($admin)
     {
         $this->fireAdminAction($admin, Action::GENERATE_LOGIN_TOKEN);
@@ -246,8 +265,10 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($admin);
 
+        $bearerToken = str_random(20);
+
         $tokenAttributes = [
-            'token'      => str_random(40),
+            'token'      => Hash::make($bearerToken),
             'expires_at' => Carbon::now()->addDays(30)->getTimestamp()
         ];
 
@@ -255,14 +276,14 @@ class Service extends Base\Service
 
         $admin = $admin->toArrayPublic();
 
-        $admin['token'] = $token->getToken();
+        $admin['token'] = $bearerToken . $token->getId();
 
         return $admin;
     }
 
-    public function createAdmin(string $orgId, array $input)
+    public function createAdmin(array $input)
     {
-        $org = $this->repo->org->findByPublicId($orgId);
+        $org = $this->repo->org->find($this->adminOrgId);
 
         if (empty($input[Entity::ROLES]) === false)
         {
@@ -293,16 +314,16 @@ class Service extends Base\Service
         Mail::queue($createAdminMail);
     }
 
-    public function getAdmin(string $orgId, string $adminId)
+    public function getAdmin(string $adminId)
     {
         // Fetch admin with relations
         $admin = $this->repo->admin->findByPublicIdAndOrgIdWithRelations(
-            $adminId, $orgId, [Entity::GROUPS, Entity::ROLES]);
+            $adminId, $this->adminOrgId, [Entity::GROUPS, Entity::ROLES]);
 
         return $admin->toArrayPublic();
     }
 
-    public function getAdminByAppAuth(string $orgId, array $input)
+    public function getAdminByAppAuth(array $input)
     {
         $token = $input['token'];
 
@@ -310,11 +331,12 @@ class Service extends Base\Service
 
         $adminId = $adminToken->getAdminId();
 
+        $orgId = $adminToken->admin->getOrgId();
+
         $admin = $this->repo->admin->findByIdAndOrgIdWithRelations(
             $adminId, $orgId, ['groups', 'roles', 'roles.permissions']);
 
         $roles = $admin->roles;
-        $permissions = [];
         $roleNames = [];
         $groupRules = [];
 
@@ -356,11 +378,11 @@ class Service extends Base\Service
         return $admin;
     }
 
-    public function deleteAdmin(string $orgId, string $adminId)
+    public function deleteAdmin(string $adminId)
     {
         $authAdmin = $this->app['basicauth']->getAdmin();
 
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $this->adminOrgId);
 
         $admin->getValidator()->validateSelfEditForbidden($authAdmin, $admin);
 
@@ -369,11 +391,9 @@ class Service extends Base\Service
         return $this->core()->delete($admin);
     }
 
-    public function fetchMultiple(string $orgId, array $input)
+    public function fetchMultiple()
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-
-        $admins = $this->repo->admin->fetchByOrgId($orgId, [Entity::GROUPS, Entity::ROLES]);
+        $admins = $this->repo->admin->fetchByOrgId($this->adminOrgId, [Entity::GROUPS, Entity::ROLES]);
 
         return $admins->toArrayPublic();
     }
@@ -396,8 +416,17 @@ class Service extends Base\Service
         return [];
     }
 
-    public function editAdmin(string $orgId, string $adminId, array $input)
+    public function editAdmin(string $adminId, array $input)
     {
+        if (empty($this->adminOrgId))
+        {
+            $orgId = $this->app['basicauth']->getOrgId();
+        }
+        else
+        {
+            $orgId = $this->adminOrgId;
+        }
+
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
         if (empty($input[Entity::ROLES]) === false)
@@ -679,7 +708,7 @@ class Service extends Base\Service
         {
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLWOED);
+                ErrorCode::BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED);
         }
 
         $this->core()->updatePassword($admin, $input, false, 'change');

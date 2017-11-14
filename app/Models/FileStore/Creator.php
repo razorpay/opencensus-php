@@ -4,6 +4,7 @@ namespace RZP\Models\FileStore;
 
 use Config;
 use RZP\Exception;
+use RZP\Encryption;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -96,6 +97,27 @@ class Creator extends Base\Core
      * @var boolean Compress flag
      */
     protected $shouldCompress = false;
+
+     /**
+     * Flag to signify if file has to be encrypted
+     *
+     * @var boolean Encrypt flag
+     */
+    protected $shouldEncrypt = false;
+
+    /**
+     * Flag to signify if file has to be base64 encoded
+     *
+     * @var boolean Encode flag
+     */
+    protected $shouldEncode = false;
+
+     /**
+     * Encryption Handler Instance
+     *
+     * @var Encryption Handler
+     */
+    protected $encryptionHandler;
 
     /**
      * Format in which file has to be Compress
@@ -237,6 +259,32 @@ class Creator extends Base\Core
         $this->compressionFormat = $format;
 
         $this->setCompressionCommand();
+
+        return $this;
+    }
+
+    /** Encrypts contents of file
+     *
+     * @param string $type  type of encryption
+     * @param string $secret secret for encryption
+     *
+     * @return Creator object
+     */
+    public function encrypt(string $type, array $params)
+    {
+        $this->shouldEncrypt = true;
+
+        $this->encryptionHandler = new Encryption\Handler($type, $params);
+
+        return $this;
+    }
+
+    /** Encodes the given file with base64
+     * @return $this
+     */
+    public function encode()
+    {
+        $this->shouldEncode = true;
 
         return $this;
     }
@@ -632,12 +680,40 @@ class Creator extends Base\Core
                 throw new Exception\LogicException('Not A Valid Extension');
         }
 
+        if ($this->shouldEncrypt === true)
+        {
+            $this->encryptFile();
+        }
+
         if ($this->shouldCompress === true)
         {
             $this->compressFile();
         }
 
+        if ($this->shouldEncode === true)
+        {
+            $this->encodeFile();
+        }
+
         $this->updateFilePermission();
+    }
+
+    protected function encryptFile()
+    {
+        $fileToBeEncrypted = $this->getFullFilePath();
+
+        $this->encryptionHandler->encryptFile($fileToBeEncrypted);
+    }
+
+    protected function encodeFile()
+    {
+        $fileToBeEncoded = $this->getFullFilePath();
+
+        $data = file_get_contents($fileToBeEncoded);
+
+        $encodedData = base64_encode($data);
+
+        file_put_contents($fileToBeEncoded, $encodedData);
     }
 
     /*

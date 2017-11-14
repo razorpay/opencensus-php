@@ -9,7 +9,6 @@ return [
     'testCreateVirtualAccount' => [
         'name'            => 'Test virtual account',
         'entity'          => 'virtual_account',
-        // 'amount_expected' => 10000,
         'status'          => 'active',
         'description'     => 'VA for tests',
         'receivers'  => [
@@ -21,10 +20,32 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccountWithBharatQr' => [
+        'name'            => 'Test virtual account',
+        'entity'          => 'virtual_account',
+        'status'          => 'active',
+        'description'     => 'VA for tests',
+        'receivers'  => [
+            [
+            ],
+        ],
+    ],
+
+    'testCreateVirtualAccountWithBharatQrWithAmount' => [
+        'name'            => 'Test virtual account',
+        'entity'          => 'virtual_account',
+        'amount_expected' => 10000,
+        'status'          => 'active',
+        'description'     => 'VA for tests',
+        'receivers'  => [
+            [
+            ],
+        ],
+    ],
+
     'testFetchVirtualAccount' => [
         'name'            => 'Test virtual account',
         'entity'          => 'virtual_account',
-        // 'amount_expected' => 10000,
         'status'          => 'active',
         'description'     => 'VA for tests',
         'receivers'  => [
@@ -43,14 +64,12 @@ return [
             [
                 'name'            => 'Second VA',
                 'entity'          => 'virtual_account',
-                // 'amount_expected' => 10000,
                 'status'          => 'active',
                 'description'     => 'VA for tests',
             ],
             [
                 'name'            => 'First VA',
                 'entity'          => 'virtual_account',
-                // 'amount_expected' => 10000,
                 'status'          => 'active',
                 'description'     => 'VA for tests',
             ],
@@ -95,6 +114,22 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE,
+        ],
+    ],
+
+    'testCreateVirtualAccountDescriptorLengths' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid length for descriptor.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH,
         ],
     ],
 

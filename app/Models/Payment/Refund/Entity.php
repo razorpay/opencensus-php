@@ -9,6 +9,9 @@ use RZP\Models\Transaction\Channel;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
 
+/**
+ * @property Payment\Entity $payment
+ */
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
@@ -149,6 +152,12 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Batch\Entity', self::BATCH_ID);
     }
 
+    public function fundTransferAttempts()
+    {
+        return $this->morphMany('RZP\Models\FundTransfer\Attempt\Entity', 'source')
+                    ->orderBy(self::CREATED_AT);
+    }
+
     public function batchFundTransfer()
     {
         return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
@@ -205,21 +214,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
-    public function getFormattedAmount()
-    {
-        $currency = $this->getCurrency();
-
-        $currencySymbol = Currency\Currency::SYMBOL[$currency];
-
-        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency];
-
-        $amount = $this->getAmount() / $denominationFactor;
-
-        $amount = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
-
-        return $currencySymbol . ' ' . $amount;
-    }
-
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);
@@ -271,11 +265,6 @@ class Entity extends Base\PublicEntity
     }
 
     public function getFees()
-    {
-        return 0;
-    }
-
-    public function getServiceTax()
     {
         return 0;
     }
@@ -367,15 +356,16 @@ class Entity extends Base\PublicEntity
         // '1mg', 'Playo', 'Nestaway',
         // 'RailYatri', 'Treebo', 'Goibibo',
         // 'Goeventz', 'RentoMojo', 'Voonik',
-        // 'Zomato', 'Swiggy',
-        //
+        // 'Zomato', 'Swiggy', 'Yatra'
+        // 'Mr Button', 'Zefo'
 
         $merchantIds = [
             '10000000000000', '6gn7Xc2gqK40c9', '4uObL8AHBqFNnP',
             '6e9vU1F6c16Wgy', '6LCgLZgRjTI8ws', '4IAipsLXQZ8HfL',
             '5yvFZKqbBjEBsr', '3d2EGdZF6CAYVc', '6ZLE5BE57SExGF',
             '6B94xSUfS76yht', '4bnk7yysqr5Wx5', '4zGGr9ZwCTH1gh',
-            '6H7N6hlcv29OMG', '8S0i1kWYyF2woQ',
+            '6H7N6hlcv29OMG', '8S0i1kWYyF2woQ', '87qTXzFTBLFN7i',
+            '5PKFA3s9dpIwPn', '6RGC8wjp5U2K2e'
         ];
 
         $currentMerchantId = $this->getMerchantId();
@@ -408,7 +398,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECEIPT, $value);
     }
 
-    public function setUtr(string $value)
+    public function setUtr(string $value = null)
     {
         $this->setAttribute(self::REFERENCE1, $value);
     }

@@ -7,8 +7,16 @@ use Razorpay\IFSC\IFSC;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
+use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
 
+/**
+ * @property Payment\Entity        $payment
+ * @property Merchant\Entity       $merchant
+ * @property VirtualAccount\Entity $virtualAccount
+ * @property BankAccount\Entity    $payerBankAccount
+ */
 class Entity extends Base\PublicEntity
 {
     const ID                 = 'id';
@@ -21,12 +29,15 @@ class Entity extends Base\PublicEntity
     const PAYER_IFSC            = 'payer_ifsc';
     const PAYER_BANK_ACCOUNT    = 'payer_bank_account';
     const PAYER_BANK_ACCOUNT_ID = 'payer_bank_account_id';
+    const PAYER_BANK_NAME       = 'payer_bank_name';
 
     // Details of the receiver bank account
     const PAYEE_ACCOUNT      = 'payee_account';
     const PAYEE_IFSC         = 'payee_ifsc';
 
     const VIRTUAL_ACCOUNT_ID = 'virtual_account_id';
+    const VIRTUAL_ACCOUNT    = 'virtual_account';
+
     const AMOUNT             = 'amount';
 
     // Modes: NEFT, RTGS, IMPS, IFT
@@ -54,6 +65,10 @@ class Entity extends Base\PublicEntity
     // This is used to generate the value for the UTR field.
     const REQ_UTR            = 'transaction_id';
 
+    const SPECIAL_IFSC_CODE  = 'RAZR0000001';
+
+    const MAX_DESCRIPTION_LENGTH = 255;
+
     protected $fillable = [
         self::PAYMENT_ID,
         self::PAYER_NAME,
@@ -70,12 +85,17 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::PAYMENT_ID,
-        self::VIRTUAL_ACCOUNT_ID,
-        self::AMOUNT,
-        self::PAYER_BANK_ACCOUNT,
         // This can be added later, upon request
         // self::MODE,
         // self::UTR,
+        self::AMOUNT,
+        self::PAYER_BANK_ACCOUNT,
+        self::VIRTUAL_ACCOUNT_ID,
+        self::VIRTUAL_ACCOUNT,
+    ];
+
+    protected $appends = [
+        self::PAYER_BANK_NAME,
     ];
 
     protected $visible = [
@@ -90,6 +110,7 @@ class Entity extends Base\PublicEntity
         self::PAYER_BANK_ACCOUNT_ID,
         self::PAYEE_ACCOUNT,
         self::PAYEE_IFSC,
+        self::PAYER_BANK_NAME,
         self::DESCRIPTION,
         self::MODE,
         self::UTR,
@@ -111,7 +132,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected static $modifiers = [
-        self::AMOUNT,
+        self::DESCRIPTION,
     ];
 
     protected $defaults = [
@@ -192,11 +213,36 @@ class Entity extends Base\PublicEntity
         $array[self::MODE] = strtoupper($array[self::MODE]);
     }
 
+    // -------------------------- Mutators -------------------------------------
+
+    public function setAmountAttribute(float $amount)
+    {
+        //
+        // If you're wondering why this is here, run "(int) (579.3 * 100)" in tinker
+        //
+        // The value of (579.3 * 100) is actually stored as 57929.999... and casting
+        // that to an integer just dumps the decimal part and ruins everything.
+        //
+        // testBankTransferFloatingPointImprecision exists to check against this.
+        //
+
+        $amount = (int) number_format(($amount * 100), 0, '.', '');
+
+        $this->attributes[self::AMOUNT] = $amount;
+    }
+
     // -------------------------- Modifiers ------------------------------------
 
-    public function modifyAmount(array & $input)
+    public function modifyDescription(array & $input)
     {
-        $input[self::AMOUNT] = (int) ($input[self::AMOUNT] * 100);
+        //
+        // This field is used in payment description, so we truncate to the limit
+        //
+
+        if (isset($input[self::DESCRIPTION]) === true)
+        {
+            $input[self::DESCRIPTION] = substr($input[self::DESCRIPTION], 0, self::MAX_DESCRIPTION_LENGTH);
+        }
     }
 
     // -------------------------- Getters --------------------------------------
@@ -206,9 +252,31 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getMode()
+    {
+        return $this->getAttribute(self::MODE);
+    }
+
     public function getUtr()
     {
         return $this->getAttribute(self::UTR);
+    }
+
+    public function getPayerBankNameAttribute()
+    {
+        $ifsc = $this->getAttribute(self::PAYER_IFSC);
+
+        if ($ifsc === null)
+        {
+            return null;
+        }
+
+        if ($ifsc === self::SPECIAL_IFSC_CODE)
+        {
+            return 'Razorpay';
+        }
+
+        return IFSC::getBankName($ifsc);
     }
 
     public function getPayerName()

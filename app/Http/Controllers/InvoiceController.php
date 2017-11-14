@@ -171,7 +171,6 @@ class InvoiceController extends Controller
             '7SVOQZGZuwHr4I', // Amit. M's
         ];
 
-
         if ((empty($data['merchant']) === false) and
             (in_array($data['merchant']['id'], $idsForUberFlow, true) === true))
         {
@@ -190,31 +189,29 @@ class InvoiceController extends Controller
                    ->with('data', $data);
     }
 
+    /**
+     * Gets invoice pdf file.
+     * Redirects to signed aws s3 url. Additionally if download=1 in sent in query
+     * then redirects and forces download.
+     *
+     * @param string $id
+     */
     public function getInvoicePdf(string $id)
     {
-        list($displayName, $path) = $this->service()->getInvoicePdf($id);
+        $download = (bool) Request::input('download', '0');
 
-        if ($path === null)
+        $url = $this->service()->getInvoicePdfSignedUrl($id, $download);
+
+        if ($url === null)
         {
-            $data = [
-                'error' => [
-                    'description' => 'No pdf file found'
-                ],
-            ];
+            $data['error']['description'] = 'No pdf file found';
 
             return response()
                         ->view('invoice.index', ['data' => $data])
                         ->setStatusCode(ResponseCodes::HTTP_BAD_REQUEST);
         }
 
-        $download = Request::input('download', '0');
-
-        if ($download === '1')
-        {
-            return Response::download($path, "$displayName");
-        }
-
-        return Response::file($path);
+        return redirect($url);
     }
 
     public function issueInvoicesOfBatch(string $batchId)

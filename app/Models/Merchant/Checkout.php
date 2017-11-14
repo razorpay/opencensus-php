@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use App;
 use Request;
+use RZP\Base\RepositoryManager;
 use Session;
 
 use RZP\Error\ErrorCode;
@@ -22,20 +23,29 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Plan\Subscription;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
 
 class Checkout
 {
-    const CHECKOUT_LOGO_SIZE = 'medium';
-    const CHECKOUT_DEFAULT_THEME_COLOR = '#3594E2';
+    const CHECKOUT_LOGO_SIZE            = 'medium';
+    const CHECKOUT_DEFAULT_THEME_COLOR  = '#3594E2';
 
-    const SUBSCRIPTION_ID    = 'subscription_id';
+    const SUBSCRIPTION_ID               = 'subscription_id';
 
     protected $app;
     /**
      * @var Trace
      */
     protected $trace;
+    /**
+     * @var RepositoryManager
+     */
     protected $repo;
+
+    /**
+     * @var Subscription\Entity
+     */
+    protected $subscription;
 
     public function __construct()
     {
@@ -54,7 +64,7 @@ class Checkout
 
         $data = $this->getMerchantPreferencesData($merchant, $mode);
 
-        $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
+        $data[Entity::METHODS] = (new Methods\Core)->getFormattedMethods($merchant);
 
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
@@ -62,6 +72,8 @@ class Checkout
 
         $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
 
+        // This should be after `checkAndFillSavedTokens` because this expects
+        // `$this->subscription` to be set.
         $this->checkAndAddDetailsForSubscription($input, $merchant, $data);
 
         $this->checkAndFillOfferDetails($merchant, $input, $data);
@@ -85,7 +97,31 @@ class Checkout
 
         $orderId = $input[Payment\Entity::ORDER_ID];
 
-        $data['order'] = (new Order\Core)->getFormattedDataForCheckout($orderId, $merchant);
+        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
+
+        $data['order'] = (new Order\Core)->getFormattedDataForCheckout($order, $merchant);
+
+        $this->resetMethodsIfValidBanksPresent($data, $order);
+    }
+
+    protected function resetMethodsIfValidBanksPresent(
+        array & $data,
+        Order\Entity $order)
+    {
+        if($order->getBank() !== null)
+        {
+            $bankCode = $order->getBank();
+
+            // Order bank should be present in the list of netbanking banks.
+            if (isset($data['methods']['netbanking'][$bankCode]) === true)
+            {
+                $bankName = $data['methods']['netbanking'][$bankCode];
+
+                $data['methods']['netbanking'] = [
+                    $bankCode => $bankName,
+                ];
+            }
+        }
     }
 
     protected function checkAndAddDetailsForInvoice(
@@ -133,9 +169,42 @@ class Checkout
             return;
         }
 
-        $subscriptionId = $input[self::SUBSCRIPTION_ID];
+        $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
 
-        $data['subscription'] = (new Subscription\Core)->getFormattedSubscriptionData($merchant, $subscriptionId);
+        $subscription = $this->getSubscription($input[self::SUBSCRIPTION_ID], $merchant);
+
+        //
+        // If the subscription has already been authenticated, there's no reason for
+        // the checkout to hit the preferences route. UNLESS it's a card change flow.
+        //
+        if (($cardChange === false) and
+            ($subscription->hasBeenAuthenticated() === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_ALREADY_AUTHENTICATED,
+                null,
+                [
+                    self::SUBSCRIPTION_ID   => $input[self::SUBSCRIPTION_ID],
+                    'merchant_id'           => $merchant->getId(),
+                    'card_change'           => $cardChange
+                ]);
+        }
+
+        if (($cardChange === true) and
+            ($subscription->isCardChangeStatus() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CARD_CHANGE_NOT_ALLOWED,
+                null,
+                [
+                    'subscription_id'       => $input[self::SUBSCRIPTION_ID],
+                    'subscription_status'   => $subscription->getStatus(),
+                    'merchant_id'           => $merchant->getId(),
+                    'card_change'           => $cardChange
+                ]);
+        }
+
+        $data['subscription'] = (new Subscription\Core)->getFormattedSubscriptionData($subscription, $cardChange);
     }
 
     protected function tracePreferencesRequest(Entity $merchant, $mode, array $input)
@@ -187,13 +256,23 @@ class Checkout
                 return null;
             }
 
-            $savedTokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
+            $tokenCore = (new Customer\Token\Core);
 
-            $custData =  array(
+            $savedTokens = $tokenCore->fetchTokensByCustomer($customer);
+
+            //
+            // TODO: Remove this later when we start handling the below case.
+            // Currently, we do not expose any recurring NB tokens to the customer.
+            // We do not handle the flow where a customer can use an existing token
+            // to subscribe to another product.
+            //
+            $savedTokens = $tokenCore->removeNetbankingRecurringTokens($savedTokens);
+
+            $custData =  [
                 'email'     => $customer->getEmail(),
                 'contact'   => $customer->getContact(),
-                'tokens'    => $savedTokens->toArrayPublic()
-            );
+                'tokens'    => $savedTokens->toArrayPublic(),
+            ];
 
             //
             // This case comes when customer_id is sent in the input (always local customer).
@@ -307,14 +386,19 @@ class Checkout
 
                 if ($response['saved'] === true)
                 {
-                    if (isset($response['email']))
+                    if (isset($response['email']) === true)
                     {
                         $data['customer']['email'] = $response['email'];
                     }
 
-                    if (isset($response['tokens']))
+                    if (isset($response['tokens']) === true)
                     {
-                        $data['customer']['tokens'] = $response['tokens'];
+                        $tokens = $response['tokens'];
+
+                        // TODO: Needs to be fixed later when we allow first recurring on old recurring nb token.
+                        $tokensWithoutNB = (new Customer\Token\Core)->removeNetbankingRecurringTokens($tokens);
+
+                        $data['customer']['tokens'] = $tokensWithoutNB;
                     }
                 }
             }
@@ -357,8 +441,7 @@ class Checkout
                 $input);
         }
 
-        $subscription = $this->repo->subscription->findByPublicIdAndMerchant(
-            $input[Payment\Entity::SUBSCRIPTION_ID], $merchant);
+        $subscription = $this->setSubscription($input[Payment\Entity::SUBSCRIPTION_ID], $merchant);
 
         //
         // If a customer is not associated with the subscription already,
@@ -397,6 +480,25 @@ class Checkout
                 $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
             }
         }
+    }
+
+    protected function setSubscription($subscriptionId, Merchant\Entity $merchant)
+    {
+        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $merchant);
+
+        $this->subscription = $subscription;
+
+        return $subscription;
+    }
+
+    protected function getSubscription(string $subscriptionId, Merchant\Entity $merchant)
+    {
+        if (isset($this->subscription) === true)
+        {
+            return $this->subscription;
+        }
+
+        return $this->setSubscription($subscriptionId, $merchant);
     }
 
     protected function getMerchantPreferencesData(Entity $merchant, $mode)

@@ -47,7 +47,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $createPlanRules = [
-        Entity::PLAN_NAME => 'required|alpha_num|max:20'
+        Entity::PLAN_NAME   => 'required|alpha_num|max:20'
+    ];
+
+    protected static $createBulkPricingRules = [
+        Entity::PLAN_NAME   => 'required|alpha_num|max:20',
+        Entity::RULES       => 'required|array|min:1',
     ];
 
     protected function validateAddPlanRuleFeature($input)
@@ -236,8 +241,7 @@ class Validator extends Base\Validator
     public function createPlanValidate($input)
     {
         // If no plan name, then set it to null
-        $planInput[Entity::PLAN_NAME] =
-            (isset($input[Entity::PLAN_NAME])) ? $input[Entity::PLAN_NAME] : null;
+        $planInput[Entity::PLAN_NAME] = $input[Entity::PLAN_NAME] ?? null;
 
         $this->validateInput('createPlan', $planInput);
 
@@ -250,7 +254,7 @@ class Validator extends Base\Validator
     {
         $this->validateInput('addPlanRule', $input);
 
-        // The plan should already have at leats one rule
+        // The plan should already have at least one rule
         if ($plan->count() === 0)
         {
             throw new Exception\LogicException(
@@ -281,7 +285,7 @@ class Validator extends Base\Validator
     /**
      * Check whether this new rule already exists
      */
-    public function matchPaymentRules($plan)
+    public function validateRuleDoesNotMatch(Plan $plan)
     {
         $rules = $plan->toArray();
 
@@ -363,7 +367,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public static function validatePlanCountZero($plan)
+    public function validatePlanCountZero(Plan $plan)
     {
         if ($plan->count() > 0)
         {
@@ -376,4 +380,5 @@ class Validator extends Base\Validator
     {
         return (($min < $n) and ($n < $max));
     }
+
 }

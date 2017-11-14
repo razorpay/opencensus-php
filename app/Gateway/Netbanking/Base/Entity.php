@@ -22,14 +22,32 @@ class Entity extends Base\Entity
     const REFUND_ID             = 'refund_id';
     const REFERENCE1            = 'reference1';
     const ACCOUNT_NUMBER        = 'account_number';
-    //Credit Account number is the bank account to which money is transferred.
+    const ACCOUNT_TYPE          = 'account_type';
+    const ACCOUNT_SUBTYPE       = 'account_subtype';
+    const ACCOUNT_BRANCHCODE    = 'account_branch_code';
+    // Credit Account number is the bank account to which money is transferred.
     const CREDIT_ACCOUNT_NUMBER = 'credit_account_number';
     const INT_PAYMENT_ID        = 'int_payment_id';
     const CAPS_PAYMENT_ID       = 'caps_payment_id';
 
+    //
+    // Recurring specific fields
+    //
+
+    const SI_TOKEN              = 'si_token';
+    const SI_STATUS             = 'si_status';
+    const SI_MSG                = 'si_message';
+
+    /**
+     * Number of years from now to set for end_date.
+     * For charge at will payments, we don't know off hand
+     * how long the merchant wants the subscription to go on
+     */
+    const MAX_RECURRING_END_YEARS = 30;
+
     protected $entity = 'netbanking';
 
-    protected $fields = array(
+    protected $fields = [
         self::ID,
         self::PAYMENT_ID,
         self::BANK,
@@ -48,9 +66,9 @@ class Entity extends Base\Entity
         self::ACCOUNT_NUMBER,
         self::INT_PAYMENT_ID,
         self::CAPS_PAYMENT_ID,
-    );
+    ];
 
-    protected $fillable = array(
+    protected $fillable = [
         self::BANK,
         self::AMOUNT,
         self::RECEIVED,
@@ -65,8 +83,14 @@ class Entity extends Base\Entity
         self::REFUND_ID,
         self::REFERENCE1,
         self::ACCOUNT_NUMBER,
+        self::ACCOUNT_TYPE,
+        self::ACCOUNT_SUBTYPE,
+        self::ACCOUNT_BRANCHCODE,
         self::INT_PAYMENT_ID,
-    );
+        self::SI_TOKEN,
+        self::SI_STATUS,
+        self::SI_MSG,
+    ];
 
     public function setBank($bank)
     {
@@ -90,6 +114,21 @@ class Entity extends Base\Entity
         $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
     }
 
+    public function setAccountType(string $accountType)
+    {
+        $this->setAttribute(self::ACCOUNT_TYPE, $accountType);
+    }
+
+    public function setAccountSubType(string $accountSubType)
+    {
+        $this->setAttribute(self::ACCOUNT_SUBTYPE, $accountSubType);
+    }
+
+    public function setAccountBranchCode(string $accountBranchCode)
+    {
+        $this->setAttribute(self::ACCOUNT_BRANCHCODE, $accountBranchCode);
+    }
+
     public function setCreditAccountNumber(string $creditAccountNumber)
     {
         $this->setAttribute(self::CREDIT_ACCOUNT_NUMBER, $creditAccountNumber);
@@ -102,7 +141,7 @@ class Entity extends Base\Entity
 
     public function isTpv()
     {
-        $accountNumber = $this->getAttribute(self::ACCOUNT_NUMBER);
+        $accountNumber = $this->getAccountNumber();
 
         if (is_null($accountNumber) === true)
         {
@@ -110,6 +149,11 @@ class Entity extends Base\Entity
         }
 
         return true;
+    }
+
+    public function getAccountNumber()
+    {
+        return $this->getAttribute(self::ACCOUNT_NUMBER);
     }
 
     public function getBankPaymentId()
@@ -152,8 +196,28 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::RECEIVED);
     }
 
+    public function getErrorMessage()
+    {
+        return $this->getAttribute(self::ERROR_MESSAGE);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getSIToken()
+    {
+        return $this->getAttribute(self::SI_TOKEN);
+    }
+
+    public function getSIStatus()
+    {
+        return $this->getAttribute(self::SI_STATUS);
+    }
+
+    public function getSIMessage()
+    {
+        return $this->getAttribute(self::SI_MSG);
     }
 }

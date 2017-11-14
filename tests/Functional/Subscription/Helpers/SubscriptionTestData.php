@@ -232,36 +232,155 @@ return [
         ],
     ],
 
+    'testCreateAddon' => [
+        'request' => [
+            'url'       => '/subscriptions/{subscriptionId}/addons',
+            'method'    => 'post',
+            'content'   => [
+                'quantity'  => 2,
+                'item'      => [
+                    'name'          => 'test addon',
+                    'amount'        => 1000,
+                    'currency'      => 'INR',
+                    'description'   => 'test addon desc'
+                ]
+            ]
+        ],
+        'response' => [
+            'content'   => [
+                'item'  => [
+                    'name'  => 'test addon',
+                    'type'  => 'addon',
+                ],
+                'invoice_id'    => null,
+            ]
+        ]
+    ],
+
+    'testFetchAddon' => [
+        'request' => [
+            'url'       => '/addons/{addonId}',
+            'method'    => 'get',
+            'content'   => [
+            ]
+        ],
+        'response'  => [
+            'content'   => [
+                'entity'        => 'addon',
+                'item'          => [
+                    'name'  => 'Some item name',
+                    'type'  => 'addon',
+                ],
+                'invoice_id'    => null,
+            ]
+        ]
+    ],
+
+    'testFetchMultipleAddons' => [
+        'request' => [
+            'url'       => '/addons/',
+            'method'    => 'get',
+            'content'   => [
+                'subscription_id' => '{subscriptionId}',
+            ]
+        ],
+        'response'  => [
+            'content'   => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity' => 'addon',
+                        'invoice_id' => null,
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testDeleteAddon' => [
+        'request'   => [
+            'url'       => '/addons/{addonId}',
+            'method'    => 'delete',
+        ],
+        'response'  => [
+            'content' => []
+        ]
+    ],
+
+    'testDeleteAddonAssociatedWithInvoice' => [
+        'request'   => [
+            'url'       => '/addons/{addonId}',
+            'method'    => 'delete'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Delete operation cannot be performed on the addon.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ADDON_DELETE_NOT_ALLOWED,
+        ],
+    ],
+
+    'testFetchDueAddons' => [
+        'request' => [
+            'url'       => '/subscriptions/{subscriptionId}/addons/due',
+            'method'    => 'get',
+        ],
+        'response'  => [
+            'content'   => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     => [
+                    [
+                        'entity'        => 'addon',
+                        'invoice_id'    => null,
+                        'item'          => [
+                            'id'    => 'item_3000000000item',
+                            'type'  => 'addon',
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'createSubscriptionForAuthTxn' => [
         'request' => [
             'url' => '/subscriptions',
             'method' => 'post',
             'content' => [
-                'customer_id'   => 'cust_100000customer',
-                'plan_id'       => 'plan_1000000000plan',
-                'quantity'      => 1,
-                'total_count'   => 6, // Every two months
-                'customer_notify' => 0,
+                'customer_id'     => 'cust_100000customer',
+                'plan_id'         => 'plan_1000000000plan',
+                'quantity'        => 1,
+                'total_count'     => 6, // Every two months
+                'customer_notify' => 1,
             ],
         ],
         'response' => [
             'content' => [
-                'customer_id' => 'cust_100000customer',
-                'plan_id' => 'plan_1000000000plan',
-                'status' => 'created',
-                'current_start' => null,
-                'current_end' => null,
-                'ended_at' => null,
-                'quantity' => 1,
-                // 'token_id' => null,
-                'notes' => [],
-                'charge_at' => null,
-                'start_at' => null,
-                'end_at' => null,
-                'total_count' => 6,
-                'paid_count' => 0,
-                'auth_attempts' => 0,
-                'customer_notify' => false,
+                'customer_id'     => 'cust_100000customer',
+                'plan_id'         => 'plan_1000000000plan',
+                'status'          => 'created',
+                'current_start'   => null,
+                'current_end'     => null,
+                'ended_at'        => null,
+                'quantity'        => 1,
+                // 'token_id'     => null,
+                'notes'           => [],
+                'charge_at'       => null,
+                'start_at'        => null,
+                'end_at'          => null,
+                'total_count'     => 6,
+                'paid_count'      => 0,
+                'auth_attempts'   => 0,
+                'customer_notify' => true,
             ],
         ],
     ],
@@ -276,7 +395,7 @@ return [
                 'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
                 'quantity'      => 1,
                 'total_count'   => 6, // Every two months
-                'customer_notify' => 0,
+                'customer_notify' => 1,
             ],
         ],
         'response' => [
@@ -296,7 +415,9 @@ return [
                 'total_count'     => 6,
                 'paid_count'      => 0,
                 'auth_attempts'   => 0,
-                'customer_notify' => false,
+                // Commenting this out because this request is being
+                // used for both customer_notify true and false cases.
+                // 'customer_notify' => true,
             ],
         ],
     ],
@@ -309,7 +430,7 @@ return [
                 'plan_id'       => 'plan_1000000000plan',
                 'quantity'      => 1,
                 'total_count'   => 6, // Every two months
-                'customer_notify' => 0,
+                'customer_notify' => 1,
             ],
         ],
         'response' => [
@@ -331,7 +452,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'plan_id should be sent in the request to create a subscription.',
+                    'description' => 'The plan id field is required.',
                 ],
             ],
             'status_code' => 400,
@@ -351,7 +472,7 @@ return [
                 'plan_id'       => 'plan_1000000000plan',
                 'quantity'      => 1,
                 'total_count'   => 6, // Every two months
-                'customer_notify' => 0,
+                'customer_notify' => 1,
             ],
         ],
         'response' => [
@@ -371,7 +492,7 @@ return [
                 'total_count' => 6,
                 'paid_count' => 0,
                 'auth_attempts' => 0,
-                'customer_notify' => false,
+                'customer_notify' => true,
             ],
         ],
     ],
@@ -386,7 +507,7 @@ return [
                 'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
                 'quantity'      => 1,
                 'total_count'   => 6, // Every two months
-                'customer_notify' => 0,
+                'customer_notify' => 1,
             ],
         ],
         'response' => [
@@ -406,7 +527,38 @@ return [
                 'total_count' => 6,
                 'paid_count' => 0,
                 'auth_attempts' => 0,
-                'customer_notify' => false,
+                'customer_notify' => true,
+            ],
+        ],
+    ],
+
+    'testCreateSubscriptionWithBlankStartAt' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'plan_id'         => 'plan_1000000000plan',
+                'quantity'        => 1,
+                'total_count'     => 6, // Every two months
+                'customer_notify' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'plan_id'         => 'plan_1000000000plan',
+                'status'          => 'created',
+                'current_start'   => null,
+                'current_end'     => null,
+                'ended_at'        => null,
+                'quantity'        => 1,
+                'notes'           => [],
+                'charge_at'       => null,
+                'start_at'        => null,
+                'end_at'          => null,
+                'total_count'     => 6,
+                'paid_count'      => 0,
+                'auth_attempts'   => 0,
+                'customer_notify' => true,
             ],
         ],
     ],
@@ -421,7 +573,7 @@ return [
                 'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
                 'quantity'      => 1,
                 'total_count'   => 6, // Every two months
-                'customer_notify' => 0,
+                'customer_notify' => 1,
             ],
         ],
         'response' => [
@@ -441,7 +593,7 @@ return [
                 'total_count' => 6,
                 'paid_count' => 0,
                 'auth_attempts' => 0,
-                'customer_notify' => false,
+                'customer_notify' => true,
             ],
         ],
     ],
@@ -455,7 +607,7 @@ return [
                 'plan_id'         => 'plan_1000000000plan',
                 'quantity'        => 1,
                 'total_count'     => 6, // Every two months
-                'customer_notify' => 0,
+                'customer_notify' => 1,
                 'addons'        => [
                     [
                         'item' => [
@@ -496,7 +648,7 @@ return [
                 'plan_id'         => 'plan_1000000000plan',
                 'quantity'        => 1,
                 'total_count'     => 6, // Every two months
-                'customer_notify' => 0,
+                'customer_notify' => 1,
                 'addons'        => [
                     [
                         'quantity' => 4,
@@ -539,7 +691,7 @@ return [
                 'quantity'        => 1,
                 'total_count'     => 6, // Every two months
                 'start_at'        => 1516386600,
-                'customer_notify' => 0,
+                'customer_notify' => 1,
                 'addons'        => [
                     [
                         'item' => [
@@ -568,7 +720,7 @@ return [
                 'total_count' => 6,
                 'paid_count' => 0,
                 'auth_attempts' => 0,
-                'customer_notify' => false,
+                'customer_notify' => true,
             ],
         ],
     ],
@@ -583,7 +735,7 @@ return [
                 'quantity'      => 1,
                 'start_at'      => 2116002600, // 1-20-2037, 12:00:00 AM
                 'total_count'   => 6, // Every two months
-                'customer_notify' => 0,
+                'customer_notify' => 1,
             ],
         ],
         'response' => [
@@ -611,7 +763,7 @@ return [
                 'quantity'      => 1,
                 'start_at'      => 1484850600, // 1-20-2017, 12:00:00 AM
                 'total_count'   => 6, // Every two months
-                'customer_notify' => 0,
+                'customer_notify' => 1,
             ],
         ],
         'response' => [
@@ -639,7 +791,7 @@ return [
                 'quantity'      => 1,
                 'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
                 'total_count'   => 6, // Every two months
-                'customer_notify' => 0,
+                'customer_notify' => 1,
             ],
         ],
         'response' => [
@@ -671,7 +823,7 @@ return [
                 'quantity'      => 1,
                 'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
                 'end_at'        => 1542652200, // Every two months
-                'customer_notify' => 0,
+                'customer_notify' => 1,
             ],
         ],
         'response' => [
@@ -704,7 +856,7 @@ return [
                 'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
                 'end_at'        => 1545244200, // Every two months
                 'total_count'   => 6,
-                'customer_notify' => 0,
+                'customer_notify' => 1,
             ]
         ],
         'response' => [
@@ -732,7 +884,7 @@ return [
                 'quantity'      => 1,
                 'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
                 'end_at'        => 1505244200, // Every two months
-                'customer_notify' => 0,
+                'customer_notify' => 1,
             ]
         ],
         'response' => [
@@ -760,7 +912,7 @@ return [
                 'quantity'      => 1,
                 'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
                 'end_at'        => 2116002600, // 1-20-2020, 12:00:00 AM
-                'customer_notify' => 0,
+                'customer_notify' => 1,
             ]
         ],
         'response' => [
@@ -787,7 +939,7 @@ return [
                 'customer_id'   => 'cust_100000customer',
                 'quantity'      => 1,
                 'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
-                'customer_notify' => 0,
+                'customer_notify' => 1,
             ]
         ],
         'response' => [
@@ -834,7 +986,7 @@ return [
                 'plan_id'         => 'plan_1000000000plan',
                 'quantity'        => 1,
                 'total_count'     => 6,
-                'customer_notify' => 0,
+                'customer_notify' => 1,
             ],
         ],
         'response' => [
@@ -848,7 +1000,7 @@ return [
                 'total_count'      => 6,
                 'paid_count'       => 0,
                 'auth_attempts'    => 0,
-                'customer_notify'  => false,
+                'customer_notify'  => true,
                 'notes'            => [],
                 'current_start'    => null,
                 'current_end'      => null,
@@ -982,6 +1134,26 @@ return [
         ],
     ],
 
+    'testSubscriptionCancelFuture' => [
+        'request' => [
+            'method'    => 'post',
+            'content'   => [
+                'cancel_at_cycle_end'   => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'                => 'subscription',
+                'plan_id'               => 'plan_1000000000plan',
+                'customer_id'           => 'cust_100000customer',
+                'status'                => 'active',
+                'total_count'           => 6,
+                'paid_count'            => 1,
+                'ended_at'              => null,
+            ]
+        ]
+    ],
+
     'testSubscriptionCancelBasic' => [
         'request' => [
             'method' => 'post',
@@ -1003,7 +1175,7 @@ return [
                 'start_at' => 1516386600,
                 'end_at' => 1542652200,
                 'auth_attempts' => 0,
-                'customer_notify' => false,
+                'customer_notify' => true,
             ]
         ],
     ],
@@ -1023,8 +1195,8 @@ return [
                         'plan_id'           => 'plan_1000000000plan',
                         'customer_id'       => 'cust_100000customer',
                         'status'            => 'pending',
-                        'current_start'     => 1516386600,
-                        'current_end'       => 1521484200,
+                        'current_start'     => 1521484200,
+                        'current_end'       => 1526754600,
                         'ended_at'          => null,
                         'quantity'          => 1,
                         'notes'             => [],
@@ -1034,7 +1206,7 @@ return [
                         'auth_attempts'     => 1,
                         'total_count'       => 6,
                         'paid_count'        => 1,
-                        'customer_notify'   => false,
+                        'customer_notify'   => true,
                     ]
                 ],
             ],
@@ -1047,8 +1219,8 @@ return [
             'entity'    => 'event',
             'event'     => 'subscription.pending',
             'contains' => [
-                // 'subscription', 'payment'
-                'subscription'
+                'subscription',
+                'payment'
             ],
             'payload'  => [
                 'subscription' => [
@@ -1057,8 +1229,8 @@ return [
                         'plan_id'           => 'plan_1000000000plan',
                         'customer_id'       => 'cust_100000customer',
                         'status'            => 'pending',
-                        'current_start'     => 1516386600,
-                        'current_end'       => 1521484200,
+                        'current_start'     => 1521484200,
+                        'current_end'       => 1526754600,
                         'ended_at'          => null,
                         'quantity'          => 1,
                         'notes'             => [],
@@ -1068,35 +1240,35 @@ return [
                         'auth_attempts'     => 1,
                         'total_count'       => 6,
                         'paid_count'        => 1,
-                        'customer_notify'   => false,
+                        'customer_notify'   => true,
                     ]
                 ],
-                // 'payment' => [
-                //     'entity' => [
-                //         'entity'            => 'payment',
-                //         'amount'            => 2000,
-                //         'currency'          => 'INR',
-                //         'status'            => 'authorized',
-                //         'international'     => false,
-                //         'method'            => 'card',
-                //         'amount_refunded'   => 0,
-                //         'refund_status'     => null,
-                //         'captured'          => false,
-                //         'description'       => 'Recurring Payment via Subscription',
-                //         'bank'              => null,
-                //         'wallet'            => null,
-                //         'vpa'               => null,
-                //         'email'             => 'test@razorpay.com',
-                //         'contact'           => '+911234567890',
-                //         'customer_id'       => 'cust_100000customer',
-                //         'notes'             => [],
-                //         'fee'               => null,
-                //         'service_tax'       => null,
-                //         'error_code'        => null,
-                //         'error_description' => null,
-                //         'acquirer_data'     => [],
-                //     ]
-                // ],
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'amount'            => 2000,
+                        'currency'          => 'INR',
+                        'status'            => 'authorized',
+                        'international'     => false,
+                        'method'            => 'card',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => false,
+                        'description'       => 'Recurring Payment via Subscription',
+                        'bank'              => null,
+                        'wallet'            => null,
+                        'vpa'               => null,
+                        'email'             => 'test@razorpay.com',
+                        'contact'           => '+911234567890',
+                        'customer_id'       => 'cust_100000customer',
+                        'notes'             => [],
+                        'fee'               => null,
+                        'tax'               => null,
+                        'error_code'        => null,
+                        'error_description' => null,
+                        'acquirer_data'     => [],
+                    ]
+                ],
             ],
         ],
     ],
@@ -1107,8 +1279,8 @@ return [
             'entity'    => 'event',
             'event'     => 'subscription.activated',
             'contains' => [
-                // 'subscription', 'payment'
-                'subscription'
+                'subscription',
+                'payment'
             ],
             'payload'  => [
                 'subscription' => [
@@ -1123,35 +1295,35 @@ return [
                         'auth_attempts'     => 0,
                         'total_count'       => 6,
                         'paid_count'        => 2,
-                        'customer_notify'   => false,
+                        'customer_notify'   => true,
                     ]
                 ],
-                // 'payment' => [
-                //     'entity' => [
-                //         'entity'            => 'payment',
-                //         'amount'            => 2000,
-                //         'currency'          => 'INR',
-                //         'status'            => 'captured',
-                //         'international'     => false,
-                //         'method'            => 'card',
-                //         'amount_refunded'   => 0,
-                //         'refund_status'     => null,
-                //         'captured'          => true,
-                //         'description'       => 'Recurring Payment via Subscription',
-                //         'bank'              => null,
-                //         'wallet'            => null,
-                //         'vpa'               => null,
-                //         'email'             => 'test@razorpay.com',
-                //         'contact'           => '+911234567890',
-                //         'customer_id'       => 'cust_100000customer',
-                //         'notes'             => [],
-                //         'fee'               => 40,
-                //         'service_tax'       => 0,
-                //         'error_code'        => null,
-                //         'error_description' => null,
-                //         'acquirer_data'     => [],
-                //     ]
-                // ],
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'amount'            => 2000,
+                        'currency'          => 'INR',
+                        'status'            => 'captured',
+                        'international'     => false,
+                        'method'            => 'card',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => 'Recurring Payment via Subscription',
+                        'bank'              => null,
+                        'wallet'            => null,
+                        'vpa'               => null,
+                        'email'             => 'test@razorpay.com',
+                        'contact'           => '+911234567890',
+                        'customer_id'       => 'cust_100000customer',
+                        'notes'             => [],
+                        'fee'               => 40,
+                        'tax'               => 0,
+                        'error_code'        => null,
+                        'error_description' => null,
+                        'acquirer_data'     => [],
+                    ]
+                ],
             ],
         ],
     ],
@@ -1162,8 +1334,8 @@ return [
             'entity'    => 'event',
             'event'     => 'subscription.charged',
             'contains' => [
-                // 'subscription', 'payment'
-                'subscription'
+                'subscription',
+                'payment'
             ],
             'payload'  => [
                 'subscription' => [
@@ -1183,35 +1355,35 @@ return [
                         'auth_attempts'     => 0,
                         'total_count'       => 6,
                         'paid_count'        => 1,
-                        'customer_notify'   => false,
+                        'customer_notify'   => true,
                     ]
                 ],
-                // 'payment' => [
-                //     'entity' => [
-                //         'entity'            => 'payment',
-                //         'amount'            => 2000,
-                //         'currency'          => 'INR',
-                //         'status'            => 'captured',
-                //         'international'     => false,
-                //         'method'            => 'card',
-                //         'amount_refunded'   => 0,
-                //         'refund_status'     => null,
-                //         'captured'          => true,
-                //         'description'       => 'Recurring Payment via Subscription',
-                //         'bank'              => null,
-                //         'wallet'            => null,
-                //         'vpa'               => null,
-                //         'email'             => 'test@razorpay.com',
-                //         'contact'           => '+911234567890',
-                //         'customer_id'       => 'cust_100000customer',
-                //         'notes'             => [],
-                //         'fee'               => 40,
-                //         'service_tax'       => 0,
-                //         'error_code'        => null,
-                //         'error_description' => null,
-                //         'acquirer_data'     => [],
-                //     ]
-                // ],
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'amount'            => 2000,
+                        'currency'          => 'INR',
+                        'status'            => 'captured',
+                        'international'     => false,
+                        'method'            => 'card',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => 'Recurring Payment via Subscription',
+                        'bank'              => null,
+                        'wallet'            => null,
+                        'vpa'               => null,
+                        'email'             => 'test@razorpay.com',
+                        'contact'           => '+911234567890',
+                        'customer_id'       => 'cust_100000customer',
+                        'notes'             => [],
+                        'fee'               => 40,
+                        'tax'               => 0,
+                        'error_code'        => null,
+                        'error_description' => null,
+                        'acquirer_data'     => [],
+                    ]
+                ],
             ],
         ],
     ],
@@ -1231,19 +1403,19 @@ return [
                         'plan_id'           => 'plan_1000000000plan',
                         'customer_id'       => 'cust_100000customer',
                         'status'            => 'active',
-                        'current_start'     => null,
-                        'current_end'       => null,
                         'ended_at'          => null,
                         'quantity'          => 1,
                         'notes'             => [],
                         'auth_attempts'     => 0,
                         'total_count'       => 6,
                         'paid_count'        => 0,
-                        'customer_notify'   => false,
+                        'customer_notify'   => true,
                         // These fields are like this because this is
                         // first activated. In first activated we fire
                         // webhook first and then make a charge, unlike
                         // other active fires.
+                        // 'current_start'     => null,
+                        // 'current_end'       => null,
                         // 'current_start' => NULL
                         // 'current_end' => NULL
                         // 'paid_count' => integer 0
@@ -1279,6 +1451,70 @@ return [
                         'auth_attempts' => 0,
                         'total_count'   => 6,
                         'paid_count'    => 1,
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testSubscriptionCardChangeOnAuthenticated' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Cannot change card for the subscription at this state',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SUBSCRIPTION_CARD_CHANGE_NOT_ALLOWED,
+        ],
+    ],
+
+    'testSubscriptionHaltedCardChangeFail' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\RuntimeException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
+    ],
+
+    'subscriptionWebhookDataForFutureCancel' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event'  => 'subscription.cancelled',
+            'contains' => [
+                'subscription',
+            ],
+            'payload' => [
+                'subscription' => [
+                    'entity' => [
+                        'entity'                => 'subscription',
+                        'plan_id'               => 'plan_1000000000plan',
+                        'customer_id'           => 'cust_100000customer',
+                        'status'                => 'cancelled',
+                        'current_start'         => 1516386600,
+                        'current_end'           => 1521484200,
+                        'ended_at'              => 1516386601,
+                        'quantity'              => 1,
+                        'notes'                 => [],
+                        'charge_at'             => null,
+                        'start_at'              => 1516386600,
+                        'end_at'                => 1542652200,
+                        'auth_attempts'         => 0,
+                        'total_count'           => 6,
+                        'paid_count'            => 1,
                     ]
                 ]
             ]

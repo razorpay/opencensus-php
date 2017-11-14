@@ -31,6 +31,9 @@ services:
       SLAVE_DB_TEST_HOST: api_db
       SLAVE_DB_TEST_USERNAME: api_user
       SLAVE_DB_TEST_PASSWORD: 123
+      DB_AUTH_HOST: api_db
+      DB_AUTH_USERNAME: api_user
+      DB_AUTH_PASSWORD: 123
       REDIS_HOST: cache
       SECURE_REDIS_HOST: cache
       QUEUE_REDIS_HOST: cache
@@ -43,7 +46,7 @@ services:
       ES_WORKFLOW_ACTION_MOCK: "false"
       HEIMDALL_WORKFLOWS_MOCK: "false"
       MUTEX_MOCK: "false"
-      APP_CONTEXT: dev
+      APP_MODE: dev
   api_db:
     image: mysql:5.6
     ports:

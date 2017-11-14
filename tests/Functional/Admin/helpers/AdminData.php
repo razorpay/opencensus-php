@@ -8,7 +8,7 @@ return [
 
     'testCreateAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'                  => 'test admin',
@@ -42,7 +42,7 @@ return [
 
     'testCreateAdminWithWrongEmailDomain' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'               => 'test admin',
@@ -77,7 +77,7 @@ return [
 
     'testCreateAdminWithExistingEmail' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'               => 'test admin',
@@ -111,7 +111,7 @@ return [
 
     'testCreateAdminWithExistingEmailOfDeletedAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'                  => 'test admin',
@@ -144,7 +144,7 @@ return [
 
     'testGetAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admin/%s/fetch',
             'method' => 'get',
         ],
         'response' => [
@@ -159,7 +159,7 @@ return [
 
     'testEditAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admin/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test',
@@ -177,7 +177,7 @@ return [
 
     'testEditAdminOnAppAuth' => [
         'request' => [
-            'url' => '/orgs/%s/admin-app-auth/%s',
+            'url' => '/admin-app-auth/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test',
@@ -195,7 +195,7 @@ return [
 
     'testDeleteAllRolesAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admin/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test',
@@ -210,7 +210,7 @@ return [
 
     'testDeleteAllGroupsAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admin/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test',
@@ -225,7 +225,7 @@ return [
 
     'testDeleteAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admin/%s',
             'method' => 'delete',
         ],
         'response' => [
@@ -238,7 +238,7 @@ return [
 
     'testDeleteAdminFailed' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admin/%s',
             'method' => 'delete',
         ],
         'response' => [
@@ -251,7 +251,7 @@ return [
 
     'testGetMultipleAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'get',
         ],
         'response' => [
@@ -264,10 +264,10 @@ return [
 
     'testGetCurrentAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/current_admin',
+            'url' => '/current_admin',
             'method' => 'post',
             'content' => [
-                'token' => 'secondToken',
+                'token' => 'secondTokenAdminToken1234',
             ],
         ],
         'response' => [
@@ -292,7 +292,7 @@ return [
 
     'testLockedAdminAccess' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admin/%s/fetch',
             'method' => 'GET',
             'content' => []
         ],
@@ -325,7 +325,7 @@ return [
 
     'testLoginUserDoesNotExist' => [
         'request' => [
-            'url' => '/orgs/%s/admin/authenticate',
+            'url' => '/admin/authenticate',
             'method' => 'post',
             'content' => [
                 'username' => 'test admin not exist',
@@ -369,7 +369,7 @@ return [
 
     'testLoginOauth' => [
         'request' => [
-            'url' => '/orgs/%s/admin/oauth_login',
+            'url' => '/admin/oauth_login',
             'method' => 'post',
             'content' => [
                 'email' => 'test@email.com',
@@ -385,7 +385,7 @@ return [
 
     'testFailedLoginOauth' => [
         'request' => [
-            'url' => '/orgs/%s/admin/oauth_login',
+            'url' => '/admin/oauth_login',
             'method' => 'post',
             'content' => [
                 'email' => 'test@email.com',
@@ -407,7 +407,6 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED,
         ],
     ],
-
     'testGetAdminByEmailOnAppAuth' => [
         'request' => [
             'url'     => '/admins/get-multiple-app-auth?email=testadmin@rzp.com',
@@ -415,16 +414,15 @@ return [
             'content' => [],
         ],
         'response' => [
-            'content'     => [
-                'name' => 'test admin app auth'
+            'content'   => [
+                'name'  => 'test admin app auth'
             ],
             'status_code' => 200,
         ],
     ],
-
     'testSelfEditAdminFailed' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admin/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test asd',
@@ -449,7 +447,7 @@ return [
 
     'testForgotPasswordSuccess' => [
         'request' => [
-            'url' => '/orgs/%s/admin/forgot_password',
+            'url' => '/admin/forgot_password',
             'method' => 'post',
             'content' => [
                 'email' => 'abc@razorpay.com',
@@ -465,7 +463,7 @@ return [
 
     'testAdminUnlockOnResetPasswordSuccess' => [
         'request' => [
-            'url' => '/orgs/%s/admin/reset_password',
+            'url' => '/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -482,7 +480,7 @@ return [
 
     'testForgotPasswordInvalidUser' => [
         'request' => [
-            'url' => '/orgs/%s/admin/forgot_password',
+            'url' => '/admin/forgot_password',
             'method' => 'post',
             'content' => [
                 'email' => 'xyz@razorpay.com',
@@ -505,7 +503,7 @@ return [
 
     'testForgotPasswordResetUrlBlank' => [
         'request' => [
-            'url' => '/orgs/%s/admin/forgot_password',
+            'url' => '/admin/forgot_password',
             'method' => 'post',
             'content' => [
                 'email' => 'xyz@razorpay.com',
@@ -527,7 +525,7 @@ return [
 
     'testPasswordResetSuccess' => [
         'request' => [
-            'url' => '/orgs/%s/admin/reset_password',
+            'url' => '/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -544,7 +542,7 @@ return [
 
     'testAdminUnlockFailOnPasswordResetFail' => [
         'request' => [
-            'url' => '/orgs/%s/admin/reset_password',
+            'url' => '/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -570,7 +568,7 @@ return [
 
     'testPasswordResetTokenMismatch' => [
         'request' => [
-            'url' => '/orgs/%s/admin/reset_password',
+            'url' => '/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -596,7 +594,7 @@ return [
 
     'testPasswordResetPasswordMismatch' => [
         'request' => [
-            'url' => '/orgs/%s/admin/reset_password',
+            'url' => '/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -620,7 +618,7 @@ return [
 
     'testPasswordResetInvalidPassword' => [
         'request' => [
-            'url' => '/orgs/%s/admin/reset_password',
+            'url' => '/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -644,7 +642,7 @@ return [
 
     'testPasswordResetMaxRetain' => [
         'request' => [
-            'url' => '/orgs/%s/admin/reset_password',
+            'url' => '/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -668,12 +666,13 @@ return [
 
     'testPasswordResetInvalidAuthType' => [
         'request' => [
-            'url' => '/orgs/%s/admin/reset_password',
+            'url' => '/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
                 'password'              => 'M!2#uWdx',
                 'password_confirmation' => 'M!2#uWdx',
+                'token'                 => 'dummytoken',
             ],
         ],
         'response'  => [
@@ -692,7 +691,7 @@ return [
 
     'testAdminLogout' => [
         'request' => [
-            'url'     => '/orgs/%s/admin/logout',
+            'url'     => '/admin/logout',
             'method'  => 'post',
             'content' => [],
         ],
@@ -706,7 +705,7 @@ return [
 
     'testCreateAdminWithoutPassword' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'                  => 'test admin',
@@ -737,7 +736,7 @@ return [
 
     'testCreateAdminWithOAuth' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'                  => 'test admin',
@@ -795,4 +794,16 @@ return [
             'terminal_selection_log_verbose' => '1',
         ],
     ],
+
+    'testAdminAllEntitiesApi' => [
+        'request' => [
+            'url'       => '/admin/entities/all',
+            'method'    => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'entities' => []
+            ]
+        ]
+    ]
 ];

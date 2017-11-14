@@ -2,19 +2,24 @@
 
 namespace RZP\Models\Feature;
 
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-
 
 class Service extends Base\Service
 {
-    public function addFeatures($input)
+    public function addFeatures(array $input)
     {
         $featureParams = $this->buildFeatureParams($input);
 
-        $features = $featureParams->map(function ($item)
+        $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
+
+        $featureCore = new Core;
+
+        $features = $featureParams->map(function ($item) use ($featureCore, $shouldSync)
         {
-            return (new Core)->create($item);
+            return $featureCore->create($item, $shouldSync);
         });
 
         return $features->toArray();
@@ -32,11 +37,16 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function deleteFeature(string $entityId, string $featureName)
+    public function deleteFeature(string $entityId, string $featureName, array $input)
     {
         $feature = $this->repo->feature->findByEntityIdAndNameOrFail($entityId, $featureName);
 
-        (new Core)->delete($entityId, $feature);
+        $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
+
+        (new Core)->delete($feature, $shouldSync);
+
+        // We delete the tag also along with feature.
+        (new Merchant\Service)->deleteTag($entityId, $feature->getName());
 
         return $feature->toArrayDeleted();
     }
@@ -46,6 +56,8 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::FEATURE_MULTI_ASSIGN_REQUEST, $input);
 
         $entityIds = $input[Constants::ENTITY_IDS];
+
+        $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
         $response = new Base\Collection;
 
@@ -59,7 +71,7 @@ class Service extends Base\Service
 
             try
             {
-                $feature = (new Core)->create($featureParam);
+                $feature = (new Core)->create($featureParam, $shouldSync);
 
                 $response->push($feature);
             }
@@ -82,6 +94,8 @@ class Service extends Base\Service
 
         $entityIds = $input[Constants::ENTITY_IDS];
 
+        $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
+
         $featureName = $input[Entity::NAME];
 
         $response = new Base\Collection;
@@ -96,7 +110,7 @@ class Service extends Base\Service
             {
                 $response->push($feature);
 
-                $this->repo->deleteOrFail($feature);
+                (new Core)->delete($feature, $shouldSync);
             }
         }
 
@@ -129,7 +143,100 @@ class Service extends Base\Service
         return $data;
     }
 
-    private function buildFeatureParams($input)
+    /**
+     * Returns all the questions required for onboarding features
+     *
+     * @param  array $input
+     *
+     * @return array
+     */
+    public function getOnboardingDetails(array $input): array
+    {
+        $response['questions'] = $this->getOnboardingQuestions($input);
+
+        $response['submissions'] = $this->getOnboardingSubmissions();
+
+        return $response;
+    }
+
+    /**
+     * Returns all the questions required for onboarding features
+     *
+     * @param  array $input
+     *
+     * @return array
+     */
+    public function getOnboardingQuestions(array $input): array
+    {
+        $features = $input[Constants::FEATURES];
+
+        $response = [];
+
+        foreach ($features as $feature)
+        {
+            $questionMap = Constants::getFeatureQuestions($feature);
+
+            if (count($questionMap) > 0)
+            {
+                $response[$feature] = $questionMap;
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * Saves the merchant responses to the onboarding questions
+     *
+     * @param array  $input
+     * @param string $feature
+     *
+     * @return bool
+     * @throws Exception\BadRequestException
+     */
+    public function postOnboardingSubmissions(array $input, string $feature): bool
+    {
+        $status = (new Core)->postOnboardingSubmissions($this->merchant, $input, $feature);
+
+        return $status;
+    }
+
+    /**
+     * Updates the merchant responses to the onboarding questions
+     *
+     * @param array  $input
+     * @param string $feature
+     *
+     * @return bool
+     */
+    public function updateOnboardingSubmissions(array $input, string $feature): bool
+    {
+        $merchantId = $input['merchant_id'];
+
+        $merchant = $this->repo->merchant->findByPublicId($merchantId);
+
+        unset($input['merchant_id']);
+
+        $data[$feature] = $input;
+
+        $status = (new Core)->processOnboardingResponses(Constants::UPDATE, $data, $merchant);
+
+        return $status;
+    }
+
+    /**
+     * @param string|null $feature
+     *
+     * @return array
+     */
+    public function getOnboardingSubmissions(string $feature = null)
+    {
+        $settings = (new Core)->getOnboardingSubmissions($this->merchant, $feature);
+
+        return $settings;
+    }
+
+    protected function buildFeatureParams($input)
     {
         $featureParams = new Base\Collection;
 
@@ -142,13 +249,68 @@ class Service extends Base\Service
         foreach ($featureNames as $featureName)
         {
             $featureParams->push([
-                Entity::ENTITY_TYPE     => $entityType,
-                Entity::ENTITY_ID       => $entityId,
-                Entity::NAME            => $featureName
+                Entity::ENTITY_TYPE => $entityType,
+                Entity::ENTITY_ID   => $entityId,
+                Entity::NAME        => $featureName
             ]);
         }
 
         return $featureParams;
+    }
+
+    /**
+     * Returns the feature activation requests based on the status
+     *
+     * @param array $input
+     *
+     * @return mixed
+     */
+    public function getFeatureOnboardingRequests(array $input)
+    {
+        $status = $input['status'];
+
+        $merchantDetails = $this->repo->merchant_detail->getFeatureOnboardingRequestsByStatus($status);
+
+        return $merchantDetails;
+    }
+
+    /**
+     * @param string $featureName
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function updateFeatureActivationStatus(string $featureName, array $input): array
+    {
+        $status = $input['status'];
+
+        $merchantId = $input['merchant_id'];
+
+        $response = (new Core)->updateFeatureActivationStatus($merchantId, $featureName, $status);
+
+        return $response;
+    }
+
+    /**
+     * @param string $featureName
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function getFeatureActivationStatus(string $featureName, array $input)
+    {
+        $merchantId = $input['merchant_id'];
+
+        $merchant = $this->repo->merchant->findByPublicId($merchantId);
+
+        $status =  $this->repo->merchant_detail->getFeatureActivationStatus(
+            $merchant,
+            $featureName
+        );
+
+        $response['status'] = $status;
+
+        return $response;
     }
 }
 

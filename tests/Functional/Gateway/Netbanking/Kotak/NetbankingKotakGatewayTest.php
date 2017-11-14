@@ -63,9 +63,29 @@ class NetbankingKotakGatewayTest extends TestCase
         $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
-    public function testTpvPayment()
+    public function testAmountTampering()
     {
-        $this->fixtures->merchant->enableTPV();
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['Amount'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultNetbankingPaymentArray('KKBK');
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testTpvPayment($tpvFeatureEnabled = false)
+    {
+        if ($tpvFeatureEnabled === false)
+        {
+            $this->fixtures->merchant->enableTPV();
+        }
 
         $this->fixtures->create('gateway_rule', [
             'method'           => 'netbanking',
@@ -92,8 +112,6 @@ class NetbankingKotakGatewayTest extends TestCase
 
         $this->assertArrayHasKey('bank_payment_id', $payment);
         $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
-
-        $this->fixtures->merchant->disableTPV();
     }
 
     protected function createTpvOrderForBank($bank)
@@ -138,11 +156,16 @@ class NetbankingKotakGatewayTest extends TestCase
         // Make 6 payments
         foreach (range(0,2) as $value)
         {
-            // 3 tpv payments
+            // 3 non tpv payments
             $this->testPayment();
+        }
 
-            // 3 nonTpv payments
-            $this->testTpvPayment();
+        $tpvEnabled = $this->fixtures->merchant->enableTPV();
+
+        foreach (range(0,2) as $value)
+        {
+            // 3 tpv payment
+            $this->testTpvPayment($tpvEnabled);
         }
 
         $payments = $this->getEntities('payment', [], true);

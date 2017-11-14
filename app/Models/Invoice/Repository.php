@@ -29,6 +29,7 @@ class Repository extends Base\Repository
     ];
 
     protected $entityFetchParamRules = [
+        Entity::TYPE              => 'sometimes|string|custom',
         Entity::PAYMENT_ID        => 'sometimes|string|min:14|max:18',
         Entity::RECEIPT           => 'sometimes|string|min:1|max:40',
         Entity::CUSTOMER_ID       => 'sometimes|string|min:14|max:19',
@@ -38,7 +39,6 @@ class Repository extends Base\Repository
         Entity::BATCH_ID          => 'sometimes|string|min:14|max:20',
         Entity::USER_ID           => 'sometimes|alpha_num',
         Entity::STATUS            => 'sometimes|string',
-        Entity::TYPE              => 'sometimes|string|custom',
         Entity::TYPES             => 'sometimes|array|min:1|max:2|custom',
         Entity::CUSTOMER_NAME     => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:255',
         Entity::CUSTOMER_CONTACT  => 'sometimes|contact_syntax',
@@ -47,7 +47,7 @@ class Repository extends Base\Repository
         Entity::SUBSCRIPTION_ID   => 'sometimes|string|min:14|max:18',
         EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
         EsRepository::SEARCH_HITS => 'sometimes|boolean',
-        self::EXPAND . '.*'       => 'string|in:payments,',
+        self::EXPAND . '.*'       => 'string|in:payments,payments.card,user',
     ];
 
     protected $appFetchParamRules = [
@@ -199,6 +199,39 @@ class Repository extends Base\Repository
         }
 
         return $invoices->first();
+    }
+
+    /**
+     * @param Subscription\Entity $subscription
+     *
+     * @return Entity
+     * @throws Exception\LogicException
+     */
+    public function fetchLatestInvoiceOfPendingSubscription(Subscription\Entity $subscription)
+    {
+        if ($subscription->isPending() === false)
+        {
+            throw new Exception\LogicException(
+                'This should have been called only for a pending subscription',
+                ErrorCode::SERVER_ERROR_SUBSCRIPTION_NOT_PENDING,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                ]);
+        }
+
+        $invoice = $this->newQuery()
+                        ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
+                        ->where(Entity::STATUS, '=', Status::ISSUED)
+                        ->where(Entity::BILLING_START, '=', $subscription->getCurrentStart())
+                        ->where(Entity::BILLING_END, '=', $subscription->getCurrentEnd())
+                        ->where(function($query)
+                        {
+                            $query->where(Entity::SUBSCRIPTION_STATUS, '!=', Status::HALTED)
+                                  ->orWhereNull(Entity::SUBSCRIPTION_STATUS);
+                        })
+                        ->firstOrFail();
+
+        return $invoice;
     }
 
     /**

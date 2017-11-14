@@ -9,6 +9,8 @@ class Entity extends Base\PublicEntity
 {
     const ID                = 'id';
     const MERCHANT_ID       = 'merchant_id';
+    const ENTITY_ID         = 'entity_id';
+    const ENTITY_TYPE       = 'entity_type';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
     const CHANNEL           = 'channel';
@@ -16,19 +18,24 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID    = 'transaction_id';
     const SETTLEMENT_ID     = 'settlement_id';
 
+    // For report
+    const DISPUTE_ID        = 'dispute_id';
+    const ENTITY            = 'entity';
+
     protected static $sign = 'adj';
 
     protected $entity = 'adjustment';
 
     protected $generateIdOnCreate = true;
 
-    protected $fillable = array(
+    protected $fillable = [
         self::AMOUNT,
         self::DESCRIPTION,
         self::CURRENCY,
-        self::SETTLEMENT_ID);
+        self::SETTLEMENT_ID,
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::ID,
         self::MERCHANT_ID,
         self::AMOUNT,
@@ -37,10 +44,13 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::TRANSACTION_ID,
         self::SETTLEMENT_ID,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
         self::CREATED_AT,
-        self::UPDATED_AT);
+        self::UPDATED_AT
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::AMOUNT,
@@ -49,10 +59,17 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::TRANSACTION_ID,
         self::SETTLEMENT_ID,
-        self::CREATED_AT);
+        self::CREATED_AT
+    ];
 
-    protected static $modifiers = array(
-        self::SETTLEMENT_ID);
+    protected static $modifiers = [
+        self::SETTLEMENT_ID
+    ];
+
+    protected $defaults = [
+        self::ENTITY_ID   => null,
+        self::ENTITY_TYPE => null,
+    ];
 
     public function getChannel()
     {
@@ -72,6 +89,21 @@ class Entity extends Base\PublicEntity
     protected function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    public function getTransactionId()
+    {
+        return $this->getAttribute(self::TRANSACTION_ID);
     }
 
     public function setAmount($amount)
@@ -97,6 +129,21 @@ class Entity extends Base\PublicEntity
     public function setChannel($channel)
     {
         $this->setAttribute(self::CHANNEL, $channel);
+    }
+
+    public function setCreatedAt($createdAt)
+    {
+        $this->setAttribute(self::CREATED_AT, $createdAt);
+    }
+
+    public function setUpdatedAt($updatedAt)
+    {
+        $this->setAttribute(self::UPDATED_AT, $updatedAt);
+    }
+
+    public function entity()
+    {
+        return $this->morphTo();
     }
 
     protected function modifySettlementId(&$input)

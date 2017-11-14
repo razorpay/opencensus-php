@@ -2,15 +2,75 @@
 
 namespace RZP\Gateway\Netbanking\Icici;
 
+use RZP\Models\Customer\Token;
+
 class Status
 {
-    const SUCCESS    = 'SUCCESS';
-    const FAILED     = 'FAILED';
-    // TODO: Get exact meanings and leave comments on
-    // how we get these statuses
-    const REVERSED   = 'Reversed';
-    const IN_PROCESS = 'IN PROCESS';
-    const ERROR      = 'Error';
+    /**
+     * This status appears in verify when the payment is successful on the bank's end
+     */
+    const SUCCESS     = 'SUCCESS';
 
-    const Y = 'Y';
+    /**
+     * This status appears in verify when the payment is failed on the bank's end
+     */
+    const FAILED      = 'FAILED';
+
+    /**
+     * This status appears in verify when the payment has been reversed by the bank
+     */
+    const REVERSED    = 'Reversed';
+
+    /**
+     * This status appears in verify when the payment is still in process
+     */
+    const IN_PROCESS  = 'IN PROCESS';
+
+    /**
+     * This status appears when there's an error in the payment, and is similar to a failure
+     */
+    const ERROR       = 'Error';
+
+    const Y           = 'Y';
+    const N           = 'N';
+
+    /**
+     * Indicates that the SI registration was successful
+     */
+    const SI_SUCCESS            = 'Success';
+
+    /**
+     * Indicates that the SI registration was a failure
+     */
+    const SI_FAILED             = 'failed';
+
+    /**
+     * This happens when verify indicates that no such payment was scheduled
+     */
+    const PAYMENT_NOT_SCHEDULED = 'nosuchpaymentscheduled';
+
+    const SI_FAILED_STATUSES    = [self::SI_FAILED, self::PAYMENT_NOT_SCHEDULED];
+
+    const SI_STATUS_TO_RECURRING_STATUS_MAP = [
+        self::Y => Token\RecurringStatus::CONFIRMED,
+        self::N => Token\RecurringStatus::REJECTED
+    ];
+
+    /**
+     * Sets the SI Message
+     *
+     * @param string $status
+     * @return string
+     */
+    public static function getSiMessage(string $status): string
+    {
+        return ($status === self::Y) ? 'Success' : 'Failure';
+    }
+
+    public static function isSiStatusFailure(string $status): bool
+    {
+        $status = strtolower($status);
+
+        return (in_array($status, self::SI_FAILED_STATUSES, true) === true);
+    }
 }

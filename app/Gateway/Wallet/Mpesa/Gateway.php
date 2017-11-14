@@ -6,22 +6,21 @@ use SoapFault;
 use SoapClient;
 use SoapHeader;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Exception;
-use Lib\PhoneBook;
 use SimpleXMLElement;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
+use Razorpay\Trace\Logger;
+use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\Payment\Processor\Wallet;
-
-use libphonenumber\PhoneNumberUtil;
+use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
 {
@@ -65,6 +64,10 @@ class Gateway extends Base\Gateway
         $this->assertPaymentId($input['payment']['id'],
                                $content[ResponseFields::TRANSACTION_REFERENCE]);
 
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($input['gateway']['txnAmt'], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
+
         $wallet = $this->repo->findByPaymentIdAndAction(
                     $input['payment']['id'],
                     Action::AUTHORIZE);
@@ -83,6 +86,8 @@ class Gateway extends Base\Gateway
      * prevent user tampering with the data while making a payment.
      *
      * @param array $input
+     * @param Base\Entity $wallet
+     * @throws Exception\GatewayErrorException
      */
     protected function verifyCallback(array $input, Base\Entity $wallet)
     {
@@ -218,13 +223,63 @@ class Gateway extends Base\Gateway
         $this->checkGatewayResponse($status);
     }
 
+    public function verifyRefund(array $input)
+    {
+        parent::verify($input);
+
+        $processedRefunds = [
+            '897PijT4dsJKJI',
+            '89qPekio4ZuHYK',
+            '8bXyVNxWy8M596',
+            '8batpufoOmwBlz',
+            '8bb3Y0LjF4Wctc',
+            '8bbUlUpMxjIXvz',
+            '8brMCJoXOYkcVn',
+            '8ejXKlFFSMSmHn',
+            '8gFMNPoOUxnBTS',
+        ];
+
+        if (in_array($input['payment']['id'], $processedRefunds) === true)
+        {
+            return true;
+        }
+
+        throw new Exception\RuntimeException(
+            'This refund should not be processed by verify refund',
+            [
+                'refund_id'  => $input['refund']['id'],
+                'payment_id' => $input['payment']['id'],
+                'gateway'    => $this->gateway,
+            ]);
+    }
+
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
         $data = $this->getVerifyRequestData($verify);
 
-        $verify->verifyResponse = $this->sendSoapRequest($data,
-                                                   SoapAction::QUERY_API,
-                                                   SoapMethod::QUERY_PAYMENT_TRANSACTION);
+        try
+        {
+            $verify->verifyResponse = $this->sendSoapRequest($data,
+                                                             SoapAction::QUERY_API,
+                                                             SoapMethod::QUERY_PAYMENT_TRANSACTION);
+        }
+        catch (\Exception $e)
+        {
+            //
+            // When soap faults or soap error's happen during verify, we must retry the verification call
+            //
+
+            $data = [
+                'payment_id' => $verify->input['payment']['id'],
+                'gateway'    => $this->gateway,
+            ];
+
+            $this->trace->traceException($e, Logger::INFO, TraceCode::GATEWAY_VERIFY_ERROR, $data);
+
+            $data['error_message'] = $e->getMessage();
+
+            throw new Exception\PaymentVerificationException($data, $verify, VerifyAction::RETRY);
+        }
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -239,8 +294,6 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment(Verify $verify)
     {
-        $content = $verify->verifyResponseContent;
-
         $status = $this->getVerifyStatus($verify);
 
         $verify->status = $status;
@@ -367,7 +420,7 @@ class Gateway extends Base\Gateway
         // This is to maintain the backward compatibility
         // Current terminals have only `gateway_merchant_id` assigned
         // New terminals will have `gateway_merchant_id` and `gateway_merchant_id2`
-        // with values swaped. If it's an old terminal then `merchant_id2` will be empty
+        // with values swapped. If it's an old terminal then `merchant_id2` will be empty
         // and filler3 should not be sent in that case.
         if (empty($this->getMerchantId2()) === false)
         {
@@ -556,17 +609,19 @@ class Gateway extends Base\Gateway
 
     protected function sendSoapRequest(array $data, string $soapRoot, string $method)
     {
+        $context = [
+            'payment_id'  => $this->input['payment']['id'],
+            'gateway'     => $this->gateway,
+            'soap_method' => $method,
+            'request'     => [
+                'soap_root' => $soapRoot,
+                'data'      => $data
+            ],
+        ];
+
         $this->trace->info(
             TraceCode::GATEWAY_SOAP_REQUEST,
-            [
-                'payment_id'  => $this->input['payment']['id'],
-                'gateway'     => $this->gateway,
-                'soap_method' => $method,
-                'request'     => [
-                    'soap_root' => $soapRoot,
-                    'data'      => $data
-                ],
-            ]);
+            $context);
 
         try
         {
@@ -576,34 +631,28 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $e)
         {
+            // Handle soapfaults gracefully
             if (isset($client) === true)
             {
-                $this->trace->error(
-                    TraceCode::GATEWAY_SOAP_FAULT,
-                    [
-                        'payment_id'    => $this->input['payment']['id'],
-                        'gateway'       => $this->gateway,
-                        'soap_method'   => $method,
-                        'soap_response' => $client->__getLastResponse()
-                    ]);
+                $context['soap_response'] = $client->__getLastResponse();
             }
+
+            $this->trace->error(TraceCode::GATEWAY_SOAP_FAULT, $context);
 
             $this->handleSoapFault($e, $method);
         }
+        catch (\Exception $e)
+        {
+            $context['error_message'] = $e->getMessage();
+
+            //
+            // Non SoapFaults can be handled differently
+            // We simply trace this at a warning level
+            //
+            $this->trace->warning(TraceCode::GATEWAY_SOAP_ERROR, $context);
+        }
 
         return json_decode(json_encode($response), true);
-    }
-
-    protected function getSoapHeaders()
-    {
-        $wsseNs = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd';
-
-        $headers = [
-            new SoapHeader($wsseNs, Constants::USER_ID, $this->getSoapUserId()),
-            new SoapHeader($wsseNs, Constants::PASSWORD, $this->getSoapPassword())
-        ];
-
-        return $headers;
     }
 
     protected function handleSoapFault(SoapFault $e, string $method)
@@ -619,12 +668,24 @@ class Gateway extends Base\Gateway
             ErrorCode::GATEWAY_ERROR_SOAP_ERROR, null, $errorMessage, [], $e);
     }
 
+    protected function getSoapHeaders()
+    {
+        $wsseNs = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd';
+
+        $headers = [
+            new SoapHeader($wsseNs, Constants::USER_ID, $this->getSoapUserId()),
+            new SoapHeader($wsseNs, Constants::PASSWORD, $this->getSoapPassword())
+        ];
+
+        return $headers;
+    }
+
     protected function checkGatewayResponse(string $status)
     {
-        if ($status !== StatusCode::SUCCESS)
+        if (StatusCode::isStatusSuccess($status) === false)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                StatusCode::getErrorCode($status),
                 $status,
                 StatusCode::getErrorMessage($status)
             );

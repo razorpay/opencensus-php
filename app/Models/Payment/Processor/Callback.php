@@ -94,7 +94,14 @@ trait Callback
                 // Reload in case it's processed by another thread.
                 $this->repo->reload($payment);
 
-                if ($payment->isCreated() === false)
+                $isCorporatePayment = $payment->terminal->isCorporate();
+
+                // In case of non - corporate payments, this case is fine.
+                // In case of corporate and payment already having been authorized
+                if ((($payment->isCreated() === false) and
+                     ($isCorporatePayment === false)) or
+                    (($isCorporatePayment === true) and
+                     ($payment->hasBeenAuthorized() === true)))
                 {
                     $this->app['segment']->trackPayment(
                         $payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
@@ -103,7 +110,9 @@ trait Callback
                         ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
                 }
 
-                $this->processPaymentCallback($payment, $gatewayInput);
+                $isS2sCallback = true;
+
+                $this->processPaymentCallback($payment, $gatewayInput, $isS2sCallback);
 
                 $this->autoCapturePaymentIfApplicable($payment);
             },
@@ -138,15 +147,6 @@ trait Callback
      * This could be due to browser refresh by the customer or
      * s2s callback notification being delivered by the gateway before
      * browser hits the callback route etc.
-     *
-     * @TODO
-     * Another case that needs to be explicitly handled is the
-     * case of a payment authorizaion occurring due to
-     * a pending authorization corporate netbanking payment
-     * that was marked failed due to the pending status.
-     *
-     * Once a checker approval comes in callback will be fired
-     * which must be accepted and sent as success.
      */
     protected function processPaymentCallbackSecondTime($payment)
     {
@@ -175,7 +175,7 @@ trait Callback
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
     }
 
-    protected function processPaymentCallback($payment, $gatewayInput)
+    protected function processPaymentCallback($payment, $gatewayInput, $s2sCallback = false)
     {
         $input['payment'] = $payment->toArrayGateway();
         $input['gateway'] = $gatewayInput;
@@ -185,10 +185,11 @@ trait Callback
             $input['customer'] = $this->repo->customer->getGlobalCustomerForPayment($payment);
         }
 
-        if ($payment->getGlobalTokenId() !== null)
+        $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
+
+        if ($token !== null)
         {
-            $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
-            $input['token'] = $token->toArray();
+            $input['token'] = $token;
         }
 
         if ($payment->hasCard())
@@ -196,6 +197,13 @@ trait Callback
             $card = $this->repo->card->fetchForPayment($payment);
 
             $input['card'] = $card->toArray();
+        }
+
+        // In case of axis corporate payments, the s2s call back return unencrypted
+        // data, however, the normal callback return parameters which are encrypted.
+        if ($s2sCallback === true)
+        {
+            $input['s2s'] = true;
         }
 
         try
@@ -232,12 +240,14 @@ trait Callback
 
                 $isCorporatePayment = $payment->terminal->isCorporate();
 
+                //
                 // In case of non - corporate payments, this case is fine.
                 // In case of corporate and payment already having been authorized
-                if ((($payment->isCreated() === false) and
-                    ($isCorporatePayment === false)) or
+                //
+                if ((($isCorporatePayment === false) and
+                     ($payment->isCreated() === false)) or
                     (($isCorporatePayment === true) and
-                    ($payment->hasBeenAuthorized() === true)))
+                     ($payment->hasBeenAuthorized() === true)))
                 {
                     return $this->processPaymentCallbackSecondTime($payment);
                 }
@@ -264,12 +274,12 @@ trait Callback
             $this->validateCallbackInputIfApplicable($input);
 
             // TODO: Better name suggestions
-            $data = $this->callGatewayFunction('callbackOtpSubmit', $input);
+            $data = $this->callGatewayFunction(Payment\Action::CALLBACK_OTP_SUBMIT, $input);
 
             $this->postPaymentOtpCallbackProcessing($input, $data);
 
             // Send a request to topup if balance is insufficient
-            $this->callGatewayFunction('checkBalance', $input);
+            $this->callGatewayFunction(Payment\Action::CHECK_BALANCE, $input);
         }
         else
         {

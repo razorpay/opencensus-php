@@ -2,47 +2,50 @@
 
 namespace RZP\Models\Merchant;
 
+use Carbon\Carbon;
+use Config;
 use DB;
 use Mail;
-use Config;
-use Carbon\Carbon;
-
-use RZP\Exception;
-use RZP\Models\Key;
-use RZP\Models\Base;
-use RZP\Models\Offer;
-use RZP\Models\Coupon;
+use Razorpay\OAuth\Client as OAuthClient;
+use Razorpay\OAuth\Token as OAuthToken;
+use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
-use RZP\Models\Feature;
-use RZP\Models\Schedule;
-use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
-use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
+use RZP\Models\Admin\Org;
 use RZP\Models\BankAccount;
-use RZP\Base\RuntimeManager;
-use RZP\Models\Merchant\Webhook;
-use RZP\Models\Settlement\Holidays;
-use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Base;
+use RZP\Models\Coupon;
+use RZP\Models\Feature;
+use RZP\Models\Key;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\SlackActions as SlackActions;
-use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
+use RZP\Models\Merchant\Webhook;
+use RZP\Models\Offer;
+use RZP\Models\Schedule;
+use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Settlement\Holidays;
+use RZP\Models\User;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
     use Notify;
 
     const COUPON_RESPONSE = 'apply_coupon';
+    const OAUTH_MAIL      = 'oauth_mail';
 
     /**
      * Creates a merchant and saves in database
      *
      * @param  array            $input
-     * @return Merchant\Entity
+     * @return array
      */
-    public function create(array $input)
+    public function create(array $input): array
     {
         if (empty($input[Entity::ADMINS]) === false)
         {
@@ -74,9 +77,24 @@ class Service extends Base\Service
         return $merchantData;
     }
 
-    public function createSubMerchant(array $input)
+    public function createSubMerchant(array $input): array
     {
         $merchant = $this->merchant;
+
+        $linkedAccount = (bool) ($input['account'] ?? false);
+
+        if (($linkedAccount === false) and
+            ($merchant->isFeatureEnabled(Feature\Constants::AGGREGATOR) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_AGGREGRATOR);
+        }
+
+        $ownerId = $input['user_id'];
+
+        unset($input['user_id']);
+
+        unset($input['account']);
 
         $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant);
 
@@ -87,11 +105,41 @@ class Service extends Base\Service
             $this->sendSubMerchantCreationMail($subMerchant, $merchant);
         }
 
+        if ($linkedAccount === false)
+        {
+            $this->addLinkedAccountReferral($merchant, $subMerchant);
+
+            $this->attachSubMerchantOwner($ownerId, $subMerchant);
+        }
+
         $subMerchantData = $this->saveMerchantAndApplyCoupon($subMerchant, $input);
 
         return $subMerchantData;
     }
 
+    /**
+     * @param string $ownerId
+     * @param Entity $subMerchant
+     */
+    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant)
+    {
+        $userMerchantMappingInputData = [
+            'action'      => 'attach',
+            'role'        => 'owner',
+            'merchant_id' => $subMerchant->id,
+        ];
+
+        (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
+    }
+
+    private function addLinkedAccountReferral($aggregratorMerchant, $account)
+    {
+        $tagInputData = [
+            'tags' => ['ref-'.$aggregratorMerchant->id],
+        ];
+
+        $this->addTags($account->id, $tagInputData);
+    }
     protected function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
     {
         $this->repo->saveOrFail($merchant);
@@ -131,6 +179,13 @@ class Service extends Base\Service
 
     public function edit($id, array $input)
     {
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT,
+            [
+                'merchant_id' => $id,
+                'input'       => $input,
+            ]);
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if (empty($input[Entity::GROUPS]) === false)
@@ -168,11 +223,17 @@ class Service extends Base\Service
         Mail::queue($createSubMerchantMail);
     }
 
-    public function editEmail($id, array $input)
+    public function editEmail($id, array $input) :array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
+        $orignalEmail = $merchant->getEmail();
+
         $merchant = (new Merchant\Core)->editEmail($merchant, $input);
+
+        $newEmail = $merchant->getEmail();
+
+        (new Merchant\Core)->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail);
 
         return $merchant->toArrayPublic();
     }
@@ -318,6 +379,13 @@ class Service extends Base\Service
 
     public function assignPricingPlan($id, $input)
     {
+        $this->trace->info(
+            TraceCode::MERCHANT_PRICING_PLAN_ASSIGN_REQUEST,
+            [
+                'merchant_id' => $id,
+                'input'       => $input
+            ]);
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if (isset($input['pricing_plan_id']) === false)
@@ -452,6 +520,12 @@ class Service extends Base\Service
 
     public function activate($id)
     {
+        $this->trace->info(
+            TraceCode::MERCHANT_ACTIVATE_REQUEST,
+            [
+                'merchant_id' => $id,
+            ]);
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $act = new Activate($this->app);
@@ -494,6 +568,12 @@ class Service extends Base\Service
 
     public function liveEnable($id)
     {
+        $this->trace->info(
+            TraceCode::MERCHANT_LIVE_ENABLE_REQUEST,
+            [
+                'merchant_id' => $id,
+            ]);
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if ($merchant->isActivated() === false)
@@ -532,6 +612,11 @@ class Service extends Base\Service
 
     public function liveDisable($id)
     {
+        $this->trace->info(
+            TraceCode::MERCHANT_LIVE_DISABLE_REQUEST,
+            [
+                'merchant_id' => $id,
+            ]);
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if ($merchant->isActivated() === false)
@@ -564,6 +649,13 @@ class Service extends Base\Service
 
     public function action($id, array $input)
     {
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT_ACTION,
+            [
+                'merchant_id' => $id,
+                'input'       => $input,
+            ]);
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $merchant = (new Merchant\Core)->action($merchant, $input);
@@ -667,7 +759,7 @@ class Service extends Base\Service
     {
         $formattedMethods = (new Methods\Core)->getFormattedMethods($this->merchant);
 
-        // licious has dependency on this field in their android app
+        // Licious has dependency on this field in their android app
         if ($this->merchant->getId() === '5yZ76HWrvL9g2l')
         {
             $formattedMethods['http_status_code'] = 200;
@@ -993,7 +1085,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function addOrRemoveMerchantFeatures($input)
+    public function addOrRemoveMerchantFeatures(array $input)
     {
         $this->trace->info(
             TraceCode::MERCHANT_FEATURE_UPDATE,
@@ -1001,15 +1093,17 @@ class Service extends Base\Service
 
         $merchant = $this->merchant;
 
+        $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
+
         $merchant->validateInput('feature', $input);
 
         $featuresToAdd = $this->getFeatureNamesToAdd($input['features']);
 
         $featuresToRemove = $this->getFeatureNamesToRemove($input['features']);
 
-        $this->addFeatures($featuresToAdd);
+        $this->addFeatures($featuresToAdd, $shouldSync);
 
-        $this->removeFeatures($featuresToRemove);
+        $this->removeFeatures($featuresToRemove, $shouldSync);
 
         $data = (new Feature\Service)->getFeaturesForEntity($merchant);
 
@@ -1041,8 +1135,9 @@ class Service extends Base\Service
      * used for adding tags to merchant
      * @param string $id
      * @param array $input which contains the tags of the merchant
+     * @param bool $slackNotify
      */
-    public function addTags($id, $input)
+    public function addTags($id, $input, $slackNotify = false)
     {
         (new Validator)->validateInput('addTags', $input);
 
@@ -1055,6 +1150,11 @@ class Service extends Base\Service
         $merchant->retag($tags);
 
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
+        if ($slackNotify === true)
+        {
+            $this->logActionToSlack($merchant, SlackActions::TAGGED, $input);
+        }
 
         return $merchant->tagNames();
     }
@@ -1136,6 +1236,75 @@ class Service extends Base\Service
         return $users;
     }
 
+    public function createBatches(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $batches = (new Merchant\Core)->createBatches($merchant, $input);
+
+        return $batches;
+    }
+
+    public function sendPayoutMailForMultipleMerchants(array $input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_PAYOUT_NOTIFICATION_REQUEST,
+            $input
+        );
+
+        (new Validator)->validateInput('payout_mail', $input);
+
+        $merchantsData = $input['content'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantsData as $merchantData)
+        {
+            try
+            {
+                $merchantId = $merchantData['merchant_id'];
+
+                $email = $merchantData['email'] ?? null;
+
+                $processed = $this->sendPayoutMail($merchantId, $email);
+
+                if ($processed === true)
+                {
+                    $successCount++;
+                }
+                else
+                {
+                    $failedCount++;
+
+                    $failedIds[] = $merchantId;
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response['total'] = count($merchantsData);
+        $response['success'] = $successCount;
+        $response['failed'] = $failedCount;
+        $response['failedIds'] = $failedIds;
+
+        $this->trace->info(
+            TraceCode::MERCHANT_PAYOUT_NOTIFICATION_RESPONSE,
+            $response
+        );
+
+        return $response;
+
+    }
+
     /**
      * Return all submerchants of the master merchant (for aggregator model only)
      *
@@ -1155,11 +1324,35 @@ class Service extends Base\Service
         return array_merge([$merchantId], $merchants->pluck('id')->toArray());
     }
 
+
+    protected function sendPayoutMail(string $merchantId, string $email = null)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        list($from, $to) = $this->getTimestamps();
+
+        $processed = $this->core()->sendPayoutMail($merchant, $from, $to, $email);
+
+        return $processed;
+    }
+
+    private function getTimestamps()
+    {
+        $from = Carbon::today(Timezone::IST)->getTimestamp();
+        $to = Carbon::tomorrow(Timezone::IST)->getTimestamp() - 1;
+
+        return [$from, $to];
+    }
+
     /**
      * Gets the feature names to be added. A feature needs to be added to merchant
      * only if the value in input is equal to the default value of the feature
+     *
+     * @param array $features
+     *
+     * @return array
      */
-    private function getFeatureNamesToAdd($features)
+    private function getFeatureNamesToAdd(array $features): array
     {
         $featureNames = [];
 
@@ -1182,8 +1375,12 @@ class Service extends Base\Service
     /**
      * Gets the feature names to be removed. A feature needs to be removed from a
      * merchant only if the value in input is opposite of the default value of the feature
+     *
+     * @param array $features
+     *
+     * @return array
      */
-    private function getFeatureNamesToRemove($features)
+    private function getFeatureNamesToRemove(array $features): array
     {
         $featureNames = [];
 
@@ -1203,35 +1400,38 @@ class Service extends Base\Service
         return $featureNames;
     }
 
-    private function addFeatures($featureNames)
+    private function addFeatures(array $featureNames, bool $shouldSync = false)
     {
         $merchant = $this->merchant;
 
         if (count($featureNames) > 0)
         {
             $featureParams = [
-                Feature\Entity::ENTITY_ID => $merchant->getId(),
-                Feature\Entity::ENTITY_TYPE => 'merchant',
-                'names' => $featureNames
+                Feature\Entity::ENTITY_ID    => $merchant->getId(),
+                Feature\Entity::ENTITY_TYPE  => 'merchant',
+                Feature\Entity::NAMES        => $featureNames,
+                Feature\Entity::SHOULD_SYNC  => $shouldSync
             ];
 
             (new Feature\Service)->addFeatures($featureParams);
         }
     }
 
-    private function removeFeatures($featureNames)
+    private function removeFeatures($featureNames, bool $shouldSync = false)
     {
         $merchant = $this->merchant;
+
+        $entityId = $merchant->getId();
 
         foreach ($featureNames as $featureName)
         {
             $feature = $this->repo->feature->findByEntityIdAndNameOrFail(
-                $merchant->getId(),
+                $entityId,
                 $featureName);
 
             if ($feature !== null)
             {
-                $this->repo->feature->delete($feature);
+                $this->repo->feature->deleteAndSyncIfApplicableOrFail($feature, $shouldSync);
             }
         }
     }
@@ -1264,7 +1464,6 @@ class Service extends Base\Service
 
         return $data;
     }
-
     /**
      * Will provide if merchant is confirmed or not.
      *
@@ -1287,5 +1486,113 @@ class Service extends Base\Service
             // True if an confirmed owner is present.
             return !empty($owner);
         }
+    }
+
+    /**
+     * Sends a mail to the merchant when an action is taken
+     * on oauth access to his account
+     *
+     * @param array  $input
+     * @param string $type
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function sendOAuthMail(array $input, string $type): array
+    {
+        $this->trace->info(TraceCode::SEND_OAUTH_MAIL_REQUEST, ['type' => $type, 'input' => $input]);
+
+        (new Merchant\Validator)->validateInput(self::OAUTH_MAIL, $input);
+
+        $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
+        $user     = $this->repo->user->findOrFail($input[User\Entity::USER_ID]);
+        $client   = (new OAuthClient\Repository)->findOrFail($input[OAuthToken\Entity::CLIENT_ID]);
+
+        $mailer = $this->getOAuthMailerClassByType($type);
+
+        $data = [
+            'merchant'    => $merchant->toArrayPublic(),
+            'user'        => $user->toArrayPublic(),
+            'application' => $client->application->toArrayPublic(),
+        ];
+
+        Mail::queue((new $mailer($data)));
+
+        return ['success' => true];
+    }
+
+    /**
+     * Returns OAuth mailer class name by event type. Also validates that
+     * the same exists. If not throws a bad request exception.
+     *
+     * @param string $type
+     *
+     * @return string
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function getOAuthMailerClassByType(string $type): string
+    {
+        $mailer = 'RZP\\Mail\\OAuth\\' . studly_case($type);
+
+        if (class_exists($mailer) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_OAUTH_MAIL_TYPE,
+                null,
+                [
+                    'type' => $type,
+                ]);
+        }
+
+        return $mailer;
+    }
+
+    public function fetchAnalytics($input)
+    {
+        (new Core())->validateFilterAttributesAndAddMerchantId($this->merchant->getId(), $input);
+
+        return $this->app['eventManager']->query($input);
+    }
+
+    /**
+     * Creates submerchant User and associates with the submerchant as owner.
+     * @param array $input
+     *
+     * @return array
+     */
+    public function createSubMerchantUser($merchantId, array $input): array
+    {
+        $subMerchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $input['email']  = $subMerchant->getEmail();
+
+        $input['merchant_id'] = $this->merchant->getId();
+
+        (new Merchant\Validator)->validateInput('createSubMerchantUser', $input);
+
+        unset($input['merchant_id']);
+
+        //Creates a user from the given data.
+        $userData = $this->formatUserCreationData($input, $subMerchant);
+
+        $subMerchantUser = (new User\Service)->create($userData);
+
+        $this->attachSubMerchantOwner($subMerchantUser['id'], $subMerchant);
+
+        (new User\Service)->sendConfirmationMail($subMerchantUser['id']);
+
+        return $subMerchantUser;
+    }
+
+    private function formatUserCreationData($input, $subMerchant)
+    {
+        return [
+            User\Entity::NAME                  => $subMerchant->getName(),
+            User\Entity::EMAIL                 => $input['email'],
+            User\Entity::PASSWORD              => $input['password'],
+            User\Entity::PASSWORD_CONFIRMATION => $input['password_confirmation'],
+            User\Entity::CAPTCHA_DISABLE       => User\Validator::DISABLE_CAPTCHA_SECRET,
+        ];
     }
 }

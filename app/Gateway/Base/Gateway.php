@@ -2,11 +2,16 @@
 
 namespace RZP\Gateway\Base;
 
+use Crypt;
+use Cache;
+use RZP\Http\Route;
+use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
 
@@ -35,11 +40,19 @@ class Gateway
     const OTP_ATTEMPTS_LIMIT = 3;
 
     /**
+     * Number of minutes that the cache key will be stored
+     * @var integer
+     */
+    const CACHE_TTL = 15;
+
+    /**
      * In gateway responses one particular field contains
      * hash or checksum. This variable will contain that field
      * name.
      */
     const CHECKSUM_ATTRIBUTE = '';
+
+    const CACHE_KEY = 'base_%s_card_details';
 
     /**
      * The application instance.
@@ -53,6 +66,8 @@ class Gateway
      * @var Trace\Trace
      */
     protected $trace;
+
+    protected $repo;
 
     /**
      * @var array
@@ -90,6 +105,8 @@ class Gateway
      */
     protected $mode;
 
+    protected $env;
+
     /**
      * Denotes if the gateway is a mock
      * @var boolean
@@ -122,11 +139,13 @@ class Gateway
     /**
      * Api Route instance
      *
-     * @var RZP\Http\Route
+     * @var Route
      */
     protected $route;
 
     protected $terminal;
+
+    protected $gateway;
 
     /**
      * Laravel request class instance
@@ -180,7 +199,9 @@ class Gateway
      * Handles gateway callback
      *
      * @param array $input
+     *
      * @return array|null
+     * @throws Exception\GatewayErrorException
      */
     public function callback(array $input)
     {
@@ -322,6 +343,35 @@ class Gateway
         }
     }
 
+    protected function assertAmount($expectedAmount, $actualAmount)
+    {
+        if ($expectedAmount !== $actualAmount)
+        {
+            throw new Exception\LogicException(
+                'Amount tampering found.',
+                ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED, [
+                    'expected' => $expectedAmount,
+                    'actual'   => $actualAmount
+                ]);
+        }
+    }
+
+    protected function getAcquirerData($input, $gatewayPayment)
+    {
+        $acquirer = [];
+
+        switch ($input['payment']['method'])
+        {
+            case Payment\Method::CARD:
+                $acquirer['acquirer'] = [
+                    Payment\Entity::REFERENCE2 => $gatewayPayment->getAuthCode(),
+                ];
+                break;
+        }
+
+        return $acquirer;
+    }
+
     protected function getCallbackResponseData(array $input, $response = [])
     {
         $response[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::PASSED;
@@ -366,8 +416,7 @@ class Gateway
                 [
                     'actual'    => $actual,
                     'generated' => $generated
-                ]
-            );
+                ]);
 
             throw new Exception\RuntimeException('Failed checksum verification');
         }
@@ -427,12 +476,12 @@ class Gateway
     {
         if (isset($request['options']) === false)
         {
-            $request['options'] = array();
+            $request['options'] = [];
         }
 
         if (isset($request['headers']) === false)
         {
-            $request['headers'] = array();
+            $request['headers'] = [];
         }
 
         $method = 'post';
@@ -485,7 +534,7 @@ class Gateway
         return $response;
     }
 
-    protected function validateResponse($response)
+    protected function validateResponse(\Requests_Response $response)
     {
         if (in_array($response->status_code, [503, 504], true) === true)
         {
@@ -548,6 +597,18 @@ class Gateway
             throw new Exception\PaymentVerificationException(
                 $verify->getDataToTrace(),
                 $verify);
+        }
+
+        if (($verify->amountMismatch === true) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\RuntimeException(
+                'Payment amount verification failed.',
+                [
+                    'payment_id' => $this->input['payment']['id'],
+                    'gateway'    => $this->gateway
+                ]
+            );
         }
 
         return $verify->getDataToTrace();
@@ -672,6 +733,16 @@ class Gateway
         return $this->input['terminal']['gateway_secure_secret'];
     }
 
+    protected function isTestMode() : bool
+    {
+        return ($this->mode === Mode::TEST);
+    }
+
+    protected function isLiveMode() : bool
+    {
+        return ($this->mode === Mode::LIVE);
+    }
+
     protected function getNewGatewayPaymentEntity()
     {
         $class = $this->getGatewayNamespace() . '\Entity';
@@ -704,7 +775,7 @@ class Gateway
     {
         $ns = $this->getGatewayNamespace();
 
-        return constant($ns.'\Url::'.$type);
+        return constant($ns . '\Url::' . $type);
     }
 
     protected function getUrl($type = null)
@@ -826,7 +897,7 @@ class Gateway
         return $request;
     }
 
-    protected function getDynamicMerchantName($merchant)
+    protected function getDynamicMerchantName(Merchant\Entity $merchant, $limit = 20) : string
     {
         $label = $merchant->getBillingLabel();
 
@@ -837,7 +908,7 @@ class Gateway
             $label = "Razorpay Payments";
         }
 
-        return str_limit($label, 20);
+        return str_limit($label, $limit);
     }
 
     protected function verifyOtpAttempts($payment, $limit = null)
@@ -923,6 +994,16 @@ class Gateway
                 'Failed to convert xml to array',
                 ['xml' => $xml],
                 $e);
+        }
+    }
+
+    protected function failIfRequired(array $input)
+    {
+        if ((isset($input['test_success']) === true) and
+            ($input['test_success'] === false))
+        {
+            throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_SCHEDULED_FAILURE);
         }
     }
 

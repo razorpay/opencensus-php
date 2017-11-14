@@ -46,6 +46,26 @@ trait SettlementTrait
                 }
             }
 
+            // DSP wants settlements only between 10 am and 3 pm ¯\_(ツ)_/¯
+            //
+            // TODO : Move this to schedules
+            // https://github.com/razorpay/api/issues/5347
+            //
+            if ($txn->getMerchantId() === '7thBRSDflu7NHL')
+            {
+                $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+                $tenAm = Carbon::today(Timezone::IST)->hour(10)->getTimestamp();
+
+                $threePm = Carbon::today(Timezone::IST)->hour(15)->minute(10)->getTimestamp();
+
+                if (($now < $tenAm) or
+                    ($now > $threePm))
+                {
+                    continue;
+                }
+            }
+
             $filteredTxns->push($txn);
         }
 
@@ -124,7 +144,7 @@ trait SettlementTrait
             $setlGatewayFee += $txn->getGatewayFee();
             $setlApiFee     += $txn->getApiFee();
             $setlFee        += $txn->getFee();
-            $tax            += $txn->getServiceTax();
+            $tax            += $txn->getTax();
 
             $setlTxns->push($txn);
             $i++;
@@ -246,6 +266,15 @@ trait SettlementTrait
      */
     protected function shouldSettle($merchant): bool
     {
+        //
+        // Skip settlements for Moneyview
+        // Details in: https://github.com/razorpay/api/issues/5830
+        //
+        if ($merchant->getId() === '8hXTLsmoM3F6PH')
+        {
+            return false;
+        }
+
         $shouldSettle = true;
 
         $today = Carbon::today(Timezone::IST);

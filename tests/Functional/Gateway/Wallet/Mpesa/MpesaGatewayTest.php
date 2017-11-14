@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Wallet\Mpesa;
 
 use SoapFault;
+use ErrorException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Wallet\Mpesa\Action;
 use RZP\Gateway\Wallet\Mpesa\SoapAction;
@@ -16,6 +17,10 @@ class MpesaGatewayTest extends TestCase
     const WALLET = 'mpesa';
 
     const OTP = '1234';
+
+    protected $payment;
+
+    protected $sharedTerminal;
 
     public function setUp()
     {
@@ -74,6 +79,21 @@ class MpesaGatewayTest extends TestCase
         $this->assertNotEmpty($wallet['gateway_payment_id']);
 
         $this->assertEmpty($wallet['gateway_payment_id_2']);
+    }
+
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['txnAmt'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $this->doAuthPayment($this->payment);
+        });
     }
 
     /**
@@ -283,7 +303,7 @@ class MpesaGatewayTest extends TestCase
 
     public function testSoapTimeoutError()
     {
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testVerifyMismatch'];
 
         $this->testAuthPayment();
 
@@ -301,7 +321,7 @@ class MpesaGatewayTest extends TestCase
 
     public function testSoapError()
     {
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testVerifyMismatch'];
 
         $this->testAuthPayment();
 
@@ -315,6 +335,48 @@ class MpesaGatewayTest extends TestCase
             {
                 $this->verifyPayment($payment['id']);
             });
+    }
+
+    public function testSoapSslError()
+    {
+        $this->testAuthPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockSoapSslError();
+
+        $data = $this->testData['testVerifyMismatch'];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+    }
+
+    public function testMpesaUpperCaseError()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->payment;
+
+        $payment['wallet'] = 'MPESA';
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+    }
+
+    protected function mockSoapSslError()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            throw new ErrorException('SoapClient::__doRequest(): SSL: Connection reset by peer');
+        });
     }
 
     protected function mockSoapFault($timeout = false)

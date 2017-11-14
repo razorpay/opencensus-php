@@ -8,6 +8,7 @@ use App;
 use RZP\Constants;
 use RZP\Jobs\WebHook;
 use RZP\Models\Base;
+use RZP\Models\Customer\Token;
 use RZP\Models\Event;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
@@ -60,6 +61,7 @@ class ApiEventSubscriber extends Base\Core
      * @var array
      */
     protected static $notWebhookOnlyEvents = [
+        WebhookEvent::INVOICE_PARTIALLY_PAID,
         WebhookEvent::INVOICE_PAID,
     ];
 
@@ -176,8 +178,24 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onInvoicePartiallyPaid($payment)
+    {
+        //
+        // It is safe to just call the other method which gets called with
+        // invoice.paid event. The web hook payload is same in both event (it's
+        // invoice, order, payment entities), just the event name differs.
+        //
+        $this->onInvoicePaid($payment);
+    }
+
     protected function onInvoicePaid($payment)
     {
+        //
+        // Other than firing web hook in this case, we also update invoice's copy
+        // of customer details if that is empty, with payment's attributes.
+        //
+        // Refer $notWebhookOnlyEvents also.
+        //
         (new Invoice\Core)->setCustomerDetailsFromPaymentIfAbsent($payment);
 
         if ($this->webhookEnabledForEvent === false)
@@ -185,8 +203,14 @@ class ApiEventSubscriber extends Base\Core
             return;
         }
 
-        // WebHook specific statements
-        $payload = $this->getInvoicePayload($payment);
+        $payload = $this->getInvoicePayloadWithPayment($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onInvoiceExpired($invoice)
+    {
+        $payload = $this->getInvoicePayload($invoice);
 
         $this->prepareAndDispatchWebhook($payload);
     }
@@ -268,6 +292,20 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onTokenConfirmed($token)
+    {
+        $payload = $this->getTokenPayload($token);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onTokenRejected($token)
+    {
+        $payload = $this->getTokenPayload($token);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function getP2pPayload($p2p)
     {
         $source = $p2p->source;
@@ -287,6 +325,17 @@ class ApiEventSubscriber extends Base\Core
         ];
 
         return $partialPayload;
+    }
+
+    protected function getTokenPayload(Token\Entity $token)
+    {
+        $payload = [
+            Constants\Entity::TOKEN => [
+                'entity' => $token->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
     }
 
     protected function getSubscriptionPayload($subscription)
@@ -336,21 +385,32 @@ class ApiEventSubscriber extends Base\Core
         return $partialPayload;
     }
 
-    protected function getInvoicePayload($payment)
+    protected function getInvoicePayload(Invoice\Entity $invoice)
     {
-        $order = $payment->order;
+        $payload = [
+            Constants\Entity::INVOICE => [
+                'entity' => $invoice->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
+    }
+
+    protected function getInvoicePayloadWithPayment($payment)
+    {
+        $order   = $payment->order;
         $invoice = $order->invoice;
 
         $partialPayload[Constants\Entity::PAYMENT] = [
-            'entity' => $payment->toArrayPublic()
+            'entity' => $payment->toArrayPublic(),
         ];
 
         $partialPayload[Constants\Entity::ORDER] = [
-            'entity' => $order->toArrayPublic()
+            'entity' => $order->toArrayPublic(),
         ];
 
         $partialPayload[Constants\Entity::INVOICE] = [
-            'entity' => $invoice->toArrayPublic()
+            'entity' => $invoice->toArrayPublic(),
         ];
 
         return $partialPayload;
@@ -360,8 +420,8 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = [
             Constants\Entity::PAYMENT => [
-                'entity' => $payment->toArrayPublic()
-            ]
+                'entity' => $payment->toArrayPublic(),
+            ],
         ];
 
         return $payload;

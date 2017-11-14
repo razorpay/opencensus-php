@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Constants\Table;
+use RZP\Models\Customer\Token;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
@@ -33,7 +34,7 @@ class Repository extends Base\Repository
         Entity::EMAIL              => 'sometimes|email',
         Entity::ORDER_ID           => 'sometimes|string|size:20',
         Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1',
-        self::EXPAND . '.*'        => 'string|in:card,',
+        self::EXPAND . '.*'        => 'string|in:card',
     ];
 
     // These are proxy allowed params to search on.
@@ -41,7 +42,9 @@ class Repository extends Base\Repository
         Entity::EMAIL              => 'sometimes',
         Entity::STATUS             => 'sometimes|string',
         Entity::NOTES              => 'sometimes|string|max:500',
-        Entity::INVOICE_ID         => 'sometimes|string|max:18',
+        Entity::INVOICE_ID         => 'sometimes|string|min:14|max:18',
+        Entity::SUBSCRIPTION_ID    => 'sometimes|string|min:14|max:18',
+        self::EXPAND . '.*'        => 'string|in:card,emi_plan',
     ];
 
     // These are admin allowed params to search on.
@@ -75,6 +78,7 @@ class Repository extends Base\Repository
     protected $signedIds = [
         Entity::ORDER_ID,
         Entity::INVOICE_ID,
+        Entity::SUBSCRIPTION_ID,
     ];
 
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
@@ -951,12 +955,123 @@ class Repository extends Base\Repository
                     ->sum(Entity::AMOUNT);
     }
 
-    public function updateTax(int $limit = 10000)
+    public function fetchPendingEMandateRegistration(string $gateway, int $from, int $to)
     {
+        $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
+
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Token\Entity::RECURRING);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+
+        $selectCols = $this->dbColumn('*');
+
         return $this->newQuery()
-                    ->whereNull(Entity::TAX)
-                    ->whereNotNull(Entity::SERVICE_TAX)
-                    ->limit($limit)
-                    ->update([Entity::TAX => DB::raw(Entity::SERVICE_TAX)]);
+                    ->select($selectCols)
+                    ->join(
+                          Table::TOKEN,
+                          function ($join)
+                          use($tokenIdColumn)
+                            {
+                                $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
+                                $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
+                            })
+                    ->where(Entity::RECURRING_TYPE, '=', RecurringType::INITIAL)
+                    ->where($paymentRecurringColumn, '=', 1)
+                    ->where($paymentMethodColumn, '=', Method::NETBANKING)
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+                    ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
+                    ->where($tokenRecurringColumn, '!=', 1)
+                    ->with(['localToken', 'globalToken', 'customer'])
+                    ->get();
+    }
+
+    public function fetchPendingEMandateDebit(string $gateway, $from, $to)
+    {
+        $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
+
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Token\Entity::RECURRING);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+
+        $selectCols = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($selectCols)
+                    ->join(
+                        Table::TOKEN,
+                        function ($join)
+                        use ($tokenIdColumn)
+                        {
+                          $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
+                          $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
+                        })
+                    ->where(Entity::RECURRING_TYPE, '=', RecurringType::AUTO)
+                    ->where(Entity::STATUS, '=', Status::CREATED)
+                    ->where($paymentRecurringColumn, '=', 1)
+                    ->where($paymentMethodColumn, '=', Method::NETBANKING)
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+                    ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::CONFIRMED)
+                    ->where($tokenRecurringColumn, '=', 1)
+                    ->with(['localToken', 'globalToken', 'merchant', 'order'])
+                    ->get();
+    }
+
+    public function fetchDebitEmandatePaymentPendingAuth(
+        string $gateway, string $paymentId, string $tokenId, string $accountNo)
+    {
+        $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
+
+        $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $selectCols = $this->dbColumn('*');
+
+        //
+        // The SQL query that will be run is –
+        //
+        // select `payments`.* from `payments` inner join `tokens`
+        // on `token_id` = `tokens`.`id` or `global_token_id` = `tokens`.`id`
+        // where `payments`.`id` = ? and
+        // `account_number` = ? and
+        // `tokens`.`id` = ? and
+        // `recurring_type` = ? and
+        // `status` = ? and
+        // `payments`.`recurring` = ? and
+        // `payments`.`method` = ? and
+        // `gateway` = ?
+        //
+        return $this->newQuery()
+                    ->select($selectCols)
+                    ->join(
+                      Table::TOKEN,
+                      function ($join)
+                      use ($tokenIdColumn)
+                      {
+                        $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
+                        $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
+                      })
+                    ->where($paymentIdColumn, $paymentId)
+                    ->where(Token\Entity::ACCOUNT_NUMBER, $accountNo)
+                    ->where($tokenIdColumn, $tokenId)
+                    ->where(Entity::RECURRING_TYPE, RecurringType::AUTO)
+                    ->where(Entity::STATUS, Status::CREATED)
+                    ->where($paymentRecurringColumn, 1)
+                    ->where($paymentMethodColumn, Method::NETBANKING)
+                    ->where(Entity::GATEWAY, $gateway)
+                    ->with('merchant')
+                    ->firstOrFail();
     }
 }

@@ -2,20 +2,18 @@
 
 namespace RZP\Models\Pricing;
 
-use Carbon\Carbon;
-
+use RZP\Exception;
 use RZP\Constants;
-use RZP\Error\ErrorCode;
+use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
-use RZP\Models\Base;
-use RZP\Exception;
-use RZP\Models\Emi;
-use RZP\Trace\TraceCode;
+
 use Razorpay\Trace\Logger as Trace;
 
 class FeeCalculator
@@ -103,15 +101,19 @@ class FeeCalculator
 
         $totalFees = $fees + $totalTaxes;
 
-        if ($totalFees > $amount)
+        // In case the merchant is customer fee bearer, we shouldn't check $amount < $totalFees
+        if ($this->entity->merchant->isFeeBearerCustomer() === false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
-                Payment\Entity::AMOUNT,
-                [
-                    'amount' => $amount,
-                    'fees'   => $totalFees
-                ]);
+            if ($totalFees > $amount)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
+                    Payment\Entity::AMOUNT,
+                    [
+                        'amount' => $amount,
+                        'fees'   => $totalFees
+                    ]);
+            }
         }
 
         return [$totalFees, $totalTaxes];
@@ -666,6 +668,8 @@ class FeeCalculator
     {
         $totalTaxes = 0;
 
+        $totalPercentage = 0;
+
         $taxComponents = $this->taxComponents;
 
         // Check if GST needs to be levied
@@ -688,15 +692,14 @@ class FeeCalculator
 
             $taxValue = ($eligibleForGst === true) ? $taxValue: 0;
 
-            $taxBreakup = $this->createFeeBreakup(
-                                            $name,
-                                            $percentage,
-                                            $taxValue);
-
-            $this->feesSplit->push($taxBreakup);
-
             $totalTaxes += $taxValue;
+
+            $totalPercentage += $percentage;
         }
+
+        $tax = $this->createFeeBreakup(FeeBreakupName::TAX, $totalPercentage, $totalTaxes);
+
+        $this->feesSplit->push($tax);
 
         return $totalTaxes;
     }

@@ -71,7 +71,7 @@ return [
                 'id' => '1X4hRFHFx4UiXt',
                 'name' => 'Tester',
                 'email' => 'test@localhost.com',
-                'pricing_plan_id' => '2atGxLIYLyHWg7',
+                'pricing_plan_id' => '1In3Yh5Mluj605',
                 'live' => false,
                 'activated' => false,
                 'hold_funds' => false,
@@ -225,9 +225,10 @@ return [
             'url' => '/submerchants',
             'method' => 'POST',
             'content' => [
-                'id'    => '7gcKngYfqyDMjN',
-                'name'  => 'Linked Account 2',
-                'email' => 'linkedaccount@razorpay.com'
+                'id'      => '7gcKngYfqyDMjN',
+                'name'    => 'Linked Account 2',
+                'email'   => 'linkedaccount@razorpay.com',
+                'account' => true,
             ],
         ],
         'response' => [
@@ -244,9 +245,10 @@ return [
             'url' => '/submerchants',
             'method' => 'POST',
             'content' => [
-                'id'    => '7gcKngYfqyDMjN',
-                'name'  => 'Linked Account 4',
-                'email' => 'linkedaccount@razorpay.com'
+                'id'      => '7gcKngYfqyDMjN',
+                'name'    => 'Linked Account 4',
+                'email'   => 'linkedaccount@razorpay.com',
+                'account' => true,
             ],
         ],
         'response' => [
@@ -264,9 +266,10 @@ return [
             'url' => '/submerchants',
             'method' => 'POST',
             'content' => [
-                'id'    => '7gbqextd68Co4t',
-                'name'  => 'Linked Account 3',
-                'email' => 'linkedaccount@razorpay.com'
+                'id'      => '7gbqextd68Co4t',
+                'name'    => 'Linked Account 3',
+                'email'   => 'linkedaccount@razorpay.com',
+                'account' => true,
             ],
         ],
         'response' => [
@@ -274,6 +277,30 @@ return [
                 'id'    => '7gbqextd68Co4t',
                 'name'  => 'Linked Account 3',
                 'email' => 'linkedaccount@razorpay.com',
+            ],
+        ],
+    ],
+
+    'testCreateLinkedAccountBatch' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'linked_account',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'linked_account',
+                'status'           => 'created',
+                'total_count'      => 2,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'amount'           => 0,
+                'processed_amount' => 0,
+                'processed_at'     => null,
             ],
         ],
     ],

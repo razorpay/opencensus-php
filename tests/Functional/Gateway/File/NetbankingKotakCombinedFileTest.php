@@ -1,0 +1,248 @@
+<?php
+
+namespace RZP\Tests\Functional\Gateway\File;
+
+use Mail;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+use RZP\Models\Gateway\File;
+use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
+class NetbankingKotakCombinedFileTest extends TestCase
+{
+    use PaymentTrait;
+
+    public function setUp()
+    {
+        Carbon::setTestNow();
+
+        $this->testDataFilePath = __DIR__ . '/helpers/NetbankingKotakCombinedFileTestData.php';
+
+        parent::setUp();
+    }
+
+    public function testGenerateKotakCombinedFileForNonTpv()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_kotak_terminal');
+
+        Mail::fake();
+
+        $payment = $this->getDefaultNetbankingPaymentArray('KKBK');
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $files = $this->getEntities('file_store', [
+            'count' => 2
+        ], true);
+
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        $expectedFilesContent = [
+            'entity' => 'collection',
+            'count' => 2,
+            'items' => [
+                [
+                    'type' => 'kotak_netbanking_claim',
+                    'location' => 'Kotak_Netbanking_Claim_OSRAZORPAY_test' . '_' . $time . '.txt',
+                ],
+                [
+                    'type' => 'kotak_netbanking_refund',
+                    'location' => 'Kotak_Netbanking_Refund_OSRAZORPAY_test' . '_' . $time . '.txt',
+                ],
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFilesContent, $files);
+
+        Mail::assertSent(DailyFileMail::class, function ($mail)
+        {
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $testData = [
+                'subject' => 'Kotak Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims' => 500,
+                    'refunds' => 500,
+                    'total' => 0
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            $this->checkClaimsFile($mail->viewData['claimsFile']);
+
+            $this->checkRefundsFile($mail->viewData['refundsFile']);
+
+            return true;
+        });
+    }
+
+    public function testGenerateKotakCombinedFileForTpv()
+    {
+        Mail::fake();
+
+        $terminalAttrs = [
+            'id'               => 'TpvNbKotakTmnl',
+            'network_category' => 'securities',
+            'tpv'              => 1,
+        ];
+
+        $terminal = $this->fixtures->create(
+                        'terminal:shared_netbanking_kotak_terminal',
+                        $terminalAttrs);
+
+        $payment = $this->makeTpvPayment();
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $files = $this->getEntities('file_store', [
+            'count' => 2
+        ], true);
+
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        $expectedFilesContent = [
+            'entity' => 'collection',
+            'count' => 2,
+            'items' => [
+                [
+                    'type' => 'kotak_netbanking_claim',
+                    'location' => 'Kotak_Netbanking_Claim_OTRAZORPAY_test' . '_' . $time . '.txt',
+                ],
+                [
+                    'type' => 'kotak_netbanking_refund',
+                    'location' => 'Kotak_Netbanking_Refund_OTRAZORPAY_test' . '_' . $time . '.txt',
+                ],
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFilesContent, $files);
+
+        Mail::assertSent(DailyFileMail::class, function ($mail)
+        {
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $testData = [
+                'subject' => 'Kotak Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims' => 500,
+                    'refunds' => 500,
+                    'total' => 0
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            $this->checkClaimsFile($mail->viewData['claimsFile']);
+
+            $this->checkRefundsFile($mail->viewData['refundsFile']);
+
+            return true;
+        });
+    }
+
+    protected function makeTpvPayment()
+    {
+        $this->fixtures->merchant->enableTPV();
+
+        $order = $this->createTpvOrderForBank('KKBK');
+
+        $payment = $this->getDefaultNetbankingPaymentArray('KKBK');
+
+        $payment['order_id'] = $order['id'];
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->fixtures->merchant->disableTpv();
+
+        return $payment;
+    }
+
+    protected function createTpvOrderForBank($bank)
+    {
+        $request = [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'account_number' => '0040304030403040',
+                'bank'           => $bank,
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ];
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->ba->publicAuth();
+
+        return $content;
+    }
+
+    protected function checkClaimsFile(array $claimsFileData)
+    {
+        $claimsFileContents = file($claimsFileData['url']);
+
+        $claimsFileLine1 = explode('|', $claimsFileContents[0]);
+
+        $this->assertCount(1, $claimsFileContents);
+
+        $this->assertCount(6, $claimsFileLine1);
+    }
+
+    protected function checkRefundsFile(array $refundsFileData)
+    {
+        $refundsFileContents = file($refundsFileData['url']);
+
+        $refundsFileName = $refundsFileData['name'];
+
+        $refundsFileLine1 = explode('|', $refundsFileContents[1]);
+
+        $this->assertCount(6, $refundsFileLine1);
+
+        $this->assertCount(2, $refundsFileContents);
+
+        $this->assertEquals($refundsFileName, explode('|', $refundsFileContents[0])[0]);
+    }
+}

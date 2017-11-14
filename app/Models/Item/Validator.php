@@ -3,8 +3,11 @@
 namespace RZP\Models\Item;
 
 use RZP\Base;
-use RZP\Exception;
+use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base as BaseModel;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -13,27 +16,27 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::NAME                => 'required|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
-        Entity::AMOUNT              => 'required_without:unit_amount|integer|min:100',
-        Entity::UNIT_AMOUNT         => 'required_without:amount|integer|min:100',
+        Entity::AMOUNT              => 'required_without:unit_amount|mysql_unsigned_int|min:100',
+        Entity::UNIT_AMOUNT         => 'required_without:amount|mysql_unsigned_int|min:100',
         Entity::CURRENCY            => 'required|size:3|in:INR',
-        Entity::TYPE                => 'sometimes|string|max:16|custom',
-        Entity::UNIT                => 'sometimes|string|max:512',
-        Entity::TAX_INCLUSIVE       => 'sometimes|boolean',
-        Entity::TAX_ID              => 'sometimes|public_id|size:18',
-        Entity::TAX_GROUP_ID        => 'sometimes|public_id|size:19',
+        Entity::TYPE                => 'filled|string|max:16|custom',
+        Entity::UNIT                => 'filled|string|max:512',
+        Entity::TAX_INCLUSIVE       => 'filled|boolean',
+        Entity::TAX_ID              => 'sometimes|nullable|public_id|size:18',
+        Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
     ];
 
     protected static $editRules  = [
-        Entity::ACTIVE              => 'sometimes|boolean',
-        Entity::NAME                => 'sometimes|string|max:512',
-        Entity::DESCRIPTION         => 'sometimes|string|max:2048',
-        Entity::AMOUNT              => 'sometimes|integer|min:100',
-        Entity::UNIT_AMOUNT         => 'sometimes|integer|min:100',
-        Entity::CURRENCY            => 'sometimes|size:3|in:INR',
-        Entity::UNIT                => 'sometimes|string|max:512',
-        Entity::TAX_INCLUSIVE       => 'sometimes|boolean',
-        Entity::TAX_ID              => 'sometimes|public_id|size:18',
-        Entity::TAX_GROUP_ID        => 'sometimes|public_id|size:19',
+        Entity::ACTIVE              => 'filled|boolean',
+        Entity::NAME                => 'filled|string|max:512',
+        Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
+        Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
+        Entity::UNIT_AMOUNT         => 'filled|mysql_unsigned_int|min:100',
+        Entity::CURRENCY            => 'filled|size:3|in:INR',
+        Entity::UNIT                => 'sometimes|nullable|string|max:512',
+        Entity::TAX_INCLUSIVE       => 'filled|boolean',
+        Entity::TAX_ID              => 'sometimes|nullable|public_id|size:18',
+        Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
     ];
 
     protected static $createValidators = [
@@ -56,7 +59,7 @@ class Validator extends Base\Validator
      *
      * @param array $input
      *
-     * @throws Exception\BadRequestValidationFailureException
+     * @throws BadRequestValidationFailureException
      */
     public function validateTaxInputs(array $input)
     {
@@ -68,21 +71,82 @@ class Validator extends Base\Validator
 
         if ((empty($taxId) === false) and (empty($taxGroupId) === false))
         {
-            throw new Exception\BadRequestValidationFailureException(
+            throw new BadRequestValidationFailureException(
                 'Both tax_id and tax_group_id cannot be present');
+        }
+    }
+
+    public function validateUpdateOperation(Entity $item)
+    {
+        if ($item->isNotOfType(Type::INVOICE) === true)
+        {
+            $type = $item->getType();
+
+            throw new BadRequestValidationFailureException(
+                "Update operation not allowed for item of type: $type",
+                null,
+                [
+                    Entity::ID   => $item->getId(),
+                    Entity::TYPE => $item->getType(),
+                ]);
         }
     }
 
     public function validateDeleteOperation(Entity $item)
     {
-        if ($item->lineItems()->count() > 0)
+        if ($item->isNotOfType(Type::INVOICE) === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED,
+            $type = $item->getType();
+
+            throw new BadRequestValidationFailureException(
+                "Delete operation not allowed for item of type: $type",
                 null,
                 [
-                    'item_id' => $item->getId(),
+                    Entity::ID   => $item->getId(),
+                    Entity::TYPE => $item->getType(),
                 ]);
+        }
+
+        if ($item->lineItems()->count() > 0)
+        {
+            throw new BadRequestValidationFailureException(
+                'Cannot edit/delete an item with which invoices have been created already',
+                null,
+                [
+                    Entity::ID   => $item->getId(),
+                    Entity::TYPE => $item->getType(),
+                ]);
+        }
+    }
+
+    public function validateItemIsActive()
+    {
+        $item = $this->entity;
+
+        if ($item->isNotActive() === true)
+        {
+            $traceData = [
+                Entity::ID     => $item->getId(),
+                Entity::ACTIVE => $item->isActive(),
+            ];
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ITEM_INACTIVE, null, $traceData);
+        }
+    }
+
+    public function validateItemIsOfType(string $type)
+    {
+        $item = $this->entity;
+
+        if ($item->isNotOfType($type) === true)
+        {
+            $traceData = [
+                Entity::ENTITY => $item->getEntity(),
+                Entity::ID     => $item->getId(),
+                Entity::TYPE   => $item->getType(),
+            ];
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE, null, $traceData);
         }
     }
 }

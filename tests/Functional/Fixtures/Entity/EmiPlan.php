@@ -84,6 +84,24 @@ class EmiPlan extends Base
             'subvention'        => 'merchant',
             'merchant_payback'  => 549
         ],
+        [
+            'id'                => '10101111111110',
+            'duration'          => '9',
+            'rate'              => '1300',
+            'methods'           => 'debitcard',
+            'bank'              => 'YESB',
+            'min_amount'        => '250000',
+        ],
+        [
+            'id'                => '11111111111110',
+            'duration'          => '9',
+            'rate'              => '1300',
+            'methods'           => 'debitcard',
+            'bank'              => 'YESB',
+            'min_amount'        => '250000',
+            'subvention'        => 'merchant',
+            'merchant_payback'  => 549,
+        ],
     ];
 
     public function createDefaultEmiPlans()

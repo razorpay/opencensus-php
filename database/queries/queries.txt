@@ -345,7 +345,7 @@ ALTER TABLE bank_accounts
 ALTER TABLE bank_accounts
     ADD INDEX bank_accounts_deleted_at_index (deleted_at);
 
-UPDATE settlements s
+UPDATE settlements
     JOIN bank_accounts b ON s.merchant_id = b.merchant_id
     SET s.bank_account_id = b.id;
 
@@ -2342,6 +2342,10 @@ ALTER TABLE gateway_rules
     ADD INDEX gateway_rules_network_category_index (network_category),
     ADD INDEX gateway_rules_category2_index (category2);
 
+ALTER TABLE subscriptions
+    ADD COLUMN cancel_at INT(11) DEFAULT NULL AFTER end_at,
+    ADD INDEX subscriptions_cancel_at_index (cancel_at);
+
 ALTER TABLE fund_transfer_attempts
     ADD COLUMN narration VARCHAR(255) DEFAULT NULL AFTER utr;
 
@@ -2424,6 +2428,11 @@ ALTER TABLE merchant_invoice
 ALTER TABLE merchants
     ADD COLUMN invoice_code CHAR(12) DEFAULT NULL AFTER category2;
 
+ALTER TABLE tokens
+   ADD COLUMN recurring_status VARCHAR(32) AFTER recurring,
+   ADD COLUMN recurring_failure_reason TEXT AFTER recurring_status,
+   ADD COLUMN max_amount INTEGER AFTER recurring_failure_reason;
+
 # Adding index on settlements.updated_at, refunds.updated_at, transactions.updated_at
 # Useful for Merchant analytics queries
 ALTER TABLE settlements
@@ -2441,6 +2450,17 @@ ALTER TABLE transfers
     ADD CONSTRAINT transfers_recipient_settlement_id_foreign FOREIGN KEY(recipient_settlement_id)
     REFERENCES settlements(id) ON DELETE RESTRICT;
 
+ALTER TABLE netbanking
+    ADD COLUMN si_token VARCHAR(255) DEFAULT NULL AFTER caps_payment_id,
+    ADD COLUMN si_status VARCHAR(255) DEFAULT NULL AFTER si_token,
+    ADD COLUMN si_message VARCHAR(255) DEFAULT NULL AFTER si_status;
+
+ALTER TABLE payments
+    ADD COLUMN recurring_type VARCHAR(255) DEFAULT NULL AFTER updated_at;
+
+ALTER TABLE subscriptions
+    ADD COLUMN type TINYINT(1) UNSIGNED DEFAULT 0 AFTER customer_notify;
+
 ALTER TABLE gateway_rules
     MODIFY COLUMN gateway VARCHAR(50) DEFAULT NULL;
 
@@ -2449,3 +2469,159 @@ ALTER TABLE offers
 
 ALTER TABLE offers
     MODIFY COLUMN payment_method VARCHAR(10) NULL;
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN payer_ifsc varchar(13) NOT NULL;
+
+ALTER TABLE bank_accounts
+    MODIFY COLUMN ifsc_code varchar(11) NULL;
+
+# Pre deployment of branch 'invoice_items_constraints'
+# Following 4 queries:
+
+# Adds line_items.type column with default null
+ALTER TABLE line_items
+    ADD COLUMN type VARCHAR(16) DEFAULT NULL after currency,
+    ADD INDEX line_items_type_index (type);
+
+# Populates line_items.type of existing rows
+UPDATE line_items l
+       JOIN items i
+            ON l.item_id = i.id AND l.type IS NULL
+SET    l.type = i.type;
+
+UPDATE line_items
+SET    type = 'invoice'
+WHERE  item_id IS NULL;
+
+## Sets default value for customer_notify
+ALTER TABLE subscriptions
+   MODIFY COLUMN customer_notify TINYINT(1) UNSIGNED DEFAULT 1;
+
+# Makes line_items.type column not null and default to 'invoice'
+ALTER TABLE line_items
+    MODIFY COLUMN type VARCHAR(16) NOT NULL DEFAULT 'invoice';
+
+# Adding these columns, since reconciliation send us these data
+# which we need to pass in the refund file for Corporation bank
+ALTER TABLE netbanking
+    ADD COLUMN account_branch_code VARCHAR(255) AFTER account_number,
+    ADD COLUMN account_subtype VARCHAR(255) AFTER account_number,
+    ADD COLUMN account_type VARCHAR(255) AFTER account_number;
+
+# Make adjustment morph to entity optionally
+ALTER TABLE adjustment
+    ADD COLUMN entity_type VARCHAR(100) AFTER merchant_id,
+    ADD COLUMN entity_id CHAR(14) AFTER entity_type;
+
+INSERT INTO dispute_reasons
+    (id, network, gateway_code, gateway_description, code, description, created_at, updated_at)
+    VALUES
+        ('NotAvailable00', 'RZP', 'RZP00', 'Not Available', 'not_available', 'Not Available', 1506415644, 1506415644);
+
+ALTER TABLE batches
+    MODIFY COLUMN `type` CHAR(25);
+
+# Marketplace auto-activate
+ALTER TABLE merchants
+    ADD COLUMN linked_account_kyc TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_model;
+
+ALTER TABLE merchants
+    MODIFY COLUMN invoice_code CHAR(12) NOT NULL AFTER category2;
+
+# Data correction for test bank_transfer payment made in live mode
+DELETE FROM payments
+    WHERE id='8i1eFM9BkOB8Ze';
+DELETE FROM transactions
+    WHERE entity_id='8i1eFM9BkOB8Ze';
+DELETE FROM refunds
+    WHERE id='8iQEuts9RhZTvI';
+DELETE FROM transactions
+    WHERE entity_id='8iQEuts9RhZTvI';
+DELETE FROM bank_transfers
+    WHERE payment_id='8i1eFM9BkOB8Ze';
+
+# Makes invoices.user_id refer to users.id
+ALTER TABLE invoices
+    ADD CONSTRAINT invoices_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT;
+
+ALTER TABLE schedules
+    MODIFY COLUMN `anchor` int(11);
+
+ALTER TABLE tokens
+    ADD COLUMN account_number VARCHAR(40) AFTER wallet,
+    ADD INDEX `tokens_account_number_index` (`account_number`);
+
+ALTER TABLE batches
+    ADD COLUMN sub_type VARCHAR(25) DEFAULT NULL AFTER type,
+    ADD COLUMN gateway VARCHAR(25) DEFAULT NULL AFTER sub_type,
+    ADD COLUMN failure_reason TEXT DEFAULT NULL AFTER gateway,
+    ADD COLUMN processing TINYINT(1) DEFAULT 0 AFTER failure_reason,
+    ADD INDEX batches_gateway_index (gateway);
+
+ALTER TABLE disputes
+    ADD COLUMN parent_id CHAR(14) DEFAULT NULL AFTER merchant_id,
+    ADD CONSTRAINT disputes_parent_id_foreign FOREIGN KEY (parent_id) REFERENCES disputes(id) ON DELETE RESTRICT;
+
+ALTER TABLE bank_accounts
+    MODIFY COLUMN beneficiary_name VARCHAR(120) NOT NULL after account_number;
+
+# Adds tpv coulumn to gateway file
+ALTER TABLE gateway_files
+    ADD COLUMN sub_type VARCHAR(25) DEFAULT NULL AFTER target;
+
+ALTER TABLE merchant_details
+	ADD marketplace_activation_status VARCHAR(30) DEFAULT NULL AFTER locked,
+	ADD virtual_accounts_activation_status VARCHAR(30) DEFAULT NULL AFTER marketplace_activation_status,
+	ADD subscriptions_activation_status VARCHAR(30) DEFAULT NULL AFTER virtual_accounts_activation_status;
+
+ALTER TABLE virtual_accounts
+    ADD COLUMN qr_code_id CHAR(14) DEFAULT NULL after bank_account_id;
+
+ALTER TABLE fund_transfer_attempts
+	ADD mode VARCHAR(30) DEFAULT NULL AFTER bank_status_code;
+
+ALTER TABLE gateway_files
+    ADD COLUMN processing TINYINT(1) NOT NULL DEFAULT 0 AFTER status;
+
+ALTER TABLE payments
+    DROP COLUMN service_tax;
+
+ALTER TABLE transactions
+    DROP COLUMN service_tax;
+
+ALTER TABLE settlements
+    DROP COLUMN service_tax;
+
+ALTER TABLE payouts
+    DROP COLUMN service_tax;
+
+ALTER TABLE transfers
+    DROP COLUMN service_tax;
+
+ALTER TABLE daily_settlements
+    DROP COLUMN service_tax;
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN payer_account varchar(40) NOT NULL;
+
+#
+# Makes amount field of items, line_items, invoices unsigned and not null in
+# consistence with payment, orders and other tables.
+#
+# Some new amount fields were added later with default null but now they should
+# be not null.
+#
+
+ALTER TABLE items
+    MODIFY COLUMN amount INT(11) UNSIGNED NOT NULL;
+
+ALTER TABLE line_items
+    MODIFY COLUMN amount INT(11) UNSIGNED NOT NULL,
+    MODIFY COLUMN gross_amount INT(11) UNSIGNED NOT NULL,
+    MODIFY COLUMN tax_amount INT(11) UNSIGNED NOT NULL,
+    MODIFY COLUMN net_amount INT(11) UNSIGNED NOT NULL;
+
+ALTER TABLE invoices
+    MODIFY COLUMN gross_amount INT(11) UNSIGNED DEFAULT NULL,
+    MODIFY COLUMN tax_amount INT(11) UNSIGNED DEFAULT NULL;

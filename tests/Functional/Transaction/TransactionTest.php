@@ -111,7 +111,6 @@ class TransactionTest extends TestCase
 
         $testData = $this->testData['testTransactionCreateForOldPayment'];
         $testData['fee'] = $txn['fee'];
-        $testData['service_tax'] = $txn['service_tax'];
         $testData['tax'] = $txn['tax'];
 
         $this->assertArraySelectiveEquals($testData, $txn);
@@ -141,8 +140,10 @@ class TransactionTest extends TestCase
 
         $txn = $this->getLastTransaction(true);
 
+        $adjustment = $this->getLastEntity('adjustment');
+
         $testData = $this->testData['txnDataAfterDisputingPayment'];
-        $testData['entity_id'] = $dispute['id'];
+        $testData['entity_id'] = $adjustment['id'];
 
         $this->assertArraySelectiveEquals($testData, $txn);
 

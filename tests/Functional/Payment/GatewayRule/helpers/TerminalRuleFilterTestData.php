@@ -626,9 +626,7 @@ return [
         [
             'payment_options' => [
                 'method' => Method::CARD,
-                'card' => [
-                    'international' => true
-                ]
+                'international' => true,
             ],
             'fixtures' => [
                 [
@@ -677,6 +675,35 @@ return [
             'expected_terminal_ids' => [
                 '1000HdfcShared',
             ]
+        ]
+    ],
+
+    'testDomesticPaymentFilter' => [
+        'payment_options' => [
+            'method' => Method::CARD,
+            'international' => false,
+        ],
+        'fixtures' => [
+            [
+                'method'      => Method::CARD,
+                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'type'        => 'filter',
+                'filter_type' => 'select',
+                'group'       => 'method_filter',
+            ],
+            [
+                'method'        => Method::CARD,
+                'merchant_id'   => Merchant\Account::SHARED_ACCOUNT,
+                'type'          => 'filter',
+                'filter_type'   => 'select',
+                'group'         => 'domestic_filter',
+                'international' => '0',
+                'currency'      => 'INR',
+            ],
+        ],
+        'expected_terminal_ids' => [
+            '1000HdfcShared',
+            '1000FrstDataTl'
         ]
     ],
 

@@ -2,34 +2,34 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use DB;
 use Mail;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
-use RZP\Mail\Merchant\Activation as ActivationMail;
-use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
-use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
-use RZP\Models\Merchant\Methods;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Mail\Merchant\Activation as ActivationMail;
+use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
+use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 
 class MerchantTest extends TestCase
 {
+    use PaymentTrait;
     use ScheduleTrait;
     use SettlementTrait;
     use InteractsWithSession;
-    use EntityActionTrait;
-    use RequestResponseFlowTrait;
     use HeimdallTrait;
 
     public function setUp()
@@ -300,6 +300,11 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditTestAccountMerchantEmail()
+    {
+        $this->startTest();
+    }
+
     public function testEditMerchantConfig()
     {
         $this->createMerchant();
@@ -395,6 +400,12 @@ class MerchantTest extends TestCase
             'hostname'  => 'dashboard.razorpay.com'
         ]);
 
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => '1cXSLlUU8V9sXl',
+            'submitted'   => false,
+            'locked'      => false
+        ]);
+
         $activatedAt = time();
 
         $content = $this->startTest();
@@ -431,6 +442,11 @@ class MerchantTest extends TestCase
 
             $this->assertNotNull($mailData['rules']['amountRangeRules']);
             $this->assertNotNull($mailData['rules']['otherRules']);
+
+            // A pricing rule without a valid display pricing would
+            // appear in the mail as one with empty string as display.
+            $this->assertArrayNotHasKey('', $mailData['rules']['otherRules']);
+            $this->assertArrayNotHasKey('', $mailData['rules']['amountRangeRules']);
 
             return true;
         });
@@ -630,7 +646,7 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
-        $merchantDetail = $this->fixtures->create('merchant_detail',
+        $this->fixtures->create('merchant_detail',
                                                 [
                                                     'merchant_id' => '10000000000000',
                                                 ]);
@@ -669,7 +685,7 @@ class MerchantTest extends TestCase
     {
         $this->testAddBankAccount();
 
-        $content = $this->startTest();
+        $this->startTest();
     }
 
     public function testChangeBankAccount()
@@ -678,7 +694,7 @@ class MerchantTest extends TestCase
 
         $this->testAddBankAccount();
 
-        $content = $this->startTest();
+        $this->startTest();
 
         $bankAccounts = $this->getEntities(
                             'bank_account', ['deleted' => true, 'type' => 'merchant'], true);
@@ -739,7 +755,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $content = $this->startTest();
+        $this->startTest();
     }
 
     public function testSetEmptyBanks()
@@ -790,9 +806,9 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->enablePaytm();
 
-        $terminal = $this->fixtures->on('live')->create('terminal', $attributes);
+        $this->fixtures->on('live')->create('terminal', $attributes);
 
-        $content = $this->startTest();
+        $this->startTest();
     }
 
     public function testGetCheckoutRoute()
@@ -1208,7 +1224,7 @@ class MerchantTest extends TestCase
 
         $this->ba->appAuth();
 
-        $content = $this->startTest();
+        $this->startTest();
     }
 
     public function testPutEmiMethod()
@@ -1341,7 +1357,7 @@ class MerchantTest extends TestCase
     {
         $this->assertFileExists($file);
 
-        $mimeType = "image/png";
+        $mimeType = 'image/png';
         $uploadedFile = new UploadedFile(
                                             $file,
                                             $file,
@@ -1462,27 +1478,6 @@ class MerchantTest extends TestCase
         });
     }
 
-    public function testGetMerchantFeatures()
-    {
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
-    public function testUpdateMerchantFeatures()
-    {
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
-    public function testUpdateMerchantUnEditableFeatures()
-    {
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
     public function testScheduleTaskMigration()
     {
         $this->ba->appAuth();
@@ -1532,6 +1527,55 @@ class MerchantTest extends TestCase
         $this->assertNotNull($row);
     }
 
+    public function testCreateNbRecurringTokenPreferencesRoute()
+    {
+        $this->markTestSkipped();
+        $this->fixtures->create('terminal:shared_netbanking_icici_recurring_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->create('customer');
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
+
+        $response = $this->makePreferencesRouteRequest();
+
+        $expectedTokenCount = $response['customer']['tokens']['count'];
+
+        $payment = $this->getNetbankingRecurringPaymentArray('ICIC');
+        unset($payment['card']);
+
+        // We create a new nb recurring token via payment
+        $this->doAuthPayment($payment);
+
+        // Asserting that token was created, using Netbanking ICICI's SI Ref ID
+        $netbanking = $this->getLastEntity('netbanking', true);
+        $this->assertEquals('ICIC', $netbanking['bank']);
+        $token = $this->getLastEntity('token', true);
+        $this->assertEquals($netbanking['si_token'], $token['gateway_token']);
+
+        $response = $this->makePreferencesRouteRequest();
+
+        // We expect that the token created above is not sent in the preferences response
+        $this->assertEquals($expectedTokenCount, $response['customer']['tokens']['count']);
+    }
+
+    protected function makePreferencesRouteRequest()
+    {
+        $this->ba->publicAuth();
+
+        $request = [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'contact' => '9918899029',
+                'customer_id' => 'cust_100000customer'
+            ],
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function createUserMerchantMapping(string $userId, string $merchantId, string $role)
     {
         DB::table('merchant_users')
@@ -1542,5 +1586,25 @@ class MerchantTest extends TestCase
                 'created_at'  => 1493805150,
                 'updated_at'  => 1493805150
             ]);
+    }
+
+    public function testUpdateSubmerchantEmail()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000044',
+            'name'   => 'Submerchant',
+            'org_id' => '100000razorpay',
+            'email'  => 'test@razorpay.com',
+        ]);
+
+        $merchant = Merchant\Entity::find("10000000000044");
+        $merchant->reTag(["ref-10000000000000"]);
+        $merchant->saveOrFail();
+
+        $this->ba->appAuth();
+
+        $this->startTest();
     }
 }

@@ -4,14 +4,26 @@ namespace RZP\Tests\Functional\Gateway\FirstData;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class FirstDataGatewayTest extends TestCase
 {
     use PaymentTrait;
+
+    /**
+     * Instance of a terminal from the fixtures
+     * @var Terminal
+     */
+    protected $sharedTerminal;
+
+    /**
+     * The payment array
+     * @var array
+     */
+    protected $payment;
 
     public function setUp()
     {
@@ -30,7 +42,8 @@ class FirstDataGatewayTest extends TestCase
 
     public function testRecurringPayment()
     {
-        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+        list($terminal1, $terminal2) = $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+
         $this->fixtures->merchant->addFeatures('charge_at_will');
         $this->mockTokenex();
 
@@ -50,6 +63,16 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals($paymentEntity['token_id'], $token['id']);
         $this->assertEquals(true, $token['recurring']);
         $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
+
+        $this->mockServerRequestFunction(function ($body) use ($terminal1)
+        {
+            $hostedDataStoreId = $body['Transaction']['Payment']['HostedDataStoreID'];
+
+            $this->assertEquals(
+                $terminal1->getGatewayMerchantId(),
+                $hostedDataStoreId,
+                'wrong MID sent for recurring payment request');
+        });
 
         // Set payment for second recurring payment
         unset($payment['card']);
@@ -71,7 +94,7 @@ class FirstDataGatewayTest extends TestCase
         $token = $this->getLastEntity('token', true);
         $this->assertEquals($paymentEntity['token_id'], $token['id']);
         $this->assertEquals(true, $token['recurring']);
-        $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
+        $this->assertEquals('FDRcrgTrmlN3DS', $token['terminal_id']);
 
         // Transaction created at auth step itself, as recurring payment is a purchase request
         $transaction = $this->getLastEntity('transaction', true);
@@ -98,7 +121,11 @@ class FirstDataGatewayTest extends TestCase
         $token = $this->getLastEntity('token', true);
         $this->assertEquals($paymentEntity['token_id'], $token['id']);
         $this->assertEquals(true, $token['recurring']);
-        $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
+        $this->assertEquals('FDRcrgTrmlN3DS', $token['terminal_id']);
+
+        $gatewayToken = $this->getLastEntity('gateway_token', true);
+        $this->assertEquals($token['id'], 'token_'.$gatewayToken['token_id']);
+        $this->assertEquals('FDRcrgTrmlN3DS', $gatewayToken['terminal_id']);
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
         $refund = $this->getLastEntity('refund', true);
@@ -273,9 +300,8 @@ class FirstDataGatewayTest extends TestCase
 
         $paymentRes = $this->getLastPayment(true);
 
-        // FirstData is preferred over Sharp, but does not get selected
-        // as ICICI cards are disabled on FirstData
-        $this->assertNotEquals('first_data', $paymentRes['gateway']);
+        // FirstData now should get selected
+        $this->assertEquals('first_data', $paymentRes['gateway']);
 
         $payment['card']['number'] = '5109591717594888';
 
@@ -305,6 +331,21 @@ class FirstDataGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(1, $payment['verified']);
+    }
+
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['chargetotal'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $this->doAuthPayment();
+        });
     }
 
     public function testPaymentRefund()
@@ -588,5 +629,49 @@ class FirstDataGatewayTest extends TestCase
         $paymentId = explode('_', $payment['id'])[1];
 
         $this->assertEquals(strtoupper($paymentId), $firstData['caps_payment_id']);
+    }
+
+    public function testAuthCodeMappingFromApprovalCode()
+    {
+        $sampleAuthCode = random_integer(6);
+
+        $this->getOveriddenApprovalCode("Y:$sampleAuthCode:PPX: 233123");
+
+        $this->doAuthPayment($this->payment);
+
+        $gatewayPayment = $this->getLastEntity('first_data', true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($sampleAuthCode, $gatewayPayment['auth_code']);
+
+        $this->assertEquals($sampleAuthCode, $payment['reference2']);
+    }
+
+    public function testAuthCodeMapForVerifyPayment()
+    {
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->verifyPayment($payment['id']);
+
+        $gatewayPayment = $this->getLastEntity('first_data', true);
+
+        // The value is hardcoded in SoapWrapper,
+        // it also makes sure that the first TransactionValues is picked if there are many
+        $this->assertEquals('543210', $gatewayPayment['auth_code']);
+    }
+
+    public function testPaymentForMissingIin()
+    {
+        $iinCode = '466522';
+
+        $iin = $this->getEntityById('iin', $iinCode);
+        $this->assertArrayHasKey('error', $iin);
+
+        $this->payment['card']['number'] = $iinCode . '00000000000';
+
+        $this->doAuthPayment($this->payment);
     }
 }

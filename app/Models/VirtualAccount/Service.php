@@ -31,23 +31,11 @@ class Service extends Base\Service
 
         $this->verifyMerchantIsLiveForLiveRequest();
 
-        // @TODO: Change/Update this when more methods are added for Virtual Accounts
-        $this->verifyBankTransferEnabled();
-
         $customer = $this->getCustomerIfGiven($input);
 
         $this->setDefaultReceiverTypesIfNeeded($input);
 
-        $virtualAccount = $this->repo->transaction(function() use ($input, $customer)
-        {
-            $virtualAccount = $this->core->create($input, $this->merchant, $customer);
-
-            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVER_TYPES]);
-
-            $this->repo->saveOrFail($virtualAccount);
-
-            return $virtualAccount;
-        });
+        $virtualAccount = $this->core->create($input, $this->merchant, $customer);
 
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_CREATED,
@@ -232,26 +220,6 @@ class Service extends Base\Service
         }
     }
 
-    protected function buildReceivers(Entity $virtualAccount, array $receiverTypes)
-    {
-        $name = $virtualAccount->getName();
-
-        $descriptor = $virtualAccount->getDescriptor();
-
-        $receiverHelper = new Receiver($this->merchant, $name, $descriptor);
-
-        foreach ($receiverTypes as $receiverType)
-        {
-            $func = 'build' . studly_case($receiverType);
-
-            $receiver = $receiverHelper->$func($virtualAccount);
-
-            $association = camel_case($receiverType);
-
-            $virtualAccount->$association()->associate($receiver);
-        }
-    }
-
     protected function verifyMerchantIsLiveForLiveRequest()
     {
         // On live request, ensure that merchant isn't blocked temporarily
@@ -261,28 +229,6 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED);
         }
-    }
-
-    protected function verifyBankTransferEnabled()
-    {
-        $merchantMethods = $this->getMethodsForMerchant($this->merchant);
-
-        if (($merchantMethods === null) or
-            ($merchantMethods->isBankTransferEnabled() === false))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BANK_TRANSFER_NOT_ENABLED_FOR_MERCHANT);
-        }
-    }
-
-    protected function getMethodsForMerchant(Merchant\Entity $merchant)
-    {
-        if ($merchant->hasRelation('methods') === false)
-        {
-            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
-        }
-
-        return $merchant->methods;
     }
 
     protected function getNewProcessor($merchant)

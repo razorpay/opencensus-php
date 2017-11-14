@@ -80,7 +80,7 @@ class TransferTest extends TestCase
         // When Transfer Fee = 0, zero pricing
         $this->assertEquals($transfer['amount'], $this->getBalance($this->linkedAccountId));
 
-        $this->checkTransferAndTxnRecords($transfer, ['fees' => 0, 'service_tax' => 0, 'tax' => 0]);
+        $this->checkTransferAndTxnRecords($transfer, ['fees' => 0, 'tax' => 0]);
 
         $this->checkPaymentAndTxnRecords($transfer);
     }
@@ -104,7 +104,6 @@ class TransferTest extends TestCase
         $txnData = [
             'amount'      => $transfer['amount'],
             'fee'         => $expectedFee,
-            'service_tax' => $tax,
             'tax'         => $tax,
             'debit'       => $transfer['amount'] + $expectedFee
         ];
@@ -197,7 +196,7 @@ class TransferTest extends TestCase
     {
         $transfer = $this->createTransfer('account');
 
-        $transferId = $this->fixtures->transfer->stripSign($transfer['id']);
+        $transferId = $this->fixtures->stripSign($transfer['id']);
 
         $transferPayment = $this->getEntities('payment', ['transfer_id' => $transferId], true)['items'][0];
 
@@ -227,6 +226,18 @@ class TransferTest extends TestCase
         {
             $this->patchTransfer('account', $transfer['id'], $body);
         });
+    }
+
+    public function testPatchTransferOnHoldUntilOnHoldTrue()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $body['on_hold'] = '1';
+
+        $patch = $this->patchTransfer('account', $transfer['id'], $body);
+
+        $this->assertEquals(true, $patch['on_hold']);
+        $this->assertEquals(null, $patch['on_hold_until']);
     }
 
     public function testRetrieveTransfer()
@@ -504,7 +515,6 @@ class TransferTest extends TestCase
             'credit'        => 0,
             'settled'       => false,
             'fee'           => 0,
-            'service_tax'   => 0,
             'tax'           => 0,
         ];
 
@@ -539,7 +549,6 @@ class TransferTest extends TestCase
             'on_hold'       => $transfer['on_hold'],
             'settled'       => false,
             'fee'           => 0,
-            'service_tax'   => 0,
             'tax'           => 0,
         ];
 

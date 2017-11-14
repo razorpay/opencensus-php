@@ -3,32 +3,60 @@
 namespace RZP\Models\Customer\Token;
 
 use RZP\Models\Base;
+use RZP\Models\Card;
+use RZP\Models\Payment;
+use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Models\Merchant\Account;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property Card\Entity $card
+ * @property Terminal\Entity $terminal
+ * @property Merchant\Entity $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
-    const MERCHANT_ID           = 'merchant_id';
-    const CUSTOMER_ID           = 'customer_id';
-    const TERMINAL_ID           = 'terminal_id';
-    const TOKEN                 = 'token';
-    const METHOD                = 'method';
-    const CARD_ID               = 'card_id';
-    const CARD                  = 'card';
-    const BANK                  = 'bank';
-    const WALLET                = 'wallet';
-    const GATEWAY_TOKEN         = 'gateway_token';
-    const GATEWAY_TOKEN2        = 'gateway_token2';
-    const RECURRING             = 'recurring';
-    const USED_COUNT            = 'used_count';
-    const USED_AT               = 'used_at';
-    const EXPIRED_AT            = 'expired_at';
-    const CREATED_AT            = 'created_at';
-    const UPDATED_AT            = 'updated_at';
-    const DELETED_AT            = 'deleted_at';
+    const MERCHANT_ID               = 'merchant_id';
+    const CUSTOMER_ID               = 'customer_id';
+    const TERMINAL_ID               = 'terminal_id';
+    const TOKEN                     = 'token';
+    const METHOD                    = 'method';
+    const CARD_ID                   = 'card_id';
+    const CARD                      = 'card';
+    const BANK                      = 'bank';
+    const WALLET                    = 'wallet';
+    const ACCOUNT_NUMBER            = 'account_number';
+    const GATEWAY_TOKEN             = 'gateway_token';
+    const GATEWAY_TOKEN2            = 'gateway_token2';
+    const RECURRING                 = 'recurring';
+    const MAX_AMOUNT                = 'max_amount';
+    const RECURRING_STATUS          = 'recurring_status';
+    const RECURRING_FAILURE_REASON  = 'recurring_failure_reason';
+    const RECURRING_DETAILS         = 'recurring_details';
+    const USED_COUNT                = 'used_count';
+    const USED_AT                   = 'used_at';
+    const EXPIRED_AT                = 'expired_at';
+    const CREATED_AT                = 'created_at';
+    const UPDATED_AT                = 'updated_at';
+    const DELETED_AT                = 'deleted_at';
+
+    //
+    // These keys will be under recurring_details
+    // Having recurring prepended to status and
+    // failure_reason is redundant.
+    //
+    const RECURRING_STATUS_SHORT            = 'status';
+    const RECURRING_FAILURE_REASON_SHORT    = 'failure_reason';
+
+    /**
+     * We use this to set the max amount of the token entity.
+     * By default, we have chosen 10000000 paise
+     */
+    const DEFAULT_MAX_AMOUNT    = 10000000;
 
     protected static $sign      = 'token';
 
@@ -36,23 +64,26 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected $fillable = array(
+    protected $fillable = [
         self::ID,
         self::BANK,
         self::WALLET,
         self::METHOD,
+        self::ACCOUNT_NUMBER,
         self::TOKEN,
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
         self::RECURRING,
         self::EXPIRED_AT,
-    );
+        self::MAX_AMOUNT
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::ID,
         self::MERCHANT_ID,
         self::BANK,
         self::WALLET,
+        self::ACCOUNT_NUMBER,
         self::TOKEN,
         self::METHOD,
         self::CARD_ID,
@@ -62,14 +93,18 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
         self::RECURRING,
+        self::RECURRING_DETAILS,
+        self::RECURRING_FAILURE_REASON,
+        self::RECURRING_STATUS,
+        self::MAX_AMOUNT,
         self::USED_COUNT,
         self::USED_AT,
         self::EXPIRED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::TOKEN,
@@ -78,34 +113,49 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::CARD,
         self::RECURRING,
+        self::RECURRING_DETAILS,
         self::USED_AT,
-        self::CREATED_AT
-    );
+        self::CREATED_AT,
+        // TODO: uncomment when we start accepting token as input
+        // self::MAX_AMOUNT,
+    ];
 
-    protected $defaults = array(
-        self::WALLET         => null,
-        self::BANK           => null,
-        self::CARD_ID        => null,
-        self::GATEWAY_TOKEN2 => null,
-        self::RECURRING      => false,
-        self::USED_AT        => null,
-        self::USED_COUNT     => 0,
-        self::EXPIRED_AT     => null,
-    );
+    protected $defaults = [
+        self::WALLET                    => null,
+        self::ACCOUNT_NUMBER            => null,
+        self::BANK                      => null,
+        self::CARD_ID                   => null,
+        self::GATEWAY_TOKEN2            => null,
+        self::RECURRING                 => false,
+        self::RECURRING_FAILURE_REASON  => null,
+        self::RECURRING_STATUS          => null,
+        self::MAX_AMOUNT                => null,
+        self::USED_AT                   => null,
+        self::USED_COUNT                => 0,
+        self::EXPIRED_AT                => null,
+    ];
 
-    protected $publicSetters = array(
+    protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::CARD,
-        self::RECURRING);
+        // TODO: Remove this after deciding on how to expose
+        self::RECURRING_DETAILS
+    ];
 
-    protected $casts = array(
+    protected $appends = [
+        self::RECURRING_DETAILS,
+    ];
+
+    protected $casts = [
         self::RECURRING     => 'bool',
-    );
+        self::MAX_AMOUNT    => 'int',
+        self::USED_COUNT    => 'int',
+    ];
 
-    protected static $generators = array(
+    protected static $generators = [
         self::TOKEN
-    );
+    ];
 
     public function customer()
     {
@@ -142,6 +192,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::WALLET);
     }
 
+    public function getAccountNumber()
+    {
+        return $this->getAttribute(self::ACCOUNT_NUMBER);
+    }
+
     public function getToken()
     {
         return $this->getAttribute(self::TOKEN);
@@ -155,6 +210,11 @@ class Entity extends Base\PublicEntity
     public function getGatewayToken()
     {
         return $this->getAttribute(self::GATEWAY_TOKEN);
+    }
+
+    public function setGatewayToken($gatewayToken)
+    {
+        return $this->setAttribute(self::GATEWAY_TOKEN, $gatewayToken);
     }
 
     public function getGatewayToken2()
@@ -187,6 +247,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MERCHANT_ID);
     }
 
+    public function getMaxAmount()
+    {
+        return $this->getAttribute(self::MAX_AMOUNT);
+    }
+
     public function getCardId()
     {
         return $this->getAttribute(self::CARD_ID);
@@ -197,9 +262,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
+    public function getRecurringStatus()
+    {
+        return $this->getAttribute(self::RECURRING_STATUS);
+    }
+
+    public function getRecurringFailureReason()
+    {
+        return $this->getAttribute(self::RECURRING_FAILURE_REASON);
+    }
+
     public function isLocal()
     {
         return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
+    }
+
+    public function isCard()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::CARD);
     }
 
     public function isExpired()
@@ -219,6 +299,18 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECURRING, $recurring);
     }
 
+    public function setRecurringStatus($recurringStatus)
+    {
+        RecurringStatus::validateRecurringStatus($recurringStatus);
+
+        $this->setAttribute(self::RECURRING_STATUS, $recurringStatus);
+    }
+
+    public function setRecurringFailureReason($recurringFailureReason)
+    {
+        $this->setAttribute(self::RECURRING_FAILURE_REASON, $recurringFailureReason);
+    }
+
     public function setUsedAt($timestamp)
     {
         $this->setAttribute(self::USED_AT, $timestamp);
@@ -232,13 +324,6 @@ class Entity extends Base\PublicEntity
     public function incrementUsedCount()
     {
         $this->increment(self::USED_COUNT);
-    }
-
-    public function scopeCustomerId($query, $customerId)
-    {
-        $customerIdColumn = $this->getAttributeWithTableName(Entity::CUSTOMER_ID);
-
-        $query->where($customerIdColumn, '=', $customerId);
     }
 
     protected function setUsedAtAttribute($time)
@@ -259,11 +344,23 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function setPublicRecurringAttribute(array & $array)
+    /**
+     * Appending recurring status and recurring
+     * failure reason when recurring status is set
+     */
+    public function getRecurringDetailsAttribute()
     {
-        if ($this->isRecurring() === false)
+        return [
+            self::RECURRING_STATUS_SHORT            => $this->getRecurringStatus(),
+            self::RECURRING_FAILURE_REASON_SHORT    => $this->getRecurringFailureReason()
+        ];
+    }
+
+    public function setPublicRecurringDetailsAttribute(array & $array)
+    {
+        if ($this->getMethod() === Payment\Method::CARD)
         {
-            unset($array[self::RECURRING]);
+            unset($array[self::RECURRING_DETAILS]);
         }
     }
 

@@ -7,6 +7,7 @@ use Swift_Mailer;
 use Http\Mock\Client as MockHttplug;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+
 use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
@@ -20,13 +21,13 @@ use RZP\Models\Promotion;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
-use RZP\Models\Gateway\File;
 use RZP\Models\Admin as Admin;
 use RZP\Models\Payment\Refund;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Plan\Subscription;
 use RZP\Services\GatewayFileManager;
 use RZP\Models\Plan\Subscription\Addon;
+use RZP\Models\Gateway\File as GatewayFile;
 
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -96,6 +97,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new Raven($app);
         });
 
+        $this->app->singleton('authservice', function($app)
+        {
+            return new AuthService($app);
+        });
+
         $this->app->singleton('es', function($app)
         {
             return new EsClient($app);
@@ -118,6 +124,13 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('eventManager', function($app)
         {
+            $harvesterClientMock = $app['config']->get('applications.harvester.mock');
+
+            if ($harvesterClientMock === true)
+            {
+                return new Mock\HarvesterClient($app);
+            }
+
             return new HarvesterClient($app);
         });
 
@@ -181,6 +194,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'exchange',
             'pigeon',
             'workflow',
+            'authservice',
             'sns',
             'reporting',
         ];
@@ -282,7 +296,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'merchant'        => Merchant\Entity::class,
             'merchant_detail' => Merchant\Detail\Entity::class,
             'batch'           => Batch\Entity::class,
-            'gateway_file'    => Gateway\File\Entity::class,
+            'gateway_file'    => GatewayFile\Entity::class,
 
             // transaction
             'adjustment'      => Adjustment\Entity::class,

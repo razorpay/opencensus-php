@@ -55,7 +55,6 @@ return [
                 'two_factor_auth' => TwoFactorAuth::NOT_APPLICABLE,
                 'captured' => false,
                 'fee' => null,
-                'service_tax' => null,
                 'tax' => null,
             ],
         ],
@@ -106,6 +105,30 @@ return [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
+        ],
+    ],
+
+    'testAcsFailure' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '5200000000000064',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,
+            'gateway_error_code'  => '98',
         ],
     ],
 

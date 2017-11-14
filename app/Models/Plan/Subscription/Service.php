@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use RZP\Constants;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
@@ -10,6 +11,7 @@ use RZP\Models\Plan;
 use RZP\Trace\TraceCode;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
@@ -23,9 +25,9 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function create(array $input) : array
+    public function create(array $input): array
     {
-        (new Validator)->validateInputBeforeBuild($input);
+        (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 
         $planId = $input[Entity::PLAN_ID];
 
@@ -159,33 +161,19 @@ class Service extends Base\Service
     {
         $subscriptionsToRetry = $this->repo->subscription->getSubscriptionsToRetry();
 
-        $success = $failed = 0;
+        $success = 0;
         $failures = [];
 
         foreach ($subscriptionsToRetry as $subscription)
         {
-            $errorStatus = $subscription->getErrorStatus();
-
-            if ($errorStatus === null)
-            {
-                throw new LogicException(
-                    'Only subscriptions with an error status should be retried!',
-                    null,
-                    [
-                        'subscription_id' => $subscription->getId(),
-                    ]);
-            }
-
             try
             {
-                $this->core->retry($subscription, $errorStatus);
+                $this->core->retry($subscription);
 
                 $success++;
             }
             catch (\Exception $ex)
             {
-                $failed++;
-
                 $failures[] = $subscription->getId();
 
                 $this->trace->traceException(
@@ -199,7 +187,7 @@ class Service extends Base\Service
         $summary = [
             'total'                 => $subscriptionsToRetry->count(),
             'queued'                => $success,
-            'failed'                => $failed,
+            'failed'                => count($failures),
             'failure_subscriptions' => $failures,
         ];
 
@@ -211,13 +199,66 @@ class Service extends Base\Service
         return $summary;
     }
 
-    public function cancelSubscription(string $subscriptionId)
+    public function cancelSubscription(string $subscriptionId, array $input = []): array
     {
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
-        $subscription = $this->core->cancel($subscription);
+        $subscription = $this->core->cancel($subscription, $input);
 
         return $subscription->toArrayPublic();
+    }
+
+    public function chargeTestSubscription(string $subscriptionId, array $input)
+    {
+        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
+
+        $this->core->testCharge($subscription, $input);
+
+        return $subscription->toArrayPublic();
+    }
+
+    public function cancelDueSubscriptions()
+    {
+        $subscriptionsToCancel = $this->repo->subscription->getSubscriptionsToCancel();
+
+        $success = 0;
+        $failures = [];
+
+        foreach ($subscriptionsToCancel as $subscription)
+        {
+            try
+            {
+                $this->core->cancelImmediately($subscription);
+
+                $success++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::SUBSCRIPTION_CANCEL_FAILED,
+                    [
+                        'subscription_id' => $subscription->getId()
+                    ]);
+
+                $failures[] = $subscription->getId();
+            }
+        }
+
+        $summary = [
+            'total'                 => $subscriptionsToCancel->count(),
+            'queued'                => $success,
+            'failed'                => count($failures),
+            'failure_subscriptions' => $failures,
+        ];
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_CANCEL_DUE_SUMMARY,
+            $summary
+        );
+
+        return $summary;
     }
 
     public function chargeSubscriptionInvoiceManually(string $invoiceId)
@@ -235,7 +276,7 @@ class Service extends Base\Service
                 'subscription'      => $subscription->toArray(),
             ]);
 
-        if (in_array($subscription->getStatus(), Status::$invoiceManualChargeableStatuses, true) === false)
+        if ($subscription->isInvoiceManualChargeableStatus() === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_HALTED_STATE,
@@ -247,8 +288,7 @@ class Service extends Base\Service
                 ]);
         }
 
-        if (($invoice->isIssued() === false) or
-            ($invoice->getSubscriptionStatus() !== Invoice\Status::HALTED))
+        if ($invoice->isIssued() === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVOICE_CANNOT_BE_CHARGED,
@@ -262,17 +302,77 @@ class Service extends Base\Service
 
         $capture = $this->shouldCaptureInvoice($invoice, $subscription);
 
+        $options = [
+            'manual' => true,
+            'queue'  => false,
+        ];
+
         if ($capture === true)
         {
-            return $this->core->retryCapture($subscription, $invoice, true);
+            $success = $this->core->retryCapture($subscription, $invoice, $options);
         }
         else
         {
-            return $this->core->charge($subscription, $invoice, true);
+            $success = $this->core->charge($subscription, $invoice, $options);
         }
+
+        if ($success === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVOICE_CHARGE_FAILED,
+                null,
+                [
+                    'invoice_id'        => $invoiceId,
+                    'subscription_id'   => $subscription->getId(),
+                    'capture'           => $capture,
+                    'options'           => $options
+                ]);
+        }
+
+        //
+        // Subscription is charged by passing a payload of reference ids
+        // to a helper class (Charge). We use a payload, because for cron
+        // charges, we queue the job. We don't for manual though, so
+        // reloading at this stage ensures that updated values are returned.
+        //
+        $this->repo->reload($invoice);
+
+        return $invoice->toArrayPublic();
+    }
+
+    public function getSubscriptionViewData(string $subscriptionId): array
+    {
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        if (($routeName === 'subscription_view_test') or
+            ($routeName === 'subscription_view_test_post'))
+        {
+            $mode = Constants\Mode::TEST;
+        }
+        else
+        {
+            $mode = Constants\Mode::LIVE;
+        }
+
+        \Database\DefaultConnection::set($mode);
+
+        $this->app['basicauth']->setMode($mode);
+
+        $subscription = $this->repo->subscription->findByPublicId($subscriptionId);
+
+        $subscription->getValidator()->validateSubscriptionViewable();
+
+        return (new ViewDataSerializer($subscription))->get();
     }
 
     /**
+     * Whether an invoice should be captured can be determined just by seeing if there
+     * are any authorized payments. An authorized payment can only exist if the amount
+     * has already been validated, so this can be captured.
+     *
+     * We can't use subscription errorStatus, as merchant may be manually charging an
+     * older invoice, and subscription attributes may since have been updated.
+     *
      * @param Invoice\Entity $invoice
      * @param Entity         $subscription
      *

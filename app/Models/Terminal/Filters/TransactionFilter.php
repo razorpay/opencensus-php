@@ -3,18 +3,21 @@
 namespace RZP\Models\Terminal\Filters;
 
 use App;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\Card\Network;
-use RZP\Models\Card\Issuer;
-use RZP\Models\Card\Type;
-use RZP\Models\Payment\Gateway;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Method;
-use RZP\Models\Currency\Currency;
+use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Card\Type;
+use RZP\Models\Card\Issuer;
+use RZP\Models\Card\Network;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Shared;
+use RZP\Models\Currency\Currency;
+use RZP\Models\Terminal\Category;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
@@ -22,11 +25,12 @@ class TransactionFilter extends Terminal\Filter
     protected $properties = [
         'method',
         'network',
-        'currency',
-        'international',
         'bank',
         'recurring',
+        'gateway',
         'subscription',
+        'tpv',
+        'pharma',
     ];
 
     public function methodFilter($terminal)
@@ -82,39 +86,6 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
-    public function currencyFilter($terminal)
-    {
-        $payment = $this->input['payment'];
-
-        $paymentCurrency = $payment->getCurrency();
-
-        if ($payment->getConvertCurrency() === true)
-        {
-            $paymentCurrency = Currency::INR;
-        }
-
-        $terminalCurrency = $terminal->getCurrency();
-
-        return ($paymentCurrency === $terminalCurrency);
-    }
-
-    public function internationalFilter($terminal)
-    {
-        if ($this->input['payment']->isMethodCardOrEmi() === false)
-        {
-            return true;
-        }
-
-        $isPaymentInternational = $this->input['payment']->isInternational();
-
-        if ($isPaymentInternational === true)
-        {
-            return $terminal->isInternational();
-        }
-
-        return $terminal->isDomestic();
-    }
-
     public function bankFilter($terminal)
     {
         if ($this->input['payment']->isNetbanking())
@@ -129,19 +100,42 @@ class TransactionFilter extends Terminal\Filter
 
             return in_array($terminalGateway, $gateways);
         }
-        else if ($this->input['payment']->isCard())
-        {
-            $issuer = $this->input['payment']->card->getIssuer();
-            $type = $this->input['payment']->card->getType();
 
-            if (($issuer === Issuer::ICIC) and
-                ($type !== Type::CREDIT) and
-                ($terminal->getGateway() === Gateway::FIRST_DATA) and
-                ($this->input['merchant']->getId() !== '5ubLZpACTmD8D4'))
+        return true;
+    }
+
+    /**
+     * Filter to remove cybersource shared terminals for non recurring payments
+     *
+     * @param  Terminal\Entity $terminal
+     */
+    public function gatewayFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        $merchant = $this->input['merchant'];
+
+        // This filter should run only in production environment, else tests for
+        // cybersource would fail.
+        if ($this->isLiveMode() === true)
+        {
+            if ($terminal->getGateway() === Gateway::CYBERSOURCE)
             {
-                // ICICI debit cards currently don't work on FirstData
-                // This allows transactions only on test merchant
-                return false;
+                //
+                // For some merchants, due to business reasons we want payments
+                // to go through cybersource terminal
+                //
+                $merchantWhitelisted = (in_array($merchant->getId(),
+                                            Preferences::CYBERSOURCE_MERCHANT_WHITELIST,
+                                            true) === true);
+
+                if (($merchantWhitelisted === false) and
+                    ($payment->isRecurring() === false) and
+                    ($payment->isInternational() === false) and
+                    ($terminal->isDirectForMerchant($merchant) === false))
+                {
+                    return false;
+                }
             }
         }
 
@@ -155,7 +149,9 @@ class TransactionFilter extends Terminal\Filter
         // for cybersource, check get the terminal based on recurring type
         if ($payment->isRecurring() === true)
         {
-            if (Gateway::isRecurringGateway($terminal->getGateway()) === false)
+            $recurring = Gateway::isRecurringGateway($terminal->getGateway());
+
+            if ($recurring === false)
             {
                 return false;
             }
@@ -297,5 +293,61 @@ class TransactionFilter extends Terminal\Filter
         $subvention = $this->input['payment']->emiPlan->getSubvention();
 
         return $terminal->isValidEmiTerminal($gateway, $emiDuration, $subvention);
+    }
+
+    public function pharmaFilter(Terminal\Entity $terminal)
+    {
+        $category2 = $this->input['merchant']->getCategory2();
+
+        $acquirer = $terminal->getGatewayAcquirer();
+
+        if (($category2 === Category::PHARMA) and
+            ($this->input['payment']->isMethodCardOrEmi() === true))
+        {
+            if (($terminal->isShared() === true) and
+                ($acquirer === Gateway::ACQUIRER_HDFC))
+            {
+                // This check is for all the card networks which are
+                // supported by gateways from other acquirers that also
+                // have a shared terminal.
+                // Currently, we don't have a shared terminal RuPay and
+                // Maestro. We are doing a workaround using the
+                // merchant descriptor feature of FirstData
+                return false;
+            }
+            // Terminal ID for Aala first data terminal is 76lEBqibDvhOzY
+            else if ($terminal->getId() === '76lEBqibDvhOzY')
+            {
+                 $network = $this->input['payment']->card->getNetworkCode();
+                 if (in_array($network, [Network::RUPAY, Network::MAES], true) === false)
+                 {
+                    return false;
+                 }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * For netbanking payments, if a merchant has tpv feature enabled, checks
+     * if the terminal supports tpv or not
+     *
+     * @param  Terminal\Entity      $terminal
+     *
+     * @return bool
+     */
+    public function tpvFilter($terminal)
+    {
+        if ($this->input['payment']->isNetbanking() === true)
+        {
+            if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TPV))
+            {
+                return ($terminal->isTpvAllowed() === true);
+            }
+
+            return ($terminal->isNonTpvAllowed() === true);
+        }
+
+        return true;
     }
 }

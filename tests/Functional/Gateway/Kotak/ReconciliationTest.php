@@ -75,6 +75,9 @@ class ReconciliationTest extends TestCase
             $this->assertNotNull($setl[$key]);
         }
 
+        $merchant = $this->getEntityById('merchant','10000000000000', true);
+        $this->assertEquals(false, $merchant['hold_funds']);
+
         $batch = $this->getLastEntity('batch_fund_transfer', true);
 
         $this->assertEquals(1, $batch['processed_count']);
@@ -132,6 +135,9 @@ class ReconciliationTest extends TestCase
 
         $this->assertNull($settlement[Settlement\Entity::SETTLED_ON]);
 
+        $merchant = $this->getEntityById('merchant','10000000000000', true);
+        $this->assertEquals(true, $merchant['hold_funds']);
+
         // Validate settlement attempt entity
         $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconFailure');
@@ -178,7 +184,13 @@ class ReconciliationTest extends TestCase
     public function testRetryRecon()
     {
         $settlement = $this->testReconciliationFailure();
+
+        $firstAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
         $oldBatchFundTransferId = $settlement['batch_fund_transfer_id'];
+
+        // Resetting merchant
+        $this->fixtures->merchant->holdFunds(Account::TEST_ACCOUNT, false);
 
         $content = $this->retryIntiateSettlements([$settlement['id']]);
 
@@ -200,7 +212,7 @@ class ReconciliationTest extends TestCase
         $content = $this->getEntities('file_store', [], true);
         $this->assertSame($content['count'], 4);
 
-        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile);
+        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile, false, $firstAttempt['id']);
 
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
@@ -301,7 +313,7 @@ class ReconciliationTest extends TestCase
         Carbon::setTestNow($currentTime);
 
         $txtFile2 = $this->createSettlementsAndSettlementFile(
-            2, Carbon::today("Asia/Kolkata")->subDays(5)->timestamp);
+            2, Carbon::today(Timezone::IST)->subDays(5)->timestamp);
 
         $request = [
             'url' => '/settlements/reconcile/test',

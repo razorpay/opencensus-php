@@ -667,7 +667,7 @@ class VerifyTest extends TestCase
             'method' => 'post'
         ];
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $time->addMinutes(15);
 
@@ -681,7 +681,7 @@ class VerifyTest extends TestCase
 
         $this->assertEquals(9, $newBucket);
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $time->addMinutes(30);
 
@@ -732,7 +732,7 @@ class VerifyTest extends TestCase
             'method' => 'post'
         ];
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $time->addMinutes(15);
 
@@ -746,7 +746,7 @@ class VerifyTest extends TestCase
 
         $this->assertEquals(0, $newBucket);
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $time->addMinutes(30);
 
@@ -806,7 +806,7 @@ class VerifyTest extends TestCase
             'method' => 'post'
         ];
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $time->addMinutes(14);
 
@@ -815,8 +815,8 @@ class VerifyTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'error' => 1,
-            'filter'  => $filter,
+            'not_applicable' => 1,
+            'filter'         => $filter,
         ];
 
         $this->assertContent($content, $resultData);
@@ -855,15 +855,15 @@ class VerifyTest extends TestCase
 
         $time = Carbon::now(Timezone::IST);
 
-        $time->addMinutes(15);
+        $time->addMinutes(14);
 
         Carbon::setTestNow($time);
 
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            'timeout' => 1,
-            'filter'  => 'payments_failed',
+            'not_applicable' => 1,
+            'filter'         => 'payments_failed',
         ];
 
         $this->assertContent($content, $resultData);
@@ -1136,11 +1136,13 @@ class VerifyTest extends TestCase
         unset($content['verifiable_count']);
 
         $defaultParams = [
-            'success'       => 0,
-            'authorized'    => 0,
-            'timeout'       => 0,
-            'error'         => 0,
-            'bucket_filter' => [],
+            'success'        => 0,
+            'authorized'     => 0,
+            'timeout'        => 0,
+            'error'          => 0,
+            'not_applicable' => 0,
+            'unknown'        => 0,
+            'bucket_filter'  => [],
         ];
 
         $total = array_sum($defaultParams);
@@ -1148,7 +1150,13 @@ class VerifyTest extends TestCase
         $defaultParams = array_merge($defaultParams, $param);
 
         $defaultParams['verified_payments'] = $defaultParams['success'] +
-            $defaultParams['authorized'] + $defaultParams['timeout'] + $defaultParams['error'];
+            $defaultParams['authorized'] + $defaultParams['timeout'] +
+            $defaultParams['error'] + $defaultParams['not_applicable'] + $defaultParams['unknown'];
+
+        if ($defaultParams['not_applicable'] === 0)
+        {
+            unset($defaultParams['not_applicable']);
+        }
 
         $this->assertEquals($defaultParams, $content);
     }

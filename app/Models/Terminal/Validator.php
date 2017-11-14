@@ -35,7 +35,7 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|in:1,2,3',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
-        Entity::TPV                         => 'sometimes_if:netbanking,1|boolean',
+        Entity::TPV                         => 'sometimes_if:netbanking,1|in:0,1,2',
         Entity::CORPORATE                   => 'sometimes_if:netbanking,1|boolean',
         Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
@@ -50,6 +50,7 @@ class Validator extends Base\Validator
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::BILLDESK,
         Payment\Gateway::FIRST_DATA,
+        Payment\Gateway::NETBANKING_INDUSIND,
     ];
 
     protected static $createValidators = [
@@ -76,6 +77,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::CURRENCY                   => 'sometimes|alpha|size:3',
     ];
 
     protected static $aepsIciciTerminalRules = [
@@ -164,7 +166,7 @@ class Validator extends Base\Validator
 
     protected static $billdeskEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:billdesk',
-        Entity::TPV                        => 'sometimes|boolean|in:0,1',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
@@ -194,6 +196,15 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'sometimes|in:upi_icici',
         Entity::UPI                        => 'sometimes|boolean|in:1',
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
+    ];
+
+    protected static $netbankingIciciEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID2    => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
+    ];
+
+    protected static $netbankingIndusindEditTerminalRules = [
+        Entity::TPV                     => 'sometimes|in:0,1,2'
     ];
 
     protected static $walletPayzappTerminalRules = [
@@ -231,12 +242,15 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:wallet_freecharge',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes',
     ];
 
     protected static $netbankingIciciTerminalRules = [
-        Entity::GATEWAY                    => 'required|in:netbanking_icici',
-        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::GATEWAY                 => 'required|in:netbanking_icici',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2    => 'required|string',
+        Entity::TYPE                    => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16'
     ];
 
     protected static $walletJiomoneyTerminalRules = [
@@ -274,7 +288,11 @@ class Validator extends Base\Validator
 
     protected static $netbankingAxisTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_axis',
-        Entity::GATEWAY_MERCHANT_ID        => 'required|string'
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        // The below fields are used only for Emandate terminals, hence "sometimes"
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $netbankingFederalTerminalRules = [
@@ -308,12 +326,7 @@ class Validator extends Base\Validator
 
     protected function validateGateway($input)
     {
-        if (Payment\Gateway::isValidGateway($input['gateway']) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Not a valid gateway: ' . $input['gateway'],
-                Entity::GATEWAY);
-        }
+        Payment\Gateway::validateGateway($input['gateway']);
 
         unset(
             $input[Entity::TPV],

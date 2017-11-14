@@ -17,6 +17,7 @@ return [
         'billdesk',
         'blade',
         'cybersource',
+        'hitachi',
         'first_data',
         'ebs',
         'hdfc',
@@ -35,7 +36,6 @@ return [
         'netbanking_pnb',
         'sharp',
         'wallet_olamoney',
-        'upi_idfc',
         'upi_icici',
         'upi_mindgate',
         'upi_npci',
@@ -55,6 +55,7 @@ return [
     'mock_cybersource'            => env('CYBERSOURCE_MOCK'),
     'mock_first_data'             => env('FIRST_DATA_MOCK'),
     'mock_atom'                   => env('ATOM_MOCK'),
+    'mock_hitachi'                => env('HITACHI_MOCK'),
     'mock_axis_migs'              => env('AXIS_MIGS_MOCK'),
     'mock_axis_genius'            => env('AXIS_GENIUS_MOCK'),
     'mock_kotak'                  => env('KOTAK_MOCK'),
@@ -71,7 +72,6 @@ return [
     'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
-    //TODO add this env
     'mock_blade'                  => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
     'mock_wallet_olamoney'        => env('OLAMONEY_MOCK'),
@@ -82,7 +82,6 @@ return [
     'mock_wallet_sbibuddy'        => env('SBIBUDDY_MOCK'),
     'mock_upi_mindgate'           => env('UPI_MINDGATE_MOCK'),
     'mock_upi_icici'              => env('UPI_ICICI_MOCK'),
-    'mock_upi_idfc'               => env('UPI_IDFC_MOCK'),
     'mock_upi_npci'               => env('UPI_NPCI_MOCK'),
     'mock_aeps_icici'             => env('AEPS_ICICI_MOCK'),
     'mock_wallet_freecharge'      => env('FREECHARGE_MOCK'),
@@ -101,6 +100,12 @@ return [
         'test_password'         => env('CYBERSOURCE_GATEWAY_TEST_ACCESS_CODE'),
         'test_merchant_id'      => env('CYBERSOURCE_GATEWAY_TEST_USERNAME', 'cybersource_id'),
         'test_merchant_secret'  => env('CYBERSOURCE_GATEWAY_TEST_SECRET', 'cybersource_secret'),
+    ],
+
+    'hitachi' => [
+        'test_merchant_id'  => env('HITACHI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'  => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
+        'test_hash_secret2' => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
     ],
 
     'first_data' => [
@@ -203,14 +208,6 @@ return [
         'terminal_id'           => env('AEPS_TERMINAL_ID'),
     ],
 
-    'upi_idfc' => [
-    ],
-
-    'upi_idfc'  => [
-        'test_kek'               => env('UPI_IDFC_TEST_KEK'),
-        'test_password'          => env('UPI_IDFC_TEST_PASSWORD'),
-    ],
-
     'upi_npci' => [
         'test_decryption_key'       => env('UPI_NPCI_TEST_DECRYPTION_KEY'),
         'test_signing_key'          => env('UPI_NPCI_TEST_SIGNING_KEY'),
@@ -256,8 +253,9 @@ return [
 
     'wallet_freecharge' => [
         'test_hash_secret'      => env('FREECHARGE_WALLET_TEST_HASH_SECRET'),
-        'test_merchant_id'      => env('FREECHARGE_WALLET_TEST_MERCHANT_ID'),
-        'test_dealer_id'        => env('FREECHARGE_WALLET_TEST_DEALER_ID'),
+        // Freecharge is little different hence exchanging values
+        'test_merchant_id'      => env('FREECHARGE_WALLET_TEST_DEALER_ID'),
+        'test_dealer_id'        => env('FREECHARGE_WALLET_TEST_MERCHANT_ID'),
     ],
 
     'wallet_jiomoney' => [
@@ -283,16 +281,22 @@ return [
     ],
 
     'netbanking_hdfc' => [
+        // TODO: Move constants to env file
+
         'live_hash_secret'  => env('NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret'  => '123456',
+
         // tpv
         'live_hash_secret_tpv' => env('NETBANKING_HDFC_GATEWAY_CUG_LIVE_HASH_SECRET'),
         'test_hash_secret_tpv' => '12345',
+
+        'test_merchant_id' => 'RAZORPAY',
     ],
 
     'netbanking_corporation' => [
-        'test_merchant_id'  => env('NETBANKING_CORPORATION_GATEWAY_TEST_MERCHANT_ID'),
-        'test_hash_secret'  => env('NETBANKING_CORPORATION_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id'       => env('NETBANKING_CORPORATION_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'       => env('NETBANKING_CORPORATION_GATEWAY_TEST_HASH_SECRET'),
+        'pooling_account_number' => env('KOTAK_NODAL_ACCOUNT_NUMBER'),
     ],
 
     'netbanking_kotak' => [
@@ -304,8 +308,10 @@ return [
     'netbanking_icici' => [
         //retail netbanking
         'test_hash_secret'       => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
+        'test_hash_secret_rec'   => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET_REC'),
         'test_merchant_id'       => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID'),
         'test_merchant_id2'      => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2'),
+        'test_merchant_id2_rec'  => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2_REC'),
 
         'live_hash_secret'       => env('NETBANKING_ICICI_LIVE_HASH_SECRET'),
         'live_merchant_id2'      => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
@@ -323,9 +329,21 @@ return [
     ],
 
     'netbanking_axis' => [
-        'live_hash_secret' => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET'),
-        'test_hash_secret' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
-        'test_merchant_id' => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
+        // retail netbanking
+        'live_hash_secret'           => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET'),
+        'test_hash_secret'           => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id'           => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
+
+        // corporate netbanking
+        'live_hash_secret_corporate' => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_CORPORATE'),
+        'test_hash_secret_corporate' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_CORPORATE'),
+        'test_merchant_id_corporate' => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_CORPORATE'),
+        
+        // recurring
+        'test_hash_secret_rec'       => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_REC'),
+        'test_hash_secret_encrec'    => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_ENCREC'),
+        'test_merchant_id_rec'       => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_REC'),
+        
     ],
 
     'netbanking_airtel' => [
@@ -359,6 +377,12 @@ return [
     ],
 
     'sharp' => [
+    ],
+
+    'bharat_qr' => [
+        'visa_acquirer_code'       => env('BHARAT_QR_VISA_ACQUIRER_CODE'),
+        'mastercard_acquirer_code' => env('BHARAT_QR_MASTERCARD_ACQUIRER_CODE'),
+        'identifier_padding'       => env('BHARAT_QR_IDENTIFIER_PADDING'),
     ],
 
     'proxy_enabled' => env('PROXY_ENABLED'),

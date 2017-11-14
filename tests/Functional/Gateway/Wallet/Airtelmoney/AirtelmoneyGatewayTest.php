@@ -44,6 +44,23 @@ class AirtelmoneyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['TRAN_AMT'] = '1.00';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testPaymentFailureFlow()
     {
         $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
@@ -112,7 +129,6 @@ class AirtelmoneyGatewayTest extends TestCase
     {
         $this->ba->publicAuth();
 
-
         $payment = $this->fixtures->create(
             'payment',
             [
@@ -168,7 +184,7 @@ class AirtelmoneyGatewayTest extends TestCase
         $capturePayment = $this->doAuthAndCapturePayment($payment);
 
         // Refund half the amount
-        $this->refundPayment($capturePayment['id'], $payment['amount']/2);
+        $this->refundPayment($capturePayment['id'], $payment['amount'] / 2);
 
         $refund = $this->getLastEntity('wallet', true);
 

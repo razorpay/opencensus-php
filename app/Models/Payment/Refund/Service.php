@@ -77,9 +77,15 @@ class Service extends Base\Service
                 // These gateways go through a reconciliation process
                 // Please refer POST /reconciliate
                 unset($gateways[IFSC::KKBK]);
+                unset($gateways[IFSC::CORP]);
                 unset($gateways[IFSC::UTIB]);
                 unset($gateways[IFSC::FDRL]);
                 unset($gateways[IFSC::RATN]);
+
+                // These banks refund files have been moved to gateway_file, so
+                // unsetting it here
+                unset($gateways[IFSC::HDFC]);
+                unset($gateways[IFSC::ICIC]);
                 break;
 
             case Payment\Method::WALLET:
@@ -123,12 +129,26 @@ class Service extends Base\Service
         {
             foreach ($gateways as $gatewayCode => $gateway)
             {
-                $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway, $email);
+                $returnValue[$gateway] = $this->generateRefundFileForGateway(
+                    $type,
+                    $gatewayCode,
+                    $from,
+                    $to,
+                    $gateway,
+                    $email
+                );
             }
         }
         else
         {
-            $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway, $email);
+            $returnValue[$gateway] = $this->generateRefundFileForGateway(
+                $type,
+                $gatewayCode,
+                $from,
+                $to,
+                $gateway,
+                $email
+            );
         }
 
         $this->trace->info(
@@ -203,9 +223,7 @@ class Service extends Base\Service
 
         $gateway = $terminal->getGateway();
 
-        $action = 'generateRefunds';
-
-        $file = $this->app['gateway']->call($gateway, $action, $input, $this->mode);
+        $file = $this->app['gateway']->call($gateway, Payment\Action::GENERATE_REFUNDS, $input, $this->mode);
 
         return ['file' => $file, 'count' => $count];
     }
@@ -740,11 +758,13 @@ class Service extends Base\Service
         return $summary;
     }
 
-    public function retry($id)
+    public function retry(string $id, array $input)
     {
+        (new Validator)->validateInput('retry', $input);
+
         $refund = $this->repo->refund->findByPublicId($id);
 
-        $refundStatus = $this->getNewProcessor($refund->merchant)->processRefundRetry($refund);
+        $refundStatus = $this->getNewProcessor($refund->merchant)->processRefundRetry($refund, $input);
 
         return [
             'refund_id' => $id,

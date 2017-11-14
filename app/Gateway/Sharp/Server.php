@@ -3,6 +3,8 @@
 namespace RZP\Gateway\Sharp;
 
 use Crypt;
+
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Trace\TraceCode;
@@ -11,6 +13,11 @@ use RZP\Models\Payment;
 
 class Server extends Base\Mock\Server
 {
+    protected $validActions = [
+        'enroll',
+        'authorize',
+    ];
+
     public function action($input)
     {
         if (isset($input['action']) === false)
@@ -25,6 +32,15 @@ class Server extends Base\Mock\Server
             $input['success'] = 'F';
 
             return $this->authSubmit($input);
+        }
+
+        if (in_array($input['action'], $this->validActions, true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                null,
+                ['action' => $input['action']]
+            );
         }
 
         $action = $input['action'];

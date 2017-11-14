@@ -92,6 +92,9 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $input['gateway']['vpc_MerchTxnRef']);
 
+        $expectedAmount = (string) $input['payment']['amount'];
+        $this->assertAmount($expectedAmount, $input['gateway']['vpc_Amount']);
+
         $gatewayPayment = $this->repo->findByMerchantTxnRefAndCommand(
             $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
 
@@ -390,7 +393,7 @@ class Gateway extends Base\Gateway
 
         // We have confirmed with acquirer banks that these refunds have
         // not been processed.
-        $unprocessedRefundIds = ['85VhjZuf8juCfZ'];
+        $unprocessedRefundIds = ['87eT5BJpNL8uPb'];
 
         if (in_array($input['refund']['id'], $unprocessedRefundIds) === true)
         {
@@ -437,7 +440,7 @@ class Gateway extends Base\Gateway
         }
 
         if (($content['vpc_FoundMultipleDRs'] === 'N') and
-            ($content['vpc_RefundedAmount'] === $input['refund']['base_amount']))
+            (((int) $content['vpc_RefundedAmount']) === $input['refund']['base_amount']))
         {
             return true;
         }
@@ -972,14 +975,14 @@ class Gateway extends Base\Gateway
             // then we need to block the transaction on the international card.
             //
 
-            $acquirerData = $this->getAcquirerData($gatewayPayment);
+            $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
             $authStatus = ThreeDSecureStatus::getThreeDSstatus($threeDSstatus);
 
             if (($authStatus === Payment\TwoFactorAuth::FAILED) or
                 ($authStatus === Payment\TwoFactorAuth::UNKNOWN))
             {
-                if ($input['merchant']['international'] === false)
+                if ($this->shouldRaiseErrorForInternationalMerchant($input))
                 {
                     $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED;
                 }
@@ -1005,16 +1008,6 @@ class Gateway extends Base\Gateway
         }
 
         $this->throwException($apiErrorCode, $txnResponseCode, $message, $threeDSstatus);
-    }
-
-    protected function getAcquirerData($gatewayPayment)
-    {
-        return [
-            'acquirer' => [
-                Payment\Entity::APPROVAL_CODE => $gatewayPayment->getAuthCode(),
-                Payment\Entity::REFERENCE1    => $gatewayPayment->getReceiptNo()
-            ]
-        ];
     }
 
     protected function getCallbackResponseData(array $input, $response = [])
@@ -1197,5 +1190,10 @@ class Gateway extends Base\Gateway
         $cardExp = substr($input['card']['expiry_year'], 2,2) . $expiryMonth;
 
         return $cardExp;
+    }
+
+    protected function shouldRaiseErrorForInternationalMerchant(array $input) : bool
+    {
+        return ($input['merchant']['international'] === false);
     }
 }

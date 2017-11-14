@@ -7,12 +7,9 @@ use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\Gateway\File\Processor;
 
-class Hdfc extends Processor\Base
+class Hdfc extends Base
 {
-    use GenerateRefundFile;
-
     const FILE_NAME              = 'HDFC_Netbanking_Refunds';
     const EXTENSION              = FileStore\Format::XLSX;
     const FILE_TYPE              = FileStore\Type::HDFC_NETBANKING_REFUND;
@@ -23,11 +20,11 @@ class Hdfc extends Processor\Base
     /**
      * Formats the data fetched from database as per HDFC netbanking refund file format
      */
-    protected function formatDataForFile()
+    protected function formatDataForFile(array $data)
     {
          $formattedData = [];
 
-        foreach ($this->data as $index => $row)
+        foreach ($data as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], Timezone::IST)->format('d/m/Y');
@@ -49,7 +46,7 @@ class Hdfc extends Processor\Base
     /**
      * Fetches required data to be sent as part of the mail to HDFC
      */
-    protected function formatDataForMail()
+    protected function formatDataForMail(array $data)
     {
         $file = $this->gatewayFile
                      ->files()

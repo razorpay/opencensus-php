@@ -2,35 +2,51 @@
 
 namespace RZP\Models\Merchant;
 
-use Config;
 use ApiResponse;
-use RZP\Exception;
-use RZP\Models\Base;
-use RZP\Models\User;
-use RZP\Models\Feature;
+use Config;
+use Mail;
+use Carbon\Carbon;
 use RZP\Constants\Mode;
-use RZP\Models\Pricing;
-use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
-use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
-use RZP\Jobs\MerchantSync;
-use RZP\Models\BankAccount;
-use RZP\Models\Admin\Action;
+use RZP\Constants\Timezone;
+use RZP\Exception\BadRequestException;
 use RZP\Jobs\DispatchRouter;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Admin\Permission;
-use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Jobs\MerchantSync;
+use RZP\Models\Admin\Action;
 use RZP\Models\Admin\AdminLead;
+use RZP\Models\Admin\Permission;
+use RZP\Models\BankAccount;
+use RZP\Models\Base;
+use RZP\Models\Batch;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Pricing;
+use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Transaction;
+use RZP\Models\User;
+use RZP\Trace\TraceCode;
+use RZP\Mail\Payout\Payout as PayoutMail;
 
 class Core extends Base\Core
 {
     use Notify;
 
+    // This is used in case for
+    // IRCTC for sending payout
+    // mails
+    const MASTER_ID_MAPPING = [
+        '8YPFnW5UOM91H7' => 'WMRAZOR00000',
+    ];
+
     public function create($input)
     {
         $merchant = (new Merchant\Entity)->build($input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_CREATE,
+            [
+                'data' => $input
+            ]);
 
         $merchant->setAuditAction(Action::CREATE_MERCHANT);
 
@@ -38,7 +54,7 @@ class Core extends Base\Core
 
         $merchant->getValidator()->validateInput('unique_email', $email);
 
-        $merchant->setPricingPlan(Pricing\DefaultPlan::STARTUP_PLAN_ID);
+        $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
 
         $this->repo->saveOrFail($merchant);
 
@@ -54,19 +70,24 @@ class Core extends Base\Core
         return $merchant;
     }
 
-    public function createSubMerchant($input, $aggregatorMerchant)
+    public function createSubMerchant($input, $aggregatorMerchant): Entity
     {
         // We only check for email uniqueness if the email
         // address is provided
         if (isset($input['email']) === true)
         {
             $email['email'] = $input['email'];
+
             (new Validator)->validateInput('unique_email', $email);
         }
         else
         {
             $input['email'] = $aggregatorMerchant->getEmail();
         }
+
+        $merchantData['name'] = $input['name'] ?? null;
+
+        (new Validator)->validateInput('edit_name', $merchantData);
 
         $subMerchant = (new Merchant\Entity)->build($input);
 
@@ -112,7 +133,7 @@ class Core extends Base\Core
 
         (new Methods\Core)->setDefaultMethods($merchant);
 
-        (new Detail\Service)->createMerchantDetails($merchant);
+        (new Detail\Core)->createMerchantDetails($merchant);
 
         (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
     }
@@ -189,13 +210,6 @@ class Core extends Base\Core
                 [Entity::GROUPS, Entity::ADMINS]);
         }
 
-        $this->trace->info(
-            TraceCode::MERCHANT_EDIT,
-            [
-                'merchant_id' => $merchant->getId(),
-                'input'       => $input,
-            ]);
-
         return $merchant;
     }
 
@@ -204,7 +218,9 @@ class Core extends Base\Core
      *
      * @param \RZP\Models\Merchant\Entity $merchant
      * @param array $input
+     *
      * @return \RZP\Models\Merchant\Entity
+     * @throws BadRequestException
      */
     public function editEmail($merchant, $input)
     {
@@ -214,6 +230,20 @@ class Core extends Base\Core
                 'old_email' => $merchant->getEmail(),
                 'new_email' => $input['email']
             ]);
+
+        $parentId = $merchant->getReferrer();
+
+        if (empty($parentId) === false)
+        {
+            $parent = $this->repo->merchant->find($parentId);
+
+            if ((empty($parent) === false) and
+                (strtolower($merchant->getEmail()) === strtolower($parent->getEmail())))
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
+                    Merchant\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
+            }
+        }
 
         $merchant->edit($input, 'editEmail');
 
@@ -383,6 +413,23 @@ class Core extends Base\Core
         }
     }
 
+    public function validateFilterAttributesAndAddMerchantId($merchantId, $input)
+    {
+        $filters = $input[Entity::FILTERS];
+
+        $validator = new AnalyticsValidator();
+
+        foreach ($filters as $key => $filter)
+        {
+            array_push($input[Entity::FILTERS][$key], [Entity::KEY_MERCHANT_ID => $merchantId]);
+
+            foreach ($filter as $attributes)
+            {
+                $validator->validateAnalyticsInputFilter($attributes);
+            }
+        }
+    }
+
     /**
      * If a merchant user has a role as owner and has confirm_token set to null
      * then the user will be considered as a confirmed owner.
@@ -416,5 +463,177 @@ class Core extends Base\Core
         $job->delay(Repository::ES_JOB_DELAY);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::ES_V2);
+    }
+
+    public function createBatches(Entity $merchant, array $input): array
+    {
+        $merchant->getValidator()->validateInput('create_batch', $input);
+
+        $type = $input['type'];
+
+        $input = $input['data'];
+
+        $merchant->getValidator()->validateInput($type, $input);
+
+        $batches = $this->repo->transaction(function() use ($input, $type, $merchant)
+                   {
+                        $batches = [];
+
+                        foreach ($input as $key => $file)
+                        {
+                            $batchType =  $type . '_' . $key;
+
+                            $params = [
+                                Batch\Entity::FILE        => $file,
+                                Batch\Entity::TYPE        => $batchType
+                            ];
+
+                            $batch = (new Batch\Core)->create($params, $merchant);
+
+                            $batches[$batchType] = $batch->getId();
+                        }
+
+                        return $batches;
+                    });
+
+        $class = 'RZP\\Jobs\\' . studly_case($type) . 'Batch';
+
+        $job = new $class($this->mode, $batches);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
+
+        return $batches;
+    }
+
+    public function sendPayoutMail(Entity $merchant, int $from, int $to, string $email)
+    {
+        $payouts = $this->repo->payout->fetchProcessedPayouts($from, $to, $merchant->getId());
+
+        $recipients = $merchant->getTransactionReportEmail();
+
+        $merchantId = $merchant->getId();
+
+        if (empty($email) === false)
+        {
+            array_push($recipients, $email);
+        }
+
+        $processed = false;
+
+        foreach ($payouts as $payout)
+        {
+            $body = 'Settlement Processed<br />';
+            $body = $body . 'Total Amount : Rs.' . number_format($payout->getAmount() / 100, 2, '.', '') . '<br />';
+
+            if (empty($payout->getUtr()) === false)
+            {
+                $body = $body . 'UTR : ' . $payout->getUtr() . '<br />';
+            }
+
+            $payoutBankAccount = $payout->destination;
+
+            if (empty($payoutBankAccount) === false)
+            {
+                $body = $body . '<br />' . $payoutBankAccount->getBeneficiaryName() . '<br />';
+                $body = $body . 'Bank Account Number : ' . $payoutBankAccount->getAccountNumber() . '<br />';
+                $body = $body . $payoutBankAccount->getBeneficiaryAddress1() . '<br />';
+                $body = $body . $payoutBankAccount->getBeneficiaryAddress2() . '<br />';
+                $body = $body . $payoutBankAccount->getBeneficiaryAddress3() . '<br />';
+            }
+
+            $body = $body . '<br />'
+                          . 'Razorpay Software Pvt Ltd' . '<br />'
+                          . 'Bank Account Number : 7911547334' . '<br />'
+                          . 'Kotak Mahindra Bank 5 C/ II, <br />'
+                          . 'MITTAL COURT,224, NARIMAN POINT,MUMBAI - 400 021, <br/>'
+                          . 'GREATER BOMBAY,MAHARASHTRA <br /><br />';
+
+            if (array_key_exists($merchantId, self::MASTER_ID_MAPPING) === true)
+            {
+                $body = $body . 'Master ID :' . self::MASTER_ID_MAPPING[$merchantId] . '<br />';
+            }
+
+            $date= Carbon::createFromTimestamp($payout->getCreatedAt(), Timezone::IST)->format('d-m-Y');
+
+            $body = $body . 'Date Of Deposit : ' . $date . '<br />';
+
+            $body = $body . 'Date Of Credit : ' . $date . '<br />';
+
+            $mailData = ['body'  =>  $body];
+
+            $payoutMail = new PayoutMail(
+                $mailData,
+                $recipients);
+
+            Mail::queue($payoutMail);
+
+            $processed = true;
+        }
+
+        return $processed;
+    }
+
+    /**
+     * This handles 3 possible cases when changing user email.
+     * 1. There exists a team member with the new email
+     *    Here, we swap the roles of the team member(manager) with new email and the original owner
+     * 2. There exists a user(not team member) with the new email
+     *    Here, we change the original owner to manager and then add the user with new email as owner
+     * 3. The new email is unique so far
+     *    Here, we just change the email of the original user(owner).
+     *
+     * @param $merchant
+     * @param $originalEmail
+     * @param $newEmail
+     *
+     * @return bool
+     */
+    public function changeMerchantUsersEmail(Entity $merchant, string $originalEmail, string $newEmail)
+    {
+        $merchantUsersCount = $merchant->users()->count();
+
+        if ($merchantUsersCount === 0)
+        {
+            return false;
+        }
+
+        $teamUser = $merchant->users()->where('email', $newEmail)->first();
+
+        $existingUser = $this->repo->user->getUserFromEmail($newEmail);
+
+        $selfUser = $this->repo->user->getUserFromEmail($originalEmail);
+
+        $oldOwner = $merchant->primaryOwner();
+
+        if ((empty($oldOwner) === false) and ((empty($teamUser) === false) or (empty($existingUser) === false)))
+        {
+            // Assign Manager role to the old owner.
+            (new User\Core)->detachAndAttachMerchantUser($oldOwner, $merchant->getId(), 'manager');
+        }
+
+        if (empty($teamUser) === false)
+        {
+            // Assign Owner role to the team user.
+            (new User\Core)->detachAndAttachMerchantUser($teamUser, $merchant->getId(), 'owner');
+        }
+        elseif (empty($existingUser) === false)
+        {
+            // Assign owner to existing user.
+            $userMerchantMappingInputData = [
+                'action'      => 'attach',
+                'role'        => 'owner',
+                'merchant_id' => $merchant->getId(),
+            ];
+
+            (new User\Core)->updateUserMerchantMapping($existingUser, $userMerchantMappingInputData);
+        }
+        elseif (empty($selfUser) === false)
+        {
+            $userData = [
+                'email' => $newEmail,
+            ];
+
+            (new User\Core)->edit($selfUser, $userData);
+        }
     }
 }

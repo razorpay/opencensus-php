@@ -11,7 +11,6 @@ use RZP\Models\Merchant;
 
 class CreateSettlements extends Migration
 {
-
     /**
      * Run the migrations.
      *
@@ -36,10 +35,6 @@ class CreateSettlements extends Migration
 
             $table->integer(Settlement::FEES)
                   ->unsigned();
-
-            $table->integer(Settlement::SERVICE_TAX)
-                  ->unsigned()
-                  ->nullable();
 
             $table->integer(Settlement::TAX)
                   ->unsigned()

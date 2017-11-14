@@ -82,6 +82,8 @@ return array(
     'timezone'             => 'The :attribute must be a valid zone.',
     'unique'               => 'The :attribute has already been taken.',
     'url'                  => 'The :attribute format is invalid.',
+    'mysql_unsigned_int'   => 'The :attribute must be valid integer between 0 and 4294967295.',
+    'mysql_signed_int'     => 'The :attribute must be valid integer between -2147483648 and 2147483647.',
 
     /*
      | Defined by user application
@@ -107,7 +109,10 @@ return array(
         ],
         'amount' => [
             'min' => 'Minimum transaction amount allowed is Re. 1'
-        ]
+        ],
+        'expand.*' => [
+            'in' => 'Value of each expand must be one of following types: :values',
+        ],
     ],
     /*
     |--------------------------------------------------------------------------

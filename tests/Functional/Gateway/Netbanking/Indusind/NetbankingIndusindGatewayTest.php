@@ -52,6 +52,21 @@ class NetbankingIndusindGatewayTest extends TestCase
         $this->assertEquals($gatewayPayment['bank_payment_id'], $payment['reference1']);
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['AMT'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
     public function testTpvPayment()
     {
         $terminal = $this->fixtures->create('terminal:shared_netbanking_indusind_tpv_terminal');

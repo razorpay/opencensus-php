@@ -25,6 +25,7 @@ class Table
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const REPORT                = 'reports';
+    const QR_CODE               = 'qr_code';
     const BALANCE               = 'balance';
     const PRICING               = 'pricing';
     const UPI_VPA               = 'upi_vpa';
@@ -41,6 +42,7 @@ class Table
     const CUSTOMER              = 'customers';
     const TRANSFER              = 'transfers';
     const REVERSAL              = 'reversals';
+    const BHARAT_QR             = 'bharat_qr';
     const PROMOTION             = 'promotions';
     const LINE_ITEM             = 'line_items';
     const INVITATION            = 'invitations';
@@ -113,6 +115,7 @@ class Table
     const PAYTM                 = 'paytm';
     const WALLET                = 'wallet';
     const BILLDESK              = 'billdesk';
+    const HITACHI               = 'hitachi';
     const MOBIKWIK              = 'mobikwik';
     const NETBANKING            = 'netbanking';
     const FIRST_DATA            = 'first_data';
@@ -140,6 +143,8 @@ class Table
     const TAX                   = 'taxes';
     const TAX_GROUP             = 'tax_groups';
     const TAX_GROUP_TAX_MAP     = 'tax_group_tax_map';
+
+    const SETTING               = 'settings';
 
     protected static $entityToTableMap = array(
         Entity::AXIS_MIGS           => self::MIGS,

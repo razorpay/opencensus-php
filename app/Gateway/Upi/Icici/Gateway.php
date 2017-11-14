@@ -2,24 +2,25 @@
 
 namespace RZP\Gateway\Upi\Icici;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use ErrorException;
-use phpseclib\Crypt\RSA;
 use Request;
+use Carbon\Carbon;
+use RZP\Exception;
+use ErrorException;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
+use RZP\Gateway\Utility;
+use RZP\Trace\TraceCode;
+use phpseclib\Crypt\RSA;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Upi\Base;
+use RZP\Constants\Timezone;
+use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
-use RZP\Gateway\Upi\Base\ProviderCode;
-use RZP\Gateway\Utility;
+use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Upi\Icici\ResponseCodeMap;
 
 class Gateway extends Base\Gateway
@@ -330,10 +331,9 @@ class Gateway extends Base\Gateway
             Fields::MERCHANT_ID      => $this->getMerchantId(),
             Fields::MERCHANT_TRAN_ID => $payment['id'],
             Fields::MERCHANT_NAME    => 'Razorpay',
-            // Do not change this.
-            // Note and Submerchant name fields only support alphanumeric hence replacing all
-            // the spaces to empty string here.
-            Fields::NOTE             => preg_replace('/\s+/', '', $this->getPaymentRemark($input)),
+            Fields::NOTE             => $this->getPaymentRemark($input),
+            // sub-merchant name field only supports alphanumeric
+            // hence replacing all the spaces to empty string here.
             Fields::SUBMERCHANT_NAME => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
             Fields::PAYER_VA_REQ     => $input['payment']['vpa'],
             Fields::SUBMERCHANT_ID   => $this->getSubMerchantId($input),
@@ -360,7 +360,7 @@ class Gateway extends Base\Gateway
     {
         $mcc = (string) $input['merchant']->getCategory();
 
-        //Dafault merchant category code is 5411
+        //Default merchant category code is 5411
         if ($mcc === '1234')
         {
             $mcc = '5411';
@@ -372,11 +372,17 @@ class Gateway extends Base\Gateway
     /**
      * This is same as the payment description, capped
      * to 50 characters
+     *
+     * @param array $input
+     *
      * @return string
      */
     protected function getPaymentRemark(array $input): string
     {
-        $description = $input['merchant']->getFilteredDba();
+        $paymentDescription = $input['payment']['description'] ?? '';
+        $filteredPaymentDescription = Payment\Entity::getFilteredDescription($paymentDescription);
+
+        $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
 
         return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
     }
@@ -496,11 +502,11 @@ class Gateway extends Base\Gateway
 
     protected function getRefundVerifyRequestArray(array $input)
     {
-        $attempts = '';
+        $attempts = $input['refund']['attempts'] - 1;
 
-        if ($input['refund']['attempts'] !== 2)
+        if ($input['refund']['attempts'] === 1)
         {
-            $attempts = $input['refund']['attempts'] - 1;
+            $attempts = '';
         }
 
         $data = [
@@ -598,7 +604,14 @@ class Gateway extends Base\Gateway
             return false;
         }
 
-         throw new Exception\LogicException(
+        $msg = strtolower($content['message']);
+
+        if (in_array($msg, [Status::NO_RECORDS, Status::NO_RECORDS2], true) === true)
+        {
+            return false;
+        }
+
+        throw new Exception\LogicException(
                 'Shouldn\'t reach here',
                 null,
                 [

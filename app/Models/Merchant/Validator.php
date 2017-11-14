@@ -2,13 +2,13 @@
 
 namespace RZP\Models\Merchant;
 
+use App;
 use RZP\Base;
-use RZP\Constants\Mode;
-use RZP\Models\Merchant;
-use RZP\Models\Terminal;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
+use RZP\Constants\Mode;
+use RZP\Models\Terminal;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Validator extends Base\Validator
@@ -23,8 +23,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $createRules = [
-        Entity::ID                          => 'required|alpha_num|size:14|unique:merchants',
-        Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
+        Entity::ID                          => 'sometimes|alpha_num|size:14|unique:merchants',
+        Entity::NAME                        => 'sometimes|string|max:200',
         Entity::EMAIL                       => 'required|email',
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
@@ -33,7 +33,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
+        Entity::NAME                        => 'sometimes|string|max:200',
         Entity::HOLD_FUNDS                  => 'sometimes|in:0,1',
         Entity::WEBSITE                     => 'sometimes|url|max:255',
         Entity::CATEGORY                    => 'sometimes|numeric|digits:4',
@@ -42,8 +42,8 @@ class Validator extends Base\Validator
         Entity::BILLING_LABEL               => 'sometimes|max:255',
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
+        Entity::LINKED_ACCOUNT_KYC          => 'sometimes|boolean',
         Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
-        Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
         Entity::RISK_THRESHOLD              => 'sometimes|integer|min:0|max:20',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
@@ -70,12 +70,16 @@ class Validator extends Base\Validator
         Entity::EMAIL                       => 'required|email|unique:merchants'
     ];
 
+    protected static $editNameRules = [
+        Entity::NAME                        => 'required|min:4|string|max:200',
+    ];
+
     protected static $editConfigRules = [
         Entity::BRAND_COLOR                 => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::LOGO_URL                    => 'sometimes|max:2000',
         Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean',
-        Entity::HANDLE                      => 'sometimes|nullable|size:4|custom|unique:merchants,handle,null',
+        Entity::HANDLE                      => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
         MerchantDetail::GSTIN               => 'sometimes|nullable|string|size:15',
         MerchantDetail::P_GSTIN             => 'sometimes|nullable|string',
     ];
@@ -84,9 +88,16 @@ class Validator extends Base\Validator
         Entity::ACTION                      => 'required|custom'
     ];
 
+    protected static $oauthMailRules = [
+        'client_id'    => 'required|alpha_num|size:14',
+        'user_id'      => 'required|alpha_num|size:14',
+        'merchant_id'  => 'required|alpha_num|size:14'
+    ];
+
     protected static $featureRules = [
-        'features'          => 'required|array',
-        'optout_reason'     => 'sometimes|string|max:200'
+        'features'                   => 'required|array',
+        'optout_reason'              => 'sometimes|string|max:200',
+        Feature\Entity::SHOULD_SYNC  => 'sometimes|boolean',
     ];
 
     protected static $addTagsRules = [
@@ -103,6 +114,29 @@ class Validator extends Base\Validator
         'merchant_ids'   => 'required|array'
     ];
 
+    protected static $createBatchRules = [
+        'type'        => 'required|string|max:50',
+        'data'        => 'required|array'
+    ];
+
+    protected static $payoutMailRules = [
+        'content'               => 'required|array',
+        'content.*.merchant_id' => 'required',
+        'content.*.email'       => 'required',
+    ];
+
+    protected static $irctcRules = [
+        'refund'     => 'sometimes|filled|file|mimes:txt|max:1024',
+        'settlement' => 'sometimes|filled|file|mimes:txt|max:1024',
+    ];
+
+    protected static $createSubMerchantUserRules = [
+        'merchant_id'           => 'required|alpha_num|size:14',
+        'password'              => 'required|between:7,50|confirmed|numbers|letters',
+        'password_confirmation' => 'required|between:7,50',
+        Entity::EMAIL           => 'required|email',
+    ];
+
     protected static $editConfigValidators = [
         'csv_email',
     ];
@@ -113,7 +147,78 @@ class Validator extends Base\Validator
 
     protected static $featureValidators = [
         'visible_features',
+        'uneditable_features',
     ];
+
+    protected static $createSubMerchantUserValidators = [
+        'sub_merchant_owner',
+    ];
+
+    protected static $editEmailValidators = [
+        'is_test_account',
+    ];
+
+    protected function validateIsTestAccount(array $input)
+    {
+        $merchant = $this->entity;
+
+        $isTestAccount = (new Account)->isTestAccount($merchant->getId());
+
+        if ($isTestAccount === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT);
+        }
+
+    }
+
+    /**
+     * validates if the user who is attempting to create a submerchant user is the owner  or not.
+     *
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function validateSubMerchantOwner(array $input)
+    {
+        $app = App::getFacadeRoot();
+
+        $dashboardHeaders = $app['basicauth']->getDashboardHeaders();
+
+        if ($dashboardHeaders['user_role'] !== 'owner')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBUSER_CREATION_NOT_ALLOWED);
+        }
+    }
+
+    /**
+     * Throws an exception if a merchant tries to enable an uneditable
+     * feature for live mode, or via the should_sync flag
+     *
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function validateUneditableFeatures(array $input)
+    {
+        $requestedFeatures = array_keys($input['features']);
+
+        $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
+
+        $uneditableFeatures = array_values(array_intersect($requestedFeatures,
+            Feature\Constants::PRODUCT_FEATURES));
+
+        if ((count($uneditableFeatures) > 0) and (
+            ($this->isLiveMode() === true) or
+            ($shouldSync === true)))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+                Feature\Entity::NAMES,
+                ['features' => $uneditableFeatures, 'should_sync' => $shouldSync]);
+        }
+    }
 
     protected function validateHandle($attribute, $handle)
     {
@@ -130,8 +235,8 @@ class Validator extends Base\Validator
     public function validateLogo($imageDetails)
     {
         $fileSize = $imageDetails['size'];
-        $width = $imageDetails['width'];
-        $height = $imageDetails['height'];
+        $width    = $imageDetails['width'];
+        $height   = $imageDetails['height'];
 
         // File size should not be more than 1M.
         if ($fileSize > self::MAXIMAGESIZE)
@@ -227,9 +332,23 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateBeforeActivate(Merchant\Entity $merchant)
+    public function validateBeforeActivate()
     {
-        // Dont validate these attributes for Marketplace accounts
+        $merchant = $this->entity;
+
+        if ($merchant->isActivated() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
+        }
+
+        if ($merchant->isArchived() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION);
+        }
+
+        // Don't validate these rest of the attributes for Marketplace accounts
         if ($merchant->isLinkedAccount() === true)
         {
             return;

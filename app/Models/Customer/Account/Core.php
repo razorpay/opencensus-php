@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer;
 
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Address;
@@ -83,6 +84,8 @@ class Core extends Base\Core
      */
     protected function create(array $input, Merchant\Entity $merchant, $failOnDuplicate = true)
     {
+        $this->trace->info(TraceCode::CUSTOMER_CREATE, $input);
+
         $customer = (new Customer\Entity)->build($input);
 
         $customer->merchant()->associate($merchant);
@@ -199,8 +202,17 @@ class Core extends Base\Core
             $response['device_token'] = $appToken->getDeviceToken();
         }
 
-        if (($tokens !== null) and ($tokens->count() > 0))
+        if ($tokens->isNotEmpty() === true)
         {
+            //
+            // Currently, we do not expose netbanking recurring tokens to the
+            // customer. We don't have a way to handle first recurring
+            // with an existing recurring token.
+            //
+
+            // TODO: Uncomment this when we use charge_at_will for global flow
+            // $tokens = (new Token\Core)->removeNetbankingRecurringTokens($tokens);
+
             $response['tokens'] = $tokens->toArrayPublic();
         }
 
@@ -384,10 +396,19 @@ class Core extends Base\Core
 
         $ba = $this->app['basicauth'];
 
-        if ($ba->isPrivilegeAuth() === true)
+        //
+        // In case of internal auth/ crons,
+        // there will not be any app_token.
+        // Also, in case of subscriptions, we have a charge route (in test mode)
+        // (which is generally used by our crons)
+        // which is hit from the dashboard. We do not expect to
+        // have app_token here just like how we don't expect in
+        // privilege (cron) auth.
+        //
+        if ((($ba->isProxyAuth() === true) and
+             ($this->mode === Mode::TEST)) or
+            ($ba->isPrivilegeAuth() === true))
         {
-            // In case of internal auth/ crons,
-            // there will not be any app_token.
             return [$customer, null];
         }
 
@@ -425,7 +446,7 @@ class Core extends Base\Core
                 null,
                 [
                     'app_token_customer_id' => $appTokenCustomerId,
-                    'expected_customer_id' => $customerId()
+                    'expected_customer_id' => $customerId,
                 ]);
         }
 

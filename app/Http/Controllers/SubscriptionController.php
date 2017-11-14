@@ -2,9 +2,11 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use Request;
+use ApiResponse;
 use RZP\Constants\Entity as E;
+use RZP\Exception\BaseException;
+use View;
 
 class SubscriptionController extends Controller
 {
@@ -19,9 +21,9 @@ class SubscriptionController extends Controller
         return ApiResponse::json($plan);
     }
 
-    public function getPlan(string $id)
+    public function getPlan(string $planId)
     {
-        $plan = $this->service(E::PLAN)->fetch($id);
+        $plan = $this->service(E::PLAN)->fetch($planId);
 
         return ApiResponse::json($plan);
     }
@@ -35,7 +37,50 @@ class SubscriptionController extends Controller
         return ApiResponse::json($plans);
     }
 
-    // -------------------- Plan endpoints end --------------------
+    // -------------------- Plan endpoints end ----------------------
+
+    // -------------------- Addon endpoints start -------------------
+
+    public function postAddonForSubscription(string $subscriptionId)
+    {
+        $input = Request::all();
+
+        $addon = $this->service(E::ADDON)->create($input, $subscriptionId);
+
+        return ApiResponse::json($addon);
+    }
+
+    public function getAddon(string $addonId)
+    {
+        $addon = $this->service(E::ADDON)->fetch($addonId);
+
+        return ApiResponse::json($addon);
+    }
+
+    public function getAddons()
+    {
+        $input = Request::all();
+
+        $addon = $this->service(E::ADDON)->fetchMultiple($input);
+
+        return ApiResponse::json($addon);
+    }
+
+    public function getDueAddonsForSubscription(string $subscriptionId)
+    {
+        $addons = $this->service(E::ADDON)->fetchDueAddonsForSubscription($subscriptionId);
+
+        return ApiResponse::json($addons);
+    }
+
+    public function deleteAddon($addonId)
+    {
+        $addon = $this->service(E::ADDON)->delete($addonId);
+
+        return ApiResponse::json($addon);
+    }
+
+    // -------------------- Addon endpoints end -------------------
 
     public function postCreateSubscription()
     {
@@ -46,9 +91,9 @@ class SubscriptionController extends Controller
         return ApiResponse::json($subscription);
     }
 
-    public function getSubscription(string $id)
+    public function getSubscription(string $subscriptionId)
     {
-        $subscription = $this->service()->fetch($id);
+        $subscription = $this->service()->fetch($subscriptionId);
 
         return ApiResponse::json($subscription);
     }
@@ -78,7 +123,16 @@ class SubscriptionController extends Controller
 
     public function postChargeSubscriptionInvoiceManually($invoiceId)
     {
-        $subscription = $this->service()->chargeSubscriptionInvoiceManually($invoiceId);
+        $invoice = $this->service()->chargeSubscriptionInvoiceManually($invoiceId);
+
+        return ApiResponse::json($invoice);
+    }
+
+    public function postTestChargeSubscription($subscriptionId)
+    {
+        $input = Request::input();
+
+        $subscription = $this->service()->chargeTestSubscription($subscriptionId, $input);
 
         return ApiResponse::json($subscription);
     }
@@ -92,8 +146,49 @@ class SubscriptionController extends Controller
 
     public function postCancelSubscription(string $subscriptionId)
     {
-        $subscription = $this->service()->cancelSubscription($subscriptionId);
+        $input = Request::all();
+
+        $subscription = $this->service()->cancelSubscription($subscriptionId, $input);
 
         return ApiResponse::json($subscription);
+    }
+
+    public function getSubscriptionView(string $subscriptionId)
+    {
+        $error = Request::get('error');
+
+        $data = [];
+
+        if (empty($error) === false)
+        {
+            $data['error'] = $error;
+
+            $view = 'public.error';
+        }
+        else
+        {
+            try
+            {
+                $data = $this->service()->getSubscriptionViewData($subscriptionId);
+
+                $view = 'subscription.index';
+            }
+            catch (BaseException $e)
+            {
+                $data = $e->getError()->toPublicArray();
+
+                $view = 'public.error';
+            }
+        }
+
+        return View::make($view)
+                   ->with('data', $data);
+    }
+
+    public function postCancelDueSubscriptions()
+    {
+        $summary = $this->service()->cancelDueSubscriptions();
+
+        return ApiResponse::json($summary);
     }
 }

@@ -16,6 +16,8 @@ class Format
     const XLS   = 'xls';
     const XLSX  = 'xlsx';
     const ZIP   = 'zip';
+    const DOC   = 'doc';
+    const DOCX  = 'docx';
 
     const EXCEL_COLUMN_TEXT = '@';
 
@@ -30,21 +32,26 @@ class Format
         self::XLS,
         self::XLSX,
         self::ZIP,
+        self::DOC,
+        self::DOCX
     ];
 
     const VALID_EXTENSION_MIME_MAP = [
         self::CSV   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values',
-                        'text/plain', 'inode/x-empty', 'application/octet-stream'],
-        self::ENC   => ['application/octet-stream'],
-        self::JPG   => ['image/jpeg'],
-        self::JPEG  => ['image/jpeg'],
-        self::PDF   => ['application/pdf', 'application/x-pdf'],
-        self::PNG   => ['image/png'],
-        self::TXT   => ['text/plain'],
-        self::XLSX  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+                        'text/plain', 'inode/x-empty', 'application/octet-stream', 'application/pgp'],
+        self::ENC   => ['application/octet-stream', 'application/pgp'],
+        self::JPG   => ['image/jpeg', 'application/pgp'],
+        self::JPEG  => ['image/jpeg', 'application/pgp'],
+        self::PDF   => ['application/pdf', 'application/x-pdf', 'application/pgp'],
+        self::PNG   => ['image/png', 'application/pgp'],
+        self::TXT   => ['text/plain', 'application/pgp'],
+        self::XLSX  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pgp',
+                        'application/octet-stream', 'text/plain'],
         self::XLS   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
-                        'application/vnd.ms-office'],
-        self::ZIP   => ['application/zip'],
+                        'application/vnd.ms-office', 'application/pgp'],
+        self::ZIP   => ['application/zip', 'application/pgp'],
+        self::DOC   => ['application/msword'],
+        self::DOCX  => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
     ];
 
     const VALID_LOCAL_EXTENSIONS = [

@@ -65,6 +65,10 @@ class Gateway extends Base\Gateway
         $this->assertPaymentId($input['payment']['id'],
              $content[RequestFields::MERCHANT_REFERENCE]);
 
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($content['AMT'], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
+
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
             $content[RequestFields::MERCHANT_REFERENCE], Action::AUTHORIZE);
 
@@ -72,7 +76,7 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($content);
 
-        $acquirerData = $this->getAcquirerData($gatewayEntity);
+        $acquirerData = $this->getAcquirerData($input, $gatewayEntity);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -206,6 +210,14 @@ class Gateway extends Base\Gateway
         }
 
         $queryString = urldecode(http_build_query($data));
+
+        //This is done because we need to pass BID key even if it is null
+        //in case we don't receive a callback
+        if (($this->action === Action::VERIFY) and
+            (empty($data[RequestFields::BANK_REFERENCE_ID]) === true))
+        {
+            $queryString  = $queryString . '&' . RequestFields::BANK_REFERENCE_ID . '=';
+        }
 
         return $this->encryptString($queryString);
     }

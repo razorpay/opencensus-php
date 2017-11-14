@@ -5,6 +5,8 @@ namespace RZP\Models\BankAccount;
 use RZP\Exception;
 use RZP\Models\BankAccount;
 use RZP\Models\Base;
+use RZP\Models\VirtualAccount;
+use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
@@ -62,9 +64,19 @@ class Repository extends Base\Repository
 
     public function findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode = null)
     {
+        $virtualAccountId     = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
+        $virtualAccountStatus = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::STATUS);
+
+        $bankAccountEntityId = $this->dbColumn(Entity::ENTITY_ID);
+        $bankAccountType     = $this->dbColumn(Entity::TYPE);
+        $bankAccountData     = $this->dbColumn('*');
+
         $query = $this->newQuery()
+                      ->select($bankAccountData)
+                      ->join(Table::VIRTUAL_ACCOUNT, $bankAccountEntityId, '=', $virtualAccountId)
                       ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
-                      ->where(Entity::TYPE, '=', Type::VIRTUAL_ACCOUNT);
+                      ->where(Entity::TYPE, '=', Type::VIRTUAL_ACCOUNT)
+                      ->where($virtualAccountStatus, '=', VirtualAccount\Status::ACTIVE);
 
         if ($bankCode !== null)
         {

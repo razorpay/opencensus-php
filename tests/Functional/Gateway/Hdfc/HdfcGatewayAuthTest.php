@@ -87,6 +87,19 @@ class HdfcGatewayAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testAcsFailure()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authenticate')
+            {
+                $content['PaRes'] = 'eNpVkM0KwjAQhM/2KfbmrYlWxUIMlLaioCj9ETxGu2qhTSGJgm9vim3F2w7zDTu7DsseCjFK8fpUyJ0R26PW4o5QFquxX58W1yOdzKnnzxZLb06ndNxCsVKNssOIvVDpspF84lJ3ykgvWwtbKGwK5P6SkZ8avG4Vz5SQukRpQL+1wRpuoqxsnS7UY0MuQmMBnktxqRBMAwXeKmF6vrO/7WTRbc3i/fGQBMkZ0nNqBayD7S5PYtgEKRzC0I5R238I2DNJfycjQwlG/j/2AQDkZqM=';
+            }
+        });
+
+        $this->startTest();
+    }
+
     public function testSignatureFailure1()
     {
         $this->startTest();

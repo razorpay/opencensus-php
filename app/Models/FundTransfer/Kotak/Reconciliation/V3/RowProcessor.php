@@ -64,6 +64,8 @@ class RowProcessor extends Base\RowProcessor
     {
         $this->updateReconEntity();
 
+        $this->updateMerchantEntity();
+
         $this->updateSourceEntity();
 
         $this->updateTransactionEntity();
@@ -92,17 +94,41 @@ class RowProcessor extends Base\RowProcessor
         // The below conditions check that it's not an upload-level failure
         if (($status === Attempt\Status::FAILED) and
             (empty($utr) === false) and
-            (in_array(Attempt\Entity::STATUS, array_keys($dirtyAttributes)) === true) and
             ($bankStatusCode === Status::PROCESSED))
         {
-            $this->firstFailure = true;
+            if (in_array(Attempt\Entity::STATUS, array_keys($dirtyAttributes)) === true)
+            {
+                $this->firstFailure = true;
+            }
+
+            // Merchant is put on hold if a settlement failed
+            // This is to avoid further failures on same merchant
+            if ($this->source->getEntity() === Entity::SETTLEMENT)
+            {
+                $this->holdFunds = true;
+            }
         }
 
         $this->reconEntity->saveOrFail();
     }
 
+    protected function updateMerchantEntity()
+    {
+        if ($this->holdFunds === true)
+        {
+            $this->reconEntity->merchant->setHoldFunds(true);
+
+            $this->repo->saveOrFail($this->reconEntity->merchant);
+        }
+    }
+
     protected function updateSourceEntity()
     {
+        if ($this->source->getBatchFundTransferId() !== $this->reconEntity->getBatchFundTransferId())
+        {
+            return;
+        }
+
         $sourceStatus = $this->getSourceStatusFromReconEntityStatus();
 
         $this->source->setStatus($sourceStatus);

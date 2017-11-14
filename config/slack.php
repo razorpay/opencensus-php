@@ -121,38 +121,43 @@ return array(
 
     // Reference for Slack Channel IDs:
     // https://github.com/razorpay/api/wiki/Slack-Channel-IDs
-    'channels'  =>  [
+    'channels' => [
         // transactions_high
-        'high'              => 'C0KRNK0AF',
+        'high'                 => 'C0KRNK0AF',
         // transactions_risk_4
-        'high_4'            => 'C2CD9RXKR',
+        'high_4'               => 'C2CD9RXKR',
         // transactions_highrisk
-        'highrisk'          => 'C1NBL61NE',
+        'highrisk'             => 'C1NBL61NE',
         // transactions
-        'low'               => 'C04260LMZ',
+        'low'                  => 'C04260LMZ',
         // transactions_lt_10
-        'lt_10'             => 'C2R9JBVED',
+        'lt_10'                => 'C2R9JBVED',
         // operations_log
-        'operations_log'    => 'C0KUX9WSE',
+        'operations_log'       => 'C0KUX9WSE',
         // reconciliation
-        'reconciliation'    => 'C1GNPHC07',
+        'reconciliation'       => 'C1GNPHC07',
         // transactions_risky
-        'risky'             => 'C0RL2C917',
+        'risky'                => 'C0RL2C917',
         // settlements
-        'settlements'       => 'C02LBK2D7',
+        'settlements'          => 'C02LBK2D7',
         // tech_logs
-        'tech_logs'         => 'C0E2Q6MJM',
+        'tech_logs'            => 'C0E2Q6MJM',
         // tech_logs_verify
-        'tech_logs_verify'  => 'C3AJ9V9EY',
+        'tech_logs_verify'     => 'C3AJ9V9EY',
         // subscriptions
-        // TODO: Use channel_id once the channel is created.
-        'subscriptions'     => '#tech_subscription_logs',
+        'subscriptions'        => 'C77PAU3JM',
+        // virtual_accounts
+        'virtual_accounts'     => 'C44FHBKC1',
         // tech_logs_mail
-        'tech_logs_mail'    => 'C50JZ3S5T',
-
-        'activations'       => 'activations_log',
-        'risk'              => 'risk',
-        'operations'        => 'operations_log',
+        'tech_logs_mail'       => 'C50JZ3S5T',
+        // activations
+        'activations'          => 'C17UC7DHS',
+        // risk
+        'risk'                 => 'C0SG9Q7TM',
+        // operations
+        'operations'           => 'C0KUX9WSE',
+        // Product (Feature) onboarding requests
+        'activations_prod_log' => 'C76P70Y7K'
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,

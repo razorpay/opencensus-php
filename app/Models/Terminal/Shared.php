@@ -21,9 +21,12 @@ class Shared
     const NETBANKING_KOTAK_TERMINAL         = '100NbKotakTmnl';
     const NETBANKING_ICICI_TERMINAL         = '100NbIciciTmnl';
     const NETBANKING_ICICI_TPV_TERMINAL     = '100NbIcicTpvTl';
+    const NETBANKING_ICICI_REC_TERMINAL     = '100NbIcicRecTl';
+    const NETBANKING_HDFC_REC_TERMINAL      = '100NbHdfcRecTl';
     const NETBANKING_AIRTEL_TERMINAL        = '100NbAirtlTmnl';
     const NETBANKING_AXIS_TERMINAL          = '100NbAxisTrmnl';
     const NETBANKING_AXIS_TPV_TERMINAL      = '100NbAxisTpvTl';
+    const NETBANKING_AXIS_REC_TERMINAL      = '100NbAxisRecTl';
     const NETBANKING_FEDERAL_TERMINAL       = '100NbFdrlTrmnl';
     const NETBANKING_FEDERAL_TPV_TERMINAL   = '100NbFdrlTpvTl';
     const NETBANKING_RBL_TERMINAL           = '100NbRblTermnl';
@@ -39,6 +42,7 @@ class Shared
     const SHARP_RAZORPAY_TERMINAL           = '1000SharpTrmnl';
     const CYBERSOURCE_HDFC_TERMINAL         = '1000CybrsTrmnl';
     const CYBERSOURCE_AXIS_TERMINAL         = '1000CybAxTrmnl';
+    const HITACHI_TERMINAL                  = '100HitachiTmnl';
     const FIRST_DATA_RAZORPAY_TERMINAL      = '1000FrstDataTl';
     const UPI_MINDGATE_RAZORPAY_TERMINAL    = '100UPIMindgate';
     const UPI_ICICI_RAZORPAY_TERMINAL       = '100UPIICICITml';
@@ -75,6 +79,7 @@ class Shared
         self::SHARP_RAZORPAY_TERMINAL,
         self::CYBERSOURCE_HDFC_TERMINAL,
         self::CYBERSOURCE_AXIS_TERMINAL,
+        self::HITACHI_TERMINAL,
         self::FIRST_DATA_RAZORPAY_TERMINAL,
         self::UPI_MINDGATE_RAZORPAY_TERMINAL,
         self::UPI_ICICI_RAZORPAY_TERMINAL,
@@ -98,6 +103,7 @@ class Shared
         self::EBS_RAZORPAY_TERMINAL             => Gateway::EBS,
         self::CYBERSOURCE_HDFC_TERMINAL         => Gateway::CYBERSOURCE,
         self::HDFC_RAZORPAY_TERMINAL            => Gateway::HDFC,
+        self::HITACHI_TERMINAL                  => Gateway::HITACHI,
         self::MOBIKWIK_RAZORPAY_TERMINAL        => Gateway::MOBIKWIK,
         self::NETBANKING_HDFC_TERMINAL          => Gateway::NETBANKING_HDFC,
         self::NETBANKING_CORPORATION_TERMINAL   => Gateway::NETBANKING_CORPORATION,

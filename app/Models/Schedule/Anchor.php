@@ -3,6 +3,7 @@
 namespace RZP\Models\Schedule;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Anchor
@@ -34,11 +35,9 @@ class Anchor
     {
         Period::validatePeriod($period);
 
-        $check = self::$checks[$period];
-
         if ($startTime === null)
         {
-            $startTime = Carbon::now('Asia/Kolkata');
+            $startTime = Carbon::now(Timezone::IST);
         }
 
         if ($period === Period::YEARLY)
@@ -47,6 +46,8 @@ class Anchor
         }
         else
         {
+            $check = self::$checks[$period];
+
             $anchor = $startTime->$check;
         }
 
@@ -81,7 +82,7 @@ class Anchor
         //
         $testDay = 1;
 
-        $date = Carbon::createFromDate($leapYear, $month, $testDay, 'Asia/Kolkata');
+        $date = Carbon::createFromDate($leapYear, $month, $testDay, Timezone::IST);
 
         if ($day > $date->daysInMonth)
         {

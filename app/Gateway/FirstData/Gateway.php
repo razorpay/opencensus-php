@@ -31,7 +31,7 @@ class Gateway extends Base\Gateway
     const PROCESSING                 = 'PROCESSING';
     const SERVICES                   = 'SERVICES';
 
-    const CHECKSUM_ATTRIBUTE = ConnectResponseFields::RESPONSE_HASH;
+    const CHECKSUM_ATTRIBUTE         = ConnectResponseFields::RESPONSE_HASH;
 
     protected $gateway = Constants\Entity::FIRST_DATA;
 
@@ -40,6 +40,16 @@ class Gateway extends Base\Gateway
         Action::CAPTURE   => TraceCode::GATEWAY_CAPTURE_RESPONSE,
         Action::REFUND    => TraceCode::GATEWAY_REFUND_RESPONSE,
         Action::REVERSE   => TraceCode::GATEWAY_REVERSE_RESPONSE,
+    ];
+
+    const OLD_STORE_IDS = [
+        // EMI terminals
+        '3374679283',
+        '3374679291',
+        '3374679309',
+        '3374679333',
+        // Shared FirstData terminal, disabled now
+        '3396093976',
     ];
 
     public function authorize(array $input)
@@ -104,8 +114,6 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA);
         }
 
-        $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
-
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['gateway'][ConnectResponseFields::ORDER_ID],
             Action::AUTHORIZE);
@@ -113,6 +121,13 @@ class Gateway extends Base\Gateway
         $this->verifySecureHash($input['gateway']);
 
         $this->mockApprovalCodeIfNeeded($input['gateway']);
+
+        $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
+
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($input['gateway'][ConnectResponseFields::CHARGE_TOTAL], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $attributes = $this->getCallbackFields($input['gateway']);
 
@@ -124,19 +139,9 @@ class Gateway extends Base\Gateway
 
         $this->checkApprovalCode($gatewayPayment);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
-    }
-
-    protected function getAcquirerData($gatewayPayment)
-    {
-        return [
-            'acquirer' => [
-                Payment\Entity::APPROVAL_CODE => $gatewayPayment->getAuthCode(),
-                Payment\Entity::REFERENCE1    => $gatewayPayment->getEndpointTransactionId()
-            ]
-        ];
     }
 
     protected function runCallbackVerify(array $input)
@@ -524,7 +529,7 @@ class Gateway extends Base\Gateway
         {
             $attributes[Entity::STATUS]    = Status::AUTHORIZED;
 
-            $attributes[Entity::AUTH_CODE] = $callbackBody[ConnectResponseFields::PROCESSOR_RESPONSE_CODE];
+            $attributes[Entity::AUTH_CODE] = $this->getAuthCodeFromCallback($callbackBody);
 
             $attributes[Entity::TDATE]     = $callbackBody[ConnectResponseFields::TDATE];
         }
@@ -537,6 +542,9 @@ class Gateway extends Base\Gateway
     protected function getPurchaseFields(array $response, array $input)
     {
         $attributes = $this->getCommonResponseFields($response, $input);
+
+        $this->setFieldIfPresent($attributes, Entity::AUTH_CODE,
+            ApiResponseFields::PROCESSOR_APPROVAL_CODE, $response);
 
         return $attributes;
     }
@@ -703,11 +711,12 @@ class Gateway extends Base\Gateway
             // reason. Either way, this is equivalent to gateway success being false.
             $verify->gatewaySuccess = false;
 
-            $authTdate              = null;
-
-            $authGatewayPaymntId    = null;
-
-            $authGatewayStatus      = Status::FAILED;
+            $verifyContent = [
+                Entity::TDATE               => null,
+                Entity::GATEWAY_PAYMENT_ID  => null,
+                Entity::STATUS              => Status::FAILED,
+                Entity::AUTH_CODE           => null
+            ];
         }
         else
         {
@@ -749,13 +758,21 @@ class Gateway extends Base\Gateway
             //
             // As tdate, order_ID and state are structed under different
             // namespaces, their parsing logic is also distinct.
-            $authTdate = (string) $verifyAuthResponse->children('v1', true)->TransactionDetails->TDate;
+            $verifyContent = [
+                Entity::TDATE               => (string) $verifyAuthResponse->children('v1', true)
+                                                                           ->TransactionDetails->TDate,
+                Entity::GATEWAY_PAYMENT_ID  => (string) $verifyAuthResponse->children('v1', true)
+                                                                           ->TransactionDetails->OrderId,
+                Entity::STATUS              => (string) $verifyAuthResponse->children('a1', true)
+                                                                           ->TransactionState,
+                Entity::AUTH_CODE           => (string) $verifyAuthResponse->children('ipgapi', true)
+                                                                           ->IPGApiOrderResponse
+                                                                           ->ProcessorApprovalCode
+            ];
 
-            $authGatewayPaymntId = (string) $verifyAuthResponse->children('v1', true)->TransactionDetails->OrderId;
-
-            $authGatewayStatus = (string) $verifyAuthResponse->children('a1', true)->TransactionState;
-
-            $verify->gatewaySuccess = (in_array($authGatewayStatus, Status::SUCCESSFUL_AUTH_STATES, true) === true);
+            $verify->gatewaySuccess = (in_array($verifyContent[Entity::STATUS],
+                                                Status::SUCCESSFUL_AUTH_STATES,
+                                                true) === true);
         }
 
         $verify->apiSuccess = $this->getVerifyApiStatus($gatewayPayment, $input['payment']);
@@ -765,8 +782,7 @@ class Gateway extends Base\Gateway
             $verify->status = VerifyResult::STATUS_MISMATCH;
         }
 
-        $verify->payment = $this->saveVerifyContent($gatewayPayment, $authGatewayPaymntId,
-                                                    $authGatewayStatus, $authTdate);
+        $verify->payment = $this->saveVerifyContent($gatewayPayment, $verifyContent);
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
@@ -833,13 +849,9 @@ class Gateway extends Base\Gateway
         return $apiStatus;
     }
 
-    protected function saveVerifyContent(Entity $gatewayPayment, $gatewayPaymentId, string $status, $tdate)
+    protected function saveVerifyContent(Entity $gatewayPayment, array $verifyContent)
     {
-        $gatewayPayment->setStatus($status);
-
-        $gatewayPayment->setTdate($tdate);
-
-        $gatewayPayment->setGatewayPaymentId($gatewayPaymentId);
+        $gatewayPayment->fill($verifyContent);
 
         $this->repo->saveOrFail($gatewayPayment);
 
@@ -1041,13 +1053,15 @@ class Gateway extends Base\Gateway
 
         $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
 
-        $method = $input['card'][Card\Entity::NETWORK_CODE];
+        $networkCode = $input['card'][Card\Entity::NETWORK_CODE];
 
         $requestHash = $this->getRequestHash($txnDateTime, $chargeTotal, $currencyCode);
 
         $txnType = TxnType::AUTH;
 
-        if (Payment\Gateway::supportsAuthAndCapture($this->gateway, $method) === false)
+        if ((Payment\Gateway::supportsAuthAndCapture($this->gateway, $networkCode) === false) or
+            (($input['card'][Card\Entity::ISSUER] === Card\Issuer::ICIC) and
+             ($input['card'][Card\Entity::TYPE] === Card\Type::DEBIT)))
         {
             $txnType = TxnType::SALE;
         }
@@ -1077,7 +1091,7 @@ class Gateway extends Base\Gateway
             ConnectRequestFields::RESPONSE_SUCCESS_URL      => $input['callbackUrl'],
             ConnectRequestFields::RESPONSE_FAIL_URL         => $input['callbackUrl'],
             ConnectRequestFields::TXN_TYPE                  => $txnType,
-            ConnectRequestFields::PAYMENT_METHOD            => PaymentMethod::METHOD_MAP[$method],
+            ConnectRequestFields::PAYMENT_METHOD            => PaymentMethod::METHOD_MAP[$networkCode],
         ];
 
         if ($this->isFirstRecurringPayment($input) === true)
@@ -1247,7 +1261,7 @@ class Gateway extends Base\Gateway
         {
             $body[ApiRequestFields::V1_PAYMENT] = [
                 ApiRequestFields::V1_HOSTED_DATA_ID  => $input['token']->getId(),
-                ApiRequestFields::V1_HOSTED_STORE_ID => $input['gateway_token']->terminal->getGatewayMerchantId(),
+                ApiRequestFields::V1_HOSTED_STORE_ID => $this->getHostedDataStoreId(),
             ];
         }
 
@@ -1371,13 +1385,39 @@ class Gateway extends Base\Gateway
         return $storeId;
     }
 
+    /**
+     * Non-3DS recurring payments require the store id that the original 3DS
+     * payment was made on. This was earlier retrieved through the token used,
+     * but is now simply stored as an extra attribute in terminal entity
+     *
+     * @return string hostedDataStoreId
+     */
+    public function getHostedDataStoreId()
+    {
+        $hostedDataStoreId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+
+        if ($this->isOldStoreId() === true)
+        {
+            throw new Exception\LogicException(
+                'Gateway Merchant ID2 has different meaning for old store ids.',
+                null,
+                [
+                    'payment_id'           => $this->input['payment']['id'],
+                    'gateway_merchant_id'  => $this->getStoreId,
+                    'gateway_merchant_id2' => $hostedDataStoreId,
+                ]);
+        }
+
+        return $hostedDataStoreId;
+    }
+
     protected function getLiveSecret()
     {
-        $liveSecret = $this->input['terminal']['gateway_secure_secret'];
+        $liveSecret = $this->config['live_hash_secret'];
 
-        if ($this->isChildStoreId() === true)
+        if ($this->isOldStoreId() === true)
         {
-            $liveSecret = $this->config['live_hash_secret'];
+            $liveSecret = $this->input['terminal']['gateway_secure_secret'];
         }
 
         return $liveSecret;
@@ -1385,13 +1425,13 @@ class Gateway extends Base\Gateway
 
     protected function getCredentials()
     {
-        $username = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
-        $password = $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE];
+        $username = $this->config['live_user_id'];
+        $password = $this->config['live_password'];
 
-        if ($this->isChildStoreId() === true)
+        if ($this->isOldStoreId() === true)
         {
-            $username = $this->config['live_user_id'];
-            $password = $this->config['live_password'];
+            $username = $this->getUsernameForOldStoreId();
+            $password = $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE];
         }
 
         if ($this->mode === Mode::TEST)
@@ -1401,6 +1441,20 @@ class Gateway extends Base\Gateway
         }
 
         return [$username, $password];
+    }
+
+    /**
+     * Old terminal had a gateway_merchant_id2 that was just f(gateway_merchant_id)
+     *
+     * @return array credentials
+     */
+    protected function getUsernameForOldStoreId()
+    {
+        $gatewayMerchantId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+
+        $username = 'WS'.$gatewayMerchantId.'._.1';
+
+        return $username;
     }
 
     protected function getGatewayCertDirName()
@@ -1417,11 +1471,11 @@ class Gateway extends Base\Gateway
 
     public function getClientCertificateName()
     {
-        $certName = $this->getStoreId() . '.' . self::CERTIFICATE_FORMAT_P12;
+        $certName = $this->config['client_certificate'];
 
-        if ($this->isChildStoreId() === true)
+        if ($this->isOldStoreId() === true)
         {
-            $certName = $this->config['client_certificate'];
+            $certName = $this->getStoreId() . '.' . self::CERTIFICATE_FORMAT_P12;
         }
 
         return $certName;
@@ -1438,11 +1492,11 @@ class Gateway extends Base\Gateway
         {
             $clientCertFile = fopen($clientCertPath, 'w');
 
-            $encodedCert = $this->terminal[Terminal\Entity::GATEWAY_CLIENT_CERTIFICATE];
+            $encodedCert = $this->config['live_client_certificate'];
 
-            if ($this->isChildStoreId() === true)
+            if ($this->isOldStoreId() === true)
             {
-                $encodedCert = $this->config['live_client_certificate'];
+                $encodedCert = $this->terminal[Terminal\Entity::GATEWAY_CLIENT_CERTIFICATE];
             }
 
             if ($this->mode === Mode::TEST)
@@ -1466,11 +1520,11 @@ class Gateway extends Base\Gateway
 
     protected function getClientCertificatePassword()
     {
-        $password = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+        $password = $this->config['live_client_certificate_password'];
 
-        if ($this->isChildStoreId() === true)
+        if ($this->isOldStoreId() === true)
         {
-            $password = $this->config['live_client_certificate_password'];
+            $password = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
         }
 
         if ($this->mode === Mode::TEST)
@@ -1481,13 +1535,31 @@ class Gateway extends Base\Gateway
         return $password;
     }
 
-    protected function isChildStoreId()
+    /**
+     * The oldest FirstData terminals, had several values stored differently
+     *
+     * @return boolean
+     */
+    protected function isOldStoreId()
     {
-        // Older creds needed a separate value to access
-        // FirstData API and web portal.
-        // New FirstData creds are child ids, and do not
-        // have a merchantId2 value of their own.
+        $gatewayMerchantId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
 
-        return ($this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2] === null);
+        return (in_array($gatewayMerchantId, self::OLD_STORE_IDS, true) === true);
+    }
+
+    protected function getAuthCodeFromCallback($callbackBody)
+    {
+        $authCode = null;
+
+        $approvalCodeArray = explode(':', $callbackBody[ConnectResponseFields::APPROVAL_CODE]);
+
+        // Only when call had succeed, we get authCode in approvalCode
+        if (($approvalCodeArray[0] === 'Y') and
+            (isset($approvalCodeArray[1]) === true))
+        {
+            $authCode = $approvalCodeArray[1];
+        }
+
+        return $authCode;
     }
 }

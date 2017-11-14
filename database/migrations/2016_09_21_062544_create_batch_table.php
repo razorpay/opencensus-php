@@ -33,9 +33,21 @@ class CreateBatchTable extends Migration
             $table->char(Batch::DOWNLOAD_FILE_URL, Batch::FILE_URL_LENGTH)
                   ->nullable();
 
-            $table->char(Batch::TYPE, Batch::ID_LENGTH);
+            $table->char(Batch::TYPE, 25);
+
+            $table->string(Batch::SUB_TYPE, 25)
+                  ->nullable();
+
+            $table->string(Batch::GATEWAY, 25)
+                  ->nullable();
+
+            $table->text(Batch::FAILURE_REASON)
+                  ->nullable();
 
             $table->char(Batch::STATUS, Batch::STATUS_LENGTH);
+
+            $table->tinyInteger(Batch::PROCESSING)
+                  ->default(0);
 
             $table->integer(Batch::TOTAL_COUNT);
 
@@ -67,6 +79,7 @@ class CreateBatchTable extends Migration
 
             $table->index(Batch::CREATED_AT);
             $table->index(Batch::TYPE);
+            $table->index(Batch::GATEWAY);
             $table->index(Batch::STATUS);
 
             $table->foreign(Batch::MERCHANT_ID)

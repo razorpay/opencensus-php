@@ -3,15 +3,12 @@
 namespace RZP\Models\Payout;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 
-use RZP\Constants\Table;
-use RZP\Error\ErrorCode;
-use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Models\Customer;
-use RZP\Models\Payout;
+use RZP\Constants\Timezone;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
@@ -29,7 +26,6 @@ class Entity extends Base\PublicEntity
     const CURRENCY               = 'currency';
     const NOTES                  = 'notes';
     const FEES                   = 'fees';
-    const SERVICE_TAX            = 'service_tax';
     const TAX                    = 'tax';
     const PAYMENT_ID             = 'payment_id';
     const TRANSACTION_ID         = 'transaction_id';
@@ -85,7 +81,6 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::METHOD,
         self::FEES,
-        self::SERVICE_TAX,
         self::TAX,
         self::PAYMENT_ID,
         self::TRANSACTION_ID,
@@ -111,7 +106,6 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::NOTES,
         self::FEES,
-        self::SERVICE_TAX,
         self::TAX,
         self::STATUS,
         self::UTR,
@@ -136,14 +130,13 @@ class Entity extends Base\PublicEntity
     protected $amounts = [
         self::AMOUNT,
         self::FEES,
-        self::SERVICE_TAX,
         self::TAX,
     ];
 
     protected $casts = [
         self::AMOUNT      => 'int',
         self::FEES        => 'int',
-        self::SERVICE_TAX => 'int',
+        self::TAX         => 'int',
     ];
 
     protected $dates = [
@@ -193,9 +186,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEES);
     }
 
-    public function getServiceTax()
+    // FeeCalculator calls `$entity->getFee()` for all the pricing entity
+    public function getFee()
     {
-        return $this->getAttribute(self::SERVICE_TAX);
+        return $this->getFees();
     }
 
     public function getTax()
@@ -278,11 +272,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CHANNEL, $channel);
     }
 
-    public function setServiceTax($serviceTax)
-    {
-        $this->setAttribute(self::SERVICE_TAX, $serviceTax);
-    }
-
     public function setTax($tax)
     {
         $this->setAttribute(self::TAX, $tax);
@@ -303,7 +292,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
-    public function setUtr($utr)
+    public function setUtr(string $utr = null)
     {
         $this->setAttribute(self::UTR, $utr);
     }

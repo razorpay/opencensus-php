@@ -67,6 +67,7 @@ class Customer extends Base
             'method'        => 'card',
             'bank'          => null,
             'wallet'        => null,
+            'recurring'     => false,
             'card_id'       => '100000000lcard',
             'used_at'       => 10
         ),

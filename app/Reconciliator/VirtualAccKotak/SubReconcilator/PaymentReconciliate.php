@@ -7,16 +7,25 @@ use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\BankTransfer;
+use RZP\Constants\Timezone;
 use RZP\Models\VirtualAccount\Provider;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
     const COLUMN_UTR           = 'txn_ref_no';
     const COLUMN_AMOUNT        = 'amount';
-    const COLUMN_PAYER_NAME    = 'send_cust_acname';
-    const COLUMN_PAYEE_ACCOUNT = 'e_coll_ac_no';
-    const COLUMN_PAYER_ACCOUNT = 'send_cust_ac_no';
-    const COLUMN_PAYER_IFSC    = 'snd_brn_ifsc';
+    const COLUMN_PAYER_NAME    = 'payer_name';
+    const COLUMN_PAYEE_ACCOUNT = 'payee_account';
+    const COLUMN_PAYER_ACCOUNT = 'payer_account';
+    const COLUMN_PAYER_IFSC    = 'payer_ifsc';
+    const COLUMN_MODE          = 'mode';
+    const COLUMN_DATE          = 'date';
+    const COLUMN_TIME          = 'time';
+
+    const TIME_FORMAT = 'd/m/Y H:i:s';
+
+    // 30 minutes
+    const BUFFER_TIME = 1800;
 
     /**
      * Identify the bank transfer using UTR, and thus find payment
@@ -47,21 +56,55 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                              ->bank_transfer
                              ->findByUtr($utr);
 
-        // Bank Transfer will not be found in two cases:
-        // 1) Payment was made to a reserved acc, in which case we can ignore it
-        // 2) Kotak did not inform us of the payment via API, in which case we
-        //    create a payment now
         if ($bankTransfer === null)
         {
-            if ($this->isPaymentToReservedAccount($row) === true)
-            {
-                return null;
-            }
+            $this->alertUnexpectedBankTransferIfApplicable($row);
 
-            $bankTransfer = $this->createBankTransferPayment($row);
+            return null;
         }
 
         return $bankTransfer->getPaymentId();
+    }
+
+    /**
+     * Bank Transfer will not be found in two cases:
+     *  1) Payment was made to a reserved acc, in which case we can ignore it
+     *  2) Kotak did not inform us of the payment via API
+     *     2.1) If the payment is recent, we may simply receive the API in a few minutes.
+     *          Don't raise alerts for payments less than 30 minutes old (but trace it anyway).
+     *     2.2) If payment is old, it's a genuine unexpected bank transfer.
+     *          Raise alert, handle it some other way.
+     *
+     * @param  array  $row
+     */
+    protected function alertUnexpectedBankTransferIfApplicable(array $row)
+    {
+        // No alerts for reserved accounts
+        if ($this->isPaymentToReservedAccount($row) === true)
+        {
+            return;
+        }
+
+        // Trace, but don't alert, for recent payments
+        if ($this->isRecentBankTransfer($row) === true)
+        {
+            $this->trace->info(TraceCode::BANK_TRANSFER_UNEXPECTED,
+                [
+                    'message'       => 'Unexpected bank transfer, alert skipped',
+                    'utr'           => $row[self::COLUMN_UTR],
+                    'row'           => $row,
+                ]);
+
+            return;
+        }
+
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'    => TraceCode::RECON_ALERT,
+                'message'       => 'Unexpected bank transfer',
+                'row'           => $row,
+                'gateway'       => get_called_class()
+            ]);
     }
 
     /**
@@ -137,6 +180,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         ];
     }
 
+    /**
+     * Customer name is not present in case of Kotak-to-Kotak IFT
+     *
+     * @param  array $row
+     * @return string
+     */
     protected function getCustomerName(array $row)
     {
         if (empty($row[self::COLUMN_PAYER_NAME]) === false)
@@ -147,6 +196,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return null;
     }
 
+    /**
+     * Certain roots are reserved for Razorpay's own usage, eg. for inter-nodal
+     * transfers. We ignore these payments completely, and raise no alerts.
+     *
+     * @param  array $row
+     * @return bool
+     */
     protected function isPaymentToReservedAccount(array $row)
     {
         $payeeAccount = $row[self::COLUMN_PAYEE_ACCOUNT];
@@ -162,42 +218,41 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     }
 
     /**
-     * An unexpected bank transfer is present in the MIS file.
-     * one which is not present in the DB, because Kotak failed
-     * to hit the bank_transfer_process API for a payment.
+     * Because there is a delay between when a bank transfer is actually made by
+     * the customer and when the API call is received by us, it is quite possible
+     * for a bank transfer to appear in a recon file before it is processed via
+     * API. This will appear to us as an unexpected bank transfer, and will raise
+     * an unnecessary alert, only to be fixed later when the API request is received.
      *
-     * This is a problem, as Kotak ought to be retrying, but we
-     * can handle it here by creating the payment now.
+     * To avoid this, we ignore very recent bank transfers, i.e. <30 minutes old.
      *
-     * @param  array  $row
-     * @return BankTransfer\Entity
+     * @param  array $row
+     * @return bool
      */
-    protected function createBankTransferPayment(array $row)
+    protected function isRecentBankTransfer(array $row): bool
     {
-        $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
-                    'message'       => 'Unexpected bank transfer',
-                    'row'           => $row,
-                    'gateway'       => get_called_class()
-                ]);
+        $time = $this->getTimeOfBankTransfer($row);
 
-        $payeeIfsc = Provider::DEFAULT_DETAILS[Provider::KOTAK]['ifsc_code'];
-        $time      = Carbon::now()->getTimestamp();
+        $now = Carbon::now()->getTimestamp();
 
-        $data = [
-            BankTransfer\Entity::PAYER_NAME     => $row[self::COLUMN_PAYER_NAME],
-            BankTransfer\Entity::PAYER_ACCOUNT  => $row[self::COLUMN_PAYER_ACCOUNT],
-            BankTransfer\Entity::PAYER_IFSC     => $row[self::COLUMN_PAYER_IFSC],
-            BankTransfer\Entity::AMOUNT         => $row[self::COLUMN_AMOUNT],
-            BankTransfer\Entity::REQ_UTR        => $row[self::COLUMN_UTR],
-            BankTransfer\Entity::PAYEE_ACCOUNT  => $row[self::COLUMN_PAYEE_ACCOUNT],
-            BankTransfer\Entity::PAYEE_IFSC     => $payeeIfsc,
-            BankTransfer\Entity::TIME           => $time,
-            // Hack, until mode is added to the recon files
-            BankTransfer\Entity::MODE           => 'neft',
-        ];
+        if (($now - $time) < self::BUFFER_TIME)
+        {
+            return true;
+        }
 
-        return (new BankTransfer\Core)->process($data);
+        return false;
+    }
+
+    /**
+     * @param array $row
+     * @return int
+     */
+    protected function getTimeOfBankTransfer(array $row): int
+    {
+        $dateTime = $row[self::COLUMN_DATE] . ' ' .  $row[self::COLUMN_TIME];
+
+        $carbon = Carbon::createFromFormat(self::TIME_FORMAT, $dateTime, Timezone::IST);
+
+        return $carbon->getTimestamp();
     }
 }

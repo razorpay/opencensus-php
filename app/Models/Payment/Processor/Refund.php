@@ -32,6 +32,12 @@ trait Refund
      */
     protected function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
     {
+        if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
+        }
+
         if ($payment->isDisputed() === true)
         {
             throw new Exception\BadRequestException(
@@ -53,6 +59,11 @@ trait Refund
         int $refundAmount)
     {
         $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount);
+    }
+
+    public function createRefundFromMerchantFile(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
+    {
+        return $this->refund($payment, $input, $batch);
     }
 
     public function createRefundOnApiForCancelledBilldeskRefund(
@@ -193,6 +204,11 @@ trait Refund
     public function verifyRefund(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
+
+        if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
@@ -766,16 +782,19 @@ trait Refund
      * - no need to update payment - marked as refunded
      *
      * @param Payment\Refund\Entity $refund
+     * @param array $input Values passed in API input
      *
      * @return string
      */
-    public function processRefundRetry(Payment\Refund\Entity $refund)
+    public function processRefundRetry(Payment\Refund\Entity $refund, array $input = [])
     {
         $payment = $refund->payment;
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
+
+        $data = array_merge($data, $input);
 
         if ($refund->isProcessed() === true)
         {
@@ -792,7 +811,7 @@ trait Refund
                 $payment->getId(),
                 function() use ($data, $payment)
                 {
-                    return $this->callGatewayRefundFunction($payment, $data);
+                    return $this->callRefundFunction($payment, $data);
                 });
         }
         else
@@ -1002,6 +1021,12 @@ trait Refund
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
         }
+
+        // Some bank transfer payments cannot be refunded.
+        if ($payment->isBankTransfer() === true)
+        {
+            (new BankTransfer\Validator)->validatePaymentForRefund($payment);
+        }
     }
 
     protected function setPaymentAndRefundInfo($refund, $payment)
@@ -1024,14 +1049,13 @@ trait Refund
      * - EMails (to both customer and merchant)
      *
      * @param  Payment\Entity $payment Payment Entity
-     *
-     * @return null
      */
     protected function sendRefundNotification(Payment\Entity $payment)
     {
         //
         // Analytics is on dashboard side for now
         //
+
         $notifier = new Notify($payment);
         $notifier->addRefund($this->refund);
         $notifier->trigger(Payment\Event::REFUNDED);
@@ -1112,7 +1136,7 @@ trait Refund
 
         try
         {
-            (new BankTransfer\Core)->refund($data, $this->merchant);
+            (new BankTransfer\Core)->refund($data);
 
             $this->refund->setStatus(Payment\Refund\Status::CREATED);
 

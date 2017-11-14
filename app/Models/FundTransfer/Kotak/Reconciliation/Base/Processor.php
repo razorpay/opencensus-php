@@ -114,50 +114,49 @@ class Processor extends Base\Core
 
     protected function startReconciliation($data): array
     {
-        $this->repo->beginTransaction();
-
-        try
+        $summary = $this->repo->transactionOnLiveAndTest(function() use ($data)
         {
-            foreach ($data as $row)
+            try
             {
-                $entity = $this->reconcileEntity($row);
-
-                if ($entity === null)
+                foreach ($data as $row)
                 {
-                    $this->unprocessedIds[] = $row[Kotak\Headings::PAYMENT_REF_NO] ?? 'null';
+                    $entity = $this->reconcileEntity($row);
+
+                    if ($entity === null)
+                    {
+                        $this->unprocessedIds[] = $row[Kotak\Headings::PAYMENT_REF_NO] ?? 'null';
+                    }
+                    else
+                    {
+                        $this->allEntities[] = $entity;
+
+                        $this->updateBatchFundTransferStats($entity);
+                    }
                 }
-                else
-                {
-                    $this->allEntities[] = $entity;
 
-                    $this->updateBatchFundTransferStats($entity);
+                // Update batch stats post reconciliations
+                foreach ($this->batchFundTransferStats as $batchId => $attrs)
+                {
+                    $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
+                    $batchEntity->setProcessedCount($attrs['processed_count']);
+                    $batchEntity->setProcessedAmount($attrs['processed_amount']);
+                    $batchEntity->saveOrFail();
                 }
             }
-
-            // Update batch stats post reconciliations
-            foreach ($this->batchFundTransferStats as $batchId => $attrs)
+            catch (\Exception $e)
             {
-                $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
-                $batchEntity->setProcessedCount($attrs['processed_count']);
-                $batchEntity->setProcessedAmount($attrs['processed_amount']);
-                $batchEntity->saveOrFail();
+                (new SlackNotification)->failure('setl_reconciliation', $e);
+
+                throw $e;
             }
 
-            $this->repo->commit();
-        }
-        catch (\Exception $e)
-        {
-            $this->repo->rollback();
+            $summary = $this->getSummary();
 
-            (new SlackNotification)->failure('setl_reconciliation', $e);
+            (new SlackNotification)->success('setl_reconciliation', $summary);
 
-            throw $e;
-        }
-
-        $summary = $this->getSummary();
-
-        (new SlackNotification)->success('setl_reconciliation', $summary);
-
+            return $summary;
+        });
+        
         return $summary;
     }
 
@@ -260,16 +259,10 @@ class Processor extends Base\Core
             return $entity->getId();
         });
 
-        $failureAmount = 0;
-
         foreach ($failureEntities as $entity)
         {
             $failureEntityIds[] = $entity->getId();
-
-            $failureAmount += $entity->getAmount();
         }
-
-        $failureAmount = $failureAmount / 100;
 
         // If multiple, let's say 2, attempts were made, on the same day for a settlement,
         // the recon file would have both failure and success rows corresponding to each
@@ -277,6 +270,18 @@ class Processor extends Base\Core
         // both successEntities, and failureEntities. To avoid a false alarm for this
         // settlement, we do this
         $failureEntityIds = array_diff($failureEntityIds, $successEntityIds);
+
+        $failureAmount = 0;
+
+        foreach ($failureEntities as $entity)
+        {
+            if (in_array($entity->getId(), $failureEntityIds, true) === true)
+            {
+                $failureAmount += $entity->getAmount();
+            }
+        }
+
+        $failureAmount = $failureAmount / 100;
 
         $totalCount = count($allEntityIds);
         $failureCount = count($failureEntityIds);

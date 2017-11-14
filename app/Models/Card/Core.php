@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Card;
 
+use Route;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -48,7 +49,13 @@ class Core extends Base\Core
 
     public function createAndReturnWithSensitiveData(array $input, Merchant\Entity $merchant): array
     {
+        //
+        // We are running modifiers outside the build() because
+        // modifiers only change the input under the scope of build.
+        // As `$input` is not passed by reference to build().
+        //
         Card\Entity::modifyNumber($input);
+        Card\Entity::modifyMaestro($input);
 
         $card = null;
 
@@ -77,11 +84,11 @@ class Core extends Base\Core
     public function createDuplicateCard($input, $merchant)
     {
         $createInput = array(
-            Entity::NUMBER          =>  $input[Entity::NUMBER],
-            Entity::EXPIRY_MONTH    =>  $input[Entity::EXPIRY_MONTH],
-            Entity::EXPIRY_YEAR     =>  $input[Entity::EXPIRY_YEAR],
-            Entity::CVV             =>  $input[Entity::CVV],
-            Entity::NAME            =>  $input[Entity::NAME],
+            Entity::NUMBER          => $input[Entity::NUMBER],
+            Entity::EXPIRY_MONTH    => $input[Entity::EXPIRY_MONTH],
+            Entity::EXPIRY_YEAR     => $input[Entity::EXPIRY_YEAR],
+            Entity::CVV             => $input[Entity::CVV],
+            Entity::NAME            => $input[Entity::NAME],
         );
 
         $card = $this->create($createInput, $merchant);
@@ -181,30 +188,37 @@ class Core extends Base\Core
         // we might need to do a similar thing when we start with
         // global charge at will recurring.
         //
-        if (($this->app['basicauth']->isPrivilegeAuth() === true) and
+        if (($this->app['basicauth']->isProxyOrPrivilegeAuth() === true) and
             (isset($input['cvv']) === false))
         {
             return;
         }
 
+        //
+        // If the card is not Maestro, then cvv has to be set
+        //
+        if (empty($input['cvv']) === true)
+        {
+            // If card is Maestro, cvv may be absent
+            if ($card->isMaestro() === true)
+            {
+                return;
+            }
+
+            throw new Exception\BadRequestValidationFailureException(
+                'The cvv field is required',
+                Entity::CVV);
+        }
+
         $cvvLength = strlen($input['cvv']);
 
         // If card is Amex, cvv length should be 4.
-        if ($card->isAmex())
+        if ($card->isAmex() === true)
         {
             if ($cvvLength !== 4)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_AMEX_CVV_LENGTH_MUST_BE_FOUR);
-            }
-        }
-        // If card is Maestro, cvv may be absent
-        else if ($card->isMaestro())
-        {
-            if ((empty($input['cvv']) === false) and ($cvvLength !== 3))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV);
             }
         }
         else if ($cvvLength !== 3)

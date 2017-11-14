@@ -31,6 +31,53 @@ class CustomerTest extends TestCase
         $this->assertNotNull($customer);
     }
 
+    public function testCreateCustomerWithValidNames()
+    {
+        $this->ba->privateAuth();
+
+        //
+        // To create different unique customers. Uniqueness is asserted in code
+        // by email & contact.
+        //
+        $validNameEmailMap = [
+            'Sample name'        => 'test1@test.razorpay.com',
+            'ABC Corp Pvt. Ltd.' => 'test2@test.razorpay.com',
+            'ABC Corp (Pvt)'     => 'test3@test.razorpay.com',
+            'Sample\'d name'     => 'test4@test.razorpay.com',
+        ];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        foreach ($validNameEmailMap as $name => $email)
+        {
+            $testData['request']['content']['name'] = $testData['response']['content']['name'] = $name;
+            $testData['request']['content']['email'] = $testData['response']['content']['email'] = $email;
+
+            $this->startTest();
+        }
+    }
+
+    public function testCreateCustomerWithInvalidNames()
+    {
+        $this->ba->privateAuth();
+
+        $invalidNameErrorMap = [
+            'Sample"s name'                                       => 'The name format is invalid.',
+            'A very big big big name off some big big big person' => 'The name may not be greater than 50 characters.',
+            'A weird? name'                                       => 'The name format is invalid.',
+        ];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        foreach ($invalidNameErrorMap as $name => $error)
+        {
+            $testData['request']['content']['name']                  = $name;
+            $testData['response']['content']['error']['description'] = $error;
+
+            $this->startTest();
+        }
+    }
+
     public function testCreateCustomerEmailOnly()
     {
         $this->ba->privateAuth();

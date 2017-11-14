@@ -18,9 +18,6 @@ build:
     # The steps that will be executed on build
     steps:
       - script:
-          name: ENV Variables
-          code: env
-      - script:
           name: copy env file
           code: cp ./environment/.env.wercker ./environment/.env.testing
       - add-ssh-key:
@@ -40,6 +37,8 @@ build:
           code: >
               export DB_TEST_HOST="$MYSQL_PORT_3306_TCP_ADDR"
               export DB_TEST_PORT="$MYSQL_PORT_3306_TCP_PORT"
+              export DB_AUTH_HOST="$MYSQL_PORT_3306_TCP_ADDR"
+              export DB_AUTH_PORT="$MYSQL_PORT_3306_TCP_PORT"
       - script:
           name: Export wercker Redis env var to API environment variables
           code: >
@@ -68,7 +67,8 @@ build:
           name: Composer set-up
           code: |
               composer config -g github-oauth.github.com $github_token
-              export COMPOSER_CACHE_DIR="$WERCKER_CACHE_DIR/composer" && mkdir -p $COMPOSER_CACHE_DIR
+              export COMPOSER_CACHE_DIR="$WERCKER_CACHE_DIR/composer"
+              mkdir -p $COMPOSER_CACHE_DIR
               composer install --no-interaction
       - script:
           name: Create certificate directories
@@ -86,6 +86,9 @@ build:
           channel:  tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
+      - script:
+          name: Save trace
+          code: cp storage/logs/* $WERCKER_REPORT_ARTIFACTS_DIR/
 dockerhub-push:
     box:
       id: razorpay/containers:base-php7

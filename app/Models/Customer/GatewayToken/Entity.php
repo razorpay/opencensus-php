@@ -58,6 +58,10 @@ class Entity extends Base\PublicEntity
         self::RECURRING         => null,
     ];
 
+    protected $casts = [
+        self::RECURRING => 'bool',
+    ];
+
     // -------------------- Relations --------------------
 
     public function merchant()
@@ -82,6 +86,11 @@ class Entity extends Base\PublicEntity
     public function setReference($reference)
     {
         $this->setAttribute(self::REFERENCE, $reference);
+    }
+
+    public function setRecurring(bool $recurring)
+    {
+        $this->setAttribute(self::RECURRING, $recurring);
     }
 
     // -------------------- End Setters --------------------

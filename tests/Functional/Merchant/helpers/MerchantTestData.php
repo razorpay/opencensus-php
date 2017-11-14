@@ -38,7 +38,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED,
         ],
     ],
@@ -182,7 +182,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_KEY_EXPIRED,
         ],
     ],
@@ -204,7 +204,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_KEY_OF_DEMO_ACCOUNT,
         ],
     ],
@@ -213,6 +213,7 @@ return [
         'request' => [
             'content' => [
                 'international' => '1',
+                'linked_account_kyc' => '1',
                 'website' => 'http://abc.com',
                 'category' => '1111',
                 'transaction_report_email'  => [
@@ -232,6 +233,7 @@ return [
                 'id' => '1X4hRFHFx4UiXt',
                 'entity' => 'merchant',
                 'international' => true,
+                'linked_account_kyc' => true,
                 'category' => 1111,
                 'website' => 'http://abc.com',
                 'transaction_report_email'  => [
@@ -259,7 +261,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -311,7 +313,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -367,15 +369,38 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The email field is required.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditTestAccountMerchantEmail' => [
+        'request' => [
+            'content' => [
+                'email' => 'testing@fail.com',
+            ],
+            'url' => '/merchants/10000000000000/email',
+            'method' => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT,
         ],
     ],
 
@@ -574,7 +599,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED,
         ],
     ],
@@ -595,7 +620,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
         ]
     ],
@@ -2179,7 +2204,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -2195,7 +2220,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE,
         ],
     ],
@@ -2211,7 +2236,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL,
         ],
     ],
@@ -2227,7 +2252,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE,
         ],
     ],
@@ -2243,7 +2268,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_BIG,
         ],
     ],
@@ -2257,79 +2282,6 @@ return [
         'response' => [
             'content' => [],
             'status_code' => 200,
-        ],
-    ],
-
-    'testGetMerchantFeatures' => [
-        'request' => [
-            'url' => '/merchants/10000000000000/features',
-            'method' => 'get'
-        ],
-        'response' => [
-            'content' => [
-                'features' => [
-                    [
-                        'feature' => "noflashcheckout",
-                        'value' => false,
-                        'display_name' => "No Flash Checkout"
-                    ],
-                ]
-            ],
-            'status_code' => 200
-        ]
-    ],
-
-    'testUpdateMerchantFeatures' => [
-        'request' => [
-            'content' => [
-                "features" => [
-                    "noflashcheckout" => "1",
-                ],
-                "optout_reason" => "some reason"
-            ],
-            'url' => '/merchants/10000000000000/features',
-            'method' => 'post',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'features' => [
-                    [
-                        'feature' => "noflashcheckout",
-                        'value' => true,
-                        'display_name' => "No Flash Checkout"
-                    ]
-                ]
-            ],
-            'status_code' => 200
-        ]
-    ],
-
-    'testUpdateMerchantUnEditableFeatures' => [
-        'request' => [
-            'content' => [
-                "features" => [
-                    "dummy" => "1"
-                ]
-            ],
-            'url' => '/merchants/10000000000000/features',
-            'method' => 'post'
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
         ],
     ],
 
@@ -2367,7 +2319,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS,
         ],
     ],
@@ -2390,7 +2342,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED,
         ],
     ],
@@ -2429,7 +2381,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ARCHIVED,
         ],
     ],
@@ -2470,7 +2422,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED,
         ],
     ],
@@ -2511,7 +2463,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_SUSPENDED,
         ],
     ],
@@ -2534,7 +2486,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED,
         ],
     ],
@@ -2553,6 +2505,32 @@ return [
             'content' => [
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateSubmerchantEmail' => [
+        'request' => [
+            'url'       => '/merchants/10000000000044/email',
+            'method'    => 'PUT',
+            'content'   => [
+                'email' => 'differentemail@razorpay.com'
+            ],
+            'server' => [
+                'HTTP_' . \RZP\Http\BasicAuth\BasicAuth::ACCOUNT_HEADER_KEY => '10000000000044',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
         ],
     ]
 ];
