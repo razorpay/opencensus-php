@@ -90,7 +90,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getPricingPlansWithRulesCount()
+    public function getMerchantPricingPlansSummary()
     {
         return $this->newQuery()
                     ->selectRaw(
