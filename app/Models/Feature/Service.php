@@ -320,7 +320,7 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function bulkUpdateFeatureActivationStatus(array $input)
+    public function bulkUpdateFeatureActivationStatus(array $input): array
     {
         $result = [];
 

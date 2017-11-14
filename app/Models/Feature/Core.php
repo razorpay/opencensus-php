@@ -315,6 +315,36 @@ class Core extends Base\Core
     }
 
     /**
+     * Accepts a merchant map (merchantId => status) for a product feature and updates the status
+     *
+     * @param string $featureName
+     * @param array  $merchantMap
+     *
+     * @return array
+     */
+    public function bulkUpdateFeatureActivationStatus(string $featureName, array $merchantMap)
+    {
+        foreach ($merchantMap as $merchantId => $status)
+        {
+            $response = $this->updateFeatureActivationStatus($merchantId, $featureName, $status);
+
+            // Verify that the status was updated
+            $featureActivationStatus = snake_case($featureName . '_activation_status');
+
+            if ($response[$featureActivationStatus] === $status)
+            {
+                $merchantMap[$merchantId] = true;
+            }
+            else
+            {
+                $merchantMap[$merchantId] = false;
+            }
+        }
+
+        return $merchantMap;
+    }
+
+    /**
      * Accessor class overwrites all the old responses submitted by the merchant with the new
      * keys sent while updating. This function preserves the old keys and only updates the new ones.
      *
@@ -666,27 +696,5 @@ class Core extends Base\Core
 
             $this->logActionToSlack($merchant, SlackActions::PRODUCT_ACTIVATION, $data);
         }
-    }
-
-    public function bulkUpdateFeatureActivationStatus(string $featureName, array $merchantMap)
-    {
-        foreach ($merchantMap as $merchantId => $status)
-        {
-            $response = $this->updateFeatureActivationStatus($merchantId, $featureName, $status);
-
-            // Verify that the status was updated
-            $featureActivationStatus = snake_case($featureName . '_activation_status');
-
-            if ($response[$featureActivationStatus] === $status)
-            {
-                $merchantMap[$merchantId] = true;
-            }
-            else
-            {
-                $merchantMap[$merchantId] = false;
-            }
-        }
-
-        return $merchantMap;
     }
 }
