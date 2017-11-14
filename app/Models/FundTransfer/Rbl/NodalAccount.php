@@ -2,7 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Rbl;
 
-use Trace;
+use App;
 use Requests;
 use Config;
 use Requests_Hooks;
@@ -20,9 +20,15 @@ class NodalAccount extends NodalBase\NodalAccount
 
     protected $url = '';
 
+    protected $trace;
+
     public function __construct()
     {
         parent::__construct();
+
+        $app = App::getFacadeRoot();
+
+        $this->trace = $this->app['trace'];
 
         $this->config = Config::get('nodal.rbl');
 
@@ -63,13 +69,13 @@ class NodalAccount extends NodalBase\NodalAccount
             if ((empty($resp['Body']['Status']) === false) and
                 ($resp['Bodyq']['Status'] === 'Failure'))
             {
-                $this->trace()->error(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
+                $this->trace->error(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
 
                 return $responseArray;
             }
         }
 
-        $this->trace()->info(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
+        $this->trace->info(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
 
         return $responseArray;
     }
@@ -87,13 +93,13 @@ class NodalAccount extends NodalBase\NodalAccount
             if ((empty($resp['Header']['Status']) === false) and
                 ($resp['Bodyq']['Status'] === 'FAILED'))
             {
-                $this->trace()->error(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
+                $this->trace->error(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
 
                 return $responseArray;
             }
         }
 
-        $this->trace()->info(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
+        $this->trace->info(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
 
         return $responseArray;
     }
@@ -178,7 +184,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
     protected function getResponse(array $content, string $url): array
     {
-        $this->trace()->info(TraceCode::RBL_NODAL_REQUEST, $responseArray);
+        $this->trace->info(TraceCode::RBL_NODAL_REQUEST, $responseArray);
 
         $response = Requests::post(
             $url,
@@ -320,12 +326,5 @@ class NodalAccount extends NodalBase\NodalAccount
         ];
 
         return $content;
-    }
-
-    protected function trace()
-    {
-        $trace = Trace::getFacadeRoot();
-
-        return $trace;
     }
 }
