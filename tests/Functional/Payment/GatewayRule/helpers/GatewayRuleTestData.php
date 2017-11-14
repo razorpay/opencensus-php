@@ -581,6 +581,80 @@ return [
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
         ],
+        // Create more specific rule while more generic rule exists
+        [
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '100000Razorpay',
+                    'gateway'     => 'hdfc',
+                    'network'     => null,
+                    'min_amount'  => 0,
+                    'load'        => 90
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'sorter',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'iins'        => ['411111'],
+                    'load'        => 90
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'sorter',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'iins'        => ['411111'],
+                    'load'        => 90,
+                    'admin'       => true
+                ],
+            ],
+        ],
+        // Create generic ru;e while more specific rule exists
+        [
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '100000Razorpay',
+                    'gateway'     => 'hdfc',
+                    'network'     => null,
+                    'min_amount'  => 0,
+                    'load'        => 90
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'sorter',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'iins'        => ['411111'],
+                    'load'        => 90
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'sorter',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'iins'        => ['411111'],
+                    'load'        => 90,
+                    'admin'       => true
+                ],
+            ],
+        ],
         // Create select type filter rule
         [
             'request' => [
@@ -1032,6 +1106,84 @@ return [
             'exception' => [
                 'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // test update load for specific rule while generic rule exists
+        [
+            'to_update' => [
+                'method'      => 'card',
+                'type'        => 'sorter',
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'hdfc',
+                'network'     => 'VISA',
+                'min_amount'  => 0,
+                'load'        => 50
+            ],
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'axis_migs',
+                    'min_amount'  => 0,
+                    'load'        => 50
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'load'  => 70,
+                ],
+                'method' => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'network'     => 'VISA',
+                    'min_amount'  => 0,
+                    'load'        => 70,
+                ],
+            ],
+        ],
+        // test update generic rule while more generic rule exists
+        [
+            'to_update' => [
+                'method'      => 'card',
+                'type'        => 'sorter',
+                'merchant_id' => '100000Razorpay',
+                'gateway'     => 'hdfc',
+                'network'     => 'VISA',
+                'min_amount'  => 0,
+                'load'        => 50
+            ],
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'axis_migs',
+                    'min_amount'  => 0,
+                    'load'        => 50
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'load'  => 70,
+                ],
+                'method' => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '100000Razorpay',
+                    'gateway'     => 'hdfc',
+                    'network'     => 'VISA',
+                    'min_amount'  => 0,
+                    'load'        => 70,
+                ],
             ],
         ],
         // test update sorter rule load, but total load will exceed 100 on update

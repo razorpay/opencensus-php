@@ -29,12 +29,14 @@ class GatewayRuleTest extends TestCase
 
         $testCases = $this->testData[__FUNCTION__];
 
+        //
         // All test cases have the below format
         // [
         //      'fixtures' => <any rules that neds to be created via fixtures
         //      'request' => 'create request to be made'
         //      'response' => expected response
         // ]
+        //
         foreach ($testCases as $test)
         {
             $this->runTestCase($test);
@@ -47,6 +49,7 @@ class GatewayRuleTest extends TestCase
 
         $testCases = $this->testData[__FUNCTION__];
 
+        //
         // All test cases have the below format
         // [
         //      'to_update' => Existing rule which needs to be updated
@@ -54,6 +57,7 @@ class GatewayRuleTest extends TestCase
         //      'request' => 'create request to be made'
         //      'response' => expected response
         // ]
+        //
         foreach ($testCases as $test)
         {
              $this->runTestCase($test);
