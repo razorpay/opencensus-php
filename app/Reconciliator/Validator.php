@@ -74,6 +74,10 @@ class Validator
     // Max allowed file size - 25M (25*1024*1024).
     const MAX_FILE_SIZE = 26214400;
 
+    const FORCE_UPDATE_ALLOWED = [
+        Orchestrator::REFUND_ARN
+    ];
+
     const MANUAL_INPUT_RULES = [
         Orchestrator::ATTACHMENT_COUNT    => 'required|integer|min:0|max:10',
         Orchestrator::GATEWAY             => 'required|custom',
@@ -343,7 +347,7 @@ class Validator
             }
             else
             {
-                $diff = array_diff(Orchestrator::ALLOWED_FORCE_UPDATE, $value);
+                $diff = array_diff(self::FORCE_UPDATE_ALLOWED, $value);
                 $valid = (count($diff) === 0);
             }
         }

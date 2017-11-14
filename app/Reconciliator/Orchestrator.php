@@ -125,10 +125,6 @@ class Orchestrator extends Base\Core
      */
     const REFUND_ARN = 'refund_arn';
 
-    const ALLOWED_FORCE_UPDATE = [
-        self::REFUND_ARN
-    ];
-
     /*********************
      * Instance variables
      *********************/
