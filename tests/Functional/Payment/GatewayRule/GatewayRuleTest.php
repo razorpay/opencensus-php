@@ -2,12 +2,8 @@
 
 namespace RZP\Functional\Payment\GatewayRule;
 
-use Carbon\Carbon;
-use RZP\Models\Merchant;
-use RZP\Models\Payment\Method;
-use RZP\Models\Terminal\Options;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 /**
  * Tests CRUD operations on gateway_rule entity
@@ -80,7 +76,7 @@ class GatewayRuleTest extends TestCase
 
         $this->ba->appAuth();
 
-        $content = $this->startTest();
+        $this->startTest();
     }
 
     protected function runTestCase(array $testData)
@@ -120,6 +116,8 @@ class GatewayRuleTest extends TestCase
 
     protected function createRules(array $ruleParams): array
     {
+        $ruleIds = [];
+
         foreach ($ruleParams as $params)
         {
             $rule = $this->fixtures->create('gateway_rule', $params);

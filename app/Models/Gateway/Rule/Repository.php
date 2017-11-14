@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\Rule;
 
 use RZP\Models\Base;
+use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 
 class Repository extends Base\Repository
 {
@@ -59,10 +60,10 @@ class Repository extends Base\Repository
      *   AND (network = ? OR network IS NULL) AND (gateway_acquirer = ? OR gateway_acquirer IS NULL)
      *   AND international = false AND deleted_at IS NOT NULL
      *
-     * @param  Querybuilder  $query  Query object
-     * @param  array  $params query params
+     * @param  QueryBuilder  $query  Query object
+     * @param  array         $params query params
      */
-    protected function buildSelectionQuery($query, array $params)
+    protected function buildSelectionQuery(QueryBuilder $query, array $params)
     {
         foreach ($params as $key => $value)
         {
@@ -70,7 +71,12 @@ class Repository extends Base\Repository
         }
     }
 
-    protected function addQueryForAttribute($query, $key, $params)
+    /**
+     * @param QueryBuilder $query
+     * @param $key
+     * @param $params
+     */
+    protected function addQueryForAttribute(QueryBuilder $query, string $key, array $params)
     {
         if ($params[$key] !== null)
         {
@@ -114,7 +120,7 @@ class Repository extends Base\Repository
      * @param Querybuilder $query
      * @param array        $params
      */
-    protected function addQueryForId($query, $params)
+    protected function addQueryForId(QueryBuilder $query, array $params)
     {
         $query->where(Entity::ID, '!=', $params[Entity::ID]);
     }
@@ -122,8 +128,10 @@ class Repository extends Base\Repository
     /**
      * We always check for filter_type not equal to that of current rule, so as
      * to find rules with matching criteria but opposite filter action
+     * @param QueryBuilder $query
+     * @param array        $params
      */
-    protected function addQueryForFilterType($query, $params)
+    protected function addQueryForFilterType(QueryBuilder $query, array $params)
     {
         $query->where(Entity::FILTER_TYPE, '!=', $params[Entity::FILTER_TYPE]);
     }
@@ -131,8 +139,10 @@ class Repository extends Base\Repository
     /**
      * min_amount and max_amount are handled like below as they represent a range
      * and we want to find rules which overlap this range
+     * @param QueryBuilder $query
+     * @param array        $params
      */
-    protected function addQueryForMinAmount($query, $params)
+    protected function addQueryForMinAmount(QueryBuilder $query, array $params)
     {
         if (isset($params[Entity::MAX_AMOUNT]) === true)
         {
@@ -140,7 +150,11 @@ class Repository extends Base\Repository
         }
     }
 
-    protected function addQueryForMaxAmount($query, $params)
+    /**
+     * @param QueryBuilder $query
+     * @param array $params
+     */
+    protected function addQueryForMaxAmount(QueryBuilder $query, array $params)
     {
         $query->where(Entity::MAX_AMOUNT, '>=', $params[Entity::MIN_AMOUNT]);
     }

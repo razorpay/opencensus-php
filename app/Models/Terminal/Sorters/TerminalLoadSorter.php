@@ -3,10 +3,7 @@
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Base;
-use RZP\Models\Feature;
 use RZP\Models\Gateway\Rule;
-use RZP\Models\Merchant\Account;
-use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 
@@ -22,7 +19,6 @@ class TerminalLoadSorter extends Terminal\Sorter
      * defined rules
      *
      * @param $terminals
-     * @param array $input
      * @return array
      */
     public function gatewaySorter($terminals)
@@ -31,8 +27,6 @@ class TerminalLoadSorter extends Terminal\Sorter
         {
             return $terminals;
         }
-
-        $merchant = $this->input['merchant'];
 
         try
         {
@@ -45,7 +39,6 @@ class TerminalLoadSorter extends Terminal\Sorter
             $chancePercent = $this->options->getChance();
 
             $boostedTerminals = [];
-            $nonBoostedTerminals = [];
 
             foreach ($this->rules as $score => $rules)
             {

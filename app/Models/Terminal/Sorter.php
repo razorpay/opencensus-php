@@ -2,10 +2,9 @@
 
 namespace RZP\Models\Terminal;
 
+use App;
 use Trace;
 
-use App;
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 

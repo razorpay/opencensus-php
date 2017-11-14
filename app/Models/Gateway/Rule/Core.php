@@ -55,16 +55,13 @@ class Core extends Base\Core
     /**
      * Fetches rules from db as per payment criteria during terminal selection
      *
-     * @param  array        $terminals Set of all terminals
-     * @param  array        $input     Array containing payment, merchant entities
-     * @param  bool         $verbose
-     * @return PublicCollection collection of applicable rules
+     * @param  array        $input      Array containing payment, merchant entities
+     *
+     * @return Base\PublicCollection    collection of applicable rules
      */
-    public function fetchApplicableRulesForPayment(
-                        array $terminals,
-                        array $input): Base\PublicCollection
+    public function fetchApplicableRulesForPayment(array $input): Base\PublicCollection
     {
-        $searchCriteria = $this->getRuleSearchCriteriaForPayment($terminals, $input);
+        $searchCriteria = $this->getRuleSearchCriteriaForPayment($input);
 
         $applicableRules = $this->repo
                                 ->gateway_rule
@@ -108,7 +105,6 @@ class Core extends Base\Core
      *
      * @param  Entity                   $rule           New rule
      * @param  Base\PublicCollection    $matchingRules  Set of matching rules for the given criteria
-     * @param  array                    $input          Request data
      * @throws Exception\BadRequestValidationFailureException
      */
     protected function validateSorterRule(Entity $rule, Base\PublicCollection $matchingRules)
@@ -140,11 +136,10 @@ class Core extends Base\Core
     /**
      * Forms the search criteria to be used for fetching relevant rules during a payment
      *
-     * @param  array  $terminals set of all terminals
      * @param  array  $input     payment related input
      * @return array             array of parameters on which to build db query
      */
-    protected function getRuleSearchCriteriaForPayment(array $terminals, array $input): array
+    protected function getRuleSearchCriteriaForPayment(array $input): array
     {
         $payment = $input['payment'];
 
@@ -242,8 +237,10 @@ class Core extends Base\Core
      * If any existing rule has null iin, that is also considered overlapping
      * with current rule
      *
+     * @param  array                 $iins  iins to check for overlap
      * @param  Base\PublicCollection $rules Collection of exisitng rules which can have
      *                                      overlapping ins
+     *
      * @return Base\PublicCollection        rules with overlapping iins
      */
     protected function getRulesWithOverLappingIins(array $iins, Base\PublicCollection $rules): Base\PublicCollection

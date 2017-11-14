@@ -8,7 +8,6 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 
 class Entity extends Base\PublicEntity
@@ -247,7 +246,7 @@ class Entity extends Base\PublicEntity
      *
      * @param  array  $models models which are part of the collection
      *
-     * @return Collectio
+     * @return Collection
      */
     public function newCollection(array $models = array())
     {
@@ -515,6 +514,8 @@ class Entity extends Base\PublicEntity
      * given terminal
      *
      * @param  Terminal\Entity $terminal Terminal entity to compare against
+     * @param  Merchant\Entity $merchant
+     *
      * @return bool whether rule matches terminal
      */
     public function matches(Terminal\Entity $terminal, Merchant\Entity $merchant): bool
@@ -574,6 +575,8 @@ class Entity extends Base\PublicEntity
             case Method::AEPS:
                 return ($terminal->isAepsEnabled() === true);
         }
+
+        return false;
     }
 
     /**

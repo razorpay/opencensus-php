@@ -187,7 +187,8 @@ class Validator extends Base\Validator
                 if (empty($input[Entity::ISSUER]) === false)
                 {
                     throw new Exception\BadRequestValidationFailureException(
-                        'Issuer ' . $issuer . ' for method ' . $method . ' is not supported');
+                        'Issuer ' . $input[Entity::ISSUER] .
+                        ' for method ' . $method . ' is not supported');
                 }
         }
     }
