@@ -90,6 +90,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getPricingPlansWithRulesCount()
+    {
+        return $this->newQuery()
+                    ->selectRaw(
+                       Pricing\Entity::PLAN_ID . ','.
+                       Pricing\Entity::PLAN_NAME . ','.
+                       'COUNT(*) AS rules_count')
+                    ->groupBy(Pricing\Entity::PLAN_ID, Pricing\Entity::PLAN_NAME)
+                    ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
+                    ->get();
+    }
+
     public function getGatewayPricingPlans()
     {
         return $this->newQuery()
