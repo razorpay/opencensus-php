@@ -2,10 +2,10 @@
 
 namespace RZP\Gateway\Netbanking\Base;
 
-use RZP\Exception;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Base\RuntimeManager;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Processor;
@@ -138,6 +138,6 @@ class EMandateDebitReconFile extends Base\Core
      */
     protected function getApiErrorCode(string $errorDescription): string
     {
-        return '';
+        throw new Exception\LogicException('API Error codes not marked');
     }
 }
