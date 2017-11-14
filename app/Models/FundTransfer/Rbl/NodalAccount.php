@@ -26,10 +26,6 @@ class NodalAccount extends NodalBase\NodalAccount
     {
         parent::__construct();
 
-        $app = App::getFacadeRoot();
-
-        $this->trace = $this->app['trace'];
-
         $this->config = Config::get('nodal.rbl');
 
         $this->username = $this->config['username'];
