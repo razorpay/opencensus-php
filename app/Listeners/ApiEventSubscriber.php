@@ -6,13 +6,13 @@ use Illuminate\Events\Dispatcher;
 
 use App;
 use RZP\Constants;
-use RZP\Models\Base;
 use RZP\Jobs\WebHook;
+use RZP\Jobs\DispatchRouter;
+use RZP\Models\Base;
+use RZP\Models\Customer\Token;
 use RZP\Models\Event;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
-use RZP\Jobs\DispatchRouter;
-use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 
 class ApiEventSubscriber extends Base\Core
@@ -527,7 +527,7 @@ class ApiEventSubscriber extends Base\Core
      *
      * @return Merchant\Entity
      */
-    protected function getMerchantFromEntity(Base\PublicEntity $entity)
+    protected function getMerchantFromEntity(Base\PublicEntity $entity): Merchant\Entity
     {
         $merchant = $entity->merchant;
 

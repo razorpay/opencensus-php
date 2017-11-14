@@ -115,7 +115,7 @@ class Processor extends Base\Core
     {
         $this->repo->beginTransaction();
 
-        $reconciledData = [];
+        $webhookData = [];
 
         try
         {
@@ -123,7 +123,7 @@ class Processor extends Base\Core
             {
                 $reconciledRowDetails = $this->reconcileEntity($row);
 
-                $reconciledData[] = $reconciledRowDetails;
+                $webhookData[] = $reconciledRowDetails;
 
                 $entity = $reconciledRowDetails['entity'];
 
@@ -155,7 +155,7 @@ class Processor extends Base\Core
             $this->repo->rollback();
 
             // Empty the array to not trigger the webhook
-            $reconciledData = [];
+            $webhookData = [];
 
             (new SlackNotification)->failure('setl_reconciliation', $e);
 
@@ -169,7 +169,7 @@ class Processor extends Base\Core
         // Isolating the webhook flow in a try-catch, to keep the original settlement cycle unaffected
         try
         {
-            (new FundTransferAttempt\Core)->notifyMerchantViaWebhook($reconciledData);
+            (new FundTransferAttempt\Core)->notifyMerchantViaWebhook($webhookData);
         }
         catch (\Exception $e)
         {
