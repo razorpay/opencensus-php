@@ -8,6 +8,13 @@ import Model from './model';
 import EntityRow from 'ui/EntityRow';
 import Table from 'ui/Table';
 
+import ContactDetails from './MerchantActivationForms/ContactDetails';
+import WebsiteDetails from './MerchantActivationForms/WebsiteDetails';
+import BankAccountDetails from './MerchantActivationForms/BankAccountDetails';
+import DocumentDetails from './MerchantActivationForms/DocumentDetails';
+import ProductOnboarding from './MerchantActivationForms/ProductOnboarding';
+import BusinessDetails from './MerchantActivationForms/BusinessDetails';
+
 @observer
 export default class MerchantActivationForm extends Component {
   state = {};
@@ -69,6 +76,7 @@ export default class MerchantActivationForm extends Component {
   }
 
   render() {
+    const { details } = this.model.merchant;
     return (
       <div class="entity-container">
         <header class="heading">Activation Form</header>
@@ -76,6 +84,14 @@ export default class MerchantActivationForm extends Component {
 
         <div class="box">
           <div class="heading">Merchant Activation Form</div>
+          <ContactDetails {...details} />
+          <BusinessDetails {...details} />
+          <WebsiteDetails {...details} />
+          {/*
+          <BankAccountDetails />
+          <DocumentDetails />
+          <ProductOnboarding />
+*/}
         </div>
       </div>
     );
@@ -96,12 +112,22 @@ function _getOverviewFields(details) {
     },
     {
       label: 'Activation Form Submitted',
-      value: () => <i class={`i i-${details.submitted == 1 ? 'yes' : 'no'}`} />,
+      value: () => (
+        <i
+          class={`i i-${
+            details.merchant_details.submitted == 1 ? 'yes' : 'no'
+          }`}
+        />
+      ),
     },
     {
       label: 'Activation Form Status',
       value: () => (
-        <i class={`i i-${details.locked == 1 ? 'lock' : 'unlock'}`} />
+        <i
+          class={`i i-${
+            details.merchant_details.locked == 1 ? 'lock' : 'unlock'
+          }`}
+        />
       ),
     },
     {

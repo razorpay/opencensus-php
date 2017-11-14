@@ -21,8 +21,8 @@ export default function Field({ tag = 'input', label, infoMsg, ...props }) {
       <Tag {...props} />
       {infoMsg && (
         <div class="info-block">
-          <i class="i i-info-circle" />
-          {infoMsg}
+          {/*<i class="i i-info-circle" />*/}
+          {typeof infoMsg === 'function' ? infoMsg() : infoMsg}
         </div>
       )}
     </div>
