@@ -14,8 +14,11 @@ class BankCodes
     //
     const IFSC_ANDB = 'ANDB0001334';
     const IFSC_BARB = 'BARB0MAINOF';
+    const IFSC_CIUB = 'CIUB0000032';
     const IFSC_CNRB = 'CNRB0000002';
     const IFSC_COSB = 'COSB0000001';
+    const IFSC_DCBL = 'DCBL0000001';
+    const IFSC_ESFB = 'ESFB0000002';
     const IFSC_FDRL = 'FDRL0000121';
     const IFSC_GSCB = 'GSCB0000001';
     const IFSC_HDFC = 'HDFC0000001';
@@ -23,6 +26,7 @@ class BankCodes
     const IFSC_ICIC = 'ICIC0002445';
     const IFSC_IDFB = 'IDFB0010201';
     const IFSC_IDIB = 'IDIB0NEFTMU';
+    const IFSC_INDB = 'INDB0000006';
     const IFSC_IOBA = 'IOBA0001548';
     const IFSC_KARB = 'KARB0000513';
     const IFSC_KVBL = 'KVBL0001101';
@@ -35,11 +39,12 @@ class BankCodes
     const IFSC_SBIN = 'SBIN0010411';
     const IFSC_SCBL = 'SCBL0036001';
     const IFSC_SIBL = 'SIBL0000084';
+    const IFSC_SRCB = 'SRCB0000024';
     const IFSC_SYNB = 'SYNB0000005';
     const IFSC_TMBL = 'TMBL0000001';
-    const IFSC_UTBI = 'UTBI0XCNA10';
-    const IFSC_UCBA = 'UCBA0000002';
     const IFSC_UBIN = 'UBIN0538167';
+    const IFSC_UCBA = 'UCBA0000002';
+    const IFSC_UTBI = 'UTBI0XCNA10';
     const IFSC_UTIB = 'UTIB0001918';
     const IFSC_VIJB = 'VIJB0001398';
     const IFSC_YESB = 'YESB0000001';
@@ -55,12 +60,16 @@ class BankCodes
         'BOM'   => self::IFSC_MAHB,
         'CNB'   => self::IFSC_CNRB,
         'COB'   => self::IFSC_COSB,
+        'CUB'   => self::IFSC_CIUB,
+        'DCB'   => self::IFSC_DCBL,
+        'ESF'   => self::IFSC_ESFB,
         'FBL'   => self::IFSC_FDRL,
         'GSC'   => self::IFSC_GSCB,
         'HDB'   => self::IFSC_HDFC,
         'ICI'   => self::IFSC_ICIC,
         'IDB'   => self::IFSC_IBKL,
         'IDF'   => self::IFSC_IDFB,
+        'IIA'   => self::IFSC_INDB,
         'INB'   => self::IFSC_IDIB,
         'IOB'   => self::IFSC_IOBA,
         'IOBN1' => self::IFSC_IOBA,
@@ -78,6 +87,7 @@ class BankCodes
         'SBI'   => self::IFSC_SBIN,
         'SCB'   => self::IFSC_SCBL,
         'SIB'   => self::IFSC_SIBL,
+        'SRC'   => self::IFSC_SRCB,
         'SYB'   => self::IFSC_SYNB,
         'TMB'   => self::IFSC_TMBL,
         'UBI'   => self::IFSC_UTBI,

@@ -113,7 +113,7 @@ class InvoiceReport extends BaseReport
 
         if ($this->invoiceBreakup->count() === 0)
         {
-            throw new Exception\RuntimeException(
+            throw new Exception\BadRequestValidationFailureException(
                 'Invoice not generated yet for merchant ' . $this->merchant->getId() .
                 ' for year ' . $this->year . ' and month ' . $this->month);
         }
