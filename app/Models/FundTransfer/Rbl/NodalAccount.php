@@ -53,7 +53,7 @@ class NodalAccount extends NodalBase\NodalAccount
         $this->options = $this->getRequestOptions();
     }
 
-    public function addBeneficiary(array $input)
+    public function addBeneficiary(array $input): array
     {
         $content = $this->getAddBeneficiaryData($input);
 
@@ -62,7 +62,7 @@ class NodalAccount extends NodalBase\NodalAccount
         return $this->getResponse($content, $url);
     }
 
-    public function initiateTransfer(string $amount)
+    public function initiateTransfer(string $amount): array
     {
         $content = $this->getTransferData($amount);
 
@@ -71,7 +71,7 @@ class NodalAccount extends NodalBase\NodalAccount
         return $this->getResponse($content, $url);
     }
 
-    protected function getRequestOptions()
+    protected function getRequestOptions(): array
     {
         $hooks = new Requests_Hooks();
 
@@ -96,12 +96,13 @@ class NodalAccount extends NodalBase\NodalAccount
         curl_setopt($curl, CURLOPT_SSLKEY, $this->getClientCertificateKey());
     }
 
-    protected function getClientCertificate()
+    protected function getClientCertificate(): string
     {
         $certPath = $this->getGatewayCertDirPath();
 
         $certFile = $certPath . '/' . $this->getClientCertificateName();
 
+        // Download cert file from vault if already not present and store locally
         if (file_exists($certFile) === false)
         {
             $cert = $this->config['client_certificate'];
@@ -114,12 +115,13 @@ class NodalAccount extends NodalBase\NodalAccount
         return $certFile;
     }
 
-    protected function getClientCertificateKey()
+    protected function getClientCertificateKey(): string
     {
         $certPath = $this->getGatewayCertDirPath();
 
         $certFile = $certPath . '/' . $this->getClientCertificateKeyName();
 
+        // Download cert key file from vault if already not present and store locally
         if (file_exists($certFile) === false)
         {
             $key = $this->config['client_certificate_key'];
@@ -132,22 +134,22 @@ class NodalAccount extends NodalBase\NodalAccount
         return $certFile;
     }
 
-    protected function getClientCertificateName()
+    protected function getClientCertificateName(): string
     {
         return $this->config['certificate_name'];
     }
 
-    protected function getGatewayCertDirPath()
+    protected function getGatewayCertDirPath(): string
     {
         return $this->config['certificate_path'];
     }
 
-    protected function getClientCertificateKeyName()
+    protected function getClientCertificateKeyName(): string
     {
         return $this->config['certificate_key_name'];
     }
 
-    protected function getResponse(array $content, string $url)
+    protected function getResponse(array $content, string $url): array
     {
         $response = Requests::post(
             $url,
@@ -158,7 +160,7 @@ class NodalAccount extends NodalBase\NodalAccount
         return json_decode($response->body, true);
     }
 
-    protected function getTransferData(string $amount)
+    protected function getTransferData(string $amount): array
     {
         $content = [
             'Single_Payment_Corp_Req' => [
@@ -192,7 +194,7 @@ class NodalAccount extends NodalBase\NodalAccount
         return $content;
     }
 
-    protected function getAddBeneficiaryData(array $input)
+    protected function getAddBeneficiaryData(array $input): array
     {
         $content = [
             'Beneficiary_Nodal_Account_Registration_Req' => [
