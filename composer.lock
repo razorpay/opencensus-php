@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "5ee93e508a2e81bb5025831bdb77eaaa",
+    "content-hash": "5afa08aab7ac2c79daa3bc8848d1ae54",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -980,7 +980,7 @@
                 "singularize",
                 "string"
             ],
-            "time": "2015-11-06T14:35:42+00:00"
+            "time": "2017-07-22T12:18:28+00:00"
         },
         {
             "name": "doctrine/instantiator",
@@ -5327,6 +5327,62 @@
             "time": "2017-10-24T13:59:57+00:00"
         },
         {
+            "name": "razorpay/ufh-sdk-php",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:razorpay/ufh-sdk-php.git",
+                "reference": "b23cb726aadcfc7ebcddd9dd8b9c5568f583c162"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/razorpay/ufh-sdk-php/zipball/b23cb726aadcfc7ebcddd9dd8b9c5568f583c162",
+                "reference": "b23cb726aadcfc7ebcddd9dd8b9c5568f583c162",
+                "shasum": ""
+            },
+            "require": {
+                "php-http/client-implementation": "^1.0",
+                "php-http/discovery": "^1.0",
+                "php-http/httplug": "^1.0",
+                "php-http/message": "^1.0",
+                "php-http/message-factory": "^1.0",
+                "php-http/multipart-stream-builder": "^1.0",
+                "psr/http-message": "^1.0"
+            },
+            "require-dev": {
+                "guzzlehttp/psr7": "^1.3",
+                "php-http/mock-client": "^1.0",
+                "phpunit/phpunit": "~6.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Razorpay\\Ufh\\": "src",
+                    "Razorpay\\Ufh\\Tests\\": "tests"
+                }
+            },
+            "authors": [
+                {
+                    "name": "Rishabh Pugalia",
+                    "email": "rishabh.pugalia@razorpay.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Razorpay's PHP UFH SDK.",
+            "keywords": [
+                "filestore",
+                "fileupload",
+                "razorpay",
+                "sdk",
+                "ufh"
+            ],
+            "support": {
+                "source": "https://github.com/razorpay/ufh-sdk-php/tree/master",
+                "issues": "https://github.com/razorpay/ufh-sdk-php/issues"
+            },
+            "time": "2017-09-14T18:00:42+00:00"
+        },
+        {
             "name": "razorpay/upi-clients",
             "version": "dev-master",
             "source": {
@@ -5368,7 +5424,7 @@
                 "source": "https://github.com/razorpay/upi-clients/tree/master",
                 "issues": "https://github.com/razorpay/upi-clients/issues"
             },
-            "time": "2017-08-10T18:30:30+00:00"
+            "time": "2017-06-09T09:05:10+00:00"
         },
         {
             "name": "react/promise",
@@ -8960,6 +9016,7 @@
         "razorpay/spine": 20,
         "razorpay/upi-clients": 20,
         "razorpay/oauth": 20,
+        "razorpay/ufh-sdk-php": 20,
         "codacy/coverage": 20,
         "symfony/phpunit-bridge": 20
     },
