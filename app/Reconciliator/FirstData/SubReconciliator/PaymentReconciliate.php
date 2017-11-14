@@ -20,6 +20,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_PAYMENT_AMOUNT  = 'transaction_amt';
     const COLUMN_CARD_CATEGORY   = 'card_category';
     const COLUMN_CARD_TRIVIA     = 'card_type';
+    const COLUMN_AUTH_CODE       = 'auth_code';
+    const COLUMN_ARN             = 'arn_no';
 
     const INTERNATIONAL          = 'international';
     const ONUS                   = 'onus';
@@ -200,8 +202,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'info_code'         => 'CARD_TRIVIA_ABSENT',
                     'row'               => $row,
                     'gateway'           => get_class()
-                ]
-            );
+                ]);
 
             // there is an anomaly if no card type is present in row
             return null;
@@ -231,8 +232,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'info_code'         => 'CARD_ISSUER_ABSENT',
                     'row'               => $row,
                     'gateway'           => get_class()
-                ]
-            );
+                ]);
 
             // there is an anomaly if no card category is present in row
             return null;
@@ -247,5 +247,29 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return null;
+    }
+
+    protected function getAuthCode($row)
+    {
+        if (empty($row[self::COLUMN_AUTH_CODE]) === true)
+        {
+            $this->reportMissingColumn($row, self::COLUMN_AUTH_CODE);
+
+            return null;
+        }
+
+        return $row[self::COLUMN_AUTH_CODE];
+    }
+
+    protected function getArn($row)
+    {
+        if (empty($row[self::COLUMN_ARN]) === true)
+        {
+            $this->reportMissingColumn($row, self::COLUMN_ARN);
+
+            return null;
+        }
+
+        return $row[self::COLUMN_ARN];
     }
 }

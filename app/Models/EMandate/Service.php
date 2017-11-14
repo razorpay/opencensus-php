@@ -23,6 +23,10 @@ class Service extends Base\Service
      */
     public function reconcileRegistrationFile(string $gateway, array $input)
     {
+        $this->trace->info(
+            TraceCode::EMANDATE_REGISTER_RECON_REQUEST,
+            ['gateway'   => $gateway]);
+
         (new Validator)->validateRegistrationGateway($gateway);
 
         $response = $this->app['gateway']->call(
@@ -31,12 +35,15 @@ class Service extends Base\Service
                             $input,
                             $this->mode);
 
-
         return $response;
     }
 
     public function reconcileDebitFile(string $gateway, array $input)
     {
+        $this->trace->info(
+            TraceCode::EMANDATE_DEBIT_RECON_REQUEST,
+            ['gateway'   => $gateway]);
+
         (new Validator)->validateDebitGateway($gateway);
 
         $response = $this->app['gateway']->call(

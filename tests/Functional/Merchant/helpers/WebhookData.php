@@ -96,7 +96,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'URL must point to a public IP address'
+                    'description' => 'URL must point to a public IP address: http://10.0.0.1.xip.io'
                 ],
             ],
             'status_code' => 400,
@@ -122,7 +122,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'URL must point to a public IP address'
+                    'description' => 'URL must point to a public IP address: http://169.254.169.254.xip.io'
                 ],
             ],
             'status_code' => 400,
@@ -206,7 +206,7 @@ return [
     'testEditWebhook' => [
         'request' => [
             'content' => [
-                'url' => 'http://random2.com',
+                'url' => 'https://example.com',
                 'events' => [
                     'payment.authorized' => '0',
                 ],
@@ -216,7 +216,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'url' => 'http://random2.com',
+                'url' => 'https://example.com',
                 'events' => [
                     'payment.authorized' => false,
                 ],

@@ -22,8 +22,11 @@ class Orchestrator extends Base\Core
      * whenever applicable. It does not contain the actual content.
      * It's all meta data.
      */
-    const EXTRA_DETAILS    = 'extra_details';
-    const ATTACHMENT_COUNT = 'attachment_count';
+    const EXTRA_DETAILS           = 'extra_details';
+    const ATTACHMENT_COUNT        = 'attachment_count';
+    const ATTACHMENT_HYPHEN_COUNT = 'attachment-count';
+    const FORCE_UPDATE            = 'force_update';
+    const INPUT_DETAILS           = 'input_details';
 
     /**************************
      * Email details constants
@@ -117,13 +120,22 @@ class Orchestrator extends Base\Core
         self::FREECHARGE,
     ];
 
+    /*
+     *  These field can be force updated with passed with request
+     */
+    const REFUND_ARN = 'refund_arn';
+
+    const ALLOWED_FORCE_UPDATE = [
+        self::REFUND_ARN
+    ];
+
     /*********************
      * Instance variables
      *********************/
 
     protected $allFilesContents;
     protected $allFilesDetails;
-    protected $emailDetails;
+    protected $inputDetails;
 
     /********************
      * Instance objects
@@ -173,15 +185,13 @@ class Orchestrator extends Base\Core
             if ($this->isManualRequest($input) === true)
             {
                 $this->trace->traceException(
-                    $e, Trace::ERROR, TraceCode::RECON_ALERT,
-                    (array) json_decode($e->getMessage()));
+                    $e, Trace::ERROR, TraceCode::RECON_ALERT);
 
                 throw $e;
             }
 
             $this->trace->traceException(
-                $e, Trace::DEBUG, TraceCode::RECON_ALERT,
-                (array) json_decode($e->getMessage()));
+                $e, Trace::DEBUG, TraceCode::RECON_ALERT);
 
             // We do not throw an exception as route is hit via Mailgun,
             // and Mailgun will attempt retrying, which we don't want.
@@ -300,13 +310,13 @@ class Orchestrator extends Base\Core
         // Also, adds attachment-count to input, if not present already.
         $this->validator->validateAttachments($input);
 
-        $inputDetails = $this->getManualInputDetails($input);
+        $this->inputDetails = $this->getManualInputDetails($input);
 
         // Figures out the gateway and
         // sets the gateway reconciliator object for the orchestrator
-        $this->setGatewayForManual($inputDetails);
+        $this->setGatewayForManual();
 
-        $allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input);
+        $allFilesDetails = $this->getFileDetailsFromInput($this->inputDetails, $input);
 
         return $allFilesDetails;
     }
@@ -321,9 +331,9 @@ class Orchestrator extends Base\Core
     protected function mailGunEntry(array $input)
     {
         // Gets the email details and validates the email details.
-        $this->emailDetails = $this->getEmailDetails($input);
+        $this->inputDetails = $this->getEmailDetails($input);
 
-        $this->validator->filterEmails($this->emailDetails);
+        $this->validator->filterEmails($this->inputDetails);
 
         // Figures out the gateway and sets the gateway reconciliator object for
         // the orchestrator, using the input details.
@@ -349,11 +359,11 @@ class Orchestrator extends Base\Core
             //
             $this->validator->validateAttachments($input);
 
-            $this->emailDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
+            $this->inputDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
         }
 
         $allFilesDetails = $this->getFileDetailsFromInput(
-            $this->emailDetails, $input, $fileLocationType);
+            $this->inputDetails, $input, $fileLocationType);
 
         return $allFilesDetails;
     }
@@ -482,10 +492,12 @@ class Orchestrator extends Base\Core
     }
 
     /**
-     * Gets the required details from the input, structured.
+     * Validates and Gets the required details from the input, structured.
      * This includes the gateway for which the reconciliation
      * needs to be done and the number of attachments. This is an
      * optional parameter.
+     * Check if force-update is passed, otherwise set it to []
+     * The gateway should be present in the GATEWAY_SENDER_MAPPING list.
      *
      * @param array $input
      * @return array Structured input details
@@ -493,9 +505,12 @@ class Orchestrator extends Base\Core
     protected function getManualInputDetails(array $input)
     {
         $inputDetails = [
-            self::ATTACHMENT_COUNT => $input['attachment-count'],
-            self::GATEWAY          => $input['gateway'],
+            self::ATTACHMENT_COUNT => $input[self::ATTACHMENT_HYPHEN_COUNT],
+            self::GATEWAY          => $input[self::GATEWAY],
+            self::FORCE_UPDATE     => $input[self::FORCE_UPDATE] ?? []
         ];
+
+        (new Validator)->validateManualInput($inputDetails);
 
         return $inputDetails;
     }
@@ -536,26 +551,13 @@ class Orchestrator extends Base\Core
     }
 
     /**
-     * Uses the gateway input sent in the route, to set the gateway
-     * reconciliator object for the class. The gateway should be
-     * present in the GATEWAY_SENDER_MAPPING list.
-     *
-     * @param array $inputDetails
-     * @throws Exception\ReconciliationException
+     * Uses the gateway input sent in the route, to set
+     * the gateway reconciliator object for the class.
      */
-    protected function setGatewayForManual(array $inputDetails)
+    protected function setGatewayForManual()
     {
         // In manual, the input params should contain what gateway is it.
-        $gateway = $inputDetails[self::GATEWAY];
-
-        // This is a validation for the value of the gateway input received.
-        if (array_key_exists($gateway, self::GATEWAY_SENDER_MAPPING) === false)
-        {
-            throw new Exception\ReconciliationException(
-                'Invalid gateway param. Not in the allowed list of gateway params.',
-                ['gateway' => $gateway]
-            );
-        }
+        $gateway = $this->inputDetails[self::GATEWAY];
 
         // Sets the gateway reconciliator object for the orchestrator.
         $this->setGatewayReconciliatorObject($gateway);
@@ -576,7 +578,7 @@ class Orchestrator extends Base\Core
 
         if ($gateway === self::ADMIN)
         {
-            $gateway = $this->emailDetails[self::SUBJECT];
+            $gateway = $this->inputDetails[self::SUBJECT];
 
             if (in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)) === false)
             {
@@ -595,7 +597,7 @@ class Orchestrator extends Base\Core
 
     protected function getGatewayFromEmail()
     {
-        $fromEmailId = $this->emailDetails[self::FROM];
+        $fromEmailId = $this->inputDetails[self::FROM];
 
         $gateway = $this->getKeyFromSubArrayMatch($fromEmailId, self::GATEWAY_SENDER_MAPPING);
 
@@ -609,7 +611,7 @@ class Orchestrator extends Base\Core
         if (($this->gatewayEmailValidationIsNeeded($gateway) === true) and
             ($this->gatewayEmailIsValid($gateway) === false))
         {
-            $formattedMailDetails = $this->emailDetails;
+            $formattedMailDetails = $this->inputDetails;
             unset($formattedMailDetails[self::BODY]);
             unset($formattedMailDetails[self::BODY_HTML_TEXT]);
 
@@ -632,7 +634,7 @@ class Orchestrator extends Base\Core
     {
         $gatewayEmailValidator = 'validate' . studly_case($gateway) . 'Email';
 
-        $valid = $this->validator->$gatewayEmailValidator($this->emailDetails);
+        $valid = $this->validator->$gatewayEmailValidator($this->inputDetails);
 
         return $valid;
     }
@@ -815,6 +817,11 @@ class Orchestrator extends Base\Core
      */
     protected function getFileContentInArrayAndSet($fileDetails)
     {
+        $this->trace->info(TraceCode::RECON_BEGIN_FILE_PARSING, [
+            'gateway'      => $this->gateway,
+            'file_details' => $fileDetails,
+        ]);
+
         $fileType = $this->gatewayReconciliator->getFileType($fileDetails[FileProcessor::MIME_TYPE]);
 
         $fileDetails[FileProcessor::FILE_TYPE] = $fileType;
@@ -843,6 +850,12 @@ class Orchestrator extends Base\Core
                 ['file_details' => $fileDetails]
             );
         }
+
+        $this->trace->info(TraceCode::RECON_END_FILE_PARSING, [
+            'gateway'      => $this->gateway,
+            'file_details' => $fileDetails,
+        ]);
+
     }
 
     protected function setGatewayReconciliatorObject($gateway)
@@ -954,7 +967,7 @@ class Orchestrator extends Base\Core
     {
         $arrayContent[self::EXTRA_DETAILS][FileProcessor::FILE_DETAILS] = $fileDetails;
 
-        $arrayContent[self::EXTRA_DETAILS][self::EMAIL_DETAILS] = $this->emailDetails;
+        $arrayContent[self::EXTRA_DETAILS][self::INPUT_DETAILS] = $this->inputDetails;
     }
 
     /**
@@ -1057,5 +1070,12 @@ class Orchestrator extends Base\Core
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setTimeLimit(3600);
+
+        //
+        // In certain cases XLS parsing takes a long time. We are setting
+        // the execution time to 60 min here to prevent the execution
+        // from being terminated.
+        //
+        RuntimeManager::setMaxExecTime(3600);
     }
 }

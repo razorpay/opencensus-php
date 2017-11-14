@@ -328,13 +328,26 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
+    /**
+     * For netbanking payments, if a merchant has tpv feature enabled, checks
+     * if the terminal supports tpv or not
+     *
+     * @param  Terminal\Entity      $terminal
+     *
+     * @return bool
+     */
     public function tpvFilter($terminal)
     {
-        if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TPV))
+        if ($this->input['payment']->isNetbanking() === true)
         {
-            return ($terminal->isTpvAllowed() === true);
+            if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TPV))
+            {
+                return ($terminal->isTpvAllowed() === true);
+            }
+
+            return ($terminal->isNonTpvAllowed() === true);
         }
 
-        return ($terminal->isNonTpvAllowed() === true);
+        return true;
     }
 }

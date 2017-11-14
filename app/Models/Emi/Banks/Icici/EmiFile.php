@@ -2,14 +2,12 @@
 
 namespace RZP\Models\Emi\Banks\Icici;
 
-use Mail;
 use Carbon\Carbon;
+use Mail;
 use RZP\Constants\Timezone;
-use RZP\Mail\Emi as EmiMail;
+use RZP\Models\Emi;
 use RZP\Models\Emi\Banks\Base;
 use RZP\Models\FileStore;
-use RZP\Models\Base\UniqueIdEntity;
-use RZP\Models\Emi;
 use RZP\Models\Payment;
 
 class EmiFile extends Base\EmiFile
@@ -29,8 +27,6 @@ class EmiFile extends Base\EmiFile
     public function __construct()
     {
         parent::__construct();
-
-        $this->shouldCompress = false;
 
         $this->transferMode = Base\EmiMode::SFTP;
     }
@@ -136,6 +132,13 @@ class EmiFile extends Base\EmiFile
         return $fileData;
     }
 
+    protected function generateEmiFilePassword()
+    {
+        $monthYear = Carbon::now(Timezone::IST)->format('mY');
+        
+        return "razorpay" . $monthYear;
+    }
+
     protected function getFileToWriteName(array $data)
     {
         $count = $this->totalTransactions;
@@ -169,6 +172,7 @@ class EmiFile extends Base\EmiFile
     {
         $body = 'Emi File Uploaded <br />';
         $body = $body . 'File Name : ' . static::$fileToWriteName . '<br />';
+        $body = $body . 'Password : ' . $this->emiFilePassword . '<br />';
         $body = $body . 'Total Amount : ' . $this->totalAmount . '<br />';
         $body = $body . 'Transactions Count : ' . $this->totalTransactions;
 

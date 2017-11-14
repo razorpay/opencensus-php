@@ -847,4 +847,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function sendPayoutMail()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->sendPayoutMailForMultipleMerchants($input);
+
+        return ApiResponse::json($response);
+    }
 }

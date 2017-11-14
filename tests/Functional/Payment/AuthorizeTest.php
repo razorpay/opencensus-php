@@ -19,6 +19,12 @@ class AuthorizeTest extends TestCase
 {
     use PaymentTrait;
 
+    /**
+     * The payment array
+     * @var array
+     */
+    protected $payment;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/AuthorizeTestData.php';
@@ -108,6 +114,37 @@ class AuthorizeTest extends TestCase
         unset($this->payment['card']);
 
         $this->startTest();
+    }
+
+    /**
+     * This test first makes a card payment successfully using a non-maestro number
+     * without the cvv being set. We assert that a BadRequestValidationFailureException
+     * is thrown. We then make a payment using a maestro number that goes through successfully
+     */
+    public function testCardWithoutCvv()
+    {
+        $payment = $this->payment;
+
+        unset($payment['card']['cvv']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+
+        // Converting to a maestro card number
+        $payment['card']['number'] = '5081597022059105';
+
+        // Payment goes through fine without any exceptions
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $payment['status']);
     }
 
     public function testPaymentCardAsString()

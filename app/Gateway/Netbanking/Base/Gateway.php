@@ -14,6 +14,8 @@ class Gateway extends \RZP\Gateway\Base\Gateway
 
     const CORPORATE = 'corporate';
 
+    const EMANDATE = 'emandate';
+
     protected function createGatewayPaymentEntity($attributes)
     {
         $attr = $this->getMappedAttributes($attributes);
@@ -126,12 +128,17 @@ class Gateway extends \RZP\Gateway\Base\Gateway
 
     protected function setCorporateBanking()
     {
-        $this->bankingType = 'corporate';
+        $this->setBankingType(self::CORPORATE);
     }
 
     protected function isCorporateBanking()
     {
-        return ($this->bankingType === 'corporate');
+        return ($this->getBankingType() === self::CORPORATE);
+    }
+
+    protected function isRetailBanking()
+    {
+        return ($this->getBankingType() === self::RETAIL);
     }
 
     protected function getBankingType()
@@ -177,5 +184,10 @@ class Gateway extends \RZP\Gateway\Base\Gateway
                 'payment_id' => $input['payment']['id'],
                 'extra_data' => $extraData
             ]);
+    }
+
+    protected function setCorporate()
+    {
+        $this->type = 'corporate';
     }
 }

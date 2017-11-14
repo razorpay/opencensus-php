@@ -16,8 +16,16 @@ class IrctcSettlement extends Base
 
         $paymentProcessor = (new PaymentProcessor($payment->merchant));
 
+        $amount = $payment->getAmount();
+
+        // The payment amount is inclusive of fees, so we need to capture with the original amount.
+        if ($payment->merchant->isFeeBearerCustomer() === true)
+        {
+            $amount = $amount - $payment->getFee();
+        }
+
         $params = [
-            Payment\Entity::AMOUNT   => $payment->getAmount(),
+            Payment\Entity::AMOUNT   => $amount,
             Payment\Entity::CURRENCY => $payment->getCurrency()
         ];
 

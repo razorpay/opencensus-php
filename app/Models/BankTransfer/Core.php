@@ -2,7 +2,9 @@
 
 namespace RZP\Models\BankTransfer;
 
-use RZP\Exception;
+use Cache;
+use Config;
+
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -14,6 +16,11 @@ use Razorpay\Trace\Logger as Trace;
 class Core extends Base\Core
 {
     protected $mutex;
+
+    const NRE_FAILURE_MESSAGES = [
+        'NEFT-RETURN Credit to NRI Account',
+        'IMPS-RTN-NRE ACCOUNT',
+    ];
 
     public function __construct()
     {
@@ -73,16 +80,9 @@ class Core extends Base\Core
 
             $valid = true;
         }
-        catch (Exception\BadRequestValidationFailureException $ex)
+        catch (\Throwable $ex)
         {
-            // Returning anything other than a 200 causes Kotak to retry here.
-            //
-            // However, validation failures are due to Kotak sending the request
-            // in wrong format, or (more frequently) the wrong request altogether.
-            // So retrying doesn't help us, and will cause unnecessary errors.
-            // Best to trace, and return false, to stop the request.
-            $this->trace->traceException(
-                $ex, Trace::ERROR, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
+            $this->alertException($ex, $input);
 
             $valid = false;
         }
@@ -98,6 +98,45 @@ class Core extends Base\Core
     public function refund(array $data)
     {
         (new Refund)->process($data);
+    }
+
+    /**
+     * Trace to splunk, and also send an alert to Slack.
+     *
+     * @param  \Throwable $ex
+     * @param  array      $input
+     */
+    protected function alertException(\Throwable $ex, array $input)
+    {
+        // Any exception is critical, as bank transfers are never
+        // supposed to fail. Trace accordingly, as then rethrow
+        // the exception, so that Kotak retries the request.
+        $this->trace->traceException(
+            $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
+
+        // To avoid overloading Slack with errors messages (Kotak does retry)
+        // we cache a specific alert for an hour.
+        // Even Payee Account may not be set.
+        $subKey = $input[Entity::PAYEE_ACCOUNT] ?? '';
+
+        $cacheKey = 'slack.bank_transfer_processing_failed.' . $subKey;
+
+        if (Cache::get($cacheKey) === null)
+        {
+            $data = array_merge($input, ['message' => $ex->getMessage()]);
+
+            $this->app['slack']->queue(
+                TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
+                $data,
+                [
+                    'channel'  => Config::get('slack.channels.virtual_accounts'),
+                    'username' => 'Scrooge',
+                    'icon'     => ':x:'
+                ]
+            );
+
+            Cache::put($cacheKey, $ex->getMessage(), 60);
+        }
     }
 
     /**
@@ -174,7 +213,7 @@ class Core extends Base\Core
 
         foreach ($refunds as $refund)
         {
-            if ($refund->isStatusFailed() === false)
+            if ($this->skipRefund($refund) === true)
             {
                 $this->trace->info(
                     TraceCode::REFUND_RETRY_SKIPPED,
@@ -213,6 +252,24 @@ class Core extends Base\Core
             'failure'       => $failure,
             'status'        => $status,
         ];
+    }
+
+    protected function skipRefund(PaymentRefund\Entity $refund)
+    {
+        if ($refund->isStatusFailed() === false)
+        {
+            return true;
+        }
+
+        $latestAttempt = $refund->fundTransferAttempts->last();
+
+        if (($latestAttempt !== null) and
+            (in_array($latestAttempt->getRemarks(), self::NRE_FAILURE_MESSAGES, true)))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -263,6 +320,13 @@ class Core extends Base\Core
         $payerBankAccount = $payerBankAccount->edit($input, 'editVirtualBankAccount');
 
         $this->repo->saveOrFail($payerBankAccount);
+
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED,
+            [
+                'bank_account' => $payerBankAccount->toArrayPublic(),
+                'input'        => $input,
+            ]);
 
         return $bankTransfer;
     }

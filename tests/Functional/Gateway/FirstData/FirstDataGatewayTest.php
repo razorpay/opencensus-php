@@ -4,14 +4,26 @@ namespace RZP\Tests\Functional\Gateway\FirstData;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class FirstDataGatewayTest extends TestCase
 {
     use PaymentTrait;
+
+    /**
+     * Instance of a terminal from the fixtures
+     * @var Terminal
+     */
+    protected $sharedTerminal;
+
+    /**
+     * The payment array
+     * @var array
+     */
+    protected $payment;
 
     public function setUp()
     {
@@ -649,5 +661,17 @@ class FirstDataGatewayTest extends TestCase
         // The value is hardcoded in SoapWrapper,
         // it also makes sure that the first TransactionValues is picked if there are many
         $this->assertEquals('543210', $gatewayPayment['auth_code']);
+    }
+
+    public function testPaymentForMissingIin()
+    {
+        $iinCode = '466522';
+
+        $iin = $this->getEntityById('iin', $iinCode);
+        $this->assertArrayHasKey('error', $iin);
+
+        $this->payment['card']['number'] = $iinCode . '00000000000';
+
+        $this->doAuthPayment($this->payment);
     }
 }

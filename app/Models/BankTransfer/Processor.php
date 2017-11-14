@@ -4,14 +4,16 @@ namespace RZP\Models\BankTransfer;
 
 use App;
 
+use Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode as RzpMode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Processor extends Base\Core
@@ -28,6 +30,8 @@ class Processor extends Base\Core
         Payment\Entity::CURRENCY => Currency::INR,
         Payment\Entity::METHOD   => Payment\Method::BANK_TRANSFER,
     ];
+
+    const PAYER_BANK_ACCOUNT_MAX_LENGTH = 20;
 
     public function __construct(string $provider = null)
     {
@@ -265,13 +269,17 @@ class Processor extends Base\Core
         if ($this->virtualAccount === null)
         {
             $this->trace->info(
-                TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
+                TraceCode::BANK_TRANSFER_VIRTUAL_ACCOUNT_NOT_FOUND,
                 [
                     'message'      => 'Invalid account number',
                     'bankTransfer' => $bankTransfer->toArray(),
                 ]
             );
 
+            return false;
+        }
+        else if ($this->virtualAccount->merchant->methods->isBankTransferEnabled() === false)
+        {
             return false;
         }
 
@@ -434,19 +442,24 @@ class Processor extends Base\Core
      */
     protected function createAndAssociatePayerBankAccount(Entity $bankTransfer)
     {
-        //
-        // In some situations, we don't have enough info to create a bank account at all
-        // It's fine, since we don't intend on allowing these payments to be refunded anyway.
-        //
-        if (($bankTransfer->getMode() === Mode::IMPS) and
-            (empty($bankTransfer->getPayerAccount()) === true))
+        try
         {
-            return;
+            $bankAccount = $this->createPayerBankAccount($bankTransfer);
+
+            $bankTransfer->payerBankAccount()->associate($bankAccount);
         }
-
-        $bankAccount = $this->createPayerBankAccount($bankTransfer);
-
-        $bankTransfer->payerBankAccount()->associate($bankAccount);
+        catch (Exception $ex)
+        {
+            //
+            // In some situations, we don't have enough info to create a bank account at all
+            // It's fine, since we don't intend on allowing these payments to be refunded anyway.
+            //
+            $this->trace->traceException(
+                $ex,
+                Trace::INFO,
+                TraceCode::BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED,
+                $bankTransfer->toArray());
+        }
     }
 
     /**
@@ -484,14 +497,10 @@ class Processor extends Base\Core
      */
     protected function getBankAccountInput(Entity $bankTransfer)
     {
-        $label = $this->getLabel($bankTransfer);
-
-        $ifsc = $this->getPayerIfsc($bankTransfer);
-
         return [
-            BankAccount\Entity::IFSC_CODE        => $ifsc,
+            BankAccount\Entity::IFSC_CODE        => $this->getPayerIfsc($bankTransfer),
             BankAccount\Entity::ACCOUNT_NUMBER   => $this->getPayerAccount($bankTransfer),
-            BankAccount\Entity::BENEFICIARY_NAME => $label,
+            BankAccount\Entity::BENEFICIARY_NAME => $this->getLabel($bankTransfer),
         ];
     }
 
@@ -507,12 +516,18 @@ class Processor extends Base\Core
     {
         $label = $bankTransfer->getPayerName();
 
-        if (empty($label) === true)
+        $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+
+        // Label could be empty AFTER the preg_replace step
+        if (empty(trim($label)) === true)
         {
             $label = $bankTransfer->merchant->getBillingLabel();
+
+            // Still necessary to sanitize merchant name
+            $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
         }
 
-        return substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $label), 0, 39);
+        return substr($label, 0, 39);
     }
 
     /**
@@ -526,12 +541,11 @@ class Processor extends Base\Core
     {
         $account = $bankTransfer->getPayerAccount();
 
-        if (empty($account) === true)
-        {
-            return null;
-        }
+        $account = preg_replace('/[^a-zA-Z0-9]+/', '', $account);
 
-        return preg_replace('/[^a-zA-Z0-9]+/', '', $account);
+        $account = BankCodes::modifyPayerAccountIfNeeded($account, $bankTransfer);
+
+        return $account;
     }
 
     /**

@@ -77,7 +77,7 @@ class Core extends Base\Core
             return $dispute;
         });
 
-        $this->sendDisputeMailToMerchant($dispute, $merchant);
+        $this->sendDisputeMailToMerchant($dispute, $merchant, $input);
 
         return $dispute;
     }
@@ -375,12 +375,27 @@ class Core extends Base\Core
         return $parent;
     }
 
-    protected function sendDisputeMailToMerchant(Entity $dispute, Merchant\Entity $merchant)
+    protected function sendDisputeMailToMerchant(
+        Entity $dispute,
+        Merchant\Entity $merchant,
+        array $input)
     {
+        if (empty($input[Entity::SKIP_EMAIL]) === false)
+        {
+            return;
+        }
+
+        $email = $merchant->getEmail();
+
+        if (empty($input[Entity::MERCHANT_EMAILS]) === false)
+        {
+            $email = $input[Entity::MERCHANT_EMAILS];
+        }
+
         $data = [
             'merchant' => [
                 'name'      => $merchant->getName(),
-                'email'     => $merchant->getEmail(),
+                'email'     => $email,
             ],
             'dispute' => $dispute->toArrayPublic(),
         ];

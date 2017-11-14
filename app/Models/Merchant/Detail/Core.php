@@ -52,9 +52,9 @@ class Core extends Base\Core
                 $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
             }
 
-            $response = $this->createResponse($merchantDetails);
-
             $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
+
+            $response = $this->createResponse($merchantDetails);
 
             $activationProgress = $response['verification']['activation_progress'];
 
@@ -159,7 +159,7 @@ class Core extends Base\Core
 
         $zapierData = $this->activationZapierData($customer, $merchant);
 
-        $this->postFormSubmissionToZapier($zapierData);
+        $this->postFormSubmissionToZapier($zapierData, 'submissions');
     }
 
     protected function activationZapierData(array $customer, Merchant\Entity $merchant)
@@ -174,14 +174,14 @@ class Core extends Base\Core
         return $customer;
     }
 
-    public function postFormSubmissionToZapier($data)
+    public function postFormSubmissionToZapier($data, $zapierAction)
     {
         if (Config::get('zapier.mock'))
         {
             return;
         }
 
-        $url = Config::get('zapier.submissions');
+        $url = Config::get('zapier.' . $zapierAction);
 
         $request = [
             'url'     => $url,
@@ -265,6 +265,10 @@ class Core extends Base\Core
             $bankCore->createOrChangeBankAccount($bankData, $merchant);
 
             (new Merchant\Activate)->autoActivate($merchant);
+
+            $merchantDetails->setLocked(true);
+
+            $this->repo->saveOrFail($merchantDetails);
 
             return true;
         }

@@ -18,7 +18,6 @@ class Entity extends Base\PublicEntity
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const AMOUNT                 = 'amount';
     const FEES                   = 'fees';
-    const SERVICE_TAX            = 'service_tax';
     const TAX                    = 'tax';
     const STATUS                 = 'status';
     const TRANSACTION_ID         = 'transaction_id';
@@ -41,7 +40,6 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::FEES,
-        self::SERVICE_TAX,
         self::TAX,
         self::STATUS,
         self::MERCHANT_ID,
@@ -61,7 +59,6 @@ class Entity extends Base\PublicEntity
         self::BATCH_FUND_TRANSFER_ID,
         self::AMOUNT,
         self::FEES,
-        self::SERVICE_TAX,
         self::TAX,
         self::STATUS,
         self::TRANSACTION_ID,
@@ -82,11 +79,9 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::STATUS,
         self::FEES,
-        self::SERVICE_TAX,
-        self::UTR,
-        self::SETTLED_ON,
-        self::CREATED_AT,
         self::TAX,
+        self::UTR,
+        self::CREATED_AT,
     ];
 
     protected $defaults = [
@@ -107,7 +102,6 @@ class Entity extends Base\PublicEntity
     protected $amounts = [
         self::AMOUNT,
         self::FEES,
-        self::SERVICE_TAX,
         self::TAX,
     ];
 
@@ -177,11 +171,6 @@ class Entity extends Base\PublicEntity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
-    }
-
-    public function getServiceTax()
-    {
-        return $this->getAttribute(self::SERVICE_TAX);
     }
 
     public function getTax()
@@ -271,11 +260,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TAX, $tax);
     }
 
-    public function setServiceTax($serviceTax)
-    {
-        $this->setAttribute(self::SERVICE_TAX, $serviceTax);
-    }
-
     public function setRemarks($remarks)
     {
         $this->setAttribute(self::REMARKS, $remarks);
@@ -297,11 +281,6 @@ class Entity extends Base\PublicEntity
     }
 
     // --------------------------------- accessors -------------------------------
-
-    protected function getServiceTaxAttribute()
-    {
-        return (int) $this->attributes[self::SERVICE_TAX];
-    }
 
     protected function getTaxAttribute()
     {

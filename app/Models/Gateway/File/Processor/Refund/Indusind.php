@@ -23,11 +23,11 @@ class Indusind extends Base
 
     protected $type = Payment\Entity::BANK;
 
-    protected function formatDataForFile()
+    protected function formatDataForFile(array $data)
     {
         $formattedData = [];
 
-        foreach ($this->data as $index => $row)
+        foreach ($data as $index => $row)
         {
             $formattedData[] = [
                 RefundFileFields::SERIAL_NO          => $index + 1,
@@ -56,7 +56,7 @@ class Indusind extends Base
         return static::FILE_NAME . $time;
     }
 
-    public function sendFile()
+    public function sendFile($data)
     {
         return;
     }
