@@ -55,7 +55,22 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $url = $this->baseUrl . $this->config['ben_add_url_suffix'] . $this->clientCreds;
 
-        return $this->getResponse($content, $url);
+        $responseArray = $this->getResponse($content, $url);
+
+        foreach ($responseArray as $resp)
+        {
+            if ((empty($resp['Body']['Status']) === false) and
+                ($resp['Bodyq']['Status'] === 'Failure'))
+            {
+                $this->trace()->error(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
+
+                return $responseArray;
+            }
+        }
+
+        $this->trace()->info(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
+
+        return $responseArray;
     }
 
     public function initiateTransfer(string $amount): array
@@ -64,7 +79,22 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $url = $this->baseUrl . $this->config['fund_transfer_url_sufffix'] . $this->clientCreds;
 
-        return $this->getResponse($content, $url);
+        $responseArray = $this->getResponse($content, $url);
+
+        foreach ($responseArray as $resp)
+        {
+            if ((empty($resp['Header']['Status']) === false) and
+                ($resp['Bodyq']['Status'] === 'FAILED'))
+            {
+                $this->trace()->error(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
+
+                return $responseArray;
+            }
+        }
+
+        $this->trace()->info(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
+
+        return $responseArray;
     }
 
     protected function getRequestOptions(): array
@@ -147,6 +177,8 @@ class NodalAccount extends NodalBase\NodalAccount
 
     protected function getResponse(array $content, string $url): array
     {
+        $this->trace()->info(TraceCode::RBL_NODAL_REQUEST, $responseArray);
+
         $response = Requests::post(
             $url,
             $this->headers,
@@ -154,8 +186,6 @@ class NodalAccount extends NodalBase\NodalAccount
             $this->options);
 
         $responseArray = json_decode($response->body, true);
-
-        $this->trace()->info(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
 
         return $responseArray;
     }

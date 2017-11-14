@@ -59,7 +59,7 @@ class Core extends Base\Core
 
     public function addBeneficiary(string $channel, array $input)
     {
-        (new Validator)->validateInput('rbl_add_beneficiary', $input);
+        (new Validator)->validateInput($channel . '_add_beneficiary', $input);
 
         $nodalClass = 'RZP\Models\FundTransfer\\' . ucwords($channel) . '\NodalAccount';
 

@@ -27,7 +27,7 @@ class Validator extends Base\Validator
 
     protected static $rblAddBeneficiaryRules = [
         RequestConstants::BEN_IFSC        => 'required|string',
-        RequestConstants::BEN_ACCT_NO     => 'required|integer',
+        RequestConstants::BEN_ACCT_NO     => 'required|string',
         RequestConstants::BEN_NAME        => 'required|string',
         RequestConstants::BEN_ADDRESS     => 'required|string',
         RequestConstants::BEN_BANKNAME    => 'required|string',
