@@ -112,7 +112,7 @@ class Processor extends Base\Core
         return $response;
     }
 
-    protected function startReconciliation($data)
+    protected function startReconciliation($data): array
     {
         $summary = $this->repo->transactionOnLiveAndTest(function() use ($data)
         {
