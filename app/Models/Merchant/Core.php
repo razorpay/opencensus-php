@@ -530,13 +530,15 @@ class Core extends Base\Core
                 $body = $body . 'UTR : ' . $payout->getUtr() . '<br />';
             }
 
-            if (empty($payout->destination) === false)
+            $payoutBankAccount = $payout->destination;
+
+            if (empty($payoutBankAccount) === false)
             {
-                $body = $body . '<br />' . $payout->destination->getBeneficiaryName() . '<br />';
-                $body = $body . 'Bank Account Number : ' . $payout->destination->getAccountNumber() . '<br />';
-                $body = $body . $payout->destination->getBeneficiaryAddress1() . '<br />';
-                $body = $body . $payout->destination->getBeneficiaryAddress2() . '<br />';
-                $body = $body . $payout->destination->getBeneficiaryAddress3() . '<br />';
+                $body = $body . '<br />' . $payoutBankAccount->getBeneficiaryName() . '<br />';
+                $body = $body . 'Bank Account Number : ' . $payoutBankAccount->getAccountNumber() . '<br />';
+                $body = $body . $payoutBankAccount->getBeneficiaryAddress1() . '<br />';
+                $body = $body . $payoutBankAccount->getBeneficiaryAddress2() . '<br />';
+                $body = $body . $payoutBankAccount->getBeneficiaryAddress3() . '<br />';
             }
 
             $body = $body . '<br />'
@@ -551,13 +553,11 @@ class Core extends Base\Core
                 $body = $body . 'Master ID :' . self::MASTER_ID_MAPPING[$merchantId] . '<br />';
             }
 
-            $dateOfDeposit = Carbon::createFromTimestamp($payout->getCreatedAt(), Timezone::IST)->format('d-m-Y');
+            $date= Carbon::createFromTimestamp($payout->getCreatedAt(), Timezone::IST)->format('d-m-Y');
 
-            $dateOfCredit = Carbon::createFromTimestamp($payout->getCreatedAt(), Timezone::IST)->format('d-m-Y');
+            $body = $body . 'Date Of Deposit : ' . $date . '<br />';
 
-            $body = $body . 'Date Of Deposit : ' . $dateOfDeposit . '<br />';
-
-            $body = $body . 'Date Of Credit : ' . $dateOfCredit . '<br />';
+            $body = $body . 'Date Of Credit : ' . $date . '<br />';
 
             $mailData = ['body'  =>  $body];
 
