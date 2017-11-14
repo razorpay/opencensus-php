@@ -19,10 +19,14 @@ class Reporting
 
     /**
      * Configuration array
+     *
      * @var array
      */
-    protected $config = [];
+    protected $config;
 
+    /**
+     * @var string
+     */
     protected $mode;
 
     protected $trace;
@@ -43,63 +47,54 @@ class Reporting
         $this->auth = $app['basicauth'];
     }
 
-    private function getAuthHeaders() : array
-    {
-        return [
-            $this->config['auth']['username'],
-            $this->config['auth']['password'],
-        ];
-    }
-
-    public function createConfig($input) : array
+    public function createConfig(array $input): array
     {
         $url = self::REPORT_CONFIG;
 
         return $this->makeRequestAndSend($input, $url, 'post');
     }
 
-    public function fetchConfigMultiple($input) : array
+    public function fetchConfigMultiple(array $input): array
     {
         $url = self::REPORT_CONFIG;
 
         return $this->makeRequestAndSend($input, $url, 'get');
     }
 
-    public function fetchConfigById($id, $input) : array
+    public function fetchConfigById(string $id, array $input): array
     {
         $url = self::REPORT_CONFIG . '/' . $id;
 
         return $this->makeRequestAndSend($input, $url, 'get');
     }
 
-    public function editConfig($id, $input) : array
+    public function editConfig(string $id, array $input): array
     {
         $url = self::REPORT_CONFIG . '/' . $id;
 
         return $this->makeRequestAndSend($input, $url, 'patch');
     }
 
-    public function deleteConfig($id) : array
+    public function deleteConfig(string $id): array
     {
         $url = self::REPORT_CONFIG . '/' . $id;
 
         return $this->makeRequestAndSend(null, $url, 'delete');
     }
 
-    public function generateReport($configId, $input)
+    public function generateReport(string $configId, array $input)
     {
         $url = self::REPORT_GENERATE;
 
         // Prepare input
-        $input['mode'] = $this->app['rzp.mode'];
+        $input['mode']      = $this->app['rzp.mode'];
         $input['config_id'] = $configId;
 
         return $this->makeRequestAndSend($input, $url, 'post');
     }
 
-    protected function makeRequestAndSend($input = null, $url, $method = 'post')
+    protected function makeRequestAndSend($input = null, string $url, string $method = 'post')
     {
-        $request = [];
         $response = null;
 
         $options = [
@@ -111,16 +106,15 @@ class Reporting
             'X-Merchant-Id' => $this->auth->getMerchantId()
         ];
 
-        $request['url'] =  $this->config['url'] . $url;
+        $request = [
+            'url'     => $this->config['url'] . $url,
+            'method'  => $method,
+            'content' => $input,
+            'options' => $options,
+            'headers' => $headers
+        ];
 
-        $request['method'] = $method;
-
-        $request['content'] = $input;
-
-        $request['options'] = $options;
-
-        $request['headers'] = $headers;
-
+        // TODO: fix mode
         if ($this->mode === Mode::TEST)
         {
             $response['success'] = true;
@@ -133,7 +127,7 @@ class Reporting
         return json_decode($response->body, true);
     }
 
-    protected function sendRequest($request)
+    protected function sendRequest(array $request)
     {
         $request['options'] = $request['options'] ?? [];
 
@@ -181,5 +175,13 @@ class Reporting
 
             throw new Exception\IntegrationException($e->getMessage(), $data);
         }
+    }
+
+    private function getAuthHeaders(): array
+    {
+        return [
+            $this->config['auth']['username'],
+            $this->config['auth']['password'],
+        ];
     }
 }

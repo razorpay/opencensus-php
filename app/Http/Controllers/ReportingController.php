@@ -5,8 +5,15 @@ namespace RZP\Http\Controllers;
 use ApiResponse;
 use Request;
 
+use RZP\Services;
+
 class ReportingController extends Controller
 {
+    /**
+     * @var Services\Reporting
+     */
+    protected $reportingService;
+
     public function __construct()
     {
         parent::__construct();
@@ -14,7 +21,7 @@ class ReportingController extends Controller
         $this->reportingService = $this->app['reporting'];
     }
 
-    public function get($id)
+    public function get(string $id)
     {
         $input = Request::all();
 
@@ -50,14 +57,14 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function delete($id)
+    public function delete(string $id)
     {
         $data = $this->reportingService->deleteConfig($id);
 
         return ApiResponse::json($data);
     }
 
-    public function generateReport($configId)
+    public function generateReport(string $configId)
     {
         $input = Request::all();
 
