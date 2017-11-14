@@ -26,17 +26,16 @@ class Validator extends Base\Validator
     ];
 
     protected static $rblAddBeneficiaryRules = [
-        Entity::CHANNEL                   => 'required|string',
-        RequestConstants::BEN_IFSC        => 'required_if:channel,rbl|string',
-        RequestConstants::BEN_ACCT_NO     => 'required_if:channel,rbl|integer',
-        RequestConstants::BEN_NAME        => 'required_if:channel,rbl|string',
-        RequestConstants::BEN_ADDRESS     => 'required_if:channel,rbl|string',
-        RequestConstants::BEN_BANKNAME    => 'required_if:channel,rbl|string',
-        RequestConstants::BEN_BRANCHCD    => 'required_if:channel,rbl|string',
-        RequestConstants::BEN_BANKCD      => 'required_if:channel,rbl|string',
-        RequestConstants::BEN_PAN         => 'required_if:channel,rbl|string',
-        RequestConstants::KYC_DOC_NAME    => 'required_if:channel,rbl|string',
-        RequestConstants::KYC_DOC_CONTENT => 'required_if:channel,rbl|string',
+        RequestConstants::BEN_IFSC        => 'required|string',
+        RequestConstants::BEN_ACCT_NO     => 'required|integer',
+        RequestConstants::BEN_NAME        => 'required|string',
+        RequestConstants::BEN_ADDRESS     => 'required|string',
+        RequestConstants::BEN_BANKNAME    => 'required|string',
+        RequestConstants::BEN_BRANCHCD    => 'required|string',
+        RequestConstants::BEN_BANKCD      => 'required|string',
+        RequestConstants::BEN_PAN         => 'required|string',
+        RequestConstants::KYC_DOC_NAME    => 'required|string',
+        RequestConstants::KYC_DOC_CONTENT => 'required|string',
     ];
 
     protected static $retryRules = [

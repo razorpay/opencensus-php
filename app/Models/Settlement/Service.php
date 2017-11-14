@@ -163,9 +163,9 @@ class Service extends Base\Service
     /**
      * Add beneficiary from one Nodal account to another
      */
-    public function addBeneficiary(array $input): array
+    public function addBeneficiary(string $channel, array $input): array
     {
-        $response = (new Core)->addBeneficiary($input);
+        $response = (new Core)->addBeneficiary(string, $input);
 
         return $response;
     }
