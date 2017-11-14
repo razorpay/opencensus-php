@@ -1071,9 +1071,9 @@ class Orchestrator extends Base\Core
 
         //
         // In certain cases XLS parsing takes a long time. We are setting
-        // the execution time to 30 min here to prevent the execution
+        // the execution time to 60 min here to prevent the execution
         // from being terminated.
         //
-        RuntimeManager::setMaxExecTime(1800);
+        RuntimeManager::setMaxExecTime(3600);
     }
 }
