@@ -28,7 +28,6 @@ class Entity extends Base\PublicEntity
     const TOTAL_COUNT           = 'total_count';
     const PROCESSED_COUNT       = 'processed_count';
     const TRANSACTION_COUNT     = 'transaction_count';
-    const SERVICE_TAX           = 'service_tax';
     const TAX                   = 'tax';
     const URLS                  = 'urls';
     const INITIATED_AT          = 'initiated_at';
@@ -52,7 +51,6 @@ class Entity extends Base\PublicEntity
         self::TOTAL_COUNT,
         self::PROCESSED_COUNT,
         self::TRANSACTION_COUNT,
-        self::SERVICE_TAX,
         self::TAX,
         self::INITIATED_AT,
         self::API_FEE,
@@ -76,7 +74,6 @@ class Entity extends Base\PublicEntity
         self::TOTAL_COUNT,
         self::PROCESSED_COUNT,
         self::TRANSACTION_COUNT,
-        self::SERVICE_TAX,
         self::TAX,
         self::URLS,
         self::INITIATED_AT,
@@ -109,7 +106,6 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_AMOUNT      => 'int',
         self::FEES                  => 'int',
         self::DATE                  => 'int',
-        self::SERVICE_TAX           => 'int',
         self::TAX                   => 'int',
         self::API_FEE               => 'int',
         self::GATEWAY_FEE           => 'int',
@@ -162,11 +158,6 @@ class Entity extends Base\PublicEntity
         $this->increment(self::FEES, $value);
     }
 
-    public function incrementServiceTax($value)
-    {
-        $this->increment(self::SERVICE_TAX, $value);
-    }
-
     public function incrementTax($value)
     {
         $this->increment(self::TAX, $value);
@@ -212,13 +203,6 @@ class Entity extends Base\PublicEntity
         assertTrue($tax >= 0);
 
         $this->setAttribute(self::TAX, $tax);
-    }
-
-    public function setServiceTax($servicetax)
-    {
-        assertTrue($servicetax >= 0);
-
-        $this->setAttribute(self::SERVICE_TAX, $servicetax);
     }
 
     public function setProcessedCount($count)

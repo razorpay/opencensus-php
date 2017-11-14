@@ -132,6 +132,7 @@ class Gateway
     const REFUND_RETRY_GATEWAYS = [
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::BILLDESK,
+        Payment\Gateway::EBS,
         Payment\Gateway::HDFC,
         Payment\Gateway::MOBIKWIK,
         Payment\Gateway::WALLET_OLAMONEY,
@@ -452,11 +453,13 @@ class Gateway
         Gateway::AXIS_MIGS,
         Gateway::HDFC,
         Gateway::NETBANKING_ICICI,
+        Gateway::NETBANKING_AXIS,
         Gateway::NETBANKING_HDFC,
     ];
 
     public static $eMandateBanks = [
         IFSC::ICIC,
+        IFSC::UTIB,
         IFSC::HDFC,
     ];
 
@@ -467,6 +470,7 @@ class Gateway
      */
     public static $fileBasedEMandateDebitGateways = [
         Gateway::NETBANKING_HDFC,
+        Gateway::NETBANKING_AXIS,
     ];
 
     /**
@@ -485,6 +489,10 @@ class Gateway
      * @var array
      */
     public static $s2sCallbackGateways = [
+        // Corporate response is provided through
+        // s2s callback.
+        Gateway::NETBANKING_AXIS,
+
         Gateway::BILLDESK,
         Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,
@@ -561,6 +569,7 @@ class Gateway
     public static $refundFileNetbankingGateways = [
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        IFSC::CORP => Gateway::NETBANKING_CORPORATION,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
@@ -610,10 +619,6 @@ class Gateway
 
     public static $subscriptionOverOneYearGateways = [
         Gateway::AXIS_MIGS
-    ];
-
-    public static $shouldNotSetNon3DSTerminalsInTokenGateways = [
-        Gateway::FIRST_DATA,
     ];
 
     public static function getAcquirerName(string $acquirer)

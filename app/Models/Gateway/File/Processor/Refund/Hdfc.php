@@ -20,11 +20,11 @@ class Hdfc extends Base
     /**
      * Formats the data fetched from database as per HDFC netbanking refund file format
      */
-    protected function formatDataForFile()
+    protected function formatDataForFile(array $data)
     {
          $formattedData = [];
 
-        foreach ($this->data as $index => $row)
+        foreach ($data as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], Timezone::IST)->format('d/m/Y');
@@ -46,7 +46,7 @@ class Hdfc extends Base
     /**
      * Fetches required data to be sent as part of the mail to HDFC
      */
-    protected function formatDataForMail()
+    protected function formatDataForMail(array $data)
     {
         $file = $this->gatewayFile
                      ->files()

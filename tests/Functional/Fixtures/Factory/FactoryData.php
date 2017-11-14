@@ -298,11 +298,11 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Emi\Entity::class, [
-            'id' => 10101010101010,
-            'duration' => 9,
-            'rate' => 1200,
-            'bank' => 'HDFC',
-            'methods' => 'card',
+            'id'         => '10101010101010',
+            'duration'   => 9,
+            'rate'       => 1200,
+            'bank'       => 'HDFC',
+            'methods'    => 'card',
             'min_amount' => 500000,
         ]);
 
@@ -390,11 +390,11 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Customer\Entity::class, [
-            'id' => $faker->uniqueid,
+            'id'          => $faker->uniqueid,
             'merchant_id' => '10000000000000',
-            'name' => 'name',
-            'contact' => '9988776655',
-            'notes' => null,
+            'name'        => 'name',
+            'contact'     => '9988776655',
+            'notes'       => null,
         ]);
 
         $factory(\RZP\Models\Customer\Token\Entity::class, [

@@ -4,7 +4,9 @@ namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Timezone;
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
@@ -272,5 +274,124 @@ class Service extends Base\Service
                 $merchantDetails['steps_finished'] = $finishedSteps;
             }
         }
+    }
+
+    /**
+     * Will get pre signup details from merchant details.
+     *
+     * @return array
+     */
+    public function getPreSignupDetails(): array
+    {
+        // Referrer merchant doesn't need to complete presignup details.
+        $referrerMerchant = $this->merchant->getReferrer();
+
+        $presignupDetails = [];
+
+        // Referrer Merchant check for presignup details.
+        if ((empty($referrerMerchant) === true) or
+            (Merchant\Entity::verifyUniqueId($referrerMerchant, false) === 0))
+        {
+            $merchantDetails = $this->fetchMerchantDetails();
+
+            $presignupFields = Constants::PRE_SIGNUP_FIELDS;
+
+            foreach ($presignupFields as $key)
+            {
+                if (empty($merchantDetails[$key]) === false)
+                {
+                    $presignupDetails[$key] = (string) $merchantDetails[$key];
+                }
+                else
+                {
+                    $presignupDetails[$key] = null;
+                }
+            }
+        }
+
+        return $presignupDetails;
+    }
+
+    /**
+     * Edit pre signup details.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function editPreSignupDetails(array $input) : array
+    {
+        (new Validator)->validateInput('pre_signup', $input);
+
+        $this->saveMerchantDetails($input);
+
+        if (empty($input[Entity::BUSINESS_NAME]) === false)
+        {
+            $inputName = ['name' => $input[Entity::BUSINESS_NAME]];
+
+            // Validate Input Name for merchant
+            (new Merchant\Validator)->validateInput('edit_name', $inputName);
+
+            (new Merchant\Service)->edit($this->merchant->id, $inputName);
+
+            // Save User Information of contact name nad contact Email.
+
+            $user = $this->merchant->primaryOwner();
+
+            $userEditData['contact_mobile'] = $input['contact_mobile'] ?? null;
+            $userEditData['name']           = $input['contact_name'] ?? null;
+
+            $userEditData = array_filter($userEditData);
+
+            (new User\Validator)->validateInput('pre_signup', $userEditData);
+
+            (new User\Service)->edit($user->id, $userEditData);
+
+            // Dump data to zapier.
+
+            $zapierData = $this->getZapierData($this->merchant, $input);
+
+            (new Core)->postFormSubmissionToZapier($zapierData, 'signups');
+        }
+
+        $preSignupDetails = $this->getPreSignupDetails();
+
+        return $preSignupDetails;
+    }
+
+    private function getZapierData($merchant, $input)
+    {
+        // This is the same format we'll set in the google spreadsheet
+        $timestamp = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('j/m/Y');
+
+        $userName = $input['contact_name'] ?? '';
+
+        $phoneNumber = $input['contact_mobile'] ?? '';
+
+        $businessType = isset($input['business_type']) ?
+            Merchant\Detail\BusinessType::getType($input['business_type']) : '';
+
+        $transactionVolume = isset($input['transaction_volume']) ?
+            Merchant\Detail\TransactionVolume::getVolume($input['transaction_volume']) : '';
+
+        $role = isset($input['role']) ? Merchant\Detail\Role::getType($input['role']) : '';
+
+        $department = isset($input['department']) ? Merchant\Detail\Department::getType($input['department']) : '';
+
+        $referrer = $merchant->referrer ?? '';
+
+        return [
+            Entity::ID                 => $merchant->id,
+            Merchant\Entity::EMAIL     => $merchant->email,
+            Constants::INDIVIDUAL      => $userName,
+            Merchant\Entity::NAME      => $merchant->name,
+            Constants::REF             => $referrer,
+            Constants::TIMESTAMP       => $timestamp,
+            Constants::CONTACT         => $phoneNumber,
+            Entity::BUSINESS_TYPE      => $businessType,
+            Entity::TRANSACTION_VOLUME => $transactionVolume,
+            Entity::ROLE               => $role,
+            Entity::DEPARTMENT         => $department,
+        ];
     }
 }

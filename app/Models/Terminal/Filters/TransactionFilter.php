@@ -17,6 +17,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Shared;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal\Category;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
@@ -26,6 +27,7 @@ class TransactionFilter extends Terminal\Filter
         'network',
         'bank',
         'recurring',
+        'gateway',
         'subscription',
         'tpv',
         'pharma',
@@ -97,6 +99,44 @@ class TransactionFilter extends Terminal\Filter
             $gateways = Gateway::getGatewaysForNetbankingBank($bank, $isTPV);
 
             return in_array($terminalGateway, $gateways);
+        }
+
+        return true;
+    }
+
+    /**
+     * Filter to remove cybersource shared terminals for non recurring payments
+     *
+     * @param  Terminal\Entity $terminal
+     */
+    public function gatewayFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        $merchant = $this->input['merchant'];
+
+        // This filter should run only in production environment, else tests for
+        // cybersource would fail.
+        if ($this->isLiveMode() === true)
+        {
+            if ($terminal->getGateway() === Gateway::CYBERSOURCE)
+            {
+                //
+                // For some merchants, due to business reasons we want payments
+                // to go through cybersource terminal
+                //
+                $merchantWhitelisted = (in_array($merchant->getId(),
+                                            Preferences::CYBERSOURCE_MERCHANT_WHITELIST,
+                                            true) === true);
+
+                if (($merchantWhitelisted === false) and
+                    ($payment->isRecurring() === false) and
+                    ($payment->isInternational() === false) and
+                    ($terminal->isDirectForMerchant($merchant) === false))
+                {
+                    return false;
+                }
+            }
         }
 
         return true;
@@ -288,13 +328,26 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
+    /**
+     * For netbanking payments, if a merchant has tpv feature enabled, checks
+     * if the terminal supports tpv or not
+     *
+     * @param  Terminal\Entity      $terminal
+     *
+     * @return bool
+     */
     public function tpvFilter($terminal)
     {
-        if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TPV))
+        if ($this->input['payment']->isNetbanking() === true)
         {
-            return ($terminal->isTpvAllowed() === true);
+            if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TPV))
+            {
+                return ($terminal->isTpvAllowed() === true);
+            }
+
+            return ($terminal->isNonTpvAllowed() === true);
         }
 
-        return ($terminal->isNonTpvAllowed() === true);
+        return true;
     }
 }

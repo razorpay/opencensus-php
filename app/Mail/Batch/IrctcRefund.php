@@ -13,7 +13,7 @@ class IrctcRefund extends Base
 
     protected static $sender      = Constants::IRCTC;
 
-    protected static $subjectLine = "Razorpay | IRCTC Refunds File";
+    protected static $subjectLine = "Razorpay | IRCTC Refunds File for %s";
 
     protected static $body        = 'Please upload IRCTC refund file on portal';
 }

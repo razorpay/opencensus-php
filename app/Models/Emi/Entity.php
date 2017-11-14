@@ -2,8 +2,11 @@
 
 namespace RZP\Models\Emi;
 
-use RZP\Models\Base;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
+use RZP\Models\Base;
+use RZP\Models\Bank;
+use RZP\Models\Card;
 
 class Entity extends Base\PublicEntity
 {
@@ -23,36 +26,16 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
 
+    // Appended attributes
+    const ISSUER_NAME           = 'issuer_name';
+
     protected $entity           = 'emi_plan';
 
     protected $generateIdOnCreate = true;
 
-    protected $fillable = array(
-        self::ID,
+    protected $fillable = [
         self::BANK,
         self::NETWORK,
-        self::RATE,
-        self::DURATION,
-        self::METHODS,
-        self::MIN_AMOUNT,
-        self::ISSUER_PLAN_ID,
-        self::SUBVENTION,
-        self::MERCHANT_PAYBACK);
-
-    protected $visible = array(
-        self::ID,
-        self::BANK,
-        self::NETWORK,
-        self::RATE,
-        self::DURATION,
-        self::METHODS,
-        self::MIN_AMOUNT,
-        self::ISSUER_PLAN_ID,
-        self::SUBVENTION,
-        self::MERCHANT_PAYBACK);
-
-    protected $public = array(
-        self::BANK,
         self::RATE,
         self::DURATION,
         self::METHODS,
@@ -60,25 +43,47 @@ class Entity extends Base\PublicEntity
         self::ISSUER_PLAN_ID,
         self::SUBVENTION,
         self::MERCHANT_PAYBACK,
-    );
+    ];
 
-    protected $defaults = array(
+    protected $visible = [
+        self::ID,
+        self::BANK,
+        self::NETWORK,
+        self::ISSUER_NAME,
+        self::RATE,
+        self::DURATION,
+        self::METHODS,
+        self::MIN_AMOUNT,
+        self::ISSUER_PLAN_ID,
+        self::SUBVENTION,
+        self::MERCHANT_PAYBACK,
+    ];
+
+    protected $public = [
+        self::ISSUER_NAME,
+        self::RATE,
+        self::DURATION,
+    ];
+
+    protected $defaults = [
         self::MIN_AMOUNT       => 300000,
         self::BANK             => null,
         self::NETWORK          => null,
         self::ISSUER_PLAN_ID   => null,
         self::SUBVENTION       => Subvention::CUSTOMER,
         self::MERCHANT_PAYBACK => 0,
-    );
+    ];
 
-    protected $casts = array(
+    protected $casts = [
         self::RATE             => 'int',
         self::MIN_AMOUNT       => 'int',
         self::DURATION         => 'int',
         self::MERCHANT_PAYBACK => 'int',
-    );
+    ];
 
-    protected $guarded = array(self::ID);
+    protected $appends = [
+        self::ISSUER_NAME,
+    ];
 
     public function getRate()
     {
@@ -125,10 +130,17 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ISSUER_PLAN_ID);
     }
 
+    public function getIssuerNameAttribute(): string
+    {
+        return $this->getIssuerName();
+    }
+
     /**
      * Issuer is either a bank or a network
+     *
+     * @return string
      */
-    public function getIssuer()
+    public function getIssuer(): string
     {
         $bank = $this->getBank();
 
@@ -139,4 +151,24 @@ class Entity extends Base\PublicEntity
 
         return $this->getNetwork();
     }
+
+    /**
+     * Issuer is either a bank or a network, returns mapped full name.
+     *
+     * @return string
+     */
+    public function getIssuerName(): string
+    {
+        $bank = $this->getBank();
+
+        if (is_null($bank) === false)
+        {
+            return Bank\Name::getBankName($bank);
+        }
+
+        $network = $this->getNetwork();
+
+        return Card\Network::getFullName($network);
+    }
+
 }

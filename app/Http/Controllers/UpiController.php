@@ -21,7 +21,7 @@ class UpiController extends Controller
 
         if (substr($id, 0, 3) === 'RAY')
         {
-            $forwardUrl = 'http://api2.razorpay.dev/' . Request::path();
+            $forwardUrl = 'http://api2.razorpay.in/' . Request::path();
 
             $response = \Requests::post($forwardUrl, [
                 'Content-Type'  => 'application/xml'

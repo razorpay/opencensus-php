@@ -326,14 +326,11 @@ class Core extends Base\Core
             ApiEventSubscriber::MAIN => $subscription,
         ];
 
-        //
-        // For now, commenting this out. Will add it later
-        // depending on merchants' use cases.
-        //
-        // if ($payment !== null)
-        // {
-        //     $eventPayload[ApiEventSubscriber::WITH] = [Constants\Entity::PAYMENT => $payment];
-        // }
+        if ($payment !== null)
+        {
+            $eventPayload[ApiEventSubscriber::WITH] = [Constants\Entity::PAYMENT => $payment];
+        }
+
         $this->app['events']->fire('api.' . $event, $eventPayload);
     }
 
@@ -342,11 +339,7 @@ class Core extends Base\Core
         $eventPayload = [
             ApiEventSubscriber::MAIN => $subscription,
             ApiEventSubscriber::WITH => [
-                //
-                // For now, commenting this out. Will add it later
-                // depending on merchants' use cases.
-                //
-                // Constants\Entity::PAYMENT => $payment,
+                Constants\Entity::PAYMENT => $payment,
             ]
         ];
 

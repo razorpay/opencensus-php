@@ -71,7 +71,7 @@ trait EntityActionTrait
     protected function createWebhook(array $input = array())
     {
         $defaultInput = array(
-            'url' => 'http://localhost/v1/dummy/route',
+            'url' => 'http://example.com/v1/dummy/route',
             'events' => [
                 'payment.authorized' => '1',
             ]);

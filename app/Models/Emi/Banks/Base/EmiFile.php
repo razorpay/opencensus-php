@@ -157,13 +157,13 @@ class EmiFile extends Base\Core
 
     protected function fetchAndSendPassword()
     {
-        // skip password generation and sending for sftp
+        $this->emiFilePassword = $this->generateEmiFilePassword();
+
+        // skip password sending for sftp
         if ($this->transferMode === EmiMode::SFTP)
         {
             return;
         }
-
-        $this->emiFilePassword = $this->generateEmiFilePassword();
 
         $this->sendEmiPassword();
     }

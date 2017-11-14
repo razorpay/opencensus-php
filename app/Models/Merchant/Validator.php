@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Feature;
@@ -22,8 +23,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $createRules = [
-        Entity::ID                          => 'required|alpha_num|size:14|unique:merchants',
-        Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
+        Entity::ID                          => 'sometimes|alpha_num|size:14|unique:merchants',
+        Entity::NAME                        => 'sometimes|string|max:200',
         Entity::EMAIL                       => 'required|email',
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
@@ -32,7 +33,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
+        Entity::NAME                        => 'sometimes|string|max:200',
         Entity::HOLD_FUNDS                  => 'sometimes|in:0,1',
         Entity::WEBSITE                     => 'sometimes|url|max:255',
         Entity::CATEGORY                    => 'sometimes|numeric|digits:4',
@@ -43,7 +44,6 @@ class Validator extends Base\Validator
         Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
         Entity::LINKED_ACCOUNT_KYC          => 'sometimes|boolean',
         Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
-        Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
         Entity::RISK_THRESHOLD              => 'sometimes|integer|min:0|max:20',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
@@ -68,6 +68,10 @@ class Validator extends Base\Validator
 
     protected static $editEmailRules = [
         Entity::EMAIL                       => 'required|email|unique:merchants'
+    ];
+
+    protected static $editNameRules = [
+        Entity::NAME                        => 'required|min:4|string|max:200',
     ];
 
     protected static $editConfigRules = [
@@ -115,9 +119,22 @@ class Validator extends Base\Validator
         'data'        => 'required|array'
     ];
 
+    protected static $payoutMailRules = [
+        'content'               => 'required|array',
+        'content.*.merchant_id' => 'required',
+        'content.*.email'       => 'required',
+    ];
+
     protected static $irctcRules = [
         'refund'     => 'sometimes|filled|file|mimes:txt|max:1024',
         'settlement' => 'sometimes|filled|file|mimes:txt|max:1024',
+    ];
+
+    protected static $createSubMerchantUserRules = [
+        'merchant_id'           => 'required|alpha_num|size:14',
+        'password'              => 'required|between:7,50|confirmed|numbers|letters',
+        'password_confirmation' => 'required|between:7,50',
+        Entity::EMAIL           => 'required|email',
     ];
 
     protected static $editConfigValidators = [
@@ -130,48 +147,54 @@ class Validator extends Base\Validator
 
     protected static $featureValidators = [
         'visible_features',
-        'feature_update_for_mode',
         'uneditable_features',
     ];
 
+    protected static $createSubMerchantUserValidators = [
+        'sub_merchant_owner',
+    ];
+
+    protected static $editEmailValidators = [
+        'is_test_account',
+    ];
+
+    protected function validateIsTestAccount(array $input)
+    {
+        $merchant = $this->entity;
+
+        $isTestAccount = (new Account)->isTestAccount($merchant->getId());
+
+        if ($isTestAccount === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT);
+        }
+
+    }
+
     /**
-     * Throw an error, if any of the features that can be enabled or disabled only by
-     * an admin in the LIVE mode, is being edited by the merchant.
+     * validates if the user who is attempting to create a submerchant user is the owner  or not.
      *
      * @param array $input
      *
      * @throws Exception\BadRequestException
      */
-    protected function validateFeatureUpdateForMode(array $input)
+    protected function validateSubMerchantOwner(array $input)
     {
-        if ($this->isTestMode() === true)
-        {
-            return;
-        }
+        $app = App::getFacadeRoot();
 
-        $requestedFeatures = array_keys($input['features']);
+        $dashboardHeaders = $app['basicauth']->getDashboardHeaders();
 
-        $uneditableFeatures = Feature\Constants::$featuresUneditableOnLive;
-
-        //
-        // array_values is required as array_intersect returns an associative
-        // array with keys as the indexes if the element at index 0 in the
-        // first array is not present in the second array.
-        //
-        $featuresNotAllowed = array_values(array_intersect($requestedFeatures, $uneditableFeatures));
-
-        if (empty($featuresNotAllowed) === false)
+        if ($dashboardHeaders['user_role'] !== 'owner')
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
-                null,
-                ['features' => $featuresNotAllowed]);
+                ErrorCode::BAD_REQUEST_SUBUSER_CREATION_NOT_ALLOWED);
         }
     }
 
     /**
      * Throws an exception if a merchant tries to enable an uneditable
-     * feature for live mode, via the should_sync flag
+     * feature for live mode, or via the should_sync flag
      *
      * @param array $input
      *
@@ -183,9 +206,12 @@ class Validator extends Base\Validator
 
         $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
 
-        $uneditableFeatures = array_values(array_intersect($requestedFeatures, Feature\Constants::$featuresUneditableOnLive));
+        $uneditableFeatures = array_values(array_intersect($requestedFeatures,
+            Feature\Constants::PRODUCT_FEATURES));
 
-        if (($shouldSync === true) and (count($uneditableFeatures) > 0))
+        if ((count($uneditableFeatures) > 0) and (
+            ($this->isLiveMode() === true) or
+            ($shouldSync === true)))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,

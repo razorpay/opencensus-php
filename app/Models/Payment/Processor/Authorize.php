@@ -248,7 +248,7 @@ trait Authorize
         throw $e;
     }
 
-    protected function updatePaymentAuthFailed(Exception\BaseException $e)
+    public function updatePaymentAuthFailed(Exception\BaseException $e)
     {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
@@ -270,7 +270,7 @@ trait Authorize
      *
      * @return array
      */
-    protected function processAuth(Payment\Entity $payment): array
+    public function processAuth(Payment\Entity $payment): array
     {
         $this->updateAndNotifyPaymentAuthorized();
 
@@ -1265,6 +1265,11 @@ trait Authorize
         {
             $data = array('payment' => $payment->toArray());
 
+            if ($payment->getGlobalOrLocalTokenEntity() !== null)
+            {
+                $data['token'] = $payment->getGlobalOrLocalTokenEntity();
+            }
+
             if ($payment->isMethodCardOrEmi())
             {
                 $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
@@ -2253,15 +2258,10 @@ trait Authorize
             $this->updateTokenOnAuthorizedForNetbankingRecurring($token, $data, $payment);
         }
 
-        //
-        // For First Data second recurring payments
-        // we do not update the token's terminal
-        //
-        if ($this->shouldSetTokenTerminal($token, $payment) === true)
-        {
-            // TODO: Refactor this later
-            $token->terminal()->associate($payment->terminal);
-        }
+        // Not required as we only use terminals through
+        // gateway_token, and not through token itself.
+        // TODO: Remove this
+        $token->terminal()->associate($payment->terminal);
 
         $this->createAndSetTerminalInGatewayToken($payment, $token);
     }
@@ -2314,18 +2314,6 @@ trait Authorize
         }
 
         (new Token\Core)->updateTokenFromNetbankingGatewayData($token, $gatewayData);
-    }
-
-    protected function shouldSetTokenTerminal(Token\Entity $token, Payment\Entity $payment)
-    {
-        $gateway = $payment->getGateway();
-
-        $gatewayInArray = in_array($gateway, Payment\Gateway::$shouldNotSetNon3DSTerminalsInTokenGateways, true);
-
-        $shouldNotSetTokenTerminal = (($gatewayInArray === true) and
-                                      (empty($token->getTerminalId()) === false));
-
-        return ($shouldNotSetTokenTerminal === false);
     }
 
     protected function createAndSetTerminalInGatewayToken(Payment\Entity $payment, Token\Entity $token)

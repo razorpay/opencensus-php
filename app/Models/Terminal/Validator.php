@@ -50,6 +50,7 @@ class Validator extends Base\Validator
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::BILLDESK,
         Payment\Gateway::FIRST_DATA,
+        Payment\Gateway::NETBANKING_INDUSIND,
     ];
 
     protected static $createValidators = [
@@ -202,6 +203,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
     ];
 
+    protected static $netbankingIndusindEditTerminalRules = [
+        Entity::TPV                     => 'sometimes|in:0,1,2'
+    ];
+
     protected static $walletPayzappTerminalRules = [
         Entity::GATEWAY                    => 'required|in:wallet_payzapp',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string|size:21',
@@ -283,7 +288,11 @@ class Validator extends Base\Validator
 
     protected static $netbankingAxisTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_axis',
-        Entity::GATEWAY_MERCHANT_ID        => 'required|string'
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        // The below fields are used only for Emandate terminals, hence "sometimes"
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $netbankingFederalTerminalRules = [

@@ -173,9 +173,19 @@ class Accessor extends Base\Core
         return $urls;
     }
 
-    public function getSignedUrlOfFile($file)
+    /**
+     * @param Entity      $file
+     * @param string|null $downloadAs - For not null values returns signed url
+     *                                  which on following forces download with
+     *                                  Content-disposition headers.
+     *
+     * @return string
+     */
+    public function getSignedUrlOfFile(
+        Entity $file,
+        string $downloadAs = null): string
     {
-        $signedUrl = $this->getUrl($file);
+        $signedUrl = $this->getUrl($file, $downloadAs);
 
         if ($this->app->environment('dev', 'testing') === true)
         {
@@ -185,14 +195,22 @@ class Accessor extends Base\Core
         return $signedUrl;
     }
 
+    public function getFullFilePath(Entity $file): string
+    {
+        return $this->getStorageDir() . $file->getName() . '.' . $file->getExtension();
+    }
+
     /**
      * Get Signed URL for single file entity
      *
-     * @param Entity $fileStore Entity object
+     * @param Entity      $fileStore
+     * @param string|null $downloadAs - Refer getSignedUrlOfFile()
      *
      * @return string signed url
      */
-    protected function getUrl(Entity $fileStore)
+    protected function getUrl(
+        Entity $fileStore,
+        string $downloadAs = null): string
     {
         $storageHandler = Store::getHandler($fileStore->getStore());
 
@@ -201,7 +219,16 @@ class Accessor extends Base\Core
             'region' => $fileStore->getRegion(),
         ];
 
-        $url = $storageHandler->getSignedUrl($bucketConfig, $fileStore->getLocation());
+        // Additional parameters
+        $params = [
+            'downloadAs' => $downloadAs,
+        ];
+
+        $url = $storageHandler->getSignedUrl(
+                                    $bucketConfig,
+                                    $fileStore->getLocation(),
+                                    '15',
+                                    $params);
 
         return $url;
     }
@@ -257,10 +284,5 @@ class Accessor extends Base\Core
         {
             $this->merchantId(Account::SHARED_ACCOUNT);
         }
-    }
-
-    protected function getFullFilePath($file)
-    {
-        return $this->getStorageDir() . $file->getName() . '.' . $file->getExtension();
     }
 }

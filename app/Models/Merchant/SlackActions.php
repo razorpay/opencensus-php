@@ -15,6 +15,7 @@ class SlackActions
     const FORM_LOCKED                  = 'Form Locked';
     const FORM_UNLOCKED                = 'Form Unlocked';
     const PRICING_PLAN_SET             = 'Pricing Plan Set';
+    const ADD_TAGS                     = 'Tagged';
     const ACTIVATED                    = 'Activated';
     const HDFC_EXCEL                   = 'HDFC Excel generated';
     const LIVE_ENABLED                 = 'Live transactions enabled';
@@ -24,7 +25,6 @@ class SlackActions
     const SUSPENDED                    = 'Suspended';
     const UNSUSPENDED                  = 'Unsuspended';
     const FREE_CREDITS_EDIT            = 'Free Credits Edited';
-    const TAGGED                       = 'Tagged';
     const CONFIRMED                    = 'Confirmed';
     const ADMIN_EDIT                   = 'Admin Edited';
     const EMAIL_DISABLED               = 'Receipt email disabled';
@@ -44,6 +44,7 @@ class SlackActions
     const LOCK                   = 'lock';
     const UNLOCK                 = 'unlock';
     const ASSIGN_PRICING         = 'assign_pricing';
+    const TAGGED                 = 'Tagged';
     const ASSIGN_BANKS           = 'assign_banks';
     const ADD_ADJUSTMENT         = 'add_adjustment';
     const EDIT_BANK_DETAILS      = 'edit_bank_details';
@@ -66,6 +67,7 @@ class SlackActions
         self::LOCK                   => self::FORM_LOCKED,
         self::UNLOCK                 => self::FORM_UNLOCKED,
         self::ASSIGN_PRICING         => self::PRICING_PLAN_SET,
+        self::TAGGED                 => self::ADD_TAGS,
         self::ASSIGN_BANKS           => self::BANK_LIST_EDITED,
         self::ADD_ADJUSTMENT         => self::ADJUSTMENT_ADDED,
         self::EDIT_BANK_DETAILS      => self::BANK_DETAILS_EDITED,

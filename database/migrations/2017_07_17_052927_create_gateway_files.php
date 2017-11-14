@@ -28,7 +28,7 @@ class CreateGatewayFiles extends Migration
 
             $table->string(GatewayFile::TARGET, 50);
 
-            $table->tinyInteger(GatewayFile::TPV)
+            $table->string(GatewayFile::SUB_TYPE, 25)
                   ->nullable();
 
             $table->string(GatewayFile::SENDER, 100);
@@ -42,6 +42,9 @@ class CreateGatewayFiles extends Migration
 
             $table->string(GatewayFile::STATUS, 20)
                   ->default('created');
+
+            $table->tinyInteger(GatewayFile::PROCESSING)
+                  ->default(0);
 
             $table->tinyInteger(GatewayFile::PARTIALLY_PROCESSED)
                   ->default(0);

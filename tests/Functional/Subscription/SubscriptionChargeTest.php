@@ -12,11 +12,16 @@ use RZP\Models\Item;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
+/**
+ * @group dns-sensitive
+ */
 class SubscriptionChargeTest extends TestCase
 {
     use PaymentTrait;
+    use MocksDnsTrait;
     use SubscriptionTrait;
 
     const MAX_AUTH_ATTEMPTS = 4;
@@ -36,6 +41,8 @@ class SubscriptionChargeTest extends TestCase
         $this->gateway = 'cybersource';
 
         $this->mockTokenex();
+
+        $this->setupMockDns();
 
         Carbon::setTestNow();
     }
