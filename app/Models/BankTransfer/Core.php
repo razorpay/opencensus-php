@@ -84,7 +84,7 @@ class Core extends Base\Core
         {
             $this->alertException($ex, $input);
 
-            throw $ex;
+            $valid = false;
         }
 
         return $valid;
