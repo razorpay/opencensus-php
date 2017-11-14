@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Rbl;
 
+use Trace;
 use Requests;
 use Config;
 use Requests_Hooks;
@@ -152,7 +153,11 @@ class NodalAccount extends NodalBase\NodalAccount
             json_encode($content),
             $this->options);
 
-        return json_decode($response->body, true);
+        $responseArray = json_decode($response->body, true);
+
+        $this->trace()->info(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
+
+        return $responseArray;
     }
 
     protected function getTransferData(string $amount): array
@@ -284,5 +289,12 @@ class NodalAccount extends NodalBase\NodalAccount
         ];
 
         return $content;
+    }
+
+    protected function trace()
+    {
+        $trace = Trace::getFacadeRoot();
+
+        return $trace;
     }
 }
