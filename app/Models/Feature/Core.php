@@ -262,7 +262,8 @@ class Core extends Base\Core
     }
 
     /**
-     * Updates the feature activation status in the merchant details table
+     * Updates the feature activation status in the merchant details table.
+     * It also adds the feature, if the status is approved and the feature is not enabled for the merchant.
      *
      * @param string $merchantId
      * @param string $featureName
@@ -665,5 +666,27 @@ class Core extends Base\Core
 
             $this->logActionToSlack($merchant, SlackActions::PRODUCT_ACTIVATION, $data);
         }
+    }
+
+    public function bulkUpdateFeatureActivationStatus(string $featureName, array $merchantMap)
+    {
+        foreach ($merchantMap as $merchantId => $status)
+        {
+            $response = $this->updateFeatureActivationStatus($merchantId, $featureName, $status);
+
+            // Verify that the status was updated
+            $featureActivationStatus = snake_case($featureName . '_activation_status');
+
+            if ($response[$featureActivationStatus] === $status)
+            {
+                $merchantMap[$merchantId] = true;
+            }
+            else
+            {
+                $merchantMap[$merchantId] = false;
+            }
+        }
+
+        return $merchantMap;
     }
 }
