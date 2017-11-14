@@ -874,7 +874,8 @@
       <div class="form-group" ng-show="loading===false && pricingPlansLength() > 0">
         <label class="col-lg-2 control-label">Plan to be Assigned</label>
         <div class="col-lg-10" >
-          <select class="form-control m-b" name="pricing_plan_id" ng-model="pricing_plan_id" ng-options="id as name for (id, name) in pricing_plans">
+          <select class="form-control m-b" name="pricing_plan_id" ng-model="pricing_plan_id"
+            ng-options="plan_id as plan_name for (plan_id, plan_name) in pricing_plans">
           </select>
         </div>
       </div>

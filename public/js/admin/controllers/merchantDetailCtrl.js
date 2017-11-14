@@ -2340,9 +2340,9 @@ app
       });
       request.success(function(data) {
         if (data.success) {
-          for (var key in data.data.items) {
-            var value = data.data.items[key];
-            $scope.pricing_plans[value.id] = value.name;
+          for (var key in data.data) {
+            var value = data.data[key];
+            $scope.pricing_plans[value.plan_id] = value.plan_name;
           }
           $scope.loading = false;
         }
