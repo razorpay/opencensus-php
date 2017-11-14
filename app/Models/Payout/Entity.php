@@ -3,15 +3,12 @@
 namespace RZP\Models\Payout;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 
-use RZP\Constants\Table;
-use RZP\Error\ErrorCode;
-use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Models\Customer;
-use RZP\Models\Payout;
+use RZP\Constants\Timezone;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
@@ -187,6 +184,12 @@ class Entity extends Base\PublicEntity
     public function getFees()
     {
         return $this->getAttribute(self::FEES);
+    }
+
+    // FeeCalculator calls `$entity->getFee()` for all the pricing entity
+    public function getFee()
+    {
+        return $this->getFees();
     }
 
     public function getTax()

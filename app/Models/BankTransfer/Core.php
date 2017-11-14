@@ -84,7 +84,7 @@ class Core extends Base\Core
         {
             $this->alertException($ex, $input);
 
-            throw $ex;
+            $valid = false;
         }
 
         return $valid;
@@ -115,8 +115,11 @@ class Core extends Base\Core
             $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
 
         // To avoid overloading Slack with errors messages (Kotak does retry)
-        // we cache a specific alert for an hour. Payee Account is always set.
-        $cacheKey = 'slack.bank_transfer_processing_failed.' . $input[Entity::PAYEE_ACCOUNT];
+        // we cache a specific alert for an hour.
+        // Even Payee Account may not be set.
+        $subKey = $input[Entity::PAYEE_ACCOUNT] ?? '';
+
+        $cacheKey = 'slack.bank_transfer_processing_failed.' . $subKey;
 
         if (Cache::get($cacheKey) === null)
         {

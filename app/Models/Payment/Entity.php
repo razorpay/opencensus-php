@@ -2317,4 +2317,11 @@ class Entity extends Base\PublicEntity
 
         return false;
     }
+
+    public static function getFilteredDescription(string $description = null)
+    {
+        $filteredDescription = preg_replace('/[^a-zA-Z0-9 ]+/', '', $description);
+
+        return $filteredDescription;
+    }
 }
