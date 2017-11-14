@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Field, { SelectField, SelectMethod } from 'ui/Field';
-import { replaceSlider, closeSlider } from 'common/modal';
+import { openModal, closeModal } from 'common/modal';
 import { adminPost, adminFetch, adminPut, adminDelete } from 'util/fetch';
 import { notifyError, notifySuccess, notifyDone } from 'common/modal';
 import Table from 'ui/Table';
@@ -49,7 +49,7 @@ class EditGroup extends Component {
         }
         notifySuccess('Success!');
       }
-      closeSlider();
+      closeModal();
     });
   };
 
@@ -127,7 +127,7 @@ class EditGroup extends Component {
 }
 
 export function showEntity(collection) {
-  replaceSlider(<EditGroup collection={collection} model={this} />);
+  openModal(<EditGroup collection={collection} model={this} />);
 }
 
 export function removeEntity(e) {
