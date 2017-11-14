@@ -288,7 +288,11 @@ class Validator extends Base\Validator
 
     protected static $netbankingAxisTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_axis',
-        Entity::GATEWAY_MERCHANT_ID        => 'required|string'
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        // The below fields are used only for Emandate terminals, hence "sometimes"
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $netbankingFederalTerminalRules = [

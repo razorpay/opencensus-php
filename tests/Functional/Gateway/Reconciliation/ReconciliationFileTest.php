@@ -168,6 +168,38 @@ class ReconciliationFileTest extends TestCase
         $this->assertTrue($updatedPayment1['gateway_captured']);
     }
 
+    public function testHdfcFssReconRefundFile()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $refund1 = $this->getNewRefundEntity(true, false);
+        $gatewayPayment1 = $this->getLastEntity('hdfc', true);
+
+        $this->assertNull($refund1['arn']);
+
+        $entries[] = $this->overrideHdfcRefund($gatewayPayment1);
+
+        $file = $this->writeToExcelFile($entries, 'fss');
+        $this->runForFiles([$file], 'HDFC');
+
+        $updatedRefund1 = $this->getEntityById('refund', $refund1['id'], true);
+
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedRefund1['arn']);
+
+        // Test for for update ARN
+        $entries[0][HDFCPaymentRecon::COLUMN_ARN[0]] .= str_random(2);
+
+        $file = $this->writeToExcelFile($entries, 'fss');
+        $this->runForFiles([$file], 'HDFC', ['refund_arn']);
+
+        $updatedRefund1 = $this->getEntityById('refund', $refund1['id'], true);
+
+        $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedRefund1['arn']);
+
+    }
+
     /*
      * Helpers
      */
@@ -198,6 +230,15 @@ class ReconciliationFileTest extends TestCase
         }
 
         return $paymentEntity;
+    }
+
+    private function getNewRefundEntity($captured = false)
+    {
+        $payment = $this->getNewPaymentEntity(false, $captured);
+
+        $this->refundPayment($payment['id']);
+
+        return $this->getLastEntity('refund', true);
     }
 
     private function overrideFirstDataPayment(array $payment, array $forceOverride = [])
@@ -244,7 +285,18 @@ class ReconciliationFileTest extends TestCase
 
         return $facade;
     }
-    protected function runForFiles(array $files, string $gateway)
+
+    private function overrideHdfcRefund(array $payment, array $forceOverride = [], $gateway = 'fss')
+    {
+        $facade = $this->overrideHdfcPayment($payment, $forceOverride, $gateway);
+
+        $facade['rec_fmt'] = 'CVD';
+        $facade[HDFCPaymentRecon::COLUMN_PAYMENT_ID[0]] = $payment['refund_id'];
+
+        return $facade;
+    }
+
+    protected function runForFiles(array $files, string $gateway, array $forceUpdate = [])
     {
         $testData = $this->testData['reconciliate'];
 
@@ -253,6 +305,14 @@ class ReconciliationFileTest extends TestCase
         foreach ($files as $index => $file)
         {
             $testData['request']['files']['attachment-' . ($index + 1)] = $this->createUploadedFile($file);
+        }
+
+        if (empty($forceUpdate) === false)
+        {
+            foreach ($forceUpdate as $forceUpdateColumn)
+            {
+                $testData['request']['content']['force_update'][] = $forceUpdateColumn;
+            }
         }
 
         $this->runRequestResponseFlow($testData);
