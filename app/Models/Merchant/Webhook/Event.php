@@ -60,29 +60,6 @@ class Event
         self::SETTLEMENT_PROCESSED
     ];
 
-    protected static $bitMap = [
-        self::PAYMENT_AUTHORIZED        => 0x1,
-        self::PAYMENT_FAILED            => 0x2,
-        self::PAYMENT_CAPTURED          => 0x3,
-        self::ORDER_PAID                => 0x4,
-        self::INVOICE_PAID              => 0x5,
-        self::VPA_EDITED                => 0x6,
-        self::P2P_CREATED               => 0x7,
-        self::P2P_REJECTED              => 0x8,
-        self::SUBSCRIPTION_ACTIVATED    => 0x9,
-        self::SUBSCRIPTION_PENDING      => 0x10,
-        self::SUBSCRIPTION_HALTED       => 0x11,
-        self::SUBSCRIPTION_CHARGED      => 0x12,
-        self::SUBSCRIPTION_CANCELLED    => 0x13,
-        self::SUBSCRIPTION_COMPLETED    => 0x14,
-        // self::SUBSCRIPTION_EXPIRED      => 0x15,
-        self::INVOICE_EXPIRED           => 0x16,
-        self::INVOICE_PARTIALLY_PAID    => 0x17,
-        self::TOKEN_CONFIRMED           => 0x18,
-        self::TOKEN_REJECTED            => 0x19,
-        self::SETTLEMENT_PROCESSED      => 0x20,
-    ];
-
     /**
      * Events which are present in the system and
      * can be enabled/disabled.
