@@ -95,7 +95,7 @@ export class Switch extends Component {
   buttonClass = this.props.knob ? 'checkbox knob' : 'checkbox';
 
   state = {
-    checked: this.enabledValue === this.props.value,
+    checked: this.enabledValue == this.props.defaultValue,
   };
 
   toggle = e => {
@@ -108,13 +108,7 @@ export class Switch extends Component {
   };
 
   render() {
-    let {
-      knob,
-      defaultChecked,
-      disabledValue,
-      enabledValue,
-      ...restProps
-    } = this.props;
+    let { knob, disabledValue, enabledValue, ...restProps } = this.props;
     let { checked } = this.state;
 
     let buttonClass = this.buttonClass;

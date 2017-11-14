@@ -9,8 +9,9 @@ import { PowerSelectMultiple } from 'react-power-select';
     2. name: Just like field. The selected value can be accessed using body[name] (comma separated string)
     3. trackBy: each of the selected option is identified by comma separated trackBy (eg - comma separated ids)
     4. options: exhaustive list of options (array)
-    5. keys: used to display default custom option component
-    6. CustomOptionComponent: You can pass custom component which has access to option(single item from props.options).
+    5. defaultValue: array of objects. (trackBy key must be present in items of both defaultValue and options)
+    6. keys: used to display default custom option component
+    7. CustomOptionComponent: You can pass custom component which has access to option(single item from props.options).
         If passing this, don't pass keys props.
 
   Note: Add on change listener on input, in case you need the listener
@@ -26,11 +27,18 @@ export default class MultiSelectField extends Component {
     this.state = { selectedOptions: [] };
 
     // Pre-populate selectedOptions
-    const preSelectedOptions = props.preSelectedOptions;
+    const preSelectedOptions = props.defaultValue;
     if (preSelectedOptions) {
       const tempArray = [];
-      preSelectedOptions.map(id => {
-        tempArray.push(props.options.find(option => option.id === id));
+
+      // To select option in powerselect, reference of option must be stored.
+      // Storing references of all options from exhaustive list, which matches id(/trackBy) of options in defaultValue array.
+      preSelectedOptions.map(item => {
+        tempArray.push(
+          props.options.find(
+            option => option[props.trackBy] === item[props.trackBy]
+          )
+        );
       });
 
       this.state = { selectedOptions: tempArray };

@@ -42,7 +42,7 @@ export default ({ props }) => {
       fields.push(
         <label key={method}>
           {method}
-          <SwitchField name={method} value={methods[method]} />
+          <SwitchField name={method} defaultValue={methods[method]} />
         </label>
       );
     }

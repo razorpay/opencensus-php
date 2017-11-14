@@ -12,7 +12,7 @@ import FeaturesDetails from './helpers/FeaturesDetails';
 
 /* RESOURCE UTILS */
 export function openMerchantEntity() {
-  window.open(`/admin/_#/app/merchants/${this.id}/detail`);
+  window.open(`/admin#/app/merchants/${this.id}/detail`);
 }
 
 /*---------------------------------------- Getters ------------------------------------------------*/

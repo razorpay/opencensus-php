@@ -221,7 +221,7 @@ export default class CreateOffer extends Component {
           <SwitchField
             name="type"
             label="Type"
-            value={'deferred'}
+            defaultValue={'deferred'}
             disabledLabel="Instant"
             enabledLabel="Deferred"
             enabledValue="deferred"
@@ -231,7 +231,7 @@ export default class CreateOffer extends Component {
           <SwitchField
             label="Display on Checkout"
             name="checkout_display"
-            value="0"
+            defaultValue="0"
             disabledLabel="False"
             enabledLabel="True"
           />

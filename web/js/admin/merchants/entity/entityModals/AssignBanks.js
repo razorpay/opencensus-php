@@ -40,7 +40,7 @@ export default class PricingPlanModal extends Component {
     for (let bank in this.state.banksList) {
       fields.push(
         <label key={bank}>
-          <SwitchField name={bank} value={this.state.banksList[bank]} />
+          <SwitchField name={bank} defaultValue={this.state.banksList[bank]} />
           {this.state.merchantBanksMapping[bank]}
         </label>
       );
