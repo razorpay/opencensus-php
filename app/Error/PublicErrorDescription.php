@@ -225,8 +225,6 @@ class PublicErrorDescription
     const BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH                 = 'Invalid length for descriptor.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE                               = 'A virtual account with this descriptor is unavailable at this time.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE                    = 'Descriptor field cannot be used as merchant handle is not set for your account.';
-    const BAD_REQUEST_VIRTUAL_ACCOUNT_ALPHA_SANS_HANDLE                         = 'Alphabetical account numbers cannot be used as merchant handle is not set for your account.';
-    const BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_WITH_NUMERIC                   = 'Descriptor cannot be used for numeric accounts.';
 
     const BAD_REQUEST_ACCOUNT_CLOSED                                            = 'Bank Account is closed.';
     const BAD_REQUEST_ACCOUNT_NUMBER_MISMATCH                                   = 'Bank Account Number does not match.';
