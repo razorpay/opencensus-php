@@ -10,12 +10,7 @@ use RZP\Models\FundTransfer\Base as NodalBase;
 
 class NodalAccount extends NodalBase\NodalAccount
 {
-    //TODO change Url on basis of mode
-    const BEN_ADD_URL = '/test/sb/rbl/api/v1.5/na-beneficiary/registration?';
-
-    const FUND_TRANSFER_URL = '/test/sb/rbl/api/v1/payment_bid/pay?';
-
-    const TIMEOUT = '120';
+    const TIMEOUT = '240';
 
     protected $headers = [];
 
@@ -57,7 +52,7 @@ class NodalAccount extends NodalBase\NodalAccount
     {
         $content = $this->getAddBeneficiaryData($input);
 
-        $url = $this->baseUrl . self::BEN_ADD_URL . $this->clientCreds;
+        $url = $this->baseUrl . $this->config['ben_add_url_suffix'] . $this->clientCreds;
 
         return $this->getResponse($content, $url);
     }
@@ -66,7 +61,7 @@ class NodalAccount extends NodalBase\NodalAccount
     {
         $content = $this->getTransferData($amount);
 
-        $url = $this->baseUrl . self::FUND_TRANSFER_URL . $this->clientCreds;
+        $url = $this->baseUrl . $this->config['fund_transfer_url_sufffix'] . $this->clientCreds;
 
         return $this->getResponse($content, $url);
     }
