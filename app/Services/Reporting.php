@@ -12,7 +12,7 @@ use RZP\Trace\TraceCode;
 
 class Reporting
 {
-    const REQUEST_TIMEOUT = 20;
+    const REQUEST_TIMEOUT = 30;
 
     const REPORT_CONFIG   = '/config';
     const REPORT_GENERATE = '/generate';
@@ -153,8 +153,6 @@ class Reporting
         }
         catch (\Requests_Exception $e)
         {
-            $this->exception = $e;
-
             $data = [
                 'service' => 'reporting-service',
                 'url'     => $request['url'],
