@@ -60,6 +60,8 @@ class NodalAccount extends NodalBase\NodalAccount
     {
         $content = $this->getAddBeneficiaryData($input);
 
+        $this->trace->info(TraceCode::RBL_NODAL_BEN_ADD_REQUEST, $content);
+
         $url = $this->baseUrl . $this->config['ben_add_url_suffix'] . $this->clientCreds;
 
         $responseArray = $this->getResponse($content, $url);
@@ -69,7 +71,7 @@ class NodalAccount extends NodalBase\NodalAccount
             if ((empty($resp['Body']['Status']) === false) and
                 ($resp['Bodyq']['Status'] === 'Failure'))
             {
-                $this->trace->error(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
+                $this->trace->error(TraceCode::RBL_NODAL_BEN_ADD_RESPONSE, $responseArray);
 
                 return $responseArray;
             }
@@ -84,6 +86,8 @@ class NodalAccount extends NodalBase\NodalAccount
     {
         $content = $this->getTransferData($amount);
 
+        $this->trace->info(TraceCode::RBL_NODAL_TRANSFER_REQUEST, $content);
+
         $url = $this->baseUrl . $this->config['fund_transfer_url_sufffix'] . $this->clientCreds;
 
         $responseArray = $this->getResponse($content, $url);
@@ -93,7 +97,7 @@ class NodalAccount extends NodalBase\NodalAccount
             if ((empty($resp['Header']['Status']) === false) and
                 ($resp['Bodyq']['Status'] === 'FAILED'))
             {
-                $this->trace->error(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
+                $this->trace->error(TraceCode::RBL_NODAL_TRANSFER_RESPONSE, $responseArray);
 
                 return $responseArray;
             }
@@ -184,8 +188,6 @@ class NodalAccount extends NodalBase\NodalAccount
 
     protected function getResponse(array $content, string $url): array
     {
-        $this->trace->info(TraceCode::RBL_NODAL_REQUEST, $responseArray);
-
         $response = Requests::post(
             $url,
             $this->headers,

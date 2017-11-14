@@ -184,8 +184,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const DASHBOARD_JOB_ERROR                           = 'DASHBOARD_JOB_ERROR';
 
-    const RBL_NODAL_RESPONSE                            = 'RBL_NODAL_RESPONSE';
-    const RBL_NODAL_REQUEST                             = 'RBL_NODAL_REQUEST';
+    const RBL_NODAL_BEN_ADD_REQUEST                     = 'RBL_NODAL_BEN_ADD_REQUEST';
+    const RBL_NODAL_TRANSFER_REQUEST                    = 'RBL_NODAL_TRANSFER_REQUEST';
+    const RBL_NODAL_TRANSFER_RESPONSE                   = 'RBL_NODAL_TRANSFER_RESPONSE';
+    const RBL_NODAL_BEN_ADD_RESPONSE                    = 'RBL_NODAL_BEN_ADD_RESPONSE';
 
     const TERMINAL_SELECTION                            = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_FOR_RULE_GROUP             = 'TERMINAL_SELECTION_FOR_RULE_GROUP';
