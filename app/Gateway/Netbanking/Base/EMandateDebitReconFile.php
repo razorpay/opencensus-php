@@ -13,7 +13,7 @@ use RZP\Trace\TraceCode;
 
 class EMandateDebitReconFile extends Base\Core
 {
-    protected $gateway = Payment\Gateway::NETBANKING_HDFC;
+    protected $gateway;
 
     protected $fileContents;
 

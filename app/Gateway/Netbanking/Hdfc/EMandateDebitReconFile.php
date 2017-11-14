@@ -15,6 +15,8 @@ class EMandateDebitReconFile extends Base\EMandateDebitReconFile
 
     protected $errors = [];
 
+    protected $gateway = Payment\Gateway::NETBANKING_HDFC;
+
     const PROCESS = 'process';
     const REJECT  = 'reject';
 
