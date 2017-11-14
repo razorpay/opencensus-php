@@ -670,7 +670,7 @@ final class Route
         'reporting_config_create'                 => ['post',     'reporting/config',                               'ReportingController@create'                                        ],
         'reporting_config_edit'                   => ['put',      'reporting/config/{id}',                          'ReportingController@update'                                        ],
         'reporting_config_delete'                 => ['delete',   'reporting/config/{id}',                          'ReportingController@delete'                                        ],
-        'reporting_generate'                      => ['post',     'reporting/generate/{configId}',                  'ReportingController@generateReport'                                ],
+        'reporting_generate'                      => ['post',     'reporting/config/{id}/generate',                 'ReportingController@generateReport'                                ],
 
         // UFH Service
         'ufh_get_file_signed_url'                 => ['get',      'ufh/file/{fileId}/get-signed-url',               'UfhController@getSignedUrl'                                        ],
