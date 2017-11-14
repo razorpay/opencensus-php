@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator;
 
 use RZP\Exception;
+use RZP\Base\JitValidator;
 
 class Validator
 {
@@ -72,6 +73,12 @@ class Validator
 
     // Max allowed file size - 25M (25*1024*1024).
     const MAX_FILE_SIZE = 26214400;
+
+    const MANUAL_INPUT_RULES = [
+        Orchestrator::ATTACHMENT_COUNT    => 'required|integer|min:0|max:10',
+        Orchestrator::GATEWAY             => 'required|custom',
+        Orchestrator::FORCE_UPDATE        => 'sometimes|custom',
+    ];
 
     public function filterEmails(array $emailDetails)
     {
@@ -306,6 +313,49 @@ class Validator
         return false;
     }
 
+    public function validateManualInput(array $input)
+    {
+        (new JitValidator)->rules(self::MANUAL_INPUT_RULES)
+                          ->caller($this)
+                          ->input($input)
+                          ->validate();
+    }
+
+    public function validateGateway($attribute, $value, $parameters)
+    {
+        if (isset(Orchestrator::GATEWAY_SENDER_MAPPING[$value]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'Invalid value for' . Orchestrator::GATEWAY
+            );
+        }
+    }
+
+    public function validateForceUpdate($attribute, $value, $parameters)
+    {
+        $valid = false;
+
+        if (is_array($value) === true)
+        {
+            if (empty($value) === true)
+            {
+                $valid = true;
+            }
+            else
+            {
+                $diff = array_diff(Orchestrator::ALLOWED_FORCE_UPDATE, $value);
+                $valid = (count($diff) === 0);
+            }
+        }
+
+        if ($valid === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid value for ' . Orchestrator::FORCE_UPDATE
+            );
+        }
+    }
+
     public function validateExtensionMimeType(string $extension, string $mimeType)
     {
         $acceptedExtensionsMap = self::ACCEPTED_EXTENSIONS_MAP;
@@ -356,5 +406,14 @@ class Validator
     protected function validateAttachmentCount(int $attachmentCount, string $gateway)
     {
         return (self::GATEWAY_ATTACHMENT_COUNT[$gateway] === $attachmentCount);
+    }
+
+    public function validateCustom($func, $attribute, $value, $parameters)
+    {
+        $message = 'function name should start with validate : ' . $func;
+
+        assert (strpos($func, 'validate') === 0, $message);
+
+        $this->$func($attribute, $value, $parameters);
     }
 }
