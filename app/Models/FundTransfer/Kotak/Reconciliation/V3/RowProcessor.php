@@ -118,7 +118,7 @@ class RowProcessor extends Base\RowProcessor
         {
             $this->reconEntity->merchant->setHoldFunds(true);
 
-            $this->reconEntity->merchant->saveOrFail();
+            $this->repo->saveOrFail($this->reconEntity->merchant);
         }
     }
 
