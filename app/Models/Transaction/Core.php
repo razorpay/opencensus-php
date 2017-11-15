@@ -748,6 +748,13 @@ class Core extends Base\Core
 
         $txn->sourceAssociate($transfer);
 
+        //
+        // Saving the transaction entity here because we create a
+        // credit_transactions record in the next statement which
+        // has a foreign key relation to transaction,
+        //
+        $this->repo->saveOrFail($txn);
+
         $this->updateCredits($txn, $transfer);
 
         $this->updateBalances($txn, false);

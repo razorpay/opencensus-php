@@ -145,6 +145,9 @@ class TransferTest extends TestCase
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
         $this->assertEquals(10000 - $expectedFee, $balance['fee_credits']);
+
+        $creditTransactions = $this->getEntities('credit_transaction', [], true);
+        $this->assertEquals($expectedFee, $creditTransactions['items'][0]['credits_used']);
     }
 
     public function testLiveModeTransferToNonActivatedAccount()
