@@ -135,4 +135,13 @@ class AdminController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function updateGeoIps()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateGeoIps($input);
+
+        return ApiResponse::json($data);
+    }
 }

@@ -18,8 +18,9 @@ class Entity extends Base\Entity
 
     protected $entity = 'geo_ip';
 
+    protected $primaryKey = self::IP;
+
     protected $fillable = [
-        self::IP,
         self::CITY,
         self::STATE,
         self::POSTAL,
@@ -29,4 +30,9 @@ class Entity extends Base\Entity
         self::LONGITUDE,
         self::ISP,
     ];
+
+    public function getIp()
+    {
+        return $this->getAttribute(self::IP);
+    }
 }

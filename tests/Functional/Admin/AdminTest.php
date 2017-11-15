@@ -1010,4 +1010,20 @@ class AdminTest extends TestCase
             \RZP\Exception\BadRequestValidationFailureException::class,
             'The selected deleted is invalid.');
     }
+
+    public function testUpdateGeoIps()
+    {
+        $this->app['config']->set('services.geolocation.mocked', true);
+
+        //Invalid IP
+        $this->fixtures->create('geo_ip', ['ip' => '127.0.0.1']);
+
+        $geoIp = $this->fixtures->create('geo_ip', [
+            'ip' => '106.51.22.240'
+        ]);
+
+        $this->startTest();
+
+        $this->assertSame('Bangalore', $geoIp->reload()->city);
+    }
 }
