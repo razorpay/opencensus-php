@@ -6,13 +6,10 @@ use RZP\Exception;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as Headings;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Payment;
 
 class EMandateDebitReconFile extends Base\EMandateDebitReconFile
 {
-    use FileHandlerTrait;
-
     protected $errors = [];
 
     protected $gateway = Payment\Gateway::NETBANKING_HDFC;

@@ -2,11 +2,13 @@
 
 namespace RZP\Gateway\Netbanking\Base;
 
-use Razorpay\Trace\Logger as Trace;
 use Illuminate\Http\UploadedFile;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Base\RuntimeManager;
 use RZP\Exception;
+use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
 use RZP\Models\Payment;
@@ -15,6 +17,8 @@ use RZP\Trace\TraceCode;
 
 class EMandateDebitReconFile extends Base\Core
 {
+    use FileHandlerTrait;
+
     protected $gateway;
 
     protected $fileContents;
@@ -118,7 +122,7 @@ class EMandateDebitReconFile extends Base\Core
         return ['total_count' => $totalCount, 'processed_count' => $processedCount];
     }
 
-    protected function updatePayment(Base\Entity $gatewayPayment, Payment\Entity $payment)
+    protected function updatePayment(NetbankingEntity $gatewayPayment, Payment\Entity $payment)
     {
         if ($this->isAuthorized($gatewayPayment) === true)
         {
@@ -139,7 +143,7 @@ class EMandateDebitReconFile extends Base\Core
         return $processor->processAuth($payment);
     }
 
-    protected function processFailedPayment(Payment\Entity $payment, Base\Entity $gatewayPayment)
+    protected function processFailedPayment(Payment\Entity $payment, NetbankingEntity $gatewayPayment)
     {
         $merchant = $payment->merchant;
 
