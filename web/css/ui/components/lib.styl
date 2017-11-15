@@ -1,3 +1,8 @@
+/* Put those styles which are generalised */
+
+//----------
+/* General styles */
+
 header
   padding: 12px 20px
   line-height: 38px
@@ -29,7 +34,45 @@ header
   .box
     margin: 15px
 
+.info-block // Mostly used for helper text under the Field
+  word-break: break-word;
+  font-size: 12px
+  color: $color-semi-muted
+
+  .i-info-circle
+    margin-right: 4px
+
+.clickable
+  cursor: pointer
+  &:hover
+    background: $bg-highlight
+
+.highlight
+  background: $bg-highlight
+
+.rotate
+  transform: rotate(-180deg)
+
+.hide
+  display: none
+
+.code
+  white-space: pre
+  font-family: monospace
+  background: #f6f6f6
+  border: 1px solid #eee
+  font-size: 13px
+  margin: 20px
+  border-radius: 3px
+  padding: 20px
+
+header + banner
+  margin-top: -2px
+
+
+//--------
 /* Buttons */
+
 .link
   display: inline-block
   color: #0078E7
@@ -52,55 +95,53 @@ header
   &:active
     background-color: #f0f0f0
 
-//-------------
 
+//-------------
 /* Labels */
+
 .status-label
   padding: 2px 12px
   font-size: 75%
   font-weight: 700
   border-radius 16px
-  color: #fff;
-  text-align: center;
-  white-space: nowrap;
+  color: #fff
+  text-align: center
+  white-space: nowrap
 
 
-.label-muted {
-  background-color: #999;
-}
+.label-muted
+  background-color: #999
 
-.label-semi-muted {
-  color: $color-semi-muted;
-  background-color: #D8E1E3;
-}
+.label-semi-muted
+  color: $color-semi-muted
+  background-color: #D8E1E3
 
-.label-danger {
-  background-color: #f05150;
-}
 
-.label-pending {
-  background-color: #E8B248;
-}
+.label-danger
+  background-color: #f05150
+
+.label-pending
+  background-color: $color-pending
 
 .label-success
-  background-color: #27c24c;
+  background-color: $success
 
 .label-info
-  background-color: #23b7e5;
+  background-color: $color-info
+
 
 //-------------
 //  Text style
 
-.text-danger {
-  background-color: #f05150;
-}
+.text-danger
+  background-color: $danger
 
-.text-pending {
-  background-color: #E8B248;
-}
+.text-pending
+  background-color: $color-pending
 
 .text-success
-  background-color: #27c24c;
+  background-color: $success
+
 
 //-------------
 // icons
@@ -111,82 +152,78 @@ header
 .i-yes
   color: $success
 
-.code
-  white-space: pre
-  font-family: monospace
-  background: #f6f6f6
-  border: 1px solid #eee
-  font-size: 13px
-  margin: 20px
-  border-radius: 3px
-  padding: 20px
 
-header + alert-warn
-  margin-top: -2px
+//------------
+/* Banner */
 
-alert-warn
+banner
   font-size: 14px
   display: block
   padding: 10px 20px
-  background-color: #fcf8e3;
-  border: 1px solid #eee
-  color: #8a6d3b;
+  border: 1px solid
 
-.info-block
-  color: $color-semi-muted
-  font-size: 12px
+  &.warning
+    background-color: #fcf8e3
+    border-color: #eee
+    color: #8a6d3b
 
-  .i-info-circle
-    margin-right: 4px
-
-.clickable
-  cursor: pointer
-  &:hover
-    background: $bg-highlight
-
-.highlight
-  background: $bg-highlight
-
-.rotate
-  transform: rotate(-180deg);
+  &.info
+    background-color: #d9edf7
+    border-color: #bce8f1
+    color: #31708f
 
 
-// Custom select TypeAhead component
+//----------
+/* Custom select TypeAhead component */
+
 .custom-select
-  position: relative;
+  position: relative
 
   input
-    width: 100%;
+    width: 100%
 
   .custom-icon, .typeAheadSkin
-    position: absolute;
-    pointer-events: none;
+    position: absolute
+    pointer-events: none
 
   .custom-icon
-    top: 11px;
-    left: 8px;
-    font-size: 20px;
-    z-index: 1;
-    color: #e0e0e0;
+    top: 11px
+    left: 8px
+    font-size: 20px
+    z-index: 1
+    color: #e0e0e0
 
   .typeAheadSkin
-    z-index: 2;
-    background-color: #fff;
-    top: 10px;
-    width: 87%;
-    margin-left: 30px;
-    font-size: 12px;
+    z-index: 2
+    background-color: #fff
+    top: 10px
+    width: 87%
+    margin-left: 30px
+    font-size: 12px
 
   .PowerSelect__TriggerInput
     padding-left: 32px
 
 .PowerSelect__Option
-  padding: 0 5px;
-  font-size: 14px;
-  border: 1px solid #eaeff0;
-  background-color: #fff;
-  line-height: 28px;
+  padding: 0 5px
+  font-size: 14px
+  border: 1px solid #eaeff0
+  background-color: #fff
+  line-height: 28px
   cursor: pointer
 
   &--highlighted
-    background-color: #f1f1f1;
+    background-color: #f1f1f1
+
+
+//----------
+/* margins */
+
+  .m-t
+    margin-top: 10px
+  .m-b
+    margin-bottom: 10px
+  .m-r
+    margin-right: 10px
+  .m-l
+    margin-left: 10px

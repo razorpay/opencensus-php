@@ -12,10 +12,10 @@ export default function InviteForm({
   return (
     <div>
       <header>Invitation details</header>
-      <alert-warn>
+      <banner class="warning">
         Smarthub: Education, Society &amp; Government merchants should NOT be
         onboarded through this solution
-      </alert-warn>
+      </banner>
       <Form onSubmit={onInvite}>
         {fields.indexOf('channel_code') > -1 && (
           <div>

@@ -19,13 +19,13 @@ export default class ErrorBoundary extends Component {
   render() {
     if (this.state.error) {
       return (
-        <alert-warn>
+        <banner class="warning">
           <p>
             <b>An Error Occured</b>
           </p>
           <pre>{this.state.error.toString()}</pre>
           <pre>{this.state.info.componentStack.replace(/^\n/gm, '')}</pre>
-        </alert-warn>
+        </banner>
       );
     }
     return this.props.children;
