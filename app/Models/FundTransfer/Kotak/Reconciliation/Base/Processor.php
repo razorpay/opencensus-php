@@ -113,77 +113,76 @@ class Processor extends Base\Core
 
     protected function startReconciliation($data): array
     {
-        $this->repo->beginTransaction();
-
-        $webhookData = [];
-
-        try
+        $summary = $this->repo->transactionOnLiveAndTest(function() use ($data)
         {
-            foreach ($data as $row)
-            {
-                $reconciledRowDetails = $this->reconcileEntity($row);
-
-                $webhookData[] = $reconciledRowDetails;
-
-                $entity = $reconciledRowDetails['entity'];
-
-                if ($entity === null)
-                {
-                    $this->unprocessedIds[] = $row[Kotak\Headings::PAYMENT_REF_NO] ?? 'null';
-                }
-                else
-                {
-                    $this->allEntities[] = $entity;
-
-                    $this->updateBatchFundTransferStats($entity);
-                }
-            }
-
-            // Update batch stats post reconciliations
-            foreach ($this->batchFundTransferStats as $batchId => $attrs)
-            {
-                $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
-                $batchEntity->setProcessedCount($attrs['processed_count']);
-                $batchEntity->setProcessedAmount($attrs['processed_amount']);
-                $batchEntity->saveOrFail();
-            }
-
-            $this->repo->commit();
-        }
-        catch (\Exception $e)
-        {
-            $this->repo->rollback();
-
-            // Empty the array to not trigger the webhook
             $webhookData = [];
 
-            (new SlackNotification)->failure('setl_reconciliation', $e);
+            try
+            {
+                foreach ($data as $row)
+                {
+                    $reconciledRowDetails = $this->reconcileEntity($row);
 
-            throw $e;
-        }
+                    $webhookData[] = $reconciledRowDetails;
 
-        $summary = $this->getSummary();
+                    $entity = $reconciledRowDetails['entity'];
 
-        (new SlackNotification)->success('setl_reconciliation', $summary);
+                    if ($entity === null)
+                    {
+                        $this->unprocessedIds[] = $row[Kotak\Headings::PAYMENT_REF_NO] ?? 'null';
+                    }
+                    else
+                    {
+                        $this->allEntities[] = $entity;
 
-        // Isolating the webhook flow in a try-catch, to keep the original settlement cycle unaffected
-        try
-        {
-            (new FundTransferAttempt\Core)->notifyMerchantViaWebhook($webhookData);
-        }
-        catch (\Exception $e)
-        {
-            // Log only the entity ids instead of the entire entities
-            $entities = array_map(function($entity) {
-                return $entity->getId();
-            }, $this->allEntities);
+                        $this->updateBatchFundTransferStats($entity);
+                    }
+                }
 
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::SETTLEMENT_PROCESSED_WEBHOOOK_FAILED,
-                ['entities' => $entities]);
-        }
+                // Update batch stats post reconciliations
+                foreach ($this->batchFundTransferStats as $batchId => $attrs)
+                {
+                    $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
+                    $batchEntity->setProcessedCount($attrs['processed_count']);
+                    $batchEntity->setProcessedAmount($attrs['processed_amount']);
+                    $batchEntity->saveOrFail();
+                }
+            }
+            catch (\Exception $e)
+            {
+                (new SlackNotification)->failure('setl_reconciliation', $e);
+
+                // Empty the array to not trigger the webhook
+                $webhookData = [];
+
+                throw $e;
+            }
+
+            $summary = $this->getSummary();
+
+            (new SlackNotification)->success('setl_reconciliation', $summary);
+
+            // Isolating the webhook flow in a try-catch, to keep the original settlement cycle unaffected
+            try
+            {
+                (new FundTransferAttempt\Core)->notifyMerchantViaWebhook($webhookData);
+            }
+            catch (\Exception $e)
+            {
+                // Log only the entity ids instead of the entire entities
+                $entities = array_map(function($entity) {
+                    return $entity->getId();
+                }, $this->allEntities);
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::SETTLEMENT_PROCESSED_WEBHOOOK_FAILED,
+                    ['entities' => $entities]);
+            }
+
+            return $summary;
+        });
 
         return $summary;
     }

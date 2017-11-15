@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment;
 
 use App;
+use Route;
 use Cache;
 use Carbon\Carbon;
 use Lib\PhoneBook;
@@ -115,6 +116,14 @@ class Validator extends Base\Validator
 
     protected function validateEmail(array $input)
     {
+        //
+        // TODO: To be changed after refactor. No validation required for Bharat qr
+        //
+        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
+        {
+            return;
+        }
+
         $allowedPaymentMethods = [
             Payment\Method::AEPS,
             Payment\Method::TRANSFER,
@@ -326,6 +335,14 @@ class Validator extends Base\Validator
 
     protected function validateContact($input)
     {
+        //
+        // TODO: To be changed after refactor. No validation required for Bharat qr
+        //
+        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
+        {
+            return;
+        }
+
         $allowedPaymentMethods = [
             Payment\Method::AEPS,
             Payment\Method::TRANSFER,

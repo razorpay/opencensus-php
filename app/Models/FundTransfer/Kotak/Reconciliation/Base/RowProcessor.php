@@ -62,6 +62,8 @@ class RowProcessor extends BaseCore
 
     protected $dashboardUrl;
 
+    protected $holdFunds = false;
+
     public function __construct($row)
     {
         parent::__construct();
