@@ -498,21 +498,26 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchByMerchantBetweenTimestamps(string $merchantId, int $from, int $to, $receipt = null)
+    public function fetchIrctcDeltaRefunds(string $merchantId, int $from, int $to, $receipt = null)
     {
+        $pId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $pOrderId = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
+
+        $rPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
+
+        $orderId = $this->repo->order->dbColumn(Order\Entity::ID);
+
         $query = $this->newQuery()
+                      ->select($this->dbColumn('*'))
+                      ->join(Table::PAYMENT, $rPaymentId, '=', $pId)
+                      ->join(Table::ORDER, $orderId, $pOrderId)
                       ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
                       ->where(Refund\Entity::CREATED_AT, '>=', $from)
-                      ->where(Refund\Entity::CREATED_AT, '<=', $to);
-
-        if (empty($receipt) === true)
-        {
-            $query->whereNull(Refund\Entity::RECEIPT);
-        }
-        else
-        {
-            $query->where(Refund\Entity::RECEIPT, '=', $receipt);
-        }
+                      ->where(Refund\Entity::CREATED_AT, '<=', $to)
+                      ->whereNull(Refund\Entity::RECEIPT)
+                      ->where(Order\Entity::STATUS, '!=', Order\Status::PAID)
+                      ->groupBy($orderId);
 
         return $query->get();
     }

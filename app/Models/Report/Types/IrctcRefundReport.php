@@ -42,7 +42,7 @@ class IrctcRefundReport extends BasicEntityReport
     protected function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
         return $this->repo->refund
-                        ->fetchByMerchantBetweenTimestamps($merchantId, $from, $to);
+                        ->fetchIrctcDeltaRefunds($merchantId, $from, $to);
     }
 
     protected function fetchFormattedDataForReport($entities): array
