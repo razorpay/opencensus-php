@@ -9,6 +9,10 @@ export default class AsyncButton extends Component {
   onClick = ::this.onClick;
 
   onClick(e) {
+    if (this.props.disabled) {
+      return;
+    }
+
     if (!this.state.pending) {
       let { onSubmit, onClick } = this.props;
 
@@ -36,9 +40,12 @@ export default class AsyncButton extends Component {
   }
 
   render() {
-    var className = this.state.pending
+    let className = this.state.pending
       ? this.props.pendingClass
       : this.props.className;
+
+    className += this.props.disabled ? ' disabled' : '';
+
     return (
       <div class={className} onClick={this.onClick}>
         {this.props.text}

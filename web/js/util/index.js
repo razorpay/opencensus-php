@@ -61,3 +61,5 @@ export const removeFromArray = (array, index) => {
   newArray.splice(index, 1);
   return newArray;
 };
+
+export const removeLineBreaks = str => str.replace(/[\n|\r]/g, ' ');

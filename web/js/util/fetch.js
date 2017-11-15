@@ -5,6 +5,11 @@ import { notifyError } from 'common/modal';
 export default function fetch(options) {
   return axios(options)
     .then(({ data }) => {
+      if (typeof data !== 'object') {
+        // Eg- when data is .html template
+        return data;
+      }
+
       if (!data.success) {
         notifyError(data.errors.join('\n'));
       } else {
