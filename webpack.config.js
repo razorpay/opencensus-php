@@ -1,5 +1,8 @@
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const webpack = require('webpack');
 const isProd = require('process').env.NODE_ENV === 'production';
+
+let plugins = [];
 
 module.exports = {
   externals: [].reduce.call(
@@ -51,4 +54,17 @@ module.exports = {
       },
     ],
   },
+
+  devtool: 'source-map',
+
+  plugins,
 };
+
+if (isProd) {
+  module.exports.devtool = 'hidden-source-map';
+  plugins.push(
+    new UglifyJSPlugin({
+      sourceMap: true,
+    })
+  );
+}
