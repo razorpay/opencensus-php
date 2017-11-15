@@ -84,14 +84,13 @@ export default class MerchantActivationForm extends Component {
 
         <div class="box">
           <div class="heading">Merchant Activation Form</div>
+
           <ContactDetails {...details} />
           <BusinessDetails {...details} />
           <WebsiteDetails {...details} />
           <BankAccountDetails {...details} />
           <DocumentDetails merchantId={this.merchantId} {...details} />
-          {/*
-          <ProductOnboarding />
-*/}
+          <ProductOnboarding merchantId={this.merchantId} />
         </div>
       </div>
     );
