@@ -25,7 +25,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         'amount'                     => 'required|integer',
         'currency'                   => 'required|string|size:3',
-        'method'                     => 'string|custom',
+        'method'                     => 'required|string|custom',
         'vpa'                        => 'required_if:method,upi|string|max:100|custom',
         'aadhaar'                    => 'required_if:method,aeps|array',
         'aadhaar.number'             => 'required_if:method,aeps|size:12|string',

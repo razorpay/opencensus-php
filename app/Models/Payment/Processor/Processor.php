@@ -166,16 +166,7 @@ class Processor
 
     public function process(array $input): array
     {
-        if (isset($input['method']) === false)
-        {
-            $input['method'] = Payment\Method::CARD;
-        }
-        else if (empty($input['method']) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Please provide appropriate payment method',
-                Payment\Entity::METHOD);
-        }
+        $this->setMethodForInput($input);
 
         $payment = $this->buildPaymentEntity($input);
 
@@ -280,6 +271,69 @@ class Processor
         $input['fee'] = $fee;
 
         return $data;
+    }
+
+    protected function setMethodForInput(& $input)
+    {
+        //
+        // We use isset and not `empty` because if we receive
+        // the key `method` in the input, but with empty string,
+        // we want to let the validator throw the exception.
+        // If the key itself is not present, we will set the method
+        // to `card` or token's method.
+        //
+        if (isset($input[Payment\Entity::METHOD]) === true)
+        {
+            return;
+        }
+
+        if ((isset($input[Payment\Entity::TOKEN]) === true) and
+            (isset($input[Payment\Entity::CUSTOMER_ID]) === true))
+        {
+            $customerId = $input[Payment\Entity::CUSTOMER_ID];
+            $tokenId = $input[Payment\Entity::TOKEN];
+
+            Customer\Entity::verifyIdAndStripSign($customerId);
+
+            //
+            // TokenID can either be the token ID or the
+            // `token` attribute of the token entity.
+            //
+            Customer\Token\Entity::verifyIdAndSilentlyStripSign($tokenId);
+
+            $token = (new Customer\Token\Core)->getByTokenIdAndCustomerId($tokenId, $customerId);
+
+            //
+            // It cannot be global token because customer_id is also being sent.
+            // If customer_id is being sent, it has to be local customer.
+            // If it's local customer, the token being sent should also be local
+            // token. If it's local token, the token's merchant should match the
+            // payment request's merchant.
+            //
+            if ($token->getMerchantId() !== $this->merchant->getId())
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_ID,
+                    'token');
+            }
+
+            $tokenMethod = $token->getMethod();
+
+            $input[Payment\Entity::METHOD] = $tokenMethod;
+
+            if ($tokenMethod === Payment\Method::NETBANKING)
+            {
+                $input[Payment\Entity::BANK] = $token->getBank();
+            }
+            else if ($tokenMethod === Payment\Method::WALLET)
+            {
+                $input[Payment\Entity::WALLET] = $token->getWallet();
+            }
+        }
+        else
+        {
+            $input[Payment\Entity::METHOD] = Payment\Method::CARD;
+        }
     }
 
     protected function checkSignature($input, $payment)
@@ -813,7 +867,6 @@ class Processor
 
             throw $ex;
         }
-
     }
 
     protected function createPaymentEntity(array $input, Payment\Entity $payment = null): Payment\Entity
