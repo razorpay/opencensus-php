@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
+use Route;
 use Carbon\Carbon;
 use RZP\Base\RepositoryManager;
 use RZP\Constants\Mode;
@@ -1619,6 +1620,25 @@ class Processor
         }
 
         if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
+        if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
+        {
+            return false;
+        }
+
+        //
+        // TODO: route check to be changed after refactor
+        //
+        // If this is hit while creating a payment, gateway would not have been set yet.
+        // Hence, gateway check in the previous block would not work.
+        // This function is hit in the refund flow also, in which the gateway
+        // would have been set already.
+        // The gateway would be set AFTER the payment is created and processed.
+        //
+        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
         {
             return false;
         }
