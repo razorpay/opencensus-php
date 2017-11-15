@@ -413,7 +413,8 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::TRANSACTION_AMOUNT_CREDITS,
             [
-                'payment_id'     => $entity->getId(),
+                'entity_type'    => $entity->getEntity(),
+                'entity_id'      => $entity->getId(),
                 'amount'         => $amount
             ]
         );
