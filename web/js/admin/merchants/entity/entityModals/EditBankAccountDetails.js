@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import BaseModal from 'ui/BaseModal';
 
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
+import { beneficiaryStateMap } from '../entity-resources';
 
 import Form from 'ui/Form';
 import Field, { SelectField } from 'ui/Field';
@@ -154,42 +155,3 @@ export default class EditBankAccountDetails extends Component {
     );
   }
 }
-
-/* Resources */
-const beneficiaryStateMap = {
-  AN: 'Andaman And Nicobar',
-  AP: 'Andhra Pradesh',
-  AR: 'Arunachal Pradesh',
-  AS: 'Assam',
-  BI: 'Bihar',
-  CH: 'Chandigarh (UT)',
-  CT: 'Chattisgarh',
-  DN: 'Dadra And Nagar Haveli',
-  DD: 'Daman And Diu (UT)',
-  DL: 'Delhi',
-  GO: 'Goa',
-  GJ: 'Gujarat',
-  HA: 'Haryana',
-  HP: 'Himachal Pradesh',
-  JK: 'Jammu And Kashmir',
-  JH: 'Jharkhand',
-  KA: 'Karnataka',
-  KE: 'Kerala',
-  MP: 'Madhya Pradesh',
-  MH: 'Maharashtra',
-  MA: 'Manipur',
-  ME: 'Meghalaya',
-  MI: 'Mizoram',
-  NA: 'Nagaland',
-  OR: 'Orissa',
-  PO: 'Pondicherry(UT)',
-  PB: 'Punjab',
-  RJ: 'Rajasthan',
-  SK: 'Sikkim',
-  TG: 'Telangana',
-  TN: 'Tamilnadu',
-  TR: 'Tripura',
-  UP: 'Uttar Pradesh',
-  UT: 'Uttranchal',
-  WB: 'West Bengal',
-};

@@ -8,12 +8,12 @@ import Model from './model';
 import EntityRow from 'ui/EntityRow';
 import Table from 'ui/Table';
 
-import ContactDetails from './MerchantActivationForms/ContactDetails';
-import WebsiteDetails from './MerchantActivationForms/WebsiteDetails';
-import BankAccountDetails from './MerchantActivationForms/BankAccountDetails';
-import DocumentDetails from './MerchantActivationForms/DocumentDetails';
-import ProductOnboarding from './MerchantActivationForms/ProductOnboarding';
-import BusinessDetails from './MerchantActivationForms/BusinessDetails';
+import ContactDetails from './merchantActivationForms/ContactDetails';
+import WebsiteDetails from './merchantActivationForms/WebsiteDetails';
+import BankAccountDetails from './merchantActivationForms/BankAccountDetails';
+import DocumentDetails from './merchantActivationForms/DocumentDetails';
+import ProductOnboarding from './merchantActivationForms/ProductOnboarding';
+import BusinessDetails from './merchantActivationForms/BusinessDetails';
 
 @observer
 export default class MerchantActivationForm extends Component {
@@ -87,8 +87,8 @@ export default class MerchantActivationForm extends Component {
           <ContactDetails {...details} />
           <BusinessDetails {...details} />
           <WebsiteDetails {...details} />
+          <BankAccountDetails {...details} />
           {/*
-          <BankAccountDetails />
           <DocumentDetails />
           <ProductOnboarding />
 */}

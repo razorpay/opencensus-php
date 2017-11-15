@@ -5,8 +5,8 @@ import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';
 import Table from 'ui/Table';
 
-import CreditsDetails from './helpers/CreditsDetails';
-import FeaturesDetails from './helpers/FeaturesDetails';
+import CreditsDetails from './entityDetails/CreditsDetails';
+import FeaturesDetails from './entityDetails/FeaturesDetails';
 
 /*---------------------------------------- Functionality ------------------------------------------*/
 
@@ -259,6 +259,44 @@ const _getMethods = {
   sbibuddy: 'SBI Buddy',
   upi: 'UPI',
   emi: 'EMI',
+};
+
+export const beneficiaryStateMap = {
+  AN: 'Andaman And Nicobar',
+  AP: 'Andhra Pradesh',
+  AR: 'Arunachal Pradesh',
+  AS: 'Assam',
+  BI: 'Bihar',
+  CH: 'Chandigarh (UT)',
+  CT: 'Chattisgarh',
+  DN: 'Dadra And Nagar Haveli',
+  DD: 'Daman And Diu (UT)',
+  DL: 'Delhi',
+  GO: 'Goa',
+  GJ: 'Gujarat',
+  HA: 'Haryana',
+  HP: 'Himachal Pradesh',
+  JK: 'Jammu And Kashmir',
+  JH: 'Jharkhand',
+  KA: 'Karnataka',
+  KE: 'Kerala',
+  MP: 'Madhya Pradesh',
+  MH: 'Maharashtra',
+  MA: 'Manipur',
+  ME: 'Meghalaya',
+  MI: 'Mizoram',
+  NA: 'Nagaland',
+  OR: 'Orissa',
+  PO: 'Pondicherry(UT)',
+  PB: 'Punjab',
+  RJ: 'Rajasthan',
+  SK: 'Sikkim',
+  TG: 'Telangana',
+  TN: 'Tamilnadu',
+  TR: 'Tripura',
+  UP: 'Uttar Pradesh',
+  UT: 'Uttranchal',
+  WB: 'West Bengal',
 };
 
 /*---------------------------------------- UI resource --------------------------------------------*/
