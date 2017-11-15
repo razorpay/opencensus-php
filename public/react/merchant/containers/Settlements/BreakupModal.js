@@ -2,8 +2,7 @@ import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';
-import SettlementBreakupTable
-  from 'merchant/components/Settlements/BreakupTable';
+import SettlementBreakupTable from 'merchant/components/Settlements/BreakupTable';
 import { fetchBreakupDetails } from 'merchant/modules/settlements/details';
 import * as ModalActions from 'rzp/modules/modals';
 
@@ -16,6 +15,14 @@ export default class BreakdownModal extends Component {
     this.props.fetchBreakupDetails({
       id: this.props.settlementId,
     });
+  }
+
+  componentDidMount() {
+    this.props.onMount && this.props.onMount(this.props.settlementId);
+  }
+
+  componentWillUnmount() {
+    this.props.onUnmount && this.props.onUnmount(this.props.settlementId);
   }
 
   render() {

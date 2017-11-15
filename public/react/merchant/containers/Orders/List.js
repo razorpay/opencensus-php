@@ -13,8 +13,35 @@ import {
   createdAt,
 } from 'rzp/ui/item/pair';
 
+import { stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
+
 @connect(state => state.orders, { fetchAll })
 export default class OrdersListContainer extends ListContainer {
+  componentDidMount() {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Orders',
+      eventAction: 'Go To - Orders',
+    });
+  }
+
+  onSearchAnalytics = params => {
+    const label = stringifyQueryParamsWithPipe(params);
+    if (label && label.length > 0) {
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Orders',
+        eventAction: 'Search - Orders',
+        eventLabel: label,
+      });
+    }
+  };
+
+  onClearAnalytics = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Orders',
+      eventAction: 'Clear Search Params - Orders',
+    });
+  };
+
   render() {
     return (
       <div class="content-wrapper">
@@ -22,6 +49,8 @@ export default class OrdersListContainer extends ListContainer {
           form="orderListFilter"
           count={this.state.count}
           onSubmit={this.search}
+          onSearchAnalytics={this.onSearchAnalytics}
+          onClearAnalytics={this.onClearAnalytics}
         />
 
         <DataTable

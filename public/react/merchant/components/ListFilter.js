@@ -41,6 +41,8 @@ export default class ListFilter extends Component {
       search: stringifyQueryParams(props),
     });
 
+    this.props.onSearchAnalytics(props, stringifyQueryParams(props));
+
     return this.props.onSubmit(props);
   };
 
@@ -50,6 +52,8 @@ export default class ListFilter extends Component {
       pathname: this.props.location.pathname,
       search: stringifyQueryParams({}),
     });
+
+    this.props.onClearAnalytics();
   };
 
   render() {
@@ -80,4 +84,6 @@ export default class ListFilter extends Component {
 
 ListFilter.defaultProps = {
   onSubmit: () => {},
+  onSearchAnalytics: () => {},
+  onClearAnalytics: () => {},
 };

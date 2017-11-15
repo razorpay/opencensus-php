@@ -95,6 +95,23 @@ export default class App extends Component {
     if (user) {
       delete window.rzp_user;
       this.props.updateSession({ user });
+      let currentMode = LocalStorageService.getItem('rzp_mode');
+      if (!currentMode) {
+        currentMode = user.isActivated ? 'live' : 'test';
+      } else if (!user.isActivated) {
+        currentMode = 'test';
+      }
+      window.rzpAnalytics({
+        name: 'set_dimensions',
+        dimensions: {
+          dimension1: currentMode, // Mode
+          dimension2: user.name, // Merchant Name
+          dimension3: user.id, // Merchant ID
+          dimension4: user.user.email, // Logged User Email
+          dimension5: user.role, // Logged User Role
+        },
+      });
+
       return Promise.resolve({ data: user });
     } else {
       return this.props.fetchUser();

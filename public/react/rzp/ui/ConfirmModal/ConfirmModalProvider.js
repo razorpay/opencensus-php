@@ -21,6 +21,14 @@ export default class ConfirmModalProvider extends Component {
     this.abort = ::this.abort;
   }
 
+  componentDidMount() {
+    this.state.options.onMount && this.state.options.onMount();
+  }
+
+  componentWillUnmount() {
+    this.state.options.onUnmount && this.state.options.onUnmount();
+  }
+
   confirm(options = {}) {
     let promise = new Promise((resolve, reject) => {
       this.setState({
@@ -35,11 +43,14 @@ export default class ConfirmModalProvider extends Component {
       };
     }
 
-    options.message = typeof options.message === 'undefined'
-      ? 'Are you sure to continue ?'
-      : options.message;
+    options.message =
+      typeof options.message === 'undefined'
+        ? 'Are you sure to continue ?'
+        : options.message;
     options.affirmativeLabel = options.affirmativeLabel || 'OK';
     options.abortLabel = options.abortLabel || 'Cancel';
+
+    options.onMount && options.onMount();
 
     this.setState({
       show: true,
@@ -68,6 +79,8 @@ export default class ConfirmModalProvider extends Component {
   }
 
   abort() {
+    this.state.options.abort && this.state.options.abort();
+
     this.close();
     return this.state.confirmReject();
   }

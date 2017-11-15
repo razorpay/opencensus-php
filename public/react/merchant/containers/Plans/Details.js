@@ -2,9 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PlanDetails from 'merchant/components/Plans/Details';
 import { fetchPlan as fetchItem } from 'merchant/modules/plans';
-import {
-  fetchSubscriptionsByPlanId as fetchSubscriptions,
-} from 'merchant/modules/plans';
+import { fetchSubscriptionsByPlanId as fetchSubscriptions } from 'merchant/modules/plans';
+import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
 
 @connect(
   state => ({
@@ -25,6 +24,28 @@ export default class PlanDetailsContainer extends Component {
         this.props.fetchSubscriptions(nextProps.entity);
       });
     }
+  }
+
+  componentDidMount() {
+    const { closeUrl, id } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
+      window.rzpAnalytics({
+        eventCategory: eventCategory,
+        eventAction: 'Open Details - Plans',
+        eventLabel: `plan_id=${id}`,
+      });
+  }
+
+  componentWillUnmount() {
+    const { closeUrl, id } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
+      window.rzpAnalytics({
+        eventCategory: eventCategory,
+        eventAction: 'Close Details - Plans',
+        eventLabel: `plan_id=${id}`,
+      });
   }
 
   render() {

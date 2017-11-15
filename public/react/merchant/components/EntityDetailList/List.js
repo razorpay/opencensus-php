@@ -32,6 +32,7 @@ export default class EntityDetailList extends Component {
       subscriptionStatus,
       subscriptionType,
       mode,
+      subscriptionId,
     } = this.props;
     let list = [];
 
@@ -112,6 +113,7 @@ export default class EntityDetailList extends Component {
           subscriptionStatus={subscriptionStatus}
           subscriptionType={subscriptionType}
           mode={mode}
+          subscriptionId={subscriptionId}
         />
       );
     }
@@ -153,12 +155,8 @@ export default class EntityDetailList extends Component {
     return (
       <div class="entity-detail-list">
         <div class="list-heading">
-          <span class="label--primary">
-            {title}
-          </span>
-          <span class="label--secondary">
-            {subTitle}
-          </span>
+          <span class="label--primary">{title}</span>
+          <span class="label--secondary">{subTitle}</span>
         </div>
         <div class="list-content">
           {error && <Alert type="error" message={error} />}
