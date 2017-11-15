@@ -47,11 +47,11 @@ class XmlseclibsAdapter
      * create a new chain and use that
      */
     const ROOT_CERT_FINGERPRINTS = [
-        // VISA PIT Testing fingerprint
-        '59181d9a9d8daf100da969594971871ec873565b',
         '2fc57c21ea9d79e87bba91413a439a56a4b6033d',
         '4b2252395bac2a7f7852ae12f17fcf4b1f56528f',
-        '3621a169aba9bb3496a804102acfb127761ab5a9'
+        '3621a169aba9bb3496a804102acfb127761ab5a9',
+        // VISA prod fingerprint
+        '70179b868c00a4fa609152223f9f3e32bde00562',
     ];
 
     /**
