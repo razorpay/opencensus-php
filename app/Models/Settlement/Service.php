@@ -165,7 +165,7 @@ class Service extends Base\Service
      */
     public function addBeneficiary(string $channel, array $input): array
     {
-        $response = (new Core)->addBeneficiary(string, $input);
+        $response = (new Core)->addBeneficiary($channel, $input);
 
         return $response;
     }

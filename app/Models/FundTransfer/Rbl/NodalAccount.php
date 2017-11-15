@@ -7,6 +7,7 @@ use Requests;
 use Config;
 use Requests_Hooks;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\FundTransfer\Base as NodalBase;
 
@@ -65,7 +66,7 @@ class NodalAccount extends NodalBase\NodalAccount
         foreach ($responseArray as $resp)
         {
             if ((empty($resp['Body']['Status']) === false) and
-                ($resp['Bodyq']['Status'] === 'Failure'))
+                ($resp['Body']['Status'] === 'Failure'))
             {
                 $this->trace->error(TraceCode::RBL_NODAL_BEN_ADD_RESPONSE, $responseArray);
 
@@ -73,7 +74,7 @@ class NodalAccount extends NodalBase\NodalAccount
             }
         }
 
-        $this->trace->info(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
+        $this->trace->info(TraceCode::RBL_NODAL_BEN_ADD_RESPONSE, $responseArray);
 
         return $responseArray;
     }
@@ -99,7 +100,7 @@ class NodalAccount extends NodalBase\NodalAccount
             }
         }
 
-        $this->trace->info(TraceCode::RBL_NODAL_RESPONSE, $responseArray);
+        $this->trace->info(TraceCode::RBL_NODAL_TRANSFER_RESPONSE, $responseArray);
 
         return $responseArray;
     }
@@ -245,8 +246,8 @@ class NodalAccount extends NodalBase\NodalAccount
                     'Ben_Acct_No'        => $input[RequestConstants::BEN_ACCT_NO],
                     'Ben_Name'           => $input[RequestConstants::BEN_NAME],
                     'Ben_Address'        => $input[RequestConstants::BEN_ADDRESS],
-                    'Ben_State'          => 'karnataka',
-                    'Ben_City'           => 'Bengaluru',
+                    'Ben_State'          => 'Karnataka',
+                    'Ben_City'           => 'Bangalore',
                     'Ben_PinCd'          => '560030',
                     'Ben_DOB'            => '1960-01-01',
                     'Ben_BankName'       => $input[RequestConstants::BEN_BANKNAME],
@@ -305,13 +306,13 @@ class NodalAccount extends NodalBase\NodalAccount
                     'Bene_Type'           => 'Sole Proprietor',
                     'Ben_SettlementTerms' => 'Chanincludeged',
                     'Ben_CommercialTerms' => 'ABC001',
-                    'KYC_Document' => [
+                    'KYC_Document' => [[
                         'KYC_Doc_Id'      => 'Document1',
                         'KYC_Doc_Name'    => $input[RequestConstants::KYC_DOC_NAME],
                         'KYC_Doc_Type'    => 'POI',
                         'KYC_Doc_Format'  => 'PDF',
                         'KYC_Doc_Content' => $input[RequestConstants::KYC_DOC_CONTENT]
-                    ],
+                    ]],
                     'Remarks'    => 'NODAL BE NINQ UIRYPE NDINGAPPREJ',
                     'Ben_Action' => '0',
                     'Nodal_Flag' => 'N',
