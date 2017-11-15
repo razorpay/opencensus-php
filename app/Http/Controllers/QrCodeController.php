@@ -2,9 +2,9 @@
 
 namespace RZP\Http\Controllers;
 
-use Request;
 use Response;
 use RZP\Constants\Mode;
+use RZP\Models\QrCode\Constants;
 
 class QrCodeController extends Controller
 {
@@ -14,7 +14,7 @@ class QrCodeController extends Controller
 
         $response = $this->service()->fetchQrCode($id);
 
-        return Response::download($response, 'qr_code');
+        return Response::download($response, Constants::QR_CODE_FILE_NAME);
     }
 
     public function fetchLiveQrCode(string $id)
@@ -23,6 +23,6 @@ class QrCodeController extends Controller
 
         $response = $this->service()->fetchQrCode($id);
 
-        return Response::download($response, 'qr_code');
+        return Response::download($response, Constants::QR_CODE_FILE_NAME);
     }
 }

@@ -663,8 +663,8 @@ final class Route
         'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                   'FeatureController@postOnboardingSubmissions'                       ],
         'feature_onboarding_fetch_responses'      => ['get',      'feature/onboarding/{feature}/responses',         'FeatureController@getOnboardingSubmissionsDeprecated'              ],
         'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                   'FeatureController@getOnboardingSubmissionsDeprecated'              ],
-        'qr_code_download_live'                   => ['get',       'qrcode/l/{id}',                                 'QrCodeController@fetchTestQrCode'                                  ],
-        'qr_code_download_test'                   => ['get',       'qrcode/t/{id}',                                 'QrCodeController@fetchLiveQrCode'                                  ],
+        'qr_code_download_live'                   => ['get',      'l/qrcode/{id}',                                  'QrCodeController@fetchTestQrCode'                                  ],
+        'qr_code_download_test'                   => ['get',      't/qrcode/{id}',                                  'QrCodeController@fetchLiveQrCode'                                  ],
     ];
 
     public static $public = [
@@ -720,8 +720,6 @@ final class Route
         'otp_verify_app',
         'device_create',
         'merchant_methods_downtime',
-        'qr_code_download_live',
-        'qr_code_download_test',
     ];
 
     public static $device = [
@@ -1442,6 +1440,8 @@ final class Route
         'upi_npci_request',
         'upi_zero_call',
         'mock_billdesk_payment',
+        'qr_code_download_live',
+        'qr_code_download_test',
     ];
 
     public static $internalApps = [

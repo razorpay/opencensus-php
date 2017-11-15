@@ -62,7 +62,7 @@ class Entity extends Base\PublicEntity
 
     public function files()
     {
-        return $this->morphMany('RZP\Models\FileStore\Entity', 'entity');
+        return $this->morphMany(FileStore\Entity::class, 'entity');
     }
 
     // --------------------- END RELATIONS ---------------------
@@ -95,11 +95,6 @@ class Entity extends Base\PublicEntity
     public function getProvider()
     {
         return $this->getAttribute(self::PROVIDER);
-    }
-
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
     }
 
     public function getFormattedAmount()

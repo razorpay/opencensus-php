@@ -3,25 +3,23 @@
 namespace RZP\Models\QrCode;
 
 use RZP\Models\Base;
-use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    protected $core;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->core = new Core;
-    }
-
+    /**
+     * This return qr code file
+     * path downloading the qr code
+     *
+     * @param string $id
+     *
+     * @return string
+     */
     public function fetchQrCode(string $id)
     {
         $qrCode = $this->repo->qr_code->findByPublicId($id);
 
-        $response = $this->core->fetchQrCode($qrCode);
+        $qrCodeFilePath = $this->core()->fetchQrCode($qrCode, $qrCode->merchant);
 
-        return $response;
+        return $qrCodeFilePath;
     }
 }
