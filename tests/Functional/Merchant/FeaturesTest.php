@@ -1012,9 +1012,9 @@ class FeaturesTest extends TestCase
         ];
 
         $testData['response']['content'] = [
-            $featureName => [
-                $merchantId => true
-            ]
+            'success'       => 1,
+            'failed'        => 0,
+            'failed_ids'    => []
         ];
 
         $this->startTest($testData);

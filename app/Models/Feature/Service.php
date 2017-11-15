@@ -322,7 +322,9 @@ class Service extends Base\Service
      */
     public function bulkUpdateFeatureActivationStatus(array $input): array
     {
-        $result = [];
+        $success = 0;
+        $failed = 0;
+        $failedIds = [];
 
         $core = new Core;
 
@@ -330,11 +332,26 @@ class Service extends Base\Service
         {
             if (isset($input[$productFeature]) === true)
             {
-                $result[$productFeature] = $core->bulkUpdateFeatureActivationStatus($productFeature, $input[$productFeature]);
+                $productResponse = $core->bulkUpdateFeatureActivationStatus($productFeature, $input[$productFeature]);
+
+                $success += $productResponse['success'];
+
+                $failed += $productResponse['failed'];
+
+                if ($productResponse['failed'] > 0)
+                {
+                    $failedIds[$productFeature] = $productResponse['failed_ids'];
+                }
             }
         }
 
-        return $result;
+        $response = [
+            'success'    => $success,
+            'failed'     => $failed,
+            'failed_ids' => $failedIds
+        ];
+
+        return $response;
     }
 }
 

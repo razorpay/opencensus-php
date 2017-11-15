@@ -693,7 +693,7 @@ return [
     'bulkUpdateFeatureActivationStatus' => [
         'request'  => [
             'content' => [ ],
-            'url'     => '/onboarding/features/status/bulk_update',
+            'url'     => '/onboarding/features/status/bulk',
             'method'  => 'PUT',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',

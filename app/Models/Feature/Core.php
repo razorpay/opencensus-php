@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Exception\LogicException;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Base\PublicEntity;
 use RZP\Mail\Merchant\FeatureEnabled;
@@ -322,26 +323,61 @@ class Core extends Base\Core
      *
      * @return array
      */
-    public function bulkUpdateFeatureActivationStatus(string $featureName, array $merchantMap)
+    public function bulkUpdateFeatureActivationStatus(string $featureName, array $merchantMap): array
     {
+        $success = 0;
+        $failed = 0;
+        $failedIds = [];
+
+        $this->trace->info(
+            TraceCode::FEATURE_ONBOARDING_BULK_UPDATE_STATUS,
+            [
+                Entity::FEATURE     => $featureName,
+                'merchant_map'      => $merchantMap,
+                'admin_id'          => $this->app['basicauth']->getAdmin()->getId()
+            ]);
+
         foreach ($merchantMap as $merchantId => $status)
         {
-            $response = $this->updateFeatureActivationStatus($merchantId, $featureName, $status);
-
-            // Verify that the status was updated
-            $featureActivationStatus = snake_case($featureName . '_activation_status');
-
-            if ($response[$featureActivationStatus] === $status)
+            try
             {
-                $merchantMap[$merchantId] = true;
+                $response = $this->updateFeatureActivationStatus($merchantId, $featureName, $status);
+
+                // Verify that the status was updated
+                $featureActivationStatus = snake_case($featureName . '_activation_status');
+
+                if ($response[$featureActivationStatus] !== $status)
+                {
+                    throw new LogicException('Feature activation status could not be updated');
+                }
+
+                $success++;
             }
-            else
+            catch (\Exception $ex)
             {
-                $merchantMap[$merchantId] = false;
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    null,
+                    [
+                        Entity::MERCHANT_ID => $merchantId,
+                        Entity::FEATURE     => $featureName,
+                        'status'            => $status
+                    ]);
+
+                $failed++;
+
+                $failedIds[] = $merchantId;
             }
         }
 
-        return $merchantMap;
+        $response = [
+            'success'    => $success,
+            'failed'     => $failed,
+            'failed_ids' => $failedIds
+        ];
+
+        return $response;
     }
 
     /**
