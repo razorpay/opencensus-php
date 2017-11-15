@@ -102,7 +102,6 @@ export default class Model extends BaseModel {
       return this.request('fetchMerchantBalance', this.fetchFn(data)).then(
         data => {
           if (data) {
-            console.log('DATA..', data);
             this.merchant.balanceDetails[mode] = data;
           }
         }
@@ -270,8 +269,6 @@ export default class Model extends BaseModel {
     return this.request(
       'deleteFeature',
       adminDelete(data).then(data => {
-        console.log('DATA...', data);
-
         notifySuccess(
           `${titleCase(featureMode)} feature '${
             featureName

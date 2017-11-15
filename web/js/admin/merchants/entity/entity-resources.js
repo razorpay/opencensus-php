@@ -317,9 +317,6 @@ export function getDetailsViewMap(model) {
     adminsMap,
   } = model.merchant;
 
-  console.log('BALANCE DETAILS..TEST..', balanceDetails.test);
-  console.log('BALANCE DETAILS..LIVE..', balanceDetails.live);
-
   return [
     {
       label: 'Group Details',
@@ -358,17 +355,18 @@ export function getDetailsViewMap(model) {
             <div style={{ width: '80%', borderLeft: '1px solid #edf1f2' }}>
               {balanceDetails.test && (
                 <EntityRow
-                  label="Test"
+                  label="Test:"
                   value={() => <Amount value={balanceDetails.test.balance} />}
                 />
               )}
-              {balanceDetails.live && (
-                <EntityRow
-                  className="separate"
-                  label="Live"
-                  value={() => <Amount value={balanceDetails.live.balance} />}
-                />
-              )}
+              {balanceDetails.live &&
+                details.activated && (
+                  <EntityRow
+                    className="separate"
+                    label="Live:"
+                    value={() => <Amount value={balanceDetails.live.balance} />}
+                  />
+                )}
             </div>
           )
         : null,
@@ -381,17 +379,18 @@ export function getDetailsViewMap(model) {
             <div style={{ width: '80%', borderLeft: '1px solid #edf1f2' }}>
               {balanceDetails.test && (
                 <EntityRow
-                  label="Test"
+                  label="Test:"
                   value={() => <Amount value={balanceDetails.test.credits} />}
                 />
               )}
-              {balanceDetails.live && (
-                <EntityRow
-                  className="separate"
-                  label="Live"
-                  value={() => <Amount value={balanceDetails.live.credits} />}
-                />
-              )}
+              {balanceDetails.live &&
+                details.activated && (
+                  <EntityRow
+                    className="separate"
+                    label="Live:"
+                    value={() => <Amount value={balanceDetails.live.credits} />}
+                  />
+                )}
             </div>
           )
         : null,
@@ -404,21 +403,22 @@ export function getDetailsViewMap(model) {
             <div style={{ width: '80%', borderLeft: '1px solid #edf1f2' }}>
               {balanceDetails.test && (
                 <EntityRow
-                  label="Test"
+                  label="Test:"
                   value={() => (
                     <Amount value={balanceDetails.test.fee_credits} />
                   )}
                 />
               )}
-              {balanceDetails.live && (
-                <EntityRow
-                  className="separate"
-                  label="Live"
-                  value={() => (
-                    <Amount value={balanceDetails.live.fee_credits} />
-                  )}
-                />
-              )}
+              {balanceDetails.live &&
+                details.activated && (
+                  <EntityRow
+                    className="separate"
+                    label="Live:"
+                    value={() => (
+                      <Amount value={balanceDetails.live.fee_credits} />
+                    )}
+                  />
+                )}
             </div>
           )
         : null,
