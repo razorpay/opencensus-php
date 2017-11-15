@@ -507,7 +507,7 @@ class Core extends Base\Core
 
     public function sendPayoutMail(Entity $merchant, int $from, int $to, string $email)
     {
-        $payouts = $this->repo->payout->fetchProcessedPayouts($from, $to, $merchant->getId());
+        $payouts = $this->repo->payout->fetchPayoutsWithUtrNotNull($from, $to, $merchant->getId());
 
         $recipients = $merchant->getTransactionReportEmail();
 
