@@ -45,8 +45,6 @@ export default class VirtualAccountDetailsContainer extends Component {
   componentDidMount() {
     const { closeUrl, id } = this.props,
       eventCategory = getEventCategoryFromPath(closeUrl);
-
-    console.log(closeUrl, id);
     eventCategory &&
       window.rzpAnalytics({
         eventCategory: eventCategory,

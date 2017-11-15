@@ -237,7 +237,6 @@ export default class PaymentDetailsContainer extends Component {
   };
 
   afterRefund = ({ amount, partial, payment }) => {
-    console.log('afterRefund', amount, partial, payment);
     const label = {
       payment_id: payment.id,
       partial_payment_enabled: partial || payment.amount_refunded > 0.0,
