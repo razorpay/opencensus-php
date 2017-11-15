@@ -747,6 +747,8 @@ class Core extends Base\Core
 
         $txn->sourceAssociate($transfer);
 
+        $this->updateCredits($txn, $transfer);
+
         $this->updateBalances($txn, false);
 
         return $txn;
@@ -913,7 +915,7 @@ class Core extends Base\Core
     //     return $txn;
     // }
 
-    public function updateAmountCredits(Transaction\Entity $txn, Payment\Entity $payment)
+    public function updateAmountCredits(Transaction\Entity $txn, Base\PublicEntity $entity)
     {
         assert ($txn->isTypePayment() === true);
 
@@ -921,7 +923,7 @@ class Core extends Base\Core
         // These transactions are not using the free credits.
         if (($txn->getFee() !== 0) or
             ($txn->getCredit() !== $txn->getAmount()) or
-            ($payment->getCreatedAt() < self::JULY_FIRST_EPOCH))
+            ($entity->getCreatedAt() < self::JULY_FIRST_EPOCH))
         {
             return;
         }
@@ -969,8 +971,6 @@ class Core extends Base\Core
 
     public function updateFeeCredits(Transaction\Entity $txn)
     {
-        assert ($txn->isTypePayment() === true);
-
         // While filling the txn fees and amount, we have not used fee credits.
         if ($txn->getFeeCredits() === 0)
         {
@@ -1077,11 +1077,11 @@ class Core extends Base\Core
         return $returnDay->getTimestamp();
     }
 
-    public function updateCredits(Transaction\Entity $txn, Payment\Entity $payment)
+    public function updateCredits(Transaction\Entity $txn, Base\PublicEntity $entity)
     {
         if ($txn->isGratis() === true)
         {
-            $this->updateAmountCredits($txn, $payment);
+            $this->updateAmountCredits($txn, $entity);
         }
         else if ($txn->getFeeCredits() > 0)
         {

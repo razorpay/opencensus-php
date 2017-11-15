@@ -142,6 +142,9 @@ class TransferTest extends TestCase
         ];
 
         $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(10000 - $expectedFee, $balance['fee_credits']);
     }
 
     public function testLiveModeTransferToNonActivatedAccount()
