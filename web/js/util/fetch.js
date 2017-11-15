@@ -40,9 +40,11 @@ export function adminPut(data, customUrl) {
   });
 }
 
-export function adminFormUpload(form, url) {
+export function adminFormUpload(form, customUrl) {
   //Let axios decide which "Content-Type" to send
+  let url = customUrl ? customUrl : '/admin/generic';
   let fData = createFormData(form);
+
   return axios.post(url, fData);
 }
 

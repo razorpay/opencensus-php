@@ -72,6 +72,10 @@ export function serialize(form) {
 
         selectedOptions.forEach(option => value.push(option.value));
       }
+      if (el.type === 'file') {
+        value = el.files.length ? el.files : null;
+      }
+
       if (value) {
         // item[foo] → item.foo
         var nameSplit = name.match(/(.+)\[(\w+)\]$/);
