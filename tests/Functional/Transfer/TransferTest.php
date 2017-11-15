@@ -105,10 +105,49 @@ class TransferTest extends TestCase
             'amount'      => $transfer['amount'],
             'fee'         => $expectedFee,
             'tax'         => $tax,
-            'debit'       => $transfer['amount'] + $expectedFee
+            'debit'       => $transfer['amount'] + $expectedFee,
+            'credit_type' => 'default',
+            'fee_credits' => 0,
         ];
 
         $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
+    }
+
+    public function testTransferToAccountWithFeeCredits()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
+
+        $this->fixtures->create('credits', ['type' => 'fee', 'value' => 10000]);
+        $this->fixtures->merchant->editFeeCredits(10000, '10000000000000');
+
+        $transfer = $this->createTransfer('account');
+
+        $tax = 4;
+        $expectedFee = 20 + $tax;
+
+        $transferData = [
+            'fees'  => $expectedFee,
+            'tax'   => $tax
+        ];
+
+        $txnData = [
+            'amount'      => $transfer['amount'],
+            'fee'         => $expectedFee,
+            'tax'         => $tax,
+            'debit'       => $transfer['amount'],
+            'fee_credits' => $expectedFee,
+            'credit_type' => 'fee',
+        ];
+
+        $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(10000 - $expectedFee, $balance['fee_credits']);
+
+        $creditTransactions = $this->getEntities('credit_transaction', [], true);
+        $this->assertEquals($expectedFee, $creditTransactions['items'][0]['credits_used']);
     }
 
     public function testLiveModeTransferToNonActivatedAccount()

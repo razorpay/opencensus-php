@@ -129,13 +129,25 @@ class Core extends Base\Core
     public function getByTokenIdAndCustomer($id, Customer\Entity $customer)
     {
         // TODO: remove this once merchants shifts to token_id
-        $token = $this->repo->token->getByTokenIdAndCustomer($id, $customer);
+        $token = $this->repo->token->getByTokenAndCustomer($id, $customer);
 
         if ($token === null)
         {
             $token = $this->repo->token->findByPublicIdAndMerchant($id, $customer->merchant);
 
             assertTrue($token->getCustomerId() === $customer->getId());
+        }
+
+        return $token;
+    }
+
+    public function getByTokenIdAndCustomerId(string $id, string $customerId)
+    {
+        $token = $this->repo->token->getByTokenAndCustomerId($id, $customerId);
+
+        if ($token === null)
+        {
+            $token = $this->repo->token->getByTokenIdAndCustomerId($id, $customerId);
         }
 
         return $token;
