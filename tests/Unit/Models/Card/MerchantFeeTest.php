@@ -847,7 +847,7 @@ class MerchantFeeTest extends TestCase
         {
             $this->assertEquals('SERVER_ERROR_PRICING_RULE_ABSENT', $ex->getCode());
 
-            $this->assertEquals('Invalid rule count: 0, Payment Id: testPay1234567', $ex->getMessage());
+            $this->assertEquals('Invalid rule count: 0, Merchant Id: 10000000000000', $ex->getMessage());
 
             return;
         }
