@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Base;
 
 use Razorpay\Trace\Logger as Trace;
+use Illuminate\Http\UploadedFile;
 
 use RZP\Base\RuntimeManager;
 use RZP\Exception;
@@ -52,27 +53,27 @@ class EMandateDebitReconFile extends Base\Core
      * @return array
      * @throws LogicException
      */
-    protected function parseFile(string $filePath): array
+    protected function parseFile(UploadedFile $file): array
     {
-        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $ext = pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
 
         switch ($ext)
         {
             case FileStore\Format::XLSX:
-                return $this->parseExcelSheets($filePath);
+                return $this->parseExcelSheets($file);
 
             case FileStore\Format::TXT:
                 //
                 // We use standard separator | for txt, if needs this
                 // can be made configurable. But for now it's ok.
                 //
-                return $this->parseTextFile($filePath, '|');
+                return $this->parseTextFile($file, '|');
 
             case FileStore\Format::CSV:
-                return $this->parseTextFile($filePath, ',');
+                return $this->parseTextFile($file, ',');
 
             default:
-                throw new LogicException("Extension not handled: {$ext}");
+                throw new Exception\LogicException("Extension not handled: {$ext}");
         }
     }
 
