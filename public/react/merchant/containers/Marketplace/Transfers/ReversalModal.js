@@ -187,7 +187,7 @@ export default class ReversalModal extends Component {
             <div className="form-group">
               <label className="label-required">Reversal Amount</label>
               <div className="input-group">
-                <div className="input-group-addon">INR</div>
+                <div className="input-group-addon">{transfer.currency}</div>
                 <Field
                   name="amount"
                   component={InputField}

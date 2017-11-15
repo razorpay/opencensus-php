@@ -224,7 +224,7 @@ export default class RefundModal extends Component {
             <div class="form-group">
               <label class="label-required">Refund Amount</label>
               <div class="input-group">
-                <div class="input-group-addon">INR</div>
+                <div class="input-group-addon">{payment.currency}</div>
                 <Field
                   name="amount"
                   component={InputField}
