@@ -13,6 +13,7 @@ import * as InvoiceActions from 'merchant/modules/invoices/list';
 import * as ModalActions from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
+import { stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
 
 @connect(state => ({ ...state.invoices, ...state.session }), {
   ...InvoiceActions,
@@ -61,6 +62,32 @@ export default class PaymentLinksContainer extends ListContainer {
     });
   };
 
+  onSearchAnalytics = params => {
+    const label = stringifyQueryParamsWithPipe(params);
+    if (label && label.length > 0) {
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Payment Links',
+        eventAction: 'Search - Payment Links',
+        eventLabel: label,
+      });
+    }
+  };
+
+  onClearAnalytics = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payment Links',
+      eventAction: 'Clear Search Params - Payment Links',
+    });
+  };
+
+  onCopy = ({ invoiceId, text }) => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payment Links',
+      eventAction: 'Copy - Payment Link',
+      eventLabel: `payment_link_id=${invoiceId}`,
+    });
+  };
+
   render() {
     let { loading, invoices, user } = this.props;
     let status = this.state.status;
@@ -88,6 +115,8 @@ export default class PaymentLinksContainer extends ListContainer {
           type="link"
           count={this.state.count}
           onSubmit={this.search}
+          onSearchAnalytics={this.onSearchAnalytics}
+          onClearAnalytics={this.onClearAnalytics}
         />
 
         <Alert type={status.type} message={status.message} />
@@ -97,6 +126,7 @@ export default class PaymentLinksContainer extends ListContainer {
           isLoading={loading}
           type="link"
           onEdit={this.showPaymentLinkModal}
+          onCopy={this.onCopy}
         />
 
         <Pager

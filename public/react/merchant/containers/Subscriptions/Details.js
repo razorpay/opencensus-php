@@ -21,6 +21,7 @@ import { openModal, closeModal } from 'rzp/modules/modals';
 import CancellationModal from './CancellationModal';
 import TestPaymentModal from './TestPaymentModal';
 import AddOnCreation from 'merchant/containers/AddOns/New';
+import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
 
 /*
  * Invoice (Upfront?) |    Subscription(Start?)     | Type
@@ -60,6 +61,28 @@ export default class SubscriptionDetailsContainer extends Component {
   };
 
   state = {};
+
+  componentDidMount() {
+    const { closeUrl, id } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
+      window.rzpAnalytics({
+        eventCategory: eventCategory,
+        eventAction: 'Open Details - Subscriptions',
+        eventLabel: `subscription_id=${id}`,
+      });
+  }
+
+  componentWillUnmount() {
+    const { closeUrl, id } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
+      window.rzpAnalytics({
+        eventCategory: eventCategory,
+        eventAction: 'Close Details - Subscriptions',
+        eventLabel: `subscription_id=${id}`,
+      });
+  }
 
   componentWillMount() {
     this.props.id && this.fetchSubscriptionDetails(this.props.id);
@@ -196,9 +219,42 @@ export default class SubscriptionDetailsContainer extends Component {
     }
   };
 
+  onCancellationModalMount = id => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Subscriptions',
+      eventAction: 'Open Form - Cancel Subscription',
+      eventLabel: `subscription_id=${id}`,
+    });
+  };
+
+  onCancellationModalUnmount = id => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Subscriptions',
+      eventAction: 'Close Form - Cancel Subscription',
+      eventLabel: `subscription_id=${id}`,
+    });
+  };
+
+  onSubscriptionCancel = (id, type) => {
+    type =
+      type === '1' ? 'cancel_at_end_of_billing_cycle' : 'cancel_immediately';
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Subscriptions',
+      eventAction: 'Submit Form - Cancel Subscription',
+      eventLabel: `cancel_option=${type}`,
+    });
+  };
+
   cancelSubscription = () => {
     this.props.openModal({
-      component: <CancellationModal subscriptionId={this.props.id} />,
+      component: (
+        <CancellationModal
+          subscriptionId={this.props.id}
+          onMount={this.onCancellationModalMount}
+          onUnmount={this.onCancellationModalUnmount}
+          onSubscriptionCancel={this.onSubscriptionCancel}
+        />
+      ),
       size: 'small',
     });
   };
@@ -230,7 +286,7 @@ export default class SubscriptionDetailsContainer extends Component {
   }
 
   // Manual Attempt to invoice charge
-  onManualAttempt = invoiceId => {
+  onManualAttempt = (invoiceId, subscriptionId) => {
     this.context.confirm({
       header: 'Are you sure you want to manually charge it?',
       message: null,
@@ -240,6 +296,18 @@ export default class SubscriptionDetailsContainer extends Component {
       action: () => {
         return paymentManualAttempt(invoiceId)
           .then(response => {
+            window.rzpAnalytics({
+              eventCategory: 'Dashboard - Subscriptions',
+              eventAction: 'Submit Form - Charge Now',
+              eventLabel: `subscription_id=${subscriptionId}`,
+            });
+
+            window.rzpAnalytics({
+              eventCategory: 'Dashboard - Subscriptions',
+              eventAction: 'Close Form - Charge Now',
+              eventLabel: `subscription_id=${subscriptionId}`,
+            });
+
             // Show success notification
             this.props.showNotification({
               type: 'success',
@@ -261,6 +329,20 @@ export default class SubscriptionDetailsContainer extends Component {
               message: err.errors,
             });
           });
+      },
+      onMount: () => {
+        window.rzpAnalytics({
+          eventCategory: 'Dashboard - Subscriptions',
+          eventAction: 'Open Form - Charge Now',
+          eventLabel: `subscription_id=${subscriptionId}`,
+        });
+      },
+      abort: () => {
+        window.rzpAnalytics({
+          eventCategory: 'Dashboard - Subscriptions',
+          eventAction: 'Close Form - Charge Now',
+          eventLabel: `subscription_id=${subscriptionId}`,
+        });
       },
     });
   };
@@ -459,6 +541,7 @@ export default class SubscriptionDetailsContainer extends Component {
               : invoiceLoading
           }
           ref={comp => (this.invoiceView = comp)}
+          subscriptionId={this.props.id}
         />
       );
     }

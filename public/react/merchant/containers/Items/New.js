@@ -32,11 +32,19 @@ export default class AddItem extends Component {
     }
   }
 
+  componentDidMount() {
+    this.props.onMount && this.props.onMount(this.props.item);
+  }
+
+  componentWillUnmount() {
+    this.props.onUnmount && this.props.onUnmount(this.props.item);
+  }
+
   save = props => {
     return this.props
       .saveItem(props)
       .then(item => {
-        this.props.onSave(item);
+        this.props.onSave && this.props.onSave(item, this.props.item);
         this.props.showNotification({
           type: 'success',
           message: 'Item saved successfully',

@@ -30,6 +30,7 @@ export default props => {
     isLoading,
     openRefundModal,
     statusMsg = {},
+    onRefundDetailsToggleClick = () => {},
   } = props;
 
   return (
@@ -112,6 +113,7 @@ export default props => {
                     payment={payment}
                     refunds={refunds}
                     openRefundModal={openRefundModal}
+                    onToggleClick={onRefundDetailsToggleClick}
                   />
                 </EntityDetailRow>
 

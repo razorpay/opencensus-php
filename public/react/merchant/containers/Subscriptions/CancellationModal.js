@@ -30,6 +30,14 @@ export default class CancellationModal extends Component {
     };
   }
 
+  componentDidMount() {
+    this.props.onMount && this.props.onMount(this.props.subscriptionId);
+  }
+
+  componentWillUnmount() {
+    this.props.onUnmount && this.props.onUnmount(this.props.subscriptionId);
+  }
+
   save = params => {
     params.id = this.props.subscriptionId;
 
@@ -41,6 +49,12 @@ export default class CancellationModal extends Component {
     return this.props
       .cancelSubscription(params)
       .then(() => {
+        this.props.onSubscriptionCancel &&
+          this.props.onSubscriptionCancel(
+            this.props.subscriptionId,
+            params.cancel_at_cycle_end
+          );
+
         this.props.closeModal();
 
         this.props.showNotification({
@@ -79,7 +93,7 @@ export default class CancellationModal extends Component {
                 component={RadioButton}
                 name="cancel_at_cycle_end"
                 htmlValue="1"
-                label={() =>
+                label={() => (
                   <div>
                     <div>
                       <b>Cancel at end of current billing cycle</b>
@@ -88,7 +102,8 @@ export default class CancellationModal extends Component {
                       </div>
                     </div>
                     <div />
-                  </div>}
+                  </div>
+                )}
               />
               <Field
                 component={RadioButton}

@@ -12,6 +12,7 @@ import CreatePaymentLink from 'merchant/containers/Invoices/CreatePaymentLink';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 import * as ModalActions from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
+import { stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
 
 @withRouter
 @connect(
@@ -49,6 +50,31 @@ export default class InvoicesListContainer extends ListContainer {
     });
   };
 
+  onSearchAnalytics = params => {
+    const label = stringifyQueryParamsWithPipe(params);
+    if (label && label.length > 0) {
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Invoices',
+        eventAction: 'Search - Invoices',
+        eventLabel: label,
+      });
+    }
+  };
+
+  onClearAnalytics = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Invoices',
+      eventAction: 'Clear Search Params - Invoices',
+    });
+  };
+
+  componentDidMount() {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Invoices',
+      eventAction: 'Go To - Invoices',
+    });
+  }
+
   render() {
     let { loading, invoices, user } = this.props;
     let status = this.state.status;
@@ -72,6 +98,8 @@ export default class InvoicesListContainer extends ListContainer {
           form="InvoiceListFilter"
           count={this.state.count}
           onSubmit={this.search}
+          onSearchAnalytics={this.onSearchAnalytics}
+          onClearAnalytics={this.onClearAnalytics}
         />
 
         <Alert type={status.type} message={status.message} />
@@ -80,6 +108,15 @@ export default class InvoicesListContainer extends ListContainer {
           invoices={invoices}
           isLoading={loading}
           onEdit={this.editInvoice}
+          onSearchAnalytics={this.onSearchAnalytics}
+          onClearAnalytics={this.onClearAnalytics}
+          onCopy={({ invoiceId }) => {
+            window.rzpAnalytics({
+              eventCategory: 'Dashboard - Invoices',
+              eventAction: 'Copy - Invoice Link',
+              eventLabel: `invoice_id=${invoiceId}`,
+            });
+          }}
         />
 
         <Pager

@@ -217,6 +217,7 @@ export default ({
                 subscriptionType={subscription.type}
                 subscriptionchargeAt={subscription.charge_at}
                 authAttempts={subscription.auth_attempts}
+                subscriptionId={subscription.id}
               />
 
               <NestedEntityDetailRow label="Notes" value={subscription.notes} />

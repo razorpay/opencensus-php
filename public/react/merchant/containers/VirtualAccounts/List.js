@@ -22,6 +22,10 @@ import TestModeBanner from 'merchant/containers/TestModeBanner';
 import ActivationBanner from 'merchant/components/ActivationBanner';
 import FeatureOnboarding from 'merchant/containers/FeatureOnboarding/OnBoarding';
 import FeatureOnboardingModal from 'merchant/containers/FeatureOnboarding/OnBoardingModal';
+import {
+  stringifyQueryParamsWithPipe,
+  getEventCategoryFromPath,
+} from 'rzp/utils/rzp-utils';
 
 const heading =
   'A powerful system to easily collect payments via direct bank transfers (NEFT/RTGS). Automate the tedious reconciliation process, starting now.';
@@ -50,6 +54,31 @@ export default class VirtualAccountsListContainer extends ListContainer {
     this.props.fetchConfig();
   }
 
+  componentDidMount() {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Smart Collect',
+      eventAction: 'Go To - Smart Collect',
+    });
+  }
+
+  onSearchAnalytics = params => {
+    const label = stringifyQueryParamsWithPipe(params);
+    if (label && label.length > 0) {
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Smart Collect',
+        eventAction: 'Search - Virtual Accounts',
+        eventLabel: label,
+      });
+    }
+  };
+
+  onClearAnalytics = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Smart Collect',
+      eventAction: 'Clear Search Params - Virtual Accounts',
+    });
+  };
+
   enableFeature = () => {
     var data = {
       features: {
@@ -74,11 +103,47 @@ export default class VirtualAccountsListContainer extends ListContainer {
       });
   };
 
+  onVAModalMount = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Smart Collect',
+      eventAction: 'Open Form - Create Virtual Account',
+    });
+  };
+
+  onVAModalUnmount = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Smart Collect',
+      eventAction: 'Close Form - Create Virtual Account',
+    });
+  };
+
+  onCreateVA = params => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Smart Collect',
+      eventAction: 'Submit Form - Create Virtual Account',
+      eventLabel: stringifyQueryParamsWithPipe(params),
+    });
+  };
+
+  onCopy = virtualaccount => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Smart Collect',
+      eventAction: 'Copy To Clipboard',
+      eventLabel: `virtual_account_id${virtualaccount.id}`,
+    });
+  };
+
   showCreateVAModal = () => {
     this.props.openModal({
       size: 'small',
       component: (
-        <CreateVirtualAccount showCreateVAModal={this.showCreateVAModal} />
+        <CreateVirtualAccount
+          showCreateVAModal={this.showCreateVAModal}
+          onMount={this.onVAModalMount}
+          onUnmount={this.onVAModalUnmount}
+          onCreateVA={this.onCreateVA}
+          onCopy={this.onCopy}
+        />
       ),
     });
   };
@@ -114,14 +179,15 @@ export default class VirtualAccountsListContainer extends ListContainer {
 
     return (
       <div>
-        {this.props.mode === 'test' &&
+        {this.props.mode === 'test' && (
           <ActivationBanner
             productName="Razorpay Smart Collect"
             productDocs="https://razorpay.com/docs/smart-collect"
             feature="virtual_accounts"
             symbol={require('styles/assets/symbols/smartcollect.svg')}
             onActivate={this.openActivationModal}
-          />}
+          />
+        )}
         <tabbed-container>
           <header id="#va-header">
             <NavLink to="/virtualaccounts">Virtual Accounts</NavLink>
@@ -146,6 +212,8 @@ export default class VirtualAccountsListContainer extends ListContainer {
                 form="virtualAccountsListFilter"
                 count={this.state.count}
                 onSubmit={this.search}
+                onSearchAnalytics={this.onSearchAnalytics}
+                onClearAnalytics={this.onClearAnalytics}
               />
 
               <DataTable

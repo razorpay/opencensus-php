@@ -9,6 +9,17 @@ import ShowWhen from 'merchant/components/ShowWhen';
   };
 }, {})
 export default class MainNavLink extends Component {
+  /**
+   * Method that sends analytics regarding navigation.
+   */
+  sendAnalytics = () => {
+    this.props.label &&
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Side Nav',
+        eventAction: `Go To - ${this.props.label}`,
+      });
+  };
+
   render() {
     let {
       myRole,
@@ -45,6 +56,7 @@ export default class MainNavLink extends Component {
           isActive={(match, location) => {
             return (baseLocation || location).pathname === linkProps.to;
           }}
+          onClick={this.sendAnalytics}
         >
           <i class={icon} />
           {label}

@@ -77,7 +77,26 @@ export default class InvoiceDetailContainer extends Component {
           isPaymentLink={true}
           customer={this.props.invoice.customer}
           onIssue={notifyProps => {
+            window.rzpAnalytics({
+              eventCategory: 'Dashboard - Payment Links',
+              eventAction: 'Send - Payment Link',
+              eventLabel: `payment_link_id=${this.props.invoice.id}`,
+            });
             return this.issueInvoice(this.props.invoice, notifyProps);
+          }}
+          onMount={() => {
+            window.rzpAnalytics({
+              eventCategory: 'Dashboard - Payment Links',
+              eventAction: 'Open Form - Send Link',
+              eventLabel: `payment_link_id=${this.props.invoice.id}`,
+            });
+          }}
+          onUnmount={() => {
+            window.rzpAnalytics({
+              eventCategory: 'Dashboard - Payment Links',
+              eventAction: 'Close Form - Send Link',
+              eventLabel: `payment_link_id=${this.props.invoice.id}`,
+            });
           }}
         />
       ),
@@ -91,7 +110,8 @@ export default class InvoiceDetailContainer extends Component {
       message: () => (
         <div class="text-semi-muted">
           <p>
-            The Link will be cancelled and the customer will not be able to pay for it.
+            The Link will be cancelled and the customer will not be able to pay
+            for it.
           </p>
         </div>
       ),
@@ -102,6 +122,18 @@ export default class InvoiceDetailContainer extends Component {
         return this.props
           .cancelInvoice(invoice)
           .then(invoice => {
+            window.rzpAnalytics({
+              eventCategory: 'Dashboard - Payment Links',
+              eventAction: 'Submit Form - Cancel Payment Link',
+              eventLabel: `payment_link_id=${invoice.id}`,
+            });
+
+            window.rzpAnalytics({
+              eventCategory: 'Dashboard - Payment Links',
+              eventAction: 'Close Form - Cancel Payment Link',
+              eventLabel: `payment_link_id=${invoice.id}`,
+            });
+
             this.props.showNotification({
               type: 'success',
               message: 'Link cancelled!',
@@ -113,6 +145,20 @@ export default class InvoiceDetailContainer extends Component {
               message: errors,
             });
           });
+      },
+      onMount: () => {
+        window.rzpAnalytics({
+          eventCategory: 'Dashboard - Payment Links',
+          eventAction: 'Open Form - Cancel Payment Link',
+          eventLabel: `payment_link_id=${invoice.id}`,
+        });
+      },
+      abort: () => {
+        window.rzpAnalytics({
+          eventCategory: 'Dashboard - Payment Links',
+          eventAction: 'Close Form - Cancel Payment Link',
+          eventLabel: `payment_link_id=${invoice.id}`,
+        });
       },
     });
   };

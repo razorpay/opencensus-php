@@ -36,14 +36,14 @@ const NumRefunds = ({ refunds, titleCase = false }) => {
   );
 };
 
-const RefundsList = ({ refunds }) => {
+const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
   const refundsHeading = {
     title: 'Refund Details',
     subTitle: <NumRefunds refunds={refunds} titleCase={true} />,
   };
 
   return (
-    <ContentToggler>
+    <ContentToggler onToggleClick={onToggleClick}>
       <span>Refund Details</span>
       <div className="full-width-item sub-entity-list">
         <DataTable
@@ -62,7 +62,12 @@ const RefundsList = ({ refunds }) => {
   );
 };
 
-export default ({ payment, refunds, openRefundModal }) => {
+export default ({
+  payment,
+  refunds,
+  openRefundModal,
+  onToggleClick = () => {},
+}) => {
   const paymentStatus = payment.status,
     refundStatus = payment.refund_status,
     refundAmount = payment.amount_refunded,
@@ -85,7 +90,13 @@ export default ({ payment, refunds, openRefundModal }) => {
                 <Amount value={refundAmount} currency={currency} /> Refunded
               </span>
               <span>
-                Partially refunded in <NumRefunds refunds={refunds} />
+                Partially refunded in{' '}
+                <NumRefunds
+                  refunds={refunds}
+                  onToggleClick={() => {
+                    onToggleClick(payment);
+                  }}
+                />
               </span>
             </Definition>
           ) : (
@@ -101,7 +112,14 @@ export default ({ payment, refunds, openRefundModal }) => {
             </p>
           </ShowWhen>
         }
-        {refundStatus === 'partial' && <RefundsList refunds={refunds} />}
+        {refundStatus === 'partial' && (
+          <RefundsList
+            refunds={refunds}
+            onToggleClick={() => {
+              onToggleClick(payment);
+            }}
+          />
+        )}
       </div>
     );
   } else if (paymentStatus === 'refunded') {
@@ -126,7 +144,14 @@ export default ({ payment, refunds, openRefundModal }) => {
             </span>
           </Definition>
           <p />
-          {<RefundsList refunds={refunds} />}
+          {
+            <RefundsList
+              refunds={refunds}
+              onToggleClick={() => {
+                onToggleClick(payment);
+              }}
+            />
+          }
         </div>
       );
     }

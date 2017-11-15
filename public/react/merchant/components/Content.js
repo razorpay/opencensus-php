@@ -47,9 +47,7 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
   return (
     <tabbed-container>
       <header id={headerId}>
-        <NavLink to={to}>
-          {navLabel}
-        </NavLink>
+        <NavLink to={to}>{navLabel}</NavLink>
       </header>
       <content>
         <Route path={path || to} component={component} />
@@ -149,13 +147,14 @@ export default class Content extends Component {
           {/*<Route path="/addons" component={Subscriptions} />*/}
           <Route
             path="/customers"
-            render={() =>
+            render={() => (
               <TabbedContent
                 headerId="invoicing-header"
                 to="/customers"
                 navLabel="Customers"
                 component={Customers}
-              />}
+              />
+            )}
           />
 
           <Route path="/route" component={Marketplace} />
@@ -201,11 +200,17 @@ export default class Content extends Component {
     var BaseView = this.baseLocation ? this.getBaseView() : null;
 
     if (DetailView) {
-      DetailView = BaseView
-        ? <Slider closeUrl={this.baseLocation}>
-            {' '}<DetailView {...this.detailProps} />{' '}
-          </Slider>
-        : <DetailView {...this.detailProps} />;
+      DetailView = BaseView ? (
+        <Slider closeUrl={this.baseLocation}>
+          {' '}
+          <DetailView
+            {...this.detailProps}
+            closeUrl={this.baseLocation.pathname}
+          />{' '}
+        </Slider>
+      ) : (
+        <DetailView {...this.detailProps} />
+      );
     }
 
     return (
