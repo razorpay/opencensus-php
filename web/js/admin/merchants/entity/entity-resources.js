@@ -300,7 +300,7 @@ export const beneficiaryStateMap = {
   WB: 'West Bengal',
 };
 
-/*---------------------------------------- UI resource --------------------------------------------*/
+/*---------------------------------------- Render UI resource --------------------------------------------*/
 export function getDetailsViewMap(model) {
   const {
     details,

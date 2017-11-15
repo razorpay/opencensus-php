@@ -209,9 +209,7 @@ export default class AssignTerminal extends Component {
           </SelectField>
 
           <SelectField name="currency" label="Currency" defaultValue="INR">
-            <option value="INR" selected>
-              INR
-            </option>
+            <option value="INR">INR</option>
             <option value="USD">USD</option>
           </SelectField>
 

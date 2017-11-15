@@ -308,7 +308,13 @@ export default class MerchantEntity extends Component {
         <div onClick={actions.MarkReferred}>Mark as Referred</div>
         <div onClick={actions.EditTags}>Tag Merchant</div>
         <div onClick={actions.EditFeatures}>Feature Merchant</div>
-        <div onClick={actions.MerchantBatchUpload}>Merchant Batch Upload</div>
+        {merchant.features['live'] &&
+          merchant.features['live'].assigned_features.indexOf('irctc_report') >
+            -1 && (
+            <div onClick={actions.MerchantBatchUpload}>
+              Merchant Batch Upload
+            </div>
+          )}
         <div onClick={actions.UploadScreenshots}>Upload screenshots</div>
         <div onClick={this.captureScreenshot}>Capture Screenshots</div>
         <div onClick={actions.AddCredits}>Add Credits</div>
