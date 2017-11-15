@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_ADDRESS4   => 'sometimes|max:30',
         Entity::MOBILE_BANKING_ENABLED => 'sometimes|in:0,1',
         Entity::MPIN                   => 'sometimes|max:6',
-        Entity::BENEFICIARY_CITY       => 'required|max:30',
+        Entity::BENEFICIARY_CITY       => 'required|max:30|alpha_space',
         Entity::BENEFICIARY_STATE      => 'required|max:2',
         Entity::BENEFICIARY_PIN        => 'required|integer|digits:6',
         Entity::BENEFICIARY_COUNTRY    => 'sometimes|in:IN',
