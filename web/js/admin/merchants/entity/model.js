@@ -9,16 +9,17 @@ export default class Model extends BaseModel {
   @observable
   merchant = {
     details: {},
+    balanceDetails: {},
     gatewayRules: {},
     terminals: { items: [], count: 0 },
     offers: [],
     pricingPlans: {},
     scheduleTasks: {},
+    hasSettlementSchedule: undefined,
     features: {},
     bankDetails: {},
     creditsLogs: {},
     adminsMap: {},
-    hasSettlementSchedule: undefined,
   };
 
   constructor({ merchantId, fetchFn }) {
@@ -47,6 +48,7 @@ export default class Model extends BaseModel {
 
         // TODO: Ensure rendering happpens on resolve of each below otherwise data will update but not merchant object, hence no re-rendering. Or take out each property instead of putting inside merchant object
         this.fetchPricingPlans();
+        this.fetchBalance();
         this.fetchScheduleTasks();
         this.fetchGatewayRules();
 
@@ -86,6 +88,29 @@ export default class Model extends BaseModel {
         this.merchant.offers = data.items;
       }
     });
+  }
+
+  @action
+  fetchBalance() {
+    const request = mode => {
+      const data = {
+        route_name: 'balance_fetch',
+        merchant_id: this.merchantId,
+        mode,
+      };
+
+      return this.request('fetchMerchantBalance', this.fetchFn(data)).then(
+        data => {
+          if (data) {
+            console.log('DATA..', data);
+            this.merchant.balanceDetails[mode] = data;
+          }
+        }
+      );
+    };
+
+    request('test');
+    request('live');
   }
 
   @action

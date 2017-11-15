@@ -29,7 +29,7 @@ export const prevent = e => {
   e.stopPropagation();
 };
 
-export const titleCase = (str = '') => {
+export const titleCase = (str = '--') => {
   const chars = str.split('');
 
   return chars[0].toUpperCase() + chars.splice(1).join('');
@@ -51,9 +51,9 @@ export const formatDate = unixTimestamp => {
     [0, 'st', 'nd', 'rd'][dateOfMonth === 31 ? 1 : dateOfMonth % 20] ||
     dateSuffix;
 
-  return `${date.getDate()}${dateSuffix} ${MONTHS[
-    date.getMonth()
-  ]}, ${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
+  return `${date.getDate()}${dateSuffix} ${
+    MONTHS[date.getMonth()]
+  }, ${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
 };
 
 export const removeFromArray = (array, index) => {

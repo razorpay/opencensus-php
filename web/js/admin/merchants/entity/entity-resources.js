@@ -3,6 +3,7 @@ import { titleCase, formatDate } from 'util/index';
 
 import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';
+import ToggleEntityRow from 'ui/ToggleEntityRow';
 import Table from 'ui/Table';
 
 import CreditsDetails from './entityDetails/CreditsDetails';
@@ -303,17 +304,21 @@ export const beneficiaryStateMap = {
 export function getDetailsViewMap(model) {
   const {
     details,
+    balanceDetails,
+    gatewayRules,
     terminals,
+    offers,
     pricingPlans,
-    bankDetails,
-    features,
     scheduleTasks,
     hasSettlementSchedule,
-    gatewayRules,
-    offers,
+    features,
+    bankDetails,
     creditsLogs,
     adminsMap,
   } = model.merchant;
+
+  console.log('BALANCE DETAILS..TEST..', balanceDetails.test);
+  console.log('BALANCE DETAILS..LIVE..', balanceDetails.live);
 
   return [
     {
@@ -347,13 +352,78 @@ export function getDetailsViewMap(model) {
       ),
     },
     {
-      label: 'Balance(Test)',
-      value: details.amount,
+      label: 'Balance',
+      value: Object.keys(balanceDetails).length
+        ? () => (
+            <div style={{ width: '80%', borderLeft: '1px solid #edf1f2' }}>
+              {balanceDetails.test && (
+                <EntityRow
+                  label="Test"
+                  value={() => <Amount value={balanceDetails.test.balance} />}
+                />
+              )}
+              {balanceDetails.live && (
+                <EntityRow
+                  className="separate"
+                  label="Live"
+                  value={() => <Amount value={balanceDetails.live.balance} />}
+                />
+              )}
+            </div>
+          )
+        : null,
     },
+
     {
-      label: 'Balance(Live)',
-      value: details.amount,
+      label: 'Amount Credits',
+      value: Object.keys(balanceDetails).length
+        ? () => (
+            <div style={{ width: '80%', borderLeft: '1px solid #edf1f2' }}>
+              {balanceDetails.test && (
+                <EntityRow
+                  label="Test"
+                  value={() => <Amount value={balanceDetails.test.credits} />}
+                />
+              )}
+              {balanceDetails.live && (
+                <EntityRow
+                  className="separate"
+                  label="Live"
+                  value={() => <Amount value={balanceDetails.live.credits} />}
+                />
+              )}
+            </div>
+          )
+        : null,
     },
+
+    {
+      label: 'Fee Credits',
+      value: Object.keys(balanceDetails).length
+        ? () => (
+            <div style={{ width: '80%', borderLeft: '1px solid #edf1f2' }}>
+              {balanceDetails.test && (
+                <EntityRow
+                  label="Test"
+                  value={() => (
+                    <Amount value={balanceDetails.test.fee_credits} />
+                  )}
+                />
+              )}
+              {balanceDetails.live && (
+                <EntityRow
+                  className="separate"
+                  label="Live"
+                  value={() => (
+                    <Amount value={balanceDetails.live.fee_credits} />
+                  )}
+                />
+              )}
+            </div>
+          )
+        : null,
+    },
+
     {
       label: 'Max Payment Amount',
       value: details.max_payment_amount
@@ -384,23 +454,25 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'MCC',
-      value: details.amount,
+      value: details.category,
     },
     {
       label: 'Category 2',
-      value: details.amount,
+      value: details.category2,
     },
     {
       label: 'Billing Label',
-      value: details.amount,
+      value: details.billing_label,
     },
     {
       label: 'Merchant Handle',
-      value: details.amount,
+      value: details.handle,
     },
     {
       label: 'Transaction Report Email',
-      value: details.amount,
+      value: details.merchant_details
+        ? details.merchant_details.transaction_report_email
+        : null,
     },
     {
       label: 'International',
@@ -438,7 +510,15 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Activation Form Status',
-      value: details.merchant_details ? details.merchant_details.locked : null,
+      value: details.merchant_details
+        ? () => (
+            <i
+              class={`i i-${
+                details.merchant_details.locked ? 'lock' : 'unlock'
+              }`}
+            />
+          )
+        : null,
     },
     {
       label: 'Activated',
@@ -472,11 +552,11 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Fee Bearer',
-      value: details.fee_bearer,
+      value: titleCase(details.fee_bearer),
     },
     {
       label: 'Fee Model',
-      value: details.fee_model,
+      value: titleCase(details.fee_model),
     },
     {
       label: 'Settlement Schedule',
@@ -517,28 +597,33 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Customer Receipt Emails',
-      value: details.receipt_email_enabled,
+      value: _getBoolIcon(details.receipt_email_enabled),
     },
     {
       label: 'Print Screenshots',
-      value: details.amount,
+      value: () => <i class="i i-cloud-download" />,
     },
-    // TODO: Convert this in ToggleEntityRow container. Check EntityRow.js TODO
     {
       label: 'Pricing Plan',
       children: () => (
         <div>
-          <EntityRow
-            label="Plan Id"
-            value={pricingPlans.id}
-            className="separate"
-          />
+          <EntityRow label="Plan Id" value={pricingPlans.id} />
           <EntityRow
             label="Plan Name"
             value={pricingPlans.name}
             className="separate"
           />
-          <Table items={pricingPlans.rules} fields={_getPricingPlansFields()} />
+          <ToggleEntityRow
+            label={'Plan Rules'}
+            defaultOpen={true}
+            value={() => ''}
+            className="separate"
+          >
+            <Table
+              items={pricingPlans.rules}
+              fields={_getPricingPlansFields()}
+            />
+          </ToggleEntityRow>
         </div>
       ),
     },

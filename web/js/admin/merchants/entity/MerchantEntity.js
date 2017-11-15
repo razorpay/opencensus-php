@@ -336,7 +336,7 @@ export default class MerchantEntity extends Component {
                 key={item.label}
                 label={item.label}
                 value={item.value}
-                className={item.class}
+                className={`vertical-center ${item.class ? item.class : ''}`}
               >
                 {item.children()}
               </ToggleEntityRow>
@@ -347,7 +347,7 @@ export default class MerchantEntity extends Component {
                 key={item.label}
                 label={item.label}
                 value={item.value}
-                className={item.class}
+                className={`vertical-center ${item.class ? item.class : ''}`}
               />
             );
           }

@@ -41,7 +41,7 @@ export default class DocumentDetails extends Component {
             <div style={{ width: '70%', margin: 'auto' }}>
               <EntityRow
                 label="Business Proof"
-                className="separate m-t left-align"
+                className="m-t left-align"
                 value={() => (
                   <div>
                     <span class="info-block">
