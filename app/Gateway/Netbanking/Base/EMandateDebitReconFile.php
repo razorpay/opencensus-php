@@ -7,6 +7,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Base\RuntimeManager;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\FileStore;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Trace\TraceCode;
@@ -28,7 +29,7 @@ class EMandateDebitReconFile extends Base\Core
     {
         $file = $input['file'];
 
-        $this->fileContents = $this->parseExcelSheets($file);
+        $this->fileContents = $this->parseFile($file);
 
         $response = $this->processFileContents();
 
@@ -41,6 +42,38 @@ class EMandateDebitReconFile extends Base\Core
         );
 
         return $response;
+    }
+
+    /**
+     * Parses given file and returns the entries array
+     *
+     * @param string $filePath
+     *
+     * @return array
+     * @throws LogicException
+     */
+    protected function parseFile(string $filePath): array
+    {
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+
+        switch ($ext)
+        {
+            case FileStore\Format::XLSX:
+                return $this->parseExcelSheets($filePath);
+
+            case FileStore\Format::TXT:
+                //
+                // We use standard separator | for txt, if needs this
+                // can be made configurable. But for now it's ok.
+                //
+                return $this->parseTextFile($filePath, '|');
+
+            case FileStore\Format::CSV:
+                return $this->parseTextFile($filePath, ',');
+
+            default:
+                throw new LogicException("Extension not handled: {$ext}");
+        }
     }
 
     protected function increaseAllowedSystemLimits()
@@ -86,7 +119,7 @@ class EMandateDebitReconFile extends Base\Core
 
     protected function updatePayment(Base\Entity $gatewayPayment, Payment\Entity $payment)
     {
-        if ($this->isAuthorized($gatewayPayment) === false)
+        if ($this->isAuthorized($gatewayPayment) === true)
         {
             return $this->processAuthorizedPayment($payment);
         }
@@ -126,7 +159,7 @@ class EMandateDebitReconFile extends Base\Core
 
         $processor = $processor->setPayment($payment);
 
-        $processor->updatePaymentAuthFailed($e);
+        return $processor->updatePaymentAuthFailed($e);
     }
 
     /**
@@ -138,6 +171,6 @@ class EMandateDebitReconFile extends Base\Core
      */
     protected function getApiErrorCode(string $errorDescription): string
     {
-        throw new Exception\LogicException('API Error codes not marked');
+        throw new Exception\LogicException('Child class must implement this method');
     }
 }
