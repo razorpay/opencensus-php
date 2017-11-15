@@ -116,6 +116,12 @@ class Core extends Base\Core
             $amount = ($merchantBalance > self::MAX_PAYOUT_AMOUNT) ? self::MAX_PAYOUT_AMOUNT : $merchantBalance;
         }
 
+        if ((isset($input[Entity::BUFFER_AMOUNT]) === true) and
+            ($amount > $input[Entity::BUFFER_AMOUNT]))
+        {
+            $amount = $amount - $input[Entity::BUFFER_AMOUNT];
+        }
+
         if ((isset($input[Entity::MIN_AMOUNT]) === true) and
             ($amount < $input[Entity::MIN_AMOUNT]))
         {
@@ -148,7 +154,7 @@ class Core extends Base\Core
             Entity::METHOD         => Method::FUND_TRANSFER,
             Entity::DESTINATION    => $bankAccountId,
         ];
-
+        
         $payout = $this->directPayout($payoutInput, $merchant);
 
         return $payout->toArrayPublic();

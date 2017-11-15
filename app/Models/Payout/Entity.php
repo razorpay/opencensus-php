@@ -47,6 +47,7 @@ class Entity extends Base\PublicEntity
     // Modulo refers to the multiples in which amount should be
     const MIN_AMOUNT             = 'min_amount';
     const MODULO                 = 'modulo';
+    const BUFFER_AMOUNT          = 'buffer_amount';
 
     protected $entity = 'payout';
 
