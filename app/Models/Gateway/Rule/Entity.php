@@ -44,6 +44,7 @@ class Entity extends Base\PublicEntity
     // Merchant properties
     const CATEGORY2        = 'category2';
 
+    const COMMENTS         = 'comments';
     const DELETED_AT       = 'deleted_at';
 
     //
@@ -192,6 +193,7 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
         self::CURRENCY,
+        self::COMMENTS,
     ];
 
     protected $visible = [
@@ -217,6 +219,7 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
         self::CURRENCY,
+        self::COMMENTS,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT

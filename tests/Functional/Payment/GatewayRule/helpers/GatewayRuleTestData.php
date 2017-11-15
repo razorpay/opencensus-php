@@ -17,7 +17,8 @@ return [
                     'issuer'           => 'HDFC',
                     'currency'         => 'INR',
                     'international'    => 0,
-                    'load'             => 50
+                    'load'             => 50,
+                    'comments'         => 'some comments',
                 ],
                 'url' => '/gateway/rules',
                 'method' => 'POST',
@@ -34,6 +35,7 @@ return [
                     'international'    => false,
                     'min_amount'       => 0,
                     'load'             => 50,
+                    'comments'         => 'some comments',
                     'admin'            => true
                 ],
             ],
@@ -1056,8 +1058,9 @@ return [
             ],
             'request' => [
                 'content' => [
-                    'load'  => 70,
-                    'group' => 'groupA',
+                    'load'     => 70,
+                    'group'    => 'groupA',
+                    'comments' => 'some comments',
                 ],
                 'method' => 'PATCH',
             ],
@@ -1071,6 +1074,7 @@ return [
                     'network'     => 'VISA',
                     'min_amount'  => 0,
                     'load'        => 70,
+                    'comments'    => 'some comments',
                 ]
             ]
         ],

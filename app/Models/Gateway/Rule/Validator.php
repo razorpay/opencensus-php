@@ -36,14 +36,16 @@ class Validator extends Base\Validator
         Entity::EMI_DURATION     => 'required_only_if:method,emi|integer|in:3,6,9,12,18,24',
         Entity::EMI_SUBVENTION   => 'required_only_if:method,emi|in:customer,merchant',
         Entity::IINS             => 'filled|array',
-        Entity::CURRENCY         => 'filled|in:INR,USD'
+        Entity::CURRENCY         => 'filled|in:INR,USD',
+        Entity::COMMENTS         => 'filled|string|max:255',
     ];
 
     protected static $editRules = [
-        Entity::GROUP       => 'sometimes|filled|string|max:50',
-        Entity::FILTER_TYPE => 'sometimes|filled|in:select,reject',
-        Entity::LOAD        => 'sometimes|filled|numeric|between:0,100',
-        Entity::IINS        => 'sometimes|filled|array',
+        Entity::GROUP       => 'filled|string|max:50',
+        Entity::FILTER_TYPE => 'filled|in:select,reject',
+        Entity::LOAD        => 'filled|numeric|between:0,100',
+        Entity::IINS        => 'filled|array',
+        Entity::COMMENTS    => 'filled|string|max:255',
     ];
 
     protected static $createValidators = [
