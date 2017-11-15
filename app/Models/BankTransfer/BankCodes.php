@@ -18,6 +18,7 @@ class BankCodes
     const IFSC_CNRB = 'CNRB0000002';
     const IFSC_COSB = 'COSB0000001';
     const IFSC_DCBL = 'DCBL0000001';
+    const IFSC_DNSB = 'DNSB00000CO';
     const IFSC_ESFB = 'ESFB0000002';
     const IFSC_FDRL = 'FDRL0000121';
     const IFSC_GSCB = 'GSCB0000001';
@@ -62,6 +63,7 @@ class BankCodes
         'COB'   => self::IFSC_COSB,
         'CUB'   => self::IFSC_CIUB,
         'DCB'   => self::IFSC_DCBL,
+        'DUS'   => self::IFSC_DNSB,
         'ESF'   => self::IFSC_ESFB,
         'FBL'   => self::IFSC_FDRL,
         'GSC'   => self::IFSC_GSCB,
