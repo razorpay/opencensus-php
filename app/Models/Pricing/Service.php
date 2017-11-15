@@ -62,7 +62,7 @@ class Service extends Base\Service
             return $plan;
         });
 
-        return $pricingPlans;
+        return $pricingPlans->toArray();
     }
 
     public function getGatewayPricingPlans()

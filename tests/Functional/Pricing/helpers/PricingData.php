@@ -564,7 +564,7 @@ return [
                     'plan_name'   => 'testDefaultPlan',
                     'rules_count' => 12,
                 ],
-            ]
+            ],
         ],
     ],
 
