@@ -55,6 +55,7 @@ class Orchestrator extends Base\Core
     const NETBANKING_AXIS        = 'NetbankingAxis';
     const NETBANKING_ICICI       = 'NetbankingIcici';
     const NETBANKING_FEDERAL     = 'NetbankingFederal';
+    const NETBANKING_BOB         = 'NetbankingBob';
     const NETBANKING_CORPORATION = 'NetbankingCorporation';
     const NETBANKING_RBL         = 'NetbankingRbl';
     const NETBANKING_INDUSIND    = 'NetbankingIndusind';
@@ -87,6 +88,7 @@ class Orchestrator extends Base\Core
         self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
         self::NETBANKING_INDUSIND    => [],
         self::NETBANKING_PNB         => [],
+        self::NETBANKING_BOB         => [],
         self::JIOMONEY               => [],
         self::EBS                    => [],
         self::FIRST_DATA             => ['customer.care@icici.mailserv.in'],
