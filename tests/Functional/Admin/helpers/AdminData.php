@@ -807,20 +807,30 @@ return [
         ]
     ],
 
-    'testDeletedEntityFetchForAdmin' => [
+    //
+    // Additional request content and assertions are done in test method
+    // for different cases.
+    //
+    'testFetchDeletedEntityForAdmin' => [
         'request' => [
             'url'      => '/admin/org',
             'method'   => 'get',
-            'content'  => [],
+            'content'  => [
+                'auth_type' => 'google_auth',
+            ],
         ],
         'response' => [
             'content'  => [],
         ],
     ],
 
-    'testDeletedEntityFindForAdmin' => [
+    //
+    // Additional request content and assertions are done in test method
+    // for different cases.
+    //
+    'testFindDeletedEntityForAdmin' => [
         'request' => [
-            'url'     => '/admin/org/',
+            'url'     => '/admin/org/org_10000000000001',
             'method'  => 'get',
             'content' => [],
         ],

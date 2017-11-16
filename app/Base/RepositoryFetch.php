@@ -542,9 +542,8 @@ trait RepositoryFetch
         {
             $rules = array_merge($rules, $this->appFetchParamRules);
 
-            // temporary check to enable deleted,
-            // actual fix is done in Base/Fetch
-            $rules['deleted'] = 'sometimes|boolean';
+            // Temporary fix to add deleted rule, Actual fix is done in Base/Fetch
+            $rules[self::DELETED] = 'sometimes|boolean';
         }
 
         if (($this->auth->isAdminAuth()) and
@@ -653,11 +652,14 @@ trait RepositoryFetch
      * Along with Id, other allowed parameter can also be passed
      * Like: deleted
      *
-     * @param $id
-     * @param array $params
+     * @param string $id
+     * @param array  $params
+     *
      * @return PublicEntity
      */
-    public function findOrFailByPublicIdWithParams($id, array $params)
+    public function findOrFailByPublicIdWithParams(
+        string $id,
+        array $params) : PublicEntity
     {
         $query = $this->getQueryForFindWithParams($params);
 
@@ -690,8 +692,7 @@ trait RepositoryFetch
 
         $expands = $this->getExpandsForQueryFromInput($params);
 
-        $query = $this->newQuery()
-            ->with($expands);
+        $query = $this->newQuery()->with($expands);
 
         $this->buildQueryWithParams($query, $params);
 
@@ -777,8 +778,7 @@ trait RepositoryFetch
     {
         $deleted = (bool) $param[self::DELETED];
 
-        if (($deleted === true) and
-            ($this->doesEntityUseSoftdeletes()))
+        if (($deleted === true) and ($this->doesEntityUseSoftdeletes() === true))
         {
             $query->withTrashed();
         }

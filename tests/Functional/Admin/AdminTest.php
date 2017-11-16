@@ -922,45 +922,58 @@ class AdminTest extends TestCase
         $this->assertCount(120, $result['entities']);
     }
 
-    public function testDeletedEntityFetchForAdmin()
+    public function testFetchDeletedEntityForAdmin()
     {
-        $org = $this->fixtures->org->create([
-                                                'auth_type' => 'google_auth',
-                                                'deleted_at' => time()
-                                             ]);
+        $org = $this->fixtures
+                    ->org
+                    ->create(
+                        [
+                            'auth_type'  => 'google_auth',
+                            'deleted_at' => time(),
+                        ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['content']['auth_type'] = $org['auth_type'];
+        // Case 1: When no deleted parameter sent, should return 0 entity
         $content = $this->startTest();
         $this->assertSame(0, $content['count']);
 
+        // Case 2: When deleted=0 is sent, should return 0 entity
         $testData['request']['content']['deleted'] = 0;
         $content = $this->startTest();
         $this->assertSame(0, $content['count']);
 
+        // Case 3: When deleted=1 is sent, should return 1 entity
         $testData['request']['content']['deleted'] = '1';
         $content = $this->startTest();
         $this->assertSame(1, $content['count']);
 
+        //
+        // Case 4: When invalid value is sent for deleted parameter, should
+        //         throw validation exception.
+        //
         $testData['request']['content']['deleted'] = 11;
-        $this->makeRequestAndCatchException(function() use ($testData)
-        {
-            $this->runRequestResponseFlow($testData);
-        },
-        \RZP\Exception\BadRequestValidationFailureException::class);
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            \RZP\Exception\BadRequestValidationFailureException::class);
     }
 
-    public function testDeletedEntityFindForAdmin()
+    public function testFindDeletedEntityForAdmin()
     {
-        $org = $this->fixtures->org->create([
-                                                'auth_type' => 'google_auth',
-                                                'deleted_at' => time()
-                                            ]);
+        $org = $this->fixtures
+                    ->org
+                    ->create(
+                        [
+                            'id'         => '10000000000001',
+                            'auth_type'  => 'google_auth',
+                            'deleted_at' => time(),
+                        ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] .= $org['id'];
         $this->makeRequestAndCatchException(
         function() use ($testData)
         {

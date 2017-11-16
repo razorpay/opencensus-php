@@ -140,16 +140,19 @@ class Fetch
     protected $enabled = false;
 
     /**
-     * Cached value for default rules
-     * The setter is called as instantiated value if null
+     * Cached value for default rules.
+     * Should be accessed via getDefaultFetchRules() because if this is null
+     * it sets and keeps the instance value and then return.
      *
      * @var array
      */
     protected $defaultRules;
 
     /**
-     * Cached value for rules
-     * The setter is called as instantiated value if null
+     * Cached value for rules.
+     * Should be accessed via getAllFetchRules() because if this is null it sets
+     * and keeps the instance value and then return.
+     *
      * @var array
      */
     protected $rules;
