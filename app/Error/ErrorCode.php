@@ -61,7 +61,7 @@ class ErrorCode
     const GATEWAY_ERROR_CARD_RUPAY_MAESTRO_NOT_ENABLED                              = 'GATEWAY_ERROR_CARD_RUPAY_MAESTRO_NOT_ENABLED';
     const GATEWAY_ERROR_SOAP_ERROR                                                  = 'GATEWAY_ERROR_SOAP_ERROR';
     const GATEWAY_ERROR_DECRYPTION_FAILED                                           = 'GATEWAY_ERROR_DECRYPTION_FAILED';
-    const GATEWAY_ERROR_AMOUNT_TAMPERED                                            = 'GATEWAY_ERROR_AMOUNT_TAMPERED';
+    const GATEWAY_ERROR_AMOUNT_TAMPERED                                             = 'GATEWAY_ERROR_AMOUNT_TAMPERED';
 
     const GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH                                   = 'GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH';
 
@@ -155,6 +155,7 @@ class ErrorCode
 
     // Payment bad requests
     const BAD_REQUEST_PAYMENT_FAILED                                                = 'BAD_REQUEST_PAYMENT_FAILED';
+    const BAD_REQUEST_PAYMENT_PENDING                                               = 'BAD_REQUEST_PAYMENT_PENDING';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_USER                                     = 'BAD_REQUEST_PAYMENT_CANCELLED_BY_USER';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID                 = 'BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID';
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_LOGIN_SCREEN                             = 'BAD_REQUEST_PAYMENT_CANCELLED_AT_LOGIN_SCREEN';
@@ -719,4 +720,5 @@ class ErrorCode
 
     const BAD_REQUEST_ADMIN_TOKEN_MISMATCH                                          = 'BAD_REQUEST_ADMIN_TOKEN_MISMATCH';
     const BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE                                    = 'BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE';
+    const BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION                                 = 'BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION';
 }

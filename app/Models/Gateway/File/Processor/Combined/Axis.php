@@ -23,7 +23,7 @@ class Axis extends Base
         ];
 
         $claimsFile = [];
-        $refundFile = [];
+        $refundsFile = [];
 
         if (isset($data['refunds']) === true)
         {
@@ -66,6 +66,7 @@ class Axis extends Base
             'date'        => $date,
             'claimsFile'  => $claimsFile,
             'refundsFile' => $refundsFile,
+            'corporate'   => $this->gatewayFile->getCorporate(),
             'emails'      => $this->gatewayFile->getRecipients()
         ];
     }

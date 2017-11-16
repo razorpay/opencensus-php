@@ -1476,6 +1476,21 @@ class DatabaseSeeder extends Seeder
                 'updated_at'            => time(),
             ]
         );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                    'id'                        => Terminal\Shared::NETBANKING_AXIS_REC_TERMINAL,
+                    'merchant_id'               => Account::TEST_ACCOUNT,
+                    'gateway'                   => Gateway::NETBANKING_AXIS,
+                    'card'                      => '0',
+                    'netbanking'                => '1',
+                    'gateway_merchant_id'       => 'test_merchant_netbanking_axis_recurring',
+                    'recurring'                 => 1,
+                    'created_at'                => time(),
+                    'updated_at'                => time(),
+                    'type'                      => 6,
+            ]
+        );
     }
 
     protected function createNetbankingFederalTerminal()

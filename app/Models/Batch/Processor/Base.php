@@ -182,7 +182,7 @@ class Base extends BaseModel\Core
         }
         catch (\Throwable $e)
         {
-            $this->handleBatchProcessingException($ex);
+            $this->handleBatchProcessingException($e);
         }
         finally
         {
@@ -470,16 +470,18 @@ class Base extends BaseModel\Core
         //
         $ext = pathinfo($this->inputFileLocalPath, PATHINFO_EXTENSION);
 
+        $dir = $this->batch->getLocalSaveDir(Batch\Entity::OUTPUT_FILE_PREFIX);
+
         switch ($ext)
         {
             case FileStore\Format::TXT:
                 $txt = $this->generateText($entries, '|');
-                $this->outputFileLocalPath = $this->createTxtFile($this->getFileName($ext), $txt);
+                $this->outputFileLocalPath = $this->createTxtFile($this->getFileName($ext), $txt, $dir);
                 return;
 
             case FileStore\Format::CSV:
                 $txt = $this->generateText($entries, ',');
-                $this->outputFileLocalPath = $this->createTxtFile($this->getFileName($ext), $txt);
+                $this->outputFileLocalPath = $this->createTxtFile($this->getFileName($ext), $txt, $dir);
                 return;
 
             case FileStore\Format::XLSX:
@@ -489,11 +491,7 @@ class Base extends BaseModel\Core
                                     [],
                                     $this->batch->getType()
                                  )
-                                 ->store(
-                                    $ext,
-                                    $this->batch->getLocalSaveDir(Batch\Entity::OUTPUT_FILE_PREFIX),
-                                    true
-                                );
+                                 ->store($ext, $dir, true);
                 $this->outputFileLocalPath = $fileMeta['full'];
                 return;
 
@@ -784,7 +782,7 @@ class Base extends BaseModel\Core
      *
      * @param \Throwable $e Exception encountered while processing the batch
      */
-    protected function handleBatchProcessingException(\Throwable $e)
+    protected function handleBatchProcessingException(\Throwable $ex)
     {
         $this->trace->traceException(
             $ex,
@@ -792,7 +790,7 @@ class Base extends BaseModel\Core
             TraceCode::BATCH_FILE_PROCESSING_ERROR,
             [
                 Batch\Entity::ID   => $this->batch->getId(),
-                Batch\Entity::Type => $this->batch->getType(),
+                Batch\Entity::TYPE => $this->batch->getType(),
             ]);
 
         //

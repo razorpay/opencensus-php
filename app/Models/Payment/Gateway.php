@@ -18,6 +18,7 @@ class Gateway
 {
     const AMEX                   = 'amex';
     const ATOM                   = 'atom';
+    const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
     const BILLDESK               = 'billdesk';
@@ -455,11 +456,13 @@ class Gateway
         Gateway::AXIS_MIGS,
         Gateway::HDFC,
         Gateway::NETBANKING_ICICI,
+        Gateway::NETBANKING_AXIS,
         Gateway::NETBANKING_HDFC,
     ];
 
     public static $eMandateBanks = [
         IFSC::ICIC,
+        IFSC::UTIB,
         IFSC::HDFC,
     ];
 
@@ -470,6 +473,7 @@ class Gateway
      */
     public static $fileBasedEMandateDebitGateways = [
         Gateway::NETBANKING_HDFC,
+        Gateway::NETBANKING_AXIS,
     ];
 
     /**
@@ -488,6 +492,10 @@ class Gateway
      * @var array
      */
     public static $s2sCallbackGateways = [
+        // Corporate response is provided through
+        // s2s callback.
+        Gateway::NETBANKING_AXIS,
+
         Gateway::BILLDESK,
         Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,

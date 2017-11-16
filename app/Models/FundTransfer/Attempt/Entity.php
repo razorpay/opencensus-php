@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const CHANNEL                = 'channel';
     const VERSION                = 'version';
     const BANK_STATUS_CODE       = 'bank_status_code';
+    const MODE                   = 'mode';
     const STATUS                 = 'status';
     const UTR                    = 'utr';
     const NARRATION              = 'narration';
@@ -45,6 +46,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::VERSION,
         self::BANK_STATUS_CODE,
+        self::MODE,
         self::STATUS,
         self::UTR,
         self::NARRATION,
@@ -132,6 +134,11 @@ class Entity extends Base\PublicEntity
     public function getBatchFundTransferId()
     {
         return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
+    }
+
+    public function getMode()
+    {
+        return $this->getAttribute(self::MODE);
     }
 
     // ------------------------------- setters ---------------------------------
@@ -225,5 +232,10 @@ class Entity extends Base\PublicEntity
         $entity = E::getEntityClass($sourceType);
 
         $attributes[self::SOURCE] = $entity::getSignedId($sourceId);
+    }
+
+    public function setMode($mode)
+    {
+        return $this->setAttribute(self::MODE, $mode);
     }
 }

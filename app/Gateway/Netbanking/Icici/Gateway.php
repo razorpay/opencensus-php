@@ -136,9 +136,9 @@ class Gateway extends Base\Gateway
                 ]);
         }
 
-        $attrs = $this->getResponseAttributes($responseArray);
+        $attributes = $this->getResponseAttributes($responseArray);
 
-        $gatewayPayment->fill($attrs);
+        $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
 
@@ -207,13 +207,13 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
-        $attrs = $this->getResponseAttributes($callbackData);
+        $attributes = $this->getResponseAttributes($callbackData);
 
-        $gatewayPayment->fill($attrs);
+        $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
 
-        $this->checkCallbackStatus($attrs, $callbackData);
+        $this->checkCallbackStatus($attributes, $callbackData);
 
         $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
         $actualAmount = number_format($callbackData['AMT'], 2, '.', '');
@@ -648,10 +648,10 @@ class Gateway extends Base\Gateway
         return array_merge($data, $recurringData);
     }
 
-    protected function checkCallbackStatus(array $attrs, array $content)
+    protected function checkCallbackStatus(array $attributes, array $content)
     {
-        if ((isset($attrs[ResponseFields::STATUS_LC]) === false) or
-            ($attrs[ResponseFields::STATUS_LC] !== Confirmation::YES))
+        if ((isset($attributes[ResponseFields::STATUS_LC]) === false) or
+            ($attributes[ResponseFields::STATUS_LC] !== Confirmation::YES))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,

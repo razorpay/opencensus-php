@@ -77,7 +77,6 @@ class Entity extends Base\PublicEntity
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
     const BANK                  = 'bank';
-    const CARD                  = 'card';
     const CARD_ID               = 'card_id';
     const WALLET                = 'wallet';
     const EMI_PLAN_ID           = 'emi_plan_id';
@@ -114,6 +113,10 @@ class Entity extends Base\PublicEntity
 
     // Query params
     const TRANSFERRED           = 'transferred';
+
+    // Relations
+    const CARD                  = 'card';
+    const EMI_PLAN              = 'emi_plan';
 
     // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';
@@ -269,6 +272,7 @@ class Entity extends Base\PublicEntity
         self::ERROR_DESCRIPTION,
         self::ACQUIRER_DATA,
         // self::SUBSCRIPTION_ID,
+        self::EMI_PLAN,
         self::CREATED_AT,
     ];
 
@@ -582,6 +586,11 @@ class Entity extends Base\PublicEntity
     public function setAmountPaidout(int $amount)
     {
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
+    }
+
+    public function setGatewayBharatQr()
+    {
+        $this->setGateway(Payment\Gateway::BHARAT_QR);
     }
 
     /**
@@ -2307,5 +2316,12 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public static function getFilteredDescription(string $description = null)
+    {
+        $filteredDescription = preg_replace('/[^a-zA-Z0-9 ]+/', '', $description);
+
+        return $filteredDescription;
     }
 }

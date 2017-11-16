@@ -43,6 +43,8 @@ class MailTags
     const FAILED_TO_AUTHORIZED             = 'failed_to_authorized';
     const CARD_SAVING                      = 'card_saving';
 
+    const PAYOUT_SUCCESSFUL                = 'payout_successful';
+
     const INVOICE                          = 'invoice';
     const ECOD                             = 'ecod';
     const LINK                             = 'link';
@@ -58,6 +60,8 @@ class MailTags
 
     const HDFC_EMANDATE_REGISTER_MAIL      = 'hdfc_emandate_register_mail';
     const HDFC_EMANDATE_DEBIT_MAIL         = 'hdfc_emandate_debit_mail';
+
+    const AXIS_EMANDATE_DEBIT_MAIL         = 'axis_emandate_debit_mail';
 
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';

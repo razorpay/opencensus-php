@@ -1186,3 +1186,61 @@ UPDATE transactions SET settled_at=1509942600 WHERE id='8wulvPuP2Xu7Mj';
 
 # Fix user email case.
 UPDATE users AS u SET u.email = Lower(u.email) WHERE u.email != Lower(u.email) LIMIT 100;
+
+# Corrects Bank Transfer IMPS Bank Codes used in bank accounts
+UPDATE bank_accounts INNER JOIN bank_transfers
+  ON bank_accounts.id=bank_transfers.payer_bank_account_id
+  SET bank_accounts.ifsc_code = 'UTBI0XCNA10'
+  WHERE bank_transfers.mode='imps' and bank_transfers.payer_ifsc like 'UBI%';
+
+UPDATE bank_accounts INNER JOIN bank_transfers
+  ON bank_accounts.id=bank_transfers.payer_bank_account_id
+  SET bank_accounts.ifsc_code = 'UBIN0538167'
+  WHERE bank_transfers.mode='imps' and bank_transfers.payer_ifsc like 'UOB%';
+
+# Corrects refund status of refunds that Kotak notified as successful,
+# but which actually failed. This does not include the IMPS cases.
+UPDATE refunds
+    SET status='failed'
+    WHERE id in ('8vNkBhJKtEePDD','8x4CxVvdqBBnHd');
+
+UPDATE fund_transfer_attempts
+    SET status='failed',
+    remarks='IFSC DOES NOT RTGSINW-0015311497'
+    WHERE id='8vNkBqtFRdrgIC';
+
+UPDATE fund_transfer_attempts
+    SET status='failed',
+    remarks='RBI REJ SERVICE BRANCH IFSC'
+    WHERE id='8x4CxaQZhSgUb4';
+
+UPDATE billdesk SET RefundId = 'JSBI57924526691' WHERE id = 2502509;
+
+UPDATE `merchant_details`
+    SET `virtual_accounts_activation_status`='rejected'
+    WHERE `merchant_id`
+    IN ('8ehse6GUnMXxIj', '6hHoeddcrm7AeT', '4GIroEakhj58SY', '6hHoeddcrm7AeT', '8aMXEYKfY52iRp', '8dCyOnL2V186mb', '8ehse6GUnMXxIj', '8gjadvc6vBFZOT', '8go78cwfDc7J2r', '8hdU5vM8b0Cya6', '7Ae6I3YcGQH5iv', '77QseSEfHmHk2s', '8hzK7OLldh3KJ0', '84U9qRNhwFBA3E', '8U37Pw73xF3yG3', '8jE0znLe3lCClE', '8e0L4AdY6a3sYW', '7n8alb1DIIEths', '8jyLJ637GHAKMC', '8kepzpgtSCHLsV', '8l9648zmrM5SgI', '8lQprQoXlqC3J4', '7txmuKvk0XA52I', '8fauBlbgTvChyn', '8mn8b3td4P99nm', '8oe1EfLIIDP1AY', '8pX6tBf7fi8EUR', '8ajpYJkutrG67g', '7YR2ZKKEnjCg0p', '8oaSTKqPwI2nlL', '8qI75LopbrGsCz', '8qdO4LSI1XFDUf', '8UdJew4UxgJ6uf', '8opB01YTTF7hE4', '8rnK8SIqwG5WgR', '8sVGZze9YBFjsY', '8shnmf5Me59Gg3', '8thsxYfOBAD24c', '8tiu5K8Sd6ACls', '8uF24dVDOJ96ey', '7ie6pGJzBm3tIh', '8liIsSFi5Q59Kp', '6n7lDjfbfzFii5', '8wfk9W9PbvB4Wi', '5p4lrjsOPVg4Nl', '8xgNkyHkABnmKm', '8yBoCfFQWc7LeI');
+
+UPDATE `merchant_details`
+    SET `marketplace_activation_status`='rejected'
+    WHERE `merchant_id`
+    IN ('7QlLDotP44FmKp', '8eq26RxeX27bvF', '4EoPUcs0PH5jXZ', '5ghMk9Cdit10mR', '8CNKMr912M4F71', '8ZDdyevGGaL17v', '8eq26RxeX27bvF', '6Yzq9xjpgG6ub1', '8FpoLkIReIBHg3', '7o9TqKUikuEUPq', '8jPBlM4B5VBbM1', '8Tz9VhwGgVFru0', '8ljZUvTW916myJ', '8fBGY5u4f3FSTv', '8UdJew4UxgJ6uf', '8oC6SDpSu3D4XX', '536gcQZZEi7Naa', '8lU3tFVe1gELCV', '7d833vLESdCqKj', '8rNMPAL90JGw6B', '8rjcZe9bHQHWPN', '8iMsgslxrIHkqw', '8uva7qEebY8DT9', '8vRQk2Db7uAsjz', '8xNWU5yT0gQgvC');
+
+UPDATE `merchant_details`
+    SET `subscriptions_activation_status`='rejected'
+    WHERE `merchant_id`
+    IN ('7s7LR4fbKE4pIu', '5dCK9LX1iURHRB', '6CrnYBaM7I9Bhd', '7id8KOpI3Q6LoC', '83xUfOMNAL19jv', '6WbmafD3Dd6yXE', '7hQe9JRUM72pIm', '44guNk1cMMDOc4', '7cjGg41SLI6gh4', '7rFAR8o68iFE0z', '5b8BQm6rln59Yd', '7x37fNyweaMrPg', '8bF3agioff3Vnd', '8K9XeIXsFc3SJZ', '8oEgOWSPSfD7AG', '8rjcZe9bHQHWPN', '8sBW8F5Wx0AAl0', '8sYXZVAMAJ4FrH', '8cqIgIiB1cBDBB', '8sxXLmGaSdDQhV', '7IlTuj6bZxJC4s', '8l96oL7Xnm5NlB', '8p4aFLOJBW1gPq', '5NlQsGREdy5tkH', '4wkUX8P3ra7bmJ', '88SPDVoFNHIjo9');
+
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "74056637290703706725681" WHERE id IN ("8bIRahKimyzicP", "8bzB8i2PgTtRRX") AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "74056637290701506725455" WHERE id = "8VMHYrlEyFnEGS" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "74056637290705306725508" WHERE id = "8er2yQwNr0ySF0" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "74056637290703206725561" WHERE id = "8gpjIyTCH45QnJ" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "74056637290705306726076" WHERE id = "8hu3GK07uuOqsv" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "74056637290703606726102" WHERE id = "8gpjoAOSmHNr5x" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "75105177289000897440412" WHERE id = "8PjhUnEBR2CUPv" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "75105177289000897440552" WHERE id = "8gpkIOAi1sqDZK" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "75105177289000897440545" WHERE id IN ("8kOWbY6LxWusGY", "8hqyNmm1A9xbYR") AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "75105177289000897440115" WHERE id = "8ZiAFXMegwkq47" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "75105177290000898454690" WHERE id = "7CzzmfYgu0uiuR" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "75105177290000898454708" WHERE id = "8gpsryVTEAzQbS" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "75105177290000898454732" WHERE id = "8gptLdM6Igny7t" AND status = "failed";

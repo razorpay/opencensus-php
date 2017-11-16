@@ -6,6 +6,7 @@ use App;
 use Mail;
 use Crypt;
 use Config;
+use Route;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
@@ -1264,6 +1265,11 @@ trait Authorize
         $this->repo->transaction(function() use ($payment)
         {
             $data = array('payment' => $payment->toArray());
+
+            if ($payment->getGlobalOrLocalTokenEntity() !== null)
+            {
+                $data['token'] = $payment->getGlobalOrLocalTokenEntity();
+            }
 
             if ($payment->isMethodCardOrEmi())
             {
@@ -3680,8 +3686,12 @@ trait Authorize
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
     {
-        // No gateway for bank transfer, everything is internal
-        if ($payment->isBankTransfer() === true)
+        //
+        // No gateway for bank transfer or Bharat Qr, everything is internal
+        // TODO: To be changed after refactor
+        //
+        if (($payment->isBankTransfer() === true) or
+            (Route::currentRouteName() === 'gateway_payment_callback_bharatqr'))
         {
             return false;
         }

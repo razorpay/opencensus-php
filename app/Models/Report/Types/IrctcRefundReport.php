@@ -34,6 +34,11 @@ class IrctcRefundReport extends BasicEntityReport
     const REFUND_DATE        = 'Refund Date';
     const REFUND_ID          = 'Refund Id';
 
+    const FILE_PREFIX = [
+        '8ST00QgEPT14cE' => 'deltarefund_WRZRMPP00000_',
+        '8YPFnW5UOM91H7' => 'deltarefund_WMRAZOR00000_'
+    ];
+
     protected function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
         return $this->repo->refund
@@ -112,7 +117,9 @@ class IrctcRefundReport extends BasicEntityReport
 
         $time = Carbon::now(Timezone::IST)->format('Ymd');
 
-        return 'deltarefund_WUATRZRPAY_' . $time . '_' .$version;
+        $filePrefix = self::FILE_PREFIX[$this->merchant->getId()];
+
+        return $filePrefix . $time . '_' .$version;
     }
 
     protected function writeDataToCsvForMerchant(int $from,

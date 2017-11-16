@@ -9,7 +9,13 @@ return [
     'createVirtualAccount' => [
         'url'     => '/virtual_accounts',
         'method'  => 'post',
-        'content' => [],
+        'content' => [
+            'receivers' => [
+                'types' => [
+                    'bank_account',
+                ],
+            ],
+        ],
     ],
 
     'processBankTransfer' => [
@@ -117,7 +123,7 @@ return [
             'payee_ifsc'     => null,
             'payer_name'     => 'Name of account holder',
             'payer_account'  => '00000000000123456',
-            'payer_ifsc'     => 'CNB9876543210',
+            'payer_ifsc'     => 'ABC9876543210',
             'mode'           => 'imps',
             'transaction_id' => strtoupper(random_alphanum_string(22)),
             'time'           => 148415544000,
@@ -160,7 +166,7 @@ return [
         ],
     ],
 
-    'testBankTransferImpsFromRogueBank' => [
+    'testBankTransferImpsFromRogueBankNullAccount' => [
         'url'     => '/ecollect/validate',
         'method'  => 'post',
         'content' => [
@@ -174,6 +180,40 @@ return [
             'time'           => 148415544000,
             'amount'         => 50000,
             'description'    => 'IMPS payment of 50,000 rupees, with no account number',
+        ],
+    ],
+
+    'testBankTransferImpsFromRogueBankInvalidAccount' => [
+        'url'     => '/ecollect/validate',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => '533/1 NEFT CASH FOR NON CUSTOMER',
+            'payer_account'  => '533/1 NEFT CASH FOR NON CUSTOMER',
+            'payer_ifsc'     => 'PJSB0000003',
+            'mode'           => 'rtgs',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 50000,
+            'description'    => 'IMPS payment of 50,000 rupees, with nonsense account number',
+        ],
+    ],
+
+    'testBankTransferImpsFromRogueBankStripAccount' => [
+        'url'     => '/ecollect/validate',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '00000000000123456',
+            'payer_ifsc'     => 'CNB9876543210',
+            'mode'           => 'imps',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 50000,
+            'description'    => 'IMPS payment of 50,000 rupees, with leading zeroes',
         ],
     ],
 
@@ -198,7 +238,7 @@ return [
             'url' => '/ecollect/validate',
             'method' => 'post',
             'content' => [
-                'payee_ifsc'     => 'IFSC0009876',
+                'payee_account'  => 'RZP1234567890',
                 'payer_account'  => '765432346787812',
                 'payer_ifsc'     => 'HDFC0000001',
                 'mode'           => 'neft',
@@ -210,16 +250,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The payee account field is required.',
-                ],
+                'valid' => false,
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

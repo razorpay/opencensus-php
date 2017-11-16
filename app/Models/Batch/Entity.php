@@ -53,6 +53,7 @@ class Entity extends Base\PublicEntity
      * Additional constants
      */
     const FILE                      = 'file';
+    const FILES                     = 'files';
     const URL                       = 'url';
     const INPUT_FILE_PREFIX         = 'batch/upload/';
     const OUTPUT_FILE_PREFIX        = 'batch/download/';
@@ -233,6 +234,16 @@ class Entity extends Base\PublicEntity
     public function getGateway()
     {
         return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function getUploadFileUrl()
+    {
+        return $this->getAttribute(self::UPLOAD_FILE_URL);
+    }
+
+    public function getDownloadFileUrl()
+    {
+        return $this->getAttribute(self::DOWNLOAD_FILE_URL);
     }
 
     public function isProcessed(): bool

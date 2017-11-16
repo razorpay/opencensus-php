@@ -26,6 +26,8 @@ class Type
 
     const AXIS_NETBANKING_CLAIMS            = 'axis_netbanking_claims';
 
+    const AXIS_EMANDATE_DEBIT               = 'axis_emandate_debit';
+
     const FEDERAL_NETBANKING_REFUND         = 'federal_netbanking_refund';
 
     const RBL_NETBANKING_REFUND             = 'rbl_netbanking_refund';
@@ -103,6 +105,7 @@ class Type
             self::HDFC_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
+            self::AXIS_EMANDATE_DEBIT,
             self::FEDERAL_NETBANKING_REFUND,
             self::CORPORATION_NETBANKING_REFUND,
             self::BOB_NETBANKING_REFUND,
@@ -185,6 +188,7 @@ class Type
         self::CORPORATION_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
+        self::AXIS_EMANDATE_DEBIT,
         self::FEDERAL_NETBANKING_REFUND,
         self::RBL_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_REFUND,

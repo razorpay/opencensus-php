@@ -20,21 +20,22 @@ use Razorpay\Trace\Logger as Trace;
 class Index extends Command
 {
     protected $signature = 'rzp:index
-                            {--slave=0   : Whether to use slave or master db connection? (0|1)}
-                            {--mode=test : Database mode the command will run in (test|live)}
-                            {--index=    : ES index name (eg. beta_api_invoice_test) }
-                            {--entity=   : Entity name (eg. item|merchant) }
-                            {--skip=0    : Skip offset (eg. skip first 100 rows) }
-                            {--take=5000 : Take count (eg. 1000 at a time) }
-                            {--start_at= : Start value(epoch) for time range query }
-                            {--end_at=   : End value(epoch) for time range query }';
+                            {mode            : Database & application mode the command will run in (test|live)}
+                            {entity          : Entity name (eg. item|merchant) }
+
+                            {--slave=0       : Whether to use slave or master db connection? (0|1)}
+                            {--index_prefix= : ES new index prefix (eg. 20171201_beta_api_) }
+                            {--skip=0        : Skip offset (eg. skip first 100 rows) }
+                            {--take=5000     : Take count (eg. 1000 at a time) }
+                            {--start_at=     : Start value(epoch) for time range query }
+                            {--end_at=       : End value(epoch) for time range query }';
 
     protected $description = 'Indexes entity into es for search purposes.';
 
-    protected $slave;
     protected $mode;
-    protected $index;
     protected $entity;
+    protected $slave;
+    protected $indexPrefix;
     protected $skip;
     protected $take;
     protected $startAt;
@@ -55,14 +56,15 @@ class Index extends Command
 
     protected function setOptions()
     {
-        $this->slave   = (int) $this->option('slave');
-        $this->mode    = $this->option('mode');
-        $this->index   = $this->option('index');
-        $this->entity  = $this->option('entity');
-        $this->skip    = (int) $this->option('skip');
-        $this->take    = (int) $this->option('take');
-        $this->startAt = $this->option('start_at');
-        $this->endAt   = $this->option('end_at');
+        $this->mode        = $this->argument('mode');
+        $this->entity      = $this->argument('entity');
+
+        $this->slave       = (int) $this->option('slave');
+        $this->indexPrefix = $this->option('index_prefix');
+        $this->skip        = (int) $this->option('skip');
+        $this->take        = (int) $this->option('take');
+        $this->startAt     = $this->option('start_at');
+        $this->endAt       = $this->option('end_at');
     }
 
     protected function init()
@@ -82,8 +84,10 @@ class Index extends Command
 
         $app['rzp.mode'] = $this->mode;
 
+        //
         // 2. Initializes repository and esRepository corresponding to the
         //    input entity.
+        //
 
         $this->trace = $app['trace'];
 
@@ -98,13 +102,15 @@ class Index extends Command
             throw new LogicException('EsSync: Es repo not found.');
         }
 
-        // 3. If index name is passed in option, will use that. Useful in
-        //    cases of first time indexing with mapping changes. We create the
-        //    new index do indexing and then switch and then again do delta indexing.
+        //
+        // 3. If index prefix is passed in option, will use that. Useful in
+        //    cases of reindexing with mapping changes. We create the new index,
+        //    do indexing and then switch and then again do delta indexing.
+        //
 
-        if ($this->index !== null)
+        if ($this->indexPrefix !== null)
         {
-            $this->esRepo->setIndexNameByValue($this->index);
+            $this->esRepo->setIndexNameByPrefix($this->indexPrefix);
         }
     }
 

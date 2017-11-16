@@ -54,7 +54,7 @@ class Constants
         self::CARE        => 'Team Razorpay',
         self::ALERTS      => 'Razorpay Webhook Support',
         self::ACTIVATION  => 'Razorpay Activations Team',
-        self::IRCTC       => 'Razorpay IRCTC Refunds',
+        self::IRCTC       => 'Razorpay IRCTC Files',
         self::EMANDATE    => 'Razorpay EMandate',
         self::DISPUTES    => 'Razorpay Risk Team',
     ];

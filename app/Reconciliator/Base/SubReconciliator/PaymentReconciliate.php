@@ -80,21 +80,21 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     public function startReconciliation($fileContents)
     {
-        $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
+        $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
         unset($fileContents[Orchestrator::EXTRA_DETAILS]);
 
         foreach ($fileContents as $row)
         {
-            $this->repo->transactionOnLiveAndTest(function() use ($row, $extraDetails)
+            $this->repo->transactionOnLiveAndTest(function() use ($row)
             {
-                $this->runReconciliate($row, $extraDetails);
+                $this->runReconciliate($row);
             });
         }
 
         return $this->getSummary();
     }
 
-    public function runReconciliate($row, $extraDetails)
+    public function runReconciliate($row)
     {
         $rowDetails = $this->getRowDetailsStructured($row);
 
@@ -150,7 +150,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                     'trace_code'    => TraceCode::RECON_FAILURE,
                     'message'       => 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage(),
                     'row'           => $row,
-                    'extra_details' => $extraDetails,
+                    'extra_details' => $this->extraDetails,
                     'gateway'       => get_called_class()
                 ]);
 

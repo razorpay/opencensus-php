@@ -53,6 +53,7 @@ class Entity
     const TERMINAL              = 'terminal';
     const TRANSFER              = 'transfer';
     const QR_CODE               = 'qr_code';
+    const BHARAT_QR             = 'bharat_qr';
     const PROMOTION             = 'promotion';
     const LINE_ITEM             = 'line_item';
     const APP_TOKEN             = 'app_token';
