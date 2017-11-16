@@ -17,9 +17,9 @@ export default class PricingPlanModal extends Component {
     }).then(data => {
       const pricingPlans = {};
 
-      for (let key in data.items) {
-        let value = data.items[key];
-        pricingPlans[value.id] = value.name;
+      for (let key in data) {
+        let value = data[key];
+        pricingPlans[value.plan_id] = value.plan_name;
       }
 
       this.setState({ pricingPlans });

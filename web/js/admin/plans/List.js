@@ -42,7 +42,7 @@ export default class PlanList extends Component {
 }
 
 const pricingFields = [
-  ['Plan ID', item => item.id],
-  ['Plan Name', item => item.name],
-  ['Number of Rules', item => item.count],
+  ['Plan ID', item => item.plan_id],
+  ['Plan Name', item => item.plan_name],
+  ['Number of Rules', item => item.rules_count],
 ];

@@ -56,21 +56,6 @@ const gatewayAcquirerMapping = {
 export default class AssignTerminal extends Component {
   state = { pricingPlans: {} };
 
-  componentWillMount() {
-    adminFetch({
-      route_name: 'pricing_get_merchant_plans',
-    }).then(data => {
-      const pricingPlans = {};
-
-      for (let key in data.items) {
-        let value = data.items[key];
-        pricingPlans[value.id] = value.name;
-      }
-
-      this.setState({ pricingPlans });
-    });
-  }
-
   handleConfirm = body => {
     const { props } = this.props;
 

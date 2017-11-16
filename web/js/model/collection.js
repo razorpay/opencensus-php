@@ -52,7 +52,9 @@ export default class Collection extends BaseModel {
     ).then(data => {
       if (data) {
         let Model = this.model || CollectionItem;
-        data.items = data.items.map(i => new Model(this, i));
+
+        const items = data.items ? data.items : data; // pricing_get_merchant_plans api no longer has data.items
+        data.items = items.map(i => new Model(this, i));
         this.items.replace(data.items);
         this.animateItems = false;
       }
