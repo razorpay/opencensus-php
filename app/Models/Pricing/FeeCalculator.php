@@ -315,8 +315,11 @@ class FeeCalculator
         if (count($rules) === 0)
         {
             throw new Exception\LogicException(
-                'Invalid rule count: 0, Payment Id: ' . $payment->getId(),
-                ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT);
+                'Invalid rule count: 0, Merchant Id: ' . $payment->getMerchantId(),
+                ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
+                [
+                    'payment_id' => $payment->getId()
+                ]);
         }
 
         $subventionType = $payment->merchant->getSubventionType();
@@ -326,8 +329,11 @@ class FeeCalculator
         if ($rule === null)
         {
             throw new Exception\LogicException(
-                'Failed to find a valid pricing rule for the payment. ' .
-                'Payment id: ' . $payment->getId());
+                'Failed to find a valid pricing rule for the payment, Merchant Id: ' . $payment->getMerchantId(),
+                ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+                [
+                    'payment_id' => $payment->getId()
+                ]);
         }
 
         return $rule;

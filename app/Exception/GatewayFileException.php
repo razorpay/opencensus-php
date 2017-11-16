@@ -27,8 +27,8 @@ class GatewayFileException extends RecoverableException
     public function __construct(
         string $code,
         array $data = [],
-        string $traceLevel = Trace::INFO,
-        \Exception $previous = null)
+        \Exception $previous = null,
+        string $traceLevel = Trace::INFO)
     {
         $this->error = new Error($code);
 

@@ -682,10 +682,10 @@ class Gateway extends Base\Gateway
 
     protected function checkGatewayResponse(string $status)
     {
-        if ($status !== StatusCode::SUCCESS)
+        if (StatusCode::isStatusSuccess($status) === false)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                StatusCode::getErrorCode($status),
                 $status,
                 StatusCode::getErrorMessage($status)
             );

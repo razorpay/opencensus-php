@@ -153,9 +153,19 @@ class Service extends Base\Service
     /**
      * Initiates transfer from one Nodal account to another
      */
-    public function postInitiateTransfer($input): array
+    public function postInitiateTransfer(array $input): array
     {
         $response = (new Core)->postInitiateTransfer($input);
+
+        return $response;
+    }
+
+    /**
+     * Add beneficiary from one Nodal account to another
+     */
+    public function addBeneficiary(string $channel, array $input): array
+    {
+        $response = (new Core)->addBeneficiary($channel, $input);
 
         return $response;
     }

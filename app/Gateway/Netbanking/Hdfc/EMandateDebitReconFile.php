@@ -2,74 +2,21 @@
 
 namespace RZP\Gateway\Netbanking\Hdfc;
 
-use Razorpay\Trace\Logger as Trace;
-
 use RZP\Exception;
-use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
-use RZP\Gateway\Netbanking\Base;
-use RZP\Models\Payment\Processor\Processor;
 use RZP\Gateway\Base\Action as GatewayAction;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as Headings;
+use RZP\Models\Payment;
 
 class EMandateDebitReconFile extends Base\EMandateDebitReconFile
 {
-    use FileHandlerTrait;
-
-    protected $fileContents;
-
     protected $errors = [];
+
+    protected $gateway = Payment\Gateway::NETBANKING_HDFC;
 
     const PROCESS = 'process';
     const REJECT  = 'reject';
 
-    public function process(array $input)
-    {
-        $file = $input['file'];
-
-        $this->fileContents = $this->parseExcelSheets($file);
-
-        $response = $this->processFileContents();
-
-        $this->trace->info(TraceCode::EMANDATE_DEBIT_RESPONSE, $response);
-
-        return $response;
-    }
-
-    protected function processFileContents(): array
-    {
-        $totalCount = count($this->fileContents);
-
-        $processedCount = 0;
-
-        foreach ($this->fileContents as $row)
-        {
-            $this->trace->info(
-                TraceCode::EMANDATE_DEBIT_RECON_ROW,
-                [
-                    'gateway'   => 'netbanking_hdfc',
-                    'row'       => $row,
-                ]);
-
-            try
-            {
-                $this->updatePaymentEntities($row);
-
-                $processedCount++;
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::EMANDATE_DEBIT_RECON_FAILED
-                );
-            }
-        }
-
-        return ['total_count' => $totalCount, 'processed_count' => $processedCount];
-    }
 
     protected function updatePaymentEntities(array $row)
     {
@@ -84,7 +31,7 @@ class EMandateDebitReconFile extends Base\EMandateDebitReconFile
 
         // Get payment
         $payment = $this->repo->payment->fetchDebitEmandatePaymentPendingAuth(
-                        Payment\Gateway::NETBANKING_HDFC,
+                        $this->gateway,
                         $paymentId,
                         $tokenId,
                         $accountNumber);
@@ -109,16 +56,6 @@ class EMandateDebitReconFile extends Base\EMandateDebitReconFile
         return $gatewayPayment;
     }
 
-    protected function updatePayment(Base\Entity $gatewayPayment, Payment\Entity $payment)
-    {
-        if ($gatewayPayment->getStatus() !== self::PROCESS)
-        {
-            return $this->processAuthorizedPayment($payment);
-        }
-
-        return $this->processFailedPayment($payment, $gatewayPayment);
-    }
-
     protected function getGatewayAttributes(array $row): array
     {
         $error = trim($row[Headings::REJECTION_REMARKS] ?: '');
@@ -138,38 +75,13 @@ class EMandateDebitReconFile extends Base\EMandateDebitReconFile
         ];
     }
 
-    protected function processAuthorizedPayment(Payment\Entity $payment)
+    protected function isAuthorized(Base\Entity $gatewayPayment): bool
     {
-        $merchant = $payment->merchant;
-
-        $processor = new Processor($merchant);
-
-        $processor = $processor->setPayment($payment);
-
-        return $processor->processAuth($payment);
+        return ($gatewayPayment->getStatus() === self::PROCESS);
     }
 
-    protected function processFailedPayment(Payment\Entity $payment, Base\Entity $gatewayPayment)
+    protected function getApiErrorCode(string $errorDescription): string
     {
-        $merchant = $payment->merchant;
-
-        $processor = new Processor($merchant);
-
-        $gatewayErrorDesc = $gatewayPayment->getErrorMessage();
-
-        $errorCode = ErrorCode::getApiErrorCode($gatewayErrorDesc);
-
-        $e = new Exception\GatewayErrorException(
-            $errorCode,
-            '',
-            $gatewayErrorDesc,
-            [
-                'payment_id'         => $payment->getId(),
-                'gateway_payment_id' => $gatewayPayment->getId(),
-            ]);
-
-        $processor = $processor->setPayment($payment);
-
-        return $processor->updatePaymentAuthFailed($e);
+        return ErrorCode::getApiErrorCode($errorDescription);
     }
 }
