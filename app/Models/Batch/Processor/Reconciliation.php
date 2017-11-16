@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
 use RZP\Reconciliator\Converter;
+use RZP\Reconciliator\RequestProcessor;
 use RZP\Reconciliator\FileProcessor;
 
 class Reconciliation extends Base
@@ -287,9 +288,9 @@ class Reconciliation extends Base
 
     protected function setExtraDetails(array & $arrayContent, array $fileDetails)
     {
-        $arrayContent[self::EXTRA_DETAILS][self::FILE_DETAILS] = $fileDetails;
+        $arrayContent[self::EXTRA_DETAILS][RequestProcessor\Base::FILE_DETAILS] = $fileDetails;
 
-        $arrayContent[self::EXTRA_DETAILS][self::INPUT_DETAILS] = $this->params['extra_details'];
+        $arrayContent[self::EXTRA_DETAILS][RequestProcessor\Base::INPUT_DETAILS] = $this->params[self::EXTRA_DETAILS];
     }
 
     /**

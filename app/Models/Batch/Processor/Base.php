@@ -23,6 +23,8 @@ class Base extends BaseModel\Core
 {
     use FileHandlerTrait;
 
+    const EXTRA_DETAILS = 'extra_details';
+
     /**
      * Lock wait timeout for batch entity
      */

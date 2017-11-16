@@ -17,6 +17,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
@@ -496,7 +497,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                 //   raise an alert and return.
                 // - If force update enabled, let recon
                 //
-                if ($this->shouldForceUpdate(Orchestrator::REFUND_ARN) === false)
+                if ($this->shouldForceUpdate(RequestProcessor\Base::REFUND_ARN) === false)
                 {
                     $this->messenger->raiseReconAlert(
                         [

@@ -30,11 +30,7 @@ class Status
     const SUCCESS             = 'success';
     const FAILURE             = 'failure';
 
-<<<<<<< HEAD
     const BATCH_STATUSES = [
-=======
-    const VALID_BATCH_STATUSES = [
->>>>>>> [batch] adds additional validation while setting status
         self::CREATED,
         self::PARTIALLY_PROCESSED,
         self::FAILED,
@@ -43,11 +39,7 @@ class Status
 
     public static function validateStatus(string $type)
     {
-<<<<<<< HEAD
         if (in_array($type, self::BATCH_STATUSES, true) === false)
-=======
-        if (in_array($type, self::VALID_BATCH_STATUSES, true) === false)
->>>>>>> [batch] adds additional validation while setting status
         {
             throw new Exception\BadRequestValidationFailureException('Not a valid type: ' . $type);
         }

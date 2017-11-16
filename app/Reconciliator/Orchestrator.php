@@ -24,7 +24,6 @@ class Orchestrator extends Base\Core
      * It's all meta data.
      */
     const EXTRA_DETAILS           = 'extra_details';
-    const INPUT_DETAILS           = 'input_details';
 
     /*********************
      * Instance variables
@@ -76,7 +75,7 @@ class Orchestrator extends Base\Core
      * Calls the gateway reconciliator with
      * all the file details and file contents.
      *
-     * @param array $allFilesDetails
+     * @param array $reconDetails
      *
      * @return array
      *
@@ -102,7 +101,7 @@ class Orchestrator extends Base\Core
 
             if ($skipFile === true)
             {
-                $this->handleFileSkip($file, $fileDetails, $this->allFilesDetails);
+                $this->handleFileSkip($file, $fileDetails);
 
                 continue;
             }
@@ -127,7 +126,7 @@ class Orchestrator extends Base\Core
 
                 $this->trace->traceException($ex);
 
-                $this->handleFileSkip($file, $fileDetails, $this->allFilesDetails);
+                $this->handleFileSkip($file, $fileDetails);
 
                 // Don't get the content of the file.
                 continue;
@@ -161,20 +160,20 @@ class Orchestrator extends Base\Core
      * Creates a batch entity with the reconciliation details
      * and queues it for processing
      *
-     * @param array $allFilesDetails
+     * @param array $reconDetails
      *
      * @return array
      *
      * @throws Exception\ReconciliationException
      */
-    public function orchestrateV2(array $allFilesDetails)
+    public function orchestrateV2(array $reconDetails)
     {
         $this->allFilesDetails = $reconDetails[RequestProcessor\Base::FILE_DETAILS] ?? [];
         $this->inputDetails = $reconDetails[RequestProcessor\Base::INPUT_DETAILS] ?? [];
 
         $batches = new PublicCollection;
 
-        foreach ($allFilesDetails as $fileIndex => $fileDetails)
+        foreach ($this->allFilesDetails as $fileIndex => $fileDetails)
         {
             $this->trace->info(
                 TraceCode::RECON_FILE_DETAILS,
@@ -221,7 +220,7 @@ class Orchestrator extends Base\Core
             throw new Exception\ReconciliationException(
                 'No batches created for recon',
                 [
-                    'all_files_details' => $allFilesDetails,
+                    'all_files_details' => $this->allFilesDetails,
                 ]);
         }
 
@@ -429,9 +428,9 @@ class Orchestrator extends Base\Core
 
     protected function setExtraDetails(& $arrayContent, $fileDetails)
     {
-        $arrayContent[self::EXTRA_DETAILS][FileProcessor::FILE_DETAILS] = $fileDetails;
+        $arrayContent[self::EXTRA_DETAILS][RequestProcessor\Base::FILE_DETAILS] = $fileDetails;
 
-        $arrayContent[self::EXTRA_DETAILS][self::INPUT_DETAILS] = $this->inputDetails;
+        $arrayContent[self::EXTRA_DETAILS][RequestProcessor\Base::INPUT_DETAILS] = $this->inputDetails;
     }
 
     /**

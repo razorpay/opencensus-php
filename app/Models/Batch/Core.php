@@ -32,7 +32,12 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
 
-        $input['extra_details'] = $extraDetails;
+        //
+        // Some batch types (like recon) might send additional details during creation
+        // which are required during processing. This is then set in the params
+        // attribute of the processor class.
+        //
+        $input[Processor\Base::EXTRA_DETAILS] = $extraDetails;
 
         $this->dispatchOnQueueForProcessingIfApplicable($batch, $input);
 
