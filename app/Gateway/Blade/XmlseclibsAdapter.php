@@ -47,11 +47,10 @@ class XmlseclibsAdapter
      * create a new chain and use that
      */
     const ROOT_CERT_FINGERPRINTS = [
-        '2fc57c21ea9d79e87bba91413a439a56a4b6033d',
-        '4b2252395bac2a7f7852ae12f17fcf4b1f56528f',
-        '3621a169aba9bb3496a804102acfb127761ab5a9',
-        // VISA prod fingerprint
-        '70179b868c00a4fa609152223f9f3e32bde00562',
+        // MasterCard Root
+        '32dfd35574d8811bb90ebe33846dd3a0b945e0d9',
+        // VISA
+        '70179b868c00a4fa609152223f9f3e32bde00562'
     ];
 
     /**
@@ -190,7 +189,7 @@ class XmlseclibsAdapter
 
     public function assert($bool, $msg = 'assertion failed')
     {
-        if ($bool !==  true)
+        if ($bool !== true)
         {
             throw new RuntimeException($msg);
         }
@@ -458,7 +457,7 @@ class XmlseclibsAdapter
         // Instead of using the entire CA bundle
         $this->assert(count($cert->CAs) === 1);
 
-        return @($cert->validateSignature($signer));
+        return $cert->validateSignature(false);
     }
 
     protected function verifySingleCert(X509 $cert)
