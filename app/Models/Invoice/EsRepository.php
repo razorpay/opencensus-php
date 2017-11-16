@@ -3,6 +3,7 @@
 namespace RZP\Models\Invoice;
 
 use RZP\Models\Base;
+use RZP\Constants\Es;
 
 class EsRepository extends Base\EsRepository
 {
@@ -52,47 +53,23 @@ class EsRepository extends Base\EsRepository
 
     public function buildQueryForType(array & $query, string $value)
     {
-        $filter = [
-            'term' => [
-                'type' => [
-                    'value' => $value,
-                ],
-            ],
-        ];
-
-        $this->addFilter($query, $filter);
+        $this->addTermFilter($query, Entity::TYPE, $value);
     }
 
     public function buildQueryForTypes(array & $query, array $value)
     {
-        $filter = ['terms' => ['type' => $value]];
+        $filter = [Es::TERMS => [Entity::TYPE => $value]];
 
         $this->addFilter($query, $filter);
     }
 
     public function buildQueryForStatus(array & $query, string $value)
     {
-        $filter = [
-            'term' => [
-                'status' => [
-                    'value' => $value,
-                ],
-            ],
-        ];
-
-        $this->addFilter($query, $filter);
+        $this->addTermFilter($query, Entity::STATUS, $value);
     }
 
     public function buildQueryForUserId(array & $query, string $value)
     {
-        $filter = [
-            'term' => [
-                'user_id' => [
-                    'value' => $value,
-                ],
-            ],
-        ];
-
-        $this->addFilter($query, $filter);
+        $this->addTermFilter($query, Entity::USER_ID, $value);
     }
 }
