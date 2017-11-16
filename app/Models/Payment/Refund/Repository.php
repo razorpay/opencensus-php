@@ -12,6 +12,7 @@ use RZP\Exception;
 use RZP\Constants\Table;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Models\Order;
 
 class Repository extends Base\Repository
 {
@@ -506,17 +507,25 @@ class Repository extends Base\Repository
 
         $rPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
 
+        $rMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
+
         $orderId = $this->repo->order->dbColumn(Order\Entity::ID);
 
+        $createdAt = $this->dbColumn(Entity::CREATED_AT);
+
+        $receipt = $this->dbColumn(Entity::RECEIPT);
+
+        $status = $this->repo->order->dbColumn(Order\Entity::STATUS);
+
         $query = $this->newQuery()
-                      ->select($this->dbColumn('*'))
+                      ->select(\DB::raw('*'))
                       ->join(Table::PAYMENT, $rPaymentId, '=', $pId)
                       ->join(Table::ORDER, $orderId, $pOrderId)
-                      ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
-                      ->where(Refund\Entity::CREATED_AT, '>=', $from)
-                      ->where(Refund\Entity::CREATED_AT, '<=', $to)
-                      ->whereNull(Refund\Entity::RECEIPT)
-                      ->where(Order\Entity::STATUS, '!=', Order\Status::PAID)
+                      ->where($rMerchantId, '=', $merchantId)
+                      ->where($createdAt, '>=', $from)
+                      ->where($createdAt, '<=', $to)
+                      ->whereNull($receipt)
+                      ->where($status, '!=', Order\Status::PAID)
                       ->groupBy($orderId);
 
         return $query->get();

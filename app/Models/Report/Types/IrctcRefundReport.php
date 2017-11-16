@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Report\Types;
 
+use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Order;
@@ -10,10 +11,12 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\FileStore;
 use RZP\Models\Feature;
 use RZP\Constants\Entity as E;
+use RZP\Mail\Report\IrctcRefundReport as IrctcMail;
 
 class IrctcRefundReport extends BasicEntityReport
 {
     const BATCH_LIMIT = 100000;
+
     // Maps the transaction source to the entities to be fetched for it
     protected $entityToRelationFetchMap = [
         E::REFUND => [
@@ -161,13 +164,23 @@ class IrctcRefundReport extends BasicEntityReport
         $s3File = $this->createFileAndSave($fullpath, $filename);
 
         $this->unlinkFile($fullpath);
+
+        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($s3File);
+
+        $filenameWithExtension = $filename . '.txt';
+
+        $data = $this->createMailData($filenameWithExtension, $signedUrl, $input);
+
+        $reportingMail = new IrctcMail($data);
+
+        Mail::queue($reportingMail);
     }
 
     protected function getTimestamps($input): array
     {
         $from = Carbon::yesterday(Timezone::IST)->timestamp;
 
-        $to = Carbon::today(Timezone::IST)->timestamp - 1;
+        $to = Carbon::tomorrow(Timezone::IST)->timestamp - 1;
 
         if (isset($input['from']) === true)
         {
@@ -207,5 +220,24 @@ class IrctcRefundReport extends BasicEntityReport
     protected function getFormattedAmount($amount)
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function createMailData($filename, $signedUrl, $input)
+    {
+        list($from, $to) = $this->getTimestamps($input);
+
+        $fdate = Carbon::createFromTimestamp($from, Timezone::IST)->format('Y-m-d');
+
+        $tdate = Carbon::createFromTimestamp($to, Timezone::IST)->format('Y-m-d');
+
+        $data = [
+            'subject'    => 'Irctc Delta Refunds Report - ' . $fdate .' to ' . $tdate,
+            'body'       => '',
+            'signed_url' => $signedUrl,
+            'filename'   => $filename,
+            'emails'     => $input['email']
+        ];
+
+        return $data;
     }
 }
