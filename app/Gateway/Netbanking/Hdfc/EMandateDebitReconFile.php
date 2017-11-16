@@ -33,8 +33,9 @@ class EMandateDebitReconFile extends Base\EMandateDebitReconFile
         $payment = $this->repo->payment->fetchDebitEmandatePaymentPendingAuth(
                         $this->gateway,
                         $paymentId,
-                        $tokenId,
                         $accountNumber);
+
+        assert($payment[Payment\Entity::TOKEN_ID] === $tokenId);
 
         // Update payment
         $this->updatePayment($gatewayPayment, $payment);
