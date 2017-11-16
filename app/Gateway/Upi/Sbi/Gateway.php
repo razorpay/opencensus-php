@@ -3,6 +3,8 @@
 namespace RZP\Gateway\Upi\Sbi;
 
 use App;
+use Razorpay\Trace\Logger;
+use RZP\Exception\BaseException;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base;
@@ -77,6 +79,7 @@ class Gateway extends Base\Gateway
      *
      * @param array $input
      * @return array
+     * @throws BaseException
      */
     public function callback(array $input)
     {
@@ -89,7 +92,23 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
                                                                       Action::AUTHORIZE);
 
-        assertTrue($content[ResponseFields::UPI_TRANS_REFERENCE_NO] === $gatewayPayment->getNpciReferenceId());
+        try
+        {
+            assertTrue($content[ResponseFields::UPI_TRANS_REFERENCE_NO] === $gatewayPayment->getNpciReferenceId());
+        }
+        catch (BaseException $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::INFO,
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                [
+                    'response_trans_reference_no' => $content[ResponseFields::UPI_TRANS_REFERENCE_NO],
+                    'entity_npci_reference_id'    => $gatewayPayment->getNpciReferenceId(),
+                ]);
+
+            throw $e;
+        }
 
         $this->checkResponseStatus($content[ResponseFields::STATUS]);
 
@@ -426,7 +445,16 @@ class Gateway extends Base\Gateway
 
         $json = $this->getAesCrypto()->decryptString($response);
 
-        return json_decode($json, true);
+        $callback = json_decode($json, true);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'decrypted_data' => $callback,
+                'payment_id'     => $callback[ResponseFields::API_RESPONSE][ResponseFields::PSP_REFERENCE_NO]
+            ]);
+
+        return $callback;
     }
 
     /**
