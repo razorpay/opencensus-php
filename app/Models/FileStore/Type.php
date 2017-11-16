@@ -87,6 +87,7 @@ class Type
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
     const RECON_BUCKET_CONFIG                   = 'recon_bucket_config';
+    const CUSTOMER_BUCKET_CONFIG                = 'customer_bucket_config';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -239,6 +240,10 @@ class Type
 
         self::INVOICE_BUCKET_CONFIG => [
             self::INVOICE_PDF,
+        ],
+
+        self::CUSTOMER_BUCKET_CONFIG => [
+            self::QR_CODE_IMAGES,
         ],
 
         self::ACTIVATION_BUCKET_CONFIG => [

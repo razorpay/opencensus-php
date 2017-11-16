@@ -123,7 +123,17 @@ class Generator extends Base\Core
     {
         $localFilePath = $this->generateQrCodeLocalFile();
 
-        $this->generateQrCodeFileOnS3($localFilePath);
+        $ext = FileStore\Format::PNG;
+
+        return (new FileStore\Creator)
+                    ->localFilePath($localFilePath)
+                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$ext][0])
+                    ->name($this->qrCode->getQrCodeFileName())
+                    ->extension($ext)
+                    ->entity($this->qrCode)
+                    ->merchant($this->merchant)
+                    ->type(FileStore\Type::QR_CODE_IMAGES)
+                    ->save();
     }
 
     protected function getLocalSaveDir(): string
@@ -142,20 +152,5 @@ class Generator extends Base\Core
         $qrCodeImage->writeFile($localFilePath);
 
         return $localFilePath;
-    }
-
-    protected function generateQrCodeFileOnS3(string $localFilePath)
-    {
-        $ext = pathinfo($localFilePath, PATHINFO_EXTENSION);
-
-        return (new FileStore\Creator)
-                    ->localFilePath($localFilePath)
-                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$ext][0])
-                    ->name($this->qrCode->getQrCodeFileName())
-                    ->extension($ext)
-                    ->entity($this->qrCode)
-                    ->merchant($this->merchant)
-                    ->type(FileStore\Type::QR_CODE_IMAGES)
-                    ->save();
     }
 }
