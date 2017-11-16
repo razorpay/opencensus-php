@@ -587,6 +587,10 @@
           <span class="pull-right" tooltip="{{merchant.details.receipt_email_enabled == 1 ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.receipt_email_enabled == 1, 'fa-times text-danger':merchant.details.receipt_email_enabled == 0}"></i></span>
           Customer Receipt Emails
         </div>
+        <div class="list-group-item">
+          <span class="pull-right">{{merchant.details.gstin}}</span>
+          GST Number
+        </div>
         <a target="_blank" href="/admin/merchant/{{merchant.id}}/screenshot" class="list-group-item">
           <span class="pull-right" tooltip="Print screenshots"><i class="fa fa-cloud-download"></i></span>
           Print screenshots

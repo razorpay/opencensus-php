@@ -240,6 +240,53 @@ export const getCustomerDisplayName = ({ name, contact, email }) => {
     : ''}`;
 };
 
+/**
+ * Method to create a query string separated by | instead of &
+ * @param {Object} params
+ * @return {String}
+ */
+export const stringifyQueryParamsWithPipe = params => {
+  if (!params) return '';
+  return JSON.stringify(params)
+    .replace(/:/g, '=') // Replace : with =
+    .replace(/{/g, '') // Remove {
+    .replace(/}/g, '') // Remove }
+    .replace(/"/g, '') // Remove "
+    .replace(/,/g, '|'); // Replace , with |
+};
+
+/**
+ * Method to get eventCategory for Analytics based on the given pathname
+ * @param {String} pathname
+ * @return {String}
+ */
+export const getEventCategoryFromPath = pathname => {
+  // Remove slashes from path. Eg: /plans/ => plan
+  pathname = pathname && pathname.split('/').join('');
+  switch (pathname) {
+    case 'payments':
+      return 'Dashboard - Payments';
+    case 'refunds':
+      return 'Dashboard - Refunds';
+    case 'paymentlinks':
+      return 'Dashboard - Payment Links';
+    case 'orders':
+      return 'Dashboard - Orders';
+    case 'settlements':
+      return 'Dashboard - Settlements';
+    case 'invoices':
+    case 'items':
+      return 'Dashboard - Invoices';
+    case 'plans':
+    case 'subscriptions':
+      return 'Dashboard - Subscriptions';
+    case 'virtualaccounts':
+      return 'Dashboard - Smart Collect';
+    default:
+      return null;
+  }
+};
+
 export const getEMI = (principle, length, rate) => {
   /*
    * Calculates EMI given amount, interestRate and Number of months

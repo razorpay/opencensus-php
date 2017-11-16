@@ -8,7 +8,7 @@ import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
-import { isBlank } from 'rzp/utils/rzp-utils';
+import { isBlank, stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
 import { saveInvoice } from 'merchant/modules/invoices/list';
 import { required, phone, email, amount } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
@@ -99,6 +99,36 @@ export default class CreatePaymentLink extends Component {
     }
   }
 
+  componentDidMount() {
+    const isEdit = !!this.props.invoice;
+
+    let analyticsObj = {
+      eventCategory: 'Dashboard - Payment Links',
+      eventAction: `Open Form - ${isEdit ? 'Edit' : 'New'} Payment Link`,
+    };
+
+    if (isEdit) {
+      analyticsObj.eventLabel = `payment_link_id=${this.props.invoice.id}`;
+    }
+
+    window.rzpAnalytics(analyticsObj);
+  }
+
+  componentWillUnmount() {
+    const isEdit = !!this.props.invoice;
+
+    let analyticsObj = {
+      eventCategory: 'Dashboard - Payment Links',
+      eventAction: `Close Form - ${isEdit ? 'Edit' : 'New'} Payment Link`,
+    };
+
+    if (isEdit) {
+      analyticsObj.eventLabel = `payment_link_id=${this.props.invoice.id}`;
+    }
+
+    window.rzpAnalytics(analyticsObj);
+  }
+
   setExpiryDate(date) {
     /*
      * This gets executed when Expire By date is set/removed
@@ -141,6 +171,7 @@ export default class CreatePaymentLink extends Component {
 
   save = props => {
     const params = { ...props };
+    const isEdit = !!this.props.invoice;
     let notificationMSG = 'Payment link created successfully.',
       notifyMedium = [];
 
@@ -170,6 +201,12 @@ export default class CreatePaymentLink extends Component {
     return this.props
       .saveInvoice(params)
       .then(invoice => {
+        window.rzpAnalytics({
+          eventCategory: 'Dashboard - Payment Links',
+          eventAction: `Submit Form - ${isEdit ? 'Edit' : 'New'} Payment Link`,
+          eventLabel: stringifyQueryParamsWithPipe(params),
+        });
+
         this.props.onSave(invoice);
         this.props.closeModal();
         this.props.showNotification({

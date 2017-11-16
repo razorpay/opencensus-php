@@ -12,6 +12,11 @@ import { showNotification } from 'rzp/modules/notifications';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import FormItem from 'merchant/components/FormItem';
 
+import {
+  stringifyQueryParamsWithPipe,
+  getEventCategoryFromPath,
+} from 'rzp/utils/rzp-utils';
+
 let Label = ({ text, htmlFor, required }) => {
   var classes = typeof required !== 'undefined' ? 'label-required' : '';
 
@@ -53,10 +58,38 @@ export default class AddPlan extends Component {
     }
   }
 
+  componentDidMount() {
+    const { closeUrl } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
+      window.rzpAnalytics({
+        eventCategory: eventCategory,
+        eventAction: 'Open Form - New Plan',
+      });
+  }
+
+  componentWillUnmount() {
+    const { closeUrl } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
+      window.rzpAnalytics({
+        eventCategory: eventCategory,
+        eventAction: 'Close Form - New Plan',
+      });
+  }
+
   save = props => {
     return this.props
       .savePlan(props)
       .then(plan => {
+        const { closeUrl } = this.props,
+          eventCategory = getEventCategoryFromPath(closeUrl);
+        eventCategory &&
+          window.rzpAnalytics({
+            eventCategory: eventCategory,
+            eventAction: 'Submit Form - New Plan',
+            eventLabel: stringifyQueryParamsWithPipe(props),
+          });
         this.props.onSave(plan);
         this.props.history.push(`/plans/${plan[plan.resourceIdField]}`);
         this.props.showNotification({
@@ -85,7 +118,7 @@ export default class AddPlan extends Component {
             <form class="panel-body" onSubmit={handleSubmit(this.save)}>
               <FormItem
                 label={_ => <Label text="Plan Name" required />}
-                field={_ =>
+                field={_ => (
                   <Field
                     name="item[name]"
                     component={InputField}
@@ -93,11 +126,12 @@ export default class AddPlan extends Component {
                     autoFocus={true}
                     validate={required('Plan name is required')}
                     placeholder="The name known to your customers"
-                  />}
+                  />
+                )}
               />
               <FormItem
                 label={_ => <Label text="Plan Description" />}
-                field={_ =>
+                field={_ => (
                   <div>
                     <Field
                       name="item[description]"
@@ -110,11 +144,12 @@ export default class AddPlan extends Component {
                       The <b>Plan Name</b> and <b>Plan Description</b> will
                       appear on the invoice as entered above
                     </span>
-                  </div>}
+                  </div>
+                )}
               />
               <FormItem
                 label={_ => <Label text="Billing Frequency" required />}
-                field={_ =>
+                field={_ => (
                   <div class="billing-frequency">
                     <span>Every</span>
                     <Field
@@ -150,12 +185,13 @@ export default class AddPlan extends Component {
                       <b>billing cycle</b> (start date and end date) and{' '}
                       <b>trial period</b> later while, creating a subscription.
                     </span>
-                  </div>}
+                  </div>
+                )}
               />
 
               <FormItem
                 label={_ => <Label text="Billing Amount" required />}
-                field={_ =>
+                field={_ => (
                   <div>
                     <Field
                       name="item[amount]"
@@ -171,17 +207,19 @@ export default class AddPlan extends Component {
                       <b>Billing amount</b> and <b>billing frequency</b> can not
                       be changed later.
                     </span>
-                  </div>}
+                  </div>
+                )}
               />
 
               <FormItem
                 label={_ => <Label text="Internal Notes" />}
-                field={_ =>
+                field={_ => (
                   <FieldArray
                     name="notes"
                     component={NotesFieldArray}
                     required
-                  />}
+                  />
+                )}
               />
 
               <Alert type="error" message={this.state.errors} />

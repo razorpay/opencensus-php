@@ -119,6 +119,14 @@ export default class RefundModal extends Component {
     });
   }
 
+  componentDidMount() {
+    this.props.onMount && this.props.onMount(this.props.payment);
+  }
+
+  componentWillUnmount() {
+    this.props.onUnmount && this.props.onUnmount(this.props.payment);
+  }
+
   save = props => {
     const partial = isPartialPayment(this.props),
       hasAmountErrors = amountValidation(this.props);
@@ -176,6 +184,13 @@ export default class RefundModal extends Component {
                 this.props.onRefund();
               }
 
+              this.props.afterRefund &&
+                this.props.afterRefund({
+                  amount: data.amount,
+                  partial: partial,
+                  payment: this.props.payment,
+                });
+
               this.props.closeModal();
             })
             .catch(({ errors }) => {
@@ -228,9 +243,7 @@ export default class RefundModal extends Component {
                   <b>
                     <RefundType partial={partial} /> refund
                   </b>.
-                  {!partial && (
-                    <span> Change amount for a partial refund.</span>
-                  )}
+                  {!partial && <span>Change amount for a partial refund.</span>}
                 </small>
               )}
             </div>

@@ -20,6 +20,7 @@ export default props => {
     onManualAttempt,
     isUpfront,
     mode,
+    subscriptionId,
   } = props;
 
   let chargeAttemptsFailedText; // Charge attempts failed text
@@ -170,7 +171,7 @@ export default props => {
                   class="btn-link no-padding"
                   text=" Attempt Charge"
                   pendingText="Attempting..."
-                  onClick={() => onManualAttempt(item.id)}
+                  onClick={() => onManualAttempt(item.id, subscriptionId)}
                 />;
               }
             }

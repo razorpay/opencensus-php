@@ -8,7 +8,6 @@ import { fetchPlans as fetchAll } from 'merchant/modules/plans';
 import * as ModalActions from 'rzp/modules/modals';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { NavLink } from 'react-router-dom';
-
 import {
   planId,
   planName,
@@ -16,9 +15,35 @@ import {
   planBillingCycle,
   createdAt,
 } from 'rzp/ui/item/pair';
+import { stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
 
 @connect(state => state.plans, { fetchAll, ...ModalActions })
 export default class PlansListContainer extends ListContainer {
+  componentDidMount() {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Subscriptions',
+      eventAction: 'Go To - Plans',
+    });
+  }
+
+  onSearchAnalytics = params => {
+    const label = stringifyQueryParamsWithPipe(params);
+    if (label && label.length > 0) {
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Subscriptions',
+        eventAction: 'Search - Plans',
+        eventLabel: label,
+      });
+    }
+  };
+
+  onClearAnalytics = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Subscriptions',
+      eventAction: 'Clear Search Params - Plans',
+    });
+  };
+
   render() {
     let { loading, items, error } = this.props;
 
@@ -41,6 +66,8 @@ export default class PlansListContainer extends ListContainer {
           form="plansListFilter"
           count={this.state.count}
           onSubmit={this.search}
+          onSearchAnalytics={this.onSearchAnalytics}
+          onClearAnalytics={this.onClearAnalytics}
         />
 
         <DataTable

@@ -22,9 +22,7 @@ export default class WebsiteDetailsForm extends Component {
               Website Address
             </label>
             <div class="col-md-9">
-              <span class="help-block">
-                Example: http://www.example.com/
-              </span>
+              <span class="help-block">Example: http://www.example.com/</span>
 
               <Field
                 name="business_website"
@@ -156,7 +154,9 @@ export default class WebsiteDetailsForm extends Component {
             </label>
             <div class="col-md-9">
               <span class="help-block">
-                Any page with product prices in INR. May display a range of prices if not actual price as part of a static pricing policy. Download a &nbsp;
+                Any page with product prices in INR. May display a range of
+                prices if not actual price as part of a static pricing policy.
+                Download a &nbsp;
                 <a
                   class="highlight"
                   href="https://docs.google.com/document/d/1uibf_AW9DDfNylWgDgCT8EpyWzRF7dZtV8mbEMeP7gs/pub"

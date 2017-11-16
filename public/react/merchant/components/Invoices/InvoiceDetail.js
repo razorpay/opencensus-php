@@ -144,7 +144,20 @@ export default props => {
 
                 <EntityDetailRow
                   label="Payment Link"
-                  value={() => <CopyLink url={invoice.short_url} />}
+                  value={() => (
+                    <CopyLink
+                      url={invoice.short_url}
+                      onCopy={() => {
+                        if (invoice.type === 'link') {
+                          window.rzpAnalytics({
+                            eventCategory: 'Dashboard - Payment Links',
+                            eventAction: 'Copy - Payment Link',
+                            eventLabel: `payment_link_id=${invoice.id}`,
+                          });
+                        }
+                      }}
+                    />
+                  )}
                 />
                 <EntityDetailRow
                   label="Summary"

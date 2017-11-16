@@ -10,15 +10,63 @@ import SettlementBreakupModal from './BreakupModal';
 import { fetchSettlements as fetchAll } from 'rzp/modules/collection';
 import * as ModalActions from 'rzp/modules/modals';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
+import { stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
 
 @connect(state => state.settlements, {
   fetchAll,
   ...ModalActions,
 })
 export default class SettlementsListContainer extends ListContainer {
+  componentDidMount() {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Settlements',
+      eventAction: 'Go To - Settlements',
+    });
+  }
+
+  onSearchAnalytics = params => {
+    const label = stringifyQueryParamsWithPipe(params);
+    if (label && label.length > 0) {
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Settlements',
+        eventAction: 'Search - Settlements',
+        eventLabel: label,
+      });
+    }
+  };
+
+  onClearAnalytics = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Settlements',
+      eventAction: 'Clear Search Params - Settlements',
+    });
+  };
+
+  settlementBreakupOnMount = id => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Settlements',
+      eventAction: 'Show - Settlement Breakup',
+      eventLabel: `settlement_id=${id}`,
+    });
+  };
+
+  settlementBreakupOnUnmount = id => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Settlements',
+      eventAction: 'Hide - Settlement Breakup',
+      eventLabel: `settlement_id=${id}`,
+    });
+  };
+
   showBreakup = settlement => {
     this.props.openModal({
-      component: <SettlementBreakupModal settlementId={settlement.id} />,
+      component: (
+        <SettlementBreakupModal
+          settlementId={settlement.id}
+          onMount={this.settlementBreakupOnMount}
+          onUnmount={this.settlementBreakupOnUnmount}
+        />
+      ),
     });
   };
 
@@ -39,6 +87,8 @@ export default class SettlementsListContainer extends ListContainer {
               form="settlementsListFilter"
               count={this.state.count}
               onSubmit={this.search}
+              onSearchAnalytics={this.onSearchAnalytics}
+              onClearAnalytics={this.onClearAnalytics}
             />
 
             {error && <Alert type="error" message={error} />}

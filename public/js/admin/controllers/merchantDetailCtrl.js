@@ -2136,6 +2136,8 @@ app
                 $scope.merchant.details.merchant_details.submitted_at;
               $scope.referer = getReferer($scope.merchant.details.tags);
               $scope.marketplace = $scope.merchant.details.parent_id;
+              $scope.merchant.details.gstin =
+                $scope.merchant.details.merchant_details.gstin;
 
               var merchantAdmins = $scope.merchant.details.admins || [];
               $scope.selected_admins = [];
