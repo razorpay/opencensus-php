@@ -491,11 +491,11 @@ class Gateway extends Base\Gateway
         switch ($this->input['card']['network_code'])
         {
             case Card\Network::MC:
-                $network = NetworkName::MASTERCARD;
+                $network = Card\NetworkName::MASTERCARD;
                 break;
 
             case Card\Network::VISA:
-                $network = NetworkName::VISA;
+                $network = Card\NetworkName::VISA;
                 break;
         }
 
