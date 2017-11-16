@@ -218,35 +218,6 @@ class Service extends Base\Service
         }
     }
 
-    /**
-     * Old format:
-     * {
-     *   "receiver_types": [
-     *     "bank_account"
-     *   ],
-     *   "descriptor": "DESCRIPT"
-     * }
-     *
-     * New format:
-     * {
-     *   "receivers": {
-     *     "types": [
-     *       "bank_account"
-     *     ],
-     *     "bank_account": {
-     *       "descriptor": "DESCRIPT"
-     *     }
-     *   }
-     * }
-     *
-     * Both formats are to be concurrently supported. While the old
-     * format gave alphanumeric accounts by default, the new format will
-     * give numeric ones by default. Here, we convert the old format to
-     * the new one, and set numeric option to false explicitly, so that
-     * the old format continues to work the way it did.
-     *
-     * @param  array $input
-     */
     protected function modifyRequestFromOldFormat(array & $input)
     {
         if ($this->isOldFormat($input) === false)
@@ -276,15 +247,11 @@ class Service extends Base\Service
                 Entity::NUMERIC    => false,
             ];
 
-            // Descriptor should ideally be unset here, as its use is complete
-            // But we are currently using it as an attribute of the VA entity,
-            // and it is needed to query for active VAs with the same descriptor.
-            // TODO: This will have to be refactored later.
             // unset($input[Entity::DESCRIPTOR]);
         }
     }
 
-    protected function isOldFormat(array $input): bool
+    protected function isOldFormat(array $input)
     {
         if (isset($input[Entity::RECEIVER_TYPES]) === true)
         {

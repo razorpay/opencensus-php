@@ -123,15 +123,15 @@ return [
                 'content' => [
                     'error' => [
                         'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => 'Alphabetical account numbers cannot be '.
-                                         'used as merchant handle is not set.',
+                        'description' => 'Alphabetical account numbers cannot be used as '.
+                                         'merchant handle is not set for your account.',
                     ],
                 ],
                 'status_code' => 400,
             ],
             'exception' => [
-                'class' => 'RZP\Exception\BadRequestValidationFailureException',
-                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                'class' => 'RZP\Exception\BadRequestException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ALPHA_SANS_HANDLE,
             ],
         ],
         'numericWithDescriptor' => [
@@ -145,8 +145,8 @@ return [
                 'status_code' => 400,
             ],
             'exception' => [
-                'class' => 'RZP\Exception\BadRequestValidationFailureException',
-                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                'class' => 'RZP\Exception\BadRequestException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_WITH_NUMERIC,
             ],
         ],
     ],
