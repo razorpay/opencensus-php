@@ -118,10 +118,10 @@ class Service extends Base\Service
         // Sets the gateway reconciliator object and
         // Gets all the file details from the input.
         //
-        $allFilesDetails = $requestProcessor->process($input);
+        $reconDetails = $requestProcessor->process($input);
 
         // There must be at least one file. Otherwise, error.
-        if (empty($allFilesDetails) === true)
+        if (empty($reconDetails[RequestProcessor\Base::FILE_DETAILS]) === true)
         {
             throw new Exception\ReconciliationException(
                 'File details are empty.');
@@ -129,7 +129,7 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::RECON_FILE_DETAILS,
-            $allFilesDetails);
+            $reconDetails[RequestProcessor\Base::FILE_DETAILS]);
 
         $gateway = $requestProcessor->getGateway();
 
@@ -143,10 +143,10 @@ class Service extends Base\Service
         //
         if (in_array($gateway, self::BATCH_RECON_GATEWAYS, true) === true)
         {
-            return $orchestrator->orchestrateV2($allFilesDetails);
+            return $orchestrator->orchestrateV2($reconDetails);
         }
 
-        return $orchestrator->orchestrate($allFilesDetails);
+        return $orchestrator->orchestrate($reconDetails);
     }
 
     /**

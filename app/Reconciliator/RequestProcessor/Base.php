@@ -15,11 +15,13 @@ use RZP\Reconciliator\FileProcessor;
 
 class Base extends Core
 {
-    const GATEWAY          = 'gateway';
-
+    const GATEWAY                 = 'gateway';
     const ATTACHMENT_COUNT        = 'attachment_count';
     const ATTACHMENT_HYPHEN_COUNT = 'attachment-count';
     const FORCE_UPDATE            = 'force_update';
+
+    const FILE_DETAILS            = 'file_details';
+    const INPUT_DETAILS           = 'input_details';
 
     /**
      * These field can be force updated with passed with request

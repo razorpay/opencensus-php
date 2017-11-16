@@ -80,7 +80,10 @@ class Mailgun extends Base
         $allFilesDetails = $this->getFileDetailsFromInput(
             $this->inputDetails, $input, $fileLocationType);
 
-        return $allFilesDetails;
+        return [
+            self::FILE_DETAILS  => $allFilesDetails,
+            self::INPUT_DETAILS => $this->inputDetails,
+        ];
     }
 
     protected function getEmailDetails($input)

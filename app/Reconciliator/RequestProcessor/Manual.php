@@ -29,7 +29,10 @@ class Manual extends Base
 
         $allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input);
 
-        return $allFilesDetails;
+        return [
+            self::FILE_DETAILS  => $allFilesDetails,
+            self::INPUT_DETAILS => $inputDetails,
+        ];
     }
 
     /**

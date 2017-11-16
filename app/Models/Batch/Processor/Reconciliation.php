@@ -18,6 +18,7 @@ class Reconciliation extends Base
 {
     const EXTRA_DETAILS = 'extra_details';
     const FILE_DETAILS  = 'file_details';
+    const INPUT_DETAILS = 'input_details';
 
     /**
      * Lock wait timeout for reconciliation batch entity
@@ -287,6 +288,8 @@ class Reconciliation extends Base
     protected function setExtraDetails(array & $arrayContent, array $fileDetails)
     {
         $arrayContent[self::EXTRA_DETAILS][self::FILE_DETAILS] = $fileDetails;
+
+        $arrayContent[self::EXTRA_DETAILS][self::INPUT_DETAILS] = $this->params['extra_details'];
     }
 
     /**

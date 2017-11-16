@@ -357,10 +357,10 @@ class Validator
 
     public function validateGateway($attribute, $value, $parameters)
     {
-        if (isset(Orchestrator::GATEWAY_SENDER_MAPPING[$value]) === false)
+        if (isset(RequestProcessor\Base::GATEWAY_SENDER_MAPPING[$value]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                    'Invalid value for' . Orchestrator::GATEWAY
+                    'Invalid value for' . RequestProcessor\Base::GATEWAY
             );
         }
     }
@@ -385,7 +385,7 @@ class Validator
         if ($valid === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Invalid value for ' . Orchestrator::FORCE_UPDATE
+                'Invalid value for ' . RequestProcessor\Base::FORCE_UPDATE
             );
         }
     }

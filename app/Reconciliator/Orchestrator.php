@@ -30,6 +30,8 @@ class Orchestrator extends Base\Core
      * Instance variables
      *********************/
 
+    protected $inputDetails;
+    protected $allFilesDetails;
     protected $allFilesContents;
 
     /********************
@@ -80,10 +82,13 @@ class Orchestrator extends Base\Core
      *
      * @throws Exception\ReconciliationException
      */
-    public function orchestrate(array $allFilesDetails)
+    public function orchestrate(array $reconDetails)
     {
+        $this->allFilesDetails = $reconDetails[RequestProcessor\Base::FILE_DETAILS] ?? [];
+        $this->inputDetails = $reconDetails[RequestProcessor\Base::INPUT_DETAILS] ?? [];
+
         // Run validations and conversions on each file
-        foreach ($allFilesDetails as $file => $fileDetails)
+        foreach ($this->allFilesDetails as $file => $fileDetails)
         {
             $this->trace->info(
                 TraceCode::RECON_FILE_DETAILS,
@@ -97,7 +102,7 @@ class Orchestrator extends Base\Core
 
             if ($skipFile === true)
             {
-                $this->handleFileSkip($file, $fileDetails, $allFilesDetails);
+                $this->handleFileSkip($file, $fileDetails, $this->allFilesDetails);
 
                 continue;
             }
@@ -122,7 +127,7 @@ class Orchestrator extends Base\Core
 
                 $this->trace->traceException($ex);
 
-                $this->handleFileSkip($file, $fileDetails, $allFilesDetails);
+                $this->handleFileSkip($file, $fileDetails, $this->allFilesDetails);
 
                 // Don't get the content of the file.
                 continue;
@@ -137,12 +142,12 @@ class Orchestrator extends Base\Core
             $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
         }
 
-        if (empty($allFilesDetails) === true)
+        if (empty($this->allFilesDetails) === true)
         {
             throw new Exception\ReconciliationException(
                 'File contents are empty.',
                 [
-                    'all_files_details' => $allFilesDetails,
+                    'all_files_details' => $this->allFilesDetails,
                 ]);
         }
 
@@ -164,6 +169,9 @@ class Orchestrator extends Base\Core
      */
     public function orchestrateV2(array $allFilesDetails)
     {
+        $this->allFilesDetails = $reconDetails[RequestProcessor\Base::FILE_DETAILS] ?? [];
+        $this->inputDetails = $reconDetails[RequestProcessor\Base::INPUT_DETAILS] ?? [];
+
         $batches = new PublicCollection;
 
         foreach ($allFilesDetails as $fileIndex => $fileDetails)
@@ -180,7 +188,7 @@ class Orchestrator extends Base\Core
 
             if ($skipFile === true)
             {
-                $this->handleFileSkip($fileIndex, $fileDetails, $allFilesDetails);
+                $this->handleFileSkip($fileIndex, $fileDetails);
 
                 continue;
             }
@@ -194,7 +202,7 @@ class Orchestrator extends Base\Core
             }
             catch (\Throwable $ex)
             {
-                $this->handleBatchCreationError($ex, $fileIndex, $fileDetails, $allFilesDetails);
+                $this->handleBatchCreationError($ex, $fileIndex, $fileDetails);
 
                 continue;
             }
@@ -260,12 +268,12 @@ class Orchestrator extends Base\Core
         return false;
     }
 
-    protected function handleFileSkip($file, array $fileDetails, array & $allFilesDetails)
+    protected function handleFileSkip($file, array $fileDetails)
     {
         $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
 
         // Remove the file from allFiles variable, since this file is now, not part of reconciliation.
-        unset($allFilesDetails[$file]);
+        unset($this->allFilesDetails[$file]);
     }
 
     /**
@@ -284,7 +292,7 @@ class Orchestrator extends Base\Core
             Batch\Entity::FILE        => $file
         ];
 
-        $batch = $this->batchCore->create($params, $this->sharedMerchant);
+        $batch = $this->batchCore->create($params, $this->sharedMerchant, $this->inputDetails);
 
         return $batch;
     }
@@ -292,8 +300,7 @@ class Orchestrator extends Base\Core
     protected function handleBatchCreationError(
         \Throwable $ex,
         int $fileIndex,
-        array $fileDetails,
-        array & $allFilesDetails)
+        array $fileDetails)
     {
         $this->trace->traceException($ex);
 
@@ -306,7 +313,7 @@ class Orchestrator extends Base\Core
                 'gateway'      => $this->gateway,
             ]);
 
-        $this->handleFileSkip($fileIndex, $fileDetails, $allFilesDetails);
+        $this->handleFileSkip($fileIndex, $fileDetails);
     }
 
     /**

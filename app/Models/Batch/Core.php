@@ -15,7 +15,10 @@ class Core extends Base\Core
 {
     use FileHandlerTrait;
 
-    public function create(array $input, Merchant\Entity $merchant): Entity
+    public function create(
+        array $input,
+        Merchant\Entity $merchant,
+        array $extraDetails = []): Entity
     {
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
@@ -28,6 +31,8 @@ class Core extends Base\Core
         $processor->storeInputFileAndSaveBatch($input);
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
+
+        $input['extra_details'] = $extraDetails;
 
         $this->dispatchOnQueueForProcessingIfApplicable($batch, $input);
 
