@@ -417,7 +417,7 @@ class Gateway extends Base\Gateway
         {
             $networkName = $this->getNetworkName();
 
-            $cert = $this->config['live_client_' . $networkName . 'certificate'];
+            $cert = $this->config['live_client_' . $networkName . '_certificate'];
 
             $cert = str_replace('\n', "\n", $cert);
 
@@ -449,7 +449,7 @@ class Gateway extends Base\Gateway
         {
             $networkName = $this->getNetworkName();
 
-            $cert = $this->config['live_client_' . $networkName . 'certificate_pem'];
+            $cert = $this->config['live_client_' . $networkName . '_certificate_pem'];
 
             $cert = str_replace('\n', "\n", $cert);
 
@@ -491,7 +491,7 @@ class Gateway extends Base\Gateway
         switch ($this->input['card']['network_code'])
         {
             case Card\Network::MC:
-                $network = Card\NetworkName::MASTERCARD;
+                $network = Card\NetworkName::MC;
                 break;
 
             case Card\Network::VISA:
