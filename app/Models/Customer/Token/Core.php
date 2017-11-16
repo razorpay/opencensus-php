@@ -42,15 +42,15 @@ class Core extends Base\Core
 
                 $input[Token\Entity::USED_AT] = Carbon::now()->getTimestamp();
 
-                $token =  $this->create($customer, $input, $card);
+                $token = $this->create($customer, $input, $card);
 
                 return $token;
             });
     }
 
     /**
-     * @param  Customer\Entity $customer
-     * @param  array           $input
+     * @param Customer\Entity  $customer
+     * @param array            $input
      * @param Card\Entity|null $card
      *
      * @return Entity Below function is used to create token in payment flow where we
@@ -62,31 +62,32 @@ class Core extends Base\Core
     {
         $token = new Token\Entity;
 
-        if ((isset($input[Token\Entity::CARD_ID]) === true) or
-            ($card !== null))
+        if (isset($input[Token\Entity::CARD_ID]) === true)
         {
-            if ($card === null)
-            {
-                $card = $this->repo->card->findOrFailPublic($input[Token\Entity::CARD_ID]);
-            }
-
-            $token->card()->associate($card);
-
-            $token->setExpiredAt($card->getExpiryTimestamp());
+            $card = $this->repo->findOrFailPublic($input[Token\Entity::CARD_ID]);
         }
+
+        //
+        // This is here because we are doing
+        // a terminal check later in the flow.
+        //
+        $terminal = null;
 
         if (isset($input[Token\Entity::TERMINAL_ID]))
         {
-            $terminal = $this->repo->terminal->findOrFail($input[Token\Entity::TERMINAL_ID]);
-
             //
             // This if block gets run only in case of wallet currently.
             //
-            $token->terminal()->associate($terminal);
+
+            $terminal = $this->repo->terminal->findOrFail($input[Token\Entity::TERMINAL_ID]);
 
             unset($input[Token\Entity::TERMINAL_ID]);
         }
 
+        //
+        // This is basically being used only
+        // for creation of direct tokens
+        //
         if (isset($input[Token\Entity::USED_AT]) === true)
         {
            $token->setUsedAt($input[Token\Entity::USED_AT]);
@@ -94,11 +95,34 @@ class Core extends Base\Core
            unset($input[Token\Entity::USED_AT]);
         }
 
+        //
+        // This should be before associations because if defaults for the
+        // foreign entities are present as null in the entity class
+        // and if the association is done before the build, the
+        // association will get overridden as null.
+        //
+        $token->build($input);
+
+        if ($card !== null)
+        {
+            //
+            // This is being done here and not in the above card block
+            // because this function can accept a card also and we have
+            // to set expiry time even then. Like duh.
+            //
+            $token->setExpiredAt($card->getExpiryTimestamp());
+
+            $token->card()->associate($card);
+        }
+
+        if ($terminal !== null)
+        {
+            $token->terminal()->associate($terminal);
+        }
+
         $token->customer()->associate($customer);
 
         $token->merchant()->associate($customer->merchant);
-
-        $token->build($input);
 
         $existingToken = $this->validateExistingToken($token);
 
