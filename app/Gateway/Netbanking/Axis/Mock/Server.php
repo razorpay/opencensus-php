@@ -75,7 +75,9 @@ class Server extends Base\Mock\Server
         // Since there is no way to identify based on parameter if the
         // corporate netbanking was to be employed, this can be checked
         // by trying to decrypt the payment using the corporate key
-        if (empty($data) === true)
+        // Moving to an isset based check as decryption sometimes fails
+        // with garbage value
+        if (isset($data['PRN']) === false)
         {
             $dataCorporate = $this->getDecryptedDataForBankingType($input, 'corporate');
 
@@ -85,6 +87,7 @@ class Server extends Base\Mock\Server
 
                 $data = $dataCorporate;
             }
+
         }
 
         return $data;

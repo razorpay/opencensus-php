@@ -187,6 +187,7 @@ final class Route
         'bank_transfer_edit_payer_account'        => ['put',      'bank_transfers/{id}/payer_bank_account',         'BankTransferController@editPayerBankAccount'                       ],
         'bank_transfer_strip_payer_accounts'      => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
         'bank_transfer_insert'                    => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
+        'gateway_payment_callback_bharatqr'       => ['post',     'payment/callback/bharatqr',                      'BharatQrController@processBharatQrPayment'                         ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
         'virtual_account_fetch'                   => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
@@ -250,6 +251,7 @@ final class Route
         'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
         'nodal_initiate_transfer'                 => ['post',     'nodal/transfer',                                 'SettlementController@postInitiateTransfer'                         ],
+        'nodal_add_beneficiary'                   => ['post',     'nodal/beneficiary/{channel}',                    'SettlementController@addBeneficiary'                               ],
         'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                      => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
         'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
@@ -650,7 +652,6 @@ final class Route
 
         'merchant_analytics'                      => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
 
-        // Feature onboarding routes
         'onboarding_features_fetch_details'       => ['get',      'onboarding/features',                            'FeatureController@getOnboardingDetails'                            ],
         'onboarding_features_fetch_submission'    => ['get',      'onboarding/features/{feature}',                  'FeatureController@getOnboardingSubmissions'                        ],
         'onboarding_features_create'              => ['post',     'onboarding/features/{feature}',                  'FeatureController@postOnboardingSubmissions'                       ],
@@ -929,6 +930,7 @@ final class Route
         'setl_delete_file',
         'setl_post_details_old',
         'setl_fixer',
+        'nodal_add_beneficiary',
         'nodal_initiate_transfer',
         'payment_verify',
         'payment_authorize_failed',
@@ -1094,6 +1096,7 @@ final class Route
         'user_reset_password_create',
         'user_reset_password_token',
         'merchant_payout_mail',
+        'gateway_payment_callback_bharatqr',
     ];
 
     public static $proxy = [
@@ -1512,6 +1515,10 @@ final class Route
         'yesbank' => [
             'bank_transfer_process',
             'bank_transfer_notify',
+        ],
+
+        'bharatqr' => [
+            'gateway_payment_callback_bharatqr',
         ],
 
         'mailgun' => [

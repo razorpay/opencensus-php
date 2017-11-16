@@ -42,6 +42,7 @@ class Table
     const CUSTOMER              = 'customers';
     const TRANSFER              = 'transfers';
     const REVERSAL              = 'reversals';
+    const BHARAT_QR             = 'bharat_qr';
     const PROMOTION             = 'promotions';
     const LINE_ITEM             = 'line_items';
     const INVITATION            = 'invitations';

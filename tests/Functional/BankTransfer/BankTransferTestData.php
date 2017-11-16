@@ -9,7 +9,13 @@ return [
     'createVirtualAccount' => [
         'url'     => '/virtual_accounts',
         'method'  => 'post',
-        'content' => [],
+        'content' => [
+            'receivers' => [
+                'types' => [
+                    'bank_account',
+                ],
+            ],
+        ],
     ],
 
     'processBankTransfer' => [

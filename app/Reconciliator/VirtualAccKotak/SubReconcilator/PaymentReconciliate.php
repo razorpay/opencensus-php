@@ -85,26 +85,25 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             return;
         }
 
-        // Trace, but don't alert, for recent payments
-        if ($this->isRecentBankTransfer($row) === true)
+        $this->trace->info(TraceCode::BANK_TRANSFER_UNEXPECTED, [
+            'message'       => 'Unexpected bank transfer, alert skipped',
+            'utr'           => $row[self::COLUMN_UTR],
+            'row'           => $row,
+        ]);
+
+        // Don't alert for recent payments
+        if ($this->isRecentBankTransfer($row) === false)
         {
-            $this->trace->info(TraceCode::BANK_TRANSFER_UNEXPECTED,
+            $this->app['slack']->queue(
+                TraceCode::BANK_TRANSFER_UNEXPECTED,
+                $row,
                 [
-                    'message'       => 'Unexpected bank transfer, alert skipped',
-                    'utr'           => $row[self::COLUMN_UTR],
-                    'row'           => $row,
-                ]);
-
-            return;
+                    'channel'  => Config::get('slack.channels.virtual_accounts_log'),
+                    'username' => 'Scrooge',
+                    'icon'     => ':x:'
+                ]
+            );
         }
-
-        $this->messenger->raiseReconAlert(
-            [
-                'trace_code'    => TraceCode::RECON_ALERT,
-                'message'       => 'Unexpected bank transfer',
-                'row'           => $row,
-                'gateway'       => get_called_class()
-            ]);
     }
 
     /**

@@ -118,7 +118,11 @@ class Gateway extends \RZP\Gateway\Base\Gateway
 
     public function reconcileDebitEmandate(array $input)
     {
-        $this->input = $input;
+        $namespace = $this->getGatewayNamespace();
+
+        $class = $namespace . '\\' . 'EMandateDebitReconFile';
+
+        return (new $class)->process($input);
     }
 
     public function setBankingType($bankingType)

@@ -45,8 +45,10 @@ class Entity extends Base\PublicEntity
     // These are used while creating merchant payouts.
     // Min amount refers to the minimum amount payout has to be
     // Modulo refers to the multiples in which amount should be
+    // Buffer Amount specifies the remaining merchant balance (buffer balance) after the payout
     const MIN_AMOUNT             = 'min_amount';
     const MODULO                 = 'modulo';
+    const BUFFER_AMOUNT          = 'buffer_amount';
 
     protected $entity = 'payout';
 

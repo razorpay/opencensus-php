@@ -24,6 +24,7 @@ class Terminal extends Base
         $this->createSharedNetbankingAirtelTerminal();
         $this->createSharedNetbankingAxisTerminal();
         $this->createSharedNetbankingFederalTerminal();
+        $this->createSharedNetbankingBobTerminal();
         $this->createSharedNetbankingRblTerminal();
         $this->createSharedNetbankingIndusindTerminal();
         $this->createSharedNetbankingPnbTerminal();
@@ -1149,6 +1150,24 @@ class Terminal extends Base
         ];
 
         return $this->createSharedNetbankingFederalTerminal($attributes);
+    }
+
+    public function createSharedNetbankingBobTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_BOB_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_bob',
+            'gateway_merchant_id'       => 'netbanking_bob_merchant_id',
+            'netbanking'                => 1,
+            'shared'                    => 1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
     }
 
     public function createSharedNetbankingRblTerminal(array $attributes = [])

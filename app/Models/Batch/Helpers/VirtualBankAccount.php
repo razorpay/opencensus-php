@@ -22,8 +22,14 @@ class VirtualBankAccount
         return [
             VirtualAccount\Entity::DESCRIPTOR  => $entry[Header::VA_DESCRIPTOR],
             VirtualAccount\Entity::CUSTOMER_ID => $customer->getPublicId(),
-            VirtualAccount\Entity::RECEIVER_TYPES => [
-                VirtualAccount\Receiver::BANK_ACCOUNT,
+            VirtualAccount\Entity::RECEIVERS => [
+                VirtualAccount\Entity::TYPES => [
+                    VirtualAccount\Receiver::BANK_ACCOUNT,
+                ],
+                VirtualAccount\Entity::BANK_ACCOUNT => [
+                    VirtualAccount\Receiver::NUMERIC    => false,
+                    VirtualAccount\Receiver::DESCRIPTOR => $entry[Header::VA_DESCRIPTOR],
+                ],
             ],
         ];
     }
