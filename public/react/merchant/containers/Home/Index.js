@@ -4,11 +4,17 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import * as HomeActions from 'merchant/modules/home';
 import { Field } from 'redux-form';
+import moment from 'moment';
 
 import Amount from 'rzp/ui/Amount';
 import Definition from 'rzp/ui/Definition';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
-import KeyMetrics from './KeyMetrics';
+
+import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
+import PaymentMethods from './PaymentMethods';
+import Traffic from './Traffic';
+import RecentActivity from './RecentActivity';
+
 import DateRangePicker from 'merchant/components/Home/DateRangePicker';
 import RadioButton from 'rzp/ui/Forms/RadioButton';
 import Sticky from 'rzp/ui/Sticky';
@@ -45,28 +51,46 @@ const breakDownVals = [
   }
 )
 export default class HomeContainer extends Component {
+  constructor(props) {
+    super(props);
+
+    const endDate = moment(),
+      startDate = endDate.add(...dateRangeOptions[0].slice(1));
+
+    this.state = {
+      startDate,
+      endDate,
+    };
+  }
+
   render() {
     let mode = this.props.mode;
 
+    const { startDate, endDate } = this.state;
+
     return (
       <div class="react-root">
-        <Header title="Dashboard" showMode={true}>
-          <div class="pull-right">
-            <Definition>
-              <span>
-                Current Balance: <Amount value={38760} />
-              </span>
-              <span>Updated 10 mins ago</span>
-            </Definition>
-          </div>
-        </Header>
+        <div className="panel">
+          <Header title="Dashboard" showMode={true}>
+            <div class="pull-right">
+              <Definition>
+                <span>
+                  Current Balance: <Amount value={38760} />
+                </span>
+                <span>Updated 10 mins ago</span>
+              </Definition>
+            </div>
+          </Header>
+        </div>
 
         <Sticky stickWhen={68} stickAt={50}>
           <div className="dashboard-ctrl-bar clearfix">
             <div className="pull-left">
               <DateRangePicker
                 presets={dateRangeOptions}
-                onDatesChange={(s, e) => console.log(s, e)}
+                onDatesChange={(startDate, endDate) => {
+                  this.setState({ startDate, endDate });
+                }}
               />
             </div>
             <div className="pull-right">
@@ -96,27 +120,26 @@ export default class HomeContainer extends Component {
         <div className="dashboard">
           <div className="row">
             <div className="col-md-12">
-              <KeyMetrics />
+              <KeyMetrics startDate={startDate} endDate={endDate} />
             </div>
           </div>
+
           <div className="row">
             <div className="col-md-12">
               <p>Payment methods drilldown</p>
             </div>
             <div className="col-md-12">
-              <div className="panel">
-                <div className="clearfix">
-                  <div className="pull-left">Showing: All Payment Methods</div>
-                  <div className="pull-right">...</div>
-                  <div className="pull-right">
-                    <select>
-                      <option>By Transaction Volume</option>
-                      <option>By Issuer</option>
-                    </select>
-                  </div>
-                </div>
-                <Highcharts />
-              </div>
+              <PaymentMethods startDate={startDate} endDate={endDate} />
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="col-md-6">
+              <Traffic startDate={startDate} endDate={endDate} />
+            </div>
+
+            <div className="col-md-6">
+              <RecentActivity startDate={startDate} endDate={endDate} />
             </div>
           </div>
         </div>
