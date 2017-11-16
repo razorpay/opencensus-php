@@ -811,7 +811,7 @@ return [
     // Additional request content and assertions are done in test method
     // for different cases.
     //
-    'testFetchDeletedEntityForAdmin' => [
+    'testFetchSoftDeletedEntityForAdmin' => [
         'request' => [
             'url'      => '/admin/org',
             'method'   => 'get',
@@ -828,7 +828,7 @@ return [
     // Additional request content and assertions are done in test method
     // for different cases.
     //
-    'testFindDeletedEntityForAdmin' => [
+    'testFindSoftDeletedEntityForAdmin' => [
         'request' => [
             'url'     => '/admin/org/org_10000000000001',
             'method'  => 'get',
