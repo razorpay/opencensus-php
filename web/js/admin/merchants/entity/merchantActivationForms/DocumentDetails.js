@@ -28,10 +28,10 @@ export default class DocumentDetails extends Component {
     const { files } = this.state;
 
     return (
-      <div>
+      <div class="container">
         <header>{this.props.title}</header>
         {!files ? (
-          <div class="spinner" />
+          <div class="spinner center" />
         ) : (
           <div>
             <banner class="info">

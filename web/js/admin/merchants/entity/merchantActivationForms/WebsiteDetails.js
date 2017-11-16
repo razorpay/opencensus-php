@@ -4,10 +4,10 @@ import Form from 'ui/Form';
 import Field from 'ui/Field';
 
 export default ({ merchant_details: merchantDetails }) => (
-  <div>
+  <div class="container">
     <header>Website Details</header>
     {!merchantDetails ? (
-      <div class="spinner" />
+      <div class="spinner center" />
     ) : (
       <Form>
         <Field

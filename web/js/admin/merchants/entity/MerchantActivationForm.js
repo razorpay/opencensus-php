@@ -60,7 +60,7 @@ export default class MerchantActivationForm extends Component {
           Merchant: <b>{this.merchantId}</b>
         </div>
         {!Object.keys(details).length ? (
-          <div class="spinner" />
+          <div class="spinner center" />
         ) : (
           _getOverviewFields(details).map(row => (
             <EntityRow

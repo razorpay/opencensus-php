@@ -32,11 +32,11 @@ export default class ProductOnboarding extends Component {
     const { onboarding } = this.state;
 
     return (
-      <div>
+      <div class="container">
         <header>{this.props.title}</header>
 
         {!onboarding ? (
-          <div class="spinner" />
+          <div class="spinner center" />
         ) : (
           <div>
             {

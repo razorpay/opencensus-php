@@ -47,10 +47,10 @@ export default class BusinessDetails extends Component {
     const { merchant_details: merchantDetails, title } = this.props;
 
     return (
-      <div>
+      <div class="container">
         <header>{title}</header>
         {!merchantDetails ? (
-          <div class="spinner" />
+          <div class="spinner center" />
         ) : (
           <Form>
             <SelectField
