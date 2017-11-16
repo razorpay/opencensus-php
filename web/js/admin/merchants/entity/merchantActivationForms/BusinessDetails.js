@@ -44,12 +44,11 @@ export default class BusinessDetails extends Component {
   }
 
   render() {
-    const { merchant_details: merchantDetails } = this.props;
-    console.log(merchantDetails);
+    const { merchant_details: merchantDetails, title } = this.props;
 
     return (
       <div>
-        <header>Business Details</header>
+        <header>{title}</header>
         {!merchantDetails ? (
           <div class="spinner" />
         ) : (

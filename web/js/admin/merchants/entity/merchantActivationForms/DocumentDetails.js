@@ -29,7 +29,7 @@ export default class DocumentDetails extends Component {
 
     return (
       <div>
-        <header>Document Uploads</header>
+        <header>{this.props.title}</header>
         {!files ? (
           <div class="spinner" />
         ) : (

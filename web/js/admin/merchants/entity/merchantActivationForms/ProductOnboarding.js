@@ -33,7 +33,7 @@ export default class ProductOnboarding extends Component {
 
     return (
       <div>
-        <header>Product Onboarding</header>
+        <header>{this.props.title}</header>
 
         {!onboarding ? (
           <div class="spinner" />

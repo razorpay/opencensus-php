@@ -3,9 +3,9 @@ import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Field from 'ui/Field';
 
-export default ({ merchant_details: merchantDetails }) => (
+export default ({ merchant_details: merchantDetails, title }) => (
   <div>
-    <header>Contact Details</header>
+    <header>{title}</header>
     {!merchantDetails ? (
       <div class="spinner" />
     ) : (

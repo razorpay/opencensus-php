@@ -6,7 +6,7 @@ import { openModal, confirm } from 'common/modal';
 
 import Model from './model';
 import EntityRow from 'ui/EntityRow';
-import Table from 'ui/Table';
+import TabsContainer from 'ui/Tabs';
 
 import ContactDetails from './merchantActivationForms/ContactDetails';
 import WebsiteDetails from './merchantActivationForms/WebsiteDetails';
@@ -85,12 +85,23 @@ export default class MerchantActivationForm extends Component {
         <div class="box">
           <div class="heading">Merchant Activation Form</div>
 
-          <ContactDetails {...details} />
-          <BusinessDetails {...details} />
-          <WebsiteDetails {...details} />
-          <BankAccountDetails {...details} />
-          <DocumentDetails merchantId={this.merchantId} {...details} />
-          <ProductOnboarding merchantId={this.merchantId} />
+          {
+            <TabsContainer tabNames={tabNames}>
+              <ContactDetails {...details} title={tabNames[0]} />
+              <BusinessDetails {...details} title={tabNames[1]} />
+              <WebsiteDetails {...details} title={tabNames[2]} />
+              <BankAccountDetails {...details} title={tabNames[3]} />
+              <DocumentDetails
+                merchantId={this.merchantId}
+                {...details}
+                title={tabNames[4]}
+              />
+              <ProductOnboarding
+                merchantId={this.merchantId}
+                title={tabNames[5]}
+              />
+            </TabsContainer>
+          }
         </div>
       </div>
     );
@@ -135,3 +146,12 @@ function _getOverviewFields(details) {
     },
   ];
 }
+
+const tabNames = [
+  'Contact Details',
+  'Business Details',
+  'Website details',
+  'Bank Account Details',
+  'Document Uploads',
+  'Product Onboading',
+];

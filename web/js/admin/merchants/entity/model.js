@@ -1,4 +1,4 @@
-import { observable, action, transaction } from 'mobx';
+import { observable, action } from 'mobx';
 import { notifySuccess } from 'common/modal';
 import BaseModel from 'model/base';
 
