@@ -36,28 +36,6 @@ trait VirtualAccountTrait
         return $response;
     }
 
-    private function createVirtualAccountOldFormat(
-        array $input = [],
-        $numeric = true,
-        $descriptor = null)
-    {
-        $defaultValues = $this->getOldVirtualAccountRequestArray();
-
-        $attributes = array_merge($defaultValues, $input);
-
-        $this->ba->privateAuth();
-
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/virtual_accounts',
-            'content' => $attributes,
-        ];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        return $response;
-    }
-
     private function closeVirtualAccount(string $id)
     {
         $request = [
