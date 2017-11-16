@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer\Token;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Customer;
@@ -39,7 +40,11 @@ class Core extends Base\Core
 
                 $card = (new Card\Core)->create($cardInput, $customer->merchant);
 
-                return $this->create($customer, $input, $card);
+                $input[Token\Entity::USED_AT] = Carbon::now()->getTimestamp();
+
+                $token =  $this->create($customer, $input, $card);
+
+                return $token;
             });
     }
 
@@ -80,6 +85,13 @@ class Core extends Base\Core
             $token->terminal()->associate($terminal);
 
             unset($input[Token\Entity::TERMINAL_ID]);
+        }
+
+        if (isset($input[Token\Entity::USED_AT]) === true)
+        {
+           $token->setUsedAt($input[Token\Entity::USED_AT]);
+
+           unset($input[Token\Entity::USED_AT]);
         }
 
         $token->customer()->associate($customer);
