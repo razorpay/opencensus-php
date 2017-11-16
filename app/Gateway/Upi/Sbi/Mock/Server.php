@@ -15,20 +15,6 @@ class Server extends Base\Mock\Server
 {
     const DEFAULT_PAYEE_VPA = 'razorpay@sbi';
 
-    protected $ns;
-
-    protected $repo;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        // TODO: Verify this, currently setting this so that getGatewayInstance works correctly
-        $this->ns = $this->ns ?? __NAMESPACE__;
-
-        $this->repo = $this->app['repo']->upi;
-    }
-
     public function authorize($input)
     {
         parent::authorize($input);
@@ -79,7 +65,6 @@ class Server extends Base\Mock\Server
 
         $this->content($content, 'verify');
 
-        // TODO: Double check this
         $content = [
             ResponseFields::RESPONSE       => $this->encrypt($content),
             ResponseFields::PG_MERCHANT_ID => $this->getGatewayInstance()->getMerchantId()
@@ -112,7 +97,7 @@ class Server extends Base\Mock\Server
     {
         $paymentId = $input[RequestFields::REQUEST_INFO][RequestFields::PSP_REFERENCE_NO];
 
-        $gatewayPayment = $this->repo->findByPaymentId($paymentId)->first();
+        $gatewayPayment = $this->getRepo()->findByPaymentId($paymentId)->first();
 
         $response = [
             ResponseFields::PSP_REFERENCE_NO       => $paymentId,
@@ -191,5 +176,25 @@ class Server extends Base\Mock\Server
         $this->content($content, 'auth_decrypted');
 
         return [ResponseFields::API_RESPONSE => $content];
+    }
+
+    /**
+     * @override
+     * @return string
+     */
+    protected function getNamespace()
+    {
+        return __NAMESPACE__;
+    }
+
+    /**
+     * @override
+     * @return mixed
+     */
+    protected function getRepo()
+    {
+        $class = 'RZP\Gateway\Upi\Base\Repository';
+
+        return new $class;
     }
 }
