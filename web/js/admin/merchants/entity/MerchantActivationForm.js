@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
-
+import { toJS } from 'mobx';
 import { adminFetch } from 'util/fetch';
 import { openModal, confirm } from 'common/modal';
 
@@ -86,7 +86,15 @@ export default class MerchantActivationForm extends Component {
           <div class="heading">Merchant Activation Form</div>
 
           {
-            <TabsContainer tabNames={tabNames}>
+            <TabsContainer
+              tabNames={tabNames}
+              className="activation-form"
+              iconClass="i i-yes"
+              iconBoolList={
+                details.merchant_details &&
+                toJS(details.merchant_details.steps_finished)
+              }
+            >
               <ContactDetails {...details} title={tabNames[0]} />
               <BusinessDetails {...details} title={tabNames[1]} />
               <WebsiteDetails {...details} title={tabNames[2]} />

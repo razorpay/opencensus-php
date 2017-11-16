@@ -51,6 +51,8 @@ class TabModel {
   Example: See "Edit Merchant" modal in merchant details
   Props:
     tabNames: Pass array of names to be shown on tabs navigation
+    iconBoolList: array of indexes for which 'iconClass' is to be put
+                  (Note: iconBoolList is to have 1 for item with index = 0 to have iconClass)
     children: The current selected tab will pick content from children(treated as array)
 */
 
@@ -66,23 +68,39 @@ export default class TabsContainer extends Component {
   }
 
   render() {
-    let { className = '', tabNames, children } = this.props;
-    className += 'tabs-container';
+    let {
+      className = '',
+      tabNames,
+      children,
+      iconClass,
+      iconBoolList,
+    } = this.props;
+    className += ' tabs-container';
 
     const currentContent = children[this.model.currentActiveIdx];
 
     return (
       <div class={className}>
         <ul class="tabs-nav">
-          {tabNames.map((tab, index) => (
-            <li
-              key={index}
-              class={this.model.currentActiveIdx === index ? 'selected' : ''}
-              onClick={() => this.model.goTo(index)}
-            >
-              {tab}
-            </li>
-          ))}
+          {tabNames.map((tab, index) => {
+            let icon;
+            if (iconBoolList && iconBoolList.indexOf(index + 1) > -1) {
+              icon = <i class={iconClass} />;
+            }
+
+            return (
+              <li
+                key={index}
+                class={`${
+                  this.model.currentActiveIdx === index ? 'selected' : ''
+                } ${icon && 'text-success'}`}
+                onClick={() => this.model.goTo(index)}
+              >
+                {icon}
+                {tab}
+              </li>
+            );
+          })}
         </ul>
         <div class="tabs-content">{currentContent}</div>
 
