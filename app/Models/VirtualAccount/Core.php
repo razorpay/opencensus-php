@@ -23,7 +23,7 @@ class Core extends Base\Core
 
             $virtualAccount->customer()->associate($customer);
 
-            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
+            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVER_TYPES]);
 
             $this->repo->saveOrFail($virtualAccount);
 
@@ -55,21 +55,21 @@ class Core extends Base\Core
         return $virtualAccount;
     }
 
-    protected function buildReceivers(Entity $virtualAccount, array $receivers)
+    protected function buildReceivers(Entity $virtualAccount, array $receiverTypes)
     {
         $name = $virtualAccount->getName();
 
-        $receiverHelper = new Receiver($virtualAccount->merchant, $name);
+        $descriptor = $virtualAccount->getDescriptor();
 
-        foreach ($receivers[Entity::TYPES] as $receiverType)
+        $receiverHelper = new Receiver($virtualAccount->merchant, $name, $descriptor);
+
+        foreach ($receiverTypes as $receiverType)
         {
-            $options = $receivers[$receiverType] ?? [];
-
             $this->validateReceiver($receiverType);
 
             $func = 'build' . studly_case($receiverType);
 
-            $receiver = $receiverHelper->$func($virtualAccount, $options);
+            $receiver = $receiverHelper->$func($virtualAccount);
 
             $association = camel_case($receiverType);
 
