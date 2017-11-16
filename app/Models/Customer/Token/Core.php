@@ -40,6 +40,11 @@ class Core extends Base\Core
 
                 $card = (new Card\Core)->create($cardInput, $customer->merchant);
 
+                //
+                // This is being done because if we don't do this, then the merchant
+                // will not receive this in the response of fetch tokens because
+                // we don't return back tokens which have never been used.
+                //
                 $input[Token\Entity::USED_AT] = Carbon::now()->getTimestamp();
 
                 $token = $this->create($customer, $input, $card);
@@ -64,7 +69,7 @@ class Core extends Base\Core
 
         if (isset($input[Token\Entity::CARD_ID]) === true)
         {
-            $card = $this->repo->findOrFailPublic($input[Token\Entity::CARD_ID]);
+            $card = $this->repo->card->findOrFailPublic($input[Token\Entity::CARD_ID]);
         }
 
         //
