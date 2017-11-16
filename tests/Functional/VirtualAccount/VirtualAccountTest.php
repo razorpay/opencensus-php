@@ -103,8 +103,8 @@ class VirtualAccountTest extends TestCase
         $this->createVirtualAccount();
 
         $vba = $this->getLastEntity('bank_account', true);
-        // Handle is unset so default root is used with default handle
-        $this->assertRegexp("/11111100[0-9]{9}$/", $vba['account_number']);
+        // Handle is unsetso default root is used with default handle
+        $this->assertRegexp("/RAZORPAY[A-Z0-9]{9}$/", $vba['account_number']);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -119,14 +119,6 @@ class VirtualAccountTest extends TestCase
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is set so standard root is used with given handle
         $this->assertEquals("RZRPHANDDESC1234", $vba['account_number']);
-
-        $this->fixtures->merchant->setHandle('3333');
-
-        $this->createVirtualAccount(['descriptor' => 'desc5678']);
-
-        $vba = $this->getLastEntity('bank_account', true);
-        // Handle is set so standard root is used with given handle
-        $this->assertEquals("11113333DESC5678", $vba['account_number']);
     }
 
     public function testCreateVirtualAccountDescriptorLengths()

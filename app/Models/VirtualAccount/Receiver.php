@@ -34,9 +34,8 @@ class Receiver
     // No 5s and Ss
     // No 8s and Bs
     // No 2s and Zs
-    const ACCOUNT_NUMBER_ALPHANUM_CHAR_SPACE = '34679ACDEFGHJKLMNPQRTUVWXY';
-    const ACCOUNT_NUMBER_NUM_CHAR_SPACE      = '0123456789';
-    const MAX_ACCOUNT_GENERATION_ATTEMPTS    = 10;
+    const ACCOUNT_NUMBER_CHAR_SPACE       = '34679ACDEFGHJKLMNPQRTUVWXY';
+    const MAX_ACCOUNT_GENERATION_ATTEMPTS = 10;
 
     protected $app;
     protected $merchant;
@@ -157,11 +156,13 @@ class Receiver
     {
         $bankCode = Provider::getBankCode($provider);
 
+        $root = $this->getRoot($provider);
+
         $attempts = 0;
 
         while ($attempts <= self::MAX_ACCOUNT_GENERATION_ATTEMPTS)
         {
-            $accountNumber = $this->generateNewAccountNumberForProvider($provider);
+            $accountNumber = $this->generateNewAccountNumberWithRoot($root);
 
             $existingAccount = $this->repo->bank_account
                                     ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode);
@@ -194,13 +195,11 @@ class Receiver
      * @return string Unique account number
      * @throws Exception\LogicException
      */
-    protected function generateNewAccountNumberForProvider(string $provider)
+    protected function generateNewAccountNumberWithRoot(string $root)
     {
-        $root = $this->getRoot($provider);
-
         $handle = $this->getHandle($root);
 
-        $descriptor = $this->getDescriptor($handle, $root);
+        $descriptor = $this->getDescriptor($handle);
 
         $accountNumber = strtoupper($root . $handle . $descriptor);
 
@@ -228,36 +227,34 @@ class Receiver
         return $accountNumber;
     }
 
-    // If handle is not set, we use the default numeric root,
+    // If handle is not set, we use the default root (RAZO),
     // and later add the default handle.
     //
-    // If handle is set, and it contains alphabets,
-    // we use the alpha root (RZRP)
+    // If handle is set, we use the standard root (RZRP)
     //
     protected function getRoot(string $provider)
     {
-        $root = Provider::ROOT[$provider]['default'];
+        $root = Provider::ROOT[$provider]['standard'];
 
         $handle = $this->merchant->getHandle();
 
-        if (($handle !== null) and
-            (preg_match("/[a-z]/i", $handle) === 1))
+        if ($handle === null)
         {
-            $root = Provider::ROOT[$provider]['alpha'];
-
-            if (strlen($handle) !== self::STANDARD_HANDLE_LENGTH)
-            {
-                $root = Provider::ROOT[$provider]['special'];
-            }
+            $root = Provider::ROOT[$provider]['default'];
+        }
+        else if (strlen($handle) !== self::STANDARD_HANDLE_LENGTH)
+        {
+            $root = Provider::ROOT[$provider]['special'];
         }
 
         return $root;
     }
 
-    // If handle is not set, we use the default numeric root,
-    // and now add the default handle.
+    // If handle is not set, we use the default root (RAZO),
+    // and now add the default handle (RPAY).
     //
-    // If handle is set, we use it.
+    // If handle is set, we use the standard root (RZRP),
+    // and add the chosen handle.
     //
     protected function getHandle(string $root)
     {
@@ -277,16 +274,16 @@ class Receiver
     // Merchant handles can be 3 or 4 characters. Max is 17,
     // so we pad with 17-4-n characters, i.e. 10 or 9.
     //
-    protected function getDescriptor(string $handle, string $root)
+    protected function getDescriptor(string $handle)
     {
         $descriptor = $this->descriptor;
 
-        if (($handle === null) or
+        if (($this->merchant->getHandle() === null) or
             ($descriptor === null))
         {
             $totalLength = self::ACCOUNT_NUMBER_LENGTH;
 
-            $availableLength = $totalLength - strlen($root) - strlen($handle);
+            $availableLength = $totalLength - self::ROOT_LENGTH - strlen($handle);
 
             $descriptor = $this->padWithRandomDigits($availableLength);
         }
@@ -303,7 +300,7 @@ class Receiver
     {
         $pad = '';
 
-        $charSpace = $this->getCharSpace();
+        $charSpace = str_split(self::ACCOUNT_NUMBER_CHAR_SPACE);
 
         while (strlen($pad) < $desiredLength)
         {
@@ -311,18 +308,5 @@ class Receiver
         }
 
         return $pad;
-    }
-
-    protected function getCharSpace()
-    {
-        $charSpace = self::ACCOUNT_NUMBER_NUM_CHAR_SPACE;
-
-        if (($this->merchant->getHandle() !== null) and
-            (preg_match("/[a-z]/i", $this->merchant->getHandle()) === true))
-        {
-            $charSpace = self::ACCOUNT_NUMBER_ALPHANUM_CHAR_SPACE;
-        }
-
-        return str_split($charSpace);
     }
 }

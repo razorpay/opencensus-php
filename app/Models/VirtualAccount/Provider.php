@@ -46,18 +46,18 @@ class Provider
     //
     // Standard root is used when handle is set.
     const ROOT = [
-        self::YESBANK => [
+        self::YESBANK   => [
             // Todo
             'default'  => '',
-            'alpha'    => '',
+            'standard' => '',
             'special'  => '',
             'reserved' => [],
         ],
         self::KOTAK     => [
             // Used for merchants who have not set handle
-            'default'  => '139913',
+            'default'  => 'RAZO',
             // Used for merchants who have set a 4-char handle
-            'alpha'    => 'RZRP',
+            'standard' => 'RZRP',
             // Used for merchants who have set a 3-char handle
             'special'  => 'RAZR',
             // Used for our own nodal-to-nodal transfers
@@ -67,8 +67,8 @@ class Provider
             ],
         ],
         self::DASHBOARD       => [
-            'default'  => '111111',
-            'alpha'    => 'RZRP',
+            'default'  => 'RAZO',
+            'standard' => 'RZRP',
             'special'  => 'RAZR',
             'reserved' => [
                 'RZRN',
@@ -77,8 +77,7 @@ class Provider
     ];
 
     const DEFAULT_HANDLE_MAPPING = [
-        '111111' => '00',
-        '139913' => '00'
+        'RAZO' => 'RPAY',
     ];
 
     // The default details are fixed by each provider, most specifically
