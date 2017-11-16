@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\RequestProcessor;
 
 use RZP\Exception;
+use RZP\Reconciliator\Validator;
 
 class Manual extends Base
 {
@@ -45,7 +46,10 @@ class Manual extends Base
         $inputDetails = [
             self::ATTACHMENT_COUNT => $input['attachment-count'],
             self::GATEWAY          => $input['gateway'],
+            self::FORCE_UPDATE     => $input[self::FORCE_UPDATE] ?? [],
         ];
+
+        (new Validator)->validateManualInput($inputDetails);
 
         return $inputDetails;
     }

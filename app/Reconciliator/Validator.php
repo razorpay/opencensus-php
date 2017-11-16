@@ -76,13 +76,13 @@ class Validator
     const MAX_FILE_SIZE = 26214400;
 
     const FORCE_UPDATE_ALLOWED = [
-        Orchestrator::REFUND_ARN
+        RequestProcessor\Base::REFUND_ARN
     ];
 
     const MANUAL_INPUT_RULES = [
-        Orchestrator::ATTACHMENT_COUNT    => 'required|integer|min:0|max:10',
-        Orchestrator::GATEWAY             => 'required|custom',
-        Orchestrator::FORCE_UPDATE        => 'sometimes|custom',
+        RequestProcessor\Base::ATTACHMENT_COUNT    => 'required|integer|min:0|max:10',
+        RequestProcessor\Base::GATEWAY             => 'required|custom',
+        RequestProcessor\Base::FORCE_UPDATE        => 'sometimes|custom',
     ];
 
     public function filterEmails(array $emailDetails)

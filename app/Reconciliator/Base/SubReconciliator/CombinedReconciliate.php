@@ -173,7 +173,8 @@ class CombinedReconciliate extends Foundation\SubReconciliate
 
                 $this->repo->transactionOnLiveAndTest(function() use ($subReconciliatorObject, $row, $extraDetails)
                 {
-                    $subReconciliatorObject->runReconciliate($row, $extraDetails);
+                    $subReconciliatorObject->setExtraDetails($extraDetails);
+                    $subReconciliatorObject->runReconciliate($row);
                 });
             }
         }

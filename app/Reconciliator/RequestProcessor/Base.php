@@ -17,7 +17,14 @@ class Base extends Core
 {
     const GATEWAY          = 'gateway';
 
-    const ATTACHMENT_COUNT = 'attachment_count';
+    const ATTACHMENT_COUNT        = 'attachment_count';
+    const ATTACHMENT_HYPHEN_COUNT = 'attachment-count';
+    const FORCE_UPDATE            = 'force_update';
+
+    /**
+     * These field can be force updated with passed with request
+     */
+    const REFUND_ARN = 'refund_arn';
 
     /******************
      * Gateway constants

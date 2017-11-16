@@ -72,7 +72,7 @@ class SubReconciliate extends Base\Core
      */
     public function resetProcessingAttributes()
     {
-        return;
+        $this->extraDetails = [];
     }
 
     protected function persistReconciledAt($entity)

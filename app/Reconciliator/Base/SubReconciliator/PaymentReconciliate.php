@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Base;
 
 use App;
+
 use RZP\Models\Card;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
@@ -103,7 +104,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     public function startReconciliationV2(array $fileContents, Batch\Entity $batch)
     {
-        $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
+        $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
         unset($fileContents[Orchestrator::EXTRA_DETAILS]);
 
         try
@@ -112,7 +113,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             {
                 $this->repo->transactionOnLiveAndTest(function() use ($row, $extraDetails)
                 {
-                    $this->runReconciliate($row, $extraDetails);
+                    $this->runReconciliate($row);
                 });
             }
         }
@@ -122,7 +123,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
     }
 
-    public function runReconciliate($row, $extraDetails)
+    public function runReconciliate($row)
     {
         $rowDetails = $this->getRowDetailsStructured($row);
 
@@ -193,6 +194,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->payment = null;
         $this->paymentIin = null;
         $this->paymentTransaction = null;
+        parent::resetProcessingAttributes();
     }
 
     protected function runPreReconciledAtCheckRecon($rowDetails)

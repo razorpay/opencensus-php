@@ -24,9 +24,6 @@ class Orchestrator extends Base\Core
      * It's all meta data.
      */
     const EXTRA_DETAILS           = 'extra_details';
-    const ATTACHMENT_COUNT        = 'attachment_count';
-    const ATTACHMENT_HYPHEN_COUNT = 'attachment-count';
-    const FORCE_UPDATE            = 'force_update';
     const INPUT_DETAILS           = 'input_details';
 
     /*********************

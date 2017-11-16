@@ -39,7 +39,7 @@ class Mailgun extends Base
         self::FREECHARGE,
     ];
 
-    protected $emailDetails;
+    protected $inputDetails;
 
     /**
      * Getting all files details is handled by this function when the
@@ -51,9 +51,9 @@ class Mailgun extends Base
     public function process(array $input): array
     {
         // Gets the email details and validates the email details.
-        $this->emailDetails = $this->getEmailDetails($input);
+        $this->inputDetails = $this->getEmailDetails($input);
 
-        $this->validator->filterEmails($this->emailDetails);
+        $this->validator->filterEmails($this->inputDetails);
 
         // Figures out the gateway and sets the gateway reconciliator object for
         // the orchestrator, using the input details.
@@ -74,11 +74,11 @@ class Mailgun extends Base
             //
             $this->validator->validateAttachments($input);
 
-            $this->emailDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
+            $this->inputDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
         }
 
         $allFilesDetails = $this->getFileDetailsFromInput(
-            $this->emailDetails, $input, $fileLocationType);
+            $this->inputDetails, $input, $fileLocationType);
 
         return $allFilesDetails;
     }
@@ -96,7 +96,7 @@ class Mailgun extends Base
         // 'X-Original-Sender' always contains just the email address.
         //
 
-        $emailDetails = [
+        $inputDetails = [
             self::FROM           => strtolower($input['X-Original-Sender'] ?? $input['sender']),
             self::SUBJECT        => $input['subject'],
             self::TO             => $input['recipient'],
@@ -113,9 +113,9 @@ class Mailgun extends Base
         //
         $this->validator->validateAttachments($input, true);
 
-        $emailDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
+        $inputDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
 
-        return $emailDetails;
+        return $inputDetails;
     }
 
     /**
@@ -133,7 +133,7 @@ class Mailgun extends Base
 
         if ($this->gateway === self::ADMIN)
         {
-            $this->gateway = $this->emailDetails[self::SUBJECT];
+            $this->gateway = $this->inputDetails[self::SUBJECT];
 
             if (in_array($this->gateway, array_keys(self::GATEWAY_SENDER_MAPPING)) === false)
             {
@@ -152,7 +152,7 @@ class Mailgun extends Base
 
     protected function getGatewayFromEmail()
     {
-        $fromEmailId = $this->emailDetails[self::FROM];
+        $fromEmailId = $this->inputDetails[self::FROM];
 
         $gateway = get_key_from_subarray_match($fromEmailId, self::GATEWAY_SENDER_MAPPING);
 
@@ -166,7 +166,7 @@ class Mailgun extends Base
         if (($this->gatewayEmailValidationIsNeeded($gateway) === true) and
             ($this->gatewayEmailIsValid($gateway) === false))
         {
-            $formattedMailDetails = $this->emailDetails;
+            $formattedMailDetails = $this->inputDetails;
             unset($formattedMailDetails[self::BODY]);
             unset($formattedMailDetails[self::BODY_HTML_TEXT]);
 
@@ -189,7 +189,7 @@ class Mailgun extends Base
     {
         $gatewayEmailValidator = 'validate' . studly_case($gateway) . 'Email';
 
-        $valid = $this->validator->$gatewayEmailValidator($this->emailDetails);
+        $valid = $this->validator->$gatewayEmailValidator($this->inputDetails);
 
         return $valid;
     }
