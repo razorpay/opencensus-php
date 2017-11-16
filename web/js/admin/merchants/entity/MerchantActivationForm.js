@@ -89,7 +89,7 @@ export default class MerchantActivationForm extends Component {
             <TabsContainer
               tabNames={tabNames}
               className="activation-form"
-              iconClass="i i-yes"
+              iconClass="i i-yes text-success"
               iconBoolList={
                 details.merchant_details &&
                 toJS(details.merchant_details.steps_finished)
@@ -132,8 +132,10 @@ function _getOverviewFields(details) {
       label: 'Activation Form Submitted',
       value: () => (
         <i
-          class={`i i-${
-            details.merchant_details.submitted == 1 ? 'yes' : 'no'
+          class={`i ${
+            details.merchant_details.submitted == 1
+              ? 'i-yes text-success'
+              : 'i-no text-danger'
           }`}
         />
       ),
@@ -150,7 +152,13 @@ function _getOverviewFields(details) {
     },
     {
       label: 'Activated',
-      value: () => <i class={`i i-${details.activated == 1 ? 'yes' : 'no'}`} />,
+      value: () => (
+        <i
+          class={`i ${
+            details.activated == 1 ? 'i-yes text-success' : 'i-no text-danger'
+          }`}
+        />
+      ),
     },
   ];
 }

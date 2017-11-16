@@ -197,7 +197,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
       successMsg = 'Receipt email enabled successfully';
     }
 
-    this.merchantAction(action, successMsg);
+    merchantAction(action, successMsg);
   }
 
   // Suspend / Unsuspend merchant
@@ -216,7 +216,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
       confirm(
         'Are you sure you want to suspend merchant?(Make sure you have attempted all ways of convincing him before doing this)'
       ).then(_ => {
-        this.merchantAction(action, successMsg);
+        merchantAction(action, successMsg);
       });
     }
   }
@@ -241,8 +241,30 @@ const ActionsList = ({ model, merchantId, actions }) => {
     confirm(confirmMsg).then(_ => merchantAction(action, successMsg));
   }
 
+  function activateMerchant() {
+    confirm(
+      'Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating?'
+    ).then(_ => {
+      return adminFetch(
+        {
+          params: { dashboard: true },
+        },
+        '/admin/merchant/' + merchantId + '/activate'
+      )
+        .then(response => {
+          if (response) {
+            notifySuccess('Merchant is successfully updated');
+            model.updateDetails(response);
+          }
+        })
+        .catch(err => {
+          notifyError(JSON.stringify(err.response));
+        });
+    });
+  }
+
   function toggleFundsHoldOrRelease() {
-    const merchant = this.model.merchant;
+    const merchant = model.merchant;
 
     let action, confirmMsg;
     if (merchant.details.activated == 1 && !merchant.details.hold_funds) {
@@ -259,7 +281,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
       adminPut({
         route_name: 'merchant_action',
         url_params: {
-          id: this.merchantId,
+          id: merchantId,
         },
         body: { action },
       })
@@ -292,6 +314,18 @@ const ActionsList = ({ model, merchantId, actions }) => {
         <div onClick={toggleLockOnActivationForm}>
           {merchant.details.merchant_details.locked ? 'Unlock' : 'Lock'}{' '}
           Activation Form
+          <i
+            class={`pull-right i i-${
+              merchant.details.merchant_details.locked ? 'unlock' : 'lock'
+            }`}
+          />
+        </div>
+      )}
+
+      {(true || merchant.details.activated == 0) && (
+        <div onClick={activateMerchant}>
+          Activate Merchant
+          <i class="pull-right i i-done-all" />
         </div>
       )}
 
@@ -299,10 +333,14 @@ const ActionsList = ({ model, merchantId, actions }) => {
       {
         do {
           if (merchant.details.activated == 1 && !merchant.details.hold_funds) {
-            <div onClick={toggleFundsHoldOrRelease}>Hold Merchant Funds</div>;
+            <div onClick={toggleFundsHoldOrRelease}>
+              Hold Merchant Funds
+              <i class="pull-right i i-hand-stop" />
+            </div>;
           } else if (merchant.details.hold_funds == 1) {
             <div onClick={toggleFundsHoldOrRelease}>
               Release Merchant Funds
+              <i class="pull-right i i-thumps-up" />
             </div>;
           }
         }
@@ -314,10 +352,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
           if (merchant.details.activated == 1 && merchant.details.live == 0) {
             <div onClick={toggleLiveTransactions}>
               Enable Live Transactions
+              <i class="pull-right i i-yes" />
             </div>;
           } else if (merchant.details.live == 1) {
             <div onClick={toggleLiveTransactions}>
               Disable Live Transactions
+              <i class="pull-right i i-no" />
             </div>;
           }
         }
@@ -327,47 +367,107 @@ const ActionsList = ({ model, merchantId, actions }) => {
       <div onClick={toggleReceiptEmail}>
         {merchant.details.receipt_email_enabled ? 'Disable' : 'Enable'} Receipt
         Email
+        <i class="pull-right i i-email" />
       </div>
 
-      <div onClick={actions.EditMethods}>Edit Methods</div>
-      <div onClick={actions.AssignPricingPlan}>Assign Pricing</div>
-      <div onClick={actions.AssignSchedule}>Assign Schedule</div>
-      <div onClick={actions.AssignTerminal}>Assign Terminal</div>
-      <div onClick={actions.AssignBanks}>Assign Banks</div>
-      <div onClick={actions.AssignMerchantHandle}>Assign Merchant Handle</div>
-      <div onClick={actions.AddAdjustment}>Add Adjustment</div>
-      <div onClick={actions.CreateOffer}>Create Offer</div>
-      <div onClick={actions.EditMerchant}>Edit Merchant</div>
-      <div onClick={actions.EditMerchantEmail}>Edit Merchant Email</div>
+      <div onClick={actions.EditMethods}>
+        Edit Methods
+        <i class="pull-right i i-money" />
+      </div>
+      <div onClick={actions.AssignPricingPlan}>
+        Assign Pricing
+        <i class="pull-right i">%</i>
+      </div>
+      <div onClick={actions.AssignSchedule}>
+        Assign Schedule
+        <i class="pull-right i i-schedule" />
+      </div>
+      <div onClick={actions.AssignTerminal}>
+        Assign Terminal
+        <i class="pull-right i i-terminal" />
+      </div>
+      <div onClick={actions.AssignBanks}>
+        Assign Banks
+        <i class="pull-right i i-bank" />
+      </div>
+      <div onClick={actions.AssignMerchantHandle}>
+        Assign Merchant Handle
+        <i class="pull-right i">@</i>
+      </div>
+      <div onClick={actions.AddAdjustment}>
+        Add Adjustment
+        <i class="pull-right i i-edit" />
+      </div>
+      <div onClick={actions.CreateOffer}>
+        Create Offer
+        <i class="pull-right i i-money" />
+      </div>
+      <div onClick={actions.EditMerchant}>
+        Edit Merchant
+        <i class="pull-right i i-edit-form" />
+      </div>
+      <div onClick={actions.EditMerchantEmail}>
+        Edit Merchant Email
+        <i class="pull-right i i-email" />
+      </div>
       <div onClick={actions.EditBankAccountDetails}>
         Edit Bank Account Details
+        <i class="pull-right i i-bank" />
       </div>
       <div onClick={actions.AutoFillActivationForm}>
         Autofill Activation Form
+        <i class="pull-right i i-auto-fill" />
       </div>
-      <div onClick={actions.EditComment}>Edit Comment</div>
+      <div onClick={actions.EditComment}>
+        Edit Comment
+        <i class="pull-right i i-comment" />
+      </div>
 
       <div onClick={toggleArchiveMerchant}>
         {merchant.details.archived_at === null ? 'Archive' : 'Unarchive'}{' '}
+        <i
+          class={`pull-right i i-${
+            merchant.details.archived_at === null ? 'archive' : 'unarchive'
+          }`}
+        />
         Merchant
       </div>
 
       {typeof merchant.details.suspended_at !== 'undefined' && (
         <div onClick={toggleSuspension}>
           {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}{' '}
+          <i class="pull-right i i-power" />
           Merchant
         </div>
       )}
-      <div onClick={actions.MarkReferred}>Mark as Referred</div>
-      <div onClick={actions.EditTags}>Tag Merchant</div>
-      <div onClick={actions.EditFeatures}>Feature Merchant</div>
+      <div onClick={actions.MarkReferred}>
+        Mark as Referred
+        <i class="pull-right i i-gift" />
+      </div>
+      <div onClick={actions.EditTags}>
+        Tag Merchant
+        <i class="pull-right i i-tag" />
+      </div>
+      <div onClick={actions.EditFeatures}>
+        Feature Merchant
+        <i class="pull-right i i-tag" />
+      </div>
       {merchant.features['live'] &&
         merchant.features['live'].assigned_features.indexOf('irctc_report') >
           -1 && (
-          <div onClick={actions.MerchantBatchUpload}>Merchant Batch Upload</div>
+          <div onClick={actions.MerchantBatchUpload}>
+            Merchant Batch Upload
+            <i class="pull-right i i-upload" />
+          </div>
         )}
-      <div onClick={actions.UploadScreenshots}>Upload screenshots</div>
-      <div onClick={captureScreenshot}>Capture Screenshots</div>
+      <div onClick={actions.UploadScreenshots}>
+        Upload screenshots
+        <i class="pull-right i i-upload" />
+      </div>
+      <div onClick={captureScreenshot}>
+        Capture Screenshots
+        <i class="pull-right i i-camera" />
+      </div>
       <div onClick={actions.AddCredits}>Add Credits</div>
 
       <div class="btn-primary" onClick={actions.GenerateReports}>

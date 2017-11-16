@@ -307,7 +307,13 @@ export default class BusinessDetails extends Component {
 
             <div class="field">
               <label>Signatory PAN Verified</label>
-              <i class={`i i-${this.state.panVerified ? 'yes' : 'no'}`} />
+              <i
+                class={`i ${
+                  this.state.panVerified
+                    ? 'i-yes text-success'
+                    : 'i-no text-danger'
+                }`}
+              />
               <div class="info-block">
                 <i class="i i-info-circle" />
                 This only verifies if the Signatory PAN Number and Name on the

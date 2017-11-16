@@ -34,7 +34,9 @@ export function getRiskRating(value) {
 }
 
 function _getBoolIcon(value) {
-  return () => <i class={`i i-${value ? 'yes' : 'no'}`} />;
+  return () => (
+    <i class={`i ${value ? 'i-yes text-success' : 'i-no text-danger'}`} />
+  );
 }
 
 function _getGroupsFields() {
