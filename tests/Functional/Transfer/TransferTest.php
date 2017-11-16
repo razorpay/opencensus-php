@@ -150,6 +150,48 @@ class TransferTest extends TestCase
         $this->assertEquals($expectedFee, $creditTransactions['items'][0]['credits_used']);
     }
 
+    public function testTransferToAccountWithAmountCredits()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
+
+        $this->fixtures->create('credits', ['type' => 'amount', 'value' => 10000]);
+        $this->fixtures->merchant->editCredits(10000, '10000000000000');
+
+        $transfer = $this->createTransfer('account');
+
+        //
+        // We just need to assert in this test that no fees were charged
+        // for transfer with amount credits. This same thing we do for transfer
+        // and txn entity.
+        //
+
+        $transferData = [
+            'fees' => 0,
+            'tax'  => 0,
+        ];
+
+        $txnData = [
+            'amount'      => $transfer['amount'],
+            'fee'         => 0,
+            'tax'         => 0,
+            'fee_credits' => 0,
+            'gratis'      => true,
+            'debit'       => $transfer['amount'],
+            'credit_type' => 'amount',
+        ];
+
+        $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(0, $balance['fee_credits']);
+        $this->assertEquals(9000, $balance['credits']);
+
+        $creditTransactions = $this->getEntities('credit_transaction', [], true);
+        $this->assertEquals(1000, $creditTransactions['items'][0]['credits_used']);
+    }
+
     public function testLiveModeTransferToNonActivatedAccount()
     {
         $this->fixtures->merchant->edit('10000000000000', ['activated' => true]);
