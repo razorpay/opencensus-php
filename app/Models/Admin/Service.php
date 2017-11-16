@@ -30,7 +30,7 @@ class Service extends Base\Service
         ];
     }
 
-    public function fetchEntityById($entity, $id, array $input = [])
+    public function fetchEntityById(string $entity, string $id, array $input = []): array
     {
         $entity = $this->fetchEntityByNameAndId($entity, $id, $input);
 
@@ -44,7 +44,10 @@ class Service extends Base\Service
         return $entity->toArrayAdmin($subMerchantFlag);
     }
 
-    protected function fetchEntityByNameAndId($entity, $id, array $input = [])
+    protected function fetchEntityByNameAndId(
+        string $entity,
+        string $id,
+        array $input = []): Base\PublicEntity
     {
         Entity::validateEntityOrFailPublic($entity);
 

@@ -201,29 +201,6 @@ return [
         ],
     ],
 
-    'testFetchAndFindForSoftDeletedForProxyAuth' => [
-        'request' => [
-            'url'     => '/invoices/',
-            'method'  => 'get',
-            'content' => [
-                'deleted' => 1
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'deleted is/are not required and should not be sent',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => \RZP\Exception\ExtraFieldsException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
-        ],
-    ],
-
     'testFetchForSoftDeletedInvoiceForAppAuth' => [
         'request' => [
             'url'     => '/admin/invoice',

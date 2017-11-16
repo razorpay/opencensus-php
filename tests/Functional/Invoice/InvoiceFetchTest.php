@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Invoice;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 /**
@@ -99,9 +100,7 @@ class InvoiceFetchTest extends TestCase
 
         $this->startTest();
 
-        $invoice = $this->createDraftInvoice(['deleted_at' => time()]);
-
-        $this->testData[__FUNCTION__]['request']['url'] .= $invoice['public_id'];
+        $this->testData[__FUNCTION__]['request']['url'] .= 'inv_00000000000001';
 
         $this->startTest();
     }
@@ -110,13 +109,13 @@ class InvoiceFetchTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $this->startTest();
+        $testData = $this->testData['testFetchAndFindForSoftDeletedForPrivateAuth'];
 
-        $invoice = $this->createDraftInvoice(['deleted_at' => time()]);
+        $this->startTest($testData);
 
-        $this->testData[__FUNCTION__]['request']['url'] .= $invoice['public_id'];
+        $testData['request']['url'] .= 'inv_00000000000001';
 
-        $this->startTest();
+        $this->startTest($testData);
     }
 
     public function testFetchForSoftDeletedInvoiceForAppAuth()
@@ -137,7 +136,7 @@ class InvoiceFetchTest extends TestCase
         $this->assertSame(0, $content['count']);
 
         // Case 3: When deleted=1 is sent, should return 1 entity
-        $testData['request']['content']['deleted'] = '1';
+        $testData['request']['content']['deleted'] = 1;
         $content = $this->startTest();
         $this->assertSame(1, $content['count']);
 
@@ -148,7 +147,8 @@ class InvoiceFetchTest extends TestCase
             {
                 $this->runRequestResponseFlow($testData);
             },
-            \RZP\Exception\BadRequestValidationFailureException::class);
+            \RZP\Exception\BadRequestValidationFailureException::class,
+            'The selected deleted is invalid.');
     }
 
     public function testFindByIdForSoftDeletedInvoiceForAppAuth()
@@ -161,11 +161,13 @@ class InvoiceFetchTest extends TestCase
 
         // Case 1: When no deleted parameter sent, should throw exception
         $testData['request']['url'] .= $invoice['public_id'];
-        $this->makeRequestAndCatchException(function() use ($testData)
-        {
-            $this->runRequestResponseFlow($testData);
-        },
-        \RZP\Exception\BadRequestException::class);
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            \RZP\Exception\BadRequestException::class,
+            PublicErrorDescription::BAD_REQUEST_INVALID_ID);
 
         // Case 2: When deleted=0 is sent, should return 0 entity
         $testData['request']['content']['deleted'] = 0;
@@ -174,7 +176,8 @@ class InvoiceFetchTest extends TestCase
             {
                 $this->runRequestResponseFlow($testData);
             },
-            \RZP\Exception\BadRequestException::class);
+            \RZP\Exception\BadRequestException::class,
+            PublicErrorDescription::BAD_REQUEST_INVALID_ID);
 
         // Case 3: When deleted=1 is sent, should return entity
         $testData['request']['content']['deleted'] = 1;
@@ -182,11 +185,13 @@ class InvoiceFetchTest extends TestCase
         $this->assertSame($invoice['public_id'], $content['id']);
 
         // Case 4: When invalid deleted sent, should throw exception
-        $testData['request']['content']['deleted'] = 'true';
-        $this->makeRequestAndCatchException(function() use ($testData)
-        {
-            $this->runRequestResponseFlow($testData);
-        },
-        \RZP\Exception\BadRequestValidationFailureException::class);
+        $testData['request']['content']['deleted'] = 123;
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            \RZP\Exception\BadRequestValidationFailureException::class,
+            'The selected deleted is invalid.');
     }
 }

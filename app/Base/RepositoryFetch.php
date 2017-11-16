@@ -543,7 +543,7 @@ trait RepositoryFetch
             $rules = array_merge($rules, $this->appFetchParamRules);
 
             // Temporary fix to add deleted rule, Actual fix is done in Base/Fetch
-            $rules[self::DELETED] = 'sometimes|boolean';
+            $rules[self::DELETED] = 'filled|string|in:0,1';
         }
 
         if (($this->auth->isAdminAuth()) and
@@ -677,6 +677,14 @@ trait RepositoryFetch
         $this->$func($attribute, $value, $parameters);
     }
 
+    /**
+     * Build query for find by id routes. In such routes expand[] or deleted
+     * (for now) can be sent conditionally.
+     *
+     * @param array $params
+     *
+     * @return BuilderEx
+     */
     protected function getQueryForFindWithParams(array $params) : BuilderEx
     {
         if ($this->hasEntityFetch() === true)

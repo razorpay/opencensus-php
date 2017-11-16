@@ -959,7 +959,8 @@ class AdminTest extends TestCase
             {
                 $this->runRequestResponseFlow($testData);
             },
-            \RZP\Exception\BadRequestValidationFailureException::class);
+            \RZP\Exception\BadRequestValidationFailureException::class,
+            'The selected deleted is invalid.');
     }
 
     public function testFindSoftDeletedEntityForAdmin()
@@ -1007,6 +1008,6 @@ class AdminTest extends TestCase
                 $this->runRequestResponseFlow($testData);
             },
             \RZP\Exception\BadRequestValidationFailureException::class,
-            'The deleted field must be true or false.');
+            'The selected deleted is invalid.');
     }
 }

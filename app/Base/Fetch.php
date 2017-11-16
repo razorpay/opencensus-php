@@ -118,7 +118,7 @@ class Fetch
 
         BasicAuth\Type::PRIVILEGE_AUTH => [
             self::COUNT         => 'filled|integer|min:1|max:1000',
-            self::DELETED       => 'filled|boolean'
+            self::DELETED       => 'filled|string|in:0,1',
         ],
 
         BasicAuth\Type::ADMIN_AUTH => [],
