@@ -4,26 +4,25 @@ namespace RZP\Models\Payment;
 
 use DB;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorDescription;
+
 use RZP\Exception;
-use RZP\Constants\Table;
-use RZP\Models\Customer\Token;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Models\Merchant;
-use RZP\Models\Offer;
 use RZP\Models\Order;
-use RZP\Models\Feature;
-use RZP\Models\Payment;
-use RZP\Models\Terminal;
-use RZP\Models\BankTransfer;
-use RZP\Models\VirtualAccount;
-use RZP\Models\Payment\Verify;
-use RZP\Models\Transaction;
-use RZP\Models\Invoice;
 use RZP\Base\BuilderEx;
+use RZP\Models\Payment;
+use RZP\Models\Feature;
+use RZP\Models\Merchant;
+use RZP\Models\Terminal;
+use RZP\Constants\Table;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
+use RZP\Models\Transaction;
+use RZP\Models\BankTransfer;
+use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Verify;
+use RZP\Models\VirtualAccount;
+use RZP\Error\PublicErrorDescription;
 
 class Repository extends Base\Repository
 {
@@ -495,6 +494,39 @@ class Repository extends Base\Repository
                     ->where($transactionEntityType, '=', 'payment')
                     ->whereBetween($transactionReconciledAt, [$from, $to])
                     ->whereIn(Entity::STATUS, $status)
+                    ->get();
+    }
+
+    public function fetchCorporatePaymentsWithStatus(
+        int $from,
+        int $to,
+        string $gateway,
+        array $statuses,
+        bool $corporate = false)
+    {
+        $paymentAttrs = $this->dbColumn('*');
+
+        $terminalRepo = $this->repo->terminal;
+
+        $pTableName = $this->getTableName();
+        $tTablename = $terminalRepo->getTableName();
+
+        $pGateway = $this->dbColumn(Entity::GATEWAY);
+        $pStatus = $this->dbColumn(Entity::STATUS);
+        $pTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+        $tId = $terminalRepo->dbColumn(Terminal\Entity::ID);
+        $pCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+        $pStatus = $this->dbColumn(Entity::STATUS);
+        $tCorp = $terminalRepo->dbColumn(Terminal\Entity::CORPORATE);
+
+        return $this->newQuery()
+                    ->select($paymentAttrs)
+                    ->join($tTablename, $pTerminalId, '=', $tId)
+                    ->where($pCreatedAt, '>=', $from)
+                    ->where($pCreatedAt, '<=', $to)
+                    ->where($pGateway, $gateway)
+                    ->whereIn($pStatus, $statuses)
+                    ->where($tCorp, $corporate)
                     ->get();
     }
 
@@ -972,13 +1004,13 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->select($selectCols)
                     ->join(
-                          Table::TOKEN,
-                          function ($join)
-                          use($tokenIdColumn)
-                            {
-                                $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
-                                $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
-                            })
+                        Table::TOKEN,
+                        function ($join)
+                        use($tokenIdColumn)
+                        {
+                            $join->on(Entity::TOKEN_ID, '=', $tokenIdColumn);
+                            $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
+                        })
                     ->where(Entity::RECURRING_TYPE, '=', RecurringType::INITIAL)
                     ->where($paymentRecurringColumn, '=', 1)
                     ->where($paymentMethodColumn, '=', Method::NETBANKING)

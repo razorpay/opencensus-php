@@ -925,8 +925,6 @@ class Core extends Base\Core
 
     public function updateAmountCredits(Transaction\Entity $txn, Base\PublicEntity $entity)
     {
-        assert ($txn->isTypePayment() === true);
-
         // For transactions being created before july 1st, 2016, we assign the zero pricing plan.
         // These transactions are not using the free credits.
         if (($txn->getFee() !== 0) or

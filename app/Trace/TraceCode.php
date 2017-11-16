@@ -185,6 +185,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const DASHBOARD_JOB_ERROR                           = 'DASHBOARD_JOB_ERROR';
 
+    const RBL_NODAL_BEN_ADD_REQUEST                     = 'RBL_NODAL_BEN_ADD_REQUEST';
+    const RBL_NODAL_TRANSFER_REQUEST                    = 'RBL_NODAL_TRANSFER_REQUEST';
+    const RBL_NODAL_TRANSFER_RESPONSE                   = 'RBL_NODAL_TRANSFER_RESPONSE';
+    const RBL_NODAL_BEN_ADD_RESPONSE                    = 'RBL_NODAL_BEN_ADD_RESPONSE';
+
     const TERMINAL_SELECTION                            = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_FOR_RULE_GROUP             = 'TERMINAL_SELECTION_FOR_RULE_GROUP';
     const TERMINAL_RULE_FILTER_EXCEPTION                = 'TERMINAL_RULE_FILTER_EXCEPTION';
@@ -920,8 +925,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_FILE_JOB_RECEIVED                     = 'GATEWAY_FILE_JOB_RECEIVED';
     const GATEWAY_FILE_JOB_HANDLED                      = 'GATEWAY_FILE_JOB_HANDLED';
     const GATEWAY_FILE_JOB_ERROR                        = 'GATEWAY_FILE_JOB_ERROR';
-    const GATEWAY_FILE_REFUND_ENTITIES                  = 'GATEWAY_FILE_REFUND_ENTITIES';
-    const GATEWAY_FILE_CLAIM_ENTITIES                   = 'GATEWAY_FILE_CLAIM_ENTITIES';
 
     const VERIFY_ENROLLMENT_RESPONSE                    = 'VERIFY_ENROLLMENT_RESPONSE';
 

@@ -557,7 +557,13 @@ class Verify extends Base\Core
                     }
                     catch (\Throwable $e)
                     {
-                        $this->trace->traceException($e, Trace::ERROR);
+                        $this->trace->traceException(
+                            $e,
+                            Trace::ERROR,
+                            TraceCode::GATEWAY_VERIFY_ERROR,
+                            [
+                                'payment_id' => $payment->getId()
+                            ]);
 
                         $result = Result::ERROR;
                     }
