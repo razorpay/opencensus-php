@@ -258,6 +258,7 @@ class Service extends Base\Service
 
         unset($input[Entity::RECEIVER_TYPES]);
 
+        // Sending types as a single value was also allowed in the older format
         if (is_array($types) === false)
         {
             $types = [$types];
@@ -267,14 +268,22 @@ class Service extends Base\Service
             Entity::TYPES => $types,
         ];
 
-        if ((in_array(Receiver::BANK_ACCOUNT, $types, true) === true) and
-            (isset($input[Entity::DESCRIPTOR]) === true))
+        // Bank Account is the only type of receiver being used right now
+        if (in_array(Receiver::BANK_ACCOUNT, $types, true) === true)
         {
-            $input[Entity::RECEIVERS][Entity::BANK_ACCOUNT] = [
-                Entity::DESCRIPTOR => $input[Entity::DESCRIPTOR],
+            $bankAccount = [
                 // Default behaviour of old API format should not change
+                // Give alphanumeric accounts to those using the old format
                 Entity::NUMERIC    => false,
             ];
+
+            // Descriptor isn't always set, allowing for random account numbers
+            if (isset($input[Entity::DESCRIPTOR]) === true)
+            {
+                $bankAccount[Entity::DESCRIPTOR] = $input[Entity::DESCRIPTOR];
+            }
+
+            $input[Entity::RECEIVERS][Entity::BANK_ACCOUNT] = $bankAccount;
 
             // Descriptor should ideally be unset here, as its use is complete
             // But we are currently using it as an attribute of the VA entity,
