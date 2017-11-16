@@ -2,36 +2,34 @@ import React, { Component } from 'react';
 import Header from 'rzp/ui/Header';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
-import moment from 'moment';
 import * as HomeActions from 'merchant/modules/home';
-import {
-  fetchPayments,
-  fetchRefunds,
-  fetchSettlements,
-} from 'rzp/modules/collection';
-import DateRangePickerField from 'rzp/ui/Forms/DateRangePickerField';
-import InfoCardList from 'merchant/components/Home/InfoCardList';
-import RecentEntityTable from 'merchant/components/Home/EntityTable';
-import AnalyticsGraph from 'merchant/components/Home/AnalyticsGraph';
-import MethodBreakupCard from 'merchant/components/Home/MethodBreakupCard';
-import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
-import { defaults } from 'react-chartjs-2';
-import ShowWhen from 'merchant/components/ShowWhen';
-import LocalStorageService from 'rzp/utils/localStorage';
-import TadaPNG from 'styles/assets/tada.png';
+import { Field } from 'redux-form';
 
-defaults.global.defaultFontColor = '#666';
-defaults.global.defaultFontFamily =
-  '"Lato", "Helvetica Neue", Helvetica, Arial,sans-serif';
-defaults.global.defaultFontSize = 11;
-defaults.global.layout = {
-  padding: {
-    left: 10,
-    bottom: 15,
-    top: 5,
-    right: 5,
-  },
-};
+import Amount from 'rzp/ui/Amount';
+import Definition from 'rzp/ui/Definition';
+import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
+import KeyMetrics from './KeyMetrics';
+import DateRangePicker from 'merchant/components/Home/DateRangePicker';
+import RadioButton from 'rzp/ui/Forms/RadioButton';
+import Sticky from 'rzp/ui/Sticky';
+import Highcharts from 'rzp/ui/Highcharts';
+
+import './styles.styl';
+
+const dateRangeOptions = [
+  ['Past 7 days', -7, 'days'],
+  ['Past 15 days', -15, 'days'],
+  ['Past 1 month', -1, 'months'],
+  ['Past 3 months', -3, 'months'],
+  ['Past 6 months', -6, 'months'],
+  ['Past 1 year', -1, 'years'],
+];
+
+const breakDownVals = [
+  ['Days', 'days'],
+  ['Weeks', 'weeks'],
+  ['Months', 'months'],
+];
 
 // graph data
 // numbers
@@ -40,123 +38,86 @@ defaults.global.layout = {
     return {
       user: state.session.user,
       mode: state.session.mode,
-      analytics: state.home.analytics,
-      entity_totals: state.home.entity_totals,
-      payment_breakup: state.home.payment_breakup,
-      current_balance: state.home.current_balance,
-      payments: state.payments,
-      refunds: state.refunds,
-      settlements: state.settlements,
     };
   },
   {
     ...HomeActions,
-    fetchPayments,
-    fetchRefunds,
-    fetchSettlements,
   }
 )
 export default class HomeContainer extends Component {
-  componentWillMount() {
-    this.props.fetchEntityTotals();
-    this.props.fetchPaymentBreakup();
-    this.props.fetchCurrentBalance();
-    this.props.fetchPayments({ count: 5 });
-    this.props.fetchRefunds({ count: 5 });
-    this.props.fetchSettlements({ count: 5 });
-  }
-
   render() {
-    let {
-      entity_totals,
-      payment_breakup,
-      current_balance,
-      payments,
-      refunds,
-      settlements,
-    } = this.props;
     let mode = this.props.mode;
-    let graphData = this.props.analytics;
 
     return (
       <div class="react-root">
         <Header title="Dashboard" showMode={true}>
           <div class="pull-right">
-            <DateRangePickerField
-              onDatesChange={params => {
-                this.props.fetchAnalytics({
-                  ...params,
-                  mode,
-                });
-              }}
-            />
+            <Definition>
+              <span>
+                Current Balance: <Amount value={38760} />
+              </span>
+              <span>Updated 10 mins ago</span>
+            </Definition>
           </div>
         </Header>
 
-        <div
-          class="Dashboard"
-          style={{
-            padding: '20px',
-          }}
-        >
-          <div class="row">
-            <div class="col-md-12">
-              <NewUserOnboardingCard payments={payments.items} />
+        <Sticky stickWhen={68} stickAt={50}>
+          <div className="dashboard-ctrl-bar clearfix">
+            <div className="pull-left">
+              <DateRangePicker
+                presets={dateRangeOptions}
+                onDatesChange={(s, e) => console.log(s, e)}
+              />
             </div>
-
-            <InfoCardList
-              entity_totals={entity_totals}
-              payment_breakup={payment_breakup}
-              current_balance={current_balance}
-              payments={payments}
-              refunds={refunds}
-              settlements={settlements}
-            />
-            <div class="col-md-12 col-lg-6">
-              <div class="WidgetContainer">
-                <AnalyticsGraph
-                  title="Successful Transactions"
-                  loading={graphData.loading}
-                  error={graphData.error}
-                  data={graphData.transaction_count}
-                  yLabel="Number of Successful Transactions"
-                />
+            <div className="pull-right">
+              <div className="form form-horizontal">
+                {breakDownVals.map((item, index) => {
+                  return (
+                    <div class="RadioButton" key={index}>
+                      <label>
+                        <input type="radio" name="breakdown" value={item[1]} />
+                        <div>
+                          <div class="RadioButton__button" />
+                          <div class="RadioButton__label">
+                            <div>
+                              <span>{item[0]}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
-          <div class="clearfix">
-            <MethodBreakupCard
-              data={payment_breakup.data}
-              loading={payment_breakup.loading}
-              error={payment_breakup.error}
-            />
-            <div class="WidgetContainer Transaction__Vol">
-              <AnalyticsGraph
-                title="Transaction Volume"
-                loading={graphData.loading}
-                error={graphData.error}
-                data={graphData.transaction_amount}
-                yLabel="Transaction Volume in INR"
-              />
+        </Sticky>
+
+        <div className="dashboard">
+          <div className="row">
+            <div className="col-md-12">
+              <KeyMetrics />
             </div>
           </div>
-
-          <div class="row RecentTxns">
-            <RecentEntityTable
-              entity="payment"
-              data={payments}
-              loading={payments.loading}
-            />
-            <RecentEntityTable
-              entity="refund"
-              data={refunds}
-              loading={refunds.loading}
-            />
-            <RecentEntityTable
-              entity="settlement"
-              data={settlements}
-              loading={settlements.loading}
-            />
+          <div className="row">
+            <div className="col-md-12">
+              <p>Payment methods drilldown</p>
+            </div>
+            <div className="col-md-12">
+              <div className="panel">
+                <div className="clearfix">
+                  <div className="pull-left">Showing: All Payment Methods</div>
+                  <div className="pull-right">...</div>
+                  <div className="pull-right">
+                    <select>
+                      <option>By Transaction Volume</option>
+                      <option>By Issuer</option>
+                    </select>
+                  </div>
+                </div>
+                <Highcharts />
+              </div>
+            </div>
           </div>
         </div>
       </div>
