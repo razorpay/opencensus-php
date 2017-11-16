@@ -33,6 +33,8 @@ class Service extends Base\Service
 
         $customer = $this->getCustomerIfGiven($input);
 
+        $this->setDefaultReceiverTypesIfNeeded($input);
+
         $virtualAccount = $this->core->create($input, $this->merchant, $customer);
 
         $this->trace->info(
@@ -203,6 +205,19 @@ class Service extends Base\Service
         }
 
         return $customer;
+    }
+
+    protected function setDefaultReceiverTypesIfNeeded(array & $input)
+    {
+        if (empty($input[Entity::RECEIVER_TYPES]) === true)
+        {
+            $input[Entity::RECEIVER_TYPES] = self::DEFAULT_RECEIVER_TYPES;
+        }
+
+        if (is_array($input[Entity::RECEIVER_TYPES]) === false)
+        {
+            $input[Entity::RECEIVER_TYPES] = [$input[Entity::RECEIVER_TYPES]];
+        }
     }
 
     protected function verifyMerchantIsLiveForLiveRequest()
