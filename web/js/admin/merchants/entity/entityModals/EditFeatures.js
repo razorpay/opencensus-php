@@ -14,6 +14,10 @@ export default class EditFeatures extends Component {
   onSubmit = body => {
     const selectedFeatures = body.selectedFeatures;
 
+    if (!selectedFeatures.length) {
+      notifyError('No features selected');
+      return;
+    }
     const requestData = {
       features: selectedFeatures,
       mode: body.mode,
