@@ -325,7 +325,7 @@ app.controller('PricingsCtrl', [
 
       request.success(function(data) {
         if (data.success) {
-          $scope.pricing_plans = data.data.items;
+          $scope.pricing_plans = data.data;
         }
       });
     };
