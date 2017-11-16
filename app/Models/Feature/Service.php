@@ -322,8 +322,8 @@ class Service extends Base\Service
      */
     public function bulkUpdateFeatureActivationStatus(array $input): array
     {
-        $success = 0;
-        $failed = 0;
+        $success   = 0;
+        $failed    = 0;
         $failedIds = [];
 
         $core = new Core;

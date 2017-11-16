@@ -325,16 +325,16 @@ class Core extends Base\Core
      */
     public function bulkUpdateFeatureActivationStatus(string $featureName, array $merchantMap): array
     {
-        $success = 0;
-        $failed = 0;
+        $success   = 0;
+        $failed    = 0;
         $failedIds = [];
 
         $this->trace->info(
             TraceCode::FEATURE_ONBOARDING_BULK_UPDATE_STATUS,
             [
-                Entity::FEATURE     => $featureName,
-                'merchant_map'      => $merchantMap,
-                'admin_id'          => $this->app['basicauth']->getAdmin()->getId()
+                Entity::FEATURE => $featureName,
+                'merchant_map'  => $merchantMap,
+                'admin_id'      => $this->app['basicauth']->getAdmin()->getId()
             ]);
 
         foreach ($merchantMap as $merchantId => $status)
