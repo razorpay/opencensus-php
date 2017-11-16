@@ -601,7 +601,11 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Print Screenshots',
-      value: () => <i class="i i-cloud-download" />,
+      value: () => (
+        <a target="_blank" href={`/admin/merchant/${details.id}/screenshot`}>
+          <i class="i i-cloud-download" />
+        </a>
+      ),
     },
     {
       label: 'Pricing Plan',
