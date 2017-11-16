@@ -18,6 +18,7 @@ class EsRepository extends Base\EsRepository
         Entity::TYPE,
         Entity::TERMS,
         Entity::NOTES,
+        Entity::USER_ID,
         Entity::CREATED_AT,
     ];
 
@@ -46,6 +47,7 @@ class EsRepository extends Base\EsRepository
         Entity::TYPE,
         Entity::TYPES,
         Entity::MERCHANT_ID,
+        Entity::USER_ID,
     ];
 
     public function buildQueryForType(array & $query, string $value)
@@ -73,6 +75,19 @@ class EsRepository extends Base\EsRepository
         $filter = [
             'term' => [
                 'status' => [
+                    'value' => $value,
+                ],
+            ],
+        ];
+
+        $this->addFilter($query, $filter);
+    }
+
+    public function buildQueryForUserId(array & $query, string $value)
+    {
+        $filter = [
+            'term' => [
+                'user_id' => [
                     'value' => $value,
                 ],
             ],
