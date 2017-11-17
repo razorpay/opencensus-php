@@ -26,7 +26,7 @@ export default class PlanList extends Component {
         <div class="box">
           <header>
             Pricing Plans
-            <div class="btn" onClick={this.newPricingEntity}>
+            <div class="btn pull-right" onClick={this.newPricingEntity}>
               Add New
             </div>
           </header>

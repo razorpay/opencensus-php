@@ -24,7 +24,7 @@ export default class WorkflowList extends Component {
         <div class="box">
           <header>
             Workflows
-            <Link class="btn" to={'/workflows/new'}>
+            <Link class="btn pull-right" to={'/workflows/new'}>
               Add New Workflow
             </Link>
           </header>

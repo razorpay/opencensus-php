@@ -38,7 +38,7 @@ export default class MerchantList extends Component {
             </SelectField>
             <Field name="sub_accounts" label="Linked-accounts for ID" />
             <SwitchField label="Linked Accounts Only" name="sub_accounts" />
-            <button>Apply</button>
+            <button class="pull-right">Apply</button>
           </Form>
         </div>
         <PageTable

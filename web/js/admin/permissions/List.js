@@ -33,7 +33,7 @@ export default class PermissionsList extends Component {
         <div class="box">
           <header>
             Permissions
-            <div class="btn" onClick={this.showEntity}>
+            <div class="btn pull-right" onClick={this.showEntity}>
               Add a Permission
             </div>
           </header>

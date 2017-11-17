@@ -34,7 +34,7 @@ export default class InvitesList extends Component {
         <div class="box">
           <header>
             Invitations
-            <div class="btn" onClick={this.showEntity}>
+            <div class="btn pull-right" onClick={this.showEntity}>
               Invite a Merchant
             </div>
           </header>

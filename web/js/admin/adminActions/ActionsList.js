@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { openModal, confirm } from 'common/modal';
 import * as actionModals from './actionModals';
 import Table from 'ui/Table';
+import BaseModal from 'ui/BaseModal';
 
 // Access actions using actions.FileName (FileName is the export name of that modal content in entity/index.js)
 const rows = Object.keys(actionModals).map(key => actionModals[key]);
@@ -9,10 +10,9 @@ const rows = Object.keys(actionModals).map(key => actionModals[key]);
 export default class AdminActionsList extends Component {
   render() {
     return (
-      <div className="limited box">
-        <header>Actions</header>
+      <BaseModal header="Actions">
         <Table fields={fields} items={rows} onClick={onClick} />
-      </div>
+      </BaseModal>
     );
   }
 }

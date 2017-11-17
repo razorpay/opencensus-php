@@ -30,7 +30,7 @@ export default class UserList extends Component {
         <div class="box">
           <header>
             Users
-            <div class="btn">
+            <div class="btn pull-right">
               <Link to="/users/new">Add User</Link>
             </div>
           </header>

@@ -266,7 +266,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
   function toggleFundsHoldOrRelease() {
     const merchant = model.merchant;
 
-    let action, confirmMsg;
+    let action, confirmMsg, successMsg;
     if (merchant.details.activated == 1 && !merchant.details.hold_funds) {
       confirmMsg = 'Are you sure you want to hold funds for this merchant?';
       successMsg = 'Merchant funds put on hold successfully';

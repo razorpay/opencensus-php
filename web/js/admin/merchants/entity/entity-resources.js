@@ -13,7 +13,7 @@ import FeaturesDetails from './entityDetails/FeaturesDetails';
 
 /* RESOURCE UTILS */
 export function openMerchantEntity() {
-  window.open(`/admin#/app/merchants/${this.id}/detail`);
+  window.open(`/admin#/merchants/${this.id}`);
 }
 
 /*---------------------------------------- Getters ------------------------------------------------*/

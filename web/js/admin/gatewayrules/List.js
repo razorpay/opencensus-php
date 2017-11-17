@@ -47,8 +47,11 @@ export default class GatewayRuleList extends Component {
         <div class="box">
           <header>
             Gateway Rules
-            <div class="btn" onClick={showEntity.bind(null, this.collection)}>
-              Add
+            <div
+              class="btn pull-right"
+              onClick={showEntity.bind(null, this.collection)}
+            >
+              Add a Rule
             </div>
           </header>
           <Form onSubmit={this.onSubmit} class="filters">

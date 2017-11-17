@@ -47,7 +47,7 @@ class OrganizationsList extends Component {
         <div class="box">
           <header>
             Organizations
-            <button class="btn">
+            <button class="btn pull-right">
               <Link to={'/orgs/new'}>Add an Organization</Link>
             </button>
           </header>

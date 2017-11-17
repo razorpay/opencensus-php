@@ -27,7 +27,7 @@ export default class WorkflowList extends Component {
         <div class="box">
           <header>
             Groups
-            <div class="btn" onClick={this.showEntity}>
+            <div class="btn pull-right" onClick={this.showEntity}>
               Add Group
             </div>
           </header>

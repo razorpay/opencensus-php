@@ -47,7 +47,7 @@ export default class RoleList extends Component {
         <div class="box">
           <header>
             Roles
-            <div class="btn" onClick={this.showEntity}>
+            <div class="btn pull-right" onClick={this.showEntity}>
               Add Role
             </div>
           </header>

@@ -3,7 +3,7 @@ import Duplex from 'ui/Duplex';
 import { adminFetch } from 'util/fetch';
 import { Link } from 'react-router-dom';
 
-export default class PaymentEntity extends Component {
+export default class GenericEntity extends Component {
   params = this.props.match.params;
   title = this.title();
 
