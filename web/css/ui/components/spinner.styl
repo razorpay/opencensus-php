@@ -41,4 +41,28 @@
    50%
     transform: scale(1.0)
 
+@keyframes spin
+  to
+    transform:rotate(360deg)
 
+.spin, .spin-btn
+  height: 24px
+  width: 24px
+  border-radius: 50%
+  display: inline-block
+  animation: spin .8s infinite linear
+  transition: 0.3s
+  opacity:0
+  border:2px solid $prime
+  border-top-color:transparent
+
+.spin-btn
+  vertical-align: middle
+  margin-top: -3px
+  width: 13px
+  height: 13px
+  border-width: 1px
+
+.btn-pending
+  .spin-btn
+    opacity: 1

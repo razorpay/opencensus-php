@@ -15,6 +15,7 @@ import { getDetailsViewMap } from './entity-resources';
 import EntityRow from 'ui/EntityRow';
 import ToggleEntityRow from 'ui/ToggleEntityRow';
 import Model from './model';
+import AsyncButton from 'ui/AsyncButton';
 
 let parentProps;
 const actions = {};
@@ -124,9 +125,9 @@ const ActionsList = ({ model, merchantId, actions }) => {
     })
       .then(response => {
         notifySuccess(
-          `Activation Form is now ${isCurrentlyLocked
-            ? 'Unlocked'
-            : 'Locked'} successfully`
+          `Activation Form is now ${
+            isCurrentlyLocked ? 'Unlocked' : 'Locked'
+          } successfully`
         );
         model.updateMerchantDetails(response);
       })
@@ -174,7 +175,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
       body: { action },
     };
 
-    adminPut(data)
+    return adminPut(data)
       .then(response => {
         notifySuccess(successMsg);
         model.updateDetails(response);
@@ -197,7 +198,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
       successMsg = 'Receipt email enabled successfully';
     }
 
-    merchantAction(action, successMsg);
+    return merchantAction(action, successMsg);
   }
 
   // Suspend / Unsuspend merchant
@@ -242,7 +243,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
   }
 
   function activateMerchant() {
-    confirm(
+    return confirm(
       'Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating?'
     ).then(_ => {
       return adminFetch(
@@ -315,18 +316,19 @@ const ActionsList = ({ model, merchantId, actions }) => {
           {merchant.details.merchant_details.locked ? 'Unlock' : 'Lock'}{' '}
           Activation Form
           <i
-            class={`pull-right i i-${merchant.details.merchant_details.locked
-              ? 'unlock'
-              : 'lock'}`}
+            class={`pull-right i i-${
+              merchant.details.merchant_details.locked ? 'unlock' : 'lock'
+            }`}
           />
         </div>
       )}
 
       {(true || merchant.details.activated == 0) && (
-        <div onClick={activateMerchant}>
+        <AsyncButton onClick={activateMerchant}>
           Activate Merchant
+          <span class="spin-btn" />
           <i class="pull-right i i-done-all" />
-        </div>
+        </AsyncButton>
       )}
 
       {/* Hold or Release funds */}
@@ -347,28 +349,24 @@ const ActionsList = ({ model, merchantId, actions }) => {
       }
 
       {/* Toggle enable or disabled live transactions */}
-      {
-        do {
-          if (merchant.details.activated == 1 && merchant.details.live == 0) {
-            <div onClick={toggleLiveTransactions}>
-              Enable Live Transactions
-              <i class="pull-right i i-yes" />
-            </div>;
-          } else if (merchant.details.live == 1) {
-            <div onClick={toggleLiveTransactions}>
-              Disable Live Transactions
-              <i class="pull-right i i-no" />
-            </div>;
-          }
-        }
-      }
+      {merchant.details.activated && (
+        <AsyncButton
+          onClick={toggleLiveTransactions}
+          pendingClass="btn-pending"
+        >
+          {merchant.details.live ? 'Disable' : 'Enable'} Live Transactions
+          <span class="spin-btn" />
+          <i class={`pull-right i i-${merchant.details.live ? 'no' : 'yes'}`} />
+        </AsyncButton>
+      )}
 
       {/* Toggle disbale or enable receipt email */}
-      <div onClick={toggleReceiptEmail}>
-        {merchant.details.receipt_email_enabled ? 'Disable' : 'Enable'} Receipt
-        Email
+      <AsyncButton onClick={toggleReceiptEmail} pendingClass="btn-pending">
+        {merchant.details.receipt_email_enabled ? 'Disable' : 'Enable'}
+        Receipt Email
+        <span class="spin-btn" />
         <i class="pull-right i i-email" />
-      </div>
+      </AsyncButton>
 
       <div onClick={actions.EditMethods}>
         Edit Methods
@@ -426,18 +424,16 @@ const ActionsList = ({ model, merchantId, actions }) => {
       <div onClick={toggleArchiveMerchant}>
         {merchant.details.archived_at === null ? 'Archive' : 'Unarchive'}{' '}
         <i
-          class={`pull-right i i-${merchant.details.archived_at === null
-            ? 'archive'
-            : 'unarchive'}`}
+          class={`pull-right i i-${
+            merchant.details.archived_at === null ? 'archive' : 'unarchive'
+          }`}
         />
         Merchant
       </div>
 
       {typeof merchant.details.suspended_at !== 'undefined' && (
         <div onClick={toggleSuspension}>
-          {merchant.details.suspended_at === null
-            ? 'Suspend'
-            : 'Unsuspend'}{' '}
+          {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}{' '}
           <i class="pull-right i i-power" />
           Merchant
         </div>
