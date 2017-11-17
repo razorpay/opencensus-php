@@ -11,7 +11,6 @@ use RuntimeException;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 use RobRichards\XMLSecLibs\XMLSecurityDSig;
 use UnexpectedValueException;
-use phpseclib\File\X509;
 
 /**
  * XmlDSig adapter based on "xmlseclibs" library
