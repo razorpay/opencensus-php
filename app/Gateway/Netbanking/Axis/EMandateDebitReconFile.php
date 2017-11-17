@@ -10,8 +10,8 @@ use RZP\Gateway\Base\Action as GatewayAction;
 
 class EMandateDebitReconFile extends BaseEMandateDebitReconFile
 {
-    const STATUS_SUCCESS = 'SUCCESS';
-    const STATUS_FAILURE = 'RETURN';
+    const STATUS_SUCCESS = 'success';
+    const STATUS_FAILURE = 'return';
 
     // Headings
     const HEADING_MERCHANT_ID     = 'CMPNY_CODE';
@@ -79,7 +79,7 @@ class EMandateDebitReconFile extends BaseEMandateDebitReconFile
 
     protected function checkValidStatus(array $row)
     {
-        if (in_array($row[self::HEADING_STATUS], $this->allowedStatuses) === false)
+        if (in_array(strtolower($row[self::HEADING_STATUS]), $this->allowedStatuses) === false)
         {
             throw new Exception\GatewayErrorException(
                 'Unrecognized gateway status ' . $gatewayStatus, ['row' => $row]);
@@ -91,7 +91,7 @@ class EMandateDebitReconFile extends BaseEMandateDebitReconFile
         $error = null;
 
         // If the payment fails, set the error message
-        if ($row[self::HEADING_STATUS] !== self::STATUS_SUCCESS)
+        if (strtolower($row[self::HEADING_STATUS]) !== self::STATUS_SUCCESS)
         {
             $error = $row[self::HEADING_REMARK] ?? null;
         }
