@@ -153,8 +153,10 @@ class Reconciliation extends Base
     protected function postProcessEntries(array & $entries)
     {
         //
-        // Not doing anything here, as no special post processing steps need to
-        // be taken for recon
+        // Not doing anything here, as the processing metadata (success_count / failure_count)
+        // etc, is updated during reconciliation itself to the batch entity. We cant return
+        // the run summary from reconciliator, as that is obtained inside a finally block
+        // and returning from the same also suppresses any exception being thrown by reconciliator
         //
         return;
     }
@@ -290,7 +292,8 @@ class Reconciliation extends Base
     {
         $arrayContent[self::EXTRA_DETAILS][RequestProcessor\Base::FILE_DETAILS] = $fileDetails;
 
-        $arrayContent[self::EXTRA_DETAILS][RequestProcessor\Base::INPUT_DETAILS] = $this->params[self::EXTRA_DETAILS];
+        $arrayContent[self::EXTRA_DETAILS]
+            [RequestProcessor\Base::INPUT_DETAILS] = $this->params[Batch\Entity::INPUT_DETAILS];
     }
 
     /**

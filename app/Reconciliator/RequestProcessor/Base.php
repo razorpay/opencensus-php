@@ -48,6 +48,7 @@ class Base extends Core
     const NETBANKING_RBL         = 'NetbankingRbl';
     const NETBANKING_INDUSIND    = 'NetbankingIndusind';
     const NETBANKING_PNB         = 'NetbankingPnb';
+    const NETBANKING_BOB         = 'NetbankingBob';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const JIOMONEY               = 'Jiomoney';
     const EBS                    = 'Ebs';
@@ -75,6 +76,7 @@ class Base extends Core
         self::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
         self::NETBANKING_INDUSIND => [],
         self::NETBANKING_PNB      => [],
+        self::NETBANKING_BOB      => [],
         self::JIOMONEY            => [],
         self::EBS                 => [],
         self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],

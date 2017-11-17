@@ -141,7 +141,7 @@ class Orchestrator extends Base\Core
             $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
         }
 
-        if (empty($this->allFilesDetails) === true)
+        if (empty($this->allFilesContents) === true)
         {
             throw new Exception\ReconciliationException(
                 'File contents are empty.',
@@ -286,12 +286,13 @@ class Orchestrator extends Base\Core
         $file = new File($fileDetails[FileProcessor::FILE_PATH]);
 
         $params = [
-            Batch\Entity::TYPE        => Batch\Type::RECONCILIATION,
-            Batch\Entity::GATEWAY     => $this->gateway,
-            Batch\Entity::FILE        => $file
+            Batch\Entity::TYPE          => Batch\Type::RECONCILIATION,
+            Batch\Entity::GATEWAY       => $this->gateway,
+            Batch\Entity::FILE          => $file,
+            Batch\Entity::INPUT_DETAILS => $this->inputDetails,
         ];
 
-        $batch = $this->batchCore->create($params, $this->sharedMerchant, $this->inputDetails);
+        $batch = $this->batchCore->create($params, $this->sharedMerchant);
 
         return $batch;
     }

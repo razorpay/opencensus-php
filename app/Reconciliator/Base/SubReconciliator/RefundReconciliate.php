@@ -52,58 +52,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
         $this->messenger = new Messenger();
     }
 
-    /**
-     * Runs the same reconciliation process, though here we always update the batch with recon
-     * summary, regardless of any exception thrown during the process.
-     *
-     * @param array          $fileContents      file contents to be processed
-     */
-    public function startReconciliation($fileContents)
-    {
-        $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
-        unset($fileContents[Orchestrator::EXTRA_DETAILS]);
-
-        foreach ($fileContents as $row)
-        {
-            $this->repo->transactionOnLiveAndTest(function() use ($row)
-            {
-                $this->runReconciliate($row);
-            });
-        }
-
-        return $this->getSummary();
-    }
-
-    /**
-     * This method is called during batch processing. Instead of throwing an unhandled
-     * exception for a row, we suppress it and only the recon summary is updated
-     *
-     * @param array         $fileContents
-     * @param Batch\Entity  $batch
-     *
-     * @return array
-     */
-    public function startReconciliationV2(array $fileContents, Batch\Entity $batch)
-    {
-        $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
-        unset($fileContents[Orchestrator::EXTRA_DETAILS]);
-
-        try
-        {
-            foreach ($fileContents as $row)
-            {
-                $this->repo->transactionOnLiveAndTest(function() use ($row, $extraDetails)
-                {
-                    $this->runReconciliate($row);
-                });
-            }
-        }
-        finally
-        {
-            $this->updateBatchWithSummary($batch);
-        }
-    }
-
     public function runReconciliate($row)
     {
         $rowDetails = $this->getRowDetailsStructured($row);

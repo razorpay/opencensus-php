@@ -76,6 +76,57 @@ class SubReconciliate extends Base\Core
         $this->extraDetails = [];
     }
 
+    /**
+     * This is the start of the actual reconciliation.
+     * Reconciliation is done for each row in the file content.
+     *
+     * @param array $fileContents
+     * @return array
+     */
+    public function startReconciliation(array $fileContents)
+    {
+        $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
+        unset($fileContents[Orchestrator::EXTRA_DETAILS]);
+
+        foreach ($fileContents as $row)
+        {
+            $this->repo->transactionOnLiveAndTest(function() use ($row)
+            {
+                $this->runReconciliate($row);
+            });
+        }
+
+        return $this->getSummary();
+    }
+
+    /**
+     * Runs the same reconciliation process, though here we always update the batch with recon
+     * summary, regardless of any exception thrown during the process.
+     *
+     * @param array          $fileContents      file contents to be processed
+     * @param Batch\Entity   $batch             Batch entity for the current run
+     */
+    public function startReconciliationV2(array $fileContents, Batch\Entity $batch)
+    {
+        $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
+        unset($fileContents[Orchestrator::EXTRA_DETAILS]);
+
+        try
+        {
+            foreach ($fileContents as $row)
+            {
+                $this->repo->transactionOnLiveAndTest(function() use ($row)
+                {
+                    $this->runReconciliate($row);
+                });
+            }
+        }
+        finally
+        {
+            $this->updateBatchWithSummary($batch);
+        }
+    }
+
     protected function persistReconciledAt($entity)
     {
         $transaction = $entity->transaction;
@@ -210,6 +261,12 @@ class SubReconciliate extends Base\Core
      */
     protected function updateBatchWithSummary(Batch\Entity $batch)
     {
+        //
+        // We are not updating the batch total count here, as that is already done
+        // when we parse the file, before processing has begn. This is because recon
+        // files usually have extra rows, and hence updating the total_count here
+        // will not reflect the actual number of rows in the file.
+        //
         $batch->setSuccessCount(count($this->successes));
 
         $batch->setFailureCount(count($this->failures));

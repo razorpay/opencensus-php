@@ -23,8 +23,6 @@ class Base extends BaseModel\Core
 {
     use FileHandlerTrait;
 
-    const EXTRA_DETAILS = 'extra_details';
-
     /**
      * Lock wait timeout for batch entity
      */
@@ -163,9 +161,9 @@ class Base extends BaseModel\Core
 
             $this->parseAndProcessBatchEntries();
         }
-        catch (\Throwable $e)
+        catch (\Throwable $ex)
         {
-            $this->handleBatchProcessingException($e);
+            $this->handleBatchProcessingException($ex);
         }
         finally
         {
@@ -538,39 +536,6 @@ class Base extends BaseModel\Core
      * @param  string $filePath
      * @param  array  $input
      */
-    protected function parseInputFileAndValidateEntries(string $filePath, array $input)
-    {
-        $entries = $this->parseFile($filePath);
-
-        $this->validateEntries($entries, $input);
-
-        $this->fillBatchEntityWithInputFileDetails($entries);
-    }
-
-    /**
-     * Fills Batch entity with details extracted from the input file.
-     * Eg.
-     * - Total row count
-     * - Aggregate sum of amount field
-     *
-     * @param array $entries
-     */
-    protected function fillBatchEntityWithInputFileDetails(array $entries)
-    {
-        $totalAmount = array_sum(array_column($entries, Batch\Header::AMOUNT));
-        $totalCount  = count($entries);
-
-        $this->batch->setAmount($totalAmount);
-        $this->batch->setTotalCount($totalCount);
-    }
-
-    /**
-     * While creating the batch we parse the file and validate each entry in the file.
-     * Post validation, we fill the batch entity with total_count and other metadata
-     *
-     * @param  string $filePath
-     * @param  array  $input
-     */
     protected function validateInputFileAndUpdateBatch(string $filePath, array $input)
     {
         $entries = $this->parseFile($filePath);
@@ -690,11 +655,9 @@ class Base extends BaseModel\Core
                                 Batch\Entity::INPUT_FILE_PREFIX :
                                 Batch\Entity::OUTPUT_FILE_PREFIX;
 
-        $batchFilePrefix = ($type === FileStore\Type::BATCH_INPUT) ?
-                                Batch\Entity::INPUT_FILE_PREFIX :
-                                Batch\Entity::OUTPUT_FILE_PREFIX;
-
         $name = $batchFilePrefix . $this->batch->getFileKey();
+
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
 
         return (new FileStore\Creator)
                     ->localFilePath($filePath)
@@ -839,10 +802,10 @@ class Base extends BaseModel\Core
      *
      * @param \Throwable $ex
      */
-    protected function handleBatchProcessingException(\Throwable $e)
+    protected function handleBatchProcessingException(\Throwable $ex)
     {
         $this->trace->traceException(
-            $e,
+            $ex,
             Trace::ERROR,
             TraceCode::BATCH_FILE_PROCESSING_ERROR,
             [

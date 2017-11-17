@@ -17,8 +17,7 @@ class Core extends Base\Core
 
     public function create(
         array $input,
-        Merchant\Entity $merchant,
-        array $extraDetails = []): Entity
+        Merchant\Entity $merchant): Entity
     {
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
@@ -31,13 +30,6 @@ class Core extends Base\Core
         $processor->storeInputFileAndSaveBatch($input);
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
-
-        //
-        // Some batch types (like recon) might send additional details during creation
-        // which are required during processing. This is then set in the params
-        // attribute of the processor class.
-        //
-        $input[Processor\Base::EXTRA_DETAILS] = $extraDetails;
 
         $this->dispatchOnQueueForProcessingIfApplicable($batch, $input);
 

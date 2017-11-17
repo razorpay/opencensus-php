@@ -33,6 +33,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::NETBANKING_PNB,
+        RequestProcessor\Base::NETBANKING_BOB,
     ];
 
     /*******************
@@ -66,61 +67,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->iinRepo         = $this->repo->iin;
         $this->transactionRepo = $this->repo->transaction;
         $this->cardRepo        = $this->repo->card;
-    }
-
-    /**
-     * This is the start of the actual reconciliation.
-     * Reconciliation is done for each row in the file content.
-     * Validates payment status.
-     * Records gateway fees.
-     * Records gateway service tax.
-     * Sets card details (debit/credit, international).
-     *
-     * @param array $fileContents
-     * @return array
-     */
-    public function startReconciliation($fileContents)
-    {
-        $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
-        unset($fileContents[Orchestrator::EXTRA_DETAILS]);
-
-        foreach ($fileContents as $row)
-        {
-            $this->repo->transactionOnLiveAndTest(function() use ($row)
-            {
-                $this->runReconciliate($row);
-            });
-        }
-
-        return $this->getSummary();
-    }
-
-    /**
-     * Runs the same reconciliation process, though here we always update the batch with recon
-     * summary, regardless of any exception thrown during the process.
-     *
-     * @param array          $fileContents      file contents to be processed
-     * @param Batch\Entity   $batch             Batch entity for the current run
-     */
-    public function startReconciliationV2(array $fileContents, Batch\Entity $batch)
-    {
-        $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
-        unset($fileContents[Orchestrator::EXTRA_DETAILS]);
-
-        try
-        {
-            foreach ($fileContents as $row)
-            {
-                $this->repo->transactionOnLiveAndTest(function() use ($row, $extraDetails)
-                {
-                    $this->runReconciliate($row);
-                });
-            }
-        }
-        finally
-        {
-            $this->updateBatchWithSummary($batch);
-        }
     }
 
     public function runReconciliate($row)
