@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Upi\Sbi;
 use Excel;
 use Carbon\Carbon;
 use RZP\Models\Payment;
+use RZP\Models\FileStore;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Method;
@@ -18,6 +19,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Upi\Sbi\ResponseFields;
 use RZP\Gateway\Upi\Base\Entity as Upi;
 use RZP\Gateway\Upi\Sbi\Status as SbiStatus;
+use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class UpiSbiGatewayTest extends TestCase
@@ -146,8 +148,6 @@ class UpiSbiGatewayTest extends TestCase
 
         $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
 
-        // TODO: Add more assertions
-
         $this->assertEquals(true, $verify[Constants::GATEWAY][Constants::API_SUCCESS]);
         $this->assertEquals(true, $verify[Constants::GATEWAY][Constants::GATEWAY_SUCCESS]);
 
@@ -212,7 +212,6 @@ class UpiSbiGatewayTest extends TestCase
             });
     }
 
-    // TODO: File based refund flow - upload file
     public function testRefundFileFlow()
     {
         // Create 3 payments
@@ -269,6 +268,12 @@ class UpiSbiGatewayTest extends TestCase
         // We assert that there are 2 refunds of 500 rupees, and 1 of 100
         $this->assertEquals(2, $count[500]);
         $this->assertEquals(1, $count[100]);
+
+        $file = $this->getLastEntity(ConstantsEntity::FILE_STORE, true);
+
+        $this->assertEquals(FileStore\Type::SBI_UPI_REFUND, $file[FileStore\Entity::TYPE]);
+        $this->assertEquals(FileStore\Store::S3, $file[FileStore\Entity::STORE]);
+        $this->assertEquals(FileStore\Format::CSV, $file[FileStore\Entity::EXTENSION]);
     }
 
     protected function createCapturedPayment()

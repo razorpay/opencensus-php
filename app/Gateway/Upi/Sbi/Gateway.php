@@ -3,14 +3,15 @@
 namespace RZP\Gateway\Upi\Sbi;
 
 use App;
-use Razorpay\Trace\Logger;
-use RZP\Exception\BaseException;
+use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base;
+use Razorpay\Trace\Logger;
 use RZP\Gateway\Base\Entity;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
+use RZP\Exception\BaseException;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Exception\GatewayErrorException;
@@ -65,7 +66,7 @@ class Gateway extends Base\Gateway
 
         $this->checkResponseStatus($response[ResponseFields::API_RESPONSE][ResponseFields::STATUS]);
 
-        $vpa = $input['terminal']['gateway_merchant_id2'] ?? self::DEFAULT_PAYEE_VPA;
+        $vpa = $input[ConstantsEntity::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID2] ?? self::DEFAULT_PAYEE_VPA;
 
         return [
             'data'   => [
@@ -94,7 +95,7 @@ class Gateway extends Base\Gateway
 
         try
         {
-            assertTrue($content[ResponseFields::UPI_TRANS_REFERENCE_NO] === $gatewayPayment->getNpciReferenceId());
+            assertTrue(((string) $content[ResponseFields::UPI_TRANS_REFERENCE_NO]) === ((string) $gatewayPayment->getNpciReferenceId()));
         }
         catch (BaseException $e)
         {
@@ -103,8 +104,9 @@ class Gateway extends Base\Gateway
                 Logger::INFO,
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
                 [
-                    'response_trans_reference_no' => $content[ResponseFields::UPI_TRANS_REFERENCE_NO],
-                    'entity_npci_reference_id'    => $gatewayPayment->getNpciReferenceId(),
+                    'response_trans_reference_no' => (string) $content[ResponseFields::UPI_TRANS_REFERENCE_NO],
+                    'entity_npci_reference_id'    => (string) $gatewayPayment->getNpciReferenceId(),
+                    'payment_id'                  => (string) $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
                 ]);
 
             throw $e;
@@ -237,8 +239,6 @@ class Gateway extends Base\Gateway
 
         $verify->gatewaySuccess = (Status::isStatusSuccess($status) === true);
     }
-
-    // TODO: Validate VPA before sending collect request and don't create payment entity if VPA is invalid
 
     /**
      * @param string $status
@@ -423,11 +423,17 @@ class Gateway extends Base\Gateway
         $attr = $this->getMappedAttributes($response);
 
         // To mark that we have received a response for this request
-        $attr[Entity::RECEIVED] = 1;
+        $attr[Base\Entity::RECEIVED] = 1;
 
-        $upiEntity->fill($attr);
+        $array = $upiEntity->toArrayPublic();
 
-        $upiEntity->saveOrFail();
+        // We only update the upi entity if received is not updated to 1
+        if (array_key_exists(Base\Entity::RECEIVED, $array) === false)
+        {
+            $upiEntity->fill($attr);
+
+            $upiEntity->saveOrFail();
+        }
     }
 
     protected function formatAmount(array $input): string

@@ -66,11 +66,11 @@ class RefundFile extends Base\RefundFile
             $data[] = [
                 self::PG_MERCHANT_ID  => $this->getMerchantId(),
                 self::REFUND_REQ_NO   => $row['refund']['id'],
-                self::TRANS_REF_NO    => $row['gateway']['npci_reference_id'], // TODO: Verify this - UPI TXN REF NO
+                self::TRANS_REF_NO    => $row['gateway']['npci_reference_id'],
                 self::CUSTOMER_REF_NO => $row['gateway']['gateway_payment_id'],
                 self::ORDER_NO        => $row['payment']['id'],
                 self::REFUND_REQ_AMT  => $row['refund']['amount'] / 100,
-                self::REFUND_REMARK   => 'Refund'
+                self::REFUND_REMARK   => 'Refund from ' . $row['payment']['vpa']
             ];
         }
 

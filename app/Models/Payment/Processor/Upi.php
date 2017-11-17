@@ -8,7 +8,6 @@ class Upi
     const HDFC      = 'hdfc';
     const SBI       = 'sbi';
 
-    // TODO: shift this to IFSC::getBankName()
     public static $fullName = array(
         self::ICICI         => 'ICICI Bank',
         self::HDFC          => 'HDFC Bank',
