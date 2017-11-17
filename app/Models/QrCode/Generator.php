@@ -138,7 +138,7 @@ class Generator extends Base\Core
 
     protected function getLocalSaveDir(): string
     {
-        return storage_path('files/filestore');
+        return storage_path('files/qrcode');
     }
 
     protected function generateQrCodeLocalFile()
