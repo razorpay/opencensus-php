@@ -11,36 +11,33 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::NAME            => 'filled|string|max:40',
-        Entity::DESCRIPTOR      => 'sometimes|nullable|alpha_num',
-        Entity::AMOUNT_EXPECTED => 'filled|integer|min:0',
+        Entity::NAME            => 'sometimes|filled|string|max:40',
+        Entity::DESCRIPTOR      => 'sometimes|nullable|alpha_num|custom',
+        Entity::AMOUNT_EXPECTED => 'sometimes|filled|integer|min:0',
         Entity::DESCRIPTION     => 'sometimes|nullable|string|max:2048',
-        Entity::CUSTOMER_ID     => 'filled|public_id|size:19',
-        Entity::RECEIVERS       => 'required|array',
+        Entity::CUSTOMER_ID     => 'sometimes|filled|public_id|size:19',
+        Entity::RECEIVER_TYPES  => 'sometimes|filled|array',
         Entity::NOTES           => 'sometimes|notes',
     ];
 
     protected static $editRules = [
-        Entity::NAME            => 'filled|string|max:40',
+        Entity::NAME            => 'sometimes|filled|string|max:40',
         Entity::STATUS          => 'sometimes|in:closed',
         Entity::DESCRIPTION     => 'sometimes|nullable|string|max:2048',
         Entity::NOTES           => 'sometimes|notes',
     ];
 
     protected static $createValidators = [
-        Entity::RECEIVERS
+        Entity::RECEIVER_TYPES
     ];
 
-    public static function validateDescriptor($descriptor, $handle)
+    protected function validateDescriptor($attribute, $descriptor)
     {
-        if ($descriptor === null)
-        {
-            return;
-        }
+        $merchant = $this->entity->merchant;
 
         $descriptorLength = strlen($descriptor);
 
-        $handleLength = strlen($handle);
+        $handleLength = strlen($merchant->getHandle());
 
         $rootLength = Receiver::ROOT_LENGTH;
 
@@ -55,15 +52,10 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateReceivers(array $input)
+    protected function validateReceiverTypes(array $input)
     {
-        if (isset($input[Entity::RECEIVERS][Entity::TYPES]) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'requests.types is required.');
-        }
-
-        if (Receiver::areTypesValid($input[Entity::RECEIVERS][Entity::TYPES]) === false)
+        if ((isset($input[Entity::RECEIVER_TYPES]) === true) and
+            (Receiver::areTypesValid($input[Entity::RECEIVER_TYPES]) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES,

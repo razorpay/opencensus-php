@@ -4,44 +4,9 @@ namespace RZP\Tests\Functional\Helpers\VirtualAccount;
 
 trait VirtualAccountTrait
 {
-    private function createVirtualAccount(
-        array $input = [],
-        $numeric = true,
-        $descriptor = null)
+    private function createVirtualAccount(array $input = [])
     {
-        $defaultValues = $this->getDefaultVirtualAccountRequestArray();
-
-        if ($numeric === false)
-        {
-            $defaultValues['receivers']['bank_account']['numeric'] = 0;
-        }
-
-        if ($descriptor !== null)
-        {
-            $defaultValues['receivers']['bank_account']['descriptor'] = $descriptor;
-        }
-
-        $attributes = array_merge($defaultValues, $input);
-
-        $this->ba->privateAuth();
-
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/virtual_accounts',
-            'content' => $attributes,
-        ];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        return $response;
-    }
-
-    private function createVirtualAccountOldFormat(
-        array $input = [],
-        $numeric = true,
-        $descriptor = null)
-    {
-        $defaultValues = $this->getOldVirtualAccountRequestArray();
+        $defaultValues = $this->getDefaultVirtualAccountArray();
 
         $attributes = array_merge($defaultValues, $input);
 
@@ -185,31 +150,15 @@ trait VirtualAccountTrait
         ];
     }
 
-    private function getOldVirtualAccountRequestArray()
+    private function getDefaultVirtualAccountArray()
     {
         return [
-            'name'           => 'Test virtual account',
-            'description'    => 'VA for tests',
-            'receiver_types' => [
+            'name'            => 'Test virtual account',
+            'description'     => 'VA for tests',
+            'receiver_types'  => [
                 'bank_account'
             ],
-            'notes'          => [
-                'a' => 'b',
-            ],
-        ];
-    }
-
-    private function getDefaultVirtualAccountRequestArray()
-    {
-        return [
-            'name'        => 'Test virtual account',
-            'description' => 'VA for tests',
-            'receivers'   => [
-                'types' => [
-                    'bank_account',
-                ],
-            ],
-            'notes'       => [
+            'notes'           => [
                 'a' => 'b',
             ],
         ];

@@ -78,11 +78,7 @@ class Processor extends VirtualAccount\Processor
     {
         return [
             VirtualAccount\Entity::AMOUNT_EXPECTED => $amount,
-            VirtualAccount\Entity::RECEIVERS  => [
-                VirtualAccount\Entity::TYPES => [
-                    VirtualAccount\Receiver::QR_CODE,
-                ],
-            ]
+            VirtualAccount\Entity::RECEIVER_TYPES  => [VirtualAccount\Receiver::QR_CODE]
         ];
     }
 
