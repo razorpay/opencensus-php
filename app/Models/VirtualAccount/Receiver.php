@@ -94,8 +94,6 @@ class Receiver
 
     public function buildQrCode(Entity $virtualAccount)
     {
-        $qrCode = new QrCode\Entity;
-
         $input = $this->getQrCodeEntityParams($virtualAccount);
 
         $qrCode = (new QrCode\Generator($this->merchant))->generate($input, $virtualAccount);

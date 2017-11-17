@@ -4,7 +4,6 @@ namespace RZP\Models\QrCode;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
@@ -12,7 +11,6 @@ use Endroid\QrCode\QrCode;
 use RZP\Models\VirtualAccount;
 use RZP\Exception\LogicException;
 use RZP\Services\Elfin\Service as Elfin;
-use RZP\Exception\BadRequestValidationFailureException;
 
 class Generator extends Base\Core
 {
@@ -52,8 +50,51 @@ class Generator extends Base\Core
         $this->baseQrCodeUrl = $this->app['config']->get('app.url');
     }
 
+    public function generate(array $input, VirtualAccount\Entity $virtualAccount): Entity
+    {
+        $this->createAndSetQrCode($input);
+
+        $qrCode = $this->qrCode;
+
+        $qrCode->merchant()->associate($this->merchant);
+
+        $qrCode->source()->associate($virtualAccount);
+
+        $qrCode->generateQrString();
+
+        $this->setShortUrl();
+
+        $this->repo->saveOrFail($qrCode);
+
+        $this->generateQrCodeFile();
+
+        return $this->qrCode;
+    }
+
+    protected function createAndSetQrCode(array $input)
+    {
+        $this->qrCode = (new Entity)->build($input)->generateId();
+    }
+
+    protected function setShortUrl()
+    {
+        $longUrl = $this->getQrCodeLink();
+
+        $shortenedUrl = $this->elfin->shorten($longUrl);
+
+        $this->trace->info(
+            TraceCode::QR_CODE_URL,
+            [
+                'qr_code_id'     => $this->qrCode->getId(),
+                'short_url'      => $shortenedUrl,
+                'long_url'       => $longUrl,
+            ]);
+
+        $this->qrCode->setShortUrl($shortenedUrl);
+    }
+
     /**
-     * Qr Code Long URl
+     * Qr Code Long URL
      *
      * @return string
      *
@@ -77,51 +118,9 @@ class Generator extends Base\Core
         return $qrCodeLink;
     }
 
-    public function generate(array $input, VirtualAccount\Entity $virtualAccount): Entity
-    {
-        $qrCode = new Entity;
-
-        $qrCode = $qrCode->build($input);
-
-        $qrCode->generateId();
-
-        $qrCode->merchant()->associate($this->merchant);
-
-        $qrCode->source()->associate($virtualAccount);
-
-        $qrCode = $qrCode->generateQrString();
-
-        $this->qrCode = $qrCode;
-
-        $this->setShortUrl();
-
-        $this->repo->saveOrFail($qrCode);
-
-        $qrCodeImage = $this->generateQrCodeFile();
-
-        return $this->qrCode;
-    }
-
-    protected function setShortUrl()
-    {
-        $longUrl = $this->getQrCodeLink();
-
-        $shortenedUrl = $this->elfin->shorten($longUrl);
-
-        $this->trace->info(
-            TraceCode::QR_CODE_URL,
-            [
-                'qr_code_id'     => $this->qrCode->getId(),
-                'short_url'      => $shortenedUrl,
-                'long_url'       => $longUrl,
-            ]);
-
-        $this->qrCode->setShortUrl($shortenedUrl);
-    }
-
     protected function generateQrCodeFile()
     {
-        $localFilePath = $this->generateQrCodeLocalFile();
+        $localFilePath = $this->generateQrCodeImage();
 
         $ext = FileStore\Format::PNG;
 
@@ -136,18 +135,7 @@ class Generator extends Base\Core
                     ->save();
     }
 
-    protected function getLocalSaveDir(): string
-    {
-        $dir_to_save = storage_path('files/qrcode');
-
-        if (!is_dir($dir_to_save)) {
-            mkdir($dir_to_save);
-        }
-
-        return storage_path('files/qrcode');
-    }
-
-    protected function generateQrCodeLocalFile()
+    protected function generateQrCodeImage()
     {
         $qrCodeImage = new QrCode($this->qrCode->getQrString());
 
@@ -158,5 +146,16 @@ class Generator extends Base\Core
         $qrCodeImage->writeFile($localFilePath);
 
         return $localFilePath;
+    }
+
+    protected function getLocalSaveDir(): string
+    {
+        $dir_to_save = storage_path('files/qrcode');
+
+        if (!is_dir($dir_to_save)) {
+            mkdir($dir_to_save);
+        }
+
+        return storage_path('files/qrcode');
     }
 }

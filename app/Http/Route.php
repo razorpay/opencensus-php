@@ -188,6 +188,8 @@ final class Route
         'bank_transfer_strip_payer_accounts'      => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
         'bank_transfer_insert'                    => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'gateway_payment_callback_bharatqr'       => ['post',     'payment/callback/bharatqr',                      'BharatQrController@processBharatQrPayment'                         ],
+        'qr_code_download_live'                   => ['get',      'l/qrcode/{id}',                                  'QrCodeController@fetchTestQrCode'                                  ],
+        'qr_code_download_test'                   => ['get',      't/qrcode/{id}',                                  'QrCodeController@fetchLiveQrCode'                                  ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
         'virtual_account_fetch'                   => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
@@ -663,8 +665,6 @@ final class Route
         'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                   'FeatureController@postOnboardingSubmissions'                       ],
         'feature_onboarding_fetch_responses'      => ['get',      'feature/onboarding/{feature}/responses',         'FeatureController@getOnboardingSubmissionsDeprecated'              ],
         'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                   'FeatureController@getOnboardingSubmissionsDeprecated'              ],
-        'qr_code_download_live'                   => ['get',      'l/qrcode/{id}',                                  'QrCodeController@fetchTestQrCode'                                  ],
-        'qr_code_download_test'                   => ['get',      't/qrcode/{id}',                                  'QrCodeController@fetchLiveQrCode'                                  ],
     ];
 
     public static $public = [
