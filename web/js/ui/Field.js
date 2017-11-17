@@ -85,9 +85,9 @@ export function SwitchField({ label, disabledLabel, enabledLabel, ...props }) {
     <div class="field">
       <label class={props.required ? 'required' : ''}>{label}</label>
 
-      {disabledLabel && <span>{disabledLabel}</span>}
+      {disabledLabel && <span class="caption">{disabledLabel}</span>}
       <Switch knob {...props} />
-      {enabledLabel && <span>{enabledLabel}</span>}
+      {enabledLabel && <span class="caption">{enabledLabel}</span>}
     </div>
   );
 }

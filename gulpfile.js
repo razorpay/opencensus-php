@@ -4,6 +4,7 @@ const iconFontGenerator = require('icon-font-generator/lib');
 const glob = require('glob').sync;
 const path = require('path');
 const { execSync } = require('child_process');
+const isProd = require('process').env.NODE_ENV === 'production';
 
 function createBaseDir() {
   execSync(`
@@ -27,6 +28,7 @@ function compileCss(o) {
       stylus({
         include: [__dirname + '/public/dist/css', __dirname + '/node_modules'],
         'include css': true,
+        compress: isProd,
       })
     )
     .on('error', handleError)
