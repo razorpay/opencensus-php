@@ -96,6 +96,7 @@ export default class MerchantEntity extends Component {
   }
 }
 
+/* Side bar component */
 const ActionsList = ({ model, merchantId, actions }) => {
   const merchant = model.merchant;
 

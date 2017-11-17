@@ -9,7 +9,7 @@ export default ({ merchant_details: merchantDetails }) => (
     {!merchantDetails ? (
       <div class="spinner center m-t" />
     ) : (
-      <Form class="full-span">
+      <Form class="full-span full-elements limited">
         <Field
           label="Website Address"
           name="business_website"

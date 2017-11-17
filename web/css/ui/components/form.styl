@@ -14,6 +14,7 @@ input, select, textarea, button, .btn
     border-color: #b5b5b5
 
 textarea
+  resize: vertical
   min-height: 100px
 
 input, textarea, select
@@ -100,30 +101,43 @@ form
       opacity: .6
       pointer-events: none
 
-  &.full-span
+  &.limited
     width: 75%
+
+  // full-span class on <Form> makes the <Field> elements to come in separates lines
+  &.full-span
     margin: 0 auto
 
     .field
       width: 100%
-      margin-top: 16px
+      margin: 8px auto
 
-      label, select, input, > div
+      label, select, input, textarea, > div
         display: inline-block
         vertical-align: middle
 
       label
         width: 35%
+        line-height: 38px;
+        margin-bottom: 0;
+        vertical-align: top
         white-space: pre-wrap
 
-      select, input, >i
-        width: 55%
+      select, input, textarea, >i
         margin-left: 10px
+
+      >i
+        width: 55%
 
       .info-block
         width: 55%
         float: right
         margin-right: 8%
+
+    // full-elements class on <Form> makes the <Field> elements to take 100% on right side otherwise default width
+    &.full-elements .field
+      select, input, textarea
+        width: 55%
 
 
 // Used for labels

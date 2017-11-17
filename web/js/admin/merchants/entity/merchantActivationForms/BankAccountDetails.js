@@ -11,7 +11,7 @@ export default ({ merchant_details: merchantDetails, title }) => (
     {!merchantDetails ? (
       <div class="spinner center m-t" />
     ) : (
-      <Form class="full-span">
+      <Form class="full-span full-elements limited">
         <Field
           label="Name of Bank"
           name="bank_name"

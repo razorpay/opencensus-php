@@ -34,7 +34,7 @@ export default ({ props }) => {
 
   return (
     <BaseModal header="Edit Comment">
-      <Form>
+      <Form class="full-span full-elements">
         <TextAreaField label="Comment" name="comment" />
 
         <AsyncButton

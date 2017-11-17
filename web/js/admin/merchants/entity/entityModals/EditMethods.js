@@ -69,12 +69,11 @@ export default ({ props }) => {
       },
       body,
     })
-      .then(response => {
-        if (response.data.success) {
+      .then(data => {
+        if (data) {
           notifySuccess('Methods updated successfully.');
+          props.updateDetails({ ...props.merchant.details, methods: data });
           closeModal();
-        } else {
-          response.data.errors.map(error => notifyError(error));
         }
       })
       .catch(err => {

@@ -29,15 +29,17 @@ export default ({ props }) => {
 
   return (
     <BaseModal header="Upload Screenshots">
-      {entitiesList.map(entity => (
-        <FileField
-          key={entity.name}
-          accept="image/*"
-          label={entity.label}
-          name={entity.name}
-          onChange={handleUpload.bind(null, entity.name, entity.label)}
-        />
-      ))}
+      <div style={{ width: '350px' }}>
+        {entitiesList.map(entity => (
+          <FileField
+            key={entity.name}
+            accept="image/*"
+            label={entity.label}
+            name={entity.name}
+            onChange={handleUpload.bind(null, entity.name, entity.label)}
+          />
+        ))}
+      </div>
     </BaseModal>
   );
 };

@@ -36,10 +36,10 @@ export default ({ props }) => {
 
   return (
     <BaseModal header="Mark as Referred">
-      <Form>
+      <Form class="full-span full-elements" style={{ width: '350px' }}>
         <Field label="Merchant Id" name="referral" />
 
-        <div>
+        <div class="m-t m-b info-block text-danger">
           <strong>
             Warning: You need to be a superadmin in order to edit merchant email
             address.
