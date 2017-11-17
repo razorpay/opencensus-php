@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import { notifyError } from 'common/modal';
-import { titleCase } from 'util/index';
+import { titleCase, snakeToTitleCase } from 'util/index';
 
 import { adminFetch } from 'util/fetch';
 import EntityRow from 'ui/EntityRow';
@@ -38,7 +38,7 @@ export default class ProductOnboarding extends Component {
         {!onboarding ? (
           <div class="spinner center m-t" />
         ) : (
-          <div>
+          <div class="limited">
             {
               do {
                 if (!Object.keys(onboarding).length) {
@@ -48,13 +48,15 @@ export default class ProductOnboarding extends Component {
                     const questionsList = onboarding[productName];
 
                     return (
-                      <div key={productName} style={{ width: '40%' }}>
-                        <b>{productName}</b>
+                      <div key={productName} class="m-b">
+                        <div class="heading">
+                          {snakeToTitleCase(productName)}
+                        </div>
 
                         {Object.keys(questionsList).map(questionName => (
                           <EntityRow
                             key={questionName}
-                            label={titleCase(questionName)}
+                            label={snakeToTitleCase(questionName)}
                             value={
                               questionName === 'vendor_agreement' ? (
                                 <a

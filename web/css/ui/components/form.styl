@@ -32,8 +32,8 @@ label
   line-height: 18px
   white-space: nowrap
   display: block
-  margin-left: 1px;
-  margin-bottom: 4px;
+  margin-left: 1px
+  margin-bottom: 4px
 
 button, .btn
   line-height: 38px
@@ -50,8 +50,8 @@ button, .btn
     background: #e74c3c
 
 .disabled
-  opacity: 0.5;
-  cursor: not-allowed !important;
+  opacity: 0.5
+  cursor: not-allowed !important
 
 .field
   display: inline-block
@@ -66,7 +66,7 @@ button, .btn
   width: 34px
   height: 38px
   position: relative
-  margin: 0;
+  margin: 0
   display: inline-block
   vertical-align: middle
   &:before
@@ -89,7 +89,7 @@ button, .btn
     transition: .2s
   &.checked
     &:before
-      background: linear-gradient(to bottom, #4CD964, #4BD863);
+      background: linear-gradient(to bottom, #4CD964, #4BD863)
     &:after
       transform: translateX(15px)
 
@@ -100,6 +100,33 @@ form
       opacity: .6
       pointer-events: none
 
+  &.full-span
+    width: 75%
+    margin: 0 auto
+
+    .field
+      width: 100%
+      margin-top: 16px
+
+      label, select, input, > div
+        display: inline-block
+        vertical-align: middle
+
+      label
+        width: 35%
+        white-space: pre-wrap
+
+      select, input, >i
+        width: 55%
+        margin-left: 10px
+
+      .info-block
+        width: 55%
+        float: right
+        margin-right: 8%
+
+
+// Used for labels
 .required:after
   content: '*'
   color: red

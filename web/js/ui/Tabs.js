@@ -113,14 +113,14 @@ export default class TabsContainer extends Component {
 const TabControl = ({ model }) => (
   <div class="tabs-control">
     <span
-      class={`pills label-semi-muted prev ${model.currentActiveIdx === 0 &&
+      class={`m-l pills label-semi-muted prev ${model.currentActiveIdx === 0 &&
         'hide'}`}
       onClick={model.goPrev}
     >
       {'< Prev'}
     </span>
     <span
-      class={`pills label-semi-muted next ${model.currentActiveIdx ===
+      class={`m-r pills label-semi-muted next ${model.currentActiveIdx ===
         model.totalTabs - 1 && 'hide'}`}
       onClick={model.goNext}
     >
