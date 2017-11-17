@@ -5,11 +5,11 @@ import { beneficiaryStateMap } from '../entity-resources';
 import Form from 'ui/Form';
 import Field, { SelectField } from 'ui/Field';
 
-export default ({ merchant_details: merchantDetails }) => (
+export default ({ merchant_details: merchantDetails, title }) => (
   <div class="container">
-    <header>Bank Account Details</header>
+    <header class="m-b">{title}</header>
     {!merchantDetails ? (
-      <div class="spinner center" />
+      <div class="spinner center m-t" />
     ) : (
       <Form>
         <Field

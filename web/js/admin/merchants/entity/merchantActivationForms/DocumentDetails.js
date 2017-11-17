@@ -31,7 +31,7 @@ export default class DocumentDetails extends Component {
       <div class="container">
         <header>{this.props.title}</header>
         {!files ? (
-          <div class="spinner center" />
+          <div class="spinner center m-t" />
         ) : (
           <div>
             <banner class="info">

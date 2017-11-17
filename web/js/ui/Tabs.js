@@ -75,7 +75,7 @@ export default class TabsContainer extends Component {
       iconClass,
       iconBoolList,
     } = this.props;
-    className += ' tabs-container';
+    className += ' tabs-container m-t m-b';
 
     const currentContent = children[this.model.currentActiveIdx];
 
@@ -91,9 +91,9 @@ export default class TabsContainer extends Component {
             return (
               <li
                 key={index}
-                class={`${this.model.currentActiveIdx === index
-                  ? 'selected'
-                  : ''} ${icon && 'text-success'}`}
+                class={`${
+                  this.model.currentActiveIdx === index ? 'selected' : ''
+                } ${icon && 'text-success'}`}
                 onClick={() => this.model.goTo(index)}
               >
                 {icon}

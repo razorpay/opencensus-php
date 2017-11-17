@@ -33,10 +33,10 @@ export default class ProductOnboarding extends Component {
 
     return (
       <div class="container">
-        <header>{this.props.title}</header>
+        <header class="m-b">{this.props.title}</header>
 
         {!onboarding ? (
-          <div class="spinner center" />
+          <div class="spinner center m-t" />
         ) : (
           <div>
             {
