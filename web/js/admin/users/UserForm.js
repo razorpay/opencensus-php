@@ -53,7 +53,7 @@ export default class UserForm extends Component {
 
     return (
       <div class="box user-form-container">
-        <header>{user.id ? `Edit User-${user.id}` : 'Add an User'} </header>
+        <header>{user.id ? `Edit User – ${user.id}` : 'Add an User'} </header>
         <Form onSubmit={onSubmit}>
           {fields.indexOf('name') > -1 && (
             <Field
@@ -143,7 +143,6 @@ export default class UserForm extends Component {
             <CheckField
               name="allow_all_merchants"
               label="Allow All Merchants"
-              required
               defaultChecked={user.allow_all_merchants}
             />
           )}
@@ -152,7 +151,6 @@ export default class UserForm extends Component {
             <CheckField
               name="disabled"
               label="Disabled"
-              required
               defaultChecked={user.disabled}
             />
           )}
@@ -174,12 +172,12 @@ export default class UserForm extends Component {
               </SelectField>
               {roles.map(r => (
                 <span
+                  title="Click to remove"
                   class="link"
                   key={r[0]}
                   onClick={e => updateRole(r[0], true)}
                 >
-                  {r[1]}
-                  {' x'}
+                  {r[1]} ×
                 </span>
               ))}
             </div>

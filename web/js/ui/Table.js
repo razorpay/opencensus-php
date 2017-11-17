@@ -23,6 +23,7 @@ export default function Table({
   border,
   animateRow,
   href,
+  header = true,
   indexFn = defaultIndexFn,
 }) {
   let Row = href ? Link : 'div';
@@ -47,15 +48,17 @@ export default function Table({
   return (
     <div class="table-container">
       <TransitionGroup class={tableClass} enter={animateRow} exit={animateRow}>
-        <CSSTransition timeout={0}>
-          <div class="tr thead">
-            {fields.map((field, index) => (
-              <div class="th" key={index}>
-                {field[0]}
-              </div>
-            ))}
-          </div>
-        </CSSTransition>
+        {header && (
+          <CSSTransition timeout={0}>
+            <div class="tr thead">
+              {fields.map((field, index) => (
+                <div class="th" key={index}>
+                  {field[0]}
+                </div>
+              ))}
+            </div>
+          </CSSTransition>
+        )}
         {items.map((item, index) => {
           return (
             <CSSTransition

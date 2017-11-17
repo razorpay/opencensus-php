@@ -12,7 +12,7 @@ export default class AdminActionsList extends Component {
     return (
       <div className="limited box">
         <header>Actions</header>
-        <Table fields={fields} items={rows} onClick={onClick} />
+        <Table header={false} fields={fields} items={rows} onClick={onClick} />
       </div>
     );
   }

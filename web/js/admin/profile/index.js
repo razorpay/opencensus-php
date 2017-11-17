@@ -203,7 +203,7 @@ export default class Profile extends Component {
     ];
 
     return (
-      <BaseModal header="Admin Profile">
+      <div class="limited box">
         <header>Admin Profile</header>
         <Duplex fields={fields} model={user} />
         {org.auth_type === 'password' && (
@@ -228,7 +228,7 @@ export default class Profile extends Component {
             this.showActivityLog();
           }}
         />
-      </BaseModal>
+      </div>
     );
   }
 }
