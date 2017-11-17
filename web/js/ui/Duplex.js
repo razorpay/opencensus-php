@@ -7,7 +7,7 @@ export default class Duplex extends Component {
     let { fields, pending, model } = this.props;
 
     return (
-      <div>
+      <div class="duplex">
         {(pending && <div class="table-pending" />) ||
           (model &&
             fields.length && (

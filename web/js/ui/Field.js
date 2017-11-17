@@ -36,23 +36,11 @@ export const FileField = _ => <Field {..._} type="file" />;
 export const DateField = _ => (
   <Field format="DD/MM/YYYY" {..._} tag={DayPickerInput} />
 );
+export const TimeField = _ => <Field {..._} type="time" />;
 export const DataListField = _ => <Field {..._} tag="datalist" />;
 
 export const FromField = _ => <DateField {..._} name="from" label="From" />;
 export const ToField = _ => <DateField {..._} name="to" label="To" />;
-
-export function TimeField({ label, ...props }) {
-  return (
-    <div class="field">
-      {label && (
-        <label class={props.required ? 'required' : ''} onClick={toggleChecked}>
-          {label}
-        </label>
-      )}
-      <input type="time" name="start_at_time" {...props} />
-    </div>
-  );
-}
 
 export function RadioField({ label, value, defaultValue, ...props }) {
   return (

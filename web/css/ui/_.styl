@@ -105,17 +105,21 @@ a
     padding: 50px 0 1px
     position: relative
 
+.limited
+  margin: 30px auto
+  max-width: 600px
+
 .container
   position: relative
+
+  header
+    border-bottom: 1px solid $faded-color;
 
 .box
   position: relative
   background: #fff
   margin: 30px
   box-shadow: 1px 2px 8px rgba(0,0,0,.11)
-  &.limited
-    margin: 30px auto
-    max-width: 600px
   > header:not(:only-child)
     border-bottom: 2px solid #eee
 

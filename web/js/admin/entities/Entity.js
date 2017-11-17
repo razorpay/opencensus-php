@@ -53,7 +53,7 @@ export default class GenericEntity extends Component {
           {this.title} <code>{id}</code>
         </header>
         <Duplex pending={!data} model={data} fields={this.fields()} />
-        <div class="code">{JSON.stringify(data, null, 4)}</div>
+        {data && <div class="code">{JSON.stringify(data, null, 4)}</div>}
       </div>
     );
   }

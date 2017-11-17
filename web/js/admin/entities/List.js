@@ -82,13 +82,9 @@ export default class EntityList extends Component {
           (this.state.selectedEntity === 'merchant' && key === 'id')
         ) {
           return (
-            <a
-              href={`/admin/_#/app/merchants/${value}/detail`}
-              target="_blank"
-              class="link"
-            >
+            <Link to={`/merchants/${value}`} class="link">
               {value}
-            </a>
+            </Link>
           );
         }
 
