@@ -417,7 +417,7 @@ class Gateway extends Base\Gateway
         {
             $networkName = $this->getNetworkName();
 
-            $cert = $this->config['live_client_' . $networkName . '_certificate'];
+            $cert = $this->config['live_' . $networkName . '_certificate'];
 
             $cert = str_replace('\n', "\n", $cert);
 
@@ -449,7 +449,7 @@ class Gateway extends Base\Gateway
         {
             $networkName = $this->getNetworkName();
 
-            $cert = $this->config['live_client_' . $networkName . '_certificate_pem'];
+            $cert = $this->config['live_' . $networkName . '_key'];
 
             $cert = str_replace('\n', "\n", $cert);
 
