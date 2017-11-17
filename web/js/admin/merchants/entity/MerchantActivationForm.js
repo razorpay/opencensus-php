@@ -15,6 +15,8 @@ import DocumentDetails from './merchantActivationForms/DocumentDetails';
 import ProductOnboarding from './merchantActivationForms/ProductOnboarding';
 import BusinessDetails from './merchantActivationForms/BusinessDetails';
 
+import { Link } from 'react-router-dom';
+
 @observer
 export default class MerchantActivationForm extends Component {
   state = {};
@@ -57,7 +59,10 @@ export default class MerchantActivationForm extends Component {
     return (
       <div class="box">
         <div class="heading">
-          Merchant: <b>{this.merchantId}</b>
+          Merchant:{' '}
+          <Link to={`/merchants/${this.merchantId}`}>
+            <b>{this.merchantId}</b>
+          </Link>
         </div>
         {!Object.keys(details).length ? (
           <div class="spinner center" />
@@ -132,9 +137,11 @@ function _getOverviewFields(details) {
       label: 'Activation Form Submitted',
       value: () => (
         <i
-          class={`i ${details.merchant_details.submitted == 1
-            ? 'i-yes text-success'
-            : 'i-no text-danger'}`}
+          class={`i ${
+            details.merchant_details.submitted == 1
+              ? 'i-yes text-success'
+              : 'i-no text-danger'
+          }`}
         />
       ),
     },
@@ -142,9 +149,9 @@ function _getOverviewFields(details) {
       label: 'Activation Form Status',
       value: () => (
         <i
-          class={`i i-${details.merchant_details.locked == 1
-            ? 'lock'
-            : 'unlock'}`}
+          class={`i i-${
+            details.merchant_details.locked == 1 ? 'lock' : 'unlock'
+          }`}
         />
       ),
     },
@@ -152,9 +159,9 @@ function _getOverviewFields(details) {
       label: 'Activated',
       value: () => (
         <i
-          class={`i ${details.activated == 1
-            ? 'i-yes text-success'
-            : 'i-no text-danger'}`}
+          class={`i ${
+            details.activated == 1 ? 'i-yes text-success' : 'i-no text-danger'
+          }`}
         />
       ),
     },

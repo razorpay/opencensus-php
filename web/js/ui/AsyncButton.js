@@ -44,7 +44,9 @@ export default class AsyncButton extends Component {
       ? this.props.pendingClass
       : this.props.className;
 
-    className += this.props.disabled ? ' disabled' : '';
+    if (this.props.disabled) {
+      className += ' disabled';
+    }
 
     return (
       <div class={className} onClick={this.onClick}>

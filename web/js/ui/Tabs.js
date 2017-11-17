@@ -91,9 +91,7 @@ export default class TabsContainer extends Component {
             return (
               <li
                 key={index}
-                class={`${
-                  this.model.currentActiveIdx === index ? 'selected' : ''
-                } ${icon && 'text-success'}`}
+                class={this.model.currentActiveIdx === index && 'selected'}
                 onClick={() => this.model.goTo(index)}
               >
                 {icon}
