@@ -2,14 +2,17 @@
 
 namespace RZP\Gateway\Netbanking\Axis;
 
+use RZP\Error;
+use RZP\Exception;
+use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Gateway\Netbanking\Base\EMandateDebitReconFile as BaseEMandateDebitReconFile;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 use RZP\Models\Payment;
-use RZP\Error;
-use RZP\Gateway\Base\Action as GatewayAction;
 
 class EMandateDebitReconFile extends BaseEMandateDebitReconFile
 {
+    // Status codes
+    // Keep these values in lowercase to do a case-insensitive check
     const STATUS_SUCCESS = 'success';
     const STATUS_FAILURE = 'return';
 
@@ -82,7 +85,7 @@ class EMandateDebitReconFile extends BaseEMandateDebitReconFile
         if (in_array(strtolower($row[self::HEADING_STATUS]), $this->allowedStatuses) === false)
         {
             throw new Exception\GatewayErrorException(
-                'Unrecognized gateway status ' . $gatewayStatus, ['row' => $row]);
+                'Unrecognized gateway status ' . $row[self::HEADING_STATUS], ['row' => $row]);
         }
     }
 
