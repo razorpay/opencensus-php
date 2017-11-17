@@ -720,16 +720,64 @@ return [
         ],
     ],
 
-    'testDisputeMerchantDocumentUpload' => [
+    'testEditDisputeMerchantDocumentUploadByPrivate' => [
         'request' => [
             'content' => [
-                'comments'      => [],
             ],
             'method' => 'patch',
             'files' => [],
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testEditDisputeMerchantDocumentUploadByProxy' => [
+        'request' => [
+            'content' => [
+            ],
+            'method' => 'patch',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testEditDisputeMerchantAcceptDispute' => [
+        'request' => [
+            'content' => [
+                'accept_dispute'    => true,
+            ],
+            'method' => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'dispute'   => [
+                    'amount'            => 10100,
+                    'status'            => 'lost',
+                    'phase'             => 'chargeback',
+                ]
+            ],
+        ],
+    ],
+
+    'testEditDisputeMerchantAcceptDisputeForNonTransactional' => [
+        'request' => [
+            'content' => [
+                'accept_dispute'    => true,
+            ],
+            'method' => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'dispute'   => [
+                    'amount'            => 10100,
+                    'status'            => 'closed',
+                    'phase'             => 'fraud',
+                ],
             ],
         ],
     ],

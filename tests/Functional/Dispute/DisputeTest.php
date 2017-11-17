@@ -25,7 +25,7 @@ class DisputeTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testDisputeCreate()
@@ -532,7 +532,7 @@ class DisputeTest extends TestCase
         $this->startTest($testdata);
     }
 
-    public function testDisputeMerchantDocumentUpload()
+    public function testEditDisputeMerchantDocumentUploadByPrivate()
     {
         $this->ba->privateAuth();
 
@@ -542,6 +542,67 @@ class DisputeTest extends TestCase
 
         $content = $this->runRequestResponseFlow($testData);
 
+        $this->checkUploadedFilesArray($content);
+    }
+
+    public function testEditDisputeMerchantDocumentUploadByProxy()
+    {
+        $this->ba->proxyAuth();
+
+        $testData = $this->updateUploadDocumentData();
+
+        $testData['request']['files'][DisputeFileEntity::FILES] = $this->getTestFiles();
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->checkUploadedFilesArray($content);
+    }
+
+    public function testEditDisputeMerchantAcceptDispute()
+    {
+        $this->ba->proxyAuth();
+
+        // Input params while creating
+        $input = [
+            'amount'                => 10100,
+            'deduct_at_onset'       => 0,
+        ];
+
+        $testdata = $this->updateEditTestData($input);
+
+        $this->startTest($testdata);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertEquals(10100, $dispute['amount_deducted']);
+        $this->assertEquals(0, $dispute['amount_reversed']);
+        $this->assertEquals(0, $dispute['deduct_at_onset']);
+    }
+
+    public function testEditDisputeMerchantAcceptDisputeForNonTransactional()
+    {
+        $this->ba->proxyAuth();
+
+        // Input params while creating
+        $input = [
+            'amount'                => 10100,
+            'deduct_at_onset'       => 0,
+            'phase'                 => 'fraud',
+        ];
+
+        $testdata = $this->updateEditTestData($input);
+
+        $this->startTest($testdata);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertEquals(0, $dispute['amount_deducted']);
+        $this->assertEquals(0, $dispute['amount_reversed']);
+        $this->assertEquals(0, $dispute['deduct_at_onset']);
+    }
+
+    protected function checkUploadedFilesArray(array $content)
+    {
         $dispute = $this->getLastEntity('dispute', true);
 
         $files = $this->getEntities('dispute_file', [], true);
@@ -620,7 +681,7 @@ class DisputeTest extends TestCase
 
         $testData = &$this->testData[$name];
 
-        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId() . '/merchant';
+        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
 
         return $testData;
     }
