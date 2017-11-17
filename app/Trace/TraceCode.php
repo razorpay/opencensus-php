@@ -736,6 +736,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_JOB_ERROR                               = 'BATCH_JOB_ERROR';
     const IRCTC_BATCH_JOB_RECEIVED                      = 'IRCTC_BATCH_JOB_RECEIVED';
     const IRCTC_BATCH_JOB_ERROR                         = 'IRCTC_BATCH_JOB_ERROR';
+    const BATCH_FILE_DELETE_ERROR                       = 'BATCH_FILE_DELETE_ERROR';
+
     const MUTEX_LOCK_ALREADY_RELEASED                   = 'MUTEX_LOCK_ALREADY_RELEASED';
     const MUTEX_UNABLE_TO_ACQUIRE                       = 'MUTEX_UNABLE_TO_ACQUIRE';
 
@@ -935,6 +937,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Merchant feature trace codes
     const FEATURE_ONBOARDING_SUBMISSION_REQUEST         = 'FEATURE_ONBOARDING_SUBMISSION_REQUEST';
     const FEATURE_ONBOARDING_SUBMISSION_APPROVED        = 'FEATURE_ONBOARDING_SUBMISSION_APPROVED';
+    const FEATURE_ONBOARDING_BULK_UPDATE_STATUS         = 'FEATURE_ONBOARDING_BULK_UPDATE_STATUS';
     const FEATURE_ENABLED_MERCHANT_NOTIFIED             = 'FEATURE_ENABLED_MERCHANT_NOTIFIED';
     const FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED         = 'FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED';
 

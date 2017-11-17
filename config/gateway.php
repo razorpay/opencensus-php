@@ -25,6 +25,7 @@ return [
         'mobikwik',
         'paytm',
         'netbanking_hdfc',
+        'netbanking_bob',
         'netbanking_corporation',
         'netbanking_kotak',
         'netbanking_icici',
@@ -62,6 +63,7 @@ return [
     'mock_mobikwik'               => env('MOBIKWIK_MOCK'),
     'mock_paytm'                  => env('PAYTM_MOCK'),
     'mock_netbanking_hdfc'        => env('NETBANKING_HDFC_MOCK'),
+    'mock_netbanking_bob'         => env('NETBANKING_BOB_MOCK'),
     'mock_netbanking_corporation' => env('NETBANKING_CORPORATION_MOCK'),
     'mock_netbanking_kotak'       => env('NETBANKING_KOTAK_MOCK'),
     'mock_netbanking_icici'       => env('NETBANKING_ICICI_MOCK'),
@@ -307,6 +309,12 @@ return [
         'live_hash_secret'     => env('NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret'     => env('NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'),
         'live_hash_secret_tpv' => env('NETBANKING_KOTAK_GATEWAY_SEC_LIVE_HASH_SECRET'),
+    ],
+
+    'netbanking_bob' => [
+        'test_merchant_id'       => env('NETBANKING_BOB_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'       => env('NETBANKING_BOB_GATEWAY_TEST_HASH_SECRET'),
+        'pooling_account_number' => env('KOTAK_NODAL_ACCOUNT_NUMBER'),
     ],
 
     'netbanking_icici' => [

@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Exception\LogicException;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Base\PublicEntity;
 use RZP\Mail\Merchant\FeatureEnabled;
@@ -262,7 +263,8 @@ class Core extends Base\Core
     }
 
     /**
-     * Updates the feature activation status in the merchant details table
+     * Updates the feature activation status in the merchant details table.
+     * It also adds the feature, if the status is approved and the feature is not enabled for the merchant.
      *
      * @param string $merchantId
      * @param string $featureName
@@ -309,6 +311,71 @@ class Core extends Base\Core
         $merchantDetail = $merchant->merchantDetail;
 
         $response = $merchantDetail->getFeatureOnboardingStatuses();
+
+        return $response;
+    }
+
+    /**
+     * Accepts a merchant map (merchantId => status) for a product feature and updates the status
+     *
+     * @param string $featureName
+     * @param array  $merchantMap
+     *
+     * @return array
+     */
+    public function bulkUpdateFeatureActivationStatus(string $featureName, array $merchantMap): array
+    {
+        $success   = 0;
+        $failed    = 0;
+        $failedIds = [];
+
+        $this->trace->info(
+            TraceCode::FEATURE_ONBOARDING_BULK_UPDATE_STATUS,
+            [
+                Entity::FEATURE => $featureName,
+                'merchant_map'  => $merchantMap,
+                'admin_id'      => $this->app['basicauth']->getAdmin()->getId()
+            ]);
+
+        foreach ($merchantMap as $merchantId => $status)
+        {
+            try
+            {
+                $response = $this->updateFeatureActivationStatus($merchantId, $featureName, $status);
+
+                // Verify that the status was updated
+                $featureActivationStatus = snake_case($featureName . '_activation_status');
+
+                if ($response[$featureActivationStatus] !== $status)
+                {
+                    throw new LogicException('Feature activation status could not be updated');
+                }
+
+                $success++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    null,
+                    [
+                        Entity::MERCHANT_ID => $merchantId,
+                        Entity::FEATURE     => $featureName,
+                        'status'            => $status
+                    ]);
+
+                $failed++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'success'    => $success,
+            'failed'     => $failed,
+            'failed_ids' => $failedIds
+        ];
 
         return $response;
     }

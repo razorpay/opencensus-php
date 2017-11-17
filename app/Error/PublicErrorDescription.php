@@ -526,7 +526,6 @@ class PublicErrorDescription
     const BAD_REQUEST_CHECK_NOT_REQUIRED_IN_CURRENT_LEVEL                       = 'No check required from checker roles in the current workflow action level';
     const BAD_REQUEST_ACTION_INVALID_TYPE                                       = 'The given action type is not valid';
     const BAD_REQUEST_ACTION_INVALID_METHOD                                     = 'The given action method is not valid';
-    const BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE                             = 'Action State is not valid';
     const BAD_REQUEST_WORKFLOW_INVALID_CHECKER                                  = 'The checker review is invalid for this action';
     const BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND                                 = 'The requested action is not found';
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSE_NOT_AUTHORIZED                      = 'Workflow Action can only be closed by maker.';
@@ -545,6 +544,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES                                 = 'Workflow action is not in any open state';
     const BAD_REQUEST_WORKFLOW_STEPS_CANNOT_BE_EDITED                           = 'Workflow steps cannot be edited';
     const BAD_REQUEST_WORKFLOW_DUTY_TYPE_INVALID                                = 'Workflow requests listing duty/type params are invalid';
+    const BAD_REQUEST_INVALID_STATE                                             = 'Invalid state passed in query parameters';
 
     const BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED                                = 'This service can only be accessed by superadmins';
 
@@ -564,8 +564,12 @@ class PublicErrorDescription
 
     const BAD_REQUEST_ADMIN_TOKEN_MISMATCH                                      = 'Admin Token Mismatch';
 
-    const BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE                                = 'This gateway file generation attempt is not retriable';
     const BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION                             = 'Payment is pending authorization from approver.';
+
+    const BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE                                = 'This gateway file generation attempt is not retriable';
+    const BAD_REQUEST_GATEWAY_FILE_ANOTHER_OPERATION_IN_PROGRESS                = 'Another operation is in progress on the gateway_file entity';
+    const BAD_REQUEST_MORPHED_ENTITY_INVALID                                    = 'Invalid entity passed in query parameters';
+
     const SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND                               = 'No data present for gateway file processing in the given time period';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE                       = 'Error occurred trying to create file';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE                          = 'Error occurred while sending file';
