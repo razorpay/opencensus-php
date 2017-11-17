@@ -8,7 +8,6 @@ build:
           name: Build
           code: |
             npm run build
-            npm run squash
             mkdir -p /tmp/generated
             mv scripts/s3sync.js /tmp
             cp -r public/dist /tmp/generated
