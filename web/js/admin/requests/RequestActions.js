@@ -37,9 +37,10 @@ export default class RequestActions extends Component {
     requestFn({
       ...params,
     }).then(response => {
-      onUpdateAction(response);
-      closeModal();
-      notifyDone();
+      if (response) {
+        onUpdateAction(response);
+        notifyDone();
+      }
     });
   };
 
