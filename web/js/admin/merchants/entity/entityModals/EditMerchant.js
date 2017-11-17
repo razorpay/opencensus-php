@@ -127,8 +127,8 @@ export default class EditMerchant extends Component {
     });
 
     return (
-      <BaseModal header="Edit Bank Account details">
-        <Form>
+      <BaseModal header="Edit Merchant">
+        <Form class="full-span full-elements" style={{ width: '650px' }}>
           <Field label="Name" name="name" defaultValue={details.name} />
           <Field label="MCC" name="category" defaultValue={details.category} />
           <Field
