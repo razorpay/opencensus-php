@@ -351,6 +351,24 @@ class BasicAuth
 
             return $this->checkAndSetAccountScope();
         }
+        else if (($this->isKeyBlank()) and
+            ($this->verifyInternalApp()))
+        {
+            $this->setType(Type::PRIVILEGE_AUTH);
+
+            $this->setAppTrue();
+
+            // TODO : Security check -- check if request is coming from merchant/admin dashboard
+
+            $response = $this->setAdminAuthIfApplicable();
+
+            if ($response !== null)
+            {
+                return $response;
+            }
+
+            return $this->checkAndSetAccountScope();
+        }
 
         return $this->invalidApiKey();
     }
