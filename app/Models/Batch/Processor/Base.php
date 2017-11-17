@@ -494,6 +494,7 @@ class Base extends BaseModel\Core
                 return;
 
             case FileStore\Format::XLSX:
+            case FileStore\Format::XLS:
                 $fileMeta = $this->createExcelObject(
                                     $entries,
                                     $this->batch->getId(),
@@ -609,6 +610,7 @@ class Base extends BaseModel\Core
         switch ($ext)
         {
             case FileStore\Format::XLSX:
+            case FileStore\Format::XLS:
                 return $this->parseExcelSheets($filePath);
 
             case FileStore\Format::TXT:
