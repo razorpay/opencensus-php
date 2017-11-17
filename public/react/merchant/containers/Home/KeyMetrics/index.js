@@ -6,31 +6,7 @@ import Highcharts from 'rzp/ui/Highcharts';
 import { tabsOrder, tabsMeta } from './data';
 import Panel from './Panel';
 
-const date = {
-  loading: false,
-  tabs: {
-    transactionVolume: {
-      total: 242460,
-      diff: 8686,
-      histogram: [],
-    },
-    numTransactions: {
-      total: 12460,
-      diff: 123,
-      histogram: [],
-    },
-    refunds: {
-      total: 738,
-      diff: 1245,
-      histogram: [],
-    },
-    savedCards: {
-      total: 3697,
-      diff: 121,
-      histogram: [],
-    },
-  },
-};
+import { getData } from 'merchant/models/HomeKeyMetricsMock';
 
 class KeyMetricsContainer extends Component {
   constructor(props) {
@@ -42,19 +18,38 @@ class KeyMetricsContainer extends Component {
     };
 
     tabsOrder.forEach(tabName => {
-      var grouping = (tabsMeta[
-        tabName
-      ].grouping.tabState = this.state.tabsState[tabName] = {});
+      const grouping = tabsMeta[tabName].grouping,
+        tabState = (this.state.tabsState[tabName] = {});
 
       if (grouping.length > 0) {
-        tabsState[tabName] = {
-          selectedGrouping: grouping[0].value,
-        };
+        tabState.selectedGrouping = grouping[0].value;
       }
+
+      tabState.data = {};
     });
 
     this.onGroupingChange = this.onGroupingChange.bind(this);
     this.handleTabChange = this.handleTabChange.bind(this);
+  }
+
+  componentWillMount() {
+    const { tabsState, selectedTab } = this.state;
+
+    getData().then(resp => {
+      tabsOrder.forEach(tabName => {
+        tabsState[tabName].data.count = resp[tabName];
+      });
+
+      const tabState = tabsState[selectedTab];
+
+      tabState.data.diff = resp.diff;
+      tabState.data.histogram = resp.histogram.map(item => [
+        item.timestamp,
+        item.value,
+      ]);
+
+      this.setState({ tabsState });
+    });
   }
 
   handleTabChange(tabName) {
@@ -83,10 +78,12 @@ class KeyMetricsContainer extends Component {
           disabledTabClassName="disabled"
         >
           {tabsOrder.map((tabName, index) => {
+            const tabData = tabsState[tabName].data;
+
             return (
               <Tab key={index} onClick={() => this.handleTabChange(tabName)}>
                 <a>
-                  <h1>Loading..</h1>
+                  <h1>{tabData.count ? tabData.count.value : 'Loading...'}</h1>
                   {tabsMeta[tabName].title}
                 </a>
               </Tab>
@@ -101,6 +98,7 @@ class KeyMetricsContainer extends Component {
                 tabName={tabName}
                 selectedGrouping={tabsState[tabName].selectedGrouping}
                 onGroupingChange={this.onGroupingChange}
+                data={tabsState[tabName].data}
               />
             </TabPanel>
           );

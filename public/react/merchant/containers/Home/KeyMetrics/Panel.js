@@ -1,8 +1,20 @@
 import React, { Component } from 'react';
 
 import Definition from 'rzp/ui/Definition';
+import Highcharts from 'rzp/ui/Highcharts';
 
 import { tabsMeta } from './data';
+
+const chartOptions = {
+  xAxis: {
+    type: 'datetime',
+  },
+  yAxis: {
+    title: {
+      text: 'Count',
+    },
+  },
+};
 
 class Panel extends Component {
   constructor(props) {
@@ -19,34 +31,50 @@ class Panel extends Component {
   }
 
   render() {
-    const { selectedGrouping } = this.props,
+    const { selectedGrouping, data } = this.props,
+      histogramOptions = {
+        ...chartOptions,
+        series: [
+          {
+            type: 'area',
+            data: data.histogram,
+          },
+        ],
+      },
       { grouping, options } = this.meta;
 
+    if (!data.diff) {
+      return <center>Loading...</center>;
+    }
+
     return (
-      <div className="clearfix panel">
-        <div className="pull-left">
-          <Definition>
-            <h3>+ 1234</h3>
-            <span className="text-fade">As compared to:</span>
-          </Definition>
+      <div>
+        <div className="clearfix panel">
+          <div className="pull-left">
+            <Definition>
+              <h3>{data.diff.value}</h3>
+              <span className="text-fade">As compared to:</span>
+            </Definition>
+          </div>
+          <div className="pull-right">
+            {grouping.length > 0 && (
+              <select
+                value={selectedGrouping}
+                onChange={this.handleGroupingChange}
+              >
+                {grouping.map((item, index) => {
+                  return (
+                    <option value={item.value} key={index}>
+                      {item.text}
+                    </option>
+                  );
+                })}
+              </select>
+            )}
+            {options.length > 0 && <button>...</button>}
+          </div>
         </div>
-        <div className="pull-right">
-          {grouping.length > 0 && (
-            <select
-              value={selectedGrouping}
-              onChange={this.handleGroupingChange}
-            >
-              {grouping.map((item, index) => {
-                return (
-                  <option value={item.value} key={index}>
-                    {item.text}
-                  </option>
-                );
-              })}
-            </select>
-          )}
-          {options.length > 0 && <button>...</button>}
-        </div>
+        <Highcharts options={histogramOptions} />
       </div>
     );
   }

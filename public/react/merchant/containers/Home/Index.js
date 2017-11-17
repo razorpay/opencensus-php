@@ -20,9 +20,11 @@ import RadioButton from 'rzp/ui/Forms/RadioButton';
 import Sticky from 'rzp/ui/Sticky';
 import Highcharts from 'rzp/ui/Highcharts';
 
+import { getData } from 'merchant/models/HomeKeyMetricsMock';
+
 import './styles.styl';
 
-const dateRangeOptions = [
+const dateRangePresets = [
   ['Past 7 days', -7, 'days'],
   ['Past 15 days', -15, 'days'],
   ['Past 1 month', -1, 'months'],
@@ -55,51 +57,70 @@ export default class HomeContainer extends Component {
     super(props);
 
     const endDate = moment(),
-      startDate = endDate.add(...dateRangeOptions[0].slice(1));
+      startDate = endDate.add(...dateRangePresets[0].slice(1)),
+      selectedBreakdown = breakDownVals[0][1];
 
     this.state = {
       startDate,
       endDate,
+      selectedBreakdown,
     };
+
+    this.onDatesChange = this.onDatesChange.bind(this);
+    this.onBreakdownChange = this.onBreakdownChange.bind(this);
+  }
+
+  onDatesChange(startDate, endDate) {
+    this.setState({ startDate, endDate });
+  }
+
+  onBreakdownChange(e) {
+    this.setState({ selectedBreakdown: e.target.value });
   }
 
   render() {
     let mode = this.props.mode;
 
-    const { startDate, endDate } = this.state;
+    const { startDate, endDate, selectedBreakdown } = this.state;
 
     return (
       <div class="react-root">
-        <div className="panel">
-          <Header title="Dashboard" showMode={true}>
-            <div class="pull-right">
-              <Definition>
-                <span>
-                  Current Balance: <Amount value={38760} />
-                </span>
-                <span>Updated 10 mins ago</span>
-              </Definition>
-            </div>
-          </Header>
-        </div>
+        <Header title="Dashboard" showMode={true}>
+          <div class="pull-right">
+            <Definition>
+              <span>
+                Current Balance: <Amount value={38760} />
+              </span>
+              <span>Updated 10 mins ago</span>
+            </Definition>
+          </div>
+        </Header>
 
         <Sticky stickWhen={68} stickAt={50}>
           <div className="dashboard-ctrl-bar clearfix">
-            <div className="pull-left">
+            <div className="pull-left date-range-container">
               <DateRangePicker
-                presets={dateRangeOptions}
-                onDatesChange={(startDate, endDate) => {
-                  this.setState({ startDate, endDate });
-                }}
+                presets={dateRangePresets}
+                onDatesChange={this.onDatesChange}
               />
             </div>
             <div className="pull-right">
-              <div className="form form-horizontal">
+              <div
+                className="form form-horizontal breakdown-container"
+                onChange={this.onBreakdownChange}
+              >
                 {breakDownVals.map((item, index) => {
                   return (
                     <div class="RadioButton" key={index}>
                       <label>
-                        <input type="radio" name="breakdown" value={item[1]} />
+                        <input
+                          type="radio"
+                          name="breakdown"
+                          value={item[1]}
+                          checked={selectedBreakdown === item[1]}
+                          readOnly={true}
+                        />
+
                         <div>
                           <div class="RadioButton__button" />
                           <div class="RadioButton__label">
@@ -120,7 +141,11 @@ export default class HomeContainer extends Component {
         <div className="dashboard">
           <div className="row">
             <div className="col-md-12">
-              <KeyMetrics startDate={startDate} endDate={endDate} />
+              <KeyMetrics
+                startDate={startDate}
+                endDate={endDate}
+                selectedBreakdown={selectedBreakdown}
+              />
             </div>
           </div>
 

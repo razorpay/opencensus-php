@@ -2,6 +2,8 @@ import moment from 'moment';
 import React, { Component } from 'react';
 import Drp from 'rzp/ui/Forms/DateRangePickerField';
 
+import './styles.styl';
+
 const defaultPresets = [],
   customRangeText = 'Custom Range',
   customRangeVal = 0;

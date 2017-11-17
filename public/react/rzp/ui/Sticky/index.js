@@ -6,7 +6,10 @@ class Sticky extends Component {
   constructor(props) {
     super(props);
 
-    this.isSticky = false;
+    this.state = {
+      isSticky: false,
+    };
+
     this.handleScroll = this.handleScroll.bind(this);
   }
 
@@ -25,18 +28,21 @@ class Sticky extends Component {
       node.style[styleName] = styles[styleName];
     });
 
-    this.isSticky = true;
+    this.setState({ isSticky: true });
   }
 
   unStick() {
     this.node.removeAttribute('style');
-    this.isSticky = false;
+
+    this.setState({
+      isSticky: false,
+    });
   }
 
   handleScroll() {
     return window.scrollY >= this.props.stickWhen
-      ? !this.isSticky && this.stick()
-      : this.isSticky && this.unStick();
+      ? !this.state.isSticky && this.stick()
+      : this.state.isSticky && this.unStick();
   }
 
   componentDidMount() {
@@ -52,8 +58,14 @@ class Sticky extends Component {
   }
 
   render() {
+    const classNames = ['rzp-sticky'];
+
+    if (this.state.isSticky) {
+      classNames.push('sticky');
+    }
+
     return (
-      <div className="rzp-sticky" ref={node => (this.node = node)}>
+      <div className={classNames.join(' ')} ref={node => (this.node = node)}>
         {this.props.children}
       </div>
     );
