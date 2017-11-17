@@ -109,6 +109,10 @@ class Entity
     const ACTION_STATE          = 'action_state';
     const ACTION_COMMENT        = 'action_comment';
 
+    // Generic comment and state entities
+    const COMMENT               = 'comment';
+    const STATE                 = 'state';
+
     //
     // Gateway entities
     const EBS                    = 'ebs';
@@ -136,6 +140,7 @@ class Entity
     const UPI_ICICI              = 'upi_icici';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
+    const NETBANKING_BOB         = 'netbanking_bob';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
     const NETBANKING_KOTAK       = 'netbanking_kotak';
@@ -240,6 +245,7 @@ class Entity
         self::WALLET_SBIBUDDY        => \RZP\Gateway\Wallet\Sbibuddy::class,
         self::NETBANKING_AXIS        => \RZP\Gateway\Netbanking\Axis::class,
         self::NETBANKING_HDFC        => \RZP\Gateway\Netbanking\Hdfc::class,
+        self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Bob::class,
         self::NETBANKING_CORPORATION => \RZP\Gateway\Netbanking\Corporation::class,
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Kotak::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Icici::class,

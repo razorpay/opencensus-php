@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Workflow\Action\Differ;
 
-use RZP\Error;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -11,7 +10,6 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsDao;
 use RZP\Events\DifferEvent;
 use RZP\Models\Workflow\Action;
-use RZP\Models\Workflow\Action\State;
 
 class Core extends Base\Core
 {

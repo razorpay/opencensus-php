@@ -673,7 +673,6 @@ class ErrorCode
     const BAD_REQUEST_API_CAPTURE_FAILED                                            = 'BAD_REQUEST_API_CAPTURE_FAILED';
 
     // Workflow Related ErrorCodes
-    const BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE                                 = 'BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE';
     const BAD_REQUEST_WORKFLOW_INVALID_CHECKER                                      = 'BAD_REQUEST_WORKFLOW_INVLID_CHECKER';
     const BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND                                     = 'BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND';
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSE_NOT_AUTHORIZED                          = 'BAD_REQUEST_WORKFLOW_ACTION_CLOSE_NOT_AUTHORIZED';
@@ -692,6 +691,7 @@ class ErrorCode
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED                            = 'BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED';
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSED                                        = 'BAD_REQUEST_WORKFLOW_ACTION_CLOSED';
     const BAD_REQUEST_WORKFLOW_STEPS_CANNOT_BE_EDITED                               = 'BAD_REQUEST_WORKFLOW_STEPS_CANNOT_BE_EDITED';
+    const BAD_REQUEST_INVALID_STATE                                                 = 'BAD_REQUEST_INVALID_STATE';
 
     // Gateway Priority API error codes
     const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';
@@ -724,5 +724,8 @@ class ErrorCode
 
     const BAD_REQUEST_ADMIN_TOKEN_MISMATCH                                          = 'BAD_REQUEST_ADMIN_TOKEN_MISMATCH';
     const BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE                                    = 'BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE';
+
+    const BAD_REQUEST_MORPHED_ENTITY_INVALID                                        = 'BAD_REQUEST_MORPHED_ENTITY_INVALID';
+
     const BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION                                 = 'BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION';
 }

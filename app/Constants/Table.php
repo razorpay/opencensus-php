@@ -102,6 +102,13 @@ class Table
     const WORKFLOW_ACTION       = 'workflow_actions';
     const ACTION_COMMENT        = 'action_comments';
     const ACTION_STATE          = 'action_state';
+    //
+    // Currently constants comment and state points to same table
+    // as action_comment and action_state but later we plan to rename
+    // the table and drop usage of formers.
+    //
+    const COMMENT               = 'action_comments';
+    const STATE                 = 'action_state';
     const ACTION_CHECKER        = 'action_checker';
     const WORKFLOW_PERMISSION   = 'workflow_permissions';
 

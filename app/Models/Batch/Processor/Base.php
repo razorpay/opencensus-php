@@ -5,7 +5,7 @@ namespace RZP\Models\Batch\Processor;
 use Mail;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\File\File;
 
 use RZP\Models\Batch;
 use RZP\Models\Invoice;
@@ -116,29 +116,10 @@ class Base extends BaseModel\Core
 
             $file = $this->saveInputFile($inputFile);
 
-            $entries = $this->parseInputFileAndValidate($file->getPathname(), $input);
-
-            $this->fillBatchEntityWithInputFileDetails($entries);
+            $this->validateInputFileAndUpdateBatch($file->getPathname(), $input);
 
             $this->repo->saveOrFail($this->batch);
         });
-    }
-
-    /**
-     * Fills Batch entity with details extracted from the input file.
-     * Eg.
-     * - Total row count
-     * - Aggregate sum of amount field
-     *
-     * @param array $entries
-     */
-    protected function fillBatchEntityWithInputFileDetails(array $entries)
-    {
-        $totalAmount = array_sum(array_column($entries, Batch\Header::AMOUNT));
-        $totalCount  = count($entries);
-
-        $this->batch->setAmount($totalAmount);
-        $this->batch->setTotalCount($totalCount);
     }
 
     /**
@@ -194,6 +175,8 @@ class Base extends BaseModel\Core
 
     protected function performPreProcessingActions()
     {
+        $this->increaseAllowedSystemLimits();
+
         $this->batch->incrementAttempts();
 
         $this->downloadAndSetInputFile();
@@ -370,7 +353,6 @@ class Base extends BaseModel\Core
                     Batch\Status::FAILED :
                     Batch\Status::PROCESSED;
 
-
         //
         // But if we were able to process the file and there were failures, we
         // mark it as partially_processed or processed depending on the type of
@@ -436,7 +418,6 @@ class Base extends BaseModel\Core
         // is used to create output file. Below we fill in the empty headers
         // with null so we don't get errors during creation of files.
         //
-
         $cleanedEntries = [];
 
         foreach ($entries as $entry)
@@ -461,6 +442,7 @@ class Base extends BaseModel\Core
      * the relevant FileHandlerTrait's methods.
      *
      * @param array $entries
+     * @throws LogicException
      */
     protected function createAndSetOutputFileByExt(array $entries)
     {
@@ -529,25 +511,59 @@ class Base extends BaseModel\Core
         if (file_exists($filePath))
         {
             $success = unlink($filePath);
+
+            if ($success === false)
+            {
+                $this->trace->critical(TraceCode::BATCH_FILE_DELETE_ERROR, [
+                    'file_path' => $filePath
+                ]);
+            }
         }
+    }
+
+    /**
+     * While creating the batch we parse the file and validate each entry in the file.
+     * Post validation, we fill the batch entity with total_count and other metadata
+     *
+     * @param  string $filePath
+     * @param  array  $input
+     */
+    protected function validateInputFileAndUpdateBatch(string $filePath, array $input)
+    {
+        $entries = $this->parseFile($filePath);
+
+        $this->validateEntries($entries, $input);
+
+        $this->fillBatchEntityWithInputFileDetails($entries);
+    }
+
+    /**
+     * Fills Batch entity with details extracted from the input file.
+     * Eg.
+     * - Total row count
+     * - Aggregate sum of amount field
+     *
+     * @param array $entries
+     */
+    protected function fillBatchEntityWithInputFileDetails(array $entries)
+    {
+        $totalAmount = array_sum(array_column($entries, Batch\Header::AMOUNT));
+        $totalCount  = count($entries);
+
+        $this->batch->setAmount($totalAmount);
+        $this->batch->setTotalCount($totalCount);
     }
 
     /**
      * Parses input file and runs validation on the entries. Finally returns
      * the validated entries.
      *
-     * @param string $filePath
-     * @param array  $input
-     *
-     * @return array
+     * @param array $entries
+     * @param array $input
      */
-    public function parseInputFileAndValidate(string $filePath, array $input): array
+    protected function validateEntries(array $entries, array $input)
     {
-        $entries = $this->parseFile($filePath);
-
         $this->batch->getValidator()->validateEntries($entries, $input, $this->merchant);
-
-        return $entries;
     }
 
 
@@ -583,11 +599,9 @@ class Base extends BaseModel\Core
         }
     }
 
-    public function saveInputFile(UploadedFile $file): \SplFileInfo
+    protected function saveInputFile(File $file): File
     {
         $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArray());
-
-        $clientExtension = $file->getClientOriginalExtension();
 
         //
         // PHP's upload file get's deleted automatically once request terminates.
@@ -629,8 +643,6 @@ class Base extends BaseModel\Core
      */
     protected function saveFile(string $filePath, string $type): FileStore\Creator
     {
-        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
-
         $batchFilePrefix = ($type === FileStore\Type::BATCH_INPUT) ?
                                 Batch\Entity::INPUT_FILE_PREFIX :
                                 Batch\Entity::OUTPUT_FILE_PREFIX;
@@ -780,7 +792,7 @@ class Base extends BaseModel\Core
      * status accordingly. Should be overrideen by respective processors for any
      * special handling
      *
-     * @param \Throwable $e Exception encountered while processing the batch
+     * @param \Throwable $ex
      */
     protected function handleBatchProcessingException(\Throwable $ex)
     {
@@ -807,9 +819,26 @@ class Base extends BaseModel\Core
         // Sets failure reason here because exception instance won't be available
         // in postProcess() call in finally block
         //
+        if ($ex instanceof BaseException)
+        {
+            $failureReason = $ex->getError()->getDescription();
+        }
+        else
+        {
+            $failureReason = $ex->getMessage();
+        }
 
-        $failureReason = $ex->getError()->getDescription();
+        $this->batch->setFailureReason($failureReason);
+    }
 
-        $this->batch->setFailureReason($ex->getError()->getDescription());
+    /**
+     * Method to configure any system limits before beginning batch processing
+     * To be implemented by respective processors
+     *
+     * @return null
+     */
+    protected function increaseAllowedSystemLimits()
+    {
+        return;
     }
 }

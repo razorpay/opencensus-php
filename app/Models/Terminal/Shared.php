@@ -17,6 +17,7 @@ class Shared
     const HDFC_RAZORPAY_TERMINAL            = '1000HdfcShared';
     const MOBIKWIK_RAZORPAY_TERMINAL        = '1000MobiKwikTl';
     const NETBANKING_HDFC_TERMINAL          = '100NbHdfcTrmnl';
+    const NETBANKING_BOB_TERMINAL           = '100NbBbdaTrmnl';
     const NETBANKING_CORPORATION_TERMINAL   = '100NbCorpTrmnl';
     const NETBANKING_KOTAK_TERMINAL         = '100NbKotakTmnl';
     const NETBANKING_ICICI_TERMINAL         = '100NbIciciTmnl';
@@ -66,6 +67,7 @@ class Shared
         self::OLAMONEY_RAZORPAY_TERMINAL,
         self::PAYTM_RAZORPAY_TERMINAL,
         self::NETBANKING_HDFC_TERMINAL,
+        self::NETBANKING_BOB_TERMINAL,
         self::NETBANKING_KOTAK_TERMINAL,
         self::NETBANKING_ICICI_TERMINAL,
         self::NETBANKING_AIRTEL_TERMINAL,
@@ -108,6 +110,7 @@ class Shared
         self::HITACHI_TERMINAL                   => Gateway::HITACHI,
         self::MOBIKWIK_RAZORPAY_TERMINAL         => Gateway::MOBIKWIK,
         self::NETBANKING_HDFC_TERMINAL           => Gateway::NETBANKING_HDFC,
+        self::NETBANKING_BOB_TERMINAL            => Gateway::NETBANKING_BOB,
         self::NETBANKING_CORPORATION_TERMINAL    => Gateway::NETBANKING_CORPORATION,
         self::NETBANKING_KOTAK_TERMINAL          => Gateway::NETBANKING_KOTAK,
         self::NETBANKING_ICICI_TERMINAL          => Gateway::NETBANKING_ICICI,

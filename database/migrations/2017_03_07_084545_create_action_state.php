@@ -4,9 +4,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\State\Entity as State;
 use RZP\Models\Admin\Admin\Entity as Admin;
 use RZP\Models\Workflow\Action\Entity as Action;
-use RZP\Models\Workflow\Action\State\Entity as State;
 
 class CreateActionState extends Migration
 {
@@ -17,19 +18,30 @@ class CreateActionState extends Migration
      */
     public function up()
     {
-        Schema::create(Table::ACTION_STATE, function (BluePrint $table)
+        Schema::create(Table::STATE, function (BluePrint $table)
         {
             $table->engine = 'InnoDB';
 
             $table->char(State::ID, State::ID_LENGTH)
                   ->primary();
 
-            $table->char(State::ACTION_ID, State::ID_LENGTH);
+            $table->char(State::ACTION_ID, Action::ID_LENGTH)->nullable();
 
-            $table->char(State::ADMIN_ID, State::ID_LENGTH)
+            $table->char(State::ENTITY_ID, State::ID_LENGTH)->nullable();
+
+            $table->char(State::ENTITY_TYPE, 100)->nullable();
+
+            $table->char(State::ADMIN_ID, Admin::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(State::MERCHANT_ID, Merchant::ID_LENGTH)
                   ->nullable();
 
             $table->char(State::NAME, 255);
+
+            $table->integer(State::CREATED_AT);
+
+            $table->integer(State::UPDATED_AT);
 
             $table->foreign(State::ACTION_ID)
                   ->references(Action::ID)
@@ -41,9 +53,14 @@ class CreateActionState extends Migration
                   ->on(Table::ADMIN)
                   ->on_delete('restrict');
 
-            $table->integer(State::CREATED_AT);
+            $table->foreign(State::MERCHANT_ID)
+                  ->references(Merchant::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
 
-            $table->integer(State::UPDATED_AT);
+            $table->index(State::ENTITY_ID);
+            $table->index(State::ENTITY_TYPE);
+            $table->index(State::CREATED_AT);
         });
     }
 
@@ -54,13 +71,13 @@ class CreateActionState extends Migration
      */
     public function down()
     {
-        Schema::table(Table::ACTION_STATE, function($table)
+        Schema::table(Table::STATE, function($table)
         {
-            $table->dropForeign(Table::ACTION_STATE . '_' . State::ACTION_ID . '_foreign');
+            $table->dropForeign(Table::STATE . '_' . State::ACTION_ID . '_foreign');
 
-            $table->dropForeign(Table::ACTION_STATE . '_' . State::ADMIN_ID . '_foreign');
+            $table->dropForeign(Table::STATE . '_' . State::ADMIN_ID . '_foreign');
         });
 
-        Schema::drop(Table::ACTION_STATE);
+        Schema::drop(Table::STATE);
     }
 }

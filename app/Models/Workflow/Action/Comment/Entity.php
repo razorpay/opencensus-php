@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Workflow\Action\Comment;
 
-use RZP\Constants\Table;
 use RZP\Models\Workflow\Base;
 
 class Entity extends Base\Entity
