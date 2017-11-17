@@ -17,8 +17,6 @@ export default class WorkflowList extends Component {
     },
     model: CollectionItem,
   });
-
-  onSubmit = filters => this.collection.setFilters(filters);
   showEntity = showEntity.bind(null, this.collection);
 
   render() {
@@ -31,9 +29,6 @@ export default class WorkflowList extends Component {
               Add Group
             </div>
           </header>
-          <Form onSubmit={this.onSubmit} class="filters">
-            <Field name="q" label="Search" />
-          </Form>
         </div>
         <PageTable
           model={this.collection}

@@ -35,7 +35,6 @@ export default class RoleList extends Component {
     });
   }
 
-  onSubmit = filters => this.collection.setFilters(filters);
   showEntity = showEntity.bind(null, this.collection);
 
   render() {
@@ -51,9 +50,6 @@ export default class RoleList extends Component {
               Add Role
             </div>
           </header>
-          <Form onSubmit={this.onSubmit} class="filters">
-            <Field name="q" label="Search" />
-          </Form>
         </div>
         <PageTable
           model={this.collection}

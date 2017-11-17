@@ -21,8 +21,6 @@ export default class PermissionsList extends Component {
     model: CollectionItem,
   });
 
-  onSubmit = filters => this.collection.setFilters(filters);
-
   showRole = openRoleModal.bind(null, this.collection);
 
   showEntity = showEntity.bind(null, this.collection);
@@ -37,9 +35,6 @@ export default class PermissionsList extends Component {
               Add a Permission
             </div>
           </header>
-          <Form onSubmit={this.onSubmit} class="filters">
-            <Field name="q" label="Search" />
-          </Form>
         </div>
         <PageTable
           model={this.collection}

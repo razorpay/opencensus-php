@@ -39,8 +39,6 @@ class OrganizationsList extends Component {
     fetchFn: adminFetch,
   });
 
-  onSubmit = filters => this.collection.setFilters(filters);
-
   render() {
     return (
       <div class="list-container">
@@ -51,9 +49,6 @@ class OrganizationsList extends Component {
               <Link to={'/orgs/new'}>Add an Organization</Link>
             </button>
           </header>
-          <Form onSubmit={this.onSubmit} class="filters">
-            <Field label="Search" />
-          </Form>
         </div>
         <PageTable model={this.collection} fields={fields} />
       </div>

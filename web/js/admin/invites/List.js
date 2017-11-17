@@ -26,8 +26,6 @@ export default class InvitesList extends Component {
     model: CollectionItem,
   });
 
-  showEntity = showEntity.bind(null, this.collection);
-
   render() {
     return (
       <div class="list-container">
@@ -38,9 +36,6 @@ export default class InvitesList extends Component {
               Invite a Merchant
             </div>
           </header>
-          <Form class="filters">
-            <Field label="Search" />
-          </Form>
         </div>
         <PageTable
           model={this.collection}

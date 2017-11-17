@@ -22,8 +22,6 @@ export default class UserList extends Component {
     model: CollectionItem,
   });
 
-  onSubmit = filters => this.collection.setFilters(filters);
-
   render() {
     return (
       <div class="list-container">
@@ -34,9 +32,6 @@ export default class UserList extends Component {
               <Link to="/users/new">Add User</Link>
             </div>
           </header>
-          <Form onSubmit={this.onSubmit} class="filters">
-            <Field name="q" label="Search" />
-          </Form>
         </div>
         <PageTable model={this.collection} fields={fields} href={href} />
       </div>

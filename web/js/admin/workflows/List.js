@@ -16,8 +16,6 @@ export default class WorkflowList extends Component {
     },
   });
 
-  onSubmit = filters => this.collection.setFilters(filters);
-
   render() {
     return (
       <div class="list-container">
@@ -28,9 +26,6 @@ export default class WorkflowList extends Component {
               Add New Workflow
             </Link>
           </header>
-          <Form onSubmit={this.onSubmit} class="filters">
-            <Field name="q" label="Search" />
-          </Form>
         </div>
         <PageTable model={this.collection} fields={fields} href={href} />
       </div>

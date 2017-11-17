@@ -46,7 +46,6 @@ export default class RequestList extends Component {
         <div class="box">
           <header>Workflow Requests</header>
           <Form onSubmit={this.onSubmit} class="filters">
-            <Field name="q" label="Search" />
             <SelectField
               label="Workflow Request Type"
               value={this.state.selectedType}
