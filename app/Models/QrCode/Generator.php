@@ -138,6 +138,12 @@ class Generator extends Base\Core
 
     protected function getLocalSaveDir(): string
     {
+        $dir_to_save = storage_path('files/qrcode');
+
+        if (!is_dir($dir_to_save)) {
+            mkdir($dir_to_save);
+        }
+
         return storage_path('files/qrcode');
     }
 
