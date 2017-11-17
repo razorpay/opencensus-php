@@ -65,7 +65,7 @@ class IrctcRefundReport extends Mailable
         {
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader(MailTags::HEADER, MailTags::DAILY_REPORT);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::IRCTC_REFUND_REPORT);
         });
 
         return $this;

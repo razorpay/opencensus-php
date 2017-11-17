@@ -501,32 +501,37 @@ class Repository extends Base\Repository
 
     public function fetchIrctcDeltaRefunds(string $merchantId, int $from, int $to, $receipt = null)
     {
-        $pId = $this->repo->payment->dbColumn(Payment\Entity::ID);
-
-        $pOrderId = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
-
-        $rPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
-
-        $rMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
-
-        $orderId = $this->repo->order->dbColumn(Order\Entity::ID);
-
-        $createdAt = $this->dbColumn(Entity::CREATED_AT);
-
-        $receipt = $this->dbColumn(Entity::RECEIPT);
-
-        $status = $this->repo->order->dbColumn(Order\Entity::STATUS);
-
         $query = $this->newQuery()
-                      ->select(\DB::raw('*'))
-                      ->join(Table::PAYMENT, $rPaymentId, '=', $pId)
-                      ->join(Table::ORDER, $orderId, $pOrderId)
-                      ->where($rMerchantId, '=', $merchantId)
-                      ->where($createdAt, '>=', $from)
-                      ->where($createdAt, '<=', $to)
-                      ->whereNull($receipt)
-                      ->where($status, '!=', Order\Status::PAID)
-                      ->groupBy($orderId);
+                      ->select($this->dbColumn('*'))
+                      ->whereIn('id', function ($query) use($merchantId, $from, $to)
+                        {
+                            $pId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+                            $pOrderId = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
+
+                            $rPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
+
+                            $rMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
+
+                            $orderId = $this->repo->order->dbColumn(Order\Entity::ID);
+
+                            $createdAt = $this->dbColumn(Entity::CREATED_AT);
+
+                            $receipt = $this->dbColumn(Entity::RECEIPT);
+
+                            $status = $this->repo->order->dbColumn(Order\Entity::STATUS);
+
+                            $query->select(\DB::raw('max(refunds.id)'))
+                                  ->from('refunds')
+                                  ->join(Table::PAYMENT, $rPaymentId, '=', $pId)
+                                  ->join(Table::ORDER, $orderId, $pOrderId)
+                                  ->where($rMerchantId, '=', $merchantId)
+                                  ->where($createdAt, '>=', $from)
+                                  ->where($createdAt, '<=', $to)
+                                  ->whereNull($receipt)
+                                  ->where($status, '!=', Order\Status::PAID)
+                                  ->groupBy($orderId);
+                          });
 
         return $query->get();
     }

@@ -39,13 +39,38 @@ class IrctcRefundReport extends BasicEntityReport
 
     const FILE_PREFIX = [
         '8ST00QgEPT14cE' => 'deltarefund_WRZRMPP00000_',
-        '8YPFnW5UOM91H7' => 'deltarefund_WMRAZOR00000_'
+        '8YPFnW5UOM91H7' => 'deltarefund_WMRAZOR00000_',
     ];
+
+    public function getReport(array $input)
+    {
+        $this->setDefaults();
+
+        $now = Carbon::now()->getTimestamp();
+
+        $filename = $this->generateFilename($now);
+
+        $fullpath = $this->writeDataToCsv($input, $filename);
+
+        $s3File = $this->createFileAndSave($fullpath, $filename);
+
+        $this->unlinkFile($fullpath);
+
+        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($s3File);
+
+        $data = $this->createMailData($filename, $signedUrl, $input);
+
+        $reportingMail = new IrctcMail($data);
+
+        Mail::send($reportingMail);
+
+        return [ 'url' => $signedUrl ];
+    }
 
     protected function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
-        return $this->repo->refund
-                        ->fetchIrctcDeltaRefunds($merchantId, $from, $to);
+        return  $this->repo->refund
+                           ->fetchIrctcDeltaRefunds($merchantId, $from, $to);
     }
 
     protected function fetchFormattedDataForReport($entities): array
@@ -122,7 +147,7 @@ class IrctcRefundReport extends BasicEntityReport
 
         $filePrefix = self::FILE_PREFIX[$this->merchant->getId()];
 
-        return $filePrefix . $time . '_' .$version;
+        return $filePrefix . $time . '_' .$version . '.txt';
     }
 
     protected function writeDataToCsvForMerchant(int $from,
@@ -142,45 +167,11 @@ class IrctcRefundReport extends BasicEntityReport
         return [$count, $fullpath];
     }
 
-    public function generateReport(array $input)
-    {
-        $this->setDefaults();
-
-        $now = Carbon::now()->getTimestamp();
-
-        $filename = $this->generateFilename($now);
-
-        // We do not want all the aggregator merchant to download the complete report
-        // so its behind aggregator_report feature
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::AGGREGATOR_REPORT) === true)
-        {
-            $fullpath = $this->writeDataToCsvForAggregator($input, $filename);
-        }
-        else
-        {
-            $fullpath = $this->writeDataToCsv($input, $filename);
-        }
-
-        $s3File = $this->createFileAndSave($fullpath, $filename);
-
-        $this->unlinkFile($fullpath);
-
-        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($s3File);
-
-        $filenameWithExtension = $filename . '.txt';
-
-        $data = $this->createMailData($filenameWithExtension, $signedUrl, $input);
-
-        $reportingMail = new IrctcMail($data);
-
-        Mail::queue($reportingMail);
-    }
-
     protected function getTimestamps($input): array
     {
         $from = Carbon::yesterday(Timezone::IST)->timestamp;
 
-        $to = Carbon::tomorrow(Timezone::IST)->timestamp - 1;
+        $to = Carbon::today(Timezone::IST)->timestamp - 1;
 
         if (isset($input['from']) === true)
         {
