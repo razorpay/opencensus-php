@@ -119,7 +119,7 @@ export default class CreateOffer extends Component {
   render() {
     return (
       <BaseModal header="Create Offer">
-        <Form>
+        <Form class="full-span full-elements" style={{ width: '500px' }}>
           <SelectMode />
           <Field label="Name" name="name" />
 
