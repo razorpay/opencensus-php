@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { methods } from 'util/data';
 import { prevent } from 'util/index';
+import { Input as DayPickerInput } from 'react-day-picker';
 
 function focusInput(e) {
   e.target.nextElementSibling.focus();
@@ -32,11 +33,13 @@ export default function Field({ tag = 'input', label, infoMsg, ...props }) {
 export const SelectField = _ => <Field {..._} tag="select" />;
 export const TextAreaField = _ => <Field {..._} tag="textarea" />;
 export const FileField = _ => <Field {..._} type="file" />;
-export const DateTimeField = _ => <Field {..._} type="date" />;
+export const DateField = _ => (
+  <Field format="DD/MM/YYYY" {..._} tag={DayPickerInput} />
+);
 export const DataListField = _ => <Field {..._} tag="datalist" />;
 
-export const FromField = _ => <DateTimeField {..._} name="from" label="From" />;
-export const ToField = _ => <DateTimeField {..._} name="to" label="To" />;
+export const FromField = _ => <DateField {..._} name="from" label="From" />;
+export const ToField = _ => <DateField {..._} name="to" label="To" />;
 
 export function TimeField({ label, ...props }) {
   return (
@@ -100,11 +103,14 @@ export class Switch extends Component {
   };
 
   toggle = e => {
-    var checked = !this.state.checked;
-    let onChange = this.props.onChange;
-    let target = e.target;
+    // it's an actual click, not triggered syntheticmouseevent due to form submission
+    if (e.pageX && e.pageY) {
+      var checked = !this.state.checked;
+      let onChange = this.props.onChange;
+      let target = e.target;
 
-    this.setState({ checked }, _ => onChange && onChange({ target }));
+      this.setState({ checked }, _ => onChange && onChange({ target }));
+    }
     prevent(e);
   };
 

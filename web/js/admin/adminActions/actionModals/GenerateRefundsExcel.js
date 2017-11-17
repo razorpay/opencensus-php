@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  DateTimeField,
+  DateField,
   SelectField,
   CheckField,
   SelectMode,
@@ -31,7 +31,8 @@ GenerateRefundsExcel.title = 'Generate Refund Excel';
 export default function GenerateRefundsExcel() {
   return (
     <Form>
-      <DateTimeField
+      <header>{GenerateRefundsExcel.title}</header>
+      <DateField
         label="Date"
         name="on"
         defaultValue={new Date().toISOString().split('T')[0]}

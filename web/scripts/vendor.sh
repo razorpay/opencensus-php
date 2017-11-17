@@ -18,6 +18,7 @@ files=$(cat <<-END
   mobx            mobx/lib/mobx.umd.min.js
   mobxReact       mobx-react/index.min.js
   moment          moment/min/moment.min.js
+  DayPicker       react-day-picker/lib/daypicker.min.js
   Chart           chart.js/dist/Chart.min.js
 END
 )

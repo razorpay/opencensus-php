@@ -157,8 +157,8 @@ export default class EntityList extends Component {
               step="10"
               defaultValue="20"
             />
-            <FromField />
-            <ToField />
+            <FromField format="X" />
+            <ToField format="X" />
             <Field label="Search" onChange={this.selectId} />
 
             {selectedFiltersArray.map(f => {
