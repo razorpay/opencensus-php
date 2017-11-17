@@ -937,9 +937,9 @@ app
       };
 
       /**
-     * Sends the final edit merchant ajax call
-     * @param  Object merchant
-     */
+       * Sends the final edit merchant ajax call
+       * @param  Object merchant
+       */
       $scope.editMerchant = function(
         merchant,
         selected_groups,
@@ -2136,6 +2136,8 @@ app
                 $scope.merchant.details.merchant_details.submitted_at;
               $scope.referer = getReferer($scope.merchant.details.tags);
               $scope.marketplace = $scope.merchant.details.parent_id;
+              $scope.merchant.details.gstin =
+                $scope.merchant.details.merchant_details.gstin;
 
               var merchantAdmins = $scope.merchant.details.admins || [];
               $scope.selected_admins = [];
@@ -2224,10 +2226,10 @@ app
       }
 
       /**
-     * Plucks the id and name from array of feature objects
-     * @param  {array} features [Array of feature objects]
-     * @return {array}
-     */
+       * Plucks the id and name from array of feature objects
+       * @param  {array} features [Array of feature objects]
+       * @return {array}
+       */
       function getFeatureNames(features) {
         var featureNames = features.map(function(feature) {
           return {
@@ -2257,11 +2259,11 @@ app
               });
             }
             var features = $scope.merchant.details.features[featureMode];
-            $scope.merchant.details.features[
-              featureMode
-            ] = features.filter(function(item) {
-              return item.id !== data.data.id;
-            });
+            $scope.merchant.details.features[featureMode] = features.filter(
+              function(item) {
+                return item.id !== data.data.id;
+              }
+            );
           } else {
             $scope.alerts.resetAlerts(true);
             angular.forEach(data.errors, function(value) {
@@ -2340,9 +2342,9 @@ app
       });
       request.success(function(data) {
         if (data.success) {
-          for (var key in data.data.items) {
-            var value = data.data.items[key];
-            $scope.pricing_plans[value.id] = value.name;
+          for (var key in data.data) {
+            var value = data.data[key];
+            $scope.pricing_plans[value.plan_id] = value.plan_name;
           }
           $scope.loading = false;
         }

@@ -587,6 +587,10 @@
           <span class="pull-right" tooltip="{{merchant.details.receipt_email_enabled == 1 ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.receipt_email_enabled == 1, 'fa-times text-danger':merchant.details.receipt_email_enabled == 0}"></i></span>
           Customer Receipt Emails
         </div>
+        <div class="list-group-item">
+          <span class="pull-right">{{merchant.details.gstin}}</span>
+          GST Number
+        </div>
         <a target="_blank" href="/admin/merchant/{{merchant.id}}/screenshot" class="list-group-item">
           <span class="pull-right" tooltip="Print screenshots"><i class="fa fa-cloud-download"></i></span>
           Print screenshots
@@ -874,7 +878,8 @@
       <div class="form-group" ng-show="loading===false && pricingPlansLength() > 0">
         <label class="col-lg-2 control-label">Plan to be Assigned</label>
         <div class="col-lg-10" >
-          <select class="form-control m-b" name="pricing_plan_id" ng-model="pricing_plan_id" ng-options="id as name for (id, name) in pricing_plans">
+          <select class="form-control m-b" name="pricing_plan_id" ng-model="pricing_plan_id"
+            ng-options="plan_id as plan_name for (plan_id, plan_name) in pricing_plans">
           </select>
         </div>
       </div>
@@ -1002,6 +1007,7 @@
              <option value="wallet_olamoney">Olamoney</option>
              <option value="wallet_mpesa">Vodafone Mpesa</option>
              <option value="upi_icici">UPI/ICICI</option>
+             <option value="upi_sbi">UPI/SBI</option>
              <option value="upi_mindgate">UPI/Mindgate</option>
              <option value="aeps_icici">AEPS/ICICI</option>
              <option value="wallet_airtelmoney">Airtelmoney</option>
