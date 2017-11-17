@@ -7,8 +7,9 @@ import { notifyDone } from 'common/modal';
 import UserForm from './UserForm';
 import { isWorkflow } from 'util/index';
 
+@withRouter
 @observer
-class EditUser extends Component {
+export default class EditUser extends Component {
   // all available roles
   allRoles = observable.map();
   allGroups = observable.map();
@@ -164,5 +165,3 @@ class EditUser extends Component {
     );
   }
 }
-
-export default withRouter(EditUser);

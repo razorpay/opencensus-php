@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
+import { observer } from 'mobx-react';
 import axios from 'axios';
 import {
   openModal,
@@ -13,6 +14,8 @@ import normalize from 'util/normalize';
 import { isWorkflow } from 'util/index';
 import RolesForm from './RolesForm';
 
+@withRouter
+@observer
 class EditRole extends Component {
   state = {
     allPerms: null,
@@ -147,9 +150,6 @@ class EditRole extends Component {
   }
 }
 
-//pass withRouter
-const EditRoleR = withRouter(EditRole);
-
 export function showEntity(collection) {
-  openModal(<EditRoleR collection={collection} model={this} />);
+  openModal(<EditRole collection={collection} model={this} />);
 }
