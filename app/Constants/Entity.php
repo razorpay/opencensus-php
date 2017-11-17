@@ -109,6 +109,10 @@ class Entity
     const ACTION_STATE          = 'action_state';
     const ACTION_COMMENT        = 'action_comment';
 
+    // Generic comment and state entities
+    const COMMENT               = 'comment';
+    const STATE                 = 'state';
+
     //
     // Gateway entities
     const EBS                    = 'ebs';

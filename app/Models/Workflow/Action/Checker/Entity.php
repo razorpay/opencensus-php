@@ -2,9 +2,6 @@
 
 namespace RZP\Models\Workflow\Action\Checker;
 
-use RZP\Constants\Table;
-use RZP\Models\Workflow\Action;
-use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Base;
 
 class Entity extends Base\Entity

@@ -2625,3 +2625,19 @@ ALTER TABLE line_items
 ALTER TABLE invoices
     MODIFY COLUMN gross_amount INT(11) UNSIGNED DEFAULT NULL,
     MODIFY COLUMN tax_amount INT(11) UNSIGNED DEFAULT NULL;
+
+# PR - 5730
+ALTER TABLE action_comments
+    ADD COLUMN entity_id CHAR(14) AFTER action_id,
+    ADD COLUMN entity_type VARCHAR(100) AFTER entity_id,
+    ADD COLUMN merchant_id CHAR(14) AFTER admin_id,
+    MODIFY COLUMN action_id CHAR(14),
+    MODIFY COLUMN admin_id CHAR(14);
+
+# PR - 5730
+ALTER TABLE action_state
+    ADD COLUMN entity_id CHAR(14) AFTER action_id,
+    ADD COLUMN entity_type VARCHAR(100) AFTER entity_id,
+    ADD COLUMN merchant_id CHAR(14) AFTER admin_id,
+    MODIFY COLUMN action_id CHAR(14),
+    MODIFY COLUMN admin_id CHAR(14);
