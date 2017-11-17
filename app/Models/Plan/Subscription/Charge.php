@@ -145,6 +145,7 @@ class Charge extends Base\Core
                     $captureFailure = false;
                 }
 
+                // Payment will be null here in case there was some exception thrown.
                 $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, $payment, $captureFailure);
             }
 
@@ -357,7 +358,7 @@ class Charge extends Base\Core
 
                 $this->repo->saveOrFail($subscription);
 
-                $core->fireWebhookForStatusUpdate($subscription, Status::COMPLETED);
+                $core->fireWebhookForStatusUpdate($subscription, Status::COMPLETED, $capturedPayment);
 
                 break;
             default:

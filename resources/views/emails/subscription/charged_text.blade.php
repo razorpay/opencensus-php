@@ -1,4 +1,4 @@
-Subscription is charged. Like a wow!
+Subscription is charged.
 
 --
 Team Razorpay

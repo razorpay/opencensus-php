@@ -61,7 +61,7 @@ class Service extends Base\Service
         return [
             'valid'          => $valid,
             'message'        => null,
-            'transaction_id' => $input[Entity::REQ_UTR],
+            'transaction_id' => $input[Entity::REQ_UTR] ?? '',
         ];
     }
 
@@ -87,7 +87,7 @@ class Service extends Base\Service
         return [
             'success'        => $success,
             'message'        => null,
-            'transaction_id' => $input[Entity::REQ_UTR],
+            'transaction_id' => $input[Entity::REQ_UTR] ?? '',
         ];
     }
 
@@ -194,5 +194,30 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
+    }
+
+    public function editPayerBankAccount(string $id, array $input)
+    {
+        $bankTransfer = $this->repo->bank_transfer->findByPublicId($id);
+
+        $bankTransfer = $this->core->editPayerBankAccount($bankTransfer, $input);
+
+        return $bankTransfer->toArrayPublic();
+    }
+
+    public function stripPayerBankAccounts(array $input)
+    {
+        $bankTransfers = $this->repo->bank_transfer->fetch($input);
+
+        foreach ($bankTransfers as $bankTransfer)
+        {
+            $payerAccount = $bankTransfer->getPayerAccount();
+
+            $this->core->editPayerBankAccount($bankTransfer, [
+                'account_number' => ltrim($payerAccount, '0'),
+            ]);
+        }
+
+        return $bankTransfers->getPublicIds();
     }
 }

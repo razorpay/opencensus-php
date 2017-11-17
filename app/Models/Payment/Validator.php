@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment;
 
 use App;
+use Route;
 use Cache;
 use Carbon\Carbon;
 use Lib\PhoneBook;
@@ -24,7 +25,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         'amount'                     => 'required|integer',
         'currency'                   => 'required|string|size:3',
-        'method'                     => 'string|custom',
+        'method'                     => 'required|string|custom',
         'vpa'                        => 'required_if:method,upi|string|max:100|custom',
         'aadhaar'                    => 'required_if:method,aeps|array',
         'aadhaar.number'             => 'required_if:method,aeps|size:12|string',
@@ -51,7 +52,6 @@ class Validator extends Base\Validator
         'save'                       => 'sometimes|in:0,1',
         'recurring'                  => 'sometimes_if:method,card,netbanking|in:0,1',
         'fee'                        => 'sometimes|filled|integer|max:50000000',
-        Entity::SERVICE_TAX          => 'sometimes|filled|integer|max:50000000',
         Entity::TAX                  => 'sometimes|filled|integer|max:50000000',
         'on_hold'                    => 'sometimes_if:method,transfer|boolean',
         'on_hold_until'              => 'sometimes_if:method,transfer|nullable|epoch',
@@ -116,6 +116,14 @@ class Validator extends Base\Validator
 
     protected function validateEmail(array $input)
     {
+        //
+        // TODO: To be changed after refactor. No validation required for Bharat qr
+        //
+        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
+        {
+            return;
+        }
+
         $allowedPaymentMethods = [
             Payment\Method::AEPS,
             Payment\Method::TRANSFER,
@@ -327,6 +335,14 @@ class Validator extends Base\Validator
 
     protected function validateContact($input)
     {
+        //
+        // TODO: To be changed after refactor. No validation required for Bharat qr
+        //
+        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
+        {
+            return;
+        }
+
         $allowedPaymentMethods = [
             Payment\Method::AEPS,
             Payment\Method::TRANSFER,

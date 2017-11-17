@@ -345,7 +345,7 @@ ALTER TABLE bank_accounts
 ALTER TABLE bank_accounts
     ADD INDEX bank_accounts_deleted_at_index (deleted_at);
 
-UPDATE settlements s
+UPDATE settlements
     JOIN bank_accounts b ON s.merchant_id = b.merchant_id
     SET s.bank_account_id = b.id;
 
@@ -2502,6 +2502,13 @@ ALTER TABLE subscriptions
 ALTER TABLE line_items
     MODIFY COLUMN type VARCHAR(16) NOT NULL DEFAULT 'invoice';
 
+# Adding these columns, since reconciliation send us these data
+# which we need to pass in the refund file for Corporation bank
+ALTER TABLE netbanking
+    ADD COLUMN account_branch_code VARCHAR(255) AFTER account_number,
+    ADD COLUMN account_subtype VARCHAR(255) AFTER account_number,
+    ADD COLUMN account_type VARCHAR(255) AFTER account_number;
+
 # Make adjustment morph to entity optionally
 ALTER TABLE adjustment
     ADD COLUMN entity_type VARCHAR(100) AFTER merchant_id,
@@ -2544,3 +2551,93 @@ ALTER TABLE schedules
 ALTER TABLE tokens
     ADD COLUMN account_number VARCHAR(40) AFTER wallet,
     ADD INDEX `tokens_account_number_index` (`account_number`);
+
+ALTER TABLE batches
+    ADD COLUMN sub_type VARCHAR(25) DEFAULT NULL AFTER type,
+    ADD COLUMN gateway VARCHAR(25) DEFAULT NULL AFTER sub_type,
+    ADD COLUMN failure_reason TEXT DEFAULT NULL AFTER gateway,
+    ADD COLUMN processing TINYINT(1) DEFAULT 0 AFTER failure_reason,
+    ADD INDEX batches_gateway_index (gateway);
+
+ALTER TABLE disputes
+    ADD COLUMN parent_id CHAR(14) DEFAULT NULL AFTER merchant_id,
+    ADD CONSTRAINT disputes_parent_id_foreign FOREIGN KEY (parent_id) REFERENCES disputes(id) ON DELETE RESTRICT;
+
+ALTER TABLE bank_accounts
+    MODIFY COLUMN beneficiary_name VARCHAR(120) NOT NULL after account_number;
+
+# Adds tpv coulumn to gateway file
+ALTER TABLE gateway_files
+    ADD COLUMN sub_type VARCHAR(25) DEFAULT NULL AFTER target;
+
+ALTER TABLE merchant_details
+	ADD marketplace_activation_status VARCHAR(30) DEFAULT NULL AFTER locked,
+	ADD virtual_accounts_activation_status VARCHAR(30) DEFAULT NULL AFTER marketplace_activation_status,
+	ADD subscriptions_activation_status VARCHAR(30) DEFAULT NULL AFTER virtual_accounts_activation_status;
+
+ALTER TABLE virtual_accounts
+    ADD COLUMN qr_code_id CHAR(14) DEFAULT NULL after bank_account_id;
+
+ALTER TABLE fund_transfer_attempts
+	ADD mode VARCHAR(30) DEFAULT NULL AFTER bank_status_code;
+
+ALTER TABLE gateway_files
+    ADD COLUMN processing TINYINT(1) NOT NULL DEFAULT 0 AFTER status;
+
+ALTER TABLE payments
+    DROP COLUMN service_tax;
+
+ALTER TABLE transactions
+    DROP COLUMN service_tax;
+
+ALTER TABLE settlements
+    DROP COLUMN service_tax;
+
+ALTER TABLE payouts
+    DROP COLUMN service_tax;
+
+ALTER TABLE transfers
+    DROP COLUMN service_tax;
+
+ALTER TABLE daily_settlements
+    DROP COLUMN service_tax;
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN payer_account varchar(40) NOT NULL;
+
+#
+# Makes amount field of items, line_items, invoices unsigned and not null in
+# consistence with payment, orders and other tables.
+#
+# Some new amount fields were added later with default null but now they should
+# be not null.
+#
+
+ALTER TABLE items
+    MODIFY COLUMN amount INT(11) UNSIGNED NOT NULL;
+
+ALTER TABLE line_items
+    MODIFY COLUMN amount INT(11) UNSIGNED NOT NULL,
+    MODIFY COLUMN gross_amount INT(11) UNSIGNED NOT NULL,
+    MODIFY COLUMN tax_amount INT(11) UNSIGNED NOT NULL,
+    MODIFY COLUMN net_amount INT(11) UNSIGNED NOT NULL;
+
+ALTER TABLE invoices
+    MODIFY COLUMN gross_amount INT(11) UNSIGNED DEFAULT NULL,
+    MODIFY COLUMN tax_amount INT(11) UNSIGNED DEFAULT NULL;
+
+# PR - 5730
+ALTER TABLE action_comments
+    ADD COLUMN entity_id CHAR(14) AFTER action_id,
+    ADD COLUMN entity_type VARCHAR(100) AFTER entity_id,
+    ADD COLUMN merchant_id CHAR(14) AFTER admin_id,
+    MODIFY COLUMN action_id CHAR(14),
+    MODIFY COLUMN admin_id CHAR(14);
+
+# PR - 5730
+ALTER TABLE action_state
+    ADD COLUMN entity_id CHAR(14) AFTER action_id,
+    ADD COLUMN entity_type VARCHAR(100) AFTER entity_id,
+    ADD COLUMN merchant_id CHAR(14) AFTER admin_id,
+    MODIFY COLUMN action_id CHAR(14),
+    MODIFY COLUMN admin_id CHAR(14);

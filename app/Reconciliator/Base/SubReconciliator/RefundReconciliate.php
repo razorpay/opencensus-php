@@ -64,21 +64,21 @@ class RefundReconciliate extends Foundation\SubReconciliate
      */
     public function startReconciliation($fileContents)
     {
-        $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
+        $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
         unset($fileContents[Orchestrator::EXTRA_DETAILS]);
 
         foreach ($fileContents as $row)
         {
-            $this->repo->transactionOnLiveAndTest(function() use ($row, $extraDetails)
+            $this->repo->transactionOnLiveAndTest(function() use ($row)
             {
-                $this->runReconciliate($row, $extraDetails);
+                $this->runReconciliate($row);
             });
         }
 
         return $this->getSummary();
     }
 
-    public function runReconciliate($row, $extraDetails)
+    public function runReconciliate($row)
     {
         $rowDetails = $this->getRowDetailsStructured($row);
 
@@ -134,7 +134,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'trace_code'    => TraceCode::RECON_FAILURE,
                     'message'       => 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage(),
                     'row'           => $row,
-                    'extra_details' => $extraDetails,
+                    'extra_details' => $this->extraDetails,
                     'gateway'       => get_called_class()
                 ]);
 
@@ -456,24 +456,28 @@ class RefundReconciliate extends Foundation\SubReconciliate
             {
                 //
                 // If the ARN in DB doesn't match the ARN from row,
-                // there are two possibilities
+                // there are three possibilities
                 // - the value is NA
                 //   don't do anything
                 //   just continue and override it after this block.
-                // - the value is not NA
+                // - the value is not NA and force update is disabled
                 //   raise an alert and return.
+                // - If force update enabled, let recon
                 //
-                $this->messenger->raiseReconAlert(
-                    [
-                        'trace_code'    => TraceCode::RECON_MISMATCH,
-                        'message'       => 'Arn number for the refund entity does not match',
-                        'row'           => $rowDetails,
-                        'refund_id'     => $refund->getId(),
-                        'gateway'       => get_called_class(),
-                        'refund_arn'    => $currentArn,
-                    ]);
+                if ($this->shouldForceUpdate(Orchestrator::REFUND_ARN) === false)
+                {
+                    $this->messenger->raiseReconAlert(
+                        [
+                            'trace_code'    => TraceCode::RECON_MISMATCH,
+                            'message'       => 'Arn number for the refund entity does not match',
+                            'row'           => $rowDetails,
+                            'refund_id'     => $refund->getId(),
+                            'gateway'       => get_called_class(),
+                            'refund_arn'    => $currentArn,
+                        ]);
 
-                return;
+                    return;
+                }
             }
         }
 

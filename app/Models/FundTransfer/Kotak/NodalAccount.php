@@ -15,6 +15,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\FileStore;
 use RZP\Models\FundTransfer;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\FundTransfer\Base as NodalBase;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
@@ -97,7 +98,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
             $amount = $source->getAmount() / 100;
 
-            $type = $this->getPaymentType($ba, $amount, $entity->getSourceType());
+            $type = $this->getPaymentType($ba, $amount, $entity);
 
             $this->updateSummary($type, $amount);
 
@@ -157,7 +158,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
             $totalAmount += $amount;
 
-            $type = $this->getPaymentType($ba, $amount, $attempt->getSourceType());
+            $type = $this->getPaymentType($ba, $amount, $attempt);
 
             $array = [
                 Headings::CLIENT_CODE             => 'RAZORNODAL',
@@ -165,6 +166,7 @@ class NodalAccount extends NodalBase\NodalAccount
                 Headings::PAYMENT_TYPE            => $type,
                 Headings::PAYMENT_REF_NO          => $paymentRefNo,
                 Headings::PAYMENT_DATE            => $this->date,
+                Headings::INSTRUMENT_DATE         => $this->date,
                 Headings::DR_AC_NO                => static::$nodalAccountNumber,
                 Headings::AMOUNT                  => (string) $amount,
                 Headings::BANK_CODE_INDICATOR     => 'M',
@@ -233,7 +235,7 @@ class NodalAccount extends NodalBase\NodalAccount
         return [$version, $paymentRefNo, $source];
     }
 
-    protected function getPaymentType(BankAccount\Entity $ba, $amount, string $sourceType)
+    protected function getPaymentType(BankAccount\Entity $ba, $amount, Attempt\Entity $attempt)
     {
         $ifsc = $ba->getIfscCode();
 
@@ -242,16 +244,22 @@ class NodalAccount extends NodalBase\NodalAccount
         if (($ifscFirstFour === 'KKBK') or
             ($ifscFirstFour === 'VYSA'))
         {
-            $type = 'IFT';
+            $type = FundTransfer\Mode::IFT;
         }
         else if (($amount <= self::IMPS_AMOUNT) and
-                 ($sourceType !== Entity::SETTLEMENT))
+            ($attempt->getSourceType() !== Type::SETTLEMENT))
         {
-            $type = 'IMPS';
+            $type = FundTransfer\Mode::IMPS;
         }
         else
         {
             $type = $this->getTransferMode($amount);
+        }
+
+        // Mode will be present only for attempts of type Refund
+        if ($attempt->getMode() != null)
+        {
+            $type = $attempt->getMode();
         }
 
         return $type;

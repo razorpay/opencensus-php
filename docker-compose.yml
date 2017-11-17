@@ -39,7 +39,7 @@ services:
       SECURE_CACHE_DRIVER: redis
       ES_HOST: es
       MUTEX_MOCK: "false"
-      APP_CONTEXT: dev
+      APP_MODE: dev
   api_db:
     image: mysql:5.6
     ports:

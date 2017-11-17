@@ -4,15 +4,20 @@ namespace RZP\Tests\Functional\Subscription;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
+/**
+ * @group dns-sensitive
+ */
 class SubscriptionCancelTest extends TestCase
 {
     use PaymentTrait;
+    use MocksDnsTrait;
     use SubscriptionTrait;
 
     public function setUp()
@@ -30,6 +35,8 @@ class SubscriptionCancelTest extends TestCase
         $this->gateway = 'cybersource';
 
         $this->mockTokenex();
+
+        $this->setupMockDns();
     }
 
     public function tearDown()

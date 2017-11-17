@@ -9,7 +9,20 @@ use RZP\Models\Invoice\Type;
 
 class Base extends Mailable
 {
+    /**
+     * Overridden in child classes(specific mail types), holds templates
+     * per type.
+     *
+     * @var array
+     */
+    const SUBJECT_TEMPLATES = [
+        Type::LINK    => '',
+        Type::ECOD    => '',
+        Type::INVOICE => '',
+    ];
+
     const MAIL_TAG_MAP = [
+        Type::LINK    => MailTags::LINK,
         Type::ECOD    => MailTags::ECOD,
         Type::INVOICE => MailTags::INVOICE,
     ];
@@ -48,11 +61,7 @@ class Base extends Mailable
 
     protected function addSubject()
     {
-        $merchantName = $this->data['merchant']['name'];
-
-        $subjectTemplate = $this->getSubjectTemplate();
-
-        $subject = sprintf($subjectTemplate, $merchantName);
+        $subject = $this->getSubjectByInvoiceType();
 
         $this->subject($subject);
 
@@ -93,5 +102,33 @@ class Base extends Mailable
         });
 
         return $this;
+    }
+
+    /**
+     * Returns subject to use for mails based on invoice's type.
+     * The subject templates for mails per type has different placeholders.
+     *
+     * @return string
+     */
+    protected function getSubjectByInvoiceType(): string
+    {
+        $type = $this->data['invoice']['type'];
+
+        $template = static::SUBJECT_TEMPLATES[$type];
+
+        if ($type === Type::INVOICE)
+        {
+            $args = [
+                $this->data['merchant']['name'],
+            ];
+        }
+        else
+        {
+            $args = [
+                $this->data['invoice']['amount_formatted'],
+            ];
+        }
+
+        return sprintf($template, ...$args);
     }
 }

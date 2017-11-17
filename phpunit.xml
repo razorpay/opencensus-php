@@ -24,8 +24,7 @@
       </testsuite>
   </testsuites>
   <listeners>
-     <!-- Uncomment and enable this listener below to print out run times for each test -->
-    <!--<listener class="\RZP\Tests\Listeners\TestTimer" />-->
+    <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener" />
   </listeners>
   <filter>
     <whitelist>

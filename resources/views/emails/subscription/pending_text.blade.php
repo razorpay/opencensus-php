@@ -1,4 +1,4 @@
-Subscription is pending. Like a wow!
+Subscription is pending.
 
 --
 Team Razorpay

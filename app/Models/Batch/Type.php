@@ -6,18 +6,20 @@ use RZP\Exception;
 
 class Type
 {
-    const REFUND           = 'refund';
-    const PAYMENT_LINK     = 'payment_link';
+    const REFUND                = 'refund';
+    const PAYMENT_LINK          = 'payment_link';
 
     // IRCTC Batch Types
-    const IRCTC_REFUND     = 'irctc_refund';
-    const IRCTC_SETTLEMENT = 'irctc_settlement';
+    const IRCTC_REFUND          = 'irctc_refund';
+    const IRCTC_SETTLEMENT      = 'irctc_settlement';
 
     // Marketplace Batch
-    const LINKED_ACCOUNT   = 'linked_account';
+    const LINKED_ACCOUNT        = 'linked_account';
 
     // Virtual Account Bulk Creation
-    const VIRTUAL_BANK_ACCOUNT = 'virtual_bank_account';
+    const VIRTUAL_BANK_ACCOUNT  = 'virtual_bank_account';
+
+    const RECONCILIATION        = 'reconciliation';
 
     /**
      * Following batch types get processed via CRON job, CRON currently runs
@@ -39,6 +41,7 @@ class Type
         self::PAYMENT_LINK,
         self::LINKED_ACCOUNT,
         self::VIRTUAL_BANK_ACCOUNT,
+        self::RECONCILIATION,
     ];
 
     public static function exists(string $type)

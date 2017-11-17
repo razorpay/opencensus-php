@@ -63,26 +63,29 @@ return [
     ],
 
     'testSubmitAutoActivate' => [
-        'request' => [
+        'request'  => [
             'content' => [
-                'bank_account_name' => 'Test',
+                'bank_account_name'   => 'Test',
                 'bank_account_number' => '111000',
-                'bank_branch_ifsc' => 'SBIN0007105',
-                'bank_account_type' => 'savings',
-                'business_name' => 'Test',
-                'business_type' => 1,
-                'submit' => true
+                'bank_branch_ifsc'    => 'SBIN0007105',
+                'bank_account_type'   => 'savings',
+                'business_name'       => 'Test',
+                'business_type'       => 1,
+                'submit'              => true
             ],
-            'url' => '/merchant/activation',
-            'method' => 'POST'
+            'url'     => '/merchant/activation',
+            'method'  => 'POST'
         ],
         'response' => [
             'content' => [
-                'submitted' => true,
-                'verification' => [
+                'submitted'      => true,
+                'verification'   => [
                     'status' => 'pending'
                 ],
-                'can_submit' => true,
+                'can_submit'     => true,
+                'activated'      => 1,
+                'locked'         => true,
+                'auto_activated' => true
             ],
         ],
     ],
@@ -416,6 +419,41 @@ return [
                 'international'             => true,
                 'max_payment_amount'        => 50000000,
                 'suspended_at'              => null,
+            ],
+        ],
+    ],
+
+    'testGetPreSignupDetails' => [
+        'request' => [
+            'content' => [],
+            'url'     => '/pre_signup',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'      => '1',
+                'transaction_volume' => '5',
+                'department'         => '6',
+                'contact_mobile'     => '8722627189',
+            ],
+        ],
+    ],
+
+    'testPutPreSignupDetails' => [
+        'request' => [
+            'content' => [
+                'business_type' => '2',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'      => '2',
+                'transaction_volume' => null,
+                'department'         => null,
+                'contact_mobile'     => null,
+                'role'               => null,
             ],
         ],
     ],

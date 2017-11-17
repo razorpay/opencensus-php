@@ -24,6 +24,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     const TIME_FORMAT = 'd/m/Y H:i:s';
 
+    // 30 minutes
+    const BUFFER_TIME = 1800;
+
     /**
      * Identify the bank transfer using UTR, and thus find payment
      *
@@ -53,27 +56,54 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                              ->bank_transfer
                              ->findByUtr($utr);
 
-        // Bank Transfer will not be found in two cases:
-        // 1) Payment was made to a reserved acc, in which case we can ignore it
-        // 2) Kotak did not inform us of the payment via API, in which
-        //    case we raise an alert, and handle it some other way.
         if ($bankTransfer === null)
         {
-            if ($this->isPaymentToReservedAccount($row) === false)
-            {
-                $this->messenger->raiseReconAlert(
-                    [
-                        'trace_code'    => TraceCode::RECON_ALERT,
-                        'message'       => 'Unexpected bank transfer',
-                        'row'           => $row,
-                        'gateway'       => get_called_class()
-                    ]);
-            }
+            $this->alertUnexpectedBankTransferIfApplicable($row);
 
             return null;
         }
 
         return $bankTransfer->getPaymentId();
+    }
+
+    /**
+     * Bank Transfer will not be found in two cases:
+     *  1) Payment was made to a reserved acc, in which case we can ignore it
+     *  2) Kotak did not inform us of the payment via API
+     *     2.1) If the payment is recent, we may simply receive the API in a few minutes.
+     *          Don't raise alerts for payments less than 30 minutes old (but trace it anyway).
+     *     2.2) If payment is old, it's a genuine unexpected bank transfer.
+     *          Raise alert, handle it some other way.
+     *
+     * @param  array  $row
+     */
+    protected function alertUnexpectedBankTransferIfApplicable(array $row)
+    {
+        // No alerts for reserved accounts
+        if ($this->isPaymentToReservedAccount($row) === true)
+        {
+            return;
+        }
+
+        $this->trace->info(TraceCode::BANK_TRANSFER_UNEXPECTED, [
+            'message'       => 'Unexpected bank transfer, alert skipped',
+            'utr'           => $row[self::COLUMN_UTR],
+            'row'           => $row,
+        ]);
+
+        // Don't alert for recent payments
+        if ($this->isRecentBankTransfer($row) === false)
+        {
+            $this->app['slack']->queue(
+                TraceCode::BANK_TRANSFER_UNEXPECTED,
+                $row,
+                [
+                    'channel'  => Config::get('slack.channels.virtual_accounts_log'),
+                    'username' => 'Scrooge',
+                    'icon'     => ':x:'
+                ]
+            );
+        }
     }
 
     /**
@@ -149,6 +179,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         ];
     }
 
+    /**
+     * Customer name is not present in case of Kotak-to-Kotak IFT
+     *
+     * @param  array $row
+     * @return string
+     */
     protected function getCustomerName(array $row)
     {
         if (empty($row[self::COLUMN_PAYER_NAME]) === false)
@@ -159,6 +195,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return null;
     }
 
+    /**
+     * Certain roots are reserved for Razorpay's own usage, eg. for inter-nodal
+     * transfers. We ignore these payments completely, and raise no alerts.
+     *
+     * @param  array $row
+     * @return bool
+     */
     protected function isPaymentToReservedAccount(array $row)
     {
         $payeeAccount = $row[self::COLUMN_PAYEE_ACCOUNT];
@@ -171,5 +214,44 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return false;
+    }
+
+    /**
+     * Because there is a delay between when a bank transfer is actually made by
+     * the customer and when the API call is received by us, it is quite possible
+     * for a bank transfer to appear in a recon file before it is processed via
+     * API. This will appear to us as an unexpected bank transfer, and will raise
+     * an unnecessary alert, only to be fixed later when the API request is received.
+     *
+     * To avoid this, we ignore very recent bank transfers, i.e. <30 minutes old.
+     *
+     * @param  array $row
+     * @return bool
+     */
+    protected function isRecentBankTransfer(array $row): bool
+    {
+        $time = $this->getTimeOfBankTransfer($row);
+
+        $now = Carbon::now()->getTimestamp();
+
+        if (($now - $time) < self::BUFFER_TIME)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array $row
+     * @return int
+     */
+    protected function getTimeOfBankTransfer(array $row): int
+    {
+        $dateTime = $row[self::COLUMN_DATE] . ' ' .  $row[self::COLUMN_TIME];
+
+        $carbon = Carbon::createFromFormat(self::TIME_FORMAT, $dateTime, Timezone::IST);
+
+        return $carbon->getTimestamp();
     }
 }

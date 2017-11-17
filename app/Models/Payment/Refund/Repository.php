@@ -2,16 +2,16 @@
 
 namespace RZP\Models\Payment\Refund;
 
-use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
-use RZP\Gateway\Wallet\Freecharge;
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
-use RZP\Models\Payment\Refund;
-use RZP\Exception;
 use RZP\Constants\Table;
-use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Refund;
+use RZP\Gateway\Wallet\Freecharge;
+use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 
 class Repository extends Base\Repository
 {
@@ -252,7 +252,13 @@ class Repository extends Base\Repository
         return $refunds;
     }
 
-    public function fetchRefundsForTpvBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway, $tpvEnabled = false)
+    public function fetchRefundsForTpvBetweenTimestamps(
+        string $type,
+        string $gatewayCode,
+        int $from,
+        int $to,
+        string $gateway,
+        bool $tpvEnabled = false)
     {
         // SELECT `refunds`.*
         // FROM `refunds`
@@ -292,6 +298,56 @@ class Repository extends Base\Repository
                     ->where($pType, '=', $gatewayCode)
                     ->where($pGateway, '=', $gateway)
                     ->where($tTpv, '=', $tpvEnabled)
+                    ->with('payment')
+                    ->get();
+    }
+
+    public function fetchCorporateRefundsBetweenTimestamps(
+        string $type,
+        string $gatewayCode,
+        int $from,
+        int $to,
+        string $gateway,
+        bool $corporate = false)
+    {
+        // SELECT `refunds`.*
+        // FROM `refunds`
+        // INNER JOIN `payments` ON `refunds`.`payment_id` = `payments`.`id`
+        // INNER JOIN `terminals` ON `payments`.`terminal_id` = `terminals`.`id`
+        // WHERE `refunds`.`created_at` >= $from
+        //   AND `refunds`.`created_at` < $to
+        //   AND `payments`.`bank` = $gatewayCode
+        //   AND `payments`.`gateway` = $gateway
+        //   AND `terminals`.`corporate` = $tpvEnabled
+
+        $attrs = $this->dbColumn('*');
+
+        $pRepo = $this->repo->payment;
+        $pTableName = $pRepo->getTableName();
+
+        $tRepo = $this->repo->terminal;
+        $tTableName = $tRepo->getTableName();
+
+        $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
+        $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
+
+        $pId = $pRepo->dbColumn(Payment\Entity::ID);
+        $pType = $pRepo->dbColumn($type);
+        $pGateway = $pRepo->dbColumn(Payment\Entity::GATEWAY);
+        $pTerminalId = $pRepo->dbColumn(Payment\Entity::TERMINAL_ID);
+
+        $tId = $tRepo->dbColumn(Terminal\Entity::ID);
+        $tCorp = $tRepo->dbColumn(Terminal\Entity::CORPORATE);
+
+        return $this->newQuery()
+                    ->select($attrs)
+                    ->join($pTableName, $rPaymentId, '=', $pId)
+                    ->join($tTableName, $pTerminalId, '=', $tId)
+                    ->where($rCreatedAt, '>=', $from)
+                    ->where($rCreatedAt, '<=', $to)
+                    ->where($pType, '=', $gatewayCode)
+                    ->where($pGateway, '=', $gateway)
+                    ->where($tCorp, '=', $corporate)
                     ->with('payment')
                     ->get();
     }
@@ -472,7 +528,8 @@ class Repository extends Base\Repository
                        ->where($refundStatus, '=', Status::FAILED)
                        ->where($paymentMethod, '=', $method)
                        ->with(['payment','payment.terminal'])
-                       ->limit(50);
+                       ->inRandomOrder()
+                       ->limit(200);
 
         return $query->get();
     }

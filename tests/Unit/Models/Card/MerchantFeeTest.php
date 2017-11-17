@@ -3,7 +3,6 @@
 namespace RZP\Tests\Unit\Models\Card;
 
 use Mockery;
-use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Card;
@@ -11,29 +10,28 @@ use RZP\Models\Pricing;
 use RZP\Models\Payment;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Models\Base\PublicCollection;
 
 class MerchantFeeTest extends TestCase
 {
     use PaymentTrait;
 
     protected $card = [
-        'number' => '4012001036275556',
+        'number'       => '4012001036275556',
         'expiry_month' => '1',
-        'expiry_year' => '2035',
-        'cvv' => '123',
-        'name' => 'Abhay',
+        'expiry_year'  => '2035',
+        'cvv'          => '123',
+        'name'         => 'Abhay',
     ];
 
     protected $input = [
-        'method' => 'card',
-        'card' => [],
-        'currency' => "INR",
+        'method'   => 'card',
+        'card'     => [],
+        'currency' => 'INR',
         'amount'   => 0,
-        'email' => "test@razorpay.com",
-        'contact'   => '9988776655',
-        'notes' => [
-            'order_id'  => "3453"
+        'email'    => 'test@razorpay.com',
+        'contact'  => '9988776655',
+        'notes'    => [
+            'order_id' => '3453',
         ],
     ];
 
@@ -240,6 +238,25 @@ class MerchantFeeTest extends TestCase
                 'max_fee'             => null,
             ]);
 
+        $pricingPlanNetB4 = new Pricing\Entity([
+            'id'                  => '1fq0OXpgrfrt4y',
+            'plan_id'             => '1hDYlICobzOCYy',
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => 'payment',
+            'payment_method'      => 'netbanking',
+            'payment_method_type' => null,
+            'payment_network'     => 'HDFC',
+            'payment_issuer'      => null,
+            'amount_range_active' => true,
+            'amount_range_min'    => 0,
+            'amount_range_max'    => 100000000000,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 500,
+            'international'       => 0,
+            'min_fee'             => 0,
+            'max_fee'             => null,
+        ]);
+
         $pricingPlanWallet = new Pricing\Entity([
                 'id'                  => '1fq0O3dewex3df',
                 'plan_id'             => '1hDYlICobzOCYt',
@@ -403,6 +420,7 @@ class MerchantFeeTest extends TestCase
             $pricingPlanNetB1,
             $pricingPlanNetB2,
             $pricingPlanNetB3,
+            $pricingPlanNetB4,
             $pricingPlanWallet,
             $pricingPlanWallet1,
             $pricingPlanWallet2,
@@ -434,22 +452,22 @@ class MerchantFeeTest extends TestCase
     protected function getMockInternationalPricingRepo()
     {
         $internationalRule = new Pricing\Entity([
-                'id'                  => '1nvp2XPMmaRLzz',
-                'plan_id'             => '1hDYlICobzOCYt',
-                'plan_name'           => 'testDefaultPlan',
-                'feature'             => 'payment',
-                'payment_method'      => 'card',
-                'payment_method_type' => null,
-                'payment_network'     => null,
-                'payment_issuer'      => null,
-                'amount_range_active' => false,
-                'amount_range_min'    => 0,
-                'amount_range_max'    => 0,
-                'percent_rate'        => 200,
-                'fixed_rate'          => 0,
-                'international'       => true,
-                'min_fee'            => 0,
-                'max_fee'            => null,
+            'id'                  => '1nvp2XPMmaRLzz',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => 'payment',
+            'payment_method'      => 'card',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'amount_range_active' => false,
+            'amount_range_min'    => 0,
+            'amount_range_max'    => 0,
+            'percent_rate'        => 200,
+            'fixed_rate'          => 0,
+            'international'       => true,
+            'min_fee'             => 0,
+            'max_fee'             => null,
             ]);
 
         $pricingRules = [
@@ -542,17 +560,17 @@ class MerchantFeeTest extends TestCase
         // Card type unknown will be treated as
         // credit card and their rules will be applied
 
-        $this->runMerchantFeeTest("100", "Visa", ["payment" => "1nvp2XPMmaRLxy"], Card\Type::UNKNOWN);
+        $this->runMerchantFeeTest('100', 'Visa', ['payment' => '1nvp2XPMmaRLxy'], Card\Type::UNKNOWN);
 
-        $this->runMerchantFeeTest("200000", "Visa", ["payment" => "1nvp2XPMmaRLxy"], Card\Type::UNKNOWN);
+        $this->runMerchantFeeTest('200000', 'Visa', ['payment' => '1nvp2XPMmaRLxy'], Card\Type::UNKNOWN);
 
-        $this->runMerchantFeeTest("200100", "Visa", ["payment" => "1nvp2XPMmaRLxy"], Card\Type::UNKNOWN);
+        $this->runMerchantFeeTest('200100', 'Visa', ['payment' => '1nvp2XPMmaRLxy'], Card\Type::UNKNOWN);
 
-        $this->runMerchantFeeTest("100", "Visa", ["payment" => "1nvp2XPMmaRLxy"], Card\Type::CREDIT);
+        $this->runMerchantFeeTest('100', 'Visa', ['payment' => '1nvp2XPMmaRLxy'], Card\Type::CREDIT);
 
-        $this->runMerchantFeeTest("200000", "Visa", ["payment" => "1nvp2XPMmaRLxy"], Card\Type::CREDIT);
+        $this->runMerchantFeeTest('200000', 'Visa', ['payment' => '1nvp2XPMmaRLxy'], Card\Type::CREDIT);
 
-        $this->runMerchantFeeTest("200100", "Visa", ["payment" => "1nvp2XPMmaRLxy"], Card\Type::CREDIT);
+        $this->runMerchantFeeTest('200100', 'Visa', ['payment' => '1nvp2XPMmaRLxy'], Card\Type::CREDIT);
 
         $useCreditCardRule = false;
 
@@ -562,28 +580,28 @@ class MerchantFeeTest extends TestCase
         // Unknown Cards will be treated as credit card
         // and subsequent rules will be applied.
 
-        $this->runMerchantFeeTest("100", "Visa", ["payment" => "1nvp2XPMmaRLxx"], Card\Type::UNKNOWN);
+        $this->runMerchantFeeTest('100', 'Visa', ['payment' => '1nvp2XPMmaRLxx'], Card\Type::UNKNOWN);
 
-        $this->runMerchantFeeTest("200000", "Visa", ["payment" => "1nvp2XPMmaRLxx"], Card\Type::UNKNOWN);
+        $this->runMerchantFeeTest('200000', 'Visa', ['payment' => '1nvp2XPMmaRLxx'], Card\Type::UNKNOWN);
 
-        $this->runMerchantFeeTest("200100", "Visa", ["payment" => "1nvp2XPMmaRLxx"], Card\Type::UNKNOWN);
+        $this->runMerchantFeeTest('200100', 'Visa', ['payment' => '1nvp2XPMmaRLxx'], Card\Type::UNKNOWN);
 
-        $this->runMerchantFeeTest("100", "Visa", ["payment" => "1nvp2XPMmaRLxx"], Card\Type::CREDIT);
+        $this->runMerchantFeeTest('100', 'Visa', ['payment' => '1nvp2XPMmaRLxx'], Card\Type::CREDIT);
 
-        $this->runMerchantFeeTest("200000", "Visa", ["payment" => "1nvp2XPMmaRLxx"], Card\Type::CREDIT);
+        $this->runMerchantFeeTest('200000', 'Visa', ['payment' => '1nvp2XPMmaRLxx'], Card\Type::CREDIT);
 
-        $this->runMerchantFeeTest("200100", "Visa", ["payment" => "1nvp2XPMmaRLxx"], Card\Type::CREDIT);
+        $this->runMerchantFeeTest('200100', 'Visa', ['payment' => '1nvp2XPMmaRLxx'], Card\Type::CREDIT);
     }
 
     public function testDebitCardRuleSelection()
     {
         // Debit Cards and subsequent amount range rules
 
-        $this->runMerchantFeeTest("100", "Visa", ["payment" => "4pmbgtgNVVDd7x"], Card\Type::DEBIT);
+        $this->runMerchantFeeTest('100', 'Visa', ['payment' => '4pmbgtgNVVDd7x'], Card\Type::DEBIT);
 
-        $this->runMerchantFeeTest("200000", "Visa", ["payment" => "4pmbgtgNVVDd7x"], Card\Type::DEBIT);
+        $this->runMerchantFeeTest('200000', 'Visa', ['payment' => '4pmbgtgNVVDd7x'], Card\Type::DEBIT);
 
-        $this->runMerchantFeeTest("200100", "Visa", ["payment" => "4pmdaEzu3jmDTx"], Card\Type::DEBIT);
+        $this->runMerchantFeeTest('200100', 'Visa', ['payment' => '4pmdaEzu3jmDTx'], Card\Type::DEBIT);
     }
 
     public function testDebitCardRuleSelectionWithRecurring()
@@ -591,27 +609,27 @@ class MerchantFeeTest extends TestCase
         // Debit Cards and subsequent amount range rules
 
         $expectedPricingRules = [
-                                    "payment"          => "4pmbgtgNVVDd7x",
-                                    "recurring"        => "1nvp2XPMmaabxy",
+                                    'payment'          => '4pmbgtgNVVDd7x',
+                                    'recurring'        => '1nvp2XPMmaabxy',
                                 ];
 
-        $this->runMerchantFeeTest("100", "Visa", $expectedPricingRules, Card\Type::DEBIT, true);
+        $this->runMerchantFeeTest('100', 'Visa', $expectedPricingRules, Card\Type::DEBIT, true);
 
-        $this->runMerchantFeeTest("200000", "Visa", $expectedPricingRules, Card\Type::DEBIT, true);
+        $this->runMerchantFeeTest('200000', 'Visa', $expectedPricingRules, Card\Type::DEBIT, true);
 
         $expectedPricingRules['payment'] = '4pmdaEzu3jmDTx';
 
-        $this->runMerchantFeeTest("200100", "Visa", $expectedPricingRules, Card\Type::DEBIT, true);
+        $this->runMerchantFeeTest('200100', 'Visa', $expectedPricingRules, Card\Type::DEBIT, true);
     }
 
     public function testAmexCardRuleSelection()
     {
-        $this->runMerchantFeeTest("100", "American Express", ["payment" => "1OwH8rTI0ejFxx"], Card\Type::CREDIT);
+        $this->runMerchantFeeTest('100', 'American Express', ['payment' => '1OwH8rTI0ejFxx'], Card\Type::CREDIT);
     }
 
     public function testDiclCardRuleSelection()
     {
-        $this->runMerchantFeeTest("100", "Diners Club", ["payment" => "1fq0OXpgeyafQx"], Card\Type::CREDIT);
+        $this->runMerchantFeeTest('100', 'Diners Club', ['payment' => '1fq0OXpgeyafQx'], Card\Type::CREDIT);
     }
 
     public function testInternationalCardRuleSelection()
@@ -620,44 +638,69 @@ class MerchantFeeTest extends TestCase
 
         $this->fee->setPricingRepo($this->getMockInternationalPricingRepo());
 
-        $this->runMerchantFeeTest("100", "Visa", ["payment" => "1nvp2XPMmaRLzz"], Card\Type::CREDIT, false, $isCardInternational);
+        $this->runMerchantFeeTest('100', 'Visa', ['payment' => '1nvp2XPMmaRLzz'], Card\Type::CREDIT, false, $isCardInternational);
 
-        $this->runMerchantFeeTest("100", "Visa", ["payment" => "1nvp2XPMmaRLzz"], Card\Type::DEBIT, false, $isCardInternational);
+        $this->runMerchantFeeTest('100', 'Visa', ['payment' => '1nvp2XPMmaRLzz'], Card\Type::DEBIT, false, $isCardInternational);
 
-        $this->runMerchantFeeTest("100", "Visa", ["payment" => "1nvp2XPMmaRLzz"], Card\Type::UNKNOWN, false, $isCardInternational);
+        $this->runMerchantFeeTest('100', 'Visa', ['payment' => '1nvp2XPMmaRLzz'], Card\Type::UNKNOWN, false, $isCardInternational);
 
-        $this->runMerchantFeeTest("100", "American Express", ["payment" => "1nvp2XPMmaRLzz"], Card\Type::CREDIT, false, $isCardInternational);
+        $this->runMerchantFeeTest('100', 'American Express', ['payment' => '1nvp2XPMmaRLzz'], Card\Type::CREDIT, false, $isCardInternational);
 
-        $this->runMerchantFeeTest("100", "American Express", ["payment" => "1nvp2XPMmaRLzz"], Card\Type::DEBIT, false, $isCardInternational);
+        $this->runMerchantFeeTest('100', 'American Express', ['payment' => '1nvp2XPMmaRLzz'], Card\Type::DEBIT, false, $isCardInternational);
 
-        $this->runMerchantFeeTest("100", "American Express", ["payment" => "1nvp2XPMmaRLzz"], Card\Type::UNKNOWN, false, $isCardInternational);
+        $this->runMerchantFeeTest('100', 'American Express', ['payment' => '1nvp2XPMmaRLzz'], Card\Type::UNKNOWN, false, $isCardInternational);
 
-        $this->runMerchantFeeTest("100", "Maestro", ["payment" => "1nvp2XPMmaRLzz"], Card\Type::CREDIT, false, $isCardInternational);
+        $this->runMerchantFeeTest('100', 'Maestro', ['payment' => '1nvp2XPMmaRLzz'], Card\Type::CREDIT, false, $isCardInternational);
 
-        $this->runMerchantFeeTest("100", "Maestro", ["payment" => "1nvp2XPMmaRLzz"], Card\Type::DEBIT, false, $isCardInternational);
+        $this->runMerchantFeeTest('100', 'Maestro', ['payment' => '1nvp2XPMmaRLzz'], Card\Type::DEBIT, false, $isCardInternational);
 
-        $this->runMerchantFeeTest("100", "Maestro", ["payment" => "1nvp2XPMmaRLzz"], Card\Type::UNKNOWN, false, $isCardInternational);
+        $this->runMerchantFeeTest('100', 'Maestro', ['payment' => '1nvp2XPMmaRLzz'], Card\Type::UNKNOWN, false, $isCardInternational);
     }
 
     public function testInternationalCardRuleSelectionWithNoMatchingRule()
     {
         $isCardInternational = true;
 
-        $this->runMerchantFeeTestWithException("100", "Visa", ["payment" => "1nvp2XPMmaRLzz"], Card\Type::CREDIT, false, $isCardInternational);
+        $this->runMerchantFeeTestWithException('100', 'Visa', ['payment' => '1nvp2XPMmaRLzz'], Card\Type::CREDIT, false, $isCardInternational);
     }
 
     public function testNetBankingRuleSelection()
     {
         $this->fee->setPricingRepo($this->getMockPricingRepo());
 
-        $this->runMerchantFeeTestNetB("100", "SIBL", ["payment" => "1fq0OXpgrfrt3x"]);
+        $this->runMerchantFeeTestNetB('100', 'SIBL', ['payment' => '1fq0OXpgrfrt3x']);
 
-        $this->runMerchantFeeTestNetB("200000", "SIBL", ["payment" => "1fq0OXpgrfrt6x"]);
+        $this->runMerchantFeeTestNetB('200000', 'SIBL', ['payment' => '1fq0OXpgrfrt6x']);
 
-        $this->runMerchantFeeTestNetB("200000", "SBMY", ["payment" => "1fq0OXpgrfrt4x"]);
+        $this->runMerchantFeeTestNetB('200000', 'SBMY', ['payment' => '1fq0OXpgrfrt4x']);
 
-        $this->runMerchantFeeTestNetB("200", "SBMY", ["payment" => "1fq0OXpgrfrt5x"]);
+        $this->runMerchantFeeTestNetB('200', 'SBMY', ['payment' => '1fq0OXpgrfrt5x']);
+    }
 
+    public function testNetBankingRuleSelectionForCustomerFeeBearer()
+    {
+        $this->fee->setPricingRepo($this->getMockPricingRepo());
+
+        $this->fixtures->merchant->setFeeBearer('customer');
+
+        $this->runMerchantFeeTestNetB('100', 'HDFC', ['payment' => '1fq0OXpgrfrt4y']);
+
+        $this->fixtures->merchant->setFeeBearer('platform');
+
+        try
+        {
+            $this->runMerchantFeeTestNetB('100', 'HDFC', ['payment' => '1fq0OXpgrfrt4y']);
+        }
+        catch(Exception\BadRequestException $ex)
+        {
+            $this->assertEquals('BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT', $ex->getCode());
+
+            $this->assertEquals('The fees calculated for payment is greater than the payment amount. Please provide a higher amount', $ex->getMessage());
+
+            return;
+        }
+
+        $this->fail();
     }
 
     public function testWalletRuleSelection()
@@ -668,13 +711,13 @@ class MerchantFeeTest extends TestCase
         // Card type unknown will be treated as
         // debit card and their rules will be applied
 
-        $this->runMerchantFeeTestWallet("mobikwik", ["payment" => "1fq0O3dewex3df"]);
+        $this->runMerchantFeeTestWallet('mobikwik', ['payment' => '1fq0O3dewex3df']);
 
-        $this->runMerchantFeeTestWallet("paytm", ["payment" => "1fq0O3dewex3ef"]);
+        $this->runMerchantFeeTestWallet('paytm', ['payment' => '1fq0O3dewex3ef']);
 
-        $this->runMerchantFeeTestWallet("payumoney", ["payment" => "1fq0O3dewex3ff"]);
+        $this->runMerchantFeeTestWallet('payumoney', ['payment' => '1fq0O3dewex3ff']);
 
-        $this->runMerchantFeeTestWallet("payzapp", ["payment" => "1fq0O3dewex3gf"]);
+        $this->runMerchantFeeTestWallet('payzapp', ['payment' => '1fq0O3dewex3gf']);
     }
 
     public function testEmiRuleSelection()
@@ -683,12 +726,12 @@ class MerchantFeeTest extends TestCase
 
         $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
 
-        $this->runMerchantFeeTestEmi("Visa", ["payment" => "1fq0O3demix3gf"]);
+        $this->runMerchantFeeTestEmi('Visa', ['payment' => '1fq0O3demix3gf']);
 
-        $this->runMerchantFeeTestEmi("American Express", ["payment" => "1fq0O3demiamex"]);
+        $this->runMerchantFeeTestEmi('American Express', ['payment' => '1fq0O3demiamex']);
 
-        $this->runMerchantFeeTestEmiWithMerchantSubvention("Visa", ["payment" => "1fq0O3demix3gf",
-            "emi" => "1fq0O3demix3tt"]);
+        $this->runMerchantFeeTestEmiWithMerchantSubvention('Visa', ['payment' => '1fq0O3demix3gf',
+            'emi' => '1fq0O3demix3tt']);
     }
 
     public function testInterstateGstForCard()
@@ -702,7 +745,7 @@ class MerchantFeeTest extends TestCase
             'merchant_detail',
             [
                 'merchant_id' => $merchant->getId(),
-                'gstin' => '20kjsngjk2139',
+                'gstin'       => '20kjsngjk2139',
             ]);
 
         foreach ($this->testData[__FUNCTION__] as $data)
@@ -719,6 +762,8 @@ class MerchantFeeTest extends TestCase
             $paymentArray[Payment\Entity::METHOD] = Payment\Method::CARD;
 
             $payment = new Payment\Entity($paymentArray);
+
+            $payment->setAttribute(Payment\Entity::INTERNATIONAL, false);
 
             $payment->card = (new Card\Entity)->build($this->card);
 
@@ -765,14 +810,14 @@ class MerchantFeeTest extends TestCase
 
     protected function runFeeTestWithMaxFeeForCard($amount, $cardType, $expectedFee, $expectedTax, $feeComponents)
     {
-        list($fee, $tax, $feesSplit) = $this->runMerchantFeeTest($amount, "Visa", ["payment" => "1nvp2XPMmaRLMR"], $cardType);
+        list($fee, $tax, $feesSplit) = $this->runMerchantFeeTest($amount, 'Visa', ['payment' => '1nvp2XPMmaRLMR'], $cardType);
 
         $this->assertFeesAndTax($fee, $tax, $feesSplit->toArray(), $expectedFee, $expectedTax, $feeComponents);
     }
 
     protected function runFeeTestWithMaxFeeForWallet($amount, $expectedFee, $expectedTax, $feeComponents)
     {
-        list($fee, $tax, $feesSplit) = $this->runMerchantFeeTestWallet("mobikwik", ["payment" => "1fq0O3dewex3MR"], $amount);
+        list($fee, $tax, $feesSplit) = $this->runMerchantFeeTestWallet('mobikwik', ['payment' => '1fq0O3dewex3MR'], $amount);
 
         $this->assertFeesAndTax($fee, $tax, $feesSplit->toArray(), $expectedFee, $expectedTax, $feeComponents);
     }
@@ -800,9 +845,9 @@ class MerchantFeeTest extends TestCase
         }
         catch(Exception\LogicException $ex)
         {
-            $this->assertEquals("SERVER_ERROR_PRICING_RULE_ABSENT", $ex->getCode());
+            $this->assertEquals('SERVER_ERROR_PRICING_RULE_ABSENT', $ex->getCode());
 
-            $this->assertEquals("Invalid rule count: 0, Payment Id: testPay1234567", $ex->getMessage());
+            $this->assertEquals('Invalid rule count: 0, Merchant Id: 10000000000000', $ex->getMessage());
 
             return;
         }
@@ -854,6 +899,8 @@ class MerchantFeeTest extends TestCase
         list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
         $this->assertPricingRules($expectedRules, $feesSplit);
+
+        return [$fee, $tax, $feesSplit];
     }
 
     protected function runMerchantFeeTestWallet($wallet, array $expectedRules, $amount = 50000)

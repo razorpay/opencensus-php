@@ -10,6 +10,7 @@ use ApiResponse;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
 use RZP\Http\Throttle;
+use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
 
 class Authenticate
@@ -108,14 +109,20 @@ class Authenticate
         if ((in_array($route, Route::$internal, true) === true) or
             (in_array($route, Route::$admin, true) === true))
         {
+            $this->throttleRequests($route, Type::ADMIN_AUTH);
+
             $ret = $this->ba->appAuth();
         }
         else if (in_array($route, Route::$private, true) === true)
         {
+            $this->throttleRequests($route, Type::PRIVATE_AUTH);
+
             $ret = $this->ba->privateAuth();
         }
         else if (in_array($route, Route::$public, true) === true)
         {
+            $this->throttleRequests($route, Type::PUBLIC_AUTH);
+
             //
             // For public routes, OAuth sends a public_token using BasicAuth
             // We check here if the key is an OAuth public token and
@@ -133,19 +140,27 @@ class Authenticate
         }
         else if (in_array($route, Route::$publicCallback, true) === true)
         {
+            $this->throttleRequests($route, Type::PUBLIC_AUTH);
+
             $ret = $this->ba->publicCallbackAuth();
         }
         else if (in_array($route, Route::$proxy, true) === true)
         {
+            $this->throttleRequests($route, Type::PROXY_AUTH);
+
             $ret = $this->ba->proxyAuth();
         }
         else if (in_array($route, Route::$device, true) === true)
         {
+            $this->throttleRequests($route, Type::DEVICE_AUTH);
+
             $ret = $this->ba->deviceAuth();
         }
         else if (in_array($route, Route::$direct, true) === true)
         {
-            ; // $ret = $this->ba->proxyAuth();
+            $this->throttleRequests($route, Type::DIRECT_AUTH);
+
+            // $ret = $this->ba->proxyAuth();
         }
         else
         {
@@ -219,7 +234,7 @@ class Authenticate
      *
      * @param string $auth
      */
-    private function throttleRequests(string $auth)
+    private function throttleRequests(string $route, string $auth)
     {
         $throttle = new Throttle($this->app);
 

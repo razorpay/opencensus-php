@@ -11,7 +11,9 @@ use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
+    const CREATE_DIRECT = 'create_direct';
+
+    protected static $createRules = [
         Entity::METHOD          => 'required|in:card,netbanking,wallet',
         Entity::CARD_ID         => 'required_only_if:method,card|alpha_num|size:14',
         Entity::BANK            => 'required_only_if:method,netbanking|custom',
@@ -22,11 +24,16 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TOKEN2  => 'sometimes|string',
         Entity::EXPIRED_AT      => 'sometimes|integer',
         Entity::ACCOUNT_NUMBER  => 'sometimes|alpha_num|between:5,20|nullable',
-    );
+    ];
 
-    protected static $editRules = array(
+    protected static $createDirectRules = [
+        Entity::CARD            => 'required|array',
+        Entity::METHOD          => 'required|in:card'
+    ];
+
+    protected static $editRules = [
         Entity::RECURRING       => 'sometimes|in:0',
-    );
+    ];
 
     protected static function validateBank($attribute, $value)
     {

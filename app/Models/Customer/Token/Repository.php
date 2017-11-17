@@ -4,6 +4,7 @@ namespace RZP\Models\Customer\Token;
 
 use RZP\Models\Base;
 use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Method;
 use RZP\Exception;
 use RZP\Models\Customer;
 
@@ -55,11 +56,11 @@ class Repository extends Base\Repository
         return $token;
     }
 
-    public function getByTokenIdAndCustomer($tokenId, Customer\Entity $customer)
+    public function getByTokenAndCustomer($token, Customer\Entity $customer)
     {
         $token = $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
-                    ->where(Token\Entity::TOKEN, '=', $tokenId)
+                    ->where(Token\Entity::TOKEN, '=', $token)
                     ->first();
 
         if ($token !== null)
@@ -68,6 +69,22 @@ class Repository extends Base\Repository
         }
 
         return $token;
+    }
+
+    public function getByTokenAndCustomerId(string $token, string $customerId)
+    {
+        return $this->newQuery()
+                    ->where(Token\Entity::CUSTOMER_ID, '=', $customerId)
+                    ->where(Token\Entity::TOKEN, '=', $token)
+                    ->first();
+    }
+
+    public function getByTokenIdAndCustomerId(string $tokenId, string $customerId)
+    {
+        return $this->newQuery()
+                    ->where(Token\Entity::CUSTOMER_ID, '=', $customerId)
+                    ->where(Token\Entity::ID, '=', $tokenId)
+                    ->firstOrFail();
     }
 
     public function getByWalletTerminalAndCustomerId($wallet, $terminal, $customer)
@@ -86,6 +103,17 @@ class Repository extends Base\Repository
                     ->where(Entity::CUSTOMER_ID, '=', $customer->getId())
                     ->where(Entity::MERCHANT_ID, '=', $customer->merchant->getId())
                     ->get();
+    }
+
+    public function getInitiatedTokenByIdAndAccountNumber(string $tokenId, string $accountNumber)
+    {
+        return $this->newQuery()
+                    ->where(Entity::RECURRING_STATUS, RecurringStatus::INITIATED)
+                    ->where(Entity::RECURRING, 0)
+                    ->where(Entity::METHOD, Method::NETBANKING)
+                    ->where(Entity::ID, $tokenId)
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->firstOrFail();
     }
 
     public function isMerchantIdRequiredForFetch()

@@ -265,6 +265,23 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PASSWORD);
     }
 
+    public function getSize()
+    {
+        return $this->getAttribute(self::SIZE);
+    }
+
+    /**
+     * Returns local full file path
+     *
+     * @return string
+     */
+    public function getFullFilePath(): string
+    {
+        $dir = storage_path(Store::STORAGE_DIRECTORY);
+
+        return $dir . $this->getName() . '.' . $this->getExtension();
+    }
+
     // ----------------------- Getters Ends----------------------------------------
 
     protected function getPasswordAttribute()

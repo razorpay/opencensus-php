@@ -14,8 +14,9 @@ class Gateway extends Axis\Gateway
     {
         $request = parent::authorize($input);
 
-        $url = $this->route->getUrlWithPublicAuth('mock_netbanking_payment',
-                                                 ['bank' => $this->bank]);
+        $url = $this->route->getUrlWithPublicAuth(
+                    'mock_netbanking_payment',
+                    ['bank' => $this->bank]);
 
         $request['url'] = $url;
 

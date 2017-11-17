@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     //
     const BILLING_ADDRESS       = 'billing_address';
     const SHIPPING_ADDRESS      = 'shipping_address';
+    const BILLING_ADDRESS_ID    = 'billing_address_id';
 
     protected $generateIdOnCreate = true;
 

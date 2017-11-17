@@ -3,10 +3,12 @@
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class Kotak extends Base
@@ -23,13 +25,32 @@ class Kotak extends Base
 
     protected $type = Payment\Entity::BANK;
 
-    protected function formatDataForFile()
+    public function fetchEntities(): PublicCollection
+    {
+        $begin = $this->gatewayFile->getBegin();
+        $end = $this->gatewayFile->getEnd();
+
+        $tpv = $this->gatewayFile->getTpv();
+
+        $refunds = $this->repo->refund->fetchRefundsForTpvBetweenTimestamps(
+            static::PAYMENT_TYPE_ATTRIBUTE,
+            static::GATEWAY_CODE,
+            $begin,
+            $end,
+            static::GATEWAY,
+            $tpv
+        );
+
+        return $refunds;
+    }
+
+    protected function formatDataForFile(array $data)
     {
         $formattedData = [];
 
         $totalAmount = 0;
 
-        foreach ($this->data as $index => $row)
+        foreach ($data as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], Timezone::IST)->format('d-M-Y');
@@ -57,7 +78,7 @@ class Kotak extends Base
         return $formattedData;
     }
 
-    public function sendFile()
+    public function sendFile($data)
     {
         return;
     }
@@ -72,7 +93,7 @@ class Kotak extends Base
     {
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
-        $name = ($this->gatewayFile->getTpv() === true) ? static::TPV_FILE_NAME : static::NON_TPV_FILE_NAME;
+        $name = ($this->getTpv() === true) ? static::TPV_FILE_NAME : static::NON_TPV_FILE_NAME;
 
         return $name . '_' . $this->mode . '_' . $time;
     }

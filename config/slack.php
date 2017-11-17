@@ -146,11 +146,17 @@ return array(
         'tech_logs_verify'     => 'C3AJ9V9EY',
         // subscriptions
         'subscriptions'        => 'C77PAU3JM',
+        // virtual_accounts
+        'virtual_accounts'     => 'C44FHBKC1',
+        'virtual_accounts_log' => 'C809AQYUC',
         // tech_logs_mail
         'tech_logs_mail'       => 'C50JZ3S5T',
-        'activations'          => 'activations_log',
-        'risk'                 => 'risk',
-        'operations'           => 'operations_log',
+        // activations
+        'activations'          => 'C17UC7DHS',
+        // risk
+        'risk'                 => 'C0SG9Q7TM',
+        // operations
+        'operations'           => 'C0KUX9WSE',
         // Product (Feature) onboarding requests
         'activations_prod_log' => 'C76P70Y7K'
     ],
