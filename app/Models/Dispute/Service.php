@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Dispute;
 
+use Request;
 use RZP\Models\Base;
+use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 
 class Service extends Base\Service
 {
@@ -28,6 +30,31 @@ class Service extends Base\Service
         return $dispute->toArrayPublic();
     }
 
+    public function updateForMerchant(string $id, array $input): array
+    {
+        $response = [];
+
+        if (Request::hasFile(DisputeFileEntity::FILES) === true)
+        {
+            $files = Request::file(DisputeFileEntity::FILES);
+
+            $response['files'] = ((new File\Core)->uploadFiles($id, $files));
+
+            unset($input[DisputeFileEntity::FILES]);
+        }
+
+        $dispute = $this->repo->dispute->findByPublicId($id);
+
+        if (empty($input) === false)
+        {
+            $dispute = $this->core()->updateForMerchant($dispute, $input);
+        }
+s($dispute);
+        $response['dispute'] = $dispute->toArrayPublic();
+
+        return $response;
+    }
+
     public function migrateOldAdjustments($file): array
     {
         return $this->core()->migrateOldAdjustments($file);
@@ -38,10 +65,5 @@ class Service extends Base\Service
         $reason = (new Reason\Core)->create($input);
 
         return $reason->toArrayPublic();
-    }
-
-    public function uploadFiles(string $id, array $files): array
-    {
-        return ((new File\Core)->uploadFiles($id, $files));
     }
 }

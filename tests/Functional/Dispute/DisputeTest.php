@@ -22,7 +22,7 @@ class DisputeTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testDisputeCreate()
@@ -307,7 +307,7 @@ class DisputeTest extends TestCase
         $this->assertEquals('adjustment', $txn['type']);
     }
 
-    public function testDisputeMerchantDocumentUpload()
+    public function testEditDisputeMerchantDocumentUploadByPrivate()
     {
         $this->ba->privateAuth();
 
@@ -317,6 +317,41 @@ class DisputeTest extends TestCase
 
         $content = $this->runRequestResponseFlow($testData);
 
+        $this->checkUploadedFilesArray($content);
+    }
+
+    public function testEditDisputeMerchantDocumentUploadByProxy()
+    {
+        $this->ba->proxyAuth();
+
+        $testData = $this->updateUploadDocumentData();
+
+        $testData['request']['files'][DisputeFileEntity::FILES] = $this->getTestFiles();
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->checkUploadedFilesArray($content);
+    }
+
+    public function testEditDisputeMerchantAcceptDispute()
+    {
+        $this->ba->proxyAuth();
+
+        // Input params while creating
+        $input = [
+            'amount'                => 10100,
+            'deduct_at_onset'       => 0,
+        ];
+
+        $testdata = $this->updateEditTestData($input);
+
+        $content = $this->runRequestResponseFlow($testdata);
+
+        s($content);
+    }
+
+    protected function checkUploadedFilesArray(array $content)
+    {
         $dispute = $this->getLastEntity('dispute', true);
 
         $files = $this->getEntities('dispute_file', [], true);
@@ -388,7 +423,7 @@ class DisputeTest extends TestCase
 
         $testData = &$this->testData[$name];
 
-        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId() . '/merchant';
+        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
 
         return $testData;
     }

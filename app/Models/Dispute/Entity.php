@@ -34,6 +34,9 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT              = 'updated_at';
     const RESOLVED_AT             = 'resolved_at';
 
+    // Key for accepting dispute by merchant
+    const ACCEPT_DISPUTE          = 'accept_dispute';
+
     protected static $sign = 'disp';
 
     protected $entity = 'dispute';

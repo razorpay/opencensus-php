@@ -612,7 +612,6 @@ final class Route
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
         'dispute_migrate_adjustments'             => ['post',     'disputes/migrate_old_adjustments',               'DisputeController@migrateOldAdjustments'                           ],
         'dispute_reason_create'                   => ['post',     'disputes/reasons',                               'DisputeController@createReason'                                    ],
-        'dispute_edit_merchant'                   => ['patch',    'disputes/{id}/merchant',                         'DisputeController@editByMerchant'                                  ],
 
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
 
@@ -833,7 +832,7 @@ final class Route
         'transfer_fetch_reversals',
         'reversal_fetch',
         'reversal_fetch_multiple',
-        'dispute_edit_merchant',
+        'dispute_edit',
     ];
 
     public static $internal = [
@@ -1038,7 +1037,6 @@ final class Route
         'migrate_tokens_to_gateway_tokens',
         'mock_generate_reconciliation',
         'payment_dispute_create',
-        'dispute_edit',
         'dispute_migrate_adjustments',
         'adjustments_split_for_dispute',
         'dispute_reason_create',

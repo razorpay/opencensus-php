@@ -5,12 +5,9 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Exception;
-use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 
 class DisputeController extends Controller
 {
-    use Traits\HasCrudMethods;
-
     public function create(string $paymentId)
     {
         $input = Request::all();
@@ -18,6 +15,25 @@ class DisputeController extends Controller
         $data = $this->service()->create($input, $paymentId);
 
         return ApiResponse::json($data);
+    }
+
+    public function update(string $id)
+    {
+        $input = Request::all();
+
+        // For edits by merchant either from API or dashboard
+
+        if (($this->ba->isPrivateAuth() === true) or
+            ($this->ba->isProxyAuth() === true))
+        {
+            $response = $this->service()->updateForMerchant($id, $input);
+
+            return ApiResponse::json($response);
+        }
+
+        $entity = $this->service()->update($id, $input);
+
+        return ApiResponse::json($entity);
     }
 
     public function migrateOldAdjustments()
@@ -44,19 +60,5 @@ class DisputeController extends Controller
         $data = $this->service()->createReason($input);
 
         return ApiResponse::json($data);
-    }
-
-    public function editByMerchant(string $id)
-    {
-        if (Request::hasFile(DisputeFileEntity::FILES) === true)
-        {
-            $files = Request::file(DisputeFileEntity::FILES);
-
-            return $this->service()->uploadFiles($id, $files);
-        }
-
-        // TODO : Update data for comments from merchant
-
-        return [];
     }
 }

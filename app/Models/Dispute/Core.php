@@ -103,6 +103,37 @@ class Core extends Base\Core
     }
 
     /**
+     * @param Entity $dispute
+     * @param array  $input
+     *
+     * @return Entity
+     */
+    public function updateForMerchant(Entity $dispute, array $input): Entity
+    {
+        $this->trace->info(
+            TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
+            array_merge($input, [Entity::ID => $dispute->getId()])
+        );
+
+        (new Validator())->validateInput('merchant_edit', $input);
+
+        $input = $this->generateInputForMerchantEdit($input);
+
+        $dispute->edit($input);
+
+        $dispute->setAuditAction(Action::EDIT_DISPUTE);
+
+        return $this->repo->transaction(function() use ($dispute)
+        {
+            $this->handleDisputeClosure($dispute);
+
+            $this->repo->saveOrFail($dispute);
+
+            return $dispute;
+        });
+    }
+
+    /**
      * @param $file
      *
      * @return array
@@ -273,5 +304,18 @@ class Core extends Base\Core
         ];
 
         (new Adjustment\Core)->createDisputeAdjustment($input, $dispute);
+    }
+
+    protected function generateInputForMerchantEdit(array $input): array
+    {
+        $input = [];
+
+        if ((isset($input[Entity::ACCEPT_DISPUTE]) === true) and
+            ($input[Entity::ACCEPT_DISPUTE] === true))
+        {
+            $input[Entity::STATUS] = true;
+        }
+
+        return $input;
     }
 }

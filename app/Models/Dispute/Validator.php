@@ -26,6 +26,10 @@ class Validator extends Base\Validator
         Entity::EXPIRES_ON             => 'sometimes|epoch',
     ];
 
+    protected static $merchantEditRules = [
+        Entity::ACCEPT_DISPUTE         => 'sometimes|in:true',
+    ];
+
     protected function validatePhase(string $attribute, string $value)
     {
         if (Phase::exists($value) === false)
