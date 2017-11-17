@@ -78,8 +78,7 @@ export default class TransferNew extends Component {
       this.props.initialize(this.props.plan);
     }
 
-    // Currently keeping count = 100
-    this.props.fetchAccounts({ count: 100 });
+    this.props.fetchAccounts({});
   }
 
   componentWillReceiveProps(nextProps) {
