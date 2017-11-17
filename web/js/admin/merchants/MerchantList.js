@@ -7,7 +7,7 @@ import { adminFetch } from 'util/fetch';
 import { openMerchantEntity } from './entity/entity-resources';
 
 const defaultFilters = {
-  account_status: 'activated',
+  account_status: 'pending',
 };
 
 export default class MerchantList extends Component {
@@ -19,7 +19,12 @@ export default class MerchantList extends Component {
     filters: defaultFilters,
   });
 
-  onSubmit = filters => this.collection.setFilters(filters);
+  onSubmit = filters => {
+    if (filters['sub_accounts'] == 0) {
+      delete filters['sub_accounts'];
+    }
+    return this.collection.setFilters(filters);
+  };
 
   render() {
     return (
@@ -35,6 +40,10 @@ export default class MerchantList extends Component {
             >
               <option value="">All</option>
               <option value="activated">Activated</option>
+              <option value="pending">Pending Activation</option>
+              <option value="dead">Dead</option>
+              <option value="archived">Archived</option>
+              <option value="suspended">Suspended</option>
             </SelectField>
             <Field name="sub_accounts" label="Linked-accounts for ID" />
             <SwitchField label="Linked Accounts Only" name="sub_accounts" />
