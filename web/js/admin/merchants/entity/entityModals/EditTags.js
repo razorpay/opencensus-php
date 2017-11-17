@@ -3,7 +3,7 @@ import { toJS } from 'mobx';
 import BaseModal from 'ui/BaseModal';
 
 import Form from 'ui/Form';
-import Field from 'ui/Field';
+import { TextAreaField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
@@ -11,7 +11,7 @@ import { adminPost } from 'util/fetch';
 
 export default ({ props }) => {
   function onSubmit(body) {
-    const tags = body.tags ? body.tags.split(',') : [];
+    const tags = body.tags ? body.tags.split(',').map(tag => tag.trim()) : [];
 
     return adminPost({
       route_name: 'merchant_tag_add',
@@ -20,9 +20,10 @@ export default ({ props }) => {
       },
       body: { tags },
     })
-      .then(response => {
-        if (response) {
+      .then(data => {
+        if (data) {
           notifySuccess('Merchant tagged successfully.');
+          props.updateDetails({ ...props.merchant.details, tags: data });
           closeModal();
         }
       })
@@ -33,11 +34,12 @@ export default ({ props }) => {
 
   return (
     <BaseModal header="Edit Tags">
-      <Form>
-        <Field
+      <Form class="full-span full-elements" style={{ width: '450px' }}>
+        <TextAreaField
+          type="textarea"
           label="Tags"
           name="tags"
-          defaultValue={toJS(props.merchant.details.tags).join(',')}
+          defaultValue={toJS(props.merchant.details.tags).join(', ')}
         />
 
         <AsyncButton
