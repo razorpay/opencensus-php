@@ -10,7 +10,6 @@ ConfirmUser.title = 'Confirm User';
 export default function ConfirmUser() {
   return (
     <Form>
-      <header>{ConfirmUser.title}</header>
       <Field label="User Email" type="email" name="email" />
       <AsyncButton
         text="OK"

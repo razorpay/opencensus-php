@@ -10,9 +10,10 @@ const rows = Object.keys(actionModals).map(key => actionModals[key]);
 export default class AdminActionsList extends Component {
   render() {
     return (
-      <BaseModal header="Actions">
+      <div className="limited box">
+        <header>Actions</header>
         <Table fields={fields} items={rows} onClick={onClick} />
-      </BaseModal>
+      </div>
     );
   }
 }
@@ -20,5 +21,9 @@ export default class AdminActionsList extends Component {
 const fields = [['', item => item && item.title]];
 
 function onClick(e) {
-  openModal(<this />);
+  openModal(
+    <BaseModal header={this.title}>
+      <this />
+    </BaseModal>
+  );
 }

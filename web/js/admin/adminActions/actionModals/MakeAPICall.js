@@ -23,7 +23,6 @@ export default class MakeAPICall extends Component {
   render() {
     return (
       <div>
-        <header>{MakeAPICall.title}</header>
         <Form>
           <Field label="URL" name="url" />
           <SelectMode />

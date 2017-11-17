@@ -10,7 +10,6 @@ AuthorizeFailedPayment.title = 'Authorize Failed Payment';
 export default function AuthorizeFailedPayment() {
   return (
     <div>
-      <header>{AuthorizeFailedPayment.title}</header>
       <Form>
         <Field label="Payment ID" name="payment" />
         <SelectMode />

@@ -31,7 +31,6 @@ GenerateRefundsExcel.title = 'Generate Refund Excel';
 export default function GenerateRefundsExcel() {
   return (
     <Form>
-      <header>{GenerateRefundsExcel.title}</header>
       <DateTimeField
         label="Date"
         name="on"

@@ -27,7 +27,6 @@ AddIINRule.title = 'Add IIN';
 export default function AddIINRule() {
   return (
     <Form>
-      <header>{AddIINRule.title}</header>
       <Field label="IIN (6 digit)" name="iin" required />
       <SelectField label="Network" name="network" required>
         {options.network.map((opt, idx) => (

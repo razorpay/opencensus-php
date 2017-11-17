@@ -8,7 +8,6 @@ TriggerDummyError.title = 'Trigger Dummy Error';
 export default function TriggerDummyError() {
   return (
     <div>
-      <header>{TriggerDummyError.title}</header>
       <div className="field">
         <p>Are you sure you want to trigger an error?</p>
       </div>

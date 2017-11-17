@@ -10,7 +10,6 @@ RetryFailedSettlements.title = 'Retry Failed Settlements';
 export default function RetryFailedSettlements() {
   return (
     <div>
-      <header>{RetryFailedSettlements.title}</header>
       <Form>
         <TextAreaField
           label="Settlement IDs:"

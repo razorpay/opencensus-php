@@ -11,7 +11,6 @@ UploadSettlementReconciliation.title = 'Upload Settlement Reconciliation (UTR)';
 export default function UploadSettlementReconciliation() {
   return (
     <Form>
-      <header>{UploadSettlementReconciliation.title}</header>
       <SelectMode />
       <FileField label="Attach File" name="file" />
       <AsyncButton

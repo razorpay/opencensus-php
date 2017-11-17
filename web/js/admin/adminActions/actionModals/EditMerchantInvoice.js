@@ -10,7 +10,6 @@ EditMerchantInvoice.title = 'Edit Merchant Invoice GSTIN';
 export default function EditMerchantInvoice() {
   return (
     <Form>
-      <header>{EditMerchantInvoice.title}</header>
       <Field
         label="Merchant ID"
         placeholder="Enter Merchant ID"

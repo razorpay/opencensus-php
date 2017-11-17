@@ -15,7 +15,6 @@ CreateSchedule.title = 'Add Schedule';
 export default function CreateSchedule() {
   return (
     <Form>
-      <header>{CreateSchedule.title}</header>
       <Field label="Name" placeholder="Weekly-2" name="name" />
       <SelectField label="Period" name="period">
         {options.period.map((opt, idx) => (

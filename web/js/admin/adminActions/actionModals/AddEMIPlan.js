@@ -26,7 +26,6 @@ AddEMIPlan.title = 'Add EMI Plan';
 export default function AddEMIPlan() {
   return (
     <Form>
-      <header>{AddEMIPlan.title}</header>
       <SelectField label="Banks" name="bank">
         {options.banks.map((opt, idx) => (
           <option key={idx} value={opt}>

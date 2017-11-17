@@ -34,7 +34,6 @@ UploadReconciliationFile.title = 'Upload Reconciliation File (Payment/Refund)';
 export default function UploadReconciliationFile() {
   return (
     <Form>
-      <header>{UploadReconciliationFile.title}</header>
       <SelectMode />
       <SelectField label="Gateway" name="gateway">
         {gateWayOptions.map((opt, idx) => (

@@ -26,7 +26,6 @@ AddDisputeReason.title = 'Add Dispute Reason';
 export default function AddDisputeReason() {
   return (
     <Form>
-      <header>{AddDisputeReason.title}</header>
       <SelectField label="Network" name="network">
         {options.network.map((opt, idx) => (
           <option key={idx} value={opt}>
