@@ -117,6 +117,37 @@ class Core extends Base\Core
     }
 
     /**
+     * @param Entity $dispute
+     * @param array  $input
+     *
+     * @return Entity
+     */
+    public function updateForMerchant(Entity $dispute, array $input): Entity
+    {
+        $this->trace->info(
+            TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
+            array_merge($input, [Entity::ID => $dispute->getId()])
+        );
+
+        (new Validator())->validateInput('merchant_edit', $input);
+
+        $input = $this->generateInputForMerchantEdit($dispute, $input);
+
+        $dispute->edit($input);
+
+        $dispute->setAuditAction(Action::EDIT_DISPUTE);
+
+        return $this->repo->transaction(function() use ($dispute, $input)
+        {
+            $this->handleDisputeClosure($dispute, $input);
+
+            $this->repo->saveOrFail($dispute);
+
+            return $dispute;
+        });
+    }
+
+    /**
      * @param $file
      *
      * @return array
@@ -401,5 +432,25 @@ class Core extends Base\Core
         ];
 
         Mail::queue(new DisputeMailer\Creation($data));
+    }
+
+    protected function generateInputForMerchantEdit(Entity $dispute, array $input): array
+    {
+        if ((isset($input[Entity::ACCEPT_DISPUTE]) === true) and
+            ($input[Entity::ACCEPT_DISPUTE] == true))
+        {
+            if (in_array($dispute->getPhase(), Phase::getNonTransactionalPhases()))
+            {
+                $input[Entity::STATUS] = Status::CLOSED;
+            }
+            else
+            {
+                $input[Entity::STATUS] = Status::LOST;
+            }
+
+            unset($input[Entity::ACCEPT_DISPUTE]);
+        }
+
+        return $input;
     }
 }

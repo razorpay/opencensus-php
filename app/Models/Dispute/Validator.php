@@ -32,6 +32,10 @@ class Validator extends Base\Validator
         Entity::PARENT_ID               => 'sometimes|alpha_num|size:14',
     ];
 
+    protected static $merchantEditRules = [
+        Entity::ACCEPT_DISPUTE         => 'sometimes|boolean',
+    ];
+
     protected function validatePhase(string $attribute, string $value)
     {
         if (Phase::exists($value) === false)
