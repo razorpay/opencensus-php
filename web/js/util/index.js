@@ -51,9 +51,9 @@ export const formatDate = unixTimestamp => {
     [0, 'st', 'nd', 'rd'][dateOfMonth === 31 ? 1 : dateOfMonth % 20] ||
     dateSuffix;
 
-  return `${date.getDate()}${dateSuffix} ${MONTHS[
-    date.getMonth()
-  ]}, ${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
+  return `${date.getDate()}${dateSuffix} ${
+    MONTHS[date.getMonth()]
+  }, ${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
 };
 
 export const removeFromArray = (array, index) => {
@@ -63,3 +63,19 @@ export const removeFromArray = (array, index) => {
 };
 
 export const removeLineBreaks = str => str.replace(/[\n|\r]/g, ' ');
+
+/*
+ * Check for pending workflow requests
+ * Pass withRouter 'history' prop from component
+*/
+export const isWorkflow = (response, history) => {
+  if (
+    typeof response.id !== 'undefined' &&
+    response.id.indexOf('w_action') === 0 &&
+    typeof response.workflow_id !== 'undefined'
+  ) {
+    history.push(`/requests/${response.id}`);
+  }
+
+  return false;
+};

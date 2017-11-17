@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 import { observable, extendObservable, action } from 'mobx';
 import { observer } from 'mobx-react';
 import { adminFetch, adminPost, adminPut } from 'util/fetch';
 import { notifyDone } from 'common/modal';
 import UserForm from './UserForm';
+import { isWorkflow } from 'util/index';
 
 @observer
-export default class EditUser extends Component {
+class EditUser extends Component {
   // all available roles
   allRoles = observable.map();
   allGroups = observable.map();
@@ -119,6 +121,9 @@ export default class EditUser extends Component {
 
     return request(data).then(response => {
       if (response) {
+        if (isWorkflow(response, history)) {
+          return;
+        }
         notifyDone();
       }
     });
@@ -159,3 +164,5 @@ export default class EditUser extends Component {
     );
   }
 }
+
+export default withRouter(EditUser);

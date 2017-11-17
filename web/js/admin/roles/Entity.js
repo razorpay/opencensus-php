@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 import axios from 'axios';
 import {
   openModal,
@@ -9,7 +10,7 @@ import {
 import Table from 'ui/Table';
 import { adminFetch, adminPost } from 'util/fetch';
 import normalize from 'util/normalize';
-
+import { isWorkflow } from 'util/index';
 import RolesForm from './RolesForm';
 
 class EditRole extends Component {
@@ -47,7 +48,7 @@ class EditRole extends Component {
   }
 
   save = body => {
-    let { model } = this.props;
+    let { model, history } = this.props;
     let { selectedPerms } = this.state;
 
     if (model) {
@@ -78,6 +79,9 @@ class EditRole extends Component {
         ],
       }).then(response => {
         if (response.data.success) {
+          if (isWorkflow(response.data.data, history)) {
+            return;
+          }
           notifySuccess('Role edited successfully.');
           closeModal();
         } else {
@@ -91,6 +95,9 @@ class EditRole extends Component {
         body,
       }).then(response => {
         if (response) {
+          if (isWorkflow(response, history)) {
+            return;
+          }
           this.props.collection.items.push(response.data);
           notifySuccess('Roles added successfully.');
           closeModal();
@@ -140,6 +147,9 @@ class EditRole extends Component {
   }
 }
 
+//pass withRouter
+const EditRoleR = withRouter(EditRole);
+
 export function showEntity(collection) {
-  openModal(<EditRole collection={collection} model={this} />);
+  openModal(<EditRoleR collection={collection} model={this} />);
 }
