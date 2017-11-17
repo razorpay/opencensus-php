@@ -4,7 +4,7 @@ import BaseModal from 'ui/BaseModal';
 import { notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
-import { Field, RadioField, SelectField, DateTimeField } from 'ui/Field';
+import { Field, RadioField, SelectField, DateField } from 'ui/Field';
 import fetch, { adminFetch } from 'util/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import { PowerSelect, TypeAhead } from 'react-power-select';

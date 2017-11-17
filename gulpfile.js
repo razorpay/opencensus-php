@@ -25,7 +25,7 @@ function compileCss(o) {
     .src('web/css/*.styl')
     .pipe(
       stylus({
-        include: [__dirname + '/public/dist/css'],
+        include: [__dirname + '/public/dist/css', __dirname + '/node_modules'],
         'include css': true,
       })
     )

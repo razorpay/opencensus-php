@@ -5,7 +5,7 @@ import Form from 'ui/Form';
 import Field, {
   SelectMode,
   SelectField,
-  DateTimeField,
+  DateField,
   SwitchField,
   TimeField,
 } from 'ui/Field';
@@ -202,15 +202,11 @@ export default class CreateOffer extends Component {
           />
 
           {/* Starts at */}
-          <DateTimeField
-            name="starts_at"
-            label="Starts at"
-            min={this.minDate}
-          />
+          <DateField name="starts_at" label="Starts at" min={this.minDate} />
           <TimeField name="starts_at_time" defaultValue="00:00" />
 
           {/* Ends at */}
-          <DateTimeField
+          <DateField
             name="ends_at"
             label="Ends at"
             min={this.minDate}

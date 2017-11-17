@@ -96,8 +96,9 @@ export default class EntityList extends Component {
           return (
             <Link
               class="link"
-              to={`/entity/${this.state.selectedEntity}/${this.collection.data
-                .mode}/${value}`}
+              to={`/entity/${this.state.selectedEntity}/${
+                this.collection.data.mode
+              }/${value}`}
             >
               {value}
             </Link>
@@ -138,9 +139,11 @@ export default class EntityList extends Component {
               ))}
             </SelectField>
             <SwitchField
-              label="Live Mode"
+              label="Mode"
               defaultChecked
               onChange={this.selectMode}
+              disabledLabel="Test"
+              enabledLabel="Live"
               disabledValue="test"
               enabledValue="live"
             />
@@ -154,8 +157,8 @@ export default class EntityList extends Component {
               step="10"
               defaultValue="20"
             />
-            <FromField />
-            <ToField />
+            <FromField format="X" />
+            <ToField format="X" />
             <Field label="Search" onChange={this.selectId} />
 
             {selectedFiltersArray.map(f => {

@@ -5,7 +5,7 @@ import CollectionItem from 'model/collectionItem';
 import { adminFetch } from 'util/fetch';
 import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
-import Field, { DateTimeField } from 'ui/Field';
+import Field from 'ui/Field';
 
 import { showEntity, showDetails } from './Entity';
 
