@@ -245,9 +245,7 @@ export default class BusinessDetails extends Component {
                 <a
                   class="link"
                   target="_blank"
-                  href={`https://incometaxindiaefiling.gov.in/e-Filing/Services/KnowYourJurisdictionLink.html?panOfDeductee=${
-                    merchantDetails.company_pan
-                  }`}
+                  href={`https://incometaxindiaefiling.gov.in/e-Filing/Services/KnowYourJurisdictionLink.html?panOfDeductee=${merchantDetails.company_pan}`}
                 >
                   Verify
                 </a>
@@ -308,11 +306,9 @@ export default class BusinessDetails extends Component {
             <div class="field">
               <label>Signatory PAN Verified</label>
               <i
-                class={`i ${
-                  this.state.panVerified
-                    ? 'i-yes text-success'
-                    : 'i-no text-danger'
-                }`}
+                class={`i ${this.state.panVerified
+                  ? 'i-yes text-success'
+                  : 'i-no text-danger'}`}
               />
               <div class="info-block">
                 <i class="i i-info-circle" />
@@ -340,9 +336,9 @@ function _getCompanyInfoFields() {
       'Defaulter',
       () => (
         <i
-          class={`i ${
-            person.Defaulter ? 'i-warning text-danger' : 'i-smile text-success'
-          }`}
+          class={`i ${person.Defaulter
+            ? 'i-warning text-danger'
+            : 'i-smile text-success'}`}
         />
       ),
     ],

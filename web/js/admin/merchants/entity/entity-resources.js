@@ -515,9 +515,9 @@ export function getDetailsViewMap(model) {
       value: details.merchant_details
         ? () => (
             <i
-              class={`i i-${
-                details.merchant_details.locked ? 'lock' : 'unlock'
-              }`}
+              class={`i i-${details.merchant_details.locked
+                ? 'lock'
+                : 'unlock'}`}
             />
           )
         : null,

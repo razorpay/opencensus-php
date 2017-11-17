@@ -124,9 +124,9 @@ const ActionsList = ({ model, merchantId, actions }) => {
     })
       .then(response => {
         notifySuccess(
-          `Activation Form is now ${
-            isCurrentlyLocked ? 'Unlocked' : 'Locked'
-          } successfully`
+          `Activation Form is now ${isCurrentlyLocked
+            ? 'Unlocked'
+            : 'Locked'} successfully`
         );
         model.updateMerchantDetails(response);
       })
@@ -315,9 +315,9 @@ const ActionsList = ({ model, merchantId, actions }) => {
           {merchant.details.merchant_details.locked ? 'Unlock' : 'Lock'}{' '}
           Activation Form
           <i
-            class={`pull-right i i-${
-              merchant.details.merchant_details.locked ? 'unlock' : 'lock'
-            }`}
+            class={`pull-right i i-${merchant.details.merchant_details.locked
+              ? 'unlock'
+              : 'lock'}`}
           />
         </div>
       )}
@@ -426,16 +426,18 @@ const ActionsList = ({ model, merchantId, actions }) => {
       <div onClick={toggleArchiveMerchant}>
         {merchant.details.archived_at === null ? 'Archive' : 'Unarchive'}{' '}
         <i
-          class={`pull-right i i-${
-            merchant.details.archived_at === null ? 'archive' : 'unarchive'
-          }`}
+          class={`pull-right i i-${merchant.details.archived_at === null
+            ? 'archive'
+            : 'unarchive'}`}
         />
         Merchant
       </div>
 
       {typeof merchant.details.suspended_at !== 'undefined' && (
         <div onClick={toggleSuspension}>
-          {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}{' '}
+          {merchant.details.suspended_at === null
+            ? 'Suspend'
+            : 'Unsuspend'}{' '}
           <i class="pull-right i i-power" />
           Merchant
         </div>

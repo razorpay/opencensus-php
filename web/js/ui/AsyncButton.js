@@ -48,7 +48,7 @@ export default class AsyncButton extends Component {
 
     return (
       <div class={className} onClick={this.onClick}>
-        {this.props.text}
+        {this.props.text || this.props.children}
       </div>
     );
   }
