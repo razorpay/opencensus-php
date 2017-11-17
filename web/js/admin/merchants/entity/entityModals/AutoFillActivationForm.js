@@ -16,14 +16,19 @@ export default class AutoFillActivationForm extends Component {
   state = { scriptLoaded: false };
 
   componentWillMount() {
-    const script = document.createElement('script');
+    if (!window.doT) {
+      const script = document.createElement('script');
 
-    script.onload = () => {
+      script.onload = () => {
+        this.setState({ scriptLoaded: true });
+      };
+      script.src =
+        'https://cdnjs.cloudflare.com/ajax/libs/dot/1.1.2/doT.min.js';
+
+      document.head.appendChild(script);
+    } else {
       this.setState({ scriptLoaded: true });
-    };
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/dot/1.1.2/doT.min.js';
-
-    document.head.appendChild(script);
+    }
   }
 
   handleChange = e => {
