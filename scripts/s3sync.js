@@ -50,8 +50,12 @@ glob(ENV.TARGET_DIR + '/**', {}, function(error, files) {
         // ignore mapfiles
         var fileParams = JSON.parse(JSON.stringify(params));
 
-        if (f.endsWith('-entry.js') || f.endsWith('.js.map')) {
-          fileParams.s3Params.CacheControl = 'no-store, must-revalidate';
+        if (
+          f.endsWith('-entry.js') ||
+          f.endsWith('.js.map') ||
+          ext.startsWith('woff')
+        ) {
+          fileParams.s3Params.CacheControl = 'no-store,must-revalidate';
         }
 
         fileParams.localFile = f;
