@@ -49,7 +49,7 @@ class Validator extends Base\Validator
     protected static $reconciliationCreateRules = [
         Entity::TYPE                 => 'required|in:reconciliation',
         Entity::GATEWAY              => 'required|string|max:25',
-        Entity::FILE                 => 'required|array'
+        Entity::FILE                 => 'required|file'
     ];
 
     /**
