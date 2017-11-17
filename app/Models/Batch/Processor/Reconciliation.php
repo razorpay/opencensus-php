@@ -66,7 +66,12 @@ class Reconciliation extends Base
         $guesser->register(new FileBinaryMimeTypeGuesser());
     }
 
-    protected function saveInputFile(File $file): File
+    /**
+     * @param File $file
+     *
+     * @return array [FileStore\Entity, File]
+     */
+    protected function saveInputFile(File $file): array
     {
         $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArray());
 
@@ -86,17 +91,16 @@ class Reconciliation extends Base
 
         // we move the file to storage location used by UFH Accessor, so that S3
         // mock works successfully.
-        $file = $file->move(
-                    $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE_PREFIX),
-                    $fileNameWithExt);
+        $movedFile = $file->move(
+                        $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE_PREFIX),
+                        $fileNameWithExt);
 
         $ufh = new FileStore\Creator;
 
-        $ufh->localFilePath($file->getPathname())
+        $ufh->localFilePath($movedFile->getPathname())
             ->mime($mimeType)
             ->name($fileName)
             ->extension($extension)
-            ->entity($this->batch)
             ->type(FileStore\Type::RECONCILIATION_BATCH_INPUT)
             ->deleteLocalFile()
             ->save();
@@ -107,7 +111,7 @@ class Reconciliation extends Base
 
         $this->trace->info(TraceCode::BATCH_UPLOAD_FILE, $ufhFile->toArrayPublic());
 
-        return $file;
+        return [$ufhFile, $movedFile];
     }
 
     protected function validateInputFileAndUpdateBatch(string $filePath, array $input)
