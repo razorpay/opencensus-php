@@ -7,8 +7,10 @@ import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
 import { adminPost } from 'util/fetch';
+import { isWorkflow } from 'util/index';
+import { withRouter } from 'react-router-dom';
 
-export default ({ props }) => {
+export default withRouter(({ props, history }) => {
   function onSubmit(body) {
     const mode = body.mode;
     delete body.mode;
@@ -23,6 +25,10 @@ export default ({ props }) => {
     })
       .then(response => {
         if (response) {
+          if (isWorkflow(response, history)) {
+            return;
+          }
+
           notifySuccess('Credits updated successfully.');
           // TODO: Update credits in the model
           closeModal();
@@ -62,4 +68,4 @@ export default ({ props }) => {
       </Form>
     </BaseModal>
   );
-};
+});

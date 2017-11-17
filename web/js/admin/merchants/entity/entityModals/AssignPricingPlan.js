@@ -7,7 +7,10 @@ import Form from 'ui/Form';
 import { SelectField } from 'ui/Field';
 import { adminFetch, adminPost } from 'util/fetch';
 import AsyncButton from 'ui/AsyncButton';
+import { withRouter } from 'react-router-dom';
+import { isWorkflow } from 'util/index';
 
+@withRouter
 export default class PricingPlanModal extends Component {
   state = { pricingPlans: {} };
 
@@ -27,7 +30,7 @@ export default class PricingPlanModal extends Component {
   }
 
   handleConfirm = body => {
-    const { props } = this.props;
+    const { props, history } = this.props;
 
     return confirm(
       'Any previously assigned plan for the merchant will be replace with selected.',
@@ -47,6 +50,9 @@ export default class PricingPlanModal extends Component {
       })
         .then(data => {
           if (data) {
+            if (isWorkflow(data, history)) {
+              return;
+            }
             notifySuccess('Pricing Plan assigned successfully.');
             closeModal();
           }

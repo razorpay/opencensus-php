@@ -7,8 +7,10 @@ import AsyncButton from 'ui/AsyncButton';
 import { notifyError, confirm, notifySuccess, closeModal } from 'common/modal';
 
 import { adminPost } from 'util/fetch';
+import { isWorkflow } from 'util/index';
+import { withRouter } from 'react-router-dom';
 
-export default ({ props }) => {
+export default withRouter(({ props, history }) => {
   function handleConfirm(body) {
     return confirm(
       'Adjustment once assigned can not be changed, ensure you have checked all values.',
@@ -25,6 +27,10 @@ export default ({ props }) => {
       })
         .then(response => {
           if (response) {
+            if (isWorkflow(response, history)) {
+              return;
+            }
+
             notifySuccess('Adjustment added successfully.');
             closeModal();
           }
@@ -68,4 +74,4 @@ export default ({ props }) => {
       </Form>
     </BaseModal>
   );
-};
+});

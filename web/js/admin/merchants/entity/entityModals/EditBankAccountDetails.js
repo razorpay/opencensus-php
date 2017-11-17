@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
 import BaseModal from 'ui/BaseModal';
-
+import { withRouter } from 'react-router-dom';
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
 import { beneficiaryStateMap } from '../entity-resources';
-
+import { isWorkflow } from 'util/index';
 import Form from 'ui/Form';
 import Field, { SelectField } from 'ui/Field';
 import { adminFetch, adminPost } from 'util/fetch';
 import AsyncButton from 'ui/AsyncButton';
 
+@withRouter
 export default class EditBankAccountDetails extends Component {
   state = { bankAccount: null };
 
@@ -25,6 +26,10 @@ export default class EditBankAccountDetails extends Component {
       body,
     })
       .then(response => {
+        if (isWorkflow(response, history)) {
+          return;
+        }
+
         closeModal();
         notifySuccess('Merchant bank details changed successfully');
       })
@@ -41,7 +46,11 @@ export default class EditBankAccountDetails extends Component {
       },
     })
       .then(data => {
-        this.setState({ bankAccount: data });
+        if (data) {
+          this.setState({ bankAccount: data });
+        } else {
+          closeModal();
+        }
       })
       .catch(err => {
         notifyError(err);
