@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react';
-
 import { adminFetch, adminPut, adminPost } from 'util/fetch';
 import {
   openModal,
@@ -16,6 +15,7 @@ import EntityRow from 'ui/EntityRow';
 import ToggleEntityRow from 'ui/ToggleEntityRow';
 import Model from './model';
 import AsyncButton from 'ui/AsyncButton';
+import { isWorkflow } from 'util/index';
 
 let parentProps;
 const actions = {};
@@ -28,6 +28,7 @@ Object.keys(entityModals).map(key => {
   };
 });
 
+@withRouter
 @observer
 export default class MerchantEntity extends Component {
   constructor(props) {
@@ -87,6 +88,7 @@ export default class MerchantEntity extends Component {
           model={this.model}
           merchantId={this.merchantId}
           actions={actions}
+          history={this.props.history}
         />
 
         {/* Content */}
@@ -96,8 +98,7 @@ export default class MerchantEntity extends Component {
   }
 }
 
-/* Side bar component */
-const ActionsList = ({ model, merchantId, actions }) => {
+const ActionsList = ({ model, merchantId, actions, history }) => {
   const merchant = model.merchant;
 
   function captureScreenshot() {
@@ -157,6 +158,10 @@ const ActionsList = ({ model, merchantId, actions }) => {
     })
       .then(response => {
         if (response) {
+          if (isWorkflow(response, history)) {
+            return;
+          }
+
           closeModal();
           notifySuccess(successMsg);
           model.updateDetails(response);
@@ -178,6 +183,10 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
     return adminPut(data)
       .then(response => {
+        if (isWorkflow(response, history)) {
+          return;
+        }
+
         notifySuccess(successMsg);
         model.updateDetails(response);
       })
