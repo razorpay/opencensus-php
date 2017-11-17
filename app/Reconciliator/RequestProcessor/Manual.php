@@ -52,7 +52,7 @@ class Manual extends Base
             self::FORCE_UPDATE     => $input[self::FORCE_UPDATE] ?? [],
         ];
 
-        (new Validator)->validateManualInput($inputDetails);
+        $this->validator->validateManualInput($inputDetails);
 
         return $inputDetails;
     }

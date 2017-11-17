@@ -162,8 +162,7 @@ class Reconciliate extends Base\Core
                 'total_count'   => $batch->getTotalCount(),
                 'success_count' => $batch->getSuccessCount(),
                 'failure_count' => $batch->getFailureCount(),
-            ]
-        );
+            ]);
     }
 
     /**
@@ -291,8 +290,7 @@ class Reconciliate extends Base\Core
         string $reconciliationType,
         array $extraDetails)
     {
-        if (($extraDetails[FileProcessor::FILE_DETAILS]
-                [FileProcessor::FILE_TYPE] === FileProcessor::EXCEL) and
+        if (($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_TYPE] === FileProcessor::EXCEL) and
             ($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_COUNT] > 0))
         {
             $batch->setSubType(self::COMBINED);
@@ -304,20 +302,20 @@ class Reconciliate extends Base\Core
     }
 
     /**
-     * @param  array  $fileDetails  File metad data
+     * @param  array  $extraDetails  File metad data
      * @return string               name of the file
      */
-    protected function getFileName(array $fileDetails): string
+    protected function getFileName(array $extraDetails): string
     {
         //
         // For excel recon files, we consider the sheet name if present as the file name.
         //
-        if (isset($fileDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME]) === true)
+        if (isset($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME]) === true)
         {
-            return $fileDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME];
+            return $extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME];
         }
 
-        return $fileDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_NAME];
+        return $extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_NAME];
     }
 
     public function getReconciliationTypeFromFileName($fileName)

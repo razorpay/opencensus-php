@@ -36,15 +36,13 @@ class Service extends Base\Service
             if ($this->isManualRequest($input) === true)
             {
                 $this->trace->traceException(
-                    $e, Trace::ERROR, TraceCode::RECON_ALERT,
-                    (array) json_decode($e->getMessage()));
+                    $e, Trace::ERROR, TraceCode::RECON_ALERT);
 
                 throw $e;
             }
 
             $this->trace->traceException(
-                $e, Trace::DEBUG, TraceCode::RECON_ALERT,
-                (array) json_decode($e->getMessage()));
+                $e, Trace::DEBUG, TraceCode::RECON_ALERT);
 
             // We do not throw an exception as route is hit via Mailgun,
             // and Mailgun will attempt retrying, which we don't want.

@@ -137,9 +137,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     public function resetProcessingAttributes()
     {
-        $this->payment = null;
-        $this->paymentIin = null;
+        $this->payment            = null;
+        $this->paymentIin         = null;
         $this->paymentTransaction = null;
+
         parent::resetProcessingAttributes();
     }
 

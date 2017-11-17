@@ -320,6 +320,13 @@ class Base extends BaseModel\Core
     {
         $this->updateBatchStatusPostProcess();
 
+        //
+        // We need to save this here only because we send a processed mail.
+        // We cannot send the processed mail without saving first because
+        // save can fail. In which case, we would have sent an incorrect
+        // processed mail.
+        //
+
         $this->repo->saveOrFail($this->batch);
 
         if ($this->batch->isProcessed() === true)
@@ -367,7 +374,7 @@ class Base extends BaseModel\Core
             //
             if (($this->batch->getFailureCount() > 0) or
                 (($this->batch->getSuccessCount() === 0) and
-                ($this->batch->getFailureCount() === 0)))
+                 ($this->batch->getFailureCount() === 0)))
             {
                 $status = ($this->shouldMarkProcessedOnFailures() === true) ?
                             Batch\Status::PROCESSED :

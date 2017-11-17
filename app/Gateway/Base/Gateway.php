@@ -2,22 +2,22 @@
 
 namespace RZP\Gateway\Base;
 
+use App;
 use Crypt;
 use Cache;
+use Requests;
+use Symfony\Component\DomCrawler\Crawler;
+
+use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Models\Payment\Status;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
-
-use Requests;
-use Symfony\Component\DomCrawler\Crawler;
-use App;
+use RZP\Models\Payment\Status;
 
 class Gateway
 {

@@ -123,7 +123,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
     public function resetProcessingAttributes()
     {
         $this->payment = null;
-        $this->refund = null;
+        $this->refund  = null;
+
         parent::resetProcessingAttributes();
     }
 
