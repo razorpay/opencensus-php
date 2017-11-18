@@ -44,7 +44,9 @@ class CreateGeoIps extends Migration
             $table->string(Entity::ISP, 100)
                   ->nullable();
 
-            $table->timestamps();
+            $table->integer(Entity::CREATED_AT);
+
+            $table->integer(Entity::UPDATED_AT);
 
             $table->index(Entity::CITY);
 
