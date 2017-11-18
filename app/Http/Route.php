@@ -628,7 +628,7 @@ final class Route
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
         'dispute_migrate_adjustments'             => ['post',     'disputes/migrate_old_adjustments',               'DisputeController@migrateOldAdjustments'                           ],
         'dispute_reason_create'                   => ['post',     'disputes/reasons',                               'DisputeController@createReason'                                    ],
-        'merchant_disputes_list'                  => ['get',      'merchant/{id}/disputes',                         'DisputeController@fetchForMerchant'                                ],
+        'merchant_disputes_list'                  => ['get',      'merchant/disputes',                              'DisputeController@fetchForMerchant'                                ],
 
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
 
@@ -858,6 +858,7 @@ final class Route
         'transfer_fetch_reversals',
         'reversal_fetch',
         'reversal_fetch_multiple',
+        'merchant_disputes_list',
     ];
 
     public static $internal = [
@@ -1176,7 +1177,6 @@ final class Route
         'onboarding_features_fetch_details',
         'onboarding_features_create',
         'onboarding_features_fetch_submission',
-        'merchant_disputes_list',
     ];
 
     // These will run on internal auth with the assurance
