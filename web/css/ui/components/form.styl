@@ -105,6 +105,18 @@ form
   &.limited
     width: 75%
 
+  &.inline
+    .field
+    label, input, select
+      display: inline-block
+
+    label:after
+      content: ':'
+      margin-left: 2px;
+
+    input, select
+      margin-left: 10px
+
   // full-span class on <Form> makes the <Field> elements to come in separates lines
   &.full-span
     margin: 0 auto

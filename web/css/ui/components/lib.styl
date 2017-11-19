@@ -24,13 +24,6 @@ header
   &:hover
     opacity: 1
 
-.columns
-  display: flex
-  align-items: flex-start
-
-.column
-  flex: 1 0 0
-
 .box-container
   padding: 15px
   .box
@@ -83,6 +76,10 @@ header + banner
   letter-spacing: .25px
   font-weight: bold
   padding: 0 4px
+
+@keyframes fadein
+  from { opacity: 0.15 }
+  to { opacity: 1 }
 
 //--------
 /* Buttons */
