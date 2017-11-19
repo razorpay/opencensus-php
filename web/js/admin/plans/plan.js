@@ -94,6 +94,7 @@ export default class Plan extends Collection {
         };
         if (data) {
           this.props.collection.items.push(data);
+          notifySuccess('Plan added successfully.');
           return data;
         }
       })
