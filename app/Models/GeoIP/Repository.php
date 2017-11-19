@@ -16,12 +16,13 @@ class Repository extends Base\Repository
      * @param int $limit
      * @return mixed
      */
-    public function getGeoIpsWithoutCountry($params)
+    public function getGeoIpsWithoutCountry($params): Base\PublicCollection
     {
         if (empty($params[Entity::COUNTRY]) === true)
         {
             $params[Entity::COUNTRY] = 'null';
         }
+
         if (empty($params[self::COUNT]) === true)
         {
             $params[self::COUNT] = 300;

@@ -48,6 +48,7 @@ return [
                 'keys' => [
                     env('GEOLOCATION_EUREKA_KEY_0', 'SAK2YE37KH4JT7AZ345Z'),
                     env('GEOLOCATION_EUKEKA_KEY_1', 'SAKU22KQ93GX2M89VSMZ'),
+                    env('GEOLOCATION_EUKEKA_KEY_2', 'SAKC39222CXM3D43472Z'),
                 ],
             ],
         ],

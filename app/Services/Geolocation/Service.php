@@ -2,11 +2,9 @@
 
 namespace RZP\Services\Geolocation;
 
+use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\GeoIP\Entity;
-use RZP\Exception\LogicException;
-use RZP\Exception\RuntimeException;
-use RZP\Exception\BadRequestException;
 
 class Service
 {
@@ -94,7 +92,7 @@ class Service
 
             return $geolocation;
         }
-        catch (RuntimeException $e)
+        catch (Exception\RecoverableException $e)
         {
             $this->trace->warning(
                 TraceCode::GEOLOCATION_FAILURE,
@@ -114,11 +112,11 @@ class Service
      * @param string $providerName
      * @return Providers\Base
      */
-    private function getProvider(string $providerName) : Providers\Base
+    private function getProvider(string $providerName): Providers\Base
     {
         if (in_array($providerName, self::ALLOWED_PROVIDERS, true) === false)
         {
-            throw new BadRequestException('Invalid provider name ' . $providerName);
+            throw new Exception\InvalidArgumentException('Invalid provider name ' . $providerName);
         }
 
         $options = $this->config['providers'][$providerName];
@@ -146,13 +144,13 @@ class Service
 
         if (count($excluded) > 0)
         {
-            throw new LogicException('Invalid transformation');
+            throw new Exception\LogicException('Invalid transformation');
         }
 
         // Country column is required
         if (empty($geolocation[Entity::COUNTRY]) === true)
         {
-            throw new RuntimeException('Country must not be empty');
+            throw new Exception\BadRequestValidationFailureException('Country must not be empty');
         }
     }
 

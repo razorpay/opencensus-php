@@ -16,7 +16,7 @@ class Service extends Base\Service
      * @param $input
      * @return array
      */
-    public function updateGeoIps($input)
+    public function updateGeoIps($input): array
     {
         $geoLocationService = $this->app['geolocation'];
 
@@ -43,7 +43,8 @@ class Service extends Base\Service
             }
 
             $geoIp->fill($geolocation);
-            $this->repo->save($geoIp);
+
+            $geoIp->saveOrFail();
 
             $response['success']++;
         }

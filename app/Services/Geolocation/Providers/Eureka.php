@@ -3,15 +3,30 @@
 namespace RZP\Services\Geolocation\Providers;
 
 use Requests;
+use RZP\Exception;
+use Requests_Response;
 use RZP\Trace\TraceCode;
 use RZP\Models\GeoIP\Entity;
-use RZP\Exception\BadRequestException;
 use RZP\Services\GeoLocation\ProviderInterface;
 
 class Eureka extends Base
 {
-    const NA = '-';
-    const EUREKA_KEY_INDEX = 'eureka_key_index';
+    const NA                = '-';
+    const EUREKA_KEY_INDEX  = 'eureka_key_index';
+
+    const SUCCESS_CODE      = 'OK';
+
+    // Provider will throw exception back to application for critical errors
+    const CRITICAL_ERROR_CODES = [
+        'INVALID_SERVICE_ACCESS_KEY',
+        'SUBSCRIPTION_EXPIRED',
+
+    ];
+
+    // only used for testing purposes
+    const MOCKED_CRITICAL_IPS = [
+        '0.0.0.0'
+    ];
 
     const COLUMN_MAP = [
         Entity::CITY       => 'city',
@@ -32,7 +47,7 @@ class Eureka extends Base
 
     /**
      * @param array $input
-     * @throws BadRequestException
+     * @throws InvalidArgumentException
      */
     public function validateAndSetInput(array $input)
     {
@@ -40,7 +55,7 @@ class Eureka extends Base
 
         if (isset($this->options['keys'][$keyIndex]) === false)
         {
-            throw new BadRequestException('Invalid key : ' . $keyIndex);
+            throw new Exception\InvalidArgumentException('Invalid key : ' . $keyIndex);
         }
 
         $this->keyIndex = $keyIndex;
@@ -75,22 +90,9 @@ class Eureka extends Base
             $geolocation = [];
             $response = $this->sendQuery($ip);
 
-            if (isset($response['geolocation_data']))
+            if (empty($response) === false)
             {
-                $geolocation = $response['geolocation_data'];
-            }
-            else
-            {
-                $message = $response['query_status']['query_status_description'] ??
-                               'Invalid response form eureka';
-
-                $this->trace->warning(
-                    TraceCode::GEOLOCATION_FAILURE,
-                    [
-                        'message'  => $message,
-                        'ip'       => $ip,
-                        'provider' => get_called_class(),
-                    ]);
+                $geolocation = $response;
             }
 
             $geolocations[$ip] = $geolocation;
@@ -99,57 +101,114 @@ class Eureka extends Base
         return $geolocations;
     }
 
-    protected function mockedGeolocations(array $ips)
-    {
-        $response = [];
-        foreach ($ips as $ip)
-        {
-            $geolocation = [
-                'continent_code' => 'AS',
-                'continent_name' => 'Asia',
-                'country_code_iso3166alpha2' => 'IN',
-                'country_code_iso3166alpha3' => 'IND',
-                'country_code_iso3166numeric' => '356',
-                'country_code_fips10-4' => 'IN',
-                'country_name' => 'India',
-                'region_code' => 'IN19',
-                'region_name' => 'Karnataka',
-                'city' => 'Bangalore',
-                'postal_code' => '560030',
-                'metro_code' => '-',
-                'area_code' => '-',
-                'latitude' => 12.9833,
-                'longitude' => 77.5833,
-                'isp' => 'Bharti Broadband',
-                'organization' => 'Bharti Airtel',
-            ];
-
-            if (in_array($ip, self::FAILURE_IPS, true))
-            {
-                $geolocation = [];
-            }
-
-            $response[$ip] = $geolocation;
-        }
-
-        return $response;
-    }
-
     private function sendQuery($ip)
     {
-        $query = [
-            'key'    => $this->options['keys'][$this->keyIndex],
-            'format' => 'JSON',
-            'ip'     => $ip
+        if ($this->mocked === true)
+        {
+            $body = $this->getMockedResponseBody($ip);
+
+            $responseArray = $this->getGeolocationFromResponse($body, $ip);
+        }
+        else
+        {
+            $query = [
+                'key'    => $this->options['keys'][$this->keyIndex],
+                'format' => 'JSON',
+                'ip'     => $ip
+            ];
+            $queryString = http_build_query($query);
+
+            $url = $this->options['url'] . $queryString;
+
+            $response = Requests::get($url);
+
+            $responseArray = $this->getGeolocationFromResponse($response->body, $ip);
+        }
+
+        return $responseArray;
+    }
+
+    private function getGeolocationFromResponse($body, $ip): array
+    {
+        $message = $body;
+
+        $body = json_decode($body, true);
+
+        if (is_array($body) === true)
+        {
+            $code = $body['query_status']['query_status_code'] ?? null;
+
+            if ($code === self::SUCCESS_CODE)
+            {
+                return $body['geolocation_data'];
+            }
+
+            if (empty($code) === false)
+            {
+                $message = $body['query_status']['query_status_description'];
+
+                if ($this->isCriticalError($code))
+                {
+                    throw new Exception\RuntimeException($message);
+                }
+            }
+        }
+
+        $this->trace->warning(
+            TraceCode::GEOLOCATION_FAILURE,
+            [
+                'message'  => $message,
+                'ip'       => $ip,
+                'provider' => get_called_class(),
+            ]);
+
+        return [];
+    }
+
+    private function isCriticalError(string $code): bool
+    {
+        return in_array($code, self::CRITICAL_ERROR_CODES, true);
+    }
+
+    private function getMockedResponseBody($ip): string
+    {
+        $response = [
+            'query_status'      => [
+                'query_status_code'             => self::SUCCESS_CODE,
+                'query_status_description'      => null
+            ],
+            'ip_address'        => $ip,
+            'geolocation_data'  => [
+                'continent_code'                => 'AS',
+                'continent_name'                => 'Asia',
+                'country_code_iso3166alpha2'    => 'IN',
+                'country_code_iso3166alpha3'    => 'IND',
+                'country_code_iso3166numeric'   => '356',
+                'country_code_fips10-4'         => 'IN',
+                'country_name'                  => 'India',
+                'region_code'                   => 'IN19',
+                'region_name'                   => 'Karnataka',
+                'city'                          => 'Bangalore',
+                'postal_code'                   => '560030',
+                'metro_code'                    => '-',
+                'area_code'                     => '-',
+                'latitude'                      => 12.9833,
+                'longitude'                     => 77.5833,
+                'isp'                           => 'Bharti Broadband',
+                'organization'                  => 'Bharti Airtel'
+            ],
         ];
-        $queryString = http_build_query($query);
 
-        $url = $this->options['url'] . $queryString;
+        if (in_array($ip, self::FAILURE_IPS, true) === true)
+        {
+            $response['query_status']['query_status_code'] = 'LOOPBACK_IP_ADDRESS';
+        }
 
-        $response = Requests::get($url);
+        if (in_array($ip, self::MOCKED_CRITICAL_IPS, true) === true)
+        {
+            $response['query_status']['query_status_code'] = self::CRITICAL_ERROR_CODES[0];
+        }
 
-        $response = json_decode($response->body, true);
-
-        return $response;
+        return json_encode($response);
     }
 }

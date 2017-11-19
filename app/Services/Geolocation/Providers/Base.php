@@ -26,25 +26,12 @@ abstract class Base
     protected $mocked = false;
 
     /**
-     *
-     */
-    protected $fillable;
-
-    /**
      * Each provider must have implementation of retrieving geo location
      *
      * @param array $query
      * @return mixed
      */
     abstract protected function geolocations(array $ips);
-
-    /**
-     * Each provider must have implementation of mocking geo location
-     *
-     * @param array $query
-     * @return mixed
-     */
-    abstract protected function mockedGeolocations(array $ips);
 
     /**
      * Each provider must have implementation to transform geo location
@@ -97,14 +84,7 @@ abstract class Base
      */
     final public function getGeolocations(array $ips)
     {
-        if ($this->mocked === true)
-        {
-            $geolocations = $this->mockedGeolocations($ips);
-        }
-        else
-        {
-            $geolocations = $this->geolocations($ips);
-        }
+        $geolocations = $this->geolocations($ips);
 
         $container = [];
 
