@@ -58,6 +58,9 @@ class ReconciliationTest extends TestCase
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
+        // Match data returned by reconciliation
+        $this->assertTestResponse($data, 'matchSummaryForReconSuccess');
+
         // Validate settlement attempt entity
         $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
@@ -117,6 +120,9 @@ class ReconciliationTest extends TestCase
 
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
+
+        // Match data returned by reconciliation
+        $this->assertTestResponse($data, 'matchSummaryForReconFailure');
 
         // Validate batch settlement entity
         $batchFundTransfer = $this->fetchAndMatchBatchData('settlement');

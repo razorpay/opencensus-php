@@ -211,4 +211,20 @@ return [
             'internal_error_code'   => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
         ],
     ],
+
+    'testAuthorizeFailedNullVerifyResponse' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+        ],
+    ],
 ];

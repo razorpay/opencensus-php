@@ -56,11 +56,11 @@ class Repository extends Base\Repository
         return $token;
     }
 
-    public function getByTokenIdAndCustomer($tokenId, Customer\Entity $customer)
+    public function getByTokenAndCustomer($token, Customer\Entity $customer)
     {
         $token = $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
-                    ->where(Token\Entity::TOKEN, '=', $tokenId)
+                    ->where(Token\Entity::TOKEN, '=', $token)
                     ->first();
 
         if ($token !== null)
@@ -69,6 +69,22 @@ class Repository extends Base\Repository
         }
 
         return $token;
+    }
+
+    public function getByTokenAndCustomerId(string $token, string $customerId)
+    {
+        return $this->newQuery()
+                    ->where(Token\Entity::CUSTOMER_ID, '=', $customerId)
+                    ->where(Token\Entity::TOKEN, '=', $token)
+                    ->first();
+    }
+
+    public function getByTokenIdAndCustomerId(string $tokenId, string $customerId)
+    {
+        return $this->newQuery()
+                    ->where(Token\Entity::CUSTOMER_ID, '=', $customerId)
+                    ->where(Token\Entity::ID, '=', $tokenId)
+                    ->firstOrFail();
     }
 
     public function getByWalletTerminalAndCustomerId($wallet, $terminal, $customer)

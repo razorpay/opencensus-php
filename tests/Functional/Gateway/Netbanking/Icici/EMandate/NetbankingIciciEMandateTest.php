@@ -94,6 +94,26 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEMandateEntities(false);
     }
 
+    public function testEMandateScheduledPaymentWithoutMethod()
+    {
+        $payment = $this->payment;
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
+
+        unset($payment[Payment::METHOD]);
+
+        //
+        // Second auth payment for the recurring product
+        //
+        $this->doS2SRecurringPayment($payment);
+
+        $this->assertEMandateEntities(false);
+    }
+
     public function testEMandateScheduledPaymentFailure()
     {
         $payment = $this->payment;

@@ -1230,3 +1230,29 @@ UPDATE `merchant_details`
     SET `subscriptions_activation_status`='rejected'
     WHERE `merchant_id`
     IN ('7s7LR4fbKE4pIu', '5dCK9LX1iURHRB', '6CrnYBaM7I9Bhd', '7id8KOpI3Q6LoC', '83xUfOMNAL19jv', '6WbmafD3Dd6yXE', '7hQe9JRUM72pIm', '44guNk1cMMDOc4', '7cjGg41SLI6gh4', '7rFAR8o68iFE0z', '5b8BQm6rln59Yd', '7x37fNyweaMrPg', '8bF3agioff3Vnd', '8K9XeIXsFc3SJZ', '8oEgOWSPSfD7AG', '8rjcZe9bHQHWPN', '8sBW8F5Wx0AAl0', '8sYXZVAMAJ4FrH', '8cqIgIiB1cBDBB', '8sxXLmGaSdDQhV', '7IlTuj6bZxJC4s', '8l96oL7Xnm5NlB', '8p4aFLOJBW1gPq', '5NlQsGREdy5tkH', '4wkUX8P3ra7bmJ', '88SPDVoFNHIjo9');
+
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "74056637290703706725681" WHERE id IN ("8bIRahKimyzicP", "8bzB8i2PgTtRRX") AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "74056637290701506725455" WHERE id = "8VMHYrlEyFnEGS" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "74056637290705306725508" WHERE id = "8er2yQwNr0ySF0" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "74056637290703206725561" WHERE id = "8gpjIyTCH45QnJ" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "74056637290705306726076" WHERE id = "8hu3GK07uuOqsv" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "74056637290703606726102" WHERE id = "8gpjoAOSmHNr5x" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "75105177289000897440412" WHERE id = "8PjhUnEBR2CUPv" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "75105177289000897440552" WHERE id = "8gpkIOAi1sqDZK" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "75105177289000897440545" WHERE id IN ("8kOWbY6LxWusGY", "8hqyNmm1A9xbYR") AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "75105177289000897440115" WHERE id = "8ZiAFXMegwkq47" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "75105177290000898454690" WHERE id = "7CzzmfYgu0uiuR" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "75105177290000898454708" WHERE id = "8gpsryVTEAzQbS" AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, reference1 = "75105177290000898454732" WHERE id = "8gptLdM6Igny7t" AND status = "failed";
+
+# PR - 5730
+UPDATE action_state SET entity_type='workflow_action', entity_id=action_id
+    WHERE action_id is NOT NULL and entity_id IS NULL;
+
+UPDATE action_comments SET entity_type='workflow_action', entity_id=action_id
+    WHERE action_id is NOT NULL and entity_id IS NULL;
+
+# Seeding geo_ips table
+INSERT INTO `geo_ips` (`ip`, `created_at`,`updated_at`)
+    SELECT DISTINCT `ip`,1510980000, 1510980000
+        FROM `payment_analytics`;

@@ -242,6 +242,64 @@ class EntityReportTest extends TestCase
         $this->assertEquals(177600, $lastRowOfSummary['Amount']);
     }
 
+    public function testInvoiceReportForMerchantWithoutGstinWithBusinessState()
+    {
+        $this->fixtures->create('merchant_invoice',
+            [
+                'type'      => Invoice\Type::CARD_LTE_2K,
+                'gstin'     => null,
+            ]);
+
+        $md1 = $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'               => '10000000000000',
+                'gstin'                     => null,
+                'business_registered_state' => ' kerala',
+            ]);
+
+        $dt = Carbon::today(Timezone::IST);
+
+        $input = [
+            'year'      => $dt->year,
+            'month'     => $dt->month,
+            'format'    => 'new',
+        ];
+
+        $invoiceEntries = $this->fetchInvoice($input);
+
+        $this->assertTestResponse($invoiceEntries);
+    }
+
+    public function testInvoiceReportForMerchantWithoutGstinRegisteredInKarnataka()
+    {
+        $this->fixtures->create('merchant_invoice',
+            [
+                'type'      => Invoice\Type::CARD_LTE_2K,
+                'gstin'     => null,
+            ]);
+
+        $md1 = $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'               => '10000000000000',
+                'gstin'                     => null,
+                'business_registered_state' => 'Karnataka',
+            ]);
+
+        $dt = Carbon::today(Timezone::IST);
+
+        $input = [
+            'year'      => $dt->year,
+            'month'     => $dt->month,
+            'format'    => 'new',
+        ];
+
+        $invoiceEntries = $this->fetchInvoice($input);
+
+        $this->assertTestResponse($invoiceEntries);
+    }
+
     public function testPaymentReportWithoutAcquirerData()
     {
         $this->doAuthAndCapturePayment();

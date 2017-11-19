@@ -352,7 +352,7 @@ class Validator extends Base\Validator
 
     protected function validateMode($input)
     {
-        // Adding this for backward compatibility
+        // TODO: Adding this for backward compatibility
         // Will remove when dashboard starts sending both fields
         // Tests will also need to be updated
         if ((isset($input[Entity::MODE]) === false) or

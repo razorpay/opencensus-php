@@ -65,13 +65,13 @@ class WorkflowRequestListingTest extends TestCase
 
         $action = $this->fixtures->create('workflow_action', [
             'admin_id'      => Org::MAKER_ADMIN,
-            'state'         => \RZP\Models\Workflow\Action\State\Entity::CLOSED,
+            'state'         => \RZP\Models\State\Name::CLOSED,
         ]);
 
-        $this->fixtures->create('action_state', [
+        $this->fixtures->create('state', [
             'action_id'     => $action->getId(),
             'admin_id'      => Org::SUPER_ADMIN,
-            'name'         => \RZP\Models\Workflow\Action\State\Entity::CLOSED,
+            'name'         => \RZP\Models\State\Name::CLOSED,
         ]);
 
         $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $action->getPublicId();

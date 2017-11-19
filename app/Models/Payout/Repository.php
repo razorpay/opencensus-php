@@ -28,12 +28,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchProcessedPayouts($from, $to, $merchantId)
+    public function fetchPayoutsWithUtrNotNull($from, $to, $merchantId)
     {
         return $this->newQuery()
                     ->where(Entity::CREATED_AT, '>', $from)
                     ->where(Entity::CREATED_AT, '<', $to)
-                    ->where(Entity::STATUS, '=', Status::PROCESSED)
+                    ->whereNotNull(Entity::UTR)
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->get();
     }

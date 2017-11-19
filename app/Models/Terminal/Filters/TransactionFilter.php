@@ -22,6 +22,8 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
 {
+    const PREPAID_IIN = '457392';
+
     protected $properties = [
         'method',
         'network',
@@ -117,7 +119,7 @@ class TransactionFilter extends Terminal\Filter
 
         // This filter should run only in production environment, else tests for
         // cybersource would fail.
-        if ($this->isLiveMode() === true)
+        if (($this->isLiveMode() === true) and ($payment->isMethodCardOrEmi() === true))
         {
             if ($terminal->getGateway() === Gateway::CYBERSOURCE)
             {
@@ -129,9 +131,12 @@ class TransactionFilter extends Terminal\Filter
                                             Preferences::CYBERSOURCE_MERCHANT_WHITELIST,
                                             true) === true);
 
+                $iin = $payment->card->getIin();
+
                 if (($merchantWhitelisted === false) and
                     ($payment->isRecurring() === false) and
                     ($payment->isInternational() === false) and
+                    ($iin !== self::PREPAID_IIN) and
                     ($terminal->isDirectForMerchant($merchant) === false))
                 {
                     return false;

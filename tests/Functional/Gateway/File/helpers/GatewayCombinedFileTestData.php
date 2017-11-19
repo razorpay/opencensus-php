@@ -1,14 +1,16 @@
 <?php
 
 use Carbon\Carbon;
+
 use RZP\Constants\Timezone;
 
 return [
     'testGenerateCombinedFile' => [
         'request' => [
             'content' => [
-                'type'    => 'combined',
+                'type'     => 'combined',
                 'targets'  => ['axis'],
+                'sub_type' => 'non_corporate',
                 'begin'    => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'      => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
@@ -40,8 +42,9 @@ return [
     'testGenerateCombinedFileWithNoRefundOrClaims' => [
         'request' => [
             'content' => [
-                'type'    => 'combined',
+                'type'     => 'combined',
                 'targets'  => ['axis'],
+                'sub_type' => 'non_corporate',
                 'begin'    => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'      => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
@@ -74,8 +77,9 @@ return [
     'testGenerateCombinedFileWithClaimsLessThanRefunds' => [
         'request' => [
             'content' => [
-                'type'    => 'combined',
+                'type'     => 'combined',
                 'targets'  => ['axis'],
+                'sub_type' => 'non_corporate',
                 'begin'    => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'      => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
@@ -109,9 +113,9 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'combined',
-                'targets'  => ['rbl'],
-                'begin'    => Carbon::today(Timezone::IST)->getTimestamp(),
-                'end'      => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+                'targets' => ['rbl'],
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -141,10 +145,11 @@ return [
     'testGenerateCombinedFileWithMailSendError' => [
         'request' => [
             'content' => [
-                'type'    => 'combined',
-                'targets' => ['axis'],
-                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
-                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+                'type'     => 'combined',
+                'targets'  => ['axis'],
+                'sub_type' => 'non_corporate',
+                'begin'    => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'      => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
