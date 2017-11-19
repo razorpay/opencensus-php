@@ -11,19 +11,19 @@ import { Switch } from 'ui/Field';
 export default class Plan extends Collection {
   constructor(props = {}) {
     super({
-      items: props.id ? null : [],
+      items: props.plan_id ? null : [],
       itemsKey: 'rules',
       data: {
         route_name: 'pricing_get_plan',
         url_params: {
-          id: props.id,
+          id: props.plan_id,
         },
       },
       model: Rule,
     });
     this.props = props;
 
-    if (!props.id) {
+    if (!props.plan_id) {
       this.items.push(new Rule(this));
     }
 
@@ -203,7 +203,7 @@ class Rule extends CollectionItem {
 
   save() {
     // if unsaved plan
-    if (!this.collection.props.id) {
+    if (!this.collection.props.plan_id) {
       this.define('readonly', true);
       this.collection.items.push(new Rule(this.collection));
     } else {
@@ -213,7 +213,7 @@ class Rule extends CollectionItem {
           body: this.serialize(),
           route_name: 'pricing_add_plan_rule',
           url_params: {
-            id: this.collection.props.id,
+            id: this.collection.props.plan_id,
           },
         })
       ).then(data => {
@@ -227,7 +227,7 @@ class Rule extends CollectionItem {
   }
 
   delete() {
-    if (!this.collection.props.id) {
+    if (!this.collection.props.plan_id) {
       return this.collection.items.remove(this);
     }
     return this.request(
@@ -235,7 +235,7 @@ class Rule extends CollectionItem {
       adminDelete({
         route_name: 'pricing_delete_plan_rule',
         url_params: {
-          planId: this.collection.props.id,
+          planId: this.collection.props.plan_id,
           ruleId: this.id,
         },
       })
