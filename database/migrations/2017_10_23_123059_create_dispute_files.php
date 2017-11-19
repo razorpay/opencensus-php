@@ -1,4 +1,4 @@
-<?php
+x<?php
 
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
+use RZP\Models\Dispute\Entity as DisputeEntity;
 
 class CreateDisputeFiles extends Migration
 {
@@ -23,7 +24,7 @@ class CreateDisputeFiles extends Migration
             $table->string(DisputeFileEntity::ID, DisputeFileEntity::ID_LENGTH)
                 ->primary();
 
-            $table->string(DisputeFileEntity::DISPUTE_ID, DisputeFileEntity::ID_LENGTH);
+            $table->string(DisputeFileEntity::DISPUTE_ID, DisputeEntity::ID_LENGTH);
 
             $table->string(DisputeFileEntity::URL, 255);
 

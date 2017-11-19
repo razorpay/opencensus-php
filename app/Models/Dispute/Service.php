@@ -34,16 +34,16 @@ class Service extends Base\Service
     {
         $response = [];
 
+        $dispute = $this->repo->dispute->findByPublicId($id);
+
         if (Request::hasFile(DisputeFileEntity::FILES) === true)
         {
             $files = Request::file(DisputeFileEntity::FILES);
 
-            $response['files'] = ((new File\Core)->uploadFiles($id, $files));
+            $response['files'] = ((new File\Core)->uploadFiles($dispute, $files));
 
             unset($input[DisputeFileEntity::FILES]);
         }
-
-        $dispute = $this->repo->dispute->findByPublicId($id);
 
         if (empty($input) === false)
         {

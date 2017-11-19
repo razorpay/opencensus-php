@@ -8,13 +8,10 @@ use RZP\Constants\Entity as ConstantEntity;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                  = 'id';
     const DISPUTE_ID          = 'dispute_id';
     const URL                 = 'url';
     const CREATED_AT          = 'created_at';
     const UPDATED_AT          = 'updated_at';
-
-    protected $entity = ConstantEntity::DISPUTE_FILE;
 
     // Keys for array name of uploaded documents
     const FILES = 'upload_files';
@@ -28,6 +25,8 @@ class Entity extends Base\PublicEntity
     const MAX_NUM_FILES = 10;
 
     const STORAGE_PATH = 'files/dispute';
+
+    protected $entity = ConstantEntity::DISPUTE_FILE;
 
     protected $generateIdOnCreate = true;
 

@@ -30,16 +30,14 @@ class Core extends Base\Core
         return $file->toArrayPublic();
     }
 
-    public function createForDispute(string $disputeId, array $fileUrls): array
+    public function createFiles(DisputeEntity $dispute, array $fileUrls): array
     {
-        $dispute = $this->repo->dispute->findByPublicId($disputeId);
-
         $disputeFiles = [];
 
         foreach ($fileUrls as $fileUrl)
         {
             $input = [
-                Entity::DISPUTE_ID      => DisputeEntity::stripDefaultSign($disputeId),
+                Entity::DISPUTE_ID      => $dispute->getId(),
                 Entity::URL             => $fileUrl,
             ];
 
@@ -51,12 +49,12 @@ class Core extends Base\Core
         return $disputeFiles;
     }
 
-    public function uploadFiles(string $disputeId, array $files): array
+    public function uploadFiles(DisputeEntity $dispute, array $files): array
     {
         $this->trace->info(
-            TraceCode::DISPUTE_FILE_CREATE,
+            TraceCode::DISPUTE_FILES_UPLOAD,
             [
-                'id'          => $disputeId,
+                'id'          => $dispute->getId(),
                 'files'       => $files,
             ]);
 
@@ -75,7 +73,7 @@ class Core extends Base\Core
             array_push($fileUrls, $url);
         }
 
-        $disputeFiles = $this->createForDispute($disputeId, $fileUrls);
+        $disputeFiles = $this->createFiles($dispute, $fileUrls);
 
         return $disputeFiles;
     }

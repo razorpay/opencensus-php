@@ -129,7 +129,7 @@ class Core extends Base\Core
             array_merge($input, [Entity::ID => $dispute->getId()])
         );
 
-        (new Validator())->validateInput('merchant_edit', $input);
+        (new Validator)->validateInput('merchant_edit', $input);
 
         $input = $this->generateInputForMerchantEdit($dispute, $input);
 

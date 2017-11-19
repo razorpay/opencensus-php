@@ -609,14 +609,14 @@ class DisputeTest extends TestCase
 
         $dispute['id'] = DisputeEntity::stripDefaultSign($dispute['id']);
 
-        $this->assertEquals(2, sizeof($content));
+        $this->assertEquals(2, sizeof($content['files']));
         $this->assertEquals(2, $files['count']);
-        $this->assertEquals($dispute['id'], $content[0]['dispute_id']);
-        $this->assertEquals($dispute['id'], $content[1]['dispute_id']);
+        $this->assertEquals($dispute['id'], $content['files'][0]['dispute_id']);
+        $this->assertEquals($dispute['id'], $content['files'][1]['dispute_id']);
         $this->assertEquals($files['items'][0]['dispute_id'], $dispute['id']);
         $this->assertEquals($files['items'][1]['dispute_id'], $dispute['id']);
-        $this->assertEquals($files['items'][0]['url'], $content[1]['url']);
-        $this->assertEquals($files['items'][1]['url'], $content[0]['url']);
+        $this->assertEquals($files['items'][0]['url'], $content['files'][1]['url']);
+        $this->assertEquals($files['items'][1]['url'], $content['files'][0]['url']);
     }
 
     // ---------------------------- helper methods-------------------------------

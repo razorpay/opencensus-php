@@ -900,6 +900,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_REASON_CREATE                         = 'DISPUTE_REASON_CREATE';
     const DISPUTE_SAME_PARENT_LINKING                   = 'DISPUTE_SAME_PARENT_LINKING';
     const DISPUTE_FILE_CREATE                           = 'DISPUTE_FILE_CREATE';
+    const DISPUTE_FILES_UPLOAD                          = 'DISPUTE_FILES_UPLOAD';
     const DISPUTE_FILE_DETAILS                          = 'DISPUTE_FILE_DETAILS';
 
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
