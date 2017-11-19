@@ -37,13 +37,13 @@ export default ({ props }) => {
 
   return (
     <BaseModal header="Add Adjustment">
-      <span>
-        <strong>
-          Warning: The adjustment once assigned can not be changed.
-        </strong>
-      </span>
+      <Form class="full-span" style={{ width: '350px' }}>
+        <div class="m-b">
+          <strong>
+            Warning: The adjustment once assigned can not be changed.
+          </strong>
+        </div>
 
-      <Form>
         <Field
           label="Amount (in Paise)"
           name="amount"

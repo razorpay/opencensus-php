@@ -57,6 +57,7 @@ button, .btn
 .field
   display: inline-block
   margin: 10px
+  vertical-align: top;
 
 .checkbox
   background: none
@@ -112,18 +113,18 @@ form
       width: 100%
       margin: 8px auto
 
-      label, select, input, textarea, button, .info-block
+      >label, >select, >input, >textarea, >button, .info-block, .DayPickerInput
         display: inline-block
         vertical-align: middle
 
-      label
+      >label
         width: 35%
         line-height: 38px;
         margin-bottom: 0;
         vertical-align: top
         white-space: pre-wrap
 
-      select, input, textarea, button, >i
+      >select, >input, >textarea, >button, >i, .DayPickerInput
         margin-left: 10px
 
       >i
@@ -136,7 +137,7 @@ form
 
     // full-elements class on <Form> makes the <Field> elements to take 100% on right side otherwise default width
     &.full-elements .field
-      select, input, textarea
+      >select, >input, >textarea, .DayPickerInput
         width: 55%
 
 

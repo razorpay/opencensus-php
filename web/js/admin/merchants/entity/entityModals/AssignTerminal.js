@@ -97,11 +97,11 @@ export default class AssignTerminal extends Component {
   render() {
     return (
       <BaseModal header="Assign Terminal">
-        <span>
+        <div class="m-b">
           <strong>
             Warning: The terminal once assigned can not be changed
           </strong>
-        </span>
+        </div>
 
         <Form>
           <SelectField name="mode" label="Mode" defaultValue="live">
@@ -249,6 +249,7 @@ export default class AssignTerminal extends Component {
             <option value="2">Purchase</option>
           </SelectField>
 
+          <div class="m-t m-b" />
           <AsyncButton
             text="Cancel"
             class="btn btn-default"

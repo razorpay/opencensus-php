@@ -78,7 +78,7 @@ export default class ModalContainer extends Component {
   escapePress = evt => {
     evt = evt || window.event;
     if (evt.keyCode == 27) {
-      store.modals.pop();
+      store.closeModal();
     }
   };
 
