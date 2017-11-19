@@ -685,7 +685,7 @@ trait RepositoryFetch
      *
      * @return BuilderEx
      */
-    protected function getQueryForFindWithParams(array $params) : BuilderEx
+    protected function getQueryForFindWithParams(array $params): BuilderEx
     {
         if ($this->hasEntityFetch() === true)
         {
