@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 use RZP\Models\Dispute\Entity as DisputeEntity;
+use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 
 class CreateDisputeFiles extends Migration
 {
@@ -35,6 +35,11 @@ class CreateDisputeFiles extends Migration
             $table->index(DisputeFileEntity::DISPUTE_ID);
             $table->index(DisputeFileEntity::CREATED_AT);
             $table->index(DisputeFileEntity::UPDATED_AT);
+
+            $table->foreign(DisputeFileEntity::DISPUTE_ID)
+                ->references(DisputeEntity::ID)
+                ->on(Table::DISPUTE)
+                ->on_delete('restrict');
         });
     }
 
@@ -45,6 +50,11 @@ class CreateDisputeFiles extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists(Table::DISPUTE_FILES);
+        Schema::table(Table::DISPUTE_FILE, function($table)
+        {
+            $table->dropForeign(Table::DISPUTE_FILE.'_'.DisputeFileEntity::DISPUTE_ID.'_foreign');
+        });
+
+        Schema::dropIfExists(Table::DISPUTE_FILE);
     }
 }
