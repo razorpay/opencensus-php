@@ -3,6 +3,7 @@ import { openModal, closeModal, notifyDone } from 'common/modal';
 import Form from 'ui/Form';
 import Field, { CheckField } from 'ui/Field';
 import OrgTable from './OrgTable';
+import BaseModal from 'ui/BaseModal';
 import Table from 'ui/Table';
 import { adminFetch, adminPut, adminPost, adminDelete } from 'util/fetch';
 import { prevent } from 'util/index';
@@ -91,10 +92,6 @@ export default class EditPerm extends Component {
   };
 
   render() {
-    if (this.state.pending) {
-      return <div class="spinner" />;
-    }
-
     let { collection, model } = this.props;
 
     let { id, name, category, description } = model || {};
@@ -102,50 +99,55 @@ export default class EditPerm extends Component {
     let { roles, orgs, permission } = this.state;
 
     return (
-      <div>
-        <header>
-          {id ? `Edit Permission – ${name}` : 'Add a new Permission'}
-        </header>
-        <Form onSubmit={this.onSubmit}>
-          <Field
-            required
-            label="Permission Name"
-            name="name"
-            defaultValue={name}
-          />
-          <Field
-            required
-            label="Category"
-            name="category"
-            defaultValue={category}
-          />
-          <Field
-            required
-            label="Description"
-            name="description"
-            defaultValue={description}
-          />
-          <CheckField
-            label="Assignable"
-            name="assignable"
-            defaultChecked={false}
-          />
-          <header>Organizations:</header>
-          <OrgTable
-            onChange={this.onChange}
-            items={orgs}
-            orgs={permission.orgs}
-            workflowOrgs={permission.workflow_orgs}
-          />
-          {id && (
-            <div>
-              <header>Assigned Roles (In this Org)</header>
-              <Table items={roles} fields={roleFields} />
+      <BaseModal
+        header={id ? `Edit Permission – ${name}` : 'Add a new Permission'}
+      >
+        {this.state.pending ? (
+          <div class="spinner center" />
+        ) : (
+          <Form onSubmit={this.onSubmit}>
+            <Field
+              required
+              label="Permission Name"
+              name="name"
+              defaultValue={name}
+            />
+            <Field
+              required
+              label="Category"
+              name="category"
+              defaultValue={category}
+            />
+            <Field
+              required
+              label="Description"
+              name="description"
+              defaultValue={description}
+            />
+            <CheckField
+              label="Assignable"
+              name="assignable"
+              defaultChecked={false}
+            />
+            <header>Organizations:</header>
+            <OrgTable
+              onChange={this.onChange}
+              items={orgs}
+              orgs={permission.orgs}
+              workflowOrgs={permission.workflow_orgs}
+            />
+            {id && (
+              <div>
+                <header>Assigned Roles (In this Org)</header>
+                <Table items={roles} fields={roleFields} />
+              </div>
+            )}
+            <div class="sticky-save-btn">
+              <button>Save</button>
             </div>
-          )}
-          <button>Save</button>
-        </Form>
-      </div>
+          </Form>
+        )}
+      </BaseModal>
     );
   }
 }

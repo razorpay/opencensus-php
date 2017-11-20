@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
+import { observer } from 'mobx-react';
 import axios from 'axios';
 import {
   openModal,
@@ -13,6 +14,8 @@ import normalize from 'util/normalize';
 import { isWorkflow } from 'util/index';
 import RolesForm from './RolesForm';
 
+@withRouter
+@observer
 class EditRole extends Component {
   state = {
     allPerms: null,
@@ -79,7 +82,7 @@ class EditRole extends Component {
         ],
       }).then(response => {
         if (response.data.success) {
-          if (isWorkflow(response.data.data, history)) {
+          if (isWorkflow(response.data.data, this.props.history)) {
             return;
           }
           notifySuccess('Role edited successfully.');
@@ -95,7 +98,7 @@ class EditRole extends Component {
         body,
       }).then(response => {
         if (response) {
-          if (isWorkflow(response, history)) {
+          if (isWorkflow(response, this.props.history)) {
             return;
           }
           this.props.collection.items.push(response.data);
@@ -130,10 +133,6 @@ class EditRole extends Component {
   };
 
   render() {
-    if (this.state.pending) {
-      return <div class="spinner" />;
-    }
-
     return (
       <RolesForm
         {...this.state}
@@ -147,9 +146,6 @@ class EditRole extends Component {
   }
 }
 
-//pass withRouter
-const EditRoleR = withRouter(EditRole);
-
 export function showEntity(collection) {
-  openModal(<EditRoleR collection={collection} model={this} />);
+  openModal(<EditRole collection={collection} model={this} />);
 }

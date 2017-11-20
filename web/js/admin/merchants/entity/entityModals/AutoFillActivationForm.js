@@ -78,14 +78,22 @@ export default class AutoFillActivationForm extends Component {
         {!this.state.scriptLoaded ? (
           <div class="spinner" />
         ) : (
-          <Form>
+          <Form class="full-span full-elements" style={{ width: '350px' }}>
             <SelectField
               label="Template"
               name="selectbank"
               onChange={this.handleChange}
-              infoMsg={this.state.isTemplateLoading && 'Downloading Template..'}
+              infoMsg={
+                this.state.isTemplateLoading ? (
+                  'Downloading Template..'
+                ) : (
+                  <span />
+                )
+              }
             >
-              <option value="">Select</option>
+              <option value="" disabled>
+                --Select a template--
+              </option>
               {Object.keys(templateTypes).map(option => (
                 <option key={option} value={option}>
                   {templateTypes[option]}

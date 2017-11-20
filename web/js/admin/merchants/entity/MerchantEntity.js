@@ -96,6 +96,7 @@ export default class MerchantEntity extends Component {
   }
 }
 
+/* Side bar component */
 const ActionsList = ({ model, merchantId, actions }) => {
   const merchant = model.merchant;
 
@@ -114,7 +115,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
   // Lock / Unlock activation form
   function toggleLockOnActivationForm() {
     const isCurrentlyLocked = merchant.details.merchant_details.locked;
-    adminPut({
+    return adminPut({
       route_name: 'merchant_activation_update',
       url_params: {
         id: merchantId,
@@ -209,7 +210,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
     if (isAlreadySuspended) {
       successMsg = 'Merchant suspension removed successfully';
       action = 'unsuspend';
-      request();
+      merchantAction(action, successMsg);
     } else {
       successMsg = 'Merchant suspended successfully';
       action = 'suspend';
@@ -312,23 +313,26 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
       {/* Lock or Unlock activation form */}
       {merchant.details.merchant_details && (
-        <div onClick={toggleLockOnActivationForm}>
+        <AsyncButton
+          onClick={toggleLockOnActivationForm}
+          pendingClass="btn-pending"
+        >
           {merchant.details.merchant_details.locked ? 'Unlock' : 'Lock'}{' '}
           Activation Form
+          <span class="spin-btn" />
           <i
             class={`pull-right i i-${
               merchant.details.merchant_details.locked ? 'unlock' : 'lock'
             }`}
           />
-        </div>
+        </AsyncButton>
       )}
 
-      {(true || merchant.details.activated == 0) && (
-        <AsyncButton onClick={activateMerchant}>
+      {merchant.details.activated == 0 && (
+        <div onClick={activateMerchant}>
           Activate Merchant
-          <span class="spin-btn" />
           <i class="pull-right i i-done-all" />
-        </AsyncButton>
+        </div>
       )}
 
       {/* Hold or Release funds */}
@@ -362,7 +366,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
       {/* Toggle disbale or enable receipt email */}
       <AsyncButton onClick={toggleReceiptEmail} pendingClass="btn-pending">
-        {merchant.details.receipt_email_enabled ? 'Disable' : 'Enable'}
+        {merchant.details.receipt_email_enabled ? 'Disable ' : 'Enable '}
         Receipt Email
         <span class="spin-btn" />
         <i class="pull-right i i-email" />

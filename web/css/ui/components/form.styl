@@ -14,6 +14,7 @@ input, select, textarea, button, .btn
     border-color: #b5b5b5
 
 textarea
+  resize: vertical
   min-height: 100px
 
 input, textarea, select
@@ -56,6 +57,7 @@ button, .btn
 .field
   display: inline-block
   margin: 10px
+  vertical-align: top;
 
 .checkbox
   background: none
@@ -100,30 +102,56 @@ form
       opacity: .6
       pointer-events: none
 
-  &.full-span
+  &.limited
     width: 75%
+
+  &.inline
+    .field
+    label, input, select
+      display: inline-block
+
+    label:after
+      content: ':'
+      margin-left: 2px;
+
+    input, select
+      margin-left: 10px
+
+  // full-span class on <Form> makes the <Field> elements to come in separates lines
+  &.full-span
     margin: 0 auto
 
     .field
       width: 100%
-      margin-top: 16px
+      margin: 8px auto
 
-      label, select, input, > div
+      >label, >select, >input, >textarea, >button, .info-block, .DayPickerInput
         display: inline-block
         vertical-align: middle
 
-      label
+      >label
         width: 35%
+        line-height: 24px
+        min-height: 38px
+        margin-bottom: 0
+        vertical-align: top
         white-space: pre-wrap
 
-      select, input, >i
-        width: 55%
+      >select, >input, >textarea, >button, >i, .DayPickerInput
         margin-left: 10px
+
+      >i
+        width: 55%
 
       .info-block
         width: 55%
         float: right
         margin-right: 8%
+
+    // full-elements class on <Form> makes the <Field> elements to take 100% on right side otherwise default width
+    &.full-elements .field
+      >select, >input, >textarea, .DayPickerInput
+        width: 55%
 
 
 // Used for labels

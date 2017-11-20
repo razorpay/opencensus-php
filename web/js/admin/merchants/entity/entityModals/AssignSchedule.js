@@ -66,7 +66,7 @@ export default class PricingPlanModal extends Component {
   render() {
     return (
       <BaseModal header="Assign Schedule Plan">
-        <Form>
+        <Form class="full-span full-elements" style={{ width: '350px' }}>
           <SelectField name="type" label="Type" defaultValue={''}>
             {Object.keys(type_list).map(key => (
               <option key={key} value={key}>
@@ -91,12 +91,6 @@ export default class PricingPlanModal extends Component {
             ))}
           </SelectField>
 
-          <AsyncButton
-            text="Cancel"
-            class="btn btn-default"
-            pendingClass="small spinner"
-            onSubmit={closeModal}
-          />
           <AsyncButton
             text="Ok"
             class="btn"

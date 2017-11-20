@@ -31,7 +31,7 @@ export default ({ props }) => {
 
   return (
     <BaseModal header="Assign Merchant Handle">
-      <Form>
+      <Form class="full-span full-elements" style={{ width: '350px' }}>
         <Field label="Merchant Handle" name="handle" placeholder="XXXX" />
 
         <AsyncButton

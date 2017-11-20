@@ -35,7 +35,7 @@ export default ({ props }) => {
 
   return (
     <BaseModal header="Credits">
-      <Form>
+      <Form class="full-span" style={{ width: '350px' }}>
         <SelectMode />
 
         <SelectField label="Type" name="type" defaultValue="amount">

@@ -52,7 +52,7 @@ export default class BusinessDetails extends Component {
         {!merchantDetails ? (
           <div class="spinner center m-t" />
         ) : (
-          <Form class="full-span">
+          <Form class="full-span full-elements limited">
             <SelectField
               label="Organisation Type"
               name="business_type"

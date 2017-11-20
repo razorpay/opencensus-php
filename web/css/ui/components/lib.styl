@@ -24,19 +24,15 @@ header
   &:hover
     opacity: 1
 
-.columns
-  display: flex
-  align-items: flex-start
-
-.column
-  flex: 1 0 0
-
 .box-container
   padding: 15px
   .box
     margin: 15px
 
 .info-block // Mostly used for helper text under the Field
+  min-height: 18px; // In case you want info-block element to present with empty msg
+  line-height: 18px;
+  margin-top: 4px;
   word-break: break-word;
   font-size: 12px
   color: $color-semi-muted
@@ -56,7 +52,7 @@ header
   transform: rotate(-180deg)
 
 .hide
-  display: none
+  display: none !important
 
 .code
   white-space: pre
@@ -80,6 +76,10 @@ header + banner
   letter-spacing: .25px
   font-weight: bold
   padding: 0 4px
+
+@keyframes fadein
+  from { opacity: 0.15 }
+  to { opacity: 1 }
 
 //--------
 /* Buttons */
@@ -226,10 +226,10 @@ banner
 /* margins */
 
 .m-t
-  margin-top: 10px
+  margin-top: 10px !important
 .m-b
-  margin-bottom: 10px
+  margin-bottom: 10px !important
 .m-r
-  margin-right: 10px
+  margin-right: 10px !important
 .m-l
-  margin-left: 10px
+  margin-left: 10px !important

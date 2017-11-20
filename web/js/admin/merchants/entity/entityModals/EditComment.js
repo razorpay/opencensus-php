@@ -34,8 +34,12 @@ export default ({ props }) => {
 
   return (
     <BaseModal header="Edit Comment">
-      <Form>
-        <TextAreaField label="Comment" name="comment" />
+      <Form class="full-span full-elements">
+        <TextAreaField
+          label="Comment"
+          name="comment"
+          defaultValue={props.merchant.details.comment}
+        />
 
         <AsyncButton
           text="OK"

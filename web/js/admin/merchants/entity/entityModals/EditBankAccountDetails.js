@@ -53,17 +53,17 @@ export default class EditBankAccountDetails extends Component {
 
     return (
       <BaseModal header="Edit Bank Account details">
-        <span>
-          <strong>
-            Note: This is the current Bank Account where the settlements are
-            being made.
-          </strong>
-        </span>
-
         {!bankAccount ? (
-          <div class="spinner" />
+          <div class="spinner center m-t" />
         ) : (
-          <Form>
+          <Form class="full-span full-elements" style={{ width: '600px' }}>
+            <div class="m-b">
+              <strong>
+                Note: This is the current Bank Account where the settlements are
+                being made.
+              </strong>
+            </div>
+
             <Field
               label="Bank Account Number"
               name="account_number"
@@ -137,6 +137,7 @@ export default class EditBankAccountDetails extends Component {
               required
             />
 
+            <div class="m-t m-b" />
             <AsyncButton
               text="Cancel"
               class="btn btn-default"

@@ -45,12 +45,10 @@ export default class PricingPlanModal extends Component {
         },
         body: pricingData,
       })
-        .then(response => {
-          if (response.data.success) {
+        .then(data => {
+          if (data) {
             notifySuccess('Pricing Plan assigned successfully.');
             closeModal();
-          } else {
-            response.data.errors.map(error => notifyError(error));
           }
         })
         .catch(err => {
@@ -62,14 +60,13 @@ export default class PricingPlanModal extends Component {
   render() {
     return (
       <BaseModal header="Assign Pricing Plan">
-        <span>
-          <strong>
-            Warning: The assigned pricing plan will replace the current pricing
-            plan and affect all future test/live transactions.
-          </strong>
-        </span>
-
-        <Form>
+        <Form class="full-span full-elements" style={{ width: '450px' }}>
+          <div class="m-b">
+            <strong>
+              Warning: The assigned pricing plan will replace the current
+              pricing plan and affect all future test/live transactions.
+            </strong>
+          </div>
           <SelectField
             name="pricing_plan_id"
             label="Plans to be Assigned"
@@ -82,12 +79,6 @@ export default class PricingPlanModal extends Component {
             ))}
           </SelectField>
 
-          <AsyncButton
-            text="Cancel"
-            class="btn btn-default"
-            pendingClass="small spinner"
-            onSubmit={closeModal}
-          />
           <AsyncButton
             text="Ok"
             class="btn"

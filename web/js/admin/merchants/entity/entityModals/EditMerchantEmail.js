@@ -29,15 +29,15 @@ export default ({ props }) => {
 
   return (
     <BaseModal header="Edit Merchant Email">
-      <span>
-        <strong>
-          Warning: You need to be a superadmin in order to edit merchant email
-          address.
-        </strong>
-      </span>
-
-      <Form>
+      <Form class="full-span full-elements" style={{ width: '350px' }}>
         <Field label="Email" name="email" type="email" />
+
+        <div class="m-t m-b info-block text-danger">
+          <strong>
+            Warning: You need to be a superadmin in order to edit merchant email
+            address.
+          </strong>
+        </div>
 
         <AsyncButton
           text="OK"

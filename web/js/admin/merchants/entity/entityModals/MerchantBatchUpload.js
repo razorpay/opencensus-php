@@ -50,7 +50,7 @@ export default ({ props }) => {
 
   return (
     <BaseModal header="Batch Upload">
-      <Form>
+      <Form class="full-span full-elements" style={{ width: '400px' }}>
         {entitiesList.map(entity => (
           <FileField
             key={entity.name}
