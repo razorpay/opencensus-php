@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Axis;
 
-use RZP\Error;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Gateway\Netbanking\Axis\Emandate\StatusCode;
@@ -79,7 +79,11 @@ class EMandateDebitReconFile extends BaseEMandateDebitReconFile
         if (in_array(strtolower($row[self::HEADING_STATUS]), $this->allowedStatuses) === false)
         {
             throw new Exception\GatewayErrorException(
-                'Unrecognized gateway status ' . $row[self::HEADING_STATUS], ['row' => $row]);
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                '',
+                'Unrecognized gateway status ' . $row[self::HEADING_STATUS],
+                ['row' => $row]
+            );
         }
     }
 
@@ -104,7 +108,7 @@ class EMandateDebitReconFile extends BaseEMandateDebitReconFile
 
     protected function isAuthorized(NetbankingEntity $gatewayPayment): bool
     {
-        return ($gatewayPayment->getStatus() === self::STATUS_SUCCESS);
+        return (strtolower($gatewayPayment->getStatus()) === self::STATUS_SUCCESS);
     }
 
     protected function getApiErrorCode(string $errorDescription): string

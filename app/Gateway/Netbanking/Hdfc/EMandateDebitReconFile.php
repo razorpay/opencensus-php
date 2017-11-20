@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Hdfc;
 
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as Headings;
@@ -66,6 +67,7 @@ class EMandateDebitReconFile extends Base\EMandateDebitReconFile
         if (in_array($gatewayStatus, [self::PROCESS, self::REJECT], true) === false)
         {
             throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
                 'Unrecognized gateway status ' . $gatewayStatus, ['row' => $row]);
         }
 
