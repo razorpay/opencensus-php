@@ -10,6 +10,8 @@ class Entity extends Base\PublicEntity
 {
     const DISPUTE_ID          = 'dispute_id';
     const URL                 = 'url';
+    const NAME                = 'name';
+    const CATEGORY            = 'category';
     const CREATED_AT          = 'created_at';
     const UPDATED_AT          = 'updated_at';
 
@@ -34,6 +36,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::DISPUTE_ID,
         self::URL,
+        self::NAME,
+        self::CATEGORY,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -41,6 +45,8 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::DISPUTE_ID,
         self::URL,
+        self::NAME,
+        self::CATEGORY,
     ];
 
     protected $dates = [

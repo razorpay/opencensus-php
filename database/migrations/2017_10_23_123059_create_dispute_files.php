@@ -28,6 +28,11 @@ class CreateDisputeFiles extends Migration
 
             $table->string(DisputeFileEntity::URL, 255);
 
+            $table->string(DisputeFileEntity::NAME, 50);
+
+            $table->string(DisputeFileEntity::CATEGORY, 50)
+                ->nullable();
+
             $table->integer(DisputeFileEntity::CREATED_AT);
 
             $table->integer(DisputeFileEntity::UPDATED_AT);
@@ -52,7 +57,7 @@ class CreateDisputeFiles extends Migration
     {
         Schema::table(Table::DISPUTE_FILE, function($table)
         {
-            $table->dropForeign(Table::DISPUTE_FILE.'_'.DisputeFileEntity::DISPUTE_ID.'_foreign');
+            $table->dropForeign(Table::DISPUTE_FILE.'_'.DisputeFileEntity::DISPUTE_ID   .'_foreign');
         });
 
         Schema::dropIfExists(Table::DISPUTE_FILE);

@@ -13,6 +13,8 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::DISPUTE_ID         => 'required|string|max:14',
         Entity::URL                => 'required|string|max:255',
+        Entity::NAME               => 'required|string|max:50',
+        Entity::CATEGORY           => 'sometimes|string|max:50',
     ];
 
     protected static $uploadFileRules = [
