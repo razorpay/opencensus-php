@@ -57,10 +57,12 @@ export default class RequestActions extends Component {
     const checkers = this.props.checkers.peek();
 
     return (
-      <div class="requests-actions box">
+      <aside class="requests-actions">
         {requestState === 'open' || requestState === 'approved' ? (
           <div>
-            <div class="header">ACTIONS</div>
+            <div class="header">
+              <b>ACTIONS</b>
+            </div>
             {requestState !== 'approved' ? (
               <div
                 class="btn btn-default"
@@ -94,7 +96,7 @@ export default class RequestActions extends Component {
           </div>
         ) : null}
         {checkers.length ? <RequestActionCheckers checkers={checkers} /> : null}
-      </div>
+      </aside>
     );
   }
 }

@@ -32,7 +32,7 @@ export default class PlanEntity extends Component {
     pending = pending.fetch;
 
     if (!sharedNetworks.get()) {
-      return <div class="spinner" />;
+      return <div class="spinner center" />;
     }
     return (
       <div class="pricing-container">

@@ -13,7 +13,7 @@ export default function RequestForm({
   const isDisabled = requestState !== 'approved' && requestState !== 'open';
 
   return (
-    <Form onSubmit={onSubmit}>
+    <Form class="full-span full-elements" onSubmit={onSubmit}>
       <Field
         name="title"
         label="Title"
