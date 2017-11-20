@@ -70,6 +70,7 @@ export default function AddEMIPlan() {
         type="number"
         name="min_amount"
       />
+      <br />
       <AsyncButton
         text="OK"
         class="btn"

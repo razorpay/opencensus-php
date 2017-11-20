@@ -8,9 +8,8 @@ TriggerDummyError.title = 'Trigger Dummy Error';
 export default function TriggerDummyError() {
   return (
     <div>
-      <div className="field">
-        <p>Are you sure you want to trigger an error?</p>
-      </div>
+      <div class="field">Are you sure you want to trigger an error?</div>
+      <br />
       <AsyncButton
         text="Trigger"
         class="btn"

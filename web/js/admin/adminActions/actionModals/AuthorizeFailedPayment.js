@@ -13,6 +13,7 @@ export default function AuthorizeFailedPayment() {
       <Form>
         <Field label="Payment ID" name="payment" />
         <SelectMode />
+        <br />
         <AsyncButton
           text="OK"
           class="btn"
