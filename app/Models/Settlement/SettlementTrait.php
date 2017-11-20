@@ -12,10 +12,10 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Models\Payment;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 trait SettlementTrait
 {
@@ -265,12 +265,12 @@ trait SettlementTrait
      * Settlement is done only bank account change is not recent as we need some
      * time till beneficiary is updated in kotak
      *
-     * @param Merchant\Entity $merchant
+     * @param MerchantEntity $merchant
      *
      * @return bool
      * @throws Exception\LogicException
      */
-    protected function shouldSettle(Merchant\Entity $merchant): bool
+    protected function shouldSettle(MerchantEntity $merchant): bool
     {
         //
         // Skip settlements for few merchants
