@@ -8,12 +8,45 @@ const defaultFilters = {
   status: 'pending',
 };
 
-export default class PlanList extends Component {
+const features = [
+  'marketplace_activation_status',
+  'subscriptions_activation_status',
+  'virtual_accounts_activation_status',
+];
+
+const featureNames = {
+  marketplace_activation_status: 'Route',
+  subscriptions_activation_status: 'Subscription',
+  virtual_accounts_activation_status: 'Smart Collect',
+};
+
+function fetchFn() {
+  let currentFilter = this.filters.status;
+  adminFetch(...arguments).then(data => {
+    if (data) {
+      data = data.reduce((rows, current) => {
+        features.forEach(
+          f =>
+            current[f] === currentFilter &&
+            rows.push({
+              merchant_id: current.merchant_id,
+              contact_name: current.contact_name,
+              feature: featureNames[f],
+            })
+        );
+        return rows;
+      }, []);
+      return data;
+    }
+  });
+}
+
+export default class PublicFeaturesList extends Component {
   collection = new Collection({
     data: {
       route_name: 'onboarding_features_fetch_submissions',
     },
-    fetchFn: adminFetch,
+    fetchFn,
     filters: defaultFilters,
   });
 
@@ -43,4 +76,8 @@ export default class PlanList extends Component {
   }
 }
 
-const fields = [['Merchant ID', item => item.merchant_id]];
+const fields = [
+  ['Merchant ID', item => item.merchant_id],
+  ['Feature', item => item.feature],
+  ['Contact', item => item.contact_name],
+];
