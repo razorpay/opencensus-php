@@ -50,9 +50,9 @@ export default class EditPublicFeatures extends Component {
   };
 
   save = body => {
-    let { merchant_id } = this.props.model;
     let { akaFeature, selectedStatus } = this;
 
+    body.merchant_id = this.props.model.merchant_id;
     //send request if status changed
     if (selectedStatus !== body.status) {
       let data = {
