@@ -107,14 +107,17 @@ header + banner
 //-------------
 /* Labels */
 
-.pills
+.square-pills
   padding: 2px 12px
   font-size: 11px
-  border-radius 16px
+  border-radius 4px
   color: #fff
   text-align: center
   white-space: nowrap
 
+.pills
+  @extend .square-pills
+  border-radius 16px
 
 
 .status-label
@@ -128,7 +131,7 @@ header + banner
 
 .label-semi-muted
   color: $color-semi-muted
-  background-color: #D8E1E3
+  background-color: #d8e1e3
 
 
 .label-danger

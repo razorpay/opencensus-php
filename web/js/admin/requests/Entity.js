@@ -146,16 +146,17 @@ export default class RequestEntity extends Component {
 
               {/* Steps Assigned to */}
               <div class="container levels-container">
-                <b>Assigned To:</b>
+                <label>
+                  <b>Assigned To:</b>
+                </label>
                 {levels &&
                   Object.keys(levels).map((key, kdx) => {
                     kdx++;
                     return (
                       <div
-                        class={
-                          'level ' +
-                          (kdx != data.current_level ? 'inactive' : '')
-                        }
+                        class={`m-t m-b level ${
+                          kdx != data.current_level ? 'inactive' : ''
+                        }`}
                         key={key}
                       >
                         {kdx < data.current_level ||
@@ -163,9 +164,9 @@ export default class RequestEntity extends Component {
                           <i class="i-yes" />
                         ) : null}
 
-                        <span class="level-box">STEP {key}</span>
+                        <span class="square-pills no-color">STEP {key}</span>
                         {levels[key].map((item, idx) => (
-                          <span class="level-box" key={idx}>
+                          <span class="square-pills" key={idx}>
                             {item}
                           </span>
                         ))}

@@ -29,36 +29,41 @@
   /* Requests main content */
   .requests-content
     display: inline-block
-    vertical-align: top
     width: 75%
-
-    form
-      overflow: auto
-      border-bottom: 1px solid $faded-color
+    vertical-align: top
 
     form, .levels-container, .comments-containers
       padding: 0 30px
       margin-top: 16px
 
-    .levels-label
-      margin: 10px
+    form
+      overflow: auto
+      border-bottom: 1px solid $faded-color
 
+    /* Levels section */
     .levels-container
-        margin: 20px 0
-    .level
-      padding: 10px
+      margin: 20px 0
+      padding-bottom: 10px;
 
-      &.inactive
-        opacity: 0.5
+      label
+        margin-bottom: 16px
 
-        span
-          margin-left: 50px
-          padding: 5px 10px
-          border-radius: 4px
+      .level
+        .square-pills
+          display: inline-block;
+          margin: 0 12px 8px 0
+          font-weight: bold
+          border: 1px solid #e4e4e4;
+          color: $color-semi-muted
 
-          &.level-box
-            background-color: #ebebeb
+        .square-pills:not(.no-color)
+          background-color: #f3f3f3
 
+        &.inactive
+          .square-pills
+            opacity: 0.55
+
+    /* Comments section */
     .comments-container
       .comment-list
         margin: 30px
@@ -77,10 +82,6 @@
       form textarea
         width: 100%
         margin-left: 0
-
-
-
-
 
   /* Requests aside content */
   .requests-actions
