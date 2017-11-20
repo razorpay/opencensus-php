@@ -6,7 +6,7 @@ import Table from 'ui/Table';
 export default class Features extends Component {
   render() {
     if (!Object.keys(this.props.features).length) {
-      return <div class="spinner" />;
+      return <div class="spinner center" />;
     }
 
     let testModeFeatures, liveModeFeatures;

@@ -7,7 +7,7 @@ import DiffModal from './DiffModal';
 import Comments from './Comments';
 import RequestForm from './RequestForm';
 import RequestActions from './RequestActions';
-import { formatDate } from 'util/index';
+import { formatDate, titleCase } from 'util/index';
 
 @observer
 export default class RequestEntity extends Component {
@@ -98,7 +98,7 @@ export default class RequestEntity extends Component {
 
   render() {
     if (this.pending) {
-      return <div class="spinner" />;
+      return <div class="spinner center" />;
     }
 
     const { levels, checkers, comments } = this;
@@ -108,11 +108,19 @@ export default class RequestEntity extends Component {
     return (
       <div>
         <header class="requests-header">
-          {data.permission.description} ({data.entity_id})
-          <button onClick={this.openDiffModal}>View Changes</button>
+          {data.permission.description &&
+            titleCase(data.permission.description)}{' '}
+          ({data.entity_id})
+          <button
+            class="pull-right"
+            style={{ margin: '0' }}
+            onClick={this.openDiffModal}
+          >
+            View Changes
+          </button>
         </header>
         <div class="box-container">
-          <div class="box requests-content">
+          <main class="box requests-content">
             <div class="box-label">
               {data.admin.name ? (
                 <span>
@@ -168,7 +176,7 @@ export default class RequestEntity extends Component {
               id={data.id}
               onCommentAdd={this.handleCommentAdd}
             />
-          </div>
+          </main>
           <RequestActions
             id={data.id}
             onUpdateAction={this.handleActionUpdate}

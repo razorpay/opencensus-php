@@ -76,7 +76,7 @@ export default class AutoFillActivationForm extends Component {
     return (
       <BaseModal header="Autofill Bank Activation Forms">
         {!this.state.scriptLoaded ? (
-          <div class="spinner" />
+          <div class="spinner center" />
         ) : (
           <Form class="full-span full-elements" style={{ width: '350px' }}>
             <SelectField

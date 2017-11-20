@@ -28,7 +28,7 @@ export default class GroupForm extends Component {
     return (
       <BaseModal header="Edit Group">
         {this.props.pending ? (
-          <div class="spinner" />
+          <div class="spinner center" />
         ) : (
           <Form
             class="full-span full-elements"
