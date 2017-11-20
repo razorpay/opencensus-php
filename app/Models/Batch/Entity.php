@@ -46,7 +46,6 @@ class Entity extends Base\PublicEntity
     /**
      * Constants used in migration file.
      */
-    const FILE_URL_LENGTH           = 100;
     const STATUS_LENGTH             = 20;
 
     /**
