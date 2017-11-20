@@ -1016,14 +1016,26 @@ class AdminTest extends TestCase
         $this->app['config']->set('services.geolocation.mocked', true);
 
         //Invalid IP
-        $this->fixtures->create('geo_ip', ['ip' => '127.0.0.1']);
+        $geoIp1 = $this->fixtures->create('geo_ip', ['ip' => '127.0.0.1']);
 
-        $geoIp = $this->fixtures->create('geo_ip', [
+        $geoIp2 = $this->fixtures->create('geo_ip', [
             'ip' => '106.51.22.240'
         ]);
 
         $this->startTest();
 
-        $this->assertSame('Bangalore', $geoIp->reload()->city);
+        $this->assertSame('NONE', $geoIp1->reload()->country);
+        $this->assertSame('Bangalore', $geoIp2->reload()->city);
+
+        // Same entities should not be picked again
+        $response = [
+            'content' => [
+                'total'     => 0,
+                'success'   => 0,
+            ],
+        ];
+        $this->testData[__FUNCTION__]['response'] = $response;
+
+        $this->startTest();
     }
 }

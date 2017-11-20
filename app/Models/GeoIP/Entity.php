@@ -17,6 +17,8 @@ class Entity extends Base\PublicEntity
     const LONGITUDE                     = 'longitude';
     const ISP                           = 'isp';
 
+    const NONE                          = 'NONE';
+
     protected $entity = 'geo_ip';
 
     protected $primaryKey = self::IP;
@@ -35,6 +37,18 @@ class Entity extends Base\PublicEntity
     public function getIp()
     {
         return $this->getAttribute(self::IP);
+    }
+
+    /**
+     * Current update api picks entities where country is null,
+     * Marking them 'NONE' ensures same entity is not picked again.
+     */
+    public function setCountryNone()
+    {
+        if ($this->isAttributeNull(self::COUNTRY) === true)
+        {
+            $this->setAttribute(self::COUNTRY, self::NONE);
+        }
     }
 
     /**
