@@ -30,9 +30,9 @@ class Service extends Base\Service
         ];
     }
 
-    public function fetchEntityById($entity, $id)
+    public function fetchEntityById(string $entity, string $id, array $input = []): array
     {
-        $entity = $this->fetchEntityByNameAndId($entity, $id);
+        $entity = $this->fetchEntityByNameAndId($entity, $id, $input);
 
         return $entity->toArrayAdmin();
     }
@@ -44,7 +44,10 @@ class Service extends Base\Service
         return $entity->toArrayAdmin($subMerchantFlag);
     }
 
-    protected function fetchEntityByNameAndId($entity, $id)
+    protected function fetchEntityByNameAndId(
+        string $entity,
+        string $id,
+        array $input = []): Base\PublicEntity
     {
         Entity::validateEntityOrFailPublic($entity);
 
@@ -57,7 +60,7 @@ class Service extends Base\Service
             $id = $entityClass::verifyIdAndSilentlyStripSign($id);
         }
 
-        $entity = $this->repo->$entity->findOrFailPublic($id);
+        $entity = $this->repo->$entity->findOrFailByPublicIdWithParams($id, $input);
 
         return $entity;
     }

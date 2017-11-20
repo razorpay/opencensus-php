@@ -45,6 +45,7 @@ class Repository extends \Razorpay\Spine\Repository
     const TO           = 'to';
     const COUNT        = 'count';
     const SKIP         = 'skip';
+    const DELETED      = 'deleted';
 
     protected $app;
 

@@ -8,14 +8,15 @@ use Hash;
 use Mail;
 use Mockery;
 
-use RZP\Mail\Admin\Account as AdminMail;
+use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
-use RZP\Models\Admin\Role;
 use RZP\Tests\Functional\TestCase;
+use RZP\Error\PublicErrorDescription;
+use RZP\Mail\Admin\Account as AdminMail;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class AdminTest extends TestCase
 {
@@ -920,5 +921,93 @@ class AdminTest extends TestCase
 
         $this->assertCount(7, $result['fields']);
         $this->assertCount(120, $result['entities']);
+    }
+
+    public function testFetchSoftDeletedEntityForAdmin()
+    {
+        $org = $this->fixtures
+                    ->org
+                    ->create(
+                        [
+                            'auth_type'  => 'google_auth',
+                            'deleted_at' => time(),
+                        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        // Case 1: When no deleted parameter sent, should return 0 entity
+        $content = $this->startTest();
+        $this->assertSame(0, $content['count']);
+
+        // Case 2: When deleted=0 is sent, should return 0 entity
+        $testData['request']['content']['deleted'] = 0;
+        $content = $this->startTest();
+        $this->assertSame(0, $content['count']);
+
+        // Case 3: When deleted=1 is sent, should return 1 entity
+        $testData['request']['content']['deleted'] = '1';
+        $content = $this->startTest();
+        $this->assertSame(1, $content['count']);
+
+        //
+        // Case 4: When invalid value is sent for deleted parameter, should
+        //         throw validation exception.
+        //
+        $testData['request']['content']['deleted'] = 11;
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            \RZP\Exception\BadRequestValidationFailureException::class,
+            'The selected deleted is invalid.');
+    }
+
+    public function testFindSoftDeletedEntityForAdmin()
+    {
+        $org = $this->fixtures
+                    ->org
+                    ->create(
+                        [
+                            'id'         => '10000000000001',
+                            'auth_type'  => 'google_auth',
+                            'deleted_at' => time(),
+                        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        // Case 1: When no deleted parameter sent, should throw exception
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            \RZP\Exception\BadRequestException::class,
+            PublicErrorDescription::BAD_REQUEST_INVALID_ID);
+
+        // Case 2: When deleted=0 is sent, should return 0 entity
+        $testData['request']['content']['deleted'] = 0;
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            \RZP\Exception\BadRequestException::class,
+            PublicErrorDescription::BAD_REQUEST_INVALID_ID);
+
+        // Case 3: When deleted=1 is sent, should return entity
+        $testData['request']['content']['deleted'] = 1;
+        $content = $this->startTest();
+        $this->assertSame($org['public_id'], $content['id']);
+
+        // Case 4: When invalid deleted sent, should throw exception
+        $testData['request']['content']['deleted'] = 'true';
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            \RZP\Exception\BadRequestValidationFailureException::class,
+            'The selected deleted is invalid.');
     }
 }
