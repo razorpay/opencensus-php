@@ -24,8 +24,8 @@ export default class DiffModal extends Component {
       Object.keys(response.new).forEach(key => {
         items.push({
           property: key,
-          old: String(response.old[key]),
-          new: String(response.new[key]),
+          old: response.old[key],
+          new: response.new[key],
         });
       });
 
@@ -49,6 +49,29 @@ export default class DiffModal extends Component {
 // Resources
 const fields = [
   ['Property', item => item.property],
-  ['Old Value', item => item.old],
-  ['New Value', item => item.new],
+  ['Old Value', renderDiffRow('old')],
+  ['New Value', renderDiffRow('new')],
 ];
+
+function renderDiffRow(type) {
+  return function(item, index) {
+    if (item[type] instanceof Array) {
+      if (!item[type].length) {
+        return '--';
+      }
+      return (
+        <ul>
+          {item[type].map(value => {
+            return Object.keys(value).map(key => (
+              <li key={type + '-' + key + '-' + index + '-' + key}>
+                <b>{key}:</b> {value[key]}
+              </li>
+            ));
+          })}
+        </ul>
+      );
+    } else {
+      return item[type];
+    }
+  };
+}
