@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 import Field, { SelectField, SelectMode } from 'ui/Field';
 import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
@@ -6,6 +7,7 @@ import { notifySuccess, closeModal } from 'common/modal';
 
 import { adminFormUpload } from 'util/fetch';
 
+@withRouter
 export default class MakeAPICall extends Component {
   constructor() {
     super();
@@ -21,10 +23,15 @@ export default class MakeAPICall extends Component {
   };
 
   render() {
+    console.log('THIS CALL', this.props);
     return (
-      <div>
-        <Form>
-          <Field label="URL" name="url" />
+      <div class="makeapicall">
+        <Form class="full-span" style={{ width: '650px' }}>
+          <div class="field url">
+            <label>URL</label>
+            <span class="base-url">https://api.razorpay.com/v1/</span>
+            <input name="url" placeholder="relative/url" />
+          </div>
           <SelectMode />
           <SelectField label="Request Method" name="method">
             <option value="GET">GET</option>
