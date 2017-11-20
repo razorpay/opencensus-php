@@ -22,7 +22,7 @@ const featureNames = {
 
 function fetchFn() {
   let currentFilter = this.filters.status;
-  adminFetch(...arguments).then(data => {
+  return adminFetch(...arguments).then(data => {
     if (data) {
       data = data.reduce((rows, current) => {
         features.forEach(
