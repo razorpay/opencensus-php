@@ -4,6 +4,7 @@ import Form from 'ui/Form';
 import Field, { SelectField, CheckField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import Table from 'ui/Table';
+import MultiSelectField from 'ui//MultiSelectField';
 
 @observer
 export default class UserForm extends Component {
@@ -42,14 +43,11 @@ export default class UserForm extends Component {
       roles,
       allGroups,
       allRoles,
-      updateRole,
       onSubmit,
     } = this.props;
 
     //convert map into array of [[key, value], [key, value], ... ] for rendering of table/select option
-    roles = roles.entries();
     allGroups = allGroups.entries();
-    allRoles = allRoles.entries();
 
     return (
       <div class="box user-form-container">
@@ -158,29 +156,15 @@ export default class UserForm extends Component {
           <br />
 
           {fields.indexOf('roles') > -1 && (
-            <div>
-              <SelectField
-                label="Roles"
-                onChange={e => updateRole(e.target.value)}
-              >
-                <option value="" />
-                {allRoles.map(role => (
-                  <option key={role[0]} value={role[0]}>
-                    {role[1]}
-                  </option>
-                ))}
-              </SelectField>
-              {roles.map(r => (
-                <span
-                  title="Click to remove"
-                  class="link"
-                  key={r[0]}
-                  onClick={e => updateRole(r[0], true)}
-                >
-                  {r[1]} ×
-                </span>
-              ))}
-            </div>
+            <MultiSelectField
+              label="Roles"
+              name="roles"
+              options={allRoles}
+              defaultValue={roles || []}
+              trackBy="id"
+              keys={['name', 'description']}
+              placeholder="Select Roles"
+            />
           )}
 
           {fields.indexOf('groups') > -1 && [

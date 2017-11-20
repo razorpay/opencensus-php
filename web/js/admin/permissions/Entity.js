@@ -139,7 +139,7 @@ export default class EditPerm extends Component {
           />
           {id && (
             <div>
-              <header>Assigned Roles (In this Org)</header>
+              <header>Assigned Roles (In this Org):</header>
               <Table items={roles} fields={roleFields} />
             </div>
           )}

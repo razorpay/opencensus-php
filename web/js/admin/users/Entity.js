@@ -10,13 +10,11 @@ import { isWorkflow } from 'util/index';
 @withRouter
 @observer
 export default class EditUser extends Component {
-  // all available roles
-  allRoles = observable.map();
+  // all available groups
   allGroups = observable.map();
 
   // selected actions
   groups = observable.map();
-  roles = observable.map();
 
   fetchFieldMapsParams = {
     route_name: 'org_fieldmap_get_by_entity',
@@ -47,21 +45,13 @@ export default class EditUser extends Component {
 
     Promise.all(requests.map(r => adminFetch(r))).then(
       action(([allGroups, allRoles, fieldMaps, user = null]) => {
-        //create map of all roles {role_id: role_name}
-        allRoles.items.forEach(r => this.allRoles.set(r.id, r.name));
-
+        this.allRoles = allRoles.items;
         //create map of all groups {group_id: group_obj}
         allGroups.items.forEach(g => this.allGroups.set(g.id, g));
 
         if (user) {
           //create map of selected groups {group_id: group_obj}
           user.groups.forEach(g => this.groups.set(g.id, g));
-
-          //If user, than remove selected roles from all roles map
-          user.roles.forEach(r => {
-            this.allRoles.delete(r.id);
-            this.roles.set(r.id, r.name);
-          });
           this.user = user;
         }
 
@@ -90,21 +80,9 @@ export default class EditUser extends Component {
     }
   };
 
-  updateRole = (roleId, shouldRemove = false) => {
-    let { allRoles, roles } = this;
-
-    if (shouldRemove) {
-      allRoles.set(roleId, roles.get(roleId));
-      roles.delete(roleId);
-    } else {
-      roles.set(roleId, allRoles.get(roleId));
-      allRoles.delete(roleId);
-    }
-  };
-
   save = body => {
     let { id } = this.props.match.params;
-    let { groups, roles } = this;
+    let { groups } = this;
     let data = { body };
     let request = null;
 
@@ -118,7 +96,7 @@ export default class EditUser extends Component {
     }
 
     data.body.groups = groups.keys();
-    data.body.roles = roles.keys();
+    data.body.roles = data.body.roles.split(',');
 
     return request(data).then(response => {
       if (response) {
@@ -131,36 +109,21 @@ export default class EditUser extends Component {
   };
 
   render() {
-    let {
-      fields,
-      user,
-      roles,
-      groups,
-      allGroups,
-      allRoles,
-      updateRole,
-      toggleGroup,
-      selectAllGroups,
-      save,
-      pending,
-    } = this;
-
-    if (pending) {
+    if (this.pending) {
       return <div class="spinner" />;
     }
 
     return (
       <UserForm
-        fields={fields}
-        user={user}
-        groups={groups}
-        roles={roles}
-        allGroups={allGroups}
-        allRoles={allRoles}
-        updateRole={updateRole}
-        toggleGroup={toggleGroup}
-        selectAllGroups={selectAllGroups}
-        onSubmit={save}
+        fields={this.fields}
+        user={this.user}
+        groups={this.groups}
+        roles={this.user.roles}
+        allGroups={this.allGroups}
+        allRoles={this.allRoles}
+        toggleGroup={this.toggleGroup}
+        selectAllGroups={this.selectAllGroups}
+        onSubmit={this.save}
       />
     );
   }

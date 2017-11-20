@@ -52,7 +52,7 @@ export default class GroupForm extends Component {
           <button>Save</button>
           {parents.length
             ? [
-                <label key="label">Parents</label>,
+                <header key="label">Parents:</header>,
                 <Table
                   fields={fields.concat([this.deleteParentField()])}
                   items={parents}
@@ -64,7 +64,7 @@ export default class GroupForm extends Component {
           <br />
           {group && group.sub_groups.length
             ? [
-                <label key="label">Subgroups</label>,
+                <header key="label">Subgroups:</header>,
                 <Table
                   fields={fields}
                   items={group.sub_groups}
