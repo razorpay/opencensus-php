@@ -76,7 +76,7 @@ class EMandateDebitReconFile extends BaseEMandateDebitReconFile
 
     protected function checkValidStatus(array $row)
     {
-        if (in_array(strtolower($row[self::HEADING_STATUS]), $this->allowedStatuses) === false)
+        if (in_array(strtolower($row[self::HEADING_STATUS]), $this->allowedStatuses, true) === false)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
