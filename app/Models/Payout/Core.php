@@ -113,10 +113,10 @@ class Core extends Base\Core
         {
             $merchantBalance = $merchant->balance->getBalance();
 
-            $amount = ($merchantBalance > self::MAX_PAYOUT_AMOUNT) ? self::MAX_PAYOUT_AMOUNT : $merchantBalance;
-        }
+            $amount = $merchantBalance - ($input[Entity::BUFFER_AMOUNT] ?? 0);
 
-        $amount = $amount - ($input[Entity::BUFFER_AMOUNT] ?? 0);
+            $amount = ($amount > self::MAX_PAYOUT_AMOUNT) ? self::MAX_PAYOUT_AMOUNT : $amount;
+        }
 
         if ((isset($input[Entity::MIN_AMOUNT]) === true) and
             ($amount < $input[Entity::MIN_AMOUNT]))
