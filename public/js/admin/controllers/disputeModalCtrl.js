@@ -86,6 +86,7 @@ app.controller('DisputeModalCtrl', [
       $scope.dispute.skip_email = $scope.dispute.skip_email ? 1 : 0;
       if ($scope.dispute.merchant_emails) {
         $scope.dispute.merchant_emails = $scope.dispute.merchant_emails
+          .replace(/,*$/, '')
           .split(',')
           .map(function(item) {
             return item.trim();
