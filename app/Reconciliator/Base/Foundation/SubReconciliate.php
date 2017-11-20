@@ -271,4 +271,15 @@ class SubReconciliate extends Base\Core
 
         $batch->setFailureCount(count($this->failures));
     }
+
+    /**
+     * Rows for which the correponding entities, have already been marked as reconciled,
+     * we add it to the list of successfully processed rows.
+     *
+     * @param  string $entityId
+     */
+    protected function handleAlreadyReconciled(string $entityId)
+    {
+        $this->setSummaryCount(self::SUCCESSES_SUMMARY, $entityId);
+    }
 }

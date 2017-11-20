@@ -88,6 +88,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
             if ($reconciled === true)
             {
+                $this->handleAlreadyReconciled($paymentId);
+
                 return;
             }
 

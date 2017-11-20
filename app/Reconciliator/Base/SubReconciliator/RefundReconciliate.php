@@ -71,6 +71,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
             if ($reconciled === true)
             {
+                $this->handleAlreadyReconciled($refundId);
+
                 return;
             }
 
