@@ -57,6 +57,7 @@ class Entity extends Base\PublicEntity
     const URL                       = 'url';
     const INPUT_FILE_PREFIX         = 'batch/upload/';
     const OUTPUT_FILE_PREFIX        = 'batch/download/';
+    const INPUT_DETAILS             = 'input_details';
 
     protected static $sign = 'batch';
 

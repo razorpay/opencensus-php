@@ -15,7 +15,9 @@ class Core extends Base\Core
 {
     use FileHandlerTrait;
 
-    public function create(array $input, Merchant\Entity $merchant): Entity
+    public function create(
+        array $input,
+        Merchant\Entity $merchant): Entity
     {
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 

@@ -2,22 +2,23 @@
 
 namespace RZP\Reconciliator\Base;
 
-use RZP\Exception\LogicException;
-use RZP\Models\Base\UniqueIdEntity;
-use RZP\Models\Payment;
+use App;
+
 use RZP\Models\Card;
+use RZP\Models\Batch;
+use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
+use RZP\Gateway\AxisMigs;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
-use RZP\Models\Base\PublicEntity;
-
-use App;
-use RZP\Trace\TraceCode;
-use RZP\Exception\ReconciliationException;
-
-use RZP\Gateway\AxisMigs;
-use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Messenger;
+use RZP\Models\Base\PublicEntity;
+use RZP\Exception\LogicException;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\RequestProcessor;
+use RZP\Exception\ReconciliationException;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class RefundReconciliate extends Foundation\SubReconciliate
@@ -46,36 +47,9 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     public function __construct()
     {
-        $this->app = App::getFacadeRoot();
-        $this->repo = $this->app['repo'];
-        $this->trace = $this->app['trace'];
+        parent::__construct();
 
         $this->messenger = new Messenger();
-    }
-
-    /**
-     * This is the start of the actual reconciliation for refunds.
-     * Reconciliation is done for each row in the file content.
-     * Validates payment status.
-     * Sets the reconciled_at.
-     *
-     * @param array $fileContents
-     * @return array
-     */
-    public function startReconciliation($fileContents)
-    {
-        $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
-        unset($fileContents[Orchestrator::EXTRA_DETAILS]);
-
-        foreach ($fileContents as $row)
-        {
-            $this->repo->transactionOnLiveAndTest(function() use ($row)
-            {
-                $this->runReconciliate($row);
-            });
-        }
-
-        return $this->getSummary();
     }
 
     public function runReconciliate($row)
@@ -97,6 +71,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
             if ($reconciled === true)
             {
+                $this->handleAlreadyReconciled($refundId);
+
                 return;
             }
 
@@ -144,6 +120,14 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
             //return;
         }
+    }
+
+    public function resetProcessingAttributes()
+    {
+        $this->payment = null;
+        $this->refund  = null;
+
+        parent::resetProcessingAttributes();
     }
 
     protected function getRefundAmount(array $row)
@@ -464,7 +448,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                 //   raise an alert and return.
                 // - If force update enabled, let recon
                 //
-                if ($this->shouldForceUpdate(Orchestrator::REFUND_ARN) === false)
+                if ($this->shouldForceUpdate(RequestProcessor\Base::REFUND_ARN) === false)
                 {
                     $this->messenger->raiseReconAlert(
                         [
