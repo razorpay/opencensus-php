@@ -106,8 +106,8 @@ export default class RequestEntity extends Component {
     const shouldShowTick = ['approved', 'executed'].indexOf(data.state) !== -1;
 
     return (
-      <div>
-        <header class="requests-header">
+      <div class="requests-container">
+        <header class="heading">
           {data.permission.description &&
             titleCase(data.permission.description)}{' '}
           ({data.entity_id})
@@ -120,56 +120,62 @@ export default class RequestEntity extends Component {
           </button>
         </header>
         <div class="box-container">
-          <main class="box requests-content">
-            <div class="box-label">
-              {data.admin.name ? (
-                <span>
-                  <strong>{data.admin.name}</strong> performed this action{' '}
+          <main class="container requests-content">
+            <div class="box container">
+              {/* Header */}
+              <div class="heading">
+                {data.admin.name && <strong>{data.admin.name}</strong>}
+                {data.created_at ? (
+                  <span class="secondary-label">
+                    {` performed this action on `}
+                    {formatDate(data.created_at)}
+                  </span>
+                ) : null}
+                <span class={`pills status ${RequestState[data.state]}`}>
+                  {data.state}
                 </span>
-              ) : null}
-              {data.created_at ? (
-                <span>{formatDate(data.created_at)}</span>
-              ) : null}
-              <span class={`request-state ${RequestState[data.state]}`}>
-                {data.state}
-              </span>
-            </div>
-            <RequestForm
-              title={data.title}
-              description={data.description}
-              requestState={data.state}
-              onSubmit={this.handleUploadForm}
-            />
-            <div class="levels-container">
-              <label class="levels-label">
-                <b>Assigned To: </b>
-              </label>
-              {levels &&
-                Object.keys(levels).map((key, kdx) => {
-                  kdx++;
-                  return (
-                    <div
-                      class={
-                        'level ' + (kdx != data.current_level ? 'inactive' : '')
-                      }
-                      key={key}
-                    >
-                      {kdx < data.current_level ||
-                      (kdx == data.current_level && shouldShowTick) ? (
-                        <i class="i-yes" />
-                      ) : null}
+              </div>
 
-                      <span class="level-box">STEP {key}</span>
-                      {levels[key].map((item, idx) => (
-                        <span class="level-box" key={idx}>
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  );
-                })}
+              {/* Title, description */}
+              <RequestForm
+                title={data.title}
+                description={data.description}
+                requestState={data.state}
+                onSubmit={this.handleUploadForm}
+              />
+
+              {/* Steps Assigned to */}
+              <div class="container levels-container">
+                <b>Assigned To:</b>
+                {levels &&
+                  Object.keys(levels).map((key, kdx) => {
+                    kdx++;
+                    return (
+                      <div
+                        class={
+                          'level ' +
+                          (kdx != data.current_level ? 'inactive' : '')
+                        }
+                        key={key}
+                      >
+                        {kdx < data.current_level ||
+                        (kdx == data.current_level && shouldShowTick) ? (
+                          <i class="i-yes" />
+                        ) : null}
+
+                        <span class="level-box">STEP {key}</span>
+                        {levels[key].map((item, idx) => (
+                          <span class="level-box" key={idx}>
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })}
+              </div>
             </div>
-            <span class="comments-count">{comments.length} comments</span>
+
+            {/* Comments container */}
             <Comments
               comments={comments}
               checkers={checkers}
@@ -177,6 +183,8 @@ export default class RequestEntity extends Component {
               onCommentAdd={this.handleCommentAdd}
             />
           </main>
+
+          {/* Workflow Actions */}
           <RequestActions
             id={data.id}
             onUpdateAction={this.handleActionUpdate}

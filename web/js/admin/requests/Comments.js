@@ -45,9 +45,17 @@ export default class Comments extends Component {
   };
 
   render() {
-    let cards = this.sortCards();
+    const cards = this.sortCards();
+    const { comments } = this.props;
+
     return (
-      <div class="comments-container">
+      <div class="box comments-container">
+        <div class="heading">
+          <b>Comments:</b>
+          <span class="pull-right">{`${comments.length} comment${
+            comments.length > 1 ? 's' : ''
+          }`}</span>
+        </div>
         <div class="comment-list">
           {cards.length
             ? cards.map((card, idx) => {
@@ -55,33 +63,38 @@ export default class Comments extends Component {
                   <div key={idx} class="comment">
                     <label class="box-label">
                       <strong>{`${card.admin.name}`}</strong>
-                      {` commented at ${formatDate(card.created_at)}`}
+                      <span class="secondary-label">{` commented at ${formatDate(
+                        card.created_at
+                      )}`}</span>
                     </label>
-                    <div class="comment-body">{card.comment}</div>
+                    <div class="comment-body m-t">{card.comment}</div>
                   </div>
                 ) : (
                   <div key={idx} class="comment">
                     <label class="box-label">
                       <i class={card.approved ? 'i i-yes' : 'i i-no'} />
                       <strong>&nbsp;{`${card.admin.name}`}</strong>
-                      {` ${
-                        card.approved ? 'approved' : 'rejected'
-                      } at ${formatDate(card.created_at)}`}
+                      <span class="secondary-label">
+                        {` ${
+                          card.approved ? 'approved' : 'rejected'
+                        } at ${formatDate(card.created_at)}`}
+                      </span>
                     </label>
                   </div>
                 );
               })
             : null}
         </div>
-        <Form onSubmit={this.addComment}>
+        <Form class="full-span" onSubmit={this.addComment}>
           <TextAreaField
             name="comment"
+            label="Add comment:"
             value={this.state.comment}
             onChange={this.handleCommentChange}
           />
           <AsyncButton
             text="Comment"
-            class="btn"
+            class="btn pull-right"
             pendingClass="small spinner"
             onSubmit={this.addComment}
           />

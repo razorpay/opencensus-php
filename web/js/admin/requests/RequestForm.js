@@ -30,7 +30,7 @@ export default function RequestForm({
       />
       <AsyncButton
         text="Save"
-        class="btn"
+        class="pull-right btn"
         pendingClass="small spinner"
         onSubmit={onSubmit}
       />
