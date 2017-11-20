@@ -117,7 +117,7 @@ class Core extends Base\Core
                 ($merchantBalance < $input[Entity::BUFFER_AMOUNT]))
             {
                 $this->trace->info(
-                    TraceCode::MERCHANT_PAYOUT_FAILURE,
+                    TraceCode::MERCHANT_PAYOUT_SKIPPED,
                     [
                         'message'     => 'merchant balance is less than buffer amount',
                         'merchant_id' => $merchantId,
@@ -136,7 +136,7 @@ class Core extends Base\Core
             ($amount < $input[Entity::MIN_AMOUNT]))
         {
             $this->trace->info(
-                TraceCode::MERCHANT_PAYOUT_FAILURE,
+                TraceCode::MERCHANT_PAYOUT_SKIPPED,
                 [
                     'message'     => 'amount is less than min amount',
                     'merchant_id' => $merchantId,
