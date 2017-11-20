@@ -20,7 +20,11 @@ export default function InviteForm({
         </banner>
       )}
     >
-      <Form class="full-span full-elements" onSubmit={onInvite}>
+      <Form
+        class="full-span full-elements"
+        onSubmit={onInvite}
+        style={{ width: '90%' }}
+      >
         {fields.indexOf('channel_code') > -1 && (
           <div>
             <SelectField label="Channel Code" name="channel_code" required>
@@ -97,7 +101,10 @@ export default function InviteForm({
           <Field label="MCC Category" name="mcc_category" required />
         )}
 
-        <div class="heading m-t m-b">
+        <div
+          class="heading m-t m-b"
+          style={{ width: '110%', marginLeft: '-5%' }}
+        >
           <b>Merchant Details:</b>
         </div>
         {fields.indexOf('merchant_name') > -1 && (
