@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\AdminFetch;
+use RZP\Models\GeoIP\Service as GeoIP;
 
 class Service extends Base\Service
 {
@@ -187,5 +188,10 @@ class Service extends Base\Service
         $count = $this->repo->$entity->updateTax($limit);
 
         return ['count' => $count];
+    }
+
+    public function updateGeoIps(array $input)
+    {
+        return (new GeoIP)->updateGeoIps($input);
     }
 }

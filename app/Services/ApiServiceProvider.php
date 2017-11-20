@@ -159,6 +159,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerWorkflow();
 
         $this->registerHttplugMockClient();
+
+        $this->registerGeolocation();
     }
 
     /**
@@ -373,6 +375,14 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app['httplug']->extend('mock', function()
         {
             return new MockHttplug;
+        });
+    }
+
+    protected function registerGeolocation()
+    {
+        $this->app->singleton('geolocation', function($app)
+        {
+            return new Geolocation\Service($app);
         });
     }
 

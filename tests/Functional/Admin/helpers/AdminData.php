@@ -838,4 +838,20 @@ return [
             'content'  => [],
         ],
     ],
+
+    'testUpdateGeoIps' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/geoip/update',
+            'content' => [
+                'eureka_key_index' => 1
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 2,
+                'success' => 1
+            ]
+        ],
+    ]
 ];

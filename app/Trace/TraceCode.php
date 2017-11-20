@@ -946,6 +946,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // To log various debugs for a migrate command
     const BATCH_MIGRATE_DEBUG                           = 'BATCH_MIGRATE_DEBUG';
 
+    // Geo Location trace codes
+    const GEOLOCATION_FAILURE                           = 'GEOLOCATION_FAILURE';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

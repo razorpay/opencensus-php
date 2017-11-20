@@ -1,5 +1,7 @@
 <?php
 
+use RZP\Services\Geolocation\Service as GeoLocation;
+
 return [
 
     /*
@@ -36,4 +38,19 @@ return [
     'mutex' => [
         'mock' => env('MUTEX_MOCK', false)
     ],
+
+    'geolocation' => [
+        'provider'  => GeoLocation::EUREKA,
+        'mocked'    => env('GEOLOCATION_MOCKED', false),
+        'providers' => [
+            GeoLocation::EUREKA => [
+                'url'  => 'http://api.eurekapi.com/iplocation/v1.8/locateip',
+                'keys' => [
+                    env('GEOLOCATION_EUREKA_KEY_0', 'SAK2YE37KH4JT7AZ345Z'),
+                    env('GEOLOCATION_EUKEKA_KEY_1', 'SAKU22KQ93GX2M89VSMZ'),
+                    env('GEOLOCATION_EUKEKA_KEY_2', 'SAKC39222CXM3D43472Z'),
+                ],
+            ],
+        ],
+    ]
 ];

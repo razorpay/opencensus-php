@@ -3,8 +3,9 @@
 namespace RZP\Models\GeoIP;
 
 use RZP\Models\Base;
+use RZP\Exception\BadRequestValidationFailureException;
 
-class Entity extends Base\Entity
+class Entity extends Base\PublicEntity
 {
     const IP                            = 'ip';
     const CITY                          = 'city';
@@ -18,8 +19,9 @@ class Entity extends Base\Entity
 
     protected $entity = 'geo_ip';
 
+    protected $primaryKey = self::IP;
+
     protected $fillable = [
-        self::IP,
         self::CITY,
         self::STATE,
         self::POSTAL,
@@ -29,4 +31,31 @@ class Entity extends Base\Entity
         self::LONGITUDE,
         self::ISP,
     ];
+
+    public function getIp()
+    {
+        return $this->getAttribute(self::IP);
+    }
+
+    /**
+     * Overriding default behavior as to validate IP
+     * IP could be both IPv4 or IPv6
+     *
+     * @param $ip
+     * @param bool $throw
+     */
+    public static function verifyUniqueId($ip, $throw = true): bool
+    {
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6) === false)
+        {
+            if ($throw === true)
+            {
+                throw new BadRequestValidationFailureException($ip . ' is not a valid IP');
+            }
+
+            return false;
+        }
+
+        return true;
+    }
 }
