@@ -53,7 +53,10 @@ export default class FieldMaps extends Component {
         <div class="box">
           <header>
             Field Maps
-            <div class="btn" onClick={showEntity.bind(newCollection)}>
+            <div
+              class="btn pull-right"
+              onClick={showEntity.bind(newCollection)}
+            >
               Add a Field Map
             </div>
           </header>

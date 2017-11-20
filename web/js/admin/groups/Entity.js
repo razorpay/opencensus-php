@@ -111,10 +111,6 @@ class EditGroup extends Component {
   };
 
   render() {
-    if (this.state.pending) {
-      return <div class="spinner" />;
-    }
-
     return (
       <GroupForm
         {...this.state}

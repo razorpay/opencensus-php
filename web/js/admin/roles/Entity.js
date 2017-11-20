@@ -133,10 +133,6 @@ class EditRole extends Component {
   };
 
   render() {
-    if (this.state.pending) {
-      return <div class="spinner" />;
-    }
-
     return (
       <RolesForm
         {...this.state}

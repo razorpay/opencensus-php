@@ -91,7 +91,9 @@ export default class AutoFillActivationForm extends Component {
                 )
               }
             >
-              <option value="">--Select--</option>
+              <option value="" disabled>
+                --Select a template--
+              </option>
               {Object.keys(templateTypes).map(option => (
                 <option key={option} value={option}>
                   {templateTypes[option]}

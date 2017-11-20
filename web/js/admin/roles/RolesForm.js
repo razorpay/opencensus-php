@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Field, { SelectField, CheckField } from 'ui/Field';
 import Table from 'ui/Table';
+import BaseModal from 'ui/BaseModal';
 import AsyncButton from 'ui/AsyncButton';
 
 export default class RolesForm extends Component {
@@ -27,9 +28,8 @@ export default class RolesForm extends Component {
   render() {
     let { name, description, allPerms, onSubmit } = this.props;
     return (
-      <div class="roles-form-container">
-        <header>Edit Role</header>
-        <Form onSubmit={onSubmit}>
+      <BaseModal header="Edit Role" customClass="roles-form-container">
+        <Form class="inline" onSubmit={onSubmit}>
           <Field name="name" label="Name" required defaultValue={name} />
           <Field
             name="description"
@@ -37,18 +37,25 @@ export default class RolesForm extends Component {
             required
             defaultValue={description}
           />
-          <header>Permissions</header>
-          <Table items={allPerms} fields={this.fields()} />
-          <div class="sticky-save-btn">
-            <AsyncButton
-              text="Save"
-              class="btn"
-              pendingClass="small spinner"
-              onSubmit={onSubmit}
-            />
-          </div>
+
+          <header>
+            Permissions {this.props.pending && <div class="spinner small" />}
+          </header>
+          {!this.props.pending && (
+            <Table items={allPerms} fields={this.fields()} />
+          )}
+          {!this.props.pending && (
+            <div class="sticky-save-btn">
+              <AsyncButton
+                text="Save"
+                class="btn"
+                pendingClass="small spinner"
+                onSubmit={onSubmit}
+              />
+            </div>
+          )}
         </Form>
-      </div>
+      </BaseModal>
     );
   }
 }
