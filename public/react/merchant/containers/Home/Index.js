@@ -34,9 +34,9 @@ const dateRangePresets = [
 ];
 
 const breakDownVals = [
-  ['Days', 'days'],
-  ['Weeks', 'weeks'],
-  ['Months', 'months'],
+  ['Days', 'daily'],
+  ['Weeks', 'weekly'],
+  ['Months', 'monthly'],
 ];
 
 // graph data

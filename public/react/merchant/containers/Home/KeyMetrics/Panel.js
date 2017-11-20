@@ -2,16 +2,24 @@ import React, { Component } from 'react';
 
 import Definition from 'rzp/ui/Definition';
 import Highcharts from 'rzp/ui/Highcharts';
+import Change from 'rzp/ui/Change';
 
 import { tabsMeta } from './data';
 
 const chartOptions = {
+  chart: {
+    height: 350,
+    spacingTop: 10,
+  },
   xAxis: {
     type: 'datetime',
   },
-  yAxis: {
-    title: {
-      text: 'Count',
+  plotOptions: {
+    area: {
+      stacking: true,
+      animation: {
+        duration: 0,
+      },
     },
   },
 };
@@ -31,15 +39,19 @@ class Panel extends Component {
   }
 
   render() {
-    const { selectedGrouping, data } = this.props,
+    const { selectedGrouping, data, startDate, endDate } = this.props,
+      dateFormat = 'DD MMM YYYY',
       histogramOptions = {
         ...chartOptions,
-        series: [
-          {
-            type: 'area',
-            data: data.histogram,
-          },
-        ],
+        series:
+          data.histogram &&
+          data.histogram.map(item => {
+            return {
+              type: 'area',
+              data: item.data,
+              name: item.name,
+            };
+          }),
       },
       { grouping, options } = this.meta;
 
@@ -48,12 +60,17 @@ class Panel extends Component {
     }
 
     return (
-      <div>
-        <div className="clearfix panel">
+      <div className="panel">
+        <div className="clearfix p-all">
           <div className="pull-left">
             <Definition>
-              <h3>{data.diff.value}</h3>
-              <span className="text-fade">As compared to:</span>
+              <h4>
+                <Change value={data.diff.value} />
+              </h4>
+              <span className="text-fade">
+                As compared to: {startDate.format(dateFormat)} to{' '}
+                {endDate.format(dateFormat)}
+              </span>
             </Definition>
           </div>
           <div className="pull-right">

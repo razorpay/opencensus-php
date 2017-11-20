@@ -15,6 +15,7 @@ class KeyMetricsContainer extends Component {
     this.state = {
       selectedTab: tabsOrder[0],
       tabsState: {},
+      loading: true,
     };
 
     tabsOrder.forEach(tabName => {
@@ -32,30 +33,57 @@ class KeyMetricsContainer extends Component {
     this.handleTabChange = this.handleTabChange.bind(this);
   }
 
+  fetchData(tabName, breakDown) {
+    breakDown = breakDown || this.props.selectedBreakdown;
+
+    const { tabsState, selectedTab } = this.state;
+
+    getData(tabName, breakDown).then(resp => {
+      if (!tabName) {
+        tabsOrder.forEach(tabName => {
+          tabsState[tabName].data.count = resp[tabName];
+          tabsState[tabName].data.percentage = resp[`${tabName}Percentage`];
+        });
+      } else {
+        tabsState[tabName].data.count = resp[tabName];
+      }
+
+      const tabState = tabsState[tabName || selectedTab];
+
+      tabState.data.diff = resp.diff;
+
+      tabState.data.histogram = [];
+
+      Object.keys(resp).forEach(keyName => {
+        if (keyName.indexOf('group') === 0) {
+          tabState.data.histogram.push({
+            name: keyName,
+            data: resp[keyName].histogram.map(item => [
+              item.timestamp,
+              item.value,
+            ]),
+          });
+        }
+      });
+
+      this.setState({ tabsState, loading: false });
+    });
+  }
+
   componentWillMount() {
     const { tabsState, selectedTab } = this.state;
 
-    getData().then(resp => {
-      tabsOrder.forEach(tabName => {
-        tabsState[tabName].data.count = resp[tabName];
-      });
-
-      const tabState = tabsState[selectedTab];
-
-      tabState.data.diff = resp.diff;
-      tabState.data.histogram = resp.histogram.map(item => [
-        item.timestamp,
-        item.value,
-      ]);
-
-      this.setState({ tabsState });
-    });
+    this.fetchData();
   }
 
   handleTabChange(tabName) {
     this.setState({
       selectedTab: tabName,
     });
+
+    const { tabsState } = this.state;
+
+    return !tabsState[tabName].data.histogram && this.fetchData(tabName);
   }
 
   onGroupingChange(tabName, selectedGrouping) {
@@ -64,11 +92,41 @@ class KeyMetricsContainer extends Component {
 
     tabState.selectedGrouping = selectedGrouping;
 
-    this.setState({ tabsState });
+    delete tabState.data.diff;
+    delete tabState.data.histogram;
+
+    this.setState({ tabsState }, () => {
+      this.fetchData(tabName);
+    });
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { startDate, endDate, selectedBreakdown } = nextProps;
+
+    if (
+      startDate.toDate() !== this.props.startDate.toDate() ||
+      endDate.toDate() !== this.props.endDate.toDate ||
+      selectedBreakdown !== this.props.selectedBreakdown
+    ) {
+      tabsOrder.forEach(tabName => {
+        const tabState = this.state.tabsState[tabName];
+
+        delete tabState.data.diff;
+        delete tabState.data.histogram;
+      });
+
+      this.setState({ tabsState: this.state.tabsState });
+      this.fetchData(this.state.selectedTab, selectedBreakdown);
+    }
   }
 
   render() {
-    const tabsState = this.state.tabsState;
+    const { tabsState, loading } = this.state,
+      { startDate, endDate } = this.props;
+
+    if (loading) {
+      return <span>Loading...</span>;
+    }
 
     return (
       <Tabs>
@@ -99,6 +157,8 @@ class KeyMetricsContainer extends Component {
                 selectedGrouping={tabsState[tabName].selectedGrouping}
                 onGroupingChange={this.onGroupingChange}
                 data={tabsState[tabName].data}
+                startDate={startDate}
+                endDate={endDate}
               />
             </TabPanel>
           );

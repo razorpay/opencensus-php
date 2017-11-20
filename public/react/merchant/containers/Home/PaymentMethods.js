@@ -1,6 +1,13 @@
 import React, { Component } from 'react';
 
+import Hc from 'highcharts';
+import * as HeatMap from 'highcharts/modules/heatmap';
+import * as TreeMap from 'highcharts/modules/treemap';
+
 import Highcharts from 'rzp/ui/Highcharts';
+
+HeatMap(Hc);
+TreeMap(Hc);
 
 class PaymentMethods extends Component {
   render() {

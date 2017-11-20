@@ -24,8 +24,11 @@ class Sticky extends Component {
         top: `${this.props.stickAt}px`,
       };
 
+    this.node.style.width = styles.width;
+    this.node.style.height = styles.height;
+
     Object.keys(styles).forEach(styleName => {
-      node.style[styleName] = styles[styleName];
+      this.contentElement.style[styleName] = styles[styleName];
     });
 
     this.setState({ isSticky: true });
@@ -33,6 +36,7 @@ class Sticky extends Component {
 
   unStick() {
     this.node.removeAttribute('style');
+    this.contentElement.removeAttribute('style');
 
     this.setState({
       isSticky: false,
@@ -58,15 +62,22 @@ class Sticky extends Component {
   }
 
   render() {
-    const classNames = ['rzp-sticky'];
+    const classNames = ['rzp-sticky'],
+      styles = {};
 
     if (this.state.isSticky) {
       classNames.push('sticky');
+      styles.width = this.node;
     }
 
     return (
       <div className={classNames.join(' ')} ref={node => (this.node = node)}>
-        {this.props.children}
+        <div
+          ref={node => (this.contentElement = node)}
+          className="sticky-content"
+        >
+          {this.props.children}
+        </div>
       </div>
     );
   }
