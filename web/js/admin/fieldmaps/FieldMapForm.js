@@ -14,7 +14,7 @@ export default function FieldMapForm({
   return (
     <div>
       <header>{id ? `Edit - ${id}` : 'Add a new Field Map'}</header>
-      <Form>
+      <Form class="full-span full-elements">
         {id ? <input type="hidden" name="id" defaultValue={id} /> : ''}
 
         <Field
@@ -25,7 +25,7 @@ export default function FieldMapForm({
         />
         <br />
         <TextAreaField
-          label="Fields (Seperated by comma's)"
+          label="Fields(Seperated by comma)"
           name="fields"
           defaultValue={fields.join(',')}
           required
