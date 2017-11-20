@@ -296,13 +296,17 @@ const ActionsList = ({ model, merchantId, actions }) => {
         });
     });
   }
-
   return (
     <aside class="">
       <div class="heading">Actions</div>
-      <Link to={`/merchant/${merchantId}/login`} target="_blank">
+      <a
+        href={`http://dashboard.razorpay.dev/admin/merchant/${
+          merchantId
+        }/login`}
+        target="_blank"
+      >
         Login as Merchant
-      </Link>
+      </a>
       <Link to={`/merchants/${merchantId}/activation`}>
         See Activation Form Details
       </Link>
