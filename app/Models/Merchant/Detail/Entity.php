@@ -77,6 +77,9 @@ class Entity extends Base\PublicEntity
     const STEPS_FINISHED                     = 'steps_finished';
     const ACTIVATION_PROGRESS                = 'activation_progress';
     const LOCKED                             = 'locked';
+    const ACTIVATION_STATUS                  = 'activation_status';
+    const CLARIFICATION_MODE                 = 'clarification_mode';
+    const ARCHIVED_AT                        = 'archived_at';
     const MARKETPLACE_ACTIVATION_STATUS      = 'marketplace_activation_status';
     const VIRTUAL_ACCOUNTS_ACTIVATION_STATUS = 'virtual_accounts_activation_status';
     const SUBSCRIPTIONS_ACTIVATION_STATUS    = 'subscriptions_activation_status';
@@ -91,6 +94,14 @@ class Entity extends Base\PublicEntity
     const PENDING  = 'pending';
     const APPROVED = 'approved';
     const REJECTED = 'rejected';
+
+    /*
+     * Enum values used for activation form status
+     * There is also a 'rejected' status for activation form
+    */
+    const UNDER_REVIEW        = 'under_review';
+    const NEEDS_CLARIFICATION = 'needs_clarification';
+    const ACTIVATED           = 'activated';
 
     protected $entity = 'merchant_detail';
 
@@ -158,6 +169,9 @@ class Entity extends Base\PublicEntity
         self::COMMENT,
         self::STEPS_FINISHED,
         self::LOCKED,
+        self::ACTIVATION_STATUS,
+        self::CLARIFICATION_MODE,
+        self::ARCHIVED_AT,
         self::MARKETPLACE_ACTIVATION_STATUS,
         self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
         self::SUBSCRIPTIONS_ACTIVATION_STATUS,
@@ -206,6 +220,9 @@ class Entity extends Base\PublicEntity
         self::STEPS_FINISHED,
         self::ACTIVATION_PROGRESS,
         self::LOCKED,
+        self::ACTIVATION_STATUS,
+        self::CLARIFICATION_MODE,
+        self::ARCHIVED_AT,
         self::MARKETPLACE_ACTIVATION_STATUS,
         self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
         self::SUBSCRIPTIONS_ACTIVATION_STATUS,
