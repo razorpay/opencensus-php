@@ -66,12 +66,7 @@ class Reconciliation extends Base
         $guesser->register(new FileBinaryMimeTypeGuesser());
     }
 
-    /**
-     * @param File $file
-     *
-     * @return array [FileStore\Entity, File]
-     */
-    protected function saveInputFile(File $file): array
+    protected function saveInputFile(File $file): FileStore\Creator
     {
         $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArray());
 
@@ -102,16 +97,15 @@ class Reconciliation extends Base
             ->name($fileName)
             ->extension($extension)
             ->type(FileStore\Type::RECONCILIATION_BATCH_INPUT)
-            ->deleteLocalFile()
             ->save();
-
-        $ufhFile = $ufh->getFileInstance();
 
         $this->batch->setUploadFileUrl($ufh->getUrl());
 
-        $this->trace->info(TraceCode::BATCH_UPLOAD_FILE, $ufhFile->toArrayPublic());
+        $this->trace->info(
+            TraceCode::BATCH_UPLOAD_FILE,
+            $ufh->getFileInstance()->toArrayPublic());
 
-        return [$ufhFile, $movedFile];
+        return $ufh;
     }
 
     protected function validateInputFileAndUpdateBatch(string $filePath, array $input)

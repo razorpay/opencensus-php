@@ -120,9 +120,11 @@ class Base extends BaseModel\Core
         //
         $inputFile = $input[Batch\Entity::FILE];
 
-        list($ufhFile, $movedFile) = $this->saveInputFile($inputFile);
+        $ufh = $this->saveInputFile($inputFile);
 
-        $this->validateInputFileAndUpdateBatch($movedFile->getPathname(), $input);
+        $ufhFile = $ufh->getFileInstance();
+
+        $this->validateInputFileAndUpdateBatch($ufh->getFullFilePath(), $input);
 
         $ufhFile->entity()->associate($this->batch);
 
@@ -636,9 +638,9 @@ class Base extends BaseModel\Core
      *
      * @param File $file
      *
-     * @return array [FileStore\Entity, File]
+     * @return FileStore\Creator
      */
-    protected function saveInputFile(File $file): array
+    protected function saveInputFile(File $file): FileStore\Creator
     {
         $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArray());
 
@@ -661,11 +663,11 @@ class Base extends BaseModel\Core
 
         $this->batch->setUploadFileUrl($ufh->getUrl());
 
-        $ufhFile = $ufh->getFileInstance();
+        $this->trace->info(
+            TraceCode::BATCH_UPLOAD_FILE,
+            $ufh->getFileInstance()->toArrayPublic());
 
-        $this->trace->info(TraceCode::BATCH_UPLOAD_FILE, $ufhFile->toArrayPublic());
-
-        return [$ufhFile, $movedFile];
+        return $ufh;
     }
 
     protected function saveOutputFile()
