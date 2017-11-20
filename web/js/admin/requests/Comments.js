@@ -95,8 +95,9 @@ export default class Comments extends Component {
           <AsyncButton
             text="Comment"
             class="btn pull-right"
-            pendingClass="small spinner"
+            pendingClass="small spinner pull-right"
             onSubmit={this.addComment}
+            disabled={!this.state.comment.length}
           />
         </Form>
       </div>

@@ -33,7 +33,7 @@
     vertical-align: top
 
     form, .levels-container, .comments-containers
-      padding: 0 30px
+      padding: 0 30px 10px
       margin-top: 16px
 
     form
@@ -72,6 +72,7 @@
 
       .comment
         padding: 15px 20px
+        animation: 0.3s fadein ease-in
 
         &:not(:first-child)
           border-top: 1px solid $faded-color
@@ -79,9 +80,13 @@
         .comment-body
           line-height: 18px;
 
-      form textarea
-        width: 100%
-        margin-left: 0
+      form
+        label
+          font-weight: bold
+
+        textarea
+          width: 100%
+          margin-left: 0
 
   /* Requests aside content */
   .requests-actions
