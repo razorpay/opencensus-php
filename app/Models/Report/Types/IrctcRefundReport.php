@@ -4,12 +4,11 @@ namespace RZP\Models\Report\Types;
 
 use Mail;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use RZP\Models\Order;
+
 use RZP\Models\Payment;
-use RZP\Models\Payment\Refund;
 use RZP\Models\FileStore;
-use RZP\Models\Feature;
+use RZP\Constants\Timezone;
+use RZP\Models\Payment\Refund;
 use RZP\Constants\Entity as E;
 use RZP\Mail\Report\IrctcRefundReport as IrctcMail;
 
@@ -62,7 +61,7 @@ class IrctcRefundReport extends BasicEntityReport
 
         $reportingMail = new IrctcMail($data);
 
-        Mail::send($reportingMail);
+        Mail::queue($reportingMail);
 
         return [ 'url' => $signedUrl ];
     }
@@ -133,12 +132,6 @@ class IrctcRefundReport extends BasicEntityReport
         return $refundDate;
     }
 
-    /**
-     * Generates filename basis merchant_id, entity and timestamp
-     *
-     * @param  $timestamp
-     * @return $filename string
-     */
     protected function generateFilename($timestamp) : string
     {
         $version = 'V1';
@@ -147,7 +140,7 @@ class IrctcRefundReport extends BasicEntityReport
 
         $filePrefix = self::FILE_PREFIX[$this->merchant->getId()];
 
-        return $filePrefix . $time . '_' .$version . '.txt';
+        return $filePrefix . $time . '_' . $version . '.txt';
     }
 
     protected function writeDataToCsvForMerchant(int $from,

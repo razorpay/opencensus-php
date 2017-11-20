@@ -2,17 +2,17 @@
 
 namespace RZP\Models\Payment\Refund;
 
-use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
-use RZP\Gateway\Wallet\Freecharge;
+use Carbon\Carbon;
+
 use RZP\Models\Base;
+use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
-use RZP\Models\Payment\Refund;
-use RZP\Exception;
 use RZP\Constants\Table;
-use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use RZP\Models\Order;
+use RZP\Models\Payment\Refund;
+use RZP\Gateway\Wallet\Freecharge;
+use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 
 class Repository extends Base\Repository
 {
@@ -499,11 +499,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchIrctcDeltaRefunds(string $merchantId, int $from, int $to, $receipt = null)
+    public function fetchIrctcDeltaRefunds(string $merchantId, int $from, int $to)
     {
         $query = $this->newQuery()
                       ->select($this->dbColumn('*'))
-                      ->whereIn('id', function ($query) use($merchantId, $from, $to)
+                      ->whereIn(Entity::ID, function ($query) use($merchantId, $from, $to)
                         {
                             $pId = $this->repo->payment->dbColumn(Payment\Entity::ID);
 
