@@ -117,104 +117,111 @@ export default class EditPublicFeatures extends Component {
       save,
     } = this;
 
-    if (this.state.pending) {
-      return <div class="spinner" />;
-    }
-
     return (
       <BaseModal header="Edit Submission">
-        <Form class="full-span full-elements" onSubmit={save}>
-          <div class="field">
-            <label>Merchant ID</label>
-            <code>{merchant_id}</code>
-          </div>
-          <div class="field">
-            <label>Feature</label>
-            <code>{feature}</code>
-          </div>
-          <SelectField
-            label="Status"
-            name="status"
-            defaultValue={selectedStatus}
-          >
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </SelectField>
-          {featuresAkaMap[akaFeature] === featuresAkaMap.marketplace ||
-          featuresAkaMap[akaFeature] === featuresAkaMap.virtual_accounts ? (
-            <TextAreaField
-              label="Use Case"
-              name="use_case"
-              defaultValue={submissions[akaFeature].use_case}
-            />
-          ) : null}
-
-          {featuresAkaMap[akaFeature] === featuresAkaMap.virtual_accounts && (
-            <Field
-              label="Expected Monthly Revenue"
-              type="number"
-              name="expected_monthly_revenue"
-              defaultValue={submissions[akaFeature].expected_monthly_revenue}
-            />
-          )}
-
-          {featuresAkaMap[akaFeature] === featuresAkaMap.subscriptions && [
-            <TextAreaField
-              label="Business Model"
-              name="business_model"
-              key="business_model"
-              defaultValue={submissions[akaFeature].business_model}
-            />,
-            <TextAreaField
-              label="Subscription Plans"
-              name="sample_plans"
-              key="sample_plans"
-              defaultValue={submissions[akaFeature].sample_plans}
-            />,
-            <TextAreaField
-              label="Website Details"
-              name="website_details"
-              key="website_details"
-              defaultValue={submissions[akaFeature].website_details}
-            />,
-          ]}
-
-          {featuresAkaMap[akaFeature] === featuresAkaMap.marketplace && [
+        {this.state.pending ? (
+          <div class="spinner" />
+        ) : (
+          <Form class="full-span full-elements" onSubmit={save}>
+            <div class="field">
+              <label>Merchant ID</label>
+              <code>{merchant_id}</code>
+            </div>
+            <div class="field">
+              <label>Feature</label>
+              <code>{feature}</code>
+            </div>
             <SelectField
-              label="Transferring to"
-              name="settling_to"
-              key="settling_to"
-              defaultValue={submissions[akaFeature].settling_to}
+              label="Status"
+              name="status"
+              defaultValue={selectedStatus}
             >
-              {tranferToOptions.map(t => (
-                <option key={t[0]} value={t[0]}>
-                  {t[1]}
-                </option>
-              ))}
-            </SelectField>,
-            <div key="vendor_agreement">
-              {this.state.agreement ? (
-                <div>
-                  <div class="field">
-                    <label>Signed Vendor Agreement:</label>
-                    <a class="link" href={this.state.agreement} target="_blank">
-                      <i class="i-download" />&nbsp;Vendor Agreement
-                    </a>
-                    &nbsp;&nbsp;&nbsp;
-                    <div class="link danger" onClick={changeAgreement}>
-                      Change
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </SelectField>
+            {featuresAkaMap[akaFeature] === featuresAkaMap.marketplace ||
+            featuresAkaMap[akaFeature] === featuresAkaMap.virtual_accounts ? (
+              <TextAreaField
+                label="Use Case"
+                name="use_case"
+                defaultValue={submissions[akaFeature].use_case}
+              />
+            ) : null}
+
+            {featuresAkaMap[akaFeature] === featuresAkaMap.virtual_accounts && (
+              <Field
+                label="Expected Monthly Revenue"
+                type="number"
+                name="expected_monthly_revenue"
+                defaultValue={submissions[akaFeature].expected_monthly_revenue}
+              />
+            )}
+
+            {featuresAkaMap[akaFeature] === featuresAkaMap.subscriptions && [
+              <TextAreaField
+                label="Business Model"
+                name="business_model"
+                key="business_model"
+                defaultValue={submissions[akaFeature].business_model}
+              />,
+              <TextAreaField
+                label="Subscription Plans"
+                name="sample_plans"
+                key="sample_plans"
+                defaultValue={submissions[akaFeature].sample_plans}
+              />,
+              <TextAreaField
+                label="Website Details"
+                name="website_details"
+                key="website_details"
+                defaultValue={submissions[akaFeature].website_details}
+              />,
+            ]}
+
+            {featuresAkaMap[akaFeature] === featuresAkaMap.marketplace && [
+              <SelectField
+                label="Transferring to"
+                name="settling_to"
+                key="settling_to"
+                defaultValue={submissions[akaFeature].settling_to}
+              >
+                {tranferToOptions.map(t => (
+                  <option key={t[0]} value={t[0]}>
+                    {t[1]}
+                  </option>
+                ))}
+              </SelectField>,
+              <div key="vendor_agreement">
+                {this.state.agreement ? (
+                  <div>
+                    <div class="field">
+                      <label>Signed Vendor Agreement:</label>
+                      <a
+                        class="link"
+                        href={this.state.agreement}
+                        target="_blank"
+                      >
+                        <i class="i-download" />&nbsp;Vendor Agreement
+                      </a>
+                      &nbsp;&nbsp;&nbsp;
+                      <div class="link danger" onClick={changeAgreement}>
+                        Change
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : (
-                <FileField label="Signed Vendor Agreement:" name="file_name" />
-              )}
-            </div>,
-          ]}
+                ) : (
+                  <FileField
+                    label="Signed Vendor Agreement:"
+                    name="file_name"
+                  />
+                )}
+              </div>,
+            ]}
 
-          <button class="btn">Save</button>
-        </Form>
+            <button class="btn">Save</button>
+          </Form>
+        )}
       </BaseModal>
     );
   }
