@@ -6,6 +6,10 @@ import * as VirtualAccountActions from 'merchant/modules/virtualaccounts';
 import { showNotification } from 'rzp/modules/notifications';
 import { openModal } from 'rzp/modules/modals';
 import CreateTestPayment from './CreateTestPayment';
+import {
+  stringifyQueryParamsWithPipe,
+  getEventCategoryFromPath,
+} from 'rzp/utils/rzp-utils';
 
 @withRouter
 @connect(
@@ -38,16 +42,51 @@ export default class VirtualAccountDetailsContainer extends Component {
     }
   }
 
+  componentDidMount() {
+    const { closeUrl, id } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
+      window.rzpAnalytics({
+        eventCategory: eventCategory,
+        eventAction: 'Open Details - Virtual Account',
+        eventLabel: `virtual_account_id=${id}`,
+      });
+  }
+
+  componentWillUnmount() {
+    const { closeUrl, id } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
+      window.rzpAnalytics({
+        eventCategory: eventCategory,
+        eventAction: 'Close Details - Virtual Account',
+        eventLabel: `virtual_account_id=${id}`,
+      });
+  }
+
   closeAccount = virtualaccount => {
     this.context.confirm({
       header: 'Close account?',
-      message: 'The account will be closed and your customers will no longer be able to transfer money to this virtual account.',
+      message:
+        'The account will be closed and your customers will no longer be able to transfer money to this virtual account.',
       affirmativeLabel: 'Yes',
       abortLabel: 'No',
       action: () =>
         this.props
           .saveVirtualAccount({ ...virtualaccount, status: 'closed' })
           .then(response => {
+            window.rzpAnalytics({
+              eventCategory: 'Dashboard - Smart Collect',
+              eventAction: 'Submit Form - Close Virtual Account',
+              eventLabel: `virtual_account_id=${virtualaccount.id}`,
+            });
+
+            window.rzpAnalytics({
+              eventCategory: 'Dashboard - Smart Collect',
+              eventAction: 'Close Form - Close Virtual Account',
+              eventLabel: `virtual_account_id=${virtualaccount.id}`,
+            });
+
             this.props.showNotification({
               type: 'success',
               message: 'Account closed successfully',
@@ -59,13 +98,78 @@ export default class VirtualAccountDetailsContainer extends Component {
               message: errors,
             });
           }),
+      onMount: () => {
+        window.rzpAnalytics({
+          eventCategory: 'Dashboard - Smart Collect',
+          eventAction: 'Open Form - Close Virtual Account',
+          eventLabel: `virtual_account_id=${virtualaccount.id}`,
+        });
+      },
+      abort: () => {
+        window.rzpAnalytics({
+          eventCategory: 'Dashboard - Smart Collect',
+          eventAction: 'Close Form - Close Virtual Account',
+          eventLabel: `virtual_account_id=${virtualaccount.id}`,
+        });
+      },
     });
+  };
+
+  onCopy = virtualaccount => {
+    const { closeUrl } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
+      window.rzpAnalytics({
+        eventCategory: eventCategory,
+        eventAction: 'Copy To Clipboard',
+        eventLabel: `virtual_account_id${virtualaccount.id}`,
+      });
+  };
+
+  onTestPaymentModalMount = id => {
+    const { closeUrl } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
+      window.rzpAnalytics({
+        eventCategory: eventCategory,
+        eventAction: 'Open Form - Make Test Payment',
+        eventLabel: `virtual_account_id=${id}`,
+      });
+  };
+
+  onTestPaymentModalUnmount = id => {
+    const { closeUrl } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
+      window.rzpAnalytics({
+        eventCategory: eventCategory,
+        eventAction: 'Close Form - Make Test Payment',
+        eventLabel: `virtual_account_id=${id}`,
+      });
+  };
+
+  onTestPayment = params => {
+    const { closeUrl } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
+      window.rzpAnalytics({
+        eventCategory: eventCategory,
+        eventAction: 'Submit Form - Make Test Payment',
+        eventLabel: stringifyQueryParamsWithPipe(params),
+      });
   };
 
   openTestPaymentModal = () => {
     this.props.openModal({
       size: 'small',
-      component: <CreateTestPayment virtualAccount={this.props.entity} />,
+      component: (
+        <CreateTestPayment
+          virtualAccount={this.props.entity}
+          onMount={this.onTestPaymentModalMount}
+          onUnmount={this.onTestPaymentModalUnmount}
+          onTestPayment={this.onTestPayment}
+        />
+      ),
     });
   };
 
@@ -89,6 +193,7 @@ export default class VirtualAccountDetailsContainer extends Component {
         statusMsg={statusMsg}
         onClose={this.closeAccount}
         onMakeTestPaymentClick={this.openTestPaymentModal}
+        onCopy={this.onCopy}
       />
     );
   }

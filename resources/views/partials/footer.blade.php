@@ -12,6 +12,8 @@
       document.cookie = 'signup_pixel=;domain=.razorpay.com;expires=Thu, 01 Jan 1970 00:00:01 GMT';
       new Image().src = '//www.facebook.com/tr?id=697927486977350&ev=CompleteRegistration'
     }
+  } else {
+      ga = function () {};
   }
   </script>
 </body>

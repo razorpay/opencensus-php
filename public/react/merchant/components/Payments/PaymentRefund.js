@@ -31,19 +31,21 @@ const NumRefunds = ({ refunds, titleCase = false }) => {
 
   return (
     <span>
-      {refunds.loading ? <LoaderDots /> : numRefunds} {titleCase ? 'R' : 'r'}efund{refundSuffix}
+      {refunds.loading ? <LoaderDots /> : numRefunds} {titleCase ? 'R' : 'r'}efund{
+        refundSuffix
+      }
     </span>
   );
 };
 
-const RefundsList = ({ refunds }) => {
+const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
   const refundsHeading = {
     title: 'Refund Details',
     subTitle: <NumRefunds refunds={refunds} titleCase={true} />,
   };
 
   return (
-    <ContentToggler>
+    <ContentToggler onToggleClick={onToggleClick}>
       <span>Refund Details</span>
       <div className="full-width-item sub-entity-list">
         <DataTable
@@ -62,10 +64,16 @@ const RefundsList = ({ refunds }) => {
   );
 };
 
-export default ({ payment, refunds, openRefundModal }) => {
+export default ({
+  payment,
+  refunds,
+  openRefundModal,
+  onToggleClick = () => {},
+}) => {
   const paymentStatus = payment.status,
     refundStatus = payment.refund_status,
-    refundAmount = payment.amount_refunded;
+    refundAmount = payment.amount_refunded,
+    currency = payment.currency;
 
   if (['created', 'authorized', 'failed'].indexOf(paymentStatus) >= 0) {
     return (
@@ -78,16 +86,24 @@ export default ({ payment, refunds, openRefundModal }) => {
     return (
       <div>
         <div className="m-b">
-          {refundStatus === 'partial'
-            ? <Definition>
-                <span>
-                  <Amount value={refundAmount} /> Refunded
-                </span>
-                <span>
-                  Partially refunded in <NumRefunds refunds={refunds} />
-                </span>
-              </Definition>
-            : <Definition>No refunds issued yet</Definition>}
+          {refundStatus === 'partial' ? (
+            <Definition>
+              <span>
+                <Amount value={refundAmount} currency={currency} /> Refunded
+              </span>
+              <span>
+                Partially refunded in{' '}
+                <NumRefunds
+                  refunds={refunds}
+                  onToggleClick={() => {
+                    onToggleClick(payment);
+                  }}
+                />
+              </span>
+            </Definition>
+          ) : (
+            <Definition>No refunds issued yet</Definition>
+          )}
         </div>
         {
           <ShowWhen myRole="owner manager operations admin">
@@ -98,7 +114,14 @@ export default ({ payment, refunds, openRefundModal }) => {
             </p>
           </ShowWhen>
         }
-        {refundStatus === 'partial' && <RefundsList refunds={refunds} />}
+        {refundStatus === 'partial' && (
+          <RefundsList
+            refunds={refunds}
+            onToggleClick={() => {
+              onToggleClick(payment);
+            }}
+          />
+        )}
       </div>
     );
   } else if (paymentStatus === 'refunded') {
@@ -123,7 +146,14 @@ export default ({ payment, refunds, openRefundModal }) => {
             </span>
           </Definition>
           <p />
-          {<RefundsList refunds={refunds} />}
+          {
+            <RefundsList
+              refunds={refunds}
+              onToggleClick={() => {
+                onToggleClick(payment);
+              }}
+            />
+          }
         </div>
       );
     }

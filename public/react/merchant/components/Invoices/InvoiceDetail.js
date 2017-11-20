@@ -74,13 +74,13 @@ export default props => {
             <ShowWhen notMyRole="support finance">
               <div class="btn-toolbar pull-right">
                 {(isDraft || isIssued) && (
-                    <button
-                      class="btn btn-primary btn-sm"
-                      onClick={props.onIssue}
-                    >
-                      {isSmsOrEmailSent ? 'Send Again' : 'Send Link'}
-                    </button>
-                  )}
+                  <button
+                    class="btn btn-primary btn-sm"
+                    onClick={props.onIssue}
+                  >
+                    {isSmsOrEmailSent ? 'Send Again' : 'Send Link'}
+                  </button>
+                )}
 
                 {isIssued && (
                   <button
@@ -107,7 +107,12 @@ export default props => {
               <div class="list-group details-row-container">
                 <EntityDetailRow
                   label="Amount"
-                  value={() => <Amount value={invoice.amount} />}
+                  value={() => (
+                    <Amount
+                      value={invoice.amount}
+                      currency={invoice.currency}
+                    />
+                  )}
                 />
                 <EntityDetailRow
                   label="Status"
@@ -115,7 +120,12 @@ export default props => {
                 />
                 <EntityDetailRow
                   label="Amount Paid"
-                  value={() => <Amount value={invoice.amount_paid} />}
+                  value={() => (
+                    <Amount
+                      value={invoice.amount_paid}
+                      currency={invoice.currency}
+                    />
+                  )}
                 />
 
                 <EntityDetailRow
@@ -134,7 +144,20 @@ export default props => {
 
                 <EntityDetailRow
                   label="Payment Link"
-                  value={() => <CopyLink url={invoice.short_url} />}
+                  value={() => (
+                    <CopyLink
+                      url={invoice.short_url}
+                      onCopy={() => {
+                        if (invoice.type === 'link') {
+                          window.rzpAnalytics({
+                            eventCategory: 'Dashboard - Payment Links',
+                            eventAction: 'Copy - Payment Link',
+                            eventLabel: `payment_link_id=${invoice.id}`,
+                          });
+                        }
+                      }}
+                    />
+                  )}
                 />
                 <EntityDetailRow
                   label="Summary"

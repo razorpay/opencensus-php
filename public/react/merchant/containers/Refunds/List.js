@@ -8,8 +8,35 @@ import RefundsListFilter from 'merchant/components/Refunds/RefundsListFilter';
 import { fetchRefunds as fetchAll } from 'rzp/modules/collection';
 import { refundId, paymentId, amount, createdAt } from 'rzp/ui/item/pair';
 
+import { stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
+
 @connect(state => state.refunds, { fetchAll })
 export default class RefundsListContainer extends ListContainer {
+  componentDidMount() {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Refunds',
+      eventAction: 'Go To - Refunds',
+    });
+  }
+
+  onSearchAnalytics = params => {
+    const label = stringifyQueryParamsWithPipe(params);
+    if (label && label.length > 0) {
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Refunds',
+        eventAction: 'Search - Refunds',
+        eventLabel: label,
+      });
+    }
+  };
+
+  onClearAnalytics = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Refunds',
+      eventAction: 'Clear Search Params - Refunds',
+    });
+  };
+
   render() {
     return (
       <div class="content-wrapper">
@@ -17,6 +44,8 @@ export default class RefundsListContainer extends ListContainer {
           form="refundListFilter"
           count={this.state.count}
           onSubmit={this.search}
+          onSearchAnalytics={this.onSearchAnalytics}
+          onClearAnalytics={this.onClearAnalytics}
         />
 
         <DataTable

@@ -8,7 +8,7 @@ import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
-import { isBlank } from 'rzp/utils/rzp-utils';
+import { isBlank, stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
 import { saveInvoice } from 'merchant/modules/invoices/list';
 import { required, phone, email, amount } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
@@ -56,6 +56,8 @@ function validate(values) {
       // `expireByDate` is the expiry date wihtout any info about the time
       // (start of the day)
       expireByDate: selector(state, 'expire_by_date'),
+      emailNotify: selector(state, 'email_notify'),
+      smsNotify: selector(state, 'sms_notify'),
     };
   },
   { saveInvoice, showNotification }
@@ -76,8 +78,6 @@ export default class CreatePaymentLink extends Component {
     super(...arguments);
     this.state = {
       errors: null,
-      isEmailSelected: false,
-      isPhoneSelected: false,
     };
     this.setExpiryDate = this.setExpiryDate.bind(this);
     this.handleCommChange = this.handleCommChange.bind(this);
@@ -90,11 +90,43 @@ export default class CreatePaymentLink extends Component {
       this.props.initialize({
         ...this.props.invoice,
         ...(expireBy && {
-          expire_by_date: moment(expireBy * 1000).startOf('day').unix(),
+          expire_by_date: moment(expireBy * 1000)
+            .startOf('day')
+            .unix(),
           expire_by: expireBy * 1000,
         }),
       });
     }
+  }
+
+  componentDidMount() {
+    const isEdit = !!this.props.invoice;
+
+    let analyticsObj = {
+      eventCategory: 'Dashboard - Payment Links',
+      eventAction: `Open Form - ${isEdit ? 'Edit' : 'New'} Payment Link`,
+    };
+
+    if (isEdit) {
+      analyticsObj.eventLabel = `payment_link_id=${this.props.invoice.id}`;
+    }
+
+    window.rzpAnalytics(analyticsObj);
+  }
+
+  componentWillUnmount() {
+    const isEdit = !!this.props.invoice;
+
+    let analyticsObj = {
+      eventCategory: 'Dashboard - Payment Links',
+      eventAction: `Close Form - ${isEdit ? 'Edit' : 'New'} Payment Link`,
+    };
+
+    if (isEdit) {
+      analyticsObj.eventLabel = `payment_link_id=${this.props.invoice.id}`;
+    }
+
+    window.rzpAnalytics(analyticsObj);
   }
 
   setExpiryDate(date) {
@@ -113,7 +145,10 @@ export default class CreatePaymentLink extends Component {
         // and add the diff to selected date
         expiryWithTime =
           date * 1000 +
-          (expiryWithTime - moment(expiryWithTime).startOf('day').valueOf());
+          (expiryWithTime -
+            moment(expiryWithTime)
+              .startOf('day')
+              .valueOf());
       } else {
         // if `expiryDateWithTime` is not set and somebody selects a date
         // expiry time should be the EOD of the selected date (11:59 PM)
@@ -136,7 +171,7 @@ export default class CreatePaymentLink extends Component {
 
   save = props => {
     const params = { ...props };
-    const { isEmailSelected, isPhoneSelected } = this.state;
+    const isEdit = !!this.props.invoice;
     let notificationMSG = 'Payment link created successfully.',
       notifyMedium = [];
 
@@ -166,6 +201,12 @@ export default class CreatePaymentLink extends Component {
     return this.props
       .saveInvoice(params)
       .then(invoice => {
+        window.rzpAnalytics({
+          eventCategory: 'Dashboard - Payment Links',
+          eventAction: `Submit Form - ${isEdit ? 'Edit' : 'New'} Payment Link`,
+          eventLabel: stringifyQueryParamsWithPipe(params),
+        });
+
         this.props.onSave(invoice);
         this.props.closeModal();
         this.props.showNotification({
@@ -180,6 +221,23 @@ export default class CreatePaymentLink extends Component {
       });
   };
 
+  generateCtaText = () => {
+    let { invoice, smsNotify, emailNotify } = this.props;
+    let ctaText = {};
+
+    if (invoice) {
+      ctaText = { btn: 'Save Payment Link', pending: 'Saving...' };
+    } else {
+      if (smsNotify || emailNotify) {
+        ctaText = { btn: 'Send Payment Link', pending: 'Sending...' };
+      } else {
+        ctaText = { btn: 'Create Payment Link', pending: 'Creating...' };
+      }
+    }
+
+    return ctaText;
+  };
+
   render() {
     const { handleSubmit, invoice } = this.props;
     let isTestMode = this.props.mode === 'test';
@@ -190,6 +248,7 @@ export default class CreatePaymentLink extends Component {
     let isCancelled = status === 'cancelled';
     let isExpired = status === 'expired';
     let locked = isPaid || isExpired || isCancelled;
+    let ctaText = this.generateCtaText();
 
     return (
       <div>
@@ -204,7 +263,7 @@ export default class CreatePaymentLink extends Component {
         >
           <div class="modal-body">
             <Alert type="error" message={this.state.errors} />
-            {isNewForm &&
+            {isNewForm && (
               <div>
                 <div class="form-group">
                   <label class="col-md-3 control-label help-label label-required">
@@ -292,7 +351,7 @@ export default class CreatePaymentLink extends Component {
                       onDateChange={this.setExpiryDate}
                     />
                   </div>
-                  {this.props.expireBy &&
+                  {this.props.expireBy && (
                     <div class="col-md-4">
                       <Field
                         name="expire_by"
@@ -301,9 +360,11 @@ export default class CreatePaymentLink extends Component {
                         dateFormat={false}
                         timeFormat={true}
                       />
-                    </div>}
+                    </div>
+                  )}
                 </div>
-              </div>}
+              </div>
+            )}
 
             <div class="form-group customer">
               <label class="col-md-3 control-label">Customer</label>
@@ -336,7 +397,7 @@ export default class CreatePaymentLink extends Component {
               </div>
             </div>
 
-            {!isNewForm &&
+            {!isNewForm && (
               <div>
                 <div class="form-group">
                   <label class="col-md-3 control-label help-label">
@@ -382,7 +443,8 @@ export default class CreatePaymentLink extends Component {
                     />
                   </div>
                 </div>
-              </div>}
+              </div>
+            )}
 
             <div class="form-group">
               <label class="col-md-3 control-label">Notify Customer</label>
@@ -422,7 +484,7 @@ export default class CreatePaymentLink extends Component {
               </div>
             </div>
 
-            {isTestMode &&
+            {isTestMode && (
               <div class="row">
                 <div class="col-md-8 col-md-offset-3">
                   <div class="alert alert-sm alert-warning">
@@ -431,7 +493,8 @@ export default class CreatePaymentLink extends Component {
                     {/* Also, SMS will not be sent in test mode */}
                   </div>
                 </div>
-              </div>}
+              </div>
+            )}
           </div>
 
           <div class="modal-footer">
@@ -446,16 +509,8 @@ export default class CreatePaymentLink extends Component {
             <AsyncButton
               type="submit"
               class="btn btn-primary"
-              text={
-                this.state.isEmailSelected || this.state.isPhoneSelected
-                  ? 'Send Payment Link'
-                  : 'Create Payment Link'
-              }
-              pendingText={
-                this.state.isEmailSelected || this.state.isPhoneSelected
-                  ? 'Sending...'
-                  : 'Creating...'
-              }
+              text={ctaText.btn}
+              pendingText={ctaText.pending}
               onClick={handleSubmit(this.save)}
             />
           </div>

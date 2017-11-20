@@ -98,7 +98,8 @@ export default ({ transfer, reversals, openTransferReversalModal }) => {
       <div className="m-b">
         <Definition>
           <span>
-            <Amount value={reversedAmount} /> Reversed
+            <Amount value={reversedAmount} currency={transfer.currency} />{' '}
+            Reversed
           </span>
           <span>
             Partially Reversed in <NumReversals reversals={reversals} />

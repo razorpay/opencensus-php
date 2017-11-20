@@ -11,15 +11,38 @@ import ListContainer from 'merchant/containers/ListContainer';
 import * as ModalActions from 'rzp/modules/modals';
 import * as ItemActions from 'merchant/modules/items';
 import { luminateRow } from 'merchant/modules/app';
+import { stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
+import { stringifyQueryParams } from '../../../rzp/utils/rzp-utils';
 
 @connect(state => state.items, { ...ItemActions, ...ModalActions, luminateRow })
 @reduxForm({
   form: 'newItem',
 })
 export default class ItemsListContainer extends ListContainer {
+  componentDidMount() {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Invoices',
+      eventAction: 'Go To - Items',
+    });
+  }
+
   fetchEntityList(params) {
     return this.props.fetchItems(params);
   }
+
+  itemFormOnMount = item => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Invoices',
+      eventAction: `Open Form - ${item ? 'Edit' : 'New'} Item`,
+    });
+  };
+
+  itemFormOnUnmount = item => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Invoices',
+      eventAction: `Close Form - ${item ? 'Edit' : 'New'} Item`,
+    });
+  };
 
   showItemModal = (item = null) => {
     this.props.openModal({
@@ -29,12 +52,19 @@ export default class ItemsListContainer extends ListContainer {
           item={item}
           onSave={this.highlightRowAndClose}
           closeModal={this.props.closeModal}
+          onMount={this.itemFormOnMount}
+          onUnmount={this.itemFormOnUnmount}
         />
       ),
     });
   };
 
-  highlightRowAndClose = item => {
+  highlightRowAndClose = (item, prevItem) => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Invoices',
+      eventAction: `Submit Form - ${prevItem ? 'Edit' : 'New'} Item`,
+      eventLabel: stringifyQueryParamsWithPipe(item),
+    });
     this.props.luminateRow(item.id);
     this.props.closeModal();
   };

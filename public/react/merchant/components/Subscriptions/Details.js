@@ -175,10 +175,9 @@ export default ({
 
               {showTestChargeBtn && (
                 <div
-                  class={`alert alert-warning custom-banner ${subscription.status !==
-                  'halted'
-                    ? 'arrow-up'
-                    : ''}`}
+                  class={`alert alert-warning custom-banner ${
+                    subscription.status !== 'halted' ? 'arrow-up' : ''
+                  }`}
                 >
                   <button
                     class="btn btn-default"
@@ -205,7 +204,9 @@ export default ({
                 goToLink={goToLink}
                 subTitle={
                   subscription.total_count &&
-                  `${subscription.paid_count} of ${subscription.total_count} invoices charged`
+                  `${subscription.paid_count} of ${
+                    subscription.total_count
+                  } invoices charged`
                 }
                 moreAfterlimit={3}
                 error={invoices.error}
@@ -217,6 +218,7 @@ export default ({
                 subscriptionType={subscription.type}
                 subscriptionchargeAt={subscription.charge_at}
                 authAttempts={subscription.auth_attempts}
+                subscriptionId={subscription.id}
               />
 
               <NestedEntityDetailRow label="Notes" value={subscription.notes} />

@@ -4,12 +4,10 @@ import { NavLink } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
-import AccountsList
-  from 'merchant/components/Marketplace/Accounts/AccountsList';
+import AccountsList from 'merchant/components/Marketplace/Accounts/AccountsList';
 import AccountCreation from 'merchant/containers/Marketplace/Accounts/New';
 import AccountDetails from 'merchant/containers/Marketplace/Accounts/Details';
-import AccountsListFilter
-  from 'merchant/components/Marketplace/Accounts/AccountsListFilter';
+import AccountsListFilter from 'merchant/components/Marketplace/Accounts/AccountsListFilter';
 import ListContainer from 'merchant/containers/ListContainer';
 import * as AccountActions from 'merchant/modules/marketplace/accounts';
 import * as ModalActions from 'rzp/modules/modals';
@@ -36,10 +34,24 @@ export default class AccountsListContainer extends ListContainer {
     }
   }
 
+  fetchAccounts = (skip, count) => {
+    this.props.fetchAccounts({ skip, count });
+  };
+
+  onAccountCreation = account => {
+    // Reset pagination and fetch results of updated pagination
+    const paginationSkip = 0;
+    this.setState({ skip: paginationSkip });
+    this.fetchAccounts(paginationSkip, this.state.count);
+
+    // Open activation modal
+    this.showAccountDetailsModal(account);
+  };
+
   showAddAccountModal = () => {
     this.props.openModal({
       size: 'small',
-      component: <AccountCreation onSave={this.showAccountDetailsModal} />,
+      component: <AccountCreation onSave={this.onAccountCreation} />,
     });
   };
 
@@ -49,6 +61,9 @@ export default class AccountsListContainer extends ListContainer {
       component: (
         <AccountDetails
           accountId={account.id}
+          fetchAccounts={this.fetchAccounts}
+          count={this.state.count}
+          skip={this.state.skip}
           onCloseClick={() => this.highlightRowAndClose(account)}
         />
       ),

@@ -234,8 +234,77 @@ export const getIntervalCycle = (interval, period) => {
 export const getCustomerDisplayName = ({ name, contact, email }) => {
   let displayParts = [name, contact, email].filter(item => !isBlank(item));
 
-  return `${displayParts.join(' / ').replace('/ ', '(')}${displayParts.length >
-  1
-    ? ')'
-    : ''}`;
+  return `${displayParts.join(' / ').replace('/ ', '(')}${
+    displayParts.length > 1 ? ')' : ''
+  }`;
+};
+
+/**
+ * Method to create a query string separated by | instead of &
+ * @param {Object} params
+ * @return {String}
+ */
+export const stringifyQueryParamsWithPipe = params => {
+  if (!params) return '';
+  return JSON.stringify(params)
+    .replace(/:/g, '=') // Replace : with =
+    .replace(/{/g, '') // Remove {
+    .replace(/}/g, '') // Remove }
+    .replace(/"/g, '') // Remove "
+    .replace(/,/g, '|'); // Replace , with |
+};
+
+/**
+ * Method to get eventCategory for Analytics based on the given pathname
+ * @param {String} pathname
+ * @return {String}
+ */
+export const getEventCategoryFromPath = pathname => {
+  // Remove slashes from path. Eg: /plans/ => plan
+  pathname = pathname && pathname.split('/').join('');
+  switch (pathname) {
+    case 'payments':
+      return 'Dashboard - Payments';
+    case 'refunds':
+      return 'Dashboard - Refunds';
+    case 'paymentlinks':
+      return 'Dashboard - Payment Links';
+    case 'orders':
+      return 'Dashboard - Orders';
+    case 'settlements':
+      return 'Dashboard - Settlements';
+    case 'invoices':
+    case 'items':
+      return 'Dashboard - Invoices';
+    case 'plans':
+    case 'subscriptions':
+      return 'Dashboard - Subscriptions';
+    case 'virtualaccounts':
+      return 'Dashboard - Smart Collect';
+    default:
+      return null;
+  }
+};
+
+export const getEMI = (principle, length, rate) => {
+  /*
+   * Calculates EMI given amount, interestRate and Number of months
+   *
+   * @param {Number} amount
+   * @param {Number} interestRate
+   * @param {Number} numMonths
+   *
+   * `amount` must be in paise , `interestRate` is a number
+   * representing the percentage and `numMonths` is positive integer >=1
+   */
+
+  if (!rate) {
+    return Math.ceil(principle / length);
+  }
+
+  rate /= 1200;
+
+  var multiplier = Math.pow(1 + rate, length);
+
+  return parseInt(principle * rate * multiplier / (multiplier - 1), 10);
 };

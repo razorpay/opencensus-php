@@ -78,8 +78,7 @@ export default class TransferNew extends Component {
       this.props.initialize(this.props.plan);
     }
 
-    // Currently keeping count = 100
-    this.props.fetchAccounts({ count: 100 });
+    this.props.fetchAccounts({});
   }
 
   componentWillReceiveProps(nextProps) {
@@ -240,9 +239,11 @@ export default class TransferNew extends Component {
                       disabled={accounts.loading}
                       class="transfers-powerselect"
                       searchIndices={['id', 'name', 'email']}
-                      placeholder={`${accounts.loading
-                        ? 'Loading...'
-                        : 'Account ID, Account Name, Email Address'}`}
+                      placeholder={`${
+                        accounts.loading
+                          ? 'Loading...'
+                          : 'Account ID, Account Name, Email Address'
+                      }`}
                       showClear={true}
                       selected={this.state.selectedAccount}
                       selectedOptionLabelPath="name"

@@ -16,7 +16,7 @@ import CustomerCreation from 'merchant/containers/Customers/New';
 import QuickAddComponent from 'rzp/ui/Select/QuickAdd';
 import * as ModalActions from 'rzp/modules/modals';
 
-const VirtualAccountDetails = ({ virtualAccount }) => {
+const VirtualAccountDetails = ({ virtualAccount, onCopy }) => {
   let bankAccount = virtualAccount.receivers[0];
   return (
     <div>
@@ -27,32 +27,31 @@ const VirtualAccountDetails = ({ virtualAccount }) => {
       <div class="form-group">
         <div class="text-muted">Account Number</div>
         <div>
-          <b>
-            {bankAccount.account_number}
-          </b>
+          <b>{bankAccount.account_number}</b>
         </div>
       </div>
 
       <div class="form-group">
         <div class="text-muted">Beneficiary Name</div>
         <div>
-          <b>
-            {virtualAccount.name}
-          </b>
+          <b>{virtualAccount.name}</b>
         </div>
       </div>
 
       <div class="form-group">
         <div class="text-muted">IFSC Code</div>
         <div>
-          <b>
-            {bankAccount.ifsc}
-          </b>
+          <b>{bankAccount.ifsc}</b>
         </div>
       </div>
 
       <CustomClipboard
-        value={`Account Number: ${bankAccount.account_number}\nBeneficiary Name: ${virtualAccount.name}\nIFSC: ${bankAccount.ifsc}`}
+        value={`Account Number: ${
+          bankAccount.account_number
+        }\nBeneficiary Name: ${virtualAccount.name}\nIFSC: ${bankAccount.ifsc}`}
+        onCopy={() => {
+          onCopy(virtualAccount);
+        }}
       >
         <button type="button" class="btn btn-primary btn-block">
           Copy details to Clipboard
@@ -95,6 +94,14 @@ export default class CreateVirtualAccount extends Component {
     this.props.fetchCustomersForAutocomplete();
   }
 
+  componentDidMount() {
+    this.props.onMount && this.props.onMount();
+  }
+
+  componentWillUnmount() {
+    this.props.onUnmount && this.props.onUnmount();
+  }
+
   componentWillReceiveProps(nextProps) {
     // Prepoluate field (Just to display in customer selection. Actual value is props.customer_id, and it's already init through redux-form)
     if (!this.state.customerId && this.props.customer !== nextProps.customer) {
@@ -108,6 +115,7 @@ export default class CreateVirtualAccount extends Component {
     return this.props
       .saveVirtualAccount(props)
       .then(virtualAccount => {
+        this.props.onCreateVA && this.props.onCreateVA(props);
         this.props.luminateRow(virtualAccount.id);
         this.setState({ virtualAccount });
       })
@@ -168,6 +176,7 @@ export default class CreateVirtualAccount extends Component {
       descriptor = '',
       customersLoading,
       customers = [],
+      onCopy = () => {},
     } = this.props;
     const { virtualAccount } = this.state;
 
@@ -193,107 +202,111 @@ export default class CreateVirtualAccount extends Component {
         />
 
         <div class="modal-body">
-          {virtualAccount
-            ? <VirtualAccountDetails virtualAccount={virtualAccount} />
-            : <form onSubmit={handleSubmit(this.save)}>
-                <div class="form-group">
-                  <label>Customer (Optional)</label>
-                  <TypeAhead
-                    options={customers}
-                    disabled={customersLoading}
-                    class="virtual-account-powerselect"
-                    searchIndices={['id', 'name', 'email', 'contact']}
-                    placeholder={`${customersLoading
-                      ? 'Loading...'
-                      : 'Select a customer'}`}
-                    showClear={true}
-                    selected={this.state.customerId}
-                    selectedOptionLabelPath="selectedDisplayName"
-                    optionComponent={({ option }) => {
-                      return (
-                        <div class="custom-powerselect-options">
-                          {option.name &&
-                            <b>
-                              {option.name} :{' '}
-                            </b>}
-                          {option.email || option.contact}
-                        </div>
-                      );
-                    }}
-                    onClick={this.handleChange}
-                    onChange={this.handleSelect}
-                    afterOptionsComponent={select =>
-                      <QuickAddComponent
-                        {...select}
-                        onClick={this.quickCreateCustomer}
-                      />}
-                  />
-                </div>
+          {virtualAccount ? (
+            <VirtualAccountDetails
+              virtualAccount={virtualAccount}
+              onCopy={onCopy}
+            />
+          ) : (
+            <form onSubmit={handleSubmit(this.save)}>
+              <div class="form-group">
+                <label>Customer (Optional)</label>
+                <TypeAhead
+                  options={customers}
+                  disabled={customersLoading}
+                  class="virtual-account-powerselect"
+                  searchIndices={['id', 'name', 'email', 'contact']}
+                  placeholder={`${
+                    customersLoading ? 'Loading...' : 'Select a customer'
+                  }`}
+                  showClear={true}
+                  selected={this.state.customerId}
+                  selectedOptionLabelPath="selectedDisplayName"
+                  optionComponent={({ option }) => {
+                    return (
+                      <div class="custom-powerselect-options">
+                        {option.name && <b>{option.name} : </b>}
+                        {option.email || option.contact}
+                      </div>
+                    );
+                  }}
+                  onClick={this.handleChange}
+                  onChange={this.handleSelect}
+                  afterOptionsComponent={select => (
+                    <QuickAddComponent
+                      {...select}
+                      onClick={this.quickCreateCustomer}
+                    />
+                  )}
+                />
+              </div>
 
+              <div class="form-group">
+                <label>Account Description (Optional)</label>
+                <Field
+                  name="description"
+                  class="form-control"
+                  component="input"
+                  required={true}
+                />
+                <small class="help-block">
+                  Account description is only displayed on the dashboard and is
+                  not shared with the customer.
+                </small>
+              </div>
+
+              {handle ? (
                 <div class="form-group">
-                  <label>Account Description (Optional)</label>
+                  <label>Descriptor</label>
                   <Field
-                    name="description"
-                    class="form-control"
+                    name="descriptor"
                     component="input"
-                    required={true}
+                    class="form-control"
+                    placeholder={`Accepts alphanumberic, upto ${
+                      descriptorLimit
+                    } chars`}
+                    normalize={value => value.toUpperCase()}
+                    onChange={event => {
+                      let value = event.target.value;
+                      let regex = new RegExp(
+                        `^[a-z0-9]{0,${descriptorLimit}}$`,
+                        'i'
+                      );
+
+                      if (regex.test(value)) {
+                        this.props.change('descriptor', value);
+                      } else {
+                        event.preventDefault();
+                      }
+                    }}
                   />
                   <small class="help-block">
-                    Account description is only displayed on the dashboard and
-                    is not shared with the customer.
+                    Descriptor will be a part of the account number generated.
                   </small>
                 </div>
+              ) : null}
 
-                {handle
-                  ? <div class="form-group">
-                      <label>Descriptor</label>
-                      <Field
-                        name="descriptor"
-                        component="input"
-                        class="form-control"
-                        placeholder={`Accepts alphanumberic, upto ${descriptorLimit} chars`}
-                        normalize={value => value.toUpperCase()}
-                        onChange={event => {
-                          let value = event.target.value;
-                          let regex = new RegExp(
-                            `^[a-z0-9]{0,${descriptorLimit}}$`,
-                            'i'
-                          );
-
-                          if (regex.test(value)) {
-                            this.props.change('descriptor', value);
-                          } else {
-                            event.preventDefault();
-                          }
-                        }}
-                      />
-                      <small class="help-block">
-                        Descriptor will be a part of the account number
-                        generated.
-                      </small>
-                    </div>
-                  : null}
-
-                <div class="Modal__actions clearfix">
-                  {handle
-                    ? <div class="pull-left">
-                        <div>Account Number</div>
-                        <b>
-                          RZRP{handle}
-                          {descriptor}
-                        </b>
-                      </div>
-                    : null}
-                  <AsyncButton
-                    class={`btn btn-primary ${handle
-                      ? 'pull-right'
-                      : 'btn-block'}`}
-                    text="Create"
-                    pendingText="Creating..."
-                    onClick={handleSubmit(this.save)}
-                  />
-                </div>
-              </form>}
+              <div class="Modal__actions clearfix">
+                {handle ? (
+                  <div class="pull-left">
+                    <div>Account Number</div>
+                    <b>
+                      RZRP{handle}
+                      {descriptor}
+                    </b>
+                  </div>
+                ) : null}
+                <AsyncButton
+                  class={`btn btn-primary ${
+                    handle ? 'pull-right' : 'btn-block'
+                  }`}
+                  text="Create"
+                  pendingText="Creating..."
+                  onClick={handleSubmit(this.save)}
+                />
+              </div>
+            </form>
+          )}
         </div>
       </div>
     );

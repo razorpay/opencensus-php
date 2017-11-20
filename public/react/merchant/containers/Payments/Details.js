@@ -16,6 +16,11 @@ import { expandSlider, compactSlider } from 'rzp/modules/slider';
 import PaymentTransferNew from 'merchant/containers/Marketplace/Transfers/New';
 import PaymentTransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
 
+import {
+  stringifyQueryParamsWithPipe,
+  getEventCategoryFromPath,
+} from 'rzp/utils/rzp-utils';
+
 @withRouter
 @connect(
   state => {
@@ -44,9 +49,7 @@ export default class PaymentDetailsContainer extends Component {
         this.props.fetchRefunds(payment);
       }
 
-      if (payment.method === 'card' || payment.method === 'emi') {
-        this.props.fetchCardDetails(payment);
-      } else if (payment.method === 'bank_transfer') {
+      if (payment.method === 'bank_transfer') {
         this.props.fetchBankTransfer(payment);
       }
 
@@ -74,6 +77,28 @@ export default class PaymentDetailsContainer extends Component {
         findDOMNode(this.transfersView).classList.remove('toggle-slider');
       }
     }
+  }
+
+  componentDidMount() {
+    const { closeUrl, id } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
+      window.rzpAnalytics({
+        eventCategory: eventCategory,
+        eventAction: 'Open Details - Payments',
+        eventLabel: `payment_id=${id}`,
+      });
+  }
+
+  componentWillUnmount() {
+    const { closeUrl, id } = this.props,
+      eventCategory = getEventCategoryFromPath(closeUrl);
+    eventCategory &&
+      window.rzpAnalytics({
+        eventCategory: eventCategory,
+        eventAction: 'Close Details - Payments',
+        eventLabel: `payment_id=${id}`,
+      });
   }
 
   componentWillMount() {
@@ -115,7 +140,7 @@ export default class PaymentDetailsContainer extends Component {
     this.context
       .confirm({
         header: 'Are you sure you want to capture this payment?',
-        message: () =>
+        message: () => (
           <div class="text-semi-muted">
             <p>
               The payment amount is{' '}
@@ -123,7 +148,8 @@ export default class PaymentDetailsContainer extends Component {
                 <Amount value={payment.capturableAmount} />
               </b>
             </p>
-          </div>,
+          </div>
+        ),
         affirmativeLabel: 'Yes, Capture',
         affirmativePendingLabel: 'Capturing...',
         abortLabel: "No, don't!",
@@ -182,9 +208,55 @@ export default class PaymentDetailsContainer extends Component {
   openRefundModal = payment => {
     this.props.openModal({
       component: (
-        <RefundModal payment={payment} onRefund={this.onPaymentRefund} />
+        <RefundModal
+          payment={payment}
+          onRefund={this.onPaymentRefund}
+          onMount={this.onRefundModalMount}
+          onUnmount={this.onRefundModalUnmount}
+          afterRefund={this.afterRefund}
+        />
       ),
       size: 'small',
+    });
+  };
+
+  onRefundModalMount = payment => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments',
+      eventAction: 'Open Form - Refund',
+      eventLabel: `payment_id=${payment.id}`,
+    });
+  };
+
+  onRefundModalUnmount = payment => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments',
+      eventAction: 'Close Form - Refund',
+      eventLabel: `payment_id=${payment.id}`,
+    });
+  };
+
+  afterRefund = ({ amount, partial, payment }) => {
+    const label = {
+      payment_id: payment.id,
+      partial_payment_enabled: partial || payment.amount_refunded > 0.0,
+    };
+    if (partial) {
+      label.partial_payment_enabled = partial;
+    }
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments',
+      eventAction: 'Refund - Payment',
+      eventLabel: stringifyQueryParamsWithPipe(label),
+      eventValue: amount,
+    });
+  };
+
+  onRefundDetailsToggleClick = payment => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments',
+      eventAction: 'See - Payment Refund Details',
+      eventLabel: `payment_id=${payment.id}`,
     });
   };
 
@@ -193,12 +265,13 @@ export default class PaymentDetailsContainer extends Component {
       loading,
       error,
       payment,
-      card,
       refunds,
       transfers,
       bankTransfer,
     } = this.props;
     let statusMsg = {};
+
+    let { card = {} } = payment;
 
     if (error) {
       statusMsg = {
@@ -225,27 +298,30 @@ export default class PaymentDetailsContainer extends Component {
           confirmCapture={this.confirmCapture}
           goToLink={this.goToLink}
           openRefundModal={this.openRefundModal}
+          onRefundDetailsToggleClick={this.onRefundDetailsToggleClick}
         />
 
         <ShowWhen apiFeatureEnabled="Marketplace">
-          {this.state.secView === 'new_transfer' &&
+          {this.state.secView === 'new_transfer' && (
             <PaymentTransferNew
               paymentId={payment && payment.id}
               onClose={() => this.secClose(null)}
               onCreate={this.onCreateTransfer}
               ref={c => (this.transfersView = c)}
-            />}
+            />
+          )}
         </ShowWhen>
 
         <ShowWhen apiFeatureEnabled="Marketplace">
-          {this.state.secView === 'transfer' &&
+          {this.state.secView === 'transfer' && (
             <PaymentTransferDetails
               id={this.props.transfer_id}
               onClose={() => this.secClose(true)}
               ref={c => (this.transfersView = c)}
               onReverse={this.onTransferReverse}
               onRefund={this.onPaymentRefund}
-            />}
+            />
+          )}
         </ShowWhen>
       </div>
     );

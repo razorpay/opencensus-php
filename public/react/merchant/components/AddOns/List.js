@@ -12,15 +12,11 @@ const AddOnsListItem = props => {
   return (
     <EntityItemRow id={addon.id} luminateRowId={luminateRowId}>
       <td>
-        <NavLink to={`/addons/${addon.id}`}>
-          {addon.id}
-        </NavLink>
+        <NavLink to={`/addons/${addon.id}`}>{addon.id}</NavLink>
       </td>
-      <td>
-        {addon.item.name}
-      </td>
+      <td>{addon.item.name}</td>
       <td class="text-right">
-        <Amount value={addon.item.amount} />
+        <Amount value={addon.item.amount} currency={addon.item.currency} />
       </td>
       <td>
         <Time value={addon.item.created_at} format="MMM DD  YYYY, hh:mm a" />
@@ -57,14 +53,14 @@ export default props => {
           rows={addons}
           emptyTableMsg="No data found!"
         >
-          {addons.map(addon =>
+          {addons.map(addon => (
             <AddOnsListItem
               key={addon.id}
               addon={addon}
               luminateRowId={luminateRowId}
               onDelete={() => props.onDelete(addon.id)}
             />
-          )}
+          ))}
         </TableBody>
       </table>
     </div>

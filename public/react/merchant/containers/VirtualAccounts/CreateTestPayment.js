@@ -26,6 +26,20 @@ import { fetchItem, fetchVAPayments } from 'merchant/modules/virtualaccounts';
 export default class CreateTestPayment extends Component {
   state = {};
 
+  componentDidMount() {
+    this.props.onMount &&
+      this.props.onMount(
+        this.props.virtualAccount && this.props.virtualAccount.id
+      );
+  }
+
+  componentWillUnmount() {
+    this.props.onUnmount &&
+      this.props.onUnmount(
+        this.props.virtualAccount && this.props.virtualAccount.id
+      );
+  }
+
   createTestPayment = props => {
     let { virtualAccount } = this.props;
     let bankAccount = virtualAccount.receivers[0];
@@ -42,6 +56,7 @@ export default class CreateTestPayment extends Component {
     return this.props
       .createTestPayment(fieldProps)
       .then(() => {
+        this.props.onTestPayment && this.props.onTestPayment(props);
         this.props.closeModal();
         this.props.showNotification({
           type: 'success',

@@ -61,11 +61,7 @@ const RefundType = ({ partial, isTitleCase = false }) => {
     text = titleCase(text);
   }
 
-  return (
-    <span>
-      {text}
-    </span>
-  );
+  return <span>{text}</span>;
 };
 
 const selector = formValueSelector('refundModal');
@@ -121,6 +117,14 @@ export default class RefundModal extends Component {
       amount: (payment.amount - payment.amount_refunded) / 100 + '',
       reverse_all: false,
     });
+  }
+
+  componentDidMount() {
+    this.props.onMount && this.props.onMount(this.props.payment);
+  }
+
+  componentWillUnmount() {
+    this.props.onUnmount && this.props.onUnmount(this.props.payment);
   }
 
   save = props => {
@@ -180,6 +184,13 @@ export default class RefundModal extends Component {
                 this.props.onRefund();
               }
 
+              this.props.afterRefund &&
+                this.props.afterRefund({
+                  amount: data.amount,
+                  partial: partial,
+                  payment: this.props.payment,
+                });
+
               this.props.closeModal();
             })
             .catch(({ errors }) => {
@@ -213,7 +224,7 @@ export default class RefundModal extends Component {
             <div class="form-group">
               <label class="label-required">Refund Amount</label>
               <div class="input-group">
-                <div class="input-group-addon">INR</div>
+                <div class="input-group-addon">{payment.currency}</div>
                 <Field
                   name="amount"
                   component={InputField}
@@ -222,20 +233,21 @@ export default class RefundModal extends Component {
                   placeholder="Enter the refund amount"
                 />
               </div>
-              {!!amountError
-                ? <div class="InputField__ErrorText text-danger">
-                    {amountError}
-                  </div>
-                : <small class="help-block">
-                    This will be a{' '}
-                    <b>
-                      <RefundType partial={partial} /> refund
-                    </b>.
-                    {!partial &&
-                      <span>Change amount for a partial refund.</span>}
-                  </small>}
+              {!!amountError ? (
+                <div class="InputField__ErrorText text-danger">
+                  {amountError}
+                </div>
+              ) : (
+                <small class="help-block">
+                  This will be a{' '}
+                  <b>
+                    <RefundType partial={partial} /> refund
+                  </b>.
+                  {!partial && <span>Change amount for a partial refund.</span>}
+                </small>
+              )}
             </div>
-            {transfers.items.length > 0 &&
+            {transfers.items.length > 0 && (
               <div class="form-group">
                 <div class="checkbox rzpCheckbox">
                   <Field
@@ -256,7 +268,8 @@ export default class RefundModal extends Component {
                     as well
                   </label>
                 </div>
-              </div>}
+              </div>
+            )}
             <div class="form-group">
               <label>Comments (Optional)</label>
               <Field

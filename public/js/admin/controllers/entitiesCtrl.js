@@ -91,6 +91,7 @@ app.controller('EntitiesCtrl', [
       'netbanking_pnb',
       'paytm',
       'sharp',
+      'upi_sbi',
       'upi_icici',
       'upi_mindgate',
       'wallet_payumoney',
@@ -347,7 +348,7 @@ app.controller('EntitiesCtrl', [
       gateway_downtime: {
         method: methodList,
         gateway: gatewayList,
-        bank: ['Bank'],
+        issuer: ['Issuer'],
       },
       gateway_file: {
         type: ['all', 'emi', 'refund', 'combined'],

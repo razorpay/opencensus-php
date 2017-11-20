@@ -65,6 +65,11 @@ export default props => {
                   ? entity_totals.data.payment.total_amount
                   : 0
               }
+              currency={
+                entity_totals.data.payment
+                  ? entity_totals.data.payment.currency
+                  : 'INR'
+              }
             />
           }
           error={entity_totals.error}
