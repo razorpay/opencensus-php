@@ -12,6 +12,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Models\Payment;
 use Razorpay\Trace\Logger as Trace;
@@ -263,14 +264,27 @@ trait SettlementTrait
     /**
      * Settlement is done only bank account change is not recent as we need some
      * time till beneficiary is updated in kotak
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return bool
+     * @throws Exception\LogicException
      */
-    protected function shouldSettle($merchant): bool
+    protected function shouldSettle(Merchant\Entity $merchant): bool
     {
         //
-        // Skip settlements for Moneyview
+        // Skip settlements for few merchants
         // Details in: https://github.com/razorpay/api/issues/5830
+        // Temporary, until https://github.com/razorpay/api/pull/6161
+        // is merged
         //
-        if ($merchant->getId() === '8hXTLsmoM3F6PH')
+        $skipMerchantIds = [
+            '8ytYezIThlseJd', // Goalwise Non-TPV
+            '7BfRNg10LH7N6T', // Goalwise TPV
+            '8hXTLsmoM3F6PH', // Moneyview
+        ];
+
+        if (in_array($merchant->getId(), $skipMerchantIds, true) === true)
         {
             return false;
         }
