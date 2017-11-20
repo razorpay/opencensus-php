@@ -100,7 +100,7 @@ export default class EditUser extends Component {
 
     return request(data).then(response => {
       if (response) {
-        if (isWorkflow(response, history)) {
+        if (isWorkflow(response, this.props.history)) {
           return;
         }
         notifyDone();
@@ -110,7 +110,7 @@ export default class EditUser extends Component {
 
   render() {
     if (this.pending) {
-      return <div class="spinner" />;
+      return <div class="spinner center" />;
     }
 
     return (
@@ -118,7 +118,7 @@ export default class EditUser extends Component {
         fields={this.fields}
         user={this.user}
         groups={this.groups}
-        roles={this.user.roles}
+        roles={this.user && this.user.roles}
         allGroups={this.allGroups}
         allRoles={this.allRoles}
         toggleGroup={this.toggleGroup}
