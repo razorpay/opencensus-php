@@ -5,6 +5,7 @@ namespace RZP\Gateway\Netbanking\Axis;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Gateway\Netbanking\Axis\Emandate\StatusCode;
 use RZP\Gateway\Netbanking\Base\EMandateDebitReconFile as BaseEMandateDebitReconFile;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 use RZP\Models\Payment;
@@ -29,18 +30,11 @@ class EMandateDebitReconFile extends BaseEMandateDebitReconFile
     const HEADING_STATUS          = 'STATUS';
     const HEADING_REMARK          = 'REMARK';
 
-    // Error maps
-    const ERROR_INVALID_CREDS  = 'Invalid User id and Password';
-
     protected $gateway = Payment\Gateway::NETBANKING_AXIS;
 
     protected $allowedStatuses = [
         self::STATUS_SUCCESS,
         self::STATUS_FAILURE
-    ];
-
-    protected static $errorCodesMap = [
-        self::ERROR_INVALID_CREDS => Error\ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED
     ];
 
     protected function updatePaymentEntities(array $row)
@@ -115,6 +109,6 @@ class EMandateDebitReconFile extends BaseEMandateDebitReconFile
 
     protected function getApiErrorCode(string $errorDescription): string
     {
-        return (self::$errorCodesMap[$errorDescription] ?? Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        return StatusCode::getEmandateErrorCodeMap($errorDescription);
     }
 }
