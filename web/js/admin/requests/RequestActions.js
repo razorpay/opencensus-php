@@ -59,7 +59,7 @@ export default class RequestActions extends Component {
     return (
       <aside class="requests-actions">
         {requestState === 'open' || requestState === 'approved' ? (
-          <div>
+          <div class="container">
             <div class="header">
               <b>ACTIONS</b>
             </div>
@@ -116,24 +116,24 @@ const RequestActionCheckers = ({ checkers }) => {
   return (
     <div class="request-checkers-list">
       {approvalMap['approved'].length ? (
-        <div>
-          <label class="checker-label">
+        <div class="m-b">
+          <div class="header">
             <b>Approved By:</b>
-          </label>
+          </div>
           {approvalMap['approved'].map((name, idx) => (
-            <span class="checker" key={idx}>
+            <span class="pills" key={idx}>
               {name}
             </span>
           ))}
         </div>
       ) : null}
       {approvalMap['rejected'].length ? (
-        <div>
-          <label class="checker-label">
+        <div class="separate m-t">
+          <div class="header">
             <b>Rejected By:</b>
-          </label>
+          </div>
           {approvalMap['rejected'].map((name, idx) => (
-            <span class="checker" key={idx}>
+            <span class="pills" key={idx}>
               {name}
             </span>
           ))}

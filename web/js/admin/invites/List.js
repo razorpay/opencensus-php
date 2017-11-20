@@ -3,10 +3,7 @@ import { observer } from 'mobx-react';
 import Collection from 'model/collection';
 import CollectionItem from 'model/collectionItem';
 import { adminFetch } from 'util/fetch';
-import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
-import Field from 'ui/Field';
-
 import { showEntity, showDetails } from './Entity';
 
 const fields = [

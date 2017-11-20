@@ -1,97 +1,122 @@
-.request-state
-    float: right
-    color: white
-    padding: 2px 3px
-    border-radius: 4px
+.approved-state
+  background-color: #fc9700
 
-    &.approved-state
-        background-color: #fc9700
+.executed-state
+  background-color: #17C446
 
-    &.executed-state
-        background-color: #17C446
+.closed-state
+  background-color: #F14F4B
 
-    &.closed-state
-        background-color: #F14F4B
+.rejected-state
+  background-color: #F14F4B
 
-    &.rejected-state
-        background-color: #F14F4B
+.open-state
+  background-color: #FCCB00
 
-    &.open-state
-        background-color: #FCCB00
 
-.comments-container
-    .comment
-        margin: 10px
-        border: 1px solid #ebebeb
+.requests-container
+  .status
+      float: right
 
-    .comment-body
-        padding: 10px
+  .secondary-label
+    font-size: 12px
+    color: #8a8a8a
 
-.requests-content
+  .requests-content, .requests-actions
     display: inline-block
     vertical-align: top
+
+  /* Requests main content */
+  .requests-content
+    display: inline-block
     width: 75%
+    vertical-align: top
 
-    .comments-count
-        padding: 10px
-        color: #c3c3c3
+    form, .levels-container, .comments-containers
+      padding: 0 30px 10px
+      margin-top: 16px
 
-    .levels-label
-        margin: 10px
+    form
+      overflow: auto
+      border-bottom: 1px solid $faded-color
 
-    .box-label
-        background-color: #f6f8f8
-        padding: 10px
-        margin: 0
+    /* Levels section */
     .levels-container
-        margin: 20px 0
-    .level
-        padding: 10px
+      margin: 20px 0
+      padding-bottom: 10px;
+
+      label
+        margin-bottom: 16px
+
+      .level
+        .square-pills
+          display: inline-block;
+          margin: 0 12px 8px 0
+          font-weight: bold
+          border: 1px solid #e4e4e4;
+          color: $color-semi-muted
+
+        .square-pills:not(.no-color)
+          background-color: #f3f3f3
 
         &.inactive
-            opacity: 0.5
+          .square-pills
+            opacity: 0.55
 
-        span
-            margin-left: 50px
-            padding: 5px 10px
-            border-radius: 4px
+    /* Comments section */
+    .comments-container
+      .comment-list
+        margin: 30px
+        border: 1px solid #efefef;
+        background-color: $subtle-color;
 
-            &.level-box
-                background-color: #ebebeb
+      .comment
+        padding: 15px 20px
+        animation: 0.3s fadein ease-in
 
-.requests-actions
+        &:not(:first-child)
+          border-top: 1px solid $faded-color
+
+        .comment-body
+          line-height: 18px;
+
+      form
+        label
+          font-weight: bold
+
+        textarea
+          width: 100%
+          margin-left: 0
+
+  /* Requests aside content */
+  .requests-actions
     display: inline-block
-    vertical-align: top
-    width: 15%
-    margin: 20px 10px
+    margin: 30px 0
+    width: 20%
+    text-align: center
 
     .header
-        text-align: center
-        margin-top: 5px
+      margin: 16px 0 8px
 
     .btn
-        display: block
-        text-align: center
+      display: block
 
-    i
+      i
+        vertical-align: middle
         padding: 4px
+        line-height: 8px
+        margin-right: 4px
+        font-size: 8px
         border-radius: 50%
         color: #fff
-        font-size: 8px
-        line-height: 8px
-        vertical-align: middle
 
-    .request-checkers-list
-      padding: 10px
-      .checker-label
-        margin-bottom: 10px
-      .checker
-        padding: 5px
-        border-radius: 5px
-        margin-top: 5px
-        background-color: #ebebeb
-        margin: 0 5px
+    .pills
+      margin: 6px;
+      background-color: #fff
+      color: $color-semi-muted
+      display: inline-block
 
-.requests-header
-    background-color: #f6f8f8
-    border-bottom: 1px solid #dee5e7
+    .separate
+      margin-top: 10px
+      border-color: #e2e2e2
+

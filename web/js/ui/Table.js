@@ -72,7 +72,12 @@ export default function Table({
                 to={href && href(item)}
               >
                 {fields.map((field, index) => (
-                  <Value key={index} item={item} valueFn={field[1]} />
+                  <Value
+                    key={index}
+                    index={index}
+                    item={item}
+                    valueFn={field[1]}
+                  />
                 ))}
               </Row>
             </CSSTransition>
@@ -86,7 +91,11 @@ export default function Table({
 @observer
 class Value extends Component {
   render() {
-    return <div class="td">{this.props.valueFn(this.props.item)}</div>;
+    return (
+      <div class="td">
+        {this.props.valueFn(this.props.item, this.props.index)}
+      </div>
+    );
   }
 }
 

@@ -33,7 +33,7 @@ const gateWayOptions = [
 UploadReconciliationFile.title = 'Upload Reconciliation File (Payment/Refund)';
 export default function UploadReconciliationFile() {
   return (
-    <Form>
+    <Form class="full-span full-elements" style={{ width: '400px' }}>
       <SelectMode />
       <SelectField label="Gateway" name="gateway">
         {gateWayOptions.map((opt, idx) => (

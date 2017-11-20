@@ -31,6 +31,7 @@ export default function CreateSchedule() {
       <Field label="Delay" name="delay" />
       <br />
       <Field label="Anchor" name="anchor" />
+      <br />
       <AsyncButton
         text="OK"
         class="btn"

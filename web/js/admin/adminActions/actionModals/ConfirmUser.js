@@ -9,7 +9,7 @@ import { notifySuccess, closeModal } from 'common/modal';
 ConfirmUser.title = 'Confirm User';
 export default function ConfirmUser() {
   return (
-    <Form>
+    <Form class="full-span">
       <Field label="User Email" type="email" name="email" />
       <AsyncButton
         text="OK"

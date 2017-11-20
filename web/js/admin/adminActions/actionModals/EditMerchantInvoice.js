@@ -23,6 +23,7 @@ const EditMerchantInvoice = withRouter(({ history }) => {
         name="invoiceNumber"
       />
       <SelectMode />
+      <br />
       <AsyncButton
         text="OK"
         class="btn"

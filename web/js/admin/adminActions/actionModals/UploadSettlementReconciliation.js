@@ -10,7 +10,7 @@ import { adminFormUpload } from 'util/fetch';
 UploadSettlementReconciliation.title = 'Upload Settlement Reconciliation (UTR)';
 export default function UploadSettlementReconciliation() {
   return (
-    <Form>
+    <Form class="full-span full-elements" style={{ width: '400px' }}>
       <SelectMode />
       <FileField label="Attach File" name="file" />
       <AsyncButton
