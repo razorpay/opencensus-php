@@ -57,9 +57,20 @@ class GeolocationTest extends TestCase
 
         $this->expectException(Exception\RuntimeException::class);
 
-        $geolocation = $geolocation->getGeolocation('0.0.0.0');
+        $geolocation->getGeolocation('0.0.0.0');
+    }
 
-        $this->assertNull($geolocation);
+    public function testInvalidKeyForForEureka()
+    {
+        $geolocation = $this->getGeolocationService('eureka');
+
+        $this->expectException(Exception\RuntimeException::class);
+
+        $geolocation->validateAndSetInput([
+            'eureka_key' => 'invalid_key'
+        ]);
+
+        $geolocation->getGeolocation('0.0.0.0');
     }
 
     /*

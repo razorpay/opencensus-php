@@ -62,10 +62,12 @@ class Entity extends Base\PublicEntity
     {
         if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6) === false)
         {
-            if ($throw === true)
-            {
-                throw new BadRequestValidationFailureException($ip . ' is not a valid IP');
-            }
+            // Commenting until we clean geo_ips table,
+            // currently there are few garbage values for ips
+            // if ($throw === true)
+            // {
+            //     throw new BadRequestValidationFailureException($ip . ' is not a valid IP');
+            // }
 
             return false;
         }
