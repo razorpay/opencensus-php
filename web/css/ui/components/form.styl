@@ -105,6 +105,7 @@ form
   &.limited
     width: 75%
 
+  //  without .full-span, you can make label and input align adjacent like in Workflow
   &.inline
     .field
     label, input, select
@@ -114,7 +115,7 @@ form
       content: ':'
       margin-left: 2px;
 
-    input, select
+    input, select // add textarea, etc. if needed
       margin-left: 10px
 
   // full-span class on <Form> makes the <Field> elements to come in separates lines

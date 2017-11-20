@@ -2,6 +2,7 @@ import React from 'react';
 import Form from 'ui/Form';
 import Field, { SelectField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
+import BaseModal from 'ui/BaseModal';
 
 export default function InviteForm({
   fields,
@@ -10,13 +11,16 @@ export default function InviteForm({
   onInvite,
 }) {
   return (
-    <div>
-      <header>Invitation details</header>
-      <banner class="warning">
-        Smarthub: Education, Society &amp; Government merchants should NOT be
-        onboarded through this solution
-      </banner>
-      <Form onSubmit={onInvite}>
+    <BaseModal
+      header="Invitation details"
+      banner={() => (
+        <banner class="warning">
+          Smarthub: Education, Society &amp; Government merchants should NOT be
+          onboarded through this solution
+        </banner>
+      )}
+    >
+      <Form class="full-span full-elements" onSubmit={onInvite}>
         {fields.indexOf('channel_code') > -1 && (
           <div>
             <SelectField label="Channel Code" name="channel_code" required>
@@ -93,7 +97,9 @@ export default function InviteForm({
           <Field label="MCC Category" name="mcc_category" required />
         )}
 
-        <header>Merchant Details:</header>
+        <div class="heading m-t m-b">
+          <b>Merchant Details:</b>
+        </div>
         {fields.indexOf('merchant_name') > -1 && (
           <Field label="Merchant Name" name="merchant_name" required />
         )}
@@ -121,6 +127,6 @@ export default function InviteForm({
           onSubmit={onInvite}
         />
       </Form>
-    </div>
+    </BaseModal>
   );
 }
