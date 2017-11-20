@@ -948,6 +948,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_MIGRATE_DEBUG                           = 'BATCH_MIGRATE_DEBUG';
 
     // Geo Location trace codes
+    const GEOLOCATION_UPDATE_RESPONSE                   = 'GEOLOCATION_UPDATE_RESPONSE';
     const GEOLOCATION_FAILURE                           = 'GEOLOCATION_FAILURE';
 
     protected static $messages = array(

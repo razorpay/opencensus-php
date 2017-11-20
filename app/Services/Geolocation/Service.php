@@ -18,7 +18,8 @@ class Service
 
     const ALLOWED_INPUT     = [
         self::PROVIDER_NAME,
-        Providers\Eureka::EUREKA_KEY_INDEX
+        Providers\Eureka::EUREKA_KEY,
+        Providers\Eureka::EUREKA_KEY_INDEX,
     ];
 
     protected $mocked;
