@@ -281,7 +281,7 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals('first_data', $paymentRes['gateway']);
     }
 
-    public function testIciciDebitCardIsFiltered()
+    public function testIciciDebitCard()
     {
         $this->fixtures->create('terminal:shared_sharp_terminal');
 
@@ -299,9 +299,13 @@ class FirstDataGatewayTest extends TestCase
         $this->doAuthPayment($payment);
 
         $paymentRes = $this->getLastPayment(true);
+        
+        $transRes = $this->getLastTransaction(true);
 
         // FirstData now should get selected
         $this->assertEquals('first_data', $paymentRes['gateway']);
+        $this->assertEquals($transRes['entity_id'], $paymentRes['id']);
+
 
         $payment['card']['number'] = '5109591717594888';
 
