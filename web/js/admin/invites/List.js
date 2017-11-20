@@ -26,6 +26,8 @@ export default class InvitesList extends Component {
     model: CollectionItem,
   });
 
+  showEntity = showEntity.bind(null, this.collection);
+
   render() {
     return (
       <div class="list-container">

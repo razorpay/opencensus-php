@@ -3,29 +3,24 @@ import { PageTable } from 'ui/Table';
 import { SelectField } from 'ui/Field';
 import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
+import { showEntity } from './Entity';
 
 const defaultFilters = {
   status: 'pending',
 };
 
-const features = [
-  'marketplace_activation_status',
-  'subscriptions_activation_status',
-  'virtual_accounts_activation_status',
-];
-
 const featureNames = {
-  marketplace_activation_status: 'Route',
-  subscriptions_activation_status: 'Subscription',
-  virtual_accounts_activation_status: 'Smart Collect',
+  marketplace_activation_status: 'Marketplace',
+  subscriptions_activation_status: 'Subscriptions',
+  virtual_accounts_activation_status: 'Virtual Accounts',
 };
 
 function fetchFn() {
   let currentFilter = this.filters.status;
-  adminFetch(...arguments).then(data => {
+  return adminFetch(...arguments).then(data => {
     if (data) {
       data = data.reduce((rows, current) => {
-        features.forEach(
+        Object.keys(featureNames).forEach(
           f =>
             current[f] === currentFilter &&
             rows.push({
@@ -70,7 +65,11 @@ export default class PublicFeaturesList extends Component {
             </SelectField>
           </div>
         </div>
-        <PageTable model={this.collection} fields={fields} />
+        <PageTable
+          model={this.collection}
+          fields={fields}
+          onClick={showEntity}
+        />
       </div>
     );
   }
