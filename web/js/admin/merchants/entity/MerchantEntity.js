@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { observer } from 'mobx-react';
-
+import ShowWhen from 'admin/components/ShowWhen';
 import { adminFetch, adminPut, adminPost } from 'util/fetch';
 import {
   openModal,
@@ -316,20 +316,27 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
       <div class="group">
         <div class="group-heading">Merchant Summary</div>
-        <a onClick={loginAsMerchant}>Login as Merchant</a>
-        <div onClick={actions.ViewTeam}>See Team Details</div>
+        <ShowWhen permission="view_merchant_login">
+          <a onClick={loginAsMerchant}>Login as Merchant</a>
+        </ShowWhen>
+        <ShowWhen permission="view_activation_form">
+          <div onClick={actions.ViewTeam}>See Team Details</div>
+        </ShowWhen>
         <Link to={`/merchants/${merchantId}/stats`}>
           See Merchant Analytics Stats
         </Link>
-        <div onClick={actions.EditComment}>
-          Edit Comment
-          <i class="pull-right i i-comment" />
-        </div>
-
-        <div onClick={actions.GenerateReports}>
-          Download Report
-          <i class="pull-right i i-download" />
-        </div>
+        <ShowWhen permission="edit_merchant_comments">
+          <div onClick={actions.EditComment}>
+            Edit Comment
+            <i class="pull-right i i-comment" />
+          </div>
+        </ShowWhen>
+        <ShowWhen permission="view_merchant_report">
+          <div onClick={actions.GenerateReports}>
+            Download Report
+            <i class="pull-right i i-download" />
+          </div>
+        </ShowWhen>
       </div>
 
       <div class="group">
@@ -337,34 +344,46 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
         {/* Lock or Unlock activation form */}
         {merchant.details.merchant_details && (
-          <AsyncButton
-            onClick={toggleLockOnActivationForm}
-            pendingClass="btn-pending"
+          <ShowWhen
+            permission={
+              merchant.details.merchant_details.locked
+                ? 'edit_merchant_lock_activation'
+                : 'edit_merchant_unlock_activation'
+            }
           >
-            {merchant.details.merchant_details.locked ? 'Unlock' : 'Lock'}{' '}
-            Activation Form
-            <span class="spin-btn" />
-            <i
-              class={`pull-right i i-${
-                merchant.details.merchant_details.locked ? 'unlock' : 'lock'
-              }`}
-            />
-          </AsyncButton>
+            <AsyncButton
+              onClick={toggleLockOnActivationForm}
+              pendingClass="btn-pending"
+            >
+              {merchant.details.merchant_details.locked ? 'Unlock' : 'Lock'}{' '}
+              Activation Form
+              <span class="spin-btn" />
+              <i
+                class={`pull-right i i-${
+                  merchant.details.merchant_details.locked ? 'unlock' : 'lock'
+                }`}
+              />
+            </AsyncButton>
+          </ShowWhen>
         )}
 
-        <Link to={`/merchants/${merchantId}/activation`}>
-          See Activation Form Details
-        </Link>
-
-        <div onClick={actions.EditMethods}>
-          Edit Methods
-          <i class="pull-right i i-money" />
-        </div>
-
-        <div onClick={actions.EditMerchant}>
-          Edit Merchant
-          <i class="pull-right i i-edit-form" />
-        </div>
+        <ShowWhen permission="view_activation_form">
+          <Link to={`/merchants/${merchantId}/activation`}>
+            See Activation Form Details
+          </Link>
+        </ShowWhen>
+        <ShowWhen permission="edit_merchant_methods">
+          <div onClick={actions.EditMethods}>
+            Edit Methods
+            <i class="pull-right i i-money" />
+          </div>
+        </ShowWhen>
+        <ShowWhen permission="edit_merchant">
+          <div onClick={actions.EditMerchant}>
+            Edit Merchant
+            <i class="pull-right i i-edit-form" />
+          </div>
+        </ShowWhen>
 
         <div onClick={actions.AssignPricingPlan}>
           Assign Pricing
@@ -382,35 +401,45 @@ const ActionsList = ({ model, merchantId, actions }) => {
           Feature Merchant
           <i class="pull-right i i-tag" />
         </div>
-
-        <div onClick={actions.AddCredits}>Add Credits</div>
+        <ShowWhen permission="add_merchant_credits">
+          <div onClick={actions.AddCredits}>Add Credits</div>
+        </ShowWhen>
 
         {merchant.details.activated == 0 && (
-          <AsyncButton
-            onClick={activateMerchant}
-            pendingClass="btn-pending"
-            confirm="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating?"
-          >
-            Activate Merchant
-            <span class="spin-btn" />
-            <i class="pull-right i i-done-all" />
-          </AsyncButton>
+          <ShowWhen permission="edit_activate_merchant">
+            <AsyncButton
+              onClick={activateMerchant}
+              pendingClass="btn-pending"
+              confirm="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating?"
+            >
+              Activate Merchant
+              <span class="spin-btn" />
+              <i class="pull-right i i-done-all" />
+            </AsyncButton>
+          </ShowWhen>
         )}
-
-        <AsyncButton
-          onClick={toggleArchiveMerchant}
-          pendingClass="btn-pending"
-          confirm={toggleArchiveMerchantCM()}
+        <ShowWhen
+          permission={
+            merchant.details.archived_at === null
+              ? 'edit_merchant_archive'
+              : 'edit_merchant_unarchive'
+          }
         >
-          {merchant.details.archived_at === null ? 'Archive' : 'Unarchive'}{' '}
-          <i
-            class={`pull-right i i-${
-              merchant.details.archived_at === null ? 'archive' : 'unarchive'
-            }`}
-          />
-          Merchant
-          <span class="spin-btn" />
-        </AsyncButton>
+          <AsyncButton
+            onClick={toggleArchiveMerchant}
+            pendingClass="btn-pending"
+            confirm={toggleArchiveMerchantCM()}
+          >
+            {merchant.details.archived_at === null ? 'Archive' : 'Unarchive'}{' '}
+            <i
+              class={`pull-right i i-${
+                merchant.details.archived_at === null ? 'archive' : 'unarchive'
+              }`}
+            />
+            Merchant
+            <span class="spin-btn" />
+          </AsyncButton>
+        </ShowWhen>
       </div>
 
       <div class="group">
@@ -420,18 +449,22 @@ const ActionsList = ({ model, merchantId, actions }) => {
           Add Adjustment
           <i class="pull-right i i-edit" />
         </div>
-        <div onClick={actions.EditBankAccountDetails}>
-          Edit Bank Account Details
-          <i class="pull-right i i-bank" />
-        </div>
+        <ShowWhen permission="edit_merchant_bank_detail">
+          <div onClick={actions.EditBankAccountDetails}>
+            Edit Bank Account Details
+            <i class="pull-right i i-bank" />
+          </div>
+        </ShowWhen>
         <div onClick={actions.EditMerchantEmail}>
           Edit Merchant Email
           <i class="pull-right i i-email" />
         </div>
-        <div onClick={actions.CreateOffer}>
-          Create Offer
-          <i class="pull-right i i-money" />
-        </div>
+        <ShowWhen permission="create_merchant_offer">
+          <div onClick={actions.CreateOffer}>
+            Create Offer
+            <i class="pull-right i i-money" />
+          </div>
+        </ShowWhen>
         <div onClick={actions.AssignMerchantHandle}>
           Assign Merchant Handle
           <i class="pull-right i">@</i>
@@ -450,12 +483,20 @@ const ActionsList = ({ model, merchantId, actions }) => {
         <div class="group-heading">Risk Actions</div>
 
         {/* Toggle disbale or enable receipt email */}
-        <AsyncButton onClick={toggleInternational} pendingClass="btn-pending">
-          {merchant.details.international ? 'Disable ' : 'Enable '}
-          International
-          <span class="spin-btn" />
-          <i class="pull-right i i-globe" />
-        </AsyncButton>
+        <ShowWhen
+          permission={
+            merchant.details.international
+              ? 'edit_merchant_enable_international'
+              : 'edit_merchant_disable_international'
+          }
+        >
+          <AsyncButton onClick={toggleInternational} pendingClass="btn-pending">
+            {merchant.details.international ? 'Disable ' : 'Enable '}
+            International
+            <span class="spin-btn" />
+            <i class="pull-right i i-globe" />
+          </AsyncButton>
+        </ShowWhen>
 
         {/* Hold or Release funds */}
         {
@@ -464,62 +505,84 @@ const ActionsList = ({ model, merchantId, actions }) => {
               merchant.details.activated == 1 &&
               !merchant.details.hold_funds
             ) {
-              <AsyncButton
-                onClick={toggleFundsHoldOrRelease}
-                pendingClass="btn-pending"
-                confirm="Are you sure you want to hold funds for this merchant?"
-              >
-                Hold Merchant Funds
-                <span class="spin-btn" />
-                <i class="pull-right i i-hand-stop" />
-              </AsyncButton>;
+              <ShowWhen permission="edit_merchant_hold_funds">
+                <AsyncButton
+                  onClick={toggleFundsHoldOrRelease}
+                  pendingClass="btn-pending"
+                  confirm="Are you sure you want to hold funds for this merchant?"
+                >
+                  Hold Merchant Funds
+                  <span class="spin-btn" />
+                  <i class="pull-right i i-hand-stop" />
+                </AsyncButton>
+              </ShowWhen>;
             } else if (merchant.details.hold_funds == 1) {
-              <AsyncButton
-                onClick={toggleFundsHoldOrRelease}
-                pendingClass="btn-pending"
-                confirm="Are you sure you want to release funds for this merchant?"
-              >
-                Release Merchant Funds
-                <span class="spin-btn" />
-                <i class="pull-right i i-thumps-up" />
-              </AsyncButton>;
+              <ShowWhen permission="edit_merchant_release_funds">
+                <AsyncButton
+                  onClick={toggleFundsHoldOrRelease}
+                  pendingClass="btn-pending"
+                  confirm="Are you sure you want to release funds for this merchant?"
+                >
+                  Release Merchant Funds
+                  <span class="spin-btn" />
+                  <i class="pull-right i i-thumps-up" />
+                </AsyncButton>
+              </ShowWhen>;
             }
           }
         }
 
         {/* Toggle disbale or enable receipt email */}
-        <AsyncButton onClick={toggleReceiptEmail} pendingClass="btn-pending">
-          {merchant.details.receipt_email_enabled ? 'Disable ' : 'Enable '}
-          Receipt Email
-          <span class="spin-btn" />
-          <i class="pull-right i i-email" />
-        </AsyncButton>
+        <ShowWhen permission="edit_merchant_enable_receipt">
+          <AsyncButton onClick={toggleReceiptEmail} pendingClass="btn-pending">
+            {merchant.details.receipt_email_enabled ? 'Disable ' : 'Enable '}
+            Receipt Email
+            <span class="spin-btn" />
+            <i class="pull-right i i-email" />
+          </AsyncButton>
+        </ShowWhen>
 
         {/* Toggle enable or disabled live transactions */}
         {merchant.details.activated && (
-          <AsyncButton
-            onClick={toggleLiveTransactions}
-            pendingClass="btn-pending"
+          <ShowWhen
+            permission={
+              merchant.details.live
+                ? 'edit_merchant_disable_live'
+                : 'edit_merchant_enable_live'
+            }
           >
-            {merchant.details.live ? 'Disable' : 'Enable'} Live Transactions
-            <span class="spin-btn" />
-            <i
-              class={`pull-right i i-${merchant.details.live ? 'no' : 'yes'}`}
-            />
-          </AsyncButton>
+            <AsyncButton
+              onClick={toggleLiveTransactions}
+              pendingClass="btn-pending"
+            >
+              {merchant.details.live ? 'Disable' : 'Enable'} Live Transactions
+              <span class="spin-btn" />
+              <i
+                class={`pull-right i i-${merchant.details.live ? 'no' : 'yes'}`}
+              />
+            </AsyncButton>
+          </ShowWhen>
         )}
 
         {typeof merchant.details.suspended_at !== 'undefined' && (
-          <AsyncButton
-            onClick={toggleSuspension}
-            pendingClass="btn-pending"
-            confirm={toggleSuspensionCM()}
+          <ShowWhen
+            permission={
+              merchant.details.suspended_at
+                ? 'edit_merchant_suspend'
+                : 'edit_merchant_unsuspend'
+            }
           >
-            {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}{' '}
-            <i class="pull-right i i-power" />
-            Merchant
-            <span class="spin-btn" />
-          </AsyncButton>
+            <AsyncButton
+              onClick={toggleSuspension}
+              pendingClass="btn-pending"
+              confirm={toggleSuspensionCM()}
+            >
+              {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}{' '}
+              <i class="pull-right i i-power" />
+              Merchant
+              <span class="spin-btn" />
+            </AsyncButton>
+          </ShowWhen>
         )}
       </div>
 
@@ -535,26 +598,34 @@ const ActionsList = ({ model, merchantId, actions }) => {
           Assign Banks
           <i class="pull-right i i-bank" />
         </div>
-        <div onClick={actions.AutoFillActivationForm}>
-          Autofill Activation Form
-          <i class="pull-right i i-auto-fill" />
-        </div>
+        <ShowWhen permission="merchant_autofill_form">
+          <div onClick={actions.AutoFillActivationForm}>
+            Autofill Activation Form
+            <i class="pull-right i i-auto-fill" />
+          </div>
+        </ShowWhen>
       </div>
 
       <div class="group">
         <div class="group-heading" />
-        <div onClick={actions.MarkReferred}>
-          Mark as Referred
-          <i class="pull-right i i-gift" />
-        </div>
-        <div onClick={actions.UploadScreenshots}>
-          Upload screenshots
-          <i class="pull-right i i-upload" />
-        </div>
-        <div onClick={captureScreenshot}>
-          Capture Screenshots
-          <i class="pull-right i i-camera" />
-        </div>
+        <ShowWhen permission="edit_merchant_mark_referred">
+          <div onClick={actions.MarkReferred}>
+            Mark as Referred
+            <i class="pull-right i i-gift" />
+          </div>
+        </ShowWhen>
+        <ShowWhen permission="edit_merchant_screenshot">
+          <div onClick={actions.UploadScreenshots}>
+            Upload screenshots
+            <i class="pull-right i i-upload" />
+          </div>
+        </ShowWhen>
+        <ShowWhen permission="edit_merchant_screenshot">
+          <div onClick={captureScreenshot}>
+            Capture Screenshots
+            <i class="pull-right i i-camera" />
+          </div>
+        </ShowWhen>
       </div>
     </aside>
   );
