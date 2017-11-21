@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { withRouter } from 'react-router-dom';
 import { observable, extendObservable, action } from 'mobx';
 import { observer } from 'mobx-react';
 import { adminFetch, adminPost, adminPut, adminDelete } from 'util/fetch';
@@ -8,7 +7,6 @@ import UserForm from './UserForm';
 import { isWorkflow } from 'util/index';
 import { prevent } from 'util/index';
 
-@withRouter
 @observer
 export default class EditUser extends Component {
   // all available groups
@@ -101,7 +99,7 @@ export default class EditUser extends Component {
 
     return request(data).then(response => {
       if (response) {
-        if (isWorkflow(response, this.props.history)) {
+        if (isWorkflow(response)) {
           return;
         }
         notifyDone();

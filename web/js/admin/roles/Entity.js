@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import axios from 'axios';
 import {
@@ -16,7 +15,6 @@ import RolesForm from './RolesForm';
 
 import { prevent } from 'util/index';
 
-@withRouter
 @observer
 class EditRole extends Component {
   state = {
@@ -51,7 +49,7 @@ class EditRole extends Component {
   }
 
   save = body => {
-    let { model, history } = this.props;
+    let { model } = this.props;
     let { selectedPerms } = this.state;
 
     if (model) {
@@ -83,7 +81,7 @@ class EditRole extends Component {
         ],
       }).then(response => {
         if (response.data.success) {
-          if (isWorkflow(response.data.data, history)) {
+          if (isWorkflow(response.data.data)) {
             return;
           }
           notifySuccess('Role edited successfully.');
@@ -99,7 +97,7 @@ class EditRole extends Component {
         body,
       }).then(response => {
         if (response) {
-          if (isWorkflow(response, history)) {
+          if (isWorkflow(response)) {
             return;
           }
           this.props.collection.items.push(response.data);

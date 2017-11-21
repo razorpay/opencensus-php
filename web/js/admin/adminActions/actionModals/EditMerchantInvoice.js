@@ -1,5 +1,4 @@
 import React from 'react';
-import { withRouter } from 'react-router-dom';
 import Field, { SelectField, SelectMode } from 'ui/Field';
 import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
@@ -7,7 +6,9 @@ import { notifySuccess, closeModal } from 'common/modal';
 import { isWorkflow } from 'util/index';
 import { adminPut } from 'util/fetch';
 
-const EditMerchantInvoice = withRouter(({ history }) => {
+EditMerchantInvoice.title = 'Edit Merchant Invoice GSTIN';
+
+export default function EditMerchantInvoice() {
   return (
     <Form>
       <Field
@@ -38,7 +39,7 @@ const EditMerchantInvoice = withRouter(({ history }) => {
             route_name: 'merchant_invoice_update_gstin',
           }).then(response => {
             if (response) {
-              if (isWorkflow(response, history)) {
+              if (isWorkflow(response)) {
                 return;
               }
               notifySuccess('Update GSTIN Successfull');
@@ -49,8 +50,4 @@ const EditMerchantInvoice = withRouter(({ history }) => {
       />
     </Form>
   );
-});
-
-EditMerchantInvoice.title = 'Edit Merchant Invoice GSTIN';
-
-export default EditMerchantInvoice;
+}
