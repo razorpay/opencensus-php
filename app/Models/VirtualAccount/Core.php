@@ -57,9 +57,7 @@ class Core extends Base\Core
 
     protected function buildReceivers(Entity $virtualAccount, array $receivers)
     {
-        $name = $virtualAccount->getName();
-
-        $receiverHelper = new Receiver($virtualAccount->merchant, $name);
+        $receiverHelper = $virtualAccount->getReceiverBuilder();
 
         foreach ($receivers[Entity::TYPES] as $receiverType)
         {

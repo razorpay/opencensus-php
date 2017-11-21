@@ -9,9 +9,10 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
-class Receiver
+class Receiver extends Base\Core
 {
     const BANK_ACCOUNT      = 'bank_account';
     // const VPA               = 'vpa';
@@ -48,31 +49,19 @@ class Receiver
 
     protected $app;
     protected $merchant;
-    protected $name;
     protected $descriptor;
     protected $trace;
     protected $repo;
     protected $mode;
     protected $numeric;
 
-    public function __construct(
-        Merchant\Entity $merchant,
-        string $name = null)
+    public function __construct(Entity $virtualAccount)
     {
-        $this->app = App::getFacadeRoot();
+        parent::__construct();
 
-        if (isset($this->app['rzp.mode']))
-        {
-            $this->mode = $this->app['rzp.mode'];
-        }
+        $this->merchant = $virtualAccount->merchant;
 
-        $this->repo = $this->app['repo'];
-
-        $this->trace = $this->app['trace'];
-
-        $this->merchant = $merchant;
-
-        $this->name = $name;
+        $this->virtualAccount = $virtualAccount;
     }
 
     public static function areTypesValid(array $receiverTypes): bool
@@ -137,13 +126,13 @@ class Receiver
 
         $details = Provider::DEFAULT_DETAILS[$provider];
 
-        $this->setOptions($options);
+        $this->setBankAccountOptions($options);
 
         $accountNumber = $this->generateAccountNumberForProvider($provider);
 
         $merchantDetails = [
             BankAccount::ACCOUNT_NUMBER     => $accountNumber,
-            BankAccount::BENEFICIARY_NAME   => $this->name,
+            BankAccount::BENEFICIARY_NAME   => $this->virtualAccount->getName(),
         ];
 
         return array_merge($details, $merchantDetails);
@@ -156,17 +145,21 @@ class Receiver
      *
      * @param array $options
      */
-    protected function setOptions(array $options)
+    protected function setBankAccountOptions(array $options)
     {
+        $validator = $this->virtualAccount->getValidator();
+
+        $validator->validateInput('bankAccountReceiverOption', $options);
+
         $options = array_merge(self::DEFAULT_BANK_ACCOUNT_OPTIONS, $options);
 
         $this->numeric = boolval($options[self::NUMERIC]);
 
         $this->descriptor = $options[self::DESCRIPTOR];
 
-        $handle = $this->merchant->getHandle();
+        $validator->validateDescriptor($this->descriptor);
 
-        Validator::validateDescriptor($this->descriptor, $handle);
+        $handle = $this->merchant->getHandle();
 
         if (($this->numeric === true) and
             ($this->descriptor !== null))
@@ -175,10 +168,11 @@ class Receiver
                 'Descriptor cannot be used for numeric accounts.');
         }
         else if (($this->numeric === false) and
-                 ($handle === null))
+                 ($handle === null) and
+                 ($this->descriptor !== null))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Alphabetical account numbers cannot be used as merchant handle is not set.');
+                'Descriptor cannot be used as merchant handle is not set.');
         }
     }
 
@@ -278,17 +272,22 @@ class Receiver
      */
     protected function getRoot(string $provider): string
     {
-        $root = Provider::ROOT[$provider]['default'];
+        $root = Provider::ROOT[$provider]['numeric_default'];
 
         if ($this->numeric === false)
         {
-            $root = Provider::ROOT[$provider]['alpha'];
+            $root = Provider::ROOT[$provider]['alpha_numeric_default'];
 
             $handle = $this->merchant->getHandle();
 
-            if (strlen($handle) !== self::STANDARD_HANDLE_LENGTH)
+            if ($handle !== null)
             {
-                $root = Provider::ROOT[$provider]['special'];
+                $root = Provider::ROOT[$provider]['alpha_numeric_handle'];
+
+                if (strlen($handle) !== self::STANDARD_HANDLE_LENGTH)
+                {
+                    $root = Provider::ROOT[$provider]['alpha_numeric_special'];
+                }
             }
         }
 
@@ -308,7 +307,8 @@ class Receiver
     {
         $handle = $this->merchant->getHandle();
 
-        if ($this->numeric === true)
+        if (($handle === null) or
+            ($this->numeric === true))
         {
             $handle = $this->getDefaultHandle($root);
         }

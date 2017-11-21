@@ -31,12 +31,19 @@ class Validator extends Base\Validator
         Entity::RECEIVERS
     ];
 
-    public static function validateDescriptor($descriptor, $handle)
+    protected static $bankAccountReceiverOptionRules = [
+        Entity::NUMERIC    => 'sometimes|boolean',
+        Entity::DESCRIPTOR => 'sometimes|alpha_num|max:10',
+    ];
+
+    public function validateDescriptor($descriptor)
     {
         if ($descriptor === null)
         {
             return;
         }
+
+        $handle = $this->entity->merchant->getHandle();
 
         $descriptorLength = strlen($descriptor);
 

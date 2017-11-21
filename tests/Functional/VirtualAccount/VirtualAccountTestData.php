@@ -117,14 +117,13 @@ return [
         ],
     ],
 
-    'testCreateVirtualAccountDescriptorErrors' => [
-        'alphaWithoutHandle' => [
+    'testVirtualAccountCreateRequestUpdate' => [
+        'descriptorWithNumeric' => [
             'response' => [
                 'content' => [
                     'error' => [
                         'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => 'Alphabetical account numbers cannot be '.
-                                         'used as merchant handle is not set.',
+                        'description' => 'Descriptor cannot be used for numeric accounts.',
                     ],
                 ],
                 'status_code' => 400,
@@ -134,7 +133,22 @@ return [
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
         ],
-        'numericWithDescriptor' => [
+        'descriptorWithAlphaWithoutHandle' => [
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'Descriptor cannot be used as merchant handle is not set.',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class' => 'RZP\Exception\BadRequestValidationFailureException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        'descriptorWithNumericWithHandle' => [
             'response' => [
                 'content' => [
                     'error' => [

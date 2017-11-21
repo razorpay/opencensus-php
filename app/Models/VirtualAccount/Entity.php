@@ -236,6 +236,11 @@ class Entity extends Base\PublicEntity
         return $receivers;
     }
 
+    public function getReceiverBuilder()
+    {
+        return new Receiver($this);
+    }
+
     // ----------------------- Setters -----------------------------------------
 
     /**

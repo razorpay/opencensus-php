@@ -123,6 +123,14 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccountOldFormat()
     {
+        // Without handle
+        $response = $this->createVirtualAccountOldFormat();
+
+        $vba = $this->getLastEntity('bank_account', true);
+        // Handle is not set so default root is used with given descriptor
+        $this->assertStringStartsWith("RAZORPAY", $vba['account_number']);
+
+        // With handle
         $this->fixtures->merchant->setHandle('hand');
 
         $response = $this->createVirtualAccountOldFormat([
@@ -132,21 +140,65 @@ class VirtualAccountTest extends TestCase
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is set so standard root is used with given descriptor
         $this->assertEquals("RZRPHANDDESC1234", $vba['account_number']);
+
+        $response = $this->createVirtualAccountOldFormat([]);
+        $vba = $this->getLastEntity('bank_account', true);
+        // Handle is set so standard root is used with random descriptor
+        $this->assertStringStartsWith("RZRPHAND", $vba['account_number']);
     }
 
-    public function testCreateVirtualAccountDescriptorErrors()
+    public function testVirtualAccountCreateRequestUpdate()
     {
-        $data = $this->testData[__FUNCTION__]['alphaWithoutHandle'];
+        $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() {
-            $this->createVirtualAccount([], false, 'desc1234');
+        // New format
+        // receivers[types][]=bank_account
+        $response = $this->createVirtualAccount([]);
+        $vba = $this->getLastEntity('bank_account', true);
+        $this->assertStringStartsWith('11111100', $vba['account_number']);
+
+        // Sending descriptor throws error, can't use with numeric
+        // receivers[types][]=bank_account&receivers[bank_account][desriptor]=desc
+        $this->runRequestResponseFlow($data['descriptorWithNumeric'], function() {
+            $response = $this->createVirtualAccount([], true, "desc");
         });
 
-        $data = $this->testData[__FUNCTION__]['numericWithDescriptor'];
+        // Alphanumeric succeeds
+        // receivers[types][]=bank_account&receivers[bank_account][numeric]=0
+        $response = $this->createVirtualAccount([], false);
+        $vba = $this->getLastEntity('bank_account', true);
+        $this->assertStringStartsWith('RAZORPAY', $vba['account_number']);
 
-        $this->runRequestResponseFlow($data, function() {
-            $this->createVirtualAccount([], true, 'desc1234');
+        // Alphanumeric fails with descriptor, as handle isn't set
+        // receivers[types][]=bank_account&receivers[bank_account][numeric]=0&descriptor=desc
+        $this->runRequestResponseFlow($data['descriptorWithAlphaWithoutHandle'], function() {
+            $response = $this->createVirtualAccount([], false, 'desc');
         });
+
+        // With handle
+        $this->fixtures->merchant->setHandle('hand');
+
+        // New format with handle
+        // receivers[types][]=bank_account
+        $response = $this->createVirtualAccount([]);
+        $vba = $this->getLastEntity('bank_account', true);
+        $this->assertStringStartsWith('11111100', $vba['account_number']);
+
+        // Sending descriptor throws error, can't use with numeric
+        // receivers[types][]=bank_account&receivers[bank_account][desriptor]=desc
+        $this->runRequestResponseFlow($data['descriptorWithNumericWithHandle'], function() {
+            $response = $this->createVirtualAccount([], true, 'desc');
+        });
+
+        // Numeric false, without descriptor, gives random descriptor
+        $response = $this->createVirtualAccount([], false);
+        $vba = $this->getLastEntity('bank_account', true);
+        $this->assertStringStartsWith('RZRPHAND', $vba['account_number']);
+
+        // Numeric false, with descriptor
+        $response = $this->createVirtualAccount([], false, 'desc');
+        $vba = $this->getLastEntity('bank_account', true);
+        $this->assertEquals('RZRPHANDDESC', $vba['account_number']);
     }
 
     public function testCreateVirtualAccountDescriptorLengths()
