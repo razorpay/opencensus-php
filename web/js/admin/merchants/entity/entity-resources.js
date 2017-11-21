@@ -5,7 +5,7 @@ import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';
 import ToggleEntityRow from 'ui/ToggleEntityRow';
 import Table from 'ui/Table';
-
+import ShowWhen from 'admin/components/ShowWhen';
 import CreditsDetails from './entityDetails/CreditsDetails';
 import FeaturesDetails from './entityDetails/FeaturesDetails';
 
@@ -147,9 +147,11 @@ function _getFeaturesFields(deleteFeature) {
       [
         'Action',
         item => (
-          <div class="link danger" onClick={() => deleteFeature(item, mode)}>
-            Delete
-          </div>
+          <ShowWhen permission="delete_merchant_features">
+            <div class="link danger" onClick={() => deleteFeature(item, mode)}>
+              Delete
+            </div>
+          </ShowWhen>
         ),
       ],
     ];
@@ -515,9 +517,9 @@ export function getDetailsViewMap(model) {
       value: details.merchant_details
         ? () => (
             <i
-              class={`i i-${details.merchant_details.locked
-                ? 'lock'
-                : 'unlock'}`}
+              class={`i i-${
+                details.merchant_details.locked ? 'lock' : 'unlock'
+              }`}
             />
           )
         : null,
