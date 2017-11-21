@@ -188,21 +188,92 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         if ($refundTransaction === null)
         {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code' => TraceCode::RECON_MISMATCH,
-                    'message'    => 'Refund transaction not found in DB.',
-                    'refund_id'  => $this->refund->getId(),
-                    'gateway'    => get_called_class()
-                ]);
+            $createTransactionSuccess = $this->attemptToCreateMissingRefundTransaction();
 
-            return false;
+            if ($createTransactionSuccess === false)
+            {
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code'    => TraceCode::RECON_MISMATCH,
+                        'message'       => 'Refund transaction not found in DB',
+                        'refund_id'     => $this->refund->getId(),
+                        'gateway'       => get_called_class()
+                    ]);
+
+                return false;
+            }
+
+            // Refresh both refund and transaction to get latest changes.
+            // Reload txn because relation are cached.
+            $this->refund->reload()->transaction->reload();
         }
 
         // Sets the reconciled_at in the transactions entity, on a successful reconciliation.
         $this->persistReconciledAt($this->refund);
 
         return true;
+    }
+
+    protected function attemptToCreateMissingRefundTransaction()
+    {
+        $paymentTransaction = $this->payment->transaction;
+
+        if ($paymentTransaction === null)
+        {
+            return false;
+        }
+
+        try
+        {
+            $txn = $this->createMissingRefundTransaction();
+
+            if ($txn === null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+        catch (\Exception $ex)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_FAILURE,
+                    'failure_code'  => 'REFUND_TRANSACTION_CREATE_FAIL',
+                    'message'       => 'Refund transaction create failed with -> ' . $ex->getMessage(),
+                    'payment_id'    => $this->payment->getId(),
+                    'refund_id'     => $this->refund->getId(),
+                    'gateway'       => get_called_class(),
+                ]);
+
+            $this->trace->traceException($ex);
+
+            return false;
+        }
+    }
+
+    protected function createMissingRefundTransaction()
+    {
+        assertTrue($this->refund->transaction === null);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO_ALERT,
+            [
+                'info_code'     => 'REFUND_TRANSACTION_CREATE_RECON',
+                'message'       => 'Attempting to create refund transaction in recon',
+                'payment_id'    => $this->payment->getId(),
+                'refund_id'     => $this->refund->getId(),
+                'gateway'       => get_called_class()
+            ]);
+
+        $processor = new Payment\Processor\Processor($this->refund->merchant);
+
+        $txn = $processor->createTransactionForRefund($this->refund, $this->payment);
+
+        // This is required to save the association of the transaction with the refund.
+        $this->repo->saveOrFail($this->refund);
+
+        return $txn;
     }
 
     protected function getRowDetailsStructured($row)
