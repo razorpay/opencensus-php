@@ -1,6 +1,8 @@
 import { observable, observe } from 'mobx';
 import BaseModel from './base';
 import CollectionItem from './collectionItem';
+import { notifySuccess, notifyError } from 'common/modal';
+import { adminDelete } from 'util/fetch';
 
 const defaultFilters = {
   count: 20,
@@ -22,8 +24,10 @@ export default class Collection extends BaseModel {
 
   constructor(props) {
     super(props);
-    let { data, fetchFn, filters, items, model } = props;
+    let { data, fetchFn, filters, items, model, deleteRouteName } = props;
     Object.assign(this, { data, fetchFn, model });
+
+    this.deleteRouteName = deleteRouteName;
 
     this.filters =
       filters === null
@@ -61,6 +65,24 @@ export default class Collection extends BaseModel {
       return data;
     });
   }
+
+  delete = item => {
+    const data = {
+      route_name: this.deleteRouteName,
+      url_params: {
+        id: item.id,
+      },
+    };
+
+    return adminDelete(data)
+      .then(data => {
+        if (data) {
+          this.remove(item);
+          notifySuccess('Workflow deleted successfully');
+        }
+      })
+      .catch(err => notifyError(err));
+  };
 
   push(item) {
     this.items.push(new (this.model || CollectionItem)(this, item));

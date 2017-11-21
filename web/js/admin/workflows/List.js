@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
-import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
-import Field from 'ui/Field';
 import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
 import { observer } from 'mobx-react';
 import { Link } from 'react-router-dom';
+import { formatDate } from 'util/index';
 
 @observer
 export default class WorkflowList extends Component {
   collection = new Collection({
     fetchFn: adminFetch,
+    deleteRouteName: 'workflow_delete',
     data: {
       route_name: 'workflow_get_multiple',
     },
@@ -27,17 +27,35 @@ export default class WorkflowList extends Component {
             </Link>
           </header>
         </div>
-        <PageTable model={this.collection} fields={fields} href={href} />
+        <PageTable
+          model={this.collection}
+          fields={getWorkflowListfields(this.collection.delete)}
+          href={href}
+        />
       </div>
     );
   }
 }
 
-const fields = [
+const getWorkflowListfields = deleteWorkflow => [
   ['Id', item => item.id],
   ['Name', item => item.name],
-  ['Created At', item => Date(item.created_at)],
-  ['Last Updated', item => Date(item.updated_at)],
+  ['Created At', item => formatDate(item.created_at)],
+  ['Last Updated', item => formatDate(item.updated_at)],
+  [
+    'Delete',
+    item => (
+      <div
+        class="link danger"
+        onClick={e => {
+          e.preventDefault();
+          deleteWorkflow(item);
+        }}
+      >
+        Delete
+      </div>
+    ),
+  ],
 ];
 
 const href = item => '/workflows/' + item.id;
