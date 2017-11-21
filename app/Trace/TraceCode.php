@@ -615,7 +615,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_SUSPEND                          = 'MERCHANT_SUSPEND';
     const MERCHANT_UNSUSPEND                        = 'MERCHANT_UNSUSPEND';
 
-    const MERCHANT_PAYOUT_FAILURE                   = 'MERCHANT_PAYOUT_FAILURE';
+    const MERCHANT_PAYOUT_SKIPPED                   = 'MERCHANT_PAYOUT_SKIPPED';
 
     const PRICING_PLAN_CREATE_ATTEMPT               = 'PRICING_PLAN_CREATE_ATTEMPT';
     const PRICING_PLAN_CREATE_SUCCESS               = 'PRICING_PLAN_CREATE_SUCCESS';
@@ -709,6 +709,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const IIN_INSERT_FAILED                         = 'IIN_INSERT_FAILED';
     const RECON_BEGIN_FILE_PARSING                  = 'RECON_BEGIN_FILE_PARSING';
     const RECON_END_FILE_PARSING                    = 'RECON_END_FILE_PARSING';
+    const RECON_BATCH_CREATION_FAILED               = 'RECON_BATCH_CREATION_FAILED';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH           = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';
@@ -947,6 +948,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // To log various debugs for a migrate command
     const BATCH_MIGRATE_DEBUG                           = 'BATCH_MIGRATE_DEBUG';
 
+    // Geo Location trace codes
+    const GEOLOCATION_UPDATE_RESPONSE                   = 'GEOLOCATION_UPDATE_RESPONSE';
+    const GEOLOCATION_FAILURE                           = 'GEOLOCATION_FAILURE';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
@@ -1087,7 +1092,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
         self::MERCHANT_ORG_NOT_GIVEN                    => 'Merchant Org Id is not passed to API on creation',
 
-        self::MERCHANT_PAYOUT_FAILURE                   => 'Failed to create merchant payout',
+        self::MERCHANT_PAYOUT_SKIPPED                   => 'Skipped Merchant Payout',
 
         self::OFFER_IIN_DOES_NOT_EXISTS                 => 'IIN does not exists for the offer create request',
         self::OFFER_DEACTIVATE                          => 'Deactivating the expired offer',

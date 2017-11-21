@@ -259,6 +259,10 @@ class Type
             self::ICICI_EMI_FILE_SFTP,
             self::YES_EMI_FILE_SFTP,
         ],
+
+        self::RECON_BUCKET_CONFIG => [
+            self::RECONCILIATION_BATCH_INPUT,
+        ],
     ];
 
     /**

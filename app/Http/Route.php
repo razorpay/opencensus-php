@@ -299,6 +299,8 @@ final class Route
         'gateway_payment_callback_kotak_cancel'   => ['post',     'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotakCancel'                             ],
         'gateway_payment_callback_corporation'    => ['post',     'gateway/netbanking_corporation/callback',        'GatewayController@callbackCorporation'                             ],
 
+        'geoip_update'                            => ['post',     'geoip/update',                                   'AdminController@updateGeoIps'                                      ],
+
         // File-based Emandate Routes
         'emandate_registration_reconcile'         => ['post',     'emandate/registration/reconcile/{gateway}',      'EMandateController@postReconcileRegistrationFile'                  ],
         'emandate_debit_reconcile'                => ['post',     'emandate/debit/reconcile/{gateway}',             'EMandateController@postReconcileDebitFile'                         ],
@@ -1097,6 +1099,7 @@ final class Route
         'user_reset_password_token',
         'merchant_payout_mail',
         'gateway_payment_callback_bharatqr',
+        'geoip_update'
     ];
 
     public static $proxy = [
@@ -1408,6 +1411,7 @@ final class Route
         'onboarding_features_bulk_update_status'=> Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_update'            => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_fetch_details'     => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
+        'geoip_update'                          => '*',
     ];
 
     public static $direct = [
@@ -1505,6 +1509,7 @@ final class Route
             'gateway_file_create',
             'reports_refund_irctc',
             'merchant_payout_mail',
+            'geoip_update',
         ],
 
         'kotak' => [

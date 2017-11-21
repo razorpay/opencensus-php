@@ -317,7 +317,10 @@ trait RequestResponseFlowTrait
         return $this->getJsonContentFromResponse($response, $callback);
     }
 
-    protected function makeRequestAndCatchException(Closure $closure, string $exceptionClass = \Exception::class)
+    protected function makeRequestAndCatchException(
+        Closure $closure,
+        string $exceptionClass = \Exception::class,
+        string $exceptionMessage = null)
     {
         try
         {
@@ -326,6 +329,11 @@ trait RequestResponseFlowTrait
         catch (\Exception $e)
         {
             $this->assertExceptionClass($e, $exceptionClass);
+
+            if ($exceptionMessage !== null)
+            {
+                $this->assertSame($exceptionMessage, $e->getMessage());
+            }
 
             return;
         }

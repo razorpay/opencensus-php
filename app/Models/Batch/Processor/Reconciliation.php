@@ -12,12 +12,14 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
 use RZP\Reconciliator\Converter;
+use RZP\Reconciliator\RequestProcessor;
 use RZP\Reconciliator\FileProcessor;
 
 class Reconciliation extends Base
 {
     const EXTRA_DETAILS = 'extra_details';
     const FILE_DETAILS  = 'file_details';
+    const INPUT_DETAILS = 'input_details';
 
     /**
      * Lock wait timeout for reconciliation batch entity
@@ -64,7 +66,7 @@ class Reconciliation extends Base
         $guesser->register(new FileBinaryMimeTypeGuesser());
     }
 
-    protected function saveInputFile(File $file): File
+    protected function saveInputFile(File $file): FileStore\Creator
     {
         $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArray());
 
@@ -84,28 +86,26 @@ class Reconciliation extends Base
 
         // we move the file to storage location used by UFH Accessor, so that S3
         // mock works successfully.
-        $file = $file->move(
-                    $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE_PREFIX),
-                    $fileNameWithExt);
+        $movedFile = $file->move(
+                        $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE_PREFIX),
+                        $fileNameWithExt);
 
         $ufh = new FileStore\Creator;
 
-        $ufh->localFilePath($file->getPathname())
+        $ufh->localFilePath($movedFile->getPathname())
             ->mime($mimeType)
             ->name($fileName)
             ->extension($extension)
-            ->entity($this->batch)
             ->type(FileStore\Type::RECONCILIATION_BATCH_INPUT)
-            ->deleteLocalFile()
             ->save();
-
-        $ufhFile = $ufh->getFileInstance();
 
         $this->batch->setUploadFileUrl($ufh->getUrl());
 
-        $this->trace->info(TraceCode::BATCH_UPLOAD_FILE, $ufhFile->toArrayPublic());
+        $this->trace->info(
+            TraceCode::BATCH_UPLOAD_FILE,
+            $ufh->getFileInstance()->toArrayPublic());
 
-        return $file;
+        return $ufh;
     }
 
     protected function validateInputFileAndUpdateBatch(string $filePath, array $input)
@@ -151,8 +151,10 @@ class Reconciliation extends Base
     protected function postProcessEntries(array & $entries)
     {
         //
-        // Not doing anything here, as no special post processing steps need to
-        // be taken for recon
+        // Not doing anything here, as the processing metadata (success_count / failure_count)
+        // etc, is updated during reconciliation itself to the batch entity. We cant return
+        // the run summary from reconciliator, as that is obtained inside a finally block
+        // and returning from the same also suppresses any exception being thrown by reconciliator
         //
         return;
     }
@@ -224,6 +226,7 @@ class Reconciliation extends Base
         foreach ($excelArray as $sheetName => $sheetData)
         {
             $inputFileDetails[FileProcessor::SHEET_NAME] = $sheetName;
+            $inputFileDetails[FileProcessor::SHEET_COUNT] = $sheetCount;
 
             $totalCount += count($sheetData);
 
@@ -283,7 +286,10 @@ class Reconciliation extends Base
 
     protected function setExtraDetails(array & $arrayContent, array $fileDetails)
     {
-        $arrayContent[self::EXTRA_DETAILS][self::FILE_DETAILS] = $fileDetails;
+        $arrayContent[self::EXTRA_DETAILS][RequestProcessor\Base::FILE_DETAILS] = $fileDetails;
+
+        $arrayContent[self::EXTRA_DETAILS]
+            [RequestProcessor\Base::INPUT_DETAILS] = $this->params[Batch\Entity::INPUT_DETAILS];
     }
 
     /**

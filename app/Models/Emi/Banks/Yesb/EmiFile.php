@@ -161,7 +161,7 @@ class EmiFile extends Base\EmiFile
            $filePath = 'yesbank/outgoing/';
         }
 
-        return $filePath . static::$fileToWriteName;
+        return $filePath . static::$fileToWriteName . '.' . FileStore\Format::XLSX;
     }
 
     private function formattedDateFromTimestamp($timestamp)

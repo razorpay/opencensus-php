@@ -20,36 +20,48 @@ use RZP\Models\Feature\Constants as Feature;
  */
 class Validator extends Base\Validator
 {
-    const DEFAULT_MIME_TYPES = 'application/zip,'
+    /**
+     * Default rule for file validation. Per type a different file rule can be
+     * written. We validate both mime_types and mimes(basically extension).
+     */
+    const DEFAULT_MIME_RULE = '|mime_types:'
+                                    . 'application/zip,'
                                     . 'application/vnd.ms-excel,'
                                     . 'application/vnd.oasis.opendocument.spreadsheet,'
                                     . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
                                     . 'application/octet-stream,'
                                     . 'text/csv,'
-                                    . 'text/plain';
+                                    . 'text/plain'
+                                . '|mimes:'
+                                    . 'xlsx,'
+                                    . 'xls,'
+                                    . 'csv,'
+                                    . 'txt';
 
     //
     // TODO:
-    // - Add comments
+    // - csv files doesn't expect headers, it throws error in that case.
+    // - Should not keep csv, txt in default rules.
     //
 
     protected static $defaultCreateRules = [
         Entity::TYPE                 => 'required|in:refund,irctc_refund,irctc_settlement,linked_account,virtual_bank_account',
-        Entity::FILE                 => 'required|file|max:1024|mime_types:' . self::DEFAULT_MIME_TYPES,
+        Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
     ];
 
     protected static $paymentLinkCreateRules = [
         Entity::TYPE                 => 'required|in:payment_link',
-        Entity::FILE                 => 'required|file|max:1024|mime_types:' . self::DEFAULT_MIME_TYPES,
+        Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
         Invoice\Entity::DRAFT        => 'filled|in:0,1',
         Invoice\Entity::SMS_NOTIFY   => 'filled|in:0,1',
         Invoice\Entity::EMAIL_NOTIFY => 'filled|in:0,1',
     ];
 
     protected static $reconciliationCreateRules = [
-        Entity::TYPE                 => 'required|in:reconciliation',
-        Entity::GATEWAY              => 'required|string|max:25',
-        Entity::FILE                 => 'required|file'
+        Entity::TYPE          => 'required|in:reconciliation',
+        Entity::GATEWAY       => 'required|string|max:25',
+        Entity::FILE          => 'required|file',
+        Entity::INPUT_DETAILS => 'required|array',
     ];
 
     /**

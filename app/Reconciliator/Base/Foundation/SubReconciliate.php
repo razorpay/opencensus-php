@@ -3,42 +3,59 @@
 namespace RZP\Reconciliator\Base\Foundation;
 
 use App;
+
 use RZP\Models\Base;
-use RZP\Models\Payment;
+use RZP\Models\Batch;
 use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\RequestProcessor;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class SubReconciliate
+class SubReconciliate extends Base\Core
 {
     const TOTAL_SUMMARY     = 'total_summary';
     const FAILURES_SUMMARY  = 'failures_summary';
     const SUCCESSES_SUMMARY = 'successes_summary';
 
     /**
-     * The total number of payments/refunds attempted to reconcile.
+     * The list of payments/refunds attempted to reconcile.
      *
-     * @var $total
+     * @var array
      */
-    protected $total;
+    protected $total = [];
 
     /**
      * All the payments/refunds which were successfully reconciled.
      * These include payments/refunds for which we were able to successfully record the gateway
      * service tax and gateway fees in db.
      *
-     * @var $successes
+     * @var array
      */
-    protected $successes;
+    protected $successes = [];
 
     /**
      * All the payments/refunds which could not be reconciled.
      * These include the payments/refunds for which we could not record the gateway service tax
      * and gateway fees in db.
      *
-     * @var $failures
+     * @var array
      */
-    protected $failures;
+    protected $failures = [];
+
+    public function getTotal(): array
+    {
+        return $this->total;
+    }
+
+    public function getSuccesses(): array
+    {
+        return $this->successes;
+    }
+
+    public function getFailures(): array
+    {
+        return $this->failures;
+    }
 
     /**
      * Contains details for files, email or manual details
@@ -47,6 +64,68 @@ class SubReconciliate
      * @var array
      */
     protected $extraDetails = [];
+    /**
+     * This method resets any instance attributes which could have been set during
+     * processing reconciliation of a particular row. In certain cases like combined
+     * reconciliate the  subreconciliator instances are reused so we don't want
+     * instance attributes to persist between specific runs. Implementation to be
+     * provided by child classes
+     */
+    public function resetProcessingAttributes()
+    {
+        $this->extraDetails = [];
+    }
+
+    /**
+     * This is the start of the actual reconciliation.
+     * Reconciliation is done for each row in the file content.
+     *
+     * @param array $fileContents
+     * @return array
+     */
+    public function startReconciliation(array $fileContents)
+    {
+        $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
+        unset($fileContents[Orchestrator::EXTRA_DETAILS]);
+
+        foreach ($fileContents as $row)
+        {
+            $this->repo->transactionOnLiveAndTest(function() use ($row)
+            {
+                $this->runReconciliate($row);
+            });
+        }
+
+        return $this->getSummary();
+    }
+
+    /**
+     * Runs the same reconciliation process, though here we always update the batch with recon
+     * summary, regardless of any exception thrown during the process.
+     *
+     * @param array          $fileContents      file contents to be processed
+     * @param Batch\Entity   $batch             Batch entity for the current run
+     */
+    public function startReconciliationV2(array $fileContents, Batch\Entity $batch)
+    {
+        $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
+        unset($fileContents[Orchestrator::EXTRA_DETAILS]);
+
+        try
+        {
+            foreach ($fileContents as $row)
+            {
+                $this->repo->transactionOnLiveAndTest(function() use ($row)
+                {
+                    $this->runReconciliate($row);
+                });
+            }
+        }
+        finally
+        {
+            $this->updateBatchWithSummary($batch);
+        }
+    }
 
     protected function persistReconciledAt($entity)
     {
@@ -165,7 +244,9 @@ class SubReconciliate
      */
     protected function shouldForceUpdate(string $field) : bool
     {
-        $forceUpdateFields = $this->extraDetails[Orchestrator::INPUT_DETAILS][Orchestrator::FORCE_UPDATE] ?? [];
+        $forceUpdateFields = $this->extraDetails
+            [RequestProcessor\Base::INPUT_DETAILS]
+            [RequestProcessor\Base::FORCE_UPDATE] ?? [];
 
         return in_array($field, $forceUpdateFields, true);
     }
@@ -173,5 +254,32 @@ class SubReconciliate
     public function setExtraDetails(array $extraDetails)
     {
         $this->extraDetails = $extraDetails;
+    }
+
+    /**
+     * @param  Batch\Entity $batch  Batch entity for the current reconciliation request
+     */
+    protected function updateBatchWithSummary(Batch\Entity $batch)
+    {
+        //
+        // We are not updating the batch total count here, as that is already done
+        // when we parse the file, before processing has begn. This is because recon
+        // files usually have extra rows, and hence updating the total_count here
+        // will not reflect the actual number of rows in the file.
+        //
+        $batch->setSuccessCount(count($this->successes));
+
+        $batch->setFailureCount(count($this->failures));
+    }
+
+    /**
+     * Rows for which the correponding entities, have already been marked as reconciled,
+     * we add it to the list of successfully processed rows.
+     *
+     * @param  string $entityId
+     */
+    protected function handleAlreadyReconciled(string $entityId)
+    {
+        $this->setSummaryCount(self::SUCCESSES_SUMMARY, $entityId);
     }
 }

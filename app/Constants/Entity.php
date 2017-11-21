@@ -30,6 +30,7 @@ class Entity
     const OFFER                 = 'offer';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
+    const GEO_IP                = 'geo_ip';
     const COUPON                = 'coupon';
     const DEVICE                = 'device';
     const PAYOUT                = 'payout';
@@ -179,6 +180,7 @@ class Entity
         self::ADDON                 => \RZP\Models\Plan\Subscription\Addon::class,
         self::ORDER                 => \RZP\Models\Order::class,
         self::TOKEN                 => \RZP\Models\Customer\Token::class,
+        self::GEO_IP                => \RZP\Models\GeoIP::class,
         self::REFUND                => \RZP\Models\Payment\Refund::class,
         self::REPORT                => \RZP\Models\Report::class,
         self::BALANCE               => \RZP\Models\Merchant\Balance::class,

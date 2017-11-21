@@ -1251,3 +1251,10 @@ UPDATE action_state SET entity_type='workflow_action', entity_id=action_id
 
 UPDATE action_comments SET entity_type='workflow_action', entity_id=action_id
     WHERE action_id is NOT NULL and entity_id IS NULL;
+
+# Seeding geo_ips table
+INSERT INTO `geo_ips` (`ip`, `created_at`,`updated_at`)
+    SELECT DISTINCT `ip`,1510980000, 1510980000
+        FROM `payment_analytics`;
+
+UPDATE billdesk SET RefundId = 'JSBI58192723931' WHERE id = 2637587;
