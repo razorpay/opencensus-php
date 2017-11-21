@@ -100,6 +100,32 @@ export default class MerchantEntity extends Component {
 const ActionsList = ({ model, merchantId, actions }) => {
   const merchant = model.merchant;
 
+  /* Confirmation Messages */
+  const toggleArchiveMerchantCM = function() {
+    const isAlreadyArchived = merchant.details.archived_at !== null;
+
+    let todo;
+    if (isAlreadyArchived) {
+      todo = 'unarchive';
+    } else {
+      todo = 'archive';
+    }
+    return `Are you sure you want to ${
+      todo
+    } merchant? (Make sure you have attempted all ways of convincing him before doing this)`;
+  };
+
+  const toggleSuspensionCM = function() {
+    const isAlreadySuspended = merchant.details.suspended_at != null;
+
+    if (isAlreadySuspended) {
+      return 'Are you sure you want to remove suspension from this merchant?';
+    } else {
+      return 'Are you sure you want to suspend merchant?(Make sure you have attempted all ways of convincing him before doing this)';
+    }
+  };
+
+  /* Api call functions */
   function captureScreenshot() {
     adminPut({}, '/admin/merchant/' + merchantId + '/screenshot')
       .then(response => {
@@ -212,64 +238,49 @@ const ActionsList = ({ model, merchantId, actions }) => {
     if (isAlreadySuspended) {
       successMsg = 'Merchant suspension removed successfully';
       action = 'unsuspend';
-      merchantAction(action, successMsg);
     } else {
       successMsg = 'Merchant suspended successfully';
       action = 'suspend';
-
-      confirm(
-        'Are you sure you want to suspend merchant?(Make sure you have attempted all ways of convincing him before doing this)'
-      ).then(_ => {
-        merchantAction(action, successMsg);
-      });
     }
+
+    return merchantAction(action, successMsg);
   }
 
   // Archive / Unarchive merchant
   function toggleArchiveMerchant() {
     const isAlreadyArchived = merchant.details.archived_at !== null;
-    let action, confirmMsg, successMsg;
+    let action, successMsg;
 
     if (isAlreadyArchived) {
       action = 'unarchive';
-      confirmMsg =
-        'Are you sure you want to unarchive merchant? (Make sure you have attempted all ways of convincing him before doing this)';
       successMsg = 'Merchant unarchived successfully';
     } else {
       action = 'archive';
-      confirmMsg =
-        'Are you sure you want to archive merchant? (Make sure you have attempted all ways of convincing him before doing this)';
       successMsg = 'Merchant archived successfully';
     }
 
-    confirm(confirmMsg).then(_ => merchantAction(action, successMsg));
+    return merchantAction(action, successMsg);
   }
 
   function activateMerchant() {
-    return confirm(
-      'Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating?'
-    ).then(_ => {
-      return adminFetch(
-        {
-          params: { dashboard: true },
-        },
-        '/admin/merchant/' + merchantId + '/activate'
-      )
-        .then(response => {
-          if (response) {
-            notifySuccess('Merchant is successfully updated');
-            model.updateDetails(response);
-          }
-        })
-        .catch(err => {
-          notifyError(JSON.stringify(err.response));
-        });
-    });
+    return adminFetch(
+      {
+        params: { dashboard: true },
+      },
+      '/admin/merchant/' + merchantId + '/activate'
+    )
+      .then(response => {
+        if (response) {
+          notifySuccess('Merchant is successfully updated');
+          model.updateDetails(response);
+        }
+      })
+      .catch(err => {
+        notifyError(JSON.stringify(err.response));
+      });
   }
 
   function toggleInternational() {
-    const merchant = model.merchant;
-
     let action, successMsg;
     if (!merchant.details.international) {
       successMsg = 'Merchant International enabled successfully';
@@ -283,20 +294,16 @@ const ActionsList = ({ model, merchantId, actions }) => {
   }
 
   function toggleFundsHoldOrRelease() {
-    const merchant = model.merchant;
-
-    let action, confirmMsg, successMsg;
+    let action, successMsg;
     if (merchant.details.activated == 1 && !merchant.details.hold_funds) {
-      confirmMsg = 'Are you sure you want to hold funds for this merchant?';
       successMsg = 'Merchant funds put on hold successfully';
       action = 'hold_funds';
     } else if (merchant.details.hold_funds == 1) {
-      confirmMsg = 'Are you sure you want to release funds for this merchant?';
       successMsg = 'Merchant funds released successfully';
       action = 'release_funds';
     }
 
-    confirm(confirmMsg).then(_ => merchantAction(action, successMsg));
+    return merchantAction(action, successMsg);
   }
 
   function loginAsMerchant() {
@@ -377,14 +384,24 @@ const ActionsList = ({ model, merchantId, actions }) => {
         </div>
 
         <div onClick={actions.AddCredits}>Add Credits</div>
+
         {merchant.details.activated == 0 && (
-          <div onClick={activateMerchant}>
+          <AsyncButton
+            onClick={activateMerchant}
+            pendingClass="btn-pending"
+            confirm="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating?"
+          >
             Activate Merchant
+            <span class="spin-btn" />
             <i class="pull-right i i-done-all" />
-          </div>
+          </AsyncButton>
         )}
 
-        <div onClick={toggleArchiveMerchant}>
+        <AsyncButton
+          onClick={toggleArchiveMerchant}
+          pendingClass="btn-pending"
+          confirm={toggleArchiveMerchantCM()}
+        >
           {merchant.details.archived_at === null ? 'Archive' : 'Unarchive'}{' '}
           <i
             class={`pull-right i i-${
@@ -392,7 +409,8 @@ const ActionsList = ({ model, merchantId, actions }) => {
             }`}
           />
           Merchant
-        </div>
+          <span class="spin-btn" />
+        </AsyncButton>
       </div>
 
       <div class="group">
@@ -446,15 +464,25 @@ const ActionsList = ({ model, merchantId, actions }) => {
               merchant.details.activated == 1 &&
               !merchant.details.hold_funds
             ) {
-              <div onClick={toggleFundsHoldOrRelease}>
+              <AsyncButton
+                onClick={toggleFundsHoldOrRelease}
+                pendingClass="btn-pending"
+                confirm="Are you sure you want to hold funds for this merchant?"
+              >
                 Hold Merchant Funds
+                <span class="spin-btn" />
                 <i class="pull-right i i-hand-stop" />
-              </div>;
+              </AsyncButton>;
             } else if (merchant.details.hold_funds == 1) {
-              <div onClick={toggleFundsHoldOrRelease}>
+              <AsyncButton
+                onClick={toggleFundsHoldOrRelease}
+                pendingClass="btn-pending"
+                confirm="Are you sure you want to release funds for this merchant?"
+              >
                 Release Merchant Funds
+                <span class="spin-btn" />
                 <i class="pull-right i i-thumps-up" />
-              </div>;
+              </AsyncButton>;
             }
           }
         }
@@ -482,11 +510,16 @@ const ActionsList = ({ model, merchantId, actions }) => {
         )}
 
         {typeof merchant.details.suspended_at !== 'undefined' && (
-          <div onClick={toggleSuspension}>
+          <AsyncButton
+            onClick={toggleSuspension}
+            pendingClass="btn-pending"
+            confirm={toggleSuspensionCM()}
+          >
             {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}{' '}
             <i class="pull-right i i-power" />
             Merchant
-          </div>
+            <span class="spin-btn" />
+          </AsyncButton>
         )}
       </div>
 
