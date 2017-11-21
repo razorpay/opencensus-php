@@ -10,7 +10,7 @@ use RZP\Mail\Base\Constants;
 
 class IrctcRefund extends Base
 {
-    const FILE_TO_WRITE_NAME        = 'refundvalidation_RZRPAY_BRDS_';
+    const FILE_TO_WRITE_NAME       = 'refundvalidation_RZRPAY_BRDS_';
 
     protected static $mailTag     = MailTags::BATCH_IRCTC_REFUNDS_FILE;
 
@@ -20,14 +20,12 @@ class IrctcRefund extends Base
 
     protected static $body        = 'Please upload IRCTC refund file on portal';
 
-
     protected function addAttachments()
     {
         $this->attach($this->outputFileLocalPath, ['as' => $this->getFileName()]);
 
         return $this;
     }
-
 
     /**
      * File name format/example: refundvalidation_RZRPAY__BRDS_20171212_V1
