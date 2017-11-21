@@ -75,7 +75,7 @@ export const isWorkflow = response => {
   ) {
     const url = `/admin#/requests/requests/${response.id}`;
     window.open(url, '_self');
+  } else {
+    return false;
   }
-
-  return false;
 };
