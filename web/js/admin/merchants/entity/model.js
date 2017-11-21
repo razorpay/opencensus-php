@@ -204,7 +204,7 @@ export default class Model extends BaseModel {
 
       data.items.map(admin => {
         adminsMap[admin.id] = {
-          role: admin.roles[0].name,
+          role: admin.roles.length ? admin.roles[0].name : '',
           email: admin.email,
           name: admin.name,
         };

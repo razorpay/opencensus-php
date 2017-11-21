@@ -50,6 +50,7 @@ export default function AddIINRule() {
       <Field label="Issuer Name" name="issuer_name" />
       <Field label="Trivia" name="trivia" />
       <CheckField label="EMI" name="emi" />
+      <br />
       <AsyncButton
         text="OK"
         class="btn"

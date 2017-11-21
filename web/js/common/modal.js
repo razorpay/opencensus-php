@@ -17,26 +17,37 @@ class ModalStore {
 
   confirm = (message, confirmLabel = 'Yes', rejectLabel = 'Cancel') => {
     return new Promise((resolve, reject) => {
-      this.modals.push(
+      var isResolved = false;
+      let modals = this.modals;
+
+      let Confirm = (
         <div class="confirm-modal">
           <header>Confirm</header>
           <div class="message">{message}</div>
           <div class="action-buttons">
             <button
-              onClick={_ => this.closeModal() & resolve()}
+              onClick={_ => {
+                isResolved = 1;
+                this.closeModal();
+              }}
               class="btn-confirm"
             >
               {confirmLabel}
             </button>
-            <button
-              onClick={_ => this.closeModal() & reject()}
-              class="btn-reject"
-            >
+            <button onClick={_ => this.closeModal()} class="btn-reject">
               {rejectLabel}
             </button>
           </div>
         </div>
       );
+
+      this.openModal(Confirm);
+      let disposer = observe(modals, _ => {
+        if (modals.indexOf(Confirm) === -1) {
+          isResolved && resolve();
+          disposer();
+        }
+      });
     });
   };
 
@@ -53,7 +64,7 @@ class ModalStore {
   };
 
   notifyDone = _ =>
-    this.notify({ message: 'Done!', duration: 1500, className: 'success' });
+    this.notify({ message: 'Done!', duration: 3000, className: 'success' });
   notifySuccess = message => this.notify({ message, className: 'success' });
   notifyError = message => this.notify({ message, className: 'error' });
 }
@@ -78,7 +89,7 @@ export default class ModalContainer extends Component {
   escapePress = evt => {
     evt = evt || window.event;
     if (evt.keyCode == 27) {
-      store.modals.pop();
+      store.closeModal();
     }
   };
 

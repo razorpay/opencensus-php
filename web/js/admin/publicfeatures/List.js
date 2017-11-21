@@ -3,17 +3,45 @@ import { PageTable } from 'ui/Table';
 import { SelectField } from 'ui/Field';
 import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
+import { showEntity } from './Entity';
 
 const defaultFilters = {
   status: 'pending',
 };
 
-export default class PlanList extends Component {
+const featureNames = {
+  marketplace_activation_status: 'Marketplace',
+  subscriptions_activation_status: 'Subscriptions',
+  virtual_accounts_activation_status: 'Virtual Accounts',
+};
+
+function fetchFn() {
+  let currentFilter = this.filters.status;
+  return adminFetch(...arguments).then(data => {
+    if (data) {
+      data = data.reduce((rows, current) => {
+        Object.keys(featureNames).forEach(
+          f =>
+            current[f] === currentFilter &&
+            rows.push({
+              merchant_id: current.merchant_id,
+              contact_name: current.contact_name,
+              feature: featureNames[f],
+            })
+        );
+        return rows;
+      }, []);
+      return data;
+    }
+  });
+}
+
+export default class PublicFeaturesList extends Component {
   collection = new Collection({
     data: {
       route_name: 'onboarding_features_fetch_submissions',
     },
-    fetchFn: adminFetch,
+    fetchFn,
     filters: defaultFilters,
   });
 
@@ -37,10 +65,18 @@ export default class PlanList extends Component {
             </SelectField>
           </div>
         </div>
-        <PageTable model={this.collection} fields={fields} />
+        <PageTable
+          model={this.collection}
+          fields={fields}
+          onClick={showEntity}
+        />
       </div>
     );
   }
 }
 
-const fields = [['Merchant ID', item => item.merchant_id]];
+const fields = [
+  ['Merchant ID', item => item.merchant_id],
+  ['Feature', item => item.feature],
+  ['Contact', item => item.contact_name],
+];

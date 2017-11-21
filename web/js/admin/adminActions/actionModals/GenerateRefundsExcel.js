@@ -31,7 +31,6 @@ GenerateRefundsExcel.title = 'Generate Refund Excel';
 export default function GenerateRefundsExcel() {
   return (
     <Form>
-      <header>{GenerateRefundsExcel.title}</header>
       <DateField
         label="Date"
         name="on"
@@ -49,6 +48,7 @@ export default function GenerateRefundsExcel() {
       </SelectField>
       <SelectMode />
       <CheckField label="Send Email to self" name="email_self" />
+      <br />
       <AsyncButton
         text="Generate"
         class="btn"

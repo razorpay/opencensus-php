@@ -76,12 +76,13 @@ export default class AutoFillActivationForm extends Component {
     return (
       <BaseModal header="Autofill Bank Activation Forms">
         {!this.state.scriptLoaded ? (
-          <div class="spinner" />
+          <div class="spinner center" />
         ) : (
           <Form class="full-span full-elements" style={{ width: '350px' }}>
             <SelectField
               label="Template"
               name="selectbank"
+              defaultValue=""
               onChange={this.handleChange}
               infoMsg={
                 this.state.isTemplateLoading ? (
@@ -91,7 +92,9 @@ export default class AutoFillActivationForm extends Component {
                 )
               }
             >
-              <option value="">--Select--</option>
+              <option value="" disabled>
+                --Select a template--
+              </option>
               {Object.keys(templateTypes).map(option => (
                 <option key={option} value={option}>
                   {templateTypes[option]}

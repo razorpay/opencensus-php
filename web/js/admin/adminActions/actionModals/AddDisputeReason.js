@@ -38,6 +38,7 @@ export default function AddDisputeReason() {
       <br />
       <Field label="Gateway Code" name="gateway_code" />
       <Field label="Gateway Description" name="gateway_description" />
+      <br />
       <AsyncButton
         text="OK"
         class="btn"

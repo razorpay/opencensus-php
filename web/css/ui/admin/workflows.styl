@@ -1,0 +1,55 @@
+.workflow
+  .aside-wrapper, .main-wrapper
+    display: inline-block
+    vertical-align: top
+
+    .btn, .spinner
+      display: table
+      margin: 0 auto
+
+  .aside-wrapper
+    width: 35%
+    position: relative
+
+    .box
+      padding-bottom: 1px
+
+      .field
+        margin: 16px auto
+        display: block
+        width: 90%
+
+        input, select
+          width: 100%
+
+      .table-container
+        max-height: 450px
+
+    .btn
+      margin-top: 60px, .spinner
+
+      &:before
+        content: ''
+        position: absolute
+        width: 80%
+        transform: translate(12.5%, 0%)
+        bottom: 60px
+        left: 0
+        border-top: 1px solid #d4d4d4
+
+  .main-wrapper
+    width: 65%
+
+    .container
+      margin: 30px
+
+      .column
+        box-shadow: 1px 2px 8px rgba(0,0,0,.11)
+        background-color: #fff
+        animation: 0.3s fadein ease-in
+
+        &:not(:first-child)
+          margin-top: 30px
+
+    .btn
+      margin-top: 25px

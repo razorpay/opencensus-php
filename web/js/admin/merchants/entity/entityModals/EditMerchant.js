@@ -1,22 +1,33 @@
 import React, { Component } from 'react';
 import BaseModal from 'ui/BaseModal';
-import { toJS } from 'mobx';
-
+import { toJS, observable } from 'mobx';
+import { observer } from 'mobx-react';
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
 import { adminFetch, adminPost } from 'util/fetch';
 import { getRiskRating } from '../entity-resources';
-
+import ShowWhen from 'admin/components/ShowWhen';
 import Form from 'ui/Form';
 import Field, { SelectField, SwitchField } from 'ui/Field';
 import MultiSelectField from 'ui//MultiSelectField';
 import AsyncButton from 'ui/AsyncButton';
 import Table from 'ui/Table';
 
+@observer
 export default class EditMerchant extends Component {
+  allGroups = observable.map();
+  selectedGroups = observable.map();
+
   constructor() {
     super();
     this.fetchGroups();
     this.state = {};
+  }
+
+  componentWillMount() {
+    if (this.props.props) {
+      let { groups } = this.props.props.merchant.details;
+      groups.forEach(group => this.selectedGroups.set(group.id, true));
+    }
   }
 
   dropUnchangedFields(requestData) {
@@ -57,9 +68,7 @@ export default class EditMerchant extends Component {
   }
 
   handleConfirm = body => {
-    body.groups = Object.keys(body.groups).filter(
-      key => body.groups[key] === '1'
-    );
+    body.groups = this.selectedGroups.keys();
     body.admins = body.admins.split(',');
     body.max_payment_amount *= 100;
     body.transaction_report_email = body.transaction_report_email.split(',');
@@ -92,33 +101,64 @@ export default class EditMerchant extends Component {
       route_name: 'group_get_multiple',
     })
       .then(data => {
-        this.setState({ groups: data.items });
+        data.items.forEach(group => this.allGroups.set(group.id, group));
       })
       .catch(err => {
         notifyError(err);
       });
   }
 
-  getGroupsFields(defaultSelectedGroups) {
-    const selectedGroups = defaultSelectedGroups.map(group => group.id); // Shouldn't override new selection
+  toggleGroupSelect = groupId => {
+    let { selectedGroups, allGroups } = this;
+    let isThere = selectedGroups.has(groupId);
+
+    if (isThere) {
+      selectedGroups.delete(groupId);
+    } else {
+      selectedGroups.set(groupId, allGroups.get(groupId));
+    }
+  };
+
+  toggleGroupAllSelect = e => {
+    let { selectedGroups, allGroups } = this;
+    selectedGroups.clear();
+    if (e.target.checked) {
+      allGroups.entries().forEach(g => selectedGroups.set(g[0], g[1]));
+    }
+  };
+
+  getGroupsFields = () => {
+    const {
+      selectedGroups,
+      allGroups,
+      toggleGroupAllSelect,
+      toggleGroupSelect,
+    } = this;
+    let isAllChecked = selectedGroups.size === allGroups.size;
+
     return [
       [
-        'Select',
+        <input
+          type="checkbox"
+          checked={isAllChecked}
+          onChange={toggleGroupAllSelect}
+        />,
         item => (
           <input
-            name={`groups[${item.id}]`}
             type="checkbox"
-            defaultChecked={selectedGroups.indexOf(item.id) > -1}
+            checked={selectedGroups.has(item.id)}
+            onChange={() => toggleGroupSelect(item.id)}
           />
         ),
       ],
       ['Group', item => item.name],
       ['Group Description', item => item.description],
     ];
-  }
+  };
 
   render() {
     const { adminsMap, details } = this.props.props.merchant;
+    const { allGroups } = this;
     const adminsList = Object.keys(adminsMap).map(key => {
       let obj = adminsMap[key];
       obj.id = key;
@@ -156,7 +196,6 @@ export default class EditMerchant extends Component {
               </option>
             ))}
           </SelectField>
-
           <SelectField
             name="risk_rating"
             label="Risk"
@@ -172,15 +211,17 @@ export default class EditMerchant extends Component {
             ))}
           </SelectField>
 
-          <Field
-            label="Risk Threshold"
-            name="risk_threshold"
-            defaultValue={details.risk_threshold}
-            type="number"
-            min="5"
-            max="20"
-            placeholder="Valid range: 5 - 20"
-          />
+          <ShowWhen permission="edit_merchant_risk_threshold">
+            <Field
+              label="Risk Threshold"
+              name="risk_threshold"
+              defaultValue={details.risk_threshold}
+              type="number"
+              min="5"
+              max="20"
+              placeholder="Valid range: 5 - 20"
+            />
+          </ShowWhen>
 
           <Field
             label="Website"
@@ -222,8 +263,8 @@ export default class EditMerchant extends Component {
           <div class="field">
             <label>Groups</label>
             <Table
-              items={this.state.groups}
-              fields={this.getGroupsFields(details.groups)}
+              items={allGroups.entries().map(g => g[1])}
+              fields={this.getGroupsFields()}
             />
           </div>
 

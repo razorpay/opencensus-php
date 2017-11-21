@@ -12,6 +12,9 @@ import { bool } from 'ui/Item';
 import { notifyDone } from 'common/modal';
 import { prevent } from 'util/index';
 
+import { removeEntity } from './Entity';
+import AsyncButton from 'ui/AsyncButton';
+
 @observer
 export default class UserList extends Component {
   collection = new Collection({
@@ -49,27 +52,17 @@ const fields = [
   [
     'Action',
     item => (
-      <div class="link danger" onClick={item::removeEntity}>
+      <AsyncButton
+        class="link danger m-t m-r"
+        pendingClass="link danger m-l btn-pending"
+        confirm={`Are you sure you want to delete user id "${item.id}"`}
+        onClick={item::removeEntity}
+      >
         Delete
-      </div>
+        <span class="spin-btn" />
+      </AsyncButton>
     ),
   ],
 ];
-
-export function removeEntity(e) {
-  prevent(e);
-  let params = {
-    route_name: 'admin_delete',
-    url_params: {
-      adminId: this.id,
-    },
-  };
-  adminDelete(params).then(response => {
-    if (response) {
-      this.collection.items.remove(this);
-      notifyDone();
-    }
-  });
-}
 
 const href = item => `/users/${item.id}`;

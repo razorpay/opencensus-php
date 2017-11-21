@@ -13,6 +13,9 @@ function toggleChecked(e) {
 }
 
 export default function Field({ tag = 'input', label, infoMsg, ...props }) {
+  if (tag === 'input' && !props.type) {
+    props.type = 'text';
+  }
   let Tag = tag;
   return (
     <div class="field">
@@ -34,7 +37,7 @@ export const SelectField = _ => <Field {..._} tag="select" />;
 export const TextAreaField = _ => <Field {..._} tag="textarea" />;
 export const FileField = _ => <Field {..._} type="file" />;
 export const DateField = _ => (
-  <Field format="DD/MM/YYYY" {..._} tag={DayPickerInput} />
+  <Field type="text" format="DD/MM/YYYY" {..._} tag={DayPickerInput} />
 );
 export const TimeField = _ => <Field {..._} type="time" />;
 export const DataListField = _ => <Field {..._} tag="datalist" />;
@@ -68,14 +71,24 @@ export function CheckField({ label, ...props }) {
   );
 }
 
-export function SwitchField({ label, disabledLabel, enabledLabel, ...props }) {
+export function SwitchField({
+  label,
+  disabledLabel,
+  enabledLabel,
+  nocaption,
+  ...props
+}) {
   return (
     <div class="field">
       <label class={props.required ? 'required' : ''}>{label}</label>
 
-      {disabledLabel && <span class="caption">{disabledLabel}</span>}
+      {disabledLabel && (
+        <span class={`${nocaption ? '' : 'caption'} m-r`}>{disabledLabel}</span>
+      )}
       <Switch knob {...props} />
-      {enabledLabel && <span class="caption">{enabledLabel}</span>}
+      {enabledLabel && (
+        <span class={`${nocaption ? '' : 'caption'} m-l`}>{enabledLabel}</span>
+      )}
     </div>
   );
 }
@@ -103,7 +116,7 @@ export class Switch extends Component {
   };
 
   render() {
-    let { knob, disabledValue, enabledValue, ...restProps } = this.props;
+    let { knob = true, disabledValue, enabledValue, ...restProps } = this.props;
     let { checked } = this.state;
 
     let buttonClass = this.buttonClass;

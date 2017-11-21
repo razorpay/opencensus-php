@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-import Form from 'ui/Form';
-import Field from 'ui/Field';
 import { adminPost, adminPut } from 'util/fetch';
 import { confirm, closeModal, notifyError } from 'common/modal';
 import { notifyDone } from '../../common/modal';
+import AsyncButton from 'ui/AsyncButton';
 
 export default class RequestActions extends Component {
   //route config based on request actions i.e {<action>: [<action_route_name>, <action_http_func>]}
@@ -14,7 +13,7 @@ export default class RequestActions extends Component {
     execute: ['action_request_execute', adminPost],
   };
 
-  submitAction = action => {
+  handleSubmit = action => {
     const { id, onUpdateAction } = this.props,
       routes = this.actionRoutes,
       requestFn = routes[action][1]; //default http func based on routes
@@ -34,7 +33,7 @@ export default class RequestActions extends Component {
         break;
     }
 
-    requestFn({
+    return requestFn({
       ...params,
     }).then(response => {
       if (response) {
@@ -44,57 +43,63 @@ export default class RequestActions extends Component {
     });
   };
 
-  confirmAction = action => {
-    const message = `Are you sure you want to ${action} this request?`;
-
-    confirm(message, 'OK', 'Cancel').then(() => {
-      this.submitAction(action);
-    });
-  };
-
   render() {
     const { requestState } = this.props;
     const checkers = this.props.checkers.peek();
 
     return (
-      <div class="requests-actions box">
+      <aside class="requests-actions">
         {requestState === 'open' || requestState === 'approved' ? (
-          <div>
-            <div class="header">ACTIONS</div>
+          <div class="container">
+            <div class="header">
+              <b>ACTIONS</b>
+            </div>
             {requestState !== 'approved' ? (
-              <div
+              <AsyncButton
                 class="btn btn-default"
-                onClick={_ => this.confirmAction('approve')}
+                pendingClass="btn btn-default btn-pending"
+                confirm="Are you sure you want to approve this request?"
+                onClick={_ => this.handleSubmit('approve')}
               >
                 <i class="i i-yes label-success" /> Approve
-              </div>
+                <span class="spin-btn" />
+              </AsyncButton>
             ) : null}
             {requestState !== 'approved' ? (
-              <div
+              <AsyncButton
                 class="btn btn-default"
-                onClick={_ => this.confirmAction('reject')}
+                pendingClass="btn btn-default btn-pending"
+                confirm="Are you sure you want to reject this request?"
+                onClick={_ => this.handleSubmit('reject')}
               >
                 <i class="i i-no label-danger" /> Reject
-              </div>
+                <span class="spin-btn" />
+              </AsyncButton>
             ) : null}
-            <div
+            <AsyncButton
               class="btn btn-default"
-              onClick={_ => this.confirmAction('close')}
+              pendingClass="btn btn-default btn-pending"
+              confirm="Are you sure you want to close this request?"
+              onClick={_ => this.handleSubmit('close')}
             >
               <i class="i i-no label-pending" /> Close
-            </div>
+              <span class="spin-btn" />
+            </AsyncButton>
             {requestState === 'approved' ? (
-              <div
+              <AsyncButton
                 class="btn btn-default"
-                onClick={_ => this.confirmAction('execute')}
+                pendingClass="btn btn-default btn-pending"
+                confirm="Are you sure you want to execute this request?"
+                onClick={_ => this.handleSubmit('execute')}
               >
                 <i class="i i-upload label-success" /> Execute
-              </div>
+                <span class="spin-btn" />
+              </AsyncButton>
             ) : null}
           </div>
         ) : null}
         {checkers.length ? <RequestActionCheckers checkers={checkers} /> : null}
-      </div>
+      </aside>
     );
   }
 }
@@ -114,24 +119,24 @@ const RequestActionCheckers = ({ checkers }) => {
   return (
     <div class="request-checkers-list">
       {approvalMap['approved'].length ? (
-        <div>
-          <label class="checker-label">
+        <div class="m-b">
+          <div class="header">
             <b>Approved By:</b>
-          </label>
+          </div>
           {approvalMap['approved'].map((name, idx) => (
-            <span class="checker" key={idx}>
+            <span class="pills" key={idx}>
               {name}
             </span>
           ))}
         </div>
       ) : null}
       {approvalMap['rejected'].length ? (
-        <div>
-          <label class="checker-label">
+        <div class="separate m-t">
+          <div class="header">
             <b>Rejected By:</b>
-          </label>
+          </div>
           {approvalMap['rejected'].map((name, idx) => (
-            <span class="checker" key={idx}>
+            <span class="pills" key={idx}>
               {name}
             </span>
           ))}

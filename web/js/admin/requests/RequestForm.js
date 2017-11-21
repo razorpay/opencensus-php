@@ -13,12 +13,13 @@ export default function RequestForm({
   const isDisabled = requestState !== 'approved' && requestState !== 'open';
 
   return (
-    <Form onSubmit={onSubmit}>
+    <Form class="full-span full-elements" onSubmit={onSubmit}>
       <Field
         name="title"
         label="Title"
         required
         defaultValue={title}
+        placeholder={isDisabled ? '-- Cannot edit --' : ''}
         disabled={isDisabled}
       />
       <Field
@@ -26,11 +27,12 @@ export default function RequestForm({
         label="Description"
         required
         defaultValue={description}
+        placeholder={isDisabled ? '-- Cannot edit --' : ''}
         disabled={isDisabled}
       />
       <AsyncButton
         text="Save"
-        class="btn"
+        class="pull-right btn"
         pendingClass="small spinner"
         onSubmit={onSubmit}
       />

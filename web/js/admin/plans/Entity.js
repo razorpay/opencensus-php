@@ -7,6 +7,7 @@ import { observer } from 'mobx-react';
 import * as item from 'ui/Item';
 import AsyncButton from 'ui/AsyncButton';
 import Field from 'ui/Field';
+import BaseModal from 'ui/BaseModal';
 import { adminFetch } from 'util/fetch';
 
 let sharedNetworks = observable.shallowBox();
@@ -31,32 +32,44 @@ export default class PlanEntity extends Component {
     let { props, items, updateName, pending } = this.collection;
     pending = pending.fetch;
 
-    if (!sharedNetworks.get()) {
-      return <div class="spinner" />;
-    }
+    let isLoading = !sharedNetworks.get();
+
     return (
-      <div class="pricing-container">
-        <header>
-          {(props.id && props.name) || (
-            <div>
-              Enter Plan Name: <Field onChange={updateName} />
+      <BaseModal
+        customClass="pricing-container"
+        header={
+          (props.id && props.name) || (
+            <div class="pricing-header">
+              <Field
+                label="Enter Plan Name:"
+                placeholder="Enter Plan name"
+                onChange={updateName}
+                defaultValue={props.name}
+                required
+              />
               {items.length > 1 && (
                 <AsyncButton
                   class="btn"
                   pendingClass="btn spinner"
                   onClick={this.save}
                   text="Save Plan"
+                  disabled={isLoading}
                 />
               )}
             </div>
-          )}
-        </header>
-        <DataTable
-          pending={pending}
-          items={this.collection.items}
-          fields={fields}
-        />
-      </div>
+          )
+        }
+      >
+        {isLoading ? (
+          <div class="spinner center" />
+        ) : (
+          <DataTable
+            pending={pending}
+            items={this.collection.items}
+            fields={fields}
+          />
+        )}
+      </BaseModal>
     );
   }
 }

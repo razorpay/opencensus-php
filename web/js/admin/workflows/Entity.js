@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { openModal, notifyDone } from 'common/modal';
+import { openModal, notifyDone, notifyError, notify } from 'common/modal';
 import { observable, action, extendObservable, toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { adminFetch, adminPost, adminPut } from 'util/fetch';
@@ -10,7 +10,7 @@ import Table from 'ui/Table';
 import AsyncButton from 'ui/AsyncButton';
 
 import user from 'admin/user';
-import Levels from './Level';
+import Levels from './Levels';
 
 @observer
 export default class EditWorkflow extends Component {
@@ -91,14 +91,37 @@ export default class EditWorkflow extends Component {
     let data = { body };
 
     data.body.permissions = this.permissions.map(p => p.id);
+
     data.body.levels = toJS(this.levels);
+
+    if (!data.body.levels.length) {
+      notifyError('Add atleast one Step');
+
+      return;
+    }
+
+    let isRoleMissing;
     data.body.levels.forEach((l, index) => {
+      if (!l.steps.length) {
+        notify({
+          message: `Select atleast one Role in "Step ${index +
+            1}" or Remove it`,
+          duration: 7000,
+          className: 'error',
+        });
+        isRoleMissing = true;
+      }
       l.steps = l.steps.map(s => ({
         role_id: s.role_id,
         reviewer_count: s.reviewer_count,
       }));
       l.level = index + 1;
     });
+
+    // returning here to list all the steps which has missing roles
+    if (isRoleMissing) {
+      return;
+    }
 
     let requestFn;
 
@@ -129,41 +152,59 @@ export default class EditWorkflow extends Component {
     } = this;
 
     if (pending) {
-      return <div class="spinner" />;
+      return <div class="spinner center" />;
     }
 
     return (
-      <div class="columns box-container">
-        <div class="column box">
-          <header>
-            {workflow ? `Edit - ${workflow.id}` : 'Create Workflow'}
-          </header>
-          <Form onSubmit={this.save}>
-            <Field
-              label="Workflow Name"
-              name="name"
-              defaultValue={workflow && workflow.name}
+      <div class="entity-container workflow">
+        <header class="heading">
+          {workflow ? `Edit - ${workflow.id}` : 'Create Workflow'}
+        </header>
+
+        <Form onSubmit={this.save}>
+          <div class="aside-wrapper">
+            <div class="box">
+              <div class="heading">Workflow name</div>
+              <Field
+                label=""
+                name="name"
+                placeholder="Atleast 4 characters"
+                defaultValue={workflow && workflow.name}
+              />
+            </div>
+            <div class="box">
+              <div class="heading">Actions List</div>
+              <SelectField label="" onChange={this.selectPerm} defaultValue="">
+                <option value="" disabled>
+                  --Select an action--
+                </option>
+                <option value="" />
+                {allPerms.map(
+                  p =>
+                    permissions.indexOf(p) < 0 && (
+                      <option value={p.id} key={p.id}>
+                        {p.name}
+                      </option>
+                    )
+                )}
+              </SelectField>
+              <Table
+                animateRow={false}
+                fields={this.actionFields}
+                items={permissions}
+              />
+            </div>
+            <AsyncButton
+              text="Save Workflow"
+              class="btn"
+              pendingClass="spinner"
+              onSubmit={this.save}
             />
-            <SelectField label="Add Action" onChange={this.selectPerm} value="">
-              <option value="" />
-              {allPerms.map(
-                p =>
-                  permissions.indexOf(p) < 0 && (
-                    <option value={p.id} key={p.id}>
-                      {p.name}
-                    </option>
-                  )
-              )}
-            </SelectField>
-            <button>Save</button>
-          </Form>
-          <Table
-            animateRow={false}
-            fields={this.actionFields}
-            items={permissions}
-          />
-        </div>
-        <Levels levels={levels} roles={allRoles} />
+          </div>
+          <div class="main-wrapper">
+            <Levels levels={levels} roles={allRoles} />
+          </div>
+        </Form>
       </div>
     );
   }

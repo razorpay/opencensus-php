@@ -8,8 +8,10 @@ import { observer } from 'mobx-react';
 import { showEntity, removeEntity } from './Entity';
 import CollectionItem from 'model/collectionItem';
 
+import AsyncButton from 'ui/AsyncButton';
+
 @observer
-export default class WorkflowList extends Component {
+export default class GroupList extends Component {
   collection = new Collection({
     fetchFn: adminFetch,
     data: {
@@ -47,9 +49,15 @@ const fields = [
   [
     'Action',
     item => (
-      <div class="link danger" onClick={item::removeEntity}>
+      <AsyncButton
+        class="link danger m-t m-r"
+        pendingClass="link danger m-l btn-pending"
+        confirm={`Are you sure you want to delete user id "${item.id}"`}
+        onClick={item::removeEntity}
+      >
         Delete
-      </div>
+        <span class="spin-btn" />
+      </AsyncButton>
     ),
   ],
 ];

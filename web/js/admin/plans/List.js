@@ -7,12 +7,24 @@ import { adminFetch } from 'util/fetch';
 import { openPricingEntity } from './Entity';
 import Plan from './plan';
 
+function fetchFn() {
+  return adminFetch(...arguments).then(
+    data =>
+      data &&
+      data.map(p => ({
+        id: p.plan_id,
+        name: p.plan_name,
+        rules_count: p.rules_count,
+      }))
+  );
+}
+
 export default class PlanList extends Component {
   collection = new Collection({
     data: {
       route_name: 'pricing_get_merchant_plans',
     },
-    fetchFn: adminFetch,
+    fetchFn,
   });
 
   newPricingEntity = e =>
@@ -42,7 +54,7 @@ export default class PlanList extends Component {
 }
 
 const pricingFields = [
-  ['Plan ID', item => item.plan_id],
-  ['Plan Name', item => item.plan_name],
+  ['Plan ID', item => item.id],
+  ['Plan Name', item => item.name],
   ['Number of Rules', item => item.rules_count],
 ];

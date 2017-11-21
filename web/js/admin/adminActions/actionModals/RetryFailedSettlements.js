@@ -10,7 +10,7 @@ RetryFailedSettlements.title = 'Retry Failed Settlements';
 export default function RetryFailedSettlements() {
   return (
     <div>
-      <Form>
+      <Form class="full-span full-elements" style={{ width: '400px' }}>
         <TextAreaField
           label="Settlement IDs:"
           placeholder="Please enter comma separated Settlement IDs"

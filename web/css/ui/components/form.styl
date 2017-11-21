@@ -21,6 +21,9 @@ input, textarea, select
   min-width: 70px
   box-shadow: inset 0 1px 2px rgba(10, 10, 10, 0.1)
 
+input[type=text]
+  width: 180px
+
 input[type=checkbox]
   height: auto
   width: auto
@@ -57,6 +60,7 @@ button, .btn
 .field
   display: inline-block
   margin: 10px
+  vertical-align: top;
 
 .checkbox
   background: none
@@ -104,6 +108,19 @@ form
   &.limited
     width: 75%
 
+  //  without .full-span, you can make label and input align adjacent like in Workflow
+  &.inline
+    .field
+    label, input, select
+      display: inline-block
+
+    label:after
+      content: ':'
+      margin-left: 2px;
+
+    input, select // add textarea, etc. if needed
+      margin-left: 10px
+
   // full-span class on <Form> makes the <Field> elements to come in separates lines
   &.full-span
     margin: 0 auto
@@ -112,18 +129,19 @@ form
       width: 100%
       margin: 8px auto
 
-      label, select, input, textarea, button, .info-block
+      >label, >select, >input, >textarea, >button, .info-block, .DayPickerInput
         display: inline-block
         vertical-align: middle
 
-      label
+      >label
         width: 35%
-        line-height: 38px;
-        margin-bottom: 0;
+        line-height: 24px
+        min-height: 38px
+        margin-bottom: 0
         vertical-align: top
         white-space: pre-wrap
 
-      select, input, textarea, button, >i
+      >select, >input, >textarea, >button, >i, .DayPickerInput
         margin-left: 10px
 
       >i
@@ -136,7 +154,7 @@ form
 
     // full-elements class on <Form> makes the <Field> elements to take 100% on right side otherwise default width
     &.full-elements .field
-      select, input, textarea
+      >select, >input, >textarea, .DayPickerInput
         width: 55%
 
 

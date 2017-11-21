@@ -24,18 +24,6 @@ header
   &:hover
     opacity: 1
 
-.columns
-  display: flex
-  align-items: flex-start
-
-.column
-  flex: 1 0 0
-
-.box-container
-  padding: 15px
-  .box
-    margin: 15px
-
 .info-block // Mostly used for helper text under the Field
   min-height: 18px; // In case you want info-block element to present with empty msg
   line-height: 18px;
@@ -84,6 +72,13 @@ header + banner
   font-weight: bold
   padding: 0 4px
 
+.separate
+  border-top: 1px solid $faded-color
+
+@keyframes fadein
+  from { opacity: 0.15 }
+  to { opacity: 1 }
+
 //--------
 /* Buttons */
 
@@ -112,14 +107,18 @@ header + banner
 //-------------
 /* Labels */
 
-.pills
+.square-pills
   padding: 2px 12px
-  font-weight: 11px
-  border-radius 16px
+  font-size: 11px
+  border-radius 4px
   color: #fff
   text-align: center
   white-space: nowrap
 
+.pills
+  @extend .square-pills
+  display: inline-block;
+  border-radius 16px
 
 
 .status-label
@@ -133,7 +132,7 @@ header + banner
 
 .label-semi-muted
   color: $color-semi-muted
-  background-color: #D8E1E3
+  background-color: #d8e1e3
 
 
 .label-danger

@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import { serialize } from 'ui/Form';
+import { confirm } from 'common/modal';
+import { prevent } from 'util/index';
 
 export default class AsyncButton extends Component {
   state = {
@@ -9,10 +11,17 @@ export default class AsyncButton extends Component {
   onClick = ::this.onClick;
 
   onClick(e) {
-    if (this.props.disabled) {
-      return;
+    if (this.props.confirm) {
+      confirm(this.props.confirm).then(_ => this.processClick(e));
+    } else {
+      this.processClick(e);
     }
 
+    e.persist(); // e.prevenDefault makes synthetic even to get removed. Synthetic even is needed for performance reasons
+    prevent(e);
+  }
+
+  processClick(e) {
     if (!this.state.pending) {
       let { onSubmit, onClick } = this.props;
 
@@ -30,7 +39,7 @@ export default class AsyncButton extends Component {
         this.setState({
           pending: true,
         });
-        returnValue.catch(_ => _).then(_ => {
+        returnValue.then(_ => {
           this.setState({
             pending: false,
           });

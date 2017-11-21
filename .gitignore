@@ -14,6 +14,7 @@ Thumbs.db
 
 /resources/views/*.blade.php
 /storage
+/public/react
 /public/dist
 /public/docs
 /notes.txt

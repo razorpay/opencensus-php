@@ -22,10 +22,6 @@
       background-color: #f6f8f8
       margin-bottom: 28px
 
-    > div, > a
-      border: 1px solid $faded-color
-      margin-bottom: -1px
-
   aside
     width: 35%
     max-width: 350px
@@ -33,26 +29,45 @@
 
     border-right: 1px solid $faded-color // TODO: Take from theme variable file
 
-    > div, > a
-      padding: 12px
-      cursor: pointer
+    .group
+      margin-bottom: 10px
 
-      &:hover
-        background-color: #f6f8f8
+      > div:not(.group-heading), > a
+        display: block;
+        border: 1px solid $faded-color
+        margin-bottom: -1px
+        padding: 12px
+        cursor: pointer
 
-    i
-      font-size: 14px
+        &:hover
+          background-color: #f6f8f8
+
+        i
+          font-size: 14px
+
+    .group-heading
+        margin-top: 16px
+        font-size: 11px
+        font-weight: 600
+        border-bottom: 2px solid #f3f3f3
+        color: $color-semi-muted
+        padding-left: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
 
   main
     width: 70%
     border-left: 1px solid $faded-color // TODO: Take from theme variable file
 
+    > div, > a
+      border: 1px solid $faded-color
+      margin-bottom: -1px
 
 // Other styles in merchant details
 .heading
   padding: 12px
   border: 1px solid $faded-color
-  background-color: #f6f8f8
+  background-color: #f1f1f1
   margin-bottom: -1px
 
 
@@ -133,3 +148,11 @@
       margin: auto
 
 
+
+// Edit features modal
+.edit-features
+  textarea
+    width: 55%
+
+  button
+    margin-top: 30px

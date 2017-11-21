@@ -44,7 +44,7 @@ class AddInvites extends Component {
 
   render() {
     if (this.state.pending) {
-      return <div class="spinner" />;
+      return <div class="spinner center" />;
     }
 
     return (

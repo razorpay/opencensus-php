@@ -21,7 +21,7 @@ export default class Levels extends Component {
   render() {
     let levels = this.props.levels;
     return (
-      <div class="column">
+      <div class="container">
         {levels.map((level, index) => (
           <Level
             levels={levels}
@@ -33,7 +33,7 @@ export default class Levels extends Component {
           />
         ))}
         <div class="btn" onClick={this.addLevel}>
-          Add Step
+          + Add Step
         </div>
       </div>
     );
@@ -96,23 +96,25 @@ class Level extends Component {
     let selectedRoles = level.steps.map(s => s.role_id);
     let potentialRoles = roles.filter(s => selectedRoles.indexOf(s.id) < 0);
     return (
-      <div class="box" key={index}>
-        <header>
-          Step {index + 1}
+      <div class="column" key={index}>
+        <div class="heading">
+          <b>Step {index + 1}:</b>
           <i class="delete i-trash" onClick={this.delete} />
-        </header>
-        <SelectField label="Operation Type" defaultValue={level.op_type}>
-          <option value="and">AND</option>
-          <option value="or">OR</option>
-        </SelectField>
-        <SelectField label="Select Role" onChange={this.addRole} value="">
-          <option value="" />
-          {potentialRoles.map(role => (
-            <option value={role.id} key={role.id}>
-              {role.name}
-            </option>
-          ))}
-        </SelectField>
+        </div>
+        <div class="inline">
+          <SelectField label="Operation Type" defaultValue={level.op_type}>
+            <option value="and">AND</option>
+            <option value="or">OR</option>
+          </SelectField>
+          <SelectField label="Select Role" onChange={this.addRole} value="">
+            <option value="" />
+            {potentialRoles.map(role => (
+              <option value={role.id} key={role.id}>
+                {role.name}
+              </option>
+            ))}
+          </SelectField>
+        </div>
         <Table
           animateRow={false}
           fields={this.roleFields}

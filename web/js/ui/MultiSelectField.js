@@ -12,14 +12,18 @@ import { PowerSelectMultiple } from 'react-power-select';
     5. defaultValue: array of objects. (trackBy key must be present in items of both defaultValue and options)
     6. keys: used to display default custom option component
     7. CustomOptionComponent: You can pass custom component which has access to option(single item from props.options).
-        If passing this, don't pass keys props.
+        If passing this, DON'T pass keys props, because then you can handle it directly in parent
 
-  Note: Add on change listener on input, in case you need the listener
+  Note: Add support for change listener on input, in case you need the listener
 */
 
-const DefaultCustomOptionComponent = ({ option, keys }) => (
-  <div>{`${option[keys[0]]}: <${option[keys[1]]}>`}</div>
-);
+const DefaultCustomOptionComponent = ({ option, keys }) => {
+  return keys.length > 1 ? (
+    <div>{`${option[keys[0]]}: <${option[keys[1]]}>`}</div>
+  ) : (
+    <div>{option[keys[0]]}</div>
+  );
+};
 
 export default class MultiSelectField extends Component {
   constructor(props) {
@@ -29,16 +33,18 @@ export default class MultiSelectField extends Component {
     // Pre-populate selectedOptions
     const preSelectedOptions = props.defaultValue;
     if (preSelectedOptions) {
-      const tempArray = [];
+      let tempArray = [];
 
       // To select option in powerselect, reference of option must be stored.
       // Storing references of all options from exhaustive list, which matches id(/trackBy) of options in defaultValue array.
-      preSelectedOptions.map(item => {
-        tempArray.push(
-          props.options.find(
-            option => option[props.trackBy] === item[props.trackBy]
-          )
+      tempArray = preSelectedOptions.map(item => {
+        const refInOptions = props.options.find(
+          option => option[props.trackBy] === item[props.trackBy]
         );
+
+        if (refInOptions) {
+          return refInOptions;
+        }
       });
 
       this.state = { selectedOptions: tempArray };

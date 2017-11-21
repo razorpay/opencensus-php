@@ -76,7 +76,12 @@ const fields = [
   ['Title', item => item.title],
   ['Created By', item => item.admin.name],
   ['Created At', item => formatDate(item.created_at)],
-  ['State', item => item.state],
+  [
+    'State',
+    item => (
+      <span class={`pills status ${item.state}-state`}>{item.state}</span>
+    ),
+  ],
 ];
 
 const href = item => '/requests/' + item.id;
