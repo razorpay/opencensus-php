@@ -82,6 +82,7 @@ export default class AutoFillActivationForm extends Component {
             <SelectField
               label="Template"
               name="selectbank"
+              defaultValue=""
               onChange={this.handleChange}
               infoMsg={
                 this.state.isTemplateLoading ? (
