@@ -4,13 +4,16 @@ namespace RZP\Models\Payment\Refund;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Currency;
-use RZP\Models\Transaction\Channel;
+use RZP\Models\Transaction;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
 
 /**
- * @property Payment\Entity $payment
+ * @property Payment\Entity     $payment
+ * @property Transaction\Entity $transaction
+ * @property Merchant\Entity    $merchant
  */
 class Entity extends Base\PublicEntity
 {
@@ -261,7 +264,7 @@ class Entity extends Base\PublicEntity
 
     public function getChannel()
     {
-        return Channel::KOTAK;
+        return Transaction\Channel::KOTAK;
     }
 
     public function getFees()

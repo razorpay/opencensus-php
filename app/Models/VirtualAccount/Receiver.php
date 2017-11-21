@@ -9,9 +9,10 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
-class Receiver
+class Receiver extends Base\Core
 {
     const BANK_ACCOUNT      = 'bank_account';
     // const VPA               = 'vpa';
@@ -29,43 +30,38 @@ class Receiver
     const DESCRIPTOR_LENGTH         = 9;
     const ACCOUNT_NUMBER_LENGTH     = 17;
 
+    const DEFAULT_BANK_ACCOUNT_OPTIONS = [
+        self::DESCRIPTOR => null,
+        self::NUMERIC    => true,
+    ];
+
+    const NUMERIC    = 'numeric';
+    const DESCRIPTOR = 'descriptor';
+
     // No 0s and Os
     // No 1s and Is
     // No 5s and Ss
     // No 8s and Bs
     // No 2s and Zs
-    const ACCOUNT_NUMBER_CHAR_SPACE       = '34679ACDEFGHJKLMNPQRTUVWXY';
-    const MAX_ACCOUNT_GENERATION_ATTEMPTS = 10;
+    const ACCOUNT_NUMBER_ALPHANUM_CHAR_SPACE = '34679ACDEFGHJKLMNPQRTUVWXY';
+    const ACCOUNT_NUMBER_NUM_CHAR_SPACE      = '0123456789';
+    const MAX_ACCOUNT_GENERATION_ATTEMPTS    = 10;
 
     protected $app;
     protected $merchant;
-    protected $name;
     protected $descriptor;
     protected $trace;
     protected $repo;
     protected $mode;
+    protected $numeric;
 
-    public function __construct(
-        Merchant\Entity $merchant,
-        string $name = null,
-        string $descriptor = null)
+    public function __construct(Entity $virtualAccount)
     {
-        $this->app = App::getFacadeRoot();
+        parent::__construct();
 
-        if (isset($this->app['rzp.mode']))
-        {
-            $this->mode = $this->app['rzp.mode'];
-        }
+        $this->merchant = $virtualAccount->merchant;
 
-        $this->repo = $this->app['repo'];
-
-        $this->trace = $this->app['trace'];
-
-        $this->merchant = $merchant;
-
-        $this->name = $name;
-
-        $this->descriptor = $descriptor;
+        $this->virtualAccount = $virtualAccount;
     }
 
     public static function areTypesValid(array $receiverTypes): bool
@@ -75,11 +71,11 @@ class Receiver
         return (empty($invalidTypes) === true);
     }
 
-    public function buildBankAccount(Entity $virtualAccount)
+    public function buildBankAccount(Entity $virtualAccount, array $options): BankAccount
     {
         $bankAccount = new BankAccount;
 
-        $bankAccountInput = $this->generateBankAccountInput();
+        $bankAccountInput = $this->generateBankAccountInput($options);
 
         $bankAccount = $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
 
@@ -92,7 +88,7 @@ class Receiver
         return $bankAccount;
     }
 
-    public function buildQrCode(Entity $virtualAccount)
+    public function buildQrCode(Entity $virtualAccount): QrCode\Entity
     {
         $qrCode = new QrCode\Entity;
 
@@ -113,7 +109,7 @@ class Receiver
         return $qrCode;
     }
 
-    protected function getQrCodeEntityParams(Entity $virtualAccount)
+    protected function getQrCodeEntityParams(Entity $virtualAccount): array
     {
         $input = [
             // For now it is set bharat qr as default
@@ -124,23 +120,63 @@ class Receiver
         return $input;
     }
 
-    protected function generateBankAccountInput()
+    protected function generateBankAccountInput(array $options): array
     {
         $provider = $this->selectProvider();
 
         $details = Provider::DEFAULT_DETAILS[$provider];
 
+        $this->setBankAccountOptions($options);
+
         $accountNumber = $this->generateAccountNumberForProvider($provider);
 
         $merchantDetails = [
             BankAccount::ACCOUNT_NUMBER     => $accountNumber,
-            BankAccount::BENEFICIARY_NAME   => $this->name,
+            BankAccount::BENEFICIARY_NAME   => $this->virtualAccount->getName(),
         ];
 
         return array_merge($details, $merchantDetails);
     }
 
-    protected function selectProvider()
+    /**
+     * Numeric accounts are the default.
+     * Descriptor cannot be used with numeric.
+     * Merchants without handle set are not allowed non-numeric accounts
+     *
+     * @param array $options
+     */
+    protected function setBankAccountOptions(array $options)
+    {
+        $validator = $this->virtualAccount->getValidator();
+
+        $validator->validateInput('bankAccountReceiverOption', $options);
+
+        $options = array_merge(self::DEFAULT_BANK_ACCOUNT_OPTIONS, $options);
+
+        $this->numeric = boolval($options[self::NUMERIC]);
+
+        $this->descriptor = $options[self::DESCRIPTOR];
+
+        $validator->validateDescriptor($this->descriptor);
+
+        $handle = $this->merchant->getHandle();
+
+        if (($this->numeric === true) and
+            ($this->descriptor !== null))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Descriptor cannot be used for numeric accounts.');
+        }
+        else if (($this->numeric === false) and
+                 ($handle === null) and
+                 ($this->descriptor !== null))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Descriptor cannot be used as merchant handle is not set.');
+        }
+    }
+
+    protected function selectProvider(): string
     {
         $provider = Provider::KOTAK;
 
@@ -156,13 +192,11 @@ class Receiver
     {
         $bankCode = Provider::getBankCode($provider);
 
-        $root = $this->getRoot($provider);
-
         $attempts = 0;
 
         while ($attempts <= self::MAX_ACCOUNT_GENERATION_ATTEMPTS)
         {
-            $accountNumber = $this->generateNewAccountNumberWithRoot($root);
+            $accountNumber = $this->generateNewAccountNumberForProvider($provider);
 
             $existingAccount = $this->repo->bank_account
                                     ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode);
@@ -195,11 +229,13 @@ class Receiver
      * @return string Unique account number
      * @throws Exception\LogicException
      */
-    protected function generateNewAccountNumberWithRoot(string $root)
+    protected function generateNewAccountNumberForProvider(string $provider): string
     {
+        $root = $this->getRoot($provider);
+
         $handle = $this->getHandle($root);
 
-        $descriptor = $this->getDescriptor($handle);
+        $descriptor = $this->getDescriptor($handle, $root);
 
         $accountNumber = strtoupper($root . $handle . $descriptor);
 
@@ -227,63 +263,80 @@ class Receiver
         return $accountNumber;
     }
 
-    // If handle is not set, we use the default root (RAZO),
-    // and later add the default handle.
-    //
-    // If handle is set, we use the standard root (RZRP)
-    //
-    protected function getRoot(string $provider)
+    /**
+     * By default, we use the default numeric root and later add default handle.
+     * Use the alphabetical roots when non-numeric is explicitly requested.
+     *
+     * @param  string $provider
+     * @return string $root
+     */
+    protected function getRoot(string $provider): string
     {
-        $root = Provider::ROOT[$provider]['standard'];
+        $root = Provider::ROOT[$provider]['numeric_default'];
 
-        $handle = $this->merchant->getHandle();
+        if ($this->numeric === false)
+        {
+            $root = Provider::ROOT[$provider]['alpha_numeric_default'];
 
-        if ($handle === null)
-        {
-            $root = Provider::ROOT[$provider]['default'];
-        }
-        else if (strlen($handle) !== self::STANDARD_HANDLE_LENGTH)
-        {
-            $root = Provider::ROOT[$provider]['special'];
+            $handle = $this->merchant->getHandle();
+
+            if ($handle !== null)
+            {
+                $root = Provider::ROOT[$provider]['alpha_numeric_handle'];
+
+                if (strlen($handle) !== self::STANDARD_HANDLE_LENGTH)
+                {
+                    $root = Provider::ROOT[$provider]['alpha_numeric_special'];
+                }
+            }
         }
 
         return $root;
     }
 
-    // If handle is not set, we use the default root (RAZO),
-    // and now add the default handle (RPAY).
-    //
-    // If handle is set, we use the standard root (RZRP),
-    // and add the chosen handle.
-    //
-    protected function getHandle(string $root)
+    /**
+     * By default, we use the default numeric root,
+     * and now add the default numeric handle.
+     *
+     * If non-numeric is requested, we use merchant handle.
+     *
+     * @param  string $root
+     * @return string $handle
+     */
+    protected function getHandle(string $root): string
     {
-        $merchantHandle = $this->merchant->getHandle();
+        $handle = $this->merchant->getHandle();
 
-        if ($merchantHandle === null)
+        if (($handle === null) or
+            ($this->numeric === true))
         {
-            $merchantHandle = $this->getDefaultHandle($root);
+            $handle = $this->getDefaultHandle($root);
         }
 
-        return $merchantHandle;
+        return $handle;
     }
 
-    // If handle is not set, descriptor is completely random.
-    // If handle is set, we use the given desriptor.
-    //
-    // Merchant handles can be 3 or 4 characters. Max is 17,
-    // so we pad with 17-4-n characters, i.e. 10 or 9.
-    //
-    protected function getDescriptor(string $handle)
+    /**
+     * Random descriptor is used if numeric account is needed, or if
+     * descriptor isn't given. Otherwise, given descriptor is used.
+     *
+     * Merchant handles can be 3 or 4 characters. Max is 17,
+     * so we pad with 17-4-n characters, i.e. 10 or 9.
+     *
+     * @param  string $handle [description]
+     * @param  string $root   [description]
+     * @return [type]         [description]
+     */
+    protected function getDescriptor(string $handle, string $root): string
     {
         $descriptor = $this->descriptor;
 
-        if (($this->merchant->getHandle() === null) or
+        if (($this->numeric === true) or
             ($descriptor === null))
         {
             $totalLength = self::ACCOUNT_NUMBER_LENGTH;
 
-            $availableLength = $totalLength - self::ROOT_LENGTH - strlen($handle);
+            $availableLength = $totalLength - strlen($root) - strlen($handle);
 
             $descriptor = $this->padWithRandomDigits($availableLength);
         }
@@ -291,16 +344,16 @@ class Receiver
         return $descriptor;
     }
 
-    protected function getDefaultHandle(string $root)
+    protected function getDefaultHandle(string $root): string
     {
         return Provider::DEFAULT_HANDLE_MAPPING[$root];
     }
 
-    protected function padWithRandomDigits(int $desiredLength)
+    protected function padWithRandomDigits(int $desiredLength): string
     {
         $pad = '';
 
-        $charSpace = str_split(self::ACCOUNT_NUMBER_CHAR_SPACE);
+        $charSpace = $this->getCharSpace();
 
         while (strlen($pad) < $desiredLength)
         {
@@ -308,5 +361,17 @@ class Receiver
         }
 
         return $pad;
+    }
+
+    protected function getCharSpace(): array
+    {
+        $charSpace = self::ACCOUNT_NUMBER_NUM_CHAR_SPACE;
+
+        if ($this->numeric === false)
+        {
+            $charSpace = self::ACCOUNT_NUMBER_ALPHANUM_CHAR_SPACE;
+        }
+
+        return str_split($charSpace);
     }
 }
