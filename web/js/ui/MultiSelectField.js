@@ -87,7 +87,7 @@ export default class MultiSelectField extends Component {
           options={options}
           class="multi-select"
           selected={this.state.selectedOptions}
-          optionLabelPath={trackBy}
+          optionLabelPath="name"
           optionComponent={
             CustomOptionComponent ? (
               CustomOptionComponent

@@ -113,7 +113,8 @@ export class PageTable extends Component {
       return (
         <div class="box">
           <Pagination model={model} />
-          {title && `${title} · `}
+          {title && <header>{title}</header>}
+
           {info && (
             <div class="table-info">
               Results {filters.skip + 1} &ndash; {filters.skip + items.length}

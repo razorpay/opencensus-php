@@ -71,7 +71,7 @@ export default class EditFeatures extends Component {
 
     if (curModeFeatures) {
       featuresOptions = availableFeaturesInMode.map(feature => ({
-        id: feature,
+        name: feature,
       }));
     }
 
@@ -94,8 +94,8 @@ export default class EditFeatures extends Component {
             label="Features"
             name="selectedFeatures"
             options={featuresOptions}
-            trackBy="id"
-            keys={['id']}
+            trackBy="name"
+            keys={['name']}
             defaultValue={[]}
             placeholder="Select Features"
           />

@@ -18,21 +18,19 @@ export default class AuditLogList extends Component {
 
   render() {
     return (
-      <PageTable
-        title="Audit Log"
-        info={false}
-        model={this.collection}
-        fields={fields}
-      />
+      <div class="entity-container">
+        <header class="heading">Audit Log</header>
+        <PageTable info={false} model={this.collection} fields={fields} />
+      </div>
     );
   }
 }
 
 const fields = [
-  ['Event', item => item.event],
-  ['Recipient', item => item.recipient],
-  ['Subject', item => item.message.headers.subject],
+  ['Action', item => item.event.action],
+  ['Category', item => item.event.category],
+  ['Label', item => item.event.label],
   ['Failure Reason', item => item.reason],
-  ['Tags', item => <pre>{item.tags.join('\n')}</pre>],
-  ['Timestamp', item => new Date(1e3 * item.timestamp).toString()],
+  ['Timestamp', item => new Date(1e3 * item.event.created_at).toString()],
+  ['Event Full Log', item => JSON.stringify(item.event)],
 ];
