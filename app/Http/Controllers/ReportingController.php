@@ -21,14 +21,14 @@ class ReportingController extends Controller
         $this->reportingService = $this->app['reporting'];
     }
 
-    public function get(string $id)
+    public function getConfig(string $id)
     {
         $data = $this->reportingService->fetchConfigById($id);
 
         return ApiResponse::json($data);
     }
 
-    public function list()
+    public function listConfig()
     {
         $input = Request::all();
 
@@ -37,7 +37,7 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function create()
+    public function createConfig()
     {
         $input = Request::all();
 
@@ -46,7 +46,7 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function update($id)
+    public function updateConfig($id)
     {
         $input = Request::all();
 
@@ -55,7 +55,7 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function delete(string $id)
+    public function deleteConfig(string $id)
     {
         $data = $this->reportingService->deleteConfig($id);
 
@@ -67,6 +67,22 @@ class ReportingController extends Controller
         $input = Request::all();
 
         $data = $this->reportingService->generateReport($configId, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getLog(string $id)
+    {
+        $data = $this->reportingService->fetchLogById($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function listLog()
+    {
+        $input = Request::all();
+
+        $data = $this->reportingService->fetchLogMultiple($input);
 
         return ApiResponse::json($data);
     }

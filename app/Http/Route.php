@@ -669,12 +669,14 @@ final class Route
         'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                   'FeatureController@getOnboardingSubmissionsDeprecated'              ],
 
         // Reporting Service
-        'reporting_config_get'                    => ['get',      'reporting/config/{id}',                          'ReportingController@get',                                          ],
-        'reporting_config_list'                   => ['get',      'reporting/config',                               'ReportingController@list',                                         ],
-        'reporting_config_create'                 => ['post',     'reporting/config',                               'ReportingController@create'                                        ],
-        'reporting_config_edit'                   => ['patch',    'reporting/config/{id}',                          'ReportingController@update'                                        ],
-        'reporting_config_delete'                 => ['delete',   'reporting/config/{id}',                          'ReportingController@delete'                                        ],
-        'reporting_generate'                      => ['post',     'reporting/config/{id}/generate',                 'ReportingController@generateReport'                                ],
+        'reporting_config_get'                    => ['get',      'reporting/configs/{id}',                          'ReportingController@getConfig',                                          ],
+        'reporting_config_list'                   => ['get',      'reporting/configs',                               'ReportingController@listConfig',                                         ],
+        'reporting_config_create'                 => ['post',     'reporting/configs',                               'ReportingController@createConfig'                                        ],
+        'reporting_config_edit'                   => ['patch',    'reporting/configs/{id}',                          'ReportingController@updateConfig'                                        ],
+        'reporting_config_delete'                 => ['delete',   'reporting/configs/{id}',                          'ReportingController@deleteConfig'                                        ],
+        'reporting_generate'                      => ['post',     'reporting/configs/{id}/generate',                 'ReportingController@generateReport'                                ],
+        'reporting_log_get'                       => ['get',      'reporting/logs/{id}',                             'ReportingController@getLog',                                          ],
+        'reporting_log_list'                      => ['get',      'reporting/logs',                                  'ReportingController@listLog',                                         ],
 
         // UFH Service
         'ufh_get_file_signed_url'                 => ['get',      'ufh/file/{fileId}/get-signed-url',               'UfhController@getSignedUrl'                                        ],
@@ -1200,6 +1202,8 @@ final class Route
         'reporting_config_delete',
         'reporting_generate',
         'ufh_get_file_signed_url',
+        'reporting_log_get',
+        'reporting_log_list',
     ];
 
     // These will run on internal auth with the assurance

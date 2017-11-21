@@ -21,7 +21,7 @@ class UfhController extends Controller
 
         $ufhClient = (new UfhClient)->setConfig($ufhConfig);
 
-        $response = $ufhClient->getSignedUrl($fileId);
+        $response = $ufhClient->getSignedUrl($fileId, []);
 
         $data = json_decode($response->getBody(), true);
 

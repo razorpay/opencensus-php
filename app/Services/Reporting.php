@@ -14,7 +14,8 @@ class Reporting
 {
     const REQUEST_TIMEOUT = 30;
 
-    const REPORT_CONFIG   = '/config';
+    const REPORT_CONFIG   = '/configs';
+    const REPORT_LOG      = '/logs';
     const REPORT_GENERATE = '/generate';
 
     /**
@@ -96,6 +97,20 @@ class Reporting
         $input['config_id'] = $configId;
 
         return $this->makeRequestAndSend($input, $url, 'post');
+    }
+
+    public function fetchLogMultiple(array $input): array
+    {
+        $url = self::REPORT_LOG;
+
+        return $this->makeRequestAndSend($input, $url, 'get');
+    }
+
+    public function fetchLogById(string $id): array
+    {
+        $url = self::REPORT_LOG . '/' . $id;
+
+        return $this->makeRequestAndSend(null, $url, 'get');
     }
 
     protected function makeRequestAndSend(array $input = null, string $url, string $method = 'post')
