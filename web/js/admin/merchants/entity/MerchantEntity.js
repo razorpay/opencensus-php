@@ -308,7 +308,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
       <div class="group">
         <div class="group-heading">Merchant Summary</div>
         <a onClick={loginAsMerchant}>Login as Merchant</a>
-        <Link to={`/merchants/${merchantId}/team`}>See Team Details</Link>
+        <div onClick={actions.ViewTeam}>See Team Details</div>
         <Link to={`/merchants/${merchantId}/stats`}>
           See Merchant Analytics Stats
         </Link>

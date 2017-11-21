@@ -19,3 +19,4 @@ export MerchantBatchUpload from './MerchantBatchUpload';
 export UploadScreenshots from './UploadScreenshots';
 export AddCredits from './AddCredits';
 export GenerateReports from './GenerateReports';
+export ViewTeam from './ViewTeam';

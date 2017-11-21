@@ -116,7 +116,7 @@ export class Switch extends Component {
   };
 
   render() {
-    let { knob, disabledValue, enabledValue, ...restProps } = this.props;
+    let { knob = true, disabledValue, enabledValue, ...restProps } = this.props;
     let { checked } = this.state;
 
     let buttonClass = this.buttonClass;

@@ -1,19 +1,15 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
+import BaseModal from 'ui/BaseModal';
 
 import { adminFetch } from 'util/fetch';
-import { openModal, confirm } from 'common/modal';
 
 import Table from 'ui/Table';
 
 @observer
-export default class MerchantTeamDetails extends Component {
+export default class TeamDetails extends Component {
   state = {};
-
-  constructor(props) {
-    super();
-    this.merchantId = props.match.params.id;
-  }
+  merchantId = props.merchant.details.id;
 
   componentWillMount() {
     adminFetch({
@@ -39,23 +35,16 @@ export default class MerchantTeamDetails extends Component {
 
   render() {
     return (
-      <div class="entity-container">
-        <header class="heading">
-          Merchant: {this.merchantId} (Team Details)
-        </header>
-        <div class="box">
-          <div class="heading">Users</div>
-          <Table items={this.state.users} fields={_getUsersFields()} />
-        </div>
+      <BaseModal header={`Team Details for merchant ${this.merchantId}`}>
+        <strong>Users</strong>
+        <Table items={this.state.users} fields={_getUsersFields()} />
 
-        <div class="box">
-          <div class="heading">Pending Invitations</div>
-          <Table
-            items={this.state.pendingInvites}
-            fields={_getPendingInvitesFields()}
-          />
-        </div>
-      </div>
+        <strong>Pending Invites</strong>
+        <Table
+          items={this.state.pendingInvites}
+          fields={_getPendingInvitesFields()}
+        />
+      </BaseModal>
     );
   }
 }
