@@ -487,12 +487,12 @@ class Base extends BaseModel\Core
         {
             case FileStore\Format::TXT:
                 $txt = $this->generateText($entries, '|');
-                $this->outputFileLocalPath = $this->createTxtFile($dir .'/' . $this->batch->getFileKeyWithExt($ext), $txt, $dir);
+                $this->outputFileLocalPath = $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
                 return;
 
             case FileStore\Format::CSV:
                 $txt = $this->generateText($entries, ',');
-                $this->outputFileLocalPath = $this->createTxtFile($dir . '/' . $this->batch->getFileKeyWithExt($ext), $txt, $dir);
+                $this->outputFileLocalPath = $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
                 return;
 
             case FileStore\Format::XLSX:
