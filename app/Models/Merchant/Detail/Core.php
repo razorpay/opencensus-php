@@ -313,17 +313,6 @@ class Core extends Base\Core
             $response['need_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
         }
 
-        $activationStatus = $merchantDetails->activation_status;
-
-        $allowedNextStatuses = [];
-
-        if (empty($activationStatus) === false)
-        {
-            $allowedNextStatuses = Status::ALLOWED_NEXT_STATUSES[$activationStatus];
-        }
-
-        $response['allowed_next_statuses'] = $allowedNextStatuses;
-
         $totalFields = count($validationFields);
 
         foreach ($validationFields as $key)
