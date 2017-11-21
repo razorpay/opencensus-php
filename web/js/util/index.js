@@ -66,22 +66,16 @@ export const removeLineBreaks = str => str.replace(/[\n|\r]/g, ' ');
 
 /*
  * Check for pending workflow requests
- * Pass withRouter 'history' prop from component
- * Fallback to window.open if not a called from react component
 */
-export const isWorkflow = (response, history = null) => {
+export const isWorkflow = response => {
   if (
     typeof response.id !== 'undefined' &&
     response.id.indexOf('w_action') === 0 &&
     typeof response.workflow_id !== 'undefined'
   ) {
-    const workflowUrl = `/requests/${response.id}`;
-    if (history) {
-      history.push(workflowUrl);
-    } else {
-      window.open(workflowUrl);
-    }
+    const url = `/admin#/requests/requests/${response.id}`;
+    window.open(url, '_self');
+  } else {
+    return false;
   }
-
-  return false;
 };
