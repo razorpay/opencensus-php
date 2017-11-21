@@ -251,6 +251,7 @@ final class Route
         'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
         'nodal_initiate_transfer'                 => ['post',     'nodal/transfer',                                 'SettlementController@postInitiateTransfer'                         ],
+        'nodal_add_beneficiary'                   => ['post',     'nodal/beneficiary/{channel}',                    'SettlementController@addBeneficiary'                               ],
         'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                      => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
         'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
@@ -297,6 +298,8 @@ final class Route
         'gateway_payment_callback_kotak'          => ['get',      'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotak'                                   ],
         'gateway_payment_callback_kotak_cancel'   => ['post',     'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotakCancel'                             ],
         'gateway_payment_callback_corporation'    => ['post',     'gateway/netbanking_corporation/callback',        'GatewayController@callbackCorporation'                             ],
+
+        'geoip_update'                            => ['post',     'geoip/update',                                   'AdminController@updateGeoIps'                                      ],
 
         // File-based Emandate Routes
         'emandate_registration_reconcile'         => ['post',     'emandate/registration/reconcile/{gateway}',      'EMandateController@postReconcileRegistrationFile'                  ],
@@ -658,6 +661,7 @@ final class Route
         'onboarding_features_fetch_submissions'   => ['get',      'onboarding/features/submissions',                'FeatureController@getFeatureOnboardingRequests'                    ],
         'onboarding_features_update_status'       => ['put',      'onboarding/features/{feature}/status',           'FeatureController@updateFeatureActivationStatus'                   ],
         'onboarding_features_fetch_status'        => ['get',      'onboarding/features/{feature}/status',           'FeatureController@getFeatureActivationStatus'                      ],
+        'onboarding_features_bulk_update_status'  => ['put',      'onboarding/features/status/bulk',                'FeatureController@bulkUpdateFeatureActivationStatus'                      ],
 
         // Deprecated routes - maintaining for BC - Remove after dashboard changes
         'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                   'FeatureController@postOnboardingSubmissions'                       ],
@@ -928,6 +932,7 @@ final class Route
         'setl_delete_file',
         'setl_post_details_old',
         'setl_fixer',
+        'nodal_add_beneficiary',
         'nodal_initiate_transfer',
         'payment_verify',
         'payment_authorize_failed',
@@ -1094,6 +1099,7 @@ final class Route
         'user_reset_password_token',
         'merchant_payout_mail',
         'gateway_payment_callback_bharatqr',
+        'geoip_update'
     ];
 
     public static $proxy = [
@@ -1264,6 +1270,7 @@ final class Route
         'onboarding_features_fetch_submissions',
         'onboarding_features_update_status',
         'onboarding_features_fetch_status',
+        'onboarding_features_bulk_update_status',
         'onboarding_features_update'
     ];
 
@@ -1401,8 +1408,10 @@ final class Route
         'onboarding_features_fetch_submissions' => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_update_status'     => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_fetch_status'      => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
+        'onboarding_features_bulk_update_status'=> Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_update'            => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_fetch_details'     => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
+        'geoip_update'                          => '*',
     ];
 
     public static $direct = [
@@ -1500,6 +1509,7 @@ final class Route
             'gateway_file_create',
             'reports_refund_irctc',
             'merchant_payout_mail',
+            'geoip_update',
         ],
 
         'kotak' => [

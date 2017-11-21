@@ -10,7 +10,6 @@ use RZP\Exception\GatewayErrorException;
 use RZP\Exception\PaymentVerificationException;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\AESCrypto;
-use RZP\Gateway\Base\Entity as GatewayEntity;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base as Netbanking;
@@ -109,7 +108,7 @@ trait EmandateTrait
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    protected function handleEmandateResponse(array $input, array $content): GatewayEntity
+    protected function handleEmandateResponse(array $input, array $content): Netbanking\Entity
     {
         $content = $this->getEmandateDecryptedData($content[ResponseFields::DATA], $input);
 
@@ -151,17 +150,26 @@ trait EmandateTrait
 
     protected function getEmandateCallbackAttributes(array $content): array
     {
+        $mandateNumber = $content[ResponseFields::MANDATE_NUMBER] ?? null;
+
+        $statusCode = null;
+
+        if ($mandateNumber !== null)
+        {
+            $statusCode = StatusCode::getEmandateStatus($mandateNumber);
+        }
+
         return [
             Netbanking\Entity::RECEIVED        => true,
-            Netbanking\Entity::STATUS          => $content[ResponseFields::STATUS_CODE],
-            Netbanking\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REF_NO],
-            Netbanking\Entity::REFERENCE1      => $content[ResponseFields::MANDATE_NUMBER],
+
+            // These values might not be set if the registration/initial payment is a failure
+            Netbanking\Entity::STATUS          => ($content[ResponseFields::STATUS_CODE] ?? null),
+            Netbanking\Entity::BANK_PAYMENT_ID => ($content[ResponseFields::BANK_REF_NO] ?? null),
+            Netbanking\Entity::REFERENCE1      => $mandateNumber,
 
             // SI registration specific callback attributes
             Netbanking\Entity::SI_TOKEN        => $content[ResponseFields::CUSTOMER_REF_NO],
-            Netbanking\Entity::SI_STATUS       => StatusCode::getEmandateStatus(
-                                                      $content[ResponseFields::MANDATE_NUMBER]
-                                                  ),
+            Netbanking\Entity::SI_STATUS       => $statusCode,
             Netbanking\Entity::SI_MSG          => $content[ResponseFields::REMARKS],
         ];
     }
@@ -485,7 +493,12 @@ trait EmandateTrait
             return $this->config['test_hash_secret_encrec'];
         }
 
-        return $this->getLiveSecret();
+        return $this->getEMandateLiveSecret();
+    }
+
+    protected function getEMandateLiveSecret()
+    {
+        return $this->input['terminal']['gateway_secure_secret'];
     }
 
     protected function getEmandateChecksumSecret() : string

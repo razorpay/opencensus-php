@@ -615,9 +615,15 @@ class Core extends Base\Core
                 break;
 
             case Payment\Status::REFUNDED:
-                $gateway = $payment->getGateway();
+                //
+                // We are creating refund transaction via recon also.
+                // For this, we don't have to verify on gateway whether
+                // it has already been refunded or not. Irrespective of
+                // that, we will always create a refund through recon
+                // wherever applicable (payment transaction is present)
+                //
 
-                Payment\Refund\Validator::validateVerifyInternalRefundAllowed($gateway);
+                // Payment\Refund\Validator::validateVerifyInternalRefundAllowed($payment->getGateway());
 
                 //$this->updateNodalBalance($txn);
 
@@ -925,22 +931,19 @@ class Core extends Base\Core
 
     public function updateAmountCredits(Transaction\Entity $txn, Base\PublicEntity $entity)
     {
-        assert ($txn->isTypePayment() === true);
-
-        // For transactions being created before july 1st, 2016, we assign the zero pricing plan.
-        // These transactions are not using the free credits.
-        if (($txn->getFee() !== 0) or
-            ($txn->getCredit() !== $txn->getAmount()) or
-            ($entity->getCreatedAt() < self::JULY_FIRST_EPOCH))
-        {
-            return;
-        }
-
-        // While filling the txn fees and amount, we have not used amount credits.
-        if ($txn->isGratis() === false)
-        {
-            return;
-        }
+        //
+        // Few asserts:
+        // 1. This flow should be called only for gratis txn.
+        // 2. Fee is not calculated in case it was gratis(amount credits flow)
+        //    and so we expect it to be set to 0 always.
+        // 3. For txn of type other than transfers(where txn.credit = 0) expectation
+        //    is that the credit amount is same as txn amount (as fee is 0).
+        //
+        assertTrue($txn->isGratis() === true);
+        assertTrue($txn->getFee() === 0);
+        assertTrue(
+            (($txn->isTypePayment() === true) and ($txn->getCredit() === $txn->getAmount())) or
+            (($txn->isTypeTransfer() === true) and ($txn->getDebit() === $txn->getAmount())));
 
         $amount = $txn->getAmount();
 

@@ -166,6 +166,8 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
+
         $attributes = $this->getAttributesFromAuthResponse($response);
 
         $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
@@ -178,6 +180,8 @@ class Gateway extends Base\Gateway
         $request = $this->getAuthorizeRequestArrayForEnrolled($input, $authResponse);
 
         $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
 
         $attributes = $this->getAttributesFromAuthResponse($response);
 
@@ -268,6 +272,15 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
         }
 
+        $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST,
+            [
+                'request'    => $content,
+                'gateway'    => 'hitachi',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        $content += $this->getCardDataForAuthorizeRequestArray($input);
+
         return $this->getStandardRequestArray($content);
     }
 
@@ -281,7 +294,31 @@ class Gateway extends Base\Gateway
         $content[RequestFields::ALGORITHM]   = '';
         $content[RequestFields::CAVV2]       = '';
 
+        $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST,
+            [
+                'request'    => $content,
+                'gateway'    => 'hitachi',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        $content += $this->getCardDataForAuthorizeRequestArray($input);
+
         return $this->getStandardRequestArray($content);
+    }
+
+    protected function traceGatewayPaymentResponse(
+        $response,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_RESPONSE)
+    {
+        unset($response[ResponseFields::CARD_NUMBER]);
+
+        $this->trace->info($traceCode,
+            [
+                'response'   => $response,
+                'gateway'    => 'hitachi',
+                'payment_id' => $input['payment']['id'],
+            ]);
     }
 
     protected function getDefaultAuthorizeRequestArray(array $input)
@@ -298,9 +335,15 @@ class Gateway extends Base\Gateway
             RequestFields::TRANSACTION_DATE    => $date,
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id'],
+            RequestFields::EXPIRY_DATE         => $expiry,
+        ];
+    }
+
+    protected function getCardDataForAuthorizeRequestArray(array $input)
+    {
+        return [
             RequestFields::CARD_NUMBER         => $input['card']['number'],
             RequestFields::CVV2                => $input['card']['cvv'],
-            RequestFields::EXPIRY_DATE         => $expiry,
         ];
     }
 
@@ -524,28 +567,13 @@ class Gateway extends Base\Gateway
         $request['headers']['checksum'] = $this->generateHash($content);
         $request['headers']['Content-Type'] = 'application/json';
 
+        $request['options'] = [
+            'timeout'         => 30,
+            'connect_timeout' => 30,
+            'verify'          => $this->getCaInfo(),
+        ];
+
         return $request;
-    }
-
-    protected function traceGatewayPaymentRequest(
-        array $request,
-        $input,
-        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
-    {
-        if (is_array($request['content']) === false)
-        {
-            $request['content'] = json_decode($request['content'], true);
-        }
-
-        unset($request['content']['card']);
-        unset($request['card']);
-
-        $this->trace->info($traceCode,
-            [
-                'request'    => $request,
-                'gateway'    => $this->gateway,
-                'payment_id' => $input['payment']['id'],
-            ]);
     }
 
     protected function sendGatewayRequest($request)
@@ -604,5 +632,12 @@ class Gateway extends Base\Gateway
         }
 
         return $secret2;
+    }
+
+    protected function getCaInfo()
+    {
+        $clientCertPath = dirname(__FILE__) . '/cainfo/cainfo.pem';
+
+        return $clientCertPath;
     }
 }

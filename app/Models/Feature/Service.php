@@ -312,5 +312,46 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    /**
+     * Bulk updates the feature activation status for multiple merchants
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function bulkUpdateFeatureActivationStatus(array $input): array
+    {
+        $success   = 0;
+        $failed    = 0;
+        $failedIds = [];
+
+        $core = new Core;
+
+        foreach (Constants::PRODUCT_FEATURES as $productFeature)
+        {
+            if (isset($input[$productFeature]) === true)
+            {
+                $productResponse = $core->bulkUpdateFeatureActivationStatus($productFeature, $input[$productFeature]);
+
+                $success += $productResponse['success'];
+
+                $failed += $productResponse['failed'];
+
+                if ($productResponse['failed'] > 0)
+                {
+                    $failedIds[$productFeature] = $productResponse['failed_ids'];
+                }
+            }
+        }
+
+        $response = [
+            'success'    => $success,
+            'failed'     => $failed,
+            'failed_ids' => $failedIds
+        ];
+
+        return $response;
+    }
 }
 

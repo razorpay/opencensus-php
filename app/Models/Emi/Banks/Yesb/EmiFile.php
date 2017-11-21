@@ -132,12 +132,17 @@ class EmiFile extends Base\EmiFile
     {
         $fileData = null;
 
-        if ($this->transferMode === Base\EmiMode::MAIL)
+        // for sftp file is uploaded to
+        if ($this->transferMode === Base\EmiMode::SFTP)
+        {
+            $metadata = $this->getH2HMetadata();
+        }
+        else
         {
             $this->type = FileStore\Type::YES_EMI_FILE_MAIL;
         }
 
-        $fileData = parent::generateEmiFile($emiData);
+        $fileData = parent::generateEmiFile($emiData, $metadata);
 
         return $fileData;
     }
@@ -153,10 +158,10 @@ class EmiFile extends Base\EmiFile
         // for sftp we put the file in a H2H path
         if ($this->transferMode === Base\EmiMode::SFTP)
         {
-           $filePath = 'yes/outgoing/';
+           $filePath = 'yesbank/outgoing/';
         }
 
-        return $filePath . static::$fileToWriteName;
+        return $filePath . static::$fileToWriteName . '.' . FileStore\Format::XLSX;
     }
 
     private function formattedDateFromTimestamp($timestamp)
@@ -193,5 +198,15 @@ class EmiFile extends Base\EmiFile
     protected function getFormattedAmount($amount)
     {
         return number_format((float)$amount, 2, '.', '');
+    }
+
+    protected function getH2HMetadata()
+    {
+        return [
+            'gid'   => '10000',
+            'uid'   => '10004',
+            'mtime' => Carbon::now()->getTimestamp(),
+            'mode'  => '33188'
+        ];
     }
 }
