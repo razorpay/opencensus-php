@@ -38,7 +38,7 @@ const EditMerchantInvoice = withRouter(({ history }) => {
             route_name: 'merchant_invoice_update_gstin',
           }).then(response => {
             if (response) {
-              if (isWorkflow(response, this.props.history)) {
+              if (isWorkflow(response, history)) {
                 return;
               }
               notifySuccess('Update GSTIN Successfull');

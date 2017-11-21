@@ -83,7 +83,7 @@ class EditRole extends Component {
         ],
       }).then(response => {
         if (response.data.success) {
-          if (isWorkflow(response.data.data, this.props.history)) {
+          if (isWorkflow(response.data.data, history)) {
             return;
           }
           notifySuccess('Role edited successfully.');
@@ -99,7 +99,7 @@ class EditRole extends Component {
         body,
       }).then(response => {
         if (response) {
-          if (isWorkflow(response, this.props.history)) {
+          if (isWorkflow(response, history)) {
             return;
           }
           this.props.collection.items.push(response.data);
