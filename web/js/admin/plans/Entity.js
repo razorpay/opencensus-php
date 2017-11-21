@@ -44,6 +44,7 @@ export default class PlanEntity extends Component {
                 label="Enter Plan Name:"
                 placeholder="Enter Plan name"
                 onChange={updateName}
+                defaultValue={props.name}
                 required
               />
               {items.length > 1 && (

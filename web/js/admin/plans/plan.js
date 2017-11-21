@@ -11,19 +11,19 @@ import { Switch } from 'ui/Field';
 export default class Plan extends Collection {
   constructor(props = {}) {
     super({
-      items: props.plan_id ? null : [],
-      itemsKey: 'rules',
+      // array value will prevent fetch
+      items: props.id ? null : [],
       data: {
         route_name: 'pricing_get_plan',
         url_params: {
-          id: props.plan_id,
+          id: props.id,
         },
       },
       model: Rule,
     });
     this.props = props;
 
-    if (!props.plan_id) {
+    if (!props.id) {
       this.items.push(new Rule(this));
     }
 
@@ -56,42 +56,10 @@ export default class Plan extends Collection {
       adminPost({
         route_name: 'pricing_create_plan',
         body: {
-          plan_name: name,
+          name,
           rules: this.items.slice(0, -1).map(p => p.serialize()),
         },
       }).then(data => {
-        data = {
-          id: '8tNZHh6z4F47Jf',
-          name: 'lolplan',
-          entity: 'pricing',
-          count: 1,
-          rules: [
-            {
-              id: '8tNZHh8CLUk6dS',
-              plan_id: '8tNZHh6z4F47Jf',
-              plan_name: 'lolplan',
-              feature: 'payment',
-              gateway: null,
-              payment_method: 'card',
-              payment_method_type: null,
-              payment_network: null,
-              payment_issuer: null,
-              emi_duration: null,
-              international: false,
-              amount_range_active: false,
-              amount_range_min: null,
-              amount_range_max: null,
-              percent_rate: 200,
-              fixed_rate: 0,
-              min_fee: 0,
-              max_fee: null,
-              created_at: 1508922799,
-              updated_at: 1508922799,
-              deleted_at: null,
-              expired_at: null,
-            },
-          ],
-        };
         if (data) {
           this.props.collection.items.push(data);
           notifySuccess('Plan added successfully.');
@@ -204,7 +172,7 @@ class Rule extends CollectionItem {
 
   save() {
     // if unsaved plan
-    if (!this.collection.props.plan_id) {
+    if (!this.collection.props.id) {
       this.define('readonly', true);
       this.collection.items.push(new Rule(this.collection));
     } else {
@@ -214,7 +182,7 @@ class Rule extends CollectionItem {
           body: this.serialize(),
           route_name: 'pricing_add_plan_rule',
           url_params: {
-            id: this.collection.props.plan_id,
+            id: this.collection.props.id,
           },
         })
       ).then(data => {
@@ -228,7 +196,7 @@ class Rule extends CollectionItem {
   }
 
   delete() {
-    if (!this.collection.props.plan_id) {
+    if (!this.collection.props.id) {
       return this.collection.items.remove(this);
     }
     return this.request(
@@ -236,7 +204,7 @@ class Rule extends CollectionItem {
       adminDelete({
         route_name: 'pricing_delete_plan_rule',
         url_params: {
-          planId: this.collection.props.plan_id,
+          planId: this.collection.props.id,
           ruleId: this.id,
         },
       })
@@ -260,7 +228,11 @@ class Rule extends CollectionItem {
   field(Component, name, props = {}) {
     var value = this[name] || '';
 
-    if (this.id || this.readonly) {
+    if (this.readonly) {
+      return value;
+    }
+
+    if (this.id) {
       if (props.type === 'number') {
         value /= 100;
       }
