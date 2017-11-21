@@ -13,6 +13,9 @@ function toggleChecked(e) {
 }
 
 export default function Field({ tag = 'input', label, infoMsg, ...props }) {
+  if (tag === 'input' && !props.type) {
+    props.type = 'text';
+  }
   let Tag = tag;
   return (
     <div class="field">
@@ -34,7 +37,7 @@ export const SelectField = _ => <Field {..._} tag="select" />;
 export const TextAreaField = _ => <Field {..._} tag="textarea" />;
 export const FileField = _ => <Field {..._} type="file" />;
 export const DateField = _ => (
-  <Field format="DD/MM/YYYY" {..._} tag={DayPickerInput} />
+  <Field type="text" format="DD/MM/YYYY" {..._} tag={DayPickerInput} />
 );
 export const TimeField = _ => <Field {..._} type="time" />;
 export const DataListField = _ => <Field {..._} tag="datalist" />;

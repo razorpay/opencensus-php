@@ -17,26 +17,34 @@ class ModalStore {
 
   confirm = (message, confirmLabel = 'Yes', rejectLabel = 'Cancel') => {
     return new Promise((resolve, reject) => {
-      this.modals.push(
+      let isResolved = false;
+      let modals = this.modals;
+
+      let Confirm = (
         <div class="confirm-modal">
           <header>Confirm</header>
           <div class="message">{message}</div>
           <div class="action-buttons">
             <button
-              onClick={_ => this.closeModal() & resolve()}
+              onClick={_ => (isResolved = 1 & this.closeModal())}
               class="btn-confirm"
             >
               {confirmLabel}
             </button>
-            <button
-              onClick={_ => this.closeModal() & reject()}
-              class="btn-reject"
-            >
+            <button onClick={_ => this.closeModal()} class="btn-reject">
               {rejectLabel}
             </button>
           </div>
         </div>
       );
+
+      let disposer = observe(modals, _ => {
+        if (modals.indexOf(Confirm) === -1) {
+          (isResolved && resolve()) || reject();
+          disposer();
+        }
+      });
+      this.openModal(Confirm);
     });
   };
 

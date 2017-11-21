@@ -23,7 +23,6 @@ export default class MakeAPICall extends Component {
   };
 
   render() {
-    console.log('THIS CALL', this.props);
     return (
       <div class="makeapicall">
         <Form class="full-span" style={{ width: '650px' }}>
