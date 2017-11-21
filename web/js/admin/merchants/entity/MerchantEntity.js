@@ -168,6 +168,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
   }
 
   function merchantAction(action, successMsg) {
+    console.log('WHAT...0');
     const data = {
       route_name: 'merchant_action',
       url_params: {
@@ -176,8 +177,10 @@ const ActionsList = ({ model, merchantId, actions }) => {
       body: { action },
     };
 
+    console.log('WHAT...1');
     return adminPut(data)
       .then(response => {
+        console.log('WHAT...2');
         notifySuccess(successMsg);
         model.updateDetails(response);
       })
@@ -265,6 +268,21 @@ const ActionsList = ({ model, merchantId, actions }) => {
     });
   }
 
+  function toggleInternational() {
+    const merchant = model.merchant;
+
+    let action, successMsg;
+    if (!merchant.details.international) {
+      successMsg = 'Merchant International enabled successfully';
+      action = 'enable_international';
+    } else if (merchant.details.hold_funds == 1) {
+      successMsg = 'Merchant International disabled successfully';
+      action = 'disable_international';
+    }
+
+    return merchantAction(action, successMsg);
+  }
+
   function toggleFundsHoldOrRelease() {
     const merchant = model.merchant;
 
@@ -279,22 +297,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
       action = 'release_funds';
     }
 
-    confirm(confirmMsg).then(_ => {
-      adminPut({
-        route_name: 'merchant_action',
-        url_params: {
-          id: merchantId,
-        },
-        body: { action },
-      })
-        .then(response => {
-          notifySuccess(successMsg);
-          model.updateDetails(response);
-        })
-        .catch(err => {
-          notifyError(JSON.stringify(err.response));
-        });
-    });
+    confirm(confirmMsg).then(_ => merchantAction(action, successMsg));
   }
 
   function loginAsMerchant() {
@@ -428,6 +431,14 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
       <div class="group">
         <div class="group-heading">Risk Actions</div>
+
+        {/* Toggle disbale or enable receipt email */}
+        <AsyncButton onClick={toggleInternational} pendingClass="btn-pending">
+          {merchant.details.international ? 'Disable ' : 'Enable '}
+          International
+          <span class="spin-btn" />
+          <i class="pull-right i i-globe" />
+        </AsyncButton>
 
         {/* Hold or Release funds */}
         {
