@@ -304,178 +304,214 @@ const ActionsList = ({ model, merchantId, actions }) => {
   return (
     <aside class="">
       <div class="heading">Actions</div>
-      <a onClick={loginAsMerchant}>Login as Merchant</a>
-      <Link to={`/merchants/${merchantId}/activation`}>
-        See Activation Form Details
-      </Link>
-      <Link to={`/merchants/${merchantId}/team`}>See Team Details</Link>
-      <Link to={`/merchants/${merchantId}/stats`}>
-        See Merchant Analytics Stats
-      </Link>
 
-      {/* Lock or Unlock activation form */}
-      {merchant.details.merchant_details && (
-        <AsyncButton
-          onClick={toggleLockOnActivationForm}
-          pendingClass="btn-pending"
-        >
-          {merchant.details.merchant_details.locked ? 'Unlock' : 'Lock'}{' '}
-          Activation Form
-          <span class="spin-btn" />
-          <i
-            class={`pull-right i i-${
-              merchant.details.merchant_details.locked ? 'unlock' : 'lock'
-            }`}
-          />
-        </AsyncButton>
-      )}
-
-      {merchant.details.activated == 0 && (
-        <div onClick={activateMerchant}>
-          Activate Merchant
-          <i class="pull-right i i-done-all" />
+      <div class="group">
+        <div class="group-heading">Merchant Summary</div>
+        <a onClick={loginAsMerchant}>Login as Merchant</a>
+        <Link to={`/merchants/${merchantId}/team`}>See Team Details</Link>
+        <Link to={`/merchants/${merchantId}/stats`}>
+          See Merchant Analytics Stats
+        </Link>
+        <div onClick={actions.EditComment}>
+          Edit Comment
+          <i class="pull-right i i-comment" />
         </div>
-      )}
 
-      {/* Hold or Release funds */}
-      {
-        do {
-          if (merchant.details.activated == 1 && !merchant.details.hold_funds) {
-            <div onClick={toggleFundsHoldOrRelease}>
-              Hold Merchant Funds
-              <i class="pull-right i i-hand-stop" />
-            </div>;
-          } else if (merchant.details.hold_funds == 1) {
-            <div onClick={toggleFundsHoldOrRelease}>
-              Release Merchant Funds
-              <i class="pull-right i i-thumps-up" />
-            </div>;
-          }
-        }
-      }
-
-      {/* Toggle enable or disabled live transactions */}
-      {merchant.details.activated && (
-        <AsyncButton
-          onClick={toggleLiveTransactions}
-          pendingClass="btn-pending"
-        >
-          {merchant.details.live ? 'Disable' : 'Enable'} Live Transactions
-          <span class="spin-btn" />
-          <i class={`pull-right i i-${merchant.details.live ? 'no' : 'yes'}`} />
-        </AsyncButton>
-      )}
-
-      {/* Toggle disbale or enable receipt email */}
-      <AsyncButton onClick={toggleReceiptEmail} pendingClass="btn-pending">
-        {merchant.details.receipt_email_enabled ? 'Disable ' : 'Enable '}
-        Receipt Email
-        <span class="spin-btn" />
-        <i class="pull-right i i-email" />
-      </AsyncButton>
-
-      <div onClick={actions.EditMethods}>
-        Edit Methods
-        <i class="pull-right i i-money" />
-      </div>
-      <div onClick={actions.AssignPricingPlan}>
-        Assign Pricing
-        <i class="pull-right i">%</i>
-      </div>
-      <div onClick={actions.AssignSchedule}>
-        Assign Schedule
-        <i class="pull-right i i-schedule" />
-      </div>
-      <div onClick={actions.AssignTerminal}>
-        Assign Terminal
-        <i class="pull-right i i-terminal" />
-      </div>
-      <div onClick={actions.AssignBanks}>
-        Assign Banks
-        <i class="pull-right i i-bank" />
-      </div>
-      <div onClick={actions.AssignMerchantHandle}>
-        Assign Merchant Handle
-        <i class="pull-right i">@</i>
-      </div>
-      <div onClick={actions.AddAdjustment}>
-        Add Adjustment
-        <i class="pull-right i i-edit" />
-      </div>
-      <div onClick={actions.CreateOffer}>
-        Create Offer
-        <i class="pull-right i i-money" />
-      </div>
-      <div onClick={actions.EditMerchant}>
-        Edit Merchant
-        <i class="pull-right i i-edit-form" />
-      </div>
-      <div onClick={actions.EditMerchantEmail}>
-        Edit Merchant Email
-        <i class="pull-right i i-email" />
-      </div>
-      <div onClick={actions.EditBankAccountDetails}>
-        Edit Bank Account Details
-        <i class="pull-right i i-bank" />
-      </div>
-      <div onClick={actions.AutoFillActivationForm}>
-        Autofill Activation Form
-        <i class="pull-right i i-auto-fill" />
-      </div>
-      <div onClick={actions.EditComment}>
-        Edit Comment
-        <i class="pull-right i i-comment" />
-      </div>
-
-      <div onClick={toggleArchiveMerchant}>
-        {merchant.details.archived_at === null ? 'Archive' : 'Unarchive'}{' '}
-        <i
-          class={`pull-right i i-${
-            merchant.details.archived_at === null ? 'archive' : 'unarchive'
-          }`}
-        />
-        Merchant
-      </div>
-
-      {typeof merchant.details.suspended_at !== 'undefined' && (
-        <div onClick={toggleSuspension}>
-          {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}{' '}
-          <i class="pull-right i i-power" />
-          Merchant
+        <div onClick={actions.GenerateReports}>
+          Download Report
+          <i class="pull-right i i-download" />
         </div>
-      )}
-      <div onClick={actions.MarkReferred}>
-        Mark as Referred
-        <i class="pull-right i i-gift" />
       </div>
-      <div onClick={actions.EditTags}>
-        Tag Merchant
-        <i class="pull-right i i-tag" />
-      </div>
-      <div onClick={actions.EditFeatures}>
-        Feature Merchant
-        <i class="pull-right i i-tag" />
-      </div>
-      {merchant.features['live'] &&
-        merchant.features['live'].assigned_features.indexOf('irctc_report') >
-          -1 && (
-          <div onClick={actions.MerchantBatchUpload}>
-            Merchant Batch Upload
-            <i class="pull-right i i-upload" />
+
+      <div class="group">
+        <div class="group-heading">Activation</div>
+
+        {/* Lock or Unlock activation form */}
+        {merchant.details.merchant_details && (
+          <AsyncButton
+            onClick={toggleLockOnActivationForm}
+            pendingClass="btn-pending"
+          >
+            {merchant.details.merchant_details.locked ? 'Unlock' : 'Lock'}{' '}
+            Activation Form
+            <span class="spin-btn" />
+            <i
+              class={`pull-right i i-${
+                merchant.details.merchant_details.locked ? 'unlock' : 'lock'
+              }`}
+            />
+          </AsyncButton>
+        )}
+
+        <Link to={`/merchants/${merchantId}/activation`}>
+          See Activation Form Details
+        </Link>
+
+        <div onClick={actions.EditMethods}>
+          Edit Methods
+          <i class="pull-right i i-money" />
+        </div>
+
+        <div onClick={actions.EditMerchant}>
+          Edit Merchant
+          <i class="pull-right i i-edit-form" />
+        </div>
+
+        <div onClick={actions.AssignPricingPlan}>
+          Assign Pricing
+          <i class="pull-right i">%</i>
+        </div>
+        <div onClick={actions.AssignSchedule}>
+          Assign Schedule
+          <i class="pull-right i i-schedule" />
+        </div>
+        <div onClick={actions.EditTags}>
+          Tag Merchant
+          <i class="pull-right i i-tag" />
+        </div>
+        <div onClick={actions.EditFeatures}>
+          Feature Merchant
+          <i class="pull-right i i-tag" />
+        </div>
+
+        <div onClick={actions.AddCredits}>Add Credits</div>
+        {merchant.details.activated == 0 && (
+          <div onClick={activateMerchant}>
+            Activate Merchant
+            <i class="pull-right i i-done-all" />
           </div>
         )}
-      <div onClick={actions.UploadScreenshots}>
-        Upload screenshots
-        <i class="pull-right i i-upload" />
-      </div>
-      <div onClick={captureScreenshot}>
-        Capture Screenshots
-        <i class="pull-right i i-camera" />
-      </div>
-      <div onClick={actions.AddCredits}>Add Credits</div>
 
-      <div class="btn-primary" onClick={actions.GenerateReports}>
-        Download Report
+        <div onClick={toggleArchiveMerchant}>
+          {merchant.details.archived_at === null ? 'Archive' : 'Unarchive'}{' '}
+          <i
+            class={`pull-right i i-${
+              merchant.details.archived_at === null ? 'archive' : 'unarchive'
+            }`}
+          />
+          Merchant
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-heading">Business Ops</div>
+
+        <div onClick={actions.AddAdjustment}>
+          Add Adjustment
+          <i class="pull-right i i-edit" />
+        </div>
+        <div onClick={actions.EditBankAccountDetails}>
+          Edit Bank Account Details
+          <i class="pull-right i i-bank" />
+        </div>
+        <div onClick={actions.EditMerchantEmail}>
+          Edit Merchant Email
+          <i class="pull-right i i-email" />
+        </div>
+        <div onClick={actions.CreateOffer}>
+          Create Offer
+          <i class="pull-right i i-money" />
+        </div>
+        <div onClick={actions.AssignMerchantHandle}>
+          Assign Merchant Handle
+          <i class="pull-right i">@</i>
+        </div>
+        {merchant.features['live'] &&
+          merchant.features['live'].assigned_features.indexOf('irctc_report') >
+            -1 && (
+            <div onClick={actions.MerchantBatchUpload}>
+              Merchant Batch Upload
+              <i class="pull-right i i-upload" />
+            </div>
+          )}
+      </div>
+
+      <div class="group">
+        <div class="group-heading">Risk Actions</div>
+
+        {/* Hold or Release funds */}
+        {
+          do {
+            if (
+              merchant.details.activated == 1 &&
+              !merchant.details.hold_funds
+            ) {
+              <div onClick={toggleFundsHoldOrRelease}>
+                Hold Merchant Funds
+                <i class="pull-right i i-hand-stop" />
+              </div>;
+            } else if (merchant.details.hold_funds == 1) {
+              <div onClick={toggleFundsHoldOrRelease}>
+                Release Merchant Funds
+                <i class="pull-right i i-thumps-up" />
+              </div>;
+            }
+          }
+        }
+
+        {/* Toggle disbale or enable receipt email */}
+        <AsyncButton onClick={toggleReceiptEmail} pendingClass="btn-pending">
+          {merchant.details.receipt_email_enabled ? 'Disable ' : 'Enable '}
+          Receipt Email
+          <span class="spin-btn" />
+          <i class="pull-right i i-email" />
+        </AsyncButton>
+
+        {/* Toggle enable or disabled live transactions */}
+        {merchant.details.activated && (
+          <AsyncButton
+            onClick={toggleLiveTransactions}
+            pendingClass="btn-pending"
+          >
+            {merchant.details.live ? 'Disable' : 'Enable'} Live Transactions
+            <span class="spin-btn" />
+            <i
+              class={`pull-right i i-${merchant.details.live ? 'no' : 'yes'}`}
+            />
+          </AsyncButton>
+        )}
+
+        {typeof merchant.details.suspended_at !== 'undefined' && (
+          <div onClick={toggleSuspension}>
+            {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}{' '}
+            <i class="pull-right i i-power" />
+            Merchant
+          </div>
+        )}
+      </div>
+
+      <div class="group">
+        <div class="group-heading">PG Onboarding</div>
+
+        <div onClick={actions.AssignTerminal}>
+          Assign Terminal
+          <i class="pull-right i i-terminal" />
+        </div>
+
+        <div onClick={actions.AssignBanks}>
+          Assign Banks
+          <i class="pull-right i i-bank" />
+        </div>
+        <div onClick={actions.AutoFillActivationForm}>
+          Autofill Activation Form
+          <i class="pull-right i i-auto-fill" />
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-heading" />
+        <div onClick={actions.MarkReferred}>
+          Mark as Referred
+          <i class="pull-right i i-gift" />
+        </div>
+        <div onClick={actions.UploadScreenshots}>
+          Upload screenshots
+          <i class="pull-right i i-upload" />
+        </div>
+        <div onClick={captureScreenshot}>
+          Capture Screenshots
+          <i class="pull-right i i-camera" />
+        </div>
       </div>
     </aside>
   );
