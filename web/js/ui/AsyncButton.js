@@ -9,10 +9,14 @@ export default class AsyncButton extends Component {
   onClick = ::this.onClick;
 
   onClick(e) {
-    if (this.props.disabled) {
-      return;
+    if (this.props.confirm) {
+      confirm(this.props.confirm).then(_ => this.processClick(e));
+    } else {
+      this.processClick(e);
     }
+  }
 
+  processClick(e) {
     if (!this.state.pending) {
       let { onSubmit, onClick } = this.props;
 
@@ -30,7 +34,7 @@ export default class AsyncButton extends Component {
         this.setState({
           pending: true,
         });
-        returnValue.catch(_ => _).then(_ => {
+        returnValue.then(_ => {
           this.setState({
             pending: false,
           });
