@@ -49,8 +49,6 @@ class Core extends Base\Core
             {
                 $this->markSubmitted($merchantDetails);
 
-                $this->changeActivationStatus($merchantDetails, Entity::UNDER_REVIEW);
-
                 $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
             }
 
@@ -242,47 +240,6 @@ class Core extends Base\Core
         $this->repo->saveOrFail($merchantDetails);
     }
 
-    protected function changeActivationStatus(Entity $merchantDetails, $activationStatus)
-    {
-        $input = [
-            Entity::ACTIVATION_STATUS => $activationStatus,
-        ];
-
-        $merchantDetails->fill($input);
-
-        $this->repo->saveOrFail($merchantDetails);
-    }
-
-    /**
-     * This function computes the activation status changes that are allowed for a merchant
-     * Activation status can be one of the following ['under_review', 'needs_clarification', 'activated', 'rejected']
-     *
-     * @param String $activationStatus
-     *
-     * @return array $allowedStatusChanges
-     */
-    protected function computeAllowedStatusChanges($activationStatus)
-    {
-        $allowedStatusChanges = [];
-
-        if (isset($activationStatus) === true)
-        {
-            // For under_review status, the allowed status changes are [needs_clarification, activated, rejected]
-            if ($activationStatus === Entity::UNDER_REVIEW)
-            {
-                $allowedStatusChanges = [Entity::NEEDS_CLARIFICATION, Entity::ACTIVATED, Entity::REJECTED];
-            }
-            // For needs_clarification or rejected status, the allowed status changes are [under_review]
-            else if (($activationStatus === Entity::NEEDS_CLARIFICATION) or
-                     ($activationStatus === Entity::REJECTED))
-            {
-                $allowedStatusChanges = [Entity::UNDER_REVIEW];
-            }
-        }
-
-        return $allowedStatusChanges;
-    }
-
     /**
      * Checks and auto activates the merchant if possible, after form submission
      *
@@ -358,7 +315,14 @@ class Core extends Base\Core
 
         $activationStatus = $merchantDetails->activation_status;
 
-        $response['allowed_status_changes'] = $this->computeAllowedStatusChanges($activationStatus);
+        $allowedNextStatuses = [];
+
+        if (empty($activationStatus) === false)
+        {
+            $allowedNextStatuses = Status::ALLOWED_NEXT_STATUSES[$activationStatus];
+        }
+
+        $response['allowed_next_statuses'] = $allowedNextStatuses;
 
         $totalFields = count($validationFields);
 

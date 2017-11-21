@@ -95,14 +95,6 @@ class Entity extends Base\PublicEntity
     const APPROVED = 'approved';
     const REJECTED = 'rejected';
 
-    /*
-     * Enum values used for activation form status
-     * There is also a 'rejected' status for activation form
-    */
-    const UNDER_REVIEW        = 'under_review';
-    const NEEDS_CLARIFICATION = 'needs_clarification';
-    const ACTIVATED           = 'activated';
-
     protected $entity = 'merchant_detail';
 
     protected $primaryKey = self::MERCHANT_ID;
