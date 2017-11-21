@@ -87,7 +87,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         // Convert fee into basic unit of currency (ex: paise)
         $gatewayFee = floatval($row[self::COLUMN_GATEWAY_FEE]) * 100;
 
-        return round($gatewayFee);
+        return intval(number_format($gatewayFee, 2, '.', ''));
     }
 
     /**

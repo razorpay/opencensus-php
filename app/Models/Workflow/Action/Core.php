@@ -4,17 +4,17 @@ namespace RZP\Models\Workflow\Action;
 
 use App;
 use Request;
+use RZP\Models\State;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Admin\Permission;
+
+use RZP\Models\Workflow;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\Step;
-use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Checker;
-use RZP\Constants\Mode;
 
-use RZP\Models\Admin\Org;
-use RZP\Models\Workflow;
-use RZP\Models\Admin\Permission;
 
 class Core extends Base\Core
 {
@@ -131,7 +131,7 @@ class Core extends Base\Core
         our main RDBMS and to whom the entries did not fail because
         transaction rollbacks don't affect that.
     */
-    public function create(array $input, $retry = false)
+    public function create(array $input, $retry = false, Admin\Entity $admin): Entity
     {
         $action = new Entity;
 
@@ -152,7 +152,7 @@ class Core extends Base\Core
             $params = $this->buildParams($input);
         }
 
-        $this->repo->transactionOnLiveAndTest(function() use ($action, $params, $retry)
+        $this->repo->transactionOnLiveAndTest(function() use ($action, $params, $retry, $admin)
         {
             $differInput = $params[Entity::DIFFER] ?? null;
 
@@ -162,7 +162,7 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($action);
 
-            $this->createInitialStateForAction($action);
+            $this->createInitialStateForAction($action, $admin);
 
             if (($retry === false) and (empty($differInput) === false))
             {
@@ -176,15 +176,13 @@ class Core extends Base\Core
         return $action;
     }
 
-    protected function createInitialStateForAction(Entity $action)
+    protected function createInitialStateForAction(Entity $action, Admin\Entity $admin)
     {
         $input = [
-            State\Entity::ACTION_ID  => $action->getId(),
-            State\Entity::ADMIN_ID   => $action->getAdminId(),
-            State\Entity::NAME       => State\Entity::OPEN,
+            State\Entity::NAME       => State\Name::OPEN,
         ];
 
-        $actionState = (new State\Core)->create($input);
+        $actionState = (new State\Core)->createForWorkflowAction($input, $admin, $action);
 
         return $actionState;
     }
@@ -210,8 +208,13 @@ class Core extends Base\Core
 
     /**
      * This function has to run in a transaction
+     *
+     * @param  Entity       $action
+     * @param  Admin\Entity $admin
+     *
+     * @return boolean
      */
-    public function checkAndMarkActionApproved(Entity $action)
+    public function checkAndMarkActionApproved(Entity $action, Admin\Entity $admin)
     {
         if ($action->getApproved() === true)
         {
@@ -232,21 +235,21 @@ class Core extends Base\Core
 
         if ($this->isCurrentLevelApproved($action) === true)
         {
-            $this->approveAction($action);
+            $this->approveAction($action, $admin);
         }
 
         return true;
     }
 
-    protected function approveAction(Entity $action)
+    protected function approveAction(Entity $action, Admin\Entity $admin)
     {
         // Set the action as approved and create a state change that it has
         // been moved to approved.
-        $this->repo->transactionOnLiveAndTest(function() use ($action)
+        $this->repo->transactionOnLiveAndTest(function() use ($action, $admin)
         {
             $data = [
                 Entity::APPROVED => true,
-                Entity::STATE    => State\Entity::APPROVED,
+                Entity::STATE    => State\Name::APPROVED,
             ];
 
             $action->edit($data);
@@ -254,12 +257,10 @@ class Core extends Base\Core
             $this->repo->saveOrFail($action);
 
             $stateData = [
-                State\Entity::ACTION_ID => $action->getId(),
-                State\Entity::ADMIN_ID  => $action->getAdminId(),
-                State\Entity::NAME      => State\Entity::APPROVED,
+                State\Entity::NAME      => State\Name::APPROVED,
             ];
 
-            (new State\Core)->create($stateData);
+            (new State\Core)->createForWorkflowAction($stateData, $admin, $action);
 
             (new Differ\Core)->updateStateInEs(
                 $action->getId(), $stateData[State\Entity::NAME]);
@@ -349,7 +350,7 @@ class Core extends Base\Core
         // for the current level of the action
 
         // Only open actions are supported
-        if ($action->getState() !== State\Entity::OPEN)
+        if ($action->getState() !== State\Name::OPEN)
         {
             return;
         }
@@ -413,17 +414,15 @@ class Core extends Base\Core
 
         $this->repo->transactionOnLiveAndTest(function () use($action, $admin){
 
-            $state = State\Entity::CLOSED;
+            $state = State\Name::CLOSED;
 
             $stateData = [
-                State\Entity::ACTION_ID => $action->getId(),
-                State\Entity::ADMIN_ID  => $admin->getId(),
                 State\Entity::NAME      => $state,
             ];
 
             $this->updateState($action, $state);
 
-            (new State\Core)->create($stateData);
+            (new State\Core)->createForWorkflowAction($stateData, $admin, $action);
 
             (new Differ\Core)->updateStateInEs(
                 $action->getId(), $stateData[State\Entity::NAME]);
@@ -473,7 +472,7 @@ class Core extends Base\Core
         return $actions;
     }
 
-    public function executeAction($action)
+    public function executeAction($action, Admin\Entity $admin)
     {
         list($stateCore, $differCore) = [
             new State\Core,
@@ -505,11 +504,11 @@ class Core extends Base\Core
 
         $internalResponse = App::call([$controller, $functionName], array_values($routeParams));
 
-        $state = State\Entity::EXECUTED;
+        $state = State\Name::EXECUTED;
 
         if ($internalResponse->getStatusCode() !== 200)
         {
-            $state = State\Entity::FAILED;
+            $state = State\Name::FAILED;
         }
 
         // The connection is being reset in here because after executing the App::call
@@ -519,13 +518,11 @@ class Core extends Base\Core
         // Resetting connection so that workflow updates will not fail for test modes.
         \Database\DefaultConnection::set($mode);
 
-        $adminId = $this->app['basicauth']->getAdmin()->getId();
-
         // Update states
 
         $this->updateState($action, $state);
 
-        $stateCore->changeActionState($action->getId(), $state, $adminId);
+        $stateCore->changeActionState($action, $state, $admin);
 
         $differCore->updateStateInEs($action->getId(), $state);
 

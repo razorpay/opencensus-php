@@ -485,7 +485,12 @@ trait EmandateTrait
             return $this->config['test_hash_secret_encrec'];
         }
 
-        return $this->getLiveSecret();
+        return $this->getEMandateLiveSecret();
+    }
+
+    protected function getEMandateLiveSecret()
+    {
+        return $this->input['terminal']['gateway_secure_secret'];
     }
 
     protected function getEmandateChecksumSecret() : string

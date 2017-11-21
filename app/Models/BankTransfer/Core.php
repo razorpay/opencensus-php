@@ -129,7 +129,7 @@ class Core extends Base\Core
                 TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
                 $data,
                 [
-                    'channel'  => Config::get('slack.channels.virtual_accounts'),
+                    'channel'  => Config::get('slack.channels.virtual_accounts_log'),
                     'username' => 'Scrooge',
                     'icon'     => ':x:'
                 ]
