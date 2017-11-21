@@ -487,12 +487,12 @@ class Base extends BaseModel\Core
         {
             case FileStore\Format::TXT:
                 $txt = $this->generateText($entries, '|');
-                $this->outputFileLocalPath = $this->createTxtFile($this->getFileName($ext), $txt, $dir);
+                $this->outputFileLocalPath = $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
                 return;
 
             case FileStore\Format::CSV:
                 $txt = $this->generateText($entries, ',');
-                $this->outputFileLocalPath = $this->createTxtFile($this->getFileName($ext), $txt, $dir);
+                $this->outputFileLocalPath = $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
                 return;
 
             case FileStore\Format::XLSX:
@@ -510,16 +510,6 @@ class Base extends BaseModel\Core
             default:
                 throw new LogicException("Extension not handled: {$ext}");
         }
-    }
-
-    protected function getFileName(string $ext = null): string
-    {
-        if (empty($ext) === true)
-        {
-            return $this->batch->getFileKey();
-        }
-
-        return $this->batch->getFileKeyWithExt($ext);
     }
 
     protected function sendProcessedMail()
@@ -654,7 +644,7 @@ class Base extends BaseModel\Core
 
         $movedFile = $file->move(
                         $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE_PREFIX),
-                        $this->getFileName($ext));
+                        $this->batch->getFileKeyWithExt($ext));
 
         $ufh = $this->saveFile(
                         $movedFile->getPathname(),
