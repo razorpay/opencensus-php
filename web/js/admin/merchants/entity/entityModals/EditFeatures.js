@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import BaseModal from 'ui/BaseModal';
 
 import Form from 'ui/Form';
-import Field, { SelectField, SwitchField } from 'ui/Field';
+import { TextAreaField, SelectField, SwitchField } from 'ui/Field';
+import MultiSelectField from 'ui//MultiSelectField';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
@@ -12,7 +13,7 @@ export default class EditFeatures extends Component {
   state = { mode: 'test' };
 
   onSubmit = body => {
-    const selectedFeatures = body.selectedFeatures;
+    const selectedFeatures = body.selectedFeatures.split(',');
 
     if (!selectedFeatures.length) {
       notifyError('No features selected');
@@ -56,7 +57,9 @@ export default class EditFeatures extends Component {
   render() {
     const { features } = this.props.props.merchant;
     const curModeFeatures = features[this.state.mode];
-    let availableFeaturesInMode = [];
+    let availableFeaturesInMode = curModeFeatures
+      ? curModeFeatures.all_features
+      : [];
 
     if (curModeFeatures) {
       availableFeaturesInMode = curModeFeatures.all_features.filter(
@@ -64,9 +67,17 @@ export default class EditFeatures extends Component {
       );
     }
 
+    let featuresOptions = [];
+
+    if (curModeFeatures) {
+      featuresOptions = availableFeaturesInMode.map(feature => ({
+        id: feature,
+      }));
+    }
+
     return (
-      <BaseModal header="Edit Features">
-        <Form>
+      <BaseModal header="Edit Features" customClass="edit-features">
+        <Form class="full-span">
           <SelectField
             name="mode"
             label="Mode"
@@ -77,33 +88,24 @@ export default class EditFeatures extends Component {
             <option value="live">Live</option>
           </SelectField>
 
-          <label>
-            Add to both Test and Live
-            <SwitchField name="shouldSync" />
-          </label>
+          <SwitchField name="shouldSync" label="Add to both Test and Live" />
 
-          <SelectField
-            name="selectedFeatures"
+          <MultiSelectField
             label="Features"
+            name="selectedFeatures"
+            options={featuresOptions}
+            trackBy="id"
+            keys={['id']}
             defaultValue={[]}
-            multiple
-          >
-            {curModeFeatures &&
-              availableFeaturesInMode.map(feature => {
-                return (
-                  <option key={feature} value={feature}>
-                    {feature}
-                  </option>
-                );
-              })}
-          </SelectField>
+            placeholder="Select Features"
+          />
 
-          <Field
+          <TextAreaField
             label="Assigned Features"
             name="assigned_features"
             defaultValue={
               features[this.state.mode]
-                ? features[this.state.mode].assigned_features.join(',')
+                ? features[this.state.mode].assigned_features.join(', ')
                 : ''
             }
             readOnly
