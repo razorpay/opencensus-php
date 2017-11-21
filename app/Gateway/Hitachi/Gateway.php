@@ -328,7 +328,7 @@ class Gateway extends Base\Gateway
 
         $expiry = substr($input['card']['expiry_year'], 2) . $input['card']['expiry_month'];
 
-        return [
+        $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::AUTH,
             RequestFields::TRANSACTION_AMOUNT  => str_pad($input['payment']['amount'], 10, 0, STR_PAD_LEFT),
             RequestFields::TRANSACTION_TIME    => $time,
@@ -337,6 +337,13 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id'],
             RequestFields::EXPIRY_DATE         => $expiry,
         ];
+
+        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        {
+            $content[RequestFields::MERCHANT_REF_NUMBER] = substr($input['payment']['id'], 0, 10);
+        }
+
+        return $content;
     }
 
     protected function getCardDataForAuthorizeRequestArray(array $input)
