@@ -9,7 +9,7 @@ import Table from 'ui/Table';
 @observer
 export default class TeamDetails extends Component {
   state = {};
-  merchantId = props.merchant.details.id;
+  merchantId = this.props.props.merchant.details.id;
 
   componentWillMount() {
     adminFetch({
@@ -36,14 +36,29 @@ export default class TeamDetails extends Component {
   render() {
     return (
       <BaseModal header={`Team Details for merchant ${this.merchantId}`}>
-        <strong>Users</strong>
-        <Table items={this.state.users} fields={_getUsersFields()} />
+        <div class="container">
+          <div class="heading">Users</div>
+          {!this.state.users ? (
+            <div class="spinner center" />
+          ) : (
+            <Table items={this.state.users} fields={_getUsersFields()} />
+          )}
+        </div>
 
-        <strong>Pending Invites</strong>
-        <Table
-          items={this.state.pendingInvites}
-          fields={_getPendingInvitesFields()}
-        />
+        <div class="separate m-t m-b" />
+
+        <div class="container">
+          <div class="heading">Pending Invites</div>
+
+          {!this.state.pendingInvites ? (
+            <div class="spinner center" />
+          ) : (
+            <Table
+              items={this.state.pendingInvites}
+              fields={_getPendingInvitesFields()}
+            />
+          )}
+        </div>
       </BaseModal>
     );
   }
