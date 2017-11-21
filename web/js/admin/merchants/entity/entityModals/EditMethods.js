@@ -1,6 +1,5 @@
 import React from 'react';
 import BaseModal from 'ui/BaseModal';
-import { withRouter } from 'react-router-dom';
 import Form from 'ui/Form';
 import { SwitchField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
@@ -9,7 +8,7 @@ import { notifyError, notifySuccess, closeModal } from 'common/modal';
 import { adminPut } from 'util/fetch';
 import { isWorkflow } from 'util/index';
 
-export default withRouter(({ props, history }) => {
+export default ({ props }) => {
   let defaultMethods;
 
   /* Send only changed methods */
@@ -76,7 +75,7 @@ export default withRouter(({ props, history }) => {
     })
       .then(data => {
         if (data) {
-          if (isWorkflow(data, history)) {
+          if (isWorkflow(data)) {
             return;
           }
           notifySuccess('Methods updated successfully.');
@@ -104,7 +103,7 @@ export default withRouter(({ props, history }) => {
       </Form>
     </BaseModal>
   );
-});
+};
 
 function _getForceFields() {
   // List all the methods here

@@ -7,10 +7,8 @@ import Form from 'ui/Form';
 import { SwitchField } from 'ui/Field';
 import { adminFetch, adminPost } from 'util/fetch';
 import AsyncButton from 'ui/AsyncButton';
-import { withRouter } from 'react-router-dom';
 import { isWorkflow } from 'util/index';
 
-@withRouter
 export default class PricingPlanModal extends Component {
   state = { merchantBanksMapping: {} };
 
@@ -53,7 +51,7 @@ export default class PricingPlanModal extends Component {
   }
 
   handleConfirm = body => {
-    const { props, history } = this.props;
+    const { props } = this.props;
 
     return confirm(
       'Any previously assigned banks for the merchant will be replace with selected.',
@@ -71,7 +69,7 @@ export default class PricingPlanModal extends Component {
         body: banksData,
       })
         .then(response => {
-          if (isWorkflow(response, history)) {
+          if (isWorkflow(response)) {
             return;
           }
 

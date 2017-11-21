@@ -8,9 +8,8 @@ import { notifyError, confirm, notifySuccess, closeModal } from 'common/modal';
 
 import { adminPost } from 'util/fetch';
 import { isWorkflow } from 'util/index';
-import { withRouter } from 'react-router-dom';
 
-export default withRouter(({ props, history }) => {
+export default ({ props }) => {
   function handleConfirm(body) {
     return confirm(
       'Adjustment once assigned can not be changed, ensure you have checked all values.',
@@ -27,7 +26,7 @@ export default withRouter(({ props, history }) => {
       })
         .then(response => {
           if (response) {
-            if (isWorkflow(response, history)) {
+            if (isWorkflow(response)) {
               return;
             }
 
@@ -74,4 +73,4 @@ export default withRouter(({ props, history }) => {
       </Form>
     </BaseModal>
   );
-});
+};

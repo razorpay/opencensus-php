@@ -8,9 +8,8 @@ import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
 import { adminPost } from 'util/fetch';
 import { isWorkflow } from 'util/index';
-import { withRouter } from 'react-router-dom';
 
-export default withRouter(({ props, history }) => {
+export default ({ props }) => {
   function onSubmit(body) {
     const mode = body.mode;
     delete body.mode;
@@ -25,7 +24,7 @@ export default withRouter(({ props, history }) => {
     })
       .then(response => {
         if (response) {
-          if (isWorkflow(response, history)) {
+          if (isWorkflow(response)) {
             return;
           }
 
@@ -68,4 +67,4 @@ export default withRouter(({ props, history }) => {
       </Form>
     </BaseModal>
   );
-});
+};

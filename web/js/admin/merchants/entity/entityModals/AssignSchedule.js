@@ -7,7 +7,6 @@ import Form from 'ui/Form';
 import { SelectField } from 'ui/Field';
 import { adminFetch, adminPost } from 'util/fetch';
 import AsyncButton from 'ui/AsyncButton';
-import { withRouter } from 'react-router-dom';
 import { isWorkflow } from 'util/index';
 
 const methodMapping = {
@@ -22,7 +21,6 @@ const methodMapping = {
 
 const type_list = { Settlement: 'settlement' };
 
-@withRouter
 export default class PricingPlanModal extends Component {
   state = { settlementPlans: {} };
 
@@ -42,7 +40,7 @@ export default class PricingPlanModal extends Component {
   }
 
   handleSubmit = body => {
-    const { props, history } = this.props;
+    const { props } = this.props;
 
     const schedulePlanData = {
       method: body.method,
@@ -58,7 +56,7 @@ export default class PricingPlanModal extends Component {
       body: schedulePlanData,
     })
       .then(response => {
-        if (isWorkflow(response, history)) {
+        if (isWorkflow(response)) {
           return;
         }
 

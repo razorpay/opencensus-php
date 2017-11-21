@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import ShowWhen from 'admin/components/ShowWhen';
 import { adminFetch, adminPut, adminPost } from 'util/fetch';
@@ -29,7 +29,6 @@ Object.keys(entityModals).map(key => {
   };
 });
 
-@withRouter
 @observer
 export default class MerchantEntity extends Component {
   constructor(props) {
@@ -89,7 +88,6 @@ export default class MerchantEntity extends Component {
           model={this.model}
           merchantId={this.merchantId}
           actions={actions}
-          history={this.props.history}
         />
 
         {/* Content */}
@@ -99,7 +97,7 @@ export default class MerchantEntity extends Component {
   }
 }
 
-const ActionsList = ({ model, merchantId, actions, history }) => {
+const ActionsList = ({ model, merchantId, actions }) => {
   const merchant = model.merchant;
 
   /* Confirmation Messages */
@@ -185,7 +183,7 @@ const ActionsList = ({ model, merchantId, actions, history }) => {
     })
       .then(response => {
         if (response) {
-          if (isWorkflow(response, history)) {
+          if (isWorkflow(response)) {
             return;
           }
 
@@ -211,7 +209,7 @@ const ActionsList = ({ model, merchantId, actions, history }) => {
     return adminPut(data)
       .then(data => {
         if (data) {
-          if (isWorkflow(data, history)) {
+          if (isWorkflow(data)) {
             return;
           }
           notifySuccess(successMsg);
