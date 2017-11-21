@@ -7,6 +7,7 @@ import Form from 'ui/Form';
 import { SelectField } from 'ui/Field';
 import { adminFetch, adminPost } from 'util/fetch';
 import AsyncButton from 'ui/AsyncButton';
+import { isWorkflow } from 'util/index';
 
 const methodMapping = {
   null: 'All',
@@ -55,6 +56,10 @@ export default class PricingPlanModal extends Component {
       body: schedulePlanData,
     })
       .then(response => {
+        if (isWorkflow(response)) {
+          return;
+        }
+
         notifySuccess('Schedule Plan assigned successfully.');
         closeModal();
       })

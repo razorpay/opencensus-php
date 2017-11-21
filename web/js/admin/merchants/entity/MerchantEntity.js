@@ -16,6 +16,7 @@ import EntityRow from 'ui/EntityRow';
 import ToggleEntityRow from 'ui/ToggleEntityRow';
 import Model from './model';
 import AsyncButton from 'ui/AsyncButton';
+import { isWorkflow } from 'util/index';
 
 let parentProps;
 const actions = {};
@@ -96,7 +97,6 @@ export default class MerchantEntity extends Component {
   }
 }
 
-/* Side bar component */
 const ActionsList = ({ model, merchantId, actions }) => {
   const merchant = model.merchant;
 
@@ -183,6 +183,10 @@ const ActionsList = ({ model, merchantId, actions }) => {
     })
       .then(response => {
         if (response) {
+          if (isWorkflow(response)) {
+            return;
+          }
+
           closeModal();
           notifySuccess(successMsg);
           model.updateDetails(response);
@@ -205,6 +209,9 @@ const ActionsList = ({ model, merchantId, actions }) => {
     return adminPut(data)
       .then(data => {
         if (data) {
+          if (isWorkflow(data)) {
+            return;
+          }
           notifySuccess(successMsg);
           model.updateDetails(data);
         }

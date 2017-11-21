@@ -4,6 +4,7 @@ import BaseModel from 'model/base';
 
 import { adminDelete } from 'util/fetch';
 import { titleCase, removeFromArray } from 'util/index';
+import { isWorkflow } from 'util/index';
 
 export default class Model extends BaseModel {
   @observable
@@ -269,6 +270,10 @@ export default class Model extends BaseModel {
     return this.request(
       'deleteFeature',
       adminDelete(data).then(data => {
+        if (isWorkflow(data)) {
+          return;
+        }
+
         notifySuccess(
           `${titleCase(featureMode)} feature '${
             featureName

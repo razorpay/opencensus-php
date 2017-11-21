@@ -7,6 +7,7 @@ import Form from 'ui/Form';
 import { SelectField } from 'ui/Field';
 import { adminFetch, adminPost } from 'util/fetch';
 import AsyncButton from 'ui/AsyncButton';
+import { isWorkflow } from 'util/index';
 
 export default class PricingPlanModal extends Component {
   state = { pricingPlans: {} };
@@ -47,6 +48,9 @@ export default class PricingPlanModal extends Component {
       })
         .then(data => {
           if (data) {
+            if (isWorkflow(data)) {
+              return;
+            }
             notifySuccess('Pricing Plan assigned successfully.');
             closeModal();
           }

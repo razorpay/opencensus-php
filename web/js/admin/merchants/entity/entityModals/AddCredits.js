@@ -7,6 +7,7 @@ import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
 import { adminPost } from 'util/fetch';
+import { isWorkflow } from 'util/index';
 
 export default ({ props }) => {
   function onSubmit(body) {
@@ -23,6 +24,10 @@ export default ({ props }) => {
     })
       .then(response => {
         if (response) {
+          if (isWorkflow(response)) {
+            return;
+          }
+
           notifySuccess('Credits updated successfully.');
           // TODO: Update credits in the model
           closeModal();

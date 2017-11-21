@@ -7,6 +7,7 @@ import AsyncButton from 'ui/AsyncButton';
 import { notifyError, confirm, notifySuccess, closeModal } from 'common/modal';
 
 import { adminPost } from 'util/fetch';
+import { isWorkflow } from 'util/index';
 
 export default ({ props }) => {
   function handleConfirm(body) {
@@ -25,6 +26,10 @@ export default ({ props }) => {
       })
         .then(response => {
           if (response) {
+            if (isWorkflow(response)) {
+              return;
+            }
+
             notifySuccess('Adjustment added successfully.');
             closeModal();
           }
