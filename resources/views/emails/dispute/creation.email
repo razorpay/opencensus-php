@@ -56,17 +56,9 @@
 
                               <tr>
                                 <td class="text-center">
-                                  <div style="color: {{ $brand_text_color }} ; padding-top:10px ">
-                                      Payment ID : pay_{{ $dispute['payment_id'] }}
-                                  </div>
-                                </td>
-                              </tr>
-
-                              <tr>
-                                <td class="text-center">
                                   <div style="margin-top: 12px; color: {{ $brand_text_color }}">
                                     <div style="color: {{ $brand_text_color }}">
-                                        A dispute has been raised for amount &#x20b9; {{ $amount }}
+                                        A dispute has been raised for Rs. {{ $amount }}
                                     </div>
                                   </div>
                                 </td>
@@ -92,7 +84,7 @@
                 <td colspan="2" class="content" style="
                     width: 85%;
                     padding-bottom: 24px;">
-                    <strong class="text-uppercase lh-26">Payment ID / Reference ID</strong> <br> pay_{{ $dispute['payment_id'] }} / {{ $dispute['id'] }}
+                    <strong class="text-uppercase lh-26">Payment ID</strong> <br> pay_{{ $dispute['payment_id'] }}
                 </td>
 
                 <td class="last" style="
@@ -102,6 +94,36 @@
 
             </tr>
 
+
+            <tr>
+                <td class="first">
+                </td>
+
+                <td colspan="2" class="content" style="width: 85%; padding-bottom: 24px; padding-top: 0px;">
+                    <div>
+                        <strong class="text-uppercase lh-26">Dispute ID</strong> <br> {{ $dispute['id'] }}
+                    </div>
+                </td>
+
+                <td class="last">
+                </td>
+
+            </tr>
+
+            <tr>
+                <td class="first">
+                </td>
+
+                <td colspan="2" class="content" style="width: 85%; padding-bottom: 24px; padding-top: 0px;">
+                    <div>
+                        <strong class="text-uppercase lh-26">Gateway case ID</strong> <br> {{ $dispute['gateway_dispute_id'] }}
+                    </div>
+                </td>
+
+                <td class="last">
+                </td>
+
+            </tr>
 
             <tr>
                 <td class="first">
@@ -155,7 +177,7 @@
 
                 <td colspan="2" class="content" style="width: 85%; padding-bottom: 24px !important">
                     <div>
-                        <strong class="text-uppercase lh-26">Deadline of resolution</strong> <br> {{ $expiryDate }}
+                        <strong class="text-uppercase lh-26">Deadline for resolution</strong> <br> {{ $expiryDate }}
                     </div>
                 </td>
 
