@@ -72,7 +72,13 @@ export default class Comments extends Component {
                 ) : (
                   <div key={idx} class="comment">
                     <label class="box-label">
-                      <i class={card.approved ? 'i i-yes' : 'i i-no'} />
+                      <i
+                        class={
+                          card.approved
+                            ? 'i i-yes text-success'
+                            : 'i i-no text-danger'
+                        }
+                      />
                       <strong>&nbsp;{`${card.admin.name}`}</strong>
                       <span class="secondary-label">
                         {` ${
