@@ -168,7 +168,6 @@ const ActionsList = ({ model, merchantId, actions }) => {
   }
 
   function merchantAction(action, successMsg) {
-    console.log('WHAT...0');
     const data = {
       route_name: 'merchant_action',
       url_params: {
@@ -177,12 +176,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
       body: { action },
     };
 
-    console.log('WHAT...1');
     return adminPut(data)
-      .then(response => {
-        console.log('WHAT...2');
-        notifySuccess(successMsg);
-        model.updateDetails(response);
+      .then(data => {
+        if (data) {
+          notifySuccess(successMsg);
+          model.updateDetails(data);
+        }
       })
       .catch(err => {
         notifyError(JSON.stringify(err.response));

@@ -64,7 +64,7 @@ class ModalStore {
   };
 
   notifyDone = _ =>
-    this.notify({ message: 'Done!', duration: 1500, className: 'success' });
+    this.notify({ message: 'Done!', duration: 3000, className: 'success' });
   notifySuccess = message => this.notify({ message, className: 'success' });
   notifyError = message => this.notify({ message, className: 'error' });
 }
