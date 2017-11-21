@@ -567,6 +567,12 @@ class Gateway extends Base\Gateway
         $request['headers']['checksum'] = $this->generateHash($content);
         $request['headers']['Content-Type'] = 'application/json';
 
+        $request['options'] = [
+            'timeout'         => 30,
+            'connect_timeout' => 30,
+            'verify'          => $this->getCaInfo(),
+        ];
+
         return $request;
     }
 
@@ -626,5 +632,12 @@ class Gateway extends Base\Gateway
         }
 
         return $secret2;
+    }
+
+    protected function getCaInfo()
+    {
+        $clientCertPath = dirname(__FILE__) . '/cainfo/cainfo.pem';
+
+        return $clientCertPath;
     }
 }
