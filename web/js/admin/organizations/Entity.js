@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import fetch from 'util/fetch';
 import { adminFetch, adminPut } from 'util/fetch';
 import OrgForm from './OrganizationForm';
-import PermissionsList from './PermissionsList';
 import normalize from 'util/normalize';
-import { notifyError, notifySuccess } from 'common/modal';
+import { notifyError, notifySuccess, notifyDone } from 'common/modal';
+
+import { adminDelete } from 'util/fetch';
 
 export default class EditOrg extends Component {
   state = {
@@ -198,4 +199,20 @@ export default class EditOrg extends Component {
       </div>
     );
   }
+}
+
+export function removeEntity() {
+  let params = {
+    route_name: 'org_delete',
+    url_params: {
+      id: this.id,
+    },
+  };
+
+  return adminDelete(params).then(response => {
+    notifyDone();
+    this.collection.items.remove(this);
+
+    return response;
+  });
 }

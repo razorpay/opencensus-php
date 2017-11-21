@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
-import Form from 'ui/Form';
-import { PageTable } from 'ui/Table';
-import Field from 'ui/Field';
-import Collection from 'model/collection';
-import CollectionItem from 'model/collectionItem';
-import { adminFetch } from 'util/fetch';
 import { observer } from 'mobx-react';
 
+import { adminFetch } from 'util/fetch';
 import { openRoleModal } from './RoleModal';
 import { showEntity, removeEntity } from './Entity';
+
+import Collection from 'model/collection';
+import AsyncButton from 'ui/AsyncButton';
+import { PageTable } from 'ui/Table';
+import CollectionItem from 'model/collectionItem';
 
 @observer
 export default class PermissionsList extends Component {
@@ -55,11 +55,17 @@ const fields = [
 
 const Actions = ({ item }) => (
   <div>
-    <div class="link" onClick={item::openRoleModal}>
+    <div class="link m-r" onClick={item::openRoleModal}>
       Roles
     </div>
-    <div class="link danger" onClick={item::removeEntity}>
+    <AsyncButton
+      class="link danger m-l"
+      pendingClass="link danger m-l btn-pending"
+      confirm={`Are you sure you want to delete permission id "${item.id}"`}
+      onClick={item::removeEntity}
+    >
       Delete
-    </div>
+      <span class="spin-btn" />
+    </AsyncButton>
   </div>
 );

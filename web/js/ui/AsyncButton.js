@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { serialize } from 'ui/Form';
 import { confirm } from 'common/modal';
+import { prevent } from 'util/index';
 
 export default class AsyncButton extends Component {
   state = {
@@ -17,7 +18,7 @@ export default class AsyncButton extends Component {
     }
 
     e.persist(); // e.prevenDefault makes synthetic even to get removed. Synthetic even is needed for performance reasons
-    e.preventDefault();
+    prevent(e);
   }
 
   processClick(e) {

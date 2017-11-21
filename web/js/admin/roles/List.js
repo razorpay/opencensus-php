@@ -11,6 +11,9 @@ import { bool } from 'ui/Item';
 import { notifyDone } from 'common/modal';
 import { prevent } from 'util/index';
 
+import { removeEntity } from './Entity';
+import AsyncButton from 'ui/AsyncButton';
+
 @observer
 export default class RoleList extends Component {
   collection = new Collection({
@@ -68,25 +71,15 @@ const fields = [
   [
     'Action',
     item => (
-      <div class="link danger" onClick={item::removeEntity}>
+      <AsyncButton
+        class="link danger m-t m-r"
+        pendingClass="link danger m-l btn-pending"
+        confirm={`Are you sure you want to delete role id "${item.id}"`}
+        onClick={item::removeEntity}
+      >
         Delete
-      </div>
+        <span class="spin-btn" />
+      </AsyncButton>
     ),
   ],
 ];
-
-export function removeEntity(e) {
-  prevent(e);
-  let params = {
-    route_name: 'role_delete',
-    url_params: {
-      roleId: this.id,
-    },
-  };
-  adminDelete(params).then(response => {
-    if (response) {
-      this.collection.items.remove(this);
-      notifyDone();
-    }
-  });
-}

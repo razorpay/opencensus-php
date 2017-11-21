@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { observer } from 'mobx-react';
 
-import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
+import { removeEntity } from './Entity';
+import Collection from 'model/collection';
 
-import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
-import Field from 'ui/Field';
+import AsyncButton from 'ui/AsyncButton';
 
 const fields = [
   ['Organization ID', item => item.id],
@@ -20,13 +20,24 @@ const fields = [
 
 const Actions = ({ item }) => (
   <div>
-    <div class="link">
+    <div class="link m-t m-r ">
       <Link to={`/orgs/${item.id}`}>Edit</Link>
     </div>
-    <div class="link">
+    <div class="link m-t m-r">
       <Link to={`/fieldmaps/${item.id}`}>FieldMaps</Link>
     </div>
-    <div class="link danger">Delete</div>
+    {/* Delete button hidden for razorpay organisation */}
+    {item.id !== 'org_100000razorpay' && (
+      <AsyncButton
+        class="link danger m-t m-r"
+        pendingClass="link danger m-l btn-pending"
+        confirm={`Are you sure you want to delete organisation id "${item.id}"`}
+        onClick={item::removeEntity}
+      >
+        Delete
+        <span class="spin-btn" />
+      </AsyncButton>
+    )}
   </div>
 );
 

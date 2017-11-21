@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
-import Field, { SelectField, SelectMethod } from 'ui/Field';
+import { SelectField, SelectMethod } from 'ui/Field';
 import { openModal, closeModal } from 'common/modal';
 import { adminPost, adminFetch, adminPut, adminDelete } from 'util/fetch';
 import { notifyError, notifySuccess, notifyDone } from 'common/modal';
-import Table from 'ui/Table';
-import Form from 'ui/Form';
 import { prevent } from 'util/index';
 
 import GroupForm from './GroupForm';
@@ -135,7 +133,7 @@ export function removeEntity(e) {
     },
   };
 
-  adminDelete(params).then(response => {
+  return adminDelete(params).then(response => {
     notifyDone();
     this.collection.items.remove(this);
   });

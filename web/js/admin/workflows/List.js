@@ -51,7 +51,6 @@ const getWorkflowListfields = deleteWorkflow => [
         pendingClass="link danger btn-pending"
         confirm={`Are you sure you want to delete workflow id "${item.id}"`}
         onClick={e => {
-          e.preventDefault();
           return deleteWorkflow(item);
         }}
       >

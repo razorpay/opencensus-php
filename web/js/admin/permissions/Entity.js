@@ -156,16 +156,18 @@ export function showEntity(collection) {
   openModal(<EditPerm collection={collection} model={this} />);
 }
 export function removeEntity(e) {
-  prevent(e);
   let params = {
     route_name: 'permission_delete',
     url_params: {
       id: this.id,
     },
   };
-  adminDelete(params).then(response => {
+
+  return adminDelete(params).then(response => {
     notifyDone();
     this.collection.items.remove(this);
+
+    return response;
   });
 }
 

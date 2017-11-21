@@ -2,10 +2,11 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { observable, extendObservable, action } from 'mobx';
 import { observer } from 'mobx-react';
-import { adminFetch, adminPost, adminPut } from 'util/fetch';
+import { adminFetch, adminPost, adminPut, adminDelete } from 'util/fetch';
 import { notifyDone } from 'common/modal';
 import UserForm from './UserForm';
 import { isWorkflow } from 'util/index';
+import { prevent } from 'util/index';
 
 @withRouter
 @observer
@@ -127,4 +128,21 @@ export default class EditUser extends Component {
       />
     );
   }
+}
+
+export function removeEntity(e) {
+  prevent(e);
+  let params = {
+    route_name: 'admin_delete',
+    url_params: {
+      adminId: this.id,
+    },
+  };
+
+  return adminDelete(params).then(response => {
+    if (response) {
+      this.collection.items.remove(this);
+      notifyDone();
+    }
+  });
 }

@@ -7,12 +7,14 @@ import {
   notifyError,
   notifySuccess,
   closeModal,
+  notifyDone,
 } from 'common/modal';
-import Table from 'ui/Table';
-import { adminFetch, adminPost } from 'util/fetch';
+import { adminFetch, adminPost, adminDelete } from 'util/fetch';
 import normalize from 'util/normalize';
 import { isWorkflow } from 'util/index';
 import RolesForm from './RolesForm';
+
+import { prevent } from 'util/index';
 
 @withRouter
 @observer
@@ -62,7 +64,8 @@ class EditRole extends Component {
         if (selectedPerms.hasOwnProperty(sPerm))
           data.body.permissions.push(sPerm);
       }
-      //custome request
+      // TODO: { fetch } is already being exposed from fetch.js. Don't use axios. Replace in other files also
+      //customer request
       axios({
         url: '/admin/generic',
         method: 'put',
@@ -148,4 +151,20 @@ class EditRole extends Component {
 
 export function showEntity(collection) {
   openModal(<EditRole collection={collection} model={this} />);
+}
+
+export function removeEntity(e) {
+  prevent(e);
+  let params = {
+    route_name: 'role_delete',
+    url_params: {
+      roleId: this.id,
+    },
+  };
+  return adminDelete(params).then(response => {
+    if (response) {
+      this.collection.items.remove(this);
+      notifyDone();
+    }
+  });
 }
