@@ -40,10 +40,14 @@ export default ({ props }) => {
 
     for (let method in methods) {
       fields.push(
-        <label key={method}>
-          {method}
-          <SwitchField name={method} defaultValue={methods[method]} />
-        </label>
+        <span key={method}>
+          <SwitchField
+            name={method}
+            disabledLabel={method}
+            defaultValue={methods[method]}
+            nocaption
+          />
+        </span>
       );
     }
 
@@ -86,6 +90,7 @@ export default ({ props }) => {
       <Form>
         {getFormFields()}
 
+        <br />
         <AsyncButton
           text="OK"
           class="btn"
