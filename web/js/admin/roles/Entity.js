@@ -36,8 +36,6 @@ class EditRole extends Component {
       if (response) {
         allPerms = response.items;
         if (model) {
-          this.name = model.name;
-          this.description = model.name;
           model.permissions.forEach(perm => {
             selectedPerms[perm.id] = true;
           });
@@ -139,8 +137,8 @@ class EditRole extends Component {
     return (
       <RolesForm
         {...this.state}
-        name={this.name}
-        description={this.description}
+        name={this.props.model ? this.props.model.name : ''}
+        description={this.props.model ? this.props.model.description : ''}
         onSubmit={this.save}
         onSelect={this.handleSelect}
         onSelectAll={this.handleAllSelect}
