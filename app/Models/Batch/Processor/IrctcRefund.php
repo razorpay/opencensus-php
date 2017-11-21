@@ -132,7 +132,7 @@ class IrctcRefund extends Base
      *
      * @return string
      */
-    protected function getFileName(string $ext = null): string
+    protected function getFileName(): string
     {
         $time = Carbon::yesterday(Timezone::IST)->format('Ymd');
 
@@ -140,11 +140,15 @@ class IrctcRefund extends Base
 
         $name = $prefix . $time . '_V1';
 
-        if (empty($ext) === false)
-        {
-            $name = $name . '.' . $ext;
-        }
+        return $name . '.txt';
+    }
 
-        return $name;
+    protected function renameOutputLocalFile()
+    {
+        $finalPath = $this->batch->getLocalSaveDir(Batch\Entity::OUTPUT_FILE_PREFIX);
+
+        rename($this->outputFileLocalPath ,  $finalPath. $this->getFileName());
+
+        $this->outputFileLocalPath = $finalPath;
     }
 }

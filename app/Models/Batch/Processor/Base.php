@@ -487,12 +487,12 @@ class Base extends BaseModel\Core
         {
             case FileStore\Format::TXT:
                 $txt = $this->generateText($entries, '|');
-                $this->outputFileLocalPath = $this->createTxtFile($this->getFileName($ext), $txt, $dir);
+                $this->outputFileLocalPath = $this->createTxtFile($dir .'/' . $this->batch->getFileKeyWithExt($ext), $txt, $dir);
                 return;
 
             case FileStore\Format::CSV:
                 $txt = $this->generateText($entries, ',');
-                $this->outputFileLocalPath = $this->createTxtFile($this->getFileName($ext), $txt, $dir);
+                $this->outputFileLocalPath = $this->createTxtFile($dir . '/' . $this->batch->getFileKeyWithExt($ext), $txt, $dir);
                 return;
 
             case FileStore\Format::XLSX:
@@ -512,21 +512,13 @@ class Base extends BaseModel\Core
         }
     }
 
-    protected function getFileName(string $ext = null): string
-    {
-        if (empty($ext) === true)
-        {
-            return $this->batch->getFileKey();
-        }
-
-        return $this->batch->getFileKeyWithExt($ext);
-    }
-
     protected function sendProcessedMail()
     {
         $type = studly_case($this->batch->getType());
 
         $mailerClass = "\\RZP\\Mail\\Batch\\$type";
+
+        $this->renameOutputLocalFile();
 
         $mail = new $mailerClass(
                         $this->batch->toArray(),
@@ -534,6 +526,12 @@ class Base extends BaseModel\Core
                         $this->outputFileLocalPath);
 
         Mail::send($mail);
+    }
+
+
+    protected function renameOutputLocalFile()
+    {
+        return;
     }
 
     public function deleteFile(string $filePath)
@@ -654,7 +652,7 @@ class Base extends BaseModel\Core
 
         $movedFile = $file->move(
                         $this->batch->getLocalSaveDir(Batch\Entity::INPUT_FILE_PREFIX),
-                        $this->getFileName($ext));
+                        $this->batch->getFileKeyWithExt($ext));
 
         $ufh = $this->saveFile(
                         $movedFile->getPathname(),
