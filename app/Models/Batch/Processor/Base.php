@@ -518,20 +518,12 @@ class Base extends BaseModel\Core
 
         $mailerClass = "\\RZP\\Mail\\Batch\\$type";
 
-        $this->renameOutputLocalFile();
-
         $mail = new $mailerClass(
                         $this->batch->toArray(),
                         $this->merchant->toArray(),
                         $this->outputFileLocalPath);
 
         Mail::send($mail);
-    }
-
-
-    protected function renameOutputLocalFile()
-    {
-        return;
     }
 
     public function deleteFile(string $filePath)

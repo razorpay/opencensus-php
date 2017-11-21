@@ -12,8 +12,6 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class IrctcRefund extends Base
 {
-    const FILE_TO_WRITE_NAME        = 'refundvalidation_RZRPAY_BRDS_';
-
     protected function processEntry(array & $entry)
     {
         $paymentId = trim($entry[Batch\Header::PAYMENT_ID]);
@@ -123,32 +121,5 @@ class IrctcRefund extends Base
         }
 
         $this->batch->setProcessedAmount($processedAmount);
-    }
-
-    /**
-     * File name format/example: refundvalidation_RZRPAY__BRDS_20171212_V1
-     *
-     * @param string|null $ext
-     *
-     * @return string
-     */
-    protected function getFileName(): string
-    {
-        $time = Carbon::yesterday(Timezone::IST)->format('Ymd');
-
-        $prefix = self::FILE_TO_WRITE_NAME;
-
-        $name = $prefix . $time . '_V1';
-
-        return $name . '.txt';
-    }
-
-    protected function renameOutputLocalFile()
-    {
-        $finalPath = $this->batch->getLocalSaveDir(Batch\Entity::OUTPUT_FILE_PREFIX);
-
-        rename($this->outputFileLocalPath ,  $finalPath. $this->getFileName());
-
-        $this->outputFileLocalPath = $finalPath;
     }
 }
