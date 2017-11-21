@@ -130,7 +130,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
         parent::resetProcessingAttributes();
     }
 
-    protected function getRefundAmount(array $row)
+    protected function getReconRefundAmount(array $row)
     {
         if (isset($row[static::COLUMN_REFUND_AMOUNT]) === false)
         {
@@ -410,7 +410,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $paymentId = $this->getPaymentId($row);
 
-        $refundAmount = $this->getRefundAmount($row);
+        $refundAmount = $this->getReconRefundAmount($row);
 
         //
         // Checking refundAmount with `empty` because there should
