@@ -1099,8 +1099,7 @@ final class Route
         'user_reset_password_token',
         'merchant_payout_mail',
         'gateway_payment_callback_bharatqr',
-        'geoip_update',
-        'merchant_batches',
+        'geoip_update'
     ];
 
     public static $proxy = [
@@ -1266,6 +1265,7 @@ final class Route
         'merchant_invoice_add_bulk',
         'setl_retry',
         'merchant_activation_files',
+        'merchant_batches',
         'admin_fetch_all_entities',
         'onboarding_features_fetch_submissions',
         'onboarding_features_update_status',
