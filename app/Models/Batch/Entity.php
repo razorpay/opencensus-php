@@ -46,7 +46,6 @@ class Entity extends Base\PublicEntity
     /**
      * Constants used in migration file.
      */
-    const FILE_URL_LENGTH           = 100;
     const STATUS_LENGTH             = 20;
 
     /**
@@ -57,6 +56,7 @@ class Entity extends Base\PublicEntity
     const URL                       = 'url';
     const INPUT_FILE_PREFIX         = 'batch/upload/';
     const OUTPUT_FILE_PREFIX        = 'batch/download/';
+    const INPUT_DETAILS             = 'input_details';
 
     protected static $sign = 'batch';
 
@@ -191,7 +191,7 @@ class Entity extends Base\PublicEntity
         // (hence S3 locations) for reasons.
         //
         $ufhType = ($this->isReconciliationType() === true) ?
-                        FileStore\Type::BATCH_RECON_INPUT :
+                        FileStore\Type::RECONCILIATION_BATCH_INPUT :
                         FileStore\Type::BATCH_INPUT;
 
         return $this->files()
@@ -408,6 +408,8 @@ class Entity extends Base\PublicEntity
 
     public function setStatus($status)
     {
+        Status::validateStatus($status);
+
         $this->setAttribute(self::STATUS, $status);
     }
 

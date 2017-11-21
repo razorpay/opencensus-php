@@ -306,19 +306,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::P_GSTIN);
     }
 
+    public function getBusinessRegisteredState()
+    {
+        return $this->getAttribute(self::BUSINESS_REGISTERED_STATE);
+    }
+
     public function getBusinessRegisteredAddress()
     {
         return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS);
     }
 
-    public function getBusinessStateCode()
+    public function getGstStateCode()
     {
         $gstin = $this->getGstin() ?? $this->getPGstin();
 
-        return self::getBusinessStateCodeFromGstin($gstin);
+        return self::getStateCodeFromGstin($gstin);
     }
 
-    public static function getBusinessStateCodeFromGstin(string $gstin = null)
+    public static function getStateCodeFromGstin(string $gstin = null)
     {
         if (empty($gstin) === true)
         {

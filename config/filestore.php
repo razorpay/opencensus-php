@@ -29,7 +29,7 @@ return [
         ],
         'recon_bucket_config' => [
             'name'   => env('AWS_S3_RECON_BUCKET'),
-            'region' => env('AWS_BUCKET_REGION', 'us-east-1')
+            'region' => env('AWS_RECON_BUCKET_REGION', 'ap-south-1'),
         ],
         'test_bucket_config' => [
             'name'   => env('AWS_S3_TEST_BUCKET'),

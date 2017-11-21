@@ -805,5 +805,53 @@ return [
                 'entities' => []
             ]
         ]
+    ],
+
+    //
+    // Additional request content and assertions are done in test method
+    // for different cases.
+    //
+    'testFetchSoftDeletedEntityForAdmin' => [
+        'request' => [
+            'url'      => '/admin/org',
+            'method'   => 'get',
+            'content'  => [
+                'auth_type' => 'google_auth',
+            ],
+        ],
+        'response' => [
+            'content'  => [],
+        ],
+    ],
+
+    //
+    // Additional request content and assertions are done in test method
+    // for different cases.
+    //
+    'testFindSoftDeletedEntityForAdmin' => [
+        'request' => [
+            'url'     => '/admin/org/org_10000000000001',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content'  => [],
+        ],
+    ],
+
+    'testUpdateGeoIps' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/geoip/update',
+            'content' => [
+                'eureka_key_index' => 1
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 3,
+                'success' => 1
+            ]
+        ],
     ]
 ];

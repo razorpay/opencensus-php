@@ -1294,6 +1294,7 @@ trait Authorize
 
             $payment->setErrorNull();
             $payment->setVerified(true);
+            $payment->setStatus(Payment\Status::AUTHORIZED);
 
             // The first argument marks the payment as converted from failed
             // to authorized

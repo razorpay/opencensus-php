@@ -24,6 +24,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT         => 'sometimes|integer|max:500000000',
         Entity::MIN_AMOUNT     => 'sometimes|integer|min:100',
         Entity::MODULO         => 'sometimes|integer|min:100',
+        Entity::BUFFER_AMOUNT  => 'sometimes|integer|min:10000000'
     ];
 
     protected static $createValidators = [

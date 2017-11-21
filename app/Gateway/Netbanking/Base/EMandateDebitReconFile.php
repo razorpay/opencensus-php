@@ -52,10 +52,9 @@ class EMandateDebitReconFile extends Base\Core
     /**
      * Parses given file and returns the entries array
      *
-     * @param string $filePath
-     *
+     * @param UploadedFile $file
      * @return array
-     * @throws LogicException
+     * @throws Exception\LogicException
      */
     protected function parseFile(UploadedFile $file): array
     {
@@ -173,6 +172,7 @@ class EMandateDebitReconFile extends Base\Core
      * @param string $errorDescription Error description from gateway
      *
      * @return string Mapped API error code
+     * @throws Exception\LogicException
      */
     protected function getApiErrorCode(string $errorDescription): string
     {
