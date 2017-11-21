@@ -148,9 +148,7 @@ class ActivityLogModal extends Component {
                 style={{ cursor: 'pointer' }}
                 onClick={_ => {
                   confirm('Are you sure you want to delete this session?').then(
-                    _ => {
-                      this.deleteSession.bind(this, item);
-                    }
+                    this.deleteSession.bind(this, item)
                   );
                 }}
               />
