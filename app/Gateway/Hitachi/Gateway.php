@@ -326,8 +326,6 @@ class Gateway extends Base\Gateway
         $time = Carbon::now(Timezone::IST)->format(self::TIME_FORMAT);
         $date = Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
 
-        $expiry = substr($input['card']['expiry_year'], 2) . $input['card']['expiry_month'];
-
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::AUTH,
             RequestFields::TRANSACTION_AMOUNT  => str_pad($input['payment']['amount'], 10, 0, STR_PAD_LEFT),
@@ -335,7 +333,7 @@ class Gateway extends Base\Gateway
             RequestFields::TRANSACTION_DATE    => $date,
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id'],
-            RequestFields::EXPIRY_DATE         => $expiry,
+
         ];
 
         if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
@@ -348,9 +346,14 @@ class Gateway extends Base\Gateway
 
     protected function getCardDataForAuthorizeRequestArray(array $input)
     {
+        $card = $input['card'];
+
+        $expiry = substr($card['expiry_year'], 2) . str_pad($card['expiry_month'], 2, '0', STR_PAD_LEFT);
+
         return [
             RequestFields::CARD_NUMBER         => $input['card']['number'],
             RequestFields::CVV2                => $input['card']['cvv'],
+            RequestFields::EXPIRY_DATE         => $expiry,
         ];
     }
 
