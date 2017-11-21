@@ -493,7 +493,7 @@ class OrganizationController extends Controller
 
     public function auditLogSearch()
     {
-        // Indexes use lower case of orgid
+        // Indexes use lower case of public orgid
         $orgId = strtolower($this->ba->getOrgId());
 
         $input = Request::all();
