@@ -26,7 +26,7 @@ export default class EditBankAccountDetails extends Component {
       body,
     })
       .then(response => {
-        if (isWorkflow(response, history)) {
+        if (isWorkflow(response, this.props.history)) {
           return;
         }
 
