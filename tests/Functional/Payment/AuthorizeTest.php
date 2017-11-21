@@ -10,10 +10,8 @@ use RZP\Mail\Payment\Failed as PaymentFailedMail;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
-use RZP\Error\PublicErrorDescription;
 use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Constants\Mode;
 
 class AuthorizeTest extends TestCase
 {

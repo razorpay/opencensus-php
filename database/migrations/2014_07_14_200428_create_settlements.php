@@ -11,7 +11,6 @@ use RZP\Models\Merchant;
 
 class CreateSettlements extends Migration
 {
-
     /**
      * Run the migrations.
      *

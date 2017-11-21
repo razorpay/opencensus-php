@@ -68,6 +68,10 @@ class Entity extends Base\PublicEntity
         self::PASSWORD,
     ];
 
+    protected static $modifiers = [
+        self::EMAIL,
+    ];
+
     protected static $unsetCreateInput = [
         self::PASSWORD,
     ];
@@ -75,6 +79,22 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $appends = [self::CONFIRMED];
+
+    // --------------------- Modifiers ---------------------------------------------
+
+    /**
+     * Modifies the email to have lower.
+     * @param $input
+     */
+    protected function modifyEmail(& $input)
+    {
+        if (empty($input[self::EMAIL]) === false)
+        {
+            $input[self::EMAIL] = mb_strtolower($input[self::EMAIL]);
+        }
+    }
+
+    // --------------------- Modifiers Ends ----------------------------------------
 
     /**
      * Generates a one time use token of the given length

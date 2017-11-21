@@ -49,4 +49,5 @@ class CustomerErrorDescription
     const BAD_REQUEST_GLOBAL_CUSTOMER_MISMATCH                                  = 'Payment failed. Please login.';
     const BAD_REQUEST_APP_TOKEN_ABSENT                                          = 'Payment failed. Please login.';
     const BAD_REQUEST_APP_TOKEN_NOT_GLOBAL                                      = 'Payment failed. Please login.';
+    const BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION                             = 'Payment is pending authorization. Request for authorization from approver.';
 }

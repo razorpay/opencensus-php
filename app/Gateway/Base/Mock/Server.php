@@ -3,7 +3,9 @@
 namespace RZP\Gateway\Base\Mock;
 
 use App;
+use RZP\Base\Validator;
 use RZP\Exception;
+use RZP\Http\Route;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
@@ -12,18 +14,41 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class Server extends Base\Core
 {
+    /**
+     * @var string
+     */
+    protected $bank;
+
+    /**
+     * Input to the Bank API
+     * @var mixed
+     */
+    protected $input;
+
+    /**
+     * @var mixed
+     */
     protected $request;
 
+    /**
+     * @var Validator
+     */
     protected $validator;
 
+    /**
+     * @var array
+     */
     protected $mockRequest;
 
+    /**
+     * @var string
+     */
     protected $action;
 
     /**
      * Api Route instance
      *
-     * @var RZP\Http\Route
+     * @var Route
      */
     protected $route;
 
@@ -155,7 +180,7 @@ class Server extends Base\Core
         return $ns;
     }
 
-    protected function setNamespace($ns)
+    public function setNamespace($ns)
     {
         $this->ns = $ns;
     }
@@ -193,12 +218,22 @@ class Server extends Base\Core
 
     public function processSoap($input, $location, $action)
     {
+        // Should be overridden in child gateway
         $wsdlFile = $this->getWsdlFile();
 
         $server = new SoapServer($wsdlFile);
         $server->setObject($this);
 
         return $server->handle($input);
+    }
+
+    /**
+     * Should be overridden in child gateway
+     * @throws Exception\LogicException
+     */
+    protected function getWsdlFile()
+    {
+        throw new Exception\LogicException('getWsdlFile needs to be overridden by the child gateway');
     }
 
     protected function getRepo()

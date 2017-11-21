@@ -2,9 +2,13 @@
 
 namespace RZP\Models\Gateway\File\Processor\EMandate\Debit;
 
+use Carbon\Carbon;
+
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception\GatewayFileException;
 use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Gateway\Netbanking;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\EMandate;
 use RZP\Models\Payment;
@@ -49,8 +53,9 @@ abstract class Base extends EMandate\Base
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
                 [
-                    'id' => $this->gatewayFile->getId()
-                ]);
+                    'id'        => $this->gatewayFile->getId(),
+                ],
+                $e);
         }
     }
 
@@ -74,5 +79,51 @@ abstract class Base extends EMandate\Base
 
             $this->createGatewayEntity($payment);
         }
+    }
+
+    protected function createGatewayEntity(Payment\Entity $payment): Netbanking\Base\Entity
+    {
+        $paymentId = $payment->getId();
+
+        $gatewayPayment = new Netbanking\Base\Entity;
+
+        $gatewayPayment->setPaymentId($paymentId);
+
+        $gatewayPayment->setAction(GatewayAction::AUTHORIZE);
+
+        $gatewayPayment->setBank($payment->getBank());
+
+        $merchant = $payment->merchant;
+
+        if ($merchant->isTPVRequired() === true)
+        {
+            $gatewayPayment->setAccountNumber($payment->order->getAccountNumber());
+        }
+
+        $date = $date = Carbon::now(Timezone::IST)->format('d/m/Y H:m:s');
+
+        $attr = [
+            Netbanking\Base\Entity::MERCHANT_CODE => $payment->getMerchantId(),
+            Netbanking\Base\Entity::AMOUNT        => $payment->getAmount(),
+            Netbanking\Base\Entity::DATE          => $date,
+        ];
+
+        $attr = array_merge($attr, $this->getGatewayAttributes($payment));
+
+        $gatewayPayment->fill($attr);
+
+        $this->repo->netbanking->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
+    }
+
+
+    /**
+     * Override this method in the child classes incase you want
+     * to add extra values in the gateway entity
+     */
+    protected function getGatewayAttributes(Payment\Entity $payment): array
+    {
+        return [];
     }
 }

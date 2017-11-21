@@ -193,7 +193,7 @@ class ErrorCodes
         'N:P9'     => ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH,
         'N:Q1'     => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
         'N:T2'     => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_TRANSACTION_DATE,
-        'N:T5'     => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+        'N:T5'     => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
         'N:T8'     => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
 
         // Not part of originally provided list of error codes

@@ -682,11 +682,27 @@ class Merchant extends Base
 
         if ($esMock === false)
         {
-            Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_test', '--reindex' => true]);
-            Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_live', '--reindex' => true]);
+            Artisan::call(
+                'rzp:index_create',
+                [
+                    'mode'         => 'test',
+                    'entity'       => 'merchant',
+                    'index_prefix' => 'testing_',
+                    'type_prefix'  => 'testing_',
+                    '--reindex'    => true,
+                ]);
+            Artisan::call(
+                'rzp:index_create',
+                [
+                    'mode'         => 'live',
+                    'entity'       => 'merchant',
+                    'index_prefix' => 'testing_',
+                    'type_prefix'  => 'testing_',
+                    '--reindex'    => true,
+                ]);
 
-            Artisan::call('rzp:index', ['--mode' => 'test', '--entity' => 'merchant', '--index' => 'testing_merchant_test']);
-            Artisan::call('rzp:index', ['--mode' => 'live', '--entity' => 'merchant', '--index' => 'testing_merchant_live']);
+            Artisan::call('rzp:index', ['mode' => 'test', 'entity' => 'merchant']);
+            Artisan::call('rzp:index', ['mode' => 'live', 'entity' => 'merchant']);
         }
 
         unset($merchants);

@@ -79,7 +79,7 @@ class RefundFile extends Base\RefundFile
             '00000000120000',
             self::POOLING_ACCOUNT_TYPE,
             self::POOLING_ACCOUNT_SUBTYPE,
-            Config::get('gateways.netbanking_corporation.pooling_account_number'),
+            Config::get('gateway.netbanking_corporation.pooling_account_number'),
             true
         );
 

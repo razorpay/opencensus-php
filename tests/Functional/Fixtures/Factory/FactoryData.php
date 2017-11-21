@@ -298,11 +298,11 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Emi\Entity::class, [
-            'id' => 10101010101010,
-            'duration' => 9,
-            'rate' => 1200,
-            'bank' => 'HDFC',
-            'methods' => 'card',
+            'id'         => '10101010101010',
+            'duration'   => 9,
+            'rate'       => 1200,
+            'bank'       => 'HDFC',
+            'methods'    => 'card',
             'min_amount' => 500000,
         ]);
 
@@ -807,25 +807,29 @@ final class FactoryData
             'workflow_id'       => \RZP\Tests\Functional\Fixtures\Entity\Workflow::DEFAULT_WORKFLOW_ID,
             'approved'          => false,
             'current_level'     => 1,
-            'state'             => \RZP\Models\Workflow\Action\State\Entity::OPEN,
+            'state'             => \RZP\Models\State\Name::OPEN,
             'org_id'            => \RZP\Tests\Functional\Fixtures\Entity\Org::RZP_ORG,
             'permission_id'     => 'factory:RZP\Models\Admin\Permission\Entity',
         ]);
 
-        $factory(\RZP\Models\Workflow\Action\State\Entity::class, [
+        $factory(\RZP\Models\State\Entity::class, [
             'id'                => $faker->uniqueid,
-            'name'              => \RZP\Models\Workflow\Action\State\Entity::OPEN,
+            'name'              => \RZP\Models\State\Name::OPEN,
         ]);
 
         $factory(\RZP\Models\Workflow\Action\Checker\Entity::class, [
             'id'                => $faker->uniqueid,
-            'name'              => \RZP\Models\Workflow\Action\State\Entity::OPEN,
+            'name'              => \RZP\Models\State\Name::OPEN,
         ]);
 
         $factory(\RZP\Models\Gateway\File\Entity::class, [
             'id'         => $faker->uniqueid,
             'created_at' => $faker->timestamp,
             'updated_at' => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\GeoIP\Entity::class, [
+            'ip'         => $faker->ipv4
         ]);
     }
 }

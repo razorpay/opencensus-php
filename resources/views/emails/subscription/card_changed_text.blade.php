@@ -1,4 +1,4 @@
-Subscription card is changed. Like a wow!
+Subscription card is changed.
 
 --
 Team Razorpay
