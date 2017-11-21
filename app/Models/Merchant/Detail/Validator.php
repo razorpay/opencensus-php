@@ -9,7 +9,9 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    const INVALID_IFSC_CODE_MESSAGE = 'Invalid IFSC Code';
+    const INVALID_IFSC_CODE_MESSAGE     = 'Invalid IFSC Code';
+    const INVALID_STATUS_MESSAGE        = 'Invalid status';
+    const INVALID_STATUS_CHANGE_MESSAGE = 'Invalid status change';
 
     protected static $createRules = [
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
@@ -149,6 +151,14 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
     ];
 
+    protected static $archiveFormRules = [
+        Entity::ARCHIVE                         => 'required|boolean',
+    ];
+
+    protected static $activationStatusRules = [
+        Entity::ACTIVATION_STATUS               => 'required|string|custom',
+    ];
+
     public function validateTransactionReportEmail($attribute, $value)
     {
         $emails = explode(',', $value);
@@ -170,6 +180,23 @@ class Validator extends Base\Validator
         if (IFSC::validate($value) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_IFSC_CODE_MESSAGE);
+        }
+    }
+
+    public function validateActivationStatus(string $attr, string $status)
+    {
+        if (in_array($status, array_keys(Status::ALLOWED_NEXT_STATUSES)) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_STATUS_MESSAGE);
+        }
+    }
+
+    public function validateActivationStatusChange($currentStatus, $newStatus)
+    {
+        if (empty($currentStatus) === false and
+            in_array($newStatus, Status::ALLOWED_NEXT_STATUSES[$currentStatus]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_STATUS_CHANGE_MESSAGE);
         }
     }
 

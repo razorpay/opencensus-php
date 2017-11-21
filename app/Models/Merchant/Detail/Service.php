@@ -240,6 +240,36 @@ class Service extends Base\Service
         return $stepFinished;
     }
 
+    public function updateFormArchive($merchantId, $input)
+    {
+        (new Validator)->validateInput('archive_form', $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $merchantDetails = (new Core)->updateFormArchive($merchantDetails, $input);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
+    public function updateActivationStatus($merchantId, $input)
+    {
+        (new Validator)->validateInput('activation_status', $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        (new Validator)->validateActivationStatusChange(
+            $merchantDetails->activation_status,
+            $input[Entity::ACTIVATION_STATUS]);
+
+        $merchantDetails = (new Core)->updateActivationStatus($merchantDetails, $input);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
     public function getMerchantDetailsForAdmin() : array
     {
         // Formatting the data as required by the controller.

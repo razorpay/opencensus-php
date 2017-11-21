@@ -5,6 +5,8 @@ namespace RZP\Models\State;
 use RZP\Models\Base;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Workflow\Action\Entity as Action;
+use RZP\Models\Base\PublicEntity as PublicEntity;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 
 class Core extends Base\Core
 {
@@ -43,6 +45,31 @@ class Core extends Base\Core
         ];
 
         $this->createForWorkflowAction($input, $admin, $action);
+    }
+
+    /**
+     * @param array $input
+     * @param MerchantDetailEntity $merchantDetails
+     * @param Entity $maker [Admin/Merchant Entity]
+     *
+     * @return Entity $state
+     */
+    public function createForActivationAction(
+        array $input,
+        MerchantDetailEntity $merchantDetails,
+        PublicEntity $maker): Entity
+    {
+        $state = $this->create($input);
+
+        $makerEntityName = $maker->getEntity();
+
+        $state->$makerEntityName()->associate($maker);
+
+        $state->entity()->associate($merchantDetails);
+
+        $this->repo->saveOrFail($state);
+
+        return $state;
     }
 
     /**

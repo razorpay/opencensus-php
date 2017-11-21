@@ -735,6 +735,24 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function updateFormArchive($id)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updateFormArchive($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateActivationStatus($id)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updateActivationStatus($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getReferredMerchants()
     {
         $response = $this->service()->fetchReferredMerchants();

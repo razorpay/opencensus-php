@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use RZP\Models\Base;
+use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
 use RZP\Models\Merchant;
@@ -240,6 +241,43 @@ class Core extends Base\Core
         $this->repo->saveOrFail($merchantDetails);
     }
 
+    public function updateFormArchive(Entity $merchantDetails, $input)
+    {
+        $archivedAt = null;
+
+        if (empty($input[Entity::ARCHIVE]) === false)
+        {
+            $archivedAt = Carbon::now()->getTimestamp();
+        }
+
+        $input = [
+            Entity::ARCHIVED_AT => $archivedAt,
+        ];
+
+        $merchantDetails->fill($input);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        return $merchantDetails;
+    }
+
+    public function updateActivationStatus(Entity $merchantDetails, $input)
+    {
+        $merchantDetails->fill($input);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        $stateData = [
+            State\Entity::NAME => $input[Entity::ACTIVATION_STATUS],
+        ];
+
+        $admin = $this->app['basicauth']->getAdmin();
+
+        (new State\Core)->createForActivationAction($stateData, $merchantDetails, $admin);
+
+        return $merchantDetails;
+    }
+
     /**
      * Checks and auto activates the merchant if possible, after form submission
      *
@@ -312,6 +350,17 @@ class Core extends Base\Core
             //
             $response['need_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
         }
+
+        $activationStatus = $merchantDetails->activation_status;
+
+        $allowedNextStatuses = [];
+
+        if (empty($activationStatus) === false)
+        {
+            $allowedNextStatuses = Status::ALLOWED_NEXT_STATUSES[$activationStatus];
+        }
+
+        $response['allowed_next_statuses'] = $allowedNextStatuses;
 
         $totalFields = count($validationFields);
 
