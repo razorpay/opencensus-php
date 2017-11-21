@@ -125,7 +125,9 @@ class Base extends BaseModel\Core
         $ufhFile = $ufh->getFileInstance();
 
         $this->validateInputFileAndUpdateBatch($ufh->getFullFilePath(), $input);
-      
+
+        $ufhFile->entity()->associate($this->batch);
+
         $this->repo->transaction(function () use ($ufhFile)
         {
             $this->repo->saveOrFail($ufhFile);
