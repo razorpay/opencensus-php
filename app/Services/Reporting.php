@@ -45,6 +45,11 @@ class Reporting
         $this->trace = $app['trace'];
 
         $this->auth = $app['basicauth'];
+
+        if (isset($this->app['rzp.mode']) === true)
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
     }
 
     public function createConfig(array $input): array
@@ -61,11 +66,11 @@ class Reporting
         return $this->makeRequestAndSend($input, $url, 'get');
     }
 
-    public function fetchConfigById(string $id, array $input): array
+    public function fetchConfigById(string $id): array
     {
         $url = self::REPORT_CONFIG . '/' . $id;
 
-        return $this->makeRequestAndSend($input, $url, 'get');
+        return $this->makeRequestAndSend(null, $url, 'get');
     }
 
     public function editConfig(string $id, array $input): array
@@ -82,7 +87,7 @@ class Reporting
         return $this->makeRequestAndSend(null, $url, 'delete');
     }
 
-    public function generateReport(string $configId, array $input)
+    public function generateReport(string $configId, array $input): array
     {
         $url = self::REPORT_GENERATE;
 
@@ -93,7 +98,7 @@ class Reporting
         return $this->makeRequestAndSend($input, $url, 'post');
     }
 
-    protected function makeRequestAndSend($input = null, string $url, string $method = 'post')
+    protected function makeRequestAndSend(array $input = null, string $url, string $method = 'post')
     {
         $response = null;
 

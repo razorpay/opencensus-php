@@ -164,5 +164,10 @@ return [
     'ufh' => [
         'mock'  => env('UFH_MOCK', false),
         'url'   => env('UFH_BASE_URL'),
+        'auth' => [
+            'username' => env('UFH_USERNAME'),
+            'password' => env('UFH_PASSWORD'),
+        ],
+
     ],
 ];

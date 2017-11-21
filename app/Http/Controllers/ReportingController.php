@@ -2,8 +2,8 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use Request;
+use ApiResponse;
 
 use RZP\Services;
 
@@ -23,9 +23,7 @@ class ReportingController extends Controller
 
     public function get(string $id)
     {
-        $input = Request::all();
-
-        $data = $this->reportingService->fetchConfigById($id, $input);
+        $data = $this->reportingService->fetchConfigById($id);
 
         return ApiResponse::json($data);
     }

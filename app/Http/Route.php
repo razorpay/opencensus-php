@@ -672,7 +672,7 @@ final class Route
         'reporting_config_get'                    => ['get',      'reporting/config/{id}',                          'ReportingController@get',                                          ],
         'reporting_config_list'                   => ['get',      'reporting/config',                               'ReportingController@list',                                         ],
         'reporting_config_create'                 => ['post',     'reporting/config',                               'ReportingController@create'                                        ],
-        'reporting_config_edit'                   => ['put',      'reporting/config/{id}',                          'ReportingController@update'                                        ],
+        'reporting_config_edit'                   => ['patch',    'reporting/config/{id}',                          'ReportingController@update'                                        ],
         'reporting_config_delete'                 => ['delete',   'reporting/config/{id}',                          'ReportingController@delete'                                        ],
         'reporting_generate'                      => ['post',     'reporting/config/{id}/generate',                 'ReportingController@generateReport'                                ],
 
