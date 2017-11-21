@@ -5,7 +5,7 @@ import { observer } from 'mobx-react';
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
 import { adminFetch, adminPost } from 'util/fetch';
 import { getRiskRating } from '../entity-resources';
-
+import ShowWhen from 'admin/components/ShowWhen';
 import Form from 'ui/Form';
 import Field, { SelectField, SwitchField } from 'ui/Field';
 import MultiSelectField from 'ui//MultiSelectField';
@@ -196,7 +196,6 @@ export default class EditMerchant extends Component {
               </option>
             ))}
           </SelectField>
-
           <SelectField
             name="risk_rating"
             label="Risk"
@@ -212,15 +211,17 @@ export default class EditMerchant extends Component {
             ))}
           </SelectField>
 
-          <Field
-            label="Risk Threshold"
-            name="risk_threshold"
-            defaultValue={details.risk_threshold}
-            type="number"
-            min="5"
-            max="20"
-            placeholder="Valid range: 5 - 20"
-          />
+          <ShowWhen permission="edit_merchant_risk_threshold">
+            <Field
+              label="Risk Threshold"
+              name="risk_threshold"
+              defaultValue={details.risk_threshold}
+              type="number"
+              min="5"
+              max="20"
+              placeholder="Valid range: 5 - 20"
+            />
+          </ShowWhen>
 
           <Field
             label="Website"
