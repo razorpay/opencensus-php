@@ -5,6 +5,7 @@ import { adminFetch } from 'util/fetch';
 import { observer } from 'mobx-react';
 import { Link } from 'react-router-dom';
 import { formatDate } from 'util/index';
+import AsyncButton from 'ui/AsyncButton';
 
 @observer
 export default class WorkflowList extends Component {
@@ -45,15 +46,18 @@ const getWorkflowListfields = deleteWorkflow => [
   [
     'Delete',
     item => (
-      <div
+      <AsyncButton
         class="link danger"
+        pendingClass="link danger btn-pending"
+        confirm={`Are you sure you want to delete workflow id "${item.id}"`}
         onClick={e => {
           e.preventDefault();
-          deleteWorkflow(item);
+          return deleteWorkflow(item);
         }}
       >
         Delete
-      </div>
+        <span class="spin-btn" />
+      </AsyncButton>
     ),
   ],
 ];

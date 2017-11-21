@@ -15,6 +15,9 @@ export default class AsyncButton extends Component {
     } else {
       this.processClick(e);
     }
+
+    e.persist(); // e.prevenDefault makes synthetic even to get removed. Synthetic even is needed for performance reasons
+    e.preventDefault();
   }
 
   processClick(e) {
