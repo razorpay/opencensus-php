@@ -35,6 +35,7 @@ class Netbanking
     protected static $self = [
         IFSC::ICIC,
         IFSC::HDFC,
+        IFSC::BARB,
         IFSC::CORP,
         IFSC::UTIB,
         IFSC::KKBK,
@@ -243,7 +244,8 @@ class Netbanking
 
     protected static $defaultDisabled = [
         IFSC::AIRP,
-        IFSC::PUNB
+        IFSC::PUNB,
+        IFSC::BARB
     ];
 
     protected static $ebsTPV = [];

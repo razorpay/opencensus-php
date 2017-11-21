@@ -113,14 +113,30 @@ class Core extends Base\Core
         {
             $merchantBalance = $merchant->balance->getBalance();
 
-            $amount = ($merchantBalance > self::MAX_PAYOUT_AMOUNT) ? self::MAX_PAYOUT_AMOUNT : $merchantBalance;
+            if ((isset($input[Entity::BUFFER_AMOUNT]) === true) and
+                ($merchantBalance < $input[Entity::BUFFER_AMOUNT]))
+            {
+                $this->trace->info(
+                    TraceCode::MERCHANT_PAYOUT_SKIPPED,
+                    [
+                        'message'     => 'merchant balance is less than buffer amount',
+                        'merchant_id' => $merchantId,
+                        'input'       => $input,
+                    ]);
+
+                return ['message' => 'merchant balance is less than the buffer amount ' . $input[Entity::BUFFER_AMOUNT]];
+            }
+
+            $amount = $merchantBalance - ($input[Entity::BUFFER_AMOUNT] ?? 0);
+
+            $amount = ($amount > self::MAX_PAYOUT_AMOUNT) ? self::MAX_PAYOUT_AMOUNT : $amount;
         }
 
         if ((isset($input[Entity::MIN_AMOUNT]) === true) and
             ($amount < $input[Entity::MIN_AMOUNT]))
         {
             $this->trace->info(
-                TraceCode::MERCHANT_PAYOUT_FAILURE,
+                TraceCode::MERCHANT_PAYOUT_SKIPPED,
                 [
                     'message'     => 'amount is less than min amount',
                     'merchant_id' => $merchantId,

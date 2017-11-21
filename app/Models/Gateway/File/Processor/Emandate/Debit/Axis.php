@@ -7,7 +7,7 @@ use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Gateway\Netbanking;
 use RZP\Gateway\Netbanking\Axis\EMandateDebitFileHeadings as Headings;
 use RZP\Models\FileStore;
-use Rzp\Models\Payment;
+use RZP\Models\Payment;
 
 use Carbon\Carbon;
 

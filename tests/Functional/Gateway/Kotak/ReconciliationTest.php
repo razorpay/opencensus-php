@@ -180,6 +180,10 @@ class ReconciliationTest extends TestCase
 
         $this->assertEquals('No settlements found!', $content['kotak']['message']);
 
+        $this->assertNotNull($content['kotak']['retry_skipped_settlements']);
+
+        $this->assertEquals(1, $content['kotak']['retry_skipped_count']);
+
         // Validate no files were created
         $content = $this->getEntities('file_store', [], true);
         $this->assertSame($content['count'], 2);

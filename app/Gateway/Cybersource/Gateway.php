@@ -519,6 +519,11 @@ class Gateway extends Base\Gateway
 
             foreach($requests as $request)
             {
+                if (empty($request[F::APPLICATION_REPLIES][F::APPLICATION_REPLY]) === true)
+                {
+                    continue;
+                }
+
                 $applicationReplies = $request[F::APPLICATION_REPLIES][F::APPLICATION_REPLY];
 
                 if ($this->isSequentialArray($applicationReplies) === false)

@@ -384,7 +384,7 @@ class Service extends Base\Service
                 'refund_ids' => $refundsWithoutTransaction->pluck('id')->toArray(),
             ]);
 
-        $summary = $this->createAllRefundsMissingTransaction($refundsWithoutTransaction, true);
+        $summary = $this->createAllRefundsMissingTransaction($refundsWithoutTransaction);
 
         return $summary;
     }
@@ -478,8 +478,7 @@ class Service extends Base\Service
     }
 
     protected function createAllRefundsMissingTransaction(
-        Base\PublicCollection $refundsWithoutTxn,
-        bool $forceRefundTransaction = false)
+        Base\PublicCollection $refundsWithoutTxn)
     {
         $totalCount = count($refundsWithoutTxn);
 
@@ -488,7 +487,7 @@ class Service extends Base\Service
 
         foreach ($refundsWithoutTxn as $refundWithoutTxn)
         {
-            $success = $this->createMissingRefundTransaction($refundWithoutTxn, $forceRefundTransaction);
+            $success = $this->createMissingRefundTransaction($refundWithoutTxn);
 
             if ($success === true)
             {
@@ -509,7 +508,7 @@ class Service extends Base\Service
         ];
     }
 
-    protected function createMissingRefundTransaction(Entity $refundWithoutTxn, bool $forceRefundTransaction = false)
+    protected function createMissingRefundTransaction(Entity $refundWithoutTxn)
     {
         $this->trace->info(
             TraceCode::REFUND_TRANSACTION_CREATE_REQUEST,
@@ -521,11 +520,11 @@ class Service extends Base\Service
 
             $this->repo->transaction(
                 function()
-                use ($refundWithoutTxn, $payment, $forceRefundTransaction)
+                use ($refundWithoutTxn, $payment)
                 {
                     $transaction = $this->getNewProcessor($refundWithoutTxn->merchant)
                                         ->createTransactionForRefund(
-                                            $refundWithoutTxn, $payment, $forceRefundTransaction);
+                                            $refundWithoutTxn, $payment);
 
                     if ($transaction === null)
                     {
@@ -535,7 +534,6 @@ class Service extends Base\Service
                             [
                                 'refund_id'     => $refundWithoutTxn->getId(),
                                 'payment_id'    => $payment->getId(),
-                                'force'         => $forceRefundTransaction,
                             ]);
                     }
 

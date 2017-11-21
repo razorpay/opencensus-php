@@ -292,9 +292,7 @@ class InvoiceReport extends BaseReport
 
     protected function getTaxComponents(string $gstin = null): array
     {
-        $businessStateCode = Detail\Entity::getBusinessStateCodeFromGstin($gstin);
-
-        return FeeCalculator::getTaxComponentsFromStateCode($businessStateCode);
+        return FeeCalculator::getTaxComponentsForMerchant($gstin, $this->merchant);
     }
 
     protected function getInvoiceV2(array $input): array
@@ -376,7 +374,7 @@ class InvoiceReport extends BaseReport
         $cgst = intval($fees[FeeName::CGST]['sum'] ?? 0);
         $sgst = intval($fees[FeeName::SGST]['sum'] ?? 0);
 
-        $merchantBusinessStateCode = $this->merchant->getBusinessStateCode();
+        $merchantBusinessStateCode = $this->merchant->getGstStateCode();
 
         $intrastateGstApplicable = ($merchantBusinessStateCode === FeeCalculator::RZP_GST_STATE_CODE);
 
