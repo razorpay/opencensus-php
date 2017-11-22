@@ -101,12 +101,17 @@ class Throttle
     {
         $routeName = $this->request->route()->getName();
 
-        $identifier = $mode;
+        $identifier = $mode . $routeName;
 
         switch ($auth)
         {
+            /**
+             * On Admin Auth, same route can be accessed via different apps
+             * Each app has a different password, we can use password for
+             * differentiating the requests from different apps
+             */
             case Type::ADMIN_AUTH:
-                $resource = $routeName . $this->request->header(BasicAuth::ADMIN_TOKEN_HEADER);
+                $resource = $this->request->getPassword();
                 break;
 
             /**
@@ -122,7 +127,7 @@ class Throttle
              * model for that
              */
             case Type::DIRECT_AUTH:
-                $resource = $routeName;
+                $resource = '';
                 break;
 
             case Type::DEVICE_AUTH:
@@ -135,7 +140,7 @@ class Throttle
              * against one dashboard instance
              */
             case Type::PROXY_AUTH:
-                $resource = $this->getKeyId();
+                $resource = $this->request->header('X_DASHBOARD_USER_ID');
                 break;
 
             /**
@@ -148,7 +153,7 @@ class Throttle
              * checkout_public
              */
             case Type::PUBLIC_AUTH:
-                $resource = $this->request->route()->getName();
+                $resource = $this->getKeyId();
                 break;
         }
 
