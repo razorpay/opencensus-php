@@ -62,7 +62,7 @@ trait Payout
 
     protected function validateAndSetAmount(Payment\Entity $payment, & $input)
     {
-        (new PayoutValidator)->validatePaymentPayout($input, $payment);
+        (new PayoutValidator)->validatePayoutAmount($input, $payment);
 
         $paymentPayoutPending = $payment->getAmount() - $payment->getAmountPaidout();
 
