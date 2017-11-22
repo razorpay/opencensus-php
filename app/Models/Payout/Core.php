@@ -68,6 +68,8 @@ class Core extends Base\Core
      */
     public function paymentPayout(array $input, Payment\Entity $payment, Merchant\Entity $merchant): Entity
     {
+        (new Validator)->validatePaymentForPayout($input, $payment);
+
         $payout = $this->createPayout($input, $merchant);
 
         $payout->payment()->associate($payment);
