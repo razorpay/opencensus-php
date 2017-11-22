@@ -44,16 +44,13 @@ class RefundFile extends Base\RefundFile
         return $fileData;
     }
 
-    protected function getTextData(array $data)
+    protected function getTextData($data, $prependLine = '')
     {
-        $txt = '';
+        $ignoreLastNewline = true;
 
-        foreach ($data as $row)
-        {
-            $txt .= join($row , '');
+        $txt = $this->generateText($data, '|', $ignoreLastNewline);
 
-            $txt .= "\r\n";
-        }
+        $txt = $prependLine . $txt;
 
         return $txt;
     }
@@ -66,22 +63,26 @@ class RefundFile extends Base\RefundFile
         {
             $date = Carbon::createFromTimestamp(
                     $row['payment']['created_at'], Timezone::IST)
-                    ->format('d/m/Y');
+                    ->format('Ymd');
 
-            $amount = number_format($row['refund']['amount'] / 100, 2, '.', '');
+            $refund_amount = number_format($row['refund']['amount'] / 100, 2, '.', '');
 
-            $data[] = [
-                $row['gateway']['account_number'],
-                $row['payment']['currency'],
-                Constants::SERVICE_OUTLET,
-                str_pad(Constants::CREDIT, 2, ' ', STR_PAD_LEFT),
-                str_pad($amount, 17, ' ', STR_PAD_LEFT),
-                Constants::REFUND,
-                str_pad($row['payment']['id'], 2, ' ', STR_PAD_LEFT),
-                str_pad($date, 2, ' ', STR_PAD_LEFT),
+            $txn_amount = number_format($row['payment']['amount'], 2, '.', '');
+
+             // This field is left blank currently
+            $cancellation_transaction_id = '';
+
+           $data[] =[
+                $row['payment']['id'],
+                Constants::S_FLAG,
+                $refund_amount,
+                $row['gateway']['bank_payment_id'],
+                $date,
+                $txn_amount,
+                $cancellation_transaction_id
             ];
 
-            $totalAmount += $amount;
+            $totalAmount += $refund_amount;
         }
 
         // adds row for total amount of refunds. Requested by bank.
