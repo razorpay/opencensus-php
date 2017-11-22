@@ -82,6 +82,16 @@ class Validator extends Base\Validator
 
     protected function validateBankPayoutsFromCardPayments(array $input, Payment\Entity $payment)
     {
+        //
+        // If method is not sent in input, skip the
+        // following validation and allow the call to
+        // fail during Payout build
+        //
+        if (isset($input[Entity::METHOD]) === false)
+        {
+            return;
+        }
+
         // Only validating for card payments
         if ($payment->isCard() === false)
         {
@@ -97,7 +107,7 @@ class Validator extends Base\Validator
             ($destinationEntity === E::BANK_ACCOUNT))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_FUND_TRANSFER_PAYOUT_ON_CREDIT_CARD_PAYMENT);
+                ErrorCode::BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT);
         }
     }
 }

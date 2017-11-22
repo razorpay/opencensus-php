@@ -342,14 +342,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_FUND_TRANSFER_PAYOUT_ON_CREDIT_CARD_PAYMENT,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_FUND_TRANSFER_PAYOUT_ON_CREDIT_CARD_PAYMENT,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT,
         ],
     ],
 
