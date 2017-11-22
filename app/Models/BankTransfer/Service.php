@@ -214,7 +214,7 @@ class Service extends Base\Service
             $payerAccount = $bankTransfer->getPayerAccount();
 
             $this->core->editPayerBankAccount($bankTransfer, [
-                'account_number' => ltrim($payerAccount, '0'),
+                'account_number' => BankCodes::modifyPayerAccount($payerAccount),
             ]);
         }
 

@@ -272,10 +272,18 @@ class Service extends Base\Service
         if (in_array(Receiver::BANK_ACCOUNT, $types, true) === true)
         {
             $bankAccount = [
-                // Default behaviour of old API format should not change
-                // Give alphanumeric accounts to those using the old format
+                // Default behaviour of old API format should generally not
+                // change. Give alphanumeric accounts to those using old format.
                 Entity::NUMERIC    => false,
             ];
+
+            // But if merchant isn't using vanity accounts, then
+            // the account number is wholly determined by us anyway.
+            // So we might as well upgrade them all to numeric account number.
+            if ($this->merchant->getHandle() === null)
+            {
+                $bankAccount[Entity::NUMERIC] = true;
+            }
 
             // Descriptor isn't always set, allowing for random account numbers
             if (isset($input[Entity::DESCRIPTOR]) === true)
