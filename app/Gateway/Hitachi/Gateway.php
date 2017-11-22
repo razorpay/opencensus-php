@@ -539,17 +539,26 @@ class Gateway extends Base\Gateway
 
     protected function checkErrorsAndThrowException(array $response)
     {
-        if ($response[ResponseFields::RESPONSE_CODE] !== Status::SUCCESS_CODE)
+        $respCode = '';
+
+        if (isset($response[ResponseFields::RESPONSE_CODE]) === true)
         {
-            $code = $response[ResponseFields::RESPONSE_CODE];
+            $respCode = $response[ResponseFields::RESPONSE_CODE];
+        }
+        else if (isset($response['response_code']) === true)
+        {
+            $respCode = $response['response_code'];
+        }
 
-            $errorCode = ResponseCode::getErrorCode($code);
+        $errorCode = ResponseCode::getErrorCode($respCode);
 
-            $message = ResponseCode::getResponseMessage($code);
+        $message = ResponseCode::getResponseMessage($respCode);
 
+        if ($respCode !== Status::SUCCESS_CODE)
+        {
             throw new Exception\GatewayErrorException(
                 $errorCode,
-                $code,
+                $respCode,
                 $message);
         }
     }
