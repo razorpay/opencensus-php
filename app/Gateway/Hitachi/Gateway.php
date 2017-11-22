@@ -326,24 +326,34 @@ class Gateway extends Base\Gateway
         $time = Carbon::now(Timezone::IST)->format(self::TIME_FORMAT);
         $date = Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
 
-        $expiry = substr($input['card']['expiry_year'], 2) . $input['card']['expiry_month'];
-
-        return [
+        $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::AUTH,
             RequestFields::TRANSACTION_AMOUNT  => str_pad($input['payment']['amount'], 10, 0, STR_PAD_LEFT),
             RequestFields::TRANSACTION_TIME    => $time,
             RequestFields::TRANSACTION_DATE    => $date,
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id'],
-            RequestFields::EXPIRY_DATE         => $expiry,
+
         ];
+
+        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        {
+            $content[RequestFields::MERCHANT_REF_NUMBER] = substr($input['payment']['id'], 0, 10);
+        }
+
+        return $content;
     }
 
     protected function getCardDataForAuthorizeRequestArray(array $input)
     {
+        $card = $input['card'];
+
+        $expiry = substr($card['expiry_year'], 2) . str_pad($card['expiry_month'], 2, '0', STR_PAD_LEFT);
+
         return [
             RequestFields::CARD_NUMBER         => $input['card']['number'],
             RequestFields::CVV2                => $input['card']['cvv'],
+            RequestFields::EXPIRY_DATE         => $expiry,
         ];
     }
 
@@ -354,7 +364,7 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::CAPTURE,
             RequestFields::REQUEST_ID          => $input['payment']['id'],
-            RequestFields::TRANSACTION_AMOUNT  => $input['payment']['amount'] / 100,
+            RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
             RequestFields::TRANSACTION_TIME    => $createdAt->format(self::TIME_FORMAT),
             RequestFields::TRANSACTION_DATE    => $createdAt->format(self::DATE_FORMAT),
             RequestFields::RETRIEVAL_REF_NUM   => $gatewayPayment->getRrn(),
@@ -392,7 +402,7 @@ class Gateway extends Base\Gateway
         $date = $createdAt->format(self::DATE_FORMAT);
 
         $content = [
-            RequestFields::TRANSACTION_AMOUNT  => $input['refund']['amount'] / 100,
+            RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['refund']['amount']),
             RequestFields::TRANSACTION_TIME    => $time,
             RequestFields::TRANSACTION_DATE    => $date,
             RequestFields::RETRIEVAL_REF_NUM   => $gatewayPayment->getRrn(),
@@ -408,12 +418,17 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::TXN,
             RequestFields::REQUEST_ID          => $input['payment']['id'],
-            RequestFields::TRANSACTION_AMOUNT  => $input['payment']['amount'] / 100,
+            RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id']
         ];
 
         return $this->getStandardRequestArray($content);
+    }
+
+    protected function getFormattedAmount($amount)
+    {
+        return str_pad($amount, 12, '0', STR_PAD_LEFT);
     }
 
     // ----------------------------------------- Get Attributes --------------------------------------------------------
@@ -570,7 +585,7 @@ class Gateway extends Base\Gateway
         $request['options'] = [
             'timeout'         => 30,
             'connect_timeout' => 30,
-            'verify'          => $this->getCaInfo(),
+            'verify'          => false,
         ];
 
         return $request;
