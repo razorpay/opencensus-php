@@ -325,6 +325,10 @@ class NetbankingPnbGatewayTest extends TestCase
 
         assert(count($claimsFileContents) === 4);
 
+        $refundsFileContentLine = explode('|', $refundsFileContents[0]);
+
+        assert(count($refundsFileContentLine), 7);
+
         $this->checkFileContent($refundsFileContents, ['INR0120000 C 100.00Refund', 'INR0120000 C 400.00Refund']);
 
         $this->checkFileContent($claimsFileContents, ['INR0120000 D 500.00Payment', 'INR0120000 C 100.00Refund']);
