@@ -288,12 +288,6 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getDefaultAuthorizeRequestArray($input);
 
-        $content[RequestFields::AUTH_STATUS] = '';
-        $content[RequestFields::ECI]         = '';
-        $content[RequestFields::XID]         = '';
-        $content[RequestFields::ALGORITHM]   = '';
-        $content[RequestFields::CAVV2]       = '';
-
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST,
             [
                 'request'    => $content,
@@ -333,7 +327,11 @@ class Gateway extends Base\Gateway
             RequestFields::TRANSACTION_DATE    => $date,
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id'],
-
+            RequestFields::AUTH_STATUS         => '',
+            RequestFields::ECI                 => '',
+            RequestFields::XID                 => '',
+            RequestFields::ALGORITHM           => '',
+            RequestFields::CAVV2               => '',
         ];
 
         if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
