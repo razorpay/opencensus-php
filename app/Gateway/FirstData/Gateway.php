@@ -211,6 +211,9 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
+        // All refunds temporarily blocked, due to FirstData issues
+        $this->failRefund();
+
         $requestContent = $this->getRefundRequestArray($input, TxnType::REFUND);
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $requestContent);
@@ -235,6 +238,9 @@ class Gateway extends Base\Gateway
     {
         parent::reverse($input);
 
+        // All refunds temporarily blocked, due to FirstData issues
+        $this->failRefund();
+
         $requestContent = $this->getReverseRequestArray($input, TxnType::REVERSE);
 
         $this->trace->info(TraceCode::GATEWAY_REVERSE_REQUEST, $requestContent);
@@ -253,6 +259,24 @@ class Gateway extends Base\Gateway
         $reverseEntity = $this->createGatewayPaymentEntity($reverseFields, $input);
 
         $this->checkApprovalCode($reverseEntity);
+    }
+
+    /**
+     * Failing all FirstData refunds for now
+     * Will be retried later via cron
+     * @throws Exception\GatewayErrorException
+     */
+    protected function failRefund()
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_FIRST_DATA_REFUND_BLOCKED,
+            [
+                'payment_id' => $this->input['payment']['id'],
+                'refund_id'  => $this->input['refund']['id'],
+                'action'     => $this->action,
+            ]);
+
+        throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
     }
 
     public function verify(array $input)

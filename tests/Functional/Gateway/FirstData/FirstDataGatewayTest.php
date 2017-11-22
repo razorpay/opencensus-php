@@ -113,6 +113,9 @@ class FirstDataGatewayTest extends TestCase
         // Another payment to test auto-refund
         $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
+
+        $this->markTestSkipped('Refunds temporarily blocked on FirstData');
+
         $this->refundAuthorizedPayment($paymentId);
 
         $payment = $this->getLastEntity('payment', true);
@@ -150,6 +153,8 @@ class FirstDataGatewayTest extends TestCase
 
     public function testVerifyRefund()
     {
+        $this->markTestSkipped('Refunds temporarily blocked on FirstData');
+
         $payment = $this->doAuthAndCapturePayment();
 
         $this->getErrorInReturn();
@@ -190,6 +195,8 @@ class FirstDataGatewayTest extends TestCase
 
     public function testVerifyRefundFailure()
     {
+        $this->markTestSkipped('Refunds temporarily blocked on FirstData');
+
         $payment = $this->doAuthAndCapturePayment();
 
         $this->getErrorInReturn();
@@ -230,6 +237,8 @@ class FirstDataGatewayTest extends TestCase
 
     public function testVerifyReverse()
     {
+        $this->markTestSkipped('Refunds temporarily blocked on FirstData');
+
         $payment = $this->doAuthPayment();
 
         $this->getErrorInReturn();
@@ -299,7 +308,7 @@ class FirstDataGatewayTest extends TestCase
         $this->doAuthPayment($payment);
 
         $paymentRes = $this->getLastPayment(true);
-        
+
         $transRes = $this->getLastTransaction(true);
 
         // FirstData now should get selected
@@ -354,6 +363,8 @@ class FirstDataGatewayTest extends TestCase
 
     public function testPaymentRefund()
     {
+        $this->markTestSkipped('Refunds temporarily blocked on FirstData');
+
         $this->doAuthAndCapturePayment($this->payment);
 
         $txn = $this->getLastEntity('transaction', true);
@@ -377,6 +388,8 @@ class FirstDataGatewayTest extends TestCase
 
     public function testPaymentPartialRefund()
     {
+        $this->markTestSkipped('Refunds temporarily blocked on FirstData');
+
         $this->doAuthAndCapturePayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -411,6 +424,8 @@ class FirstDataGatewayTest extends TestCase
 
     public function testPaymentReverse()
     {
+        $this->markTestSkipped('Refunds temporarily blocked on FirstData');
+
         $features = $this->fixtures->merchant->addFeatures(['reverse']);
 
         $payment = $this->doAuthPayment($this->payment);
