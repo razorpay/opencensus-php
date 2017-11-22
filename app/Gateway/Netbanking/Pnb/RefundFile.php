@@ -11,7 +11,7 @@ use RZP\Constants\Timezone;
 
 class RefundFile extends Base\RefundFile
 {
-    protected static $fileToWriteName = 'PNB_Netbanking_Refunds';
+    protected static $fileToWriteName = 'refund_PNB_NB';
 
     public function generate($input)
     {
@@ -100,13 +100,13 @@ class RefundFile extends Base\RefundFile
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now(Timezone::IST)->format('dmY');
+        $time = Carbon::now(Timezone::IST)->format('Ymd');
 
         if ($this->mode === Mode::TEST)
         {
-            return static::$fileToWriteName . $time . $this->mode;
+            return join('_', [static::$fileToWriteName, $time,  'V1',  $this->mode]);
         }
 
-        return static::$fileToWriteName . $time;
+        return join('_', [static::$fileToWriteName, $time,  'V1']);
     }
 }
