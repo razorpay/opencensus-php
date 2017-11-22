@@ -372,7 +372,7 @@ class Gateway extends Base\Gateway
 
         if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
         {
-            $content[RequestFields::REQUEST_ID] = substr($input['payment']['id'], 0, 10);
+            $content[RequestFields::REQUEST_ID] = rand(1111111111,9999999999);
             $content[RequestFields::MERCHANT_REF_NUMBER] = substr($input['payment']['id'], 0, 10);
         }
 
