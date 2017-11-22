@@ -14,6 +14,7 @@ use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
+use RZP\Models\Currency\Currency;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
@@ -50,11 +51,14 @@ class Core extends Base\Core
      */
     public function directPayout(array $input, Merchant\Entity $merchant): Entity
     {
-        $payout = $this->createPayout($input, $merchant);
+        return $this->repo->transaction(function () use ($input, $merchant)
+        {
+            $payout = $this->createPayout($input, $merchant);
 
-        $this->repo->saveOrFail($payout);
+            $this->repo->saveOrFail($payout);
 
-        return $payout;
+            return $payout;
+        });
     }
 
     /**
@@ -64,7 +68,7 @@ class Core extends Base\Core
      * @param  Payment\Entity  $payment
      * @param  Merchant\Entity $merchant
      *
-     * @return Entity|
+     * @return Entity
      */
     public function paymentPayout(array $input, Payment\Entity $payment, Merchant\Entity $merchant): Entity
     {
@@ -158,8 +162,10 @@ class Core extends Base\Core
 
         }
 
+        //
         // Modulo will convert the amount into multiples
         // of modulo value
+        //
         if (isset($input[Entity::MODULO]) === true)
         {
             $moduloAmount = $amount % $input[Entity::MODULO];
@@ -170,7 +176,7 @@ class Core extends Base\Core
         $payoutInput = [
             Entity::CUSTOMER_ID    => $customerId,
             Entity::AMOUNT         => $amount,
-            Entity::CURRENCY       => 'INR',
+            Entity::CURRENCY       => Currency::INR,
             Entity::METHOD         => Method::FUND_TRANSFER,
             Entity::DESTINATION    => $bankAccountId,
         ];
@@ -184,16 +190,13 @@ class Core extends Base\Core
     {
         $this->validateMerchantStatus($merchant);
 
-        return $this->repo->transaction(function () use ($input, $merchant)
-        {
-            $payout = $this->createPayoutEntity($input, $merchant);
+        $payout = $this->createPayoutEntity($input, $merchant);
 
-            $payoutAttempt = $this->createPayoutAttemptEntity($payout);
+        $payoutAttempt = $this->createPayoutAttemptEntity($payout);
 
-            $this->updatePayoutWithTxn($payout);
+        $this->updatePayoutWithTxn($payout);
 
-            return $payout;
-        });
+        return $payout;
     }
 
     protected function processBankPayouts(array $input, string $channel): array

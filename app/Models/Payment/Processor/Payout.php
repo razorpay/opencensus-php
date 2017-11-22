@@ -28,13 +28,18 @@ trait Payout
 
         return $this->mutex->acquireAndRelease($payment->getId(), function() use ($input, $payment)
         {
+            $payment->reload();
+
             $this->validateAndSetAmount($payment, $input);
 
-            $payout = (new PayoutCore)->paymentPayout($input, $payment, $this->merchant);
+            return $this->repo->transaction(function () use ($input, $payment)
+            {
+                $payout = (new PayoutCore)->paymentPayout($input, $payment, $this->merchant);
 
-            $this->updatePaymentAmountPaidout($payment, $payout->getAmount());
+                $this->updatePaymentAmountPaidout($payment, $payout->getAmount());
 
-            return $payout;
+                return $payout;
+            });
         });
     }
 
