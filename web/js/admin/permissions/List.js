@@ -65,7 +65,7 @@ const Actions = ({ item }) => (
       onClick={item::removeEntity}
     >
       Delete
-      <span class="spin-btn" />
+      <span class="dot-loader">.</span>
     </AsyncButton>
   </div>
 );

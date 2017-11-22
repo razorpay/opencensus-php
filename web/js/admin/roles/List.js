@@ -73,12 +73,12 @@ const fields = [
     item => (
       <AsyncButton
         class="link danger m-t m-r"
-        pendingClass="link danger m-l btn-pending"
+        pendingClass="link danger m-t m-r btn-pending"
         confirm={`Are you sure you want to delete role id "${item.id}"`}
         onClick={item::removeEntity}
       >
         Delete
-        <span class="spin-btn" />
+        <span class="dot-loader">.</span>
       </AsyncButton>
     ),
   ],

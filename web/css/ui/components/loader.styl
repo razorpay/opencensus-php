@@ -1,0 +1,24 @@
+@keyframes blink
+  0%  {color: transparent}
+  20%  {color: #666 }
+  100%  {color: transparent}
+
+
+.dot-loader
+  position: absolute
+  transform: translate(-50%, -50%)
+  left: 50%
+  top: 50%
+  font-size: 40px
+  animation: blink 1.4s infinite both
+  animation-delay: .2s
+  opacity:0
+
+  &:before
+    content: '.'
+    animation: blink 1.4s infinite both
+
+  &:after
+    content: '.'
+    animation: blink 1.4s infinite both
+    animation-delay: .4s

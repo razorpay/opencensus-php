@@ -55,7 +55,7 @@ const getWorkflowListfields = deleteWorkflow => [
         }}
       >
         Delete
-        <span class="spin-btn" />
+        <span class="dot-loader">.</span>
       </AsyncButton>
     ),
   ],
