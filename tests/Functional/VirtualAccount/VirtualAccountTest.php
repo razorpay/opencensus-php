@@ -128,7 +128,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is not set so default root is used with given descriptor
-        $this->assertStringStartsWith("RAZORPAY", $vba['account_number']);
+        $this->assertStringStartsWith('11111100', $vba['account_number']);
 
         // With handle
         $this->fixtures->merchant->setHandle('hand');
