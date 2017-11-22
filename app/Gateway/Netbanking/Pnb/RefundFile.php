@@ -71,9 +71,8 @@ class RefundFile extends Base\RefundFile
 
              // This field is left blank currently
             $cancellation_transaction_id = '';
-
            $data[] =[
-                $row['payment']['id'],
+                $row['refund']['id'],
                 Constants::S_FLAG,
                 $refund_amount,
                 $row['gateway']['bank_payment_id'],
