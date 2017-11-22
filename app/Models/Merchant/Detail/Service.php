@@ -255,7 +255,7 @@ class Service extends Base\Service
 
     public function updateActivationStatus($merchantId, $input)
     {
-        (new Validator)->validateInput('activation_status', $input);
+        (new Validator)->validateInput('activationStatus', $input);
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 

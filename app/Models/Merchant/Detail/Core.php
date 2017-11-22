@@ -263,9 +263,23 @@ class Core extends Base\Core
 
     public function updateActivationStatus(Entity $merchantDetails, $input)
     {
+        $rejectionReasons = [];
+
+        if (empty($input[Entity::REJECTION_REASONS]) === false)
+        {
+            $rejectionReasons = $input[Entity::REJECTION_REASONS];
+
+            unset($input[Entity::REJECTION_REASONS]);
+        }
+
         $merchantDetails->fill($input);
 
         $this->repo->saveOrFail($merchantDetails);
+
+        if (empty($rejectionReasons) === false)
+        {
+            // save reasons
+        }
 
         $stateData = [
             State\Entity::NAME => $input[Entity::ACTIVATION_STATUS],

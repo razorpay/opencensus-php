@@ -88,8 +88,13 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                         = 'created_at';
     const UPDATED_AT                         = 'updated_at';
 
-    const SUBMIT   = 'submit';
-    const ARCHIVE  = 'archive';
+    const SUBMIT            = 'submit';
+    const ARCHIVE           = 'archive';
+    const REJECTION_REASONS = 'rejection_reasons';
+
+    // Enum values used for Clarification mode
+    const EMAIL_CLARIFICATION = 'email';
+    const CALL_CLARIFICATION  = 'call';
 
     // Enum values used for product activation status
     const PENDING  = 'pending';

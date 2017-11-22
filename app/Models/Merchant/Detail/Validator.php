@@ -9,9 +9,11 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    const INVALID_IFSC_CODE_MESSAGE     = 'Invalid IFSC Code';
-    const INVALID_STATUS_MESSAGE        = 'Invalid status';
-    const INVALID_STATUS_CHANGE_MESSAGE = 'Invalid status change';
+    const INVALID_IFSC_CODE_MESSAGE                     = 'Invalid IFSC Code';
+    const INVALID_STATUS_MESSAGE                        = 'Invalid status';
+    const INVALID_STATUS_CHANGE_MESSAGE                 = 'Invalid status change';
+    const INVALID_CLARIFICATION_MODE_MESSAGE            = 'Invalid clarification mode';
+    const INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE = 'Clarification mode should not be sent for this status';
 
     protected static $createRules = [
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
@@ -156,7 +158,14 @@ class Validator extends Base\Validator
     ];
 
     protected static $activationStatusRules = [
-        Entity::ACTIVATION_STATUS               => 'required|string|custom',
+        Entity::ACTIVATION_STATUS               => 'required|string',
+        Entity::CLARIFICATION_MODE              => 'filled|string',
+        Entity::REJECTION_REASONS               => 'filled|array',
+    ];
+
+    protected static $activationStatusValidators = [
+        'activation_status',
+        'clarification_mode',
     ];
 
     public function validateTransactionReportEmail($attribute, $value)
@@ -183,11 +192,33 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateActivationStatus(string $attr, string $status)
+    public function validateActivationStatus($input)
     {
-        if (in_array($status, array_keys(Status::ALLOWED_NEXT_STATUSES)) === false)
+        if (in_array($input[Entity::ACTIVATION_STATUS], array_keys(Status::ALLOWED_NEXT_STATUSES)) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_STATUS_MESSAGE);
+        }
+    }
+
+    public function validateClarificationMode($input)
+    {
+        if (empty($input[Entity::CLARIFICATION_MODE]) === false)
+        {
+            if ($input[Entity::ACTIVATION_STATUS] !== Status::NEEDS_CLARIFICATION)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    self::INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE);
+            }
+
+            $allowedClarificationModes = [
+                Entity::EMAIL_CLARIFICATION,
+                Entity::CALL_CLARIFICATION,
+            ];
+
+            if (in_array($input[Entity::CLARIFICATION_MODE], $allowedClarificationModes) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(self::INVALID_CLARIFICATION_MODE_MESSAGE);
+            }
         }
     }
 
