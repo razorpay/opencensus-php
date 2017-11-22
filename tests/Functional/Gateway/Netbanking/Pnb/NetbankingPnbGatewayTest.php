@@ -328,35 +328,8 @@ class NetbankingPnbGatewayTest extends TestCase
         $refundsFileContentLine = explode('|', $refundsFileContents[0]);
 
         assert(count($refundsFileContentLine), 7);
-
-        $this->checkFileContent($refundsFileContents, ['INR0120000 C 100.00Refund', 'INR0120000 C 400.00Refund']);
-
-        $this->checkFileContent($claimsFileContents, ['INR0120000 D 500.00Payment', 'INR0120000 C 100.00Refund']);
     }
 
-    protected function checkFileContent(array $fileContents, array $expectedContent)
-    {
-        foreach ($fileContents as $content)
-        {
-            $compare = false;
-
-            foreach ($expectedContent as $expected)
-            {
-                $compare = substr_compare($content, $expected, 0);
-
-                if ($compare >= 0)
-                {
-                    $compare = true;
-                    continue;
-                }
-            }
-
-            if ($compare === false)
-            {
-                throw new Exception("Contents do not match", 1);
-            }
-        }
-    }
 
     protected function checkEmptyRefundTextData($data)
     {
