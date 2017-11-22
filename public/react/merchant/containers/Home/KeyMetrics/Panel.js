@@ -2,13 +2,21 @@ import React, { Component } from 'react';
 
 import Definition from 'rzp/ui/Definition';
 import Highcharts from 'rzp/ui/Highcharts';
+import defaultChartOptions from 'rzp/ui/Highcharts/defaults';
 import Change from 'rzp/ui/Change';
+
+import Legend, {
+  LegendItem,
+  LegendLabel,
+  LegendTitle,
+  LegendContent,
+} from 'merchant/containers/Home/Legend';
 
 import { tabsMeta } from './data';
 
 const chartOptions = {
   chart: {
-    height: 350,
+    height: 250,
     spacingTop: 10,
   },
   xAxis: {
@@ -53,7 +61,17 @@ class Panel extends Component {
             };
           }),
       },
-      { grouping, options } = this.meta;
+      { grouping, options } = this.meta,
+      legendData =
+        data.histogram &&
+        data.histogram.map((data, index) => {
+          return {
+            title: data.name,
+            percentage: data.percentage.value,
+            content: data.sum.value,
+            color: defaultChartOptions.colors[index],
+          };
+        });
 
     if (!data.diff) {
       return <center>Loading...</center>;
@@ -91,7 +109,22 @@ class Panel extends Component {
             {options.length > 0 && <button>...</button>}
           </div>
         </div>
-        <Highcharts options={histogramOptions} />
+        <div className="chart-container">
+          <Highcharts options={histogramOptions} />
+          <Legend>
+            {legendData.map((data, index) => {
+              return (
+                <LegendItem key={index}>
+                  <LegendLabel color={data.color}>
+                    {data.percentage}%
+                  </LegendLabel>
+                  <LegendTitle>{data.title}</LegendTitle>
+                  <LegendContent>{data.content}</LegendContent>
+                </LegendItem>
+              );
+            })}
+          </Legend>
+        </div>
       </div>
     );
   }

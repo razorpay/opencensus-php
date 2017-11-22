@@ -34,18 +34,6 @@ const getCounts = (type = null) => {
     savedCards: {
       value: values[3],
     },
-    transactionVolumePercentage: {
-      value: percentages[0],
-    },
-    numTransactionsPercentage: {
-      value: percentages[1],
-    },
-    refundsPercentage: {
-      value: percentages[2],
-    },
-    savedCardsPercentage: {
-      value: percentages[3],
-    },
   };
 
   return type ? { [type]: counts[type] } : counts;
@@ -82,7 +70,7 @@ const getHistogram = step => {
     values.push(histogram[histogram.length - 1].value);
   }
 
-  const sum = values.reduce((prev, current) => prev + current, 0);
+  const sum = { value: values.reduce((prev, current) => prev + current, 0) };
 
   return { histogram, sum };
 };
@@ -100,7 +88,76 @@ export const getData = (tab = null, breakDown = 'daily') => {
     ...getCounts(tab),
   };
 
+  const percentages = getPercentages(
+    result.group1.sum.value,
+    result.group2.sum.value,
+    result.group3.sum.value
+  );
+
+  result.group1.percentage = { value: percentages[0].toFixed(2) };
+  result.group2.percentage = { value: percentages[1].toFixed(2) };
+  result.group3.percentage = { value: percentages[2].toFixed(2) };
+
   return new Promise(resolve => {
     window.setTimeout(() => resolve(result), randomize(500));
+  });
+};
+
+export const getTraffic = () => {
+  const getValues = () => {
+    const values = [
+        randomize(500),
+        randomize(500),
+        randomize(500),
+        randomize(500),
+      ],
+      percentages = getPercentages(...values);
+
+    return { values, percentages };
+  };
+
+  const platforms = ['Android', 'iOS', 'mWeb', 'Desktop'];
+
+  var { values, percentages } = getValues();
+
+  const transactionVolumeCount = platforms.map((platform, index) => {
+    return {
+      platform,
+      value: values[index],
+    };
+  });
+
+  const transactionVolumePercentage = platforms.map((platform, index) => {
+    return {
+      platform,
+      value: percentages[index].toFixed(2),
+    };
+  });
+
+  var { values, percentages } = getValues();
+
+  const noTransactionsCount = platforms.map((platform, index) => {
+    return {
+      platform,
+      value: values[index],
+    };
+  });
+
+  const noTransactionsPercentage = platforms.map((platform, index) => {
+    return {
+      platform,
+      value: percentages[index].toFixed(2),
+    };
+  });
+
+  return new Promise(resolve => {
+    return window.setTimeout(() => {
+      resolve({
+        transactionVolumeCount,
+        transactionVolumePercentage,
+        noTransactionsCount,
+        noTransactionsPercentage,
+      });
+    }, randomize(500));
   });
 };

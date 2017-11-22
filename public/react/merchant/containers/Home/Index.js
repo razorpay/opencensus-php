@@ -12,7 +12,7 @@ import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from './PaymentMethods';
-import Traffic from './Traffic';
+import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from './RecentActivity';
 
 import DateRangePicker from 'merchant/components/Home/DateRangePicker';

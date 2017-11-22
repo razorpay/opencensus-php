@@ -42,7 +42,6 @@ class KeyMetricsContainer extends Component {
       if (!tabName) {
         tabsOrder.forEach(tabName => {
           tabsState[tabName].data.count = resp[tabName];
-          tabsState[tabName].data.percentage = resp[`${tabName}Percentage`];
         });
       } else {
         tabsState[tabName].data.count = resp[tabName];
@@ -62,6 +61,8 @@ class KeyMetricsContainer extends Component {
               item.timestamp,
               item.value,
             ]),
+            sum: resp[keyName].sum,
+            percentage: resp[keyName].percentage,
           });
         }
       });
@@ -141,8 +142,12 @@ class KeyMetricsContainer extends Component {
             return (
               <Tab key={index} onClick={() => this.handleTabChange(tabName)}>
                 <a>
-                  <h1>{tabData.count ? tabData.count.value : 'Loading...'}</h1>
-                  {tabsMeta[tabName].title}
+                  <div>
+                    <h1>
+                      {tabData.count ? tabData.count.value : 'Loading...'}
+                    </h1>
+                    {tabsMeta[tabName].title}
+                  </div>
                 </a>
               </Tab>
             );

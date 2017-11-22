@@ -13,9 +13,65 @@
       margin-left: 20px;
     }
   }
+
+  .RadioButton {
+
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 6px 0;
+  }
+}
+
+.header, .dashboard {
+
+  background-color: #FAFBFC;
 }
 
 .dashboard {
 
   padding: 20px;
+
+  .panel {
+
+    box-shadow: 0 2px 7px 0 rgba(0,0,0,0.1);
+  }
+
+  .react-tabs > .nav.nav-tabs {
+
+    li {
+
+      padding-bottom: 0;
+
+      &.active > a , &:hover > a {
+
+        background-color: transparent;
+        border: none;
+      } 
+
+      &.active > a > div {
+
+        background-color: #ffffff;
+        border: 1px solid #ffffff;
+        box-shadow: 0 -3px 3px rgba(0,0,0,0.1);
+      }
+
+      > a {
+
+        border: none;
+        padding-left: 0;
+        padding-bottom: 0;
+
+        &:hover {
+
+          padding-left: 0;
+        }
+
+        > div {
+
+          padding: 10px;
+          box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
+  }
 }

@@ -1,0 +1,24 @@
+.rzp-legend {
+
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  padding: 10px;
+  font-size: 12px;
+
+  &.rzp-legend-vertical {
+
+    height: 100%;
+    flex-direction: column;
+
+    > .rzp-legend-item {
+
+      margin-top: 10px;
+
+      &:first {
+
+        margin-top: 0;
+      }
+    }
+  }
+}

@@ -1,17 +1,28 @@
+$borderColor = rgba(0, 0, 0, 0.1);
+
 .rzp-daterange-picker {
 
   display: block;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid $borderColor;
 
   > div {
 
     display: inline-block;
+    height: 40px;
+    border-left: 1px solid $borderColor;
+    vertical-align: middle;
 
     &.icon-container {
 
       line-height: 1;
       padding: 9px;
       font-size: 20px;
+      border-left: none;
+    }
+
+    &.presets-container {
+
+      padding-right: 5px;
     }
 
     > select {
@@ -20,6 +31,39 @@
       border-radius: 0;
       outline: none;
       border: 0;
+    }
+
+    &.daterange-container i.icon-date-range {
+
+      display: none;
+    }
+
+    .DateRangePickerInput {
+
+      border: none;
+
+      .DateRangePickerInput__arrow {
+
+        top: 0;
+        line-height: 40px;
+        left: 47%;
+      }
+
+      > div {
+
+        line-height: 32px;
+        vertical-align: top;
+      }
+
+      .DateInput:first-child {
+
+        width: 118px;
+
+        .DateInput__display-text {
+
+          padding-left: 10px;
+        }
+      }
     }
   }
 }

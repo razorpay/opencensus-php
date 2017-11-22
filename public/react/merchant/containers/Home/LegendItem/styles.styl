@@ -1,0 +1,34 @@
+$borderColor = #EAEFF0;
+
+.rzp-legend-item {
+
+  display: block;
+  position: relative;
+  border: 1px solid $borderColor;
+  border-radius: 2px;
+
+  > div {
+
+    display: inline-block;
+    vertical-alignment: middle;
+
+    &.rzp-legend-label {
+
+      border-radius: 2px 0px 0px 2px;
+      padding: 8px;
+      margin: -1px;
+      color: white;
+    }
+
+    &.rzp-legend-title, &.rzp-legend-content {
+
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    &.rzp-legend-title {
+
+      border-right: 1px solid $borderColor;
+    }
+  }
+}

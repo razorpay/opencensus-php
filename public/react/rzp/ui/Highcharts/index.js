@@ -6,12 +6,27 @@ import defaults from './defaults.js';
 
 class Highcharts extends Component {
   componentDidMount() {
-    Hc.chart(this.container, deepMerge(defaults, this.props.options || {}));
+    Hc.chart(
+      this.container,
+      deepMerge(defaults, this.props.options || {}),
+      chart => (this.chart = chart)
+    );
+  }
+
+  componentWillReceiveProps({ options }) {
+    if (this.chart) {
+      this.chart.update(options);
+    }
+  }
+
+  componentWillUnmount() {
+    this.chart.destroy();
+    this.chart = null;
   }
 
   render() {
     return (
-      <div className="hc-container" ref={node => (this.container = node)} />
+      <div className="rzp-highcharts" ref={node => (this.container = node)} />
     );
   }
 }

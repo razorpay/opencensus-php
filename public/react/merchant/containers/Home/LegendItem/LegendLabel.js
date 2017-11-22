@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 class LegendLabel extends Component {
   render() {
-    const { children, className, ...labelProps } = this.props;
+    const { children, className = '', ...labelProps } = this.props;
 
     labelProps.className = `rzp-legend-label ${className}`;
     labelProps.style = {
