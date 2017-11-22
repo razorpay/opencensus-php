@@ -323,6 +323,36 @@ return [
         ],
     ],
 
+    'testCreateBankAccountPayoutOnCardPayment' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payments/{id}/payout',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'customer_id' => 'cust_100000customer',
+                'method'      => 'fund_transfer',
+                'destination' => 'ba_1000000lcustba',
+                'notes'       => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FUND_TRANSFER_PAYOUT_ON_CREDIT_CARD_PAYMENT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FUND_TRANSFER_PAYOUT_ON_CREDIT_CARD_PAYMENT,
+        ],
+    ],
+
     'testPayoutAttemptSuccess' => [
         'channel' => 'kotak',
         'version' => 'V3',

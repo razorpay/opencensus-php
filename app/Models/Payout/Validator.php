@@ -96,7 +96,8 @@ class Validator extends Base\Validator
         if (($card->getType() === Card\Type::CREDIT) and
             ($destinationEntity === E::BANK_ACCOUNT))
         {
-            throw new Exception\BadRequestException();
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FUND_TRANSFER_PAYOUT_ON_CREDIT_CARD_PAYMENT);
         }
     }
 }
