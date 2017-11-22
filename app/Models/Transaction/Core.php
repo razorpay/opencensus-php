@@ -615,9 +615,15 @@ class Core extends Base\Core
                 break;
 
             case Payment\Status::REFUNDED:
-                $gateway = $payment->getGateway();
+                //
+                // We are creating refund transaction via recon also.
+                // For this, we don't have to verify on gateway whether
+                // it has already been refunded or not. Irrespective of
+                // that, we will always create a refund through recon
+                // wherever applicable (payment transaction is present)
+                //
 
-                Payment\Refund\Validator::validateVerifyInternalRefundAllowed($gateway);
+                // Payment\Refund\Validator::validateVerifyInternalRefundAllowed($payment->getGateway());
 
                 //$this->updateNodalBalance($txn);
 

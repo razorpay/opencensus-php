@@ -211,16 +211,24 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
+        // All refunds temporarily blocked, due to FirstData issues
+        $this->failRefund();
+
         $requestContent = $this->getRefundRequestArray($input, TxnType::REFUND);
 
-        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $requestContent);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST,
+            [
+                'refund_id' => $input['refund']['id'],
+                'request'   => $requestContent,
+            ]);
 
         $response = $this->getSoapResponse($requestContent);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
-                'response' => $response
+                'refund_id' => $input['refund']['id'],
+                'response'  => $response,
             ]
         );
 
@@ -235,24 +243,50 @@ class Gateway extends Base\Gateway
     {
         parent::reverse($input);
 
-        $requestContent = $this->getReverseRequestArray($input, TxnType::REVERSE);
+        // All refunds temporarily blocked, due to FirstData issues
+        $this->failRefund();
 
-        $this->trace->info(TraceCode::GATEWAY_REVERSE_REQUEST, $requestContent);
+        $requestContent = $this->getReverseRequestArray($input);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REVERSE_REQUEST,
+            [
+                'refund_id' => $input['refund']['id'],
+                'request'   => $requestContent,
+            ]);
 
         $response = $this->getSoapResponse($requestContent);
 
         $this->trace->info(
             TraceCode::GATEWAY_REVERSE_RESPONSE,
             [
-                'response' => $response
-            ]
-        );
+                'refund_id' => $input['refund']['id'],
+                'response'  => $response,
+            ]);
 
         $reverseFields = $this->getReverseFields($response, $input['refund']);
 
         $reverseEntity = $this->createGatewayPaymentEntity($reverseFields, $input);
 
         $this->checkApprovalCode($reverseEntity);
+    }
+
+    /**
+     * Failing all FirstData refunds for now
+     * Will be retried later via cron
+     * @throws Exception\GatewayErrorException
+     */
+    protected function failRefund()
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_FIRST_DATA_REFUND_BLOCKED,
+            [
+                'payment_id' => $this->input['payment']['id'],
+                'refund_id'  => $this->input['refund']['id'],
+                'action'     => $this->action,
+            ]);
+
+        throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
     }
 
     public function verify(array $input)

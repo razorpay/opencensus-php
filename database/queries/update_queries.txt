@@ -1258,3 +1258,10 @@ INSERT INTO `geo_ips` (`ip`, `created_at`,`updated_at`)
         FROM `payment_analytics`;
 
 UPDATE billdesk SET RefundId = 'JSBI58192723931' WHERE id = 2637587;
+
+# Axis NB E-mandate fix -- details in the PR #6195
+UPDATE payments set amount = 500, base_amount = 500, amount_authorized = 500 where id = '949aTERcyeLQw6' limit 1
+UPDATE transactions set amount = 500, credit = 500, balance = 210500 where id = '949eRva6SiVCkM' limit 1
+UPDATE balance set balance = 210500 where id = '7Ff4pDL9HIDVde' limit 1
+UPDATE netbanking set amount = 5 where id = 2245787 limit 1
+

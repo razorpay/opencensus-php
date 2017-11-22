@@ -110,12 +110,14 @@ class BankCodes
     ];
 
     const STRIP_LEADING_ZEROES_BANKS_IMPS = [
-        'CNB'
+        'CNB',
     ];
 
     const STRIP_LEADING_ZEROES_BANKS_NEFT = [
         IFSC::CNRB,
     ];
+
+    const ACCOUNT_NUMBER_LENGTH = 13;
 
     public static function getIfscForBankCode(string $bankCode)
     {
@@ -177,8 +179,27 @@ class BankCodes
 
         if (in_array($needle, $haystack, true) === true)
         {
-            $account = ltrim($account, '0');
+            $account = self::modifyPayerAccount($account);
         }
+
+        return $account;
+    }
+
+    /**
+     * Canara bank account numbers are received like this:
+     * - 00000683101027109
+     * - 00002724129002387
+     * In the former case, the last leading zero is significant. In
+     * the latter case, it is not. Result should be 13 characters.
+     *
+     * @param  string $account
+     * @return string $account
+     */
+    public static function modifyPayerAccount(string $account)
+    {
+        $account = ltrim($account, '0');
+
+        $account = str_pad($account, self::ACCOUNT_NUMBER_LENGTH, '0', STR_PAD_LEFT);
 
         return $account;
     }

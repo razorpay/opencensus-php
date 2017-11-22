@@ -136,6 +136,8 @@ return array(
         'operations_log'       => 'C0KUX9WSE',
         // reconciliation
         'reconciliation'       => 'C1GNPHC07',
+        // reconciliation 2
+        'reconciliation2'      => 'C847BUR61',
         // transactions_risky
         'risky'                => 'C0RL2C917',
         // settlements
