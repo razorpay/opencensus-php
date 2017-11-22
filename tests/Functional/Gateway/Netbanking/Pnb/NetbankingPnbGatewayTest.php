@@ -308,6 +308,18 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $claimsFileContents = file($data['netbanking_pnb']['claims']);
 
+        $refundsFilePath = explode('/', $data['netbanking_pnb']['refunds']);
+
+        $claimsFilePath = explode('/', $data['netbanking_pnb']['claims']);
+
+        $refundsFileName = end($refundsFilePath);
+
+        $claimsFileName = end($claimsFilePath);
+
+        $this->assertEquals($refundsFileName, 'refund_PNB_NB_20171122_V1_test.txt');
+
+        $this->assertEquals($claimsFileName, 'PNB_Netbanking_Claims_test_22-11-2017.txt');
+
         // 2 refunds + 1 total line
         assert(count($refundsFileContents) === 3);
 
