@@ -103,7 +103,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->traceGatewayPaymentResponse($request, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
 
         $attributes = $this->getAttributesFromRefundReverseResponse($response);
 
@@ -125,7 +125,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->traceGatewayPaymentResponse($request, $input, TraceCode::GATEWAY_REVERSE_RESPONSE);
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_REVERSE_RESPONSE);
 
         $attributes = $this->getAttributesFromRefundReverseResponse($response);
 
@@ -440,6 +440,11 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id']
         ];
+
+        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        {
+            $content[RequestFields::MERCHANT_REF_NUMBER] = substr($input['payment']['id'], 0, 10);
+        }
 
         return $this->getStandardRequestArray($content);
     }
