@@ -19,7 +19,7 @@ export default class EditBankAccountDetails extends Component {
     return adminPost({
       route_name: 'merchant_add_bank_account',
       url_params: {
-        id: this.props.props.merchant.details.id,
+        id: this.props.merchantId,
       },
       body,
     })
@@ -40,7 +40,7 @@ export default class EditBankAccountDetails extends Component {
     adminFetch({
       route_name: 'merchant_fetch_bank_account',
       url_params: {
-        id: this.props.props.merchant.details.id,
+        id: this.props.merchantId,
       },
     })
       .then(data => {

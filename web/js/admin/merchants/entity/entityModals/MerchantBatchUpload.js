@@ -8,7 +8,7 @@ import Form from 'ui/Form';
 import { FileField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 
-export default ({ props }) => {
+export default ({ merchantId }) => {
   function handleSubmit(body) {
     if (!Object.keys(body).length) {
       notifyError('Please upload atleast 1 file');
@@ -31,7 +31,7 @@ export default ({ props }) => {
       type: 'irctc',
 
       url_params: JSON.stringify({
-        '{id}': props.merchant.details.id,
+        '{id}': merchantId,
       }),
       ...requestData,
     })

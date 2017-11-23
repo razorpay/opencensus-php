@@ -8,12 +8,12 @@ import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
 import { adminPut } from 'util/fetch';
 
-export default ({ props }) => {
+export default ({ props, merchantId }) => {
   function onSubmit(body) {
     const data = {
       route_name: 'merchant_activation_update',
       url_params: {
-        id: props.merchant.details.id,
+        id: merchantId,
       },
       body: {
         comment: body.comment,

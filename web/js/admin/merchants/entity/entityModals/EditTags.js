@@ -9,14 +9,14 @@ import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
 import { adminPost } from 'util/fetch';
 
-export default ({ props }) => {
+export default ({ props, merchantId }) => {
   function onSubmit(body) {
     const tags = body.tags ? body.tags.split(',').map(tag => tag.trim()) : [];
 
     return adminPost({
       route_name: 'merchant_tag_add',
       url_params: {
-        id: props.merchant.details.id,
+        id: merchantId,
       },
       body: { tags },
     })

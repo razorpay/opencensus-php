@@ -15,7 +15,7 @@ export default class PricingPlanModal extends Component {
   componentWillMount() {
     adminFetch({
       route_name: 'merchant_get_banks',
-      url_params: { id: this.props.props.merchant.details.id },
+      url_params: { id: this.props.merchantId },
     }).then(data => {
       let merchantBanksMapping = {};
       let banksList = {};
@@ -38,12 +38,19 @@ export default class PricingPlanModal extends Component {
   getFormFields() {
     const fields = [];
 
+    if (!this.state.banksList) {
+      return <div class="spinner center" />;
+    }
+
     for (let bank in this.state.banksList) {
       fields.push(
-        <label key={bank}>
-          <SwitchField name={bank} defaultValue={this.state.banksList[bank]} />
-          {this.state.merchantBanksMapping[bank]}
-        </label>
+        <SwitchField
+          key={bank}
+          name={bank}
+          disabledLabel={this.state.merchantBanksMapping[bank]}
+          defaultValue={this.state.banksList[bank]}
+          nocaption
+        />
       );
     }
 
@@ -51,8 +58,6 @@ export default class PricingPlanModal extends Component {
   }
 
   handleConfirm = body => {
-    const { props } = this.props;
-
     return confirm(
       'Any previously assigned banks for the merchant will be replace with selected.',
       'Submit'
@@ -64,7 +69,7 @@ export default class PricingPlanModal extends Component {
       return adminPost({
         route_name: 'merchant_set_banks',
         url_params: {
-          id: props.merchant.details.id,
+          id: this.props.merchantId,
         },
         body: banksData,
       })
@@ -87,6 +92,9 @@ export default class PricingPlanModal extends Component {
       <BaseModal header="Assign Banks">
         <Form>
           {this.getFormFields()}
+
+          <br />
+
           <AsyncButton
             text="Cancel"
             class="btn btn-default"

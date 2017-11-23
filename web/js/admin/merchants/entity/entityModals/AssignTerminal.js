@@ -57,8 +57,6 @@ export default class AssignTerminal extends Component {
   state = { pricingPlans: {} };
 
   handleConfirm = body => {
-    const { props } = this.props;
-
     return confirm(
       'Any previously assigned plan for the merchant will be replace with selected.',
       'Submit'
@@ -76,7 +74,7 @@ export default class AssignTerminal extends Component {
 
       return adminFormUpload(
         body,
-        '/admin/merchant/' + props.merchant.details.id + '/terminal'
+        '/admin/merchant/' + this.props.merchantId + '/terminal'
       )
         .then(response => {
           if (response.data.success) {

@@ -8,12 +8,12 @@ import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
 import { adminPut } from 'util/fetch';
 
-export default ({ props }) => {
+export default ({ merchantId }) => {
   /* Submit button action */
   function onSubmit(body) {
     return adminPut({
       route_name: '"merchant_edit_config"',
-      merchant_id: props.merchant.details.id,
+      merchant_id: merchantId,
       body: {
         handle: body.handle,
       },

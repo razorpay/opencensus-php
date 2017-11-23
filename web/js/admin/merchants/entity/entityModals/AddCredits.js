@@ -9,7 +9,7 @@ import { notifyError, notifySuccess, closeModal } from 'common/modal';
 import { adminPost } from 'util/fetch';
 import { isWorkflow } from 'util/index';
 
-export default ({ props }) => {
+export default ({ merchantId }) => {
   function onSubmit(body) {
     const mode = body.mode;
     delete body.mode;
@@ -18,7 +18,7 @@ export default ({ props }) => {
       route_name: 'credits_create',
       mode,
       url_params: {
-        id: props.merchant.details.id,
+        id: merchantId,
       },
       body,
     })
@@ -44,9 +44,7 @@ export default ({ props }) => {
         <SelectMode />
 
         <SelectField label="Type" name="type" defaultValue="amount">
-          <option value="amount" selected>
-            Amount
-          </option>
+          <option value="amount">Amount</option>
           <option value="fee">Fee</option>
         </SelectField>
 

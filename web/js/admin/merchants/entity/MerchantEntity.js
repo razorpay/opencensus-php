@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import ShowWhen from 'admin/components/ShowWhen';
 import { adminFetch, adminPut, adminPost } from 'util/fetch';
@@ -18,14 +19,14 @@ import Model from './model';
 import AsyncButton from 'ui/AsyncButton';
 import { isWorkflow } from 'util/index';
 
-let parentProps;
+let parentProps, merchantId;
 const actions = {};
 
 // Access actions using actions.FileName (FileName is the export name of that modal content in entity/index.js)
 Object.keys(entityModals).map(key => {
   actions[key] = () => {
     const ModalContent = entityModals[key];
-    openModal(<ModalContent props={parentProps} />);
+    openModal(<ModalContent props={parentProps} merchantId={merchantId} />);
   };
 });
 
@@ -42,6 +43,7 @@ export default class MerchantEntity extends Component {
     });
 
     parentProps = this.model;
+    merchantId = this.merchantId;
   }
 
   getMainContent() {
@@ -97,8 +99,11 @@ export default class MerchantEntity extends Component {
   }
 }
 
+/* Actions list on side bar */
 const ActionsList = ({ model, merchantId, actions }) => {
   const merchant = model.merchant;
+  const isDetailsLoading = !Object.keys(toJS(merchant.details)).length;
+  const isFeaturesLoading = !Object.keys(toJS(merchant.features)).length;
 
   /* Confirmation Messages */
   const toggleArchiveMerchantCM = function() {
@@ -339,9 +344,10 @@ const ActionsList = ({ model, merchantId, actions }) => {
           </div>
         </ShowWhen>
         <ShowWhen permission="view_merchant_report">
-          <div onClick={actions.GenerateReports}>
+          <div onClick={isDetailsLoading ? null : actions.GenerateReports}>
             Download Report
             <i class="pull-right i i-download" />
+            {isDetailsLoading && <div class="dot-loader">.</div>}
           </div>
         </ShowWhen>
       </div>
@@ -380,15 +386,17 @@ const ActionsList = ({ model, merchantId, actions }) => {
           </Link>
         </ShowWhen>
         <ShowWhen permission="edit_merchant_methods">
-          <div onClick={actions.EditMethods}>
+          <div onClick={isDetailsLoading ? null : actions.EditMethods}>
             Edit Methods
             <i class="pull-right i i-money" />
+            {isDetailsLoading && <div class="dot-loader">.</div>}
           </div>
         </ShowWhen>
         <ShowWhen permission="edit_merchant">
-          <div onClick={actions.EditMerchant}>
+          <div onClick={isDetailsLoading ? null : actions.EditMerchant}>
             Edit Merchant
             <i class="pull-right i i-edit-form" />
+            {isDetailsLoading && <div class="dot-loader">.</div>}
           </div>
         </ShowWhen>
 
@@ -400,13 +408,15 @@ const ActionsList = ({ model, merchantId, actions }) => {
           Assign Schedule
           <i class="pull-right i i-schedule" />
         </div>
-        <div onClick={actions.EditTags}>
+        <div onClick={isDetailsLoading ? null : actions.EditTags}>
           Tag Merchant
           <i class="pull-right i i-tag" />
+          {isDetailsLoading && <div class="dot-loader">.</div>}
         </div>
-        <div onClick={actions.EditFeatures}>
+        <div onClick={isFeaturesLoading ? null : actions.EditFeatures}>
           Feature Merchant
           <i class="pull-right i i-tag" />
+          {isFeaturesLoading && <div class="dot-loader">.</div>}
         </div>
         <ShowWhen permission="add_merchant_credits">
           <div onClick={actions.AddCredits}>Add Credits</div>
@@ -606,9 +616,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
           <i class="pull-right i i-bank" />
         </div>
         <ShowWhen permission="merchant_autofill_form">
-          <div onClick={actions.AutoFillActivationForm}>
+          <div
+            onClick={isDetailsLoading ? null : actions.AutoFillActivationForm}
+          >
             Autofill Activation Form
             <i class="pull-right i i-auto-fill" />
+            {isDetailsLoading && <div class="dot-loader">.</div>}
           </div>
         </ShowWhen>
       </div>
@@ -616,9 +629,10 @@ const ActionsList = ({ model, merchantId, actions }) => {
       <div class="group">
         <div class="group-heading" />
         <ShowWhen permission="edit_merchant_mark_referred">
-          <div onClick={actions.MarkReferred}>
+          <div onClick={isDetailsLoading ? null : actions.MarkReferred}>
             Mark as Referred
             <i class="pull-right i i-gift" />
+            {isDetailsLoading && <div class="dot-loader">.</div>}
           </div>
         </ShowWhen>
         <ShowWhen permission="edit_merchant_screenshot">

@@ -80,10 +80,7 @@ export default class EditMerchant extends Component {
       return;
     }
 
-    return adminPost(
-      body,
-      '/admin/merchant/' + this.props.props.merchant.details.id + '/edit'
-    )
+    return adminPost(body, '/admin/merchant/' + this.props.merchantId + '/edit')
       .then(data => {
         if (data) {
           closeModal();

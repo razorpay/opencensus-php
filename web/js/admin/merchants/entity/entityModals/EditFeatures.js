@@ -35,7 +35,7 @@ export default class EditFeatures extends Component {
 
     return adminPost(
       requestData,
-      '/admin/features/merchant/' + props.merchant.details.id
+      '/admin/features/merchant/' + props.merchantId
     )
       .then(response => {
         if (response) {

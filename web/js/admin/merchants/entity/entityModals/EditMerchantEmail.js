@@ -8,13 +8,13 @@ import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
 import { adminPut } from 'util/fetch';
 
-export default ({ props }) => {
+export default ({ merchantId }) => {
   function onSubmit(body) {
     return adminPut(
       {
         email: body.email,
       },
-      '/admin/merchant/' + props.merchant.details.id + '/email'
+      '/admin/merchant/' + merchantId + '/email'
     )
       .then(response => {
         if (response) {

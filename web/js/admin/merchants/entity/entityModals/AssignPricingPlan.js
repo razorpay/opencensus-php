@@ -28,8 +28,6 @@ export default class PricingPlanModal extends Component {
   }
 
   handleConfirm = body => {
-    const { props } = this.props;
-
     return confirm(
       'Any previously assigned plan for the merchant will be replace with selected.',
       'Submit'
@@ -42,7 +40,7 @@ export default class PricingPlanModal extends Component {
       return adminPost({
         route_name: 'merchant_assign_pricing',
         url_params: {
-          id: props.merchant.details.id,
+          id: this.props.merchantId,
         },
         body: pricingData,
       })

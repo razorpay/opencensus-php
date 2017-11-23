@@ -9,12 +9,11 @@ import Table from 'ui/Table';
 @observer
 export default class TeamDetails extends Component {
   state = {};
-  merchantId = this.props.props.merchant.details.id;
 
   componentWillMount() {
     adminFetch({
       route_name: 'invitation_fetch',
-      merchant_id: this.merchantId,
+      merchant_id: this.props.merchantId,
     }).then(data => {
       this.setState({
         pendingInvites: data,
@@ -24,7 +23,7 @@ export default class TeamDetails extends Component {
     adminFetch({
       route_name: 'merchant_fetch_users',
       url_params: {
-        id: this.merchantId,
+        id: this.props.merchantId,
       },
     }).then(data => {
       this.setState({
@@ -35,7 +34,7 @@ export default class TeamDetails extends Component {
 
   render() {
     return (
-      <BaseModal header={`Team Details for merchant ${this.merchantId}`}>
+      <BaseModal header={`Team Details for merchant ${this.propsmerchantId}`}>
         <div class="container">
           <div class="heading">Users</div>
           {!this.state.users ? (

@@ -100,7 +100,7 @@ export default class CreateOffer extends Component {
 
     return adminPost({
       route_name: 'offer_create',
-      merchant_id: this.props.props.merchant.details.id,
+      merchant_id: this.props.merchantId,
       mode,
       body,
     })

@@ -61,7 +61,7 @@ export default class AutoFillActivationForm extends Component {
 
   handleSubmit = body => {
     if (bankDocument === 'hdfc-excel') {
-      const id = this.props.props.merchant.details.id;
+      const id = this.props.merchantId;
       window.location = '/admin/merchant/' + id + '/hdfc_excel';
     }
     if (html) {

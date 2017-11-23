@@ -6,13 +6,13 @@ import { adminFormUpload } from 'util/fetch';
 
 import { FileField } from 'ui/Field';
 
-export default ({ props }) => {
+export default ({ merchantId }) => {
   function handleUpload(entityName, entityLabel, e) {
     adminFormUpload(
       {
         [entityName]: e.target.files[0],
       },
-      '/admin/merchant/' + props.merchant.details.id + '/screenshot'
+      '/admin/merchant/' + merchantId + '/screenshot'
     )
       .then(response => {
         if (response.data.success) {

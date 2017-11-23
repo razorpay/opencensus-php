@@ -9,7 +9,7 @@ import { notifyError, confirm, notifySuccess, closeModal } from 'common/modal';
 import { adminPost } from 'util/fetch';
 import { isWorkflow } from 'util/index';
 
-export default ({ props }) => {
+export default ({ merchantId }) => {
   function handleConfirm(body) {
     return confirm(
       'Adjustment once assigned can not be changed, ensure you have checked all values.',
@@ -20,7 +20,7 @@ export default ({ props }) => {
 
       return adminPost({
         route_name: 'adj_add',
-        merchant_id: props.merchant.details.id,
+        merchant_id: merchantId,
         mode,
         body,
       })
@@ -42,7 +42,7 @@ export default ({ props }) => {
 
   return (
     <BaseModal header="Add Adjustment">
-      <Form class="full-span" style={{ width: '350px' }}>
+      <Form class="full-span full-elements" style={{ width: '450px' }}>
         <div class="m-b">
           <strong>
             Warning: The adjustment once assigned can not be changed.

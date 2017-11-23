@@ -40,8 +40,6 @@ export default class PricingPlanModal extends Component {
   }
 
   handleSubmit = body => {
-    const { props } = this.props;
-
     const schedulePlanData = {
       method: body.method,
       schedule_id: body.schedule_id,
@@ -51,7 +49,7 @@ export default class PricingPlanModal extends Component {
     return adminPost({
       route_name: 'schedule_assign',
       url_params: {
-        id: props.merchant.details.id,
+        id: this.props.merchantId,
       },
       body: schedulePlanData,
     })
@@ -81,6 +79,9 @@ export default class PricingPlanModal extends Component {
           </SelectField>
 
           <SelectField name="schedule_id" label="Schedules" defaultValue={''}>
+            {!Object.keys(this.state.settlementPlans).length && (
+              <option value="">Loading...</option>
+            )}
             {Object.keys(this.state.settlementPlans).map(key => (
               <option key={key} value={key}>
                 {this.state.settlementPlans[key]}

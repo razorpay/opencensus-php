@@ -8,7 +8,7 @@ import { notifyError, notifySuccess, closeModal } from 'common/modal';
 import { adminPut } from 'util/fetch';
 import { isWorkflow } from 'util/index';
 
-export default ({ props }) => {
+export default ({ props, merchantId }) => {
   let defaultMethods;
 
   /* Send only changed methods */
@@ -69,7 +69,7 @@ export default ({ props }) => {
     return adminPut({
       route_name: 'merchant_put_payment_methods',
       url_params: {
-        mid: props.merchant.details.id,
+        mid: merchantId,
       },
       body,
     })

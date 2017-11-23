@@ -9,7 +9,7 @@ import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
 import { adminPost } from 'util/fetch';
 
-export default ({ props }) => {
+export default ({ props, merchantId }) => {
   function onSubmit(body) {
     const tags = toJS(props.merchant.details.tags);
     tags.push('ref-' + body.referral);
@@ -17,7 +17,7 @@ export default ({ props }) => {
     return adminPost({
       route_name: 'merchant_tag_add',
       url_params: {
-        id: props.merchant.details.id,
+        id: merchantId,
       },
       body: {
         tags: tags,
