@@ -117,6 +117,34 @@ class BankTransferTest extends TestCase
         $this->assertEquals('NEFT', $attempt['mode']);
     }
 
+    public function testBankTransferFundTransferAttemptBulkUpdate()
+    {
+        $this->testBankTransferRefund();
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $request = [
+            'method'  => 'PATCH',
+            'url'     => '/fund_transfer_attempts',
+            'content' => [
+                'ids' => [
+                    $attempt['id']
+                ],
+                'status' => 'failed',
+                'remarks' => 'failed with reason'
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('failed', $attempt['status']);
+        $this->assertEquals('failed with reason', $attempt['remarks']);
+
+        $attempt = $this->getLastEntity('refund', true);
+        $this->assertEquals('failed', $attempt['status']);
+    }
+
     public function testBankTransferImps()
     {
         $accountNumber = $this->bankAccount['account_number'];
