@@ -116,7 +116,7 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
           {!!(
             bankTransfer.virtual_account &&
             bankTransfer.virtual_account.description
-          ) && <span>Virtual account description</span>}
+          ) && <span>{bankTransfer.virtual_account.description}</span>}
           {isDetailsLoading ? (
             <PlaceholderLoader />
           ) : (

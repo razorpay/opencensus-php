@@ -287,19 +287,8 @@ export default class CreateVirtualAccount extends Component {
               ) : null}
 
               <div class="Modal__actions clearfix">
-                {handle ? (
-                  <div class="pull-left">
-                    <div>Account Number</div>
-                    <b>
-                      RZRP{handle}
-                      {descriptor}
-                    </b>
-                  </div>
-                ) : null}
                 <AsyncButton
-                  class={`btn btn-primary ${
-                    handle ? 'pull-right' : 'btn-block'
-                  }`}
+                  className="btn btn-primary btn-block"
                   text="Create"
                   pendingText="Creating..."
                   onClick={handleSubmit(this.save)}
