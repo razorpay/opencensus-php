@@ -495,11 +495,11 @@ class Service extends Base\Service
     {
         $currentMerchant = Auth::user()->currentMerchant();
 
-        if (empty($currentMerchant))
+        if (empty($currentMerchant) === true)
         {
             // This case will happen only if the user has zero merchants and tried to access the merchant route.
             throw new \Razorpay\Api\Errors\BadRequestError(
-                'Current Merchant not found',
+                'Merchant not found for the user',
                 \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
