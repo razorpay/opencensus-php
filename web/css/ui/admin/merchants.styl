@@ -33,6 +33,7 @@
       margin-bottom: 10px
 
       > div:not(.group-heading), > a
+        position: relative
         display: block;
         border: 1px solid $faded-color
         margin-bottom: -1px
@@ -44,6 +45,14 @@
 
         i
           font-size: 14px
+
+        .dot-loader
+          top: auto
+          left: auto
+          bottom: 20px
+          right: 30px
+          transform: scale(0.7);
+          opacity: 1
 
     .group-heading
         margin-top: 16px
@@ -67,7 +76,7 @@
 .heading
   padding: 12px
   border: 1px solid $faded-color
-  background-color: #f1f1f1
+  background-color: #f6f8f8
   margin-bottom: -1px
 
 

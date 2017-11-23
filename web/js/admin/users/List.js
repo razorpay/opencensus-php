@@ -54,7 +54,7 @@ const fields = [
     item => (
       <AsyncButton
         class="link danger m-t m-r"
-        pendingClass="link danger m-t m-r btn-pending"
+        pendingClass="link danger-faded m-t m-r btn-pending"
         confirm={`Are you sure you want to delete user id "${item.id}"`}
         onClick={item::removeEntity}
       >

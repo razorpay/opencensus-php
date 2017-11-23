@@ -48,7 +48,7 @@ const getWorkflowListfields = deleteWorkflow => [
     item => (
       <AsyncButton
         class="link danger"
-        pendingClass="link danger btn-pending"
+        pendingClass="link danger-faded btn-pending"
         confirm={`Are you sure you want to delete workflow id "${item.id}"`}
         onClick={e => {
           return deleteWorkflow(item);

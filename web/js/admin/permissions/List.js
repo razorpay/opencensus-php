@@ -60,7 +60,7 @@ const Actions = ({ item }) => (
     </div>
     <AsyncButton
       class="link danger m-l"
-      pendingClass="link danger m-l btn-pending"
+      pendingClass="link danger-faded m-l btn-pending"
       confirm={`Are you sure you want to delete permission id "${item.id}"`}
       onClick={item::removeEntity}
     >
