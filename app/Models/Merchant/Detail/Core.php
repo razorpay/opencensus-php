@@ -16,6 +16,7 @@ use RZP\Jobs\RequestJob;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\State\Reason;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
@@ -272,22 +273,30 @@ class Core extends Base\Core
             unset($input[Entity::REJECTION_REASONS]);
         }
 
-        $merchantDetails->fill($input);
-
-        $this->repo->saveOrFail($merchantDetails);
-
-        if (empty($rejectionReasons) === false)
-        {
-            // save reasons
-        }
-
-        $stateData = [
-            State\Entity::NAME => $input[Entity::ACTIVATION_STATUS],
-        ];
-
         $admin = $this->app['basicauth']->getAdmin();
 
-        (new State\Core)->createForActivationAction($stateData, $merchantDetails, $admin);
+        $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input, $rejectionReasons, $admin)
+        {
+            $merchantDetails->fill($input);
+
+            $this->repo->saveOrFail($merchantDetails);
+
+            $stateData = [
+                State\Entity::NAME => $input[Entity::ACTIVATION_STATUS],
+            ];
+
+            $state = (new State\Core)->createForActivationAction($stateData, $merchantDetails, $admin);
+
+            if (empty($rejectionReasons) === false)
+            {
+                foreach ($rejectionReasons as $rejectionReason)
+                {
+                    $rejectionReason[Reason\Entity::REASON_TYPE] = Reason\Entity::REJECTION;
+
+                    (new Reason\Core)->create($rejectionReason, $state);
+                }
+            }
+        });
 
         return $merchantDetails;
     }

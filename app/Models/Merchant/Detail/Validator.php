@@ -158,8 +158,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $activationStatusRules = [
-        Entity::ACTIVATION_STATUS               => 'required|string',
-        Entity::CLARIFICATION_MODE              => 'filled|string',
+        Entity::ACTIVATION_STATUS               => 'required|string|max:255',
+        Entity::CLARIFICATION_MODE              => 'filled|string|max:255',
         Entity::REJECTION_REASONS               => 'filled|array',
     ];
 
