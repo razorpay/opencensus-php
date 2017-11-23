@@ -49,7 +49,7 @@ export default class SubscriptionForm extends Component {
           />
         </div>
 
-        <div class="form-group">
+        <div class="form-group" style={{ marginBottom: 0 }}>
           <label
             for="website_checkbox"
             class="label-required"
