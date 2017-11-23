@@ -240,6 +240,33 @@ return [
         ],
     ],
 
+    'testMerchantFormArchive' => [
+        'request' => [
+            'content' => [
+                'archive' => 1
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testMerchantActivationStatus' => [
+        'request' => [
+            'content' => [
+                'activation_status'  => 'under_review',
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status'  => 'under_review',
+            ],
+        ],
+    ],
+
     'testCommentMerchant' => [
         'request' => [
             'content' => [

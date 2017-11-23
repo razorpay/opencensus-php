@@ -8,7 +8,8 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
-
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 class MerchantDetailTest extends TestCase
 {
@@ -140,6 +141,91 @@ class MerchantDetailTest extends TestCase
         $this->setAdminForInternalAuth();
 
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest();
+    }
+
+    public function testMerchantFormArchive()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/archive_form";
+
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
+        $now = Carbon::now(Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $testData['response']['content']['archived_at'] = $now->getTimeStamp();
+
+        $this->startTest();
+
+        // Reset test params
+        Carbon::setTestNow();
+
+        $testData['request']['content']['archive'] = 0;
+
+        $testData['response']['content']['archived_at'] = null;
+
+        $this->startTest();
+    }
+
+    public function testMerchantActivationStatus()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
+        $this->startTest();
+
+        // under_review to needs_clarification
+        $testData['request']['content']['activation_status'] = 'needs_clarification';
+
+        $testData['request']['content']['clarification_mode'] = 'email';
+
+        $testData['response']['content']['activation_status'] = 'needs_clarification';
+
+        $testData['response']['content']['clarification_mode'] = 'email';
+
+        $this->startTest();
+
+        // needs_clarification to under_review
+        $testData['request']['content']['activation_status'] = 'under_review';
+
+        unset($testData['request']['content']['clarification_mode']);
+
+        $testData['response']['content']['activation_status'] = 'under_review';
+
+        unset($testData['response']['content']['clarification_mode']);
+
+        $this->startTest();
+
+        // under_review to rejected
+        $testData['request']['content']['activation_status'] = 'rejected';
+
+        $testData['request']['content']['rejection_reasons'] = [
+            [
+                'reason_category' => 'risky_business',
+                'reason_code'     => 'refurbished_goods',
+            ],
+            [
+                'reason_category' => 'risky_business',
+                'reason_code'     => 'gift_cards',
+            ],
+        ];
+
+        $testData['response']['content']['activation_status'] = 'rejected';
 
         $this->startTest();
     }
