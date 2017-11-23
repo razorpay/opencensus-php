@@ -45,9 +45,14 @@ class IrctcRefundReport extends BasicEntityReport
     {
         $this->setDefaults();
 
-        $now = Carbon::now()->getTimestamp();
+        $timestamp = Carbon::now()->getTimestamp();
 
-        $filename = $this->generateFilename($now);
+        if (isset($input['from']) === true)
+        {
+            $timestamp = $input['from'];
+        }
+
+        $filename = $this->generateFilename($timestamp);
 
         $fullpath = $this->writeDataToCsv($input, $filename);
 
@@ -136,7 +141,7 @@ class IrctcRefundReport extends BasicEntityReport
     {
         $version = 'V1';
 
-        $time = Carbon::now(Timezone::IST)->format('Ymd');
+        $time = Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('Ymd');
 
         $filePrefix = self::FILE_PREFIX[$this->merchant->getId()];
 

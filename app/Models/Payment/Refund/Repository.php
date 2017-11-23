@@ -571,7 +571,7 @@ class Repository extends Base\Repository
 
                             $orderId = $this->repo->order->dbColumn(Order\Entity::ID);
 
-                            $createdAt = $this->dbColumn(Entity::CREATED_AT);
+                            $pCreatedAt = $this->repo->payment->dbColumn(Entity::CREATED_AT);
 
                             $receipt = $this->dbColumn(Entity::RECEIPT);
 
@@ -582,8 +582,8 @@ class Repository extends Base\Repository
                                   ->join(Table::PAYMENT, $rPaymentId, '=', $pId)
                                   ->join(Table::ORDER, $orderId, $pOrderId)
                                   ->where($rMerchantId, '=', $merchantId)
-                                  ->where($createdAt, '>=', $from)
-                                  ->where($createdAt, '<=', $to)
+                                  ->where($pCreatedAt, '>=', $from)
+                                  ->where($pCreatedAt, '<=', $to)
                                   ->whereNull($receipt)
                                   ->where($status, '!=', Order\Status::PAID)
                                   ->groupBy($orderId);
