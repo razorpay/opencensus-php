@@ -88,7 +88,7 @@ export default class AddWebhook extends Component {
               </div>
             </div>
 
-            {isEdit &&
+            {isEdit && (
               <div class="form-group">
                 <label class="col-md-3 control-label">Active</label>
                 <div class="col-md-9">
@@ -98,12 +98,15 @@ export default class AddWebhook extends Component {
                     </label>
                     <div class="help-block">
                       <small>
-                        Whether the webhook is enabled or not. You can enable the webhook here if it was disabled due to multiple errors.
+                        Whether the webhook is enabled or not. You can enable
+                        the webhook here if it was disabled due to multiple
+                        errors.
                       </small>
                     </div>
                   </div>
                 </div>
-              </div>}
+              </div>
+            )}
 
             <div class="form-group">
               <label class="col-md-3 control-label">Secret</label>
@@ -113,12 +116,13 @@ export default class AddWebhook extends Component {
                   component={InputField}
                   class="form-control"
                 />
-                {isEdit &&
+                {isEdit && (
                   <div class="help-block">
                     <small>
                       You can leave the secret blank to leave it unedited.
                     </small>
-                  </div>}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -129,6 +133,7 @@ export default class AddWebhook extends Component {
                 <WebhookEventCheckbox eventName="payment.captured" />
                 <WebhookEventCheckbox eventName="payment.failed" />
                 <WebhookEventCheckbox eventName="invoice.paid" />
+                <WebhookEventCheckbox eventName="invoice.expired" />
                 <WebhookEventCheckbox eventName="order.paid" />
 
                 <ShowWhen apiFeatureEnabled="subscriptions">
