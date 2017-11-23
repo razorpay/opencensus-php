@@ -45,7 +45,7 @@ class IrctcRefundReport extends BasicEntityReport
     {
         $this->setDefaults();
 
-        $timestamp = Carbon::now()->getTimestamp();
+        $timestamp = Carbon::yesterday(Timezone::IST)->subDays(3)->timestamp;
 
         if (isset($input['from']) === true)
         {
@@ -167,9 +167,9 @@ class IrctcRefundReport extends BasicEntityReport
 
     protected function getTimestamps($input): array
     {
-        $from = Carbon::yesterday(Timezone::IST)->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->subDays(3)->timestamp;
 
-        $to = Carbon::today(Timezone::IST)->timestamp - 1;
+        $to = Carbon::yesterday(Timezone::IST)->subDays(2)->timestamp;
 
         if (isset($input['from']) === true)
         {
