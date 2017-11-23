@@ -115,6 +115,9 @@ return [
             Permission::EDIT_MERCHANT_UNSUSPEND => [
                 'assignable' => true,
             ],
+            Permission::EDIT_MERCHANT_RISK_THRESHOLD => [
+                'assignable' => true,
+            ],
             Permission::EDIT_MERCHANT_METHODS => '',
             Permission::EDIT_MERCHANT_ENABLE_INTERNATIONAL => '',
             Permission::EDIT_MERCHANT_DISABLE_INTERNATIONAL => '',

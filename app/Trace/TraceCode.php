@@ -510,6 +510,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_TERMINAL_TPV                      = 'GATEWAY_TERMINAL_TPV';
     const GATEWAY_HDFC_CAPTURED                     = 'GATEWAY_HDFC_CAPTURED';
     const GATEWAY_FIRST_DATA_UNEXPECTED             = 'GATEWAY_FIRST_DATA_UNEXPECTED';
+    const GATEWAY_FIRST_DATA_REFUND_BLOCKED         = 'GATEWAY_FIRST_DATA_REFUND_BLOCKED';
     const GATEWAY_DOWNTIME_SORTING                  = 'GATEWAY_DOWNTIME_SORTING';
     const GATEWAY_DOWNTIME_SORTING_FAILED           = 'GATEWAY_DOWNTIME_SORTING_FAILED';
     const GATEWAY_DOWNTIME_WEBHOOK                  = 'GATEWAY_DOWNTIME_WEBHOOK';
@@ -728,10 +729,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_PROCESSING_ERROR                        = 'BATCH_PROCESSING_ERROR';
     const BATCH_PROCESS_ASYNC                           = 'BATCH_PROCESS_ASYNC';
     const BATCH_RETRY_OUTPUT_FILE                       = 'BATCH_RETRY_OUTPUT_FILE';
-    const BATCH_DOWNLOAD                                = 'BATCH_DOWNLOAD';
-    const BATCH_LIST                                    = 'BATCH_LIST';
-    const BATCH_GET                                     = 'BATCH_GET';
-    const BATCH_FILE_DELETE                             = 'BATCH_FILE_DELETE';
     const BATCH_JOB_RECEIVED                            = 'BATCH_JOB_RECEIVED';
     const BATCH_JOB_HANDLED                             = 'BATCH_JOB_HANDLED';
     const BATCH_JOB_ERROR                               = 'BATCH_JOB_ERROR';
@@ -1064,10 +1061,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
         self::BATCH_ALREADY_PROCESSED                   => 'Batch File already processed',
         self::BATCH_PROCESSING_ERROR                    => 'Error in processing batch',
-        self::BATCH_DOWNLOAD                            => 'Downloading the batch file',
-        self::BATCH_LIST                                => 'Getting the batch files',
-        self::BATCH_GET                                 => 'Get Batch by given id',
-        self::BATCH_FILE_DELETE                         => 'Batch file delete',
         self::FEATURE_DELETE_REQUEST                    => 'Feature delete request initiated',
         self::FEATURE_MIGRATION_EXCEPTION               => 'Exception while creating features for merchant',
         self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant',

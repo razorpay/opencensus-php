@@ -3,6 +3,7 @@
 namespace RZP\Models\Invoice;
 
 use RZP\Models\Base;
+use RZP\Constants\Es;
 
 class EsRepository extends Base\EsRepository
 {
@@ -18,6 +19,7 @@ class EsRepository extends Base\EsRepository
         Entity::TYPE,
         Entity::TERMS,
         Entity::NOTES,
+        Entity::USER_ID,
         Entity::CREATED_AT,
     ];
 
@@ -46,38 +48,28 @@ class EsRepository extends Base\EsRepository
         Entity::TYPE,
         Entity::TYPES,
         Entity::MERCHANT_ID,
+        Entity::USER_ID,
     ];
 
     public function buildQueryForType(array & $query, string $value)
     {
-        $filter = [
-            'term' => [
-                'type' => [
-                    'value' => $value,
-                ],
-            ],
-        ];
-
-        $this->addFilter($query, $filter);
+        $this->addTermFilter($query, Entity::TYPE, $value);
     }
 
     public function buildQueryForTypes(array & $query, array $value)
     {
-        $filter = ['terms' => ['type' => $value]];
+        $filter = [Es::TERMS => [Entity::TYPE => $value]];
 
         $this->addFilter($query, $filter);
     }
 
     public function buildQueryForStatus(array & $query, string $value)
     {
-        $filter = [
-            'term' => [
-                'status' => [
-                    'value' => $value,
-                ],
-            ],
-        ];
+        $this->addTermFilter($query, Entity::STATUS, $value);
+    }
 
-        $this->addFilter($query, $filter);
+    public function buildQueryForUserId(array & $query, string $value)
+    {
+        $this->addTermFilter($query, Entity::USER_ID, $value);
     }
 }
