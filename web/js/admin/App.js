@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import { Route, matchPath, Switch, Redirect, Link } from 'react-router-dom';
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 import MainNavLink from 'admin/components/MainNavLink';
-import ShowWhen from 'admin/components/ShowWhen';
 import ErrorBoundary from 'common/ErrorBoundary';
+
+import user from 'admin/user';
 
 import Profile from 'admin/profile';
 
@@ -90,7 +91,7 @@ export default class App extends Component {
         </main>
         <header>
           <div id="profile-icon">
-            Pranav Gupta
+            {user.name}
             <i class="i-arrow-down" />
             <div class="menu">
               <Link to="/profile">
