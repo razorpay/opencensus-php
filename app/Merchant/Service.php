@@ -490,4 +490,21 @@ class Service extends Base\Service
 
         list($error, $data) = $genericService->call('POST', $addTags);
     }
+
+    public function getCurrentMerchantId()
+    {
+        $currentMerchant = Auth::user()->currentMerchant();
+
+        if (empty($currentMerchant))
+        {
+            // This case will happen only if the user has zero merchants and tried to access the merchant route.
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                'Current Merchant not found',
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return $currentMerchant->id;
+    }
 }

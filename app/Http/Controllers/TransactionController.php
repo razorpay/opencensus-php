@@ -40,8 +40,6 @@ class TransactionController extends Controller
 
         $input = Input::all();
 
-        $input['merchant_id'] = Auth::user()->currentMerchant()->id;
-
         $data = (new Transaction\Service)->getAnalytics($input, $mode);
 
         return AppResponse::jsonResponse([], $data);
@@ -51,9 +49,7 @@ class TransactionController extends Controller
     {
         $this->checkMode($mode);
 
-        $merchant_id = Auth::user()->currentMerchant()->id;
-
-        $data = (new Transaction\Service)->getAggregations($merchant_id, $mode);
+        $data = (new Transaction\Service)->getAggregations($mode);
 
         return AppResponse::jsonResponse([], $data);
     }
@@ -62,9 +58,7 @@ class TransactionController extends Controller
     {
         $this->checkMode($mode);
 
-        $merchant_id = Auth::user()->currentMerchant()->id;
-
-        $data = (new Transaction\Service)->getPaymentAggregations($merchant_id, $mode);
+        $data = (new Transaction\Service)->getPaymentAggregations($mode);
 
         return AppResponse::jsonResponse([], $data);
     }
