@@ -298,10 +298,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const EMANDATE_REGISTER_REQUEST                     = 'EMANDATE_REGISTER_REQUEST';
     const EMANDATE_REGISTER_REQUEST_ROW                 = 'EMANDATE_REGISTER_REQUEST_ROW';
-    const EMANDATE_REGISTER_RECON_REQUEST               = 'EMANDATE_REGISTER_RECON_REQUEST';
-    const EMANDATE_REGISTER_RECON_FAILED                = 'EMANDATE_REGISTER_RECON_FAILED';
-    const EMANDATE_REGISTER_RECON_ROW                   = 'EMANDATE_REGISTER_RECON_ROW';
-    const EMANDATE_REGISTER_RESPONSE                    = 'EMANDATE_REGISTER_RESPONSE';
 
     const MAILER_JOB_RECEIVED                           = 'MAILER_JOB_RECEIVED';
     const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';

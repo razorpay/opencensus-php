@@ -302,7 +302,6 @@ final class Route
         'geoip_update'                            => ['post',     'geoip/update',                                   'AdminController@updateGeoIps'                                      ],
 
         // File-based Emandate Routes
-        'emandate_registration_reconcile'         => ['post',     'emandate/registration/reconcile/{gateway}',      'EMandateController@postReconcileRegistrationFile'                  ],
         'emandate_debit_reconcile'                => ['post',     'emandate/debit/reconcile/{gateway}',             'EMandateController@postReconcileDebitFile'                         ],
 
         'reconciliate'                            => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
@@ -1093,7 +1092,6 @@ final class Route
         'user_merchant_upgrade',
         'user_resend_verification',
         'user_fetch_email',
-        'emandate_registration_reconcile',
         'emandate_debit_reconcile',
         'user_reset_password_create',
         'user_reset_password_token',
@@ -1528,7 +1526,6 @@ final class Route
 
         'mailgun' => [
             'reconciliate',
-            'emandate_registration_reconcile',
             'emandate_debit_reconcile',
         ],
 

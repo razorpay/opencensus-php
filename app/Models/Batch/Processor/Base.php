@@ -63,21 +63,6 @@ class Base extends BaseModel\Core
     protected $inputFileLocalPath = "";
     protected $outputFileLocalPath = "";
 
-    /**
-     * Static method returns instance of processor based on type of batch
-     * passed as arg.
-     *
-     * @param Batch\Entity $batch
-     *
-     * @return Base
-     */
-    public static function get(Batch\Entity $batch)
-    {
-        $processor = __NAMESPACE__ . '\\' . studly_case($batch->getType());
-
-        return new $processor($batch);
-    }
-
     public function __construct(Batch\Entity $batch)
     {
         parent::__construct();
@@ -438,7 +423,7 @@ class Base extends BaseModel\Core
     {
         $type = $this->batch->getType();
 
-        $headers = Batch\Header::PER_TYPE[$type][Batch\Header::OUTPUT];
+        $headers = Batch\Header::HEADER_MAP[$type][Batch\Header::OUTPUT];
 
         $fieldsCount = count($headers);
 
