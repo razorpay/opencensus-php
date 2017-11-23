@@ -1,8 +1,5 @@
 <?php
 
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant;
 
 return [
@@ -123,6 +120,55 @@ return [
             ],
             'test_chance' => 5000,
             'expected_terminal' => '1000HdfcShared',
+        ],
+        // Rules with different specificty levels present, but chance percent favours more generic rule
+        [
+            'method' => 'card',
+            'rules' => [
+                [
+                    'type'        => 'sorter',
+                    'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+                    'gateway'     => 'axis_migs',
+                    'network'     => 'VISA',
+                    'load'        => 70
+                ],
+                [
+                    'type'        => 'sorter',
+                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'gateway'     => 'hdfc',
+                    'load'        => 90
+                ]
+            ],
+            'test_chance' => 8000,
+            'expected_terminal' => '1000HdfcShared',
+        ],
+        [
+            'method' => 'card',
+            'rules' => [
+                [
+                    'type'        => 'sorter',
+                    'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+                    'gateway'     => 'axis_migs',
+                    'network'     => 'VISA',
+                    'load'        => 60
+                ],
+                [
+                    'type'        => 'sorter',
+                    'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+                    'issuer'      => 'HDFC',
+                    'gateway'     => 'hdfc',
+                    'load'        => 70
+                ],
+                [
+                    'type'        => 'sorter',
+                    'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+                    'iins'        => ['401200'],
+                    'gateway'     => 'first_data',
+                    'load'        => 60
+                ]
+            ],
+            'test_chance' => 5000,
+            'expected_terminal' => '1000FrstDataTl',
         ],
         // netbanking rule gives precedence to shared netbanking gateway over direct integration
         [

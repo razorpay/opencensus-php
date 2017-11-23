@@ -2652,3 +2652,6 @@ ALTER TABLE `geo_ips`
 ALTER TABLE batches
     MODIFY COLUMN upload_file_url VARCHAR(255) NOT NULL,
     MODIFY COLUMN download_file_url VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE gateway_rules
+    ADD COLUMN comments TEXT DEFAULT NULL AFTER category2;
