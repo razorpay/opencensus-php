@@ -106,6 +106,7 @@ class Entity extends Base\PublicEntity
      */
     const DEFAULT_SEARCH_ATTRIBUTES = [
         self::ID,
+        self::MERCHANT_ID,
         self::TYPE,
         self::GROUP,
         self::METHOD,
@@ -119,14 +120,6 @@ class Entity extends Base\PublicEntity
         self::EMI_SUBVENTION,
         self::INTERNATIONAL,
     ];
-
-    /**
-     * Attributes which define search criteria for sorter rules.
-     */
-    const SORTER_SEARCH_ATTRIBUTES = [
-        self::MERCHANT_ID,
-    ];
-
 
     /**
      * Attributes which define search criteria for filter rules.
@@ -467,7 +460,12 @@ class Entity extends Base\PublicEntity
     {
         $key = __CLASS__ . '::' . strtoupper($this->getType()) . '_SEARCH_ATTRIBUTES';
 
-        $searchAttributesForType = constant($key);
+        $searchAttributesForType = [];
+
+        if (defined($key) === true)
+        {
+            $searchAttributesForType = constant($key);
+        }
 
         return array_merge(self::DEFAULT_SEARCH_ATTRIBUTES, $searchAttributesForType);
     }

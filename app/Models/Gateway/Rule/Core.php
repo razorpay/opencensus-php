@@ -148,7 +148,7 @@ class Core extends Base\Core
         $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getCurrency();
 
         $params = [
-            Entity::MERCHANT_ID   => [$merchant->getId(), Account::SHARED_ACCOUNT],
+            Entity::MERCHANT_ID   => $merchant->getId(),
             Entity::METHOD        => $payment->getMethod(),
             Entity::INTERNATIONAL => false,
             Entity::CATEGORY2     => $merchant->getCategory2(),

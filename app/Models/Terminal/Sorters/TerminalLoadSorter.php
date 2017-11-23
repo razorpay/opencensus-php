@@ -40,6 +40,10 @@ class TerminalLoadSorter extends Terminal\Sorter
 
             $boostedTerminals = [];
 
+            //
+            // Here we have grouped the rules by order of specificity score, and we
+            // iterate through the groups of rules in order of score (highest -> lowest).
+            //
             foreach ($this->rules as $score => $rules)
             {
                 $boostedTerminals = $this->getBoostedTerminals(
@@ -64,8 +68,10 @@ class TerminalLoadSorter extends Terminal\Sorter
                 return $terminals;
             }
 
+            //
             // Puts any terminals which are not in boostedTerminals and puts them behind
             // the boosted terminals
+            //
             $nonBoostedTerminals = array_diff($terminals, $boostedTerminals);
 
             $terminals = array_merge($boostedTerminals, $nonBoostedTerminals);
@@ -104,6 +110,16 @@ class TerminalLoadSorter extends Terminal\Sorter
        {
             $totalLoad += $rule->getLoad();
 
+            //
+            // If the load so far is less than the random chance value, we dont
+            // consider matching terminals with the rule, and move on to the next
+            // rule if any.
+            //
+            if ($totalLoad < $chancePercent)
+            {
+                continue;
+            }
+
             $boostedTerminals = [];
 
             foreach ($terminals as $terminal)
@@ -114,6 +130,7 @@ class TerminalLoadSorter extends Terminal\Sorter
                 }
             }
 
+            //
             // We iterate through the rules and keep adding the rule load to the
             // total load  value.  If the total  load is greater than chance
             // percentage, that rule  is selected.  For  e.g  if we have
@@ -122,15 +139,13 @@ class TerminalLoadSorter extends Terminal\Sorter
             // However if say the chance percentage was 90, then even  after all
             // iterations  totalLoad will  be 80 which is less than 90 and so no
             // rules will be selected
-            if ($totalLoad >= $chancePercent)
+            //
+            if (empty($boostedTerminals) === false)
             {
-                if (empty($boostedTerminals) === false)
-                {
-                    $this->traceBoostedTerminals($boostedTerminals, $chancePercent, $verbose);
-                }
-
-                return $boostedTerminals;
+                $this->traceBoostedTerminals($boostedTerminals, $chancePercent, $verbose);
             }
+
+            return $boostedTerminals;
        }
 
        return [];

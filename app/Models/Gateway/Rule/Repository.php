@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Gateway\Rule;
 
-use RZP\Models\Base;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+
+use RZP\Models\Base;
+use RZP\Models\Merchant\Account;
 
 class Repository extends Base\Repository
 {
@@ -123,6 +125,27 @@ class Repository extends Base\Repository
     protected function addQueryForId(QueryBuilder $query, array $params)
     {
         $query->where(Entity::ID, '!=', $params[Entity::ID]);
+    }
+
+    /**
+     * For the merchant_id attribute below function covers the following two cases
+     * - While adding / editing a rule if rule is for shared merchant, we search all
+     *   applicable rules. If rule is not for shared merchant, we only check for rules
+     *   which either belong to this merchant or the shared merchant
+     * - While fetching rules applicable for payment, the merchant making the payment
+     *   will never be for shared merchant, hence always fetching rules applicable
+     *   for the payment merchant and the shared merchant
+     *
+     * @param Querybuilder $query  [description]
+     *
+     * @param array        $params [description]
+     */
+    protected function addQueryForMerchantId(Querybuilder $query, array $params)
+    {
+        if ($params[Entity::MERCHANT_ID] !== Account::SHARED_ACCOUNT)
+        {
+            $query->whereIn(Entity::MERCHANT_ID, [$params[Entity::MERCHANT_ID], Account::SHARED_ACCOUNT]);
+        }
     }
 
     /**

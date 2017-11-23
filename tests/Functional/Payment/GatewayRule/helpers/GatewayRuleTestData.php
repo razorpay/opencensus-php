@@ -618,38 +618,35 @@ return [
                 ],
             ],
         ],
-        // Create generic ru;e while more specific rule exists
+        // Create generic rule while more specific rule exists
         [
             'fixtures' => [
                 [
-                    'method'      => 'card',
-                    'type'        => 'sorter',
-                    'merchant_id' => '100000Razorpay',
-                    'gateway'     => 'hdfc',
-                    'network'     => null,
-                    'min_amount'  => 0,
-                    'load'        => 90
-                ]
-            ],
-            'request' => [
-                'content' => [
                     'merchant_id' => '10000000000000',
                     'type'        => 'sorter',
                     'gateway'     => 'axis_migs',
                     'method'      => 'card',
                     'iins'        => ['411111'],
-                    'load'        => 90
+                    'load'        => 90,
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '100000Razorpay',
+                    'gateway'     => 'hdfc',
+                    'load'        => 90,
                 ],
                 'url' => '/gateway/rules',
                 'method' => 'POST',
             ],
             'response' => [
                 'content' => [
-                    'merchant_id' => '10000000000000',
+                    'merchant_id' => '100000Razorpay',
                     'type'        => 'sorter',
-                    'gateway'     => 'axis_migs',
+                    'gateway'     => 'hdfc',
                     'method'      => 'card',
-                    'iins'        => ['411111'],
                     'load'        => 90,
                     'admin'       => true
                 ],
@@ -917,7 +914,7 @@ return [
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
         ],
-        // Test adding select and rekject filter for same criteria in same group
+        // Test adding select and reject filter for same criteria in same group
         [
             'fixtures' => [
                 [
@@ -957,6 +954,47 @@ return [
             'exception' => [
                 'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Test adding select and reject filter for same criteria in same group for different merchants
+        [
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'filter',
+                    'filter_type' => 'select',
+                    'group'       => 'groupA',
+                    'merchant_id' => '1ApiFeeAccount',
+                    'gateway'     => 'hdfc',
+                    'min_amount'  => 100,
+                    'max_amount'  => 700,
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'filter',
+                    'filter_type' => 'reject',
+                    'group'       => 'groupA',
+                    'gateway'     => 'hdfc',
+                    'method'      => 'card',
+                    'min_amount'  => 200,
+                    'max_amount'  => 500,
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'filter',
+                    'filter_type' => 'reject',
+                    'group'       => 'groupA',
+                    'gateway'     => 'hdfc',
+                    'method'      => 'card',
+                    'min_amount'  => 2,
+                    'max_amount'  => 5,
+                ],
             ],
         ],
         // test adding select / reject rules for same criteria but in different groups
