@@ -316,9 +316,11 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $claimsFileName = end($claimsFilePath);
 
-        $this->assertEquals($refundsFileName, 'refund_PNB_NB_20171122_V1_test.txt');
+        $time = Carbon::now(Timezone::IST);
 
-        $this->assertEquals($claimsFileName, 'PNB_Netbanking_Claims_test_22-11-2017.txt');
+        $this->assertEquals($refundsFileName, 'refund_PNB_NB_'. $time->format('Ymd') . '_V1_test.txt');
+
+        $this->assertEquals($claimsFileName, 'PNB_Netbanking_Claims_test_'. $time->format('d-m-Y') .  '.txt');
 
         // 2 refunds + 1 total line
         assert(count($refundsFileContents) === 3);
