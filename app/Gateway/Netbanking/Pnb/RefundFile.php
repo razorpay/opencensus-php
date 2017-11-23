@@ -71,7 +71,8 @@ class RefundFile extends Base\RefundFile
 
              // This field is left blank currently
             $cancellation_transaction_id = '';
-           $data[] =[
+
+            $data[] =[
                 $row['refund']['id'],
                 Constants::S_FLAG,
                 $refund_amount,
@@ -83,16 +84,6 @@ class RefundFile extends Base\RefundFile
 
             $totalAmount += $refund_amount;
         }
-
-        // adds row for total amount of refunds. Requested by bank.
-        $data[] = [
-            'RazorPay Pool A/c',
-            'INR',
-            '0120000',
-            str_pad(Constants::DEBIT, 2, ' ', STR_PAD_LEFT),
-            str_pad($totalAmount, 17, ' ', STR_PAD_LEFT),
-            Constants::REFUND,
-        ];
 
         return [$totalAmount, $data];
     }

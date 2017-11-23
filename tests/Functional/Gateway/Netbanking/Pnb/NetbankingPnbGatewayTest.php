@@ -322,8 +322,7 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $this->assertEquals($claimsFileName, 'PNB_Netbanking_Claims_test_'. $time->format('d-m-Y') .  '.txt');
 
-        // 2 refunds + 1 total line
-        assert(count($refundsFileContents) === 3);
+        assert(count($refundsFileContents) === 2);
 
         assert(count($claimsFileContents) === 4);
 
@@ -359,8 +358,8 @@ class NetbankingPnbGatewayTest extends TestCase
                 ],
                 'count'   => [
                     'claims'  => 4,
-                    'refunds' => 3,
-                    'total'   => 7
+                    'refunds' => 2,
+                    'total'   => 6
                 ]
         ];
 
