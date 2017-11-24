@@ -46,6 +46,13 @@ class Throttle
 
     protected function throttle(string $auth)
     {
+        if (($auth === Type::PRIVATE_AUTH) and
+            ($this->getKeyId() === 'zyRUD5exRM0CGk') and
+            ($this->request->route()->getName() === 'customer_fetch_token'))
+        {
+            throw new ThrottleException($time * 60*60, []);
+        }
+
         $mode = $this->getMode($auth);
 
         $limits = $this->config['limits'][$mode];
