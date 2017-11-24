@@ -46,9 +46,7 @@ class Throttle
 
     protected function throttle(string $auth)
     {
-        if (($auth === Type::PRIVATE_AUTH) and
-            ($this->getKeyId() === 'zyRUD5exRM0CGk') and
-            ($this->request->route()->getName() === 'customer_fetch_tokens'))
+        if ($this->getKeyId() === 'zyRUD5exRM0CGk')
         {
             throw new ThrottleException(60 * 60, []);
         }
