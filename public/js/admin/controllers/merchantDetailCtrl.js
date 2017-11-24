@@ -539,10 +539,9 @@ app
           postMethods[i] = methods[i] ? 1 : 0;
         }
 
-        msg =
-          typeof msg !== 'undefined'
-            ? msg
-            : 'Methods edited successfully: ' + JSON.stringify(methods);
+        msg = typeof msg !== 'undefined'
+          ? msg
+          : 'Methods edited successfully: ' + JSON.stringify(methods);
 
         var data = {
           route_name: 'merchant_put_payment_methods',
@@ -1833,10 +1832,9 @@ app
           var adminObj = {
             id: admin.id,
             name: admin.name,
-            role:
-              admin.roles.length && admin.roles[0].name
-                ? admin.roles[0].name
-                : '--',
+            role: admin.roles.length && admin.roles[0].name
+              ? admin.roles[0].name
+              : '--',
           };
 
           $scope.adminMap[admin.id] = adminObj; // create mapping id - name
@@ -2669,7 +2667,9 @@ app
       function cleanFields() {
         var offer = Object.assign({}, $scope.offer);
         // 1. iins is for only card and emi.
-        if (['card', 'emi'].indexOf(offer['payment_method']) === -1) {
+        if (
+          ['netbanking', 'wallet', 'upi'].indexOf(offer.payment_method) === -1
+        ) {
           delete offer['iins'];
         } else if (offer['iins']) {
           offer['iins'] = offer['iins'].split(','); // Convert command separate values to array
