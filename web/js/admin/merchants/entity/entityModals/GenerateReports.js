@@ -26,7 +26,6 @@ function validYear(current) {
   // Month check
   if (isBeforeToday && selectedYear === today.getFullYear()) {
     isBeforeToday = selectedMonth <= today.getMonth() + 1;
-    console.log('SELECTED MONTH...', selectedMonth, today.getMonth() + 1);
 
     // Date check
     if (isBeforeToday && selectedMonth === today.getMonth() + 1) {
@@ -65,8 +64,6 @@ export default class GenerateReports extends Component {
                 response.data.items
               ),
             });
-
-            console.log('RESPONSE ACCCOUNTS...,', response);
           }
         })
         .catch(err => {
@@ -95,7 +92,6 @@ export default class GenerateReports extends Component {
 
   getEntityLabel(value) {
     let label = null;
-    console.log('VALUE..', value);
     label = this.entityOptions.find(item => item.value === value).label;
 
     return label;
@@ -209,15 +205,20 @@ export default class GenerateReports extends Component {
         : details.current;
 
     if (entity === 'invoice') {
-      let invoiceUrl = `/${mode}/reports/invoice?year=${invoiceDate[0]}&month=${
+      /*
+      let invoiceUrl__merchant_dash = `/${mode}/reports/invoice?year=${invoiceDate[0]}&month=${
         invoiceDate[1]
       }`;
-      console.log('INVOICE URL...', invoiceUrl);
+*/
+
+      let invoiceUrl = `/admin/${mode}/reports/invoice?year=${
+        invoiceDate[0]
+      }&month=${invoiceDate[1]}&merchant_id=${this.props.merchantId}`;
       return Promise.resolve(window.open(invoiceUrl, '_blank'));
     }
 
     let data = {
-      month: date[1],
+      month: Number(date[1]),
       year: date[0],
     };
 
@@ -225,9 +226,14 @@ export default class GenerateReports extends Component {
       data.day = date[2];
     }
 
-    var ajaxParams = {
-      url: '/reports/' + entity,
-      data: data,
+    // let ajaxUrl__merchant_dash = '/reports/' + entity;
+    let ajaxUrl = `/admin/${mode}/reports/${entity}?merchant_id=${
+      this.props.merchantId
+    }`;
+
+    const ajaxParams = {
+      url: ajaxUrl,
+      params: data,
     };
 
     if (isMarketplaceEnabled && account_id !== details.current) {
@@ -243,17 +249,19 @@ export default class GenerateReports extends Component {
 
     return fetch(ajaxParams)
       .then(data => {
-        notifySuccess('Your report will download shortly');
+        if (data) {
+          notifySuccess('Your report will download shortly');
 
-        if (entity === 'broking') {
-          var blob = new Blob([data], {
-            type:
-              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          });
-          return saveAs(blob, 'broking_report.xlsx');
+          if (entity === 'broking') {
+            var blob = new Blob([data], {
+              type:
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+            return saveAs(blob, 'broking_report.xlsx');
+          }
+
+          location.href = data.url;
         }
-
-        location.href = data.data.url;
       })
       .catch(e => {
         notifyError('No data found for given time range');
@@ -264,8 +272,6 @@ export default class GenerateReports extends Component {
     const isGSTDisabled =
       this.props.props.merchant.details.tags.indexOf('Gst_Invoice_Disabled') !==
       -1;
-
-    console.log('CURRENT... INVOICE MONETH YEAR...', current);
 
     const selectedDate = current.split('-');
 
@@ -313,7 +319,6 @@ export default class GenerateReports extends Component {
                       value={option.value}
                       defaultValue={this.state.entity}
                       onClick={e => {
-                        console.dir(e.target.value);
                         this.setState({ entity: e.target.value });
                       }}
                       class="report-type hide"

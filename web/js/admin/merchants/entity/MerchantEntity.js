@@ -345,7 +345,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
         </ShowWhen>
         <ShowWhen permission="view_merchant_report">
           <div onClick={isDetailsLoading ? null : actions.GenerateReports}>
-            Download Report
+            Download Reports
             <i class="pull-right i i-download" />
             {isDetailsLoading && <div class="dot-loader">.</div>}
           </div>
