@@ -24,14 +24,11 @@ const ContentType = {
   svg: 'image/svg+xml',
 };
 
-// to remove it from begining of file path before uploading to s3
-const prefixLen = AWS_DIR.length + 1;
-
 glob(AWS_DIR + '/**', { nodir: true }, (error, files) => {
   files.forEach(file => {
     var fileParams = {
       ...params,
-      Key: file.slice(prefixLen),
+      Key: file,
       Body: readFileSync(file),
     };
     var ext = path.extname(file).slice(1);
