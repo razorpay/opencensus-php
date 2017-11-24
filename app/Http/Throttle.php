@@ -50,7 +50,7 @@ class Throttle
             ($this->getKeyId() === 'zyRUD5exRM0CGk') and
             ($this->request->route()->getName() === 'customer_fetch_token'))
         {
-            throw new ThrottleException($time * 60*60, []);
+            throw new ThrottleException(60 * 60, []);
         }
 
         $mode = $this->getMode($auth);
