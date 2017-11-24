@@ -8,30 +8,24 @@ import Legend, {
 } from 'merchant/containers/Home/Legend';
 import { getTraffic } from 'merchant/models/HomeKeyMetricsMock';
 
-import defaultChartOptions from 'rzp/ui/Highcharts/defaults';
-import Highcharts from 'rzp/ui/Highcharts';
+import { colors } from 'rzp/utils/chart';
+import { Pie } from 'react-chartjs-2';
 
 import './styles.styl';
 
-const { colors } = defaultChartOptions;
-
 const chartOptions = {
-  chart: {
-    type: 'pie',
-    height: '100%',
-  },
-  tooltip: {
-    enabled: false,
-  },
-  plotOptions: {
-    pie: {
-      allowPointSelect: false,
-      cursor: 'pointer',
-      dataLabels: {
-        enabled: false,
+  data: {
+    datasets: [
+      {
+        backgroundColor: colors,
+        hoverBackgroundColor: colors,
+        borderWidth: 0,
       },
-      showInLegend: false,
-      borderWidth: 0,
+    ],
+  },
+  options: {
+    tooltips: {
+      enabled: false,
     },
   },
 };
@@ -133,7 +127,7 @@ class Traffic extends Component {
   render() {
     const { loading, chartData, legendData, selectedGrouping } = this.state;
 
-    chartOptions.series = [{ data: chartData }];
+    chartOptions.data.datasets[0].data = chartData;
 
     return (
       <div className="panel rzp-traffic p-all">
@@ -156,7 +150,9 @@ class Traffic extends Component {
             <span>Loading...</span>
           ) : (
             <div className="chart-content">
-              <Highcharts options={chartOptions} />
+              <div className="chart">
+                <Pie {...chartOptions} />
+              </div>
               <Legend alignment="vertical">
                 {legendData.map((item, index) => {
                   return (

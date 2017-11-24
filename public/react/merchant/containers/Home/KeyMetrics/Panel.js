@@ -12,25 +12,11 @@ import Legend, {
   LegendContent,
 } from 'merchant/containers/Home/Legend';
 
+import { timeScale } from 'rzp/utils/chart';
+
 import { tabsMeta } from './data';
 
-const chartOptions = {
-  chart: {
-    height: 250,
-    spacingTop: 10,
-  },
-  xAxis: {
-    type: 'datetime',
-  },
-  plotOptions: {
-    area: {
-      stacking: true,
-      animation: {
-        duration: 0,
-      },
-    },
-  },
-};
+const chartOptions = timeScale();
 
 class Panel extends Component {
   constructor(props) {

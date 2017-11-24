@@ -1,10 +1,17 @@
 import { defaults } from 'react-chartjs-2';
 import moment from 'moment';
 
+console.log('something');
+
 const global = defaults.global;
 global.maintainAspectRatio = false;
-global.elements.line.lineTension = 0;
 global.legend.display = false;
+
+// by default straight lines ofr line graph
+global.elements.line.tension = 0;
+
+// by default no gap between each pie
+x.defaults.global.elements.arc.borderWidth = 0;
 
 const tooltips = global.tooltips;
 tooltips.mode = 'index';
@@ -15,7 +22,12 @@ tooltips.intersect = false;
 global.hover.mode = 'index';
 global.hover.intersect = false;
 
-const colors = [
+export const colors = [
+  [75, 84, 113],
+  [95, 127, 185],
+  [117, 194, 216],
+  [172, 172, 231],
+  [235, 120, 120],
   [35, 183, 229],
   [52, 152, 219],
   [46, 204, 113],
@@ -46,7 +58,7 @@ export const timeScale = ({ xLabel, yLabel }) => {
             tooltipFormat: 'ddd DD MMM YYYY',
           },
           gridLines: {
-            color: '#f8f8f8',
+            color: '#FFFFFF',
           },
         },
       ],
@@ -58,7 +70,7 @@ export const timeScale = ({ xLabel, yLabel }) => {
             maxTicksLimit: 10,
           },
           gridLines: {
-            color: '#f8f8f8',
+            color: '#FFFFFF',
           },
         },
       ],
