@@ -16,15 +16,11 @@ build:
             mv /tmp/generated/dist dashboard/
             mv /tmp/s3sync.js ./
 
-      - script:
-          name: Gzip
-          code: node /scripts/gzip.js
-
 deploy:
     steps:
       - script:
           name: S3 Sync
-          code: mv s3sync.js /scripts && node /scripts/s3sync.js
+          code: mv s3sync.js /scripts && /scripts/s3sync.js
 
     after-steps:
       - slack-notifier:
