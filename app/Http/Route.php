@@ -1579,6 +1579,7 @@ final class Route
         'merchant_sub_create'               => [Feature::AGGREGATOR, Feature::MARKETPLACE],
         'customer_delete'                   => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
         'customer_delete_token'             => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
+        'customer_fetch_tokens'             => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
         'payment_create_wallet'             => [Feature::S2SWALLET],
         'payment_create_upi'                => [Feature::S2SUPI],
         'payment_create_openwallet'         => [Feature::OPENWALLET],

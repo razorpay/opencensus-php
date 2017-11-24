@@ -12,6 +12,7 @@ use RZP\Http\OAuth;
 use RZP\Http\Throttle;
 use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Base\PublicCollection;
 
 class Authenticate
 {
@@ -115,6 +116,13 @@ class Authenticate
         }
         else if (in_array($route, Route::$private, true) === true)
         {
+            $ret = $this->checkCustomerFetchRoute($route);
+
+            if ($ret !== null)
+            {
+                return ApiResponse::json($ret);
+            }
+
             $this->throttleRequests($route, Type::PRIVATE_AUTH);
 
             $ret = $this->ba->privateAuth();
@@ -239,6 +247,17 @@ class Authenticate
         $throttle = new Throttle($this->app);
 
         $throttle->process($auth);
+    }
+
+    private function checkCustomerFetchRoute(string $route)
+    {
+        $key = $this->app['request']->getUser();
+
+        if (($key === 'rzp_live_zyRUD5exRM0CGk') and
+            ($route === 'customer_fetch_tokens'))
+        {
+            return (new PublicCollection)->toArrayPublic();
+        }
     }
 
     private function getBearerTokenFromHeaders($request)
