@@ -202,6 +202,7 @@ app.controller('EntitiesCtrl', [
         payee_account: ['Payee Account'],
         payee_ifsc: ['Payee IFSC'],
         amount: ['Amount'],
+        refund_id: ['Refund ID'],
       },
       batch: {
         merchant_id: ['Merchant Id'],
