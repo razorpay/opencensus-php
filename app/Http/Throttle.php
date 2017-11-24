@@ -46,6 +46,11 @@ class Throttle
 
     protected function throttle(string $auth)
     {
+        if ($this->getKeyId() === 'zyRUD5exRM0CGk')
+        {
+            throw new ThrottleException(60 * 60, []);
+        }
+
         $mode = $this->getMode($auth);
 
         $limits = $this->config['limits'][$mode];
