@@ -11,6 +11,8 @@ class LogCache
     {
         $trace = App::getFacadeRoot()['trace'];
 
-        $trace->info(TraceCode::CACHE_LOG, func_get_args());
+        $trace->info(TraceCode::CACHE_EVENT, [
+            'arguments' => func_get_args()
+        ]);
     }
 }
