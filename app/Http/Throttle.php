@@ -49,7 +49,7 @@ class Throttle
         $route = $this->request->route()->getName();
 
         if (($this->getKeyId() === 'zyRUD5exRM0CGk') and
-            ($route !== 'payment_capture'))
+            ($route !== 'payment_capture') and ($route !== 'merchant_methods'))
         {
             throw new ThrottleException(60 * 60, []);
         }
