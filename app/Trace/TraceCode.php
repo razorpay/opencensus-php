@@ -968,6 +968,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GEOLOCATION_UPDATE_RESPONSE                   = 'GEOLOCATION_UPDATE_RESPONSE';
     const GEOLOCATION_FAILURE                           = 'GEOLOCATION_FAILURE';
 
+    const LOG_CACHE                                     = 'LOG_CACHE';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

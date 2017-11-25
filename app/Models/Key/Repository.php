@@ -12,6 +12,11 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
     );
 
+    public function find($id, $columns = array('*'))
+    {
+        return $this->newQuery()->remember(5)->find($id, $columns);
+    }
+
     public function getKeysForMerchant($merchantId, $expired = false)
     {
         $query = $this->newQuery()->merchantId($merchantId);
@@ -21,7 +26,7 @@ class Repository extends Base\Repository
             $query->notExpired();
         }
 
-        return $query->get();
+        return $query->remember(5)->get();
     }
 
     public function findNotExpired($keyId)
@@ -34,6 +39,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Entity::ID, '=', $keyId)
+                    ->remember(5)
                     ->first();
     }
 }

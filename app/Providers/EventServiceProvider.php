@@ -22,7 +22,15 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         'RZP\Events\AuditLogEntry' => [
             'RZP\Listeners\AuditLogListener',
-        ]
+        ],
+
+        'Illuminate\Cache\Events\CacheHit' => [
+            'RZP\Listeners\LogCache',
+        ],
+
+        'Illuminate\Cache\Events\CacheMissed' => [
+            'RZP\Listeners\LogCache',
+        ],
     ];
 
     public function boot()
