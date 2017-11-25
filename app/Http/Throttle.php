@@ -72,7 +72,7 @@ class Throttle
 
             if ($auth === Type::PRIVATE_AUTH)
             {
-                $throttleData['ip'] = '';
+                $throttleData['ip'] = '1.1.1.1';
             }
 
             $time = $this->config['time_interval'];
