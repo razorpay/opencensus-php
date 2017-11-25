@@ -18,6 +18,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->remember(self::CACHE_TTL)
+                    ->cacheTags('keys_' . $id)
                     ->find($id, $columns);
     }
 
