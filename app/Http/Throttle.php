@@ -54,14 +54,6 @@ class Throttle
 
     protected function throttle(string $auth)
     {
-        $route = $this->request->route()->getName();
-
-        if (($this->getKeyId() === 'zyRUD5exRM0CGk') and
-            ($route === 'customer_create'))
-        {
-            throw new ThrottleException(60 * 60, []);
-        }
-
         $mode = $this->getMode($auth);
 
         $limits = $this->config['limits'][$mode];
@@ -77,6 +69,11 @@ class Throttle
                 'ip'    => $this->request->ip(),
                 'route' => $identifier,
             ];
+
+            if ($auth === Type::PRIVATE_AUTH)
+            {
+                $throttleData['ip'] = '';
+            }
 
             $time = $this->config['time_interval'];
 
@@ -109,6 +106,18 @@ class Throttle
     protected function isThrottleMocked()
     {
         $route = $this->request->route()->getName();
+
+        $nykaaThrottleRoutes = [
+            'customer_create',
+            'customer_fetch_tokens'
+        ];
+
+        // Nykaa key id
+        if (($this->getKeyId() === 'zyRUD5exRM0CGk') and
+            (in_array($route, $nykaaThrottleRoutes, true) === true))
+        {
+            return false;
+        }
 
         return (in_array($route, Route::$throttledRoutes, true) === false);
     }
