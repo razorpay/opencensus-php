@@ -16,6 +16,12 @@ use GrahamCampbell\Throttle\Facades\Throttle as ThrottleFacade;
 
 class Throttle
 {
+    protected $app;
+    protected $request;
+    protected $router;
+    protected $config;
+    protected $trace;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -51,7 +57,9 @@ class Throttle
         $route = $this->request->route()->getName();
 
         if (($this->getKeyId() === 'zyRUD5exRM0CGk') and
-            ($route !== 'payment_capture') and ($route !== 'merchant_methods'))
+            ($route !== 'payment_capture') and
+            ($route !== 'merchant_methods') and
+            ($route !== 'payment_refund'))
         {
             throw new ThrottleException(60 * 60, []);
         }
@@ -113,7 +121,7 @@ class Throttle
 
         $minute = Carbon::now(Timezone::IST)->minute;
 
-        $identifier = $mode . $routeName . ":" . $minute;
+        $identifier = $mode . $routeName . ':' . $minute;
 
         switch ($auth)
         {

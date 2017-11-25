@@ -24,7 +24,7 @@ return [
 
     'skip' => env('SKIP_THROTTLE', false),
 
-    // Time interval for key expiry in redis
+    // Time interval for key expiry in redis in minutes
     'time_interval' => 2,
 
     'limits' => [
