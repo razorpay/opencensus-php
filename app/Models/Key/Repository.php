@@ -6,6 +6,8 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
+    const CACHE_TTL = 5;
+
     protected $entity = 'key';
 
     protected $appFetchParamRules = array(
@@ -14,7 +16,9 @@ class Repository extends Base\Repository
 
     public function find($id, $columns = ['*'])
     {
-        return $this->newQuery()->remember(5)->find($id, $columns);
+        return $this->newQuery()
+                    ->remember(self::CACHE_TTL)
+                    ->find($id, $columns);
     }
 
     public function getKeysForMerchant($merchantId, $expired = false)
@@ -26,7 +30,7 @@ class Repository extends Base\Repository
             $query->notExpired();
         }
 
-        return $query->remember(5)->get();
+        return $query->get();
     }
 
     public function findNotExpired($keyId)
@@ -39,7 +43,6 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Entity::ID, '=', $keyId)
-                    ->remember(5)
                     ->first();
     }
 }
