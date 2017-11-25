@@ -3,8 +3,10 @@
 namespace RZP\Http;
 
 use App;
+use Carbon\Carbon;
 use RZP\Http\Route;
 use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Trace\TraceCode;
 use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -109,7 +111,9 @@ class Throttle
     {
         $routeName = $this->request->route()->getName();
 
-        $identifier = $mode . $routeName;
+        $minute = Carbon::now(Timezone::IST)->minute;
+
+        $identifier = $mode . $routeName . ":" . $minute;
 
         switch ($auth)
         {
