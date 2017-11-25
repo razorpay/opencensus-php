@@ -9,10 +9,10 @@ class Repository extends Base\Repository
     protected $entity = 'key';
 
     protected $appFetchParamRules = array(
-        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID => 'sometimes|alpha_num',
     );
 
-    public function find($id, $columns = array('*'))
+    public function find($id, $columns = ['*'])
     {
         return $this->newQuery()->remember(5)->find($id, $columns);
     }
