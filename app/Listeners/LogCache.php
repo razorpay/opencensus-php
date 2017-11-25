@@ -9,7 +9,7 @@ class LogCache
 {
     public function handle()
     {
-        $trace = App::getFacadeRoot();
+        $trace = App::getFacadeRoot()['trace'];
 
         $trace->info(TraceCode::CACHE_LOG, func_get_args());
     }
