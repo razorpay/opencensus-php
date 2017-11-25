@@ -46,7 +46,10 @@ class Throttle
 
     protected function throttle(string $auth)
     {
-        if ($this->getKeyId() === 'zyRUD5exRM0CGk')
+        $route = $this->request->route()->getName();
+
+        if (($this->getKeyId() === 'zyRUD5exRM0CGk') and
+            ($route !== 'payment_capture'))
         {
             throw new ThrottleException(60 * 60, []);
         }
