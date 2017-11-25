@@ -18,6 +18,8 @@ class Type
 
     // Virtual Account Bulk Creation
     const VIRTUAL_BANK_ACCOUNT  = 'virtual_bank_account';
+    // Bank Transfer Bulk Insert
+    const BANK_TRANSFER         = 'bank_transfer';
 
     const RECONCILIATION        = 'reconciliation';
 
@@ -43,6 +45,7 @@ class Type
         self::PAYMENT_LINK,
         self::LINKED_ACCOUNT,
         self::VIRTUAL_BANK_ACCOUNT,
+        self::BANK_TRANSFER,
         self::RECONCILIATION,
         self::EMANDATE,
     ];

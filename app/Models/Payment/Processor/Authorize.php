@@ -792,6 +792,13 @@ trait Authorize
             return;
         }
 
+        // Bank Transfers can be inserted via the batch create route, proxy auth
+        if (($payment->isBankTransfer() === true) and
+            (Route::currentRouteName() === 'batch_create'))
+        {
+            return;
+        }
+
         //
         // For first recurring payments, if it's coming via private auth, the merchant
         // should have S2S enabled, along with recurring.

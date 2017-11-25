@@ -1146,8 +1146,14 @@ class Processor
 
     protected function validateBankTransferDetailsIfApplicable(Payment\Entity $payment)
     {
+        // Bank transfers are normally created by VA providers,
+        // i.e. Kotak and Yesbank, which act as apps and use appAuth.
+        //
+        // They can also be inserted via Dashboard (also an app)
+        // or in bulk via the batch_create route (proxy auth)
         if (($payment->isBankTransfer() === true) and
-            ($this->app['basicauth']->isAppAuth() === false))
+            ($this->app['basicauth']->isAppAuth() === false) and
+            (Route::currentRouteName() !== 'batch_create'))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid payment method given: ' . $payment->getMethod());
