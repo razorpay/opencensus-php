@@ -43,6 +43,8 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
+        'route'        => \RZP\Http\Middleware\Route::class,
+        'throttle'     => \RZP\Http\Middleware\Throttle::class,
         'auth'         => \RZP\Http\Middleware\Authenticate::class,
         'admin_access' => \RZP\Http\Middleware\AdminAccess::class,
         'workflow'     => \RZP\Http\Middleware\Workflow::class,

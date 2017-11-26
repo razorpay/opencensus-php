@@ -25,9 +25,6 @@ class RouteServiceProvider extends ServiceProvider
 
     /**
      * Define your route model bindings, pattern filters, etc.
-     *
-     * @param  \Illuminate\Routing\Router  $router
-     * @return void
      */
     public function boot()
     {
@@ -70,13 +67,13 @@ class RouteServiceProvider extends ServiceProvider
          * - namespace - All the routes defined have a controller and action.
          *     We only define the class name of the controller, the namespace
          *     is derived from this parameter.
-         * - middleware:auth - All routes have Authenticate middleware applied
-         *     to them
+         * - middleware:auth - All routes have Throttle and Authenticate
+         *     middleware applied to them
          */
         $routeGroupGlobalParams = array(
             'prefix'        => 'v1',
             'namespace'     => $this->namespace,
-            'middleware'    => ['auth', 'admin_access', 'workflow']);
+            'middleware'    => ['route', 'throttle', 'auth', 'admin_access', 'workflow']);
 
         $router->group(
             $routeGroupGlobalParams,

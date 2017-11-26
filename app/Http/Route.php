@@ -3,6 +3,9 @@
 namespace RZP\Http;
 
 use ApiResponse;
+use Illuminate\Routing\Router;
+use RZP\Foundation\Application;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Feature\Constants as Feature;
 
 use RZP\Models\Admin\Permission\Name as Permission;
@@ -1679,6 +1682,21 @@ final class Route
 
     const WORKFLOW_APPROVE_ROUTE_NAME = 'action_checker_create';
 
+    /**
+     * @var Router
+     */
+    protected $router;
+
+    /**
+     * @var BasicAuth
+     */
+    protected $ba;
+
+    /**
+     * @var Application
+     */
+    protected $app;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -1913,7 +1931,7 @@ final class Route
 
     public function isWorkflowExecuteOrApproveCall()
     {
-        $routeName = $this->router->currentRouteName();
+        $routeName = $this->getCurrentRouteName();
 
         if (($routeName === self::WORKFLOW_EXECUTE_ROUTE_NAME) or
             ($routeName === self::WORKFLOW_APPROVE_ROUTE_NAME))
@@ -1927,14 +1945,14 @@ final class Route
     /**
      * Returns an array of feature names to which the current route is mapped under
      *
+     * @param $route
+     *
      * @return array
      */
-    public function getFeaturesForRoute() : array
+    public static function getFeaturesForRoute($route) : array
     {
-        $currentRoute = $this->getCurrentRouteName();
-
         $features = self::$routeNameToFeaturesMap;
 
-        return $features[$currentRoute] ?? [];
+        return $features[$route] ?? [];
     }
 }
