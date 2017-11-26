@@ -46,7 +46,11 @@ class Throttle
         {
             $this->throttle($auth);
         }
-        catch (BaseException $e)
+        catch (ThrottleException $e)
+        {
+            throw $e;
+        }
+        catch (\Throwable $e)
         {
             $this->trace->traceException($e);
         }

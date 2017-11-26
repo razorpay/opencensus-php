@@ -1272,3 +1272,9 @@ where utr in ('KKBKR22017111800240652', 'KKBKR22017111800240693');
 UPDATE fund_transfer_attempts
 SET status = 'failed', failure_reason = 'RTGS Return'
 where utr in ('KKBKR22017111800240652', 'KKBKR22017111800240693');
+
+# irctc batch failed due to nykaa outage
+UPDATE batches SET processing=0 WHERE id='95GW8yxNoBol2O';
+
+# goibibo refund batch failed due to nykaa outage
+UPDATE batches SET processing=0 WHERE id='95JWxgK3aeBcdy';
