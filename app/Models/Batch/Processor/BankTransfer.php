@@ -14,9 +14,9 @@ class BankTransfer extends Base
      */
     protected $core;
 
-    public function __construct(Entity $batch)
+    public function performPreProcessingActions()
     {
-        parent::__construct($batch);
+        parent::performPreProcessingActions();
 
         $this->core = new BankTransferCore;
     }
