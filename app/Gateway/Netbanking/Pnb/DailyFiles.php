@@ -14,7 +14,7 @@ use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 
 class DailyFiles extends Base\DailyFiles
 {
-    protected $emailIdsToSendTo = 'pnb.netbanking.refunds@razorpay.com';
+    protected $emailIdsToSendTo = 'settlements@razorpay.com';
 
     public function generate($from, $to, $email = null)
     {
@@ -121,7 +121,6 @@ class DailyFiles extends Base\DailyFiles
 
         $refunds = $this->repo->refund
                               ->fetchRefundsForPnbClaims($from, $to, $this->gateway);
-
 
         foreach ($refunds as $refund)
         {
