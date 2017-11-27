@@ -32,6 +32,11 @@ class Core extends Base\Core
         {
             $bharatQr = (new Entity)->build($input);
 
+            if (isset($this->app['rzp.mode']) === false)
+            {
+                $this->determineAndSetMode($bharatQr);
+            }
+
             $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
                 function() use ($bharatQr)
@@ -52,5 +57,30 @@ class Core extends Base\Core
         }
 
         return $valid;
+    }
+
+    protected function determineAndSetMode(Entity $bharatQr)
+    {
+        $merchantReference = $bharatQr->getMerchantReference();
+
+        if (empty($merchantReference) === true)
+        {
+            $mode =  Mode::LIVE;
+        }
+        else
+        {
+            $mode = $this->app['repo']->determineLiveOrTestModeForEntity($merchantReference, 'qr_code');
+
+            if ($mode === null)
+            {
+                throw new Exception\LogicException(
+                    'Merchant Reference id not found in either database: ' . $merchantReference);
+            }
+        }
+
+        \Database\DefaultConnection::set($mode);
+
+        $this->app['basicauth']->setMode($mode);
+
     }
 }

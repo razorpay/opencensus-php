@@ -1098,7 +1098,6 @@ final class Route
         'user_reset_password_create',
         'user_reset_password_token',
         'merchant_payout_mail',
-        'gateway_payment_callback_bharatqr',
         'geoip_update'
     ];
 
@@ -1447,6 +1446,7 @@ final class Route
         'upi_npci_request',
         'upi_zero_call',
         'mock_billdesk_payment',
+        'gateway_payment_callback_bharatqr',
     ];
 
     public static $internalApps = [

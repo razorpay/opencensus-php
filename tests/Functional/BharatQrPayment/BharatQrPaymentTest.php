@@ -22,7 +22,7 @@ class BharatQrPaymentTest extends TestCase
 
         $this->qrCode = $this->createVirtualAccount();
 
-        $this->ba->appAuth();
+        $this->ba->directAuth();
     }
 
     public function testQrPaymentProcess()

@@ -161,6 +161,8 @@ class Authenticate
         {
             $this->throttleRequests($route, Type::DIRECT_AUTH);
 
+            $ret = $this->ba->directAuth();
+
             // $ret = $this->ba->proxyAuth();
         }
         else
