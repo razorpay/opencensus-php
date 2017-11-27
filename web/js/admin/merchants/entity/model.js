@@ -2,6 +2,7 @@ import { observable, action } from 'mobx';
 import { notifySuccess } from 'common/modal';
 import BaseModel from 'model/base';
 
+import user from 'admin/user';
 import { adminDelete } from 'util/fetch';
 import { titleCase, removeFromArray } from 'util/index';
 import { isWorkflow } from 'util/index';
@@ -48,7 +49,11 @@ export default class Model extends BaseModel {
         }
 
         // TODO: Ensure rendering happpens on resolve of each below otherwise data will update but not merchant object, hence no re-rendering. Or take out each property instead of putting inside merchant object
-        this.fetchPricingPlans();
+
+        if (user.permissions.find(perm => perm === 'view_merchant_pricing')) {
+          this.fetchPricingPlans();
+        }
+
         this.fetchBalance();
         this.fetchScheduleTasks();
         this.fetchGatewayRules();
