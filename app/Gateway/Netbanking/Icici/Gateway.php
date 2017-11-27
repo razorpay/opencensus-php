@@ -18,7 +18,6 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Base\Entity as BaseEntity;
 use RZP\Models\Payment\Verify as PaymentVerify;
 
 class Gateway extends Base\Gateway
@@ -427,7 +426,7 @@ class Gateway extends Base\Gateway
         return array_merge($baseRequestData, $requestData);
     }
 
-    protected function getBaseVerifyRequestData(BaseEntity $gatewayPayment, array $input)
+    protected function getBaseVerifyRequestData(Base\Entity $gatewayPayment, array $input)
     {
         $paymentDate = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)
                              ->format('Y-m-d');
