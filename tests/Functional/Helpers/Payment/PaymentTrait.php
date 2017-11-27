@@ -669,6 +669,20 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function authorizedFailedPayment($id)
+    {
+        $request = array(
+            'url'    => '/payments/'.$id.'/authorize_failed',
+            'method' => 'POST');
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+
     protected function verifyMultiplePayments($filter)
     {
         $request = array(
