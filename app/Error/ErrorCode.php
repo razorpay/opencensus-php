@@ -156,9 +156,9 @@ class ErrorCode
     // Payment bad requests
     const BAD_REQUEST_PAYMENT_FAILED                                                = 'BAD_REQUEST_PAYMENT_FAILED';
     const BAD_REQUEST_PAYMENT_PENDING                                               = 'BAD_REQUEST_PAYMENT_PENDING';
-    const BAD_REQUEST_TRANSACTION_PENDING                                           = 'BAD_REQUEST_TRANSACTION_PENDING';
-    const BAD_REQUEST_PAYMENT_EXPIRED                                               = 'BAD_REQUEST_PAYMENT_EXPIRED';
-    const BAD_REQUEST_PAYMENT_REJECTED                                              = 'BAD_REQUEST_PAYMENT_REJECTED';
+    const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                           = 'BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING';
+    const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                           = 'BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED';
+    const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED                          = 'BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED';
 
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_USER                                     = 'BAD_REQUEST_PAYMENT_CANCELLED_BY_USER';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID                 = 'BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID';

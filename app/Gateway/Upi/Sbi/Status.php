@@ -24,9 +24,9 @@ class Status
 
     const STATUS_CODE_TO_ERROR_CODE_MAP = [
         self::FAILED           => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        self::REJECTED         => ErrorCode::BAD_REQUEST_PAYMENT_REJECTED,
-        self::EXPIRED          => ErrorCode::BAD_REQUEST_PAYMENT_EXPIRED,
-        self::PENDING          => ErrorCode::BAD_REQUEST_TRANSACTION_PENDING,
+        self::REJECTED         => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED,
+        self::EXPIRED          => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED,
+        self::PENDING          => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING,
         self::VALIDATION_ERROR => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
     ];
 
