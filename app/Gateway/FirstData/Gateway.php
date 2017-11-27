@@ -124,7 +124,8 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
 
-        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $expectedAmount = $this->getFormattedAmount($input['payment']['amount']);
+
         $actualAmount = number_format($input['gateway'][ConnectResponseFields::CHARGE_TOTAL], 2, '.', '');
 
         $this->assertAmount($expectedAmount, $actualAmount);
@@ -1057,7 +1058,7 @@ class Gateway extends Base\Gateway
 
         $txnDateTime = $dateTime->format(Codes::DATE_TIME_FORMAT);
 
-        $chargeTotal = $input['payment'][Payment\Entity::AMOUNT] / 100;
+        $chargeTotal = $this->getFormattedAmount($input['payment'][Payment\Entity::AMOUNT]);
 
         $currency = $input['payment'][Payment\Entity::CURRENCY];
 
@@ -1275,9 +1276,7 @@ class Gateway extends Base\Gateway
             ];
         }
 
-        $amount = $input[$amountEntity]['amount'] / 100;
-
-        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $this->getFormattedAmount($amount);
+        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $this->getFormattedAmount($input[$amountEntity]['amount']);
 
         $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY] = $currencyCode;
     }
