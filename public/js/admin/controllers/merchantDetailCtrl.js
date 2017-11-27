@@ -2668,7 +2668,7 @@ app
         var offer = Object.assign({}, $scope.offer);
         // 1. iins is for only card and emi.
         if (
-          ['netbanking', 'wallet', 'upi'].indexOf(offer.payment_method) === -1
+          ['netbanking', 'wallet', 'upi'].indexOf(offer.payment_method) !== -1
         ) {
           delete offer['iins'];
         } else if (offer['iins']) {
