@@ -10,8 +10,39 @@ use RZP\Models\Terminal\Category;
 class MerchantSorter extends Terminal\Sorter
 {
     protected $properties = [
+        'mcc',
         'category',
     ];
+
+    // Arrange card terminals in order of MCC
+    public function mccSorter($terminals)
+    {
+        // No need to sort unless the method is either card or EMI.
+        if ($this->input['payment']->isMethodCardOrEmi() === false)
+        {
+            return $terminals;
+        }
+
+        $merchantMcc = $this->input['merchant']->getCategory();
+
+        $matchedTerminals = [];
+
+        $nonMatchedTerminals = [];
+
+        foreach ($terminals as $terminal)
+        {
+            if ($terminal->getCategory() === $merchantMcc)
+            {
+                $matchedTerminals[] = $terminal;
+            }
+            else
+            {
+                $nonMatchedTerminals[] = $terminal;
+            }
+        }
+
+        return array_merge($matchedTerminals,$nonMatchedTerminals);
+    }
 
     /**
      * Specific category terminals should be placed

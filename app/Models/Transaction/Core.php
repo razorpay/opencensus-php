@@ -336,7 +336,8 @@ class Core extends Base\Core
      * @param  Payment\Entity          $payment
      * @param  Transaction\Entity      $transaction
      * @param  Merchant\Balance\Entity $merchantBalance
-     * @return [type]
+     *
+     * @return array
      */
     protected function calculatePrepaidFee(
         Payment\Entity $payment,
@@ -397,26 +398,28 @@ class Core extends Base\Core
     /**
      * Calculate Fee for Amount Credit
      * Credit = amount, fee & ST = 0
-     * @param  Payment\Entity          $payment         [description]
-     * @param  Transaction\Entity      $transaction     [description]
-     * @param  Merchant\Balance\Entity $merchantBalance [description]
-     * @return [type]                                   [description]
+     *
+     * @param Base\PublicEntity  $entity
+     * @param Transaction\Entity $transaction
+     *
+     * @return array
      */
     protected function calculateFeeForAmountCredit(
-        Payment\Entity $payment,
+        Base\PublicEntity $entity,
         Transaction\Entity $transaction)
     {
-        $amount = $payment->getBaseAmount();
+        $amount = $entity->getBaseAmount();
 
         $this->trace->info(
             TraceCode::TRANSACTION_AMOUNT_CREDITS,
             [
-                'payment_id'     => $payment->getId(),
+                'entity_type'    => $entity->getEntity(),
+                'entity_id'      => $entity->getId(),
                 'amount'         => $amount
             ]
         );
 
-        $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment)->getId();
+        $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($entity)->getId();
 
         $transaction->setPricingRule($pricingRuleId);
 
@@ -434,17 +437,19 @@ class Core extends Base\Core
     /**
      * Calculate Fee for Fee Credit
      * credit = amount, fee_credit = fee
-     * @param  Payment\Entity     $payment     [description]
-     * @param  Transaction\Entity $transaction [description]
-     * @return [type]                          [description]
+     *
+     * @param Base\PublicEntity  $entity
+     * @param Transaction\Entity $transaction
+     *
+     * @return array
      */
     protected function calculateFeeForFeeCredit(
-        Payment\Entity $payment,
+        Base\PublicEntity $entity,
         Transaction\Entity $transaction)
     {
-        $amount = $payment->getBaseAmount();
+        $amount = $entity->getBaseAmount();
 
-        list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($entity);
 
         $credit = $amount;
         $feeCredits = $fee;
@@ -458,9 +463,11 @@ class Core extends Base\Core
     /**
      * Calculate Prepaid Fee for Default credit type
      * credit = amount - fee
-     * @param  Payment\Entity     $payment     [description]
-     * @param  Transaction\Entity $transaction [description]
-     * @return [type]                          [description]
+     *
+     * @param Payment\Entity     $payment
+     * @param Transaction\Entity $transaction
+     *
+     * @return array
      */
     protected function calculateFeeForPrepaidDefault(
         Payment\Entity $payment,
@@ -480,9 +487,11 @@ class Core extends Base\Core
     /**
      * Calculate Postpaid Fee for Default credit type
      * credit = amount
-     * @param  Payment\Entity     $payment     [description]
-     * @param  Transaction\Entity $transaction [description]
-     * @return [type]                          [description]
+     *
+     * @param  Payment\Entity     $payment
+     * @param  Transaction\Entity $transaction
+     *
+     * @return array
      */
     protected function calculateFeeForPostpaidDefault(
         Payment\Entity $payment,
@@ -599,18 +608,27 @@ class Core extends Base\Core
                 //$this->updateNodalBalance($txn);
 
                 break;
+
             case Payment\Status::CAPTURED:
                 $this->updateBalances($txn);
 
                 break;
-            case Payment\Status::REFUNDED:
-                $gateway = $payment->getGateway();
 
-                Payment\Refund\Validator::validateVerifyInternalRefundAllowed($gateway);
+            case Payment\Status::REFUNDED:
+                //
+                // We are creating refund transaction via recon also.
+                // For this, we don't have to verify on gateway whether
+                // it has already been refunded or not. Irrespective of
+                // that, we will always create a refund through recon
+                // wherever applicable (payment transaction is present)
+                //
+
+                // Payment\Refund\Validator::validateVerifyInternalRefundAllowed($payment->getGateway());
 
                 //$this->updateNodalBalance($txn);
 
                 break;
+
             default:
                 throw new Exception\LogicException(
                     'Should not have reached here',
@@ -683,8 +701,13 @@ class Core extends Base\Core
 
         $amount = $transfer->getAmount();
 
-        list($fee, $tax, $feesSplit) =
-            (new Pricing\Fee)->calculateMerchantFees($transfer);
+        list($debit, $fee, $tax, $feesSplit) = $this->calculateTransferFees($txn, $transfer);
+
+        $txn->setAmount($amount);
+        $txn->setCredit(0);
+        $txn->setDebit($debit);
+        $txn->setFee($fee);
+        $txn->setTax($tax);
 
         $settledAt = time();
 
@@ -707,20 +730,13 @@ class Core extends Base\Core
             }
         }
 
-        $amountPlusFees = abs($amount + $fee);
-
         $values = [
-            Transaction\Entity::DEBIT         => $amountPlusFees,
-            Transaction\Entity::CREDIT        => 0,
             Transaction\Entity::CURRENCY      => $transfer->getCurrency(),
             Transaction\Entity::GATEWAY_FEE   => 0,
             Transaction\Entity::API_FEE       => $fee,
             Transaction\Entity::RECONCILED_AT => time(),
             Transaction\Entity::SETTLED       => 0,
             Transaction\Entity::SETTLED_AT    => $settledAt,
-            Transaction\Entity::FEE           => $fee,
-            Transaction\Entity::TAX           => $tax,
-            Transaction\Entity::AMOUNT        => $amount,
             Transaction\Entity::TYPE          => Transaction\Type::TRANSFER,
             Transaction\Entity::CHANNEL       => Transaction\Channel::KOTAK,
         ];
@@ -737,6 +753,15 @@ class Core extends Base\Core
         $txn->merchant()->associate($transfer->merchant);
 
         $txn->sourceAssociate($transfer);
+
+        //
+        // Saving the transaction entity here because we create a
+        // credit_transactions record in the next statement which
+        // has a foreign key relation to transaction,
+        //
+        $this->repo->saveOrFail($txn);
+
+        $this->updateCredits($txn, $transfer);
 
         $this->updateBalances($txn, false);
 
@@ -855,9 +880,9 @@ class Core extends Base\Core
         return $txn;
     }
 
-    protected function calculateMerchantFees(Payment\Entity $payment)
+    protected function calculateMerchantFees(Base\PublicEntity $entity)
     {
-        return (new Pricing\Fee)->calculateMerchantFees($payment);
+        return (new Pricing\Fee)->calculateMerchantFees($entity);
     }
 
     public function updateBalances(Transaction\Entity $txn, $updateNodalBalance = true)
@@ -904,24 +929,21 @@ class Core extends Base\Core
     //     return $txn;
     // }
 
-    public function updateAmountCredits(Transaction\Entity $txn, Payment\Entity $payment)
+    public function updateAmountCredits(Transaction\Entity $txn, Base\PublicEntity $entity)
     {
-        assert ($txn->isTypePayment() === true);
-
-        // For transactions being created before july 1st, 2016, we assign the zero pricing plan.
-        // These transactions are not using the free credits.
-        if (($txn->getFee() !== 0) or
-            ($txn->getCredit() !== $txn->getAmount()) or
-            ($payment->getCreatedAt() < self::JULY_FIRST_EPOCH))
-        {
-            return;
-        }
-
-        // While filling the txn fees and amount, we have not used amount credits.
-        if ($txn->isGratis() === false)
-        {
-            return;
-        }
+        //
+        // Few asserts:
+        // 1. This flow should be called only for gratis txn.
+        // 2. Fee is not calculated in case it was gratis(amount credits flow)
+        //    and so we expect it to be set to 0 always.
+        // 3. For txn of type other than transfers(where txn.credit = 0) expectation
+        //    is that the credit amount is same as txn amount (as fee is 0).
+        //
+        assertTrue($txn->isGratis() === true);
+        assertTrue($txn->getFee() === 0);
+        assertTrue(
+            (($txn->isTypePayment() === true) and ($txn->getCredit() === $txn->getAmount())) or
+            (($txn->isTypeTransfer() === true) and ($txn->getDebit() === $txn->getAmount())));
 
         $amount = $txn->getAmount();
 
@@ -960,8 +982,6 @@ class Core extends Base\Core
 
     public function updateFeeCredits(Transaction\Entity $txn)
     {
-        assert ($txn->isTypePayment() === true);
-
         // While filling the txn fees and amount, we have not used fee credits.
         if ($txn->getFeeCredits() === 0)
         {
@@ -1068,11 +1088,11 @@ class Core extends Base\Core
         return $returnDay->getTimestamp();
     }
 
-    public function updateCredits(Transaction\Entity $txn, Payment\Entity $payment)
+    public function updateCredits(Transaction\Entity $txn, Base\PublicEntity $entity)
     {
         if ($txn->isGratis() === true)
         {
-            $this->updateAmountCredits($txn, $payment);
+            $this->updateAmountCredits($txn, $entity);
         }
         else if ($txn->getFeeCredits() > 0)
         {
@@ -1152,6 +1172,34 @@ class Core extends Base\Core
                 Trace::CRITICAL,
                 TraceCode::CREDITS_TRANSACTION_FAILED,
                 $data);
+        }
+    }
+
+    protected function calculateTransferFees(Entity $transaction, Transfer\Entity $transfer)
+    {
+        $merchant = $transfer->merchant;
+
+        $merchantBalance = $this->getBalanceLockForUpdate($merchant);
+
+        list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchantBalance);
+
+        list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($transfer);
+
+        switch (true)
+        {
+            case ($amountCredits > 0):
+                return $this->calculateFeeForAmountCredit($transfer, $transaction);
+
+            case ($feeCredits >= $fee):
+                return $this->calculateFeeForFeeCredit($transfer, $transaction);
+
+            default:
+                $amount = $transfer->getBaseAmount();
+                $debit = abs($amount + $fee);
+
+                $transaction->setCreditType(Transaction\CreditType::DEFAULT);
+
+                return [$debit, $fee, $tax, $feesSplit];
         }
     }
 }

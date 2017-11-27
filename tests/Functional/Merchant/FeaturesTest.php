@@ -624,6 +624,9 @@ class FeaturesTest extends TestCase
 
         $this->verifyMarketplaceOnboardingResponseStatus('pending');
 
+        // Tests the bulk update route
+        $this->bulkUpdateFeatureActivationStatus(Constants::MARKETPLACE, $merchantId, 'rejected');
+
         Mail::assertNotSent(FeatureEnabledEmail::class);
     }
 
@@ -1003,5 +1006,24 @@ class FeaturesTest extends TestCase
     protected function getMarketplaceOnboardingResponseStatus()
     {
         $this->startTest();
+    }
+
+    protected function bulkUpdateFeatureActivationStatus($featureName, $merchantId, $status)
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = [
+            $featureName => [
+                $merchantId => $status
+            ]
+        ];
+
+        $testData['response']['content'] = [
+            'success'       => 1,
+            'failed'        => 0,
+            'failed_ids'    => []
+        ];
+
+        $this->startTest($testData);
     }
 }

@@ -69,10 +69,20 @@ trait GatewayTrait
         else if ($request['method'] === 'get')
         {
             $url = $request['url'];
+
             $parts = parse_url($url);
-            if (isset($parts['query']))
+
+            if (isset($parts['query']) === true)
             {
                 parse_str($parts['query'], $input);
+            }
+
+            // We can either pass the query params in URL or via the request's
+            // content field.
+            if ((empty($request['content']) === false) and
+                (is_array($request['content']) === true))
+            {
+                $input = array_merge($input, $request['content']);
             }
         }
 

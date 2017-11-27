@@ -690,4 +690,19 @@ return [
             ]
         ]
     ],
+
+    'bulkUpdateFeatureActivationStatus' => [
+        'request'  => [
+            'content' => [ ],
+            'url'     => '/onboarding/features/status/bulk',
+            'method'  => 'PUT',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [ ]
+        ]
+    ],
 ];

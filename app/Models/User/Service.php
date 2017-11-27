@@ -385,7 +385,13 @@ class Service extends Base\Service
             $email = mb_strtolower($input['email']);
 
             //find or fail public by email.
-            $user = $this->repo->user->findByEmail($email);
+            $user = $this->repo->user->getUserFromEmail($email);
+
+            if (empty($user) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
+            }
 
             $orgId = $this->auth->getOrgId();
 

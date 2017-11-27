@@ -8,14 +8,15 @@ use RZP\Constants\Timezone;
 use RZP\Models\Payout;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Payout\PayoutTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PayoutTest extends TestCase
 {
-    use RequestResponseFlowTrait;
     use PayoutTrait;
+    use PaymentTrait;
     use SettlementTrait;
 
     public function setUp()
@@ -188,6 +189,25 @@ class PayoutTest extends TestCase
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $this->startTest();
+    }
+
+    public function testCreateBankAccountPayoutOnCardPayment()
+    {
+        $card = $this->fixtures->on('live')->create('card', ['type' => 'credit']);
+
+        $payment = $this->fixtures->on('live')->create('payment:captured');
+        $this->fixtures->on('live')->edit('payment', $payment['id'], ['card_id' => $card['id']]);
+
+        $this->fixtures->on('live')->edit('transaction', $payment->getTransactionId(), ['settled' => 1]);
+
+        $data['request']['url'] = '/payments/'. $payment->getPublicId() . '/payouts';
+
+        // Merchant needs to be activated to make live requests
+        $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest($data);
     }
 
     public function setPaymentPayoutUrl($payment, & $request)

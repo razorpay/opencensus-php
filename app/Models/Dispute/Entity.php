@@ -105,6 +105,7 @@ class Entity extends Base\PublicEntity
         self::PARENT_ID,
         self::AMOUNT,
         self::CURRENCY,
+        self::GATEWAY_DISPUTE_ID,
         self::REASON_CODE,
         self::REASON_DESCRIPTION,
         self::RAISED_ON,

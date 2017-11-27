@@ -139,4 +139,13 @@ class FeatureController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function bulkUpdateFeatureActivationStatus()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkUpdateFeatureActivationStatus($input);
+
+        return ApiResponse::json($response);
+    }
 }

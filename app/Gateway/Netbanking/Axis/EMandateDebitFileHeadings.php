@@ -7,7 +7,7 @@ class EMandateDebitFileHeadings
     // Request file headings
     const PAYMENT_ID                  = 'INVOICE_NO';
     const DEBIT_DATE                  = 'BILL_DEBIT_DATE';
-    const MERCHANT_ID                 = 'COMPANY_CODE';
+    const GATEWAY_MERCHANT_ID         = 'COMPANY_CODE';
     const TOKEN_ID                    = 'CUSTOMER_UID';
     const CUSTOMER_NAME               = 'CUSTOMER_NAME';
     const DEBIT_ACCOUNT               = 'DEBIT_ACCOUNT';

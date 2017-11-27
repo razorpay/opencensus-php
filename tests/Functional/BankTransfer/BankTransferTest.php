@@ -117,6 +117,34 @@ class BankTransferTest extends TestCase
         $this->assertEquals('NEFT', $attempt['mode']);
     }
 
+    public function testBankTransferFundTransferAttemptBulkUpdate()
+    {
+        $this->testBankTransferRefund();
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $request = [
+            'method'  => 'PATCH',
+            'url'     => '/fund_transfer_attempts',
+            'content' => [
+                'ids' => [
+                    $attempt['id']
+                ],
+                'status' => 'failed',
+                'remarks' => 'failed with reason'
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('failed', $attempt['status']);
+        $this->assertEquals('failed with reason', $attempt['remarks']);
+
+        $attempt = $this->getLastEntity('refund', true);
+        $this->assertEquals('failed', $attempt['status']);
+    }
+
     public function testBankTransferImps()
     {
         $accountNumber = $this->bankAccount['account_number'];
@@ -613,7 +641,7 @@ class BankTransferTest extends TestCase
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
-        $this->assertEquals('00000000000123456', $bankTransfer['payer_account']);
+        $this->assertSame('00000000000123456', $bankTransfer['payer_account']);
         $this->assertEquals('IMPS', $bankTransfer['mode']);
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
@@ -627,7 +655,7 @@ class BankTransferTest extends TestCase
         // Customer bank account created, but with the zeroes stripped
         $bankAccount = $this->getLastEntity('bank_account', true);
         $this->assertEquals('CNRB0000002', $bankAccount['ifsc']);
-        $this->assertEquals('123456', $bankAccount['account_number']);
+        $this->assertSame('0000000123456', $bankAccount['account_number']);
         $this->assertEquals('Name of account holder', $bankAccount['name']);
     }
 
@@ -689,18 +717,22 @@ class BankTransferTest extends TestCase
         // Customer bank account created
         $bankAccount = $this->getLastEntity('bank_account', true);
         $this->assertNull($bankAccount['ifsc']);
-        $this->assertEquals('00000000000123456', $bankAccount['account_number']);
+        $this->assertSame('00000000000123456', $bankAccount['account_number']);
 
         $response = $this->makeRequestAndGetContent([
             'method'  => 'PUT',
             'url'     => '/bank_transfers/payer_bank_account/strip',
+            'content' => [
+                'payer_ifsc' => 'ABC',
+                'mode'       => 'imps'
+            ]
         ]);
 
         $this->assertContains($bankTransfer['id'], $response);
 
         $bankAccount = $this->getLastEntity('bank_account', true);
         $this->assertNull($bankAccount['ifsc']);
-        $this->assertEquals('123456', $bankAccount['account_number']);
+        $this->assertSame('0000000123456', $bankAccount['account_number']);
     }
 
     public function testBankTransferProcessAndFetchDetails()

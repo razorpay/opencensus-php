@@ -2,25 +2,27 @@
 
 namespace RZP\Gateway\Upi\Icici;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use ErrorException;
-use phpseclib\Crypt\RSA;
 use Request;
+use Carbon\Carbon;
+use RZP\Exception;
+use ErrorException;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
+use RZP\Gateway\Utility;
+use RZP\Trace\TraceCode;
+use phpseclib\Crypt\RSA;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Upi\Base;
+use RZP\Constants\Timezone;
+use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
-use RZP\Gateway\Upi\Base\ProviderCode;
-use RZP\Gateway\Utility;
+use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Upi\Icici\ResponseCodeMap;
+use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
 {
@@ -330,10 +332,9 @@ class Gateway extends Base\Gateway
             Fields::MERCHANT_ID      => $this->getMerchantId(),
             Fields::MERCHANT_TRAN_ID => $payment['id'],
             Fields::MERCHANT_NAME    => 'Razorpay',
-            // Do not change this.
-            // Note and Submerchant name fields only support alphanumeric hence replacing all
-            // the spaces to empty string here.
-            Fields::NOTE             => preg_replace('/\s+/', '', $this->getPaymentRemark($input)),
+            Fields::NOTE             => $this->getPaymentRemark($input),
+            // sub-merchant name field only supports alphanumeric
+            // hence replacing all the spaces to empty string here.
             Fields::SUBMERCHANT_NAME => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
             Fields::PAYER_VA_REQ     => $input['payment']['vpa'],
             Fields::SUBMERCHANT_ID   => $this->getSubMerchantId($input),
@@ -360,7 +361,7 @@ class Gateway extends Base\Gateway
     {
         $mcc = (string) $input['merchant']->getCategory();
 
-        //Dafault merchant category code is 5411
+        //Default merchant category code is 5411
         if ($mcc === '1234')
         {
             $mcc = '5411';
@@ -372,11 +373,17 @@ class Gateway extends Base\Gateway
     /**
      * This is same as the payment description, capped
      * to 50 characters
+     *
+     * @param array $input
+     *
      * @return string
      */
     protected function getPaymentRemark(array $input): string
     {
-        $description = $input['merchant']->getFilteredDba();
+        $paymentDescription = $input['payment']['description'] ?? '';
+        $filteredPaymentDescription = Payment\Entity::getFilteredDescription($paymentDescription);
+
+        $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
 
         return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
     }
@@ -535,13 +542,30 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function verifyPayment(Verify $verify): string
+    protected function checkResponseAndThrowExceptionIfRequired(Verify $verify)
     {
         $content = $verify->verifyResponseContent;
 
         // 5006 = The payment was not created at the gateway end
+        // 5000 = Invalid Request
+        // 15   = Original record not found
         //        And we can safely mark this payment as failed
-        if (($content['success'] !== 'true') and ($content[Fields::RESPONSE] !== '5006'))
+        if (in_array($content[Fields::RESPONSE], ['5006', '5000', '15'], true) === true)
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                VerifyAction::FINISH);
+        }
+    }
+
+    protected function verifyPayment(Verify $verify): string
+    {
+        $this->checkResponseAndThrowExceptionIfRequired($verify);
+
+        $content = $verify->verifyResponseContent;
+
+        if ($content['success'] !== 'true')
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,

@@ -85,26 +85,25 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             return;
         }
 
-        // Trace, but don't alert, for recent payments
-        if ($this->isRecentBankTransfer($row) === true)
+        $this->trace->info(TraceCode::BANK_TRANSFER_UNEXPECTED, [
+            'message'       => 'Unexpected bank transfer, alert skipped',
+            'utr'           => $row[self::COLUMN_UTR],
+            'row'           => $row,
+        ]);
+
+        // Don't alert for recent payments
+        if ($this->isRecentBankTransfer($row) === false)
         {
-            $this->trace->info(TraceCode::BANK_TRANSFER_UNEXPECTED,
+            $this->app['slack']->queue(
+                TraceCode::BANK_TRANSFER_UNEXPECTED,
+                $row,
                 [
-                    'message'       => 'Unexpected bank transfer, alert skipped',
-                    'utr'           => $row[self::COLUMN_UTR],
-                    'row'           => $row,
-                ]);
-
-            return;
+                    'channel'  => Config::get('slack.channels.virtual_accounts_log'),
+                    'username' => 'Scrooge',
+                    'icon'     => ':x:'
+                ]
+            );
         }
-
-        $this->messenger->raiseReconAlert(
-            [
-                'trace_code'    => TraceCode::RECON_ALERT,
-                'message'       => 'Unexpected bank transfer',
-                'row'           => $row,
-                'gateway'       => get_called_class()
-            ]);
     }
 
     /**
@@ -113,7 +112,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * @param array $row
      * @return integer $paymentAmount
      */
-    protected function getGatewayPaymentAmount(array $row)
+    protected function getReconPaymentAmount(array $row)
     {
         $paymentAmount = floatval($row[self::COLUMN_AMOUNT]) * 100;
 
@@ -134,13 +133,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
-        if ($this->payment->getAmount() !== $this->getGatewayPaymentAmount($row))
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
         {
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'message'         => 'Payment amount mismatch',
-                    'expected_amount' => $this->payment->getAmount(),
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
                     'gateway'         => get_called_class(),
                 ]);

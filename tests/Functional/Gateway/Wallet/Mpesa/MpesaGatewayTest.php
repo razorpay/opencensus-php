@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Wallet\Mpesa;
 
+use Mockery\Exception;
 use SoapFault;
 use ErrorException;
 use RZP\Tests\Functional\TestCase;
@@ -371,12 +372,35 @@ class MpesaGatewayTest extends TestCase
             });
     }
 
+    /**
+     * We assert that a GatewayErrorException is thrown when verify returns
+     * a timeout or any other exception during the authorize failed step
+     */
+    public function testAuthorizeFailedNullVerifyResponse()
+    {
+        $this->testAuthPaymentFailure();
+
+        $this->mockSoapFault();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->authorizeFailedPayment($payment['public_id']);
+            });
+    }
+
     protected function mockSoapSslError()
     {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            throw new ErrorException('SoapClient::__doRequest(): SSL: Connection reset by peer');
-        });
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                throw new ErrorException('SoapClient::__doRequest(): SSL: Connection reset by peer');
+            });
     }
 
     protected function mockSoapFault($timeout = false)

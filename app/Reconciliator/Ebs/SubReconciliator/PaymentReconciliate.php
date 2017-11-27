@@ -48,9 +48,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * and get the payment amount accordingly.
      *
      * @param $row array
-     * @return $paymentAmount integer
+     *
+     * @return float|int $paymentAmount integer
+     * @throws ReconciliationException
      */
-    protected function getGatewayPaymentAmount($row)
+    protected function getReconPaymentAmount($row)
     {
         $columnPaymentAmount = null;
 
@@ -163,13 +165,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
-        if ($this->payment->getAmount() !== $this->getGatewayPaymentAmount($row))
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
         {
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'message'         => 'Payment amount mismatch',
-                    'expected_amount' => $this->payment->getAmount(),
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
                     'gateway'         => get_called_class()
                 ]);

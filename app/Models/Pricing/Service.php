@@ -53,9 +53,16 @@ class Service extends Base\Service
 
     public function getMerchantPricingPlans()
     {
-        $pricingPlans = $this->repo->pricing->getMerchantPricingPlans();
+        $pricingPlans = $this->repo->pricing->getMerchantPricingPlansSummary();
 
-        return $pricingPlans->toArrayMultiplePlansPublic();
+        $pricingPlans->map(function ($plan)
+        {
+            $plan->rules_count = (int) $plan->rules_count;
+
+            return $plan;
+        });
+
+        return $pricingPlans->toArray();
     }
 
     public function getGatewayPricingPlans()

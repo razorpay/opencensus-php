@@ -292,7 +292,6 @@ class Payment extends Base
         $defaultValues = [
             'status'      => 'failed',
             'terminal_id' => '1n25f6uN5S1Z5a',
-            'card_id'     => '12345678901234',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
