@@ -4,6 +4,7 @@ namespace RZP\Models\BharatQr;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\QrCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -62,6 +63,8 @@ class Core extends Base\Core
     protected function determineAndSetMode(Entity $bharatQr)
     {
         $merchantReference = $bharatQr->getMerchantReference();
+
+        (new QrCode\Entity)->stripSignWithoutValidation($merchantReference);
 
         if (empty($merchantReference) === true)
         {
