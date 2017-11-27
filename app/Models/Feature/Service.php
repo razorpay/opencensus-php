@@ -269,7 +269,9 @@ class Service extends Base\Service
      */
     public function getFeatureOnboardingRequestsByStatus(array $input)
     {
-        $merchantDetails = $this->repo->merchant_detail->getFeatureOnboardingRequestsByStatus($input);
+        $status = $input['status'];
+
+        $merchantDetails = $this->repo->merchant_detail->getFeatureOnboardingRequestsByStatus($status);
 
         return $merchantDetails;
     }
