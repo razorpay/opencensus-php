@@ -628,27 +628,10 @@ class WebhookTest extends TestCase
         // Reconcile settlements
         $this->reconcileSettlements($setlReconciliationFile);
 
-        // Validate settlement attempt entity
-        $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
-
-        $this->assertNotNull($settlementAttempt['utr']);
-
         // Validate settlement entity
         $setl = $this->getLastEntity('settlement', true);
 
-        $notNullKeys = [Settlement\Entity::UTR, Settlement\Entity::SETTLED_ON, Settlement\Entity::STATUS];
-
-        foreach ($notNullKeys as $key)
-        {
-            $this->assertNotNull($setl[$key]);
-        }
-
-        // Validate settlement-transaction entity
-        $txn = $this->getLastEntity('transaction', true);
-
-        $this->assertEquals('settlement', $txn['type']);
-
-        $this->assertNotNull($txn['reconciled_at']);
+        $this->assertNotNull($setl[Settlement\Entity::UTR]);
 
         // After settlements are reconciled, the settlementReconFile is deleted. Restore it.
         file_put_contents($setlReconciliationFile, $settlementReconFileData);
