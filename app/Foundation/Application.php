@@ -26,4 +26,15 @@ class Application extends \Illuminate\Foundation\Application
         $this->globalResolvingCallbacks = [];
         $this->buildStack               = [];
     }
+
+    /**
+     * Determine if a queue worker is runnning.
+     *
+     * @return bool
+     */
+    public function runningInQueue()
+    {
+        return (($this->runningInConsole() === true) and
+                ($this->runningUnitTests() === false));
+    }
 }

@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Batch\Processor;
 
-use RZP\Models\BankTransfer\Core as BankTransferCore;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Helpers\BankTransfer as Helper;
+use RZP\Models\BankTransfer\Core as BankTransferCore;
 
 class BankTransfer extends Base
 {
@@ -14,9 +14,9 @@ class BankTransfer extends Base
      */
     protected $core;
 
-    public function performPreProcessingActions()
+    public function __construct(Entity $batch)
     {
-        parent::performPreProcessingActions();
+        parent::__construct($batch);
 
         $this->core = new BankTransferCore;
     }

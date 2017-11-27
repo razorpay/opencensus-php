@@ -784,17 +784,20 @@ trait Authorize
         $merchant = $payment->merchant;
 
         //
-        // We need to check if S2S is enabled only if the payment create
-        // call has been made via private auth.
+        // Check for bank transfer batch insertion
+        // S2S validation is not relevant here
         //
-        if ($this->app['basicauth']->isPrivateAuth() === false)
+        if (($payment->isBankTransfer() === true) and
+            ($this->app->runningInQueue() === true))
         {
             return;
         }
 
-        // Bank Transfers can be inserted via the batch create route, proxy auth
-        if (($payment->isBankTransfer() === true) and
-            (Route::currentRouteName() === 'batch_create'))
+        //
+        // We need to check if S2S is enabled only if the payment create
+        // call has been made via private auth.
+        //
+        if ($this->app['basicauth']->isPrivateAuth() === false)
         {
             return;
         }

@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Batch\Helpers;
 
-use RZP\Models\BankTransfer\Entity;
 use RZP\Models\Batch\Header;
+use RZP\Models\BankTransfer\Entity;
 
 class BankTransfer
 {
