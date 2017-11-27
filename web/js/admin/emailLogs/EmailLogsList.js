@@ -26,7 +26,7 @@ export default class EmailLogsList extends Component {
     filters: null,
   });
 
-  onSubmit = filters => this.collection.setFilters(filters);
+  onSubmit = filters => this.collection.applyFilters(filters);
 
   render() {
     return (

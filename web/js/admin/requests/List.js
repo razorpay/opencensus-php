@@ -25,7 +25,7 @@ export default class RequestList extends Component {
     },
   });
 
-  onSubmit = filters => this.collection.setFilters(filters);
+  onSubmit = filters => this.collection.applyFilters(filters);
 
   selectType = e => {
     let value = e.target.value;
@@ -37,7 +37,7 @@ export default class RequestList extends Component {
       type: value[1],
     };
 
-    this.collection.setFilters(filters);
+    this.collection.applyFilters(filters);
   };
 
   render() {

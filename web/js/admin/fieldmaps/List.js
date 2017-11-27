@@ -37,7 +37,7 @@ export default class FieldMaps extends Component {
     model: CollectionItem,
   });
 
-  onSubmit = filters => this.collection.setFilters(filters);
+  onSubmit = filters => this.collection.applyFilters(filters);
 
   showEntity = showEntity.bind(null, this.collection);
 

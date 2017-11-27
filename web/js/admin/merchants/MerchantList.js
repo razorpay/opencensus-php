@@ -23,7 +23,7 @@ export default class MerchantList extends Component {
     if (filters['sub_accounts'] == 0) {
       delete filters['sub_accounts'];
     }
-    return this.collection.setFilters(filters);
+    return this.collection.applyFilters(filters);
   };
 
   render() {

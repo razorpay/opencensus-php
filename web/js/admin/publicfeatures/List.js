@@ -45,7 +45,7 @@ export default class PublicFeaturesList extends Component {
     filters: defaultFilters,
   });
 
-  filter = e => this.collection.setFilters({ status: e.target.value });
+  filter = e => this.collection.applyFilters({ status: e.target.value });
 
   render() {
     return (

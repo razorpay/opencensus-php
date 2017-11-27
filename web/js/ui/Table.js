@@ -130,13 +130,13 @@ export class PageTable extends Component {
 
 class Pagination extends Component {
   prev() {
-    this.setFilters({
+    this.applyFilters({
       skip: this.filters.skip - this.filters.count,
     });
   }
 
   next() {
-    this.setFilters({
+    this.applyFilters({
       skip: this.filters.skip + this.filters.count,
     });
   }

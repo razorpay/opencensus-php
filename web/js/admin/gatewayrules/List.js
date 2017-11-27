@@ -37,7 +37,7 @@ export default class GatewayRuleList extends Component {
   onSubmit = filters => {
     this.collection.data.mode = filters.mode;
     delete filters.mode;
-    return this.collection.setFilters(filters);
+    return this.collection.applyFilters(filters);
   };
 
   render() {

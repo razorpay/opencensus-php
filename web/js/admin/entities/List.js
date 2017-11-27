@@ -29,7 +29,8 @@ export default class EntityList extends Component {
   });
 
   onSubmit = filters => {
-    return this.collection.setFilters(filters);
+    this.collection.replaceFilters(filters);
+    return this.collection.fetch();
   };
 
   componentWillMount() {
@@ -51,6 +52,8 @@ export default class EntityList extends Component {
     let value = e.target.value;
     this.collection.data.url_params.type = value;
     this.setState({ selectedEntity: value });
+    this.collection.replaceFilters();
+    this.collection.fetch();
   };
 
   selectId = e => {
@@ -155,7 +158,7 @@ export default class EntityList extends Component {
             />
             <FromField format="X" />
             <ToField format="X" />
-            <Field label="Search" onChange={this.selectId} />
+            <Field label="Search Entity Id" onChange={this.selectId} />
 
             {selectedFiltersArray.map(f => {
               let filterValue = selectedFilters[f];
