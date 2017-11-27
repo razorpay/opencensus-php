@@ -129,11 +129,7 @@ export default class AssignTerminal extends Component {
 
           <Field label="Terminal Category" name="category" type="number" />
           <Field label="Terminal Network Category" name="network_category" />
-          <Field
-            label="Gateway Merchant Id"
-            name="gateway_merchant_id"
-            type="number"
-          />
+          <Field label="Gateway Merchant Id" name="gateway_merchant_id" />
           <Field label="Gateway Merchant Id 2" name="gateway_merchant_id2" />
           <Field label="Gateway Terminal Id" name="gateway_terminal_id" />
           <Field
