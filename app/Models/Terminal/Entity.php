@@ -184,6 +184,7 @@ class Entity extends Base\PublicEntity
         self::TPV                       => 'int',
         self::TYPE                      => 'int',
         self::MODE                      => 'int',
+        self::CATEGORY                  => 'int',
         self::CORPORATE                 => 'boolean',
         self::USED                      => 'boolean',
     ];

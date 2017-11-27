@@ -99,8 +99,6 @@ class Reconciliation extends Base
             ->type(FileStore\Type::RECONCILIATION_BATCH_INPUT)
             ->save();
 
-        $this->batch->setUploadFileUrl($ufh->getUrl());
-
         $this->trace->info(
             TraceCode::BATCH_UPLOAD_FILE,
             $ufh->getFileInstance()->toArrayPublic());

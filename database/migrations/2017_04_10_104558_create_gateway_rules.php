@@ -82,7 +82,10 @@ class CreateGatewayRules extends Migration
             $table->string(Rule::EMI_SUBVENTION, 20)
                   ->nullable();
 
-            $table->string(Merchant::CATEGORY2)
+            $table->string(Rule::CATEGORY2)
+                  ->nullable();
+
+            $table->text(Rule::COMMENTS)
                   ->nullable();
 
             $table->integer(Rule::CREATED_AT);

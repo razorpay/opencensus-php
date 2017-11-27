@@ -103,7 +103,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->traceGatewayPaymentResponse($request, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
 
         $attributes = $this->getAttributesFromRefundReverseResponse($response);
 
@@ -125,7 +125,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->traceGatewayPaymentResponse($request, $input, TraceCode::GATEWAY_REVERSE_RESPONSE);
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_REVERSE_RESPONSE);
 
         $attributes = $this->getAttributesFromRefundReverseResponse($response);
 
@@ -288,12 +288,6 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getDefaultAuthorizeRequestArray($input);
 
-        $content[RequestFields::AUTH_STATUS] = '';
-        $content[RequestFields::ECI]         = '';
-        $content[RequestFields::XID]         = '';
-        $content[RequestFields::ALGORITHM]   = '';
-        $content[RequestFields::CAVV2]       = '';
-
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST,
             [
                 'request'    => $content,
@@ -333,7 +327,11 @@ class Gateway extends Base\Gateway
             RequestFields::TRANSACTION_DATE    => $date,
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id'],
-
+            RequestFields::AUTH_STATUS         => '',
+            RequestFields::ECI                 => '',
+            RequestFields::XID                 => '',
+            RequestFields::ALGORITHM           => '',
+            RequestFields::CAVV2               => '',
         ];
 
         if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
@@ -360,17 +358,25 @@ class Gateway extends Base\Gateway
     protected function getCaptureRequestArray(array $input, Entity $gatewayPayment)
     {
         $createdAt = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST);
+        $time = Carbon::now(Timezone::IST)->format(self::TIME_FORMAT);
+        $date = Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
 
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::CAPTURE,
             RequestFields::REQUEST_ID          => $input['payment']['id'],
             RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
-            RequestFields::TRANSACTION_TIME    => $createdAt->format(self::TIME_FORMAT),
-            RequestFields::TRANSACTION_DATE    => $createdAt->format(self::DATE_FORMAT),
+            RequestFields::TRANSACTION_TIME    => $time,
+            RequestFields::TRANSACTION_DATE    => $date,
             RequestFields::RETRIEVAL_REF_NUM   => $gatewayPayment->getRrn(),
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id']
         ];
+
+        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        {
+            $content[RequestFields::REQUEST_ID] = rand(1111111111,9999999999);
+            $content[RequestFields::MERCHANT_REF_NUMBER] = substr($input['payment']['id'], 0, 10);
+        }
 
         return $this->getStandardRequestArray($content);
     }
@@ -382,6 +388,11 @@ class Gateway extends Base\Gateway
         $content[RequestFields::TRANSACTION_TYPE] = TransactionType::REFUND;
         $content[RequestFields::REQUEST_ID]       = $input['refund']['id'];
 
+        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        {
+            $content[RequestFields::REQUEST_ID] = substr($input['refund']['id'], 0, 10);
+        }
+
         return $this->getStandardRequestArray($content);
     }
 
@@ -390,6 +401,11 @@ class Gateway extends Base\Gateway
         $content = $this->getDefaultRefundReverseArray($input, $gatewayPayment);
 
         $content[RequestFields::TRANSACTION_TYPE] = TransactionType::VOID;
+
+        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        {
+            $content[RequestFields::MERCHANT_REF_NUMBER] = substr($input['refund']['id'], 0, 10);
+        }
 
         return $this->getStandardRequestArray($content);
     }
@@ -407,8 +423,13 @@ class Gateway extends Base\Gateway
             RequestFields::TRANSACTION_DATE    => $date,
             RequestFields::RETRIEVAL_REF_NUM   => $gatewayPayment->getRrn(),
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
-            RequestFields::MERCHANT_REF_NUMBER => $input['refund']['id']
+            RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id']
         ];
+
+        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        {
+            $content[RequestFields::MERCHANT_REF_NUMBER] = substr($input['payment']['id'], 0, 10);
+        }
 
         return $content;
     }
@@ -422,6 +443,11 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id']
         ];
+
+        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        {
+            $content[RequestFields::MERCHANT_REF_NUMBER] = substr($input['payment']['id'], 0, 10);
+        }
 
         return $this->getStandardRequestArray($content);
     }
@@ -541,17 +567,26 @@ class Gateway extends Base\Gateway
 
     protected function checkErrorsAndThrowException(array $response)
     {
-        if ($response[ResponseFields::RESPONSE_CODE] !== Status::SUCCESS_CODE)
+        $respCode = '';
+
+        if (isset($response[ResponseFields::RESPONSE_CODE]) === true)
         {
-            $code = $response[ResponseFields::RESPONSE_CODE];
+            $respCode = $response[ResponseFields::RESPONSE_CODE];
+        }
+        else if (isset($response['response_code']) === true)
+        {
+            $respCode = $response['response_code'];
+        }
 
-            $errorCode = ResponseCode::getErrorCode($code);
+        $errorCode = ResponseCode::getErrorCode($respCode);
 
-            $message = ResponseCode::getResponseMessage($code);
+        $message = ResponseCode::getResponseMessage($respCode);
 
+        if ($respCode !== Status::SUCCESS_CODE)
+        {
             throw new Exception\GatewayErrorException(
                 $errorCode,
-                $code,
+                $respCode,
                 $message);
         }
     }

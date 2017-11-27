@@ -63,21 +63,6 @@ class Base extends BaseModel\Core
     protected $inputFileLocalPath = "";
     protected $outputFileLocalPath = "";
 
-    /**
-     * Static method returns instance of processor based on type of batch
-     * passed as arg.
-     *
-     * @param Batch\Entity $batch
-     *
-     * @return Base
-     */
-    public static function get(Batch\Entity $batch)
-    {
-        $processor = __NAMESPACE__ . '\\' . studly_case($batch->getType());
-
-        return new $processor($batch);
-    }
-
     public function __construct(Batch\Entity $batch)
     {
         parent::__construct();
@@ -438,7 +423,7 @@ class Base extends BaseModel\Core
     {
         $type = $this->batch->getType();
 
-        $headers = Batch\Header::PER_TYPE[$type][Batch\Header::OUTPUT];
+        $headers = Batch\Header::HEADER_MAP[$type][Batch\Header::OUTPUT];
 
         $fieldsCount = count($headers);
 
@@ -651,8 +636,6 @@ class Base extends BaseModel\Core
                         FileStore\Type::BATCH_INPUT,
                         false);
 
-        $this->batch->setUploadFileUrl($ufh->getUrl());
-
         $this->trace->info(
             TraceCode::BATCH_UPLOAD_FILE,
             $ufh->getFileInstance()->toArrayPublic());
@@ -663,8 +646,6 @@ class Base extends BaseModel\Core
     protected function saveOutputFile()
     {
         $ufh = $this->saveFile($this->outputFileLocalPath, FileStore\Type::BATCH_OUTPUT);
-
-        $this->batch->setDownloadFileUrl($ufh->getUrl());
     }
 
     /**
@@ -713,28 +694,10 @@ class Base extends BaseModel\Core
     {
         $inputFile = $this->batch->inputFile();
 
-        //
-        // Handles backward compatibility:
-        // New entries will have reference to UFH but older ones unless migrated
-        // will not have reference. So using the old way (else block) of forming
-        // S3 object key and then fetches the same.
-        //
-        if ($inputFile !== null)
-        {
-            $filePath = (new FileStore\Accessor)
-                            ->id($inputFile->getId())
-                            ->merchantId($this->batch->getMerchantId())
-                            ->getFile();
-        }
-        else
-        {
-            $awsKey = $this->batch->getFilePrefix(Batch\Status::CREATED) .
-                            $this->batch->getFileKeyWithExt();
-
-            $saveAs = $this->batch->getLocalSavePath(Batch\Entity::INPUT_FILE_PREFIX);
-
-            $filePath = $this->getFileFromAws($awsKey, $saveAs);
-        }
+        $filePath = (new FileStore\Accessor)
+                        ->id($inputFile->getId())
+                        ->merchantId($this->batch->getMerchantId())
+                        ->getFile();
 
         $this->inputFileLocalPath = $filePath;
     }

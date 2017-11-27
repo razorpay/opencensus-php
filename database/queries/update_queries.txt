@@ -1265,3 +1265,16 @@ UPDATE transactions set amount = 500, credit = 500, balance = 210500 where id = 
 UPDATE balance set balance = 210500 where id = '7Ff4pDL9HIDVde' limit 1
 UPDATE netbanking set amount = 5 where id = 2245787 limit 1
 
+UPDATE settlements
+SET status = 'failed', failure_reason = 'RTGS Return'
+where utr in ('KKBKR22017111800240652', 'KKBKR22017111800240693');
+
+UPDATE fund_transfer_attempts
+SET status = 'failed', failure_reason = 'RTGS Return'
+where utr in ('KKBKR22017111800240652', 'KKBKR22017111800240693');
+
+# irctc batch failed due to nykaa outage
+UPDATE batches SET processing=0 WHERE id='95GW8yxNoBol2O';
+
+# goibibo refund batch failed due to nykaa outage
+UPDATE batches SET processing=0 WHERE id='95JWxgK3aeBcdy';

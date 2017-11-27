@@ -55,9 +55,9 @@ class Batch extends Job implements ShouldQueue
                     BatchModel\Entity::TYPE => $batch->getType(),
                 ]);
 
-            BatchModel\Processor\Base::get($batch)
-                                     ->setParams($this->params)
-                                     ->validateAndProcess();
+            $processor = BatchModel\Processor\Factory::get($batch)
+                                                     ->setParams($this->params)
+                                                     ->validateAndProcess();
 
             $timeTaken = microtime(true) - $timeStarted;
 

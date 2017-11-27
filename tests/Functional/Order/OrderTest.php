@@ -579,6 +579,50 @@ class OrderTest extends TestCase
         $this->fixtures->merchant->disableMobikwik();
     }
 
+    public function testPaymentWithOfferOnNullMethodAndIinAndIssuer()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $this->mockTokenex();
+
+        $offer = $this->fixtures->create('offer', [
+            'starts_at'     => Carbon::now(Timezone::IST)->subMonth()->timestamp,
+            'iins'          => ['411111'],
+            'issuer'        => 'HDFC',
+            'error_message' => 'Custom error message'
+        ]);
+
+        $order = $this->fixtures->create('order', [
+            'merchant_id' => '10000000000000',
+            'offer_id'    => $offer->getId(),
+            'amount'      => 1000,
+        ]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        // Test that HDFC netbanking payment passes with the offer
+        $this->doAuthAndCapturePayment($payment);
+
+        $order = $this->fixtures->create('order', [
+            'merchant_id' => '10000000000000',
+            'offer_id'    => $offer->getId(),
+            'amount'      => 1000,
+        ]);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        // Test that offer with invalid IIN fails against the offer
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testPartialPaymentOnOrderWithNoPartialPaymentFlag()
     {
         $order = $this->fixtures->create('order');
