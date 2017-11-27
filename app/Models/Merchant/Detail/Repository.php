@@ -79,16 +79,16 @@ class Repository extends Base\Repository
     public function getFeatureOnboardingRequestsByStatus(string $status): Base\PublicCollection
     {
         return $this->newQueryWithConnection(Mode::LIVE)
-            ->select(
-                Entity::MERCHANT_ID,
-                Entity::CONTACT_NAME,
-                Entity::MARKETPLACE_ACTIVATION_STATUS,
-                Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
-                Entity::SUBSCRIPTIONS_ACTIVATION_STATUS)
-            ->where(Entity::MARKETPLACE_ACTIVATION_STATUS, $status)
-            ->orWhere(Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS, $status)
-            ->orWhere(Entity::SUBSCRIPTIONS_ACTIVATION_STATUS, $status)
-            ->get();
+                    ->select(
+                        Entity::MERCHANT_ID,
+                        Entity::CONTACT_NAME,
+                        Entity::MARKETPLACE_ACTIVATION_STATUS,
+                        Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
+                        Entity::SUBSCRIPTIONS_ACTIVATION_STATUS)
+                    ->where(Entity::MARKETPLACE_ACTIVATION_STATUS, $status)
+                    ->orWhere(Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS, $status)
+                    ->orWhere(Entity::SUBSCRIPTIONS_ACTIVATION_STATUS, $status)
+                    ->get();
     }
 
     public function getFeatureOnboardingRequests(array $filters): Base\PublicCollection
@@ -100,84 +100,52 @@ class Repository extends Base\Repository
 
         if (isset($filters['product']) === true)
         {
-            $product = $filters['product'];
+            $productFilter = $filters['product'];
         }
 
-        //
-        // Add Marketplace results,
-        // - If the product filter is not present, or,
-        // - If the product filter is set to marketplace
-        //
-        if ((isset($product) === false) or ($product === FeatureConstants::MARKETPLACE))
-        {
-            $marketplaceRecords = $this->newQueryWithConnection(Mode::LIVE)
-                ->select(
-                    Entity::MERCHANT_ID,
-                    Entity::CONTACT_NAME,
-                    DB::raw("'marketplace' as product"),
-                    DB::raw(Entity::MARKETPLACE_ACTIVATION_STATUS . " as 'status'"))
-                ->whereNotNull(Entity::MARKETPLACE_ACTIVATION_STATUS);
+        $productFeatures = FeatureConstants::PRODUCT_FEATURES;
 
-            // Filter with status
-            if (isset($status) === true)
+        foreach ($productFeatures as $productFeature)
+        {
+            //
+            // Add productFeature results,
+            // - If the product filter is not present, or,
+            // - If the product filter is set to productFeature
+            //
+            if ((isset($productFilter) === false) or ($productFilter === $productFeature))
             {
-                $marketplaceRecords->where(Entity::MARKETPLACE_ACTIVATION_STATUS, $status);
+                // virtual_accounts_activation_status
+                $productFeatureActivationStatus = $productFeature . '_activation_status';
+
+                // virtualAccountsRecords
+                $productRecordsName = camel_case($productFeature . '_records');
+
+                // Defines $marketplaceRecords, $virtualAccountsRecords, $subscriptionsRecords
+                ${$productRecordsName} = $this->newQueryWithConnection(Mode::LIVE)
+                                              ->select(
+                                                    Entity::MERCHANT_ID,
+                                                    DB::raw("'" . $productFeature . "' as product"),
+                                                    DB::raw($productFeatureActivationStatus . " as 'status'"))
+                                              ->whereNotNull($productFeatureActivationStatus);
+
+                // Filter with status
+                if (isset($status) === true)
+                {
+                    ${$productRecordsName}->where($productFeatureActivationStatus, $status);
+                }
             }
         }
 
-        //
-        // Add Virtual Accounts results,
-        // - If the product filter is not present, or,
-        // - If the product filter is set to virtual_accounts
-        //
-        if ((isset($product) === false) or ($product === FeatureConstants::VIRTUAL_ACCOUNTS))
+        if (isset($productFilter) === true)
         {
-            $virtualAccountsRecords = $this->newQueryWithConnection(Mode::LIVE)
-                ->select(
-                    Entity::MERCHANT_ID,
-                    Entity::CONTACT_NAME,
-                    DB::raw("'virtual_accounts' as product"),
-                    DB::raw(Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS . " as 'status'"))
-                ->whereNotNull(Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS);
-
-            // Filter with status
-            if (isset($status) === true)
-            {
-                $virtualAccountsRecords->where(Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS, $status);
-            }
-        }
-
-        //
-        // Add Subscriptions results,
-        // - If the product filter is not present, or,
-        // - If the product filter is set to subscriptions
-        //
-        if ((isset($product) === false) or ($product === FeatureConstants::SUBSCRIPTIONS))
-        {
-            $subscriptionsRecords = $this->newQueryWithConnection(Mode::LIVE)
-                ->select(
-                    Entity::MERCHANT_ID,
-                    Entity::CONTACT_NAME,
-                    DB::raw("'subscriptions' as product"),
-                    DB::raw(Entity::SUBSCRIPTIONS_ACTIVATION_STATUS . " as 'status'"))
-                ->whereNotNull(Entity::SUBSCRIPTIONS_ACTIVATION_STATUS);
-
-            // Filter with status
-            if (isset($status) === true)
-            {
-                $subscriptionsRecords->where(Entity::SUBSCRIPTIONS_ACTIVATION_STATUS, $status);
-            }
-        }
-
-        if (isset($product) === true)
-        {
-            $productRecords = camel_case($product . '_records');
+            $productRecords = camel_case($productFilter . '_records');
 
             // $marketplaceRecords, $virtualAccountsRecords, $subscriptionsRecords
             $records = $$productRecords;
         }
         else
         {
+            // If the product filter is not present, all the 3 variables will be dynamically defined above
             $records = $marketplaceRecords->union($virtualAccountsRecords)
                                           ->union($subscriptionsRecords);
         }
