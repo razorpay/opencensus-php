@@ -20,6 +20,8 @@ class BharatQrPaymentTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
+        $this->fixtures->merchant->activate();
+
         $this->qrCode = $this->createVirtualAccount();
 
         $this->ba->directAuth();
@@ -64,9 +66,12 @@ class BharatQrPaymentTest extends TestCase
 
         $this->assertEquals('OK', $response[0]);
 
-        $bharatQr = $this->getLastEntity('bharat_qr', true);
+        // Live because by default mode is live
+        // if entity id is not given
+        $bharatQr = $this->getLastEntity('bharat_qr', true, 'live');
 
-        $payment =  $this->getLastEntity('payment', true);
+        $payment =  $this->getLastEntity('payment', true, 'live');
+
         $this->assertEquals('card', $payment['method']);
         $this->assertEquals('authorized', $payment['status']);
 

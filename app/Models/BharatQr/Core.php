@@ -5,6 +5,7 @@ namespace RZP\Models\BharatQr;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\QrCode;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -33,10 +34,7 @@ class Core extends Base\Core
         {
             $bharatQr = (new Entity)->build($input);
 
-            if (isset($this->app['rzp.mode']) === false)
-            {
-                $this->determineAndSetMode($bharatQr);
-            }
+            $this->determineAndSetMode($bharatQr);
 
             $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
@@ -66,19 +64,11 @@ class Core extends Base\Core
 
         (new QrCode\Entity)->stripSignWithoutValidation($merchantReference);
 
-        if (empty($merchantReference) === true)
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($merchantReference, 'qr_code');
+
+        if ($mode === null)
         {
             $mode =  Mode::LIVE;
-        }
-        else
-        {
-            $mode = $this->app['repo']->determineLiveOrTestModeForEntity($merchantReference, 'qr_code');
-
-            if ($mode === null)
-            {
-                throw new Exception\LogicException(
-                    'Merchant Reference id not found in either database: ' . $merchantReference);
-            }
         }
 
         \Database\DefaultConnection::set($mode);
