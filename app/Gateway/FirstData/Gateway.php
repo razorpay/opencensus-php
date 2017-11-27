@@ -1574,7 +1574,7 @@ class Gateway extends Base\Gateway
         return $authCode;
     }
 
-    protected function getFormattedAmount($amount)
+    protected function getFormattedAmount(int $amount): string
     {
         // The amount should be in the format like 100.00, or 1500.00
         return number_format(($amount / 100), 2, '.', '');
