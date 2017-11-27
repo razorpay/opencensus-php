@@ -74,7 +74,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $bankTransferCreateRules = [
-        Entity::TYPE                 => 'required|custom',
+        Entity::TYPE                 => 'required|in:bank_transfer',
         Entity::FILE                 => 'required|file|max:1024',
     ];
 

@@ -784,8 +784,8 @@ trait Authorize
         $merchant = $payment->merchant;
 
         //
-        // Check for bank transfer batch insertion
-        // S2S validation is not relevant here
+        // Check for bank transfer batch insertion, S2S validation
+        // is not relevant here in case of queue flow.
         //
         if (($payment->isBankTransfer() === true) and
             ($this->app->runningInQueue() === true))

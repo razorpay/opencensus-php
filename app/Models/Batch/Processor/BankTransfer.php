@@ -4,6 +4,7 @@ namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
+use RZP\Models\Batch\Status;
 use RZP\Models\Batch\Helpers\BankTransfer as Helper;
 use RZP\Models\BankTransfer\Core as BankTransferCore;
 
@@ -29,7 +30,7 @@ class BankTransfer extends Base
 
         $valid = $this->core->process($bankTransferInsertInput, $provider);
 
-        $entry[Header::STATUS] = $valid;
+        $entry[Header::STATUS] = $valid ? Status::SUCCESS : Status::FAILURE;
     }
 
     protected function sendProcessedMail()
