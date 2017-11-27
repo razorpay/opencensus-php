@@ -1,65 +1,87 @@
+import { Component } from 'react';
 import { Field } from 'redux-form';
 import InputField from 'rzp/ui/Forms/InputField';
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
 import CheckboxField from 'rzp/ui/Forms/CheckboxField';
 import { required } from 'rzp/utils/validators';
+import { url } from 'rzp/utils/validators';
 
-export default () => {
-  return (
-    <div class="form-body">
-      <div class="form-group">
-        <label for="business_model" class="label-required">
-          Use Case and Business Model
-        </label>
-        <Field
-          name="business_model"
-          component={AutoResizeTextarea}
-          rows="3"
-          class="form-control"
-          placeholder="Your use case for Subscriptions and business model"
-          validate={[required()]}
-        />
-      </div>
-
-      <div class="form-group">
-        <label for="sample_plans" class="label-required">
-          Subscription Plans
-        </label>
-        <Field
-          name="sample_plans"
-          component={AutoResizeTextarea}
-          rows="3"
-          class="form-control"
-          placeholder="Define a few sample plans that you offer"
-          validate={[required()]}
-        />
-      </div>
-
-      <div class="form-group">
-        <label
-          for="website_checkbox"
-          class="label-required"
-          class="label-required"
-        >
-          Is your website live?
-        </label>
-        <div class="checkbox">
-          <label class="i-switch">
-            <Field name="website_checkbox" component={CheckboxField} />
-            <i />
-          </label>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="website_details">Link to your plans page</label>
-        <Field
-          name="website_details"
-          component={InputField}
-          class="form-control"
-          placeholder="http://example.com/pricing"
-        />
-      </div>
-    </div>
-  );
+const isWebsiteLengthValid = websiteDetail => {
+  websiteDetail = websiteDetail || '';
+  return websiteDetail.length > 200;
 };
+
+export default class SubscriptionForm extends Component {
+  state = { isWebsiteLive: false };
+
+  toggleIsWebsiteLive = () => {
+    this.setState({ isWebsiteLive: !this.state.isWebsiteLive });
+  };
+
+  render() {
+    return (
+      <div class="form-body">
+        <div class="form-group">
+          <label for="business_model" class="label-required">
+            Use Case and Business Model
+          </label>
+          <Field
+            name="business_model"
+            component={AutoResizeTextarea}
+            rows="3"
+            class="form-control"
+            placeholder="Your use case for Subscriptions and business model"
+            validate={[required()]}
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="sample_plans" class="label-required">
+            Subscription Plans
+          </label>
+          <Field
+            name="sample_plans"
+            component={AutoResizeTextarea}
+            rows="3"
+            class="form-control"
+            placeholder="Define a few sample plans that you offer"
+            validate={[required()]}
+          />
+        </div>
+
+        <div class="form-group" style={{ marginBottom: 0 }}>
+          <label
+            for="website_checkbox"
+            class="label-required"
+            class="label-required"
+          >
+            Is your website live?
+          </label>
+          <div class="checkbox">
+            <label class="i-switch">
+              <Field
+                name="website_checkbox"
+                component={CheckboxField}
+                onChange={this.toggleIsWebsiteLive}
+              />
+              <i />
+            </label>
+          </div>
+        </div>
+
+        {this.state.isWebsiteLive && (
+          <div class="form-group">
+            <label for="website_details">Link to your plans page</label>
+            <Field
+              name="website_details"
+              component={InputField}
+              class="form-control"
+              placeholder="http://example.com/pricing"
+              validate={[isWebsiteLengthValid, url('Invalid url')]}
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+}

@@ -60,7 +60,7 @@ export default class CreateTestPayment extends Component {
         this.props.closeModal();
         this.props.showNotification({
           type: 'success',
-          message: 'Test Payment successfull',
+          message: 'Test Payment successful',
         });
         this.props.fetchItem(virtualAccount.id);
         this.props.fetchVAPayments(virtualAccount.id);
