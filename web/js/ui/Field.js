@@ -43,7 +43,7 @@ export const SelectField = _ => <Field {..._} tag="select" />;
 export const TextAreaField = _ => <Field {..._} tag="textarea" />;
 export const FileField = _ => <Field {..._} type="file" />;
 export const DateField = _ => (
-  <Field type="text" format="DD/MM/YYYY" {..._} tag={DayPickerInput} />
+  <Field type="text" format="MM/DD/YYYY" {..._} tag={DayPickerInput} />
 );
 export const TimeField = _ => <Field {..._} type="time" />;
 export const DataListField = _ => <Field {..._} tag="datalist" />;

@@ -18,22 +18,9 @@ import { adminPost } from 'util/fetch';
 
 const WALLET_MAP = getMappingFor('wallet');
 const CARD_NETWORK_MAP = getMappingFor('network');
-let PAYMENT_NETWORK_MAP = {};
 
 export default class CreateOffer extends Component {
   state = {};
-
-  constructor() {
-    super();
-
-    const date = new Date();
-    this.minDate =
-      date.getFullYear() +
-      '-' +
-      ('0' + (date.getMonth() + 1)).slice(-2) +
-      '-' +
-      ('0' + date.getDate()).slice(-2);
-  }
 
   cleanFields(data) {
     let offer = Object.assign({}, data);
@@ -202,16 +189,11 @@ export default class CreateOffer extends Component {
           />
 
           {/* Starts at */}
-          <DateField name="starts_at" label="Starts at" min={this.minDate} />
+          <DateField name="starts_at" label="Starts at" />
           <TimeField name="starts_at_time" defaultValue="00:00" />
 
           {/* Ends at */}
-          <DateField
-            name="ends_at"
-            label="Ends at"
-            min={this.minDate}
-            required
-          />
+          <DateField name="ends_at" label="Ends at" required />
           <TimeField name="ends_at_time" defaultValue="00:00" />
 
           <SwitchField
