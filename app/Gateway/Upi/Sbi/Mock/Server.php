@@ -44,8 +44,6 @@ class Server extends Base\Mock\Server
             ResponseFields::PG_MERCHANT_ID => $this->getGatewayInstance()->getMerchantId(),
         ];
 
-        $this->content($content, 'async_callback');
-
         $response = $this->makeResponse($content);
 
         return [

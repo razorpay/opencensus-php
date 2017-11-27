@@ -10,6 +10,7 @@ class Constants
     const GATEWAY                             = 'gateway';
     const API_SUCCESS                         = 'apiSuccess';
     const GATEWAY_SUCCESS                     = 'gatewaySuccess';
+    const FREQUENCY_DAILY                     = 'daily';
     const COUNT                               = 'count';
     const FILE                                = 'file';
     const REJECTED_VPA                        = 'rejectedcollect@sbi';

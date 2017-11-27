@@ -6,10 +6,6 @@ use RZP\Gateway\Upi\Mindgate\Crypto as BaseCrypto;
 
 class Crypto extends BaseCrypto
 {
-    /**
-     * TODO: Refactor Base\AesCrypto later
-     */
-
     public function encryptString(string $string)
     {
         $cipherText = parent::encryptString($string);

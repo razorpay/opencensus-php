@@ -7,13 +7,12 @@ use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base;
-use Razorpay\Trace\Logger;
-use RZP\Gateway\Base\Entity;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Exception\BaseException;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Exception\AssertionException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Constants\Entity as ConstantsEntity;
 
@@ -21,7 +20,7 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
-    const ACQUIRER = 'sbi';
+    const ACQUIRER = Payment\Processor\Upi::SBIN;
 
     protected $gateway = Payment\Gateway::UPI_SBI;
 
@@ -62,7 +61,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($response->body, TraceCode::GATEWAY_PAYMENT_RESPONSE);
 
-        $this->updateGatewayEntityResponse($gatewayPayment, $response[ResponseFields::API_RESPONSE]);
+        $this->updateGatewayPaymentEntity($gatewayPayment, $response[ResponseFields::API_RESPONSE]);
 
         $this->checkResponseStatus($response[ResponseFields::API_RESPONSE][ResponseFields::STATUS]);
 
@@ -93,29 +92,21 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
                                                                       Action::AUTHORIZE);
 
-        try
+        if ($this->assertUpiTransactionId($gatewayPayment, $content) === false)
         {
-            assertTrue(((string) $content[ResponseFields::UPI_TRANS_REFERENCE_NO]) === ((string) $gatewayPayment->getNpciReferenceId()));
-        }
-        catch (BaseException $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Logger::INFO,
-                TraceCode::PAYMENT_CALLBACK_FAILURE,
+            throw new AssertionException(
+                'Upi Transaction reference number does not match saved npci reference id in DB',
                 [
-                    'response_trans_reference_no' => (string) $content[ResponseFields::UPI_TRANS_REFERENCE_NO],
-                    'entity_npci_reference_id'    => (string) $gatewayPayment->getNpciReferenceId(),
-                    'payment_id'                  => (string) $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
+                    Base\Entity::NPCI_REFERENCE_ID         => $gatewayPayment->getNpciReferenceId(),
+                    ResponseFields::UPI_TRANS_REFERENCE_NO => $content[ResponseFields::UPI_TRANS_REFERENCE_NO],
+                    Base\Entity::PAYMENT_ID                => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
                 ]);
-
-            throw $e;
         }
 
         $this->checkResponseStatus($content[ResponseFields::STATUS]);
 
         // Authorization was successful
-        $this->updateGatewayEntityResponse($gatewayPayment, $content);
+        $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
         return [];
     }
@@ -264,10 +255,6 @@ class Gateway extends Base\Gateway
                 $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST;
                 break;
 
-            case Action::CALLBACK:
-                $traceCode = TraceCode::GATEWAY_PAYMENT_CALLBACK;
-                break;
-
             case Action::VERIFY:
                 $traceCode = TraceCode::GATEWAY_PAYMENT_VERIFY;
                 break;
@@ -304,7 +291,7 @@ class Gateway extends Base\Gateway
 
     public function encrypt(array $content): string
     {
-        $json = json_encode($content);
+        $json = utf8_json_encode($content);
 
         return $this->getAesCrypto()->encryptString($json);
     }
@@ -352,6 +339,15 @@ class Gateway extends Base\Gateway
             ]);
 
         return $response;
+    }
+
+    protected function assertUpiTransactionId(Base\Entity $upiEntity, array $content)
+    {
+        $upiTransactionRefNo = (string) $content[ResponseFields::UPI_TRANS_REFERENCE_NO];
+
+        $npciReferenceId = (string) $upiEntity->getNpciReferenceId();
+
+        return ($upiTransactionRefNo === $npciReferenceId);
     }
 
     /**
@@ -416,24 +412,6 @@ class Gateway extends Base\Gateway
         ];
 
         return $attributes;
-    }
-
-    protected function updateGatewayEntityResponse(Entity $upiEntity, array $response)
-    {
-        $attr = $this->getMappedAttributes($response);
-
-        // To mark that we have received a response for this request
-        $attr[Base\Entity::RECEIVED] = 1;
-
-        $array = $upiEntity->toArrayPublic();
-
-        // We only update the upi entity if received is not updated to 1
-        if (array_key_exists(Base\Entity::RECEIVED, $array) === false)
-        {
-            $upiEntity->fill($attr);
-
-            $upiEntity->saveOrFail();
-        }
     }
 
     protected function formatAmount(array $input): string

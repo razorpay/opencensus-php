@@ -276,6 +276,28 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals(FileStore\Format::CSV, $file[FileStore\Entity::EXTENSION]);
     }
 
+    public function testUpiResponseAssertionFailure()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response[Constants::PAYMENT_ID];
+
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
+
+        $content = $this->getS2SUpiIdMismatchContent($upiEntity, $payment);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($content)
+            {
+                $this->makeS2SCallbackAndGetContent($content);
+            });
+    }
+
     protected function createCapturedPayment()
     {
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
@@ -312,9 +334,9 @@ class UpiSbiGatewayTest extends TestCase
             'url' => '/refunds/excel',
             'method' => 'post',
             'content' => [
-                'method'    => 'upi',
-                'bank'      => 'sbi',
-                'frequency' => 'daily'
+                'method'    => Method::UPI,
+                'bank'      => Payment\Processor\Upi::SBIN,
+                'frequency' => Constants::FREQUENCY_DAILY
             ],
         ];
 
@@ -331,6 +353,26 @@ class UpiSbiGatewayTest extends TestCase
         $response = $this->getPaymentStatus($id);
 
         $this->assertEquals($status, $response[Payment\Entity::STATUS]);
+    }
+
+    protected function getS2SUpiIdMismatchContent(array $upiEntity, array $payment)
+    {
+        $mockServer = $this->mockServer();
+
+        $content = $mockServer->getAsyncCallbackContent($upiEntity, $payment);
+
+        $decryptedResp = $mockServer->decrypt($content[ResponseFields::MESSAGE], ResponseFields::RESPONSE);
+
+        $decryptedResp[ResponseFields::API_RESPONSE][ResponseFields::UPI_TRANS_REFERENCE_NO] = 'Random';
+
+        $encryptedResp = [ResponseFields::RESPONSE => $mockServer->encrypt($decryptedResp)];
+
+        $response = \Response::make($encryptedResp);
+
+        $response->headers->set('Content-Type', 'application/text; charset=UTF-8');
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return [ResponseFields::MESSAGE => $response->content()];
     }
 
     protected function getS2SAmountMismatchContent(array $upiEntity, array $payment)

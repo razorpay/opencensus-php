@@ -6,12 +6,12 @@ class Upi
 {
     const ICICI     = 'icici';
     const HDFC      = 'hdfc';
-    const SBI       = 'sbi';
+    const SBIN      = 'sbin';
 
     public static $fullName = array(
         self::ICICI         => 'ICICI Bank',
         self::HDFC          => 'HDFC Bank',
-        self::SBI           => 'SBI Bank',
+        self::SBIN          => 'SBI Bank',
     );
 
     public static function exists($bank)
