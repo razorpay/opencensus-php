@@ -1275,7 +1275,9 @@ class Gateway extends Base\Gateway
             ];
         }
 
-        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $input[$amountEntity]['amount'] / 100;
+        $amount = $input[$amountEntity]['amount'] / 100;
+
+        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $this->getFormattedAmount($amount);
 
         $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY] = $currencyCode;
     }
@@ -1571,5 +1573,11 @@ class Gateway extends Base\Gateway
         }
 
         return $authCode;
+    }
+
+    protected function getFormattedAmount($amount)
+    {
+        // The amount should be in the format like 100.00, or 1500.00
+        return number_format(($amount / 100), 2, '.', '');
     }
 }
