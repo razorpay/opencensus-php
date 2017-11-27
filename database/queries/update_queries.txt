@@ -1278,3 +1278,11 @@ UPDATE batches SET processing=0 WHERE id='95GW8yxNoBol2O';
 
 # goibibo refund batch failed due to nykaa outage
 UPDATE batches SET processing=0 WHERE id='95JWxgK3aeBcdy';
+
+# Uber's payment link batch failed.
+# There was some issue during reading file in queue again. Potential fix has been
+# given but the exact issue was not reproducible with exact file on local/beta.
+# We in all cases mark the batch (of pl) as processed. Resetting it's status
+# and processed timestamp to 'created' and null respectively. We would hit api
+# to process this batch again.
+UPDATE batches SET status = 'created', processed_at = null, updated_at = created_at WHERE id = '95BFk558Ev1AIm' LIMIT 1;
