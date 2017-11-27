@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
-import Field, { SelectField, SelectMethod } from 'ui/Field';
+import Field, { SelectField, SelectMethod, TextAreaField } from 'ui/Field';
 import { openModal } from 'common/modal';
 import { observer } from 'mobx-react';
 import {
@@ -61,6 +61,12 @@ class NewGatewayRule extends Component {
       <div>
         <header>Create new Gateway Rule</header>
         <Form onSubmit={model.save}>
+          <Field
+            label="Merchant Id"
+            name="merchant_id"
+            defaultValue={model.merchant_id}
+            required
+          />
           <SelectField
             label="Type"
             name="type"
@@ -75,6 +81,7 @@ class NewGatewayRule extends Component {
           {model.type === 'sorter' && (
             <Field
               label="Load"
+              name="load"
               type="number"
               min="0"
               max="100"
@@ -92,12 +99,6 @@ class NewGatewayRule extends Component {
           )}
 
           <Field label="Group" name="group" defaultValue={model.group} />
-          <Field
-            label="Merchant Id"
-            name="merchant_id"
-            defaultValue={model.merchant_id}
-            required
-          />
           <SelectMethod
             required
             value={model.method}
@@ -116,7 +117,6 @@ class NewGatewayRule extends Component {
                 </option>
               ))}
           </SelectField>
-          <br />
           {(model.method === 'card' || model.method === 'emi') && (
             <div>
               <SelectField
@@ -221,7 +221,11 @@ class NewGatewayRule extends Component {
             <option value="0">No</option>
             <option value="1">Yes</option>
           </SelectField>
-          <br />
+          <TextAreaField
+            fieldClass="inline-field"
+            label="Add Comment:"
+            name="comment"
+          />
           <button style={{ float: 'right' }}>Save</button>
         </Form>
       </div>

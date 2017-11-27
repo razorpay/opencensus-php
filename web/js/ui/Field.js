@@ -12,13 +12,19 @@ function toggleChecked(e) {
   sib.checked = !sib.checked;
 }
 
-export default function Field({ tag = 'input', label, infoMsg, ...props }) {
+export default function Field({
+  tag = 'input',
+  label,
+  infoMsg,
+  fieldClass = '',
+  ...props
+}) {
   if (tag === 'input' && !props.type) {
     props.type = 'text';
   }
   let Tag = tag;
   return (
-    <div class="field">
+    <div class={`field ${fieldClass}`}>
       <label class={props.required ? 'required' : ''} onClick={focusInput}>
         {label}
       </label>
