@@ -8,6 +8,7 @@ use RZP\Gateway\Netbanking;
 use RZP\Gateway\Netbanking\Axis\EMandateDebitFileHeadings as Headings;
 use RZP\Models\FileStore;
 use RZP\Models\Payment;
+use RZP\Models\Terminal\Entity as TerminalEntity;
 
 use Carbon\Carbon;
 
@@ -25,14 +26,6 @@ class Axis extends Base
 
     protected function formatDataForFile($payments)
     {
-        $mode = $this->app['basicauth']->getMode();
-
-        $gateway = $this->app['gateway']->gateway(self::GATEWAY);
-
-        $gateway->setMode($mode);
-
-        $merchantId = $gateway->getEmandateMerchantId();
-
         $rows = [];
 
         foreach ($payments as $payment)
@@ -46,7 +39,7 @@ class Axis extends Base
             $row = [
                 Headings::PAYMENT_ID                  => $paymentId,
                 Headings::DEBIT_DATE                  => $debitDate,
-                Headings::MERCHANT_ID                 => $merchantId,
+                Headings::GATEWAY_MERCHANT_ID         => $payment->terminal->getGatewayMerchantId(),
                 Headings::TOKEN_ID                    => $token->getId(),
                 Headings::CUSTOMER_NAME               => $token->customer->getName(),
                 Headings::DEBIT_ACCOUNT               => $token->getAccountNumber(),

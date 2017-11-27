@@ -378,7 +378,7 @@ class EventTrackerClient extends AbstractEventClient
         }
         catch (\Throwable $e)
         {
-            $this->trace->error(TraceCode::LUMBERJACK_ASYNC_REQUEST_FAILED, $eventData);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_ASYNC_REQUEST_FAILED, $eventData);
 
             parent::sendEventRequest($headers, $url, $eventData);
         }

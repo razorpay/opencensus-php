@@ -21,6 +21,8 @@ class Type
 
     const RECONCILIATION        = 'reconciliation';
 
+    const EMANDATE              = 'emandate';
+
     /**
      * Following batch types get processed via CRON job, CRON currently runs
      * less frequently (now every 6 hrs).
@@ -42,6 +44,7 @@ class Type
         self::LINKED_ACCOUNT,
         self::VIRTUAL_BANK_ACCOUNT,
         self::RECONCILIATION,
+        self::EMANDATE,
     ];
 
     public static function exists(string $type)

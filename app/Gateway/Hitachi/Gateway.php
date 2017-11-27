@@ -358,13 +358,15 @@ class Gateway extends Base\Gateway
     protected function getCaptureRequestArray(array $input, Entity $gatewayPayment)
     {
         $createdAt = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST);
+        $time = Carbon::now(Timezone::IST)->format(self::TIME_FORMAT);
+        $date = Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
 
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::CAPTURE,
             RequestFields::REQUEST_ID          => $input['payment']['id'],
             RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
-            RequestFields::TRANSACTION_TIME    => $createdAt->format(self::TIME_FORMAT),
-            RequestFields::TRANSACTION_DATE    => $createdAt->format(self::DATE_FORMAT),
+            RequestFields::TRANSACTION_TIME    => $time,
+            RequestFields::TRANSACTION_DATE    => $date,
             RequestFields::RETRIEVAL_REF_NUM   => $gatewayPayment->getRrn(),
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id']
@@ -372,7 +374,7 @@ class Gateway extends Base\Gateway
 
         if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
         {
-            $content[RequestFields::REQUEST_ID] = substr($input['payment']['id'], 0, 10);
+            $content[RequestFields::REQUEST_ID] = rand(1111111111,9999999999);
             $content[RequestFields::MERCHANT_REF_NUMBER] = substr($input['payment']['id'], 0, 10);
         }
 

@@ -1054,7 +1054,7 @@ class Repository extends Base\Repository
                     ->whereBetween($paymentCreatedAtColumn, [$from, $to])
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::CONFIRMED)
                     ->where($tokenRecurringColumn, '=', 1)
-                    ->with(['localToken', 'globalToken', 'merchant', 'order'])
+                    ->with(['localToken', 'globalToken', 'merchant', 'order', 'terminal'])
                     ->get();
     }
 

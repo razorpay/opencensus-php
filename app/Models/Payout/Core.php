@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
@@ -14,8 +15,10 @@ use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
+use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
 use RZP\Models\FundTransfer\Kotak;
+use RZP\Models\Settlement\Holidays;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
@@ -92,6 +95,16 @@ class Core extends Base\Core
      */
     public function initiatePayouts(array $input, string $channel): array
     {
+        // Temporary. Kotak should ideally be processing at least
+        // IMPS payments on holidays as well, but they're currently
+        // not doing that, and we're stopping this till they do.
+        if (($this->mode !== Mode::TEST) and
+            ($this->env !== 'testing') and
+            (Holidays::isWorkingDay(Carbon::today(Timezone::IST)) === false))
+        {
+            return Holidays::HOLIDAY_MESSAGE;
+        }
+
         return $this->mutex->acquireAndRelease(
             self::MUTEX_RESOURCE,
             function() use($input, $channel)
