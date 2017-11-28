@@ -28,4 +28,3 @@ RUN composer config -g github-oauth.github.com ${GIT_TOKEN} && \
 EXPOSE 80
 
 ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
-CMD ["/entrypoint.sh"]
