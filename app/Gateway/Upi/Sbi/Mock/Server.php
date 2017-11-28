@@ -5,6 +5,9 @@ namespace RZP\Gateway\Upi\Sbi\Mock;
 use Carbon\Carbon;
 use Razorpay\Api\Request;
 use RZP\Gateway\Base;
+use RZP\Gateway\Upi\Sbi\Action;
+use RZP\Gateway\Upi\Sbi\Status;
+use RZP\Http\Response\Response;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Upi\Base\Entity;
@@ -31,6 +34,22 @@ class Server extends Base\Mock\Server
         ];
 
         $this->content($content, 'authorize');
+
+        return $this->makeResponse($content);
+    }
+
+    public function validateVpa(string $input)
+    {
+        $request = $this->decrypt($input);
+
+        $this->validateActionInput($request, Action::VALIDATE_VPA);
+
+        $response = $this->getValidateVpaResponseArray($request);
+
+        $content = [
+            ResponseFields::RESPONSE       => $this->encrypt($response),
+            ResponseFields::PG_MERCHANT_ID => $this->getGatewayInstance()->getMerchantId()
+        ];
 
         return $this->makeResponse($content);
     }
@@ -91,6 +110,33 @@ class Server extends Base\Mock\Server
         return json_decode($decryptedString, true);
     }
 
+    protected function getValidateVpaResponseArray(array $input)
+    {
+        $paymentId = $input[RequestFields::REQUEST_INFO][RequestFields::PSP_REFERENCE_NO];
+
+        $vpa = $input[RequestFields::PAYEE_TYPE][RequestFields::VIRTUAL_ADDRESS];
+
+        $response = [
+            ResponseFields::REQUEST_INFO => [
+                ResponseFields::PSP_REFERENCE_NO   => $paymentId,
+            ],
+            ResponseFields::PAYEE_TYPE         => [
+                ResponseFields::VIRTUAL_ADDRESS => $vpa,
+                ResponseFields::NAME            => 'Mayank Amencherla',
+            ],
+            ResponseFields::STATUS             => Status::AVAILABLE_VPA,
+            ResponseFields::STATUS_DESCRIPTION => 'VPA is valid'
+        ];
+
+        if ($vpa === 'failedvalidate@sbi')
+        {
+            $response[ResponseFields::STATUS] = Status::UNAVAILABLE_VPA;
+            $response[ResponseFields::STATUS_DESCRIPTION] = 'VPA is invalid';
+        }
+
+        return $response;
+    }
+
     protected function getVerifyResponseContent(array $input)
     {
         $paymentId = $input[RequestFields::REQUEST_INFO][RequestFields::PSP_REFERENCE_NO];
@@ -106,7 +152,7 @@ class Server extends Base\Mock\Server
             ResponseFields::TRANSACTION_AUTH_DATE  => Carbon::now(Timezone::IST)->toDateTimeString(),
             ResponseFields::RESPONSE_CODE          => '00',
             ResponseFields::APPROVAL_NUMBER        => random_int(100000, 999999),
-            ResponseFields::STATUS                 => 'S',
+            ResponseFields::STATUS                 => Status::SUCCESS,
             ResponseFields::STATUS_DESCRIPTION     => 'Payment Successful',
             ResponseFields::ADDITIONAL_INFO        => [],
             ResponseFields::PAYER_VPA              => $gatewayPayment->getVpa(),
@@ -131,7 +177,7 @@ class Server extends Base\Mock\Server
             ResponseFields::TRANSACTION_AUTH_DATE  => Carbon::now(Timezone::IST)->toDateTimeString(),
             ResponseFields::RESPONSE_CODE          => '00',
             ResponseFields::APPROVAL_NUMBER        => random_int(100000, 999999),
-            ResponseFields::STATUS                 => 'S',
+            ResponseFields::STATUS                 => Status::SUCCESS,
             ResponseFields::STATUS_DESCRIPTION     => 'Payment Successful',
             ResponseFields::ADDITIONAL_INFO        => [],
             ResponseFields::PAYER_VPA              => $vpa,
@@ -140,7 +186,7 @@ class Server extends Base\Mock\Server
 
         if ($vpa === 'rejectedcollect@sbi')
         {
-            $response[ResponseFields::STATUS] = 'R';
+            $response[ResponseFields::STATUS] = Status::REJECTED;
             $response[ResponseFields::STATUS_DESCRIPTION] = 'Collect request rejected';
         }
 
@@ -158,7 +204,7 @@ class Server extends Base\Mock\Server
             ResponseFields::CUSTOMER_REFERENCE_NO  => random_int(100000000000, 999999999999),
             ResponseFields::AMOUNT                 => $input[RequestFields::AMOUNT],
             ResponseFields::TRANSACTION_AUTH_DATE  => Carbon::now(Timezone::IST)->toDateTimeString(),
-            ResponseFields::STATUS                 => 'S',
+            ResponseFields::STATUS                 => Status::SUCCESS,
             ResponseFields::STATUS_DESCRIPTION     => 'Transaction Pending waiting for response',
             ResponseFields::ADDITIONAL_INFO        => [],
             ResponseFields::PAYER_VPA              => $vpa,
@@ -167,7 +213,7 @@ class Server extends Base\Mock\Server
 
         if ($vpa === 'failedcollect@sbi')
         {
-            $content[ResponseFields::STATUS] = 'F';
+            $content[ResponseFields::STATUS] = Status::FAILED;
             $content[ResponseFields::STATUS_DESCRIPTION] = 'Payment failed';
         }
 

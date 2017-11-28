@@ -20,9 +20,12 @@ class RequestFields
      */
     const CUSTOMER_REFERENCE_NO      = 'custRefNo';
 
+    const VA_REQUEST_TYPE            = 'vAReqType';
+
     const TRANSACTION_NOTE           = 'transactionNote';
     const REQUEST_INFO               = 'requestInfo';
     const PAYER_TYPE                 = 'payerType';
+    const PAYEE_TYPE                 = 'payeeType';
     const VIRTUAL_ADDRESS            = 'virtualAddress';
     const EXPIRY_TIME                = 'expiryTime';
     const AMOUNT                     = 'amount';

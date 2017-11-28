@@ -7,7 +7,6 @@ use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base;
-use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Exception\BaseException;
 use RZP\Gateway\Base\VerifyResult;
@@ -54,6 +53,9 @@ class Gateway extends Base\Gateway
         $attributes = $this->getGatewayEntityAttributes($input);
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
+
+        // We validate the input VPA before initiating the collect request
+        $this->validateVpa($input);
 
         $request = $this->getAuthorizeRequest($input);
 
@@ -120,6 +122,21 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    protected function validateVpa(array $input)
+    {
+        $this->action = Action::VALIDATE_VPA;
+
+        $request = $this->getValidateVpaRequest($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $responseContent = $this->parseGatewayResponse($response->body, TraceCode::GATEWAY_VALIDATE_VPA_RESPONSE);
+
+        $this->checkResponseStatus($responseContent[ResponseFields::STATUS]);
+
+        $this->action = Action::AUTHORIZE;
+    }
+
     protected function assertPaymentIdAndAmount(array $input, array $response)
     {
         $expectedAmount = $this->formatAmount($input);
@@ -153,6 +170,22 @@ class Gateway extends Base\Gateway
         $this->setVerifyAmountMismatch($verify);
 
         $this->setVerifyStatus($verify);
+    }
+
+    protected function getValidateVpaRequest(array $input): array
+    {
+        $content = [
+            RequestFields::REQUEST_INFO => [
+                RequestFields::PG_MERCHANT_ID => $this->getMerchantId(),
+                RequestFields::PSP_REFERENCE_NO => $input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
+            ],
+            RequestFields::PAYEE_TYPE => [
+                RequestFields::VIRTUAL_ADDRESS => $input[ConstantsEntity::PAYMENT][Payment\Entity::VPA]
+            ],
+            RequestFields::VA_REQUEST_TYPE => Constants::VA_REQUEST_TYPE
+        ];
+
+        return $this->getStandardRequestArray($content);
     }
 
     /**
@@ -228,7 +261,7 @@ class Gateway extends Base\Gateway
 
         $status = $content[ResponseFields::API_RESPONSE][ResponseFields::STATUS];
 
-        $verify->gatewaySuccess = (Status::isStatusSuccess($status) === true);
+        $verify->gatewaySuccess = (Status::isStatusSuccess($status, $this->action) === true);
     }
 
     /**
@@ -237,7 +270,7 @@ class Gateway extends Base\Gateway
      */
     protected function checkResponseStatus(string $status)
     {
-        if (Status::isStatusSuccess($status) === false)
+        if (Status::isStatusSuccess($status, $this->action) === false)
         {
             $errorCode = Status::getErrorCode($status);
 
@@ -253,6 +286,10 @@ class Gateway extends Base\Gateway
         {
             case Action::AUTHORIZE:
                 $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST;
+                break;
+
+            case Action::VALIDATE_VPA:
+                $traceCode = TraceCode::GATEWAY_VALIDATE_VPA_REQUEST;
                 break;
 
             case Action::VERIFY:

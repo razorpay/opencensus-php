@@ -13,6 +13,12 @@ class Status
     const EXPIRED          = 'X';
     const VALIDATION_ERROR = 'V';
 
+    /**
+     * Below are the statuses for validateVpa API
+     */
+    const AVAILABLE_VPA   = 'VE';
+    const UNAVAILABLE_VPA = 'VN';
+
     const STATUS_CODE_TO_MESSAGE_MAP = [
         self::SUCCESS          => 'Payment Successful',
         self::PENDING          => 'Transaction Pending waiting for response',
@@ -20,6 +26,8 @@ class Status
         self::REJECTED         => 'Collect request rejected by customer',
         self::EXPIRED          => 'Collect request expired',
         self::VALIDATION_ERROR => 'Request Validation Error',
+        self::AVAILABLE_VPA    => 'Vpa Available',
+        self::UNAVAILABLE_VPA  => 'Vpa Unavailable',
     ];
 
     const STATUS_CODE_TO_ERROR_CODE_MAP = [
@@ -27,11 +35,17 @@ class Status
         self::REJECTED         => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED,
         self::EXPIRED          => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED,
         self::PENDING          => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING,
-        self::VALIDATION_ERROR => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        self::VALIDATION_ERROR => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        self::UNAVAILABLE_VPA  => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
     ];
 
-    public static function isStatusSuccess(string $status)
+    public static function isStatusSuccess(string $status, string $action)
     {
+        if ($action === Action::VALIDATE_VPA)
+        {
+            return ($status === self::AVAILABLE_VPA);
+        }
+
         return ($status === self::SUCCESS);
     }
 

@@ -22,4 +22,9 @@ class Constants
     const PAYMENT_TYPE     = 'P2P';
 
     const REFUND           = 'Refund';
+
+    /**
+     * For VPA validation request
+     */
+    const VA_REQUEST_TYPE  = 'T';
 }

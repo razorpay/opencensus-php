@@ -97,10 +97,26 @@ class UpiSbiGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function()
-        {
-            $this->doAuthPaymentViaAjaxRoute($this->payment);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPaymentViaAjaxRoute($this->payment);
+            });
+    }
+
+    public function testFailedVpaValidation()
+    {
+        $this->payment[Payment\Entity::VPA] = Constants::VALIDATION_FAIL_VPA;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPaymentViaAjaxRoute($this->payment);
+            });
     }
 
     /**

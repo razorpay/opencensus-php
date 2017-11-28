@@ -32,6 +32,8 @@ class ResponseFields
      */
     const CUSTOMER_REFERENCE_NO      = 'custRefNo';
 
+    const REQUEST_INFO               = 'requestInfo';
+
     /**
      * Transaction approval number - core bank reference number
      */
@@ -46,4 +48,7 @@ class ResponseFields
     const PAYER_VPA                  = 'payerVPA';
     const PAYEE_VPA                  = 'payeeVPA';
     const PG_MERCHANT_ID             = 'pgMerchantId';
+    const PAYEE_TYPE                 = 'payeeType';
+    const VIRTUAL_ADDRESS            = 'virtualAddress';
+    const NAME                       = 'name';
 }
