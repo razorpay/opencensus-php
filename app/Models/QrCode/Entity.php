@@ -78,8 +78,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->files()
                     ->where(FileStore\Entity::TYPE, '=', FileStore\Type::QR_CODE_IMAGES)
-                    ->latest()
-                    ->first();
+                    ->firstOrFail();
     }
 
     public function getAmount()
@@ -117,7 +116,7 @@ class Entity extends Base\PublicEntity
      */
     public function getQrCodeFilename(): string
     {
-        return 'qrcode/'. $this->getId() . '_' . time();
+        return 'qrcodes/'. $this->getId() . '_' . time();
     }
 
     // --------------------- END GETTERS ---------------------

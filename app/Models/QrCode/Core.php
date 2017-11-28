@@ -9,7 +9,7 @@ use RZP\Models\FileStore;
 
 class Core extends Base\Core
 {
-    public function fetchQrCode(Entity $qrCode, Merchant\Entity $merchant)
+    public function fetchQrCodePath(Entity $qrCode, Merchant\Entity $merchant)
     {
         $qrCodeImage = $qrCode->qrCodeFile();
 

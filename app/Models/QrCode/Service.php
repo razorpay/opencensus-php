@@ -14,11 +14,11 @@ class Service extends Base\Service
      *
      * @return string
      */
-    public function fetchQrCode(string $id)
+    public function fetchQrCodePath(string $id)
     {
         $qrCode = $this->repo->qr_code->findByPublicId($id);
 
-        $qrCodeFilePath = $this->core()->fetchQrCode($qrCode, $qrCode->merchant);
+        $qrCodeFilePath = $this->core()->fetchQrCodePath($qrCode, $qrCode->merchant);
 
         return $qrCodeFilePath;
     }

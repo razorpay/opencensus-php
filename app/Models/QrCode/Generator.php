@@ -7,9 +7,11 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
-use Endroid\QrCode\QrCode;
+use BaconQrCode\Renderer;
+use BaconQrCode\Writer;
 use RZP\Models\VirtualAccount;
 use RZP\Exception\LogicException;
+use RZP\Models\FileStore\Utility;
 use RZP\Services\Elfin\Service as Elfin;
 
 class Generator extends Base\Core
@@ -137,25 +139,32 @@ class Generator extends Base\Core
 
     protected function generateQrCodeImage()
     {
-        $qrCodeImage = new QrCode($this->qrCode->getQrString());
+        $renderer = new Renderer\Image\Png();
 
-        $qrCodeImage->setSize(Constants::QR_CODE_SIZE);
+        $renderer->setHeight(Constants::QR_CODE_HEIGHT);
+
+        $renderer->setWidth(Constants::QR_CODE_WIDTH);
+
+        $writer = new Writer($renderer);
 
         $localFilePath = $this->getLocalSaveDir() . '/' . $this->qrCode->getId() . '.png';
 
-        $qrCodeImage->writeFile($localFilePath);
+        $writer->writeFile($this->qrCode->getQrString(), $localFilePath);
 
         return $localFilePath;
     }
 
     protected function getLocalSaveDir(): string
     {
-        $dir_to_save = storage_path('files/qrcode');
+        $dirPath = storage_path('files/qrcodes');
 
-        if (!is_dir($dir_to_save)) {
-            mkdir($dir_to_save);
+        $dir = dirname($dirPath);
+
+        if (file_exists($dir) === false)
+        {
+            (new Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
         }
 
-        return storage_path('files/qrcode');
+        return $dirPath;
     }
 }

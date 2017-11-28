@@ -54,7 +54,7 @@ class Type
 
     const INVOICE_PDF                       = 'invoice_pdf';
 
-    const QR_CODE_IMAGES                    = 'qr_code_images';
+    const QR_CODE_IMAGE                     = 'qr_code_image';
 
     const REPORT                            = 'report';
 
@@ -154,7 +154,7 @@ class Type
         ],
 
         Constants\Entity::QR_CODE => [
-            self::QR_CODE_IMAGES,
+            self::QR_CODE_IMAGE,
         ],
 
         Constants\Entity::BATCH_FUND_TRANSFER => [
@@ -243,7 +243,7 @@ class Type
         ],
 
         self::CUSTOMER_BUCKET_CONFIG => [
-            self::QR_CODE_IMAGES,
+            self::QR_CODE_IMAGE,
         ],
 
         self::ACTIVATION_BUCKET_CONFIG => [

@@ -10,18 +10,21 @@ class QrCodeController extends Controller
 {
     public function fetchTestQrCode(string $id)
     {
-        \Database\DefaultConnection::set(Mode::TEST);
+        $this->app['basicauth']->setModeAndDbConnection(Mode::TEST);
 
-        $response = $this->service()->fetchQrCode($id);
-
-        return Response::download($response, Constants::QR_CODE_FILE_NAME);
+        return $this->fetchQrcode($id);
     }
 
     public function fetchLiveQrCode(string $id)
     {
-        \Database\DefaultConnection::set(Mode::LIVE);
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
 
-        $response = $this->service()->fetchQrCode($id);
+        return $this->fetchQrcode($id);
+    }
+
+    protected function fetchQrcode(string $id)
+    {
+        $response = $this->service()->fetchQrCodePath($id);
 
         return Response::download($response, Constants::QR_CODE_FILE_NAME);
     }
