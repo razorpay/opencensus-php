@@ -117,6 +117,7 @@ export const categories = {
   mutual_funds: 'Mutual funds',
   travel_agency: 'Travel Agency',
   pharma: 'Pharma',
+  government: 'Government',
   cryptocurrency: 'Cryptocurrency',
   forex: 'Forex',
   hospitality: 'Hospitality',

@@ -25,8 +25,10 @@ export default class CreateOffer extends Component {
   cleanFields(data) {
     let offer = Object.assign({}, data);
 
-    // 1. iins is for only card and emi.
-    if (['card', 'emi'].indexOf(offer['payment_method']) === -1) {
+    // 1. iins is for only netbanking, wallet, upi
+    if (
+      ['netbanking', 'wallet', 'upi'].indexOf(offer['payment_method']) === -1
+    ) {
       delete offer['iins'];
     } else if (offer['iins']) {
       offer['iins'] = offer['iins'].split(','); // Convert command separate values to array
@@ -166,7 +168,7 @@ export default class CreateOffer extends Component {
 
           {['netbanking', 'wallet', 'upi'].indexOf(
             this.state.payment_method
-          ) !== -1 && (
+          ) === -1 && (
             <Field
               label="iins"
               name="iins"

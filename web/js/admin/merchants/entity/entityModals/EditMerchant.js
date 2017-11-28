@@ -310,6 +310,7 @@ const category2Map = {
   travel_agency: 'Travel Agency',
   pharma: 'Pharma',
   cryptocurrency: 'Cryptocurrency',
+  government: 'Government',
   forex: 'Forex',
   hospitality: 'Hospitality',
   logistics: 'Logistics',
