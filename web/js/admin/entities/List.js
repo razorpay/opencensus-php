@@ -49,8 +49,7 @@ export default class EntityList extends Component {
     let value = e.target.value;
     this.collection.data.url_params.type = value;
     this.setState({ selectedEntity: value });
-    this.collection.replaceFilters();
-    this.collection.fetch();
+    this.collection.applyFilters();
   };
 
   selectId = e => {

@@ -12,11 +12,13 @@ const defaultFilters = {
 export default class Collection extends BaseModel {
   animateItems = true;
 
-  // merge new filters and fetch
-  applyFilters(filters) {
+  setFilters(filters) {
     this.filters = observable.shallowObject(
       Object.assign({}, defaultFilters, filters)
     );
+  }
+  applyFilters(filters) {
+    this.setFilters(filters);
     return this.fetch();
   }
 
@@ -37,7 +39,7 @@ export default class Collection extends BaseModel {
 
     this.deleteRouteName = deleteRouteName;
 
-    this.replaceFilters(filters);
+    this.setFilters(filters);
 
     // load initial values
     // fetch if not pre-populated
