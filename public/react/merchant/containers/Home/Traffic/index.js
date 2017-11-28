@@ -8,7 +8,7 @@ import Legend, {
 } from 'merchant/containers/Home/Legend';
 import { getTraffic } from 'merchant/models/HomeKeyMetricsMock';
 
-import { colors } from 'rzp/utils/chart';
+import { colors } from 'rzp/utils/chart/index.js';
 import { Pie } from 'react-chartjs-2';
 
 import './styles.styl';

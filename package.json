@@ -46,6 +46,7 @@
     "moment": "2.18.1",
     "multi-glob": "^1.0.1",
     "ngreact": "^0.3.0",
+    "numeral": "^2.0.6",
     "postcss-loader": "^2.0.5",
     "prettier": "^1.2.2",
     "react": "^15.4.2",

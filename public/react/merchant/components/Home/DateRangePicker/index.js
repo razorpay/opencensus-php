@@ -25,7 +25,7 @@ class DateRangePicker extends Component {
 
     const now = moment();
 
-    let { presets, startDate = now, endDate = now } = props;
+    let { presets, startDate, endDate = moment() } = props;
 
     if (!Array.isArray(presets)) {
       presets = defaultPresets;

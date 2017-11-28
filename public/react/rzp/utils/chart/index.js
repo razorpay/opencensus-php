@@ -11,7 +11,7 @@ global.legend.display = false;
 global.elements.line.tension = 0;
 
 // by default no gap between each pie
-x.defaults.global.elements.arc.borderWidth = 0;
+global.elements.arc.borderWidth = 0;
 
 const tooltips = global.tooltips;
 tooltips.mode = 'index';
@@ -49,16 +49,18 @@ export const timeScale = ({ xLabel, yLabel }) => {
       xAxes: [
         {
           type: 'time',
-          minUnit: 'day',
+          distribution: 'series',
           time: {
             displayFormats: {
               day: 'DD MMM',
             },
-            parser: utcMoment => utcMoment.utcOffset('+0000'),
             tooltipFormat: 'ddd DD MMM YYYY',
           },
           gridLines: {
             color: '#FFFFFF',
+          },
+          ticks: {
+            source: 'labels',
           },
         },
       ],
@@ -72,6 +74,7 @@ export const timeScale = ({ xLabel, yLabel }) => {
           gridLines: {
             color: '#FFFFFF',
           },
+          stacked: true,
         },
       ],
     },

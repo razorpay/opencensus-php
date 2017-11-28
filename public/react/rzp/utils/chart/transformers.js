@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 import { groupBy } from '../pokedex';
 
 export const getTimelineData = (
@@ -34,7 +36,7 @@ export const getTimelineData = (
 
   const groupedData = groupBy(data, groupByColumnName),
     groups = Object.keys(groupedData),
-    /* `groupTimelineMap` is like
+    /* `timelineGroupMap` is like
          * {
          *   "<timestamp1>": {
          *     "<group1>": "<y-axis value1>",
@@ -47,16 +49,14 @@ export const getTimelineData = (
          * used to check if the all groups have data for the particular
          * timestamp , else 0 will be put
          */
-    groupTimelineMap = {},
+    timelineGroupMap = {},
     groupDatasetsMap = {},
     datasets = [];
 
   // populates default data , avoids `if` conditions in next loop
   groups.forEach(groupName => {
-    groupTimelineMap[groupName] = {};
-
     const dataset = {
-      title: groupTitleMap[groupName] || groupName,
+      label: groupTitleMap[groupName] || groupName,
       data: [],
     };
 
@@ -71,23 +71,20 @@ export const getTimelineData = (
   groups.forEach(groupName => {
     const title = groupTitleMap[groupName] || groupName,
       data = groupedData[groupName],
-      timelineMap = groupTimelineMap[groupName],
-      otherGroups = groups.filter(item => item !== groupName),
-      labels = [],
-      values = [];
+      otherGroups = groups.filter(item => item !== groupName);
 
     data.forEach(item => {
-      const timestamp = item.timestamp * 1000;
+      const timestamp = item.timestamp * 1000,
+        groupMap =
+          timelineGroupMap[timestamp] || (timelineGroupMap[timestamp] = {});
 
-      timelineMap[timestamp] =
+      groupMap[groupName] =
         typeof valueTransformer === 'function'
           ? valueTransformer(item.value, item, groupName)
           : item.value;
 
       otherGroups.forEach(groupName => {
-        const gData = groupTimelineMap[groupName];
-
-        gData[timestamp] = gData[timestamp] || 0;
+        groupMap[groupName] = groupMap[groupName] || 0;
       });
     });
   });
@@ -95,19 +92,28 @@ export const getTimelineData = (
   /*
    * Transforms data into the input format for chart.js
    */
-  const timestamps = Object.keys(groupTimelineMap).sort();
+  const timestamps = Object.keys(timelineGroupMap).sort((a, b) => {
+    return Number(a) - Number(b);
+  });
 
-  timestamps.forEach(timestamp => {
+  timestamps.forEach((timestamp, index) => {
+    timestamp = Number(timestamp);
+
     groups.forEach(groupName => {
       const groupData = groupDatasetsMap[groupName].data;
 
       // datasets variable will get populated due to reference
-      groupData.push(groupTimelineMap[timestamp][groupName]);
+      groupData.push({
+        t: timestamp,
+        y: timelineGroupMap[timestamp][groupName],
+      });
     });
+
+    timestamps[index] = moment(timestamp);
   });
 
   return {
-    label: timestamps,
+    labels: timestamps,
     datasets,
   };
 };

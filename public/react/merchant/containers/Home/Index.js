@@ -56,9 +56,11 @@ export default class HomeContainer extends Component {
   constructor(props) {
     super(props);
 
-    const endDate = moment(),
-      startDate = endDate.add(...dateRangePresets[0].slice(1)),
+    let endDate = moment(),
+      startDate = moment(),
       selectedBreakdown = breakDownVals[0][1];
+
+    startDate.add(...dateRangePresets[0].slice(1));
 
     this.state = {
       startDate,
@@ -153,19 +155,13 @@ export default class HomeContainer extends Component {
             <div className="col-md-12">
               <p>Payment methods drilldown</p>
             </div>
-            <div className="col-md-12">
-              <PaymentMethods startDate={startDate} endDate={endDate} />
-            </div>
+            <div className="col-md-12" />
           </div>
 
           <div className="row">
-            <div className="col-md-6">
-              <Traffic startDate={startDate} endDate={endDate} />
-            </div>
+            <div className="col-md-6" />
 
-            <div className="col-md-6">
-              <RecentActivity startDate={startDate} endDate={endDate} />
-            </div>
+            <div className="col-md-6" />
           </div>
         </div>
       </div>

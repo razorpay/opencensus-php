@@ -7,9 +7,7 @@ export const groupBy = (records, colName) => {
     }
 
     const colValue = record[colName],
-      colRecords = (result[colName] = result[colName] || []);
-
-    delete record[colName];
+      colRecords = (result[colValue] = result[colValue] || []);
 
     colRecords.push(record);
   });

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
+import { Line } from 'react-chartjs-2';
 
 import Definition from 'rzp/ui/Definition';
-import Highcharts from 'rzp/ui/Highcharts';
 import defaultChartOptions from 'rzp/ui/Highcharts/defaults';
 import Change from 'rzp/ui/Change';
 
@@ -12,11 +12,11 @@ import Legend, {
   LegendContent,
 } from 'merchant/containers/Home/Legend';
 
-import { timeScale } from 'rzp/utils/chart';
+import { timeScale } from 'rzp/utils/chart/index.js';
 
 import { tabsMeta } from './data';
 
-const chartOptions = timeScale();
+const chartOptions = timeScale({});
 
 class Panel extends Component {
   constructor(props) {
@@ -35,31 +35,9 @@ class Panel extends Component {
   render() {
     const { selectedGrouping, data, startDate, endDate } = this.props,
       dateFormat = 'DD MMM YYYY',
-      histogramOptions = {
-        ...chartOptions,
-        series:
-          data.histogram &&
-          data.histogram.map(item => {
-            return {
-              type: 'area',
-              data: item.data,
-              name: item.name,
-            };
-          }),
-      },
-      { grouping, options } = this.meta,
-      legendData =
-        data.histogram &&
-        data.histogram.map((data, index) => {
-          return {
-            title: data.name,
-            percentage: data.percentage.value,
-            content: data.sum.value,
-            color: defaultChartOptions.colors[index],
-          };
-        });
+      { grouping, options } = this.meta;
 
-    if (!data.diff) {
+    if (data.loading) {
       return <center>Loading...</center>;
     }
 
@@ -68,9 +46,6 @@ class Panel extends Component {
         <div className="clearfix p-all">
           <div className="pull-left">
             <Definition>
-              <h4>
-                <Change value={data.diff.value} />
-              </h4>
               <span className="text-fade">
                 As compared to: {startDate.format(dateFormat)} to{' '}
                 {endDate.format(dateFormat)}
@@ -96,20 +71,7 @@ class Panel extends Component {
           </div>
         </div>
         <div className="chart-container">
-          <Highcharts options={histogramOptions} />
-          <Legend>
-            {legendData.map((data, index) => {
-              return (
-                <LegendItem key={index}>
-                  <LegendLabel color={data.color}>
-                    {data.percentage}%
-                  </LegendLabel>
-                  <LegendTitle>{data.title}</LegendTitle>
-                  <LegendContent>{data.content}</LegendContent>
-                </LegendItem>
-              );
-            })}
-          </Legend>
+          <Line options={chartOptions} data={data.histogram} />
         </div>
       </div>
     );
