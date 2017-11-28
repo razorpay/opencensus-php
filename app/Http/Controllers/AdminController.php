@@ -81,6 +81,11 @@ class AdminController extends Controller
             }
         }
 
+        // /admin/merchants → /admin, to avoid google oauth error (redirect_uri_mismatch)
+        if (\Route::currentRouteName() === 'admin_catchall') {
+            return redirect('/admin');
+        }
+
         switch($org['auth_type'])
         {
             case 'google_auth':
@@ -91,11 +96,6 @@ class AdminController extends Controller
         return view('admin.login', [
             'org' => $org
         ]);
-    }
-
-    public function getAngular()
-    {
-        return view('admin.tmpgetIndex');
     }
 
     protected function getGoogleOAuthUrl()

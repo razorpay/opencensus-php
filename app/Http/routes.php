@@ -26,7 +26,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/org', 'AdminController@getOrg');
         Route::post('/signin', 'AdminController@postSignin');
         Route::get('/', 'AdminController@getIndex');
-        Route::get('/_', 'AdminController@getAngular');
     });
 
     Route::group(['prefix' => 'user'], function()
@@ -151,6 +150,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');
         Route::get('/admin/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');
     });
+
+    Route::get('admin/{all}', 'AdminController@getIndex')->name('admin_catchall')->where(['all' => '.*']);
 });
 
 Route::group(['middleware'  =>  'slack'], function ()
