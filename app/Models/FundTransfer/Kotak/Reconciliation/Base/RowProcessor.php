@@ -56,7 +56,6 @@ class RowProcessor extends BaseCore
 
     /**
      * Denotes if the webhook should be fired.
-     * If the entity was updated earlier, this will be set to false.
      */
     protected $fireWebhook;
 

@@ -37,9 +37,9 @@ class Processor extends Base\Core
     protected $reconciledAt;
 
     /**
-     * Array of all entities fetched for all the rows in the file
+     * Array of all reconcilied rows fetched for all the rows in the file
      */
-    protected $allEntities = [];
+    protected $allReconciledRows = [];
 
     /**
      * Array of ids for which entity couldn't be found in database
@@ -115,15 +115,11 @@ class Processor extends Base\Core
     {
         $summary = $this->repo->transactionOnLiveAndTest(function() use ($data)
         {
-            $webhookData = [];
-
             try
             {
                 foreach ($data as $row)
                 {
                     $reconciledRowDetails = $this->reconcileEntity($row);
-
-                    $webhookData[] = $reconciledRowDetails;
 
                     $entity = $reconciledRowDetails['entity'];
 
@@ -133,7 +129,7 @@ class Processor extends Base\Core
                     }
                     else
                     {
-                        $this->allEntities[] = $entity;
+                        $this->allReconciledRows[] = $reconciledRowDetails;
 
                         $this->updateBatchFundTransferStats($entity);
                     }
@@ -148,7 +144,7 @@ class Processor extends Base\Core
                     $batchEntity->saveOrFail();
                 }
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 (new SlackNotification)->failure('setl_reconciliation', $e);
 
@@ -160,29 +156,29 @@ class Processor extends Base\Core
 
             $summary = $this->getSummary();
 
-            (new SlackNotification)->success('setl_reconciliation', $summary);
-
-            // Isolating the webhook flow in a try-catch, to keep the original settlement cycle unaffected
-            try
-            {
-                (new FundTransferAttempt\Core)->notifyMerchantViaWebhook($webhookData);
-            }
-            catch (\Exception $e)
-            {
-                // Log only the entity ids instead of the entire entities
-                $entities = array_map(function($entity) {
-                    return $entity->getId();
-                }, $this->allEntities);
-
-                $this->trace->traceException(
-                    $e,
-                    Trace::CRITICAL,
-                    TraceCode::SETTLEMENT_PROCESSED_WEBHOOOK_FAILED,
-                    ['entities' => $entities]);
-            }
-
             return $summary;
         });
+
+        (new SlackNotification)->success('setl_reconciliation', $summary);
+
+        // Isolating the webhook flow in a try-catch, to keep the original settlement cycle unaffected
+        try
+        {
+            (new FundTransferAttempt\Core)->notifyMerchantViaWebhook($this->allReconciledRows);
+        }
+        catch (\Exception $e)
+        {
+            // Log only the entity ids instead of the entire entities
+            $entities = array_map(function($entity) {
+                return $entity->getId();
+            }, $this->allReconciledRows);
+
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::SETTLEMENT_PROCESSED_WEBHOOOK_FAILED,
+                ['entities' => $entities]);
+        }
 
         return $summary;
     }
@@ -269,8 +265,10 @@ class Processor extends Base\Core
 
         $settlementsCount = 0;
 
-        foreach ($this->allEntities as $entity)
+        foreach ($this->allReconciledRows as $reconciledRow)
         {
+            $entity = $reconciledRow['entity'];
+
             $entityId = $entity->getId();
 
             $allEntityIds[] = $entityId;

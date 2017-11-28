@@ -2,7 +2,6 @@
 
 namespace RZP\Models\FundTransfer\Attempt;
 
-use RZP\Constants;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
