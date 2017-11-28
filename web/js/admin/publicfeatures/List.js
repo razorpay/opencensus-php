@@ -19,19 +19,10 @@ function fetchFn() {
   let currentFilter = this.filters.status;
   return adminFetch(...arguments).then(data => {
     if (data) {
-      data = data.reduce((rows, current) => {
-        Object.keys(featureNames).forEach(
-          f =>
-            current[f] === currentFilter &&
-            rows.push({
-              merchant_id: current.merchant_id,
-              contact_name: current.contact_name,
-              feature: featureNames[f],
-            })
-        );
-        return rows;
-      }, []);
-      return data;
+      return data.map(feature => ({
+        id: `${feature.merchant_id}_${feature.product}`,
+        ...feature,
+      }));
     }
   });
 }
@@ -59,6 +50,7 @@ export default class PublicFeaturesList extends Component {
               onChange={this.filter}
               defaultValue={defaultFilters.status}
             >
+              <option value="">All</option>
               <option value="pending">Pending</option>
               <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
@@ -77,6 +69,6 @@ export default class PublicFeaturesList extends Component {
 
 const fields = [
   ['Merchant ID', item => item.merchant_id],
-  ['Feature', item => item.feature],
-  ['Contact', item => item.contact_name],
+  ['Product', item => item.product],
+  ['Status', item => item.status],
 ];

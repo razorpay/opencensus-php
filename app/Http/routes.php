@@ -154,8 +154,6 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('admin/{all}', 'AdminController@getIndex')->name('admin_catchall')->where(['all' => '.*']);
 });
 
-Route::get('admin/{all}', 'AdminController@getIndex')->name('admin_catchall')->where(['all' => '.*']);
-
 Route::group(['middleware'  =>  'slack'], function ()
 {
     Route::post('/slack', 'AdminController@postSlackQuery');
