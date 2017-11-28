@@ -121,6 +121,8 @@ class UpiSbiGatewayTest extends TestCase
 
         $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
         $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_FAILED, $payment[Payment\Entity::INTERNAL_ERROR_CODE]);
+
+        return $payment;
     }
 
     public function testFailedVpaValidation()
@@ -207,12 +209,16 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals(true, $verify[Constants::GATEWAY][Constants::GATEWAY_SUCCESS]);
 
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        // Status remains in Success after verify
+        $this->assertEquals(SbiStatus::SUCCESS, $upiEntity[Upi::STATUS_CODE]);
 
         $this->assertEquals($verify[Entity::PAYMENT][Payment\Entity::ID], $payment[Payment\Entity::ID]);
         $this->assertEquals(1, $payment[Payment\Entity::VERIFIED]);
     }
 
-    public function testPaymentPendingVerifyFailed()
+    public function testPaymentSuccessVerifyFailed()
     {
         $this->createCapturedPayment();
 
@@ -228,21 +234,35 @@ class UpiSbiGatewayTest extends TestCase
             {
                 $this->verifyPayment($payment[Payment\Entity::ID]);
             });
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        // Status changed from S to F
+        $this->assertEquals(SbiStatus::FAILED, $upiEntity[Upi::STATUS_CODE]);
+
+        $this->assertEquals(0, $payment[Payment\Entity::VERIFIED]);
     }
 
     public function testPaymentFailedVerifyFailed()
     {
-        $this->testFailedCollect();
+        $payment = $this->testFailedCollect();
 
-        $payment = $this->getLastEntity(Entity::PAYMENT, true);
-
-        $this->mockVerifyFailed(SbiStatus::FAILED);
+        $this->mockVerifyFailed();
 
         $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
 
         // This should result in api success and gateway success = false
         $this->assertEquals(false, $verify[Constants::GATEWAY][Constants::API_SUCCESS]);
         $this->assertEquals(false, $verify[Constants::GATEWAY][Constants::GATEWAY_SUCCESS]);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        // Status changed from S to F
+        $this->assertEquals(SbiStatus::FAILED, $upiEntity[Upi::STATUS_CODE]);
+
+        $this->assertEquals(1, $payment[Payment\Entity::VERIFIED]);
     }
 
     public function testAmountAssertionFailure()
@@ -265,6 +285,14 @@ class UpiSbiGatewayTest extends TestCase
             {
                 $this->makeS2SCallbackAndGetContent($content);
             });
+
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        // Status will be S, because amount assertion failure doesn't rely on status
+        $this->assertNotNull($upiEntity[Upi::NPCI_REFERENCE_ID]);
+        $this->assertNotNull($upiEntity[Upi::GATEWAY_PAYMENT_ID]);
+        $this->assertEquals(SbiStatus::SUCCESS, $upiEntity[Upi::STATUS_CODE]);
+        $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
     }
 
     public function testRefundFileFlow()
@@ -326,6 +354,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $file = $this->getLastEntity(ConstantsEntity::FILE_STORE, true);
 
+        // Asserting the properties of the fileStore object that was created and uploaded into the S3 bucket
         $this->assertEquals(FileStore\Type::SBI_UPI_REFUND, $file[FileStore\Entity::TYPE]);
         $this->assertEquals(FileStore\Store::S3, $file[FileStore\Entity::STORE]);
         $this->assertEquals(FileStore\Format::CSV, $file[FileStore\Entity::EXTENSION]);
@@ -351,6 +380,14 @@ class UpiSbiGatewayTest extends TestCase
             {
                 $this->makeS2SCallbackAndGetContent($content);
             });
+
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        // Status will be S, because assertion failure doesn't rely on status
+        $this->assertNotNull($upiEntity[Upi::NPCI_REFERENCE_ID]);
+        $this->assertNotNull($upiEntity[Upi::GATEWAY_PAYMENT_ID]);
+        $this->assertEquals(SbiStatus::SUCCESS, $upiEntity[Upi::STATUS_CODE]);
+        $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
     }
 
     protected function createCapturedPayment()
@@ -367,16 +404,23 @@ class UpiSbiGatewayTest extends TestCase
 
         $this->makeS2SCallbackAndGetContent($content);
 
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        $this->assertNotNull($upiEntity[Upi::NPCI_REFERENCE_ID]);
+        $this->assertNotNull($upiEntity[Upi::GATEWAY_PAYMENT_ID]);
+        $this->assertEquals(SbiStatus::SUCCESS, $upiEntity[Upi::STATUS_CODE]);
+        $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
+
         // Add a capture as well, just for completeness sake
         $this->capturePayment($paymentId, $payment[Payment\Entity::AMOUNT]);
     }
 
-    protected function mockVerifyFailed($status = SbiStatus::PENDING)
+    protected function mockVerifyFailed()
     {
         $this->mockServerContentFunction(
-            function(& $content, $action = null) use ($status)
+            function(& $content, $action = null)
             {
-                $content[ResponseFields::API_RESPONSE][ResponseFields::STATUS] = $status;
+                $content[ResponseFields::API_RESPONSE][ResponseFields::STATUS] = SbiStatus::FAILED;
             }
         );
     }

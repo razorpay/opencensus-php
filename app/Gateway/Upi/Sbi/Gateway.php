@@ -172,6 +172,10 @@ class Gateway extends Base\Gateway
     {
         $this->setVerifyAmountMismatch($verify);
 
+        $content = $verify->verifyResponseContent[ResponseFields::API_RESPONSE];
+
+        $this->updateGatewayPaymentEntity($verify->payment, $content);
+
         $this->setVerifyStatus($verify);
     }
 
