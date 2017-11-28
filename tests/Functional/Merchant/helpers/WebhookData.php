@@ -581,8 +581,7 @@ return [
             'entity'    => 'event',
             'event'     => 'settlement.processed',
             'contains' => [
-                'settlement',
-                'account_id'
+                'settlement'
             ],
             'payload' => [
                 'settlement' => [

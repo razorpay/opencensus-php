@@ -169,8 +169,8 @@ class Processor extends Base\Core
         catch (\Exception $e)
         {
             // Log only the entity ids instead of the entire entities
-            $entities = array_map(function($entity) {
-                return $entity->getId();
+            $entities = array_map(function($reconciledRow) {
+                return $reconciledRow['entity']->getId();
             }, $this->allReconciledRows);
 
             $this->trace->traceException(

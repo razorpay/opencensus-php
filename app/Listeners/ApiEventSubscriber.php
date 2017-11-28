@@ -440,7 +440,6 @@ class ApiEventSubscriber extends Base\Core
             Constants\Entity::SETTLEMENT => [
                 'entity' => $settlement->toArrayPublic(),
             ],
-            'account_id' => $this->withPayload['account_id']
         ];
 
         return $payload;
@@ -462,6 +461,9 @@ class ApiEventSubscriber extends Base\Core
         $merchant = $this->getMerchantFromEntity($entity);
         $webhook = $merchant->webhook;
 
+        // Send the signed account id
+        $signedAccountId = Merchant\AccountEntity::getSignedId($merchant->getId());
+
         $attributes = array(
             Event\Entity::EVENT       => $eventFired,
             //
@@ -472,6 +474,7 @@ class ApiEventSubscriber extends Base\Core
             // entity. For this reason, we cannot have a static list of contains array.
             //
             Event\Entity::CONTAINS    => array_keys($payload),
+            Event\Entity::ACCOUNT_ID  => $signedAccountId,
             Event\Entity::CREATED_AT  => $entity->getUpdatedAt(),
         );
 

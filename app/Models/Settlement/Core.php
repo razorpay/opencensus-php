@@ -57,7 +57,7 @@ class Core extends Base\Core
 
         return $response;
     }
-  
+
     public function addBeneficiary(string $channel, array $input)
     {
         (new Validator)->validateInput($channel . '_add_beneficiary', $input);
@@ -100,13 +100,8 @@ class Core extends Base\Core
             return;
         }
 
-        $accountId = Merchant\AccountEntity::getSignedId($settlement->merchant_id);
-
         $eventPayload = [
-            Entity::MAIN => $settlement,
-            Entity::WITH => [
-                'account_id' => $accountId
-            ]
+            Entity::MAIN => $settlement
         ];
 
         $this->app['events']->fire('api.settlement.processed', $eventPayload);
