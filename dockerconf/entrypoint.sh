@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/sh
 set -euo pipefail
 
 db_wait(){

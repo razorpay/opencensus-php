@@ -32,7 +32,7 @@ spec:
             configMapKeyRef:
               name: api
               key: APP_MODE
-        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
         command: ["/entrypoint.sh"]
         args: ["web"]
@@ -74,7 +74,7 @@ spec:
             configMapKeyRef:
               name: api
               key: APP_MODE
-        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
         command: ["/entrypoint.sh"]
         args: ["sqs", "10"]
@@ -93,7 +93,7 @@ spec:
             configMapKeyRef:
               name: api
               key: APP_MODE
-        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
         command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "api-gen-live", "10"]
@@ -112,7 +112,7 @@ spec:
             configMapKeyRef:
               name: api
               key: APP_MODE
-        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
         command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "api-gen-test", "20"]
@@ -131,7 +131,7 @@ spec:
             configMapKeyRef:
               name: api
               key: APP_MODE
-        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
         command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "webhooks-live", "10"]
@@ -150,7 +150,7 @@ spec:
             configMapKeyRef:
               name: api
               key: APP_MODE
-        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
         command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "webhooks-test", "20"]
@@ -169,7 +169,7 @@ spec:
             configMapKeyRef:
               name: api
               key: APP_MODE
-        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
         command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "webhooks-failure", "10"]
@@ -188,7 +188,7 @@ spec:
             configMapKeyRef:
               name: api
               key: APP_MODE
-        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
         command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "invoice-emails", "10"]
@@ -207,7 +207,7 @@ spec:
             configMapKeyRef:
               name: api
               key: APP_MODE
-        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
         command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "invoice-reports", "10"]
@@ -226,7 +226,7 @@ spec:
             configMapKeyRef:
               name: api
               key: APP_MODE
-        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
         command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "es-sync", "10"]
@@ -245,7 +245,7 @@ spec:
             configMapKeyRef:
               name: api
               key: APP_MODE
-        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
         command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "emails", "10"]
@@ -264,7 +264,7 @@ spec:
             configMapKeyRef:
               name: api
               key: APP_MODE
-        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
         command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "subscription-charge", "10"]
@@ -283,7 +283,7 @@ spec:
             configMapKeyRef:
               name: api
               key: APP_MODE
-        image: razorpay/api:e7f30768b83b69e4e7c20b7cca6fd57a60832e00
+        image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
         command: ["/entrypoint.sh"]
         args: ["sqs_multi_default", "batch", "10"]

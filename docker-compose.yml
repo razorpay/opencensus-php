@@ -5,7 +5,7 @@ services:
       context: .
       args:
         GIT_TOKEN:
-    image: razorpay:api
+    image: razorpay/api
     links:
       - api_db
       - cache
@@ -16,6 +16,9 @@ services:
       - api_db
       - cache
       - es
+    command:
+      - "/entrypoint.sh"
+      - "web"
     environment:
       DB_LIVE_HOST: api_db
       DB_LIVE_USERNAME: api_user
