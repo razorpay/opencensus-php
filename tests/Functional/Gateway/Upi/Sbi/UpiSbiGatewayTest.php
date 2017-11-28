@@ -42,7 +42,7 @@ class UpiSbiGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create(Constants::SHARED_UPI_MIDGATE_TERMINAL);
+        $this->sharedTerminal = $this->fixtures->create(Constants::SHARED_UPI_SBI_MIDGATE_TERMINAL);
 
         $this->gateway = Gateway::UPI_SBI;
 

@@ -1298,7 +1298,7 @@ class Terminal extends Base
 
     public function createSharedUpiMindgateSbiTerminal(array $attributes)
     {
-        $termId = Shared::UPI_MINDGATE_RAZORPAY_TERMINAL;
+        $termId = Shared::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL;
 
         $defaultValues = [
             'id'                        => $termId,
