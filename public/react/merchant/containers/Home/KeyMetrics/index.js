@@ -130,7 +130,7 @@ class KeyMetricsContainer extends Component {
         // Timeline data
         const histogram = resp.data[`${tabName}Histogram`];
 
-        if (histogram && histogram.length > 0) {
+        if (histogram) {
           tabState.data.histogram = getTimelineData(
             histogram,
             tabState.selectedGrouping
