@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import Duplex from 'ui/Duplex';
-import { adminFetch } from 'util/fetch';
+import { adminFetch, adminDelete } from 'util/fetch';
 import { Link } from 'react-router-dom';
+import AsyncButton from 'ui/AsyncButton';
 
 export default class GenericEntity extends Component {
   params = this.props.match.params;
@@ -38,7 +39,7 @@ export default class GenericEntity extends Component {
   }
 
   render() {
-    let { id } = this.params;
+    let { id, type } = this.params;
     let { data } = this.state;
 
     return (
@@ -52,6 +53,7 @@ export default class GenericEntity extends Component {
         <header class="capitalize">
           {this.title} <code>{id}</code>
         </header>
+        {actions[type] && actions[type](data)}
         <Duplex pending={!data} model={data} fields={this.fields()} />
         {data && <div class="code">{JSON.stringify(data, null, 4)}</div>}
       </div>
@@ -72,4 +74,25 @@ export default class GenericEntity extends Component {
       });
     }
   }
+}
+
+const actions = {
+  emi_plan: entity => (
+    <AsyncButton
+      class="btn danger"
+      pendingClass="small spinner"
+      onClick={entity::deleteEmiPlan}
+      text="Delete EMI Plan"
+      confirm="Delete EMI Plan?"
+    />
+  ),
+};
+
+function deleteEmiPlan() {
+  return adminDelete({
+    route_name: 'emi_plan_delete',
+    url_params: {
+      id: this.id,
+    },
+  });
 }
