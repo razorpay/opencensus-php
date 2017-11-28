@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Gateway\Upi\Base\Entity as Upi;
 
 return [
     'testFailedCollect' => [

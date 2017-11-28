@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Gateway\Upi\Sbi;
 
 use Excel;
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Entity;
@@ -80,11 +81,16 @@ class UpiSbiGatewayTest extends TestCase
 
         // The payment should now be authorized
         $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
         $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
 
-        $upiEntity = $this->getLastEntity(Entity::UPI, true);
-        $this->assertNotNull($upiEntity[Upi::NPCI_REFERENCE_ID]);
-        $this->assertNotNull($upiEntity[Upi::GATEWAY_PAYMENT_ID]);
+        $content = $this->getDecryptedContent($content[ResponseFields::MESSAGE], ResponseFields::RESPONSE);
+
+        $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $upiEntity[Upi::NPCI_REFERENCE_ID]);
+        $this->assertEquals($content[ResponseFields::CUSTOMER_REFERENCE_NO], $upiEntity[Upi::GATEWAY_PAYMENT_ID]);
+        $this->assertEquals($content[ResponseFields::STATUS], $upiEntity[Upi::STATUS_CODE]);
+        $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
     }
 
     /**
@@ -103,6 +109,18 @@ class UpiSbiGatewayTest extends TestCase
             {
                 $this->doAuthPaymentViaAjaxRoute($this->payment);
             });
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        $this->assertNotNull($upiEntity[Upi::NPCI_REFERENCE_ID]);
+        $this->assertNotNull($upiEntity[Upi::GATEWAY_PAYMENT_ID]);
+
+        $this->assertEquals(SbiStatus::FAILED, $upiEntity[Upi::STATUS_CODE]);
+        $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
+
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+        $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_FAILED, $payment[Payment\Entity::INTERNAL_ERROR_CODE]);
     }
 
     public function testFailedVpaValidation()
@@ -117,6 +135,19 @@ class UpiSbiGatewayTest extends TestCase
             {
                 $this->doAuthPaymentViaAjaxRoute($this->payment);
             });
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        // We don't reach the collect request state
+        $this->assertNull($upiEntity[Upi::NPCI_REFERENCE_ID]);
+        $this->assertNull($upiEntity[Upi::GATEWAY_PAYMENT_ID]);
+
+        $this->assertEquals(SbiStatus::UNAVAILABLE_VPA, $upiEntity[Upi::STATUS_CODE]);
+        $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
+
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+        $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA, $payment[Payment\Entity::INTERNAL_ERROR_CODE]);
     }
 
     /**
@@ -148,9 +179,17 @@ class UpiSbiGatewayTest extends TestCase
                 $this->makeS2SCallbackAndGetContent($content);
             });
 
-        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        $this->assertNotNull($upiEntity[Upi::NPCI_REFERENCE_ID]);
+        $this->assertNotNull($upiEntity[Upi::GATEWAY_PAYMENT_ID]);
+
+        $this->assertEquals(SbiStatus::REJECTED, $upiEntity[Upi::STATUS_CODE]);
+        $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
 
         $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+        $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED, $payment[Payment\Entity::INTERNAL_ERROR_CODE]);
     }
 
     /**
@@ -409,5 +448,10 @@ class UpiSbiGatewayTest extends TestCase
         $response->headers->set('Cache-Control', 'no-cache');
 
         return [ResponseFields::MESSAGE => $response->content()];
+    }
+
+    protected function getDecryptedContent(string $json, $messageKey, $responseKey = ResponseFields::API_RESPONSE)
+    {
+        return $this->mockServer()->decrypt($json, $messageKey)[$responseKey];
     }
 }
