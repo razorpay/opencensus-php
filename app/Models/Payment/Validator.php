@@ -61,7 +61,7 @@ class Validator extends Base\Validator
         '_'                          => 'sometimes|array',
         'test_success'               => 'sometimes|boolean',
         'subscription_card_change'   => 'sometimes|boolean',
-        'account_number'             => 'sometimes_if:recurring,1,method,netbanking|alpha_num|between:5,20|nullable',
+        'account_number'             => 'sometimes|alpha_num|between:5,20|nullable',
     ];
 
     protected static $editRules = [
@@ -112,7 +112,30 @@ class Validator extends Base\Validator
         'hold_parameters',
         'customer_id',
         'test_success',
+        'account_number',
     ];
+
+    protected function validateAccountNumber(array $input)
+    {
+        if (isset($input['account_number']) === false)
+        {
+            return;
+        }
+
+        if ($input[Entity::METHOD] !== Method::NETBANKING)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Account Number passed for invalid method: ' . $input[Entity::METHOD]);
+        }
+
+        $recurring = $input[Entity::RECURRING] ?? null;
+
+        if ($recurring !== '1')
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Account Number passed for non-recurring payment');
+        }
+    }
 
     protected function validateEmail(array $input)
     {

@@ -849,7 +849,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'total'   => 2,
+                'total'   => 3,
                 'success' => 1
             ]
         ],

@@ -13,15 +13,11 @@ class CardSorter extends Terminal\Sorter
         'gateway',
     ];
 
-    // Arrange card terminals in the order
+    // Arrange card terminals in order of gateway
     public function gatewaySorter($terminals)
     {
-        $method = $this->input['payment']->getMethod();
-
-        $methodsAllowed = [Method::CARD, Method::EMI];
-
         // No need to sort unless the method is either card or EMI.
-        if (in_array($method, $methodsAllowed, true) === false)
+        if ($this->input['payment']->isMethodCardOrEmi() === false)
         {
             return $terminals;
         }

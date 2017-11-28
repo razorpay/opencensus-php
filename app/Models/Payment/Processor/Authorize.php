@@ -1292,13 +1292,28 @@ trait Authorize
                     ['payment_id' => $payment->getId()]);
             }
 
-            $payment->setErrorNull();
             $payment->setVerified(true);
-            $payment->setStatus(Payment\Status::AUTHORIZED);
 
-            // The first argument marks the payment as converted from failed
-            // to authorized
-            $this->updateAndNotifyPaymentAuthorized($response, true);
+            // handle the special caes when timeout cron marks a payment as failed
+            // because of race conditions with verify,
+            // We just need to reverse the things done in timeout cron, we dont
+            // need to update the acquirer data here as that should have already
+            // been set in the payment when payment was intitally authorized.
+            if (($payment->hasBeenAuthorized() === true) and
+                ($payment->isFailed() === true))
+            {
+                $payment->setErrorNull();
+
+                $payment->setStatus(Payment\Status::AUTHORIZED);
+
+                $payment->setLateAuthorized(true);
+            }
+            else
+            {
+                // The first argument marks the payment as converted from failed
+                // to authorized
+                $this->updateAndNotifyPaymentAuthorized($response, true);
+            }
 
             $this->autoCapturePaymentIfApplicable($payment);
 

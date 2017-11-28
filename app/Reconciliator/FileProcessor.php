@@ -26,6 +26,7 @@ class FileProcessor
     const FILE_TYPE               = 'file_type';
     const FILE_DETAILS            = 'file_details';
     const SHEET_NAME              = 'sheet_name';
+    const SHEET_COUNT             = 'sheet_count';
 
     const ZIP_EXTENSION           = 'zip';
 
@@ -88,7 +89,7 @@ class FileProcessor
         $this->validator = new Validator;
         $this->messenger = new Messenger();
 
-        $this->trace =$app['trace'];
+        $this->trace = $app['trace'];
 
         $this->registerMimeTypeGuesser();
     }
@@ -171,6 +172,12 @@ class FileProcessor
         return new SplFileInfo($filePath);
     }
 
+    public function isZipFile($file, string $fileLocationType): bool
+    {
+         $fileExtension = $this->getFileExtension($file, $fileLocationType);
+
+         return (in_array($fileExtension, Validator::SUPPORTED_ZIP_EXTENSIONS, true) === true);
+    }
     /**
      * Unzips the file to a folder which is created in the same folder in which the zip file is present.
      *
@@ -306,7 +313,7 @@ class FileProcessor
      *
      * @return string Extension of the file
      */
-    public function getTypeOfFile($file, $fileLocationType)
+    protected function getFileExtension($file, $fileLocationType)
     {
         if ($fileLocationType === self::UPLOADED)
         {

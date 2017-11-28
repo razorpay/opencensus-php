@@ -17,6 +17,8 @@ class Entity extends Base\PublicEntity
     const LONGITUDE                     = 'longitude';
     const ISP                           = 'isp';
 
+    const NONE                          = 'NONE';
+
     protected $entity = 'geo_ip';
 
     protected $primaryKey = self::IP;
@@ -38,6 +40,18 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Current update api picks entities where country is null,
+     * Marking them 'NONE' ensures same entity is not picked again.
+     */
+    public function setCountryNone()
+    {
+        if ($this->isAttributeNull(self::COUNTRY) === true)
+        {
+            $this->setAttribute(self::COUNTRY, self::NONE);
+        }
+    }
+
+    /**
      * Overriding default behavior as to validate IP
      * IP could be both IPv4 or IPv6
      *
@@ -48,10 +62,12 @@ class Entity extends Base\PublicEntity
     {
         if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6) === false)
         {
-            if ($throw === true)
-            {
-                throw new BadRequestValidationFailureException($ip . ' is not a valid IP');
-            }
+            // Commenting until we clean geo_ips table,
+            // currently there are few garbage values for ips
+            // if ($throw === true)
+            // {
+            //     throw new BadRequestValidationFailureException($ip . ' is not a valid IP');
+            // }
 
             return false;
         }

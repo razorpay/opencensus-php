@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 
 class Header
 {
@@ -71,12 +72,32 @@ class Header
     const VA_BANK_ACCOUNT_NUMBER = 'bank_account_number';
     const VA_BANK_ACCOUNT_IFSC   = 'bank_account_ifsc';
 
+    //
+    // HDFC Emandate Register Response File Headers
+    //
+    const HDFC_EM_REGISTER_CLIENT_NAME                      = HdfcEMRegisterHeadings::CLIENT_NAME;
+    const HDFC_EM_REGISTER_MERCHANT_UNIQUE_REFERENCE_NO     = HdfcEMRegisterHeadings::MERCHANT_UNIQUE_REFERENCE_NO;
+    const HDFC_EM_REGISTER_CUSTOMER_NAME                    = HdfcEMRegisterHeadings::CUSTOMER_NAME ;
+    const HDFC_EM_REGISTER_ACCOUNT_NUMBER                   = HdfcEMRegisterHeadings::CUSTOMER_ACCOUNT_NUMBER;
+    const HDFC_EM_REGISTER_AMOUNT                           = HdfcEMRegisterHeadings::AMOUNT;
+    const HDFC_EM_REGISTER_AMOUNT_TYPE                      = HdfcEMRegisterHeadings::AMOUNT_TYPE;
+    const HDFC_EM_REGISTER_START_DATE                       = HdfcEMRegisterHeadings::START_DATE;
+    const HDFC_EM_REGISTER_END_DATE                         = HdfcEMRegisterHeadings::END_DATE;
+    const HDFC_EM_REGISTER_FREQUENCY                        = HdfcEMRegisterHeadings::FREQUENCY;
+    const HDFC_EM_REGISTER_MANDATE_SERIAL_NUMBER            = HdfcEMRegisterHeadings::MANDATE_SERIAL_NUMBER;
+    const HDFC_EM_REGISTER_MERCHANT_REQUEST_NO              = HdfcEMRegisterHeadings::MERCHANT_REQUEST_NO;
+    const HDFC_EM_REGISTER_MANDATE_ID                       = HdfcEMRegisterHeadings::MANDATE_ID;
+    const HDFC_EM_REGISTER_STATUS                           = HdfcEMRegisterHeadings::STATUS;
+    const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
+
     /**
-     * Input and output file headers per type.
+     * Input and output file headers
+     * The keys need to be like <type>_<sub-type>_<gateway>.
+     * Above is subject to those value not being empty.
      *
      * @var array
      */
-    const PER_TYPE = [
+    const HEADER_MAP = [
 
         Type::REFUND => [
 
@@ -215,19 +236,38 @@ class Header
                 self::VA_BANK_ACCOUNT_IFSC,
             ],
         ],
+
+        'emandate_register_hdfc' => [
+            self::INPUT => [
+                self::HDFC_EM_REGISTER_ACCOUNT_NUMBER,
+                self::HDFC_EM_REGISTER_MANDATE_ID,
+                self::HDFC_EM_REGISTER_STATUS,
+                self::HDFC_EM_REGISTER_REMARK,
+                self::HDFC_EM_REGISTER_CLIENT_NAME,
+                self::HDFC_EM_REGISTER_MERCHANT_UNIQUE_REFERENCE_NO,
+                self::HDFC_EM_REGISTER_CUSTOMER_NAME,
+                self::HDFC_EM_REGISTER_AMOUNT,
+                self::HDFC_EM_REGISTER_AMOUNT_TYPE,
+                self::HDFC_EM_REGISTER_START_DATE,
+                self::HDFC_EM_REGISTER_END_DATE,
+                self::HDFC_EM_REGISTER_FREQUENCY,
+                self::HDFC_EM_REGISTER_MANDATE_SERIAL_NUMBER,
+                self::HDFC_EM_REGISTER_MERCHANT_REQUEST_NO,
+            ],
+        ],
     ];
 
     /**
      * Validates headers of batch input file.
      *
-     * @param string $type
+     * @param string $headerKey
      * @param array  $keys
      *
      * @throws BadRequestException
      */
-    public static function validate(string $type, array $keys)
+    public static function validate(string $headerKey, array $keys)
     {
-        $expectedHeaders = self::PER_TYPE[$type][self::INPUT];
+        $expectedHeaders = self::HEADER_MAP[$headerKey][self::INPUT];
 
         $headersMissing = (bool) array_diff($expectedHeaders, $keys);
 
@@ -249,11 +289,11 @@ class Header
 
     public static function getInputHeadersForType(string $type): array
     {
-        return self::PER_TYPE[$type][self::INPUT];
+        return self::HEADER_MAP[$type][self::INPUT];
     }
 
     public static function getOutputHeadersForType(string $type): array
     {
-        return self::PER_TYPE[$type][self::OUTPUT];
+        return self::HEADER_MAP[$type][self::OUTPUT];
     }
 }

@@ -2,11 +2,8 @@
 
 namespace RZP\Models\GeoIP;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
-use RZP\Services\Geolocation\Service as GeoLocation;
 
 class Service extends Base\Service
 {
@@ -37,17 +34,21 @@ class Service extends Base\Service
         {
             $geolocation = $geoLocationService->getGeoLocation($geoIp->getIp());
 
-            if (empty($geolocation) === true)
+            if ($geolocation === null)
             {
-                continue;
+                $geoIp->setCountryNone();
+            }
+            else
+            {
+                $geoIp->fill($geolocation);
+
+                $response['success']++;
             }
 
-            $geoIp->fill($geolocation);
-
             $geoIp->saveOrFail();
-
-            $response['success']++;
         }
+
+        $this->trace->info(TraceCode::GEOLOCATION_UPDATE_RESPONSE, $response);
 
         return $response;
     }

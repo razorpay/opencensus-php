@@ -12,6 +12,7 @@ use RZP\Services\GeoLocation\ProviderInterface;
 class Eureka extends Base
 {
     const NA                = '-';
+    const EUREKA_KEY        = 'eureka_key';
     const EUREKA_KEY_INDEX  = 'eureka_key_index';
 
     const SUCCESS_CODE      = 'OK';
@@ -40,10 +41,11 @@ class Eureka extends Base
     ];
 
     /**
-     * Default value for key to use
-     * @var int
+     * Default value will we set when $key is null
+     *
+     * @var string
      */
-    protected $keyIndex = 0;
+    protected $key = null;
 
     /**
      * @param array $input
@@ -51,14 +53,17 @@ class Eureka extends Base
      */
     public function validateAndSetInput(array $input)
     {
+        $key      = $input[Eureka::EUREKA_KEY] ?? null;
         $keyIndex = $input[Eureka::EUREKA_KEY_INDEX] ?? 0;
 
-        if (isset($this->options['keys'][$keyIndex]) === false)
+        if (is_null($key) === false)
         {
-            throw new Exception\InvalidArgumentException('Invalid key : ' . $keyIndex);
+            $this->key = $key;
         }
-
-        $this->keyIndex = $keyIndex;
+        else
+        {
+            $this->setEurekaKey($keyIndex);
+        }
     }
 
     protected function transform(array $geolocation)
@@ -112,7 +117,7 @@ class Eureka extends Base
         else
         {
             $query = [
-                'key'    => $this->options['keys'][$this->keyIndex],
+                'key'    => $this->getEurekaKey(),
                 'format' => 'JSON',
                 'ip'     => $ip
             ];
@@ -168,6 +173,39 @@ class Eureka extends Base
     private function isCriticalError(string $code): bool
     {
         return in_array($code, self::CRITICAL_ERROR_CODES, true);
+    }
+
+    /**
+     * Return default key if not set
+     *
+     * @return string
+     */
+    private function getEurekaKey()
+    {
+        if ($this->key === null)
+        {
+            $this->setEurekaKey(0);
+        }
+
+        return $this->key;
+    }
+
+    /**
+     * Set key in request for given index
+     *
+     * @param $index
+     * @throws Exception\InvalidArgumentException
+     */
+    private function setEurekaKey($index)
+    {
+        if (isset($this->options['keys'][$index]) === true)
+        {
+            $this->key = $this->options['keys'][$index];
+        }
+        else
+        {
+            throw new Exception\InvalidArgumentException('Invalid key index: ' . $index);
+        }
     }
 
     private function getMockedResponseBody($ip): string

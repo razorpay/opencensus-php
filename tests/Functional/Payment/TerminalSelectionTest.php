@@ -206,7 +206,7 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $this->fixtures->create('terminal:multiple_category_terminals');
 
-        $this->fixtures->merchant->setCategory(123);
+        $this->fixtures->merchant->setCategory(124);
 
         // Make Payment
         $payment = $this->getDefaultPaymentArray();
@@ -214,7 +214,7 @@ class TerminalSelectionTest extends TestCase
 
         // Payment should have been made through shared terminl of correct category
         $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals('SharedTrmnl123', $payment['terminal_id']);
+        $this->assertEquals('SharedTrmnl124', $payment['terminal_id']);
     }
 
     public function testHDFCCardTerminalNotUsedForEmi()

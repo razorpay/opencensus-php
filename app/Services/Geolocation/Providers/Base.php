@@ -12,6 +12,7 @@ abstract class Base
      * Used in test purpose
      */
     const FAILURE_IPS = [
+        'INVALID_IP',
         '127.0.0.1'
     ];
 
