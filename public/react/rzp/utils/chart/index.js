@@ -64,19 +64,17 @@ export const timeScale = ({ xLabel, yLabel }) => {
           },
         },
       ],
-      yAxes: [
-        {
-          ticks: {
-            beginAtZero: true,
-            suggestedMax: 10,
-            maxTicksLimit: 10,
-          },
-          gridLines: {
-            color: '#FFFFFF',
-          },
-          stacked: true,
+      yAxes: {
+        ticks: {
+          beginAtZero: true,
+          suggestedMax: 10,
+          maxTicksLimit: 10,
         },
-      ],
+        gridLines: {
+          color: '#FFFFFF',
+        },
+        stacked: true,
+      },
     },
   };
 

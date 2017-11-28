@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Line } from 'react-chartjs-2';
 
 import Definition from 'rzp/ui/Definition';
-import defaultChartOptions from 'rzp/ui/Highcharts/defaults';
 import Change from 'rzp/ui/Change';
 
 import Legend, {
@@ -112,9 +111,10 @@ class Panel extends Component {
           <div className="pull-right">...</div>
         </div>
         <div className="chart-container">
-          {!data.loading && (
-            <Line options={chartOptions} data={data.histogram} />
-          )}
+          {!data.loading &&
+            data.histogram && (
+              <Line options={chartOptions} data={data.histogram} />
+            )}
         </div>
       </div>
     );

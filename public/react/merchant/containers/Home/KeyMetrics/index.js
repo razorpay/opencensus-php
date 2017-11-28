@@ -76,7 +76,7 @@ class KeyMetricsContainer extends Component {
       tabState.selectedBreakdown = breakdownVals[0];
 
       tabState.data = {
-        loading: true,
+        loading: false,
 
         // fetchData should be made true whenever the new data need to be
         // pulled
@@ -91,8 +91,8 @@ class KeyMetricsContainer extends Component {
 
   fetchData(fetchAllCounts) {
     /*
-	 * Fetches data , for the first time, fetches all tabs stats
-	 * and the default selected tab's graph data, when ever the tab is
+	 * Fetches data , if `fetchAllCounts` is true, fetches all tabs stats
+	 * and the selected tab's graph data, when ever the tab is
 	 * switched, latest data including stat for the selected tab is fetched
 	 */
 
@@ -133,7 +133,9 @@ class KeyMetricsContainer extends Component {
         if (histogram) {
           tabState.data.histogram = getTimelineData(
             histogram,
-            tabState.selectedGrouping
+            tabState.selectedGrouping,
+            {},
+            tabsMeta[tabName].isCurrency && paiseToRupees
           );
         }
       });
@@ -183,7 +185,7 @@ class KeyMetricsContainer extends Component {
   clearCache(tabsState) {
     // fetch data when tabs changed
     tabsOrder.forEach(tabName => {
-      tabsState[tabName].fetchData = true;
+      tabsState[tabName].data.fetchData = true;
     });
   }
 

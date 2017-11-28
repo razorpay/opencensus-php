@@ -1,5 +1,6 @@
 import moment from 'moment';
 
+import colors from './colors';
 import { groupBy } from '../pokedex';
 
 export const getTimelineData = (
@@ -54,9 +55,10 @@ export const getTimelineData = (
     datasets = [];
 
   // populates default data , avoids `if` conditions in next loop
-  groups.forEach(groupName => {
+  groups.forEach((groupName, index) => {
     const dataset = {
       label: groupTitleMap[groupName] || groupName,
+      backgroundColor: colors[index % colors.length],
       data: [],
     };
 
