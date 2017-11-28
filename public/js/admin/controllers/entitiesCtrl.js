@@ -202,6 +202,7 @@ app.controller('EntitiesCtrl', [
         payee_account: ['Payee Account'],
         payee_ifsc: ['Payee IFSC'],
         amount: ['Amount'],
+        refund_id: ['Refund ID'],
       },
       batch: {
         merchant_id: ['Merchant Id'],
@@ -650,8 +651,11 @@ app.controller('EntitiesCtrl', [
         wallet: walletList,
       },
       upi: {
-        payment_id: ['Payment Id'],
         bank: upiBankList,
+        gateway_payment_id: ['Gateway Payment Id'],
+        npci_reference_id: ['NPCI Reference Id'],
+        payment_id: ['Payment Id'],
+        refund_id: ['Refund Id'],
       },
       user: {
         email: ['Email'],

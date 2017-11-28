@@ -131,8 +131,10 @@ class Service extends Base\Service
         $obj->save();
     }
 
-    public function getAggregations($merchantId, $mode)
+    public function getAggregations($mode)
     {
+        $merchantId = (new Merchant\Service)->getCurrentMerchantId();
+
         $resources = array('payment', 'refund', 'settlement');
 
         $response = array();
@@ -147,8 +149,10 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function getPaymentAggregations($merchantId, $mode)
+    public function getPaymentAggregations($mode)
     {
+        $merchantId = (new Merchant\Service)->getCurrentMerchantId();
+
         $data = array('merchant_id' => $merchantId);
 
         $response = Merchant\Entity::getPaymentAggregations($data, $mode);
@@ -158,6 +162,10 @@ class Service extends Base\Service
 
     public function getAnalytics($input, $mode)
     {
+        $currentMerchantId = (new Merchant\Service)->getCurrentMerchantId();
+
+        $input['merchant_id'] = $currentMerchantId;
+
         $error = (new Transaction\Validator)->validateAnalytics($input);
 
         if (empty($error) === false)

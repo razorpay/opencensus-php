@@ -1471,6 +1471,9 @@ app
             selected_admins: function() {
               return $scope.selected_admins;
             },
+            permissions: function() {
+              return $scope.admin.permissions;
+            },
           },
         });
         modalInstance.result.then(function(merchant) {
@@ -2532,6 +2535,7 @@ app
     'organization',
     'selected_groups',
     'selected_admins',
+    'permissions',
     function(
       $scope,
       $modalInstance,
@@ -2540,12 +2544,14 @@ app
       groups,
       organization,
       selected_groups,
-      selected_admins
+      selected_admins,
+      permissions
     ) {
       $scope.riskMap = riskMap;
       $scope.groups = groups;
       $scope.selected_groups = selected_groups;
       $scope.selected_admins = selected_admins;
+      $scope.permissions = permissions;
 
       $scope.adminMap = {};
 
@@ -2663,7 +2669,9 @@ app
       function cleanFields() {
         var offer = Object.assign({}, $scope.offer);
         // 1. iins is for only card and emi.
-        if (['card', 'emi'].indexOf(offer['payment_method']) === -1) {
+        if (
+          ['netbanking', 'wallet', 'upi'].indexOf(offer.payment_method) === -1
+        ) {
           delete offer['iins'];
         } else if (offer['iins']) {
           offer['iins'] = offer['iins'].split(','); // Convert command separate values to array
