@@ -37,8 +37,7 @@ export default class GatewayRuleList extends Component {
   onSubmit = filters => {
     this.collection.data.mode = filters.mode;
     delete filters.mode;
-    this.collection.replaceFilters(filters);
-    return this.collection.fetch();
+    this.collection.applyFilters(filters);
   };
 
   render() {
@@ -97,10 +96,32 @@ export default class GatewayRuleList extends Component {
 const fields = [
   ['Rule Id', item => item.id],
   ['Merchant Id', merchantId],
-  ['Type', item => item.type],
+  [
+    'Type',
+    item => (
+      <span
+        class={`pills ${
+          item.type === 'filter' ? 'label-yellow' : 'label-dark-blue'
+        }`}
+      >
+        {item.type}
+      </span>
+    ),
+  ],
   [
     'Load/Filter',
-    item => (item.type === 'sorter' ? item.load : item.filter_type),
+    item =>
+      item.type === 'sorter' ? (
+        item.load
+      ) : (
+        <span
+          class={`pills ${
+            item.filter_type === 'select' ? 'label-success' : 'label-danger'
+          }`}
+        >
+          {item.filter_type}
+        </span>
+      ),
   ],
   ['Group', item => item.group],
   ['Method', item => methods[item.method]],

@@ -52,7 +52,7 @@ export default class GatewayRule extends CollectionItem {
       body.iins = body.iins.split(',');
     }
 
-    body = cleanRuleInfo(body);
+    body = this.cleanRuleInfo(body);
 
     return this.request(
       adminPost({

@@ -70,6 +70,8 @@ const fields = [
 
 @observer
 class GatewayRuleForm extends Component {
+  state = {};
+
   handleSubmit = body => {
     const { model } = this.props;
 
@@ -138,7 +140,10 @@ class GatewayRuleForm extends Component {
           label="Type"
           name="type"
           required
-          onChange={model.onPropChange}
+          onChange={e => {
+            this.setState({ type: e.target.value });
+            model.onPropChange(e);
+          }}
           value={model.type}
           disabled={!!model.id}
         >
@@ -150,10 +155,9 @@ class GatewayRuleForm extends Component {
           <Field
             label="Load"
             name="load"
-            type="number"
             min="0"
             max="100"
-            placeholder="Load value, 0-100"
+            placeholder="0-100, Eg- 45.3"
             defaultValue={model.load}
             required
           />
@@ -183,6 +187,7 @@ class GatewayRuleForm extends Component {
           label="Gateway"
           defaultValue={model.gateway}
           disabled={!!model.id}
+          required={this.state.type === 'sorter'}
         >
           <option value="">All</option>
           {model.method &&

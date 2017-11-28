@@ -13,7 +13,7 @@ import FeaturesDetails from './entityDetails/FeaturesDetails';
 
 /* RESOURCE UTILS */
 export function openMerchantEntity() {
-  window.open(`/admin#/merchants/${this.id}`);
+  window.open(`/admin/merchants/${this.id}`);
 }
 
 /*---------------------------------------- Getters ------------------------------------------------*/
@@ -112,7 +112,7 @@ function _getSettlementScheduleFields() {
 }
 
 function openSettlementSchedule() {
-  window.open(`/admin#/entity/schedule/live/${this.schedule_id}`);
+  window.open(`/admin/entity/schedule/live/${this.schedule_id}`);
 }
 
 function _getCreditsFields(deleteCreditLogs) {
