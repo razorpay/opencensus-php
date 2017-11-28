@@ -79,24 +79,31 @@ class GatewayRuleForm extends Component {
     if (model.id) {
       const data = {}; // Only below 5 fields are allowed while Edit
 
-      if (body['load'] && body['load'] !== model['load']) {
-        data['load'] = body['load'];
+      if (body.load && body.load !== model['load']) {
+        data.load = body.load;
       }
 
-      if (body['group'] && body['group'] !== model['group']) {
-        data['group'] = body['group'];
+      if (body.group && body.group !== model['group']) {
+        data.group = body.group;
       }
 
-      if (body['iins'] && body['iins'] !== model['iins']) {
-        data['iins'] = body['iins'];
+      if (body.iins) {
+        if (
+          body.iins
+            .split(',')
+            .sort()
+            .join() !== model['iins'].sort().join()
+        ) {
+          data.iins = body.iins;
+        }
       }
 
-      if (body['filter_type'] && body['filter_type'] !== model['filter_type']) {
-        data['filter_type'] = body['filter_type'];
+      if (body.filter_type && body.filter_type !== model['filter_type']) {
+        data.filter_type = body.filter_type;
       }
 
-      if (body['comment'] && body['comment'] !== model['comment']) {
-        data['comment'] = body['comment'];
+      if (body.comment && body.comment !== model['comment']) {
+        data.comment = body.comment;
       }
 
       if (!Object.keys(data).length) {

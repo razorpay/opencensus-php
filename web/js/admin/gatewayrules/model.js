@@ -1,3 +1,4 @@
+import { extendObservable } from 'mobx';
 import { prevent } from 'util/index';
 import CollectionItem from 'model/collectionItem';
 import fetch, { adminPost, adminDelete } from 'util/fetch';
@@ -96,11 +97,9 @@ export default class GatewayRule extends CollectionItem {
     )
       .then(data => {
         if (data) {
+          extendObservable(this, data);
           closeModal();
           notifySuccess(ruleId + ' Gateway Rule updated successfully');
-          console.log('THIS..', this);
-          const entity = { ...this, data };
-          console.log(this.collection.item.find(this));
 
           return data;
         }
