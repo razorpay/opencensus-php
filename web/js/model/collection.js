@@ -14,19 +14,20 @@ export default class Collection extends BaseModel {
 
   // merge new filters and fetch
   applyFilters(filters) {
+    this.filters = observable.shallowObject(
+      Object.assign({}, defaultFilters, filters)
+    );
+    return this.fetch();
+  }
+
+  addFilters(filters) {
     for (let f in defaultFilters) {
       if (f in filters) {
         filters[f] = Number(filters[f]);
       }
     }
-    Object.assign(this.filters, { skip: 0 }, filters);
+    Object.assign(this.filters, defaultFilters, filters);
     return this.fetch();
-  }
-
-  replaceFilters(filters) {
-    this.filters = observable.shallowObject(
-      Object.assign({}, defaultFilters, filters)
-    );
   }
 
   constructor(props) {

@@ -28,10 +28,7 @@ export default class EntityList extends Component {
     fetchFn: adminFetch,
   });
 
-  onSubmit = filters => {
-    this.collection.replaceFilters(filters);
-    return this.collection.fetch();
-  };
+  onSubmit = filters => this.collection.applyFilters(filters);
 
   componentWillMount() {
     if (!sharedData) {
