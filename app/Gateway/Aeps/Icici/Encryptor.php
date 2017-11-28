@@ -10,10 +10,22 @@ use RZP\Constants\Mode;
 class Encryptor
 {
     const CERT_PATH  = 'certs/public.cer';
+    const ICICI_CERT_PATH  = 'certs/public_icici.cer';
     const CERT_EXPIRY = '20191230';
 
     const CERT_PATH_UAT = 'certs/public_uat.cer';
+    const ICICI_CERT_PATH_UAT = 'certs/public_uat_icici.cer';
     const CERT_EXPIRY_UAT = '20171105';
+
+    public function __construct($mode=1, $iv='')
+    {
+        $this->encryptionMode = $mode;
+
+        if ($mode === 2)
+        {
+            $this->iv = '';
+        }
+    }
 
     protected function createPidXml($fpData)
     {
@@ -26,14 +38,19 @@ class Encryptor
 
     public function encryptUsingSessionKey($data, $skey)
     {
-        $cipher = new AES(1);
+        $cipher = new AES($this->encryptionMode);
+
+        if ($this->encryptionMode === 2)
+        {
+            $cipher->setIV($this->iv);
+        }
 
         $cipher->setKey($skey);
 
         return base64_encode($cipher->encrypt($data));
     }
 
-    public function encryptSessionKey($skey, $mode)
+    public function encryptSessionKey($skey, $mode, $type='')
     {
         if ($mode === Mode::LIVE)
         {
@@ -42,6 +59,18 @@ class Encryptor
         else
         {
             $certPath = self::CERT_PATH_UAT;
+        }
+
+        if ($type === 'refund')
+        {
+            if ($mode === Mode::LIVE)
+            {
+                $certPath = self::ICICI_CERT_PATH;
+            }
+            else
+            {
+                $certPath = self::ICICI_CERT_PATH_UAT;
+            }
         }
 
         $publicKey = file_get_contents(__DIR__ . '/' . $certPath);

@@ -125,6 +125,77 @@ class Gateway extends Base\Gateway
         //return $this->getPaymentResponseData($gatewayPayment);
     }
 
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $iv = $this->getIV();
+
+        $encryptor = (new Encryptor(2, $iv));
+
+        $sKey = $encryptor->generateSkey();
+
+        $data = [
+            'account-provider'    => '1',
+            'mobile'              => '9999999999',
+            'payer-va'            => 'razorpay1@icici',
+            'amount'              => '100.00',
+            'note'                => 'test',
+            'device-id'           => '107824107824107824107824',
+            'seq-no'              => 'ef1e92b4a01d4618a0eca5fdecc37ff23f3',
+            'channel-code'        => 'EAZYPAY',
+            'profile-id'          => '723',
+            'account-type'        => 'Saving',
+            'ifsc'                => '',
+            'account-number'      => '',
+            'mpin'                => '',
+            'pre-approved'        => 'A',
+            'use-default-acc'     => 'D',
+            'default-debit'       => 'N',
+            'default-credit'      => 'N',
+            'global-address-type' => 'AADHAR',
+            'payee-aadhar'        => '123456789012',
+            'payee-iin'           => '123456',
+            'payee-name'          => 'XYZ',
+            'mcc'                 => '5411',
+            'merchant-type'       => 'ENTITY',
+        ];
+
+        $data = $encryptor->encryptUsingSessionKey($data, $sKey);
+
+        $encryptedKey = $encryptor($sKey, $this->mode, 'refund');
+
+        $contents = [
+            'requestId'            => '',
+            'service'              => 'UPI',
+            'encryptedKey'         => $encryptedKey,
+            'oaepHashingAlgorithm' => 'NONE',
+            'iv'                   => $iv,
+            'encryptedData'        => $data,
+            'clientInfo'           => '',
+            'optionalParam'        => '',
+        ];
+
+        $request = [
+            'url'     =>  Url::TEST_REFUND_URL,
+            'method'  => 'POST',
+            'content' => json_encode($contents),
+        ];
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            [$response->body]);
+
+        //TODO do stuff after this is done
+    }
+
+    protected function getIV()
+    {
+        return '';
+    }
+
     protected function setEncryptedFingerPrintDataInCache($input)
     {
         $key = $this->getCacheKey($input['payment']['id']);
