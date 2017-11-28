@@ -5,13 +5,15 @@ const defaultGroupingVals = [
 
 const getDefaultFilterQuery = (merchantId, startTime, endTime) => {
   return {
-    default: {
-      merchant_id: [merchantId],
-      created_at: {
-        gte: startTime,
-        lte: endTime,
+    default: [
+      {
+        merchant_id: [merchantId],
+        created_at: {
+          gte: startTime,
+          lte: endTime,
+        },
       },
-    },
+    ],
   };
 };
 
@@ -146,7 +148,7 @@ export const tabsMeta = {
               gte: startTime,
               lte: endTime,
             },
-            method: 'card',
+            method: 'netbanking',
           },
         ],
       };
@@ -163,6 +165,7 @@ export const getQuery = options => {
       groupBy,
       breakdown,
       countsOnly,
+      fetchHistogramForTab,
     } = options,
     query = {};
 
@@ -186,7 +189,7 @@ export const getQuery = options => {
       const query = getQuery({
         ...options,
         tabName,
-        countsOnly: tabName !== tabsOrder[0],
+        countsOnly: tabName !== fetchHistogramForTab,
       });
 
       result.filters = { ...result.filters, ...query.filters };

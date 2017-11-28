@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Header from 'rzp/ui/Header';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import * as HomeActions from 'merchant/modules/home';
@@ -16,31 +17,20 @@ import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from './RecentActivity';
 
 import DateRangePicker from 'merchant/components/Home/DateRangePicker';
-import RadioButton from 'rzp/ui/Forms/RadioButton';
-import Sticky from 'rzp/ui/Sticky';
-import Highcharts from 'rzp/ui/Highcharts';
 
 import { getData } from 'merchant/models/HomeKeyMetricsMock';
 
 import './styles.styl';
 
 const dateRangePresets = [
-  ['Past 7 days', -7, 'days'],
-  ['Past 15 days', -15, 'days'],
-  ['Past 1 month', -1, 'months'],
-  ['Past 3 months', -3, 'months'],
-  ['Past 6 months', -6, 'months'],
-  ['Past 1 year', -1, 'years'],
-];
+    ['One Day', -1, 'days'],
+    ['Past 7 Days', -7, 'days'],
+    ['Past 30 Days', -30, 'days'],
+    ['Past 90 Days', -90, 'days'],
+    ['All Time', -10, 'years'],
+  ],
+  defaultPreset = 2;
 
-const breakDownVals = [
-  ['Days', 'daily'],
-  ['Weeks', 'weekly'],
-  ['Months', 'monthly'],
-];
-
-// graph data
-// numbers
 @connect(
   state => {
     return {
@@ -57,97 +47,51 @@ export default class HomeContainer extends Component {
     super(props);
 
     let endDate = moment(),
-      startDate = moment(),
-      selectedBreakdown = breakDownVals[0][1];
+      startDate = moment();
 
-    startDate.add(...dateRangePresets[0].slice(1));
+    startDate.add(...dateRangePresets[defaultPreset].slice(1));
 
     this.state = {
       startDate,
       endDate,
-      selectedBreakdown,
     };
 
     this.onDatesChange = this.onDatesChange.bind(this);
-    this.onBreakdownChange = this.onBreakdownChange.bind(this);
   }
 
   onDatesChange(startDate, endDate) {
     this.setState({ startDate, endDate });
   }
 
-  onBreakdownChange(e) {
-    this.setState({ selectedBreakdown: e.target.value });
-  }
-
   render() {
     let mode = this.props.mode;
 
-    const { startDate, endDate, selectedBreakdown } = this.state;
+    const { startDate, endDate } = this.state;
 
     return (
       <div class="react-root">
-        <Header title="Dashboard" showMode={true}>
-          <div class="pull-right">
+        <Header className="clearfix" title="" showMode={false}>
+          <div className="pull-left date-range-container">
+            <DateRangePicker
+              presets={dateRangePresets}
+              onDatesChange={this.onDatesChange}
+              defaultPreset={defaultPreset}
+            />
+          </div>
+          <div className="pull-right">
             <Definition>
               <span>
                 Current Balance: <Amount value={38760} />
               </span>
-              <span>Updated 10 mins ago</span>
+              <Link to="/settlements">View Settlements &gt;</Link>
             </Definition>
           </div>
         </Header>
 
-        <Sticky stickWhen={68} stickAt={50}>
-          <div className="dashboard-ctrl-bar clearfix">
-            <div className="pull-left date-range-container">
-              <DateRangePicker
-                presets={dateRangePresets}
-                onDatesChange={this.onDatesChange}
-              />
-            </div>
-            <div className="pull-right">
-              <div
-                className="form form-horizontal breakdown-container"
-                onChange={this.onBreakdownChange}
-              >
-                {breakDownVals.map((item, index) => {
-                  return (
-                    <div class="RadioButton" key={index}>
-                      <label>
-                        <input
-                          type="radio"
-                          name="breakdown"
-                          value={item[1]}
-                          checked={selectedBreakdown === item[1]}
-                          readOnly={true}
-                        />
-
-                        <div>
-                          <div class="RadioButton__button" />
-                          <div class="RadioButton__label">
-                            <div>
-                              <span>{item[0]}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </label>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </Sticky>
-
         <div className="dashboard">
           <div className="row">
             <div className="col-md-12">
-              <KeyMetrics
-                startDate={startDate}
-                endDate={endDate}
-                selectedBreakdown={selectedBreakdown}
-              />
+              <KeyMetrics startDate={startDate} endDate={endDate} />
             </div>
           </div>
 

@@ -42,7 +42,7 @@ class DateRangePicker extends Component {
     let selectedPreset = customRangeVal;
 
     if (this.presets.length > 0) {
-      selectedPreset = this.presets[0][1];
+      selectedPreset = this.presets[props.defaultPreset || 0][1];
       startDate = getStartDateFromDiff(selectedPreset, endDate);
     }
 

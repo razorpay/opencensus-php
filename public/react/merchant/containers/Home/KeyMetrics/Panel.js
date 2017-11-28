@@ -14,7 +14,7 @@ import Legend, {
 
 import { timeScale } from 'rzp/utils/chart/index.js';
 
-import { tabsMeta } from './data';
+import { tabsMeta, breakdownVals } from './data';
 
 const chartOptions = timeScale({});
 
@@ -23,7 +23,8 @@ class Panel extends Component {
     super(props);
 
     this.meta = tabsMeta[props.tabName];
-    this.handleGroupingChange = this.handleGroupingChange.bind(this);
+    this.handleGroupingChange = ::this.handleGroupingChange;
+    this.handleBreakdownChange = ::this.handleBreakdownChange;
   }
 
   handleGroupingChange(e) {
@@ -32,14 +33,23 @@ class Panel extends Component {
     return onGroupingChange && onGroupingChange(tabName, e.target.value);
   }
 
-  render() {
-    const { selectedGrouping, data, startDate, endDate } = this.props,
-      dateFormat = 'DD MMM YYYY',
-      { grouping, options } = this.meta;
+  handleBreakdownChange(e) {
+    const { tabName, onBreakdownChange } = this.props;
 
-    if (data.loading) {
-      return <center>Loading...</center>;
-    }
+    return onBreakdownChange && onBreakdownChange(tabName, e.target.value);
+  }
+
+  render() {
+    const {
+        selectedGrouping,
+        data,
+        startDate,
+        endDate,
+        selectedBreakdown,
+      } = this.props,
+      dateFormat = 'DD MMM YYYY',
+      { grouping, options } = this.meta,
+      { loading } = data;
 
     return (
       <div className="panel">
@@ -51,6 +61,37 @@ class Panel extends Component {
                 {endDate.format(dateFormat)}
               </span>
             </Definition>
+          </div>
+          <div className="pull-right">
+            <div
+              className="form form-horizontal breakdown-container"
+              onChange={this.handleBreakdownChange}
+            >
+              {breakdownVals.map((item, index) => {
+                return (
+                  <div class="RadioButton" key={index}>
+                    <label>
+                      <input
+                        type="radio"
+                        name="breakdown"
+                        value={item[1]}
+                        checked={selectedBreakdown === item[1]}
+                        readOnly={true}
+                      />
+
+                      <div>
+                        <div class="RadioButton__button" />
+                        <div class="RadioButton__label">
+                          <div>
+                            <span>{item[0]}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                );
+              })}
+            </div>
           </div>
           <div className="pull-right">
             {grouping.length > 0 && (
@@ -67,11 +108,13 @@ class Panel extends Component {
                 })}
               </select>
             )}
-            {options.length > 0 && <button>...</button>}
           </div>
+          <div className="pull-right">...</div>
         </div>
         <div className="chart-container">
-          <Line options={chartOptions} data={data.histogram} />
+          {!data.loading && (
+            <Line options={chartOptions} data={data.histogram} />
+          )}
         </div>
       </div>
     );

@@ -28,14 +28,13 @@ const TabContent = ({ name, value, isCurrency, title, isLoading }) => {
    * checks if the current tab is showing currency values and renders
    * content in the tab
    * 
-   * TODO: need better condition to show "Loading..."
    */
   return (
     <a>
       <div>
-        <h1 title={`${value}`}>
-          {isLoading
-            ? isCurrency ? '₹ ' + formattedValue : formattedValue
+        <h1 title={`${(isCurrency ? '₹ ' : '') + value}`}>
+          {!isLoading
+            ? (isCurrency ? '₹ ' : '') + formattedValue
             : 'Loading...'}
         </h1>
         {title}
@@ -55,7 +54,6 @@ class KeyMetricsContainer extends Component {
 
     this.state = {
       selectedTab: tabsOrder[0],
-      selectedBreakdown: breakdownVals[0],
       tabsState: {},
 
       // indicated nothing is loaded including the tab content
@@ -75,8 +73,10 @@ class KeyMetricsContainer extends Component {
         tabState.selectedGrouping = grouping[0].value;
       }
 
+      tabState.selectedBreakdown = breakdownVals[0];
+
       tabState.data = {
-        loading: false,
+        loading: true,
 
         // fetchData should be made true whenever the new data need to be
         // pulled
@@ -84,11 +84,12 @@ class KeyMetricsContainer extends Component {
       };
     });
 
-    this.onGroupingChange = this.onGroupingChange.bind(this);
-    this.handleTabChange = this.handleTabChange.bind(this);
+    this.onGroupingChange = ::this.onGroupingChange;
+    this.onBreakdownChange = ::this.onBreakdownChange;
+    this.handleTabChange = ::this.handleTabChange;
   }
 
-  fetchData() {
+  fetchData(fetchAllCounts) {
     /*
 	 * Fetches data , for the first time, fetches all tabs stats
 	 * and the default selected tab's graph data, when ever the tab is
@@ -97,17 +98,18 @@ class KeyMetricsContainer extends Component {
 
     const isInitialLoad = this.state.loading;
 
-    const { tabsState, selectedTab, selectedBreakdown } = this.state,
+    const { tabsState, selectedTab } = this.state,
       tabState = tabsState[selectedTab],
       { startDate, endDate } = this.props;
 
     const query = getQuery({
       merchantId: '10000000000000',
-      tabName: isInitialLoad ? 'all' : selectedTab,
-      breakdown: selectedBreakdown,
+      tabName: fetchAllCounts ? 'all' : selectedTab,
+      breakdown: tabState.selectedBreakdown,
       startTime: startDate.unix(),
       endTime: endDate.unix(),
       groupBy: tabState.selectedGrouping,
+      fetchHistogramForTab: selectedTab,
     });
 
     tabState.data.loading = true;
@@ -129,23 +131,26 @@ class KeyMetricsContainer extends Component {
         const histogram = resp.data[`${tabName}Histogram`];
 
         if (histogram && histogram.length > 0) {
-          tabState.data.histogram = histogram;
+          tabState.data.histogram = getTimelineData(
+            histogram,
+            tabState.selectedGrouping
+          );
         }
-
-        tabState.loading = false;
-        tabState.fetchData = false;
       });
 
       if (isInitialLoad) {
         this.state.loading = false;
       }
 
+      tabState.data.loading = false;
+      tabState.data.fetchData = false;
+
       this.setState(this.state);
     });
   }
 
   componentWillMount() {
-    this.fetchData();
+    this.fetchData(true);
   }
 
   handleTabChange(tabName) {
@@ -154,12 +159,12 @@ class KeyMetricsContainer extends Component {
         selectedTab: tabName,
       },
       () => {
-        const tabState = this.state.tabsState[tabName];
+        const { data } = this.state.tabsState[tabName];
 
         // fetchData depends on state, so calling it after state update,
         // this func gets new data only when the tab data is not loading and
         // fetchData is true
-        return !tabState.loading && tabState.fetchData && this.fetchData();
+        return !data.loading && data.fetchData && this.fetchData();
       }
     );
   }
@@ -175,32 +180,45 @@ class KeyMetricsContainer extends Component {
     });
   }
 
+  clearCache(tabsState) {
+    // fetch data when tabs changed
+    tabsOrder.forEach(tabName => {
+      tabsState[tabName].fetchData = true;
+    });
+  }
+
+  onBreakdownChange(tabName, selectedBreakdown) {
+    const { tabsState } = this.state;
+
+    tabsState[tabName].selectedBreakdown = selectedBreakdown;
+
+    this.setState({ tabsState }, () => {
+      this.fetchData();
+    });
+  }
+
   componentWillReceiveProps(nextProps) {
-    const { startDate, endDate, selectedBreakdown } = nextProps;
+    const { startDate, endDate } = nextProps;
 
     if (
       startDate.toDate() !== this.props.startDate.toDate() ||
       endDate.toDate() !== this.props.endDate.toDate
     ) {
-      // when daterange is changed, all tabs should get data accordingly
-      tabsOrder.forEach(tabName => {
-        this.state.tabsState[tabName].fetchData = true;
-      });
+      const { tabsState } = this.state;
 
-      this.setState({ tabsState: this.state.tabsState }, () => {
-        return this.fetchData();
+      // when switched tabs, new data should be fetched as the global
+      // daterange changed
+      this.clearCache(tabsState);
+
+      this.setState({ tabsState }, () => {
+        return this.fetchData(true);
       });
     }
   }
 
   render() {
     const { tabsState, loading } = this.state,
-      { startDate, endDate } = this.props,
-      { selectedGrouping } = tabsState[this.state.selectedTab];
-
-    if (loading) {
-      return <span>Loading...</span>;
-    }
+      { startDate, endDate } = this.props;
 
     return (
       <Tabs>
@@ -228,11 +246,15 @@ class KeyMetricsContainer extends Component {
         </TabList>
 
         {tabsOrder.map((tabName, index) => {
+          const tabState = tabsState[tabName];
+
           return (
             <TabPanel key={index}>
               <Panel
                 tabName={tabName}
-                selectedGrouping={selectedGrouping}
+                selectedBreakdown={tabState.selectedBreakdown}
+                onBreakdownChange={this.onBreakdownChange}
+                selectedGrouping={tabState.selectedGrouping}
                 onGroupingChange={this.onGroupingChange}
                 data={tabsState[tabName].data}
                 startDate={startDate}
