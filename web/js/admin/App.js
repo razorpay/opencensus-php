@@ -60,7 +60,10 @@ export default class App extends Component {
               <Route path="/stats" component={Stats} />
               <Route path="/pricing-plans" component={PlanList} />
               <Route path="/gateway-rules" component={GatewayRulesList} />
-              <Route path="/entities" component={Entities} />
+              <Route
+                path="/entities/:mode?/:selectedEntity?"
+                component={Entities}
+              />
               <Route path="/actions" component={ActionsList} />
               <Route path="/email-logs" component={EmailLogsList} />
               <Route path="/public-features" component={PublicFeatures} />

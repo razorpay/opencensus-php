@@ -4,23 +4,20 @@ import Field, { FromField, ToField, SelectField, SwitchField } from 'ui/Field';
 import { PageTable } from 'ui/Table';
 import { adminFetch } from 'util/fetch';
 import Collection from 'model/collection';
+import { extendObservable } from 'mobx';
 import { observer } from 'mobx-react';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 
 // fetch entity columns
 var sharedData;
 
+@withRouter
 @observer
 export default class EntityList extends Component {
-  state = {
-    pending: !sharedData,
-    selectedEntity: 'payment',
-  };
-
   collection = new Collection({
     data: {
       route_name: 'admin_fetch_entity_multiple',
-      mode: 'live',
+      mode: this.props.match.params.mode || 'live',
       url_params: {
         type: 'payment',
       },
@@ -28,17 +25,28 @@ export default class EntityList extends Component {
     fetchFn: adminFetch,
   });
 
-  onSubmit = filters => this.collection.applyFilters(filters);
+  submit = filters => {
+    this.updateUrl();
+    return this.collection.applyFilters(filters);
+  };
+  updateUrl = _ =>
+    this.props.history.replace(
+      `/entities/${this.collection.data.mode}/${this.selectedEntity}`
+    );
 
   componentWillMount() {
+    extendObservable(this, {
+      pending: !sharedData,
+      selectedEntity: this.props.match.params.selectedEntity || 'payment',
+    });
+
+    this.updateUrl();
     if (!sharedData) {
       adminFetch('admin_fetch_all_entities').then(data => {
         if (data) {
           data.entitiesArray = Object.keys(data.entities).sort();
           sharedData = data;
-          this.setState({
-            pending: false,
-          });
+          this.pending = false;
         }
         return data;
       });
@@ -48,8 +56,8 @@ export default class EntityList extends Component {
   selectEntity = e => {
     let value = e.target.value;
     this.collection.data.url_params.type = value;
-    this.setState({ selectedEntity: value });
-    this.collection.applyFilters();
+    this.selectedEntity = value;
+    this.submit();
   };
 
   selectId = e => {
@@ -64,6 +72,7 @@ export default class EntityList extends Component {
 
   selectMode = e => {
     this.collection.data.mode = e.target.value;
+    this.submit();
   };
 
   fields() {
@@ -78,7 +87,7 @@ export default class EntityList extends Component {
 
         if (
           key === 'merchant_id' ||
-          (this.state.selectedEntity === 'merchant' && key === 'id')
+          (this.selectedEntity === 'merchant' && key === 'id')
         ) {
           return (
             <Link to={`/merchants/${value}`} class="link">
@@ -91,7 +100,7 @@ export default class EntityList extends Component {
           return (
             <Link
               class="link"
-              to={`/entity/${this.state.selectedEntity}/${
+              to={`/entity/${this.selectedEntity}/${
                 this.collection.data.mode
               }/${value}`}
             >
@@ -107,11 +116,11 @@ export default class EntityList extends Component {
   }
 
   render() {
-    if (this.state.pending) {
+    if (this.pending) {
       return <div class="table-pending" />;
     }
 
-    let selectedFilters = sharedData.entities[this.state.selectedEntity];
+    let selectedFilters = sharedData.entities[this.selectedEntity];
     let selectedFiltersArray = [];
     if (selectedFilters) {
       selectedFiltersArray = Object.keys(selectedFilters);
@@ -121,10 +130,10 @@ export default class EntityList extends Component {
       <div class="list-container">
         <div class="box">
           <header>Entities</header>
-          <Form onSubmit={this.onSubmit} class="filters">
+          <Form onSubmit={this.submit} class="filters">
             <SelectField
               label="Entity"
-              value={this.state.selectedEntity}
+              value={this.selectedEntity}
               onChange={this.selectEntity}
             >
               {sharedData.entitiesArray.map(e => (
@@ -135,7 +144,7 @@ export default class EntityList extends Component {
             </SelectField>
             <SwitchField
               label="Mode"
-              defaultChecked
+              defaultChecked={this.collection.data.mode === 'live'}
               onChange={this.selectMode}
               disabledLabel="Test"
               enabledLabel="Live"
@@ -199,6 +208,10 @@ const fieldTypes = {
   string: (name, { label }) => <Field key={name} name={name} label={label} />,
 
   boolean: (name, { label }) => (
-    <SwitchField knob key={name} name={name} label={label} />
+    <SelectField key={name} name={name} label={label}>
+      <option value="">All</option>
+      <option value="1">Yes</option>
+      <option value="0">No</option>
+    </SelectField>
   ),
 };
