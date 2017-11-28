@@ -24,7 +24,7 @@ class Validator extends Base\Validator
 
     protected static $verifyRules = [
         RequestFields::REQUEST_INFO                                         => 'required|array|size:2',
-        RequestFields::CUSTOMER_REFERENCE_NO                                => 'required|string',
+        RequestFields::CUSTOMER_REFERENCE_NO                                => 'sometimes|string|nullable',
         RequestFields::REQUEST_INFO . '.' . RequestFields::PG_MERCHANT_ID   => 'required|string',
         RequestFields::REQUEST_INFO . '.' . RequestFields::PSP_REFERENCE_NO => 'required|string|size:14'
     ];

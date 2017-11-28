@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Upi\Sbi;
 use Excel;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Entity;
@@ -150,6 +151,38 @@ class UpiSbiGatewayTest extends TestCase
 
         $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
         $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA, $payment[Payment\Entity::INTERNAL_ERROR_CODE]);
+
+        return $payment;
+    }
+
+    /**
+     * When we verify a payment whose vpa validation failed,
+     * we should be getting a response that says no transaction found.
+     * In this case, we must set $gatewaySuccess = false, as $apiSuccess is already false.
+     */
+    public function testFailedVpaValidationVerify()
+    {
+        $payment = $this->testFailedVpaValidation();
+
+        $this->mockFailedVpaValidationVerify();
+
+        $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
+
+        $this->assertEquals(false, $verify[Constants::GATEWAY][Constants::API_SUCCESS]);
+        $this->assertEquals(false, $verify[Constants::GATEWAY][Constants::GATEWAY_SUCCESS]);
+        $this->assertEquals(false, $verify[Constants::GATEWAY][Constants::AMOUNT_MISMATCH]);
+        $this->assertEquals(VerifyResult::STATUS_MATCH, $verify[Constants::GATEWAY][Constants::STATUS]);
+        $this->assertEquals($verify[Entity::PAYMENT][Payment\Entity::ID], $payment[Payment\Entity::ID]);
+
+        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+
+        // Status remains in failed state
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+        $this->assertEquals(1, $payment[Payment\Entity::VERIFIED]);
+
+        $upiEntity = $this->getLastEntity(ConstantsEntity::UPI, true);
+
+        $this->assertEquals(SbiStatus::VALIDATION_ERROR, $upiEntity[Upi::STATUS_CODE]);
     }
 
     /**
@@ -492,6 +525,29 @@ class UpiSbiGatewayTest extends TestCase
         $response->headers->set('Cache-Control', 'no-cache');
 
         return [ResponseFields::MESSAGE => $response->content()];
+    }
+
+    protected function mockFailedVpaValidationVerify()
+    {
+        $this->mockServerContentFunction(
+            function (& $content, $action = null)
+            {
+                if ($action === 'verify')
+                {
+                    $apiResponse = $content[ResponseFields::API_RESPONSE];
+
+                    $content = [
+                        ResponseFields::API_RESPONSE => [
+                            ResponseFields::ADDITIONAL_INFO        => [],
+                            ResponseFields::PSP_REFERENCE_NO       => $apiResponse[ResponseFields::PSP_REFERENCE_NO],
+                            ResponseFields::STATUS                 => SbiStatus::VALIDATION_ERROR,
+                            ResponseFields::STATUS_DESCRIPTION     => 'No Transaction record found',
+                            ResponseFields::UPI_TRANS_REFERENCE_NO => 0,
+                            ResponseFields::TRANSACTION_AUTH_DATE  => $apiResponse[ResponseFields::TRANSACTION_AUTH_DATE]
+                        ],
+                    ];
+                }
+            });
     }
 
     protected function getDecryptedContent(string $json, $messageKey, $responseKey = ResponseFields::API_RESPONSE)

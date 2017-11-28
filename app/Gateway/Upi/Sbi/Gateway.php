@@ -222,9 +222,12 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent[ResponseFields::API_RESPONSE];
 
-        $actualAmount = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
+        if (empty($content[ResponseFields::AMOUNT]) === false)
+        {
+            $actualAmount = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
 
-        $verify->amountMismatch = ($paymentAmount !== $actualAmount);
+            $verify->amountMismatch = ($paymentAmount !== $actualAmount);
+        }
     }
 
     protected function setVerifyStatus(Verify $verify)

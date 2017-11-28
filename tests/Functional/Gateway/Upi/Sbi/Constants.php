@@ -6,10 +6,12 @@ class Constants
 {
     const TYPE                                = 'type';
     const ASYNC                               = 'async';
+    const STATUS                              = 'status';
     const SUCCESS                             = 'success';
     const GATEWAY                             = 'gateway';
     const API_SUCCESS                         = 'apiSuccess';
     const GATEWAY_SUCCESS                     = 'gatewaySuccess';
+    const AMOUNT_MISMATCH                     = 'amountMismatch';
     const FREQUENCY_DAILY                     = 'daily';
     const COUNT                               = 'count';
     const FILE                                = 'file';
