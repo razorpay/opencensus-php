@@ -29,6 +29,10 @@ input[type=checkbox]
   width: auto
   box-shadow: none
 
+input:disabled, select:disabled, textarea:disabled
+  background-color: $faded-color
+  cursor: pointer
+
 .small
   width: 80px
 
@@ -62,6 +66,7 @@ button, .btn
   margin: 10px
   vertical-align: top;
 
+  // Add fieldClass="inline-field" to <Field>
   &.inline-field
     label, input, textarea, select // Add more if required
       display: inline-block

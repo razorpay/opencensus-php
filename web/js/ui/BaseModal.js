@@ -9,10 +9,16 @@ import React, { Component } from 'react';
     banner: pass function (Example: check 'invite a merchant')
     customClass: optional string props
 */
-export default ({ header, children, banner, customClass = '' }) => (
+export default ({
+  header,
+  children,
+  banner,
+  customClass = '',
+  noPadding = false,
+}) => (
   <div class={`base-modal ${customClass}`}>
     <header>{header}</header>
     {banner && banner()}
-    <div class="modal-body">{children}</div>
+    <div class={`modal-body ${noPadding ? 'no-padding' : ''}`}>{children}</div>
   </div>
 );

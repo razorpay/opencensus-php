@@ -141,9 +141,14 @@ export class Switch extends Component {
   }
 }
 
-export function SelectMode({ defaultValue }) {
+export function SelectMode({ defaultValue, ...props }) {
   return (
-    <SelectField name="mode" label="Mode" defaultValue={defaultValue}>
+    <SelectField
+      name="mode"
+      label="Mode"
+      defaultValue={defaultValue}
+      {...props}
+    >
       <option value="test">Test</option>
       <option value="live">Live</option>
     </SelectField>

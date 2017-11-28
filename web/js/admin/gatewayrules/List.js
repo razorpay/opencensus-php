@@ -13,10 +13,10 @@ import Collection from 'model/collection';
 import Model from './model';
 
 import { adminFetch } from 'util/fetch';
-import { methods, testMerchantId, gateways } from 'util/data';
+import { methods, gateways } from 'util/data';
 
 const defaultFilters = {
-  merchant_id: testMerchantId,
+  merchant_id: '100000Razorpay',
 };
 
 @observer
@@ -37,7 +37,8 @@ export default class GatewayRuleList extends Component {
   onSubmit = filters => {
     this.collection.data.mode = filters.mode;
     delete filters.mode;
-    return this.collection.applyFilters(filters);
+    this.collection.replaceFilters(filters);
+    return this.collection.fetch();
   };
 
   render() {
@@ -58,7 +59,6 @@ export default class GatewayRuleList extends Component {
             <Field
               name="merchant_id"
               label="Merchant ID"
-              required
               defaultValue={defaultFilters.merchant_id}
             />
             <SelectField name="type" label="Type">
