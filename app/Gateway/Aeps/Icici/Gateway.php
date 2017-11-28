@@ -137,12 +137,12 @@ class Gateway extends Base\Gateway
 
         $data = [
             'account-provider'    => '1',
-            'mobile'              => '9999999999',
-            'payer-va'            => 'razorpay1@icici',
-            'amount'              => '100.00',
+            'mobile'              => '9999999999', // TDOO Read from config
+            'payer-va'            => 'razorpay1@icici', // TDOO Read from config
+            'amount'              => '100.00',  // TDOO Read from input
             'note'                => 'test',
             'device-id'           => '107824107824107824107824',
-            'seq-no'              => 'ef1e92b4a01d4618a0eca5fdecc37ff23f3',
+            'seq-no'              => 'ef1e92b4a01d4618a0eca5fdecc37ff23f3', // TODO generate random no
             'channel-code'        => 'EAZYPAY',
             'profile-id'          => '723',
             'account-type'        => 'Saving',
@@ -154,9 +154,9 @@ class Gateway extends Base\Gateway
             'default-debit'       => 'N',
             'default-credit'      => 'N',
             'global-address-type' => 'AADHAR',
-            'payee-aadhar'        => '123456789012',
-            'payee-iin'           => '123456',
-            'payee-name'          => 'XYZ',
+            'payee-aadhar'        => '123456789012', // TODO read form gateway input
+            'payee-iin'           => '',
+            'payee-name'          => '',
             'mcc'                 => '5411',
             'merchant-type'       => 'ENTITY',
         ];
