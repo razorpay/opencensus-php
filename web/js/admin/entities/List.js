@@ -128,7 +128,7 @@ export default class EntityList extends Component {
 
     return (
       <div class="list-container">
-        <div class="box">
+        <div class="box entity-container">
           <header>Entities</header>
           <Form onSubmit={this.submit} class="filters">
             <SelectField

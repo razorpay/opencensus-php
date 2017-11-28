@@ -121,7 +121,7 @@ class GatewayRuleForm extends Component {
   render() {
     let { model } = this.props;
     return (
-      <Form onSubmit={this.handleSubmit}>
+      <Form class="entity-container" onSubmit={this.handleSubmit}>
         {model.id && (
           <div class="field">
             <label>Rule Id</label>
