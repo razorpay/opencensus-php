@@ -27,7 +27,7 @@ export default class CreateOffer extends Component {
 
     // 1. iins is for only netbanking, wallet, upi
     if (
-      ['netbanking', 'wallet', 'upi'].indexOf(offer['payment_method']) === -1
+      ['netbanking', 'wallet', 'upi'].indexOf(offer['payment_method']) !== -1
     ) {
       delete offer['iins'];
     } else if (offer['iins']) {

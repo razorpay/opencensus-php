@@ -503,7 +503,17 @@ export function getDetailsViewMap(model) {
     {
       label: 'Activation Form Progress',
       value: details.merchant_details
-        ? `${details.merchant_details.activation_progress}%`
+        ? () => (
+            <span
+              class={`pills ${
+                details.merchant_details.activation_progress < 100
+                  ? 'label-danger'
+                  : 'label-success'
+              }`}
+            >
+              {details.merchant_details.activation_progress}%
+            </span>
+          )
         : null,
     },
     {

@@ -400,24 +400,32 @@ const ActionsList = ({ model, merchantId, actions }) => {
           </div>
         </ShowWhen>
 
-        <div onClick={actions.AssignPricingPlan}>
-          Assign Pricing
-          <i class="pull-right i">%</i>
-        </div>
-        <div onClick={actions.AssignSchedule}>
-          Assign Schedule
-          <i class="pull-right i i-schedule" />
-        </div>
-        <div onClick={isDetailsLoading ? null : actions.EditTags}>
-          Tag Merchant
-          <i class="pull-right i i-tag" />
-          {isDetailsLoading && <div class="dot-loader">.</div>}
-        </div>
-        <div onClick={isFeaturesLoading ? null : actions.EditFeatures}>
-          Feature Merchant
-          <i class="pull-right i i-tag" />
-          {isFeaturesLoading && <div class="dot-loader">.</div>}
-        </div>
+        <ShowWhen permission="edit_merchant_pricing">
+          <div onClick={actions.AssignPricingPlan}>
+            Assign Pricing
+            <i class="pull-right i">%</i>
+          </div>
+        </ShowWhen>
+        <ShowWhen permission="schedule_assign">
+          <div onClick={actions.AssignSchedule}>
+            Assign Schedule
+            <i class="pull-right i i-schedule" />
+          </div>
+        </ShowWhen>
+        <ShowWhen permission="edit_merchant_tags">
+          <div onClick={isDetailsLoading ? null : actions.EditTags}>
+            Tag Merchant
+            <i class="pull-right i i-tag" />
+            {isDetailsLoading && <div class="dot-loader">.</div>}
+          </div>
+        </ShowWhen>
+        <ShowWhen permission="edit_merchant_features">
+          <div onClick={isFeaturesLoading ? null : actions.EditFeatures}>
+            Feature Merchant
+            <i class="pull-right i i-tag" />
+            {isFeaturesLoading && <div class="dot-loader">.</div>}
+          </div>
+        </ShowWhen>
         <ShowWhen permission="add_merchant_credits">
           <div onClick={actions.AddCredits}>Add Credits</div>
         </ShowWhen>
@@ -462,10 +470,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
       <div class="group">
         <div class="group-heading">Business Ops</div>
 
-        <div onClick={actions.AddAdjustment}>
-          Add Adjustment
-          <i class="pull-right i i-edit" />
-        </div>
+        <ShowWhen permission="add_merchant_adjustment">
+          <div onClick={actions.AddAdjustment}>
+            Add Adjustment
+            <i class="pull-right i i-edit" />
+          </div>
+        </ShowWhen>
         <ShowWhen permission="edit_merchant_bank_detail">
           <div onClick={actions.EditBankAccountDetails}>
             Edit Bank Account Details
