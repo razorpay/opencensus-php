@@ -3,6 +3,7 @@ import Duplex from 'ui/Duplex';
 import { adminFetch, adminDelete } from 'util/fetch';
 import { Link } from 'react-router-dom';
 import AsyncButton from 'ui/AsyncButton';
+import { notifyError } from 'common/modal';
 
 export default class GenericEntity extends Component {
   params = this.props.match.params;
@@ -86,6 +87,12 @@ const actions = {
       confirm="Delete EMI Plan?"
     />
   ),
+
+  file_store: entity => (
+    <button class="btn" onClick={entity::downloadFile}>
+      Download
+    </button>
+  ),
 };
 
 function deleteEmiPlan() {
@@ -94,5 +101,22 @@ function deleteEmiPlan() {
     url_params: {
       id: this.id,
     },
+  });
+}
+
+function downloadFile() {
+  var windowRef = window.open('', '_blank');
+  adminFetch({
+    route_name: 'admin_get_file',
+    url_params: {
+      fileId: this.id,
+    },
+  }).then(data => {
+    if (data.success) {
+      windowRef.location.href = data.data.url;
+    } else {
+      windowRef.close();
+      notifyError(data.errors.join(', '));
+    }
   });
 }
