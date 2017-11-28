@@ -102,51 +102,53 @@ export default class EditPerm extends Component {
       <BaseModal
         header={id ? `Edit Permission – ${name}` : 'Add a new Permission'}
       >
-        {this.state.pending ? (
-          <div class="spinner center" />
-        ) : (
-          <Form onSubmit={this.onSubmit}>
-            <Field
-              required
-              label="Permission Name"
-              name="name"
-              defaultValue={name}
-            />
-            <Field
-              required
-              label="Category"
-              name="category"
-              defaultValue={category}
-            />
-            <Field
-              required
-              label="Description"
-              name="description"
-              defaultValue={description}
-            />
-            <CheckField
-              label="Assignable"
-              name="assignable"
-              defaultChecked={false}
-            />
-            <header>Organizations:</header>
-            <OrgTable
-              onChange={this.onChange}
-              items={orgs}
-              orgs={permission.orgs}
-              workflowOrgs={permission.workflow_orgs}
-            />
-            {id && (
-              <div>
-                <header>Assigned Roles (In this Org)</header>
-                <Table items={roles} fields={roleFields} />
+        <Form onSubmit={this.onSubmit}>
+          {this.state.pending ? (
+            <div class="spinner center" />
+          ) : (
+            <div>
+              <Field
+                required
+                label="Permission Name"
+                name="name"
+                defaultValue={name}
+              />
+              <Field
+                required
+                label="Category"
+                name="category"
+                defaultValue={category}
+              />
+              <Field
+                required
+                label="Description"
+                name="description"
+                defaultValue={description}
+              />
+              <CheckField
+                label="Assignable"
+                name="assignable"
+                defaultChecked={false}
+              />
+              <header>Organizations:</header>
+              <OrgTable
+                onChange={this.onChange}
+                items={orgs}
+                orgs={permission.orgs}
+                workflowOrgs={permission.workflow_orgs}
+              />
+              {id && (
+                <div>
+                  <header>Assigned Roles (In this Org)</header>
+                  <Table items={roles} fields={roleFields} />
+                </div>
+              )}
+              <div class="sticky-save-btn">
+                <button>Save</button>
               </div>
-            )}
-            <div class="sticky-save-btn">
-              <button>Save</button>
             </div>
-          </Form>
-        )}
+          )}
+        </Form>
       </BaseModal>
     );
   }
