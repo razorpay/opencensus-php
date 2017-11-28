@@ -821,12 +821,10 @@ class BankTransferTest extends TestCase
         $this->assertEquals(true, $response['valid']);
         $this->assertNull($response['message']);
 
-        // Created bank transfer is not expected, not linked to a payment
+        // No new entity created
+        $oldBankTransferId = $bankTransfer['id'];
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
-        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
-        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
-        $this->assertEquals(false, $bankTransfer['expected']);
-        $this->assertNull($bankTransfer['payment_id']);
+        $this->assertEquals($oldBankTransferId, $bankTransfer['id']);
     }
 
     public function testBankTransferProcessInvalidAccount()

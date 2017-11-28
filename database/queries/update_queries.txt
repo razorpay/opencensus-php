@@ -1286,3 +1286,18 @@ UPDATE batches SET processing=0 WHERE id='95JWxgK3aeBcdy';
 # and processed timestamp to 'created' and null respectively. We would hit api
 # to process this batch again.
 UPDATE batches SET status = 'created', processed_at = null, updated_at = created_at WHERE id = '95BFk558Ev1AIm' LIMIT 1;
+
+#Incident https://github.com/razorpay/incidents/issues/148
+UPDATE payments
+SET status='captured',
+    error_code=NULL,
+    internal_error_code=NULL,
+    error_description=NULL
+WHERE id IN ("7CUWjFDrILputM",
+             "90roT3xLXWW9oR",
+             "95FB80nPV9lBGU",
+             "95FM6pm3Kam0oV",
+             "95MQgcwfhaqxKO",
+             "95MSV9hNEGjfbu",
+             "95MX7h3algpi1Y",
+             "95Mx0p712DOV3M");

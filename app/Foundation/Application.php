@@ -26,4 +26,28 @@ class Application extends \Illuminate\Foundation\Application
         $this->globalResolvingCallbacks = [];
         $this->buildStack               = [];
     }
+
+    /**
+     * Determines if code is being run inside a queue worker.
+     * There are a few flows where in core layer we check for
+     * basic auth type. Ideally the application's core logic
+     * should be open to run from HTTP or/and CLI(command/cronstab,
+     * queue) equally, but in those few places it's difficult
+     * to handle in current situation.
+     *
+     * Now with payments being created via queue (via batch entity
+     * for type=bank_transfer, ref: #6259) we need following check
+     * and decide accordingly.
+     *
+     * @return bool
+     */
+    public function runningInQueue(): bool
+    {
+        //
+        // Unit tests are always running in CLI mode and queues
+        // are sync as well.
+        //
+        return (($this->runningInConsole() === true) and
+                ($this->runningUnitTests() === false));
+    }
 }
