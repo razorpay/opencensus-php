@@ -3,6 +3,7 @@ import { Line } from 'react-chartjs-2';
 
 import Definition from 'rzp/ui/Definition';
 import Change from 'rzp/ui/Change';
+import { BtnGroup, Btn } from 'rzp/ui/BtnGroup';
 
 import Legend, {
   LegendItem,
@@ -10,7 +11,7 @@ import Legend, {
   LegendTitle,
   LegendContent,
 } from 'merchant/containers/Home/Legend';
-
+import { titleCase } from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/index.js';
 
 import { tabsMeta, breakdownVals } from './data';
@@ -32,10 +33,10 @@ class Panel extends Component {
     return onGroupingChange && onGroupingChange(tabName, e.target.value);
   }
 
-  handleBreakdownChange(e) {
+  handleBreakdownChange(value) {
     const { tabName, onBreakdownChange } = this.props;
 
-    return onBreakdownChange && onBreakdownChange(tabName, e.target.value);
+    return onBreakdownChange && onBreakdownChange(tabName, value);
   }
 
   render() {
@@ -61,37 +62,7 @@ class Panel extends Component {
               </span>
             </Definition>
           </div>
-          <div className="pull-right">
-            <div
-              className="form form-horizontal breakdown-container"
-              onChange={this.handleBreakdownChange}
-            >
-              {breakdownVals.map((item, index) => {
-                return (
-                  <div class="RadioButton" key={index}>
-                    <label>
-                      <input
-                        type="radio"
-                        name="breakdown"
-                        value={item[1]}
-                        checked={selectedBreakdown === item[1]}
-                        readOnly={true}
-                      />
-
-                      <div>
-                        <div class="RadioButton__button" />
-                        <div class="RadioButton__label">
-                          <div>
-                            <span>{item[0]}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </label>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <div className="pull-right">...</div>
           <div className="pull-right">
             {grouping.length > 0 && (
               <select
@@ -108,7 +79,19 @@ class Panel extends Component {
               </select>
             )}
           </div>
-          <div className="pull-right">...</div>
+          <BtnGroup
+            className="pull-right"
+            value={selectedBreakdown}
+            onChange={this.handleBreakdownChange}
+          >
+            {breakdownVals.map((item, index) => {
+              return (
+                <Btn value={item} key={index} className="btn-default">
+                  {titleCase(item)}
+                </Btn>
+              );
+            })}
+          </BtnGroup>
         </div>
         <div className="chart-container">
           {!data.loading &&

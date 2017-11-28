@@ -60,8 +60,10 @@ export const timeScale = ({ xLabel, yLabel }) => {
             color: '#FFFFFF',
           },
           ticks: {
-            source: 'labels',
+            source: 'data',
+            autoSkip: true,
           },
+          stacked: true,
         },
       ],
       yAxes: {
@@ -73,7 +75,6 @@ export const timeScale = ({ xLabel, yLabel }) => {
         gridLines: {
           color: '#FFFFFF',
         },
-        stacked: true,
       },
     },
   };
