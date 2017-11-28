@@ -35,7 +35,7 @@ input:disabled, select:disabled, textarea:disabled
 
 label
   line-height: 18px
-  white-space: nowrap
+  white-space: normal
   display: block
   margin-left: 1px
   margin-bottom: 4px
@@ -92,7 +92,7 @@ button, .btn
     background: #9E9E9E
   &:after
     left: 0
-    top: 9px
+    top: 6px
     position: absolute
     box-shadow: 0 1px 3px 0 rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.18)
     content: ''
@@ -182,10 +182,13 @@ form
   position: relative
 
   form
-    font-size: 12px
+    font-size: 13px
 
   .field
     min-width: 172px;
+
+  label
+    width: 172px
 
   input, textarea, select
     width: 172px

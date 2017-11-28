@@ -60,105 +60,107 @@ export default class EditBankAccountDetails extends Component {
 
     return (
       <BaseModal header="Edit Bank Account details">
-        {!bankAccount ? (
-          <div class="spinner center m-t" />
-        ) : (
-          <Form class="full-span full-elements" style={{ width: '600px' }}>
-            <div class="m-b">
-              <strong>
-                Note: This is the current Bank Account where the settlements are
-                being made.
-              </strong>
+        <Form class="full-span full-elements" style={{ width: '600px' }}>
+          {!bankAccount ? (
+            <div class="spinner center m-t" />
+          ) : (
+            <div>
+              <div class="m-b">
+                <strong>
+                  Note: This is the current Bank Account where the settlements
+                  are being made.
+                </strong>
+              </div>
+
+              <Field
+                label="Bank Account Number"
+                name="account_number"
+                defaultValue={bankAccount.account_number}
+              />
+              <Field
+                label="Beneficiary Name"
+                name="beneficiary_name"
+                defaultValue={bankAccount.beneficiary_name}
+                infoMsg="Should be same as business/individual name"
+              />
+              <Field
+                label="Beneficiary Address Line 1"
+                name="beneficiary_address1"
+                defaultValue={bankAccount.beneficiary_address1}
+                type="textarea"
+                placeholder="Beneficiary Address Line 1"
+                required
+              />
+              <Field
+                label="Beneficiary Address Line 2"
+                name="beneficiary_address2"
+                defaultValue={bankAccount.beneficiary_address2}
+                type="textarea"
+                placeholder="Beneficiary Address Line 2"
+              />
+              <Field
+                label="Beneficiary Address Line 3"
+                name="beneficiary_address3"
+                defaultValue={bankAccount.beneficiary_address3}
+                type="textarea"
+                placeholder="Beneficiary Address Line 3"
+              />
+              <Field
+                label="Beneficiary Address City"
+                name="beneficiary_city"
+                defaultValue={bankAccount.beneficiary_city}
+                type="textarea"
+                placeholder="Beneficiary Address City"
+                required
+              />
+
+              <SelectField
+                name="beneficiary_state"
+                label="Beneficiary Address State"
+                defaultValue={bankAccount.beneficiary_state}
+                required
+              >
+                <option value="? undefined:undefined ?" />
+                {Object.keys(beneficiaryStateMap).map(key => (
+                  <option key={key} value={key}>
+                    {beneficiaryStateMap[key]}
+                  </option>
+                ))}
+              </SelectField>
+
+              <Field
+                label="Beneficiary Address Pincode"
+                name="beneficiary_pin"
+                defaultValue={bankAccount.beneficiary_pin}
+                type="textarea"
+                placeholder="Beneficiary Address Pincode"
+                required
+              />
+              <Field
+                label="Branch IFSC Code"
+                name="ifsc_code"
+                defaultValue={bankAccount.ifsc_code}
+                type="textarea"
+                placeholder="IFSC Code of the Bank Branch"
+                required
+              />
+
+              <div class="m-t m-b" />
+              <AsyncButton
+                text="Cancel"
+                class="btn btn-default"
+                pendingClass="small spinner"
+                onSubmit={closeModal}
+              />
+              <AsyncButton
+                text="Ok"
+                class="btn"
+                pendingClass="small spinner"
+                onSubmit={this.handleConfirm}
+              />
             </div>
-
-            <Field
-              label="Bank Account Number"
-              name="account_number"
-              defaultValue={bankAccount.account_number}
-            />
-            <Field
-              label="Beneficiary Name"
-              name="beneficiary_name"
-              defaultValue={bankAccount.beneficiary_name}
-              infoMsg="Should be same as business/individual name"
-            />
-            <Field
-              label="Beneficiary Address Line 1"
-              name="beneficiary_address1"
-              defaultValue={bankAccount.beneficiary_address1}
-              type="textarea"
-              placeholder="Beneficiary Address Line 1"
-              required
-            />
-            <Field
-              label="Beneficiary Address Line 2"
-              name="beneficiary_address2"
-              defaultValue={bankAccount.beneficiary_address2}
-              type="textarea"
-              placeholder="Beneficiary Address Line 2"
-            />
-            <Field
-              label="Beneficiary Address Line 3"
-              name="beneficiary_address3"
-              defaultValue={bankAccount.beneficiary_address3}
-              type="textarea"
-              placeholder="Beneficiary Address Line 3"
-            />
-            <Field
-              label="Beneficiary Address City"
-              name="beneficiary_city"
-              defaultValue={bankAccount.beneficiary_city}
-              type="textarea"
-              placeholder="Beneficiary Address City"
-              required
-            />
-
-            <SelectField
-              name="beneficiary_state"
-              label="Beneficiary Address State"
-              defaultValue={bankAccount.beneficiary_state}
-              required
-            >
-              <option value="? undefined:undefined ?" />
-              {Object.keys(beneficiaryStateMap).map(key => (
-                <option key={key} value={key}>
-                  {beneficiaryStateMap[key]}
-                </option>
-              ))}
-            </SelectField>
-
-            <Field
-              label="Beneficiary Address Pincode"
-              name="beneficiary_pin"
-              defaultValue={bankAccount.beneficiary_pin}
-              type="textarea"
-              placeholder="Beneficiary Address Pincode"
-              required
-            />
-            <Field
-              label="Branch IFSC Code"
-              name="ifsc_code"
-              defaultValue={bankAccount.ifsc_code}
-              type="textarea"
-              placeholder="IFSC Code of the Bank Branch"
-              required
-            />
-
-            <div class="m-t m-b" />
-            <AsyncButton
-              text="Cancel"
-              class="btn btn-default"
-              pendingClass="small spinner"
-              onSubmit={closeModal}
-            />
-            <AsyncButton
-              text="Ok"
-              class="btn"
-              pendingClass="small spinner"
-              onSubmit={this.handleConfirm}
-            />
-          </Form>
-        )}
+          )}
+        </Form>
       </BaseModal>
     );
   }

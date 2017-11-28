@@ -101,7 +101,7 @@ export default class AssignTerminal extends Component {
           </strong>
         </div>
 
-        <Form>
+        <Form class="entity-container">
           <SelectField name="mode" label="Mode" defaultValue="live">
             <option value="test">Test</option>
             <option value="live">Live</option>

@@ -38,10 +38,6 @@ export default class PricingPlanModal extends Component {
   getFormFields() {
     const fields = [];
 
-    if (!this.state.banksList) {
-      return <div class="spinner center" />;
-    }
-
     for (let bank in this.state.banksList) {
       fields.push(
         <SwitchField
@@ -91,22 +87,27 @@ export default class PricingPlanModal extends Component {
     return (
       <BaseModal header="Assign Banks">
         <Form>
-          {this.getFormFields()}
+          {!this.state.banksList ? (
+            <div class="spinner center" />
+          ) : (
+            <div>
+              {this.getFormFields()}
 
+              <AsyncButton
+                text="Cancel"
+                class="btn btn-default"
+                pendingClass="small spinner"
+                onSubmit={closeModal}
+              />
+              <AsyncButton
+                text="Ok"
+                class="btn"
+                pendingClass="small spinner"
+                onSubmit={this.handleConfirm}
+              />
+            </div>
+          )}
           <br />
-
-          <AsyncButton
-            text="Cancel"
-            class="btn btn-default"
-            pendingClass="small spinner"
-            onSubmit={closeModal}
-          />
-          <AsyncButton
-            text="Ok"
-            class="btn"
-            pendingClass="small spinner"
-            onSubmit={this.handleConfirm}
-          />
         </Form>
       </BaseModal>
     );
