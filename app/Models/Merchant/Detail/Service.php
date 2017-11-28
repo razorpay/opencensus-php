@@ -240,7 +240,14 @@ class Service extends Base\Service
         return $stepFinished;
     }
 
-    public function updateFormArchive($merchantId, $input)
+    /**
+     * This function is used for archiving merchant activation form
+     * @param string $merchantId
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateFormArchive(string $merchantId, array $input): array
     {
         (new Validator)->validateInput('archive_form', $input);
 
@@ -253,17 +260,25 @@ class Service extends Base\Service
         return $merchantDetails->toArrayPublic();
     }
 
-    public function updateActivationStatus($merchantId, $input)
+    /**
+     * This function is used for updating merchant activation status
+     * @param string $merchantId
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateActivationStatus(string $merchantId, array $input): array
     {
-        (new Validator)->validateInput('activationStatus', $input);
-
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $merchantDetails = $merchant->merchantDetail;
 
-        (new Validator)->validateActivationStatusChange(
-            $merchantDetails->activation_status,
-            $input[Entity::ACTIVATION_STATUS]);
+        $merchantDetails->getValidator()->validateInput('activationStatus', $input);
+
+        $merchantDetails->getValidator()
+                        ->validateActivationStatusChange(
+                            $merchantDetails->activation_status,
+                            $input[Entity::ACTIVATION_STATUS]);
 
         $merchantDetails = (new Core)->updateActivationStatus($merchantDetails, $input);
 

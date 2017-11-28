@@ -242,13 +242,20 @@ class Core extends Base\Core
         $this->repo->saveOrFail($merchantDetails);
     }
 
-    public function updateFormArchive(Entity $merchantDetails, $input)
+    /**
+     * This function is used for archiving merchant activation form
+     * @param Entity $merchantDetails
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateFormArchive(Entity $merchantDetails, array $input): Entity
     {
         $archivedAt = null;
 
         if (empty($input[Entity::ARCHIVE]) === false)
         {
-            $archivedAt = Carbon::now()->getTimestamp();
+            $archivedAt = Carbon::now(Timezone::IST)->getTimestamp();
         }
 
         $input = [
@@ -262,7 +269,14 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
-    public function updateActivationStatus(Entity $merchantDetails, $input)
+    /**
+     * This function is used for updating merchant activation status
+     * @param Entity $merchantDetails
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateActivationStatus(Entity $merchantDetails, array $input): Entity
     {
         $rejectionReasons = [];
 

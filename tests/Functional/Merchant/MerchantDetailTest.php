@@ -155,7 +155,7 @@ class MerchantDetailTest extends TestCase
 
         $testData['request']['url'] = "/merchant/activation/$merchantId/archive_form";
 
-        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
 
         $now = Carbon::now(Timezone::IST);
 
@@ -185,7 +185,7 @@ class MerchantDetailTest extends TestCase
 
         $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
 
-        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
 
         $this->startTest();
 

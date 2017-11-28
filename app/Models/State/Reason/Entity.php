@@ -7,7 +7,6 @@ use RZP\Models\State;
 
 class Entity extends Base\PublicEntity
 {
-    const ID              = 'id';
     const STATE_ID        = 'state_id';
     const REASON_TYPE     = 'reason_type';
     const REASON_CATEGORY = 'reason_category';
