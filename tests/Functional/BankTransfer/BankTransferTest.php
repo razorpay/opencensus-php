@@ -892,6 +892,30 @@ class BankTransferTest extends TestCase
         $this->assertEquals('ACC DOESNT EXIST-'.$bankTransfer['utr'], $attempt['narration']);
     }
 
+    public function testBankTransferYesBankRefundsNotAllowed()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $data =$this->testData[__FUNCTION__];
+
+        $data['request']['content']['payee_account'] = $accountNumber;
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($data['request']);
+
+        $utr = $response['transaction_id'];
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->refundAuthorizedPayment($payment['id']);
+        });
+    }
+
     public function testBankTransferProcessFailure()
     {
         $this->startTest();
