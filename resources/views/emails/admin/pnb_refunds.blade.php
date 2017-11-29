@@ -21,9 +21,6 @@
                 <thead>
                     <tr style="border: 1px solid grey">
                         <th style="border: 1px solid grey">Date</th>
-                        <th style="border: 1px solid grey">No. Of Txn</th>
-                        <th style="border: 1px solid grey">Transaction Amt</th>
-                        <th style="border: 1px solid grey">No. Of Txn</th>
                         <th style="border: 1px solid grey">Refund Amt</th>
                         <th style="border: 1px solid grey">Net Amt</th>
                     </tr>
@@ -31,9 +28,6 @@
                 <tbody>
                     <tr style="border: 1px solid grey">
                         <td style="border: 1px solid grey">{{{$date}}}</td>
-                        <td style="border: 1px solid grey">{{{$count['claims']}}}</td>
-                        <td style="border: 1px solid grey">{{{$amount['claims']}}}</td>
-                        <td style="border: 1px solid grey">{{{$count['refunds']}}}</td>
                         <td style="border: 1px solid grey">{{{$amount['refunds']}}}</td>
                         <td style="border: 1px solid grey">{{{$amount['total']}}}</td>
                     </tr>
