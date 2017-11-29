@@ -13,6 +13,7 @@ use RZP\Models;
  * @property Models\Plan\Subscription\Repository    $subscription
  * @property Models\Invoice\Repository              $invoice
  * @property Models\Payment\Repository              $payment
+ * @property Models\Batch\Repository                $batch
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {

@@ -1054,12 +1054,12 @@ class Repository extends Base\Repository
                     ->whereBetween($paymentCreatedAtColumn, [$from, $to])
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::CONFIRMED)
                     ->where($tokenRecurringColumn, '=', 1)
-                    ->with(['localToken', 'globalToken', 'merchant', 'order'])
+                    ->with(['localToken', 'globalToken', 'merchant', 'order', 'terminal'])
                     ->get();
     }
 
     public function fetchDebitEmandatePaymentPendingAuth(
-        string $gateway, string $paymentId, string $tokenId, string $accountNo)
+        string $gateway, string $paymentId, string $accountNo)
     {
         $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
 
@@ -1078,7 +1078,6 @@ class Repository extends Base\Repository
         // on `token_id` = `tokens`.`id` or `global_token_id` = `tokens`.`id`
         // where `payments`.`id` = ? and
         // `account_number` = ? and
-        // `tokens`.`id` = ? and
         // `recurring_type` = ? and
         // `status` = ? and
         // `payments`.`recurring` = ? and
@@ -1097,7 +1096,6 @@ class Repository extends Base\Repository
                       })
                     ->where($paymentIdColumn, $paymentId)
                     ->where(Token\Entity::ACCOUNT_NUMBER, $accountNo)
-                    ->where($tokenIdColumn, $tokenId)
                     ->where(Entity::RECURRING_TYPE, RecurringType::AUTO)
                     ->where(Entity::STATUS, Status::CREATED)
                     ->where($paymentRecurringColumn, 1)

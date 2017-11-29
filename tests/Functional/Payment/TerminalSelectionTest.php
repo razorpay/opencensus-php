@@ -2,17 +2,17 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-use RZP\Error;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
-
-use RZP\Exception\RuntimeException;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant;
+use RZP\Error\PublicErrorCode;
 use RZP\Models\Terminal\Category;
-use RZP\Models\Terminal\Options;
+use RZP\Tests\Functional\TestCase;
+use RZP\Exception\RuntimeException;
+use RZP\Models\Merchant\Preferences;
+use RZP\Error\PublicErrorDescription;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class TerminalSelectionTest extends TestCase
 {
@@ -206,7 +206,7 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $this->fixtures->create('terminal:multiple_category_terminals');
 
-        $this->fixtures->merchant->setCategory(123);
+        $this->fixtures->merchant->setCategory(124);
 
         // Make Payment
         $payment = $this->getDefaultPaymentArray();
@@ -214,7 +214,7 @@ class TerminalSelectionTest extends TestCase
 
         // Payment should have been made through shared terminl of correct category
         $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals('SharedTrmnl123', $payment['terminal_id']);
+        $this->assertEquals('SharedTrmnl124', $payment['terminal_id']);
     }
 
     public function testHDFCCardTerminalNotUsedForEmi()
@@ -946,7 +946,7 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->fixtures->create('terminal:shared_axis_terminal', [
-            'id' =>'1000AxisHdfcTl',
+            'id'               => '1000AxisHdfcTl',
             'gateway_acquirer' => 'hdfc'
         ]);
 
@@ -1158,5 +1158,75 @@ class TerminalSelectionTest extends TestCase
         $payment1 = $this->getLastEntity('payment', true);
 
         $this->assertEquals('ShrdNbBdkHouse', $payment1['terminal_id']);
+    }
+
+    public function testGatewayFilterRejectsCyberSource()
+    {
+        $attributes = [
+            'id'              => '10000000001017',
+            'org_id'          => Org::RZP_ORG,
+            'activated'       => 1,
+            'live'            => 1,
+            'pricing_plan_id' => '1hDYlICobzOCYt',
+        ];
+
+        $this->fixtures->on(Mode::LIVE)->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->on(Mode::LIVE)->create('terminal:shared_cybersource_hdfc_terminal');
+
+        $this->fixtures->on(Mode::LIVE)->create('merchant', $attributes);
+        $this->fixtures->on(Mode::LIVE)->create('methods', [
+            'merchant_id'    => '10000000001017',
+            'disabled_banks' => [],
+            'banks'          => '[]'
+        ]);
+
+        $key = $this->fixtures->on(Mode::LIVE)->create('key', [
+            'id'          => '10000000rzpkey',
+            'merchant_id' => '10000000001017',
+        ]);
+
+        $key = 'rzp_live_' . $key->getId();
+
+        $data = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($data, function () use ($key)
+        {
+            $payment = $this->getDefaultPaymentArray();
+            $this->doAuthPayment($payment, null, $key);
+        });
+    }
+
+    public function testGatewayFilterRejectsMigsForZomato()
+    {
+        $attributes = [
+            'id'              => Preferences::MID_ZOMATO,
+            'org_id'          => Org::RZP_ORG,
+            'activated'       => 1,
+            'live'            => 1,
+            'pricing_plan_id' => '1hDYlICobzOCYt',
+        ];
+
+        $this->fixtures->on(Mode::LIVE)->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->on(Mode::LIVE)->create('terminal:shared_axis_terminal');
+
+        $this->fixtures->on(Mode::LIVE)->create('merchant', $attributes);
+        $this->fixtures->on(Mode::LIVE)->create('methods', [
+            'merchant_id'    => Preferences::MID_ZOMATO,
+            'disabled_banks' => [],
+            'banks'          => '[]'
+        ]);
+
+        $key = $this->fixtures->on(Mode::LIVE)->create('key', [
+            'id'          => '10000000rzpkey',
+            'merchant_id' => Preferences::MID_ZOMATO,
+        ]);
+
+        $key = 'rzp_live_' . $key->getId();
+
+        $data = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($data, function () use ($key)
+        {
+            $payment = $this->getDefaultPaymentArray();
+            $this->doAuthPayment($payment, null, $key);
+        });
     }
 }

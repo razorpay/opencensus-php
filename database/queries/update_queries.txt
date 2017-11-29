@@ -1256,3 +1256,56 @@ UPDATE action_comments SET entity_type='workflow_action', entity_id=action_id
 INSERT INTO `geo_ips` (`ip`, `created_at`,`updated_at`)
     SELECT DISTINCT `ip`,1510980000, 1510980000
         FROM `payment_analytics`;
+
+UPDATE billdesk SET RefundId = 'JSBI58192723931' WHERE id = 2637587;
+
+# Axis NB E-mandate fix -- details in the PR #6195
+UPDATE payments set amount = 500, base_amount = 500, amount_authorized = 500 where id = '949aTERcyeLQw6' limit 1
+UPDATE transactions set amount = 500, credit = 500, balance = 210500 where id = '949eRva6SiVCkM' limit 1
+UPDATE balance set balance = 210500 where id = '7Ff4pDL9HIDVde' limit 1
+UPDATE netbanking set amount = 5 where id = 2245787 limit 1
+
+UPDATE settlements
+SET status = 'failed', failure_reason = 'RTGS Return'
+where utr in ('KKBKR22017111800240652', 'KKBKR22017111800240693');
+
+UPDATE fund_transfer_attempts
+SET status = 'failed', failure_reason = 'RTGS Return'
+where utr in ('KKBKR22017111800240652', 'KKBKR22017111800240693');
+
+# irctc batch failed due to nykaa outage
+UPDATE batches SET processing=0 WHERE id='95GW8yxNoBol2O';
+
+# goibibo refund batch failed due to nykaa outage
+UPDATE batches SET processing=0 WHERE id='95JWxgK3aeBcdy';
+
+# Uber's payment link batch failed.
+# There was some issue during reading file in queue again. Potential fix has been
+# given but the exact issue was not reproducible with exact file on local/beta.
+# We in all cases mark the batch (of pl) as processed. Resetting it's status
+# and processed timestamp to 'created' and null respectively. We would hit api
+# to process this batch again.
+UPDATE batches SET status = 'created', processed_at = null, updated_at = created_at WHERE id = '95BFk558Ev1AIm' LIMIT 1;
+
+
+# Details in the PR #6293
+# UPDATE adjustments SET transaction_id=null, created_at = 1511805060, updated_at = 1511805060 WHERE id='96pYPbswSuxwqv' LIMIT 1;
+# UPDATE transactions SET id = '96a16UxWF1KjgX', created_at = 1511805062, updated_at = 1511805062 WHERE id = '96pYPcXI3zFbPe' LIMIT 1;
+# UPDATE adjustments SET transaction_id = '96a16UxWF1KjgX' WHERE id = '96pYPbswSuxwqv' LIMIT 1;
+UPDATE transactions SET settled_at = 1511929800 WHERE id = '96tbUqesUlN4h4' LIMIT 1;
+UPDATE balance SET balance = 0 WHERE id = '5VcfkwFeXCGne1' LIMIT 1;
+
+#Incident https://github.com/razorpay/incidents/issues/148
+UPDATE payments
+SET status='captured',
+    error_code=NULL,
+    internal_error_code=NULL,
+    error_description=NULL
+WHERE id IN ("7CUWjFDrILputM",
+             "90roT3xLXWW9oR",
+             "95FB80nPV9lBGU",
+             "95FM6pm3Kam0oV",
+             "95MQgcwfhaqxKO",
+             "95MSV9hNEGjfbu",
+             "95MX7h3algpi1Y",
+             "95Mx0p712DOV3M");

@@ -142,6 +142,16 @@ class TransactionFilter extends Terminal\Filter
                     return false;
                 }
             }
+            else if (($terminal->getGateway() === Gateway::AXIS_MIGS) and
+                     ($merchant->getId() === Preferences::MID_ZOMATO))
+            {
+                $iin = $payment->card->getIin();
+
+                if ($iin !== self::PREPAID_IIN)
+                {
+                    return false;
+                }
+            }
         }
 
         return true;

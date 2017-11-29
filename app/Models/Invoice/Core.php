@@ -345,9 +345,7 @@ class Core extends Base\Core
 
         if ($medium === NotifyMedium::EMAIL)
         {
-            $pdf = $this->getFreshInvoicePdf($invoice);
-
-            $pdfPath = ($pdf !== null) ? $pdf->getFullFilePath() : null;
+            $pdfPath = $this->getFreshInvoicePdfFilePath($invoice);
         }
 
         $response = (new Notifier($invoice, $pdfPath))->$func();
@@ -607,6 +605,40 @@ class Core extends Base\Core
         }
 
         return $pdf;
+    }
+
+    /**
+     * @param Entity $invoice
+     *
+     * @return string|null
+     */
+    public function getFreshInvoicePdfFilePath(Entity $invoice)
+    {
+        $pdf = $this->getFreshInvoicePdf($invoice);
+
+        if ($pdf === null)
+        {
+            return null;
+        }
+
+        $path = $pdf->getFullFilePath();
+
+        //
+        // Call to getFreshInvoicePdf() does create new PDF in cases and so
+        // the local file already exists and we don't need to access it again.
+        // Otherwise if it's some old file store entity we need to access it.
+        //
+        if (file_exists($path) === true)
+        {
+            return $path;
+        }
+        else
+        {
+            return (new FileStore\Accessor)
+                        ->id($pdf->getId())
+                        ->merchantId($pdf->getMerchantId())
+                        ->getFile();
+        }
     }
 
     /**

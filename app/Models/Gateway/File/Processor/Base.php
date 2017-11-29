@@ -75,11 +75,11 @@ abstract class Base extends Core
     {
         try
         {
-            $entites = $this->fetchEntities();
+            $entities = $this->fetchEntities();
 
-            $this->checkIfValidDataAvailable($entites);
+            $this->checkIfValidDataAvailable($entities);
 
-            $data = $this->generateData($entites);
+            $data = $this->generateData($entities);
 
             $this->createFile($data);
 
@@ -172,8 +172,10 @@ abstract class Base extends Core
 
     /**
      * If the processing fails due to some known reason like no data found for file
-     * generation. In such cases, we mark the gateway_file entity as acknowledged
-     * @param  string   Error code / reason for failure
+     * generation. In such cases, we mark the gateway_file entity as acknowledged.
+     *
+     * @param  string $code  Error code / reason for failure
+     *
      * @return bool
      */
     abstract protected function shouldNotReportFailure(string $code): bool;

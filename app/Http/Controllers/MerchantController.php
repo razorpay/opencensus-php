@@ -735,6 +735,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getRejectionReasons()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getRejectionReasons();
+
+        return ApiResponse::json($response);
+    }
+
     public function getReferredMerchants()
     {
         $response = $this->service()->fetchReferredMerchants();

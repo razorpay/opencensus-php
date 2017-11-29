@@ -22,6 +22,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Upi\Icici\ResponseCodeMap;
+use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
 {
@@ -541,13 +542,30 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function verifyPayment(Verify $verify): string
+    protected function checkResponseAndThrowExceptionIfRequired(Verify $verify)
     {
         $content = $verify->verifyResponseContent;
 
         // 5006 = The payment was not created at the gateway end
+        // 5000 = Invalid Request
+        // 15   = Original record not found
         //        And we can safely mark this payment as failed
-        if (($content['success'] !== 'true') and ($content[Fields::RESPONSE] !== '5006'))
+        if (in_array($content[Fields::RESPONSE], ['5006', '5000', '15'], true) === true)
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                VerifyAction::FINISH);
+        }
+    }
+
+    protected function verifyPayment(Verify $verify): string
+    {
+        $this->checkResponseAndThrowExceptionIfRequired($verify);
+
+        $content = $verify->verifyResponseContent;
+
+        if ($content['success'] !== 'true')
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
