@@ -246,6 +246,8 @@ class CreateMerchantDetailsTable extends Migration
                   ->on_delete('restrict');
 
             $table->index(MerchantDetail::ACTIVATION_STATUS);
+
+            $table->index(MerchantDetail::ARCHIVED_AT);
         });
     }
 

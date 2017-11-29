@@ -54,7 +54,7 @@ class Core extends Base\Core
      *
      * @return Entity $state
      */
-    public function createForActivationAction(
+    public function createForActivation(
         array $input,
         MerchantDetailEntity $merchantDetails,
         PublicEntity $maker): Entity

@@ -2669,4 +2669,5 @@ ALTER TABLE `merchant_details`
     ADD COLUMN `activation_status` VARCHAR(255) DEFAULT NULL AFTER `locked`,
     ADD COLUMN `clarification_mode` VARCHAR(255) DEFAULT NULL AFTER `activation_status`,
     ADD COLUMN `archived_at` INT(11) DEFAULT NULL AFTER `clarification_mode`,
-    ADD INDEX `merchant_details_activation_status_index` (`activation_status`);
+    ADD INDEX `merchant_details_activation_status_index` (`activation_status`),
+    ADD INDEX `merchant_details_archived_at_index` (`archived_at`);
