@@ -168,12 +168,20 @@ const actions = {
     <action.OfferActions
       entity={entity}
       mode={entityComponent.params.mode}
-      updateEntity={entityComponent::updateOffer}
+      updateEntity={entityComponent::updateEntity}
+    />
+  ),
+
+  terminal: (entity, entityComponent) => (
+    <action.TerminalActions
+      entity={entity}
+      mode={entityComponent.params.mode}
+      updateEntity={entityComponent::updateEntity}
     />
   ),
 };
 
-function updateOffer(data) {
+function updateEntity(data) {
   this.setState({
     data: { ...this.state.data, ...data },
   });

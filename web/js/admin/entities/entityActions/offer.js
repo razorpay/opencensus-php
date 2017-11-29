@@ -16,32 +16,32 @@ export default ({ entity, mode, updateEntity }) => {
       successMsg = 'Offer is deactivated successfully';
     } else {
       successMsg = 'Offer is updated successfully';
-    }
 
-    Object.keys(body).forEach(key => {
-      body[key].trim();
+      Object.keys(body).forEach(key => {
+        body[key].trim();
 
-      if (key === 'iins' && body.iins) {
-        if (
-          entity.iins &&
-          body.iins
-            .split(',')
-            .sort()
-            .join() === entity.iins.sort().join()
-        ) {
-          delete body.iins;
-        } else {
-          body.iins = body.iins.split(',');
+        if (key === 'iins' && body.iins) {
+          if (
+            entity.iins &&
+            body.iins
+              .split(',')
+              .sort()
+              .join() === entity.iins.sort().join()
+          ) {
+            delete body.iins;
+          } else {
+            body.iins = body.iins.split(',');
+          }
+        } else if (body[key] === entity[key]) {
+          delete body[key];
         }
-      } else if (body[key] === entity[key]) {
-        delete body[key];
+      });
+
+      if (!Object.keys(body).length) {
+        notifyError('Make changes before submit');
+
+        return;
       }
-    });
-
-    if (!Object.keys(body).length) {
-      notifyError('Make changes before submit');
-
-      return;
     }
 
     return fetch({

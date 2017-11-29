@@ -1,0 +1,248 @@
+import { openModal, closeModal, confirm } from 'common/modal';
+import fetch, { adminPut } from 'util/fetch';
+import { notifyError, notifySuccess } from 'common/modal';
+
+import BaseModal from 'ui/BaseModal';
+import Form from 'ui/Form';
+import Field from 'ui/Field';
+import AsyncButton from 'ui/AsyncButton';
+import Table from 'ui/Table';
+
+import EditTerminalForm from '../../merchants/entity/entityModals/AssignTerminal';
+
+// Terminal Actions
+export default ({ entity, mode, updateEntity }) => {
+  function updateTerminal(body) {
+    if (body.terminal_mode) {
+      body.mode = body.terminal_mode;
+      delete body.terminal_mode;
+    }
+    // Remove empty or untouched variables
+    for (let key in body) {
+      if (body[key] === '' || body[key] === null || body[key] === entity[key]) {
+        delete body[key];
+      }
+    }
+
+    return adminPut({
+      route_name: 'terminal_edit',
+      url_params: {
+        id: entity.id,
+      },
+      mode: mode,
+      body,
+    })
+      .then(data => {
+        if (data) {
+          notifySuccess('Terminal is successfully updated');
+          updateEntity(data);
+          closeModal();
+        }
+      })
+      .catch(err => notifyError(JSON.stringify(err)));
+  }
+
+  function openEditTerminal() {
+    openModal(
+      <EditTerminalForm
+        entity={entity}
+        isEditMode={true}
+        merchantId={entity.merchant_id}
+        handleEdit={updateTerminal}
+      />
+    );
+  }
+
+  function changePrimaryMerchant() {
+    openModal(
+      <EditPrimaryMerchantForm
+        id={entity.merchant_id}
+        handleSubmit={updatePrimaryMerchant}
+      />
+    );
+  }
+
+  function terminalMerchantAssign() {
+    openModal(
+      <AssignSubMerchants
+        submerchants={entity.sub_merchants}
+        handleSubmit={updateSubmerchants}
+      />
+    );
+  }
+
+  function updateSubmerchants(body) {
+    return adminPut({
+      route_name: 'terminal_add_merchant',
+      url_params: {
+        id: entity.id,
+        mid: body.merchant_id,
+      },
+      mode: mode,
+    })
+      .then(data => {
+        if (data) {
+          notifySuccess('Submerchant is successfully added');
+        }
+      })
+      .catch(err => notifyError(JSON.stringify(err)));
+  }
+
+  function updatePrimaryMerchant(body) {
+    return adminPut({
+      route_name: 'terminal_reassign_merchant',
+      url_params: {
+        id: entity.id,
+      },
+      body: {
+        merchant_id: body.merchant_id,
+      },
+      mode: mode,
+    })
+      .then(data => {
+        if (data) {
+          notifySuccess('Primary Merchant is successfully updated');
+        }
+      })
+      .catch(err => notifyError(JSON.stringify(err)));
+  }
+
+  function deleteTerminal() {
+    return fetch({
+      method: 'delete',
+      url: '/admin/generic/',
+      params: {
+        route_name: 'terminal_delete',
+        url_params: {
+          '{id}': entity.id,
+        },
+        mode: mode,
+      },
+    })
+      .then(data => {
+        if (data) {
+          notifySuccess('Terminal is deleted successfully');
+          window.open(`/admin/entity/terminal`);
+        }
+      })
+      .catch(err => {
+        notifyError(JSON.stringify(err));
+      });
+  }
+
+  function toggleEnableTerminal() {
+    let isEnabled = entity.enabled;
+
+    return adminPut({
+      route_name: 'terminal_toggle',
+      url_params: {
+        id: entity.id,
+      },
+      mode: mode,
+      body: { toggle: isEnabled ? 0 : 1 },
+    });
+  }
+
+  return (
+    <div>
+      <div>
+        <button class="label-info" onClick={openEditTerminal}>
+          Edit Terminal
+        </button>
+        <button class="label-info" onClick={changePrimaryMerchant}>
+          Change Primary Merchant
+        </button>
+        <button class="label-info" onClick={terminalMerchantAssign}>
+          Assign Sub Merchants
+        </button>
+      </div>
+      <div>
+        <AsyncButton
+          onClick={deleteTerminal}
+          class="btn label-danger"
+          pendingClass="btn btn-default label-danger btn-pending"
+          confirm="Are you sure you want to delete this terminal?"
+        >
+          Delete Terminal
+          <span class="spin-btn" />
+        </AsyncButton>
+        <AsyncButton
+          onClick={toggleEnableTerminal}
+          class={`btn btn-default text-${
+            entity.enabled ? 'danger' : 'success'
+          }`}
+          pendingClass={`btn btn-default btn-pending text-${
+            entity.enabled ? 'danger' : 'success'
+          }`}
+          confirm={`Are you sure you want to ${
+            entity.enabled ? 'disable' : 'enable'
+          } this terminal?`}
+        >
+          {entity.enabled ? 'Disable' : 'Enable'} Terminal
+          <span class="spin-btn" />
+        </AsyncButton>
+      </div>
+    </div>
+  );
+};
+
+// Assign Submerchant to terminal form
+const AssignSubMerchants = ({ submerchants, handleSubmit }) => {
+  function getSubmerchantFields() {
+    return [
+      ['Id', item => item.id],
+      ['Name', item => item.name],
+      [
+        'Website',
+        item => (
+          <a class="link" target="_blank" href={item.website}>
+            {item.website}
+          </a>
+        ),
+      ],
+    ];
+  }
+
+  return (
+    <BaseModal header="Assign Sub Merchant To Terminal">
+      <Form class="full-span full-elements">
+        <Field label="Merchant id" name="merchant_id" />
+        <AsyncButton
+          text="Submit"
+          class="btn"
+          pendingClass="small spinner"
+          onSubmit={handleSubmit}
+        />
+      </Form>
+      {submerchants &&
+        submerchants.length && (
+          <Table
+            items={submerchants}
+            fields={getSubmerchantFields()}
+            customClass="limited"
+          />
+        )}
+    </BaseModal>
+  );
+};
+
+// Edit primary merchant form
+const EditPrimaryMerchantForm = ({ id, handleSubmit }) => {
+  return (
+    <BaseModal header="Change Primary Merchant for the Terminal">
+      <Form class="full-span full-elements">
+        <Field
+          label="Primary merchant id"
+          name="merchant_id"
+          defaultValue={id}
+        />
+        <AsyncButton
+          text="Submit"
+          class="btn"
+          pendingClass="small spinner"
+          onSubmit={handleSubmit}
+        />
+      </Form>
+    </BaseModal>
+  );
+};

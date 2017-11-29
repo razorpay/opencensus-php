@@ -13,12 +13,26 @@ export default class Duplex extends Component {
             fields.length && (
               <div class={defaultClass}>
                 {fields.map((itemFn, index) => {
-                  var result = itemFn(model);
+                  const result = itemFn(model);
+                  let value = result[1];
+
+                  if (typeof value === 'boolean') {
+                    value = (
+                      <span>
+                        <i
+                          class={`i ${
+                            value ? 'i-yes text-success' : 'i-no text-danger'
+                          }`}
+                        />
+                      </span>
+                    );
+                  }
+
                   return (
                     result && (
                       <div class="tr" key={index}>
                         <div class="td">{result[0]}</div>
-                        <div class="td text-right">{result[1]}</div>
+                        <div class="td text-right">{value}</div>
                       </div>
                     )
                   );

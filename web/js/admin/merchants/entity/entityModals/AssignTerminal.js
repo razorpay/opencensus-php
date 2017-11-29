@@ -53,9 +53,10 @@ const gatewayAcquirerMapping = {
   icici: 'ICICI',
 };
 
-export default class AssignTerminal extends Component {
+export default class TerminalForm extends Component {
   state = { pricingPlans: {} };
 
+  // Creates terminal
   handleConfirm = body => {
     return confirm(
       'Any previously assigned plan for the merchant will be replace with selected.',
@@ -93,21 +94,41 @@ export default class AssignTerminal extends Component {
   };
 
   render() {
+    const { isEditMode, handleEdit, entity } = this.props;
     return (
-      <BaseModal header="Assign Terminal">
+      <BaseModal header={`${isEditMode ? 'Edit' : 'Assign'} Terminal`}>
         <div class="m-b">
-          <strong>
-            Warning: The terminal once assigned can not be changed
+          <strong class="text-danger">
+            {isEditMode
+              ? 'Warning: Terminals can only be edit before any transactions happen through them'
+              : 'Warning: The terminal once assigned can not be changed'}
           </strong>
         </div>
 
         <Form class="entity-container">
-          <SelectField name="mode" label="Mode" defaultValue="live">
-            <option value="test">Test</option>
-            <option value="live">Live</option>
-          </SelectField>
+          {isEditMode && (
+            <Field label="Terminal id" defaultValue={entity.id} disabled />
+          )}
+          {isEditMode && (
+            <Field
+              label="Merchant id"
+              defaultValue={entity.merchant_id}
+              disabled
+            />
+          )}
+          {!isEditMode && (
+            <SelectField name="mode" label="Mode" defaultValue="live">
+              <option value="test">Test</option>
+              <option value="live">Live</option>
+            </SelectField>
+          )}
 
-          <SelectField name="gateway" label="Gateway" defaultValue={''}>
+          <SelectField
+            name="gateway"
+            label="Gateway"
+            defaultValue={''}
+            disabled={isEditMode}
+          >
             {Object.keys(gatewayMapping).map(key => (
               <option key={key} value={key}>
                 {gatewayMapping[key]}
@@ -146,11 +167,13 @@ export default class AssignTerminal extends Component {
           <Field label="Gateway Access Code" name="gateway_access_code" />
           <Field label="Gateway Secure Secret" name="gateway_secure_secret" />
 
-          <FileField
-            label="Gateway Client Certificate"
-            name="file"
-            infoMsg="Certificate file for FirstData"
-          />
+          {!isEditMode && (
+            <FileField
+              label="Gateway Client Certificate"
+              name="file"
+              infoMsg="Certificate file for FirstData"
+            />
+          )}
 
           <Field label="Gateway Recon Password" name="gateway_recon_password" />
 
@@ -219,10 +242,12 @@ export default class AssignTerminal extends Component {
             <option value="customer">Customer</option>
           </SelectField>
 
-          <SelectField name="shared" label="Shared" defaultValue={''}>
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-          </SelectField>
+          {!isEditMode && (
+            <SelectField name="shared" label="Shared" defaultValue={''}>
+              <option value="1">Yes</option>
+              <option value="0">No</option>
+            </SelectField>
+          )}
 
           <SelectField
             name="international"
@@ -254,7 +279,7 @@ export default class AssignTerminal extends Component {
             text="Ok"
             class="btn"
             pendingClass="small spinner"
-            onSubmit={this.handleConfirm}
+            onSubmit={handleEdit ? handleEdit : this.handleConfirm}
           />
         </Form>
       </BaseModal>
