@@ -29,7 +29,7 @@
                     <tr style="border: 1px solid grey">
                         <td style="border: 1px solid grey">{{{$date}}}</td>
                         <td style="border: 1px solid grey">{{{$amount['refunds']}}}</td>
-                        <td style="border: 1px solid grey">{{{$amount['total']}}}</td>
+                        <td style="border: 1px solid grey">{{{$amount['claims']}}}</td>
                     </tr>
                 </tbody>
             </table>
