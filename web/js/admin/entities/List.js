@@ -19,13 +19,23 @@ export default class EntityList extends Component {
       route_name: 'admin_fetch_entity_multiple',
       mode: this.props.match.params.mode || 'live',
       url_params: {
-        type: 'payment',
+        type: this.props.match.params.selectedEntity || 'payment',
       },
     },
     fetchFn: adminFetch,
   });
 
   submit = filters => {
+    filters = Object.keys(filters).reduce((prev, next) => {
+      let dotSplit = next.split('.');
+      if (dotSplit.length > 1) {
+        let nestedFilter =
+          (prev[dotSplit[0]] && JSON.parse(prev[dotSplit[0]])) || {};
+        nestedFilter[dotSplit[1]] = filters[next];
+        prev[dotSplit[0]] = JSON.stringify(nestedFilter);
+      }
+      return prev;
+    }, {});
     this.updateUrl();
     return this.collection.applyFilters(filters);
   };
@@ -37,7 +47,7 @@ export default class EntityList extends Component {
   componentWillMount() {
     extendObservable(this, {
       pending: !sharedData,
-      selectedEntity: this.props.match.params.selectedEntity || 'payment',
+      selectedEntity: this.collection.data.url_params.type,
     });
 
     this.updateUrl();
