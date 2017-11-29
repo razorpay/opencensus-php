@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import Form from 'ui/Form';
 import Field, {
   SelectField,
@@ -198,7 +198,7 @@ class GatewayRuleForm extends Component {
             ))}
         </SelectField>
         {(model.method === 'card' || model.method === 'emi') && (
-          <div>
+          <Fragment>
             <SelectField
               name="method_type"
               label="Card Type"
@@ -252,7 +252,7 @@ class GatewayRuleForm extends Component {
               placeholder="6 digit IINs, comma separated"
               pattern="^(\d{6},)*\d{6}$"
             />
-          </div>
+          </Fragment>
         )}
 
         <Field
