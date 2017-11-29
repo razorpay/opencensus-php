@@ -581,7 +581,7 @@ return [
 
     // auth
     'admin_proxy' => [
-        // Feature onboarding responses with questions 
+        // Feature onboarding responses with questions
         'onboarding_features_fetch_details' => 'onboarding/features',
         'onboarding_features_update_status' => 'onboarding/features/{feature}/status',
 
@@ -767,5 +767,7 @@ return [
         // Payment Dispute
         'payment_disputes'                  => 'payments/{id}/disputes',
         'dispute_edit'                      => 'disputes/{id}',
+        // Batch actions
+        'batch_process_by_id'               => 'batches/{id}/process',
     ],
 ];
