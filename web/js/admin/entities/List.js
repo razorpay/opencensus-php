@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Form from 'ui/Form';
+import Form, { serialize } from 'ui/Form';
 import Field, { FromField, ToField, SelectField, SwitchField } from 'ui/Field';
 import { PageTable } from 'ui/Table';
 import { adminFetch } from 'util/fetch';
@@ -26,21 +26,11 @@ export default class EntityList extends Component {
   });
 
   submit = filters => {
-    filters =
-      filters &&
-      Object.keys(filters).reduce((prev, next) => {
-        let dotSplit = next.split('.');
-        if (dotSplit.length > 1) {
-          let nestedFilter =
-            (prev[dotSplit[0]] && JSON.parse(prev[dotSplit[0]])) || {};
-          nestedFilter[dotSplit[1]] = filters[next];
-          prev[dotSplit[0]] = JSON.stringify(nestedFilter);
-        }
-        return prev;
-      }, {});
+    filters = parseFilters(filters);
     this.updateUrl();
     return this.collection.applyFilters(filters);
   };
+
   updateUrl = _ =>
     this.props.history.replace(
       `/entities/${this.collection.data.mode}/${this.selectedEntity}`
@@ -186,13 +176,51 @@ export default class EntityList extends Component {
             })}
 
             <button>Go</button>
+            <div
+              style={{ margin: 'auto 5px 18px 5px' }}
+              class="link"
+              onClick={this.downloadEntityCsv}
+            >
+              Download
+            </div>
           </Form>
         </div>
         <PageTable model={this.collection} fields={this.fields()} />
       </div>
     );
   }
+
+  downloadEntityCsv = e => {
+    let filters = parseFilters(serialize(e.currentTarget.closest('form')));
+    window.open(
+      `/admin/${this.collection.data.mode}/fetchentity/${
+        this.selectedEntity
+      }/csv?${Object.keys(filters)
+        .map(
+          filterName =>
+            `${encodeURIComponent(filterName)}=${encodeURIComponent(
+              filters[filterName]
+            )}`
+        )
+        .join('&')}`
+    );
+  };
 }
+
+const parseFilters = filters =>
+  filters &&
+  Object.keys(filters).reduce((prev, next) => {
+    let dotSplit = next.split('.');
+    if (dotSplit.length > 1) {
+      let nestedFilter =
+        (filters[dotSplit[0]] && JSON.parse(filters[dotSplit[0]])) || {};
+      nestedFilter[dotSplit[1]] = filters[next];
+      prev[dotSplit[0]] = JSON.stringify(nestedFilter);
+    } else {
+      prev[next] = filters[next];
+    }
+    return prev;
+  }, {});
 
 const fieldTypes = {
   object: (name, { label, values }) => (
