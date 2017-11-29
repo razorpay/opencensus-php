@@ -1,6 +1,5 @@
 <?php
 
-use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -1026,6 +1025,44 @@ return [
                         'payment_method'  => 'wallet',
                         'issuer'          => 'olamoney',
                         'display_text'    => 'Some display text',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithSharedMerchantOffer' => [
+        'request' => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'offers' => [
+                    [
+                        'name'            => 'Test Offer',
+                        'payment_method'  => 'wallet',
+                        'issuer'          => 'olamoney',
+                        'display_text'    => 'Merchant specific offer',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithMerchantSpecificAndSharedOffers' => [
+        'request' => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'offers' => [
+                    [
+                        'name'            => 'Test Offer',
+                        'payment_method'  => 'wallet',
+                        'issuer'          => 'olamoney',
+                        'display_text'    => 'Merchant specific offer',
                     ]
                 ]
             ],
