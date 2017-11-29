@@ -18,6 +18,32 @@ export default ({ entity, mode, updateEntity }) => {
       successMsg = 'Offer is updated successfully';
     }
 
+    Object.keys(body).forEach(key => {
+      body[key].trim();
+
+      if (key === 'iins' && body.iins) {
+        if (
+          entity.iins &&
+          body.iins
+            .split(',')
+            .sort()
+            .join() === entity.iins.sort().join()
+        ) {
+          delete body.iins;
+        } else {
+          body.iins = body.iins.split(',');
+        }
+      } else if (body[key] === entity[key]) {
+        delete body[key];
+      }
+    });
+
+    if (!Object.keys(body).length) {
+      notifyError('Make changes before submit');
+
+      return;
+    }
+
     return fetch({
       url: '/admin/generic',
       method: 'patch',
@@ -73,6 +99,24 @@ const EditOfferForm = ({ entity, handleSubmit }) => {
     <BaseModal header="Edit Offer">
       <Form class="full-span full-elements">
         <Field label="Name" name="name" defaultValue={entity.name} />
+        {['netbanking', 'wallet', 'upi'].indexOf(entity.payment_method) ===
+          -1 && (
+          <Field
+            label="iins"
+            name="iins"
+            placeholder="Enter comma(,) separated values"
+            defaultValue={entity.iins}
+          />
+        )}
+        {entity.payment_method === 'card' && (
+          <Field
+            label="max Payment Count"
+            name="max_payment_count"
+            defaultValue={entity.max_payment_count}
+          />
+        )}
+        <Field label="Name" name="name" defaultValue={entity.name} />
+
         <Field
           label="Linked Offer ids"
           name="linked_offer_ids"
