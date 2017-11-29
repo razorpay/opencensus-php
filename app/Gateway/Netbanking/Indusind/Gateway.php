@@ -334,7 +334,7 @@ class Gateway extends Base\Gateway
         return [
             Base\Entity::RECEIVED        => true,
             Base\Entity::STATUS          => $content[ResponseFields::VERIFICATION],
-            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REFERENCE_ID],
+            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REFERENCE_ID] ?? null,
         ];
     }
 
