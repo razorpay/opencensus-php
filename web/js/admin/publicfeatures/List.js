@@ -3,16 +3,10 @@ import { PageTable } from 'ui/Table';
 import { SelectField } from 'ui/Field';
 import Collection from 'model/collection';
 import { adminFetch } from 'util/fetch';
-import { showEntity } from './Entity';
+import { featuresAkaMap, showEntity } from './Entity';
 
 const defaultFilters = {
   status: 'pending',
-};
-
-const featureNames = {
-  marketplace_activation_status: 'Marketplace',
-  subscriptions_activation_status: 'Subscriptions',
-  virtual_accounts_activation_status: 'Virtual Accounts',
 };
 
 function fetchFn() {
@@ -30,13 +24,17 @@ function fetchFn() {
 export default class PublicFeaturesList extends Component {
   collection = new Collection({
     data: {
-      route_name: 'onboarding_features_fetch_submissions',
+      route_name: 'onboarding_features_get_submissions',
     },
     fetchFn,
     filters: defaultFilters,
   });
 
-  filter = e => this.collection.applyFilters({ status: e.target.value });
+  filter = e => {
+    this.collection.addFilters({
+      [e.target.name]: e.target.value,
+    });
+  };
 
   render() {
     return (
@@ -50,10 +48,16 @@ export default class PublicFeaturesList extends Component {
               onChange={this.filter}
               defaultValue={defaultFilters.status}
             >
-              <option value="">All</option>
               <option value="pending">Pending</option>
               <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
+            </SelectField>
+            <SelectField label="Product" name="product" onChange={this.filter}>
+              {Object.keys(featuresAkaMap).map(feature => (
+                <option value={feature} key={feature}>
+                  {featuresAkaMap[feature]}
+                </option>
+              ))}
             </SelectField>
           </div>
         </div>

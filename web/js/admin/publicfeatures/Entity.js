@@ -19,7 +19,7 @@ export default class EditPublicFeatures extends Component {
     agreement: null,
   };
 
-  akaFeature = this.props.model.feature.toLowerCase().replace(' ', '_');
+  akaFeature = this.props.model.product;
 
   selectedStatus = this.props.model.collection.filters.status;
 
@@ -108,7 +108,7 @@ export default class EditPublicFeatures extends Component {
   };
 
   render() {
-    let { feature, merchant_id } = this.props.model;
+    let { product, merchant_id } = this.props.model;
     let {
       selectedStatus,
       akaFeature,
@@ -130,7 +130,7 @@ export default class EditPublicFeatures extends Component {
               </div>
               <div class="field">
                 <label>Feature</label>
-                <code>{feature}</code>
+                <code>{product}</code>
               </div>
               <SelectField
                 label="Status"
@@ -244,7 +244,7 @@ const tranferToOptions = [
 ];
 
 //values might change in future
-const featuresAkaMap = {
+export const featuresAkaMap = {
   marketplace: 'Marketplace',
   subscriptions: 'Subscriptions',
   virtual_accounts: 'Virtual Accounts',
