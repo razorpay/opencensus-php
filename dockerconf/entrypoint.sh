@@ -10,8 +10,8 @@ fi
 
 
 # Install dependencies
-yarn install
-if [[ "${APP_CONTEXT}" == "dev" ]]; then
+npm install
+if [[ "${APP_MODE}" == "dev" ]]; then
 	gulp dev:webpack
 else
 	gulp
