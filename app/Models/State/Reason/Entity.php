@@ -51,8 +51,6 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     ];
 
-    protected $guarded = [self::ID];
-
     public function state()
     {
         return $this->belongsTo(State\Entity::class);
