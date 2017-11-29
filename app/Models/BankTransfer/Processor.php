@@ -73,14 +73,10 @@ class Processor extends VirtualAccount\Processor
             //
             // The transfer is an expected one, i.e. it is made to a valid account
             // but the UTR is a duplicate, indicating that a payment is being processed
-            // for a second time. In this case, we do not create anything but a
-            // bank_transfer entity, marked as unexpected.
+            // for a second time. In this case, we do nothing.
             //
-            $bankTransfer->setExpected(false);
 
-            $this->repo->saveOrFail($bankTransfer);
-
-            return $bankTransfer;
+            return null;
         }
 
         $this->processBankTransfer($bankTransfer);

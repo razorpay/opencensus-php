@@ -73,6 +73,19 @@ class Header
     const VA_BANK_ACCOUNT_IFSC   = 'bank_account_ifsc';
 
     //
+    // Bank Transfer Bulk Insertion
+    //
+    const PROVIDER       = 'provider';
+    const PAYER_NAME     = 'payer_name';
+    const PAYER_ACCOUNT  = 'payer_account';
+    const PAYER_IFSC     = 'payer_ifsc';
+    const PAYEE_ACCOUNT  = 'payee_account';
+    const PAYEE_IFSC     = 'payee_ifsc';
+    const MODE           = 'mode';
+    const UTR            = 'utr';
+    const TIME           = 'time';
+
+    //
     // HDFC Emandate Register Response File Headers
     //
     const HDFC_EM_REGISTER_CLIENT_NAME                      = HdfcEMRegisterHeadings::CLIENT_NAME;
@@ -234,6 +247,36 @@ class Header
                 self::VA_BANK_ACCOUNT_NAME,
                 self::VA_BANK_ACCOUNT_NUMBER,
                 self::VA_BANK_ACCOUNT_IFSC,
+            ],
+        ],
+
+        Type::BANK_TRANSFER => [
+            self::INPUT => [
+                self::PROVIDER,
+                self::PAYER_NAME,
+                self::PAYER_ACCOUNT,
+                self::PAYER_IFSC,
+                self::PAYEE_ACCOUNT,
+                self::PAYEE_IFSC,
+                self::MODE,
+                self::UTR,
+                self::TIME,
+                self::AMOUNT,
+                self::DESCRIPTION,
+            ],
+            self::OUTPUT => [
+                self::PROVIDER,
+                self::PAYER_NAME,
+                self::PAYER_ACCOUNT,
+                self::PAYER_IFSC,
+                self::PAYEE_ACCOUNT,
+                self::PAYEE_IFSC,
+                self::MODE,
+                self::UTR,
+                self::TIME,
+                self::AMOUNT,
+                self::DESCRIPTION,
+                self::STATUS,
             ],
         ],
 

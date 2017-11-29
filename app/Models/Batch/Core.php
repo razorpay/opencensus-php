@@ -96,11 +96,11 @@ class Core extends Base\Core
         return $batches;
     }
 
-    public function processBatchAsync(Entity $batch): Entity
+    public function processBatchAsync(Entity $batch, array $input = []): Entity
     {
-        $this->trace->info(TraceCode::BATCH_PROCESS_ASYNC, $batch->toArrayPublic());
+        $this->trace->info(TraceCode::BATCH_PROCESS_ASYNC, [$batch->toArrayPublic(), $input]);
 
-        $this->queueBatchForProcessing($batch);
+        $this->queueBatchForProcessing($batch, $input);
 
         return $batch;
     }

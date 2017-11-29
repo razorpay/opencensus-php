@@ -131,9 +131,9 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getCallbackFields($input['gateway']);
 
-        $gatewayPayment->fill($attributes);
+        $this->runCallbackVerify($input, $gatewayPayment);
 
-        $this->runCallbackVerify($input);
+        $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
 
@@ -144,13 +144,13 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    protected function runCallbackVerify(array $input)
+    protected function runCallbackVerify(array $input, Entity $gatewayPayment)
     {
         parent::verify($input);
 
         $verify = new Base\Verify($this->gateway, $input);
 
-        $gatewayPayment = $this->getPaymentToVerify($verify);
+        $verify->payment = $gatewayPayment;
 
         $this->sendPaymentVerifyRequest($verify);
 
