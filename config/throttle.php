@@ -20,7 +20,7 @@ return [
     | Default: null
     |
     */
-    'driver' => null,
+    'driver' => 'throttle_redis',
 
     'skip' => env('SKIP_THROTTLE', false),
 
