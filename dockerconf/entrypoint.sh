@@ -144,39 +144,45 @@ if [ "$#" -eq 0 ]; then
 fi
 
 ## Do the basic initialization and get the app type
-initialize
-app_type=$1
 
-## Now, based on the app type, call the specific functions
-if [[ "${app_type}" == "web" ]]; then
-  echo "Starting web app"
-  start_apache
-elif [[ "${app_type}" == "sqs" ]]; then
-  sleep_time=$2
-  #['sqs', '10']
-  if [ "$#" -ne 2 ]; then
-      echo "Need to specify following args: "
-      echo "sleep: <n seconds>"
-      exit -1
+function main {
+  initialize
+  app_type=$1
+
+  ## Now, based on the app type, call the specific functions
+  if [[ "${app_type}" == "web" ]]; then
+    echo "Starting web app"
+    start_apache
+  elif [[ "${app_type}" == "sqs" ]]; then
+    sleep_time=$2
+    #['sqs', '10']
+    if [ "$#" -ne 2 ]; then
+        echo "Need to specify following args: "
+        echo "sleep: <n seconds>"
+        exit -1
+    else
+      echo "starting sqs listener"
+      php artisan queue:work ${app_type} --sleep=${sleep_time}
+    fi
+  elif [[ "${app_type}" == "sqs_multi_default" ]]; then
+    queue_name=$2
+    sleep_time=$3
+    if [ "$#" -ne 3 ]; then
+        echo "Need to specify following args: "
+        echo "queue: <sqs-name>"
+        echo "sleep: <n seconds>"
+        exit -1
+    else
+      echo "starting sqs listener"
+      php artisan queue:work ${app_type} --queue=${APP_MODE}-${queue_name} --sleep=${sleep_time}
+    fi
+    else
+      echo "Specify sqs-listener-type: <sqs | sqs_multi_default>"
+    fi
   else
-    echo "starting sqs listener"
-    php artisan queue:work ${app_type} --sleep=${sleep_time}
+    echo "specify app-type: <web | sqs | sqs_multi_default>"
   fi
-elif [[ "${app_type}" == "sqs_multi_default" ]]; then
-  queue_name=$2
-  sleep_time=$3
-  if [ "$#" -ne 3 ]; then
-      echo "Need to specify following args: "
-      echo "queue: <sqs-name>"
-      echo "sleep: <n seconds>"
-      exit -1
-  else
-    echo "starting sqs listener"
-    php artisan queue:work ${app_type} --queue=${APP_MODE}-${queue_name} --sleep=${sleep_time}
-  fi
-  else
-    echo "Specify sqs-listener-type: <sqs | sqs_multi_default>"
-  fi
-else
-  echo "specify app-type: <web | sqs | sqs_multi_default>"
-fi
+
+}
+
+main $@
