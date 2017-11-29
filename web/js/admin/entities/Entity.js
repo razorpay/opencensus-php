@@ -6,6 +6,8 @@ import AsyncButton from 'ui/AsyncButton';
 import { notifyDone, notifyError } from 'common/modal';
 import user from 'admin/user';
 
+import * as action from './entityActions/index';
+
 export default class GenericEntity extends Component {
   params = this.props.match.params;
   title = this.title();
@@ -55,9 +57,11 @@ export default class GenericEntity extends Component {
         <header class="capitalize">
           {this.title} <code>{id}</code>
         </header>
-        {data && actions[type] && actions[type](data, this)}
         <Duplex pending={!data} model={data} fields={this.fields()} />
         {data && <div class="code">{JSON.stringify(data, null, 4)}</div>}
+        <div class="separate" style={{ padding: '10px' }}>
+          {data && actions[type] && actions[type](data, this)}
+        </div>
       </div>
     );
   }
@@ -159,7 +163,21 @@ const actions = {
       </AsyncButton>
     </div>
   ),
+
+  offer: (entity, entityComponent) => (
+    <action.OfferActions
+      entity={entity}
+      mode={entityComponent.params.mode}
+      updateEntity={entityComponent::updateOffer}
+    />
+  ),
 };
+
+function updateOffer(data) {
+  this.setState({
+    data: { ...this.state.data, ...data },
+  });
+}
 
 function deleteEmiPlan() {
   return adminDelete({
