@@ -47,7 +47,7 @@ class Validator extends Base\Validator
     //
 
     protected static $defaultCreateRules = [
-        Entity::TYPE                 => 'required|in:refund,irctc_refund,irctc_settlement,linked_account,virtual_bank_account',
+        Entity::TYPE                 => 'required|custom',
         Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
     ];
 
@@ -84,6 +84,11 @@ class Validator extends Base\Validator
         HdfcEMRegisterHeadings::CUSTOMER_ACCOUNT_NUMBER => 'Customer Account Number must be present',
         HdfcEMRegisterHeadings::STATUS                  => 'Status must be present',
     ];
+
+    protected function validateType($attribute, $value)
+    {
+        Type::validateType($value);
+    }
 
     /**
      * Throws error if batch is not in a state which can be processed
@@ -131,7 +136,11 @@ class Validator extends Base\Validator
 
         // Data validations
         $validatorMethodName = $rules['validator_method'];
-        $this->$validatorMethodName($entries, $params, $merchant);
+
+        if (method_exists($this, $validatorMethodName) === true)
+        {
+            $this->$validatorMethodName($entries, $params, $merchant);
+        }
     }
 
     /**
@@ -303,16 +312,6 @@ class Validator extends Base\Validator
                     Entity::MERCHANT_ID => $merchant->getId(),
                 ]);
         }
-    }
-
-    protected function validateIrctcRefundEntries(array & $entries, array $params, Merchant\Entity $merchant)
-    {
-
-    }
-
-    protected function validateIrctcSettlementEntries(array & $entries, array $params, Merchant\Entity $merchant)
-    {
-
     }
 
     protected function validateLinkedAccountEntries(array & $entries, array $params, Merchant\Entity $merchant)

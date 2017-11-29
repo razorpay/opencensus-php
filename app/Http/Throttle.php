@@ -171,7 +171,7 @@ class Throttle
              * against one dashboard instance
              */
             case Type::PROXY_AUTH:
-                $resource = $this->request->header('X_DASHBOARD_USER_ID');
+                $resource = $this->request->header(RequestHeader::X_DASHBOARD_USER_ID);
                 break;
 
             /**
