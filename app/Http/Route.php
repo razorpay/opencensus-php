@@ -140,7 +140,6 @@ final class Route
         'merchant_get_terminal'                   => ['get',      'merchants/{mid}/terminals/{tid}',                'MerchantController@getTerminal'                                    ],
         'merchant_delete_terminal'                => ['delete',   'merchants/{mid}/terminals/{tid}',                'MerchantController@deleteTerminal'                                 ],
         'merchant_modify_terminal'                => ['put',      'merchants/{mid}/terminals/{tid}',                'MerchantController@putTerminal'                                    ],
-        'merchant_copy_terminal'                  => ['post',     'merchants/{mid}/terminals/{tid}/copy',           'MerchantController@postCopyTerminal'                               ],
         'merchant_put_payment_methods'            => ['put',      'merchants/{mid}/methods',                        'MerchantController@putMethods'                                     ],
         'merchant_activate'                       => ['post',     'merchants/{id}/activate',                        'MerchantController@postActivate'                                   ],
         'merchant_send_activation_mail'           => ['post',     'merchants/activation_mail',                      'MerchantController@postSendActivationMail'                         ],
@@ -890,7 +889,6 @@ final class Route
         'merchant_create_terminal',
         'merchant_daily_report',
         'merchant_delete_terminal',
-        'merchant_copy_terminal',
         'merchant_activate',
         'merchant_send_activation_mail',
         'merchant_live_enable',
@@ -1667,15 +1665,6 @@ final class Route
         'payment_topup_ajax',
         'payment_topup_post',
         'payment_redirect_callback',
-    ];
-
-    /**
-     * Sometimes we need to disable routes without deleting them temporarily.
-     * It could be that the route is deleted later on and is here during
-     * the transition period only.
-     */
-    const DISABLED_ROUTES = [
-        'merchant_copy_terminal',
     ];
 
     const WORKFLOW_EXECUTE_ROUTE_NAME = 'action_request_execute';

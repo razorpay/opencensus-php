@@ -6,6 +6,8 @@ use App;
 use ApiResponse;
 
 use Closure;
+use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
 use RZP\Http;
 use Carbon\Carbon;
 use RZP\Http\Route;
@@ -59,14 +61,6 @@ class Throttle
      * @var Logger
      */
     protected $trace;
-
-    /**
-     * @var array
-     */
-    protected static $nykaaThrottleRoutes = [
-        'customer_create',
-        'customer_fetch_tokens'
-    ];
 
     const STATIC_PRIVATE_IP = '1.1.1.1';
 
@@ -124,8 +118,11 @@ class Throttle
     {
         $ret = null;
 
-        if ((in_array($route, Http\Route::$internal, true) === true) or
-            (in_array($route, Http\Route::$admin, true) === true))
+        if (in_array($route, Http\Route::$internal, true) === true)
+        {
+            $this->process(Type::PRIVILEGE_AUTH);
+        }
+        else if (in_array($route, Http\Route::$admin, true) === true)
         {
             $this->process(Type::ADMIN_AUTH);
         }
@@ -199,6 +196,7 @@ class Throttle
                     'limit' => $limit,
                     'count' => $throttle->count(),
                     'time'  => $time,
+                    'mode'  => $mode,
                 ];
 
                 if ($this->isThrottleMocked($auth) === true)
@@ -302,16 +300,20 @@ class Throttle
         switch ($auth)
         {
             //
-            // On Admin Auth, same route can be accessed via different apps
+            // On Privilege Auth, same route can be accessed via different apps
             // Each app has a different password, we can use password for
             // differentiating the requests from different apps
             //
-            case Type::ADMIN_AUTH:
+            case Type::PRIVILEGE_AUTH:
                 $resource = $this->request->getPassword();
                 break;
 
+            case Type::ADMIN_AUTH:
+                $resource = $this->request->header(Http\RequestHeader::X_DASHBOARD_ADMIN_EMAIL);
+                break;
+
             //
-            //Primary rate-limiting where we rate-limit
+            // Primary rate-limiting where we rate-limit
             //
             case Type::PRIVATE_AUTH:
                 $resource = $this->getKeyId($auth);
@@ -336,7 +338,7 @@ class Throttle
             // against one dashboard instance
             //
             case Type::PROXY_AUTH:
-                $resource = $this->request->header('X_DASHBOARD_USER_ID');
+                $resource = $this->request->header(Http\RequestHeader::X_DASHBOARD_USER_ID);
                 break;
 
             //
@@ -351,6 +353,16 @@ class Throttle
             case Type::PUBLIC_AUTH:
                 $resource = $this->getKeyId($auth);
                 break;
+
+            default:
+                throw new LogicException(
+                    "Invalid auth passed for rate limiting",
+                    ErrorCode::SERVER_ERROR_INVALID_AUTH,
+                    [
+                        'auth' => $auth,
+                        'mode' => $mode,
+                        'route_name' => $routeName
+                    ]);
         }
 
         $identifier .= $resource;
@@ -388,8 +400,7 @@ class Throttle
         $route = $this->request->route()->getName();
 
         // Nykaa key id
-        if (($this->getKeyId($auth) === 'zyRUD5exRM0CGk') and
-            (in_array($route, self::$nykaaThrottleRoutes, true) === true))
+        if ($this->getKeyId($auth) === 'zyRUD5exRM0CGk')
         {
             return false;
         }
