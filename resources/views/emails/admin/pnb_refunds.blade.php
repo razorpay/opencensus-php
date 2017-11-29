@@ -22,7 +22,7 @@
                     <tr style="border: 1px solid grey">
                         <th style="border: 1px solid grey">Date</th>
                         <th style="border: 1px solid grey">Refund Amt</th>
-                        <th style="border: 1px solid grey">Net Amt</th>
+                        <th style="border: 1px solid grey">Claim Amt</th>
                     </tr>
                 </thead>
                 <tbody>
