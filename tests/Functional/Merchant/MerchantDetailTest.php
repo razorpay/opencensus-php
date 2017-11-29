@@ -153,24 +153,15 @@ class MerchantDetailTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = "/merchant/activation/$merchantId/archive_form";
+        $testData['request']['url'] = "/merchant/activation/$merchantId/archive";
 
         $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
 
-        $now = Carbon::now(Timezone::IST);
-
-        Carbon::setTestNow($now);
-
-        $testData['response']['content']['archived_at'] = $now->getTimeStamp();
-
         $this->startTest();
-
-        // Reset test params
-        Carbon::setTestNow();
 
         $testData['request']['content']['archive'] = 0;
 
-        $testData['response']['content']['archived_at'] = null;
+        $testData['response']['content']['archived'] = 0;
 
         $this->startTest();
     }
@@ -190,6 +181,23 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
 
         // under_review to needs_clarification
+        $this->changeActivationStatusFromUnderReviewToNeedsClarification($testData);
+
+        $this->startTest();
+
+        // needs_clarification to under_review
+        $this->changeActivationStatusFromNeedsClarificationToUnderReview($testData);
+
+        $this->startTest();
+
+        // under_review to rejected
+        $this->changeActivationStatusFromUnderReviewToRejected($testData);
+
+        $this->startTest();
+    }
+
+    protected function changeActivationStatusFromUnderReviewToNeedsClarification(& $testData)
+    {
         $testData['request']['content']['activation_status'] = 'needs_clarification';
 
         $testData['request']['content']['clarification_mode'] = 'email';
@@ -197,10 +205,10 @@ class MerchantDetailTest extends TestCase
         $testData['response']['content']['activation_status'] = 'needs_clarification';
 
         $testData['response']['content']['clarification_mode'] = 'email';
+    }
 
-        $this->startTest();
-
-        // needs_clarification to under_review
+    protected function changeActivationStatusFromNeedsClarificationToUnderReview(& $testData)
+    {
         $testData['request']['content']['activation_status'] = 'under_review';
 
         unset($testData['request']['content']['clarification_mode']);
@@ -208,9 +216,10 @@ class MerchantDetailTest extends TestCase
         $testData['response']['content']['activation_status'] = 'under_review';
 
         unset($testData['response']['content']['clarification_mode']);
+    }
 
-        $this->startTest();
-
+    protected function changeActivationStatusFromUnderReviewToRejected(& $testData)
+    {
         // under_review to rejected
         $testData['request']['content']['activation_status'] = 'rejected';
 
@@ -226,8 +235,6 @@ class MerchantDetailTest extends TestCase
         ];
 
         $testData['response']['content']['activation_status'] = 'rejected';
-
-        $this->startTest();
     }
 
     public function testCommentMerchant()

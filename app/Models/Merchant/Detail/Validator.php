@@ -141,6 +141,8 @@ class Validator extends Base\Validator
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
         Entity::SUBMIT                          => 'sometimes|boolean',
+        Entity::ACTIVATION_STATUS               => 'sometimes|max:255',
+        Entity::CLARIFICATION_MODE              => 'sometimes|max:255',
     ];
 
     protected static $preSignupRules = [
@@ -194,7 +196,7 @@ class Validator extends Base\Validator
 
     public function validateActivationStatus($input)
     {
-        if (in_array($input[Entity::ACTIVATION_STATUS], array_keys(Status::ALLOWED_NEXT_STATUSES)) === false)
+        if (in_array($input[Entity::ACTIVATION_STATUS], array_keys(Status::ALLOWED_NEXT_STATUSES), true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_STATUS_MESSAGE);
         }
@@ -210,12 +212,9 @@ class Validator extends Base\Validator
                     self::INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE);
             }
 
-            $allowedClarificationModes = [
-                Entity::EMAIL_CLARIFICATION,
-                Entity::CALL_CLARIFICATION,
-            ];
+            $allowedClarificationModes = ClarificationMode::ALLOWED_CLARIFICATION_MODES;
 
-            if (in_array($input[Entity::CLARIFICATION_MODE], $allowedClarificationModes) === false)
+            if (in_array($input[Entity::CLARIFICATION_MODE], $allowedClarificationModes, true) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(self::INVALID_CLARIFICATION_MODE_MESSAGE);
             }
@@ -224,8 +223,8 @@ class Validator extends Base\Validator
 
     public function validateActivationStatusChange($currentStatus, $newStatus)
     {
-        if (empty($currentStatus) === false and
-            in_array($newStatus, Status::ALLOWED_NEXT_STATUSES[$currentStatus]) === false)
+        if ((empty($currentStatus) === false) and
+            (in_array($newStatus, Status::ALLOWED_NEXT_STATUSES[$currentStatus], true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_STATUS_CHANGE_MESSAGE);
         }

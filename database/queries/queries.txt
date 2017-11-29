@@ -2649,12 +2649,12 @@ ALTER TABLE `geo_ips`
     CHANGE `created_at` `created_at` INT(11) NULL DEFAULT NULL,
     CHANGE `updated_at` `updated_at` INT(11) NULL DEFAULT NULL;
 
+ALTER TABLE batches
+    MODIFY COLUMN upload_file_url VARCHAR(255) NOT NULL,
+    MODIFY COLUMN download_file_url VARCHAR(255) DEFAULT NULL;
+
 ALTER TABLE `merchant_details`
     ADD COLUMN `activation_status` VARCHAR(255) DEFAULT NULL AFTER `locked`,
     ADD COLUMN `clarification_mode` VARCHAR(255) DEFAULT NULL AFTER `activation_status`,
     ADD COLUMN `archived_at` INT(11) DEFAULT NULL AFTER `clarification_mode`,
     ADD INDEX `merchant_details_activation_status_index` (`activation_status`);
-
-ALTER TABLE batches
-    MODIFY COLUMN upload_file_url VARCHAR(255) NOT NULL,
-    MODIFY COLUMN download_file_url VARCHAR(255) DEFAULT NULL;

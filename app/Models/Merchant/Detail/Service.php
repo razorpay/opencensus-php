@@ -247,7 +247,7 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function updateFormArchive(string $merchantId, array $input): array
+    public function updateActivationArchive(string $merchantId, array $input): array
     {
         (new Validator)->validateInput('archive_form', $input);
 
@@ -255,7 +255,7 @@ class Service extends Base\Service
 
         $merchantDetails = $merchant->merchantDetail;
 
-        $merchantDetails = (new Core)->updateFormArchive($merchantDetails, $input);
+        $merchantDetails = (new Core)->updateActivationArchive($merchantDetails, $input);
 
         return $merchantDetails->toArrayPublic();
     }

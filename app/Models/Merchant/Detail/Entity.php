@@ -90,11 +90,8 @@ class Entity extends Base\PublicEntity
 
     const SUBMIT            = 'submit';
     const ARCHIVE           = 'archive';
+    const ARCHIVED          = 'archived';
     const REJECTION_REASONS = 'rejection_reasons';
-
-    // Enum values used for Clarification mode
-    const EMAIL_CLARIFICATION = 'email';
-    const CALL_CLARIFICATION  = 'call';
 
     // Enum values used for product activation status
     const PENDING  = 'pending';
@@ -220,7 +217,7 @@ class Entity extends Base\PublicEntity
         self::LOCKED,
         self::ACTIVATION_STATUS,
         self::CLARIFICATION_MODE,
-        self::ARCHIVED_AT,
+        self::ARCHIVED,
         self::MARKETPLACE_ACTIVATION_STATUS,
         self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
         self::SUBSCRIPTIONS_ACTIVATION_STATUS,
@@ -291,6 +288,10 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_OPERATION_STATE,
     ];
 
+    protected $publicSetters = [
+        self::ARCHIVED_AT,
+    ];
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity', self::MERCHANT_ID, 'id');
@@ -309,6 +310,25 @@ class Entity extends Base\PublicEntity
     public function isSubmitted()
     {
         return ($this->getAttribute(self::SUBMITTED) === true);
+    }
+
+    public function setArchivedAt($archived_at)
+    {
+        $this->setAttribute(self::ARCHIVED_AT, $archived_at);
+    }
+
+    protected function setPublicArchivedAtAttribute(array & $array)
+    {
+        if (empty($array[self::ARCHIVED_AT]) === false)
+        {
+            $array[self::ARCHIVED] = 1;
+        }
+        else
+        {
+            $array[self::ARCHIVED] = 0;
+        }
+
+        unset($array[self::ARCHIVED_AT]);
     }
 
     public function getGstin()

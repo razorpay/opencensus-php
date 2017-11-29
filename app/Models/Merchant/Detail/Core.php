@@ -247,9 +247,9 @@ class Core extends Base\Core
      * @param Entity $merchantDetails
      * @param array $input
      *
-     * @return array
+     * @return Entity
      */
-    public function updateFormArchive(Entity $merchantDetails, array $input): Entity
+    public function updateActivationArchive(Entity $merchantDetails, array $input): Entity
     {
         $archivedAt = null;
 
@@ -258,11 +258,7 @@ class Core extends Base\Core
             $archivedAt = Carbon::now(Timezone::IST)->getTimestamp();
         }
 
-        $input = [
-            Entity::ARCHIVED_AT => $archivedAt,
-        ];
-
-        $merchantDetails->fill($input);
+        $merchantDetails->setArchivedAt($archivedAt);
 
         $this->repo->saveOrFail($merchantDetails);
 
@@ -274,7 +270,7 @@ class Core extends Base\Core
      * @param Entity $merchantDetails
      * @param array $input
      *
-     * @return array
+     * @return Entity
      */
     public function updateActivationStatus(Entity $merchantDetails, array $input): Entity
     {
@@ -291,7 +287,7 @@ class Core extends Base\Core
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input, $rejectionReasons, $admin)
         {
-            $merchantDetails->fill($input);
+            $merchantDetails->edit($input);
 
             $this->repo->saveOrFail($merchantDetails);
 
@@ -303,12 +299,7 @@ class Core extends Base\Core
 
             if (empty($rejectionReasons) === false)
             {
-                foreach ($rejectionReasons as $rejectionReason)
-                {
-                    $rejectionReason[Reason\Entity::REASON_TYPE] = Reason\Entity::REJECTION;
-
-                    (new Reason\Core)->create($rejectionReason, $state);
-                }
+                (new Reason\Core)->addRejectionReasons($rejectionReasons, $state);
             }
         });
 

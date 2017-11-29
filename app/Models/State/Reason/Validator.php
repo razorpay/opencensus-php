@@ -21,7 +21,7 @@ class Validator extends Base\Validator
             Entity::REJECTION,
         ];
 
-        if (in_array($reasonType, $validReasonTypes) === false)
+        if (in_array($reasonType, $validReasonTypes, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 self::INVALID_REASON_TYPE_MESSAGE);

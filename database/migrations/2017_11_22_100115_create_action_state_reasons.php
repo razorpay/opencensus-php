@@ -49,6 +49,11 @@ class CreateActionStateReasons extends Migration
      */
     public function down()
     {
+        Schema::table(Table::STATE_REASON, function (Blueprint $table)
+        {
+            $table->dropForeign(Table::STATE_REASON . '_' . StateReason::STATE_ID . '_foreign');
+        });
+
         Schema::drop(Table::STATE_REASON);
     }
 }

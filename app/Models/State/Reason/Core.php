@@ -17,4 +17,14 @@ class Core extends Base\Core
 
         return $reason;
     }
+
+    public function addRejectionReasons(array $rejectionReasons, StateEntity $state)
+    {
+        foreach ($rejectionReasons as $rejectionReason)
+        {
+            $rejectionReason[Entity::REASON_TYPE] = Entity::REJECTION;
+
+            $this->create($rejectionReason, $state);
+        }
+    }
 }
