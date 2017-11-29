@@ -4,6 +4,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
 return [
 
@@ -218,6 +219,30 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED,
+        ],
+    ],
+
+    'testGetMerchantRejectionReasons' => [
+        'request' => [
+            'content' => [],
+            'url'     => '/merchant/activation/rejection_reasons',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                RejectionReasons::UNSUPPORTED_BUSINESS_MODEL => [
+                    [
+                        RejectionReasons::CODE        => RejectionReasons::WEB_DEVELOPMENT_OR_WEB_HOSTING,
+                        RejectionReasons::DESCRIPTION => RejectionReasons::WEB_DEVELOPMENT_OR_WEB_HOSTING_DESCRIPTION,
+                    ],
+                ],
+                RejectionReasons::OTHERS => [
+                    [
+                        RejectionReasons::CODE        => RejectionReasons::DUPLICATE_OR_ERRENOUS_CREATION,
+                        RejectionReasons::DESCRIPTION => RejectionReasons::DUPLICATE_OR_ERRENOUS_CREATION_DESCRIPTION,
+                    ],
+                ],
+            ],
         ],
     ],
 

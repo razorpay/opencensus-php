@@ -86,6 +86,12 @@ class Provider
         '139913' => '00',
     ];
 
+    const IFSC = [
+        self::YESBANK   => 'YESB0CMSNOC',
+        self::KOTAK     => 'KKBK0000958',
+        self::DASHBOARD => 'RAZR0000001',
+    ];
+
     // The default details are fixed by each provider, most specifically
     // the IFSC code where the virtual accounts are said to be located.
     // Further details can be derived from this IFSC, but are not required
@@ -93,13 +99,13 @@ class Provider
     //
     const DEFAULT_DETAILS = [
         self::YESBANK => [
-            BankAccount::IFSC_CODE => 'YESB0CMSNOC',
+            BankAccount::IFSC_CODE => self::IFSC[self::YESBANK],
         ],
         self::KOTAK => [
-            BankAccount::IFSC_CODE => 'KKBK0000958',
+            BankAccount::IFSC_CODE => self::IFSC[self::KOTAK],
         ],
         self::DASHBOARD => [
-            BankAccount::IFSC_CODE => 'RAZR0000001',
+            BankAccount::IFSC_CODE => self::IFSC[self::DASHBOARD],
         ],
     ];
 

@@ -78,6 +78,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::TYPE,
         self::GATEWAY,
+        self::SUB_TYPE,
     ];
 
     protected $public = [
@@ -242,6 +243,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getSubType()
+    {
+        return $this->getAttribute(self::SUB_TYPE);
+    }
+
     public function getGateway()
     {
         return $this->getAttribute(self::GATEWAY);
@@ -325,6 +331,7 @@ class Entity extends Base\PublicEntity
             return Header::getOutputHeadersForType($type);
         }
     }
+
     /**
      * Returns key for file. Id is being used for key.
      *

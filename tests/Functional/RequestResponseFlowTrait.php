@@ -111,7 +111,12 @@ trait RequestResponseFlowTrait
 
         if (isset($expected['two_fa_error']) === true)
         {
-            $this->assertEquals($actual->hasTwoFaError(), $expected['two_fa_error']);
+            $this->assertEquals($expected['two_fa_error'], $actual->hasTwoFaError());
+        }
+
+        if (isset($expected['message']) === true)
+        {
+            $this->assertEquals($expected['message'], $actual->getMessage());
         }
 
         $internalError = $actual->getError()->getAttributes();

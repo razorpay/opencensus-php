@@ -3,8 +3,10 @@
 namespace RZP\Http;
 
 use App;
+use Carbon\Carbon;
 use RZP\Http\Route;
 use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Trace\TraceCode;
 use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -14,6 +16,12 @@ use GrahamCampbell\Throttle\Facades\Throttle as ThrottleFacade;
 
 class Throttle
 {
+    protected $app;
+    protected $request;
+    protected $router;
+    protected $config;
+    protected $trace;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -38,7 +46,11 @@ class Throttle
         {
             $this->throttle($auth);
         }
-        catch (BaseException $e)
+        catch (ThrottleException $e)
+        {
+            throw $e;
+        }
+        catch (\Throwable $e)
         {
             $this->trace->traceException($e);
         }
@@ -61,6 +73,11 @@ class Throttle
                 'ip'    => $this->request->ip(),
                 'route' => $identifier,
             ];
+
+            if ($auth === Type::PRIVATE_AUTH)
+            {
+                $throttleData['ip'] = '1.1.1.1';
+            }
 
             $time = $this->config['time_interval'];
 
@@ -94,6 +111,18 @@ class Throttle
     {
         $route = $this->request->route()->getName();
 
+        $nykaaThrottleRoutes = [
+            'customer_create',
+            'customer_fetch_tokens'
+        ];
+
+        // Nykaa key id
+        if (($this->getKeyId() === 'zyRUD5exRM0CGk') and
+            (in_array($route, $nykaaThrottleRoutes, true) === true))
+        {
+            return false;
+        }
+
         return (in_array($route, Route::$throttledRoutes, true) === false);
     }
 
@@ -101,7 +130,9 @@ class Throttle
     {
         $routeName = $this->request->route()->getName();
 
-        $identifier = $mode . $routeName;
+        $minute = Carbon::now(Timezone::IST)->minute;
+
+        $identifier = $mode . $routeName . ':' . $minute;
 
         switch ($auth)
         {
@@ -140,7 +171,7 @@ class Throttle
              * against one dashboard instance
              */
             case Type::PROXY_AUTH:
-                $resource = $this->request->header('X_DASHBOARD_USER_ID');
+                $resource = $this->request->header(RequestHeader::X_DASHBOARD_USER_ID);
                 break;
 
             /**

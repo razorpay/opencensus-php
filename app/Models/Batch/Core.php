@@ -20,7 +20,7 @@ class Core extends Base\Core
 
         $batch->merchant()->associate($merchant);
 
-        $processor = Processor\Base::get($batch);
+        $processor = Processor\Factory::get($batch);
 
         $processor->storeInputFileAndSaveBatch($input);
 
@@ -45,7 +45,7 @@ class Core extends Base\Core
      */
     public function retryBatchOutputFile(Entity $batch): Entity
     {
-        Processor\Base::get($batch)->retryBatchOutputFile();
+        Processor\Factory::get($batch)->retryBatchOutputFile();
 
         return $batch;
     }
@@ -85,7 +85,7 @@ class Core extends Base\Core
         {
             try
             {
-                Processor\Base::get($batch)->validateAndProcess();
+                Processor\Factory::get($batch)->validateAndProcess();
             }
             catch (\Throwable $e)
             {
@@ -96,11 +96,11 @@ class Core extends Base\Core
         return $batches;
     }
 
-    public function processBatchAsync(Entity $batch): Entity
+    public function processBatchAsync(Entity $batch, array $input = []): Entity
     {
-        $this->trace->info(TraceCode::BATCH_PROCESS_ASYNC, $batch->toArrayPublic());
+        $this->trace->info(TraceCode::BATCH_PROCESS_ASYNC, [$batch->toArrayPublic(), $input]);
 
-        $this->queueBatchForProcessing($batch);
+        $this->queueBatchForProcessing($batch, $input);
 
         return $batch;
     }

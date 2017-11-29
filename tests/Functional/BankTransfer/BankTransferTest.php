@@ -117,6 +117,34 @@ class BankTransferTest extends TestCase
         $this->assertEquals('NEFT', $attempt['mode']);
     }
 
+    public function testBankTransferFundTransferAttemptBulkUpdate()
+    {
+        $this->testBankTransferRefund();
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $request = [
+            'method'  => 'PATCH',
+            'url'     => '/fund_transfer_attempts',
+            'content' => [
+                'ids' => [
+                    $attempt['id']
+                ],
+                'status' => 'failed',
+                'remarks' => 'failed with reason'
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('failed', $attempt['status']);
+        $this->assertEquals('failed with reason', $attempt['remarks']);
+
+        $attempt = $this->getLastEntity('refund', true);
+        $this->assertEquals('failed', $attempt['status']);
+    }
+
     public function testBankTransferImps()
     {
         $accountNumber = $this->bankAccount['account_number'];
@@ -793,12 +821,10 @@ class BankTransferTest extends TestCase
         $this->assertEquals(true, $response['valid']);
         $this->assertNull($response['message']);
 
-        // Created bank transfer is not expected, not linked to a payment
+        // No new entity created
+        $oldBankTransferId = $bankTransfer['id'];
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
-        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
-        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
-        $this->assertEquals(false, $bankTransfer['expected']);
-        $this->assertNull($bankTransfer['payment_id']);
+        $this->assertEquals($oldBankTransferId, $bankTransfer['id']);
     }
 
     public function testBankTransferProcessInvalidAccount()
@@ -864,6 +890,30 @@ class BankTransferTest extends TestCase
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
         $this->assertEquals('ACC DOESNT EXIST-'.$bankTransfer['utr'], $attempt['narration']);
+    }
+
+    public function testBankTransferYesBankRefundsNotAllowed()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $data =$this->testData[__FUNCTION__];
+
+        $data['request']['content']['payee_account'] = $accountNumber;
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($data['request']);
+
+        $utr = $response['transaction_id'];
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->refundAuthorizedPayment($payment['id']);
+        });
     }
 
     public function testBankTransferProcessFailure()

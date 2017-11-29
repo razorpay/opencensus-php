@@ -131,9 +131,9 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getCallbackFields($input['gateway']);
 
-        $gatewayPayment->fill($attributes);
+        $this->runCallbackVerify($input, $gatewayPayment);
 
-        $this->runCallbackVerify($input);
+        $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
 
@@ -144,13 +144,13 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    protected function runCallbackVerify(array $input)
+    protected function runCallbackVerify(array $input, Entity $gatewayPayment)
     {
         parent::verify($input);
 
         $verify = new Base\Verify($this->gateway, $input);
 
-        $gatewayPayment = $this->getPaymentToVerify($verify);
+        $verify->payment = $gatewayPayment;
 
         $this->sendPaymentVerifyRequest($verify);
 
@@ -211,9 +211,6 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        // All refunds temporarily blocked, due to FirstData issues
-        $this->failRefund();
-
         $requestContent = $this->getRefundRequestArray($input, TxnType::REFUND);
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST,
@@ -243,9 +240,6 @@ class Gateway extends Base\Gateway
     {
         parent::reverse($input);
 
-        // All refunds temporarily blocked, due to FirstData issues
-        $this->failRefund();
-
         $requestContent = $this->getReverseRequestArray($input);
 
         $this->trace->info(
@@ -269,24 +263,6 @@ class Gateway extends Base\Gateway
         $reverseEntity = $this->createGatewayPaymentEntity($reverseFields, $input);
 
         $this->checkApprovalCode($reverseEntity);
-    }
-
-    /**
-     * Failing all FirstData refunds for now
-     * Will be retried later via cron
-     * @throws Exception\GatewayErrorException
-     */
-    protected function failRefund()
-    {
-        $this->trace->info(
-            TraceCode::GATEWAY_FIRST_DATA_REFUND_BLOCKED,
-            [
-                'payment_id' => $this->input['payment']['id'],
-                'refund_id'  => $this->input['refund']['id'],
-                'action'     => $this->action,
-            ]);
-
-        throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
     }
 
     public function verify(array $input)

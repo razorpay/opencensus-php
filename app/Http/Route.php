@@ -187,6 +187,7 @@ final class Route
         'bank_transfer_edit_payer_account'        => ['put',      'bank_transfers/{id}/payer_bank_account',         'BankTransferController@editPayerBankAccount'                       ],
         'bank_transfer_strip_payer_accounts'      => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
         'bank_transfer_insert'                    => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
+        'fund_transfer_attempt_bulk_update'       => ['patch',    'fund_transfer_attempts',                         'FundTransferAttemptController@bulkUpdate'                          ],
         'gateway_payment_callback_bharatqr'       => ['post',     'payment/callback/bharatqr',                      'BharatQrController@processBharatQrPayment'                         ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
@@ -209,6 +210,7 @@ final class Route
         'merchant_activation_migrate'             => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'merchant_activation_archive'             => ['patch',    'merchant/activation/{id}/archive',               'MerchantController@updateActivationArchive'                        ],
         'merchant_activation_status'              => ['patch',    'merchant/activation/{id}/activation_status',     'MerchantController@updateActivationStatus'                         ],
+        'merchant_get_rejection_reasons'          => ['get',      'merchant/activation/rejection_reasons',          'MerchantController@getRejectionReasons'                            ],
         'merchant_batches'                        => ['post',     'merchant/{id}/batches',                          'MerchantController@createBatches'                                  ],
         'merchant_payout_mail'                    => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
@@ -304,7 +306,6 @@ final class Route
         'geoip_update'                            => ['post',     'geoip/update',                                   'AdminController@updateGeoIps'                                      ],
 
         // File-based Emandate Routes
-        'emandate_registration_reconcile'         => ['post',     'emandate/registration/reconcile/{gateway}',      'EMandateController@postReconcileRegistrationFile'                  ],
         'emandate_debit_reconcile'                => ['post',     'emandate/debit/reconcile/{gateway}',             'EMandateController@postReconcileDebitFile'                         ],
 
         'reconciliate'                            => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
@@ -962,6 +963,7 @@ final class Route
         'bank_transfer_refund_retry',
         'bank_transfer_edit_payer_account',
         'bank_transfer_strip_payer_accounts',
+        'fund_transfer_attempt_bulk_update',
         'bank_transfer_insert',
         'iin_fetch_by_iin',
         'card_update_saved',
@@ -1095,7 +1097,6 @@ final class Route
         'user_merchant_upgrade',
         'user_resend_verification',
         'user_fetch_email',
-        'emandate_registration_reconcile',
         'emandate_debit_reconcile',
         'user_reset_password_create',
         'user_reset_password_token',
@@ -1267,6 +1268,7 @@ final class Route
         'merchant_invoice_add_bulk',
         'setl_retry',
         'merchant_activation_files',
+        'merchant_get_rejection_reasons',
         'merchant_batches',
         'admin_fetch_all_entities',
         'merchant_activation_archive',
@@ -1407,6 +1409,7 @@ final class Route
         'settings_delete'                       => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'                    => '*',
         'merchant_activation_files'             => '*',
+        'merchant_get_rejection_reasons'        => '*',
         'dispute_reason_create'                 => Permission::CREATE_DISPUTE_REASON,
         'user_confirm_by_data'                  => '*',
         'merchant_activation_archive'           => '*',
@@ -1534,7 +1537,6 @@ final class Route
 
         'mailgun' => [
             'reconciliate',
-            'emandate_registration_reconcile',
             'emandate_debit_reconcile',
         ],
 

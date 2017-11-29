@@ -8,8 +8,10 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Batch\Processor\HdfcEmandateRegister;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 
 /**
  * Class Validator
@@ -45,7 +47,7 @@ class Validator extends Base\Validator
     //
 
     protected static $defaultCreateRules = [
-        Entity::TYPE                 => 'required|in:refund,irctc_refund,irctc_settlement,linked_account,virtual_bank_account',
+        Entity::TYPE                 => 'required|custom',
         Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
     ];
 
@@ -63,6 +65,30 @@ class Validator extends Base\Validator
         Entity::FILE          => 'required|file',
         Entity::INPUT_DETAILS => 'required|array',
     ];
+
+    protected static $emandateCreateRules = [
+        Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE                 => 'required|in:emandate',
+        Entity::SUB_TYPE             => 'required|string|in:register,debit',
+        Entity::GATEWAY              => 'required|string',
+    ];
+
+    /**
+     * Defines the required keys to be present in emandate hdfc register file
+     * and the corresponding error message to be thrown when they are absent or empty
+     *
+     * @var array
+     */
+    protected static $emandateRegisterHdfcRequiredEntries = [
+        HdfcEMRegisterHeadings::MANDATE_ID              => 'Mandate ID must be present',
+        HdfcEMRegisterHeadings::CUSTOMER_ACCOUNT_NUMBER => 'Customer Account Number must be present',
+        HdfcEMRegisterHeadings::STATUS                  => 'Status must be present',
+    ];
+
+    protected function validateType($attribute, $value)
+    {
+        Type::validateType($value);
+    }
 
     /**
      * Throws error if batch is not in a state which can be processed
@@ -100,17 +126,63 @@ class Validator extends Base\Validator
         array $params,
         Merchant\Entity $merchant)
     {
+        $rules = $this->getRuleNames();
+
+        // Limit validations
+        Limit::validate($rules['limit_rule'], count($entries));
+
+        // Header validations
+        Header::validate($rules['header_rule'], array_keys(current($entries)));
+
+        // Data validations
+        $validatorMethodName = $rules['validator_method'];
+
+        if (method_exists($this, $validatorMethodName) === true)
+        {
+            $this->$validatorMethodName($entries, $params, $merchant);
+        }
+    }
+
+    /**
+     * Gets the rule names that will be used for header, limit and data validation
+     * for emandate file entries
+     *
+     * @return array
+     */
+    protected function getRuleNames(): array
+    {
         $type = $this->entity->getType();
-
-        Limit::validate($type, count($entries));
-
-        Header::validate($type, array_keys(current($entries)));
+        $subType = $this->entity->getSubType();
+        $gateway = $this->entity->getGateway();
 
         // Calls validate method of corresponding type.
+        $limitValidatorName = $type;
+        $headerRuleName = $type;
+        $validatorMethodName = 'validate' . studly_case($type);
 
-        $validator = 'validate' . studly_case($type) .'Entries';
+        // Add sub_type to the names
+        if (empty($subType) === false)
+        {
+            $headerRuleName .= '_' . $subType;
+            $limitValidatorName .= '_' . $subType;
+            $validatorMethodName .= studly_case($subType);
+        }
 
-        $this->$validator($entries, $params, $merchant);
+        // Add gateway to the names
+        if (empty($gateway) === false)
+        {
+            $headerRuleName .= '_' . strtolower($gateway);
+            $limitValidatorName .= '_'. strtolower($gateway);
+            $validatorMethodName .= studly_case($gateway);
+        }
+
+        $validatorMethodName .= 'Entries';
+
+        return [
+            'header_rule'       => $headerRuleName,
+            'limit_rule'        => $limitValidatorName,
+            'validator_method'  => $validatorMethodName,
+        ];
     }
 
     protected function validateRefundEntries(
@@ -242,16 +314,6 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateIrctcRefundEntries(array & $entries, array $params, Merchant\Entity $merchant)
-    {
-
-    }
-
-    protected function validateIrctcSettlementEntries(array & $entries, array $params, Merchant\Entity $merchant)
-    {
-
-    }
-
     protected function validateLinkedAccountEntries(array & $entries, array $params, Merchant\Entity $merchant)
     {
         //
@@ -274,4 +336,23 @@ class Validator extends Base\Validator
         //   it now does more than validating just the input entries.
         //
     }
+
+    protected function validateEmandateRegisterHdfcEntries(
+        array & $entries, array $params, Merchant\Entity $merchant)
+    {
+        foreach ($entries as $entry)
+        {
+            $entry = array_map('trim', $entry);
+
+            foreach (self::$emandateRegisterHdfcRequiredEntries as $attr => $errorMessage)
+            {
+                if (empty($attr) === true)
+                {
+                    throw new BadRequestValidationFailureException(
+                        $errorMessage, $attr, $entry);
+                }
+            }
+        }
+    }
+
 }
