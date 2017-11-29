@@ -137,7 +137,7 @@ function run_tests()
     nanotime_extension
     create_cert_dirs
 
-    cp /app/environment/.env.wercker /app/environment/.env.testing
+    cp /app/environment/.env.distelli /app/environment/.env.testing
     cd /app
     ## Start and run the tests
     export APP_MODE=dev
