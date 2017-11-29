@@ -150,14 +150,14 @@ class Repository extends Base\Repository
                                           ->union($subscriptionsRecords);
         }
 
-        if (isset($filters['offset']) === true)
+        if (isset($filters['skip']) === true)
         {
-            $records = $records->skip($filters['offset']);
+            $records = $records->skip($filters['skip']);
         }
 
-        if (isset($filters['limit']) === true)
+        if (isset($filters['count']) === true)
         {
-            $records = $records->limit($filters['limit']);
+            $records = $records->limit($filters['count']);
         }
 
         $records = $records->get();
