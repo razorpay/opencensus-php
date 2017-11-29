@@ -122,6 +122,7 @@ function create_assertion_file {
 function nanotime_extension {
   file=/etc/php7/conf.d/nanotime.ini
   echo "extension=nanotime.so" >> ${file}
+  cp /app/scripts/nanotime.so /usr/lib/php7/modules/nanotime.so
   echo "Listing extensions"
   php -m
 }
