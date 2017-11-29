@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
+use RZP\Models\VirtualAccount\Provider;
 
 class Validator extends Base\Validator
 {
@@ -67,20 +68,31 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
                     $bankTransfer);
         }
+
+        if ($bankTransfer->getPayeeIfsc() === Provider::IFSC[Provider::YESBANK])
+        {
+            throw new Exception\LogicException(
+                    'Not refunding YesBank payments at the moment.',
+                    ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                    $bankTransfer->toArray());
+        }
     }
 
     public function validateRefundIsAllowed()
     {
         $bankTransfer = $this->entity;
 
-        // Refunds currently not permitted for IMPS payments
         if ($bankTransfer->getMode() === Mode::IMPS)
         {
             $ifsc = $bankTransfer->getPayerIfsc();
 
             $bankCode = substr($ifsc, 0, -10);
 
-            if (BankCodes::hasIfscMapping($bankCode) === false)
+            // Refunds are not permitted for 2 cases:
+            //  1. IMPS bank code is not mapped to ay valida IFSC
+            //  2. Payer bank account is unknown
+            if ((BankCodes::hasIfscMapping($bankCode) === false) or
+                ($bankTransfer->getPayerBankAccountId() === null))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
