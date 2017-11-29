@@ -4,19 +4,20 @@ import { Line } from 'react-chartjs-2';
 import Definition from 'rzp/ui/Definition';
 import Change from 'rzp/ui/Change';
 import { BtnGroup, Btn } from 'rzp/ui/BtnGroup';
-
-import Legend, {
-  LegendItem,
-  LegendLabel,
-  LegendTitle,
-  LegendContent,
-} from 'merchant/containers/Home/Legend';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/index.js';
 
 import { tabsMeta, breakdownVals } from './data';
+import Legend from 'merchant/components/Home/Legend';
 
-const chartOptions = timeScale({});
+const chartOptions = {
+  ...timeScale({}),
+  layout: {
+    padding: {
+      top: 50,
+    },
+  },
+};
 
 class Panel extends Component {
   constructor(props) {
@@ -52,8 +53,8 @@ class Panel extends Component {
       { loading } = data;
 
     return (
-      <div className="panel">
-        <div className="clearfix p-all">
+      <div className="panel p-all">
+        <div className="clearfix">
           <div className="pull-left">
             <Definition>
               <span className="text-fade">
@@ -62,36 +63,41 @@ class Panel extends Component {
               </span>
             </Definition>
           </div>
-          <div className="pull-right">...</div>
-          <div className="pull-right">
-            {grouping.length > 0 && (
-              <select
-                value={selectedGrouping}
-                onChange={this.handleGroupingChange}
-              >
-                {grouping.map((item, index) => {
-                  return (
-                    <option value={item.value} key={index}>
-                      {item.text}
-                    </option>
-                  );
-                })}
-              </select>
-            )}
+          <div className="panel-actions pull-right">
+            <BtnGroup
+              className="panel-action-item"
+              value={selectedBreakdown}
+              onChange={this.handleBreakdownChange}
+            >
+              {breakdownVals.map((item, index) => {
+                return (
+                  <Btn value={item} key={index} className="btn-default">
+                    {titleCase(item)}
+                  </Btn>
+                );
+              })}
+            </BtnGroup>
+            <div className="panel-action-item">
+              {grouping.length > 0 && (
+                <select
+                  className="form-control"
+                  value={selectedGrouping}
+                  onChange={this.handleGroupingChange}
+                >
+                  {grouping.map((item, index) => {
+                    return (
+                      <option value={item.value} key={index}>
+                        {item.text}
+                      </option>
+                    );
+                  })}
+                </select>
+              )}
+            </div>
+            <div className="panel-action-item">
+              <button className="btn btn-default">...</button>
+            </div>
           </div>
-          <BtnGroup
-            className="pull-right"
-            value={selectedBreakdown}
-            onChange={this.handleBreakdownChange}
-          >
-            {breakdownVals.map((item, index) => {
-              return (
-                <Btn value={item} key={index} className="btn-default">
-                  {titleCase(item)}
-                </Btn>
-              );
-            })}
-          </BtnGroup>
         </div>
         <div className="chart-container">
           {!data.loading &&
@@ -99,6 +105,12 @@ class Panel extends Component {
               <Line options={chartOptions} data={data.histogram} />
             )}
         </div>
+        {!data.loading &&
+          data.legendData && (
+            <div className="p-t">
+              <Legend data={data.legendData} />
+            </div>
+          )}
       </div>
     );
   }

@@ -3,12 +3,13 @@ import moment from 'moment';
 import colors from './colors';
 import { groupBy } from '../pokedex';
 
-export const getTimelineData = (
+export const getTimelineData = ({
   data,
   groupByColumnName,
   groupTitleMap = {},
-  valueTransformer = null
-) => {
+  valueTransformer = null,
+  groupValuesToShow = [],
+}) => {
   /*
    * Pokedex data will be completely denormalized without any grouping
    * this function, groups the data (for series) based on the
@@ -36,7 +37,10 @@ export const getTimelineData = (
    */
 
   const groupedData = groupBy(data, groupByColumnName),
-    groups = Object.keys(groupedData),
+    groups =
+      groupValuesToShow.length > 0
+        ? groupValuesToShow
+        : Object.keys(groupedData),
     /* `timelineGroupMap` is like
          * {
          *   "<timestamp1>": {
@@ -52,18 +56,32 @@ export const getTimelineData = (
          */
     timelineGroupMap = {},
     groupDatasetsMap = {},
-    datasets = [];
+    datasets = [],
+    aggregates = [],
+    groupAggregatesMap = {};
 
   // populates default data , avoids `if` conditions in next loop
   groups.forEach((groupName, index) => {
+    const groupLabel = groupTitleMap[groupName] || groupName,
+      groupColor = colors[index % colors.length];
+
     const dataset = {
-      label: groupTitleMap[groupName] || groupName,
-      backgroundColor: colors[index % colors.length],
+      label: groupLabel,
+      backgroundColor: groupColor,
       data: [],
+    };
+
+    const aggregate = {
+      label: groupLabel,
+      color: groupColor,
+      value: 0,
     };
 
     datasets.push(dataset);
     groupDatasetsMap[groupName] = dataset;
+
+    aggregates.push(aggregate);
+    groupAggregatesMap[groupName] = aggregate;
   });
 
   /*
@@ -102,13 +120,17 @@ export const getTimelineData = (
     timestamp = Number(timestamp);
 
     groups.forEach(groupName => {
-      const groupData = groupDatasetsMap[groupName].data;
+      const groupData = groupDatasetsMap[groupName].data,
+        aggregateData = groupAggregatesMap[groupName],
+        yAxisVal = timelineGroupMap[timestamp][groupName];
 
-      // datasets variable will get populated due to reference
+      // `datasets` variable will get populated due to reference
       groupData.push({
         t: timestamp,
-        y: timelineGroupMap[timestamp][groupName],
+        y: yAxisVal,
       });
+
+      aggregateData.value += yAxisVal;
     });
 
     timestamps[index] = moment(timestamp);
@@ -117,15 +139,16 @@ export const getTimelineData = (
   return {
     labels: timestamps,
     datasets,
+    aggregates,
   };
 };
 
-export const getPieData = (
+export const getPieData = ({
   data,
   groupByColumnName,
   groupTitleMap = {},
-  valueTransformer = null
-) => {
+  valueTransformer = null,
+}) => {
   /*
    * @param {Array} data*
    * @param {String} groupByColumnName*
@@ -148,24 +171,34 @@ export const getPieData = (
    */
 
   const groupedData = groupBy(data, groupByColumnName),
-    groups = Object.keys(getPieData),
+    groups = Object.keys(groupedData),
     labels = [],
-    datasets = { data: [] };
+    datasets = { data: [], backgroundColor: colors },
+    legendData = [];
 
-  groups.forEach(groupName => {
-    labels.push(groupTitleMap[groupName] || groupName);
+  groups.forEach((groupName, index) => {
+    const groupTitle = groupTitleMap[groupName] || groupName;
 
-    const item = groupedData[groupName],
+    labels.push(groupTitle);
+
+    const item = groupedData[groupName][0],
       value =
         typeof valueTransformer === 'function'
-          ? valueTransformer(value, groupedData, groupName)
-          : value;
+          ? valueTransformer(item.value, groupedData, groupName)
+          : item.value;
 
     datasets.data.push(value);
+
+    legendData.push({
+      color: colors[index % colors.length],
+      label: groupTitle,
+      value,
+    });
   });
 
   return {
-    label: labels,
-    datasets,
+    labels,
+    datasets: [datasets],
+    legendData,
   };
 };

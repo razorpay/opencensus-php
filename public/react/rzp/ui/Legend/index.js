@@ -6,7 +6,7 @@ import LegendItem, {
   LegendLabel,
   LegendTitle,
   LegendContent,
-} from 'merchant/containers/Home/LegendItem';
+} from 'rzp/ui/LegendItem';
 
 import './styles.styl';
 

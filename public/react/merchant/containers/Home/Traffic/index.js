@@ -1,47 +1,17 @@
 import React, { Component } from 'react';
-
-import Legend, {
-  LegendItem,
-  LegendLabel,
-  LegendTitle,
-  LegendContent,
-} from 'merchant/containers/Home/Legend';
-import { getTraffic } from 'merchant/models/HomeKeyMetricsMock';
-
-import { colors } from 'rzp/utils/chart/index.js';
 import { Pie } from 'react-chartjs-2';
 
-import './styles.styl';
+import { getPieData } from 'rzp/utils/chart/transformers';
+
+import { fetch } from 'merchant/modules/pokedex';
+import { groupValues, groupMeta, getQuery } from './data';
+import Legend from 'merchant/components/Home/Legend';
 
 const chartOptions = {
-  data: {
-    datasets: [
-      {
-        backgroundColor: colors,
-        hoverBackgroundColor: colors,
-        borderWidth: 0,
-      },
-    ],
-  },
-  options: {
-    tooltips: {
-      enabled: false,
-    },
+  tooltips: {
+    enabled: false,
   },
 };
-
-const groupValues = ['transactionVolume', 'noTransactions'];
-
-const groups = [
-  {
-    name: 'By Teansaction Volume',
-    value: groupValues[0],
-  },
-  {
-    name: 'By No. of Transactions',
-    value: groupValues[1],
-  },
-];
 
 class Traffic extends Component {
   constructor(props) {
@@ -49,125 +19,146 @@ class Traffic extends Component {
 
     this.state = {
       loading: false,
-      chartData: [],
-      legendData: [],
-      selectedGrouping: groups[0].value,
+      selectedGrouping: groupValues[0],
+      groupsState: {},
     };
 
-    this.onGroupChange = this.onGroupChange.bind(this);
+    groupValues.forEach(groupValue => {
+      this.state.groupsState[groupValue] = {
+        loading: false,
+        chartData: null,
+        legendData: null,
+        fetchData: true,
+      };
+    });
+
+    this.onGroupChange = ::this.onGroupChange;
 
     this.data = null;
+  }
+
+  getData(isInitialLoad) {
+    const { startDate, endDate } = this.props,
+      { selectedGrouping, groupsState } = this.state,
+      groupState = groupsState[selectedGrouping],
+      meta = groupMeta[selectedGrouping],
+      query = getQuery({
+        merchantId: '10000000000000',
+        startTime: startDate.unix(),
+        endTime: endDate.unix(),
+        group: selectedGrouping,
+      });
+
+    if (isInitialLoad) {
+      this.state.loading = true;
+    }
+
+    groupState.loading = true;
+
+    this.setState(this.state);
+
+    fetch(query).then(resp => {
+      const { labels, datasets, legendData } = getPieData({
+        data: resp.data.distribution,
+        groupByColumnName: meta.groupBy,
+      });
+
+      groupState.chartData = { labels, datasets };
+      groupState.legendData = legendData;
+
+      console.log(groupState);
+
+      if (isInitialLoad) {
+        this.state.loading = false;
+      }
+
+      groupState.loading = false;
+      groupState.fetchData = false;
+
+      this.setState(this.state);
+    });
   }
 
   componentWillMount() {
     this.getData();
   }
 
-  getData() {
-    const { selectedGrouping } = this.state;
-
-    this.setState({ loading: true });
-
-    getTraffic().then(resp => {
-      this.data = {};
-
-      groupValues.forEach(groupName => {
-        const sumData = resp[`${groupName}Count`],
-          percentageData = resp[`${groupName}Percentage`];
-        const groupData = (this.data[groupName] = {});
-
-        /*
-         * platform order needs to be maintained , coz
-         * the order is not guaranteed between the two
-         * aggregations
-         */
-        const sumDataMap = {},
-          platformOrder = [];
-
-        groupData.chartData = sumData.map(item => {
-          sumDataMap[item.platform] = item.value;
-          platformOrder.push(item.platform);
-          return item.value;
-        });
-
-        groupData.legendData = [];
-
-        percentageData.forEach((item, index) => {
-          const platformIndex = platformOrder.indexOf(item.platform);
-
-          groupData.legendData[platformIndex] = {
-            percentage: item.value,
-            title: item.platform,
-            content: sumDataMap[item.platform],
-          };
-        });
-      });
-
-      const { chartData, legendData } = this.data[selectedGrouping];
-
-      this.setState({
-        loading: false,
-        chartData,
-        legendData,
-      });
+  clearCache() {
+    groupValues.forEach(groupValue => {
+      this.state.groupsState[groupValue].fetchData = true;
     });
   }
 
   onGroupChange(e) {
     const selectedGrouping = e.target.value,
-      { chartData, legendData } = this.data[selectedGrouping];
+      groupState = this.state.groupsState[selectedGrouping];
 
-    this.setState({
-      selectedGrouping,
-      chartData,
-      legendData,
-    });
+    this.setState(
+      {
+        selectedGrouping,
+      },
+      () => {
+        return groupState.fetchData && this.getData();
+      }
+    );
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { startDate, endDate } = nextProps,
+      props = this.props;
+
+    if (
+      startDate.toDate() !== props.startDate.toDate() ||
+      endDate.toDate() !== props.endDate.toDate()
+    ) {
+      this.clearCache();
+
+      this.setState(this.state, () => this.getData());
+    }
   }
 
   render() {
-    const { loading, chartData, legendData, selectedGrouping } = this.state;
-
-    chartOptions.data.datasets[0].data = chartData;
+    const { loading, selectedGrouping, groupsState } = this.state,
+      groupState = groupsState[selectedGrouping],
+      { chartData, legendData } = groupState;
 
     return (
       <div className="panel rzp-traffic p-all">
         <div className="clearfix">
-          <div className="pull-right">...</div>
-          <div className="pull-right">
-            <select value={selectedGrouping} onChange={this.onGroupChange}>
-              {groups.map((item, index) => {
-                return (
-                  <option value={item.value} key={index}>
-                    {item.name}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-        </div>
-        <div className="chart-container">
-          {loading ? (
-            <span>Loading...</span>
-          ) : (
-            <div className="chart-content">
-              <div className="chart">
-                <Pie {...chartOptions} />
-              </div>
-              <Legend alignment="vertical">
-                {legendData.map((item, index) => {
+          <div className="panel-actions p-b pull-right">
+            <div className="panel-action-item">
+              <select
+                value={selectedGrouping}
+                onChange={this.onGroupChange}
+                className="form-control"
+              >
+                {groupValues.map((value, index) => {
                   return (
-                    <LegendItem key={index}>
-                      <LegendLabel color={colors[index]}>
-                        {item.percentage}%
-                      </LegendLabel>
-                      <LegendTitle>{item.title}</LegendTitle>
-                      <LegendContent>{item.content}</LegendContent>
-                    </LegendItem>
+                    <option value={value} key={index}>
+                      {groupMeta[value].title}
+                    </option>
                   );
                 })}
-              </Legend>
+              </select>
             </div>
-          )}
+            <div className="panel-action-item">
+              <button className="btn btn-default">...</button>
+            </div>
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-md-6 col-sm-12">
+            {!groupState.loading &&
+              chartData && (
+                <Pie options={chartOptions} data={groupState.chartData} />
+              )}
+          </div>
+          <div className="col-md-5 col-sm-12">
+            {!groupState.loading &&
+              legendData && (
+                <Legend data={groupState.legendData} alignment="vertical" />
+              )}
+          </div>
         </div>
       </div>
     );

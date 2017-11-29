@@ -95,7 +95,7 @@ export default class HomeContainer extends Component {
             </div>
           </div>
 
-          <div className="row">
+          <div className="row hide">
             <div className="col-md-12">
               <p>Payment methods drilldown</p>
             </div>
@@ -103,8 +103,10 @@ export default class HomeContainer extends Component {
           </div>
 
           <div className="row">
-            <div className="col-md-6" />
-
+            <div className="col-md-6">
+              <p>Traffic split on platforms</p>
+              <Traffic startDate={startDate} endDate={endDate} />
+            </div>
             <div className="col-md-6" />
           </div>
         </div>

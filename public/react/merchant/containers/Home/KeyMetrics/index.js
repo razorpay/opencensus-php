@@ -81,6 +81,15 @@ class KeyMetricsContainer extends Component {
         // fetchData should be made true whenever the new data need to be
         // pulled
         fetchData: true,
+
+        // timeline data will be stored here
+        histogram: [],
+
+        // main stat of the tab is stored here
+        count: 0,
+
+        // calculated legend info is stored here
+        legendData: [],
       };
     });
 
@@ -131,12 +140,16 @@ class KeyMetricsContainer extends Component {
         const histogram = resp.data[`${tabName}Histogram`];
 
         if (histogram) {
-          tabState.data.histogram = getTimelineData(
-            histogram,
-            tabState.selectedGrouping,
-            {},
-            tabsMeta[tabName].isCurrency && paiseToRupees
-          );
+          const { labels, datasets, aggregates } = getTimelineData({
+            data: histogram,
+            groupByColumnName: tabState.selectedGrouping,
+            groupTitleMap: {},
+            valueTransformer: tabsMeta[tabName].isCurrency && paiseToRupees,
+          });
+
+          tabState.data.histogram = { labels, datasets };
+
+          tabState.data.legendData = aggregates;
         }
       });
 
@@ -183,7 +196,7 @@ class KeyMetricsContainer extends Component {
   }
 
   clearCache(tabsState) {
-    // fetch data when tabs changed
+    // hint to fetch new data
     tabsOrder.forEach(tabName => {
       tabsState[tabName].data.fetchData = true;
     });
