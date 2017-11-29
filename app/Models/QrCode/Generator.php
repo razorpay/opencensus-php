@@ -133,7 +133,7 @@ class Generator extends Base\Core
                     ->extension($ext)
                     ->entity($this->qrCode)
                     ->merchant($this->merchant)
-                    ->type(FileStore\Type::QR_CODE_IMAGES)
+                    ->type(FileStore\Type::QR_CODE_IMAGE)
                     ->save();
     }
 
@@ -158,11 +158,9 @@ class Generator extends Base\Core
     {
         $dirPath = storage_path('files/qrcodes');
 
-        $dir = dirname($dirPath);
-
-        if (file_exists($dir) === false)
+        if (file_exists($dirPath) === false)
         {
-            (new Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
+            (new Utility)->callFileOperation('mkdir', [$dirPath, 0777, true]);
         }
 
         return $dirPath;

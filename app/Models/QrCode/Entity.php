@@ -77,7 +77,7 @@ class Entity extends Base\PublicEntity
     public function qrCodeFile(): FileStore\Entity
     {
         return $this->files()
-                    ->where(FileStore\Entity::TYPE, '=', FileStore\Type::QR_CODE_IMAGES)
+                    ->where(FileStore\Entity::TYPE, '=', FileStore\Type::QR_CODE_IMAGE)
                     ->firstOrFail();
     }
 
@@ -116,7 +116,7 @@ class Entity extends Base\PublicEntity
      */
     public function getQrCodeFilename(): string
     {
-        return 'qrcodes/'. $this->getId() . '_' . time();
+        return 'qrcodes/'. $this->getId();
     }
 
     // --------------------- END GETTERS ---------------------

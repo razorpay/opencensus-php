@@ -63,6 +63,8 @@ class VirtualAccountTest extends TestCase
 
         $qrString = $qrCode['qr_string'];
 
+        $this->assertNotNull($qrCode['short_url']);
+
         $tlvArray = $this->getTagMappedValues($qrString);
 
         $masterCardValue = $tlvArray['04'];
@@ -100,6 +102,25 @@ class VirtualAccountTest extends TestCase
         $tlvArray = $this->getTagMappedValues($qrString);
 
         $this->assertEquals($tlvArray['54'], '100.00');
+    }
+
+    public function testDownloadQrcode()
+    {
+        $response = $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+            'amount_expected' => 10000,
+        ]);
+
+        $qrCodeId = $response['receivers'][0]['id'];
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/t/qrcode/' . $qrCodeId,
+        ];
+
+        $this->ba->directAuth();
+
+        $this->makeRequestAndGetContent($request);
     }
 
     public function testCreateVirtualAccountWithDescriptor()
