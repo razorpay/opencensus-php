@@ -331,7 +331,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeReversalWinLogic()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10100,
             'deduct_at_onset'       => 1,
@@ -361,7 +360,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeReversalLostLogic()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10100,
             'deduct_at_onset'       => 1,
@@ -447,7 +445,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAccepted()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 1,
@@ -480,7 +477,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAcceptedForNoOnsetDeduct()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,
@@ -512,7 +508,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAcceptedWithInvalidAcceptedAmount()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,
@@ -526,7 +521,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAcceptedWithZeroAcceptedAmount()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,
@@ -540,7 +534,6 @@ class DisputeTest extends TestCase
 
     public function testNonTransactionalDisputeInvalidClose()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,

@@ -33,7 +33,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
-        'deduct_onset_for_non_transactional_phase',
+        'deduct_onset_for_non_transactional_phases',
     ];
 
     protected static $editValidators = [
@@ -140,20 +140,16 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateDeductOnsetForNonTransactionalPhase(array $input)
+    public function validateDeductOnsetForNonTransactionalPhases(array $input)
     {
-        if (isset($input[Entity::DEDUCT_AT_ONSET]) === false)
+        if (empty($input[Entity::DEDUCT_AT_ONSET]) === true)
         {
             return;
         }
 
-        $shouldDeductOnset = filter_var($input[Entity::DEDUCT_AT_ONSET],
-            FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-
         $nonTransactionalPhases = Phase::getNonTransactionalPhases();
 
-        if ((in_array($input[Entity::PHASE], $nonTransactionalPhases,true) === true)
-            and  $shouldDeductOnset === true)
+        if (in_array($input[Entity::PHASE], $nonTransactionalPhases,true) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Deduct at onset cannot be done for disputes in phase ' . $input[Entity::PHASE],
