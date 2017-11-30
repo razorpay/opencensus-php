@@ -7,9 +7,12 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Payment\Processor\Wallet;
 
 class Core extends Base\Core
 {
@@ -153,10 +156,7 @@ class Core extends Base\Core
         //
         foreach ($sharedOffers as $sharedOffer)
         {
-            $result = $directOffers->search(function ($offer) use ($sharedOffer)
-            {
-                return $offer->matches($sharedOffer);
-            });
+            $result =  $this->shouldApplySharedOffer($sharedOffer, $directOffers, $merchantId);
 
             if ($result === false)
             {
@@ -172,6 +172,36 @@ class Core extends Base\Core
         $offers = $this->repo->offer->fetchSharedOffers();
 
         return $offers;
+    }
+
+    protected function shouldApplySharedOffer(
+        Entity $sharedOffer,
+        PublicCollection $directOffers,
+        string $merchantId): bool
+    {
+        if (($sharedOffer->getIssuer() === Wallet::FREECHARGE))
+        {
+            //
+            // For freecharge offers, if the merchant has a direct terminal with
+            // freecharge, we don't show the offer, as freecharge does not support
+            // offers on direct terminals.
+            //
+            $merchantsWithDirectFreechargeTerminals = $this->repo
+                                                           ->terminal
+                                                           ->getDirectTerminalsForGateway(Gateway::WALLET_FREECHARGE)
+                                                           ->pluck(Terminal\Entity::MERCHANT_ID)
+                                                           ->toArray();
+
+            if (in_array($merchantId, $merchantsWithDirectFreechargeTerminals, true) === true)
+            {
+                return false;
+            }
+        }
+
+        return $directOffers->search(function ($offer) use ($sharedOffer)
+        {
+            return $offer->matches($sharedOffer);
+        });
     }
 
     protected function checkConflictingOffers(Entity $offer)

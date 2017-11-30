@@ -1050,6 +1050,25 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithFreechargeOfferOnMerchantWithDirectFreechargeTerminal' => [
+        'request' => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'offers' => [
+                    [
+                        'name'            => 'Test Offer',
+                        'payment_method'  => 'wallet',
+                        'issuer'          => 'olamoney',
+                        'display_text'    => 'Shared olamoney offer',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithMerchantSpecificAndSharedOffers' => [
         'request' => [
             'url'    => '/preferences',
