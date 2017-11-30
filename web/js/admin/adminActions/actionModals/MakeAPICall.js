@@ -94,22 +94,21 @@ export default class MakeAPICall extends Component {
             text="OK"
             class="btn"
             pendingClass="small spinner"
-            onSubmit={data => {
-              let form = { ...data };
-              let file = document.querySelector('[name=file]').files[0];
+            onSubmit={body => {
+              let form = { ...body };
+              let file = form.file;
               //If file is sent, we don't need contentType field
               if (file) {
                 form.file = file;
                 delete form.content_type;
               }
 
-              delete form.url;
+              delete body.url;
 
-              return adminFormUpload(form, '/api/' + data.url).then(
+              return adminFormUpload(form, '/api/' + form.url).then(
                 response => {
                   if (response.data.success) {
                     notifySuccess('API Request successful');
-                    closeModal();
                   } else {
                     notifyError(response.data.errors.join(', '));
                   }
