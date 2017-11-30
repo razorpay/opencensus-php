@@ -119,15 +119,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_ISSUER_ACS_SYSTEM_FAILURE,
                 ],
             ],
-            'status_code' => 502,
+            'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_ISSUER_ACS_SYSTEM_FAILURE,
         ],
     ],
 

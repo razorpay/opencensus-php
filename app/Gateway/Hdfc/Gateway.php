@@ -890,9 +890,10 @@ class Gateway extends Base\Gateway
 
             $desc = $PaRes['Message']['Error']['errorMessage'] ?? '';
 
-            throw new Exception\BadRequestException(
-                Error\ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,
-                $code . $desc,
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_ISSUER_ACS_SYSTEM_FAILURE,
+                $code,
+                $desc,
                 [
                     'issuer' => $input['card']['issuer'],
                     'iin'    => $input['card']['iin']
