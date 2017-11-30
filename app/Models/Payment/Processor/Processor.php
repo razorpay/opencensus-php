@@ -728,7 +728,7 @@ class Processor
         {
             $notifier = new Notify($this->payment);
 
-            $notifier = $notifier->trigger(Payment\Event::FAILED);
+            $notifier->trigger(Payment\Event::FAILED);
         }
     }
 
