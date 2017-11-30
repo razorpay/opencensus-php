@@ -126,9 +126,8 @@ return [
             'status_code' => 502,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\GatewayErrorException',
+            'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,
-            'gateway_error_code'  => '98',
         ],
     ],
 
