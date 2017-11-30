@@ -6,7 +6,7 @@ import ShowWhen from 'admin/components/ShowWhen';
 import AsyncButton from 'ui/AsyncButton';
 import BaseModal from 'ui/BaseModal';
 import Form from 'ui/Form';
-import Field, { SelectField } from 'ui/Field';
+import Field, { SelectField, CheckField } from 'ui/Field';
 
 // iin Actions
 export default ({ entity, updateEntity }) => {
@@ -122,11 +122,9 @@ const EditIINForm = ({ entity, handleSubmit }) => {
           style={{ width: '200px' }}
         />
 
-        <div class="field">
-          <label>EMI</label>
-          <input name="emi" type="checkbox" defaultChecked={entity.emi} />
+        <CheckField label="EMI" name="emi" defaultChecked={entity.emi}>
           <span class="m-l">EMI Available</span>
-        </div>
+        </CheckField>
 
         <Field label="Trivia" name="trivia" defaultValue={entity.trivia} />
 

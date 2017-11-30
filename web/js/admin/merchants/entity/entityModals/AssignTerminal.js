@@ -4,7 +4,7 @@ import BaseModal from 'ui/BaseModal';
 import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
-import Field, { SelectField, FileField } from 'ui/Field';
+import Field, { SelectField, FileField, CheckField } from 'ui/Field';
 import { adminFetch, adminPost, adminFormUpload } from 'util/fetch';
 import AsyncButton from 'ui/AsyncButton';
 
@@ -105,7 +105,7 @@ export default class TerminalForm extends Component {
           </strong>
         </div>
 
-        <Form class="entity-container">
+        <Form class="entity-container" style={{ width: '600px' }}>
           {isEditMode && (
             <Field label="Terminal id" defaultValue={entity.id} disabled />
           )}
@@ -267,6 +267,27 @@ export default class TerminalForm extends Component {
             <option value="1">Auth-Capture</option>
             <option value="2">Purchase</option>
           </SelectField>
+
+          <CheckField
+            label="Non recurring"
+            name="type[non-recurring]"
+            defaultChecked={entity.type['non_recurring']}
+          />
+          <CheckField
+            label="Recurring 3DS"
+            name="type[non_recurring_3ds]"
+            defaultChecked={entity.type['non_recurring_3ds']}
+          />
+          <CheckField
+            label="Recurring Non 3DS"
+            name="type[recurring_non_3ds]"
+            defaultChecked={entity.type['recurring_non_3ds']}
+          />
+          <CheckField
+            label="IVR"
+            name="type[ivr]"
+            defaultChecked={entity.type['ivr']}
+          />
 
           <div class="m-t m-b" />
           <AsyncButton

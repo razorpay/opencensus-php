@@ -74,13 +74,14 @@ export function RadioField({ label, value, defaultValue, ...props }) {
   );
 }
 
-export function CheckField({ label, ...props }) {
+export function CheckField({ label, children, ...props }) {
   return (
     <div class="field">
       <label class={props.required ? 'required' : ''} onClick={toggleChecked}>
         {label}
       </label>
       <input {...props} type="checkbox" />
+      {children}
     </div>
   );
 }

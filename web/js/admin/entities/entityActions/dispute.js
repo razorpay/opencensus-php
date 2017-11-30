@@ -8,7 +8,7 @@ import ShowWhen from 'admin/components/ShowWhen';
 import AsyncButton from 'ui/AsyncButton';
 import BaseModal from 'ui/BaseModal';
 import Form from 'ui/Form';
-import Field, { SelectField, DateField } from 'ui/Field';
+import Field, { SelectField, DateField, CheckField } from 'ui/Field';
 
 // Dispute Actions
 export default ({ entity, mode, updateEntity }) => {
@@ -245,26 +245,20 @@ export class DisputeForm extends Component {
           />
 
           {/* Deduct on Onset */}
-          <div class="field">
-            <label>Deduct at Onset</label>
-            <input
-              name="deduct_at_onset"
-              type="checkbox"
-              defaultChecked={entity.deduct_at_onset}
-              disabled={isEditMode}
-            />
-          </div>
+          <CheckField
+            label="Dedcut at Onset"
+            name="deduct_at_onset"
+            defaultChecked={entity.deduct_at_onset}
+            disabled={isEditMode}
+          />
 
           {/* Skip Merchant Email */}
-          <div class="field">
-            <label>Skip Merchant Email</label>
-            <input
-              name="ekip_email"
-              type="checkbox"
-              defaultChecked={entity.skip_email}
-              disabled={isEditMode}
-            />
-          </div>
+          <CheckField
+            label="Skip Merchant Email"
+            name="skip_email"
+            defaultChecked={entity.skip_email}
+            disabled={isEditMode}
+          />
 
           <AsyncButton
             text={isEditMode ? 'Update' : 'Create'}
