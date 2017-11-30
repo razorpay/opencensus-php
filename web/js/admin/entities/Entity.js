@@ -115,53 +115,11 @@ const actions = {
   ),
 
   payment: (entity, entityComponent) => (
-    <div>
-      {entity.status === 'failed' &&
-        !entity.verified && (
-          <AsyncButton
-            class="btn"
-            confirm="Authorize Failed Payment?"
-            onClick={entity::authorizePayment}
-          >
-            Authorize
-          </AsyncButton>
-        )}
-      {entity.status === 'authorized' &&
-        user.permissions &&
-        user.permissions.indexOf('edit_payment_capture') !== -1 && (
-          <AsyncButton
-            class="btn"
-            pendingClass="small spinner"
-            confirm="Capture Payment?"
-            onClick={entityComponent::capturePayment}
-          >
-            Capture
-          </AsyncButton>
-        )}
-      {entity.status === 'authorized' && (
-        <AsyncButton
-          class="btn"
-          confirm="Refund Authorized Payment?"
-          onClick={entity::refundAuthorizedPayment}
-        >
-          Refund
-        </AsyncButton>
-      )}
-      <AsyncButton
-        class="btn danger"
-        pendingClass="small spinner"
-        onClick={entity::disputePayment}
-      >
-        Dispute
-      </AsyncButton>
-      <AsyncButton
-        pendingClass="small spinner"
-        class="btn"
-        onClick={entityComponent::verifyPayment}
-      >
-        Verify
-      </AsyncButton>
-    </div>
+    <action.PaymentActions
+      entity={entity}
+      mode={entityComponent.params.mode}
+      updateEntity={entityComponent::updateEntity}
+    />
   ),
 
   offer: (entity, entityComponent) => (
@@ -174,6 +132,14 @@ const actions = {
 
   terminal: (entity, entityComponent) => (
     <action.TerminalActions
+      entity={entity}
+      mode={entityComponent.params.mode}
+      updateEntity={entityComponent::updateEntity}
+    />
+  ),
+
+  dispute: (entity, entityComponent) => (
+    <action.DisputeActions
       entity={entity}
       mode={entityComponent.params.mode}
       updateEntity={entityComponent::updateEntity}
@@ -212,66 +178,3 @@ function downloadFile() {
     }
   });
 }
-
-function verifyPayment() {
-  return adminFetch({
-    route_name: 'payment_verify',
-    mode: this.params.mode,
-    url_params: {
-      id: this.state.data.id,
-    },
-  }).then(data => {
-    if (data) {
-      notifyDone();
-      this.setState({
-        data: data.payment,
-      });
-    }
-  });
-}
-
-function capturePayment() {
-  let payment = this.state.data;
-  return adminPost({
-    route_name: 'payment_capture',
-    mode: this.params.mode,
-    url_params: {
-      id: payment.id,
-    },
-    body: {
-      amount: payment.amount,
-      currency: payment.currency,
-    },
-    merchant_id: payment.merchant_id,
-  }).then(data => {
-    if (data) {
-      notifyDone();
-      this.setState({
-        data,
-      });
-    }
-  });
-}
-
-function refundAuthorizedPayment() {
-  let payment = this.state.data;
-  return adminPost({
-    route_name: 'payment_authorize_refund',
-    mode: this.params.mode,
-    url_params: {
-      id: payment.id,
-    },
-    merchant_id: payment.merchant_id,
-  }).then(data => {
-    if (data) {
-      notifyDone();
-      this.setState({
-        data,
-      });
-    }
-  });
-}
-
-function disputePayment() {}
-
-function authorizePayment() {}
