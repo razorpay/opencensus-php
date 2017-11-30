@@ -6,6 +6,7 @@ use App;
 use Mail;
 use Crypt;
 use Config;
+use Route;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
@@ -248,7 +249,7 @@ trait Authorize
         throw $e;
     }
 
-    protected function updatePaymentAuthFailed(Exception\BaseException $e)
+    public function updatePaymentAuthFailed(Exception\BaseException $e)
     {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
@@ -270,7 +271,7 @@ trait Authorize
      *
      * @return array
      */
-    protected function processAuth(Payment\Entity $payment): array
+    public function processAuth(Payment\Entity $payment): array
     {
         $this->updateAndNotifyPaymentAuthorized();
 
@@ -783,6 +784,16 @@ trait Authorize
         $merchant = $payment->merchant;
 
         //
+        // Check for bank transfer batch insertion, S2S validation
+        // is not relevant here in case of queue flow.
+        //
+        if (($payment->isBankTransfer() === true) and
+            ($this->app->runningInQueue() === true))
+        {
+            return;
+        }
+
+        //
         // We need to check if S2S is enabled only if the payment create
         // call has been made via private auth.
         //
@@ -1265,6 +1276,11 @@ trait Authorize
         {
             $data = array('payment' => $payment->toArray());
 
+            if ($payment->getGlobalOrLocalTokenEntity() !== null)
+            {
+                $data['token'] = $payment->getGlobalOrLocalTokenEntity();
+            }
+
             if ($payment->isMethodCardOrEmi())
             {
                 $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
@@ -1286,12 +1302,28 @@ trait Authorize
                     ['payment_id' => $payment->getId()]);
             }
 
-            $payment->setErrorNull();
             $payment->setVerified(true);
 
-            // The first argument marks the payment as converted from failed
-            // to authorized
-            $this->updateAndNotifyPaymentAuthorized($response, true);
+            // handle the special caes when timeout cron marks a payment as failed
+            // because of race conditions with verify,
+            // We just need to reverse the things done in timeout cron, we dont
+            // need to update the acquirer data here as that should have already
+            // been set in the payment when payment was intitally authorized.
+            if (($payment->hasBeenAuthorized() === true) and
+                ($payment->isFailed() === true))
+            {
+                $payment->setErrorNull();
+
+                $payment->setStatus(Payment\Status::AUTHORIZED);
+
+                $payment->setLateAuthorized(true);
+            }
+            else
+            {
+                // The first argument marks the payment as converted from failed
+                // to authorized
+                $this->updateAndNotifyPaymentAuthorized($response, true);
+            }
 
             $this->autoCapturePaymentIfApplicable($payment);
 
@@ -3680,8 +3712,12 @@ trait Authorize
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
     {
-        // No gateway for bank transfer, everything is internal
-        if ($payment->isBankTransfer() === true)
+        //
+        // No gateway for bank transfer or Bharat Qr, everything is internal
+        // TODO: To be changed after refactor
+        //
+        if (($payment->isBankTransfer() === true) or
+            (Route::currentRouteName() === 'gateway_payment_callback_bharatqr'))
         {
             return false;
         }

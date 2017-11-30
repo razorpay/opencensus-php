@@ -552,99 +552,20 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 4,
-                'entity' => 'collection',
-                'items' => [
-                    [
-                        'name' => 'TestPlan2',
-                        'entity' => 'pricing',
-                        'count' => 4,
-                        'rules' => [
-                            [
-                                'plan_name' => 'TestPlan2',
-                                'gateway' => NULL,
-                                'payment_method' => 'card',
-                                'payment_method_type' => 'credit',
-                                'payment_network' => 'MC',
-                                'payment_issuer' => 'AXIS',
-                                'percent_rate' => 0,
-                                'fixed_rate' => 3000,
-                                'international' => false,
-                            ],
-                            [
-                                'plan_name' => 'TestPlan2',
-                                'payment_method' => 'card',
-                                'payment_method_type' => 'debit',
-                                'payment_network' => 'MAES',
-                                'payment_issuer' => 'PUNB',
-                                'percent_rate' => 250,
-                                'fixed_rate' => 0,
-                                'international' => false,
-                            ],
-                            [
-                                'plan_name' => 'TestPlan2',
-                                'payment_method' => 'card',
-                                'payment_method_type' => 'credit',
-                                'payment_network' => 'DICL',
-                                'payment_issuer' => 'ICIC',
-                                'percent_rate' => 250,
-                                'fixed_rate' => 0,
-                                'international' => false,
-                            ],
-                            [
-                                'plan_name' => 'TestPlan2',
-                                'payment_method' => 'card',
-                                'payment_method_type' => 'credit',
-                                'payment_network' => 'DICL',
-                                'payment_issuer' => 'SBIN',
-                                'percent_rate' => 275,
-                                'fixed_rate' => 0,
-                                'international' => false,
-                            ],
-                        ]
-                    ],
-                    [
-                        'name' => 'TestPlan1',
-                        'entity' => 'pricing',
-                        'count' => 2,
-                        'rules' => [
-                            [
-                                'plan_name' =>  'TestPlan1',
-                                'gateway' => NULL,
-                                'payment_method' =>  'card',
-                                'payment_method_type' => 'credit',
-                                'payment_network' =>  'MAES',
-                                'payment_issuer' =>  'HDFC',
-                                'percent_rate' =>  1000,
-                                'international' => false,
-                                'fixed_rate' =>  0,
-                                'expired_at' => NULL
-                            ],
-                            [
-                                'plan_name' =>  'TestPlan1',
-                                'gateway' => NULL,
-                                'payment_method' =>  'card',
-                                'payment_method_type' => 'credit',
-                                'payment_network' =>  'DICL',
-                                'payment_issuer' =>  'HDFC',
-                                'percent_rate' =>  1000,
-                                'international' => false,
-                                'fixed_rate' =>  0,
-                                'expired_at' => NULL
-                            ]
-                        ]
-                    ],
-                    [
-                        'name' => 'testDefaultPlan',
-                        'entity' => 'pricing',
-                        'count' => 12,
-                        'rules' => [
-                            [],
-                        ],
-                    ],
-                ]
-            ]
-        ]
+                [
+                    'plan_name'   => 'TestPlan2',
+                    'rules_count' => 4,
+                ],
+                [
+                    'plan_name'   => 'TestPlan1',
+                    'rules_count' => 2,
+                ],
+                [
+                    'plan_name'   => 'testDefaultPlan',
+                    'rules_count' => 12,
+                ],
+            ],
+        ],
     ],
 
     'testMerchantAssignPricingPlanDefault' => [

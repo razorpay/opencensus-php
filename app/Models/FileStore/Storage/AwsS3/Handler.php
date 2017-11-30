@@ -128,11 +128,16 @@ class Handler extends BaseHandler
      * @param array  $bucketConfig bucket config
      * @param string $key          File for which the signed url should be fetched
      * @param string $duration     Validity of signed url
+     * @param array  $params       Additional parameters, if any
      *
      * @return string Signed url
      * @throws \Exception
      */
-    public function getSignedUrl($bucketConfig, $key, $duration = '15')
+    public function getSignedUrl(
+        array $bucketConfig,
+        string $key,
+        string $duration = '15',
+        array $params = [])
     {
         if ($this->config['mock'] === true)
         {
@@ -143,7 +148,7 @@ class Handler extends BaseHandler
 
         try
         {
-            $s3Obj = $this->getS3FetchObj($bucketConfig['name'], $key);
+            $s3Obj = $this->getS3FetchObj($bucketConfig['name'], $key, $params);
 
             $command = $s3->getCommand('GetObject', $s3Obj);
 
@@ -209,12 +214,24 @@ class Handler extends BaseHandler
         return $s3Obj;
     }
 
-    protected function getS3FetchObj($bucket, $key)
+    protected function getS3FetchObj(
+        string $bucket,
+        string $key,
+        array $params = [])
     {
         $s3Obj = [
             'Bucket' => $bucket,
-            'Key'    => $key
+            'Key'    => $key,
         ];
+
+        $downloadAs = $params['downloadAs'] ?? null;
+
+        if ($downloadAs !== null)
+        {
+            $s3Obj += [
+                'ResponseContentDisposition' => "attachment; filename=\"$downloadAs\"",
+            ];
+        }
 
         return $s3Obj;
     }

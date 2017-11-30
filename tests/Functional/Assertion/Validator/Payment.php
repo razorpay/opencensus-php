@@ -36,7 +36,6 @@ class Payment extends Validator
         Entity::ERROR_DESCRIPTION   => 'sometimes|',
         Entity::FEE                 => 'required_if:status,captured,refunded|nullable|integer',
         Entity::ACQUIRER_DATA       => 'sometimes|array',
-        Entity::SERVICE_TAX         => 'sometimes|',
         Entity::TAX                 => 'sometimes|',
         Entity::CREATED_AT          => 'sometimes|',
         Entity::INVOICE_ID          => 'sometimes|nullable|string|size:18',
@@ -44,5 +43,6 @@ class Payment extends Validator
         Entity::TOKEN_ID            => 'sometimes|nullable|string|size:20',
         Entity::DISPUTED            => 'sometimes|boolean',
         Entity::RECURRING_TYPE      => 'sometimes|nullable|string',
+        Entity::EMI_PLAN            => 'sometimes|',
     );
 }

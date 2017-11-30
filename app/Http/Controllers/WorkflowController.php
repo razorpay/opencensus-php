@@ -121,7 +121,7 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $result = $this->service(E::ACTION_COMMENT)->create($actionId, $input);
+        $result = $this->service(E::COMMENT)->createForWorkflowAction($input, $actionId);
 
         return ApiResponse::json($result);
     }

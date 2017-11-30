@@ -30,6 +30,7 @@ class Entity
     const OFFER                 = 'offer';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
+    const GEO_IP                = 'geo_ip';
     const COUPON                = 'coupon';
     const DEVICE                = 'device';
     const PAYOUT                = 'payout';
@@ -52,6 +53,8 @@ class Entity
     const SCHEDULE              = 'schedule';
     const TERMINAL              = 'terminal';
     const TRANSFER              = 'transfer';
+    const QR_CODE               = 'qr_code';
+    const BHARAT_QR             = 'bharat_qr';
     const PROMOTION             = 'promotion';
     const LINE_ITEM             = 'line_item';
     const APP_TOKEN             = 'app_token';
@@ -107,6 +110,10 @@ class Entity
     const ACTION_STATE          = 'action_state';
     const ACTION_COMMENT        = 'action_comment';
 
+    // Generic comment and state entities
+    const COMMENT               = 'comment';
+    const STATE                 = 'state';
+
     //
     // Gateway entities
     const EBS                    = 'ebs';
@@ -134,6 +141,7 @@ class Entity
     const UPI_ICICI              = 'upi_icici';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
+    const NETBANKING_BOB         = 'netbanking_bob';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
     const NETBANKING_KOTAK       = 'netbanking_kotak';
@@ -172,6 +180,7 @@ class Entity
         self::ADDON                 => \RZP\Models\Plan\Subscription\Addon::class,
         self::ORDER                 => \RZP\Models\Order::class,
         self::TOKEN                 => \RZP\Models\Customer\Token::class,
+        self::GEO_IP                => \RZP\Models\GeoIP::class,
         self::REFUND                => \RZP\Models\Payment\Refund::class,
         self::REPORT                => \RZP\Models\Report::class,
         self::BALANCE               => \RZP\Models\Merchant\Balance::class,
@@ -238,6 +247,7 @@ class Entity
         self::WALLET_SBIBUDDY        => \RZP\Gateway\Wallet\Sbibuddy::class,
         self::NETBANKING_AXIS        => \RZP\Gateway\Netbanking\Axis::class,
         self::NETBANKING_HDFC        => \RZP\Gateway\Netbanking\Hdfc::class,
+        self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Bob::class,
         self::NETBANKING_CORPORATION => \RZP\Gateway\Netbanking\Corporation::class,
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Kotak::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Icici::class,

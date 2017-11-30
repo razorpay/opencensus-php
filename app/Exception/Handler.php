@@ -149,10 +149,17 @@ class Handler extends ExceptionHandler
         $defaultLevel = $this->route->isCriticalRoute() ? Trace::CRITICAL : Trace::ERROR;
         $defaultCode  = TraceCode::ERROR_EXCEPTION;
 
-        if ($exception instanceof RecoverableException)
+        switch (true)
         {
-            $defaultLevel = Trace::INFO;
-            $defaultCode  = TraceCode::RECOVERABLE_EXCEPTION;
+            case $exception instanceof GatewayFileException:
+                $defaultLevel = $exception->getTraceLevel();
+                $defaultCode = $exception->getTraceCode();
+                break;
+
+            case $exception instanceof RecoverableException:
+                $defaultLevel = Trace::INFO;
+                $defaultCode = TraceCode::RECOVERABLE_EXCEPTION;
+                break;
         }
 
         // Use default level and code if not sent as part of arguments
@@ -231,10 +238,10 @@ class Handler extends ExceptionHandler
 
     protected function gatewayFileExceptionHandler(GatewayFileException $exception)
     {
-        $level = Trace::INFO;
-        $code = TraceCode::RECOVERABLE_EXCEPTION;
+        $level = $exception->getTraceLevel();
+        $code = $exception->getTraceCode();
 
-        $this->traceException($exception, $level, $code);
+        $this->traceException($exception, $level, $code, $exception->getData());
 
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }

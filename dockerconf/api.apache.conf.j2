@@ -1,0 +1,38 @@
+<VirtualHost *:80>
+  # {{ ansible_managed }}
+  ServerAdmin serverlogs@razorpay.com
+
+  {% if env != 'prod' %}
+  ServerName {{ env }}-api.razorpay.com
+  ServerAlias {{ env }}-invoices.razorpay.com
+  {% elif env == 'prod' %}
+  ServerName api.razorpay.com
+  ServerAlias invoices.razorpay.com
+  {% endif %}
+
+  DocumentRoot /app/public
+  <Directory /app/public>
+    # This is to allow Authorization header raw access
+    # Without which bearer auth doesn't work
+    CGIPassAuth On
+    Options -Indexes
+    AllowOverride FileInfo
+    ErrorDocument 500 '{"error":{"code":"server_error","description":"The server encountered an error. The incident has been reported to admins"}}'
+
+    <IfModule mod_rewrite.c>
+      Options -MultiViews
+      RewriteEngine On
+      RewriteCond %{REQUEST_FILENAME} !-f
+      RewriteRule ^ index.php [L]
+    </IfModule>
+    Require all granted
+  </Directory>
+
+  # HTTPoxy Mitigation
+  RequestHeader unset Proxy early
+
+  LogLevel warn
+
+  ErrorLog /var/log/APACHE_HOST-{{ env }}-api-error.log
+  CustomLog /var/log/APACHE_HOST-{{ env }}-api-access.log combined
+</VirtualHost>

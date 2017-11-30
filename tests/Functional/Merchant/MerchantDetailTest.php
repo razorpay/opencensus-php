@@ -127,6 +127,13 @@ class MerchantDetailTest extends TestCase
         $this->authToken = $this->getAuthTokenForOrg($this->org);
     }
 
+    public function testGetMerchantRejectionReasons()
+    {
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->startTest();
+    }
+
     public function testLockMerchant()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');

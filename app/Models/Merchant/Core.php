@@ -4,8 +4,11 @@ namespace RZP\Models\Merchant;
 
 use ApiResponse;
 use Config;
+use Mail;
+use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\MerchantSync;
@@ -22,10 +25,18 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Transaction;
 use RZP\Models\User;
 use RZP\Trace\TraceCode;
+use RZP\Mail\Payout\Payout as PayoutMail;
 
 class Core extends Base\Core
 {
     use Notify;
+
+    // This is used in case for
+    // IRCTC for sending payout
+    // mails
+    const MASTER_ID_MAPPING = [
+        '8YPFnW5UOM91H7' => 'WMRAZOR00000',
+    ];
 
     public function create($input)
     {
@@ -464,21 +475,26 @@ class Core extends Base\Core
 
         $merchant->getValidator()->validateInput($type, $input);
 
-        $batches  = [];
+        $batches = $this->repo->transaction(function() use ($input, $type, $merchant)
+                   {
+                        $batches = [];
 
-        foreach ($input as $key => $file)
-        {
-            $batchType =  $type . '_' . $key;
+                        foreach ($input as $key => $file)
+                        {
+                            $batchType =  $type . '_' . $key;
 
-            $params = [
-                Batch\Entity::FILE        => $file,
-                Batch\Entity::TYPE        => $batchType
-            ];
+                            $params = [
+                                Batch\Entity::FILE        => $file,
+                                Batch\Entity::TYPE        => $batchType
+                            ];
 
-            $batch = (new Batch\Core)->create($params, $merchant);
+                            $batch = (new Batch\Core)->create($params, $merchant);
 
-            $batches[$batchType] = $batch->getId();
-        }
+                            $batches[$batchType] = $batch->getId();
+                        }
+
+                        return $batches;
+                    });
 
         $class = 'RZP\\Jobs\\' . studly_case($type) . 'Batch';
 
@@ -487,6 +503,74 @@ class Core extends Base\Core
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
 
         return $batches;
+    }
+
+    public function sendPayoutMail(Entity $merchant, int $from, int $to, string $email)
+    {
+        $payouts = $this->repo->payout->fetchPayoutsWithUtrNotNull($from, $to, $merchant->getId());
+
+        $recipients = $merchant->getTransactionReportEmail();
+
+        $merchantId = $merchant->getId();
+
+        if (empty($email) === false)
+        {
+            array_push($recipients, $email);
+        }
+
+        $processed = false;
+
+        foreach ($payouts as $payout)
+        {
+            $body = 'Settlement Processed<br />';
+            $body = $body . 'Total Amount : Rs.' . number_format($payout->getAmount() / 100, 2, '.', '') . '<br />';
+
+            if (empty($payout->getUtr()) === false)
+            {
+                $body = $body . 'UTR : ' . $payout->getUtr() . '<br />';
+            }
+
+            $payoutBankAccount = $payout->destination;
+
+            if (empty($payoutBankAccount) === false)
+            {
+                $body = $body . '<br />' . $payoutBankAccount->getBeneficiaryName() . '<br />';
+                $body = $body . 'Bank Account Number : ' . $payoutBankAccount->getAccountNumber() . '<br />';
+                $body = $body . $payoutBankAccount->getBeneficiaryAddress1() . '<br />';
+                $body = $body . $payoutBankAccount->getBeneficiaryAddress2() . '<br />';
+                $body = $body . $payoutBankAccount->getBeneficiaryAddress3() . '<br />';
+            }
+
+            $body = $body . '<br />'
+                          . 'Razorpay Software Pvt Ltd' . '<br />'
+                          . 'Bank Account Number : 7911547334' . '<br />'
+                          . 'Kotak Mahindra Bank 5 C/ II, <br />'
+                          . 'MITTAL COURT,224, NARIMAN POINT,MUMBAI - 400 021, <br/>'
+                          . 'GREATER BOMBAY,MAHARASHTRA <br /><br />';
+
+            if (array_key_exists($merchantId, self::MASTER_ID_MAPPING) === true)
+            {
+                $body = $body . 'Master ID :' . self::MASTER_ID_MAPPING[$merchantId] . '<br />';
+            }
+
+            $date= Carbon::createFromTimestamp($payout->getCreatedAt(), Timezone::IST)->format('d-m-Y');
+
+            $body = $body . 'Date Of Deposit : ' . $date . '<br />';
+
+            $body = $body . 'Date Of Credit : ' . $date . '<br />';
+
+            $mailData = ['body'  =>  $body];
+
+            $payoutMail = new PayoutMail(
+                $mailData,
+                $recipients);
+
+            Mail::queue($payoutMail);
+
+            $processed = true;
+        }
+
+        return $processed;
     }
 
     /**

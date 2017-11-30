@@ -1141,6 +1141,7 @@ class VerifyTest extends TestCase
             'timeout'        => 0,
             'error'          => 0,
             'not_applicable' => 0,
+            'unknown'        => 0,
             'bucket_filter'  => [],
         ];
 
@@ -1149,7 +1150,8 @@ class VerifyTest extends TestCase
         $defaultParams = array_merge($defaultParams, $param);
 
         $defaultParams['verified_payments'] = $defaultParams['success'] +
-            $defaultParams['authorized'] + $defaultParams['timeout'] + $defaultParams['error'] + $defaultParams['not_applicable'];
+            $defaultParams['authorized'] + $defaultParams['timeout'] +
+            $defaultParams['error'] + $defaultParams['not_applicable'] + $defaultParams['unknown'];
 
         if ($defaultParams['not_applicable'] === 0)
         {

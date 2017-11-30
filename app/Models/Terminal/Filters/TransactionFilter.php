@@ -3,25 +3,21 @@
 namespace RZP\Models\Terminal\Filters;
 
 use App;
+
 use RZP\Exception;
 use RZP\Models\Feature;
-use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
-use RZP\Models\Bank\IFSC;
-use RZP\Models\Card\Type;
-use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Terminal\Shared;
-use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\Preferences;
-use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
 {
+    const PREPAID_IIN = '457392';
+
     protected $properties = [
         'method',
         'network',
@@ -31,6 +27,7 @@ class TransactionFilter extends Terminal\Filter
         'subscription',
         'tpv',
         'pharma',
+        'mcc',
     ];
 
     public function methodFilter($terminal)
@@ -108,6 +105,7 @@ class TransactionFilter extends Terminal\Filter
      * Filter to remove cybersource shared terminals for non recurring payments
      *
      * @param  Terminal\Entity $terminal
+     * @return bool
      */
     public function gatewayFilter(Terminal\Entity $terminal)
     {
@@ -117,7 +115,7 @@ class TransactionFilter extends Terminal\Filter
 
         // This filter should run only in production environment, else tests for
         // cybersource would fail.
-        if ($this->isLiveMode() === true)
+        if (($this->isLiveMode() === true) and ($payment->isMethodCardOrEmi() === true))
         {
             if ($terminal->getGateway() === Gateway::CYBERSOURCE)
             {
@@ -129,9 +127,23 @@ class TransactionFilter extends Terminal\Filter
                                             Preferences::CYBERSOURCE_MERCHANT_WHITELIST,
                                             true) === true);
 
+                $iin = $payment->card->getIin();
+
                 if (($merchantWhitelisted === false) and
                     ($payment->isRecurring() === false) and
+                    ($payment->isInternational() === false) and
+                    ($iin !== self::PREPAID_IIN) and
                     ($terminal->isDirectForMerchant($merchant) === false))
+                {
+                    return false;
+                }
+            }
+            else if (($terminal->getGateway() === Gateway::AXIS_MIGS) and
+                     ($merchant->getId() === Preferences::MID_ZOMATO))
+            {
+                $iin = $payment->card->getIin();
+
+                if ($iin !== self::PREPAID_IIN)
                 {
                     return false;
                 }
@@ -327,13 +339,94 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
+    /**
+     * For netbanking payments, if a merchant has tpv feature enabled, checks
+     * if the terminal supports tpv or not
+     *
+     * @param  Terminal\Entity      $terminal
+     *
+     * @return bool
+     */
     public function tpvFilter($terminal)
     {
-        if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TPV))
+        if ($this->input['payment']->isNetbanking() === true)
         {
-            return ($terminal->isTpvAllowed() === true);
+            if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TPV))
+            {
+                return ($terminal->isTpvAllowed() === true);
+            }
+
+            return ($terminal->isNonTpvAllowed() === true);
         }
 
-        return ($terminal->isNonTpvAllowed() === true);
+        return true;
+    }
+
+    /**
+     * For card / emi payments, selects terminals with null mcc or with mcc
+     * matching that of the merchant
+     *
+     * @param  Terminal\Entity $terminal
+     *
+     * @return bool
+     */
+    public function mccFilter(Terminal\Entity $terminal, array $applicableTerminals)
+    {
+        $merchant = $this->input['merchant'];
+        $merchantMcc = $merchant->getCategory();
+
+        if (($this->input['payment']->isMethodCardOrEmi() === true) and
+            ($terminal->getGateway() === Gateway::HDFC))
+        {
+            //
+            // If terminal is direct for the merchant, we always select it.
+            //
+            if ($terminal->isDirectForMerchant($merchant) === true)
+            {
+                return true;
+            }
+
+            if ($terminal->getCategory() !== null)
+            {
+                //
+                // If terminal category is not null, then we reject the terminal
+                // if it's category is not the same as merchant mcc.
+                //
+                return ($terminal->getCategory() === $merchantMcc);
+
+            }
+            else
+            {
+                //
+                // If the terminal is a shared terminal with category null, then
+                // we select it, if there are no terminals with the merchant mcc
+                // present in the set of all terminals.
+                //
+                return ($this->isTerminalWithMerchantMccAbsent(
+                            $applicableTerminals,
+                            $merchantMcc) === true);
+            }
+        }
+
+        return true;
+    }
+
+    protected function isTerminalWithMerchantMccAbsent(
+        array $applicableTerminals,
+        int $merchantMcc = null): bool
+    {
+        foreach ($applicableTerminals as $terminal)
+        {
+            //
+            // Currently this checks only for HDFC gateway terminals
+            //
+            if (($terminal->getGateway() === Gateway::HDFC) and
+                ($terminal->getCategory() === $merchantMcc))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

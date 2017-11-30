@@ -34,6 +34,10 @@ class Validator extends Base\Validator
         'receipt'       => 'sometimes|string|max:40',
     ];
 
+    protected static $retryRules = [
+        'bank_account' => 'sometimes|array',
+    ];
+
     protected static $verifyInternalRefundGateways = [
         Payment\Gateway::HDFC,
         Payment\Gateway::AXIS_MIGS
@@ -119,7 +123,12 @@ class Validator extends Base\Validator
     {
         if (in_array($gateway, self::$verifyInternalRefundGateways, true) === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_GATEWAY,
+                'gateway',
+                [
+                    'gateway' => $gateway
+                ]);
         }
     }
 

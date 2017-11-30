@@ -2,13 +2,12 @@
 
 namespace RZP\Models\Payment;
 
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Models\Merchant;
-use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
-
-use Razorpay\Trace\Logger as Trace;
 
 class Action
 {
@@ -36,9 +35,6 @@ class Action
     const CHECK_BALANCE                 = 'check_balance';
     const GENERATE_REFUNDS              = 'generate_refunds';
     const GENERATE_CLAIMS               = 'generate_claims';
-    const INITIATE_REGISTER_EMANDATE    = 'initiate_register_emandate';
-    const RECONCILE_REGISTER_EMANDATE   = 'reconcile_register_emandate';
-    const INITIATE_DEBIT_EMANDATE       = 'initiate_debit_emandate';
     const RECONCILE_DEBIT_EMANDATE      = 'reconcile_debit_emandate';
 
     protected $merchant;

@@ -21,11 +21,11 @@ class Rbl extends Base
 
     protected $type = Payment\Entity::BANK;
 
-    protected function formatDataForFile()
+    protected function formatDataForFile(array $data)
     {
         $formattedData = [];
 
-        foreach ($this->data as $index => $row)
+        foreach ($data as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
                         $row['payment']['created_at'],

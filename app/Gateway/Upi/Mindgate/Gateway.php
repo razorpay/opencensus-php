@@ -4,6 +4,7 @@ namespace RZP\Gateway\Upi\Mindgate;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -94,8 +95,11 @@ class Gateway extends Base\Gateway
     /**
      * We only store the VPA because the rest of the fields
      * are filled by the callback
-     * @param  array  $input
-     * @return Array
+     *
+     * @param  array $input
+     * @param string $action
+     *
+     * @return array
      */
     protected function getGatewayEntityAttributes(array $input, string $action = Action::AUTHORIZE)
     {
@@ -241,7 +245,9 @@ class Gateway extends Base\Gateway
 
     /**
      * Encrypts data
-     * @param  string $data
+     *
+     * @param $plaintext
+     *
      * @return string
      */
     public function encrypt($plaintext)
@@ -262,13 +268,15 @@ class Gateway extends Base\Gateway
 
     /**
      * Decrypts responses from the Mindgate API
-     * @param  string $data
+     *
+     * @param string $cipherText
+     *
      * @return string
      */
-    public function decrypt(string $ciphertext)
+    public function decrypt(string $cipherText)
     {
         return $this->getCipherInstance()
-                    ->decrypt($ciphertext);
+                    ->decrypt($cipherText);
     }
 
     protected function getAuthorizeRequestArray($input)
@@ -319,11 +327,17 @@ class Gateway extends Base\Gateway
     /**
      * This is same as the payment description, capped
      * to 50 characters
+     *
+     * @param array $input
+     *
      * @return string
      */
     protected function getPaymentRemark(array $input)
     {
-        $description = $input['merchant']->getFilteredDba();
+        $paymentDescription = $input['payment']['description'] ?? '';
+        $filteredPaymentDescription = Payment\Entity::getFilteredDescription($paymentDescription);
+
+        $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
 
         return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
     }
@@ -341,7 +355,7 @@ class Gateway extends Base\Gateway
         // (because '' == false) === true
         $description = $description ?: 'Razorpay';
 
-        return "Refund for " . substr($description, 0, 36);
+        return 'Refund for ' . substr($description, 0, 36);
     }
 
     /**

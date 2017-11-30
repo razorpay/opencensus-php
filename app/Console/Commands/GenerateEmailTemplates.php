@@ -76,6 +76,8 @@ class GenerateEmailTemplates extends Command
             'emails/subscription/completed',
             'emails/subscription/card_changed',
             'emails/subscription/authenticated',
+
+            'emails/dispute/creation',
         ];
 
         $view_directory = app_path().'/../resources/views/';

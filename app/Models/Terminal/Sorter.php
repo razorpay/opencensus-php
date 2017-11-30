@@ -2,10 +2,9 @@
 
 namespace RZP\Models\Terminal;
 
+use App;
 use Trace;
 
-use App;
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 
@@ -23,7 +22,7 @@ class Sorter extends Base\Core
 
     protected $rules;
 
-    public function __construct(array $input, Options $options, Base\PublicCollection $rules)
+    public function __construct(array $input, Options $options, array $rules)
     {
         parent::__construct();
 
@@ -75,14 +74,9 @@ class Sorter extends Base\Core
 
         if (($verbose === true) and (empty($terminals) === false))
         {
-            $terminalIds = [];
+            $terminalData = array_pluck($terminals, 'gateway', 'id');
 
-            foreach ($terminals as $terminal)
-            {
-                $terminalIds[] = $terminal->getId();
-            }
-
-            $traceData = ['count' => count($terminals), 'terminals' => $terminalIds, 'msg' => $msg];
+            $traceData = ['count' => count($terminals), 'terminals' => $terminalData, 'msg' => $msg];
 
             $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }

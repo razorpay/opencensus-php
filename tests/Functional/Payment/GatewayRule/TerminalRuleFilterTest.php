@@ -340,6 +340,12 @@ class TerminalRuleFilterTest extends TestCase
         $paymentArray = array_merge($paymentArray, $options);
 
         $payment = (new Payment\Entity)->fill($paymentArray);
+
+        if (isset($paymentArray['international']) === true)
+        {
+            $payment->setAttribute(Payment\Entity::INTERNATIONAL, $paymentArray['international']);
+        }
+
         $payment->merchant()->associate($merchant);
 
         $method = $payment->getMethod();

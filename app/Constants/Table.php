@@ -19,12 +19,14 @@ class Table
     const TOKEN                 = 'tokens';
     const BLADE                 = 'blade';
     const ADDON                 = 'addons';
+    const GEO_IP                = 'geo_ips';
     const COUPON                = 'coupons';
     const BATCH                 = 'batches';
     const DEVICE                = 'devices';
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const REPORT                = 'reports';
+    const QR_CODE               = 'qr_code';
     const BALANCE               = 'balance';
     const PRICING               = 'pricing';
     const UPI_VPA               = 'upi_vpa';
@@ -41,6 +43,7 @@ class Table
     const CUSTOMER              = 'customers';
     const TRANSFER              = 'transfers';
     const REVERSAL              = 'reversals';
+    const BHARAT_QR             = 'bharat_qr';
     const PROMOTION             = 'promotions';
     const LINE_ITEM             = 'line_items';
     const INVITATION            = 'invitations';
@@ -100,6 +103,13 @@ class Table
     const WORKFLOW_ACTION       = 'workflow_actions';
     const ACTION_COMMENT        = 'action_comments';
     const ACTION_STATE          = 'action_state';
+    //
+    // Currently constants comment and state points to same table
+    // as action_comment and action_state but later we plan to rename
+    // the table and drop usage of formers.
+    //
+    const COMMENT               = 'action_comments';
+    const STATE                 = 'action_state';
     const ACTION_CHECKER        = 'action_checker';
     const WORKFLOW_PERMISSION   = 'workflow_permissions';
 

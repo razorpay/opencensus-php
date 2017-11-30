@@ -2562,7 +2562,6 @@ return [
                                 'merchant_order_id' => 'random order id',
                             ],
                             'fee'               => 2000,
-                            'service_tax'       => 0,
                             'error_code'        => null,
                             'error_description' => null,
                             'acquirer_data'     => [],
@@ -2629,7 +2628,6 @@ return [
                                 'merchant_order_id' => 'random order id',
                             ],
                             'fee'               => 2000,
-                            'service_tax'       => 0,
                             'error_code'        => null,
                             'error_description' => null,
                             'acquirer_data'     => [],
@@ -2966,7 +2964,6 @@ return [
             'content' => [
                 'type'        => 'link',
                 'customer_id' => 'cust_100000customer',
-                'user_id'     => '1000000000user',
                 'receipt'     => 'xyz',
             ],
         ],
@@ -2974,7 +2971,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'customer_id, user_id not expected with other params sent',
+                    'description' => 'customer_id not expected with other params sent',
                 ],
             ],
             'status_code' => 400,

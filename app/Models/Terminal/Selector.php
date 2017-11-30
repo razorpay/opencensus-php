@@ -4,19 +4,20 @@ namespace RZP\Models\Terminal;
 
 use App;
 use Cache;
-use RZP\Constants\Mode as ConstantMode;
-use RZP\Models\Admin\ConfigKey;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Gateway\Rule;
-use RZP\Models\Payment;
 use RZP\Models\Terminal;
-use RZP\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Gateway\Rule;
+use RZP\Models\Admin\ConfigKey;
 
 class Selector extends Base\Core
 {
     protected $input;
+
+    protected $options;
 
     protected static $filters = [
         Filters\TransactionFilter::class,
@@ -68,7 +69,7 @@ class Selector extends Base\Core
 
         $this->traceTerminals($allTerminals, 'Terminals fetched from db', $verbose);
 
-        $applicableRules = (new Rule\Core)->fetchApplicableRulesForPayment($allTerminals, $this->input);
+        $applicableRules = (new Rule\Core)->fetchApplicableRulesForPayment($this->input);
 
         $filteredTerminals = $this->filterTerminals($allTerminals, $applicableRules, $verbose);
 
@@ -197,22 +198,14 @@ class Selector extends Base\Core
         return $verbose;
     }
 
-    protected function getRulesForSorting(Base\PublicCollection $rules): Base\PublicCollection
+    protected function getRulesForSorting(Base\PublicCollection $rules): array
     {
         $sorterRules = $rules->filter(function ($rule)
         {
             return ($rule->isSorter() === true);
         });
 
-        $merchantSpecificRules = $rules->filter(function ($rule)
-        {
-            return ($rule->getMerchantId() === $this->input['merchant']->getId());
-        });
-
-        if ($merchantSpecificRules->isNotEmpty() === true)
-        {
-            return $merchantSpecificRules;
-        }
+        $sorterRules = $sorterRules->groupBySpecificityScore();
 
         return $sorterRules;
     }

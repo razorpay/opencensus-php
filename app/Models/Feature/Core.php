@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Exception\LogicException;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Base\PublicEntity;
 use RZP\Mail\Merchant\FeatureEnabled;
@@ -215,7 +216,9 @@ class Core extends Base\Core
 
             // While updating the responses, the file gets overwritten,
             // so no need to delete the old file.
-            $this->processFiles($data, $merchant);
+            $this->processFiles($data, $merchant, $action);
+
+            $this->processOnboardingKeys($data, $merchant, $action);
 
             Accessor::for($merchant, Constants::ONBOARDING)
                     ->upsert($data)
@@ -260,7 +263,8 @@ class Core extends Base\Core
     }
 
     /**
-     * Updates the feature activation status in the merchant details table
+     * Updates the feature activation status in the merchant details table.
+     * It also adds the feature, if the status is approved and the feature is not enabled for the merchant.
      *
      * @param string $merchantId
      * @param string $featureName
@@ -287,10 +291,15 @@ class Core extends Base\Core
         if (($status === MerchantDetail::APPROVED) and
             ($merchant->isFeatureEnabled($featureName) === false))
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_NOT_ASSIGNED,
-                $featureName,
-                [$featureName, $status]);
+            // Add the feature
+            $params = [
+                Entity::ENTITY_TYPE => Constants::MERCHANT,
+                Entity::ENTITY_ID   => $merchantId,
+                Entity::NAME        => $featureName
+            ];
+
+            // Adds to live mode
+            $this->create($params, true);
         }
 
         $this->repo->merchant_detail->updateFeatureActivationStatus(
@@ -304,6 +313,100 @@ class Core extends Base\Core
         $response = $merchantDetail->getFeatureOnboardingStatuses();
 
         return $response;
+    }
+
+    /**
+     * Accepts a merchant map (merchantId => status) for a product feature and updates the status
+     *
+     * @param string $featureName
+     * @param array  $merchantMap
+     *
+     * @return array
+     */
+    public function bulkUpdateFeatureActivationStatus(string $featureName, array $merchantMap): array
+    {
+        $success   = 0;
+        $failed    = 0;
+        $failedIds = [];
+
+        $this->trace->info(
+            TraceCode::FEATURE_ONBOARDING_BULK_UPDATE_STATUS,
+            [
+                Entity::FEATURE => $featureName,
+                'merchant_map'  => $merchantMap,
+                'admin_id'      => $this->app['basicauth']->getAdmin()->getId()
+            ]);
+
+        foreach ($merchantMap as $merchantId => $status)
+        {
+            try
+            {
+                $response = $this->updateFeatureActivationStatus($merchantId, $featureName, $status);
+
+                // Verify that the status was updated
+                $featureActivationStatus = snake_case($featureName . '_activation_status');
+
+                if ($response[$featureActivationStatus] !== $status)
+                {
+                    throw new LogicException('Feature activation status could not be updated');
+                }
+
+                $success++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    null,
+                    [
+                        Entity::MERCHANT_ID => $merchantId,
+                        Entity::FEATURE     => $featureName,
+                        'status'            => $status
+                    ]);
+
+                $failed++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'success'    => $success,
+            'failed'     => $failed,
+            'failed_ids' => $failedIds
+        ];
+
+        return $response;
+    }
+
+    /**
+     * Accessor class overwrites all the old responses submitted by the merchant with the new
+     * keys sent while updating. This function preserves the old keys and only updates the new ones.
+     *
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param string          $action
+     */
+    protected function processOnboardingKeys(array & $input, Merchant\Entity $merchant, string $action)
+    {
+        if ($action === Constants::UPDATE)
+        {
+            $featureName = array_keys($input)[0];
+
+            $settings = Accessor::for($merchant, Constants::ONBOARDING);
+
+            $settings = $settings->get($featureName)->toArray();
+
+            $inputKeys = $input[$featureName];
+
+            foreach ($inputKeys as $inputKey => $inputValue)
+            {
+                $settings[$inputKey] = $inputValue;
+            }
+
+            $input[$featureName] = $settings;
+        }
     }
 
     /**
@@ -391,6 +494,10 @@ class Core extends Base\Core
 
         $merchantId = $merchant->getId();
 
+        //
+        // If the input has a file, process it and
+        // update the file name in the input variable.
+        //
         if ((isset($input[$featureName]) === true) and
             (isset($input[$featureName][$question]) === true))
         {

@@ -31,12 +31,9 @@ class Service extends Base\Service
 
         $this->verifyMerchantIsLiveForLiveRequest();
 
-        // @TODO: Change/Update this when more methods are added for Virtual Accounts
-        $this->verifyBankTransferEnabled();
-
         $customer = $this->getCustomerIfGiven($input);
 
-        $this->setDefaultReceiverTypesIfNeeded($input);
+        $this->modifyRequestFromOldFormat($input);
 
         $virtualAccount = $this->core->create($input, $this->merchant, $customer);
 
@@ -210,19 +207,6 @@ class Service extends Base\Service
         return $customer;
     }
 
-    protected function setDefaultReceiverTypesIfNeeded(array & $input)
-    {
-        if (empty($input[Entity::RECEIVER_TYPES]) === true)
-        {
-            $input[Entity::RECEIVER_TYPES] = self::DEFAULT_RECEIVER_TYPES;
-        }
-
-        if (is_array($input[Entity::RECEIVER_TYPES]) === false)
-        {
-            $input[Entity::RECEIVER_TYPES] = [$input[Entity::RECEIVER_TYPES]];
-        }
-    }
-
     protected function verifyMerchantIsLiveForLiveRequest()
     {
         // On live request, ensure that merchant isn't blocked temporarily
@@ -234,26 +218,97 @@ class Service extends Base\Service
         }
     }
 
-    protected function verifyBankTransferEnabled()
+    /**
+     * Old format:
+     * {
+     *   "receiver_types": [
+     *     "bank_account"
+     *   ],
+     *   "descriptor": "DESCRIPT"
+     * }
+     *
+     * New format:
+     * {
+     *   "receivers": {
+     *     "types": [
+     *       "bank_account"
+     *     ],
+     *     "bank_account": {
+     *       "descriptor": "DESCRIPT"
+     *     }
+     *   }
+     * }
+     *
+     * Both formats are to be concurrently supported. While the old
+     * format gave alphanumeric accounts by default, the new format will
+     * give numeric ones by default. Here, we convert the old format to
+     * the new one, and set numeric option to false explicitly, so that
+     * the old format continues to work the way it did.
+     *
+     * @param  array $input
+     */
+    protected function modifyRequestFromOldFormat(array & $input)
     {
-        $merchantMethods = $this->getMethodsForMerchant($this->merchant);
-
-        if (($merchantMethods === null) or
-            ($merchantMethods->isBankTransferEnabled() === false))
+        if ($this->isOldFormat($input) === false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BANK_TRANSFER_NOT_ENABLED_FOR_MERCHANT);
+            return;
+        }
+
+        $types = $input[Entity::RECEIVER_TYPES];
+
+        unset($input[Entity::RECEIVER_TYPES]);
+
+        // Sending types as a single value was also allowed in the older format
+        if (is_array($types) === false)
+        {
+            $types = [$types];
+        }
+
+        $input[Entity::RECEIVERS] = [
+            Entity::TYPES => $types,
+        ];
+
+        // Bank Account is the only type of receiver being used right now
+        if (in_array(Receiver::BANK_ACCOUNT, $types, true) === true)
+        {
+            $bankAccount = [
+                // Default behaviour of old API format should generally not
+                // change. Give alphanumeric accounts to those using old format.
+                Entity::NUMERIC    => false,
+            ];
+
+            // But if merchant isn't using vanity accounts, then
+            // the account number is wholly determined by us anyway.
+            // So we might as well upgrade them all to numeric account number.
+            if ($this->merchant->getHandle() === null)
+            {
+                $bankAccount[Entity::NUMERIC] = true;
+            }
+
+            // Descriptor isn't always set, allowing for random account numbers
+            if (isset($input[Entity::DESCRIPTOR]) === true)
+            {
+                $bankAccount[Entity::DESCRIPTOR] = $input[Entity::DESCRIPTOR];
+            }
+
+            $input[Entity::RECEIVERS][Entity::BANK_ACCOUNT] = $bankAccount;
+
+            // Descriptor should ideally be unset here, as its use is complete
+            // But we are currently using it as an attribute of the VA entity,
+            // and it is needed to query for active VAs with the same descriptor.
+            // TODO: This will have to be refactored later.
+            // unset($input[Entity::DESCRIPTOR]);
         }
     }
 
-    protected function getMethodsForMerchant(Merchant\Entity $merchant)
+    protected function isOldFormat(array $input): bool
     {
-        if ($merchant->hasRelation('methods') === false)
+        if (isset($input[Entity::RECEIVER_TYPES]) === true)
         {
-            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+            return true;
         }
 
-        return $merchant->methods;
+        return false;
     }
 
     protected function getNewProcessor($merchant)

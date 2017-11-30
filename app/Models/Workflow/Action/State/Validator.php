@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow\Action\State;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Entity as E;
 
 class Validator extends Base\Validator
 {
@@ -27,8 +28,8 @@ class Validator extends Base\Validator
         if (in_array($state, self::VALID_ACTION_STATES, true) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_INVALID_STATE, null,
-                ['state' => $state]);
+                ErrorCode::BAD_REQUEST_INVALID_STATE, null,
+                [E::STATE => $state]);
         }
     }
 }

@@ -22,11 +22,11 @@ class Federal extends Base
     const GATEWAY_CODE           = IFSC::FDRL;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
-    protected function formatDataForFile()
+    protected function formatDataForFile(array $data)
     {
         $formattedData = [];
 
-        foreach ($this->data as $row)
+        foreach ($data as $row)
         {
             $date = Carbon::createFromTimestamp(
                     $row['payment']['created_at'],
