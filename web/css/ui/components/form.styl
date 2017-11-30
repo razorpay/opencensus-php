@@ -61,7 +61,8 @@ button, .btn
 .field
   display: inline-block
   margin: 10px
-  vertical-align: bottom;
+  vertical-align: bottom
+  position: relative
 
   // Add fieldClass="inline-field" to <Field>
   &.inline-field
@@ -155,8 +156,13 @@ form
       >select, >input, >textarea, >button, >i, .DayPickerInput
         margin-left: 10px
 
-      >i
+      >i:not(.post-field-icon)
         width: 55%
+
+      .post-field-icon
+        position: absolute
+        right: 10%
+        top: 5px
 
       .info-block
         width: 55%
@@ -176,6 +182,9 @@ form
 
 .DayPickerInput-OverlayWrapper
   z-index: 1
+
+.DayPickerInput input
+  width: 100%
 
 
 .entity-container

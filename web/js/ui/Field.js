@@ -17,6 +17,7 @@ export default function Field({
   label,
   infoMsg,
   fieldClass = '',
+  postFieldIcon,
   ...props
 }) {
   if (tag === 'input' && !props.type) {
@@ -29,6 +30,7 @@ export default function Field({
         {label}
       </label>
       <Tag {...props} />
+      {postFieldIcon && <i class={`post-field-icon ${postFieldIcon}`} />}
       {infoMsg && (
         <div class="info-block">
           {/*<i class="i i-info-circle" />*/}
@@ -43,7 +45,13 @@ export const SelectField = _ => <Field {..._} tag="select" />;
 export const TextAreaField = _ => <Field {..._} tag="textarea" />;
 export const FileField = _ => <Field {..._} type="file" />;
 export const DateField = _ => (
-  <Field type="text" format="MM/DD/YYYY" {..._} tag={DayPickerInput} />
+  <Field
+    type="text"
+    format="MM/DD/YYYY"
+    {..._}
+    tag={DayPickerInput}
+    postFieldIcon={'i i-date text-faded'}
+  />
 );
 export const TimeField = _ => <Field {..._} type="time" />;
 export const DataListField = _ => <Field {..._} tag="datalist" />;
