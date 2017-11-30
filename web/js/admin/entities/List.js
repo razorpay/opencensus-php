@@ -96,7 +96,10 @@ export default class EntityList extends Component {
               {value}
             </Link>
           );
-        } else if (key === 'id') {
+        } else if (
+          key === 'id' ||
+          (key === 'iin' && this.selectedEntity === 'iin')
+        ) {
           return (
             <Link
               class="link"

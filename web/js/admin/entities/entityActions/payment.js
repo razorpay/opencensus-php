@@ -109,7 +109,7 @@ export default ({ entity, mode, updateEntity }) => {
           <AsyncButton
             class="btn"
             pendingClass="small spinner"
-            confirm="Capture Payment?"
+            confirm="Are you sure you want to Capture Payment?"
             onClick={capturePayment}
           >
             Capture
@@ -129,7 +129,7 @@ export default ({ entity, mode, updateEntity }) => {
         onClick={verifyPayment}
         class="btn btn-default"
         pendingClass="btn btn-default btn-pending"
-        confirm="Are you sure you want to verify this payment?"
+        confirm="Are you sure you want to Verify this payment?"
       >
         Verify Payment
         <span class="spin-btn" />

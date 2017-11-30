@@ -145,6 +145,14 @@ const actions = {
       updateEntity={entityComponent::updateEntity}
     />
   ),
+
+  iin: (entity, entityComponent) => (
+    <action.IINActions
+      entity={entity}
+      mode={entityComponent.params.mode}
+      updateEntity={entityComponent::updateEntity}
+    />
+  ),
 };
 
 function updateEntity(data) {
