@@ -111,10 +111,10 @@ export default ({ entity, mode, updateEntity }) => {
         !entity.verified && (
           <AsyncButton
             class="btn"
-            confirm="Authorize Failed Payment?"
+            confirm="Are you sure you want to Authorize this failed payment?"
             onClick={authorizePayment}
           >
-            Authorize
+            Authorize Pyament
           </AsyncButton>
         )}
       {entity.status === 'authorized' &&
@@ -123,7 +123,7 @@ export default ({ entity, mode, updateEntity }) => {
           <AsyncButton
             class="btn"
             pendingClass="small spinner"
-            confirm="Are you sure you want to Capture Payment?"
+            confirm="Are you sure you want to Capture this payment?"
             onClick={capturePayment}
           >
             Capture
@@ -132,7 +132,7 @@ export default ({ entity, mode, updateEntity }) => {
       {entity.status === 'authorized' && (
         <AsyncButton
           class="btn"
-          confirm="Refund Authorized Payment?"
+          confirm="Are you sure you want to Refund this authorized payment?"
           onClick={refundAuthorizedPayment}
         >
           Refund

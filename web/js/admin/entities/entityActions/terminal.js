@@ -17,6 +17,11 @@ export default ({ entity, mode, updateEntity }) => {
       body.mode = body.terminal_mode;
       delete body.terminal_mode;
     }
+
+    if (body.emi == 0) {
+      delete body.emi_duration;
+    }
+
     // Remove empty or untouched variables
     for (let key in body) {
       if (body[key] === '' || body[key] === null || body[key] === entity[key]) {
