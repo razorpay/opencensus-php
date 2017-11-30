@@ -2,9 +2,9 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
-use Request;
 use View;
+use Request;
+use ApiResponse;
 
 class BatchController extends Controller
 {
@@ -42,7 +42,9 @@ class BatchController extends Controller
 
     public function processBatch(string $id)
     {
-        $result = $this->service()->processBatch($id);
+        $input = Request::all();
+
+        $result = $this->service()->processBatch($id, $input);
 
         return ApiResponse::json($result);
     }

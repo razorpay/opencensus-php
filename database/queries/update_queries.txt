@@ -1278,3 +1278,34 @@ UPDATE batches SET processing=0 WHERE id='95GW8yxNoBol2O';
 
 # goibibo refund batch failed due to nykaa outage
 UPDATE batches SET processing=0 WHERE id='95JWxgK3aeBcdy';
+
+# Uber's payment link batch failed.
+# There was some issue during reading file in queue again. Potential fix has been
+# given but the exact issue was not reproducible with exact file on local/beta.
+# We in all cases mark the batch (of pl) as processed. Resetting it's status
+# and processed timestamp to 'created' and null respectively. We would hit api
+# to process this batch again.
+UPDATE batches SET status = 'created', processed_at = null, updated_at = created_at WHERE id = '95BFk558Ev1AIm' LIMIT 1;
+
+
+# Details in the PR #6293
+# UPDATE adjustments SET transaction_id=null, created_at = 1511805060, updated_at = 1511805060 WHERE id='96pYPbswSuxwqv' LIMIT 1;
+# UPDATE transactions SET id = '96a16UxWF1KjgX', created_at = 1511805062, updated_at = 1511805062 WHERE id = '96pYPcXI3zFbPe' LIMIT 1;
+# UPDATE adjustments SET transaction_id = '96a16UxWF1KjgX' WHERE id = '96pYPbswSuxwqv' LIMIT 1;
+UPDATE transactions SET settled_at = 1511929800 WHERE id = '96tbUqesUlN4h4' LIMIT 1;
+UPDATE balance SET balance = 0 WHERE id = '5VcfkwFeXCGne1' LIMIT 1;
+
+#Incident https://github.com/razorpay/incidents/issues/148
+UPDATE payments
+SET status='captured',
+    error_code=NULL,
+    internal_error_code=NULL,
+    error_description=NULL
+WHERE id IN ("7CUWjFDrILputM",
+             "90roT3xLXWW9oR",
+             "95FB80nPV9lBGU",
+             "95FM6pm3Kam0oV",
+             "95MQgcwfhaqxKO",
+             "95MSV9hNEGjfbu",
+             "95MX7h3algpi1Y",
+             "95Mx0p712DOV3M");

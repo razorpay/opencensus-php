@@ -728,7 +728,7 @@ class Processor
         {
             $notifier = new Notify($this->payment);
 
-            $notifier = $notifier->trigger(Payment\Event::FAILED);
+            $notifier->trigger(Payment\Event::FAILED);
         }
     }
 
@@ -1146,8 +1146,25 @@ class Processor
 
     protected function validateBankTransferDetailsIfApplicable(Payment\Entity $payment)
     {
-        if (($payment->isBankTransfer() === true) and
-            ($this->app['basicauth']->isAppAuth() === false))
+        if ($payment->isBankTransfer() === false)
+        {
+            return;
+        }
+
+        //
+        // Bank transfers are normally created by VA providers,
+        // i.e. Kotak and Yesbank, which act as apps and use appAuth.
+        //
+        // They can also be inserted via Dashboard (also an app)
+        // or in bulk via the bank transfer batch job (run via cli)
+        //
+        if ($this->app->runningInQueue() === true)
+        {
+            return;
+        }
+
+        // TODO: Following is not testable in cases. Ref: BankTransferBatchTest
+        if ($this->app['basicauth']->isAppAuth() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid payment method given: ' . $payment->getMethod());

@@ -2661,3 +2661,10 @@ ALTER TABLE orders ADD INDEX orders_receipt_index(receipt(25));
 ALTER TABLE orders DROP INDEX orders_receipt1_index;
 
 ALTER TABLE `customers` ADD INDEX `customers_email_index` (`email`);
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN payer_account varchar(40) NULL;
+
+#changes adjustment amount to bigint
+ALTER TABLE adjustment
+    MODIFY COLUMN amount BIGINT SIGNED NOT NULL;
