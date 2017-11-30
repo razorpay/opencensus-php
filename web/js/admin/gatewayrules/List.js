@@ -101,7 +101,7 @@ const fields = [
     item => (
       <span
         class={`pills ${
-          item.type === 'filter' ? 'label-yellow' : 'label-dark-blue'
+          item.type === 'filter' ? 'label-yellow' : 'label-prime'
         }`}
       >
         {item.type}

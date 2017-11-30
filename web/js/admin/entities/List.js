@@ -96,9 +96,7 @@ export default class EntityList extends Component {
               {value}
             </Link>
           );
-        }
-
-        if (key === 'id') {
+        } else if (key === 'id') {
           return (
             <Link
               class="link"
@@ -109,6 +107,8 @@ export default class EntityList extends Component {
               {value}
             </Link>
           );
+        } else if (this.selectedEntity === 'payment' && key === 'status') {
+          return getStatusPill(value);
         } else if (value && typeof value === 'object') {
           return <pre>{JSON.stringify(value)}</pre>;
         }
@@ -206,6 +206,30 @@ export default class EntityList extends Component {
     );
   };
 }
+
+const getStatusPill = value => {
+  let className = 'pills ';
+
+  switch (value) {
+    case 'open':
+    case 'captured':
+      className += 'label-success';
+      break;
+    case 'authorized':
+      className += 'label-info';
+      break;
+
+    case 'closed':
+    case 'failed':
+      className += 'label-danger';
+      break;
+    case 'refunded':
+      className += 'label-prime';
+      break;
+  }
+
+  return <span class={className}>{value}</span>;
+};
 
 const parseFilters = filters =>
   filters &&

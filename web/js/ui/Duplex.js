@@ -28,6 +28,10 @@ export default class Duplex extends Component {
                     );
                   }
 
+                  if (result[0] === 'status') {
+                    value = <span class={`pills ${statusLabel(result[1])}`} />;
+                  }
+
                   return (
                     result && (
                       <div class="tr" key={index}>
@@ -42,4 +46,47 @@ export default class Duplex extends Component {
       </div>
     );
   }
+}
+
+function statusLabel(status) {
+  var mapper = {
+    // Common
+    created: 'label-semi-muted',
+    failed: 'label-danger',
+
+    // payment
+    authorized: 'label-info',
+    captured: 'label-success',
+    refunded: 'label-prime',
+
+    // order
+    attempted: 'label-info',
+    paid: 'label-success',
+
+    // settlement
+    processed: 'label-success',
+
+    // billdesk
+    cancelled: 'label-danger',
+    null: 'label-pending',
+
+    // batch
+    processing: 'label-info',
+
+    // refund
+    partial: 'label-info', // payment.refund_status
+
+    // invoice
+    draft: 'label-semi-muted',
+    issued: 'label-info',
+    expired: 'label-danger',
+
+    // dispute
+    open: 'label-prime',
+    under_review: 'label-pending',
+    won: 'label-success',
+    lost: 'label-danger',
+  };
+
+  return mapper[status];
 }
