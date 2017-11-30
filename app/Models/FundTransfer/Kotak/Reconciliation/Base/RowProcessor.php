@@ -83,7 +83,7 @@ class RowProcessor extends BaseCore
      *
      * @return array
      */
-    public function process($reconciledAt)
+    public function process($reconciledAt): array
     {
         $this->reconciledAt = $reconciledAt;
 
@@ -100,7 +100,10 @@ class RowProcessor extends BaseCore
             $this->sendReconciliationFailureEmail();
         }
 
-        return ['entity' => $this->entity, 'fire_webhook' => $this->fireWebhook];
+        return [
+            'entity'        => $this->entity,
+            'fire_webhook'  => $this->fireWebhook
+        ];
     }
 
     protected function parseRow()

@@ -37,7 +37,7 @@ class Processor extends Base\Core
     protected $reconciledAt;
 
     /**
-     * Array of all reconcilied rows fetched for all the rows in the file
+     * Array of reconciled data - one row corresponding to every row of the reconciliation file
      */
     protected $allReconciledRows = [];
 
@@ -148,9 +148,6 @@ class Processor extends Base\Core
             {
                 (new SlackNotification)->failure('setl_reconciliation', $e);
 
-                // Empty the array to not trigger the webhook
-                $webhookData = [];
-
                 throw $e;
             }
 
@@ -169,7 +166,8 @@ class Processor extends Base\Core
         catch (\Exception $e)
         {
             // Log only the entity ids instead of the entire entities
-            $entities = array_map(function($reconciledRow) {
+            $entityIds = array_map(function($reconciledRow)
+            {
                 return $reconciledRow['entity']->getId();
             }, $this->allReconciledRows);
 
@@ -177,7 +175,7 @@ class Processor extends Base\Core
                 $e,
                 Trace::CRITICAL,
                 TraceCode::SETTLEMENT_PROCESSED_WEBHOOOK_FAILED,
-                ['entities' => $entities]);
+                ['entities' => $entityIds]);
         }
 
         return $summary;
