@@ -5,9 +5,15 @@ import Field, {
   TextAreaField,
   FileField,
 } from 'ui/Field';
+import BaseModal from 'ui/BaseModal';
 import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
-import { notifySuccess, closeModal, notifyError } from 'common/modal';
+import {
+  notifySuccess,
+  openModal,
+  closeModal,
+  notifyError,
+} from 'common/modal';
 
 import { adminFormUpload } from 'util/fetch';
 
@@ -95,25 +101,28 @@ export default class MakeAPICall extends Component {
             class="btn"
             pendingClass="small spinner"
             onSubmit={body => {
-              let form = { ...body };
-              let file = form.file;
-              //If file is sent, we don't need contentType field
-              if (file) {
-                form.file = file;
-                delete form.content_type;
-              }
-
+              let url = body.url;
               delete body.url;
 
-              return adminFormUpload(form, '/api/' + form.url).then(
-                response => {
-                  if (response.data.success) {
-                    notifySuccess('API Request successful');
-                  } else {
-                    notifyError(response.data.errors.join(', '));
-                  }
+              if (!body.file) {
+                body.file = null;
+              }
+
+              return adminFormUpload(body, '/api/' + url).then(response => {
+                if (response.data.success) {
+                  notifySuccess('API Request successful');
+                  // closeModal();
+                  openModal(
+                    <BaseModal header="Api Response:" noPadding>
+                      <div class="code" style={{ width: '650px' }}>
+                        {JSON.stringify(response.data.data, null, 4)}}
+                      </div>
+                    </BaseModal>
+                  );
+                } else {
+                  notifyError(response.data.errors.join(', '));
                 }
-              );
+              });
             }}
           />
         </Form>
