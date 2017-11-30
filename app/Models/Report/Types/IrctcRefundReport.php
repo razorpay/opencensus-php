@@ -75,8 +75,8 @@ class IrctcRefundReport extends BasicEntityReport
 
     protected function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
-        return  $this->repo->refund
-                           ->fetchIrctcDeltaRefunds($merchantId, $from, $to);
+        return $this->repo->refund
+                          ->fetchIrctcDeltaRefunds($merchantId, $from, $to);
     }
 
     protected function fetchFormattedDataForReport($entities): array
@@ -171,7 +171,7 @@ class IrctcRefundReport extends BasicEntityReport
     {
         $from = Carbon::yesterday(Timezone::IST)->subDay(self::AUTO_REFUND_DELAY)->timestamp;
 
-        $to = Carbon::yesterday(Timezone::IST)->subDays(self::AUTO_REFUND_DELAY)->timestamp;
+        $to = Carbon::yesterday(Timezone::IST)->subDays(self::AUTO_REFUND_DELAY - 1)->timestamp;
 
         if (isset($input['from']) === true)
         {
