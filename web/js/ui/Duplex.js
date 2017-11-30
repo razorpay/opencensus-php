@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import Amount from 'ui/Amount';
+import { formatDate } from 'util/index';
 
 const defaultClass = 'table table-striped';
 
@@ -26,10 +28,28 @@ export default class Duplex extends Component {
                         />
                       </span>
                     );
-                  }
-
-                  if (result[0] === 'status') {
-                    value = <span class={`pills ${statusLabel(result[1])}`} />;
+                  } else if (result[0] === 'status') {
+                    value = (
+                      <span class={`pills ${statusLabel(result[1])}`}>
+                        {result[1]}
+                      </span>
+                    );
+                  } else if (
+                    result[0].indexOf('amount') > -1 ||
+                    result[0].indexOf('fee') > -1 ||
+                    result[0].indexOf('tax') > -1 ||
+                    result[0].indexOf('charge') > -1
+                  ) {
+                    value = <Amount value={value} />;
+                  } else if (result[0].split('_').indexOf('at') > -1) {
+                    // Value is time
+                    value = formatDate(value);
+                  } else if (!value && typeof value !== 'undefined') {
+                    value = (
+                      <span class="square-pills label-pending">
+                        {JSON.stringify(value)}
+                      </span>
+                    );
                   }
 
                   return (
