@@ -2665,6 +2665,10 @@ ALTER TABLE `customers` ADD INDEX `customers_email_index` (`email`);
 ALTER TABLE bank_transfers
     MODIFY COLUMN payer_account varchar(40) NULL;
 
+#changes adjustment amount to bigint
+ALTER TABLE adjustment
+    MODIFY COLUMN amount BIGINT SIGNED NOT NULL;
+
 ALTER TABLE `merchant_details`
     ADD COLUMN `activation_status` VARCHAR(30) DEFAULT NULL AFTER `locked`,
     ADD COLUMN `clarification_mode` VARCHAR(15) DEFAULT NULL AFTER `activation_status`,
