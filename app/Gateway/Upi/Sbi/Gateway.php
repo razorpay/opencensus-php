@@ -122,7 +122,7 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    protected function validateVpa(array $input, Base\Entity $gatewayPayment)
+    private function validateVpa(array $input, Base\Entity $gatewayPayment)
     {
         $this->action = Action::VALIDATE_VPA;
 
@@ -140,7 +140,7 @@ class Gateway extends Base\Gateway
         $this->action = Action::AUTHORIZE;
     }
 
-    protected function assertPaymentIdAndAmount(array $input, array $response)
+    private function assertPaymentIdAndAmount(array $input, array $response)
     {
         $expectedAmount = $this->formatAmount($input);
 
@@ -179,7 +179,7 @@ class Gateway extends Base\Gateway
         $this->setVerifyStatus($verify);
     }
 
-    protected function getValidateVpaRequest(array $input): array
+    private function getValidateVpaRequest(array $input): array
     {
         $content = [
             RequestFields::REQUEST_INFO => [
@@ -199,7 +199,7 @@ class Gateway extends Base\Gateway
      * @param Verify $verify
      * @return array
      */
-    protected function getPaymentVerifyRequest(Verify $verify): array
+    private function getPaymentVerifyRequest(Verify $verify): array
     {
         $input = $verify->input;
 
@@ -216,7 +216,7 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($request);
     }
 
-    protected function setVerifyAmountMismatch(Verify $verify)
+    private function setVerifyAmountMismatch(Verify $verify)
     {
         $paymentAmount = $this->formatAmount($verify->input);
 
@@ -230,7 +230,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function setVerifyStatus(Verify $verify)
+    private function setVerifyStatus(Verify $verify)
     {
         $status = VerifyResult::STATUS_MATCH;
 
@@ -248,7 +248,7 @@ class Gateway extends Base\Gateway
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
     }
 
-    protected function setApiSuccess(Verify $verify)
+    private function setApiSuccess(Verify $verify)
     {
         $verify->apiSuccess = true;
 
@@ -263,7 +263,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function setGatewaySuccess(Verify $verify)
+    private function setGatewaySuccess(Verify $verify)
     {
         $verify->gatewaySuccess = false;
 
@@ -278,7 +278,7 @@ class Gateway extends Base\Gateway
      * @param string $status
      * @throws GatewayErrorException
      */
-    protected function checkResponseStatus(string $status)
+    private function checkResponseStatus(string $status)
     {
         if (Status::isStatusSuccess($status, $this->action) === false)
         {
@@ -290,7 +290,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getRequestTraceCode(): string
+    private function getRequestTraceCode(): string
     {
         switch ($this->action)
         {
@@ -314,7 +314,7 @@ class Gateway extends Base\Gateway
         return $traceCode;
     }
 
-    protected function getAuthorizeRequest(array $input): array
+    private function getAuthorizeRequest(array $input): array
     {
         $content = [
             RequestFields::ADDITIONAL_INFO  => [
@@ -363,7 +363,7 @@ class Gateway extends Base\Gateway
      * @param string $traceCode
      * @return array
      */
-    protected function parseGatewayResponse(string $body, $traceCode = TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE): array
+    private function parseGatewayResponse(string $body, $traceCode = TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE): array
     {
         $this->trace->info($traceCode,
             [
@@ -388,7 +388,7 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
-    protected function assertUpiTransactionId(Base\Entity $upiEntity, array $content)
+    private function assertUpiTransactionId(Base\Entity $upiEntity, array $content)
     {
         $upiTransactionRefNo = (string) $content[ResponseFields::UPI_TRANS_REFERENCE_NO];
 
@@ -450,7 +450,7 @@ class Gateway extends Base\Gateway
      * @param array $input
      * @return array
      */
-    protected function getGatewayEntityAttributes(array $input): array
+    private function getGatewayEntityAttributes(array $input): array
     {
         $attributes = [
             Base\Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
@@ -461,7 +461,7 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function formatAmount(array $input): string
+    private function formatAmount(array $input): string
     {
         return number_format($input[ConstantsEntity::PAYMENT][Payment\Entity::AMOUNT] / 100, '2', '.', '');
     }

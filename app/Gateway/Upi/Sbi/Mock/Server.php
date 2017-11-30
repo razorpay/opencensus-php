@@ -90,6 +90,11 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($content);
     }
 
+    /**
+     * Encrypts the decrypted array. This method needs to be public so that it can be used in the test cases.
+     * @param array $response
+     * @return mixed
+     */
     public function encrypt(array $response)
     {
         $aes = $this->getGatewayInstance()->getAesCrypto();
@@ -99,6 +104,12 @@ class Server extends Base\Mock\Server
         return $aes->encryptString($json);
     }
 
+    /**
+     * Decrypts the encrypted json. This method needs to be public so that it can be used in the test cases.
+     * @param string $json
+     * @param string $messageKey
+     * @return mixed
+     */
     public function decrypt(string $json, $messageKey = RequestFields::REQUEST_MESSAGE)
     {
         $array = json_decode($json, true);
@@ -110,7 +121,7 @@ class Server extends Base\Mock\Server
         return json_decode($decryptedString, true);
     }
 
-    protected function getValidateVpaResponseArray(array $input)
+    private function getValidateVpaResponseArray(array $input)
     {
         $paymentId = $input[RequestFields::REQUEST_INFO][RequestFields::PSP_REFERENCE_NO];
 
@@ -137,7 +148,7 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function getVerifyResponseContent(array $input)
+    private function getVerifyResponseContent(array $input)
     {
         $paymentId = $input[RequestFields::REQUEST_INFO][RequestFields::PSP_REFERENCE_NO];
 
@@ -162,7 +173,7 @@ class Server extends Base\Mock\Server
         return [ResponseFields::API_RESPONSE => $response];
     }
 
-    protected function getAsyncCallbackResponseArray(array $upiEntity, array $payment)
+    private function getAsyncCallbackResponseArray(array $upiEntity, array $payment)
     {
         $pspRefNo = Payment\Entity::stripDefaultSign($payment[Payment\Entity::ID]);
 
@@ -193,7 +204,7 @@ class Server extends Base\Mock\Server
         return [ResponseFields::API_RESPONSE => $response];
     }
 
-    protected function getAuthorizeResponseArray(array $input)
+    private function getAuthorizeResponseArray(array $input)
     {
         $vpa = $input[RequestFields::PAYER_TYPE][RequestFields::VIRTUAL_ADDRESS];
 
