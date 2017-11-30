@@ -606,11 +606,11 @@ class AdminFetch
                     Fetch::LABEL  => 'Activated',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'amex' => [
+                'methods.amex' => [
                     Fetch::LABEL  => 'Amex',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'card' => [
+                'methods.card' => [
                     Fetch::LABEL  => 'Card',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
@@ -638,47 +638,47 @@ class AdminFetch
                     Fetch::LABEL  => 'Live',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'mobikwik' => [
+                'methods.mobikwik' => [
                     Fetch::LABEL  => 'Mobikwik',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'paytm' => [
+                'methods.paytm' => [
                     Fetch::LABEL  => 'Paytm',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'payumoney' => [
+                'methods.payumoney' => [
                     Fetch::LABEL  => 'Payumoney',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'payzapp' => [
+                'methods.payzapp' => [
                     Fetch::LABEL  => 'Payzapp',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'olamoney' => [
+                'methods.olamoney' => [
                     Fetch::LABEL  => 'Olamoney',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'mpesa' => [
+                'methods.mpesa' => [
                     Fetch::LABEL  => 'Mpesa',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'upi' => [
+                'methods.upi' => [
                     Fetch::LABEL  => 'Upi',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'airtelmoney' => [
+                'methods.airtelmoney' => [
                     Fetch::LABEL  => 'Airtelmoney',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'freecharge' => [
+                'methods.freecharge' => [
                     Fetch::LABEL  => 'Freecharge',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'jiomoney' => [
+                'methods.jiomoney' => [
                     Fetch::LABEL  => 'Jiomoney',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'sbibuddy' => [
+                'methods.sbibuddy' => [
                     Fetch::LABEL  => 'Sbibuddy',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
