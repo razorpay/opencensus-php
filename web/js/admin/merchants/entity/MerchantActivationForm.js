@@ -1,14 +1,13 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
-import fetch, { adminFetch, adminPatch } from 'util/fetch';
+import { adminFetch, adminPatch } from 'util/fetch';
 import { openModal, confirm, notifySuccess, notifyError } from 'common/modal';
 import { SelectField } from 'ui/Field';
 import Form from 'ui/Form';
 
 import Model from './model';
 import EntityRow from 'ui/EntityRow';
-import ToggleEntityRow from 'ui/ToggleEntityRow';
 import TabsContainer from 'ui/Tabs';
 
 import ContactDetails from './merchantActivationForms/ContactDetails';
@@ -69,7 +68,7 @@ export default class MerchantActivationForm extends Component {
         details.merchant_details.archived ? 'Unarchive' : 'Archive'
       } this form?`
     ).then(() => {
-      return adminPatch({
+      adminPatch({
         route_name: 'merchant_activation_archive',
         url_params: {
           id: details.id,
@@ -79,7 +78,12 @@ export default class MerchantActivationForm extends Component {
         },
       }).then(response => {
         if (response) {
-          notifySuccess('Request updated successfully.');
+          details.merchant_details.archived = response.archived;
+          notifySuccess(
+            `Form ${
+              response.archived ? 'archived' : 'unarchived'
+            } updated successfully.`
+          );
         }
       });
     });
@@ -88,7 +92,7 @@ export default class MerchantActivationForm extends Component {
   openActivationModal = body => {
     const prevStatus = this.model.merchant.details.merchant_details
       .activation_status;
-    //check whether status has changed or are undefined/null/empty
+    //check whether status has changed or is undefined/null/empty
     if (!body.activation_status || body.activation_status === prevStatus) {
       notifyError('Please change status from the drop down menu.');
       return;
@@ -111,11 +115,13 @@ export default class MerchantActivationForm extends Component {
       return;
     }
 
-    confirm(`Change Status to ${body.activation_status}?`).then(() => {
-      this.updateActivationStatus({
-        activation_status: body.activation_status,
-      });
-    });
+    confirm(`Change Status to ${statusMap[body.activation_status]}?`).then(
+      () => {
+        this.updateActivationStatus({
+          activation_status: body.activation_status,
+        });
+      }
+    );
   };
 
   updateActivationStatus = body => {
@@ -224,11 +230,9 @@ function _getOverviewFields(details) {
             class={`i i-${
               details.merchant_details.archived ? 'unarchive' : 'archive'
             }`}
-            style={{ fontSize: '1.5em' }}
-          />
-          &nbsp;{details.merchant_details.archived
-            ? 'Unarchive Form'
-            : 'Archive Form'}
+            style={{ fontSize: '1.3em' }}
+          />{' '}
+          Change
         </button>
       ),
     },
@@ -240,11 +244,12 @@ function _getOverviewFields(details) {
             name="activation_status"
             defaultValue={details.merchant_details.activation_status || ''}
           >
-            <option value="">Select activation status</option>
-            <option value="under_review">Under Review</option>
-            <option value="needs_clarification">Needs Clarification</option>
-            <option value="activated">Activated</option>
-            <option value="rejected">Rejected</option>
+            <option value="">Select status</option>
+            {Object.keys(statusMap).map(status => (
+              <option key={status} value={status}>
+                {statusMap[status]}
+              </option>
+            ))}
           </SelectField>
           <button>Change</button>
         </Form>
@@ -261,3 +266,10 @@ const tabNames = [
   'Document Uploads',
   'Product Onboading',
 ];
+
+const statusMap = {
+  under_review: 'Under Review',
+  needs_clarification: 'Needs Clarification',
+  activated: 'Activated',
+  rejected: 'Rejected',
+};
