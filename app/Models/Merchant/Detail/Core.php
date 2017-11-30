@@ -251,6 +251,8 @@ class Core extends Base\Core
      */
     public function updateActivationArchive(Entity $merchantDetails, array $input): Entity
     {
+        $merchantDetails->getValidator()->validateInput('archiveForm', $input);
+
         $archivedAt = null;
 
         if (empty($input[Entity::ARCHIVE]) === false)
@@ -274,6 +276,19 @@ class Core extends Base\Core
      */
     public function updateActivationStatus(Entity $merchantDetails, array $input): Entity
     {
+        $merchantDetails->getValidator()->validateInput('activationStatus', $input);
+
+        $currentActivationStatus = $merchantDetails->getActivationStatus();
+
+        $merchantDetails->getValidator()
+                        ->validateActivationStatusChange(
+                            $currentActivationStatus,
+                            $input[Entity::ACTIVATION_STATUS]);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS,
+            ['input' => $input]);
+
         $rejectionReasons = [];
 
         if (empty($input[Entity::REJECTION_REASONS]) === false)
@@ -379,16 +394,16 @@ class Core extends Base\Core
             $response['need_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
         }
 
-        $activationStatus = $merchantDetails->activation_status;
+        $activationStatus = $merchantDetails->getActivationStatus();
 
-        $allowedNextStatuses = [];
+        $allowedNextActivationStatuses = [];
 
         if (empty($activationStatus) === false)
         {
-            $allowedNextStatuses = Status::ALLOWED_NEXT_STATUSES[$activationStatus];
+            $allowedNextActivationStatuses = Status::ALLOWED_NEXT_ACTIVATION_STATUSES[$activationStatus];
         }
 
-        $response['allowed_next_statuses'] = $allowedNextStatuses;
+        $response['allowed_next_activation_statuses'] = $allowedNextActivationStatuses;
 
         $totalFields = count($validationFields);
 

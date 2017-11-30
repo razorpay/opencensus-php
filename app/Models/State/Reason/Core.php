@@ -27,7 +27,7 @@ class Core extends Base\Core
     {
         foreach ($rejectionReasons as $rejectionReason)
         {
-            $rejectionReason[Entity::REASON_TYPE] = Entity::REJECTION;
+            $rejectionReason[Entity::REASON_TYPE] = ReasonType::REJECTION;
 
             $this->create($rejectionReason, $state);
         }

@@ -14,9 +14,6 @@ class Entity extends Base\PublicEntity
     const CREATED_AT      = 'created_at';
     const UPDATED_AT      = 'updated_at';
 
-    // Enum for Reason Type
-    const REJECTION       = 'rejection';
-
     protected $entity = 'state_reason';
 
     protected $fillable = [

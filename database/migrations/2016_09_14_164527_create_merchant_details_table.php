@@ -212,10 +212,10 @@ class CreateMerchantDetailsTable extends Migration
             $table->boolean(MerchantDetail::LOCKED)
                   ->default(0);
 
-            $table->string(MerchantDetail::ACTIVATION_STATUS, 255)
+            $table->string(MerchantDetail::ACTIVATION_STATUS, 30)
                   ->nullable();
 
-            $table->string(MerchantDetail::CLARIFICATION_MODE, 255)
+            $table->string(MerchantDetail::CLARIFICATION_MODE, 15)
                   ->nullable();
 
             $table->integer(MerchantDetail::ARCHIVED_AT)

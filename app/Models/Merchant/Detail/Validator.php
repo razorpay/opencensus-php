@@ -194,37 +194,45 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateActivationStatus($input)
+    public function validateActivationStatus(array $input)
     {
-        if (in_array($input[Entity::ACTIVATION_STATUS], array_keys(Status::ALLOWED_NEXT_STATUSES), true) === false)
+        $validActivationStatuses = array_keys(Status::ALLOWED_NEXT_ACTIVATION_STATUSES);
+
+        if (in_array($input[Entity::ACTIVATION_STATUS], $validActivationStatuses, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_STATUS_MESSAGE);
         }
     }
 
-    public function validateClarificationMode($input)
+    public function validateClarificationMode(array $input)
     {
-        if (empty($input[Entity::CLARIFICATION_MODE]) === false)
+        if (empty($input[Entity::CLARIFICATION_MODE]) === true)
         {
-            if ($input[Entity::ACTIVATION_STATUS] !== Status::NEEDS_CLARIFICATION)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    self::INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE);
-            }
+            return;
+        }
 
-            $allowedClarificationModes = ClarificationMode::ALLOWED_CLARIFICATION_MODES;
+        if ($input[Entity::ACTIVATION_STATUS] !== Status::NEEDS_CLARIFICATION)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE);
+        }
 
-            if (in_array($input[Entity::CLARIFICATION_MODE], $allowedClarificationModes, true) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(self::INVALID_CLARIFICATION_MODE_MESSAGE);
-            }
+        $allowedClarificationModes = ClarificationMode::ALLOWED_CLARIFICATION_MODES;
+
+        if (in_array($input[Entity::CLARIFICATION_MODE], $allowedClarificationModes, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_CLARIFICATION_MODE_MESSAGE);
         }
     }
 
-    public function validateActivationStatusChange($currentStatus, $newStatus)
+    public function validateActivationStatusChange($currentStatus, string $newStatus)
     {
-        if ((empty($currentStatus) === false) and
-            (in_array($newStatus, Status::ALLOWED_NEXT_STATUSES[$currentStatus], true) === false))
+        if (empty($currentStatus) === true)
+        {
+            return;
+        }
+
+        if (in_array($newStatus, Status::ALLOWED_NEXT_ACTIVATION_STATUSES[$currentStatus], true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_STATUS_CHANGE_MESSAGE);
         }

@@ -250,8 +250,6 @@ class Service extends Base\Service
      */
     public function updateActivationArchive(string $merchantId, array $input): array
     {
-        (new Validator)->validateInput('archive_form', $input);
-
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $merchantDetails = $merchant->merchantDetail;
@@ -273,13 +271,6 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $merchantDetails = $merchant->merchantDetail;
-
-        $merchantDetails->getValidator()->validateInput('activationStatus', $input);
-
-        $merchantDetails->getValidator()
-                        ->validateActivationStatusChange(
-                            $merchantDetails->activation_status,
-                            $input[Entity::ACTIVATION_STATUS]);
 
         $merchantDetails = (new Core)->updateActivationStatus($merchantDetails, $input);
 

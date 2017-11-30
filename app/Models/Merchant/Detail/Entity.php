@@ -319,16 +319,14 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicArchivedAtAttribute(array & $array)
     {
-        if (empty($array[self::ARCHIVED_AT]) === false)
-        {
-            $array[self::ARCHIVED] = 1;
-        }
-        else
-        {
-            $array[self::ARCHIVED] = 0;
-        }
+        $array[self::ARCHIVED] = (isset($array[self::ARCHIVED_AT]) === true) ? 1 : 0;
 
         unset($array[self::ARCHIVED_AT]);
+    }
+
+    public function getActivationStatus()
+    {
+        return $this->getAttribute(self::ACTIVATION_STATUS);
     }
 
     public function getGstin()

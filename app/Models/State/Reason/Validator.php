@@ -17,11 +17,7 @@ class Validator extends Base\Validator
 
     public function validateReasonType(string $attribute, string $reasonType)
     {
-        $validReasonTypes = [
-            Entity::REJECTION,
-        ];
-
-        if (in_array($reasonType, $validReasonTypes, true) === false)
+        if (in_array($reasonType, ReasonType::ALLOWED_REASON_TYPES, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 self::INVALID_REASON_TYPE_MESSAGE);
