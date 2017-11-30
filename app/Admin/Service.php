@@ -380,7 +380,6 @@ class Service extends Base\Service
             $error[] = $e->getMessage();
         }
 
-
         return array($error, $data);
     }
 
