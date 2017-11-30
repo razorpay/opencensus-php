@@ -11,6 +11,7 @@ import * as action from './entityActions/index';
 export default class GenericEntity extends Component {
   params = this.props.match.params;
   title = this.title();
+  fields = this::getFields;
 
   title() {
     let type = this.params.type.replace('_', ' ');
@@ -65,25 +66,25 @@ export default class GenericEntity extends Component {
       </div>
     );
   }
+}
 
-  fields() {
-    let data = this.state.data;
-    if (data) {
-      let fields = Object.keys(data).map(key => {
-        let value = data[key];
-        if (value) {
-          if (typeof value === 'object') {
-            value = <pre>{JSON.stringify(value)}</pre>;
-          }
+export function getFields() {
+  let data = this.state.data;
+  if (data) {
+    let fields = Object.keys(data).map(key => {
+      let value = data[key];
+      if (value) {
+        if (typeof value === 'object') {
+          value = <pre>{JSON.stringify(value)}</pre>;
         }
-        return item => [key, value];
-      });
-      let moreFields = extraFields[data.entity];
-      if (moreFields) {
-        fields = moreFields.concat(fields);
       }
-      return fields;
+      return item => [key, value];
+    });
+    let moreFields = extraFields[data.entity];
+    if (moreFields) {
+      fields = moreFields.concat(fields);
     }
+    return fields;
   }
 }
 

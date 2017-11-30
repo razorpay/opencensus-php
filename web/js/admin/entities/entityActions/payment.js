@@ -1,11 +1,14 @@
+import { Component } from 'react';
 import { openModal, closeModal, confirm } from 'common/modal';
 import { adminFetch, adminPost } from 'util/fetch';
 import { notifyError, notifySuccess, notifyDone } from 'common/modal';
+import { getFields } from '../Entity';
 
 import AsyncButton from 'ui/AsyncButton';
 import BaseModal from 'ui/BaseModal';
 import Form from 'ui/Form';
 import Field from 'ui/Field';
+import Duplex from 'ui/Duplex';
 import { DisputeForm } from './dispute';
 
 // Payment Actions
@@ -94,18 +97,16 @@ export default ({ entity, mode, updateEntity }) => {
     });
   }
 
-  function openDisputeForm() {
-    openModal(
-      <DisputeForm
-        entity={entity}
-        handleSubmit={createDispute}
-        isEditMode={false}
-      />
-    );
-  }
-
   return (
     <div>
+      <button
+        class="btn btn-default text-primary"
+        onClick={_ =>
+          openModal(<PaymentAnalytics mode={mode} paymentId={entity.id} />)
+        }
+      >
+        Payment Analytics
+      </button>
       {entity.status === 'failed' &&
         !entity.verified && (
           <AsyncButton
@@ -149,7 +150,18 @@ export default ({ entity, mode, updateEntity }) => {
       </AsyncButton>
 
       {!entity.disputed && (
-        <button class="btn danger" onClick={openDisputeForm}>
+        <button
+          class="btn danger"
+          onClick={_ =>
+            openModal(
+              <DisputeForm
+                entity={entity}
+                handleSubmit={createDispute}
+                isEditMode={false}
+              />
+            )
+          }
+        >
           Create Dispute
         </button>
       )}
@@ -208,3 +220,37 @@ const EditOfferForm = ({ entity, handleSubmit }) => {
     </BaseModal>
   );
 };
+
+class PaymentAnalytics extends Component {
+  state = {};
+  fields = this::getFields;
+
+  componentWillMount() {
+    adminFetch({
+      route_name: 'admin_fetch_entity_multiple',
+      url_params: {
+        type: 'payment_analytics',
+      },
+      mode: this.props.mode,
+      query_params: {
+        payment_id: this.props.paymentId,
+      },
+    }).then(data => {
+      if (data) {
+        this.setState({ data: data.items.length ? data.items[0] : {} });
+      }
+    });
+  }
+
+  render() {
+    return (
+      <BaseModal header="Payment Analytics">
+        <Duplex
+          pending={typeof this.state.data === 'undefined'}
+          fields={this.fields()}
+          model={this.state.data}
+        />
+      </BaseModal>
+    );
+  }
+}

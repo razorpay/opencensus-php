@@ -227,7 +227,7 @@ const getStatusPill = value => {
       className += 'label-danger';
       break;
     case 'refunded':
-      className += 'label-prime';
+      className += 'label-primary';
       break;
   }
 

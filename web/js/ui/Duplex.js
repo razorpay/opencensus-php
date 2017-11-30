@@ -16,6 +16,9 @@ export default class Duplex extends Component {
               <div class={defaultClass}>
                 {fields.map((itemFn, index) => {
                   const result = itemFn(model);
+                  if (!result) {
+                    return;
+                  }
                   let value = result[1];
 
                   if (typeof value === 'boolean') {
@@ -77,7 +80,7 @@ function statusLabel(status) {
     // payment
     authorized: 'label-info',
     captured: 'label-success',
-    refunded: 'label-prime',
+    refunded: 'label-primary',
 
     // order
     attempted: 'label-info',
@@ -102,7 +105,7 @@ function statusLabel(status) {
     expired: 'label-danger',
 
     // dispute
-    open: 'label-prime',
+    open: 'label-primary',
     under_review: 'label-pending',
     won: 'label-success',
     lost: 'label-danger',
