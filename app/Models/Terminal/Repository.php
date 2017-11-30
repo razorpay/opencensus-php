@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Terminal;
 
+use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Exception;
+use RZP\Models\Terminal;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
 {
@@ -214,6 +216,15 @@ class Repository extends Base\Repository
                     ->whereNotIn(Terminal\Entity::ID, $exclude)
                     ->enabled()
                     ->get([Entity::ID]);
+    }
+
+    public function getDirectTerminalsForGateway(string $gateway): PublicCollection
+    {
+        return $this->newQuery()
+                    ->where(Terminal\Entity::GATEWAY, $gateway)
+                    ->where(Terminal\Entity::MERCHANT_ID, '!=', Account::SHARED_ACCOUNT)
+                    ->enabled()
+                    ->get();
     }
 
     public function deleteOrFail($entity)

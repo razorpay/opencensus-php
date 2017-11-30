@@ -75,6 +75,13 @@ class InvoiceUserIdAclTest extends TestCase
         $this->startTest();
     }
 
+    public function testListInvoiceWithUserIdHeaderAndEsParams()
+    {
+        // Need to just assert that it doesn't throw any validation errors.
+
+        $this->startTest();
+    }
+
     public function testListInvoiceWithoutUserIdHeader()
     {
         $this->createDraftInvoice(['user_id' => '10000000UserId']);

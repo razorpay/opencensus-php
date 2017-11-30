@@ -24,7 +24,6 @@ class Hdfc extends Base
     const EXTENSION     = FileStore\Format::XLSX;
     const FILE_TYPE     = FileStore\Type::HDFC_EMANDATE_DEBIT;
 
-
     protected function getClientCode(Payment\Entity $payment): string
     {
         $email = $payment->getEmail() ?: Payment\Entity::DUMMY_EMAIL;

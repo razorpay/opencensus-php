@@ -364,19 +364,32 @@ trait EmandateTrait
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            $request);
+            [
+                'gateway'    => $this->gateway,
+                'payment_id' => $verify->input['payment'][Payment\Entity::ID],
+                'request'    => $request,
+            ]
+        );
 
         $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT,
+            [
+                'gateway'     => $this->gateway,
+                'payment_id'  => $verify->input['payment'][Payment\Entity::ID],
+                'response'    => $response->body,
+                'status_code' => $response->status_code,
+            ]
+        );
 
         $verify->verifyResponseContent = $this->getEmandateDecryptedData($response->body, $verify->input);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
-                'response_body' => $response->body,
-                'content'       => $verify->verifyResponseContent,
-                'payment_id'    => $verify->input['payment']['id'],
-                'status_code'   => $response->status_code
+                'verify_response_content' => $verify->verifyResponseContent,
+                'payment_id'              => $verify->input['payment']['id'],
             ]);
     }
     //---------------Verify request helpers end-----------------------
@@ -404,8 +417,8 @@ trait EmandateTrait
                 null,
                 null,
                 [
-                    'encrypted_string' => $body,
-                    'payment_id'       => $input['payment'][Payment\Entity::ID]
+                    'gateway'    => $this->gateway,
+                    'payment_id' => $input['payment'][Payment\Entity::ID]
                 ]
             );
         }
@@ -493,10 +506,10 @@ trait EmandateTrait
             return $this->config['test_hash_secret_encrec'];
         }
 
-        return $this->getEMandateLiveSecret();
+        return $this->getEmandateLiveSecret();
     }
 
-    protected function getEMandateLiveSecret()
+    protected function getEmandateLiveSecret()
     {
         return $this->input['terminal']['gateway_secure_secret'];
     }

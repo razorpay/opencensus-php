@@ -61,7 +61,7 @@ class IrctcBatch extends Job implements ShouldQueue
 
                 $timeStarted = microtime(true);
 
-                BatchModel\Processor\Base::get($batch)->validateAndProcess();
+                BatchModel\Processor\Factory::get($batch)->validateAndProcess();
 
                 $timeTaken = microtime(true) - $timeStarted;
 

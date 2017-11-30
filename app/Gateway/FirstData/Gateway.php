@@ -131,9 +131,9 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getCallbackFields($input['gateway']);
 
-        $gatewayPayment->fill($attributes);
+        $this->runCallbackVerify($input, $gatewayPayment);
 
-        $this->runCallbackVerify($input);
+        $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
 
@@ -144,13 +144,13 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    protected function runCallbackVerify(array $input)
+    protected function runCallbackVerify(array $input, Entity $gatewayPayment)
     {
         parent::verify($input);
 
         $verify = new Base\Verify($this->gateway, $input);
 
-        $gatewayPayment = $this->getPaymentToVerify($verify);
+        $verify->payment = $gatewayPayment;
 
         $this->sendPaymentVerifyRequest($verify);
 
@@ -213,14 +213,19 @@ class Gateway extends Base\Gateway
 
         $requestContent = $this->getRefundRequestArray($input, TxnType::REFUND);
 
-        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $requestContent);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST,
+            [
+                'refund_id' => $input['refund']['id'],
+                'request'   => $requestContent,
+            ]);
 
         $response = $this->getSoapResponse($requestContent);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
-                'response' => $response
+                'refund_id' => $input['refund']['id'],
+                'response'  => $response,
             ]
         );
 
@@ -235,18 +240,23 @@ class Gateway extends Base\Gateway
     {
         parent::reverse($input);
 
-        $requestContent = $this->getReverseRequestArray($input, TxnType::REVERSE);
+        $requestContent = $this->getReverseRequestArray($input);
 
-        $this->trace->info(TraceCode::GATEWAY_REVERSE_REQUEST, $requestContent);
+        $this->trace->info(
+            TraceCode::GATEWAY_REVERSE_REQUEST,
+            [
+                'refund_id' => $input['refund']['id'],
+                'request'   => $requestContent,
+            ]);
 
         $response = $this->getSoapResponse($requestContent);
 
         $this->trace->info(
             TraceCode::GATEWAY_REVERSE_RESPONSE,
             [
-                'response' => $response
-            ]
-        );
+                'refund_id' => $input['refund']['id'],
+                'response'  => $response,
+            ]);
 
         $reverseFields = $this->getReverseFields($response, $input['refund']);
 

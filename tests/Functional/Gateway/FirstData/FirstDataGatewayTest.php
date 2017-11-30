@@ -113,6 +113,7 @@ class FirstDataGatewayTest extends TestCase
         // Another payment to test auto-refund
         $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
+
         $this->refundAuthorizedPayment($paymentId);
 
         $payment = $this->getLastEntity('payment', true);
@@ -299,7 +300,7 @@ class FirstDataGatewayTest extends TestCase
         $this->doAuthPayment($payment);
 
         $paymentRes = $this->getLastPayment(true);
-        
+
         $transRes = $this->getLastTransaction(true);
 
         // FirstData now should get selected

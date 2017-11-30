@@ -500,7 +500,7 @@ class Repository extends Base\Repository
         // for older refunds, 1493323209 is April 28, 2017 1:30:09 AM when 1st
         // processed refund was done.
 
-        return $this->newQuery()
+        $query = $this->newQuery()
                     ->select($attrs)
                     ->join($pTableName, $rPaymentId, '=', $pId)
                     ->where($rAttempts, '<', $attempts)
@@ -509,9 +509,19 @@ class Repository extends Base\Repository
                     ->whereIn($pGateway, $gateways)
                     ->where($rLastAttemptedAt, '<', $timeLimit)
                     ->with(['payment','payment.terminal'])
-                    ->limit(50)
-                    ->inRandomOrder()
-                    ->get();
+                    ->limit(100);
+
+        if ((count($gateways) === 1) and
+            ($gateways[0] === 'first_data'))
+        {
+            $query->orderBy('updated_at');
+        }
+        else
+        {
+            $query->inRandomOrder();
+        }
+
+        return $query->get();
     }
 
     public function fetchFailedRefundsByMethod(string $method)
