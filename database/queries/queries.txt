@@ -2664,3 +2664,7 @@ ALTER TABLE `customers` ADD INDEX `customers_email_index` (`email`);
 
 ALTER TABLE bank_transfers
     MODIFY COLUMN payer_account varchar(40) NULL;
+
+#changes adjustment amount to bigint
+ALTER TABLE adjustment
+    MODIFY COLUMN amount BIGINT SIGNED NOT NULL;

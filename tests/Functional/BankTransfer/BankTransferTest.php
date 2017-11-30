@@ -577,6 +577,26 @@ class BankTransferTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->refundPayment($payment['id'], 4000000);
         });
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/bank_transfers/'.$bankTransfer['id'].'/payer_bank_account',
+            'content' => [
+                'account_number' => '123456',
+                'ifsc_code'      => 'HDFC0000002',
+            ],
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertEquals('HDFC0000002', $bankAccount['ifsc']);
+        $this->assertEquals('123456', $bankAccount['account_number']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$bankTransfer['payer_bank_account_id']);
     }
 
     public function testBankTransferImpsFromRogueBankInvalidAccount()
