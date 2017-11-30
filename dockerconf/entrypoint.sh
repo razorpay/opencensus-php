@@ -7,17 +7,6 @@ if [[ -n "${GIT_COMMIT_HASH}" ]]; then
     echo "${GIT_COMMIT_HASH}" > /app/public/commit.txt
 fi
 
-
-
-# Install dependencies
-npm install
-if [[ "${APP_MODE}" == "dev" ]]; then
-	gulp dev:webpack
-else
-	gulp
-fi
-
-
 cd /app/
 
 ALOHOMORA_BIN=$(which alohomora)

@@ -21,7 +21,9 @@ RUN apk --update add python py-pip openssl ca-certificates && \
 
 RUN chown -R nginx.nginx /app && \
     composer config -g github-oauth.github.com ${GIT_TOKEN} && \
-    composer install --no-interaction
+    composer install --no-interaction && \
+    npm install && \
+    gulp
 
 EXPOSE 80
 
