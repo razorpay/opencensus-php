@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
-import { adminFetch } from 'util/fetch';
-import { openModal, confirm } from 'common/modal';
+import fetch, { adminFetch, adminPatch } from 'util/fetch';
+import { openModal, confirm, notifySuccess, notifyError } from 'common/modal';
+import { SelectField } from 'ui/Field';
+import Form from 'ui/Form';
 
 import Model from './model';
 import EntityRow from 'ui/EntityRow';
+import ToggleEntityRow from 'ui/ToggleEntityRow';
 import TabsContainer from 'ui/Tabs';
 
 import ContactDetails from './merchantActivationForms/ContactDetails';
@@ -14,6 +17,11 @@ import BankAccountDetails from './merchantActivationForms/BankAccountDetails';
 import DocumentDetails from './merchantActivationForms/DocumentDetails';
 import ProductOnboarding from './merchantActivationForms/ProductOnboarding';
 import BusinessDetails from './merchantActivationForms/BusinessDetails';
+
+import {
+  NeedClarificationActivation,
+  RejectActivation,
+} from './merchantActivationForms/ActivationReasonModal';
 
 import { Link } from 'react-router-dom';
 
@@ -53,6 +61,77 @@ export default class MerchantActivationForm extends Component {
     });
   }
 
+  handleArchive = () => {
+    const { details } = this.model.merchant;
+
+    confirm(
+      `Are you sure that you want to ${
+        details.merchant_details.archived ? 'Unarchive' : 'Archive'
+      } this form?`
+    ).then(() => {
+      return adminPatch({
+        route_name: 'merchant_activation_archive',
+        url_params: {
+          id: details.id,
+        },
+        body: {
+          archive: details.merchant_details.archived ? 0 : 1,
+        },
+      }).then(response => {
+        if (response) {
+          notifySuccess('Request updated successfully.');
+        }
+      });
+    });
+  };
+
+  openActivationModal = body => {
+    const prevStatus = this.model.merchant.details.merchant_details
+      .activation_status;
+    //check whether status has changed or are undefined/null/empty
+    if (!body.activation_status || body.activation_status === prevStatus) {
+      notifyError('Please change status from the drop down menu.');
+      return;
+    }
+
+    if (body.activation_status === 'rejected') {
+      openModal(
+        <RejectActivation
+          status={body.activation_status}
+          fetchFn={this.updateActivationStatus}
+        />
+      );
+      return;
+    }
+
+    if (body.activation_status === 'needs_clarification') {
+      openModal(
+        <NeedClarificationActivation fetchFn={this.updateActivationStatus} />
+      );
+      return;
+    }
+
+    confirm(`Change Status to ${body.activation_status}?`).then(() => {
+      this.updateActivationStatus({
+        activation_status: body.activation_status,
+      });
+    });
+  };
+
+  updateActivationStatus = body => {
+    adminPatch({
+      route_name: 'merchant_activation_status',
+      url_params: {
+        id: this.merchantId,
+      },
+      body,
+    }).then(response => {
+      if (response) {
+        notifySuccess('Status updated successfully.');
+      }
+    });
+  };
+
   getOverview() {
     const { details } = this.model.merchant;
 
@@ -67,14 +146,16 @@ export default class MerchantActivationForm extends Component {
         {!Object.keys(details).length ? (
           <div class="spinner center" />
         ) : (
-          _getOverviewFields(details).map(row => (
-            <EntityRow
-              key={row.label}
-              label={row.label}
-              value={row.value}
-              className="separate"
-            />
-          ))
+          _getOverviewFields
+            .call(this, details)
+            .map(row => (
+              <EntityRow
+                key={row.label}
+                label={row.label}
+                value={row.value}
+                className="separate"
+              />
+            ))
         )}
       </div>
     );
@@ -134,35 +215,39 @@ function _getOverviewFields(details) {
       value: details.email,
     },
     {
-      label: 'Activation Form Submitted',
+      label: details.merchant_details.archived
+        ? 'Unarchive Form'
+        : 'Archive Form',
       value: () => (
-        <i
-          class={`i ${
-            details.merchant_details.submitted == 1
-              ? 'i-yes text-success'
-              : 'i-no text-danger'
-          }`}
-        />
+        <button onClick={this.handleArchive}>
+          <i
+            class={`i i-${
+              details.merchant_details.archived ? 'unarchive' : 'archive'
+            }`}
+            style={{ fontSize: '1.5em' }}
+          />
+          &nbsp;{details.merchant_details.archived
+            ? 'Unarchive Form'
+            : 'Archive Form'}
+        </button>
       ),
     },
     {
       label: 'Activation Form Status',
       value: () => (
-        <i
-          class={`i i-${
-            details.merchant_details.locked == 1 ? 'lock' : 'unlock'
-          }`}
-        />
-      ),
-    },
-    {
-      label: 'Activated',
-      value: () => (
-        <i
-          class={`i ${
-            details.activated == 1 ? 'i-yes text-success' : 'i-no text-danger'
-          }`}
-        />
+        <Form onSubmit={this.openActivationModal}>
+          <SelectField
+            name="activation_status"
+            defaultValue={details.merchant_details.activation_status || ''}
+          >
+            <option value="">Select activation status</option>
+            <option value="under_review">Under Review</option>
+            <option value="needs_clarification">Needs Clarification</option>
+            <option value="activated">Activated</option>
+            <option value="rejected">Rejected</option>
+          </SelectField>
+          <button>Change</button>
+        </Form>
       ),
     },
   ];
