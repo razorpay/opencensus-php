@@ -79,7 +79,20 @@ export default ({ entity, mode, updateEntity }) => {
       .catch(err => notifyError(JSON.stringify(err)));
   }
 
-  function authorizePayment() {}
+  function authorizePayment() {
+    return adminPost({
+      url_params: {
+        id: entity.id,
+      },
+      mode: mode,
+      route_name: 'payment_authorize_failed',
+    }).then(response => {
+      if (response) {
+        notifySuccess('Payment Authorized Successfully.');
+        closeModal();
+      }
+    });
+  }
 
   function openDisputeForm() {
     openModal(
