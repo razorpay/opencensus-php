@@ -65,24 +65,24 @@ class RefundFile extends Base\RefundFile
                     $row['payment']['created_at'], Timezone::IST)
                     ->format('Ymd');
 
-            $refund_amount = number_format($row['refund']['amount'] / 100, 2, '.', '');
+            $refundAmount = number_format($row['refund']['amount'] / 100, 2, '.', '');
 
-            $txn_amount = number_format($row['payment']['amount'], 2, '.', '');
+            $txnAmount = number_format($row['payment']['amount'], 2, '.', '');
 
              // This field is left blank currently
-            $cancellation_transaction_id = '';
+            $cancellationTransactionId = '';
 
             $data[] =[
                 $row['refund']['id'],
                 Constants::S_FLAG,
-                $refund_amount,
+                $refundAmount,
                 $row['gateway']['bank_payment_id'],
                 $date,
-                $txn_amount,
-                $cancellation_transaction_id
+                $txnAmount,
+                $cancellationTransactionId
             ];
 
-            $totalAmount += $refund_amount;
+            $totalAmount += $refundAmount;
         }
 
         return [$totalAmount, $data];
