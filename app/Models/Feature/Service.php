@@ -259,9 +259,7 @@ class Service extends Base\Service
     }
 
     /**
-     * Returns the feature activation requests based on the status
-     * This function will be deprecated by getFeatureOnboardingRequests.
-     * Currently, maintained for Backward Compatibility.
+     * @deprecated by getFeatureOnboardingRequests()
      *
      * @param array $input
      *
@@ -269,7 +267,7 @@ class Service extends Base\Service
      */
     public function getFeatureOnboardingRequestsByStatus(array $input)
     {
-        $status = $input['status'];
+        $status = $input[Constants::STATUS];
 
         $merchantDetails = $this->repo->merchant_detail->getFeatureOnboardingRequestsByStatus($status);
 
@@ -285,7 +283,7 @@ class Service extends Base\Service
      */
     public function getFeatureOnboardingRequests(array $input)
     {
-        (new Validator)->validateInput(Constants::ONBOARDING_FILTERS, $input);
+        (new Validator)->validateInput(Constants::ONBOARDING_PARAMS, $input);
 
         $merchantDetails = $this->repo->merchant_detail->getFeatureOnboardingRequests($input);
 
@@ -300,7 +298,7 @@ class Service extends Base\Service
      */
     public function updateFeatureActivationStatus(string $featureName, array $input): array
     {
-        $status = $input['status'];
+        $status = $input[Constants::STATUS];
 
         $merchantId = $input['merchant_id'];
 
@@ -326,7 +324,7 @@ class Service extends Base\Service
             $featureName
         );
 
-        $response['status'] = $status;
+        $response[Constants::STATUS] = $status;
 
         return $response;
     }

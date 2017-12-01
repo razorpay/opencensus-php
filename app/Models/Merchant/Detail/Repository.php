@@ -69,8 +69,7 @@ class Repository extends Base\Repository
     }
 
     /**
-     * This function will be deprecated. Use the getFeatureOnboardingRequests function instead.
-     * Currently, maintained for Backward Compatibility.
+     * @deprecated by getFeatureOnboardingRequests()
      *
      * @param string $status
      *
@@ -92,18 +91,18 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Returns the list of feature onboarding requests based on the filters passed
+     * Returns the list of feature onboarding requests based on the params passed
      *
-     * @param array $filters
+     * @param array $params
      *
-     * @return Base\PublicCollection
+     * @return array
      */
-    public function getFeatureOnboardingRequests(array $filters): Base\PublicCollection
+    public function getFeatureOnboardingRequests(array $params): array
     {
         //
         // [Sample]
         //
-        // Union query that will run when these filters are passed -
+        // Union query that will run when these params are passed -
         // status=rejected, count=2, skip=0
         //
         //    (SELECT `merchant_id`,
@@ -130,14 +129,14 @@ class Repository extends Base\Repository
         //    OFFSET 0
         //
 
-        $records = new Base\PublicCollection;
+        $records = [];
 
         // unset input keys that are not required ahead. They interfere with the buildQueryWithParams fn.
-        $status = $filters['status'] ?? null;
-        unset($filters['status']);
+        $status = $params['status'] ?? null;
+        unset($params['status']);
 
-        $productFilter = $filters['product'] ?? null;
-        unset($filters['product']);
+        $productFilter = $params['product'] ?? null;
+        unset($params['product']);
 
         $productFeatures = FeatureConstants::PRODUCT_FEATURES;
 
@@ -183,9 +182,9 @@ class Repository extends Base\Repository
             }
 
             // Handles query params like skip, count, from and to
-            $this->buildQueryWithParams($query, $filters);
+            $this->buildQueryWithParams($query, $params);
 
-            $records = $query->get();
+            $records = $query->get()->toArray();
         }
 
         return $records;

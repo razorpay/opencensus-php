@@ -112,12 +112,16 @@ class Constants
     ];
 
     // Keys used in the feature on-boarding workflow
+    const TO                    = 'to';
+    const FROM                  = 'from';
+    const SKIP                  = 'skip';
+    const COUNT                 = 'count';
     const STATUS                = 'status';
     const PRODUCT               = 'product';
     const FEATURES              = 'features';
     const MERCHANT              = 'merchant';
     const ONBOARDING            = 'onboarding';
-    const ONBOARDING_FILTERS    = 'onboarding_filters';
+    const ONBOARDING_PARAMS     = 'onboarding_params';
     const ONBOARDING_SUBMISSION = 'onboarding_submission';
 
     // Keys used to define the question names in the on-boarding process

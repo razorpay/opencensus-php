@@ -587,10 +587,12 @@ return [
         ]
     ],
 
-    'verifyMarketplaceOnboardingResponseStatus' => [
+    'verifyProductOnboardingSubmissionStatus' => [
         'request'  => [
             'content' => [
-                'status' => 'approved'
+                'status' => 'approved',
+                'count'  => 3,
+                'skip'   => 0
             ],
             'url'     => '/onboarding/features/submissions/fetch',
             'method'  => 'GET',

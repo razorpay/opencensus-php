@@ -33,9 +33,13 @@ class Validator extends Base\Validator
         Constants::VIRTUAL_ACCOUNTS . "." . Constants::EXPECTED_MONTHLY_REVENUE => 'filled|string',
     ];
 
-    protected static $onboardingFiltersRules = [
+    protected static $onboardingParamsRules = [
         Constants::STATUS   => 'sometimes|string|custom',
-        Constants::PRODUCT  => 'sometimes|string|custom'
+        Constants::PRODUCT  => 'sometimes|string|custom',
+        Constants::COUNT    => 'sometimes|integer',
+        Constants::SKIP     => 'sometimes|integer',
+        Constants::FROM     => 'sometimes|epoch',
+        Constants::TO       => 'sometimes|epoch',
     ];
 
     protected function validateName($attribute, $value)

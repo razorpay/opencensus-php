@@ -99,8 +99,7 @@ class FeatureController extends Controller
     }
 
     /**
-     * This function will be deprecated by getFeatureOnboardingRequests.
-     * Currently, maintained for Backward Compatibility
+     * @deprecated by getFeatureOnboardingRequests()
      *
      * @return mixed
      */
