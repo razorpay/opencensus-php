@@ -332,7 +332,7 @@ class Gateway extends Base\Gateway
     {
         $decryptedString = $this->getAesCrypto()->decryptString($encryptedResponse);
 
-        return json_decode($decryptedString, true);
+        return $this->jsonToArray($decryptedString);
     }
 
     /**
@@ -358,7 +358,7 @@ class Gateway extends Base\Gateway
                 'payment_id' => $this->input[ConstantsEntity::PAYMENT][Payment\Entity::ID],
             ]);
 
-        $encryptedResponse = json_decode($body, true)[ResponseFields::RESPONSE];
+        $encryptedResponse = $this->jsonToArray($body)[ResponseFields::RESPONSE];
 
         $response = $this->decrypt($encryptedResponse);
 
@@ -459,11 +459,11 @@ class Gateway extends Base\Gateway
      */
     public function preProcessServerCallback($input): array
     {
-        $response = json_decode($input[ResponseFields::MESSAGE], true)[ResponseFields::RESPONSE];
+        $response = $this->jsonToArray($input[ResponseFields::MESSAGE])[ResponseFields::RESPONSE];
 
         $json = $this->getAesCrypto()->decryptString($response);
 
-        $callback = json_decode($json, true);
+        $callback = $this->jsonToArray($json);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,

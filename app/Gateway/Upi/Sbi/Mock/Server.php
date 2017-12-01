@@ -3,13 +3,10 @@
 namespace RZP\Gateway\Upi\Sbi\Mock;
 
 use Carbon\Carbon;
-use Razorpay\Api\Request;
 use RZP\Gateway\Base;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Upi\Sbi\Action;
 use RZP\Gateway\Upi\Sbi\Status;
-use RZP\Http\Response\Response;
-use RZP\Models\Payment;
-use RZP\Constants\Timezone;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Sbi\RequestFields;
 use RZP\Gateway\Upi\Sbi\ResponseFields;
