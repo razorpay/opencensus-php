@@ -94,7 +94,7 @@ export default class MerchantActivationForm extends Component {
       .activation_status;
     //check whether status has changed or is undefined/null/empty
     if (!body.activation_status || body.activation_status === prevStatus) {
-      notifyError('Please change status from the drop down menu.');
+      notifyError('Please change or select a status from the drop down menu.');
       return;
     }
 
@@ -125,7 +125,7 @@ export default class MerchantActivationForm extends Component {
   };
 
   updateActivationStatus = body => {
-    adminPatch({
+    return adminPatch({
       route_name: 'merchant_activation_status',
       url_params: {
         id: this.merchantId,
@@ -222,17 +222,11 @@ function _getOverviewFields(details) {
     },
     {
       label: details.merchant_details.archived
-        ? 'Unarchive Form'
-        : 'Archive Form',
+        ? 'Form is Archived'
+        : 'Form is Unarchived',
       value: () => (
         <button onClick={this.handleArchive}>
-          <i
-            class={`i i-${
-              details.merchant_details.archived ? 'unarchive' : 'archive'
-            }`}
-            style={{ fontSize: '1.3em' }}
-          />{' '}
-          Change
+          {details.merchant_details.archived ? 'Unarchive' : 'Archive'}
         </button>
       ),
     },

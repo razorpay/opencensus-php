@@ -5,6 +5,8 @@ import fetch, { adminFetch } from 'util/fetch';
 import { SelectField, SwitchField } from 'ui/Field';
 import Form from 'ui/Form';
 import Table from 'ui/Table';
+import AsyncButton from 'ui/AsyncButton';
+import { notifyError } from 'common/modal';
 
 export class RejectActivation extends Component {
   state = {
@@ -32,7 +34,11 @@ export class RejectActivation extends Component {
   }
 
   save = () => {
-    this.props.fetchFn({
+    if (this.state.selectedReasons.length <= 0) {
+      return notifyError('Please add a reason.');
+    }
+
+    return this.props.fetchFn({
       activation_status: this.props.status,
       rejection_reasons: this.state.selectedReasons.map(r => ({
         reason_code: r.reason_code,
@@ -111,7 +117,7 @@ export class RejectActivation extends Component {
 
     return (
       <BaseModal header="Change status to: Rejected">
-        <Form class="full-span full-elements" onSubmit={this.save}>
+        <Form class="full-span full-elements">
           <SelectField
             label="Select Category:"
             name="category"
@@ -139,7 +145,12 @@ export class RejectActivation extends Component {
           <div class="btn" onClick={this.handleReasonAdd}>
             + Add Reason
           </div>
-          <button>Save</button>
+          <AsyncButton
+            onSubmit={this.save}
+            text="Save"
+            class="btn"
+            pendingClass="small spinner"
+          />
           {selectedReasons.length > 0 && (
             <Table items={selectedReasons} fields={this.fields()} />
           )}
@@ -151,7 +162,7 @@ export class RejectActivation extends Component {
 
 export const NeedClarificationActivation = ({ fetchFn }) => (
   <BaseModal header="Change Status to: Needs Clarification">
-    <Form onSubmit={fetchFn}>
+    <Form>
       <input
         type="hidden"
         name="activation_status"
@@ -164,7 +175,12 @@ export const NeedClarificationActivation = ({ fetchFn }) => (
         disabledValue="email"
         enabledValue="call"
       />
-      <button>Save</button>
+      <AsyncButton
+        onSubmit={fetchFn}
+        text="Save"
+        class="btn"
+        pendingClass="small spinner"
+      />
     </Form>
   </BaseModal>
 );
@@ -172,5 +188,5 @@ export const NeedClarificationActivation = ({ fetchFn }) => (
 const categoryMap = {
   others: 'Others',
   risky_business: 'Risky Business',
-  unspported_business_model: 'Unspported Business Model',
+  unspported_business_model: 'Unsupported Business Model',
 };
