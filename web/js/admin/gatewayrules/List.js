@@ -21,6 +21,9 @@ const defaultFilters = {
 
 @observer
 export default class GatewayRuleList extends Component {
+  state = {
+    selectedType: '',
+  };
   collection = new Collection({
     data: {
       route_name: 'admin_fetch_entity_multiple',
@@ -33,6 +36,12 @@ export default class GatewayRuleList extends Component {
     filters: defaultFilters,
     fetchFn: adminFetch,
   });
+
+  handleTypeChange = e => {
+    this.setState({
+      selectedType: e.target.value,
+    });
+  };
 
   onSubmit = filters => {
     this.collection.data.mode = filters.mode;
@@ -60,17 +69,24 @@ export default class GatewayRuleList extends Component {
               label="Merchant ID"
               defaultValue={defaultFilters.merchant_id}
             />
-            <SelectField name="type" label="Type">
+            <SelectField
+              name="type"
+              label="Type"
+              value={this.state.selectedType}
+              onChange={this.handleTypeChange}
+            >
               <option value="">All</option>
               <option value="sorter">Sorter</option>
               <option value="filter">Filter</option>
             </SelectField>
+            {this.state.selectedType === 'filter' && (
+              <SelectField name="filter_type" label="Filter">
+                <option value="">All</option>
+                <option value="select">Select</option>
+                <option value="reject">Reject</option>
+              </SelectField>
+            )}
             <Field name="group" label="Group" />
-            <SelectField name="filter_type" label="Filter">
-              <option value="">All</option>
-              <option value="select">Select</option>
-              <option value="reject">Reject</option>
-            </SelectField>
             <SelectField name="method" label="Method">
               <option value="">All</option>
               {Object.keys(methods).map((method, index) => (
