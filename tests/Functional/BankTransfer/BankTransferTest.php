@@ -536,6 +536,22 @@ class BankTransferTest extends TestCase
         $this->assertEquals('initiated', $attempt['status']);
     }
 
+    public function testBankTransferRemoveSpaces()
+    {
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['payee_ifsc'] = $ifsc;
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals('RAZORPAY123', $bankTransfer['payee_account']);
+    }
+
     public function testBankTransferImpsFromRogueBankNullAccount()
     {
         $accountNumber = $this->bankAccount['account_number'];

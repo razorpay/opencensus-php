@@ -2668,6 +2668,10 @@ ALTER TABLE bank_transfers
 #changes adjustment amount to bigint
 ALTER TABLE adjustment
     MODIFY COLUMN amount BIGINT SIGNED NOT NULL;
+    
+# changes for UPI table
+ALTER TABLE upi
+    ADD COLUMN expiry_time MEDIUMINT SIGNED NULL;
 
 ALTER TABLE `merchant_details`
     ADD COLUMN `activation_status` VARCHAR(30) DEFAULT NULL AFTER `locked`,

@@ -1477,12 +1477,14 @@ trait Authorize
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
         }
 
-        if ($payment->isUpi())
+        if ($payment->isUpi() === true)
         {
+            $this->setGatewayInputForUpiCollect($input, $gatewayInput);
+
             $this->validateUpiPspIsAllowed($payment);
         }
 
-        if ($payment->isAeps())
+        if ($payment->isAeps() === true)
         {
             $this->setGatewayInputForAeps($input, $gatewayInput);
         }
@@ -1630,6 +1632,13 @@ trait Authorize
             ]);
 
         $payment->subscription()->associate($subscription);
+    }
+
+    protected function setGatewayInputForUpiCollect($input, & $gatewayInput)
+    {
+        // Key may not be present. Hence `??` and not `?:`
+        $gatewayInput['upi']['expiry_time'] = $input['upi']['expiry_time'] ??
+                                              Processor::UPI_COLLECT_EXPIRY;
     }
 
     protected function setGatewayInputForAeps($input, & $gatewayInput)
