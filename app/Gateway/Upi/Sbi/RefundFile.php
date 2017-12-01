@@ -21,6 +21,7 @@ class RefundFile extends Base\RefundFile
     /**
      * File column names are below
      * @see https://drive.google.com/a/razorpay.com/file/d/1nq0NwAL7_BYc2K0RCMd2ZCe7tsgTzrYE/view?usp=sharing
+     * @see https://drive.google.com/drive/u/0/folders/0B1kf6HOmx7JBTmMzTXgwQVRrNm8
      */
 
     const PG_MERCHANT_ID  = 'PG MERCHANT ID';
@@ -114,10 +115,6 @@ class RefundFile extends Base\RefundFile
         return new Gateway();
     }
 
-    /**
-     * TODO: Make changes for this
-     * @return array
-     */
     protected function getH2HMetadata()
     {
         return [
