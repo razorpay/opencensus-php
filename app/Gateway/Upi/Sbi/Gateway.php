@@ -463,7 +463,9 @@ class Gateway extends Base\Gateway
 
     private function formatAmount(array $input): string
     {
-        return number_format($input[ConstantsEntity::PAYMENT][Payment\Entity::AMOUNT] / 100, '2', '.', '');
+        $amount = $input[ConstantsEntity::PAYMENT][Payment\Entity::AMOUNT] / 100;
+
+        return number_format($amount, '2', '.', '');
     }
 
     /**
