@@ -720,20 +720,20 @@ return [
         ],
     ],
 
-    'testDisputeFetchForMerchantByProxy' => [
+    'testDisputeFetchByProxy' => [
         'request'   => [
             'method'        => 'get',
-            'url'           => '/merchant/disputes',
+            'url'           => '/disputes',
         ],
         'response'  => [
             'content'       => [],
         ],
     ],
 
-    'testDisputeFetchForMerchantByPrivate' => [
+    'testDisputeFetchByPrivate' => [
         'request'   => [
             'method'        => 'get',
-            'url'           => '/merchant/disputes',
+            'url'           => '/disputes',
         ],
         'response'  => [
             'content'       => [],

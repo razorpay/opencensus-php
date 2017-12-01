@@ -529,7 +529,7 @@ class DisputeTest extends TestCase
         $this->startTest($testdata);
     }
 
-    public function testDisputeFetchForMerchantByProxy()
+    public function testDisputeFetchByProxy()
     {
         $this->ba->proxyAuth();
 
@@ -541,10 +541,10 @@ class DisputeTest extends TestCase
 
         $content = $this->runRequestResponseFlow($testData);
 
-        $this->checkDisputeFetchForMerchant($disputes, $content);
+        $this->checkDisputeFetch($disputes, $content);
     }
 
-    public function testDisputeFetchForMerchantByPrivate()
+    public function testDisputeFetchByPrivate()
     {
         $this->ba->privateAuth();
 
@@ -556,10 +556,10 @@ class DisputeTest extends TestCase
 
         $content = $this->runRequestResponseFlow($testData);
 
-        $this->checkDisputeFetchForMerchant($disputes, $content);
+        $this->checkDisputeFetch($disputes, $content);
     }
 
-    protected function checkDisputeFetchForMerchant(array $disputes, array $content)
+    protected function checkDisputeFetch(array $disputes, array $content)
     {
         $this->assertEquals(2, $content['count']);
         $this->assertEquals($disputes[0]->getId(), Entity::stripDefaultSign($content['items'][1]['id']));
