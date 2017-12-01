@@ -88,7 +88,7 @@ const fields = [
   [
     'Activation Progress',
     item => (
-      <span class="badge success">{`${
+      <span class="pills label-success">{`${
         item.merchant_detail.activation_progress
       } %`}</span>
     ),
@@ -100,7 +100,7 @@ const fields = [
     'Tags',
     item =>
       item.tag_list.map((tag, idx) => (
-        <span class="badge" key={idx}>
+        <span class="pills label-muted" key={idx}>
           {tag}
         </span>
       )),

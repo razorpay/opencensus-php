@@ -158,6 +158,19 @@ function _getFeaturesFields(deleteFeature) {
   };
 }
 
+function _getRejectedReasonsFields() {
+  const categoryMap = {
+    others: 'Others',
+    risky_business: 'Risky Business',
+    unsupported_business_model: 'Unsupported Business Model',
+  };
+
+  return [
+    ['Category', item => categoryMap[item.reason_category]],
+    ['Reason', item => item.reason_code],
+  ];
+}
+
 // mapping used in multiple files
 const utilMapping = {
   network: {
@@ -302,6 +315,13 @@ export const beneficiaryStateMap = {
   UP: 'Uttar Pradesh',
   UT: 'Uttranchal',
   WB: 'West Bengal',
+};
+
+const formActivationStatusMap = {
+  under_review: 'Under Review',
+  needs_clarification: 'Needs Clarification',
+  activated: 'Activated',
+  rejected: 'Rejected',
 };
 
 /*---------------------------------------- Render UI resource --------------------------------------------*/
@@ -517,26 +537,32 @@ export function getDetailsViewMap(model) {
         : null,
     },
     {
-      label: 'Activation Form Submitted',
-      value: details.merchant_details
-        ? _getBoolIcon(details.merchant_details.submitted)
-        : null,
-    },
-    {
       label: 'Activation Form Status',
       value: details.merchant_details
         ? () => (
-            <i
-              class={`i i-${
-                details.merchant_details.locked ? 'lock' : 'unlock'
-              }`}
-            />
+            <pre>
+              {
+                formActivationStatusMap[
+                  details.merchant_details.activation_status
+                ]
+              }
+            </pre>
           )
         : null,
     },
     {
-      label: 'Activated',
-      value: _getBoolIcon(details.activated),
+      label: 'Rejection Reason',
+      children:
+        details.merchant_details && details.merchant_details.rejection_reasons
+          ? () => (
+              <div>
+                <Table
+                  items={details.merchant_details.rejection_reasons.items}
+                  fields={_getRejectedReasonsFields()}
+                />
+              </div>
+            )
+          : null,
     },
     {
       label: 'Live',
@@ -600,10 +626,6 @@ export function getDetailsViewMap(model) {
             }
           />
         )),
-    },
-    {
-      label: 'Archived',
-      value: _getBoolIcon(details.archived_at),
     },
     {
       label: 'Suspended',
