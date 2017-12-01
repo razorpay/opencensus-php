@@ -44,6 +44,8 @@ class CustomerTest extends TestCase
             'ABC Corp Pvt. Ltd.' => 'test2@test.razorpay.com',
             'ABC Corp (Pvt)'     => 'test3@test.razorpay.com',
             'Sample\'d name'     => 'test4@test.razorpay.com',
+            'A & B pvt ltd'      => 'test5@test.razorpay.com',
+            'A-B pvt Ltd'        => 'test6@test.razorpay.com',
         ];
 
         $testData = & $this->testData[__FUNCTION__];
@@ -57,6 +59,27 @@ class CustomerTest extends TestCase
         }
     }
 
+    public function testCreateCustomerWithLeadingOrTrailingSpaces()
+    {
+        $this->ba->privateAuth();
+
+        $validNameEmailMap = [
+            '   Sample name'        => 'test1@test.razorpay.com',
+            'Sample name   '        => 'test2@test.razorpay.com'
+        ];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        foreach ($validNameEmailMap as $name => $email)
+        {
+            $testData['request']['content']['name'] = $testData['response']['content']['name'] = trim($name);
+            $testData['request']['content']['email'] = $testData['response']['content']['email'] =  $email;
+
+            $this->startTest();
+        }
+
+    }
+
     public function testCreateCustomerWithInvalidNames()
     {
         $this->ba->privateAuth();
@@ -65,6 +88,7 @@ class CustomerTest extends TestCase
             'Sample"s name'                                       => 'The name format is invalid.',
             'A very big big big name off some big big big person' => 'The name may not be greater than 50 characters.',
             'A weird? name'                                       => 'The name format is invalid.',
+            '-AB weired name'                                     => 'The name format is invalid.'
         ];
 
         $testData = & $this->testData[__FUNCTION__];

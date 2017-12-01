@@ -45,6 +45,26 @@ return [
         ],
     ],
 
+    'testCreateCustomerWithLeadingOrTrailingSpaces' => [
+        'request' => [
+            'url'     => '/customers',
+            'method'  => 'post',
+            'content' => [
+                'name'    => 'testc',             // Replaced with different valid names in tests
+                'email'   => 'test@razorpay.com',
+                'contact' => '1234567899',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'customer',
+                'name'    => 'testc',
+                'email'   => 'test@razorpay.com',
+                'contact' => '1234567899',
+            ],
+        ],
+    ],
+
     'testCreateCustomerWithInvalidNames' => [
         'request' => [
             'url'     => '/customers',
