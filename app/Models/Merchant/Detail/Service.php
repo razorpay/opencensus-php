@@ -16,6 +16,7 @@ use RZP\Models\Merchant\Detail\ValidationFields;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
 class Service extends Base\Service
 {
@@ -240,6 +241,11 @@ class Service extends Base\Service
         return $stepFinished;
     }
 
+    public function getRejectionReasons()
+    {
+        return RejectionReasons::$reasons;
+    }
+
     public function getMerchantDetailsForAdmin() : array
     {
         // Formatting the data as required by the controller.
@@ -351,7 +357,7 @@ class Service extends Base\Service
 
             $zapierData = $this->getZapierData($this->merchant, $input);
 
-            (new Core)->postFormSubmissionToZapier($zapierData);
+            (new Core)->postFormSubmissionToZapier($zapierData, 'signups');
         }
 
         $preSignupDetails = $this->getPreSignupDetails();

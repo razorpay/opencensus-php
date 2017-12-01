@@ -148,6 +148,9 @@ return [
             'status' => [
                 'type'            => 'keyword',
             ],
+            'user_id' => [
+                'type'            => 'keyword',
+            ],
             'receipt' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',

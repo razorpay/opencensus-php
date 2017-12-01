@@ -98,9 +98,7 @@ class Gateway extends Base\Gateway
 
         if ($this->checkForSharedTerminal($terminal) === false)
         {
-            $merchant = $input['merchant'];
-
-            $referer = $merchant->getWebsite();
+            $referer = $terminal->merchant->getWebsite();
         }
 
         $this->referer = $referer;
@@ -430,8 +428,6 @@ class Gateway extends Base\Gateway
 
         // Hardcoding these refunds for processing
         $unprocessedRefunds = [
-            '8SSbtyrGAntTkL',
-            '8SShzxcY41dwVX',
             '8isATbpjCjzemn',
             '8nmxz1O7qMMrbC',
             '8nnx2FXXZBKoRq',
@@ -444,6 +440,9 @@ class Gateway extends Base\Gateway
             '8p4NUngn9iGaaI',
             '8p4QHner55GN0n',
             '8qyNyJzcArBg99',
+            '8SSbtyrGAntTkL',
+            '8SShzxcY41dwVX',
+            '8u6XaEd7xKoL2l'
         ];
 
         $processedRefund = [];

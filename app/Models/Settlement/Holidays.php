@@ -122,7 +122,7 @@ class Holidays
                 4  => 'Guru Nanak Jayanti',
             ],
             12 => [
-                1  => 'Id-e-Milad/Eid Milad-un-Nabi',
+                // 1  => 'Id-e-Milad/Eid Milad-un-Nabi',
                 25 => 'Christmas',
             ],
         ],

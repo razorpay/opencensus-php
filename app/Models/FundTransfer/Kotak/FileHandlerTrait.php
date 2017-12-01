@@ -431,9 +431,13 @@ trait FileHandlerTrait
         return $presignedUrl;
     }
 
-    public function createTxtFile($name, $txt)
+    public function createTxtFile(string $name, string $txt, string $dir = null)
     {
-        $fullpath = $this->getFullFilePath($name);
+        //
+        // If directory is not provided(default case) usage /settlement else
+        // the one provided.
+        //
+        $fullpath = ($dir === null) ? $this->getFullFilePath($name) : "{$dir}/{$name}";
 
         $dir = dirname($fullpath);
 
@@ -689,9 +693,16 @@ trait FileHandlerTrait
 
         $sheets = $this->parseExcelFile($filePath);
 
-        assert(count($sheets) === 1);
+        $hasSingleSheet  = (count($sheets) === 1);
+        $errorMessage    = 'Sheets keys: ' . implode('.', array_keys($sheets));
 
-        return $sheets[0];
+        assertTrue($hasSingleSheet, $errorMessage);
+
+        //
+        // We use head() instead of integer index as sheets might be
+        // an associative array.
+        //
+        return head($sheets);
 
         // Uncomment this if we are enabling multiple sheets
         // $finalEntries = [];

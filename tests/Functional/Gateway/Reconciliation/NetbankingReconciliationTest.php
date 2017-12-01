@@ -8,7 +8,7 @@ use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
-class NetbankingReconcilationTest extends TestCase
+class NetbankingReconciliationTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
@@ -80,10 +80,11 @@ class NetbankingReconcilationTest extends TestCase
 
         $this->runRequestResponseFlow(
             $data,
-             function() use ($uploadedFile)
+            function() use ($uploadedFile)
             {
                  $this->reconcile('NetbankingRbl', $uploadedFile);
-            });
+            }
+        );
     }
 
     public function testRblFailedPaymentReconciliation()
@@ -182,6 +183,33 @@ class NetbankingReconcilationTest extends TestCase
         $this->assertEquals($paymentEntity['status'], 'authorized');
     }
 
+    public function testBobManualReconciliation()
+    {
+        $this->gateway = 'netbanking_bob';
+
+        $payment = $this->createPayment('netbanking_bob', ['amount' => 40000]);
+
+        $netbanking = $this->createNetbanking($payment['id'], 'BARB', 'S');
+
+        $payment = $this->createPayment('netbanking_bob');
+
+        $netbanking = $this->createNetbanking($payment['id'], 'BARB', 'S');
+
+        $fileContents = $this->generateFile('bob', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingBob', $uploadedFile);
+
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEntity['account_number']);
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+    }
+
     protected function reconcile($gateway, $uploadedFile)
     {
         $input = [
@@ -223,11 +251,13 @@ class NetbankingReconcilationTest extends TestCase
     }
 
 
-    protected function createPayment($gateway)
+    protected function createPayment($gateway, $attributes = [])
     {
         $paymentAttributes = [
             'gateway' => $gateway
         ];
+
+        $paymentAttributes = array_merge($paymentAttributes, $attributes);
 
         $payment = $this->fixtures->create('payment:authorized', $paymentAttributes);
 

@@ -19,6 +19,7 @@ class Fetch
     const TO                   = 'to';
     const COUNT                = 'count';
     const SKIP                 = 'skip';
+    const DELETED              = 'deleted';
 
     //
     // Different constants used in AdminFetch response to dashboard
@@ -68,6 +69,7 @@ class Fetch
     const RULES_KEYS_FIND_ROUTE = [
         self::EXPAND,
         self::EXPAND_EACH,
+        self::DELETED,
     ];
 
     /**
@@ -99,13 +101,27 @@ class Fetch
      */
     const COMMON_FIELDS = [];
 
-    protected $defaultFetchRules = [
-        self::FROM          => 'filled|epoch',
-        self::TO            => 'filled|epoch',
-        self::COUNT         => 'filled|integer|min:1',
-        self::SKIP          => 'filled|integer|min:0',
-        self::EXPAND        => 'sometimes|array|max:5',
-        self::EXPAND_EACH   => 'filled|string|in:',
+    const DEFAULT_RULES = [
+
+        self::DEFAULTS => [
+            self::FROM          => 'filled|epoch',
+            self::TO            => 'filled|epoch',
+            self::COUNT         => 'filled|integer|min:1|max:100',
+            self::SKIP          => 'filled|integer|min:0',
+            self::EXPAND        => 'sometimes|array|max:5',
+            self::EXPAND_EACH   => 'filled|string|in:',
+        ],
+
+        BasicAuth\Type::PRIVATE_AUTH  => [],
+
+        BasicAuth\Type::PROXY_AUTH     => [],
+
+        BasicAuth\Type::PRIVILEGE_AUTH => [
+            self::COUNT         => 'filled|integer|min:1|max:1000',
+            self::DELETED       => 'filled|string|in:0,1',
+        ],
+
+        BasicAuth\Type::ADMIN_AUTH => [],
     ];
 
     /**
@@ -124,7 +140,18 @@ class Fetch
     protected $enabled = false;
 
     /**
-     * Cached value for rules
+     * Cached value for default rules.
+     * Should be accessed via getDefaultFetchRules() because if this is null
+     * it sets and keeps the instance value and then return.
+     *
+     * @var array
+     */
+    protected $defaultRules;
+
+    /**
+     * Cached value for rules.
+     * Should be accessed via getAllFetchRules() because if this is null it sets
+     * and keeps the instance value and then return.
      *
      * @var array
      */
@@ -299,23 +326,51 @@ class Fetch
     }
 
     /**
-     * Validation runs against merged rules.
+     * Validation is run against these rules
      *
      * @return array
      */
-    protected function getAllFetchRules(): array
+    protected function getAllFetchRules() : array
     {
-        if ($this->rules !== null)
+        if ($this->rules === null)
         {
-            return $this->rules;
+            $this->setCascadedRulesForCurrentAuth();
         }
 
-        // Build cascaded rules and accesses
-        $rules    = array_get(static::RULES, self::DEFAULTS, []);
-        $accesses = array_get(static::ACCESSES, self::DEFAULTS, []);
+        return $this->rules;
+    }
+
+    /**
+     * Required separately as to distinguish
+     *
+     * @return array
+     */
+    protected function getDefaultFetchRules() : array
+    {
+        if ($this->defaultRules === null)
+        {
+            $this->setCascadedRulesForCurrentAuth();
+        }
+
+        return $this->defaultRules;
+    }
+
+    /**
+     * Build cascaded rules and accesses
+     *
+     * @return array
+     */
+    protected function setCascadedRulesForCurrentAuth()
+    {
+        $defaultRules    = self::DEFAULT_RULES[self::DEFAULTS];
+
+        $rules           = array_get(static::RULES, self::DEFAULTS, []);
+        $accesses        = array_get(static::ACCESSES, self::DEFAULTS, []);
 
         if ($this->auth->isPublicAuth() === false)
         {
+            $defaultRules    = array_merge($defaultRules, self::DEFAULT_RULES[BasicAuth\Type::PRIVATE_AUTH]);
+
             $privateRules    = array_get(static::RULES, BasicAuth\Type::PRIVATE_AUTH, []);
             $privateAccesses = array_get(static::ACCESSES, BasicAuth\Type::PRIVATE_AUTH, []);
 
@@ -325,6 +380,8 @@ class Fetch
 
         if ($this->auth->isProxyOrPrivilegeAuth() === true)
         {
+            $defaultRules    = array_merge($defaultRules, self::DEFAULT_RULES[BasicAuth\Type::PROXY_AUTH]);
+
             $proxyRules    = array_get(static::RULES, BasicAuth\Type::PROXY_AUTH, []);
             $proxyAccesses = array_get(static::ACCESSES, BasicAuth\Type::PROXY_AUTH, []);
 
@@ -334,6 +391,8 @@ class Fetch
 
         if ($this->auth->isPrivilegeAuth() === true)
         {
+            $defaultRules    = array_merge($defaultRules, self::DEFAULT_RULES[BasicAuth\Type::PRIVILEGE_AUTH]);
+
             $privilegeRules    = array_get(static::RULES, BasicAuth\Type::PRIVILEGE_AUTH, []);
             $privilegeAccesses = array_get(static::ACCESSES, BasicAuth\Type::PRIVILEGE_AUTH, []);
 
@@ -343,6 +402,8 @@ class Fetch
 
         if ($this->auth->isAdminAuth() === true)
         {
+            $defaultRules    = array_merge($defaultRules, self::DEFAULT_RULES[BasicAuth\Type::ADMIN_AUTH]);
+
             $adminRules    = array_get(static::RULES, BasicAuth\Type::ADMIN_AUTH, []);
             $adminAccesses = array_get(static::ACCESSES, BasicAuth\Type::ADMIN_AUTH, []);
 
@@ -350,37 +411,14 @@ class Fetch
             $accesses = array_merge($accesses, $adminAccesses);
         }
 
-        // Merge build rules and accesses into the top level defaults
-        $defaultRules    = $this->getModifiedDefaultFetchRulesForCurrentAuth();
-        $defaultAccesses = array_keys($defaultRules);
-
-        $rules    = array_merge($defaultRules, $rules);
-        $accesses = array_merge($defaultAccesses, $accesses);
-
         // Finally get rules for keys to which access is allowed
         $rules = array_only($rules, $accesses);
 
+        // Override Defaults with rules
+        $rules = array_merge($defaultRules, $rules);
+
         $this->rules = $rules;
-
-        return $this->rules;
-    }
-
-    /**
-     * Modifies some of the default rules (e.g. count etc.) based on current
-     * authentication level. E.g. for privileged authentication max count allowed
-     * is 1000.
-     *
-     * @return array
-     */
-    protected function getModifiedDefaultFetchRulesForCurrentAuth(): array
-    {
-        $maxAllowedCount = ($this->auth->isPrivilegeAuth() === true) ? 1000 : 100;
-
-        $defaultFetchRules = $this->defaultFetchRules;
-
-        $defaultFetchRules[self::COUNT] .= "|max:$maxAllowedCount";
-
-        return $defaultFetchRules;
+        $this->defaultRules = $defaultRules;
     }
 
     /**
@@ -412,7 +450,7 @@ class Fetch
         //
         $mysqlFetchKeys  = array_values(array_diff(
                                array_keys($this->getAllFetchRules()),
-                               array_keys($this->defaultFetchRules),
+                               array_keys($this->getDefaultFetchRules()),
                                $esFetchKeys,
                                $commonFetchKeys));
 
@@ -427,7 +465,7 @@ class Fetch
         //
         $filteredParamsKeys = array_values(array_diff(
                                   array_keys($params),
-                                  array_keys($this->defaultFetchRules),
+                                  array_keys($this->getDefaultFetchRules()),
                                   $commonFetchKeys));
 
         if (empty(array_diff($filteredParamsKeys, $mysqlFetchKeys)) === true)

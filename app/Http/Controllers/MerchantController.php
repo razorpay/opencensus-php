@@ -735,6 +735,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getRejectionReasons()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getRejectionReasons();
+
+        return ApiResponse::json($response);
+    }
+
     public function getReferredMerchants()
     {
         $response = $this->service()->fetchReferredMerchants();
@@ -844,6 +851,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service()->createSubMerchantUser($merchantId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function sendPayoutMail()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->sendPayoutMailForMultipleMerchants($input);
 
         return ApiResponse::json($response);
     }

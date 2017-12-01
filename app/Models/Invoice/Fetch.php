@@ -80,6 +80,7 @@ class Fetch extends BaseFetch
         Entity::TYPE,
         Entity::TYPES,
         Entity::MERCHANT_ID,
+        Entity::USER_ID,
     ];
 
     protected $enabled = true;

@@ -1,0 +1,90 @@
+<?php
+
+namespace RZP\Gateway\Netbanking\Hdfc;
+
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Gateway\Netbanking\Base;
+use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as Headings;
+use RZP\Models\Payment;
+
+class EMandateDebitReconFile extends Base\EMandateDebitReconFile
+{
+    protected $errors = [];
+
+    protected $gateway = Payment\Gateway::NETBANKING_HDFC;
+
+    const PROCESS = 'process';
+    const REJECT  = 'reject';
+
+
+    protected function updatePaymentEntities(array $row)
+    {
+        $paymentId = trim($row[Headings::TRANSACTION_REF_NO]);
+
+        $tokenId = trim($row[Headings::MANDATE_ID]);
+
+        $accountNumber = trim($row[Headings::ACCOUNT_NO]);
+
+        // Update gateway payment
+        $gatewayPayment = $this->updateGatewayPayment($row);
+
+        // Get payment
+        $payment = $this->repo->payment->fetchDebitEmandatePaymentPendingAuth(
+                        $this->gateway,
+                        $paymentId,
+                        $accountNumber);
+
+        assert($payment[Payment\Entity::TOKEN_ID] === $tokenId);
+
+        // Update payment
+        $this->updatePayment($gatewayPayment, $payment);
+    }
+
+    protected function updateGatewayPayment(array $row): Base\Entity
+    {
+        $paymentId = trim($row[Headings::TRANSACTION_REF_NO]);
+
+        $gatewayPayment = $this->repo->netbanking->findByPaymentIdAndActionOrFail(
+                                $paymentId, GatewayAction::AUTHORIZE);
+
+        $attrs = $this->getGatewayAttributes($row);
+
+        $gatewayPayment->fill($attrs);
+
+        $this->repo->netbanking->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
+    }
+
+    protected function getGatewayAttributes(array $row): array
+    {
+        $error = trim($row[Headings::REJECTION_REMARKS] ?: '');
+
+        $gatewayStatus = strtolower(trim($row[Headings::STATUS] ?? ''));
+
+        if (in_array($gatewayStatus, [self::PROCESS, self::REJECT], true) === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+                'Unrecognized gateway status ' . $gatewayStatus, ['row' => $row]);
+        }
+
+        return [
+            'received'      => true,
+            'error_message' => $error,
+            'status'        => $gatewayStatus,
+        ];
+    }
+
+    protected function isAuthorized(Base\Entity $gatewayPayment): bool
+    {
+        return ($gatewayPayment->getStatus() === self::PROCESS);
+    }
+
+    protected function getApiErrorCode(string $errorDescription): string
+    {
+        return ErrorCode::getApiErrorCode($errorDescription);
+    }
+}

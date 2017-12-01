@@ -337,7 +337,7 @@ return [
     ],
 
     // Files will be added and verified from the main test function
-    'testPostOnboardingResponses' => [
+    'postOnboardingResponses' => [
         'request' => [
             'content' => [
                 Constants::USE_CASE    => 'Some default use case',
@@ -518,8 +518,8 @@ return [
                 Constants::SETTLING_TO => 'Someone else',
                 'merchant_id'          => '10000000001017'
             ],
-            'url'     => '/onboarding/features/' . Constants::MARKETPLACE,
-            'method'  => 'PUT',
+            'url'     => '/onboarding/features/' . Constants::MARKETPLACE . '/update',
+            'method'  => 'POST',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
@@ -687,6 +687,21 @@ return [
                     'mobikwik_offers',
                 ]
             ]
+        ]
+    ],
+
+    'bulkUpdateFeatureActivationStatus' => [
+        'request'  => [
+            'content' => [ ],
+            'url'     => '/onboarding/features/status/bulk',
+            'method'  => 'PUT',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [ ]
         ]
     ],
 ];

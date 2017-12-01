@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Workflow\Action;
 
+use RZP\Models\State;
+use RZP\Models\Comment;
 use RZP\Models\Workflow\Base;
-use RZP\Models\Workflow\Action\State;
+
 
 class Entity extends Base\Entity
 {
@@ -105,7 +107,7 @@ class Entity extends Base\Entity
     protected $defaults = [
         self::APPROVED      => false,
         self::CURRENT_LEVEL => 1,
-        self::STATE         => State\Entity::OPEN,
+        self::STATE         => State\Name::OPEN,
     ];
 
     protected $casts = [
@@ -121,6 +123,11 @@ class Entity extends Base\Entity
     public function permission()
     {
         return $this->belongsTo('RZP\Models\Admin\Permission\Entity');
+    }
+
+    public function comments()
+    {
+        return $this->morphMany(Comment\Entity::class, 'entity');
     }
 
     // public function state()
@@ -167,7 +174,7 @@ class Entity extends Base\Entity
     {
         $state = $this->getState();
 
-        return ($state === State\Entity::EXECUTED);
+        return ($state === State\Name::EXECUTED);
     }
 
     public function getAdminId()
@@ -203,13 +210,13 @@ class Entity extends Base\Entity
     {
         $state = $this->getState();
 
-        return (in_array($state, State\Entity::OPEN_STATES, true) === true);
+        return (in_array($state, State\Name::OPEN_ACTION_STATES, true) === true);
     }
 
     public function isClosed(): bool
     {
         $state = $this->getState();
 
-        return (in_array($state, State\Entity::CLOSED_STATES, true) === true);
+        return (in_array($state, State\Name::CLOSED_ACTION_STATES, true) === true);
     }
 }

@@ -1,4 +1,4 @@
-Subscription is halted. Like a wow!
+Subscription is halted.
 
 --
 Team Razorpay
