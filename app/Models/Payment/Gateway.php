@@ -394,9 +394,9 @@ class Gateway
     ];
 
     public static $upiToGatewayMap = [
-        Upi::HDFC   => Gateway::UPI_MINDGATE,
-        Upi::ICICI  => Gateway::UPI_ICICI,
-        Upi::SBIN   => Gateway::UPI_SBI
+        Upi::HDFC  => Gateway::UPI_MINDGATE,
+        Upi::ICIC  => Gateway::UPI_ICICI,
+        Upi::SBIN  => Gateway::UPI_SBI,
     ];
 
     public static $acquirerToCodeMap = [

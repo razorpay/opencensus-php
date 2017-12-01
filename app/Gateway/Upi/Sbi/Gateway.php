@@ -388,7 +388,7 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
-    private function assertUpiTransactionId(Base\Entity $upiEntity, array $content)
+    private function assertUpiTransactionId(Base\Entity $upiEntity, array $content): bool
     {
         $upiTransactionRefNo = (string) $content[ResponseFields::UPI_TRANS_REFERENCE_NO];
 
