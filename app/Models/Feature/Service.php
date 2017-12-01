@@ -219,7 +219,7 @@ class Service extends Base\Service
 
         $data[$feature] = $input;
 
-        $status = (new Core)->processOnboardingResponses(Constants::UPDATE, $data, $merchant);
+        $status = (new Core)->processOnboardingSubmissions(Constants::UPDATE, $data, $merchant);
 
         return $status;
     }
@@ -285,6 +285,8 @@ class Service extends Base\Service
      */
     public function getFeatureOnboardingRequests(array $input)
     {
+        (new Validator)->validateInput(Constants::ONBOARDING_FILTERS, $input);
+
         $merchantDetails = $this->repo->merchant_detail->getFeatureOnboardingRequests($input);
 
         return $merchantDetails;

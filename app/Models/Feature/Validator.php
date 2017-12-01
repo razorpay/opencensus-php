@@ -17,7 +17,7 @@ class Validator extends Base\Validator
         Entity::NAME        => 'required|string|max:25|custom'
     ];
 
-    protected static $onboardingRules = [
+    protected static $onboardingSubmissionRules = [
         Constants::MARKETPLACE                                     => 'filled|array|max:3',
         Constants::MARKETPLACE . "." . Constants::USE_CASE         => 'filled|string',
         Constants::MARKETPLACE . "." . Constants::SETTLING_TO      => 'filled|string',
@@ -31,6 +31,11 @@ class Validator extends Base\Validator
         Constants::VIRTUAL_ACCOUNTS                                             => 'filled|array|max:2',
         Constants::VIRTUAL_ACCOUNTS . "." . Constants::USE_CASE                 => 'filled|string',
         Constants::VIRTUAL_ACCOUNTS . "." . Constants::EXPECTED_MONTHLY_REVENUE => 'filled|string',
+    ];
+
+    protected static $onboardingFiltersRules = [
+        Constants::STATUS   => 'sometimes|string|custom',
+        Constants::PRODUCT  => 'sometimes|string|custom'
     ];
 
     protected function validateName($attribute, $value)
@@ -81,5 +86,31 @@ class Validator extends Base\Validator
                     PublicEntity::MERCHANT_ID => $feature->getMerchantId(),
                 ]);
         }
+   }
+
+   public function validateStatus($attribute, $value)
+   {
+       $onboardingStatuses = Constants::ONBOARDING_STATUSES;
+
+       if (in_array($value, $onboardingStatuses) === false)
+       {
+           throw new Exception\BadRequestValidationFailureException(
+               'Invalid status',
+               $attribute,
+               $value);
+       }
+   }
+
+   public function validateProduct($attribute, $value)
+   {
+       $productFeatures = Constants::PRODUCT_FEATURES;
+
+       if (in_array($value, $productFeatures) === false)
+       {
+           throw new Exception\BadRequestValidationFailureException(
+               'Invalid product',
+               $attribute,
+               $value);
+       }
    }
 }

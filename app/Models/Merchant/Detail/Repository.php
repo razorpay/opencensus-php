@@ -174,6 +174,8 @@ class Repository extends Base\Repository
 
         if (count($unionQueryElements) > 0)
         {
+            $query = null;
+
             // generate a union query
             foreach ($unionQueryElements as $unionQueryElement)
             {
