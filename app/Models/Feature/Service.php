@@ -263,15 +263,13 @@ class Service extends Base\Service
      *
      * @param array $input
      *
-     * @return mixed
+     * @return array
      */
-    public function getFeatureOnboardingRequestsByStatus(array $input)
+    public function getFeatureOnboardingRequestsByStatus(array $input): array
     {
         $status = $input[Constants::STATUS];
 
-        $merchantDetails = $this->repo->merchant_detail->getFeatureOnboardingRequestsByStatus($status);
-
-        return $merchantDetails;
+        return $this->repo->merchant_detail->getFeatureOnboardingRequestsByStatus($status);
     }
 
     /**
@@ -279,15 +277,13 @@ class Service extends Base\Service
      *
      * @param array $input
      *
-     * @return mixed
+     * @return array
      */
-    public function getFeatureOnboardingRequests(array $input)
+    public function getFeatureOnboardingRequests(array $input): array
     {
-        (new Validator)->validateInput(Constants::ONBOARDING_PARAMS, $input);
+        (new Validator)->validateInput(Constants::ONBOARDING_SUBMISSIONS_FETCH, $input);
 
-        $merchantDetails = $this->repo->merchant_detail->getFeatureOnboardingRequests($input);
-
-        return $merchantDetails;
+        return $this->repo->merchant_detail->getFeatureOnboardingRequests($input);
     }
 
     /**

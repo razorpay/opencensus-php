@@ -85,11 +85,11 @@ class FeatureController extends Controller
     }
 
     /**
-     * Deprecated. Added for BC. Remove after dashboard changes.
+     * @deprecated Added for BC. Remove after dashboard changes.
      *
      * @param string|null $feature
      *
-     * @return mixed
+     * @return \Illuminate\Http\Response
      */
     public function getOnboardingSubmissionsDeprecated(string $feature = null)
     {
@@ -101,7 +101,7 @@ class FeatureController extends Controller
     /**
      * @deprecated by getFeatureOnboardingRequests()
      *
-     * @return mixed
+     * @return \Illuminate\Http\Response
      */
     public function getFeatureOnboardingRequestsByStatus()
     {
