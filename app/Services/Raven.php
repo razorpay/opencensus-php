@@ -47,7 +47,10 @@ class Raven
 
         $this->baseUrl = $this->config['url'];
 
-        $this->mode = $app['rzp.mode'];
+        if (isset($app['rzp.mode']) === true)
+        {
+            $this->mode = $app['rzp.mode'];
+        }
 
         $this->key = 'rzp';
 
