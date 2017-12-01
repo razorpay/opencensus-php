@@ -2,7 +2,13 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
 import { adminFetch, adminPatch } from 'util/fetch';
-import { openModal, confirm, notifySuccess, notifyError } from 'common/modal';
+import {
+  openModal,
+  closeModal,
+  confirm,
+  notifySuccess,
+  notifyError,
+} from 'common/modal';
 import { SelectField } from 'ui/Field';
 import Form from 'ui/Form';
 
@@ -84,6 +90,7 @@ export default class MerchantActivationForm extends Component {
               response.archived ? 'archived' : 'unarchived'
             } updated successfully.`
           );
+          closeModal();
         }
       });
     });
@@ -93,8 +100,8 @@ export default class MerchantActivationForm extends Component {
     const prevStatus = this.model.merchant.details.merchant_details
       .activation_status;
     //check whether status has changed or is undefined/null/empty
-    if (!body.activation_status || body.activation_status === prevStatus) {
-      notifyError('Please change or select a status from the drop down menu.');
+    if (!body.activation_status) {
+      notifyError('Please select a status from the drop down menu.');
       return;
     }
 
@@ -125,6 +132,8 @@ export default class MerchantActivationForm extends Component {
   };
 
   updateActivationStatus = body => {
+    const { details } = this.model.merchant;
+
     return adminPatch({
       route_name: 'merchant_activation_status',
       url_params: {
@@ -133,7 +142,9 @@ export default class MerchantActivationForm extends Component {
       body,
     }).then(response => {
       if (response) {
+        details.merchant_details.activation_status = response.activation_status;
         notifySuccess('Status updated successfully.');
+        closeModal();
       }
     });
   };

@@ -67,7 +67,7 @@ export class RejectActivation extends Component {
     );
 
     if (idx < 0) {
-      selectedReasons.push({
+      selectedReasons.unshift({
         reason_code: selectedCode,
         reason_category: selectedCategory,
         desc: this.allReasons[selectedCategory].find(
@@ -81,7 +81,7 @@ export class RejectActivation extends Component {
 
   handleReasonDelete = code => {
     let selectedReasons = [...this.state.selectedReasons];
-    selectedReasons = selectedReasons.filter(r => r.code !== code);
+    selectedReasons = selectedReasons.filter(r => r.reason_code !== code);
     this.setState({ selectedReasons });
   };
 
@@ -152,7 +152,11 @@ export class RejectActivation extends Component {
             pendingClass="small spinner"
           />
           {selectedReasons.length > 0 && (
-            <Table items={selectedReasons} fields={this.fields()} />
+            <Table
+              animateRow={false}
+              items={selectedReasons}
+              fields={this.fields()}
+            />
           )}
         </Form>
       </BaseModal>
@@ -170,11 +174,13 @@ export const NeedClarificationActivation = ({ fetchFn }) => (
       />
       <SwitchField
         name="clarification_mode"
+        nocaption
         disabledLabel="Through Email"
         enabledLabel="Through Call"
         disabledValue="email"
         enabledValue="call"
       />
+      <br />
       <AsyncButton
         onSubmit={fetchFn}
         text="Save"
@@ -188,5 +194,5 @@ export const NeedClarificationActivation = ({ fetchFn }) => (
 const categoryMap = {
   others: 'Others',
   risky_business: 'Risky Business',
-  unspported_business_model: 'Unsupported Business Model',
+  unsupported_business_model: 'Unsupported Business Model',
 };
