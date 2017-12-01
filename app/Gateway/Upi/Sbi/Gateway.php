@@ -232,9 +232,9 @@ class Gateway extends Base\Gateway
     {
         $status = VerifyResult::STATUS_MATCH;
 
-        $this->setApiSuccess($verify);
+        $this->checkApiSuccess($verify);
 
-        $this->setGatewaySuccess($verify);
+        $this->checkGatewaySuccess($verify);
 
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
@@ -246,22 +246,7 @@ class Gateway extends Base\Gateway
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
     }
 
-    private function setApiSuccess(Verify $verify)
-    {
-        $verify->apiSuccess = true;
-
-        $input = $verify->input;
-
-        // If payment status is either failed or created,
-        // this is an api failure
-        if (($input[ConstantsEntity::PAYMENT][Payment\Entity::STATUS] === Payment\Status::FAILED) or
-            ($input[ConstantsEntity::PAYMENT][Payment\Entity::STATUS] === Payment\Status::CREATED))
-        {
-            $verify->apiSuccess = false;
-        }
-    }
-
-    private function setGatewaySuccess(Verify $verify)
+    private function checkGatewaySuccess(Verify $verify)
     {
         $verify->gatewaySuccess = false;
 
