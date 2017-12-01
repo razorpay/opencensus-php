@@ -57,7 +57,7 @@ class Gateway extends Base\Gateway
         // We validate the input VPA before initiating the collect request
         $this->validateVpa($input, $gatewayPayment);
 
-        $request = $this->getAuthorizeRequest($input);
+        $request = $this->getCollectRequestData($input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -124,7 +124,7 @@ class Gateway extends Base\Gateway
 
     private function validateVpa(array $input, Base\Entity $gatewayPayment)
     {
-        $this->action = Action::VALIDATE_VPA;
+        parent::action($input, Action::VALIDATE_VPA);
 
         $request = $this->getValidateVpaRequest($input);
 
@@ -136,8 +136,6 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentEntity($gatewayPayment, $responseContent);
 
         $this->checkResponseStatus($responseContent[ResponseFields::STATUS]);
-
-        $this->action = Action::AUTHORIZE;
     }
 
     private function assertPaymentIdAndAmount(array $input, array $response)
@@ -314,8 +312,10 @@ class Gateway extends Base\Gateway
         return $traceCode;
     }
 
-    private function getAuthorizeRequest(array $input): array
+    private function getCollectRequestData(array $input): array
     {
+        parent::authorize($input);
+
         $content = [
             RequestFields::ADDITIONAL_INFO  => [
                 RequestFields::ADDITIONAL_INFO9  => Constants::NOT_APPLICABLE,

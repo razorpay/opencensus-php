@@ -2,7 +2,9 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Terminal\Shared;
 use RZP\Models\Terminal\Mode;
 use RZP\Models\Terminal\Type;
@@ -1302,13 +1304,11 @@ class Terminal extends Base
 
         $defaultValues = [
             'id'                        => $termId,
-            'merchant_id'               => '100000Razorpay',
+            'merchant_id'               => Account::SHARED_ACCOUNT,
             'gateway'                   => Gateway::UPI_SBI,
-            'gateway_merchant_id'       => 'razorpay upi mindgate sbi',
-            'gateway_terminal_id'       => 'nodal account upi sbi',
             'gateway_merchant_id2'      => 'razorpay@sbibank',
             'upi'                       => 1,
-            'gateway_acquirer'          => 'sbi',
+            'gateway_acquirer'          => Upi::SBIN,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

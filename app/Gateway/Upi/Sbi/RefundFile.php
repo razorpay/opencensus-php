@@ -2,13 +2,27 @@
 
 namespace RZP\Gateway\Upi\Sbi;
 
+use RZP\Constants;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
+use RZP\Models\Payment;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
+use RZP\Models\Payment\Refund;
+use RZP\Gateway\Upi\Base as Upi;
 
 class RefundFile extends Base\RefundFile
 {
+    /**
+     * A constant used to pull out the corresponding key in the input
+     */
+    const GATEWAY         = 'gateway';
+
+    /**
+     * File column names are below
+     * @see https://drive.google.com/a/razorpay.com/file/d/1nq0NwAL7_BYc2K0RCMd2ZCe7tsgTzrYE/view?usp=sharing
+     */
+
     const PG_MERCHANT_ID  = 'PG MERCHANT ID';
     const REFUND_REQ_NO   = 'REFUND REQ NO';
     const TRANS_REF_NO    = 'TRANS REF NO.';
@@ -65,12 +79,12 @@ class RefundFile extends Base\RefundFile
         {
             $data[] = [
                 self::PG_MERCHANT_ID  => $this->getMerchantId(),
-                self::REFUND_REQ_NO   => $row['refund']['id'],
-                self::TRANS_REF_NO    => $row['gateway']['npci_reference_id'],
-                self::CUSTOMER_REF_NO => $row['gateway']['gateway_payment_id'],
-                self::ORDER_NO        => $row['payment']['id'],
-                self::REFUND_REQ_AMT  => $row['refund']['amount'] / 100,
-                self::REFUND_REMARK   => 'Refund from ' . $row['payment']['vpa']
+                self::REFUND_REQ_NO   => $row[Constants\Entity::REFUND][Refund\Entity::ID],
+                self::TRANS_REF_NO    => $row[self::GATEWAY][Upi\Entity::NPCI_REFERENCE_ID],
+                self::CUSTOMER_REF_NO => $row[self::GATEWAY][Upi\Entity::GATEWAY_PAYMENT_ID],
+                self::ORDER_NO        => $row[Constants\Entity::PAYMENT][Payment\Entity::ID],
+                self::REFUND_REQ_AMT  => $row[Constants\Entity::REFUND][Payment\Entity::AMOUNT] / 100,
+                self::REFUND_REMARK   => 'Refund from ' . Gateway::DEFAULT_PAYEE_VPA,
             ];
         }
 
