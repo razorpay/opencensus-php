@@ -91,17 +91,53 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * Returns the list of feature onboarding requests based on the filters passed
+     *
+     * @param array $filters
+     *
+     * @return Base\PublicCollection
+     */
     public function getFeatureOnboardingRequests(array $filters): Base\PublicCollection
     {
-        if (isset($filters['status']) === true)
-        {
-            $status = $filters['status'];
-        }
+        //
+        // [Sample]
+        //
+        // Union query that will run when these filters are passed -
+        // status=rejected, count=2, skip=0
+        //
+        //    (SELECT `merchant_id`,
+        //            'marketplace'                 AS product,
+        //            marketplace_activation_status AS 'status'
+        //     FROM   `merchant_details`
+        //     WHERE  `marketplace_activation_status` IS NOT NULL
+        //        AND `marketplace_activation_status` = 'rejected')
+        //    UNION
+        //    (SELECT `merchant_id`,
+        //            'subscriptions'                 AS product,
+        //            subscriptions_activation_status AS 'status'
+        //     FROM   `merchant_details`
+        //     WHERE  `subscriptions_activation_status` IS NOT NULL
+        //        AND `subscriptions_activation_status` = 'rejected')
+        //    UNION
+        //    (SELECT `merchant_id`,
+        //            'virtual_accounts'                 AS product,
+        //            virtual_accounts_activation_status AS 'status'
+        //     FROM   `merchant_details`
+        //     WHERE  `virtual_accounts_activation_status` IS NOT NULL
+        //        AND `virtual_accounts_activation_status` = 'rejected')
+        //    LIMIT 2
+        //    OFFSET 0
+        //
 
-        if (isset($filters['product']) === true)
-        {
-            $productFilter = $filters['product'];
-        }
+        $records = new Base\PublicCollection;
+
+        // unset input keys that are not required ahead. They interfere with the buildQueryWithParams fn.
+        $status = $filters['status'] ?? null;
+        unset($filters['status']);
+
+        $productFilter = $filters['product'] ?? null;
+        unset($filters['product']);
 
         $productFeatures = FeatureConstants::PRODUCT_FEATURES;
 
@@ -112,55 +148,43 @@ class Repository extends Base\Repository
             // - If the product filter is not present, or,
             // - If the product filter is set to productFeature
             //
-            if ((isset($productFilter) === false) or ($productFilter === $productFeature))
+            if (($productFilter === null) or ($productFilter === $productFeature))
             {
-                // virtual_accounts_activation_status
+                // For eg: virtual_accounts_activation_status
                 $productFeatureActivationStatus = $productFeature . '_activation_status';
 
-                // virtualAccountsRecords
-                $productRecordsName = camel_case($productFeature . '_records');
-
-                // Defines $marketplaceRecords, $virtualAccountsRecords, $subscriptionsRecords
-                ${$productRecordsName} = $this->newQueryWithConnection(Mode::LIVE)
-                                              ->select(
-                                                    Entity::MERCHANT_ID,
-                                                    DB::raw("'" . $productFeature . "' as product"),
-                                                    DB::raw($productFeatureActivationStatus . " as 'status'"))
-                                              ->whereNotNull($productFeatureActivationStatus);
+                // Dynamically generate the queries that have to be run for each product
+                // All such queries will then be UNIONed to run just one single query.
+                $unionQueryElement = $this->newQueryWithConnection(Mode::LIVE)
+                                          ->select(
+                                                Entity::MERCHANT_ID,
+                                                DB::raw("'" . $productFeature . "' as product"),
+                                                DB::raw($productFeatureActivationStatus . " as 'status'"))
+                                          ->whereNotNull($productFeatureActivationStatus);
 
                 // Filter with status
-                if (isset($status) === true)
+                if ($status !== null)
                 {
-                    ${$productRecordsName}->where($productFeatureActivationStatus, $status);
+                    $unionQueryElement->where($productFeatureActivationStatus, $status);
                 }
+
+                $unionQueryElements[] = $unionQueryElement;
             }
         }
 
-        if (isset($productFilter) === true)
+        if (count($unionQueryElements) > 0)
         {
-            $productRecords = camel_case($productFilter . '_records');
+            // generate a union query
+            foreach ($unionQueryElements as $unionQueryElement)
+            {
+                $query = $query ? $query->union($unionQueryElement) : $unionQueryElement;
+            }
 
-            // $marketplaceRecords, $virtualAccountsRecords, $subscriptionsRecords
-            $records = $$productRecords;
-        }
-        else
-        {
-            // If the product filter is not present, all the 3 variables will be dynamically defined above
-            $records = $marketplaceRecords->union($virtualAccountsRecords)
-                                          ->union($subscriptionsRecords);
-        }
+            // Handles query params like skip, count, from and to
+            $this->buildQueryWithParams($query, $filters);
 
-        if (isset($filters['skip']) === true)
-        {
-            $records = $records->skip($filters['skip']);
+            $records = $query->get();
         }
-
-        if (isset($filters['count']) === true)
-        {
-            $records = $records->limit($filters['count']);
-        }
-
-        $records = $records->get();
 
         return $records;
     }
