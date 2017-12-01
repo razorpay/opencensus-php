@@ -691,7 +691,7 @@ EOT;
             'method' => 'post',
             'content' => [
                 'method'    => 'upi',
-                'bank'      => 'icici',
+                'bank'      => 'ICIC',
                 'frequency' => 'daily'
             ],
         );
