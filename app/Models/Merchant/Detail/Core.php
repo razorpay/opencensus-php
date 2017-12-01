@@ -17,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
+use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
@@ -271,10 +272,11 @@ class Core extends Base\Core
      * This function is used for updating merchant activation status
      * @param Entity $merchantDetails
      * @param array $input
+     * @param AdminEntity $admin
      *
      * @return Entity
      */
-    public function updateActivationStatus(Entity $merchantDetails, array $input): Entity
+    public function updateActivationStatus(Entity $merchantDetails, array $input, AdminEntity $admin): Entity
     {
         $merchantDetails->getValidator()->validateInput('activationStatus', $input);
 
@@ -297,8 +299,6 @@ class Core extends Base\Core
 
             unset($input[Entity::REJECTION_REASONS]);
         }
-
-        $admin = $this->app['basicauth']->getAdmin();
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input, $rejectionReasons, $admin)
         {

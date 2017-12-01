@@ -18,11 +18,6 @@ class Core extends Base\Core
         return $reason;
     }
 
-    /**
-     * This function is used for adding rejection reasons for a state
-     * @param array $rejectionReasons
-     * @param StateEntity $state
-     */
     public function addRejectionReasons(array $rejectionReasons, StateEntity $state)
     {
         foreach ($rejectionReasons as $rejectionReason)

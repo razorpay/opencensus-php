@@ -188,49 +188,55 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
 
         // under_review to needs_clarification
-        $this->changeActivationStatusFromUnderReviewToNeedsClarification($testData);
+        $this->changeActivationStatusFromUnderReviewToNeedsClarification(
+            $testData['request']['content'],
+            $testData['response']['content']);
 
         $this->startTest();
 
         // needs_clarification to under_review
-        $this->changeActivationStatusFromNeedsClarificationToUnderReview($testData);
+        $this->changeActivationStatusFromNeedsClarificationToUnderReview(
+            $testData['request']['content'],
+            $testData['response']['content']);
 
         $this->startTest();
 
         // under_review to rejected
-        $this->changeActivationStatusFromUnderReviewToRejected($testData);
+        $this->changeActivationStatusFromUnderReviewToRejected(
+            $testData['request']['content'],
+            $testData['response']['content']);
 
         $this->startTest();
     }
 
-    protected function changeActivationStatusFromUnderReviewToNeedsClarification(& $testData)
+    protected function changeActivationStatusFromUnderReviewToNeedsClarification(& $requestContent, & $responseContent)
     {
-        $testData['request']['content']['activation_status'] = 'needs_clarification';
+        $requestContent['activation_status'] = 'needs_clarification';
 
-        $testData['request']['content']['clarification_mode'] = 'email';
+        $requestContent['clarification_mode'] = 'email';
 
-        $testData['response']['content']['activation_status'] = 'needs_clarification';
+        $responseContent['activation_status'] = 'needs_clarification';
 
-        $testData['response']['content']['clarification_mode'] = 'email';
+        $responseContent['clarification_mode'] = 'email';
     }
 
-    protected function changeActivationStatusFromNeedsClarificationToUnderReview(& $testData)
+    protected function changeActivationStatusFromNeedsClarificationToUnderReview(& $requestContent, & $responseContent)
     {
-        $testData['request']['content']['activation_status'] = 'under_review';
+        $requestContent['activation_status'] = 'under_review';
 
-        unset($testData['request']['content']['clarification_mode']);
+        unset($requestContent['clarification_mode']);
 
-        $testData['response']['content']['activation_status'] = 'under_review';
+        $responseContent['activation_status'] = 'under_review';
 
-        unset($testData['response']['content']['clarification_mode']);
+        unset($responseContent['clarification_mode']);
     }
 
-    protected function changeActivationStatusFromUnderReviewToRejected(& $testData)
+    protected function changeActivationStatusFromUnderReviewToRejected(& $requestContent, & $responseContent)
     {
         // under_review to rejected
-        $testData['request']['content']['activation_status'] = 'rejected';
+        $requestContent['activation_status'] = 'rejected';
 
-        $testData['request']['content']['rejection_reasons'] = [
+        $requestContent['rejection_reasons'] = [
             [
                 'reason_category' => 'risky_business',
                 'reason_code'     => 'refurbished_goods',
@@ -241,7 +247,7 @@ class MerchantDetailTest extends TestCase
             ],
         ];
 
-        $testData['response']['content']['activation_status'] = 'rejected';
+        $responseContent['activation_status'] = 'rejected';
     }
 
     public function testCommentMerchant()

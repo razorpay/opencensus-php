@@ -10,7 +10,7 @@ class RejectionReasons
     /*
      * Reason Categories
      */
-    const UNSUPPORTED_BUSINESS_MODEL              = 'unspported_business_model';
+    const UNSUPPORTED_BUSINESS_MODEL              = 'unsupported_business_model';
     const RISKY_BUSINESS                          = 'risky_business';
     const OTHERS                                  = 'others';
 
