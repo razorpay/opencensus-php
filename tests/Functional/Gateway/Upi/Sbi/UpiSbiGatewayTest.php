@@ -4,17 +4,16 @@ namespace RZP\Tests\Functional\Gateway\Upi\Sbi;
 
 use Excel;
 use Carbon\Carbon;
-use RZP\Error\ErrorCode;
-use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Upi\Sbi\RefundFile;
 use RZP\Models\Base\PublicCollection;
@@ -67,13 +66,11 @@ class UpiSbiGatewayTest extends TestCase
         // Coproto must be working
         $this->assertEquals(Constants::ASYNC, $response[Constants::TYPE]);
 
-        $this->checkPaymentStatus($paymentId, Status::CREATED);
+        $this->checkPaymentStatus($paymentId, Payment\Status::CREATED);
 
         $upiEntity = $this->getLastEntity(Entity::UPI, true);
 
-        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
-
-        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity);
 
         $response = $this->makeS2SCallbackAndGetContent($content);
 
@@ -201,9 +198,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $upiEntity = $this->getLastEntity(Entity::UPI, true);
 
-        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
-
-        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity);
 
         $data = $this->testData['testRejectedCollect'];
 
@@ -232,9 +227,7 @@ class UpiSbiGatewayTest extends TestCase
      */
     public function testPaymentVerify()
     {
-        $this->createCapturedPayment();
-
-        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $payment = $this->createCapturedPayment();
 
         $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
 
@@ -249,13 +242,12 @@ class UpiSbiGatewayTest extends TestCase
 
         $this->assertEquals($verify[Entity::PAYMENT][Payment\Entity::ID], $payment[Payment\Entity::ID]);
         $this->assertEquals(1, $payment[Payment\Entity::VERIFIED]);
+        $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
     }
 
     public function testPaymentSuccessVerifyFailed()
     {
-        $this->createCapturedPayment();
-
-        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $payment = $this->createCapturedPayment();
 
         $data = $this->testData['testVerifyFailed'];
 
@@ -292,6 +284,8 @@ class UpiSbiGatewayTest extends TestCase
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
         $upiEntity = $this->getLastEntity(Entity::UPI, true);
 
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+
         // Status changed from S to F
         $this->assertEquals(SbiStatus::FAILED, $upiEntity[Upi::STATUS_CODE]);
 
@@ -306,9 +300,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $upiEntity = $this->getLastEntity(Entity::UPI, true);
 
-        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
-
-        $content = $this->getS2SAmountMismatchContent($upiEntity, $payment);
+        $content = $this->getS2SAmountMismatchContent($upiEntity);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -320,6 +312,9 @@ class UpiSbiGatewayTest extends TestCase
             });
 
         $upiEntity = $this->getLastEntity(Entity::UPI, true);
+        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
+
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
 
         // Status will be S, because amount assertion failure doesn't rely on status
         $this->assertNotNull($upiEntity[Upi::NPCI_REFERENCE_ID]);
@@ -330,32 +325,31 @@ class UpiSbiGatewayTest extends TestCase
 
     public function testRefundFileFlow()
     {
+        $payments = [];
+
         // Create 3 payments
-        $this->createCapturedPayment();
-        $this->createCapturedPayment();
-        $this->createCapturedPayment();
+        $payments[] = $this->createCapturedPayment();
+        $payments[] = $this->createCapturedPayment();
+        $payments[] = $this->createCapturedPayment();
 
         // Refund 2 fully and the other one partially
-        $payments = $this->getEntities(Entity::PAYMENT, [], true);
-
         $refundAmount = [50000, 50000, 10000];
 
-        foreach ($payments[PublicCollection::ITEMS] as $count => $payment)
+        $refunds = [];
+
+        foreach ($payments as $count => $payment)
         {
-            $this->refundPayment($payment[Payment\Entity::ID], $refundAmount[$count]);
+            $refunds[] = $this->refundPayment($payment[Payment\Entity::ID], $refundAmount[$count]);
         }
 
-        $refunds = $this->getEntities(Entity::REFUND, [], true);
-
-        foreach ($refunds[PublicCollection::ITEMS] as $refund)
+        foreach ($refunds as $refund)
         {
             $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 5;
             $this->fixtures->edit(Entity::REFUND, $refund[Refund\Entity::ID], [Refund\Entity::CREATED_AT => $createdAt]);
         }
 
         // Refund a 4th payment
-        $this->createCapturedPayment();
-        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $payment = $this->createCapturedPayment();
         $this->refundPayment($payment[Payment\Entity::ID]);
 
         $data = $this->generateRefundsExcelForSbiUpi();
@@ -385,6 +379,7 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals(2, $count[500]);
         $this->assertEquals(1, $count[100]);
 
+        // We pull out the filestore entity created while creating the refund file
         $file = $this->getLastEntity(ConstantsEntity::FILE_STORE, true);
 
         // Asserting the properties of the fileStore object that was created and uploaded into the S3 bucket
@@ -401,9 +396,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $upiEntity = $this->getLastEntity(Entity::UPI, true);
 
-        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
-
-        $content = $this->getS2SUpiIdMismatchContent($upiEntity, $payment);
+        $content = $this->getS2SUpiIdMismatchContent($upiEntity);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -415,12 +408,14 @@ class UpiSbiGatewayTest extends TestCase
             });
 
         $upiEntity = $this->getLastEntity(Entity::UPI, true);
+        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
 
         // Status will be S, because assertion failure doesn't rely on status
         $this->assertNotNull($upiEntity[Upi::NPCI_REFERENCE_ID]);
         $this->assertNotNull($upiEntity[Upi::GATEWAY_PAYMENT_ID]);
         $this->assertEquals(SbiStatus::SUCCESS, $upiEntity[Upi::STATUS_CODE]);
         $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
     }
 
     protected function createCapturedPayment()
@@ -431,21 +426,26 @@ class UpiSbiGatewayTest extends TestCase
 
         $upiEntity = $this->getLastEntity(Entity::UPI, true);
 
-        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
-
-        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity);
 
         $this->makeS2SCallbackAndGetContent($content);
 
         $upiEntity = $this->getLastEntity(Entity::UPI, true);
+        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
 
         $this->assertNotNull($upiEntity[Upi::NPCI_REFERENCE_ID]);
         $this->assertNotNull($upiEntity[Upi::GATEWAY_PAYMENT_ID]);
         $this->assertEquals(SbiStatus::SUCCESS, $upiEntity[Upi::STATUS_CODE]);
         $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
 
+        $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
+
         // Add a capture as well, just for completeness sake
-        $this->capturePayment($paymentId, $payment[Payment\Entity::AMOUNT]);
+        $payment = $this->capturePayment($paymentId, $payment[Payment\Entity::AMOUNT]);
+
+        $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
+
+        return $payment;
     }
 
     protected function mockVerifyFailed()
@@ -487,11 +487,11 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals($status, $response[Payment\Entity::STATUS]);
     }
 
-    protected function getS2SUpiIdMismatchContent(array $upiEntity, array $payment)
+    protected function getS2SUpiIdMismatchContent(array $upiEntity)
     {
         $mockServer = $this->mockServer();
 
-        $content = $mockServer->getAsyncCallbackContent($upiEntity, $payment);
+        $content = $mockServer->getAsyncCallbackContent($upiEntity);
 
         $decryptedResp = $mockServer->decrypt($content[ResponseFields::MESSAGE], ResponseFields::RESPONSE);
 
@@ -507,11 +507,11 @@ class UpiSbiGatewayTest extends TestCase
         return [ResponseFields::MESSAGE => $response->content()];
     }
 
-    protected function getS2SAmountMismatchContent(array $upiEntity, array $payment)
+    protected function getS2SAmountMismatchContent(array $upiEntity)
     {
         $mockServer = $this->mockServer();
 
-        $content = $mockServer->getAsyncCallbackContent($upiEntity, $payment);
+        $content = $mockServer->getAsyncCallbackContent($upiEntity);
 
         $decryptedResp = $mockServer->decrypt($content[ResponseFields::MESSAGE], ResponseFields::RESPONSE);
 

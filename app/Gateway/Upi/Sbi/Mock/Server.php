@@ -54,9 +54,9 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($content);
     }
 
-    public function getAsyncCallbackContent(array $upiEntity, array $payment)
+    public function getAsyncCallbackContent(array $upiEntity)
     {
-        $response = $this->getAsyncCallbackResponseArray($upiEntity, $payment);
+        $response = $this->getAsyncCallbackResponseArray($upiEntity);
 
         $content = [
             ResponseFields::RESPONSE       => $this->encrypt($response),
@@ -173,29 +173,25 @@ class Server extends Base\Mock\Server
         return [ResponseFields::API_RESPONSE => $response];
     }
 
-    private function getAsyncCallbackResponseArray(array $upiEntity, array $payment)
+    private function getAsyncCallbackResponseArray(array $upiEntity)
     {
-        $pspRefNo = Payment\Entity::stripDefaultSign($payment[Payment\Entity::ID]);
-
-        $vpa = $payment[Payment\Entity::VPA];
-
         $response = [
-            ResponseFields::PSP_REFERENCE_NO       => $pspRefNo,
+            ResponseFields::PSP_REFERENCE_NO       => $upiEntity[Entity::PAYMENT_ID],
             ResponseFields::UPI_TRANS_REFERENCE_NO => $upiEntity[Entity::NPCI_REFERENCE_ID],
             ResponseFields::NPCI_TRANSACTION_ID    => 99999999999,
             ResponseFields::CUSTOMER_REFERENCE_NO  => $upiEntity[Entity::GATEWAY_PAYMENT_ID],
-            ResponseFields::AMOUNT                 => $payment[Payment\Entity::AMOUNT] / 100,
+            ResponseFields::AMOUNT                 => $upiEntity[Entity::AMOUNT] / 100,
             ResponseFields::TRANSACTION_AUTH_DATE  => Carbon::now(Timezone::IST)->toDateTimeString(),
             ResponseFields::RESPONSE_CODE          => '00',
             ResponseFields::APPROVAL_NUMBER        => random_int(100000, 999999),
             ResponseFields::STATUS                 => Status::SUCCESS,
             ResponseFields::STATUS_DESCRIPTION     => 'Payment Successful',
             ResponseFields::ADDITIONAL_INFO        => [],
-            ResponseFields::PAYER_VPA              => $vpa,
+            ResponseFields::PAYER_VPA              => $upiEntity[Entity::VPA],
             ResponseFields::PAYEE_VPA              => self::DEFAULT_PAYEE_VPA,
         ];
 
-        if ($vpa === 'rejectedcollect@sbi')
+        if ($upiEntity[Entity::VPA] === 'rejectedcollect@sbi')
         {
             $response[ResponseFields::STATUS] = Status::REJECTED;
             $response[ResponseFields::STATUS_DESCRIPTION] = 'Collect request rejected';
