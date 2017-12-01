@@ -43,9 +43,11 @@ class RefundReconciliate extends Base\RefundReconciliate
      * and get the refund amount accordingly.
      *
      * @param $row array
-     * @return $paymentAmount integer
+     *
+     * @return float|int|null $paymentAmount
+     * @throws ReconciliationException
      */
-    protected function getRefundAmount(array $row)
+    protected function getReconRefundAmount(array $row)
     {
         $columnRefundAmount = null;
 
@@ -85,14 +87,16 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function validateRefundAmountEqualsReconAmount(array $row)
     {
-        if ($this->refund->getAmount() !== $this->getRefundAmount($row))
+        if ($this->refund->getBaseAmount() !== $this->getReconRefundAmount($row))
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
-                    'message'       => 'Refund amount mismatch',
-                    'row'           => $row,
-                    'gateway'       => get_called_class()
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'message'           => 'Refund amount mismatch',
+                    'expected_amount'   => $this->refund->getBaseAmount(),
+                    'currency'          => $this->refund->getCurrency(),
+                    'row'               => $row,
+                    'gateway'           => get_called_class()
                 ]);
 
             return false;

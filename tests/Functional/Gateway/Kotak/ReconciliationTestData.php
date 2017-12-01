@@ -63,6 +63,22 @@ return [
         'remarks'           => 'This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count li',
     ],
 
+    'matchSummaryForReconFailure' => [
+        'total_count'                   => 1,
+        'unprocessed_ids'               => '',
+        'failures_count'                => 1,
+        'settlement_failure_amount'     => 4382000,
+        'settlement_failure_count'      => 1,
+        'settlement_failure_remarks'    => 'All settlements failed.',
+    ],
+
+    'matchSummaryForReconSuccess' => [
+        'total_count'                   => 1,
+        'unprocessed_ids'               => '',
+        'failures_count'                => 0,
+        'settlement_failure_amount'     => 0,
+    ],
+
     // status is not matched as we keep it created till 10pm
     'matchSettlementAttemptForReconSuccess' => [
         'channel'           => 'kotak',

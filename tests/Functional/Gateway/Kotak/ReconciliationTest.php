@@ -58,6 +58,9 @@ class ReconciliationTest extends TestCase
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
+        // Match data returned by reconciliation
+        $this->assertTestResponse($data, 'matchSummaryForReconSuccess');
+
         // Validate settlement attempt entity
         $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
@@ -74,6 +77,9 @@ class ReconciliationTest extends TestCase
         {
             $this->assertNotNull($setl[$key]);
         }
+
+        $merchant = $this->getEntityById('merchant','10000000000000', true);
+        $this->assertEquals(false, $merchant['hold_funds']);
 
         $batch = $this->getLastEntity('batch_fund_transfer', true);
 
@@ -115,6 +121,9 @@ class ReconciliationTest extends TestCase
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
+        // Match data returned by reconciliation
+        $this->assertTestResponse($data, 'matchSummaryForReconFailure');
+
         // Validate batch settlement entity
         $batchFundTransfer = $this->fetchAndMatchBatchData('settlement');
 
@@ -131,6 +140,9 @@ class ReconciliationTest extends TestCase
         }
 
         $this->assertNull($settlement[Settlement\Entity::SETTLED_ON]);
+
+        $merchant = $this->getEntityById('merchant','10000000000000', true);
+        $this->assertEquals(true, $merchant['hold_funds']);
 
         // Validate settlement attempt entity
         $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
@@ -168,6 +180,10 @@ class ReconciliationTest extends TestCase
 
         $this->assertEquals('No settlements found!', $content['kotak']['message']);
 
+        $this->assertNotNull($content['kotak']['retry_skipped_settlements']);
+
+        $this->assertEquals(1, $content['kotak']['retry_skipped_count']);
+
         // Validate no files were created
         $content = $this->getEntities('file_store', [], true);
         $this->assertSame($content['count'], 2);
@@ -182,6 +198,9 @@ class ReconciliationTest extends TestCase
         $firstAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $oldBatchFundTransferId = $settlement['batch_fund_transfer_id'];
+
+        // Resetting merchant
+        $this->fixtures->merchant->holdFunds(Account::TEST_ACCOUNT, false);
 
         $content = $this->retryIntiateSettlements([$settlement['id']]);
 

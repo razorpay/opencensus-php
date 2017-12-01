@@ -103,29 +103,109 @@ class VirtualAccountTest extends TestCase
         $this->createVirtualAccount();
 
         $vba = $this->getLastEntity('bank_account', true);
-        // Handle is unsetso default root is used with default handle
-        $this->assertRegexp("/RAZORPAY[A-Z0-9]{9}$/", $vba['account_number']);
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() {
-            $this->createVirtualAccount(['descriptor' => 'desc1234']);
-        });
+        // Handle is unset so default root is used with default handle
+        $this->assertRegexp("/11111100[0-9]{9}$/", $vba['account_number']);
 
         $this->fixtures->merchant->setHandle('hand');
 
-        $this->createVirtualAccount(['descriptor' => 'desc1234']);
+        $this->createVirtualAccount([], false, 'desc1234');
 
         $vba = $this->getLastEntity('bank_account', true);
-        // Handle is set so standard root is used with given handle
+        // Handle is set so standard root is used with given descriptor
         $this->assertEquals("RZRPHANDDESC1234", $vba['account_number']);
+
+        $this->createVirtualAccount([], true);
+
+        $vba = $this->getLastEntity('bank_account', true);
+        // Handle is set, but numeric accounts can still be created
+        $this->assertRegexp("/11111100[0-9]{9}$/", $vba['account_number']);
+    }
+
+    public function testCreateVirtualAccountOldFormat()
+    {
+        // Without handle
+        $response = $this->createVirtualAccountOldFormat();
+
+        $vba = $this->getLastEntity('bank_account', true);
+        // Handle is not set so default root is used with given descriptor
+        $this->assertStringStartsWith('11111100', $vba['account_number']);
+
+        // With handle
+        $this->fixtures->merchant->setHandle('hand');
+
+        $response = $this->createVirtualAccountOldFormat([
+            'descriptor' => 'desc1234'
+        ]);
+
+        $vba = $this->getLastEntity('bank_account', true);
+        // Handle is set so standard root is used with given descriptor
+        $this->assertEquals("RZRPHANDDESC1234", $vba['account_number']);
+
+        $response = $this->createVirtualAccountOldFormat([]);
+        $vba = $this->getLastEntity('bank_account', true);
+        // Handle is set so standard root is used with random descriptor
+        $this->assertStringStartsWith("RZRPHAND", $vba['account_number']);
+    }
+
+    public function testVirtualAccountCreateRequestUpdate()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        // New format
+        // receivers[types][]=bank_account
+        $response = $this->createVirtualAccount([]);
+        $vba = $this->getLastEntity('bank_account', true);
+        $this->assertStringStartsWith('11111100', $vba['account_number']);
+
+        // Sending descriptor throws error, can't use with numeric
+        // receivers[types][]=bank_account&receivers[bank_account][desriptor]=desc
+        $this->runRequestResponseFlow($data['descriptorWithNumeric'], function() {
+            $response = $this->createVirtualAccount([], true, "desc");
+        });
+
+        // Alphanumeric succeeds
+        // receivers[types][]=bank_account&receivers[bank_account][numeric]=0
+        $response = $this->createVirtualAccount([], false);
+        $vba = $this->getLastEntity('bank_account', true);
+        $this->assertStringStartsWith('RAZORPAY', $vba['account_number']);
+
+        // Alphanumeric fails with descriptor, as handle isn't set
+        // receivers[types][]=bank_account&receivers[bank_account][numeric]=0&descriptor=desc
+        $this->runRequestResponseFlow($data['descriptorWithAlphaWithoutHandle'], function() {
+            $response = $this->createVirtualAccount([], false, 'desc');
+        });
+
+        // With handle
+        $this->fixtures->merchant->setHandle('hand');
+
+        // New format with handle
+        // receivers[types][]=bank_account
+        $response = $this->createVirtualAccount([]);
+        $vba = $this->getLastEntity('bank_account', true);
+        $this->assertStringStartsWith('11111100', $vba['account_number']);
+
+        // Sending descriptor throws error, can't use with numeric
+        // receivers[types][]=bank_account&receivers[bank_account][desriptor]=desc
+        $this->runRequestResponseFlow($data['descriptorWithNumericWithHandle'], function() {
+            $response = $this->createVirtualAccount([], true, 'desc');
+        });
+
+        // Numeric false, without descriptor, gives random descriptor
+        $response = $this->createVirtualAccount([], false);
+        $vba = $this->getLastEntity('bank_account', true);
+        $this->assertStringStartsWith('RZRPHAND', $vba['account_number']);
+
+        // Numeric false, with descriptor
+        $response = $this->createVirtualAccount([], false, 'desc');
+        $vba = $this->getLastEntity('bank_account', true);
+        $this->assertEquals('RZRPHANDDESC', $vba['account_number']);
     }
 
     public function testCreateVirtualAccountDescriptorLengths()
     {
         $this->fixtures->merchant->setHandle('hand');
 
-        $this->createVirtualAccount(['descriptor' => '9chardesc']);
+        $this->createVirtualAccount([], false, '9chardesc');
 
         $vba = $this->getLastEntity('bank_account', true);
         $this->assertEquals("RZRPHAND9CHARDESC", $vba['account_number']);
@@ -133,14 +213,14 @@ class VirtualAccountTest extends TestCase
         // Only upto nine chars allows in descriptor
         $data = $this->testData[__FUNCTION__];
         $this->runRequestResponseFlow($data, function() {
-            $this->createVirtualAccount(['descriptor' => '10chardesc']);
+            $this->createVirtualAccount([], false, '10chardesc');
         });
 
         // Shortening handle to 3 characters
         $this->fixtures->merchant->setHandle('han');
 
         // Now 10 characters are allows
-        $this->createVirtualAccount(['descriptor' => '10chardesc']);
+        $this->createVirtualAccount([], false, '10chardesc');
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is set so standard root is used with given handle

@@ -82,6 +82,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td colspan="40">Select Bank (Netbanking): </td>
         <td>
             <select name="bank">
+                <option value="BARB">Bank of Baroda</option>
                 <option value="HDFC">HDFC Bank</option>
                 <option value="CORP">Corporation Bank</option>
                 <option value="SBIN">SBI Bank</option>

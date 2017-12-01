@@ -3,9 +3,11 @@
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
@@ -13,10 +15,11 @@ class Axis extends Base
 {
     use FileHandler;
 
-    const FILE_NAME     = 'IConnect_Claim_RAZORPAY';
-    const EXTENSION     = FileStore\Format::TXT;
-    const FILE_TYPE     = FileStore\Type::AXIS_NETBANKING_CLAIMS;
-    const GATEWAY       = Payment\Gateway::NETBANKING_AXIS;
+    const CORPORATE_FILE_NAME     = 'IConnect_Claim_RAZORPAY_CORP';
+    const NON_CORPORATE_FILE_NAME = 'IConnect_Claim_RAZORPAY';
+    const EXTENSION               = FileStore\Format::TXT;
+    const FILE_TYPE               = FileStore\Type::AXIS_NETBANKING_CLAIMS;
+    const GATEWAY                 = Payment\Gateway::NETBANKING_AXIS;
 
     const HEADERS = [
         'PayeeId', // pid
@@ -27,6 +30,21 @@ class Axis extends Base
         'Amount',
         'DateTime',
     ];
+
+    protected function fetchPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
+    {
+        $corporate = $this->gatewayFile->getCorporate();
+
+        $claims = $this->repo->payment->fetchCorporatePaymentsWithStatus(
+            $begin,
+            $end,
+            static::GATEWAY,
+            $statuses,
+            $corporate
+        );
+
+        return $claims;
+    }
 
     protected function formatDataForFile(array $data)
     {
@@ -60,11 +78,15 @@ class Axis extends Base
     {
         $time = Carbon::now(Timezone::IST)->format('Ymd');
 
+        $name = ($this->gatewayFile->getCorporate() === true) ?
+            static::CORPORATE_FILE_NAME :
+            static::NON_CORPORATE_FILE_NAME;
+
         if ($this->isTestMode() === true)
         {
-            return static::FILE_NAME . '_' . $time . '_' . $this->mode . '_1';
+            return $name . '_' . $time . '_' . $this->mode . '_1';
         }
 
-        return static::FILE_NAME . '_' . $time . '_1';
+        return $name . '_' . $time . '_1';
     }
 }

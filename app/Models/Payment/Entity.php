@@ -588,6 +588,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
+    public function setGatewayBharatQr()
+    {
+        $this->setGateway(Payment\Gateway::BHARAT_QR);
+    }
+
     /**
      * This should be kept as protected so the gateway is only
      * set via associateTerminal function
@@ -1852,8 +1857,8 @@ class Entity extends Base\PublicEntity
 
     public function setPublicAcquirerDataAttribute(array & $array)
     {
-        // Adding test merchants PolicyBazaar, DSP Blackrock merchant ID's
-        $merchantIds = ['10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f', '7thBRSDflu7NHL'];
+        // Adding test merchants PolicyBazaar, DSP Blackrock, Yatra merchant ID's
+        $merchantIds = ['10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f', '7thBRSDflu7NHL', '87qTXzFTBLFN7i'];
 
         $currentMerchantId = $this->getMerchantId();
 
@@ -2311,5 +2316,12 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public static function getFilteredDescription(string $description = null)
+    {
+        $filteredDescription = preg_replace('/[^a-zA-Z0-9 ]+/', '', $description);
+
+        return $filteredDescription;
     }
 }

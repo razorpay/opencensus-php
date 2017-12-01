@@ -46,6 +46,41 @@ class IciciGatewayTest extends TestCase
         return $paymentId;
     }
 
+    public function testPaymentWithExpiryPublicAuth()
+    {
+        $payment = $this->payment;
+
+        unset($payment['description']);
+
+        $payment['upi']['expiry_time'] = 10;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+    }
+
+    public function testPaymentWithExpiryPrivateAuth()
+    {
+        $this->fixtures->merchant->addFeatures(['s2supi']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['upi']['expiry_time'] = 10;
+
+        $response = $this->doS2SUpiPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals(10, $upiEntity['expiry_time']);
+    }
+
     public function testPaymentViaRedirection()
     {
         $payment = $this->getDefaultUpiPaymentArray();
@@ -536,6 +571,8 @@ EOT;
      */
     public function testVerifyMissingPayment()
     {
+        $data = $this->testData[__FUNCTION__];
+
         $payment = $this->getDefaultUpiPaymentArray();
 
         // TODO: Stop using notes for status
@@ -551,9 +588,15 @@ EOT;
         $upiEntity = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
 
-        $this->payment = $this->verifyPayment($payment['id']);
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->verifyPayment($payment['id']);
+        });
 
-        $this->assertSame($this->payment['payment']['verified'], 1);
+        $payment = $this->getEntityById('payment', $payment['id'], true);
+
+        // This will be updated if ran via cron
+        $this->assertSame($payment['verified'], null);
     }
 
     public function testVerifyPaymentWithEncryptedResponse()
@@ -648,7 +691,7 @@ EOT;
             'method' => 'post',
             'content' => [
                 'method'    => 'upi',
-                'bank'      => 'icici',
+                'bank'      => 'ICIC',
                 'frequency' => 'daily'
             ],
         );

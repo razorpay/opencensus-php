@@ -612,9 +612,14 @@ class Gateway extends Base\Gateway
 
     protected function isStatusUnknown($ex)
     {
+        $errorCode = null;
+
         $error = $ex->getError()->toArray();
 
-        $errorCode = $error['gateway_error_code'];
+        if (isset($error[Error\Error::GATEWAY_ERROR_CODE]) === true)
+        {
+            $errorCode = $error[Error\Error::GATEWAY_ERROR_CODE];
+        }
 
         // Handle the unknown error (fatal errors) and mark it as skip refund
         // Verify it later

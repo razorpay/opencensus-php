@@ -3,11 +3,12 @@
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\Gateway\File\Processor;
+use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
@@ -15,12 +16,13 @@ class Axis extends Base
 {
     use FileHandler;
 
-    const FILE_NAME              = 'IConnect_Refund_RAZORPAY';
-    const EXTENSION              = FileStore\Format::TXT;
-    const FILE_TYPE              = FileStore\Type::AXIS_NETBANKING_REFUND;
-    const GATEWAY                = Payment\Gateway::NETBANKING_AXIS;
-    const GATEWAY_CODE           = IFSC::UTIB;
-    const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const CORPORATE_FILE_NAME     = 'IConnect_Refund_RAZORPAY_CORP';
+    const NON_CORPORATE_FILE_NAME = 'IConnect_Refund_RAZORPAY';
+    const EXTENSION               = FileStore\Format::TXT;
+    const FILE_TYPE               = FileStore\Type::AXIS_NETBANKING_REFUND;
+    const GATEWAY                 = Payment\Gateway::NETBANKING_AXIS;
+    const GATEWAY_CODE            = IFSC::UTIB;
+    const PAYMENT_TYPE_ATTRIBUTE  = Payment\Entity::BANK;
 
     const HEADERS = [
         'Payee id', // pid
@@ -32,6 +34,25 @@ class Axis extends Base
         'DATETIME',
         'REFUND Amount',
     ];
+
+    public function fetchEntities(): PublicCollection
+    {
+        $begin = $this->gatewayFile->getBegin();
+        $end = $this->gatewayFile->getEnd();
+
+        $corporate = $this->gatewayFile->getCorporate();
+
+        $refunds = $this->repo->refund->fetchCorporateRefundsBetweenTimestamps(
+            static::PAYMENT_TYPE_ATTRIBUTE,
+            static::GATEWAY_CODE,
+            $begin,
+            $end,
+            static::GATEWAY,
+            $corporate
+        );
+
+        return $refunds;
+    }
 
     protected function formatDataForFile(array $data)
     {
@@ -71,11 +92,15 @@ class Axis extends Base
     {
         $time = Carbon::now(Timezone::IST)->format('Ymd');
 
+        $name = ($this->gatewayFile->getCorporate() === true) ?
+            static::CORPORATE_FILE_NAME :
+            static::NON_CORPORATE_FILE_NAME;
+
         if ($this->isTestMode() === true)
         {
-            return static::FILE_NAME . '_' . $time . '_' . $this->mode . '_1';
+            return $name . '_' . $time . '_' . $this->mode . '_1';
         }
 
-        return static::FILE_NAME . '_' . $time . '_1';
+        return $name . '_' . $time . '_1';
     }
 }

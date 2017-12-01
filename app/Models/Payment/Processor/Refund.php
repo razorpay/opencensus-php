@@ -32,6 +32,12 @@ trait Refund
      */
     protected function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
     {
+        if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
+        }
+
         if ($payment->isDisputed() === true)
         {
             throw new Exception\BadRequestException(
@@ -99,7 +105,7 @@ trait Refund
             {
                 $refund->setGatewayRefunded(true);
 
-                $this->recordTransactionAndUpdatePaymentForRefund(true);
+                $this->recordTransactionAndUpdatePaymentForRefund();
 
                 $this->trace->info(
                     TraceCode::VERIFY_REFUND_TRANSACTION_CREATED,
@@ -250,6 +256,12 @@ trait Refund
                 'input'         => $input,
             ]);
 
+        // Some bank transfer payments cannot be refunded.
+        if ($payment->isBankTransfer() === true)
+        {
+            $this->validateBankTransferPaymentForRefund($payment);
+        }
+
         $this->setPayment($payment);
 
         if ($this->payment->isAuthorized() === false)
@@ -333,24 +345,19 @@ trait Refund
     /**
      * @param Payment\Refund\Entity $refund
      * @param Payment\Entity $payment
-     * @param bool $forceRefundTransaction This param is used for when we don't want to check for captured payment
-     *                                      for authAndCapture supported gateways before creating a refund transaction
      *
      * @return null|Transaction\Entity
      * @throws Exception\LogicException
      */
     public function createTransactionForRefund(
-        Payment\Refund\Entity $refund, Payment\Entity $payment, $forceRefundTransaction = false)
+        Payment\Refund\Entity $refund, Payment\Entity $payment)
     {
         $this->trace->info(
             TraceCode::REFUND_TRANSACTION_CREATE_REQUEST,
             [
                 'refund_id'     => $refund->getId(),
                 'payment_id'    => $payment->getId(),
-                'force'         => $forceRefundTransaction
             ]);
-
-        $gateway = $payment->getGateway();
 
         if ($refund->getTransactionId() !== null)
         {
@@ -363,64 +370,32 @@ trait Refund
                 ]);
         }
 
-        // For authAndCapture supported gateways, payment transaction is created only after capture.
-        // For gateways which don't support authAndCapture, payment transaction is created after authorization.
-        // There are a few gateways which are partially authAndCapture gateways. This means that for
-        // some networks, payment transaction is created at authorization and for some networks, payment
-        // transaction is created at capture.
-
-        // Hence, for [notAuthAndCapture] and [notAuthAndCaptureForSpecificNetworks] gateways,
-        // we do not check for the capture timestamp.
-        // For [authAndCapture] gateways, we check for capture timestamp.
-
-        $networkCode = null;
-        $paymentCard = $payment->card;
-
-        // If payment method is wallet or net banking.
-        if ($paymentCard !== null)
+        //
+        // We cannot have gateway_captured check here because
+        // if payment transaction is not created, we cannot
+        // create refund transaction. The ledger flow will not
+        // be right if we do that. We should create a refund
+        // transaction ONLY after payment transaction is created
+        // to ensure the ledger flow is correct.
+        //
+        if ($payment->getTransactionId() === null)
         {
-            $networkCode = $paymentCard->getNetworkCode();
+            return null;
         }
 
-        $supportsAuthAndCapture = Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
+        $txn = (new Transaction\Core)->createFromRefund($refund);
 
-        $gatewayRefunded = $refund->isGatewayRefunded();
+        $this->repo->saveOrFail($txn);
 
-        if ((($supportsAuthAndCapture === true) and ($payment->getCaptureTimestamp() !== null)) or
-            ($supportsAuthAndCapture === false) or ($gatewayRefunded === true) or
-            ($forceRefundTransaction === true))
-        {
-            if ($payment->transaction === null)
-            {
-                throw new Exception\LogicException(
-                    'Transaction expected but not present for payment',
-                    null,
-                    [
-                        'payment_id'        => $payment->getId(),
-                        'auth_capture'      => $supportsAuthAndCapture,
-                        'force_refund_txn'  => $forceRefundTransaction,
-                        'gateway_refunded'  => $gatewayRefunded,
-                    ]);
-            }
+        $this->trace->info(
+            TraceCode::REFUND_TRANSACTION_CREATED,
+            [
+                'payment_id'        => $payment->getId(),
+                'refund_id'         => $refund->getId(),
+                'transaction_id'    => $txn->getId(),
+            ]);
 
-            $txn = (new Transaction\Core)->createFromRefund($refund);
-
-            $this->repo->saveOrFail($txn);
-
-            $this->trace->info(
-                TraceCode::REFUND_TRANSACTION_CREATED,
-                [
-                    'payment_id'        => $payment->getId(),
-                    'refund_id'         => $refund->getId(),
-                    'transaction_id'    => $txn->getId(),
-                    'auth_capture'      => $supportsAuthAndCapture,
-                    'force_refund_txn'  => $forceRefundTransaction,
-                ]);
-
-            return $txn;
-        }
-
-        return null;
+        return $txn;
     }
 
     /**
@@ -635,15 +610,15 @@ trait Refund
         });
     }
 
-    protected function recordTransactionAndUpdatePaymentForRefund($forceRefundTransaction = false)
+    protected function recordTransactionAndUpdatePaymentForRefund()
     {
-        $this->repo->transaction(function() use ($forceRefundTransaction)
+        $this->repo->transaction(function()
         {
             $payment = $this->payment;
 
             $this->repo->payment->lockForUpdate($payment->getKey());
 
-            $this->createTransactionForRefund($this->refund, $payment, $forceRefundTransaction);
+            $this->createTransactionForRefund($this->refund, $payment);
 
             $this->updatePaymentRefunded();
         });
@@ -1019,8 +994,13 @@ trait Refund
         // Some bank transfer payments cannot be refunded.
         if ($payment->isBankTransfer() === true)
         {
-            (new BankTransfer\Validator)->validatePaymentForRefund($payment);
+            $this->validateBankTransferPaymentForRefund($payment);
         }
+    }
+
+    protected function validateBankTransferPaymentForRefund(Payment\Entity $payment)
+    {
+        (new BankTransfer\Validator)->validatePaymentForRefund($payment);
     }
 
     protected function setPaymentAndRefundInfo($refund, $payment)

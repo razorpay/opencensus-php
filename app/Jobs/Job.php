@@ -73,6 +73,14 @@ class Job
     /**
      * @return string|null
      */
+    public function getMode()
+    {
+        return $this->mode;
+    }
+
+    /**
+     * @return string|null
+     */
     public function getPreviousMode()
     {
         return $this->previousMode;

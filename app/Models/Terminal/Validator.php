@@ -288,7 +288,11 @@ class Validator extends Base\Validator
 
     protected static $netbankingAxisTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_axis',
-        Entity::GATEWAY_MERCHANT_ID        => 'required|string'
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        // The below fields are used only for Emandate terminals, hence "sometimes"
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $netbankingFederalTerminalRules = [
@@ -348,7 +352,7 @@ class Validator extends Base\Validator
 
     protected function validateMode($input)
     {
-        // Adding this for backward compatibility
+        // TODO: Adding this for backward compatibility
         // Will remove when dashboard starts sending both fields
         // Tests will also need to be updated
         if ((isset($input[Entity::MODE]) === false) or

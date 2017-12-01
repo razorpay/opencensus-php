@@ -228,18 +228,26 @@ class Gateway extends Base\Gateway
         parent::verify($input);
 
         $processedRefunds = [
-            '897PijT4dsJKJI',
-            '89qPekio4ZuHYK',
-            '8bXyVNxWy8M596',
-            '8batpufoOmwBlz',
-            '8bb3Y0LjF4Wctc',
-            '8bbUlUpMxjIXvz',
-            '8brMCJoXOYkcVn',
-            '8ejXKlFFSMSmHn',
-            '8gFMNPoOUxnBTS',
+            '8fC4IPnITPqHt9',
+            '89EjEZhXy1P1PY',
+            '89vusCkrDiFjPG',
         ];
 
-        if (in_array($input['payment']['id'], $processedRefunds) === true)
+        $unprocessedRefunds = [
+            '8zFBRoJRgrHweO',
+            '8yTmterjOgf4bw',
+            '8vjTsAAWgin76p',
+            '8uBU8ZQZzvSM4W',
+            '8tvbuB51qty9RN',
+            '91qJqyReNvKHbk',
+            '8vjTsAAWgin76p',
+        ];
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        {
+            return false;
+        }
+        else if (in_array($input['refund']['id'], $processedRefunds) === true)
         {
             return true;
         }
@@ -682,10 +690,10 @@ class Gateway extends Base\Gateway
 
     protected function checkGatewayResponse(string $status)
     {
-        if ($status !== StatusCode::SUCCESS)
+        if (StatusCode::isStatusSuccess($status) === false)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                StatusCode::getErrorCode($status),
                 $status,
                 StatusCode::getErrorMessage($status)
             );

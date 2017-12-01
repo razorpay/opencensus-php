@@ -3,7 +3,9 @@
 namespace RZP\Reconciliator\Base;
 
 use App;
+
 use RZP\Models\Card;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
 use Rzp\Trace\TraceCode;
 use RZP\Models\Card\IIN;
@@ -13,6 +15,7 @@ use RZP\Reconciliator\Messenger;
 use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Models\Base\PublicCollection;
+use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
@@ -20,16 +23,17 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 class PaymentReconciliate extends Foundation\SubReconciliate
 {
     const GATEWAY_FEES_ABSENT_GATEWAYS = [
-        Orchestrator::KOTAK,
-        Orchestrator::NETBANKING_AXIS,
-        Orchestrator::NETBANKING_ICICI,
-        Orchestrator::NETBANKING_FEDERAL,
-        Orchestrator::NETBANKING_RBL,
-        Orchestrator::NETBANKING_INDUSIND,
-        Orchestrator::NETBANKING_CORPORATION,
-        Orchestrator::JIOMONEY,
-        Orchestrator::VIRTUAL_ACC_KOTAK,
-        Orchestrator::NETBANKING_PNB,
+        RequestProcessor\Base::KOTAK,
+        RequestProcessor\Base::NETBANKING_AXIS,
+        RequestProcessor\Base::NETBANKING_ICICI,
+        RequestProcessor\Base::NETBANKING_FEDERAL,
+        RequestProcessor\Base::NETBANKING_RBL,
+        RequestProcessor\Base::NETBANKING_INDUSIND,
+        RequestProcessor\Base::NETBANKING_CORPORATION,
+        RequestProcessor\Base::JIOMONEY,
+        RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
+        RequestProcessor\Base::NETBANKING_PNB,
+        RequestProcessor\Base::NETBANKING_BOB,
     ];
 
     /*******************
@@ -55,9 +59,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     public function __construct()
     {
-        $this->app = App::getFacadeRoot();
-        $this->repo = $this->app['repo'];
-        $this->trace = $this->app['trace'];
+        parent::__construct();
+
         $this->messenger = new Messenger;
 
         $this->paymentRepo     = $this->repo->payment;
@@ -66,34 +69,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->cardRepo        = $this->repo->card;
     }
 
-    /**
-     * This is the start of the actual reconciliation.
-     * Reconciliation is done for each row in the file content.
-     * Validates payment status.
-     * Records gateway fees.
-     * Records gateway service tax.
-     * Sets card details (debit/credit, international).
-     *
-     * @param array $fileContents
-     * @return array
-     */
-    public function startReconciliation($fileContents)
-    {
-        $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
-        unset($fileContents[Orchestrator::EXTRA_DETAILS]);
-
-        foreach ($fileContents as $row)
-        {
-            $this->repo->transactionOnLiveAndTest(function() use ($row, $extraDetails)
-            {
-                $this->runReconciliate($row, $extraDetails);
-            });
-        }
-
-        return $this->getSummary();
-    }
-
-    public function runReconciliate($row, $extraDetails)
+    public function runReconciliate($row)
     {
         $rowDetails = $this->getRowDetailsStructured($row);
 
@@ -112,6 +88,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
             if ($reconciled === true)
             {
+                $this->handleAlreadyReconciled($paymentId);
+
                 return;
             }
 
@@ -149,7 +127,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                     'trace_code'    => TraceCode::RECON_FAILURE,
                     'message'       => 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage(),
                     'row'           => $row,
-                    'extra_details' => $extraDetails,
+                    'extra_details' => $this->extraDetails,
                     'gateway'       => get_called_class()
                 ]);
 
@@ -157,6 +135,15 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
             throw $ex;
         }
+    }
+
+    public function resetProcessingAttributes()
+    {
+        $this->payment            = null;
+        $this->paymentIin         = null;
+        $this->paymentTransaction = null;
+
+        parent::resetProcessingAttributes();
     }
 
     protected function runPreReconciledAtCheckRecon($rowDetails)

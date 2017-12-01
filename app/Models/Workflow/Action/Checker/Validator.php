@@ -2,10 +2,7 @@
 
 namespace RZP\Models\Workflow\Action\Checker;
 
-use RZP\Exception;
 use RZP\Base;
-use RZP\Models\Workflow\Action;
-use RZP\Models\Workflow\Action\State;
 
 class Validator extends Base\Validator
 {

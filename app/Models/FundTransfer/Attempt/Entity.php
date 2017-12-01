@@ -35,6 +35,10 @@ class Entity extends Base\PublicEntity
         self::VERSION,
         self::STATUS,
         self::NARRATION,
+        self::BANK_STATUS_CODE,
+        self::STATUS,
+        self::REMARKS,
+        self::FAILURE_REASON,
     ];
 
     protected $visible = [
@@ -220,6 +224,23 @@ class Entity extends Base\PublicEntity
     public function isStatusFailed()
     {
         return ($this->getStatus() === Status::FAILED);
+    }
+
+    /**
+     * One attempt has one source
+     * One source has many attempts, created incrementally
+     * @return boolean
+     */
+    public function isLatest()
+    {
+        $attempts = $this->source->fundTransferAttempts;
+
+        if ($attempts->last()->getId() === $this->getId())
+        {
+            return true;
+        }
+
+        return false;
     }
 
     // ---------------------------- public setters -----------------------------

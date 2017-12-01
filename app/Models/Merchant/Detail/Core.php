@@ -10,11 +10,14 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use RZP\Models\Base;
+use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\State\Reason;
+use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
@@ -241,6 +244,84 @@ class Core extends Base\Core
     }
 
     /**
+     * This function is used for archiving merchant activation form
+     * @param Entity $merchantDetails
+     * @param array $input
+     *
+     * @return Entity
+     */
+    public function updateActivationArchive(Entity $merchantDetails, array $input): Entity
+    {
+        $merchantDetails->getValidator()->validateInput('archiveForm', $input);
+
+        $archivedAt = null;
+
+        if (empty($input[Entity::ARCHIVE]) === false)
+        {
+            $archivedAt = Carbon::now(Timezone::IST)->getTimestamp();
+        }
+
+        $merchantDetails->setArchivedAt($archivedAt);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        return $merchantDetails;
+    }
+
+    /**
+     * This function is used for updating merchant activation status
+     * @param Entity $merchantDetails
+     * @param array $input
+     * @param AdminEntity $admin
+     *
+     * @return Entity
+     */
+    public function updateActivationStatus(Entity $merchantDetails, array $input, AdminEntity $admin): Entity
+    {
+        $merchantDetails->getValidator()->validateInput('activationStatus', $input);
+
+        $currentActivationStatus = $merchantDetails->getActivationStatus();
+
+        $merchantDetails->getValidator()
+                        ->validateActivationStatusChange(
+                            $currentActivationStatus,
+                            $input[Entity::ACTIVATION_STATUS]);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS,
+            ['input' => $input]);
+
+        $rejectionReasons = [];
+
+        if (empty($input[Entity::REJECTION_REASONS]) === false)
+        {
+            $rejectionReasons = $input[Entity::REJECTION_REASONS];
+
+            unset($input[Entity::REJECTION_REASONS]);
+        }
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input, $rejectionReasons, $admin)
+        {
+            $merchantDetails->edit($input);
+
+            $this->repo->saveOrFail($merchantDetails);
+
+            $stateData = [
+                State\Entity::NAME => $input[Entity::ACTIVATION_STATUS],
+            ];
+
+            $state = (new State\Core)->createForActivation($stateData, $merchantDetails, $admin);
+
+            if (empty($rejectionReasons) === false)
+            {
+                (new Reason\Core)->addRejectionReasons($rejectionReasons, $state);
+            }
+        });
+
+        return $merchantDetails;
+    }
+
+    /**
      * Checks and auto activates the merchant if possible, after form submission
      *
      * @param Entity $merchantDetails
@@ -312,6 +393,17 @@ class Core extends Base\Core
             //
             $response['need_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
         }
+
+        $activationStatus = $merchantDetails->getActivationStatus();
+
+        $allowedNextActivationStatuses = [];
+
+        if (empty($activationStatus) === false)
+        {
+            $allowedNextActivationStatuses = Status::ALLOWED_NEXT_ACTIVATION_STATUSES[$activationStatus];
+        }
+
+        $response['allowed_next_activation_statuses'] = $allowedNextActivationStatuses;
 
         $totalFields = count($validationFields);
 
