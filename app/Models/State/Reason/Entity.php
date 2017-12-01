@@ -34,7 +34,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $public = [
-        self::ID,
         self::STATE_ID,
         self::REASON_TYPE,
         self::REASON_CATEGORY,

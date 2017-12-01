@@ -300,10 +300,10 @@ class Core extends Base\Core
             unset($input[Entity::REJECTION_REASONS]);
         }
 
+        $merchantDetails->edit($input);
+
         $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input, $rejectionReasons, $admin)
         {
-            $merchantDetails->edit($input);
-
             $this->repo->saveOrFail($merchantDetails);
 
             $stateData = [
@@ -404,6 +404,16 @@ class Core extends Base\Core
         }
 
         $response['allowed_next_activation_statuses'] = $allowedNextActivationStatuses;
+
+        $currentActivationState = $merchant->currentActivationState();
+
+        if ((empty($currentActivationState) === false) and
+            ($currentActivationState->name === Status::REJECTED))
+        {
+            $rejectionReasons = $currentActivationState->rejectionReasons()->get();
+
+            $response[Entity::REJECTION_REASONS] = $rejectionReasons->toArrayPublic();
+        }
 
         $totalFields = count($validationFields);
 
