@@ -2,9 +2,12 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Mindgate;
 
+use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Status;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -97,7 +100,15 @@ class UpiMindgateGatewayTest extends TestCase
                 $this->doAuthPaymentViaAjaxRoute($payment);
             });
 
-        // TODO: Add DB assertions
+        $upiEntity = $this->getLastEntity(ConstantsEntity::UPI, true);
+
+        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+        $this->assertEquals(Status::FAILED, $payment['status']);
+
+        $this->assertEquals('invalidvpa@hdfcbank', $upiEntity[Entity::VPA]);
+        $this->assertEquals('Mayank Amencherla', $upiEntity[Entity::NAME]);
+        $this->assertNull($upiEntity[Entity::GATEWAY_PAYMENT_ID]);
+        $this->assertNull($upiEntity[Entity::NPCI_REFERENCE_ID]);
     }
 
     /**

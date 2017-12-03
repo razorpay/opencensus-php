@@ -21,7 +21,9 @@ class Gateway extends Base\Gateway
 
     const ACQUIRER = 'hdfc';
 
-    protected $gateway = 'upi_mindgate';
+    protected $gateway = Payment\Gateway::UPI_MINDGATE;
+
+    protected $response;
 
     const BANK = 'hdfc';
 
@@ -43,6 +45,8 @@ class Gateway extends Base\Gateway
     protected $map = [
         Entity::VPA                       => Entity::VPA,
         ResponseFields::PAYER_VA          => Entity::VPA,
+        ResponseFields::PAYER_NAME        => Entity::NAME,
+        ResponseFields::VPA_STATUS        => Entity::STATUS_CODE,
         ResponseFields::STATUS            => Entity::STATUS_CODE,
         // This is a 5 digit number that is the reference ID on the HDFC side
         ResponseFields::UPI_TXN_ID        => Entity::GATEWAY_PAYMENT_ID,
@@ -52,8 +56,9 @@ class Gateway extends Base\Gateway
 
     /**
      * Authorizes a payment using UPI Gateway
-     * @param  array  $input
-     * @return null
+     * @param array $input
+     * @return array
+     * @throws Exception\GatewayErrorException
      */
     public function authorize(array $input)
     {
@@ -109,11 +114,11 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $response = $this->parseGatewayResponse($response->body);
+        $response = $this->parseGatewayResponse($response->body, Action::VALIDATE_VPA);
 
         $this->updateGatewayEntityResponse($gatewayPayment, $response);
 
-        $this->checkResponseStatus($response[ResponseFields::STATUS], Status::VPA_AVAILABLE);
+        $this->checkResponseStatus($response[ResponseFields::VPA_STATUS], Status::VPA_AVAILABLE);
     }
 
     private function checkResponseStatus(string $status, string $successStatus = Status::SUCCESS)
@@ -168,9 +173,10 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * @param  string $response
-     * @param  string $type type of request
-     * @see https://drive.google.com/drive/u/1/folders/0B1MTSXtR53PfN2dIWmE0REI3eWs
+     * @param $responseBody
+     * @param string $type
+     * @return array
+     * @see https://drive.google.com/drive/u/0/folders/0B1MTSXtR53PfYldqNUIyLXlnSjA
      */
     protected function parseGatewayResponse($responseBody, $type = Action::COLLECT)
     {
@@ -440,6 +446,7 @@ class Gateway extends Base\Gateway
         $attr = $this->getMappedAttributes($response);
 
         // To mark that we have received a response for this request
+        // TODO: Ideally we should not mark the received attribute as 1 unless it is auth / callback
         $attr[Entity::RECEIVED] = 1;
 
         $upiEntity->fill($attr);
