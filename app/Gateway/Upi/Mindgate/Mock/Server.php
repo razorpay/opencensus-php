@@ -8,6 +8,7 @@ use Gateway\Upi\Mindgate;
 use RZP\Gateway\Upi\Mindgate\Action;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Base;
+use RZP\Gateway\Upi\Mindgate\Status;
 use RZP\Gateway\Utility;
 use RZP\Gateway\Upi\Base\Entity as UPIEntity;
 use Models\Payment;
@@ -20,9 +21,10 @@ class Server extends Base\Mock\Server
      * actual incoming request
      */
     const REQUEST_FIELD_COUNT = [
-        Action::COLLECT     => 7,
-        Action::VERIFY      => 4,
-        Action::REFUND      => 10,
+        Action::COLLECT      => 7,
+        Action::VERIFY       => 4,
+        Action::REFUND       => 10,
+        Action::VALIDATE_VPA => 4,
     ];
 
     /**
@@ -70,6 +72,38 @@ class Server extends Base\Mock\Server
         }
 
         $this->content($content);
+
+        return $this->makeResponse($content);
+    }
+
+    public function validateVpa(string $input)
+    {
+        $this->action = Action::VALIDATE_VPA;
+
+        $input = $this->parseInput($input, Action::VALIDATE_VPA);
+
+        $this->validateActionInput($input, Action::VALIDATE_VPA);
+
+        $content = [
+            // Razorpay Payment Id
+            $input[1],
+            // Customer VPA
+            $input[2],
+            // Customer name
+            'Mayank Amencherla',
+            // Status
+            Status::VPA_AVAILABLE,
+            // Description
+            'Customer vpa is valid',
+        ];
+
+        if ($input[2] === 'invalidvpa@hdfcbank')
+        {
+            $content[3] = Status::VPA_NOT_AVAILABLE;
+            $content[4] = 'Customer vpa not valid';
+        }
+
+        $this->content($content, 'validate_vpa');
 
         return $this->makeResponse($content);
     }

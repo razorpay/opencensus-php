@@ -6,6 +6,17 @@ use RZP\Base;
 
 class Validator extends Base\Validator
 {
+    protected static $validateVpaRules = [
+        // Bank side Merchant Id
+        'required|alpha_num|max:16',
+        // RZP API Payment Id
+        'required|alpha_num|max:50',
+        // VPA
+        'required|string|max:255',
+        // Request Type
+        'required|string|in:T',
+    ];
+
     protected static $authRules = [
         // Bank side Merchant Id
         'required|alpha_num',

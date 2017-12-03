@@ -63,6 +63,10 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
+        $this->validateVpa($input, $gatewayPayment);
+
+        parent::action($input, Action::AUTHORIZE);
+
         $request =  $this->getAuthorizeRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
@@ -90,6 +94,41 @@ class Gateway extends Base\Gateway
                 'vpa'   => $vpa
             ]
         ];
+    }
+
+    /**
+     * We need to validate that the user's VPA is valid before proceeding with the payment
+     * @param array $input
+     * @param Entity $gatewayPayment
+     */
+    private function validateVpa(array $input, Entity $gatewayPayment)
+    {
+        parent::action($input, Action::VALIDATE_VPA);
+
+        $request = $this->getValidateVpaRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $response = $this->parseGatewayResponse($response->body);
+
+        $this->updateGatewayEntityResponse($gatewayPayment, $response);
+
+        // TODO: Check this
+        $this->checkResponseStatus($response[ResponseFields::STATUS], Status::VPA_AVAILABLE);
+    }
+
+    // TODO: Double check
+    private function checkResponseStatus(string $status, string $successStatus = Status::SUCCESS)
+    {
+        if ($status !== $successStatus)
+        {
+            $errorCode = ResponseCodeMap::getApiErrorCode($status);
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $status,
+                ResponseCode::getResponseMessage($status));
+        }
     }
 
     /**
@@ -397,6 +436,7 @@ class Gateway extends Base\Gateway
         return json_encode($json);
     }
 
+    // TODO: Switch to Base/Gateway updateGatewayPaymentEntity
     protected function updateGatewayEntityResponse(Entity $upiEntity, array $response)
     {
         $attr = $this->getMappedAttributes($response);
@@ -466,12 +506,12 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getValidateVpaRequestArray(string $vpa): array
+    protected function getValidateVpaRequestArray(array $input): array
     {
         $data = [
             $this->getMerchantId(),
-            random_alpha_string(10),
-            $vpa,
+            $input['payment']['id'],
+            $input['payment']['vpa'],
             'T'
         ];
 

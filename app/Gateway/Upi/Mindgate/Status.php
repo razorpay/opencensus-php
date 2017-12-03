@@ -13,4 +13,10 @@ class Status
     const TIMEOUT = 'TIMEOUT';
 
     const REFUND_SUCCESS = 'S';
+
+    const VPA_AVAILABLE = 'VE';
+
+    const VPA_NOT_AVAILABLE = 'VN';
+
+    const FAILED = 'F';
 }
