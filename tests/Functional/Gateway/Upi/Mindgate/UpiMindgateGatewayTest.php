@@ -2,14 +2,27 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Mindgate;
 
-use Closure;
-use Carbon\Carbon;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
+use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class UpiMindgateGatewayTest extends TestCase
 {
     use PaymentTrait;
+
+    /**
+     * @var Terminal
+     */
+    protected $sharedTerminal;
+
+    /**
+     * Payment array
+     * @var array
+     */
+    protected $payment;
 
     public function setUp()
     {
@@ -18,18 +31,20 @@ class UpiMindgateGatewayTest extends TestCase
         parent::setUp();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal', [
-            'gateway'   => 'upi_mindgate'
+            'gateway'   => Gateway::UPI_MINDGATE
         ]);
 
-        $this->gateway = 'upi_mindgate';
+        $this->gateway = Gateway::UPI_MINDGATE;
 
-        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+        $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
 
         $this->payment = $this->getDefaultUpiPaymentArray();
     }
 
     /**
      * Tests the happy-flow of a complete payment
+     * @param string $status
+     * @return mixed
      */
     public function testPayment($status = 'created')
     {
@@ -65,6 +80,24 @@ class UpiMindgateGatewayTest extends TestCase
         $this->capturePayment($paymentId, $payment['amount']);
 
         return $payment;
+    }
+
+    public function testFailedVpaValidation()
+    {
+        $this->payment['vpa'] = 'invalidvpa@hdfcbank';
+
+        $payment = $this->payment;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
+
+        // TODO: Add DB assertions
     }
 
     /**

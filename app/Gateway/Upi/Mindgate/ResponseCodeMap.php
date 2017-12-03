@@ -6,7 +6,9 @@ use RZP\Error\ErrorCode;
 
 class ResponseCodeMap
 {
-    const CODES = [];
+    const CODES = [
+        Status::VPA_NOT_AVAILABLE => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA
+    ];
 
     public static function getApiErrorCode($code)
     {

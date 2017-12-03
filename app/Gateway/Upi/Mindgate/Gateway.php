@@ -113,11 +113,9 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayEntityResponse($gatewayPayment, $response);
 
-        // TODO: Check this
         $this->checkResponseStatus($response[ResponseFields::STATUS], Status::VPA_AVAILABLE);
     }
 
-    // TODO: Double check
     private function checkResponseStatus(string $status, string $successStatus = Status::SUCCESS)
     {
         if ($status !== $successStatus)
