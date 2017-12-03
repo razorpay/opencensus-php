@@ -3241,7 +3241,8 @@ trait Authorize
 
         if (Payment\Gateway::isAuthAndPowerWallet($wallet) === true)
         {
-            return $this->isOtpOrAuthFlow($input);
+            // TODO: Figure out a way this can be called here
+            // return $this->isOtpOrAuthFlow($input);
         }
 
         return true;
