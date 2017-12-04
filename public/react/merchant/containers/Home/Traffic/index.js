@@ -28,7 +28,6 @@ class Traffic extends Component {
         loading: false,
         chartData: null,
         legendData: null,
-        fetchData: true,
       };
     });
 
@@ -66,14 +65,11 @@ class Traffic extends Component {
       groupState.chartData = { labels, datasets };
       groupState.legendData = legendData;
 
-      console.log(groupState);
-
       if (isInitialLoad) {
         this.state.loading = false;
       }
 
       groupState.loading = false;
-      groupState.fetchData = false;
 
       this.setState(this.state);
     });
@@ -81,12 +77,6 @@ class Traffic extends Component {
 
   componentWillMount() {
     this.getData();
-  }
-
-  clearCache() {
-    groupValues.forEach(groupValue => {
-      this.state.groupsState[groupValue].fetchData = true;
-    });
   }
 
   onGroupChange(e) {
@@ -98,7 +88,7 @@ class Traffic extends Component {
         selectedGrouping,
       },
       () => {
-        return groupState.fetchData && this.getData();
+        return this.getData();
       }
     );
   }
@@ -111,9 +101,7 @@ class Traffic extends Component {
       startDate.toDate() !== props.startDate.toDate() ||
       endDate.toDate() !== props.endDate.toDate()
     ) {
-      this.clearCache();
-
-      this.setState(this.state, () => this.getData());
+      this.getData();
     }
   }
 
@@ -149,9 +137,7 @@ class Traffic extends Component {
         <div className="row">
           <div className="col-md-6 col-sm-12">
             {!groupState.loading &&
-              chartData && (
-                <Pie options={chartOptions} data={groupState.chartData} />
-              )}
+              chartData && <Pie options={chartOptions} data={chartData} />}
           </div>
           <div className="col-md-5 col-sm-12">
             {!groupState.loading &&
