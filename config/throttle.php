@@ -32,8 +32,7 @@ return [
             'default'                             => 100,
             RZP\Http\BasicAuth\Type::ADMIN_AUTH   => 1000,
             RZP\Http\BasicAuth\Type::DIRECT_AUTH  => 1000,
-            // TODO: Change it to 150 after testing
-            RZP\Http\BasicAuth\Type::PRIVATE_AUTH => 50,
+            RZP\Http\BasicAuth\Type::PRIVATE_AUTH => 150,
             RZP\Http\BasicAuth\Type::DEVICE_AUTH  => 100,
 
             // Highest we have seen is 50
@@ -48,8 +47,7 @@ return [
             'default'                             => 20,
             RZP\Http\BasicAuth\Type::ADMIN_AUTH   => 100,
             RZP\Http\BasicAuth\Type::DIRECT_AUTH  => 100,
-            // TODO: Change it to 150 after testing
-            RZP\Http\BasicAuth\Type::PRIVATE_AUTH => 50,
+            RZP\Http\BasicAuth\Type::PRIVATE_AUTH => 150,
             RZP\Http\BasicAuth\Type::DEVICE_AUTH  => 100,
             RZP\Http\BasicAuth\Type::PUBLIC_AUTH  => 100,
             RZP\Http\BasicAuth\Type::PROXY_AUTH   => 500,

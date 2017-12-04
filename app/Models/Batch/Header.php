@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 
 class Header
@@ -71,6 +72,33 @@ class Header
     const VA_BANK_ACCOUNT_NAME   = 'bank_account_name';
     const VA_BANK_ACCOUNT_NUMBER = 'bank_account_number';
     const VA_BANK_ACCOUNT_IFSC   = 'bank_account_ifsc';
+
+    //
+    // HDFC Emandate Debit Response File Headers
+    //
+    const HDFC_EM_DEBIT_TRANSACTION_REF_NO  = HdfcEMDebitHeadings::TRANSACTION_REF_NO;
+    const HDFC_EM_DEBIT_MANDATE_ID          = HdfcEMDebitHeadings::MANDATE_ID;
+    const HDFC_EM_DEBIT_ACCOUNT_NO          = HdfcEMDebitHeadings::ACCOUNT_NO;
+    const HDFC_EM_DEBIT_AMOUNT              = HdfcEMDebitHeadings::AMOUNT;
+    const HDFC_EM_DEBIT_SIP_DATE            = HdfcEMDebitHeadings::SIP_DATE;
+    const HDFC_EM_DEBIT_FREQUENCY           = HdfcEMDebitHeadings::FREQUENCY;
+    const HDFC_EM_DEBIT_FROM_DATE           = HdfcEMDebitHeadings::FROM_DATE;
+    const HDFC_EM_DEBIT_TO_DATE             = HdfcEMDebitHeadings::TO_DATE;
+    const HDFC_EM_DEBIT_STATUS              = HdfcEMDebitHeadings::STATUS;
+    const HDFC_EM_DEBIT_REJECTION_REMARKS   = HdfcEMDebitHeadings::REJECTION_REMARKS;
+
+    //
+    // Bank Transfer Bulk Insertion
+    //
+    const PROVIDER       = 'provider';
+    const PAYER_NAME     = 'payer_name';
+    const PAYER_ACCOUNT  = 'payer_account';
+    const PAYER_IFSC     = 'payer_ifsc';
+    const PAYEE_ACCOUNT  = 'payee_account';
+    const PAYEE_IFSC     = 'payee_ifsc';
+    const MODE           = 'mode';
+    const UTR            = 'utr';
+    const TIME           = 'time';
 
     //
     // HDFC Emandate Register Response File Headers
@@ -234,6 +262,51 @@ class Header
                 self::VA_BANK_ACCOUNT_NAME,
                 self::VA_BANK_ACCOUNT_NUMBER,
                 self::VA_BANK_ACCOUNT_IFSC,
+            ],
+        ],
+
+        'emandate_debit_hdfc' => [
+            self::INPUT => [
+                self::HDFC_EM_DEBIT_TRANSACTION_REF_NO,
+                self::HDFC_EM_DEBIT_MANDATE_ID,
+                self::HDFC_EM_DEBIT_ACCOUNT_NO,
+                self::HDFC_EM_DEBIT_AMOUNT,
+                self::HDFC_EM_DEBIT_SIP_DATE,
+                self::HDFC_EM_DEBIT_FREQUENCY,
+                self::HDFC_EM_DEBIT_FROM_DATE,
+                self::HDFC_EM_DEBIT_TO_DATE,
+                self::HDFC_EM_DEBIT_STATUS,
+                self::HDFC_EM_DEBIT_REJECTION_REMARKS
+            ]
+        ],
+
+        Type::BANK_TRANSFER => [
+            self::INPUT => [
+                self::PROVIDER,
+                self::PAYER_NAME,
+                self::PAYER_ACCOUNT,
+                self::PAYER_IFSC,
+                self::PAYEE_ACCOUNT,
+                self::PAYEE_IFSC,
+                self::MODE,
+                self::UTR,
+                self::TIME,
+                self::AMOUNT,
+                self::DESCRIPTION,
+            ],
+            self::OUTPUT => [
+                self::PROVIDER,
+                self::PAYER_NAME,
+                self::PAYER_ACCOUNT,
+                self::PAYER_IFSC,
+                self::PAYEE_ACCOUNT,
+                self::PAYEE_IFSC,
+                self::MODE,
+                self::UTR,
+                self::TIME,
+                self::AMOUNT,
+                self::DESCRIPTION,
+                self::STATUS,
             ],
         ],
 

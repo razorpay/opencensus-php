@@ -4,7 +4,7 @@ namespace RZP\Models\State;
 
 use RZP\Exception;
 use RZP\Error\PublicErrorDescription;
-
+use RZP\Models\Merchant\Detail\Status as Status;
 
 class Name
 {
@@ -33,6 +33,12 @@ class Name
         self::EXECUTED,
         self::OPEN,
         self::CLOSED,
+
+        // Activation Action States
+        Status::UNDER_REVIEW,
+        Status::NEEDS_CLARIFICATION,
+        Status::ACTIVATED,
+        Status::REJECTED,
     ];
 
     public static function validate(string $state)

@@ -116,9 +116,20 @@ class Throttle
             'customer_fetch_tokens'
         ];
 
+        $nestawayThrottleRoutes = [
+            'payment_fetch_multiple'
+        ];
+
         // Nykaa key id
         if (($this->getKeyId() === 'zyRUD5exRM0CGk') and
             (in_array($route, $nykaaThrottleRoutes, true) === true))
+        {
+            return false;
+        }
+
+        // Nestaway key id
+        if (($this->getKeyId() === 'qaD5HXqij3FnDj') and
+            (in_array($route, $nestawayThrottleRoutes, true) === true))
         {
             return false;
         }
@@ -171,7 +182,7 @@ class Throttle
              * against one dashboard instance
              */
             case Type::PROXY_AUTH:
-                $resource = $this->request->header('X_DASHBOARD_USER_ID');
+                $resource = $this->request->header(RequestHeader::X_DASHBOARD_USER_ID);
                 break;
 
             /**

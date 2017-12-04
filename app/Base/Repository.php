@@ -373,8 +373,6 @@ class Repository extends \Razorpay\Spine\Repository
      * @param Models\Base\PublicEntity $entity
      * @param bool|boolean             $withTrashed
      *
-     * @return
-     *
      * @throws Exception\LogicException
      */
     public function lockForUpdateAndReload(

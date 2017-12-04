@@ -891,7 +891,7 @@ class Gateway extends Base\Gateway
             $desc = $PaRes['Message']['Error']['errorMessage'] ?? '';
 
             throw new Exception\GatewayErrorException(
-                Error\ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE,
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
                 $code,
                 $desc,
                 [
