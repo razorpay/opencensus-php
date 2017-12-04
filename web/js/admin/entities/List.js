@@ -1,6 +1,12 @@
 import React, { Component } from 'react';
 import Form, { serialize } from 'ui/Form';
-import Field, { FromField, ToField, SelectField, SwitchField } from 'ui/Field';
+import Field, {
+  FromField,
+  ToField,
+  SelectField,
+  SwitchField,
+  SelectMode,
+} from 'ui/Field';
 import { PageTable } from 'ui/Table';
 import { adminFetch } from 'util/fetch';
 import Collection from 'model/collection';
@@ -28,6 +34,18 @@ export default class EntityList extends Component {
   submit = filters => {
     filters = parseFilters(filters);
     this.updateUrl();
+
+    if (filters) {
+      if (filters['entity-id']) {
+        this.collection.data.route_name = 'admin_fetch_entity_by_id';
+        delete filters['entity-id'];
+      } else {
+        this.collection.data.route_name = 'admin_fetch_entity_multiple';
+      }
+
+      delete filters['mode']; // Mode is not required to be sent
+    }
+
     return this.collection.applyFilters(filters);
   };
 
@@ -72,9 +90,17 @@ export default class EntityList extends Component {
     }
   };
 
-  selectMode = e => {
+  onModeChange = e => {
     this.collection.data.mode = e.target.value;
-    this.submit();
+
+    const form = e.currentTarget.closest('form');
+    let formData;
+
+    if (form) {
+      formData = serialize(form);
+    }
+
+    this.submit(formData);
   };
 
   fields() {
@@ -103,6 +129,7 @@ export default class EntityList extends Component {
           return (
             <Link
               class="link"
+              target="_blank"
               to={`/entity/${this.selectedEntity}/${
                 this.collection.data.mode
               }/${value}`}
@@ -135,7 +162,7 @@ export default class EntityList extends Component {
       <div class="list-container">
         <div class="box entity-container">
           <header>Entities</header>
-          <Form onSubmit={this.submit} class="filters">
+          <Form name="entity-search" onSubmit={this.submit} class="filters">
             <SelectField
               label="Entity"
               value={this.selectedEntity}
@@ -147,14 +174,10 @@ export default class EntityList extends Component {
                 </option>
               ))}
             </SelectField>
-            <SwitchField
-              label="Mode"
-              defaultChecked={this.collection.data.mode === 'live'}
-              onChange={this.selectMode}
-              disabledLabel="Test"
-              enabledLabel="Live"
-              disabledValue="test"
-              enabledValue="live"
+            <SelectMode
+              label="mode"
+              defaultValue="live"
+              onChange={this.onModeChange}
             />
             <Field
               class="small"
@@ -168,7 +191,11 @@ export default class EntityList extends Component {
             />
             <FromField format="X" />
             <ToField format="X" />
-            <Field label="Search Entity Id" onChange={this.selectId} />
+            <Field
+              label="Search Entity Id"
+              onChange={this.selectId}
+              name="entity-id"
+            />
 
             {selectedFiltersArray.map(f => {
               let filterValue = selectedFilters[f];

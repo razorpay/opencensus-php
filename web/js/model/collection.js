@@ -91,7 +91,13 @@ export default class Collection extends BaseModel {
         let Model = this.model || CollectionItem;
 
         const items = data.items ? data.items : data; // pricing_get_merchant_plans api no longer has data.items
-        data.items = items.map(i => new Model(this, i));
+
+        // If searching for particular id
+        if (items instanceof Array) {
+          data.items = items.map(i => new Model(this, i));
+        } else {
+          data.items = [new Model(this, items)];
+        }
         this.items.replace(data.items);
         this.animateItems = false;
       }

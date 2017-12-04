@@ -69,7 +69,9 @@ export default class EditMerchant extends Component {
 
   handleConfirm = body => {
     body.groups = this.selectedGroups.keys();
-    body.admins = body.admins.split(',');
+    if (body.admin) {
+      body.admins = body.admins.split(',');
+    }
     body.max_payment_amount *= 100;
     body.transaction_report_email = body.transaction_report_email.split(',');
 

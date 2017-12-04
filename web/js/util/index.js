@@ -73,7 +73,7 @@ export const isWorkflow = response => {
     response.id.indexOf('w_action') === 0 &&
     typeof response.workflow_id !== 'undefined'
   ) {
-    const url = `/admin/requests/requests/${response.id}`;
+    const url = `/admin/requests/${response.id}`;
     window.open(url, '_self');
   } else {
     return false;

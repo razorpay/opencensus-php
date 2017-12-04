@@ -13,7 +13,7 @@ import EntityRow from 'ui/EntityRow';
 import Table from 'ui/Table';
 
 @observer
-export default class MerchantTeamDetails extends Component {
+export default class MerchantAnalyticStats extends Component {
   state = {};
 
   constructor(props) {
@@ -210,6 +210,7 @@ export default class MerchantTeamDetails extends Component {
     })
       .then(response => {
         if (response) {
+          this.setState({ merchant_analytics: response });
           notifySuccess('Adjustment added successfully.');
           closeModal();
         }
@@ -222,7 +223,7 @@ export default class MerchantTeamDetails extends Component {
   onSubmit(body) {}
 
   render() {
-    const { merchant_analytics } = this.props;
+    const { merchant_analytics } = this.state;
 
     return (
       <div class="entity-container">
