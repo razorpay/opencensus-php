@@ -46,6 +46,7 @@ class CustomerTest extends TestCase
             'Sample\'d name'     => 'test4@test.razorpay.com',
             'A & B pvt ltd'      => 'test5@test.razorpay.com',
             'A-B pvt Ltd'        => 'test6@test.razorpay.com',
+            'A-B pvt (test) Ltd' => 'test7@test.razorpay.com',
         ];
 
         $testData = & $this->testData[__FUNCTION__];
