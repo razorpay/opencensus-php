@@ -139,6 +139,7 @@ class Service extends Base\Service
         // This is a temporary logic. Plan is to move all gateay reconciliation
         // to batch once it is stable
         //
+        // TODO: Do we do batch recon for Upi Sbi?
         if (in_array($gateway, self::BATCH_RECON_GATEWAYS, true) === true)
         {
             return $orchestrator->orchestrateV2($reconDetails);

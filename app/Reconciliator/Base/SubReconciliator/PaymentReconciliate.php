@@ -489,6 +489,18 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         return $rowDetails;
     }
 
+    /**
+     * Needs to implemented in child class
+     *
+     * @param array $row
+     * @return null
+     */
+//    protected function getPaymentId(array $row)
+//    {
+//      TODO: Make this consistent
+//        return null;
+//    }
+
     protected function setPaymentAndTransaction($row, $paymentId)
     {
         try

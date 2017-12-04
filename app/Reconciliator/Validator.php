@@ -169,6 +169,12 @@ class Validator
         return ($validSubject and $validAttachmentCount and $validBody);
     }
 
+    public function validateUpiSbiEmail(array $emailDetails)
+    {
+        // TODO: Work on this
+        return true;
+    }
+
     public function validateNetbankingIciciEmail(array $emailDetails)
     {
         $validSubject = $this->validateEmailSubject(

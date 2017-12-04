@@ -33,6 +33,7 @@ class Mailgun extends Base
         self::NETBANKING_ICICI,
         self::NETBANKING_FEDERAL,
         self::VIRTUAL_ACC_KOTAK,
+        // self::UPI_SBI,
     ];
 
     const LINK_BASED_GATEWAYS = [

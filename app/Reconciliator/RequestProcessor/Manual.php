@@ -3,7 +3,6 @@
 namespace RZP\Reconciliator\RequestProcessor;
 
 use RZP\Exception;
-use RZP\Reconciliator\Validator;
 
 class Manual extends Base
 {
