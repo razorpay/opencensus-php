@@ -109,73 +109,81 @@ class Repository extends Base\Repository
         //            'marketplace'                 AS product,
         //            marketplace_activation_status AS 'status'
         //     FROM   `merchant_details`
-        //     WHERE  `marketplace_activation_status` IS NOT NULL
-        //        AND `marketplace_activation_status` = 'rejected')
+        //     WHERE `marketplace_activation_status` = 'rejected')
         //    UNION
         //    (SELECT `merchant_id`,
         //            'subscriptions'                 AS product,
         //            subscriptions_activation_status AS 'status'
         //     FROM   `merchant_details`
-        //     WHERE  `subscriptions_activation_status` IS NOT NULL
-        //        AND `subscriptions_activation_status` = 'rejected')
+        //     WHERE `subscriptions_activation_status` = 'rejected')
         //    UNION
         //    (SELECT `merchant_id`,
         //            'virtual_accounts'                 AS product,
         //            virtual_accounts_activation_status AS 'status'
         //     FROM   `merchant_details`
-        //     WHERE  `virtual_accounts_activation_status` IS NOT NULL
-        //        AND `virtual_accounts_activation_status` = 'rejected')
+        //     WHERE `virtual_accounts_activation_status` = 'rejected')
         //    LIMIT 2
         //    OFFSET 0
         //
 
-        $records = [];
+        //
+        // Unset input keys that are not required ahead and are only used below
+        // in the query building. They interfere with buildQueryWithParams() call.
+        //
+        $statusFilter  = array_pull($params, FeatureConstants::STATUS);
+        $productFilter = array_pull($params, FeatureConstants::PRODUCT);
 
-        // unset input keys that are not required ahead. They interfere with the buildQueryWithParams fn.
-        $status = $params['status'] ?? null;
-        unset($params['status']);
+        $products = FeatureConstants::PRODUCT_FEATURES;
 
-        $productFilter = $params['product'] ?? null;
-        unset($params['product']);
+        $unionQueryElements = [];
 
-        $productFeatures = FeatureConstants::PRODUCT_FEATURES;
-
-        foreach ($productFeatures as $productFeature)
+        foreach ($products as $product)
         {
             //
             // Add productFeature results,
             // - If the product filter is not present, or,
             // - If the product filter is set to productFeature
             //
-            if (($productFilter === null) or ($productFilter === $productFeature))
+            if (($productFilter === null) or ($productFilter === $product))
             {
                 // For eg: virtual_accounts_activation_status
-                $productFeatureActivationStatus = $productFeature . '_activation_status';
+                $productActivationStatus = $product . '_activation_status';
 
+                //
                 // Dynamically generate the queries that have to be run for each product
                 // All such queries will then be UNIONed to run just one single query.
+                //
                 $unionQueryElement = $this->newQueryWithConnection(Mode::LIVE)
                                           ->select(
                                                 Entity::MERCHANT_ID,
-                                                DB::raw("'" . $productFeature . "' as product"),
-                                                DB::raw($productFeatureActivationStatus . " as 'status'"))
-                                          ->whereNotNull($productFeatureActivationStatus);
+                                                DB::raw("'" . $product . "' as product"),
+                                                DB::raw($productActivationStatus . " as 'status'"));
 
                 // Filter with status
-                if ($status !== null)
+                if ($statusFilter === null)
                 {
-                    $unionQueryElement->where($productFeatureActivationStatus, $status);
+                    //
+                    // If the merchant hasn't submitted on-boarding responses
+                    // *_activation_status attribute is null.
+                    //
+                    $unionQueryElement->whereNotNull($productActivationStatus);
+                }
+                else
+                {
+                    $unionQueryElement->where($productActivationStatus, $statusFilter);
                 }
 
                 $unionQueryElements[] = $unionQueryElement;
             }
         }
 
+        $records = [];
+
         if (count($unionQueryElements) > 0)
         {
             $query = null;
 
-            // generate a union query
+            // Generate a union query
             foreach ($unionQueryElements as $unionQueryElement)
             {
                 $query = $query ? $query->union($unionQueryElement) : $unionQueryElement;

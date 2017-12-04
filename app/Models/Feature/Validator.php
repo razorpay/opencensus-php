@@ -4,6 +4,7 @@ namespace RZP\Models\Feature;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Base\Fetch;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class Validator extends Base\Validator
         Entity::NAME        => 'required|string|max:25|custom'
     ];
 
-    protected static $onboardingSubmissionRules = [
+    protected static $onboardingSubmissionsUpsertRules = [
         Constants::MARKETPLACE                                     => 'filled|array|max:3',
         Constants::MARKETPLACE . "." . Constants::USE_CASE         => 'filled|string',
         Constants::MARKETPLACE . "." . Constants::SETTLING_TO      => 'filled|string',
@@ -33,13 +34,13 @@ class Validator extends Base\Validator
         Constants::VIRTUAL_ACCOUNTS . "." . Constants::EXPECTED_MONTHLY_REVENUE => 'filled|string',
     ];
 
-    protected static $onboardingParamsRules = [
+    protected static $onboardingSubmissionsFetchRules = [
+        Fetch::TO           => 'sometimes|epoch',
+        Fetch::FROM         => 'sometimes|epoch',
+        Fetch::COUNT        => 'sometimes|integer',
+        Fetch::SKIP         => 'sometimes|integer',
         Constants::STATUS   => 'sometimes|string|custom',
         Constants::PRODUCT  => 'sometimes|string|custom',
-        Constants::COUNT    => 'sometimes|integer',
-        Constants::SKIP     => 'sometimes|integer',
-        Constants::FROM     => 'sometimes|epoch',
-        Constants::TO       => 'sometimes|epoch',
     ];
 
     protected function validateName($attribute, $value)
@@ -96,12 +97,11 @@ class Validator extends Base\Validator
    {
        $onboardingStatuses = Constants::ONBOARDING_STATUSES;
 
-       if (in_array($value, $onboardingStatuses) === false)
+       if (in_array($value, $onboardingStatuses, true) === false)
        {
            throw new Exception\BadRequestValidationFailureException(
-               'Invalid status',
-               $attribute,
-               $value);
+              "Invalid status: $value",
+              $attribute);
        }
    }
 
@@ -109,12 +109,11 @@ class Validator extends Base\Validator
    {
        $productFeatures = Constants::PRODUCT_FEATURES;
 
-       if (in_array($value, $productFeatures) === false)
+       if (in_array($value, $productFeatures, true) === false)
        {
            throw new Exception\BadRequestValidationFailureException(
-               'Invalid product',
-               $attribute,
-               $value);
+              "Invalid product: $value",
+              $attribute);
        }
    }
 }

@@ -212,7 +212,7 @@ class Core extends Base\Core
         {
             $saved = true;
 
-            (new Validator)->validateInput(Constants::ONBOARDING_SUBMISSION, $data);
+            (new Validator)->validateInput(Constants::ONBOARDING_SUBMISSIONS_UPSERT, $data);
 
             // While updating the responses, the file gets overwritten,
             // so no need to delete the old file.
