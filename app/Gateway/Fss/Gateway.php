@@ -4,6 +4,7 @@ namespace RZP\Gateway\Fss;
 
 use RZP\Constants\Entity as E;
 use RZP\Models\Card;
+use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Gateway\Base;
@@ -115,7 +116,13 @@ class Gateway extends Base\Gateway
     {
         if (empty($input[Constants::ERROR_TEXT]) === false)
         {
-            $errorCode = $this->getErrorCode($input[Constants::ERROR_TEXT]);
+            $gatewayCode = $this->getErrorCode($input[Constants::ERROR_TEXT]);
+
+            $errorDesc = ErrorCodes::getErrorDesc($gatewayCode);
+
+            $errorCode = ErrorCodes::getMappedCode($gatewayCode);
+
+            throw new Exception\GatewayErrorException($errorCode, $gatewayCode, $errorDesc, $input);
         }
     }
 
