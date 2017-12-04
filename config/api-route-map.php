@@ -767,5 +767,7 @@ return [
         // Payment Dispute
         'payment_disputes'                  => 'payments/{id}/disputes',
         'dispute_edit'                      => 'disputes/{id}',
+        // Batch actions
+        'batch_process_by_id'               => 'batches/{id}/process',
     ],
 ];

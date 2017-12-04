@@ -1,13 +1,15 @@
 import React, { Component, Fragment } from 'react';
+import { withRouter } from 'react-router-dom';
 import Duplex from 'ui/Duplex';
 import { adminFetch, adminDelete, adminPost } from 'util/fetch';
 import { Link } from 'react-router-dom';
 import AsyncButton from 'ui/AsyncButton';
-import { notifyDone, notifyError } from 'common/modal';
+import { notifyDone, notifyError, notifySuccess } from 'common/modal';
 import user from 'admin/user';
 
 import * as action from './entityActions/index';
 
+@withRouter
 export default class GenericEntity extends Component {
   params = this.props.match.params;
   title = this.title();
@@ -154,6 +156,15 @@ const actions = {
       updateEntity={entityComponent::updateEntity}
     />
   ),
+  batch: entity => (
+    <AsyncButton
+      class="btn"
+      pendingClass="small spinner"
+      onClick={entity::retryBatch}
+      text="Retry batch"
+      confirm="Confirm retry batch?"
+    />
+  ),
 };
 
 function updateEntity(data) {
@@ -184,6 +195,24 @@ function downloadFile() {
     } else {
       windowRef.close();
       notifyError(data.errors.join(', '));
+    }
+  });
+}
+
+function retryBatch() {
+  console.log(this);
+  const params = {
+    route_name: 'batch_process_by_id',
+    url_params: {
+      id: this.id,
+    },
+    mode: 'live',
+  };
+
+  return adminPost(params).then(response => {
+    if (response) {
+      notifySuccess(`Batch: ${response.id} retried successfully.`);
+      window.location.reload();
     }
   });
 }
