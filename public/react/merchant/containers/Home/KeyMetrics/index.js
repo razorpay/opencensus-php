@@ -33,9 +33,7 @@ const TabContent = ({ name, value, isCurrency, title, isLoading }) => {
     <a>
       <div>
         <h1 title={`${(isCurrency ? '₹ ' : '') + value}`}>
-          {!isLoading
-            ? (isCurrency ? '₹ ' : '') + formattedValue
-            : 'Loading...'}
+          {!isLoading ? (isCurrency ? '₹ ' : '') + formattedValue : '--'}
         </h1>
         {title}
       </div>
