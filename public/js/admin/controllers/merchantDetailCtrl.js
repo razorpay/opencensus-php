@@ -539,9 +539,10 @@ app
           postMethods[i] = methods[i] ? 1 : 0;
         }
 
-        msg = typeof msg !== 'undefined'
-          ? msg
-          : 'Methods edited successfully: ' + JSON.stringify(methods);
+        msg =
+          typeof msg !== 'undefined'
+            ? msg
+            : 'Methods edited successfully: ' + JSON.stringify(methods);
 
         var data = {
           route_name: 'merchant_put_payment_methods',
@@ -1543,10 +1544,12 @@ app
           }
         });
       };
-      $scope.merchantUploadBatchFiles = function(files) {
+      $scope.merchantUploadBatchFiles = function(data) {
         var fileUploaded = false;
         var fd = new FormData();
+
         fd.append('route_name', 'merchant_batches');
+        fd.append('mode', data.mode);
         fd.append(
           'url_params',
           JSON.stringify({
@@ -1554,12 +1557,12 @@ app
           })
         );
         fd.append('body[type]', 'irctc');
-        if (files.hasOwnProperty('refund') === true) {
-          fd.append('file[data][refund]', files.refund);
+        if (data.files.hasOwnProperty('refund') === true) {
+          fd.append('file[data][refund]', data.files.refund);
           fileUploaded = true;
         }
-        if (files.hasOwnProperty('settlement') === true) {
-          fd.append('file[data][settlement]', files.settlement);
+        if (data.files.hasOwnProperty('settlement') === true) {
+          fd.append('file[data][settlement]', data.files.settlement);
           fileUploaded = true;
         }
 
@@ -1597,8 +1600,8 @@ app
           templateUrl: 'merchantBatchUploadContent.html',
           controller: 'merchantBatchUploadCtrl',
         });
-        modalInstance.result.then(function(files) {
-          $scope.merchantUploadBatchFiles(files);
+        modalInstance.result.then(function(data) {
+          $scope.merchantUploadBatchFiles(data);
         }, $.noop);
       };
       $scope.openUploadScreenshot = function() {
@@ -1832,9 +1835,10 @@ app
           var adminObj = {
             id: admin.id,
             name: admin.name,
-            role: admin.roles.length && admin.roles[0].name
-              ? admin.roles[0].name
-              : '--',
+            role:
+              admin.roles.length && admin.roles[0].name
+                ? admin.roles[0].name
+                : '--',
           };
 
           $scope.adminMap[admin.id] = adminObj; // create mapping id - name
@@ -2851,13 +2855,19 @@ app
     '$scope',
     '$modalInstance',
     function($scope, $modalInstance) {
+      $scope.mode = 'live';
       $scope.files = {};
       $scope.onFileSelect = function($files, fileName) {
         var file = $files[0];
         $scope.files[fileName] = file;
       };
-      $scope.ok = function() {
-        $modalInstance.close($scope.files);
+      $scope.ok = function(mode) {
+        var data = {
+          files: $scope.files,
+          mode: mode,
+        };
+
+        $modalInstance.close(data);
       };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');
