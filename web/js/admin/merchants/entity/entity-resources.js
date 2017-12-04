@@ -647,6 +647,7 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Terminal (Live)',
+      permission: 'view_merchant_credits_log',
       children: () => (
         <div>
           <Table items={terminals.items} fields={_getTerminalFields()} />
@@ -671,6 +672,7 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Credits',
+      permission: 'view_merchant_credits_log',
       children: () => (
         <CreditsDetails
           creditsLogs={creditsLogs}

@@ -56,6 +56,11 @@ export default class MerchantEntity extends Component {
         </div>
 
         {detailsMap.map(item => {
+          if (item.permission) {
+            if (!user.permissions.find(perm => perm === item.permission)) {
+              return;
+            }
+          }
           if (item.children) {
             return (
               <ToggleEntityRow
