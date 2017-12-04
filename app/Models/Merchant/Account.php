@@ -23,14 +23,15 @@ class Account
     const TEST_ACCOUNT_KEY_ID   = '1DP5mmOlF5G5ag';
     const DEMO_ACCOUNT_KEY_ID   = '0wFRWIZnH65uny';
 
-    protected static $nodalAccounts = array(
+    protected static $nodalAccounts = [
         self::NODAL_ACCOUNT,
-        self::ATOM_ACCOUNT);
+        self::ATOM_ACCOUNT
+    ];
 
-    protected static $testAccounts = array(
+    protected static $testAccounts = [
         self::DEMO_ACCOUNT,
         self::TEST_ACCOUNT,
-    );
+    ];
 
     public static function isNodalAccount($id)
     {

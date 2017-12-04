@@ -2,22 +2,23 @@
 
 namespace RZP\Reconciliator\Base;
 
-use RZP\Exception\LogicException;
-use RZP\Models\Base\UniqueIdEntity;
-use RZP\Models\Payment;
+use App;
+
 use RZP\Models\Card;
+use RZP\Models\Batch;
+use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
+use RZP\Gateway\AxisMigs;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
-use RZP\Models\Base\PublicEntity;
-
-use App;
-use RZP\Trace\TraceCode;
-use RZP\Exception\ReconciliationException;
-
-use RZP\Gateway\AxisMigs;
-use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Messenger;
+use RZP\Models\Base\PublicEntity;
+use RZP\Exception\LogicException;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\RequestProcessor;
+use RZP\Exception\ReconciliationException;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class RefundReconciliate extends Foundation\SubReconciliate
@@ -46,36 +47,9 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     public function __construct()
     {
-        $this->app = App::getFacadeRoot();
-        $this->repo = $this->app['repo'];
-        $this->trace = $this->app['trace'];
+        parent::__construct();
 
         $this->messenger = new Messenger();
-    }
-
-    /**
-     * This is the start of the actual reconciliation for refunds.
-     * Reconciliation is done for each row in the file content.
-     * Validates payment status.
-     * Sets the reconciled_at.
-     *
-     * @param array $fileContents
-     * @return array
-     */
-    public function startReconciliation($fileContents)
-    {
-        $this->setExtraDetails($fileContents[Orchestrator::EXTRA_DETAILS]);
-        unset($fileContents[Orchestrator::EXTRA_DETAILS]);
-
-        foreach ($fileContents as $row)
-        {
-            $this->repo->transactionOnLiveAndTest(function() use ($row)
-            {
-                $this->runReconciliate($row);
-            });
-        }
-
-        return $this->getSummary();
     }
 
     public function runReconciliate($row)
@@ -97,6 +71,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
             if ($reconciled === true)
             {
+                $this->handleAlreadyReconciled($refundId);
+
                 return;
             }
 
@@ -146,7 +122,15 @@ class RefundReconciliate extends Foundation\SubReconciliate
         }
     }
 
-    protected function getRefundAmount(array $row)
+    public function resetProcessingAttributes()
+    {
+        $this->payment = null;
+        $this->refund  = null;
+
+        parent::resetProcessingAttributes();
+    }
+
+    protected function getReconRefundAmount(array $row)
     {
         if (isset($row[static::COLUMN_REFUND_AMOUNT]) === false)
         {
@@ -204,21 +188,92 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         if ($refundTransaction === null)
         {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code' => TraceCode::RECON_MISMATCH,
-                    'message'    => 'Refund transaction not found in DB.',
-                    'refund_id'  => $this->refund->getId(),
-                    'gateway'    => get_called_class()
-                ]);
+            $createTransactionSuccess = $this->attemptToCreateMissingRefundTransaction();
 
-            return false;
+            if ($createTransactionSuccess === false)
+            {
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code'    => TraceCode::RECON_MISMATCH,
+                        'message'       => 'Refund transaction not found in DB',
+                        'refund_id'     => $this->refund->getId(),
+                        'gateway'       => get_called_class()
+                    ]);
+
+                return false;
+            }
+
+            // Refresh both refund and transaction to get latest changes.
+            // Reload txn because relation are cached.
+            $this->refund->reload()->transaction->reload();
         }
 
         // Sets the reconciled_at in the transactions entity, on a successful reconciliation.
         $this->persistReconciledAt($this->refund);
 
         return true;
+    }
+
+    protected function attemptToCreateMissingRefundTransaction()
+    {
+        $paymentTransaction = $this->payment->transaction;
+
+        if ($paymentTransaction === null)
+        {
+            return false;
+        }
+
+        try
+        {
+            $txn = $this->createMissingRefundTransaction();
+
+            if ($txn === null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+        catch (\Exception $ex)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_FAILURE,
+                    'failure_code'  => 'REFUND_TRANSACTION_CREATE_FAIL',
+                    'message'       => 'Refund transaction create failed with -> ' . $ex->getMessage(),
+                    'payment_id'    => $this->payment->getId(),
+                    'refund_id'     => $this->refund->getId(),
+                    'gateway'       => get_called_class(),
+                ]);
+
+            $this->trace->traceException($ex);
+
+            return false;
+        }
+    }
+
+    protected function createMissingRefundTransaction()
+    {
+        assertTrue($this->refund->transaction === null);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO_ALERT,
+            [
+                'info_code'     => 'REFUND_TRANSACTION_CREATE_RECON',
+                'message'       => 'Attempting to create refund transaction in recon',
+                'payment_id'    => $this->payment->getId(),
+                'refund_id'     => $this->refund->getId(),
+                'gateway'       => get_called_class()
+            ]);
+
+        $processor = new Payment\Processor\Processor($this->refund->merchant);
+
+        $txn = $processor->createTransactionForRefund($this->refund, $this->payment);
+
+        // This is required to save the association of the transaction with the refund.
+        $this->repo->saveOrFail($this->refund);
+
+        return $txn;
     }
 
     protected function getRowDetailsStructured($row)
@@ -355,7 +410,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $paymentId = $this->getPaymentId($row);
 
-        $refundAmount = $this->getRefundAmount($row);
+        $refundAmount = $this->getReconRefundAmount($row);
 
         //
         // Checking refundAmount with `empty` because there should
@@ -464,7 +519,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                 //   raise an alert and return.
                 // - If force update enabled, let recon
                 //
-                if ($this->shouldForceUpdate(Orchestrator::REFUND_ARN) === false)
+                if ($this->shouldForceUpdate(RequestProcessor\Base::REFUND_ARN) === false)
                 {
                     $this->messenger->raiseReconAlert(
                         [

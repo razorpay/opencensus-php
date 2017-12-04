@@ -9,7 +9,13 @@ return [
     'createVirtualAccount' => [
         'url'     => '/virtual_accounts',
         'method'  => 'post',
-        'content' => [],
+        'content' => [
+            'receivers' => [
+                'types' => [
+                    'bank_account',
+                ],
+            ],
+        ],
     ],
 
     'processBankTransfer' => [
@@ -55,6 +61,38 @@ return [
             'time'           => 148415544000,
             'amount'         => 50000,
             'description'    => 'IMPS payment of 50,000 rupees',
+        ],
+    ],
+
+    'testBankTransferYesBankRefundsNotAllowed' => [
+        'request' => [
+            'url'     => '/ecollect/validate',
+            'method'  => 'post',
+            'content' => [
+                'payee_account'  => null,
+                'payee_ifsc'     => 'YESB0CMSNOC',
+                'payer_name'     => 'Name of account holder',
+                'payer_account'  => '9876543210123456789',
+                'payer_ifsc'     => 'HDB9876543210',
+                'mode'           => 'imps',
+                'transaction_id' => strtoupper(random_alphanum_string(22)),
+                'time'           => 148415544000,
+                'amount'         => 50000,
+                'description'    => 'IMPS payment of 50,000 rupees',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Refund is currently not supported for this payment method',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\LogicException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
         ],
     ],
 
@@ -148,6 +186,23 @@ return [
         'method'  => 'post',
         'content' => [
             'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '9876543210123456789',
+            'payer_ifsc'     => 'XYZ9876543210',
+            'mode'           => 'imps',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 50000,
+            'description'    => 'IMPS payment of 50,000 rupees, with a stupid bank code',
+        ],
+    ],
+
+    'testBankTransferRemoveSpaces' => [
+        'url'     => '/ecollect/validate',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => 'R A Z O R P A Y 1 2 3',
             'payee_ifsc'     => null,
             'payer_name'     => 'Name of account holder',
             'payer_account'  => '9876543210123456789',

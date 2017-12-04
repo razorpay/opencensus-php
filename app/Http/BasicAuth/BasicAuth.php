@@ -644,6 +644,16 @@ class BasicAuth
 
         if (empty($features) === false)
         {
+            $key = $this->request->getUser();
+            $currentRoute = $this->getCurrentRouteName();
+
+            // Nykaa key id
+            if (($key === 'rzp_live_zyRUD5exRM0CGk') and
+                ($currentRoute === 'customer_fetch_tokens'))
+            {
+                return null;
+            }
+
             //
             // If the merchant has at least one of the features
             // in the $features array enabled, we allow the request

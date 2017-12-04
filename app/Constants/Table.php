@@ -19,6 +19,7 @@ class Table
     const TOKEN                 = 'tokens';
     const BLADE                 = 'blade';
     const ADDON                 = 'addons';
+    const GEO_IP                = 'geo_ips';
     const COUPON                = 'coupons';
     const BATCH                 = 'batches';
     const DEVICE                = 'devices';
@@ -112,6 +113,7 @@ class Table
     const STATE                 = 'action_state';
     const ACTION_CHECKER        = 'action_checker';
     const WORKFLOW_PERMISSION   = 'workflow_permissions';
+    const STATE_REASON          = 'action_state_reasons';
 
     // Gateway related
     const EBS                   = 'ebs';

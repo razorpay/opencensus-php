@@ -2,52 +2,14 @@
 
 namespace RZP\Models\Gateway\Rule;
 
+use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+
 use RZP\Models\Base;
+use RZP\Models\Merchant\Account;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'gateway_rule';
-
-    /**
-     * Attributes used for fetching rules matching the criteria defined by these
-     * keys. These are used while checking for rxisting rules satisfying given criteria
-     * during new rule creation or update
-     */
-    protected $defaultQueryAttributes = [
-        Entity::TYPE,
-        Entity::GROUP,
-        Entity::METHOD,
-        Entity::METHOD_TYPE,
-        Entity::NETWORK,
-        Entity::ISSUER,
-        Entity::CURRENCY,
-        Entity::MIN_AMOUNT,
-        Entity::MAX_AMOUNT,
-        Entity::EMI_DURATION,
-        Entity::EMI_SUBVENTION,
-        Entity::INTERNATIONAL,
-    ];
-
-    /**
-     * Attributes to be used while checking for sorter rules matching given criteria
-     * apart from defaultQueryAttributes
-     */
-    protected $sorterQueryAttributes = [
-        Entity::MERCHANT_ID,
-    ];
-
-    /**
-     * Attributes to be used while querying for filter rules matching given criteria
-     * apart from defaultQueryAttributes
-     */
-    protected $filterQueryAttributes = [
-        Entity::GATEWAY,
-        Entity::FILTER_TYPE,
-        Entity::SHARED_TERMINAL,
-        Entity::NETWORK_CATEGORY,
-        Entity::GATEWAY_ACQUIRER,
-        Entity::CATEGORY2,
-    ];
 
     protected $entityFetchParamRules = [
         Entity::GATEWAY          => 'sometimes|string|max:25',
@@ -72,48 +34,15 @@ class Repository extends Base\Repository
     ];
 
     /**
-     * Fetches rules with criteria matching given rule's criteria
-     * Example - If we have rule R1 for gateway A with network null, and we are
-     * defining new rule R2 for gateway B with network VISA. For a VISA payment
-     * both rules R1 and R2 will be applicable, i.e rule R1's criteria satisfies
-     * R2's criteria.
-     *
-     * This method computes the total load across all such rules which match the
-     * new rule's criteria
-     *
-     * @param  Entity $rule New rule entity
-     * @return int          Total load across matching rules
-    */
-    public function getRulesWithMatchingCriteria(Entity $rule)
-    {
-        $params = $this->getQueryParams($rule);
-
-        $query = $this->newQuery();
-
-        $this->buildSelectionQuery($query, $params);
-
-        // If the rule against which we are matching is an existing rule, we exclude
-        // it in the query
-        if ($rule->exists === true)
-        {
-            $query->where(Entity::ID, '!=', $rule->getId());
-        }
-
-        $rules = $query->get();
-
-        return $rules;
-    }
-
-    /**
-     * Fetches rules for terminal selection as per the parameters provided
-     *
-     * @param  array  $params Query parameter values
+     * Fetches rules matching a given search criteria
+     * @param  array                    $criteria
+     * @return Base\PublicCollection
      */
-    public function fetchApplicableRulesForPayment(array $params): Base\PublicCollection
+    public function fetchRulesForSearchCriteria(array $criteria): Base\PublicCollection
     {
         $query = $this->newQuery();
 
-        $this->buildSelectionQuery($query, $params);
+        $this->buildSelectionQuery($query, $criteria);
 
         $rules = $query->get();
 
@@ -133,10 +62,10 @@ class Repository extends Base\Repository
      *   AND (network = ? OR network IS NULL) AND (gateway_acquirer = ? OR gateway_acquirer IS NULL)
      *   AND international = false AND deleted_at IS NOT NULL
      *
-     * @param  Querybuilder  $query  Query object
-     * @param  array  $params query params
+     * @param  QueryBuilder  $query  Query object
+     * @param  array         $params query params
      */
-    protected function buildSelectionQuery($query, array $params)
+    protected function buildSelectionQuery(QueryBuilder $query, array $params)
     {
         foreach ($params as $key => $value)
         {
@@ -144,7 +73,12 @@ class Repository extends Base\Repository
         }
     }
 
-    protected function addQueryForAttribute($query, $key, $params)
+    /**
+     * @param QueryBuilder $query
+     * @param $key
+     * @param $params
+     */
+    protected function addQueryForAttribute(QueryBuilder $query, string $key, array $params)
     {
         if ($params[$key] !== null)
         {
@@ -182,10 +116,45 @@ class Repository extends Base\Repository
     }
 
     /**
+     * If ID is present in the search criteria,we fetch all other rules which dont have the ID
+     * ID will be present only if an existing rule is being edited
+     *
+     * @param Querybuilder $query
+     * @param array        $params
+     */
+    protected function addQueryForId(QueryBuilder $query, array $params)
+    {
+        $query->where(Entity::ID, '!=', $params[Entity::ID]);
+    }
+
+    /**
+     * For the merchant_id attribute below function covers the following two cases
+     * - While adding / editing a rule if rule is for shared merchant, we search all
+     *   applicable rules. If rule is not for shared merchant, we only check for rules
+     *   which either belong to this merchant or the shared merchant
+     * - While fetching rules applicable for payment, the merchant making the payment
+     *   will never be for shared merchant, hence always fetching rules applicable
+     *   for the payment merchant and the shared merchant
+     *
+     * @param Querybuilder $query  [description]
+     *
+     * @param array        $params [description]
+     */
+    protected function addQueryForMerchantId(Querybuilder $query, array $params)
+    {
+        if ($params[Entity::MERCHANT_ID] !== Account::SHARED_ACCOUNT)
+        {
+            $query->whereIn(Entity::MERCHANT_ID, [$params[Entity::MERCHANT_ID], Account::SHARED_ACCOUNT]);
+        }
+    }
+
+    /**
      * We always check for filter_type not equal to that of current rule, so as
      * to find rules with matching criteria but opposite filter action
+     * @param QueryBuilder $query
+     * @param array        $params
      */
-    protected function addQueryForFilterType($query, $params)
+    protected function addQueryForFilterType(QueryBuilder $query, array $params)
     {
         $query->where(Entity::FILTER_TYPE, '!=', $params[Entity::FILTER_TYPE]);
     }
@@ -193,8 +162,10 @@ class Repository extends Base\Repository
     /**
      * min_amount and max_amount are handled like below as they represent a range
      * and we want to find rules which overlap this range
+     * @param QueryBuilder $query
+     * @param array        $params
      */
-    protected function addQueryForMinAmount($query, $params)
+    protected function addQueryForMinAmount(QueryBuilder $query, array $params)
     {
         if (isset($params[Entity::MAX_AMOUNT]) === true)
         {
@@ -202,39 +173,12 @@ class Repository extends Base\Repository
         }
     }
 
-    protected function addQueryForMaxAmount($query, $params)
+    /**
+     * @param QueryBuilder $query
+     * @param array $params
+     */
+    protected function addQueryForMaxAmount(QueryBuilder $query, array $params)
     {
         $query->where(Entity::MAX_AMOUNT, '>=', $params[Entity::MIN_AMOUNT]);
-    }
-
-    protected function getQueryAttributes(Entity $rule)
-    {
-        $attributesArray = ($rule->getType() === Entity::SORTER) ?
-                                $this->sorterQueryAttributes :
-                                $this->filterQueryAttributes;
-
-        return array_merge($this->defaultQueryAttributes, $attributesArray);
-    }
-
-    /**
-     * Generates query params from entity using only those entity keys which are
-     * present in queryAttributes and which are not null
-     *
-     * @param  Rule  $rule   rule entity to use for query
-     * @return array         query params
-     */
-    protected function getQueryParams(Entity $rule): array
-    {
-        $params = $rule->toArray();
-
-        $queryAttributes = $this->getQueryAttributes($rule);
-
-        $params = array_filter($params, function ($value, $key) use ($queryAttributes)
-        {
-            return ((in_array($key, $queryAttributes, true) === true) and
-                    ($value !== null));
-        }, ARRAY_FILTER_USE_BOTH);
-
-        return $params;
     }
 }

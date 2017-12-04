@@ -2641,3 +2641,41 @@ ALTER TABLE action_state
     ADD COLUMN merchant_id CHAR(14) AFTER admin_id,
     MODIFY COLUMN action_id CHAR(14),
     MODIFY COLUMN admin_id CHAR(14);
+
+# Renaming and altering geo_ips
+RENAME TABLE `gio_ips` TO `geo_ips`;
+
+ALTER TABLE `geo_ips`
+    CHANGE `created_at` `created_at` INT(11) NULL DEFAULT NULL,
+    CHANGE `updated_at` `updated_at` INT(11) NULL DEFAULT NULL;
+
+ALTER TABLE batches
+    MODIFY COLUMN upload_file_url VARCHAR(255) NOT NULL,
+    MODIFY COLUMN download_file_url VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE gateway_rules ADD COLUMN comments TEXT DEFAULT NULL AFTER category2;
+
+ALTER TABLE orders ADD INDEX orders_receipt1_index (receipt(25));
+ALTER TABLE orders DROP INDEX orders_receipt_index;
+ALTER TABLE orders ADD INDEX orders_receipt_index(receipt(25));
+ALTER TABLE orders DROP INDEX orders_receipt1_index;
+
+ALTER TABLE `customers` ADD INDEX `customers_email_index` (`email`);
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN payer_account varchar(40) NULL;
+
+#changes adjustment amount to bigint
+ALTER TABLE adjustment
+    MODIFY COLUMN amount BIGINT SIGNED NOT NULL;
+    
+# changes for UPI table
+ALTER TABLE upi
+    ADD COLUMN expiry_time MEDIUMINT SIGNED NULL;
+
+ALTER TABLE `merchant_details`
+    ADD COLUMN `activation_status` VARCHAR(30) DEFAULT NULL AFTER `locked`,
+    ADD COLUMN `clarification_mode` VARCHAR(15) DEFAULT NULL AFTER `activation_status`,
+    ADD COLUMN `archived_at` INT(11) DEFAULT NULL AFTER `clarification_mode`,
+    ADD INDEX `merchant_details_activation_status_index` (`activation_status`),
+    ADD INDEX `merchant_details_archived_at_index` (`archived_at`);

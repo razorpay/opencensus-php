@@ -22,6 +22,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Upi\Icici\ResponseCodeMap;
+use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
 {
@@ -45,6 +46,7 @@ class Gateway extends Base\Gateway
 
     protected $map = [
         Entity::VPA                       => Entity::VPA,
+        Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
         Entity::PROVIDER                  => Entity::PROVIDER,
         Entity::BANK                      => Entity::BANK,
         Entity::RECEIVED                  => Entity::RECEIVED,
@@ -67,6 +69,8 @@ class Gateway extends Base\Gateway
         parent::authorize($input);
 
         $attributes = $this->getGatewayEntityAttributes($input);
+
+        $attributes[Entity::EXPIRY_TIME] = $input['upi']['expiry_time'];
 
         $payment = $this->createGatewayPaymentEntity($attributes);
 
@@ -322,7 +326,9 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
-        $collectByTimestamp = Carbon::now(Timezone::IST)->addMinutes(5)->format('d/m/Y h:i A');
+        $expiryTime = $input['upi']['expiry_time'];
+
+        $collectByTimestamp = Carbon::now(Timezone::IST)->addMinutes($expiryTime)->format('d/m/Y h:i A');
 
         $data = [
             Fields::AMOUNT           => $this->formatAmount($payment['amount']),
@@ -541,13 +547,30 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function verifyPayment(Verify $verify): string
+    protected function checkResponseAndThrowExceptionIfRequired(Verify $verify)
     {
         $content = $verify->verifyResponseContent;
 
         // 5006 = The payment was not created at the gateway end
+        // 5000 = Invalid Request
+        // 15   = Original record not found
         //        And we can safely mark this payment as failed
-        if (($content['success'] !== 'true') and ($content[Fields::RESPONSE] !== '5006'))
+        if (in_array($content[Fields::RESPONSE], ['5006', '5000', '15'], true) === true)
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                VerifyAction::FINISH);
+        }
+    }
+
+    protected function verifyPayment(Verify $verify): string
+    {
+        $this->checkResponseAndThrowExceptionIfRequired($verify);
+
+        $content = $verify->verifyResponseContent;
+
+        if ($content['success'] !== 'true')
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,

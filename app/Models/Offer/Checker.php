@@ -29,10 +29,10 @@ class Checker extends Base\Core
      */
     const PROPERTIES_TO_CHECK = [
         Entity::PAYMENT_METHOD,
-        Entity::PAYMENT_METHOD_TYPE,
-        Entity::PAYMENT_NETWORK,
-        Entity::ISSUER,
         Entity::IINS,
+        Entity::ISSUER,
+        Entity::PAYMENT_NETWORK,
+        Entity::PAYMENT_METHOD_TYPE,
         self::CARD_USAGE,
     ];
 

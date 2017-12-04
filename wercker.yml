@@ -140,7 +140,7 @@ deploy:
             if [ "$APP_ENV" == "prod" ]; then
               if [ "$WERCKER_GIT_BRANCH" != "master" ]; then
                 echo "[ERROR] Cannot deploy a non-master branch to prod"
-                exit $?
+                exit 1
               fi
             fi
       - script:
@@ -205,11 +205,11 @@ deploy-canary:
             if [ "$APP_ENV" == "prod" ] && [ "$CANARY" == "true" ]; then
               if [ "$WERCKER_GIT_BRANCH" != "canary" ]; then
                 echo "[ERROR] Cannot deploy a non-canary branch to prod-canary instance"
-                exit $?
+                exit 1
               fi
               if [ ! -n $(git rev-list HEAD | grep $MASTER) ]; then
                 echo "[ERROR] Cannot deploy outdated branch to prod-canary"
-                exit $?
+                exit 1
               fi
             fi
       - script:

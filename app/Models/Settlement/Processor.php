@@ -151,6 +151,8 @@ class Processor extends Base\Core
 
         $settlements = $this->repo->settlement->getFailedSettlementsForRetry($setlIds, $channel);
 
+        $settlementsRetried = [];
+
         foreach ($settlements as $setl)
         {
             $setlTxns = $setl->setlTransactions;
@@ -170,9 +172,20 @@ class Processor extends Base\Core
             $setlAttempts->push($bankTransferAtpt);
 
             $totalTxns += $setlTxnsCount;
+
+            $settlementsRetried[] = $setl->getId();
         }
 
         $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns, $channel);
+
+        $setlNotRetried = array_diff($setlIds, $settlementsRetried);
+
+        if (empty($setlNotRetried) === false)
+        {
+            $response['retry_skipped_count'] = count($setlNotRetried);
+
+            $response['retry_skipped_settlements'] = implode(', ', $setlNotRetried);
+        }
 
         return $response;
     }
