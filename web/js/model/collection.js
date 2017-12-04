@@ -12,10 +12,16 @@ const defaultFilters = {
 export default class Collection extends BaseModel {
   animateItems = true;
 
-  setFilters(filters) {
-    this.filters = observable.shallowObject(
-      Object.assign({}, defaultFilters, filters)
-    );
+  setFilters(filters, noPagination) {
+    let newFilters;
+
+    if (noPagination) {
+      newFilters = Object.assign({}, filters);
+    } else {
+      newFilters = Object.assign({}, defaultFilters, filters);
+    }
+
+    this.filters = observable.shallowObject(newFilters);
   }
   applyFilters(filters) {
     this.setFilters(filters);
@@ -34,12 +40,20 @@ export default class Collection extends BaseModel {
 
   constructor(props) {
     super(props);
-    let { data, fetchFn, filters, items, model, deleteRouteName } = props;
+    let {
+      data,
+      fetchFn,
+      filters,
+      items,
+      model,
+      noPagination,
+      deleteRouteName,
+    } = props;
     Object.assign(this, { data, fetchFn, model });
 
     this.deleteRouteName = deleteRouteName;
 
-    this.setFilters(filters);
+    this.setFilters(filters, noPagination);
 
     // load initial values
     // fetch if not pre-populated
