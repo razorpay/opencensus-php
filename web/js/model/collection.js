@@ -34,6 +34,18 @@ export default class Collection extends BaseModel {
         filters[f] = Number(filters[f]);
       }
     }
+
+    // Clear the empty values. Send value = null, in case you want to clear out the value from the final filters
+    for (let key in filters) {
+      if (filters[key] == null) {
+        delete filters[key];
+
+        if (typeof this.filters[key] !== 'undefined') {
+          delete this.filters[key];
+        }
+      }
+    }
+
     Object.assign(this.filters, defaultFilters, filters);
     return this.fetch();
   }

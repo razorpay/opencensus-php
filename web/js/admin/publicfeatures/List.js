@@ -24,7 +24,7 @@ function fetchFn() {
 export default class PublicFeaturesList extends Component {
   collection = new Collection({
     data: {
-      route_name: 'onboarding_features_get_submissions',
+      route_name: 'onboarding_features_fetch_submissions',
     },
     fetchFn,
     filters: defaultFilters,
@@ -32,7 +32,7 @@ export default class PublicFeaturesList extends Component {
 
   filter = e => {
     this.collection.addFilters({
-      [e.target.name]: e.target.value,
+      [e.target.name]: e.target.value ? e.target.value : null,
     });
   };
 
@@ -53,6 +53,7 @@ export default class PublicFeaturesList extends Component {
               <option value="rejected">Rejected</option>
             </SelectField>
             <SelectField label="Product" name="product" onChange={this.filter}>
+              <option value="">All</option>
               {Object.keys(featuresAkaMap).map(feature => (
                 <option value={feature} key={feature}>
                   {featuresAkaMap[feature]}
