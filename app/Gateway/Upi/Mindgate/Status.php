@@ -4,13 +4,17 @@ namespace RZP\Gateway\Upi\Mindgate;
 
 class Status
 {
-    const SUCCESS = 'SUCCESS';
+    /**
+     * @see https://drive.google.com/a/razorpay.com/file/d/0B1MTSXtR53PfSFp3OHduYUhQV0U/view?usp=sharing
+     */
 
-    const PENDING = 'PENDING';
+    const SUCCESS = 'Success';
 
-    const FAILURE = 'FAILURE';
+    const PENDING = 'Pending';
 
-    const TIMEOUT = 'TIMEOUT';
+    const FAILURE = 'Failure';
+
+    const TIMEOUT = 'Timeout';
 
     const REFUND_SUCCESS = 'S';
 

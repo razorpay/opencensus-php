@@ -161,7 +161,7 @@ class UpiMindgateGatewayTest extends TestCase
     // Gateway = success
     public function testVerificationFailure()
     {
-        $payment = $this->getDefaultUpiPaymentArray();
+        $this->getDefaultUpiPaymentArray();
 
         $response = $this->doAuthPayment($this->payment);
 
@@ -171,7 +171,7 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->runRequestResponseFlow($data, function() use ($paymentId)
         {
-            $this->payment = $this->verifyPayment($paymentId);
+            $this->verifyPayment($paymentId);
         });
     }
 
@@ -201,7 +201,7 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->runRequestResponseFlow($data, function() use ($content)
         {
-            $response = $this->makeS2SCallbackAndGetContent($content);
+            $this->makeS2SCallbackAndGetContent($content);
         });
 
         $payment = $this->getEntityById('payment', $paymentId, true);

@@ -56,7 +56,7 @@ class Server extends Base\Mock\Server
             random_int(100000, 999999),
             // Amount
             $input[3],
-            'SUCCESS',
+            Status::SUCCESS,
             // Description
             'Transaction Collect request initiated successfully',
             // Payer VA
@@ -178,12 +178,12 @@ class Server extends Base\Mock\Server
 
     protected function callbackResponseContent(array $upiEntity, array $payment)
     {
-        $status = 'SUCCESS';
+        $status = Status::SUCCESS;
 
         switch ($payment['vpa'])
         {
             case 'failed@hdfcbank':
-                $status = 'FAILED';
+                $status = Status::FAILED;
                 break;
         }
 
@@ -250,7 +250,7 @@ class Server extends Base\Mock\Server
     protected function getDefaultVerifyResponse(array $input, $payment): array
     {
         return [
-            'status'        => 'SUCCESS',
+            'status'        => Status::SUCCESS,
             'message'       => 'Transaction success',
             'resp_code'     => '00',
             'npci_txn_id'   => random_int(100000000000, 999999999999),
@@ -283,7 +283,7 @@ class Server extends Base\Mock\Server
 
         if ($payment['vpa'] === 'failedrefund@hdfcbank')
         {
-            $response[4] = 'FAILED';
+            $response[4] = Status::FAILED;
         }
 
         return $this->makeResponse($response, Action::REFUND);
@@ -300,7 +300,7 @@ class Server extends Base\Mock\Server
             $input[6],
             date('Y:m:d h:i:s', time()),
             // REFUND_SUCCESS is just S
-            'S',
+            Status::SUCCESS,
             'Transaction success',
             // response code
             '00',
