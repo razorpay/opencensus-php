@@ -9,4 +9,5 @@ class Constants
 
     const PAYMENT_ID = 'PaymentID';
 
+    const ERROR_TEXT = 'ErrorText';
 }

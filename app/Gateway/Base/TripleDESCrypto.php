@@ -32,6 +32,8 @@ class TripleDESCrypto
      */
     public function decryptString($ciphertext)
     {
+        $this->des->disablePadding();
+
         return $this->des->decrypt($ciphertext);
     }
 }
