@@ -1936,11 +1936,20 @@
           <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="settlement" ng-file-select="onFileSelect($files, 'settlement')">
         </div>
       </div>
+      <div class="form-group">
+        <label for="mode" class="col-lg-2 control-label">Mode</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="mode" ng-model="mode">
+            <option value="live">Live</option>
+            <option value="test">Test</option>
+          </select>
+        </div>
+      </div>
     </form>
   </div>
   <div class="modal-footer">
     <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-    <button class="btn btn-primary modal-ok" ng-click="ok()">OK</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok(mode)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="uploadScreenshotModalContent.html">
