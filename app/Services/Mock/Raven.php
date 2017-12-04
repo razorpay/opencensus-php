@@ -11,7 +11,7 @@ class Raven extends BaseRaven
         return [self::SMS_ID => self::TEST_SMS_ID];
     }
 
-    public function sendSms(array $input): array
+    public function sendSms(array $input, bool $testModeMocked = true): array
     {
         return [self::SMS_ID => self::TEST_SMS_ID];
     }

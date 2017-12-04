@@ -75,9 +75,26 @@ class Raven
         return $response;
     }
 
-    public function sendSms(array $input): array
+    /**
+     * Makes call to raven service to send an SMS. By default if it's test mode
+     * we return mock success response. But conditionally callee can specify
+     * if it should not mock test mode behavior.
+     *
+     * @param  array        $input
+     * @param  bool|boolean $testModeMocked
+     *
+     * @return array
+     */
+    public function sendSms(array $input, bool $testModeMocked = true): array
     {
-        $response = $this->sendRequest(self::RAVEN_URLS['send-sms'], 'post', $input);
+        if (($testModeMocked === true) and ($this->mode === Mode::TEST))
+        {
+            return [self::SMS_ID => self::TEST_SMS_ID];
+        }
+        else
+        {
+            $response = $this->sendRequest(self::RAVEN_URLS['send-sms'], 'post', $input);
+        }
 
         return $response;
     }
