@@ -43,7 +43,8 @@
         "razorpay/trace": "2.0.6",
         "anlutro/l4-settings": "^0.5.0",
         "razorpay/oauth": "dev-master",
-        "drewm/mailchimp-api": "^2.1"
+        "drewm/mailchimp-api": "^2.1",
+        "razorpay/ufh-sdk-php": "*"
     },
     "repositories": [
         {
@@ -61,6 +62,10 @@
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/oauth.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:razorpay/ufh-sdk-php.git"
         }
     ],
     "require-dev": {
