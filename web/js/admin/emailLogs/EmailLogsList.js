@@ -24,6 +24,7 @@ export default class EmailLogsList extends Component {
   collection = new Collection({
     fetchFn: emailFetch,
     filters: null,
+    noPagination: true,
   });
 
   onSubmit = filters => this.collection.applyFilters(filters);
