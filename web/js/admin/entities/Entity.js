@@ -162,12 +162,12 @@ const actions = {
       updateEntity={entityComponent::updateEntity}
     />
   ),
-  batch: entity => (
+  batch: (entity, entityComponent) => (
     <ShowWhen permission="retry_batch">
       <AsyncButton
         class="btn"
         pendingClass="small spinner"
-        onClick={entity::retryBatch}
+        onClick={retryBatch.bind(entity, entityComponent::updateEntity)}
         text="Retry batch"
         confirm="Confirm retry batch?"
       />
@@ -207,7 +207,7 @@ function downloadFile() {
   });
 }
 
-function retryBatch() {
+function retryBatch(updateEntity) {
   const params = {
     route_name: 'batch_process_by_id',
     url_params: {
@@ -218,8 +218,8 @@ function retryBatch() {
 
   return adminPost(params).then(response => {
     if (response) {
+      updateEntity();
       notifySuccess(`Batch: ${response.id} retried successfully.`);
-      window.location.reload();
     }
   });
 }

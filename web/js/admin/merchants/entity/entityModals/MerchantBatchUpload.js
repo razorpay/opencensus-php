@@ -1,7 +1,7 @@
 import React from 'react';
 import BaseModal from 'ui/BaseModal';
 
-import { notifyError } from 'common/modal';
+import { notifyError, notifySuccess } from 'common/modal';
 import { adminFormUpload } from 'util/fetch';
 
 import Form from 'ui/Form';
@@ -30,7 +30,7 @@ export default ({ merchantId }) => {
 
     return adminFormUpload({
       route_name: 'merchant_batches',
-      type: 'irctc',
+      'body[type]': 'irctc',
 
       url_params: JSON.stringify({
         '{id}': merchantId,
