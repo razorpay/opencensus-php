@@ -34,8 +34,17 @@ export default class EmailLogsList extends Component {
         <div class="box">
           <header>Emails</header>
           <Form onSubmit={this.onSubmit} class="filters">
-            <Field name="recipient" type="email" label="Recipient" />
-            <Field name="tag" label="Tag" />
+            <Field
+              name="recipient"
+              type="email"
+              label="Recipient"
+              placeholder="abc@xyz.com"
+            />
+            <Field
+              name="tag"
+              label="Tag"
+              placeholder="payment_successful AND pay_7baYnDji90l"
+            />
             <SelectField name="event" label="Event" defaultValue={''}>
               <option value="">All</option>
               <option value="delivered">Delivered</option>

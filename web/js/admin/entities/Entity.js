@@ -5,6 +5,7 @@ import { adminFetch, adminDelete, adminPost } from 'util/fetch';
 import { Link } from 'react-router-dom';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyDone, notifyError, notifySuccess } from 'common/modal';
+import ShowWhen from 'admin/components/ShowWhen';
 import user from 'admin/user';
 
 import * as action from './entityActions/index';
@@ -46,8 +47,13 @@ export default class GenericEntity extends Component {
   }
 
   render() {
-    let { id, type } = this.params;
+    let { id, type, mode = null } = this.params;
     let { data } = this.state;
+
+    //pass mode value for respective api's
+    if (data && mode) {
+      data.mode = mode;
+    }
 
     return (
       <div class="box limited">
@@ -157,13 +163,15 @@ const actions = {
     />
   ),
   batch: entity => (
-    <AsyncButton
-      class="btn"
-      pendingClass="small spinner"
-      onClick={entity::retryBatch}
-      text="Retry batch"
-      confirm="Confirm retry batch?"
-    />
+    <ShowWhen permission="retry_batch">
+      <AsyncButton
+        class="btn"
+        pendingClass="small spinner"
+        onClick={entity::retryBatch}
+        text="Retry batch"
+        confirm="Confirm retry batch?"
+      />
+    </ShowWhen>
   ),
 };
 
@@ -200,13 +208,12 @@ function downloadFile() {
 }
 
 function retryBatch() {
-  console.log(this);
   const params = {
     route_name: 'batch_process_by_id',
     url_params: {
       id: this.id,
     },
-    mode: 'live',
+    mode: this.mode,
   };
 
   return adminPost(params).then(response => {
