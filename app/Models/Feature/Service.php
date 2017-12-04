@@ -168,6 +168,8 @@ class Service extends Base\Service
      */
     public function getOnboardingQuestions(array $input): array
     {
+        (new Validator)->validateInput('onboarding_questions', $input);
+
         $features = $input[Constants::FEATURES];
 
         $response = [];

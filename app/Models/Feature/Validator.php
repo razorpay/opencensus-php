@@ -34,6 +34,10 @@ class Validator extends Base\Validator
         Constants::VIRTUAL_ACCOUNTS . "." . Constants::EXPECTED_MONTHLY_REVENUE => 'filled|string',
     ];
 
+    protected static $onboardingQuestionsRules = [
+        Constants::FEATURES     => "required|array"
+    ];
+
     protected static $onboardingSubmissionsFetchRules = [
         Fetch::TO           => 'sometimes|epoch',
         Fetch::FROM         => 'sometimes|epoch',
@@ -54,7 +58,7 @@ class Validator extends Base\Validator
                 $attribute,
                 $value);
         }
-   }
+    }
 
    public function validateZoho(Request $request)
    {
