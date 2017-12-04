@@ -219,7 +219,7 @@ class Service extends Base\Service
 
         $data[$feature] = $input;
 
-        $status = (new Core)->processOnboardingResponses(Constants::UPDATE, $data, $merchant);
+        $status = (new Core)->processOnboardingSubmissions(Constants::UPDATE, $data, $merchant);
 
         return $status;
     }
@@ -259,19 +259,31 @@ class Service extends Base\Service
     }
 
     /**
+     * @deprecated by getFeatureOnboardingRequests()
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function getFeatureOnboardingRequestsByStatus(array $input): array
+    {
+        $status = $input[Constants::STATUS];
+
+        return $this->repo->merchant_detail->getFeatureOnboardingRequestsByStatus($status);
+    }
+
+    /**
      * Returns the feature activation requests based on the status
      *
      * @param array $input
      *
-     * @return mixed
+     * @return array
      */
-    public function getFeatureOnboardingRequests(array $input)
+    public function getFeatureOnboardingRequests(array $input): array
     {
-        $status = $input['status'];
+        (new Validator)->validateInput(Constants::ONBOARDING_SUBMISSIONS_FETCH, $input);
 
-        $merchantDetails = $this->repo->merchant_detail->getFeatureOnboardingRequestsByStatus($status);
-
-        return $merchantDetails;
+        return $this->repo->merchant_detail->getFeatureOnboardingRequests($input);
     }
 
     /**
@@ -282,7 +294,7 @@ class Service extends Base\Service
      */
     public function updateFeatureActivationStatus(string $featureName, array $input): array
     {
-        $status = $input['status'];
+        $status = $input[Constants::STATUS];
 
         $merchantId = $input['merchant_id'];
 
@@ -308,7 +320,7 @@ class Service extends Base\Service
             $featureName
         );
 
-        $response['status'] = $status;
+        $response[Constants::STATUS] = $status;
 
         return $response;
     }
