@@ -1,39 +1,47 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
 
-import Amount from 'rzp/ui/Amount';
 import {
   fetchPayments,
   fetchRefunds,
   fetchSettlements,
 } from 'rzp/modules/collection';
+import { titleCase } from 'rzp/utils/rzp-utils';
 
+import { tabs, tabsMeta } from './data';
 import PaymentsList from 'merchant/components/Payments/PaymentsList';
 
-const tabs = ['payments', 'settlements', 'refunds'],
-  tabsMeta = {
-    [tabs[0]]: {
-      columns: [
-        {
-          recordKey: 'amount',
-          transfomer: value => {
-            return <Amount value={value} />;
-          },
-        },
-        {
-          recordKey: 'id',
-          transfomer: value => {
-            return (
-              <Link to={`/payments/${value}`}>
-                <code>{value}</code>
-              </Link>
-            );
-          },
-        },
-      ],
-    },
-  };
+import './styles.styl';
+
+tabsMeta.refunds.columns = [...tabsMeta.refunds.columns];
+
+tabsMeta.refunds.columns[3] = {
+  ...tabsMeta.refunds.columns[3],
+  transfomer: (value, record) => {
+    const paymentAmount = (record.payment && record.payment.amount) || 0;
+
+    return <Amount value={paymentAmount} />;
+  },
+};
+
+const Row = ({ record, tabName }) => {
+  const tabMeta = tabsMeta[tabName];
+
+  return (
+    <tr>
+      {tabMeta.columns.map((columnMeta, index) => {
+        let value = record[columnMeta.recordKey];
+
+        value =
+          typeof columnMeta.transfomer === 'function'
+            ? columnMeta.transfomer(value, record)
+            : value;
+
+        return <td key={index}>{value}</td>;
+      })}
+    </tr>
+  );
+};
 
 @connect(
   state => {
@@ -56,37 +64,75 @@ export default class RecentActivity extends Component {
     this.state = {
       selectedTab: tabs[0],
     };
+
+    this.handleTabClick = ::this.handleTabClick;
+  }
+
+  handleTabClick(e) {
+    e.preventDefault();
+
+    const tabName = e.target.getAttribute('name');
+
+    this.setState({ selectedTab: tabName });
+  }
+
+  fetchData(params) {
+    this.props.fetchPayments(params);
+    this.props.fetchRefunds(params);
+    this.props.fetchSettlements(params);
   }
 
   componentWillMount() {
-    const numRows = 6;
-
-    this.props.fetchPayments(numRows);
-    this.props.fetchRefunds(numRows);
-    this.props.fetchSettlements(numRows);
+    this.fetchData({ count: 6 });
   }
 
   render() {
     const { selectedTab } = this.state,
-      { payments, settlements, refunds } = this.props;
+      selectedTabData = this.props[selectedTab],
+      numColumns = tabsMeta[selectedTab].numColumns;
+
+    let body = null;
+
+    if (selectedTabData.loading || selectedTabData.items.length === 0) {
+      body = (
+        <tr>
+          <td colSpan={numColumns}>
+            <center>
+              {selectedTabData.loading ? 'Please Wait...' : 'No Records found.'}
+            </center>
+          </td>
+        </tr>
+      );
+    } else {
+      body = selectedTabData.items.map((record, index) => {
+        return <Row key={index} record={record} tabName={selectedTab} />;
+      });
+    }
 
     return (
-      <div className="panel">
+      <div className="panel recent-activity-cont">
         <tabbed-container>
-          <header className="row">
+          <div className="row">
             {tabs.map((tabName, index) => {
               const className =
                 (tabName === selectedTab ? 'active ' : '') + 'col-sm-4';
 
               return (
-                <a className={className} key={index}>
-                  {tabName}
+                <a
+                  className={className}
+                  key={index}
+                  name={tabName}
+                  onClick={this.handleTabClick}
+                >
+                  {titleCase(tabName)}
                 </a>
               );
             })}
-          </header>
+          </div>
         </tabbed-container>
-        <table className="table table-striped" />
+        <table className="table table-striped">
+          <tbody>{body}</tbody>
+        </table>
       </div>
     );
   }

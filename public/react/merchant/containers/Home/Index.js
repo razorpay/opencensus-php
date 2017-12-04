@@ -2,15 +2,14 @@ import React, { Component } from 'react';
 import Header from 'rzp/ui/Header';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import AsyncButton from 'react-async-button';
 import * as HomeActions from 'merchant/modules/home';
-import { Field } from 'redux-form';
 import moment from 'moment';
 
 import Amount from 'rzp/ui/Amount';
 import Definition from 'rzp/ui/Definition';
-import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
+import Sticky from 'rzp/ui/Sticky';
 
+import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from './PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
@@ -74,23 +73,25 @@ export default class HomeContainer extends Component {
 
     return (
       <div class="react-root">
-        <Header className="clearfix" title="" showMode={false}>
-          <div className="pull-left date-range-container">
-            <DateRangePicker
-              presets={dateRangePresets}
-              onDatesChange={this.onDatesChange}
-              defaultPreset={defaultPreset}
-            />
-          </div>
-          <div className="pull-right">
-            <Definition>
-              <span>
-                Current Balance: <Amount value={38760} />
-              </span>
-              <Link to="/settlements">View Settlements &gt;</Link>
-            </Definition>
-          </div>
-        </Header>
+        <Sticky stickWhen={0} stickAt={50}>
+          <Header className="clearfix" title="" showMode={false}>
+            <div className="pull-left date-range-container">
+              <DateRangePicker
+                presets={dateRangePresets}
+                onDatesChange={this.onDatesChange}
+                defaultPreset={defaultPreset}
+              />
+            </div>
+            <div className="pull-right">
+              <Definition>
+                <span>
+                  Current Balance: <Amount value={38760} />
+                </span>
+                <Link to="/settlements">View Settlements &gt;</Link>
+              </Definition>
+            </div>
+          </Header>
+        </Sticky>
 
         <div className="dashboard">
           <div className="row">
@@ -113,6 +114,7 @@ export default class HomeContainer extends Component {
             </div>
             <div className="col-md-6">
               <p>Recent Activity</p>
+              <RecentActivity />
             </div>
           </div>
         </div>
