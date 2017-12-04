@@ -1564,6 +1564,7 @@ final class Route
 
     public static $slaveRoutes = [
         'payment_fetch_transaction',
+        'payment_fetch_multiple',
     ];
 
     protected static $jsonpRoutes = [
