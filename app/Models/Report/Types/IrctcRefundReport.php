@@ -238,12 +238,19 @@ class IrctcRefundReport extends BasicEntityReport
 
         $tdate = Carbon::createFromTimestamp($to, Timezone::IST)->format('Y-m-d');
 
+        $emails = $this->merchant['transaction_report_email'];
+
+        if (isset($input['email']) === true)
+        {
+            array_push($emails, $input['email']);
+        }
+
         $data = [
             'subject'    => 'Irctc Delta Refunds Report - ' . $fdate .' to ' . $tdate,
             'body'       => '',
             'signed_url' => $signedUrl,
             'filename'   => $filename,
-            'emails'     => $input['email']
+            'emails'     => $emails,
         ];
 
         return $data;
