@@ -1,7 +1,7 @@
 import React from 'react';
 import BaseModal from 'ui/BaseModal';
 
-import { notifyError, notifySuccess } from 'common/modal';
+import { notifyError, notifySuccess, closeModal } from 'common/modal';
 import { adminFormUpload } from 'util/fetch';
 
 import Form from 'ui/Form';
@@ -10,13 +10,16 @@ import AsyncButton from 'ui/AsyncButton';
 
 export default ({ merchantId }) => {
   function handleSubmit(body) {
+    let requestData = {};
+
+    requestData.mode = body.mode;
+    delete body.mode;
+
     if (!Object.keys(body).length) {
       notifyError('Please upload atleast 1 file');
 
       return false;
     }
-
-    let requestData = {};
 
     if (body.refund) {
       requestData['file[data][refund]'] = body.refund[0];
@@ -25,8 +28,6 @@ export default ({ merchantId }) => {
     if (body.settlement) {
       requestData['file[data][settlement]'] = body.settlement[0];
     }
-
-    requestData.mode = body.mode;
 
     return adminFormUpload({
       route_name: 'merchant_batches',

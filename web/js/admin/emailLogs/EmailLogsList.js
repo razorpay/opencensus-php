@@ -45,6 +45,7 @@ export default class EmailLogsList extends Component {
               name="tag"
               label="Tag"
               placeholder="payment_successful AND pay_7baYnDji90l"
+              style={{ width: '280px' }}
             />
             <SelectField name="event" label="Event" defaultValue={''}>
               <option value="">All</option>
