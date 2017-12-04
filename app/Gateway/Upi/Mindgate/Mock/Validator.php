@@ -9,8 +9,8 @@ class Validator extends Base\Validator
     protected static $validateVpaRules = [
         // Bank side Merchant Id
         'required|alpha_num|max:16',
-        // RZP API Payment Id
-        'required|alpha_num|max:50',
+        // Random 10 length string
+        'required|alpha_num|size:10',
         // VPA
         'required|string|max:255',
         // Request Type

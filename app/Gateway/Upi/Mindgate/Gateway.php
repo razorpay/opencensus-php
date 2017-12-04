@@ -515,7 +515,7 @@ class Gateway extends Base\Gateway
     {
         $data = [
             $this->getMerchantId(),
-            $input['payment']['id'],
+            random_alpha_string(10),
             $input['payment']['vpa'],
             'T'
         ];
