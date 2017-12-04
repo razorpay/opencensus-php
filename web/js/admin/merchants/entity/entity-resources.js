@@ -345,6 +345,7 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Features',
+      permission: 'view_merchant_features',
       children: () => (
         <FeaturesDetails
           features={features}
@@ -354,6 +355,7 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Balance',
+      permission: 'view_merchant_balance',
       value: Object.keys(balanceDetails).length
         ? () => (
             <div style={{ width: '80%', borderLeft: '1px solid #edf1f2' }}>
@@ -623,6 +625,7 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Pricing Plan',
+      permission: 'view_merchant_pricing',
       children: () => (
         <div>
           <EntityRow label="Plan Id" value={pricingPlans.id} />
@@ -647,7 +650,6 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Terminal (Live)',
-      permission: 'view_merchant_credits_log',
       children: () => (
         <div>
           <Table items={terminals.items} fields={_getTerminalFields()} />
