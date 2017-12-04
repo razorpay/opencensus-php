@@ -5,7 +5,7 @@ import { notifyError } from 'common/modal';
 import { adminFormUpload } from 'util/fetch';
 
 import Form from 'ui/Form';
-import { FileField } from 'ui/Field';
+import { FileField, SelectMode } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 
 export default ({ merchantId }) => {
@@ -25,6 +25,8 @@ export default ({ merchantId }) => {
     if (body.settlement) {
       requestData['file[data][settlement]'] = body.settlement[0];
     }
+
+    requestData.mode = body.mode;
 
     return adminFormUpload({
       route_name: 'merchant_batches',
@@ -59,6 +61,8 @@ export default ({ merchantId }) => {
             name={entity.name}
           />
         ))}
+        <SelectMode defaultValue="live" />
+
         <AsyncButton
           text="Submit"
           class="btn"
