@@ -22,7 +22,7 @@ const methodMapping = {
 const type_list = { Settlement: 'settlement' };
 
 export default class PricingPlanModal extends Component {
-  state = { settlementPlans: {} };
+  state = { settlementPlans: {}, pending: true };
 
   componentWillMount() {
     adminFetch({
@@ -35,7 +35,7 @@ export default class PricingPlanModal extends Component {
         settlementPlans[value.id] = value.name;
       }
 
-      this.setState({ settlementPlans });
+      this.setState({ settlementPlans, pending: false });
     });
   }
 
@@ -69,41 +69,45 @@ export default class PricingPlanModal extends Component {
   render() {
     return (
       <BaseModal header="Assign Schedule Plan">
-        <Form class="full-span full-elements" style={{ width: '350px' }}>
-          <SelectField name="type" label="Type" defaultValue={''}>
-            {Object.keys(type_list).map(key => (
-              <option key={key} value={key}>
-                {type_list[key]}
-              </option>
-            ))}
-          </SelectField>
+        {this.state.pending ? (
+          <div class="spinner center" />
+        ) : (
+          <Form class="full-span full-elements" style={{ width: '350px' }}>
+            <SelectField name="type" label="Type" defaultValue={''}>
+              {Object.keys(type_list).map(key => (
+                <option key={key} value={key}>
+                  {type_list[key]}
+                </option>
+              ))}
+            </SelectField>
 
-          <SelectField name="schedule_id" label="Schedules" defaultValue={''}>
-            {!Object.keys(this.state.settlementPlans).length && (
-              <option value="">Loading...</option>
-            )}
-            {Object.keys(this.state.settlementPlans).map(key => (
-              <option key={key} value={key}>
-                {this.state.settlementPlans[key]}
-              </option>
-            ))}
-          </SelectField>
+            <SelectField name="schedule_id" label="Schedules" defaultValue={''}>
+              {!Object.keys(this.state.settlementPlans).length && (
+                <option value="">Loading...</option>
+              )}
+              {Object.keys(this.state.settlementPlans).map(key => (
+                <option key={key} value={key}>
+                  {this.state.settlementPlans[key]}
+                </option>
+              ))}
+            </SelectField>
 
-          <SelectField name="method" label="Method" defaultValue={''}>
-            {Object.keys(methodMapping).map(key => (
-              <option key={key} value={key}>
-                {methodMapping[key]}
-              </option>
-            ))}
-          </SelectField>
+            <SelectField name="method" label="Method" defaultValue={''}>
+              {Object.keys(methodMapping).map(key => (
+                <option key={key} value={key}>
+                  {methodMapping[key]}
+                </option>
+              ))}
+            </SelectField>
 
-          <AsyncButton
-            text="Ok"
-            class="btn"
-            pendingClass="small spinner"
-            onSubmit={this.handleSubmit}
-          />
-        </Form>
+            <AsyncButton
+              text="Ok"
+              class="btn"
+              pendingClass="small spinner"
+              onSubmit={this.handleSubmit}
+            />
+          </Form>
+        )}
       </BaseModal>
     );
   }
