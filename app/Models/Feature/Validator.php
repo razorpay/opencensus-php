@@ -34,8 +34,8 @@ class Validator extends Base\Validator
         Constants::VIRTUAL_ACCOUNTS . "." . Constants::EXPECTED_MONTHLY_REVENUE => 'filled|string',
     ];
 
-    protected static $onboardingQuestionRules = [
-        Constants::FEATURES     => "required|string"
+    protected static $onboardingQuestionsRules = [
+        Constants::FEATURES     => "required|array"
     ];
 
     protected static $onboardingSubmissionsFetchRules = [
