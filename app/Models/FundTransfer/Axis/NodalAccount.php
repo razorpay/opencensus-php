@@ -62,7 +62,7 @@ class NodalAccount extends NodalBase\NodalAccount
         $this->iv = base64_decode(Config::get('nodal.axis.iv'));
     }
 
-    public function generateTransferFile(string $amount): array
+    public function initiateTransfer(string $amount): array
     {
         $rows = $this->getRows($amount);
 

@@ -64,7 +64,7 @@ class Base extends BaseProcessor
         }
     }
 
-    public function generateData(PublicCollection $entities): array
+    public function generateData(PublicCollection $entities)
     {
         $refundFileProcessor = $this->getFileProcessor(Type::REFUND);
 
@@ -72,39 +72,39 @@ class Base extends BaseProcessor
 
         if ($entities->get('refunds')->isNotEmpty() === true)
         {
-            $this->data['refunds'] = $refundFileProcessor->generateData($entities->get('refunds'));
+            $data['refunds'] = $refundFileProcessor->generateData($entities->get('refunds'));
         }
 
         if ($entities->get('claims')->isNotEmpty() === true)
         {
-            $this->data['claims'] = $claimFileProcessor->generateData($entities->get('claims'));
+            $data['claims'] = $claimFileProcessor->generateData($entities->get('claims'));
         }
 
-        return $this->data;
+        return $data;
     }
 
-    public function createFile()
+    public function createFile($data)
     {
-        if (isset($this->data['refunds']) === true)
+        if (isset($data['refunds']) === true)
         {
             $refundFileProcessor = $this->getFileProcessor(Type::REFUND);
 
-            $refundFileProcessor->createFile();
+            $refundFileProcessor->createFile($data['refunds']);
         }
 
-        if (isset($this->data['claims']) === true)
+        if (isset($data['claims']) === true)
         {
             $claimFileProcessor = $this->getFileProcessor(Type::CLAIM);
 
-            $claimFileProcessor->createFile();
+            $claimFileProcessor->createFile($data['claims']);
         }
     }
 
-    public function sendFile()
+    public function sendFile($data)
     {
         try
         {
-            $mailData = $this->formatDataForMail();
+            $mailData = $this->formatDataForMail($data);
 
             $dailyFileMail = new DailyFileMail($mailData);
 
@@ -125,7 +125,11 @@ class Base extends BaseProcessor
                             ]);
 
             throw new GatewayFileException(
-                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE);
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
+                [
+                    'id'        => $this->gatewayFile->getId(),
+                ],
+                $e);
         }
     }
 

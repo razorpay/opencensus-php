@@ -38,6 +38,15 @@ class PaymentCreateTest extends TestCase
         });
     }
 
+    public function testCreatePaymentWithoutMethod()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        unset($payment['method']);
+
+        $this->doAuthPayment($payment);
+    }
+
     public function testCreatePaymentWithoutCardNumber()
     {
         $payment = $this->getDefaultPaymentArray();

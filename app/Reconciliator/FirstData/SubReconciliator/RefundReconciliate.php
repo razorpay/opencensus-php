@@ -83,9 +83,9 @@ class RefundReconciliate extends Base\RefundReconciliate
      * @param array    $row
      * @return integer $refundAmount
      */
-    protected function getRefundAmount(array $row)
+    protected function getReconRefundAmount(array $row)
     {
-        $refundAmount = parent::getRefundAmount($row);
+        $refundAmount = parent::getReconRefundAmount($row);
 
         // We are converting to int after casting to string as PHP randomly
         // returns wrong int values due to differing floating point precisions
@@ -200,14 +200,16 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function validateRefundAmountEqualsReconAmount(array $row)
     {
-        if ($this->refund->getAmount() !== $this->getRefundAmount($row))
+        if ($this->refund->getBaseAmount() !== $this->getReconRefundAmount($row))
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
-                    'message'       => 'Refund amount mismatch',
-                    'row'           => $row,
-                    'gateway'       => get_called_class()
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'message'           => 'Refund amount mismatch',
+                    'expected_amount'   => $this->refund->getBaseAmount(),
+                    'currency'          => $this->refund->getCurrency(),
+                    'row'               => $row,
+                    'gateway'           => get_called_class()
                 ]);
 
             return false;

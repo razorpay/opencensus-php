@@ -2,18 +2,18 @@
 
 namespace RZP\Tests\Functional\Helpers\Payment;
 
-use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Exception;
 use Mockery;
 use Requests;
-use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Exception;
+use RZP\Models\Merchant\Account;
+use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Payment\Verify\Action;
 use Symfony\Component\DomCrawler\Crawler;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Models\Merchant\Account;
-use RZP\Models\Payment\Verify\Action;
 
 trait PaymentTrait
 {
@@ -274,7 +274,7 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function doAuthPayment($payment = null, $server = null)
+    protected function doAuthPayment($payment = null, $server = null, $key = null)
     {
         if ($payment === null)
         {
@@ -292,7 +292,7 @@ trait PaymentTrait
             $request['server'] = $server;
         }
 
-        $this->ba->publicAuth();
+        $this->ba->publicAuth($key);
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -669,6 +669,20 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function authorizedFailedPayment($id)
+    {
+        $request = array(
+            'url'    => '/payments/'.$id.'/authorize_failed',
+            'method' => 'POST');
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+
     protected function verifyMultiplePayments($filter)
     {
         $request = array(
@@ -793,11 +807,9 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function retryFailedRefund($id)
+    protected function retryFailedRefund($id, $content = [])
     {
         $this->ba->appAuth();
-
-        $content = [];
 
         $request = array(
             'method'  => 'POST',

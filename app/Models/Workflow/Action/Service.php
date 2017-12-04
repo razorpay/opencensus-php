@@ -5,7 +5,6 @@ namespace RZP\Models\Workflow\Action;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Workflow\Constants;
 
 class Service extends Base\Service
@@ -36,7 +35,7 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
-        $action = $this->core()->create($input);
+        $action = $this->core()->create($input, false, $this->admin);
 
         return $action->toArrayPublic();
     }
@@ -115,7 +114,7 @@ class Service extends Base\Service
 
         // Comments
         $comments = $this->repo
-                         ->action_comment
+                         ->comment
                          ->fetchByActionIdWithRelations(
                              $actionId, [Entity::ADMIN]);
 
@@ -172,7 +171,9 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_ACTION_ALREADY_EXECUTED);
         }
 
-        return $this->core()->executeAction($action);
+        $admin = $this->app['basicauth']->getAdmin();
+
+        return $this->core()->executeAction($action, $admin);
     }
 
     /**

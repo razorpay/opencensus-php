@@ -122,9 +122,9 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::WALLET                    => null,
+        self::CARD_ID                   => null,
         self::ACCOUNT_NUMBER            => null,
         self::BANK                      => null,
-        self::CARD_ID                   => null,
         self::GATEWAY_TOKEN2            => null,
         self::RECURRING                 => false,
         self::RECURRING_FAILURE_REASON  => null,

@@ -908,6 +908,8 @@ class Service extends Base\Service
         {
             if ($payment->shouldTimeout($now) === true)
             {
+                $this->repo->payment->lockForUpdateAndReload($payment);
+
                 try
                 {
                     $this->getNewProcessor($payment->merchant)

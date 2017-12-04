@@ -106,8 +106,9 @@ class Server extends Base\Mock\Server
 
     public function otpGenerate($input)
     {
-        // verify checksum.
+        $this->request($input);
 
+        // verify checksum.
         $content = array(
             'messagecode'       => '504',
             'status'            => 'SUCCESS',

@@ -111,7 +111,12 @@ trait RequestResponseFlowTrait
 
         if (isset($expected['two_fa_error']) === true)
         {
-            $this->assertEquals($actual->hasTwoFaError(), $expected['two_fa_error']);
+            $this->assertEquals($expected['two_fa_error'], $actual->hasTwoFaError());
+        }
+
+        if (isset($expected['message']) === true)
+        {
+            $this->assertEquals($expected['message'], $actual->getMessage());
         }
 
         $internalError = $actual->getError()->getAttributes();
@@ -317,7 +322,10 @@ trait RequestResponseFlowTrait
         return $this->getJsonContentFromResponse($response, $callback);
     }
 
-    protected function makeRequestAndCatchException(Closure $closure, string $exceptionClass = \Exception::class)
+    protected function makeRequestAndCatchException(
+        Closure $closure,
+        string $exceptionClass = \Exception::class,
+        string $exceptionMessage = null)
     {
         try
         {
@@ -326,6 +334,11 @@ trait RequestResponseFlowTrait
         catch (\Exception $e)
         {
             $this->assertExceptionClass($e, $exceptionClass);
+
+            if ($exceptionMessage !== null)
+            {
+                $this->assertSame($exceptionMessage, $e->getMessage());
+            }
 
             return;
         }

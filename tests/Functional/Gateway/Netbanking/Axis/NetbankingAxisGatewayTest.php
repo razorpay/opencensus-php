@@ -8,6 +8,8 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
+use RZP\Gateway\Netbanking\Axis\ResponseFields;
+use RZP\Gateway\Netbanking\Axis\Status;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -106,6 +108,79 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($data['request']['content'], $order);
     }
 
+    public function testCorporatePayment()
+    {
+        $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 1]);
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $gatewayPayment);
+
+        // Asserts that bank payment id exists in response and is an int
+        $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
+
+        $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 0]);
+    }
+
+    public function testCorporatePendingPayment()
+    {
+        $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 1]);
+
+        $this->server = $this->mockPendingResponse();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->payment;
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthAndCapturePayment($payment);
+            }
+        );
+
+        $this->mockS2sCallForPaymentFromBank();
+
+        // Entry refreshed with the actual payment
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $gatewayPayment);
+
+        // Asserts that bank payment id exists in response and is an int
+        $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
+
+        $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 0]);
+    }
+
+    public function testVerifyDisabledForCorporatePayments()
+    {
+        $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 1]);
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        assert($payment['verified'] === null);
+
+        $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 0]);
+    }
+
     public function testTpvVerifyPayment()
     {
         $this->testTpvPayment();
@@ -141,6 +216,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
     public function testPaymentVerify()
     {
+
         $payment = $this->doAuthPayment($this->payment);
 
         $this->mockSetBankPaymentId();
@@ -168,6 +244,7 @@ class NetbankingAxisGatewayTest extends TestCase
      */
     public function testOldPaymentVerify()
     {
+
         $this->doAuthAndCapturePayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -277,6 +354,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
     public function testVerifyMismatch()
     {
+
         $data = $this->testData[__FUNCTION__];
 
         $payment = $this->doAuthPayment($this->payment);
@@ -293,6 +371,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
     public function testMulipleTableVerifyResponse()
     {
+
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->mockMultipleVerifyTables('F');
@@ -304,6 +383,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
     public function testMulipleSuccessTableVerifyResponse()
     {
+
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->mockMultipleVerifyTables('S');
@@ -325,6 +405,7 @@ class NetbankingAxisGatewayTest extends TestCase
      */
     public function testAuthFailedVerifyNullResponse()
     {
+
         $this->testFailedAuthPayment();
 
         $payment = $this->getLastEntity('payment', true);
@@ -348,6 +429,7 @@ class NetbankingAxisGatewayTest extends TestCase
     // Auth fails but verify shows success
     public function testAuthFailedVerifySuccess()
     {
+
         $data = $this->testData[__FUNCTION__];
 
         $this->testFailedAuthPayment();
@@ -588,5 +670,34 @@ class NetbankingAxisGatewayTest extends TestCase
                     $content['BID'] = $gatewayEntity['bank_payment_id'];
                 }
             });
+    }
+
+    protected function mockPendingResponse()
+    {
+        // Mocks pending response
+        return $this->mockServerContentFunction(
+            function(&$content, $action = null)
+            {
+                $content[ResponseFields::PAID] = Status::NO;
+                $content[ResponseFields::FLAG] = Status::PENDING;
+            });
+
+    }
+
+    protected function mockS2sCallForPaymentFromBank()
+    {
+        // Initial pending reponse based entry
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $content = $this->server->getS2sResponseForPayment($gatewayPayment);
+
+        $request = [
+            'content' => $content,
+            'url' => '/callback/netbanking_axis',
+            'method' => 'post'
+        ];
+
+        // Fire s2s callback request
+        return $this->makeRequestAndGetContent($request);
     }
 }

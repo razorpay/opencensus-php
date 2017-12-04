@@ -7,7 +7,9 @@
 !environment/.env.defaults
 !environment/.env.production
 !environment/.env.beta
-!environment/.env.alpha
+!environment/.env.stage
+!environment/.env.perf
+!environment/.env.func
 !environment/*.j2
 
 # ignore generated docker conf

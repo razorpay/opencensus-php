@@ -33,12 +33,15 @@ class Entity extends Base\PublicEntity
     const AMOUNT_REVERSED      = 'amount_reversed';
     const BANK_ACCOUNT_ID      = 'bank_account_id';
     const VPA                  = 'vpa';
+    const QR_CODE_ID           = 'qr_code_id';
     const CUSTOMER_ID          = 'customer_id';
     const NOTES                = 'notes';
 
     const RECEIVER_TYPES       = 'receiver_types';
     const RECEIVERS            = 'receivers';
+    const TYPES                = 'types';
     const BANK_ACCOUNT         = 'bank_account';
+    const NUMERIC              = 'numeric';
 
     const DELETED_AT           = 'deleted_at';
 
@@ -57,6 +60,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::STATUS,
         self::DESCRIPTION,
+        self::AMOUNT_EXPECTED,
         self::NOTES,
         self::AMOUNT_PAID,
         self::CUSTOMER_ID,
@@ -106,6 +110,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\BankAccount\Entity');
     }
 
+    public function qrCode()
+    {
+        return $this->belongsTo('RZP\Models\QrCode\Entity');
+    }
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
@@ -140,6 +149,11 @@ class Entity extends Base\PublicEntity
     public function hasBankAccount()
     {
         return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
+    }
+
+    public function hasQrCode()
+    {
+        return ($this->isAttributeNotNull(self::QR_CODE_ID));
     }
 
     public function hasCustomer()
@@ -220,6 +234,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $receivers;
+    }
+
+    public function getReceiverBuilder()
+    {
+        return new Receiver($this);
     }
 
     // ----------------------- Setters -----------------------------------------

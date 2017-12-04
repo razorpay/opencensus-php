@@ -9,12 +9,9 @@ use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
 use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\Batch as BatchJob;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class Core extends Base\Core
 {
-    use FileHandlerTrait;
-
     public function create(array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
@@ -23,7 +20,7 @@ class Core extends Base\Core
 
         $batch->merchant()->associate($merchant);
 
-        $processor = Processor\Base::get($batch);
+        $processor = Processor\Factory::get($batch);
 
         $processor->storeInputFileAndSaveBatch($input);
 
@@ -48,14 +45,15 @@ class Core extends Base\Core
      */
     public function retryBatchOutputFile(Entity $batch): Entity
     {
-        Processor\Base::get($batch)->retryBatchOutputFile();
+        Processor\Factory::get($batch)->retryBatchOutputFile();
 
         return $batch;
     }
 
     /**
-     * Returns signed url of the batch file: output file if that exists else
-     * the input file itself.
+     * Returns signed URL of the batch's most recent file
+     * If batch is processed that will be the output file, else the batch input
+     * file is returned.
      *
      * @param Entity $batch
      *
@@ -63,29 +61,9 @@ class Core extends Base\Core
      */
     public function downloadBatch(Entity $batch): string
     {
-        $file = ($batch->getStatus() === Status::CREATED) ?
-                    $batch->inputFile() : $batch->outputFile();
+        $file = $batch->latestFile();
 
-        //
-        // Backward compatibility:
-        // - If file relation exists use that else to handle BC
-        //   form the AWS key and get the signed URL as done previously.
-        //
-        if ($file === null)
-        {
-            $signedUrl = $this->getSignedUrlOfBatchFile($batch);
-        }
-        else
-        {
-            $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
-        }
-
-        $this->trace->info(
-            TraceCode::BATCH_DOWNLOAD,
-            [
-                'batch_id' => $batch->getId(),
-                'url'      => $signedUrl,
-            ]);
+        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
 
         return $signedUrl;
     }
@@ -107,7 +85,7 @@ class Core extends Base\Core
         {
             try
             {
-                Processor\Base::get($batch)->validateAndProcess();
+                Processor\Factory::get($batch)->validateAndProcess();
             }
             catch (\Throwable $e)
             {
@@ -118,27 +96,13 @@ class Core extends Base\Core
         return $batches;
     }
 
-    public function processBatchAsync(Entity $batch): Entity
+    public function processBatchAsync(Entity $batch, array $input = []): Entity
     {
-        $this->trace->info(TraceCode::BATCH_PROCESS_ASYNC, $batch->toArrayPublic());
+        $this->trace->info(TraceCode::BATCH_PROCESS_ASYNC, [$batch->toArrayPublic(), $input]);
 
-        $this->queueBatchForProcessing($batch);
+        $this->queueBatchForProcessing($batch, $input);
 
         return $batch;
-    }
-
-    /**
-     * Get signed URL of batch file in old way.
-     *
-     * @param Entity $batch
-     *
-     * @return string
-     */
-    protected function getSignedUrlOfBatchFile(Entity $batch): string
-    {
-        $awsKey = $batch->getFilePrefix() . $batch->getFileKeyWithExt();
-
-        return $this->getPreSignedUrlFromAws($awsKey);
     }
 
     protected function increaseAllowedSystemLimits()
