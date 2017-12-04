@@ -14,7 +14,7 @@ import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from './PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
-import RecentActivity from './RecentActivity';
+import RecentActivity from 'merchant/containers/Home/RecentActivity';
 
 import DateRangePicker from 'merchant/components/Home/DateRangePicker';
 
@@ -63,6 +63,10 @@ export default class HomeContainer extends Component {
     this.setState({ startDate, endDate });
   }
 
+  componentWillMount() {
+    this.props.fetchCurrentBalance();
+  }
+
   render() {
     let mode = this.props.mode;
 
@@ -107,7 +111,9 @@ export default class HomeContainer extends Component {
               <p>Traffic split on platforms</p>
               <Traffic startDate={startDate} endDate={endDate} />
             </div>
-            <div className="col-md-6" />
+            <div className="col-md-6">
+              <p>Recent Activity</p>
+            </div>
           </div>
         </div>
       </div>
