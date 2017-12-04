@@ -281,7 +281,7 @@ class Service extends Base\Service
 
     public function getRejectionReasons()
     {
-        return RejectionReasons::$reasons;
+        return RejectionReasons::REJECTION_REASONS_MAPPING;
     }
 
     public function getMerchantDetailsForAdmin() : array

@@ -80,7 +80,40 @@ class RejectionReasons
     const MULTIPLE_VERTICALS_DESCRIPTION                       = 'Merchant into multiple verticals';
     const DUPLICATE_OR_ERRENOUS_CREATION_DESCRIPTION           = 'Archived due to duplicate account/errenous creation';
 
-    public static $reasons = [
+    // Allowed Reason Codes
+    const ALLOWED_REASON_CODES = [
+        self::WEB_DEVELOPMENT_OR_WEB_HOSTING,
+        self::CHEMICAL_GOODS,
+        self::CROWDFUNDING,
+        self::SOCIAL_MEDIA_MARKETING,
+        self::SOCIAL_MEDIA_PLATFORM,
+        self::REAL_ESTATE,
+        self::INSURANCE_SERVICES,
+        self::UNREGISTERED_INDIVIDUAL,
+        self::OTHERS,
+        self::NOT_REGISTERED_IN_INDIA,
+        self::FAKE_PRODUCTS_OR_UNLICENSED_DISTRIBUTION,
+        self::REFURBISHED_GOODS,
+        self::DTH_OR_MOBILE_RECHARGE,
+        self::FINANCIAL_ADVISORY,
+        self::IT_SUPPORT,
+        self::ONLINE_GAMES_OR_GAMBLING,
+        self::ALCOHOLIC_BEVERAGES,
+        self::GIFT_CARDS,
+        self::ASTROLOGY_SERVICES_AND_PRODUCTS,
+        self::HIRING_SERVICES,
+        self::LEAD_GENERATION,
+        self::BULK_SMS_AND_DATABASE_SALE,
+        self::MULTI_LEVEL_MARKETING,
+        self::ONLY_DIGITAL_GOODS,
+        self::CREATING_ASSIGNMENTS,
+        self::SELLING_ARMS_OR_AMMUNITION,
+        self::DATING_OR_MATCHMAKING_OR_ESCORT_SERVICES,
+        self::MULTIPLE_VERTICALS,
+        self::DUPLICATE_OR_ERRENOUS_CREATION,
+    ];
+
+    const REJECTION_REASONS_MAPPING = [
         // Unsupported Business Model
         self::UNSUPPORTED_BUSINESS_MODEL => [
             [
