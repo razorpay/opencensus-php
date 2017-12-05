@@ -414,15 +414,17 @@ const ActionsList = ({ model, merchantId, actions }) => {
         </ShowWhen>
 
         <ShowWhen permission="edit_merchant_pricing">
-          <div onClick={actions.AssignPricingPlan}>
+          <div onClick={isDetailsLoading ? null : actions.AssignPricingPlan}>
             Assign Pricing
             <i class="pull-right i">%</i>
+            {isDetailsLoading && <div class="dot-loader">.</div>}
           </div>
         </ShowWhen>
         <ShowWhen permission="schedule_assign">
-          <div onClick={actions.AssignSchedule}>
+          <div onClick={isDetailsLoading ? null : actions.AssignSchedule}>
             Assign Schedule
             <i class="pull-right i i-schedule" />
+            {isDetailsLoading && <div class="dot-loader">.</div>}
           </div>
         </ShowWhen>
         <ShowWhen permission="edit_merchant_tags">

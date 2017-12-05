@@ -4,7 +4,7 @@ import BaseModal from 'ui/BaseModal';
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
-import { SelectField } from 'ui/Field';
+import Field, { SelectField } from 'ui/Field';
 import { adminFetch, adminPost } from 'util/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import { isWorkflow } from 'util/index';
@@ -21,7 +21,7 @@ const methodMapping = {
 
 const type_list = { Settlement: 'settlement' };
 
-export default class PricingPlanModal extends Component {
+export default class ScheduleModal extends Component {
   state = { settlementPlans: {}, pending: true };
 
   componentWillMount() {
@@ -30,12 +30,18 @@ export default class PricingPlanModal extends Component {
     }).then(data => {
       const settlementPlans = {};
 
+      let defaultSchedule = '30000000000000';
       for (let key in data.items) {
         let value = data.items[key];
         settlementPlans[value.id] = value.name;
+        if (
+          value.delay === this.props.props.merchant.details.settlement_schedule
+        ) {
+          defaultSchedule = value.id;
+        }
       }
 
-      this.setState({ settlementPlans, pending: false });
+      this.setState({ settlementPlans, pending: false, defaultSchedule });
     });
   }
 
@@ -69,45 +75,47 @@ export default class PricingPlanModal extends Component {
   render() {
     return (
       <BaseModal header="Assign Schedule Plan">
-        {this.state.pending ? (
-          <div class="spinner center" />
-        ) : (
-          <Form class="full-span full-elements" style={{ width: '350px' }}>
-            <SelectField name="type" label="Type" defaultValue={''}>
-              {Object.keys(type_list).map(key => (
-                <option key={key} value={key}>
-                  {type_list[key]}
-                </option>
-              ))}
-            </SelectField>
+        <Form class="full-span full-elements" style={{ width: '350px' }}>
+          <SelectField name="type" label="Type" defaultValue={''}>
+            {Object.keys(type_list).map(key => (
+              <option key={key} value={key}>
+                {type_list[key]}
+              </option>
+            ))}
+          </SelectField>
 
-            <SelectField name="schedule_id" label="Schedules" defaultValue={''}>
-              {!Object.keys(this.state.settlementPlans).length && (
-                <option value="">Loading...</option>
-              )}
+          {this.state.pending ? (
+            <Field label="Schedules" defaultValue="Loading..." disabled />
+          ) : (
+            <SelectField
+              name="schedule_id"
+              label="Schedules"
+              defaultValue={this.state.defaultSchedule}
+            >
               {Object.keys(this.state.settlementPlans).map(key => (
                 <option key={key} value={key}>
                   {this.state.settlementPlans[key]}
                 </option>
               ))}
             </SelectField>
+          )}
 
-            <SelectField name="method" label="Method" defaultValue={''}>
-              {Object.keys(methodMapping).map(key => (
-                <option key={key} value={key}>
-                  {methodMapping[key]}
-                </option>
-              ))}
-            </SelectField>
+          <SelectField name="method" label="Method" defaultValue={''}>
+            {Object.keys(methodMapping).map(key => (
+              <option key={key} value={key}>
+                {methodMapping[key]}
+              </option>
+            ))}
+          </SelectField>
 
-            <AsyncButton
-              text="Ok"
-              class="btn"
-              pendingClass="small spinner"
-              onSubmit={this.handleSubmit}
-            />
-          </Form>
-        )}
+          <AsyncButton
+            text="Save"
+            class="btn"
+            disabled={this.state.pending}
+            pendingClass="small spinner"
+            onSubmit={this.handleSubmit}
+          />
+        </Form>
       </BaseModal>
     );
   }

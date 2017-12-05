@@ -4,7 +4,7 @@ import BaseModal from 'ui/BaseModal';
 import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
-import { SelectField } from 'ui/Field';
+import Field, { SelectField } from 'ui/Field';
 import { adminFetch, adminPost } from 'util/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import { isWorkflow } from 'util/index';
@@ -64,16 +64,16 @@ export default class PricingPlanModal extends Component {
 
     return (
       <BaseModal header="Assign Pricing Plan">
-        {this.state.pending ? (
-          <div class="spinner center" />
-        ) : (
-          <Form class="full-span full-elements" style={{ width: '450px' }}>
-            <div class="m-b">
-              <strong>
-                Warning: The assigned pricing plan will replace the current
-                pricing plan and affect all future test/live transactions.
-              </strong>
-            </div>
+        <Form class="full-span full-elements" style={{ width: '450px' }}>
+          <div class="m-b">
+            <strong>
+              Warning: The assigned pricing plan will replace the current
+              pricing plan and affect all future test/live transactions.
+            </strong>
+          </div>
+          {this.state.pending ? (
+            <Field label="Plans to be Assigned" value="Loading..." disabled />
+          ) : (
             <SelectField
               name="pricing_plan_id"
               label="Plans to be Assigned"
@@ -85,15 +85,16 @@ export default class PricingPlanModal extends Component {
                 </option>
               ))}
             </SelectField>
+          )}
 
-            <AsyncButton
-              text="Ok"
-              class="btn"
-              pendingClass="small spinner"
-              onSubmit={this.handleConfirm}
-            />
-          </Form>
-        )}
+          <AsyncButton
+            text="Ok"
+            class="btn"
+            pendingClass="small spinner"
+            disabled={this.state.pending}
+            onSubmit={this.handleConfirm}
+          />
+        </Form>
       </BaseModal>
     );
   }
