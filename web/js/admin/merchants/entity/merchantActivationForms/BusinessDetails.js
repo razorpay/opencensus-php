@@ -227,7 +227,7 @@ export default class BusinessDetails extends Component {
                     <EntityRow
                       class="info-block no-padding"
                       key={key}
-                      label={titleCase(key)}
+                      label={`${titleCase(key)}:`}
                       value={() => (
                         <span class={className}>
                           {JSON.stringify(this.state.companyInfo.company[key])}

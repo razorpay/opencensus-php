@@ -88,6 +88,8 @@ function getPrefixType(entityType) {
       return 'bt_';
     case 'card':
       return 'card_';
+    case 'customer':
+      return 'cust_';
     case 'dispute':
       return 'dispute_';
     case 'payment':
