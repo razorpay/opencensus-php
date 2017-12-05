@@ -453,6 +453,10 @@ export function getDetailsViewMap(model) {
       value: details.email,
     },
     {
+      label: 'GST Number',
+      value: details.gstin || null,
+    },
+    {
       label: 'Website',
       value: details.website
         ? () => (
