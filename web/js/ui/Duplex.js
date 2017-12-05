@@ -80,7 +80,11 @@ function statusLabel(status) {
   return mapper[status];
 }
 
-function getPrefixType(entityType) {
+function getPrefixType(entityType, value) {
+  // TODO: Ideally api should fix this. In some cases, eg- 'pay_' is prepended and in some cases not.
+  if (value.indexOf('_') > -1) {
+    return '';
+  }
   switch (entityType) {
     case 'balance_account':
       return 'ba_';
@@ -158,7 +162,7 @@ function getValue(result, mode) {
     result[0] !== 'public_id'
   ) {
     let entityName = result[0].match(/(.+)(?:_id)/)[1];
-    let id = getPrefixType(entityName) + value;
+    let id = getPrefixType(entityName, value) + value;
     value = (
       <a class="link" href={`/admin/entity/${entityName}/${mode}/${id}`}>
         {id}

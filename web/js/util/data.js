@@ -96,6 +96,7 @@ export const gateways = {
   upi: {
     upi_idfc: 'IDFC UPI',
     upi_icici: 'ICICI UPI',
+    upi_hulk: 'UPI/HULK',
     upi_mindgate: 'Mindgate/HDFC UPI',
     sharp: 'Sharp',
   },
