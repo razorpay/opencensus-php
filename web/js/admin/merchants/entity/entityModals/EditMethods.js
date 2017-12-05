@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import BaseModal from 'ui/BaseModal';
 import Form from 'ui/Form';
 import { SwitchField } from 'ui/Field';
@@ -40,14 +40,17 @@ export default ({ props, merchantId }) => {
 
     for (let method in methods) {
       fields.push(
-        <span key={method}>
-          <SwitchField
-            name={method}
-            disabledLabel={method}
-            defaultValue={methods[method]}
-            nocaption
-          />
-        </span>
+        <Fragment>
+          <span key={method}>
+            <SwitchField
+              name={method}
+              disabledLabel={method}
+              defaultValue={methods[method]}
+              nocaption
+            />
+          </span>
+          <br />
+        </Fragment>
       );
     }
 
@@ -90,7 +93,7 @@ export default ({ props, merchantId }) => {
 
   return (
     <BaseModal header="Activate/Deactivate Merchant Payment Methods">
-      <Form>
+      <Form class="full-span full-elements">
         {getFormFields()}
 
         <br />

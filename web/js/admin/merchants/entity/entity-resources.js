@@ -96,7 +96,10 @@ function _getOfferFields() {
   return [
     ['Offer Id', item => item.id],
     ['Name', item => item.name],
+    ['Percentage', item => item.percent_rate],
+    ['Flat Cashback', item => item.flat_cashback],
     ['Starts At', item => formatDate(item.starts_at)],
+    ['Ends At', item => formatDate(item.ends_at)],
     ['Display Text', item => item.display_text],
   ];
 }
@@ -341,7 +344,8 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Tags',
-      value: details && details.tags ? details.tags.join(', ') : '',
+      value:
+        details && details.tags ? details.tags.join(', ').toLowerCase() : '',
     },
     {
       label: 'Features',

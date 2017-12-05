@@ -43,6 +43,11 @@ export const snakeToTitleCase = (str = '') => {
 };
 
 export const formatDate = unixTimestamp => {
+  //if null than return null value
+  if (!unixTimestamp) {
+    return null;
+  }
+
   var date = new Date(1e3 * unixTimestamp);
 
   var dateSuffix = 'th';
