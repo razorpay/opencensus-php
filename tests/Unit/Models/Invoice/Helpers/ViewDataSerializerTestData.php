@@ -23,7 +23,6 @@ return [
                 'main_logo_url'    => null,
                 'invoice_logo_url' => null,
                 'auth_type'        => 'password',
-                'custom_code'      => '2a37c',
                 'from_email'       => null,
                 'signature_email'  => null,
             ],

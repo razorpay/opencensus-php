@@ -22,6 +22,12 @@ trait CreatesInvoice
 
         $order = $this->fixtures->create('order', $orderAttributes);
 
+        $defaultInvoiceAttributes = [
+            'issued_at' => time(),
+            'date'      => time(),
+        ];
+        $invoiceAttributes = array_merge($defaultInvoiceAttributes, $invoiceAttributes);
+
         return $this->fixtures->create('invoice', $invoiceAttributes);
     }
 
