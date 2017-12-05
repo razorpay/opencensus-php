@@ -211,10 +211,12 @@ class Throttle
         }
         catch (ThrottleException $e)
         {
+            s("kjsfnvjkdfn");
             throw $e;
         }
         catch (\Throwable $e)
         {
+            s("enfjkvnfjkv");
             $this->trace->traceException($e);
         }
     }
@@ -397,6 +399,7 @@ class Throttle
 
     protected function isThrottleMocked($auth)
     {
+        return false;
         $route = $this->request->route()->getName();
 
         // Nykaa key id

@@ -20,7 +20,7 @@ return [
     | Default: null
     |
     */
-    'driver' => 'throttle_redis',
+    'driver' => env('THROTTLE_DRIVER', 'throttle_redis'),
 
     'skip' => env('SKIP_THROTTLE', false),
 
@@ -31,7 +31,7 @@ return [
         'live' => [
             'default'                               => 100,
             RZP\Http\BasicAuth\Type::PRIVILEGE_AUTH => 200,
-            RZP\Http\BasicAuth\Type::ADMIN_AUTH     => 1000,
+            RZP\Http\BasicAuth\Type::ADMIN_AUTH     => 2,
             RZP\Http\BasicAuth\Type::DIRECT_AUTH    => 1000,
             RZP\Http\BasicAuth\Type::PRIVATE_AUTH   => 150,
             RZP\Http\BasicAuth\Type::DEVICE_AUTH    => 100,
@@ -47,7 +47,7 @@ return [
         'test' => [
             'default'                               => 20,
             RZP\Http\BasicAuth\Type::PRIVILEGE_AUTH => 200,
-            RZP\Http\BasicAuth\Type::ADMIN_AUTH     => 100,
+            RZP\Http\BasicAuth\Type::ADMIN_AUTH     => 2,
             RZP\Http\BasicAuth\Type::DIRECT_AUTH    => 100,
             RZP\Http\BasicAuth\Type::PRIVATE_AUTH   => 150,
             RZP\Http\BasicAuth\Type::DEVICE_AUTH    => 100,
