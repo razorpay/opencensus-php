@@ -140,7 +140,10 @@ function getValue(result, mode) {
     result[0].indexOf('charge') > -1
   ) {
     value = <Amount value={value} />;
-  } else if (result[0].split('_').indexOf('at') > -1) {
+  } else if (
+    result[0].indexOf('_at') > -1 ||
+    result[0].indexOf('_until') > -1
+  ) {
     // Value is time
     value = formatDate(value);
   } else if (value && result[0] === 'merchant_id') {

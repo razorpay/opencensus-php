@@ -1,4 +1,11 @@
 import React, { Component } from 'react';
+import { Link, withRouter } from 'react-router-dom';
+import { extendObservable } from 'mobx';
+import { observer } from 'mobx-react';
+
+import { adminFetch } from 'util/fetch';
+import { formatDate } from 'util/index';
+
 import Form, { serialize } from 'ui/Form';
 import Field, {
   FromField,
@@ -8,11 +15,8 @@ import Field, {
   SelectMode,
 } from 'ui/Field';
 import { PageTable } from 'ui/Table';
-import { adminFetch } from 'util/fetch';
 import Collection from 'model/collection';
-import { extendObservable } from 'mobx';
-import { observer } from 'mobx-react';
-import { Link, withRouter } from 'react-router-dom';
+import Amount from 'ui/Amount';
 
 // fetch entity columns
 var sharedData;
@@ -139,6 +143,16 @@ export default class EntityList extends Component {
           );
         } else if (this.selectedEntity === 'payment' && key === 'status') {
           return getStatusPill(value);
+        } else if (
+          key.indexOf('amount') > -1 ||
+          key.indexOf('fee') > -1 ||
+          key.indexOf('tax') > -1 ||
+          key.indexOf('charge') > -1
+        ) {
+          value = <Amount value={value} />;
+        } else if (key.indexOf('_at') > -1 || key.indexOf('_until') > -1) {
+          // Value is time
+          value = formatDate(value);
         } else if (value && typeof value === 'object') {
           return <pre>{JSON.stringify(value)}</pre>;
         }
