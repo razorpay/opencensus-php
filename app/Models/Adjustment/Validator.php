@@ -3,9 +3,10 @@
 namespace RZP\Models\Adjustment;
 
 use RZP\Base;
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -49,6 +50,42 @@ class Validator extends Base\Validator
             isset($input['fees']) === false)
         {
             throw new BadRequestValidationFailureException('Atleast one out of amount OR tax/fees should be passed');
+        }
+    }
+
+    /**
+     * Validate merchant balance before an adjustment is processed
+     *
+     * @param Merchant\Entity $merchant
+     * @param string $entityType
+     * @param string $entityId
+     * @param array $input
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateMerchantBalanceForAdjustment(Merchant\Entity $merchant, string $entityType,
+                                                         string $entityId, array $input)
+    {
+        if (isset($input[Entity::AMOUNT]) and
+            $input[Entity::AMOUNT] < 0)
+        {
+            $amount = $input[Entity::AMOUNT];
+
+            $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
+
+            if (($balance->getBalance() + $amount) < 0)
+            {
+                $traceData = [
+                    'message'               => 'Not enough balance',
+                    'merchant_balance'      => $balance->getBalance(),
+                    'adjustment_amount'     => $amount,
+                    'entity_type'           => $entityType,
+                    'entity_id'             => $entityId,
+                ];
+
+                throw new BadRequestValidationFailureException('Merchant does not have enough balance for negative adjustment.',
+                    Entity::AMOUNT,
+                    $traceData);
+            }
         }
     }
 }
