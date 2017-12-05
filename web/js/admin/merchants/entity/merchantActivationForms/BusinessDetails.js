@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
 
+import EntityRow from 'ui/EntityRow';
+import AsyncButton from 'ui/AsyncButton';
 import { adminFetch } from 'util/fetch';
 import { notifyError, notifySuccess } from 'common/modal';
+import { titleCase } from 'util/index';
 
 import Form from 'ui/Form';
-import Field, { SelectField } from 'ui/Field';
+import Field, { SelectField, TextAreaField } from 'ui/Field';
 import Table from 'ui/Table';
 
 export default class BusinessDetails extends Component {
@@ -22,17 +25,16 @@ export default class BusinessDetails extends Component {
     }
   }
 
-  getCompanyData() {
-    const cin = this.props.company_cin;
+  getCompanyData = () => {
+    const cin = this.props.merchant_details.company_cin;
 
     return adminFetch({}, '/admin/companies/' + cin + '/info')
       .then(data => {
-        console.log('DATA...', data);
-        if (data.success) {
-          this.setState({ companyInfo: data.data });
+        if (data) {
+          this.setState({ companyInfo: data });
 
           this.verifyPAN(
-            data.data.signatories,
+            data.signatories,
             this.props.merchant_details.promoter_pan_name,
             this.props.merchant_details.promoter_pan
           );
@@ -41,7 +43,7 @@ export default class BusinessDetails extends Component {
       .catch(function() {
         notifyError('Company Info could not be fetched');
       });
-  }
+  };
 
   render() {
     const { merchant_details: merchantDetails, title } = this.props;
@@ -52,7 +54,10 @@ export default class BusinessDetails extends Component {
         {!merchantDetails ? (
           <div class="spinner center m-t" />
         ) : (
-          <Form class="full-span full-elements limited">
+          <Form
+            class="full-span full-elements limited"
+            style={{ maxWidth: '650px' }}
+          >
             <SelectField
               label="Organisation Type"
               name="business_type"
@@ -103,7 +108,7 @@ export default class BusinessDetails extends Component {
               defaultValue={merchantDetails.business_paymentdetails}
             />
 
-            <Field
+            <TextAreaField
               label="Business Model"
               name="business_model"
               infoMsg="Please give a brief explanation of your business model and future plans (Essential for startups)"
@@ -195,9 +200,14 @@ export default class BusinessDetails extends Component {
               label="Company CIN"
               name="company_cin"
               infoMsg={() => (
-                <a class="link" onClick={this.getCompanyData}>
+                <AsyncButton
+                  onClick={this.getCompanyData}
+                  class="link"
+                  pendingClass="link btn-pending"
+                >
                   Verify
-                </a>
+                  <div class="dot-loader">.</div>
+                </AsyncButton>
               )}
               defaultValue={merchantDetails.company_cin}
             />
@@ -205,37 +215,39 @@ export default class BusinessDetails extends Component {
             {this.state.companyInfo && (
               <div class="field">
                 {Object.keys(this.state.companyInfo.company).map(key => {
-                  let className = '';
+                  let className = 'pills';
                   if (key === 'defaulter') {
                     if (this.state.companyInfo.company[key]) {
-                      className = 'label-danger';
+                      className += ' label-danger';
                     } else {
-                      className = 'label-success';
+                      className += ' label-success';
                     }
                   }
                   return (
-                    <div key={key} class={className}>
-                      <span>{this.state.companyInfo.company[key]}</span>
-                      {key}
-                    </div>
+                    <EntityRow
+                      class="info-block no-padding"
+                      key={key}
+                      label={`${titleCase(key)}:`}
+                      value={() => (
+                        <span class={className}>
+                          {JSON.stringify(this.state.companyInfo.company[key])}
+                        </span>
+                      )}
+                    />
                   );
                 })}
-                <div
-                  class="list-group-item"
-                  ng-repeat="(key,value) in companyInfo.company"
-                  ng-class="{'label bg-danger':key==='defaulter'&&value===true, 'label bg-success':key==='defaulter' && value=== false}"
-                >
-                  <span class="pull-right">{{ value }}</span>
-                  {{ key }}
-                </div>
               </div>
             )}
 
             {this.state.companyInfo && (
-              <Table
-                items={this.state.companyInfo.signatories}
-                fields={_getCompanyInfoFields()}
-              />
+              <div class="field">
+                <label>Signatories:</label>
+                <Table
+                  customClass="custom-table"
+                  items={this.state.companyInfo.signatories}
+                  fields={_getCompanyInfoFields()}
+                />
+              </div>
             )}
 
             <Field

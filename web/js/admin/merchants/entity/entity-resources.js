@@ -349,13 +349,26 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Features',
-      permission: 'view_merchant_features',
+      tag: 'view_merchant_features',
       children: () => (
         <FeaturesDetails
           features={features}
           getFeaturesFields={_getFeaturesFields(model.deleteFeature)}
         />
       ),
+    },
+    {
+      label: 'Marketplace Merchant',
+      tag: 'marketplace',
+      toHide: !details.parent_id,
+      value: details.parent_id
+        ? () => (
+            <a href={`/admin/merchants/${details.parent_id}`}>
+              {details.parent_id}
+            </a>
+          )
+        : null,
+      class: 'label-success text-white',
     },
     {
       label: 'Balance',

@@ -9,6 +9,7 @@ import ShowWhen from 'admin/components/ShowWhen';
 import user from 'admin/user';
 
 import * as action from './entityActions/index';
+import ToggleEntityRow from 'ui/ToggleEntityRow';
 
 @withRouter
 export default class GenericEntity extends Component {
@@ -67,7 +68,13 @@ export default class GenericEntity extends Component {
           {this.title} <code>{id}</code>
         </header>
         <Duplex pending={!data} model={data} fields={this.fields()} />
-        {data && <div class="code">{JSON.stringify(data, null, 4)}</div>}
+
+        <br />
+        {data && (
+          <ToggleEntityRow label="Raw Data">
+            <div class="code">{JSON.stringify(data, null, 4)}</div>
+          </ToggleEntityRow>
+        )}
         <div class="separate" style={{ padding: '10px' }}>
           {data && actions[type] && actions[type](data, this)}
         </div>

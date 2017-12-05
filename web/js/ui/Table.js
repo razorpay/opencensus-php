@@ -39,11 +39,11 @@ export default function Table({
   }
 
   if (pending) {
-    return <div class="table-pending" />;
+    return <div class={`table-pending ${customClass}`} />;
   }
 
   if (!items || !items.length) {
-    return <div class="table-empty" />;
+    return <div class={`table-empty ${customClass}`} />;
   }
 
   return (

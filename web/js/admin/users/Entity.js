@@ -95,7 +95,9 @@ export default class EditUser extends Component {
     }
 
     data.body.groups = groups.keys();
-    data.body.roles = data.body.roles.split(',');
+    if (data.body.roles) {
+      data.body.roles = data.body.roles.split(',');
+    }
 
     return request(data).then(response => {
       if (response) {
