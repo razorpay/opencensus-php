@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, Fragment } from 'react';
 import { openModal, closeModal, confirm } from 'common/modal';
 import { adminFetch, adminPost } from 'util/fetch';
 import { notifyError, notifySuccess, notifyDone } from 'common/modal';
@@ -8,8 +8,11 @@ import AsyncButton from 'ui/AsyncButton';
 import BaseModal from 'ui/BaseModal';
 import Form from 'ui/Form';
 import Field from 'ui/Field';
-import Duplex from 'ui/Duplex';
+import Table from 'ui/Table';
 import { DisputeForm } from './dispute';
+import ToggleEntityRow from 'ui/ToggleEntityRow';
+import { formatDate } from 'util/index';
+import Amount from 'ui/Amount';
 
 // Payment Actions
 export default ({ entity, mode, updateEntity }) => {
@@ -98,7 +101,7 @@ export default ({ entity, mode, updateEntity }) => {
   }
 
   return (
-    <div>
+    <Fragment>
       <button
         class="btn btn-default text-primary"
         onClick={_ =>
@@ -165,7 +168,7 @@ export default ({ entity, mode, updateEntity }) => {
           Create Dispute
         </button>
       )}
-    </div>
+    </Fragment>
   );
 };
 
@@ -251,6 +254,42 @@ class PaymentAnalytics extends Component {
           model={this.state.data}
         />
       </BaseModal>
+    );
+  }
+}
+
+export class PaymentRefunds extends Component {
+  state = {};
+
+  fields = [
+    ['Amount', item => <Amount value={item.amount} />],
+    ['Refund ID', item => item.id],
+    ['Created At', item => formatDate(item.created_at)],
+  ];
+
+  componentWillMount() {
+    adminFetch({
+      route_name: 'payment_fetch_refunds',
+      merchant_id: this.props.merchant_id,
+      mode: this.props.mode,
+      url_params: {
+        id: this.props.id,
+      },
+    }).then(response => {
+      if (response) {
+        this.setState({ refunds: response.items });
+      }
+    });
+  }
+  render() {
+    return (
+      <ToggleEntityRow label="Refunds">
+        <Table
+          pending={typeof this.state.refunds === 'undefined'}
+          fields={this.fields}
+          items={this.state.refunds}
+        />
+      </ToggleEntityRow>
     );
   }
 }

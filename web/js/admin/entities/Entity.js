@@ -8,6 +8,7 @@ import { notifyDone, notifyError, notifySuccess } from 'common/modal';
 import ShowWhen from 'admin/components/ShowWhen';
 import user from 'admin/user';
 
+import { PaymentRefunds } from './entityActions/payment';
 import * as action from './entityActions/index';
 import ToggleEntityRow from 'ui/ToggleEntityRow';
 
@@ -68,6 +69,14 @@ export default class GenericEntity extends Component {
           {this.title} <code>{id}</code>
         </header>
         <Duplex pending={!data} model={data} fields={this.fields()} />
+        {type === 'payment' &&
+          data && (
+            <PaymentRefunds
+              id={data.id}
+              merchant_id={data.merchant_id}
+              mode={data.mode}
+            />
+          )}
 
         <br />
         {data && (
