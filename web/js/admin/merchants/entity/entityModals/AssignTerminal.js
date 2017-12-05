@@ -21,6 +21,7 @@ const gatewayMapping = {
   wallet_olamoney: 'Olamoney',
   wallet_mpesa: 'Vodafone Mpesa',
   upi_icici: 'UPI/ICICI',
+  upi_hulk: 'UPI/HULK',
   upi_mindgate: 'UPI/Mindgate',
   aeps_icici: 'AEPS/ICICI',
   wallet_airtelmoney: 'Airtelmoney',
