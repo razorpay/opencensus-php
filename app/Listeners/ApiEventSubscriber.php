@@ -461,8 +461,9 @@ class ApiEventSubscriber extends Base\Core
         $merchant = $this->getMerchantFromEntity($entity);
         $webhook = $merchant->webhook;
 
-        // Send the signed account id
-        $signedAccountId = Merchant\AccountEntity::getSignedId($merchant->getId());
+        // Send the signed account id of the merchant associated with the entity, along with the payload
+        // In case of settlements, $entity->merchant is the the merchant to whom the settlement is processed
+        $signedAccountId = Merchant\AccountEntity::getSignedId($entity->merchant->getId());
 
         $attributes = array(
             Event\Entity::EVENT       => $eventFired,
