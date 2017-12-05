@@ -14,7 +14,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::CONTACT             => 'sometimes|nullable|contact_syntax',
-        Entity::NAME                => 'sometimes|regex:/(^[a-zA-Z\s][a-zA-Z0-9-&\'.()\s]+[a-zA-Z0-9\s.)]$)/|
+        Entity::NAME                => 'sometimes|regex:/(^[a-zA-Z\s][a-zA-Z0-9-&\'.()\s–]+[a-zA-Z0-9\s.)]$)/|
                                         max:50|nullable',
         Entity::EMAIL               => 'sometimes|nullable|email',
         Entity::NOTES               => 'sometimes|notes',
