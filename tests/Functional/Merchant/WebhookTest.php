@@ -640,6 +640,33 @@ class WebhookTest extends TestCase
         $this->reconcileSettlements($setlReconciliationFile);
     }
 
+    public function testWebhookOnSettlementFailure()
+    {
+        // Create payments and refunds with timestamps two days back
+        $prEntities = $this->createPaymentAndRefundEntities();
+
+        // delete Existing files
+        $this->deleteSetlFiles();
+
+        // reconciliation
+        $txns = $this->matchTransactions($prEntities);
+
+        // Generate settlements for above transactions
+        $setlFile = $this->initiateSettlementsAndAssertSuccess();
+
+        // Generate settlement reconciliation file
+        $generateFailedReconciliations = true;
+        $setlReconciliationFile = $this->generateSetlReconciliationFile(
+            $setlFile,
+            $generateFailedReconciliations);
+
+        // Reconcile settlements
+        $this->reconcileSettlements($setlReconciliationFile);
+
+        // No webhook should be sent if the settlements have failed
+        $this->mockInfernoFire(function () { }, 0);
+    }
+
     protected function createPaymentEntities(int $count)
     {
         $createdAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 5;
