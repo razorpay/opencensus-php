@@ -1,4 +1,5 @@
 <?php
+
 namespace RZP\Models\Adjustment;
 
 use RZP\Base\Fetch as BaseFetch;

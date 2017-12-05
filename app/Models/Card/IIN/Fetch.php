@@ -1,4 +1,5 @@
 <?php
+
 namespace RZP\Models\Card\IIN;
 
 use RZP\Base\Fetch as BaseFetch;

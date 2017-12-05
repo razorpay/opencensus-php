@@ -1,4 +1,5 @@
 <?php
+
 namespace RZP\Models\Batch;
 
 use RZP\Base\Fetch as BaseFetch;

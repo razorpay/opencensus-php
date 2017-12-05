@@ -1,10 +1,10 @@
 <?php
 
-use \RZP\Constants\Entity;
 use RZP\Http\BasicAuth\Type;
+use \RZP\Constants\Entity as E;
 
 return [
-    Entity::ADDRESS => [
+    E::ADDRESS => [
         Type::PRIVATE_AUTH   => [
 
         ],
@@ -18,7 +18,7 @@ return [
         ],
     ],
 
-    Entity::ADMIN => [
+    E::ADMIN => [
         Type::PRIVILEGE_AUTH => [
             [
                 'email' => 'void@razorpay.com'
@@ -26,7 +26,7 @@ return [
         ],
     ],
 
-    Entity::ADMIN_LEAD => [
+    E::ADMIN_LEAD => [
         Type::PRIVILEGE_AUTH => [
             [
                 'email' => 'void@razorpay.com'
@@ -34,7 +34,7 @@ return [
         ],
     ],
 
-    Entity::GROUP => [
+    E::GROUP => [
         Type::PRIVILEGE_AUTH => [
             [
                 'name' => 'razarpay'
@@ -42,7 +42,7 @@ return [
         ],
     ],
 
-    Entity::ORG_FIELD_MAP => [
+    E::ORG_FIELD_MAP => [
         Type::PRIVILEGE_AUTH => [
             [
                 'entity_name' => 'fake'
@@ -50,7 +50,7 @@ return [
         ],
     ],
 
-    Entity::ORG_HOSTNAME => [
+    E::ORG_HOSTNAME => [
         Type::PRIVILEGE_AUTH => [
             [
                 'hostname' => 'fake'
@@ -58,7 +58,7 @@ return [
         ],
     ],
 
-    Entity::ORG => [
+    E::ORG => [
         Type::PRIVILEGE_AUTH => [
             [
                 'auth_type' => 'fake'
@@ -66,7 +66,7 @@ return [
         ],
     ],
 
-    Entity::PERMISSION => [
+    E::PERMISSION => [
         Type::PRIVILEGE_AUTH => [
             [
                 'category' => 'fake'
@@ -74,7 +74,7 @@ return [
         ],
     ],
 
-    Entity::ROLE => [
+    E::ROLE => [
         Type::PRIVILEGE_AUTH => [
             [
                 'name' => 'fake'
@@ -87,7 +87,7 @@ return [
         ],
     ],
 
-    Entity::ADJUSTMENT => [
+    E::ADJUSTMENT => [
         Type::PRIVILEGE_AUTH => [
             [
                 'transaction_id' => str_random(14)
@@ -95,7 +95,7 @@ return [
         ],
     ],
 
-    Entity::BANK_ACCOUNT => [
+    E::BANK_ACCOUNT => [
         Type::PRIVILEGE_AUTH => [
             [
                 'entity_id' => str_random(14)
@@ -103,7 +103,7 @@ return [
         ],
     ],
 
-    Entity::BANK_TRANSFER => [
+    E::BANK_TRANSFER => [
         Type::PRIVILEGE_AUTH => [
             [
                 'mode'       => 'fake',
@@ -112,7 +112,12 @@ return [
         ],
     ],
 
-    Entity::BATCH => [
+    E::BATCH => [
+        Type::PROXY_AUTH => [
+            [
+                'type'        => 'refund',
+            ]
+        ],
         Type::PRIVILEGE_AUTH => [
             [
                 'type'        => 'refund',
@@ -121,7 +126,7 @@ return [
         ],
     ],
 
-    Entity::IIN => [
+    E::IIN => [
         Type::PRIVILEGE_AUTH => [
             [
                 'type' => 'debit',
@@ -130,7 +135,7 @@ return [
         ],
     ],
 
-    Entity::CARD => [
+    E::CARD => [
         Type::PRIVILEGE_AUTH => [
             [
                 'iin' => '110000'
@@ -138,7 +143,7 @@ return [
         ],
     ],
 
-    Entity::COUPON => [
+    E::COUPON => [
         Type::PRIVILEGE_AUTH => [
             [
                 'entity_id'   => str_random(14),
@@ -147,4 +152,30 @@ return [
             ],
         ],
     ],
+
+    E::COMMENT => [
+        Type::ADMIN_AUTH    => [
+            [
+                'entity_type' => 'dispute'
+            ],
+        ],
+    ],
+
+    E::GEO_IP => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'country' => 'IN'
+            ],
+        ],
+    ],
+
+    E::GATEWAY_DOWNTIME => [
+        Type::PRIVATE_AUTH => [
+            [
+                'partial' => 1
+            ],
+        ],
+    ],
+
+    E::INVOICE => [],
 ];

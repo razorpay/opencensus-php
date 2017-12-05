@@ -1,4 +1,5 @@
 <?php
+
 namespace RZP\Models\Admin\Org\Hostname;
 
 use RZP\Base\Fetch as BaseFetch;

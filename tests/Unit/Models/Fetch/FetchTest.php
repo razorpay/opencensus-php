@@ -3,17 +3,19 @@
 namespace RZP\Tests\Unit\Models\Fetch;
 
 use RZP\Base\Fetch;
-use RZP\Constants\Entity;
 use RZP\Tests\TestCase;
 use RZP\Base\JitValidator;
-use RZP\Http\BasicAuth\Type;
+use RZP\Constants\Entity as E;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\ExtraFieldsException;
-use RZP\Tests\Unit\Models\Mock\MockApp;
+use RZP\Http\BasicAuth\Type as AuthType;
 use RZP\Tests\Unit\Models\Mock\MockBasicAuth;
+use RZP\Tests\Unit\Models\Mock\MocksAppServices;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class FetchTest extends TestCase
 {
+    use MocksAppServices;
     /**
      * @var MockBasicAuth
      */
@@ -31,25 +33,34 @@ class FetchTest extends TestCase
      */
     protected $validator;
 
+    /**
+     * Contains entity to entityFetch list we need run tests for.
+     *
+     * @var array
+     */
+    protected $entityList;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/FetchTestData.php';
 
         parent::setUp();
 
-        $this->ba = MockApp::mockAuth();
+        $this->ba = $this->mockBasicAuth();
+
+        $this->entityList = $this->getEntitiesToTest();
     }
 
     public function testValidateFetchClasses()
     {
+        // These properties are only required in validateRules and ValidateAccessTypes
+        // methods, thus no need to set them from setUp.
         $this->validRuleTypes = array_keys(Fetch::DEFAULT_RULES);
 
         $this->validator = new JitValidator([]);
 
-        foreach ($this->testData as $entity => $auths)
+        foreach ($this->entityList as $fetch)
         {
-            $fetch = $this->getFetchForEntity($entity);
-
             $this->assertInstanceOf(Fetch::class, $fetch);
 
             $this->validateRuleTypes($fetch);
@@ -61,109 +72,152 @@ class FetchTest extends TestCase
 
     public function testForPrivateAuth()
     {
-        $entities = $this->getTestData(Type::PRIVATE_AUTH);
-
         $this->ba->appAuth();
 
-        $this->runForEntities($entities);
+        $this->runForType(AuthType::PRIVATE_AUTH);
     }
 
     public function testForProxyAuth()
     {
-        $entities = $this->getTestData(Type::PROXY_AUTH);
-
         $this->ba->proxyAuth();
 
-        $this->runForEntities($entities);
+        $this->runForType(AuthType::PROXY_AUTH);
     }
 
     public function testForPrivilegeAuth()
     {
-        $entities = $this->getTestData(Type::PRIVILEGE_AUTH);
-
         $this->ba->appAuth();
 
-        $this->runForEntities($entities);
+        $this->runForType(AuthType::PRIVILEGE_AUTH);
     }
 
     public function testForAdminAuth()
     {
-        $entities = $this->getTestData(Type::ADMIN_AUTH);
-
         $this->ba->adminAuth();
 
-        $this->runForEntities($entities);
+        $this->runForType(AuthType::ADMIN_AUTH);
     }
 
+    /**
+     * Here we takes tests for privilege auth and runs
+     * for private auth, this validates that exception
+     * ExtraFieldException is thrown.
+     */
     public function testExtraFieldErrorForPrivateAuth()
     {
-        $entities = $this->getTestData(Type::PRIVILEGE_AUTH);
-
         $this->ba->privateAuth();
 
-        $this->runForEntities($entities, ExtraFieldsException::class);
+        $this->runForType(AuthType::PRIVILEGE_AUTH, ExtraFieldsException::class);
     }
 
     /*
      *  Helpers
      */
 
-    protected function runForEntity(string $entity, array $tests, $exception = null)
+    /**
+     * Run tests for given entity, assert success.
+     * Third param exception if set makes sure same
+     * exception is thrown from Fetch::processFetchParams.
+     *
+     * @param string $entity
+     * @param string $type
+     * @param null $exception
+     */
+    protected function runForEntityAndType(string $entity, string $type, $exception = null)
     {
-        $fetch = $this->getFetchForEntity($entity);
+        $tests = $this->getTestDataForEntityAndType($entity, $type);
 
         foreach ($tests as $test)
         {
             if ($exception === null)
             {
-                $fetch->processFetchParams($test);
+                $this->entityList[$entity]->processFetchParams($test);
 
-                $this->assertArrayHasKey('count', $test);
+                $this->assertArrayHasKey('count', $test, $entity);
             }
             else
             {
                 try
                 {
-                    $fetch->processFetchParams($test);
+                    $this->entityList[$entity]->processFetchParams($test);
                 }
                 catch (\Exception $e)
                 {
-                    $this->assertInstanceOf($exception, $e);
+                    $this->assertInstanceOf($exception, $e, $entity);
 
                     continue;
                 }
 
-                $this->fail('Exception not throw : ' . $e);
+                $this->fail('Exception not throw : ' . $entity);
             }
         }
     }
 
-    protected function runForEntities(array $entities, $exception = null)
+    /**
+     * Read all entities and run tests for given type.
+     * Apart from AuthTypes from type here, we can use
+     * custom types like, <AuthType>+<ExceptionClass>
+     *
+     * @param $type
+     * @param null $exception
+     */
+    protected function runForType($type, $exception = null)
     {
-        foreach ($entities as $entity => $tests)
+        foreach ($this->entityList as $entity => $fetch)
         {
-            $this->runForEntity($entity, $tests, $exception);
+            $this->runForEntityAndType($entity, $type, $exception);
         }
     }
 
-    protected function getFetchForEntity(string $entity)
+    /**
+     * All entities we need to test, Uses reflection class to resolve entities,
+     * Note: Php caches the reflection class, thus time complexity is negligible
+     *
+     * @return array
+     */
+    protected function getEntitiesToTest()
     {
-        return Entity::getEntityFetch($entity);
-    }
+        $allEntities = (new \ReflectionClass(E::class))->getConstants();
 
-    protected function getTestData(string $auth)
-    {
-        $data = [];
+        $entityFetchList = [];
 
-        foreach ($this->testData as $entity => $auths)
+        foreach ($allEntities as $entity)
         {
-            if (isset($auths[$auth]))
+            $fetch = E::getEntityFetch($entity);
+
+            if (empty($fetch) === false)
             {
-                $data[$entity] = $auths[$auth];
+                $entityFetchList[$entity] = $fetch;
             }
         }
 
-        return $data;
+        return $entityFetchList;
+    }
+
+    protected function getEntityFetch(string $entity)
+    {
+        return E::getEntityFetch($entity);
+    }
+
+    /**
+     * Returns test data for given entity and type. Currently it reads data
+     * from self::$testData, but for more complex entities like payments
+     * we can have separate testData file to keep contain readable and modular.
+     *
+     * @param string $entity
+     * @param string $type
+     * @return array
+     */
+    protected function getTestDataForEntityAndType(string $entity, string $type)
+    {
+        if (isset($this->testData[$entity]) === false)
+        {
+            $this->fail('Entity needs to decalared in fetch Test Data : '. $entity);
+        }
+
+        $entityTests = $this->testData[$entity];
+
+        return $entityTests[$type] ?? [];
     }
 
     protected function validateRuleTypes(Fetch $fetch)
@@ -177,39 +231,42 @@ class FetchTest extends TestCase
             $this->fail('Invalid rule types :' . implode(', ', $invalidRules));
         }
 
-        /*
-         * This check makes sure that each rules is called
-         */
+        // This check makes sure that each rule is called
         foreach ($ruleTypes as $type => $rules)
         {
             $this->assertTrue(is_array($rules), 'Rules is not array for ' . get_class($fetch));
 
-            $filled = $this->getMockedValuesForRules($fetch, $type);
+            $this->validateRuleDefinition($fetch, $rules);
+        }
+    }
 
+    /**
+     * Checks each rules definition one by one with dummy value(0)
+     * Thrown exception other than BadRequestValidationFailureException,
+     * or BadRequestException signifies that rule definition is wrong
+     *
+     * @param Fetch $fetch
+     * @param array $rules
+     */
+    protected function validateRuleDefinition(Fetch $fetch, array $rules)
+    {
+        foreach ($rules as $param => $rule)
+        {
             try
             {
                 $this->validator->caller($fetch)
-                                ->rules($rules)
-                                ->validate($filled);
+                                ->rules([$param => $rule])
+                                ->validate([$param => 0]);
             }
             catch (BadRequestValidationFailureException $e)
             {
                 continue;
             }
+            catch (BadRequestException $e)
+            {
+                continue;
+            }
         }
-    }
-
-    /**
-     * Currently, Mocks all the fields with zero, In future if required
-     * We can extend this function to read mocked values from mocked fetch class
-     *
-     * @param Fetch $fetch
-     * @param string $type
-     * @return array
-     */
-    protected function getMockedValuesForRules(Fetch $fetch, string $type)
-    {
-        return array_fill_keys(array_keys($fetch::RULES[$type]), 0);
     }
 
     protected function validateAccessTypes(Fetch $fetch)
@@ -234,12 +291,15 @@ class FetchTest extends TestCase
                 $this->fail('Accesses must be non associative for ' . get_class($fetch));
             }
 
-            $duplicateAccesses = array_intersect($mergedAccesses, $accesses);
+            $duplicate = array_intersect($mergedAccesses, $accesses);
 
-            if (count($duplicateAccesses) > 0)
+            if (count($duplicate) > 0)
             {
-                $this->fail('Duplicate accesses : '. implode(',', $duplicateAccesses));
+                $duplicateAccesses = implode(',', $duplicate);
+                $this->fail('Duplicate accesses for ' . get_class($fetch) . ' : ' . $duplicateAccesses);
             }
+
+            $mergedAccesses = array_merge($mergedAccesses, $accesses);
         }
     }
 

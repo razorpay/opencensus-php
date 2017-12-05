@@ -1,4 +1,5 @@
 <?php
+
 namespace RZP\Models\BankAccount;
 
 use RZP\Base\Fetch as BaseFetch;

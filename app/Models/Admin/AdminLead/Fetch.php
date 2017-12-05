@@ -1,4 +1,5 @@
 <?php
+
 namespace RZP\Models\Admin\AdminLead;
 
 use RZP\Base\Fetch as BaseFetch;

@@ -16,7 +16,7 @@ class Fetch extends BaseFetch
             Entity::BATCH_ID          => 'sometimes|string|min:14|max:20',
             Entity::USER_ID           => 'sometimes|alpha_num',
             Entity::STATUS            => 'sometimes|string',
-            Entity::TYPES             => 'sometimes|array|min:1|max:2|custom',
+            Entity::TYPES             => 'sometimes|sequential_array|min:1|max:2|custom',
             Entity::CUSTOMER_NAME     => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:255',
             Entity::CUSTOMER_CONTACT  => 'sometimes|contact_syntax',
             Entity::CUSTOMER_EMAIL    => 'sometimes|email',

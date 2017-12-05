@@ -5,6 +5,16 @@ namespace RZP\Tests\Unit\Models\Mock;
 use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
 
+/**
+ * Class works as mocked instance to BasicAuth, we have
+ * mocked the basic setters in class which required
+ * user and request information.
+ * Note: We are not using Mockery for this because it is
+ * complicated, hard to understand and less flexible.
+ *
+ * Class MockBasicAuth
+ * @package RZP\Tests\Unit\Models\Mock
+ */
 class MockBasicAuth extends BasicAuth
 {
     public function privateAuth()

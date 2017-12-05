@@ -1,4 +1,5 @@
 <?php
+
 namespace RZP\Models\Card;
 
 use RZP\Models\Payment;

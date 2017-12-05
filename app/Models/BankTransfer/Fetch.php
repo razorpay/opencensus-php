@@ -1,4 +1,5 @@
 <?php
+
 namespace RZP\Models\BankTransfer;
 
 use RZP\Base\Fetch as BaseFetch;
@@ -11,13 +12,14 @@ class Fetch extends BaseFetch
             Entity::PAYMENT_ID         => 'sometimes|string|min:14|max:18',
             Entity::MERCHANT_ID        => 'sometimes|alpha_num|size:14',
             Entity::PAYER_ACCOUNT      => 'sometimes|string|max:20',
-            Entity::PAYER_IFSC         => 'sometimes|string|size:11',
+            Entity::PAYER_IFSC         => 'sometimes|string|max:15',
             Entity::PAYEE_ACCOUNT      => 'sometimes|string|max:20',
             Entity::PAYEE_IFSC         => 'sometimes|string|size:11',
             Entity::VIRTUAL_ACCOUNT_ID => 'sometimes|string|min:14|max:17',
             Entity::AMOUNT             => 'sometimes|integer',
             Entity::MODE               => 'sometimes|string|max:4',
             Entity::UTR                => 'sometimes|alpha_num|max:22',
+            Repository::REFUND_ID      => 'sometimes|string|min:14|max:19',
         ]
     ];
 
@@ -33,11 +35,13 @@ class Fetch extends BaseFetch
             Entity::AMOUNT,
             Entity::MODE,
             Entity::UTR,
+            Repository::REFUND_ID,
         ]
     ];
 
     const SIGNED_IDS = [
         Entity::PAYMENT_ID,
         Entity::VIRTUAL_ACCOUNT_ID,
+        Repository::REFUND_ID,
     ];
 }

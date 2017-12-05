@@ -1,4 +1,5 @@
 <?php
+
 namespace RZP\Models\Coupon;
 
 use RZP\Base\Fetch as BaseFetch;

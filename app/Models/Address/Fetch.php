@@ -1,4 +1,5 @@
 <?php
+
 namespace RZP\Models\Address;
 
 use RZP\Base\Fetch as BaseFetch;
