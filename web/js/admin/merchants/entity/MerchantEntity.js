@@ -56,30 +56,38 @@ export default class MerchantEntity extends Component {
         </div>
 
         {detailsMap.map(item => {
-          if (item.permission) {
-            if (!user.permissions.find(perm => perm === item.permission)) {
-              return;
-            }
+          if (item.toHide) {
+            return;
           }
           if (item.children) {
             return (
-              <ToggleEntityRow
+              <ShowWhen
+                permission={item.permission}
+                tag={item.tag}
                 key={item.label}
-                label={item.label}
-                value={item.value}
-                className={`vertical-center ${item.class ? item.class : ''}`}
               >
-                {item.children()}
-              </ToggleEntityRow>
+                <ToggleEntityRow
+                  label={item.label}
+                  value={item.value}
+                  className={`vertical-center ${item.class ? item.class : ''}`}
+                >
+                  {item.children()}
+                </ToggleEntityRow>
+              </ShowWhen>
             );
           } else {
             return (
-              <EntityRow
+              <ShowWhen
+                permission={item.permission}
+                tag={item.tag}
                 key={item.label}
-                label={item.label}
-                value={item.value}
-                className={`vertical-center ${item.class ? item.class : ''}`}
-              />
+              >
+                <EntityRow
+                  label={item.label}
+                  value={item.value}
+                  className={`vertical-center ${item.class ? item.class : ''}`}
+                />
+              </ShowWhen>
             );
           }
         })}
