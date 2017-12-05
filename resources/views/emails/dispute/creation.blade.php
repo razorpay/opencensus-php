@@ -16,11 +16,11 @@
         $amount = sprintf('%0.2f', ($dispute['amount'] / 100));
         $amount = floatval($amount);
 
-        $note = 'Kindly provide the requested documents in the required format before or on the due date, failing which the case will be lost and the corresponding amount would be debited from the current balance. ';
+        $note = 'Kindly provide the requested documents in the required format by the deadline, failing which the case will be lost and the corresponding amount will be debited from the current balance. ';
 
         if (($dispute['phase'] === 'retrieval') or ($dispute['phase'] === 'fraud'))
         {
-            $note = 'Kindly provide the requested documents in the required format before or on the due date, failing which the corresponding amount might be debited from the current balance. ';
+            $note = 'Kindly provide the requested documents in the required format by the deadline, failing which the corresponding amount might be debited from the current balance. ';
         }
 
     @endphp
@@ -162,9 +162,9 @@
                 <td colspan="2" class="content" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; font-size: 14px; line-height: 19px; padding: 24px 4%; padding-bottom: 0; background-color: #fff; border-left: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; color: #000000; width: 85%; border-top: dashed 1px rgba(0,0,0,0.1); border-bottom: solid 1px rgba(0,0,0,0.05); padding-top: 0px;">
                     <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #000000;">
                         <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                        Hello {{ $merchant['name'] }},
+                        Hey,
                         <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                        We have received a dispute against the payment ID mentioned above. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
+                        We have received a dispute for Rs. {{ $amount }} on pay_{{ $dispute['payment_id'] }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
                         <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                         Note: {{ $note }}
                         <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
@@ -187,7 +187,7 @@
                                 </td>
                                 <td class="content" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px;">
                                     <div class="footerRZP" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-align: right; padding-left: 10%; padding-bottom: 24px; font-size: 10px; color: #757575;">
-                                        For any queries, please contact <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"> support@razorpay.com
+                                        For any queries, reply directly to this <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"> email and we will help you out.
                                     </div>
                                 </td>
                             </tr></tbody></table>
