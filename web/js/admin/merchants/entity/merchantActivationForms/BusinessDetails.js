@@ -4,7 +4,7 @@ import { adminFetch } from 'util/fetch';
 import { notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
-import Field, { SelectField } from 'ui/Field';
+import Field, { SelectField, TextAreaField } from 'ui/Field';
 import Table from 'ui/Table';
 
 export default class BusinessDetails extends Component {
@@ -52,7 +52,10 @@ export default class BusinessDetails extends Component {
         {!merchantDetails ? (
           <div class="spinner center m-t" />
         ) : (
-          <Form class="full-span full-elements limited">
+          <Form
+            class="full-span full-elements limited"
+            style={{ maxWidth: '650px' }}
+          >
             <SelectField
               label="Organisation Type"
               name="business_type"
@@ -103,7 +106,7 @@ export default class BusinessDetails extends Component {
               defaultValue={merchantDetails.business_paymentdetails}
             />
 
-            <Field
+            <TextAreaField
               label="Business Model"
               name="business_model"
               infoMsg="Please give a brief explanation of your business model and future plans (Essential for startups)"
