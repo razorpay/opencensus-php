@@ -81,13 +81,13 @@ class Raven
      * if it should not mock test mode behavior.
      *
      * @param  array        $input
-     * @param  bool|boolean $testModeMocked
+     * @param  bool|boolean $mockInTestMode
      *
      * @return array
      */
-    public function sendSms(array $input, bool $testModeMocked = true): array
+    public function sendSms(array $input, bool $mockInTestMode = true): array
     {
-        if (($testModeMocked === true) and ($this->mode === Mode::TEST))
+        if (($this->mode === Mode::TEST) and ($mockInTestMode === true))
         {
             return [self::SMS_ID => self::TEST_SMS_ID];
         }
