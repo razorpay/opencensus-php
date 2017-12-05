@@ -8,7 +8,7 @@ import { openModal, confirm } from 'common/modal';
 import { notifySuccess, notifyError } from 'common/modal';
 
 import AsyncButton from 'ui/AsyncButton';
-import { FromField, ToField } from 'ui/Field';
+import { DateField } from 'ui/Field';
 import Form from 'ui/Form';
 import EntityRow from 'ui/EntityRow';
 import Table from 'ui/Table';
@@ -16,7 +16,10 @@ import Duplex from 'ui/Duplex';
 
 @observer
 export default class MerchantAnalyticStats extends Component {
-  state = {};
+  state = {
+    fromDate: new Date(new Date().setDate(new Date().getDate() - 7)),
+    toDate: new Date(),
+  };
 
   constructor(props) {
     super();
@@ -83,10 +86,20 @@ export default class MerchantAnalyticStats extends Component {
     });
   }
 
-  fetchDetails() {
-    const today = new Date();
-    const from_timestamp = new Date().setDate(today.getDate() - 7) / 1000;
-    const to_timestamp = Math.round(today.getTime()) / 1000;
+  fetchDetails = () => {
+    const from_timestamp = Math.round(
+      new Date(this.state.fromDate).getTime() / 1000
+    );
+    const to_timestamp = Math.round(
+      new Date(this.state.toDate).getTime() / 1000
+    );
+
+    console.log(from_timestamp, to_timestamp);
+
+    if (from_timestamp > to_timestamp) {
+      notifyError('Dates are invalid');
+      return;
+    }
 
     const requestData = {
       filters: {
@@ -221,9 +234,16 @@ export default class MerchantAnalyticStats extends Component {
       .catch(err => {
         notifyError(JSON.stringify(err.response));
       });
-  }
+  };
 
-  onSubmit(body) {}
+  updateFromDate = e => {
+    console.log(e);
+    this.setState({ fromDate: e.target.value });
+  };
+
+  updateToDate = e => {
+    this.setState({ toDate: e.target.value });
+  };
 
   render() {
     const { merchant_analytics } = this.state;
@@ -236,14 +256,22 @@ export default class MerchantAnalyticStats extends Component {
 
         <div class="box">
           <Form>
-            <FromField />
-            <ToField />
+            <DateField
+              label="From"
+              value={this.state.fromDate}
+              onDayClick={this.updateFromDate}
+            />
+            <DateField
+              label="To"
+              value={this.state.toDate}
+              onDayClick={this.updateToDate}
+            />
 
             <AsyncButton
               text="Fetch Stats"
               class="btn"
               pendingClass="small spinner"
-              onSubmit={this.onSubmit}
+              onSubmit={this.fetchDetails}
             />
           </Form>
         </div>
