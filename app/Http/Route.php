@@ -1410,7 +1410,7 @@ final class Route
         'merchant_analytics'                     => '*',
         'merchant_activation_files'              => '*',
         'merchant_activation_archive'            => '*',
-        'merchant_activation_status'             => '*',
+        'merchant_activation_status'             => Permission::EDIT_ACTIVATE_MERCHANT,
         'merchant_get_rejection_reasons'         => '*',
         'dispute_reason_create'                  => Permission::CREATE_DISPUTE_REASON,
         'user_confirm_by_data'                   => '*',

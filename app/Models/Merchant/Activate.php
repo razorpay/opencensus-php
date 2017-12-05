@@ -28,7 +28,15 @@ class Activate extends Base\Core
         Payment\Method::BANK_TRANSFER
     ];
 
-    public function activate(Entity $merchant)
+    /**
+     * This function is used for activating merchant
+     * @param Entity $merchant
+     * @param bool $activateByStatus which is by default false, it determines
+     * if the activation is done by the new activation status `activated`.
+     *
+     * @return array
+     */
+    public function activate(Entity $merchant, bool $activateByStatus = false): array
     {
         $merchant->getValidator()->validateBeforeActivate();
 
@@ -45,6 +53,13 @@ class Activate extends Base\Core
         //     throw new Exception\BadRequestException(
         //         ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
         // }
+
+        if ($activateByStatus === true)
+        {
+            $bankAccount = (new Detail\Service)->getBankAccountMap($merchant->merchantDetail);
+
+            (new Service)->addBankAccount($merchant->id, $bankAccount);
+        }
 
         $ba = $this->repo->bank_account->getBankAccount($merchant);
 
@@ -80,10 +95,13 @@ class Activate extends Base\Core
 
         $merchant->activate();
 
-        // Triggering
-        $workflow = $this->app['workflow']
-                         ->setEntity($merchant->getEntity())
-                         ->handle($oldMerchant, $merchant);
+        if ($activateByStatus === false)
+        {
+            // Triggering
+            $workflow = $this->app['workflow']
+                             ->setEntity($merchant->getEntity())
+                             ->handle($oldMerchant, $merchant);
+        }
 
         (new Merchant\Core)->createBalance($merchant, 'live');
 

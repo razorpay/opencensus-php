@@ -300,11 +300,28 @@ class Core extends Base\Core
             unset($input[Entity::REJECTION_REASONS]);
         }
 
+        $oldMerchant = clone $merchantDetails->merchant;
+
         $merchantDetails->edit($input);
+
+        $merchant = $merchantDetails->merchant;
+
+        if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED)
+        {
+            // Triggering Workflow
+            $workflow = $this->app['workflow']
+                             ->setEntity($merchant->getEntity())
+                             ->handle($oldMerchant, $merchant);
+        }
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input, $rejectionReasons, $admin)
         {
             $this->repo->saveOrFail($merchantDetails);
+
+            if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED)
+            {
+                (new Merchant\Activate)->activate($merchantDetails->merchant, true);
+            }
 
             $stateData = [
                 State\Entity::NAME => $input[Entity::ACTIVATION_STATUS],
