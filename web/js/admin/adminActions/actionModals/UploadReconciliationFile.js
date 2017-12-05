@@ -30,6 +30,7 @@ const gateWayOptions = [
   'Virtual Accounts Kotak',
 ];
 
+UploadReconciliationFile.permission = 'add_reconciliation_file';
 UploadReconciliationFile.title = 'Upload Reconciliation File (Payment/Refund)';
 export default function UploadReconciliationFile() {
   return (

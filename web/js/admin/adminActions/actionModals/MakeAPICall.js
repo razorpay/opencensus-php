@@ -131,4 +131,5 @@ export default class MakeAPICall extends Component {
   }
 }
 
+MakeAPICall.permission = 'make_api_call';
 MakeAPICall.title = 'Make Raw API Call';

@@ -7,7 +7,7 @@ import { isWorkflow } from 'util/index';
 import { adminPut } from 'util/fetch';
 
 EditMerchantInvoice.title = 'Edit Merchant Invoice GSTIN';
-
+EditMerchantInvoice.permission = 'edit_merchant_invoice_gstin';
 export default function EditMerchantInvoice() {
   return (
     <Form>

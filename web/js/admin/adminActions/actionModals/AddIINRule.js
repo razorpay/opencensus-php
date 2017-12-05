@@ -23,6 +23,7 @@ const options = {
   type: ['', 'Credit', 'Debit', 'Unknown'],
 };
 
+AddIINRule.permission = 'edit_iin_rule';
 AddIINRule.title = 'Add IIN';
 export default function AddIINRule() {
   return (

@@ -27,6 +27,7 @@ const options = {
   ],
 };
 
+GenerateRefundsExcel.permission = 'create_netbanking_refund';
 GenerateRefundsExcel.title = 'Generate Refund Excel';
 export default function GenerateRefundsExcel() {
   return (
