@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
-import { openModal, notifyDone, notifyError, notify } from 'common/modal';
+import { withRouter } from 'react-router-dom';
+
+import { openModal, notifySuccess, notifyError, notify } from 'common/modal';
 import { observable, action, extendObservable, toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import { adminFetch, adminPost, adminPut } from 'util/fetch';
@@ -12,6 +14,7 @@ import AsyncButton from 'ui/AsyncButton';
 import user from 'admin/user';
 import Levels from './Levels';
 
+@withRouter
 @observer
 export default class EditWorkflow extends Component {
   // all available roles
@@ -22,9 +25,9 @@ export default class EditWorkflow extends Component {
   permissions = observable.shallowArray();
   @observable levels = [];
 
-  componentWillMount() {
+  prepareWorkflow(props) {
     extendObservable(this, { pending: true });
-    let { id } = this.props.match.params;
+    let { id } = props.match.params;
 
     let requests = [
       adminFetch({ route_name: 'role_get_multiple' }),
@@ -60,6 +63,15 @@ export default class EditWorkflow extends Component {
         }
       })
     );
+  }
+  componentWillMount() {
+    this.prepareWorkflow(this.props);
+  }
+
+  componentDidUpdate(nextProps) {
+    if (this.props.match.params.id !== nextProps.match.params.id) {
+      this.prepareWorkflow(this.props); // TODO: Strangely, nextProps is giving old value and this.props is new value
+    }
   }
 
   selectPerm = e =>
@@ -137,7 +149,14 @@ export default class EditWorkflow extends Component {
       };
     }
 
-    return requestFn(data).then(r => r && notifyDone());
+    return requestFn(data).then(data => {
+      if (data) {
+        notifySuccess('Workflow successfully created');
+        setTimeout(() => {
+          this.props.history.replace(`/workflows/${data.id}`);
+        }, 1000);
+      }
+    });
   };
 
   render() {
