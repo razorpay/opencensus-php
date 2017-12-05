@@ -324,6 +324,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     protected function getApiRefundEntityFromRow(array $row)
     {
+        // TODO: Need to add this method in this class
         $refundId = $this->getRefundId($row);
 
         // If refund id is not present, return. No point of evaluating the row.

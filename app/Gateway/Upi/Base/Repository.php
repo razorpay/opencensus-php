@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Constants\Table;
+use RZP\Gateway\Upi\Icici\Action;
 use RZP\Models\Payment;
 
 class Repository extends Base\Repository
@@ -25,6 +26,14 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where('payment_id' , '=', $paymentId)
                     ->pluck('gateway_payment_id');
+    }
+
+    public function fetchByGatewayPaymentIdAndAction(string $gatewayPaymentId, string $action = Action::AUTHORIZE)
+    {
+        return $this->newQuery()
+                    ->where('gateway_payment_id', '=', $gatewayPaymentId)
+                    ->where('action', '=', $action)
+                    ->firstOrFail();
     }
 
     public function fetchByPaymentId($paymentId)

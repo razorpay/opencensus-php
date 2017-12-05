@@ -709,6 +709,12 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
+    public function alreadyRefunded(array $input)
+    {
+        // TODO: Implement this properly
+        return true;
+    }
+
     public function verifyRefund(array $input)
     {
         parent::verify($input);
