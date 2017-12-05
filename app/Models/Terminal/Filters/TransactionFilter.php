@@ -413,7 +413,7 @@ class TransactionFilter extends Terminal\Filter
 
     protected function isTerminalWithMerchantMccAbsent(
         array $applicableTerminals,
-        string $merchantMcc = null): bool
+        int $merchantMcc = null): bool
     {
         foreach ($applicableTerminals as $terminal)
         {

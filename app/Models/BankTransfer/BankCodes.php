@@ -64,7 +64,7 @@ class BankCodes
         'COB'   => self::IFSC_COSB,
         'CUB'   => self::IFSC_CIUB,
         'DCB'   => self::IFSC_DCBL,
-        'DUS'   => self::IFSC_DNSB,
+        'DNS'   => self::IFSC_DNSB,
         'ESF'   => self::IFSC_ESFB,
         'FBL'   => self::IFSC_FDRL,
         'GSC'   => self::IFSC_GSCB,

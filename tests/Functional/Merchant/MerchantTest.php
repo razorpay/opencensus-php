@@ -1103,6 +1103,40 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCheckoutPreferencesWithFreechargeOfferOnMerchantWithDirectFreechargeTerminal()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('terminal:direct_freecharge_terminal');
+
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $offer = $this->fixtures->create('offer:wallet', [
+            'merchant_id'      => '100000Razorpay',
+            'checkout_display' => true,
+            'display_text'     => 'Shared olamoney offer',
+            'terms'            => 'Some terms',
+            'starts_at'        => $startsAt,
+        ]);
+
+        //
+        // Tests that the freecharge offer is not shown as the merchant has a
+        // direct freecharge terminal.
+        //
+        $this->fixtures->create('offer:wallet', [
+            'merchant_id'      => '100000Razorpay',
+            'issuer'           => 'freecharge',
+            'checkout_display' => true,
+            'display_text'     => 'Shared freecharge offer',
+            'terms'            => 'Some terms',
+            'starts_at'        => $startsAt,
+        ]);
+
+        $content = $this->startTest();
+
+        $this->assertCount(1, $content['offers']);
+    }
+
     public function testGetCheckoutPreferencesWithMerchantSpecificAndSharedOffers()
     {
         $this->ba->publicAuth();
