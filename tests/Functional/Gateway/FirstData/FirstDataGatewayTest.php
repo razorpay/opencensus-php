@@ -307,7 +307,6 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals('first_data', $paymentRes['gateway']);
         $this->assertEquals($transRes['entity_id'], $paymentRes['id']);
 
-
         $payment['card']['number'] = '5109591717594888';
 
         $this->fixtures->create('iin',
@@ -679,4 +678,22 @@ class FirstDataGatewayTest extends TestCase
 
         $this->doAuthPayment($this->payment);
     }
+
+    public function testTransactionTimedOut()
+    {
+        $time_out_error_codes = ['N:-30052', 'N:-30053', 'N:-7778'];
+
+        foreach ($time_out_error_codes as $error_code)
+        {
+            $this->getErrorTransactionTimedout($error_code);
+
+            $data = $this->testData[__FUNCTION__];
+
+            $this->runRequestResponseFlow($data, function() {
+                $this->doAuthPayment($this->payment);
+            });
+
+        }
+    }
 }
+
