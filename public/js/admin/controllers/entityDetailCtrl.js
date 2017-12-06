@@ -134,6 +134,43 @@ app
         });
       };
 
+      $scope.batch = {
+        retry: function(data) {
+          var params = {
+            route_name: 'batch_process_by_id',
+            url_params: {
+              '{id}': $scope.entity.id,
+            },
+            mode: $scope.mode,
+          };
+
+          var request = $http({
+            method: 'post',
+            url: 'admin/generic',
+            data: params,
+          });
+
+          request
+            .success(function(data) {
+              if (data.success) {
+                $scope.alerts.addAlert(
+                  'success',
+                  'Batch: ' + data.data.id + ' successfully retried',
+                  true
+                );
+                window.location.reload();
+              } else {
+                angular.forEach(data.errors, function(value) {
+                  $scope.alerts.addAlert('danger', value);
+                });
+              }
+            })
+            .error(function() {
+              $scope.alerts.addAlert('danger', null, true);
+            });
+        },
+      };
+
       // Dispute specific actions
       $scope.dispute = {
         edit: function(data) {

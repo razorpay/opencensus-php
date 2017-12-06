@@ -138,7 +138,7 @@ return [
         'dispute_reason_create'             => 'disputes/reasons',
 
         // Product Submissions
-        'onboarding_features_fetch_submissions' => 'onboarding/features/submissions',
+        'onboarding_features_fetch_submissions' => 'onboarding/features/submissions/fetch',
 
         'onboarding_features_update'        => 'onboarding/features/{feature}/update',
     ],
@@ -581,7 +581,7 @@ return [
 
     // auth
     'admin_proxy' => [
-        // Feature onboarding responses with questions 
+        // Feature onboarding responses with questions
         'onboarding_features_fetch_details' => 'onboarding/features',
         'onboarding_features_update_status' => 'onboarding/features/{feature}/status',
 

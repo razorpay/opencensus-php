@@ -365,7 +365,7 @@ class Service extends Base\Service
             {
                 $params = ['transaction_report_email' => $csvEmail];
                 // Only when it is changed on API side we update on the dashboard side as well
-                $error = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
+                list($error, $details) = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
             }
 
             if ((isset($input['fee_bearer'])) and ($input['fee_bearer'] === 'customer'))
