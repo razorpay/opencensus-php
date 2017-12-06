@@ -661,7 +661,7 @@ final class Route
         'onboarding_features_fetch_submissions'   => ['get',      'onboarding/features/submissions',                'FeatureController@getFeatureOnboardingRequests'                    ],
         'onboarding_features_update_status'       => ['put',      'onboarding/features/{feature}/status',           'FeatureController@updateFeatureActivationStatus'                   ],
         'onboarding_features_fetch_status'        => ['get',      'onboarding/features/{feature}/status',           'FeatureController@getFeatureActivationStatus'                      ],
-        'onboarding_features_bulk_update_status'  => ['put',      'onboarding/features/status/bulk',                'FeatureController@bulkUpdateFeatureActivationStatus'                      ],
+        'onboarding_features_bulk_update_status'  => ['put',      'onboarding/features/status/bulk',                'FeatureController@bulkUpdateFeatureActivationStatus'               ],
 
         // Deprecated routes - maintaining for BC - Remove after dashboard changes
         'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                   'FeatureController@postOnboardingSubmissions'                       ],
@@ -669,14 +669,14 @@ final class Route
         'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                   'FeatureController@getOnboardingSubmissionsDeprecated'              ],
 
         // Reporting Service
-        'reporting_config_get'                    => ['get',      'reporting/configs/{id}',                          'ReportingController@getConfig',                                          ],
-        'reporting_config_list'                   => ['get',      'reporting/configs',                               'ReportingController@listConfig',                                         ],
-        'reporting_config_create'                 => ['post',     'reporting/configs',                               'ReportingController@createConfig'                                        ],
-        'reporting_config_edit'                   => ['patch',    'reporting/configs/{id}',                          'ReportingController@updateConfig'                                        ],
-        'reporting_config_delete'                 => ['delete',   'reporting/configs/{id}',                          'ReportingController@deleteConfig'                                        ],
-        'reporting_generate'                      => ['post',     'reporting/configs/{id}/generate',                 'ReportingController@generateReport'                                ],
-        'reporting_log_get'                       => ['get',      'reporting/logs/{id}',                             'ReportingController@getLog',                                          ],
-        'reporting_log_list'                      => ['get',      'reporting/logs',                                  'ReportingController@listLog',                                         ],
+        'reporting_config_get'                    => ['get',      'reporting/configs/{id}',                          'ReportingController@getConfig',                                   ],
+        'reporting_config_list'                   => ['get',      'reporting/configs',                               'ReportingController@listConfig',                                  ],
+        'reporting_config_create'                 => ['post',     'reporting/configs',                               'ReportingController@createConfig'                                 ],
+        'reporting_config_edit'                   => ['patch',    'reporting/configs/{id}',                          'ReportingController@updateConfig'                                 ],
+        'reporting_config_delete'                 => ['delete',   'reporting/configs/{id}',                          'ReportingController@deleteConfig'                                 ],
+        'reporting_log_get'                       => ['get',      'reporting/logs/{id}',                             'ReportingController@getLog',                                      ],
+        'reporting_log_list'                      => ['get',      'reporting/logs',                                  'ReportingController@listLog',                                     ],
+        'reporting_log_create'                    => ['post',     'reporting/logs',                                  'ReportingController@createLog'                                    ],
 
         // UFH Service
         'ufh_get_file_signed_url'                 => ['get',      'ufh/file/{fileId}/get-signed-url',               'UfhController@getSignedUrl'                                        ],
@@ -1200,10 +1200,10 @@ final class Route
         'reporting_config_create',
         'reporting_config_edit',
         'reporting_config_delete',
-        'reporting_generate',
-        'ufh_get_file_signed_url',
         'reporting_log_get',
         'reporting_log_list',
+        'reporting_log_create',
+        'ufh_get_file_signed_url',
     ];
 
     // These will run on internal auth with the assurance

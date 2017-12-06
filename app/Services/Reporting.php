@@ -16,7 +16,6 @@ class Reporting
 
     const REPORT_CONFIG   = '/configs';
     const REPORT_LOG      = '/logs';
-    const REPORT_GENERATE = '/generate';
 
     /**
      * Configuration array
@@ -90,7 +89,7 @@ class Reporting
 
     public function generateReport(string $configId, array $input): array
     {
-        $url = self::REPORT_GENERATE;
+        $url = self::REPORT_LOG;
 
         // Prepare input
         $input['mode']      = $this->app['rzp.mode'];
