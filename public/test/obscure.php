@@ -138,11 +138,11 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td colspan='40'>Card Holder Name:</td>
         <td><input type="text" name="card[name]" size="25" value="shashank"></td>
         <!-- <td><input type="text" name="callback_url" value="<?= $callback_url ?>"></td> -->
-        <input type="hidden" value="INR" name="currency">
-        <input type="hidden" value="<?=$key_id?>" name="key_id">
+        <td><input type="hidden" value="INR" name="currency"></td>
+        <td><input type="hidden" value="<?=$key_id?>" name="key_id"></td>
     </tr>
     <tr>
-        <td colspan="40">Card No: </b> </td>
+        <td colspan="40"><b>Card No: </b> </td>
         <td><input type="text" name="card[number]" value="4012001038443335" size="25"></td>
     </tr>
     <tr>
@@ -188,6 +188,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td colspan='40'>VPA:</td>
         <td><input type="text" name="vpa" size="25" value="nemomobile@imobile"></td>
     </tr>
+    <tr>
     <td colspan='40'>Account Number:</td>
         <td><input type="text" name="account_number" size="25"></td>
     </tr>
