@@ -8,7 +8,7 @@ import { openModal, confirm } from 'common/modal';
 import { notifySuccess, notifyError } from 'common/modal';
 
 import AsyncButton from 'ui/AsyncButton';
-import { DateField } from 'ui/Field';
+import { FromField, ToField } from 'ui/Field';
 import Form from 'ui/Form';
 import EntityRow from 'ui/EntityRow';
 import Table from 'ui/Table';
@@ -16,10 +16,9 @@ import Duplex from 'ui/Duplex';
 
 @observer
 export default class MerchantAnalyticStats extends Component {
-  state = {
-    fromDate: new Date(new Date().setDate(new Date().getDate() - 7)),
-    toDate: new Date(),
-  };
+  state = {};
+  fromDate = new Date(new Date().setDate(new Date().getDate() - 7));
+  toDate = new Date();
 
   constructor(props) {
     super();
@@ -86,18 +85,24 @@ export default class MerchantAnalyticStats extends Component {
     });
   }
 
-  fetchDetails = () => {
-    const from_timestamp = Math.round(
-      new Date(this.state.fromDate).getTime() / 1000
-    );
-    const to_timestamp = Math.round(
-      new Date(this.state.toDate).getTime() / 1000
-    );
+  handleSearch = body => {
+    if (!(body.from && body.to)) {
+      notifyError('Please enter valid dates');
 
-    console.log(from_timestamp, to_timestamp);
+      return;
+    }
+    this.fromDate = new Date(body.from);
+    this.toDate = new Date(body.to);
+
+    this.fetchDetails();
+  };
+
+  fetchDetails = () => {
+    const from_timestamp = Math.round(this.fromDate.getTime() / 1000);
+    const to_timestamp = Math.round(this.toDate.getTime() / 1000);
 
     if (from_timestamp > to_timestamp) {
-      notifyError('Dates are invalid');
+      notifyError('From date cannot be after To date');
       return;
     }
 
@@ -236,15 +241,6 @@ export default class MerchantAnalyticStats extends Component {
       });
   };
 
-  updateFromDate = e => {
-    console.log(e);
-    this.setState({ fromDate: e.target.value });
-  };
-
-  updateToDate = e => {
-    this.setState({ toDate: e.target.value });
-  };
-
   render() {
     const { merchant_analytics } = this.state;
 
@@ -256,22 +252,24 @@ export default class MerchantAnalyticStats extends Component {
 
         <div class="box">
           <Form>
-            <DateField
+            <FromField
               label="From"
-              value={this.state.fromDate}
-              onDayClick={this.updateFromDate}
+              format="YYYY-MM-DD"
+              placeholder="YYYY-MM-DD"
+              value={new Date(new Date().setDate(new Date().getDate() - 7))}
             />
-            <DateField
+            <ToField
               label="To"
-              value={this.state.toDate}
-              onDayClick={this.updateToDate}
+              format="YYYY-MM-DD"
+              placeholder="YYYY-MM-DD"
+              value={new Date()}
             />
 
             <AsyncButton
               text="Fetch Stats"
               class="btn"
               pendingClass="small spinner"
-              onSubmit={this.fetchDetails}
+              onSubmit={this.handleSearch}
             />
           </Form>
         </div>

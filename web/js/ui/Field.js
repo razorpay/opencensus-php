@@ -50,6 +50,7 @@ const DateInput = ({
   dayPickerProps,
   format,
   hideOnDayClick,
+  value,
   ...props
 }) => {
   return (
@@ -58,6 +59,7 @@ const DateInput = ({
       onDayChange={onDayChange}
       dayPickerProps={dayPickerProps}
       format={format}
+      value={value}
       inputProps={props}
     />
   );
