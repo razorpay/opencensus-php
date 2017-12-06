@@ -61,7 +61,6 @@ const DateInput = ({
       format={format}
       value={value}
       inputProps={props}
-      value={props.value}
     />
   );
 };
