@@ -10,14 +10,18 @@
         $createdDate = date('jS F Y', $dispute['created_at']);
         $expiryDate = date('jS F Y', $dispute['expires_on']);
 
+        $remainingDays = floor(( $dispute['expires_on'] - time() ) / 86400);
+
         $amount = sprintf('%0.2f', ($dispute['amount'] / 100));
         $amount = floatval($amount);
 
-        $note = 'Kindly provide the requested documents in the required format by the deadline, failing which the case will be lost and the corresponding amount will be debited from the current balance. ';
+        $paymentLink = 'https://dashboard.razorpay.com/#/app/payments/pay_' . $dispute['payment_id'];
+
+        $noteResult = 'failing which the case will be lost and the corresponding amount will be debited from the current balance. ';
 
         if (($dispute['phase'] === 'retrieval') or ($dispute['phase'] === 'fraud'))
         {
-            $note = 'Kindly provide the requested documents in the required format by the deadline, failing which the corresponding amount might be debited from the current balance. ';
+            $noteResult = 'failing which the corresponding amount might be debited from the current balance. ';
         }
 
     @endphp
@@ -33,12 +37,12 @@
             ">
 
             <h2 style="color: {{ $brand_text_color }}">
-                  Dispute Alert
+                  Dispute raised for Rs. {{ $amount }}
               </h2>
 
             <div style="margin-top: 12px; color: {{ $brand_text_color }}">
                 <div style="color: {{ $brand_text_color }}">
-                    A dispute has been raised for Rs. {{ $amount }}
+                    Please respond by {{ $expiryDate }}
                 </div>
               </div>
         </div>
@@ -52,7 +56,7 @@
 
                 <td class="content" style="
                     padding-bottom: 24px;">
-                    <strong class="text-uppercase lh-26">Payment ID</strong> <br> pay_{{ $dispute['payment_id'] }}
+                    <strong class="text-uppercase lh-26">Payment ID</strong> <br> <a href="{{ $paymentLink }}"> pay_{{ $dispute['payment_id'] }} </a>
                 </td>
             </tr>
 
@@ -76,8 +80,8 @@
             <tr>
                 <td class="content" style="padding-bottom: 0px; padding-top: 0px;">
                     <div>
-                        <strong class="text-uppercase lh-26">Dispute Type</strong> <br>
-                        <span style="text-transform: capitalize">{{ $dispute['phase'] }}</span>
+                        <strong class="text-uppercase lh-26">Dispute Type and Reason</strong> <br>
+                        <span style="text-transform: capitalize"> <b> {{ $dispute['phase'] }} </b> : {{ $dispute['reason_description'] }} </span>
                     </div>
                 </td>
             </tr>
@@ -91,17 +95,9 @@
             </tr>
 
             <tr>
-                <td class="content">
-                    <div>
-                        <strong class="text-uppercase lh-26">Dispute Reason</strong> <br> {{ $dispute['reason_description'] }}
-                    </div>
-                </td>
-            </tr>
-
-            <tr>
                 <td class="content" style="padding-bottom: 24px !important">
                     <div>
-                        <strong class="text-uppercase lh-26">Deadline for resolution</strong> <br> {{ $expiryDate }}
+                        <strong class="text-uppercase lh-26">Deadline for resolution</strong> <br> <b> {{ $expiryDate }} </b> ( in {{ $remainingDays }} days )
                     </div>
                 </td>
             </tr>
@@ -115,7 +111,7 @@
                         <br><br>
                         We have received a dispute for Rs. {{ $amount }} on pay_{{ $dispute['payment_id'] }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
                         <br><br>
-                        Note: {{ $note }}
+                        Note: Kindly <b> reply to this email </b> with the requested documents in the required format by the deadline, {{ $noteResult }}
                         <br><br>
 
                     </div>
@@ -144,7 +140,7 @@
                                 </td>
                                 <td class="content">
                                     <div class="footerRZP">
-                                        For any queries, reply directly to this <br> email and we will help you out.
+                                        For any queries, please reply to this email.
                                     </div>
                                 </td>
                             </tr>
