@@ -162,7 +162,8 @@ class Receiver extends Base\Core
         $handle = $this->merchant->getHandle();
 
         if (($this->numeric === true) and
-            ($this->descriptor !== null))
+            ($this->descriptor !== null) and
+            ($this->isPrivilegedAccount() === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Descriptor cannot be used for numeric accounts.');
@@ -272,22 +273,26 @@ class Receiver extends Base\Core
      */
     protected function getRoot(string $provider): string
     {
-        $root = Provider::ROOT[$provider]['numeric_default'];
+        $providerRoots = Provider::ROOT[$provider];
+
+        $typeRoots = $providerRoots['numeric'];
 
         if ($this->numeric === false)
         {
-            $root = Provider::ROOT[$provider]['alpha_numeric_default'];
+            $typeRoots = $providerRoots['alpha_numeric'];
+        }
 
-            $handle = $this->merchant->getHandle();
+        $root = $typeRoots['default'];
 
-            if ($handle !== null)
+        $handle = $this->merchant->getHandle();
+
+        if ($handle !== null)
+        {
+            $root = $typeRoots['handle'];
+
+            if (strlen($handle) !== self::STANDARD_HANDLE_LENGTH)
             {
-                $root = Provider::ROOT[$provider]['alpha_numeric_handle'];
-
-                if (strlen($handle) !== self::STANDARD_HANDLE_LENGTH)
-                {
-                    $root = Provider::ROOT[$provider]['alpha_numeric_special'];
-                }
+                $root = $typeRoots['special'];
             }
         }
 
@@ -331,8 +336,9 @@ class Receiver extends Base\Core
     {
         $descriptor = $this->descriptor;
 
-        if (($this->numeric === true) or
-            ($descriptor === null))
+        if (($descriptor === null) or
+            (($this->numeric === true) and
+             ($this->isPrivilegedAccount() === false)))
         {
             $totalLength = self::ACCOUNT_NUMBER_LENGTH;
 
@@ -342,6 +348,21 @@ class Receiver extends Base\Core
         }
 
         return $descriptor;
+    }
+
+    /**
+     * Some merchant accounts have special privileges associated with
+     * them for VA creation. Eg. They get shorter handles, can use longer
+     * descriptors, and create VAs using different roots.
+     *
+     * @return boolean
+     */
+    protected function isPrivilegedAccount()
+    {
+        $handle = $this->merchant->getHandle();
+
+        return (($handle !== null) and
+                (strlen($handle) !== self::STANDARD_HANDLE_LENGTH));
     }
 
     protected function getDefaultHandle(string $root): string

@@ -225,6 +225,13 @@ class VirtualAccountTest extends TestCase
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is set so standard root is used with given handle
         $this->assertEquals("RAZRHAN10CHARDESC", $vba['account_number']);
+
+        // 10 char descriptors are also allowed with numeric
+        $response = $this->createVirtualAccount([], true, '0123456789');
+
+        $vba = $this->getLastEntity('bank_account', true);
+        // Shorter handle is set so special root is used with given descriptor
+        $this->assertEquals("22222200123456789", $vba['account_number']);
     }
 
     public function testCreateVirtualAccountWithIdenticalDescriptor()

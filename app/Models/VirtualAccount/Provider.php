@@ -48,42 +48,67 @@ class Provider
     const ROOT = [
         self::YESBANK => [
             // Todo
-            'numeric_default'       => '',
-            'alpha_numeric_default' => '',
-            'alpha_numeric_handle'  => '',
-            'alpha_numeric_special' => '',
-            'reserved'              => [],
+            'numeric' => [
+                'default' => '',
+                'handle'  => '',
+                'special' => '',
+            ],
+            'alpha_numeric' => [
+                'default' => '',
+                'handle'  => '',
+                'special' => '',
+            ],
+            'reserved' => [],
         ],
         self::KOTAK     => [
-            // Numeric used for merchants who have not set handle
-            'numeric_default'       => '139913',
-            // Alphanumeric used for merchants who have not set handle
-            'alpha_numeric_default' => 'RAZO',
-            // Alphanumeric used for merchants who have set a 4-char handle
-            'alpha_numeric_handle'  => 'RZRP',
-            // Alphanumeric used for merchants who have set a 3-char handle
-            'alpha_numeric_special' => 'RAZR',
+            'numeric' => [
+                // Numeric used for merchants who have not set handle
+                'default' => '139913',
+                // Numeric used for merchants who have set a 4-char handle
+                'handle'  => '139913',
+                // Numeric used for merchants who have set a 3-char handle
+                'special' => '139914',
+            ],
+            'alpha_numeric' => [
+                // Alphanumeric used for merchants who have not set handle
+                'default' => 'RAZO',
+                // Alphanumeric used for merchants who have set a 4-char handle
+                'handle'  => 'RZRP',
+                // Alphanumeric used for merchants who have set a 3-char handle
+                'special' => 'RAZR',
+            ],
             // Used for our own nodal-to-nodal transfers
-            'reserved'              => [
+            'reserved' => [
                 // DO NOT REFUND PAYMENTS MADE HERE
                 'RZRN',
             ],
         ],
-        self::DASHBOARD       => [
-            'numeric_default'       => '111111',
-            'alpha_numeric_default' => 'RAZO',
-            'alpha_numeric_handle'  => 'RZRP',
-            'alpha_numeric_special' => 'RAZR',
-            'reserved'              => [
+        self::DASHBOARD => [
+            'numeric' => [
+                'default' => '111111',
+                'handle'  => '111111',
+                'special' => '222222',
+            ],
+            'alpha_numeric' => [
+                'default' => 'RAZO',
+                'handle'  => 'RZRP',
+                'special' => 'RAZR',
+            ],
+            'reserved' => [
                 'RZRN',
             ],
         ],
     ];
 
     const DEFAULT_HANDLE_MAPPING = [
+        // Default
         'RAZO'   => 'RPAY',
+        // Test mode
         '111111' => '00',
+        '222222' => '0',
+        // Kotak
         '139913' => '00',
+        '139914' => '0',
     ];
 
     const IFSC = [
