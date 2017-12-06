@@ -10,7 +10,7 @@ export default class ShowWhen extends Component {
     var tags = user.tags;
 
     if (
-      !(permissions && tags) ||
+      (!permissions && !tags) ||
       (permissions && permissions.find(perm => permission === perm)) ||
       (tags && tags.find(t => tag === t))
     ) {
