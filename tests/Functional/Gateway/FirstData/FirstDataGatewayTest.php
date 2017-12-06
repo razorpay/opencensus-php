@@ -404,9 +404,10 @@ class FirstDataGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->refundpayment($payment['id']);
-        });
+        $this->runRequestResponseFlow($data,
+            function() use ($payment) {
+                $this->refundPayment($payment['id']);
+            });
     }
 
     public function testPaymentReverse()
@@ -694,6 +695,22 @@ class FirstDataGatewayTest extends TestCase
             });
 
         }
+    }
+
+    public function testMinimumCardNameLimit()
+    {
+        $this->payment['card']['name'] = 'A ';
+
+        $this->mockServerContentFunction(
+            function($content)
+            {
+                if (is_array($content) === true)
+                {
+                    $this->assertSame('AXX', $content['bname']);
+                }
+            });
+
+        $this->doAuthPayment($this->payment);
     }
 }
 
