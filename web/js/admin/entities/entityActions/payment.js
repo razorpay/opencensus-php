@@ -3,6 +3,7 @@ import { openModal, closeModal, confirm } from 'common/modal';
 import { adminFetch, adminPost } from 'util/fetch';
 import { notifyError, notifySuccess, notifyDone } from 'common/modal';
 import { getFields } from '../Entity';
+import user from 'admin/user';
 
 import AsyncButton from 'ui/AsyncButton';
 import BaseModal from 'ui/BaseModal';
