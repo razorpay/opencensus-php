@@ -89,6 +89,8 @@ export default class EntityList extends Component {
 
   clearForm(currentEntity) {
     document.getElementById('entity-form').reset(); // Clear the previous values (It doesn't clear)
+    // document.getElementsByName("from")[0].value = ''; // TODO: Clear from and to values explicitly
+    // document.getElementsByName("to")[0].value = '';
     document.getElementById('selected-entity').value = currentEntity; // Keep the current selected entity selected
     document.getElementById('entity-mode').value = this.collection.data.mode; // Keep the current mode selected
   }

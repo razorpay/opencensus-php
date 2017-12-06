@@ -264,7 +264,18 @@ export class PaymentRefunds extends Component {
 
   fields = [
     ['Amount', item => <Amount value={item.amount} />],
-    ['Refund ID', item => item.id],
+    [
+      'Refund ID',
+      item => (
+        <a
+          class="link"
+          href={`/admin/entity/refund/${this.props.mode}/${item.id}`}
+        >
+          s
+          {item.id}
+        </a>
+      ),
+    ],
     ['Created At', item => formatDate(item.created_at)],
   ];
 

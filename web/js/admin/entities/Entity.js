@@ -65,8 +65,9 @@ export default class GenericEntity extends Component {
               <i class="box-icon i-user-circle"> {data.merchant_id}</i>
             </Link>
           )}
-        <header class="capitalize">
-          {this.title} <code>{id}</code>
+        <header>
+          <span class="capitalize">{this.title}</span>
+          <code>{id}</code>
         </header>
         <Duplex pending={!data} model={data} fields={this.fields()} />
         {type === 'payment' &&
