@@ -2688,3 +2688,6 @@ ALTER TABLE batches
 ALTER TABLE batches
     DROP COLUMN download_file_url,
     DROP COLUMN upload_file_url;
+
+ALTER TABLE orders
+    MODIFY COLUMN receipt VARCHAR(40), ALGORITHM=INPLACE;

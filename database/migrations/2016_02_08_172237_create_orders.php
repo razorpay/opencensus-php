@@ -49,7 +49,8 @@ class CreateOrders extends Migration
             $table->tinyInteger(Order::PAYMENT_CAPTURE)
                   ->default(false);
 
-            $table->string(Order::RECEIPT, 40);
+            $table->string(Order::RECEIPT, 40)
+                  ->nullable();
 
             $table->text(Order::NOTES);
 
