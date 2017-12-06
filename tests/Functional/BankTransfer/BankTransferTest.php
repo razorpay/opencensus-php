@@ -318,12 +318,20 @@ class BankTransferTest extends TestCase
 
         $this->ba->appAuth();
 
+        $this->fixtures->base->editEntity(
+            'bank_account',
+            $bankAccount['id'],
+            [
+                'ifsc_code'=>'RAZR0000001'
+            ]);
+
         $response = $this->makeRequestAndGetContent([
             'method'  => 'POST',
             'url'     => '/bank_transfers/refunds/retry',
         ]);
 
-        // Refund is now marked created again
+        // Refund is now marked created again,
+        // because payer bank acc now has an IFSC
         $refund =  $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
         $this->assertEquals('created', $refund['status']);

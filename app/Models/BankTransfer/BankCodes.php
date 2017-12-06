@@ -129,36 +129,26 @@ class BankCodes
 
     const ACCOUNT_NUMBER_LENGTH = 13;
 
+    public static function getIfscForImpsBankCode(string $impsBankCode)
+    {
+        return self::CODE_TO_IFSC_MAPPING[$impsBankCode] ?? null;
+    }
+
     public static function getIfscForBankCode(string $bankCode)
     {
-        $ifsc = self::CODE_TO_IFSC_MAPPING[$bankCode] ?? null;
+        $key = __CLASS__ . '::' . 'IFSC_' . strtoupper($bankCode);
 
-        $ifsc = self::hackForTesting($bankCode, $ifsc);
-
-        return $ifsc;
-    }
-
-    public static function hasIfscMapping(string $bankCode)
-    {
-        return (self::getIfscForBankCode($bankCode) !== null);
-    }
-
-    public static function hackForTesting(string $bankCode, string $ifsc = null)
-    {
-        $app = App::getFacadeRoot();
-
-        // Bank transfers pass or fail depending on whether we have a valid IFSC
-        // for the payer in CODE_TO_IFSC_MAPPING. This makes it hard to test.
-        // Here, we mock a valid IFSC, for the last step of the test.
-        if (($app['env'] === 'testing') and
-            ($bankCode === 'XYZ') and
-            ($ifsc === null) and
-            ($app['api.route']->getCurrentRouteName() === 'bank_transfer_refund_retry'))
+        if ((defined($key) === true) and (constant($key) === $type))
         {
-            $ifsc = 'RAZR0000001';
+            return constant($key);
         }
 
-        return $ifsc;
+        return null;
+    }
+
+    public static function hasIfscMapping(string $impsBankCode)
+    {
+        return (self::getIfscForImpsBankCode($impsBankCode) !== null);
     }
 
     /**
