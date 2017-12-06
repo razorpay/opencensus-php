@@ -27,4 +27,16 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
+
+    // ----------------------- Relations -----------------------
+
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity', self::MERCHANT_ID, self::ID);
+    }
+
+    public function emiPlan()
+    {
+        return $this->belongsTo('RZP\Models\Emi\Entity', self::EMI_PLAN_ID, self::ID);
+    }
 }
