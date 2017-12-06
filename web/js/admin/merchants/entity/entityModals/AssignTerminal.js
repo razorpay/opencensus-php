@@ -149,7 +149,7 @@ export default class TerminalForm extends Component {
             ))}
           </SelectField>
 
-          <Field label="Terminal Category" name="category" type="number" />
+          <Field label="Terminal Category" name="category" />
           <Field label="Terminal Network Category" name="network_category" />
           <Field label="Gateway Merchant Id" name="gateway_merchant_id" />
           <Field label="Gateway Merchant Id 2" name="gateway_merchant_id2" />
