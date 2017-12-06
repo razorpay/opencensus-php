@@ -155,7 +155,11 @@ class Core extends Base\Core
         // This is effectively just a modify-and-validate.
         $this->create($input);
 
-        $bankTransfer = $this->repo->bank_transfer->findByUtr($input[Entity::REQ_UTR]);
+        $bankTransfer = $this->repo
+                             ->bank_transfer
+                             ->findByUtrAndPayeeIfsc(
+                                $input[Entity::REQ_UTR],
+                                $input[Entity::PAYEE_IFSC]);
 
         if ($bankTransfer !== null)
         {
