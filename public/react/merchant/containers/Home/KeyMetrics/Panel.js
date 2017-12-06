@@ -19,6 +19,11 @@ const chartOptions = {
   },
 };
 
+/*
+ * This component is responsible to show tab content in `KeyMetrics`
+ * component. 
+ */
+
 class Panel extends Component {
   constructor(props) {
     super(props);

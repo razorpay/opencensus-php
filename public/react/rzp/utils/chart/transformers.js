@@ -8,7 +8,6 @@ export const getTimelineData = ({
   groupByColumnName,
   groupTitleMap = {},
   valueTransformer = null,
-  groupValuesToShow = [],
 }) => {
   /*
    * Pokedex data will be completely denormalized without any grouping
@@ -34,13 +33,12 @@ export const getTimelineData = ({
    * 1) the value of the current point
    * 2) the total record given by pokedex
    * 3) the value of the group
+   *
    */
 
+  // grouping by column, ex. group by payment method (card, netbanking)
   const groupedData = groupBy(data, groupByColumnName),
-    groups =
-      groupValuesToShow.length > 0
-        ? groupValuesToShow
-        : Object.keys(groupedData),
+    groups = Object.keys(groupedData),
     /* `timelineGroupMap` is like
          * {
          *   "<timestamp1>": {
@@ -52,11 +50,25 @@ export const getTimelineData = ({
          *
          * used to get all the timestamps 
          * used to check if the all groups have data for the particular
-         * timestamp , else 0 will be put
+         * timestamp , else 0 will be put. it serves as a quick reference
+         * of what is the value present in certain group at certain
+         * timestamp
          */
     timelineGroupMap = {},
-    groupDatasetsMap = {},
+    /*
+     * `datasets` contain data as defined in chart.js 
+     * http://www.chartjs.org/docs/latest/#creating-a-chart
+     */
     datasets = [],
+    /*
+     * `groupDatasetsMap` contain the same info in `datasets` but indexed
+     * by `groupName`
+     */
+    groupDatasetsMap = {},
+    /*
+     * `aggregates` contain the agrregate of values that we got from the
+     * server to show legend
+     */
     aggregates = [],
     groupAggregatesMap = {};
 

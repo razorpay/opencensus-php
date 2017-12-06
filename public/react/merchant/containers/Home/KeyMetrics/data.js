@@ -27,8 +27,8 @@ export const tabsOrder = [
 ];
 
 export const tabsMeta = {
-  transactionVolume: {
-    name: 'transactionVolume',
+  [tabsOrder[0]]: {
+    name: tabsOrder[0],
     title: 'Transaction Volume',
     grouping: defaultGroupingVals,
     options: [],
@@ -57,8 +57,8 @@ export const tabsMeta = {
       };
     },
   },
-  numTransactions: {
-    name: 'numTransactions',
+  [tabsOrder[1]]: {
+    name: tabsOrder[1],
     title: 'Number of Transactions',
     grouping: defaultGroupingVals,
     options: [],
@@ -84,8 +84,8 @@ export const tabsMeta = {
       };
     },
   },
-  refunds: {
-    name: 'refunds',
+  [tabsOrder[2]]: {
+    name: tabsOrder[2],
     title: 'Refunds in total',
     grouping: [defaultGroupingVals[0]],
     options: [],
@@ -111,8 +111,8 @@ export const tabsMeta = {
       };
     },
   },
-  savedCards: {
-    name: 'savedCards',
+  [tabsOrder[3]]: {
+    name: tabsOrder[3],
     title: 'New Saved Cards',
     grouping: [defaultGroupingVals[0]],
     options: [],
@@ -185,7 +185,6 @@ export const getQuery = options => {
 
   return tabsOrder.reduce(
     (result, tabName) => {
-      // for the first tab, load the histogram also
       const query = getQuery({
         ...options,
         tabName,

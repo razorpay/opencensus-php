@@ -19,6 +19,7 @@ const getStartDateFromDiff = (diff, endDate) => {
   return moment(endDate.toDate() - diff * 1000);
 };
 
+// TODO: to be moved to rzp/ui
 class DateRangePicker extends Component {
   constructor(props) {
     super(props);
@@ -98,7 +99,7 @@ class DateRangePicker extends Component {
   }
 
   render() {
-    const { icon, startDate, endDate, onDatesChange } = this.props;
+    const { icon, onDatesChange } = this.props;
 
     let { presets } = this.props;
 

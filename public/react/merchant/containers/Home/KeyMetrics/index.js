@@ -50,6 +50,7 @@ class KeyMetricsContainer extends Component {
   constructor(props) {
     super(props);
 
+    // TODO: move state to redux
     this.state = {
       selectedTab: tabsOrder[0],
       tabsState: {},

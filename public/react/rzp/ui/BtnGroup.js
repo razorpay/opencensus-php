@@ -19,6 +19,7 @@ export class Btn extends Component {
       className = '',
       active,
       onBtnClick,
+      // we will be discarding onClick if any specified
       onClick,
       selected,
       children,
@@ -29,7 +30,7 @@ export class Btn extends Component {
       `${className} btn` + `${selected === value ? ' active' : ''}`;
 
     return (
-      <button value={value} {...otherProps} onClick={this.handleClick}>
+      <button {...otherProps} onClick={this.handleClick}>
         {children}
       </button>
     );

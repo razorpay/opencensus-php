@@ -28,7 +28,7 @@ const dateRangePresets = [
     ['Past 90 Days', -90, 'days'],
     ['All Time', -10, 'years'],
   ],
-  defaultPreset = 2;
+  defaultPreset = 2; // index of default preset
 
 @connect(
   state => {
