@@ -31,7 +31,7 @@ label {
 }
 
 center {
-  max-width: 600px;
+  /*max-width: 600px;*/
 }
 
 table {
@@ -40,6 +40,8 @@ table {
 
 .table {
   background-color: #fafafa;
+  /*border-left: 1px solid #f2f2f2;*/
+  /*border-right: 1px solid #f2f2f2;*/
 }
 
 .table > tbody > tr > td {
