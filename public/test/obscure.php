@@ -63,7 +63,15 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     </style>
 </head>
 <body>
-<form method="post" id="paymentform" action="//<?=$public_url?>/payments">
+<script type="application/javascript">
+function disableEmptyInputs(form) {
+  var controls = form.elements;
+  for (var i=0, iLen=controls.length; i<iLen; i++) {
+    controls[i].disabled = controls[i].value == '';
+  }
+}
+</script>
+<form method="post" id="paymentform" action="//<?=$public_url?>/payments" onsubmit="disableEmptyInputs(this)">
 <div style="background: brown; color: #fff; text-align: center; padding: 8px 0">Enter Parameters</div>
 <table>
     <tr>
@@ -170,7 +178,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     </tr>
     <tr>
         <td colspan='40'>Razorpay Order Id:</td>
-        <!-- <td><input type="text" name="order_id" size="25" value=""></td> -->
+        <td><input type="text" name="order_id" size="25" value=""></td>
     </tr>
     <tr>
         <td colspan='40'>Order Id:</td>
@@ -189,8 +197,8 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td><input type="text" name="vpa" size="25" value="nemomobile@imobile"></td>
     </tr>
     <tr>
-    <td colspan='40'>Account Number:</td>
-        <td><input type="text" name="account_number" size="25"></td>
+        <td colspan='40'>Account Number:</td>
+        <td><input type="text" name="account_number" size="25" value=""></td>
     </tr>
     <tr>
     <tr>
