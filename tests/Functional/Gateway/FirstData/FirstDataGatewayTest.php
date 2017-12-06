@@ -683,7 +683,7 @@ class FirstDataGatewayTest extends TestCase
     {
         $time_out_error_codes = ['N:-30052', 'N:-30053', 'N:-7778'];
 
-        foreach ($time_out_error_codes as &$error_code)
+        foreach ($time_out_error_codes as $error_code)
         {
             $this->getErrorTransactionTimedout($error_code);
 
