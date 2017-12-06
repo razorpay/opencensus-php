@@ -17,7 +17,7 @@ export default function Field({
   label,
   infoMsg,
   fieldClass = '',
-  postFieldIcon,
+  icon,
   ...props
 }) {
   if (tag === 'input' && !props.type) {
@@ -30,10 +30,9 @@ export default function Field({
         {label}
       </label>
       <Tag {...props} />
-      {postFieldIcon && <i class={`post-field-icon ${postFieldIcon}`} />}
+      {icon && <i class={`post-field-icon ${icon}`} />}
       {infoMsg && (
         <div class="info-block">
-          {/*<i class="i i-info-circle" />*/}
           {typeof infoMsg === 'function' ? infoMsg() : infoMsg}
         </div>
       )}
@@ -50,7 +49,7 @@ export const DateField = _ => (
     format="MM/DD/YYYY"
     {..._}
     tag={DayPickerInput}
-    postFieldIcon={'i i-date text-faded'}
+    icon={'i-date'}
   />
 );
 export const TimeField = _ => <Field {..._} type="time" />;
@@ -150,7 +149,7 @@ export class Switch extends Component {
   }
 }
 
-export function SelectMode({ defaultValue, ...props }) {
+export function SelectMode({ defaultValue = 'live', ...props }) {
   return (
     <SelectField
       name="mode"

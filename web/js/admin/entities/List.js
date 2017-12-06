@@ -46,8 +46,6 @@ export default class EntityList extends Component {
       } else {
         this.collection.data.route_name = 'admin_fetch_entity_multiple';
       }
-
-      delete filters['mode']; // Mode is not required to be sent
     }
 
     return this.collection.applyFilters(filters);
@@ -188,11 +186,7 @@ export default class EntityList extends Component {
                 </option>
               ))}
             </SelectField>
-            <SelectMode
-              label="mode"
-              defaultValue="live"
-              onChange={this.onModeChange}
-            />
+            <SelectMode name={null} onChange={this.onModeChange} />
             <Field
               class="small"
               label="Count"
