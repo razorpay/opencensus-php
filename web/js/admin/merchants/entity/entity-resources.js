@@ -55,15 +55,15 @@ function _getAdminsFields(adminsMap) {
 
 function _getPricingPlansFields() {
   return [
-    ['Payment Method', item => item.payment_method],
-    ['Payment Method Type', item => item.payment_method_type],
-    ['Payment Network', item => item.payment_network],
-    ['Payment Issuer', item => item.payment_issuer],
-    ['International', item => item.international],
-    ['Amount Range Active', item => item.amount_range_active],
-    ['Amount Range Min', item => item.amount_range_min / 100],
-    ['Amount Range Max', item => item.amount_range_max / 100],
-    ['Percent Rate', item => item.percent_rate / 100],
+    ['Payment Method', item => item.payment_method || 'Any'],
+    ['Payment Method Type', item => item.payment_method_type || 'Any'],
+    ['Payment Network', item => item.payment_network || 'Any'],
+    ['Payment Issuer', item => item.payment_issuer || 'Any'],
+    ['International', item => item.international || 'false'],
+    ['Amount Range Active', item => item.amount_range_active || 'false'],
+    ['Amount Range Min', item => <Amount value={item.amount_range_min} />],
+    ['Amount Range Max', item => <Amount value={item.amount_range_max} />],
+    ['Percent Rate', item => <span>{item.percent_rate / 100}%</span>],
     ['Fixed Rate', item => <Amount value={item.fixed_rate} />],
   ];
 }
@@ -350,7 +350,7 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Features',
-      tag: 'view_merchant_features',
+      permission: 'view_merchant_features',
       children: () => (
         <FeaturesDetails
           features={features}
@@ -360,7 +360,6 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Marketplace Merchant',
-      tag: 'marketplace',
       toHide: !details.parent_id,
       value: details.parent_id
         ? () => (

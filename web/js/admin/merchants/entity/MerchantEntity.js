@@ -46,6 +46,20 @@ export default class MerchantEntity extends Component {
     merchantId = this.merchantId;
   }
 
+  toHideEntity(toHide, permission, tag) {
+    if (toHide) {
+      return true;
+    }
+
+    if (permission) {
+      if (!user.permissions.find(perm => perm === permission)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   getMainContent() {
     const detailsMap = getDetailsViewMap(this.model);
 
@@ -56,38 +70,29 @@ export default class MerchantEntity extends Component {
         </div>
 
         {detailsMap.map(item => {
-          if (item.toHide) {
+          if (this.toHideEntity(item.toHide, item.permission, item.tag)) {
             return;
           }
+
           if (item.children) {
             return (
-              <ShowWhen
-                permission={item.permission}
-                tag={item.tag}
+              <ToggleEntityRow
                 key={item.label}
+                label={item.label}
+                value={item.value}
+                className={`vertical-center ${item.class ? item.class : ''}`}
               >
-                <ToggleEntityRow
-                  label={item.label}
-                  value={item.value}
-                  className={`vertical-center ${item.class ? item.class : ''}`}
-                >
-                  {item.children()}
-                </ToggleEntityRow>
-              </ShowWhen>
+                {item.children()}
+              </ToggleEntityRow>
             );
           } else {
             return (
-              <ShowWhen
-                permission={item.permission}
-                tag={item.tag}
+              <EntityRow
                 key={item.label}
-              >
-                <EntityRow
-                  label={item.label}
-                  value={item.value}
-                  className={`vertical-center ${item.class ? item.class : ''}`}
-                />
-              </ShowWhen>
+                label={item.label}
+                value={item.value}
+                className={`vertical-center ${item.class ? item.class : ''}`}
+              />
             );
           }
         })}
@@ -128,9 +133,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
     } else {
       todo = 'archive';
     }
-    return `Are you sure you want to ${
-      todo
-    } merchant? (Make sure you have attempted all ways of convincing him before doing this)`;
+    return `Are you sure you want to ${todo} merchant? (Make sure you have attempted all ways of convincing him before doing this)`;
   };
 
   const toggleSuspensionCM = function() {
