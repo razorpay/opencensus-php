@@ -54,13 +54,6 @@ class Activate extends Base\Core
         //         ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
         // }
 
-        if ($activateByStatus === true)
-        {
-            $bankAccount = (new Detail\Service)->getBankAccountMap($merchant->merchantDetail);
-
-            (new Service)->addBankAccount($merchant->id, $bankAccount);
-        }
-
         $ba = $this->repo->bank_account->getBankAccount($merchant);
 
         if ($ba === null)
@@ -95,7 +88,13 @@ class Activate extends Base\Core
 
         $merchant->activate();
 
-        if ($activateByStatus === false)
+        if ($activateByStatus === true)
+        {
+            // Triggering workflow for the activation_status change in merchantDetail entity
+            $workflow = $this->app['workflow']
+                             ->handle();
+        }
+        else
         {
             // Triggering
             $workflow = $this->app['workflow']

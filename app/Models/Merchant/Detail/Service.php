@@ -242,47 +242,6 @@ class Service extends Base\Service
     }
 
     /**
-     * This function is used for get the bank account data for setting bank account for a merchant
-     * @param array $merchantDetails
-     *
-     * @return array
-     */
-    public function getBankAccountMap(Entity $merchantDetails): array
-    {
-        $data = [
-            'ifsc_code'             => $merchantDetails->bank_branch_ifsc,
-            'beneficiary_name'      => $merchantDetails->bank_account_name,
-            'account_number'        => $merchantDetails->bank_account_number,
-            'beneficiary_address1'  => $merchantDetails->bank_beneficiary_address1,
-            'beneficiary_address2'  => $merchantDetails->bank_beneficiary_address2,
-            'beneficiary_address3'  => $merchantDetails->bank_beneficiary_address3,
-            'beneficiary_address4'  => '',
-            'beneficiary_pin'       => $merchantDetails->bank_beneficiary_pin,
-            'beneficiary_city'      => $merchantDetails->bank_beneficiary_city,
-            'beneficiary_state'     => $merchantDetails->bank_beneficiary_state,
-            'beneficiary_country'   => 'IN',
-            'beneficiary_email'     => $merchantDetails->contact_email,
-            'beneficiary_mobile'    => $merchantDetails->contact_mobile,
-        ];
-
-        /**
-         * For Marketplace linked accounts, the bank fields set below are not
-         * required in the activation form but needed for validation,
-         * thereby setting default values
-        */
-        if ($merchantDetails->merchant->isLinkedAccount() === true)
-        {
-            $data['beneficiary_address1'] = 'Bangalore';
-            $data['beneficiary_city']     = 'Bangalore';
-            $data['beneficiary_state']    = 'KA';
-            $data['beneficiary_pin']      = 560001;
-            $data['beneficiary_mobile']   = 9999999999;
-        }
-
-        return $data;
-    }
-
-    /**
      * This function is used for archiving merchant activation form
      * @param string $merchantId
      * @param array $input

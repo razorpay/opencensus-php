@@ -300,28 +300,37 @@ class Core extends Base\Core
             unset($input[Entity::REJECTION_REASONS]);
         }
 
-        $oldMerchant = clone $merchantDetails->merchant;
+        $oldMerchantDetails = clone $merchantDetails;
 
         $merchantDetails->edit($input);
 
-        $merchant = $merchantDetails->merchant;
+        $newMerchantDetails = clone $merchantDetails;
 
-        if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED)
+        $this->repo->transactionOnLiveAndTest(function() use (
+                                                            $merchantDetails,
+                                                            $oldMerchantDetails,
+                                                            $newMerchantDetails,
+                                                            $input,
+                                                            $rejectionReasons,
+                                                            $admin)
         {
-            // Triggering Workflow
-            $workflow = $this->app['workflow']
-                             ->setEntity($merchant->getEntity())
-                             ->handle($oldMerchant, $merchant);
-        }
-
-        $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input, $rejectionReasons, $admin)
-        {
-            $this->repo->saveOrFail($merchantDetails);
-
             if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED)
             {
+                /*
+                 * Setup workflow for activation_status change in merchantDetail entity,
+                 * which will be triggered once all the validations are checked in the activate method.
+                 */
+                $this->app['workflow']
+                     ->setEntity($merchantDetails->getEntity())
+                     ->setOriginal($oldMerchantDetails)
+                     ->setDirty($newMerchantDetails);
+
+                $this->setBankAccountForMerchant($merchantDetails);
+
                 (new Merchant\Activate)->activate($merchantDetails->merchant, true);
             }
+
+            $this->repo->saveOrFail($merchantDetails);
 
             $stateData = [
                 State\Entity::NAME => $input[Entity::ACTIVATION_STATUS],
@@ -336,6 +345,21 @@ class Core extends Base\Core
         });
 
         return $merchantDetails;
+    }
+
+    /**
+     * This function is used for setting bank account for merchant
+     * @param Entity $merchantDetails
+     *
+     */
+    protected function setBankAccountForMerchant(Entity $merchantDetails)
+    {
+        $bankCore = (new BankAccount\Core);
+
+        // Build the input array for the merchant's bank account creation
+        $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchantDetails);
+
+        $bankCore->createOrChangeBankAccount($bankData, $merchantDetails->merchant);
     }
 
     /**
