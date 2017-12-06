@@ -24,10 +24,12 @@ var sharedData;
 @withRouter
 @observer
 export default class EntityList extends Component {
+  initialMode = this.props.match.params.mode || 'live';
+
   collection = new Collection({
     data: {
       route_name: 'admin_fetch_entity_multiple',
-      mode: this.props.match.params.mode || 'live',
+      mode: this.initialMode,
       url_params: {
         type: this.props.match.params.selectedEntity || 'payment',
       },
@@ -79,8 +81,17 @@ export default class EntityList extends Component {
     let value = e.target.value;
     this.collection.data.url_params.type = value;
     this.selectedEntity = value;
+
+    this.clearForm(value);
+
     this.submit();
   };
+
+  clearForm(currentEntity) {
+    document.getElementById('entity-form').reset(); // Clear the previous values (It doesn't clear)
+    document.getElementById('selected-entity').value = currentEntity; // Keep the current selected entity selected
+    document.getElementById('entity-mode').value = this.collection.data.mode; // Keep the current mode selected
+  }
 
   selectId = e => {
     let urlParams = this.collection.data.url_params;
@@ -174,9 +185,15 @@ export default class EntityList extends Component {
       <div class="list-container">
         <div class="box entity-container">
           <header>Entities</header>
-          <Form name="entity-search" onSubmit={this.submit} class="filters">
+          <Form
+            name="entity-search"
+            id="entity-form"
+            onSubmit={this.submit}
+            class="filters"
+          >
             <SelectField
               label="Entity"
+              id="selected-entity"
               value={this.selectedEntity}
               onChange={this.selectEntity}
             >
@@ -186,7 +203,12 @@ export default class EntityList extends Component {
                 </option>
               ))}
             </SelectField>
-            <SelectMode name={null} onChange={this.onModeChange} />
+            <SelectMode
+              name={null}
+              onChange={this.onModeChange}
+              id="entity-mode"
+              defaultValue={this.initialMode}
+            />
             <Field
               class="small"
               label="Count"
