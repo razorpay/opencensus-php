@@ -12,6 +12,7 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
+use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as RHeadings;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Customer\Token;
@@ -200,7 +201,7 @@ class Gateway extends Base\Gateway
 
         if ($input['merchant']->isTPVRequired())
         {
-            $data['ClientAccNum'] = $input['order']['account_number'];
+            $data[Fields::CLIENT_ACCOUNT_NUMBER] = $input['order']['account_number'];
 
             if ($this->mode === Mode::TEST)
             {
@@ -212,9 +213,30 @@ class Gateway extends Base\Gateway
         {
             //
             // For e mandate registration we have to
-            // add account number to the request
+            // add the following data in the same sequence
             //
-            $data['ClientAccNum'] = $input['token']->getAccountNumber();
+
+            $emData = Fields::getEMandateRegistrationData($input['token']);
+
+            $startDate = Carbon::createFromTimestamp($emData[Fields::START_TIMESTAMP], Timezone::IST)
+                               ->format('dmY');
+
+            $endDate = Carbon::createFromTimestamp($emData[Fields::END_TIMESTAMP], Timezone::IST)
+                             ->format('dmY');
+
+            $data[Fields::CLIENT_ACCOUNT_NUMBER] = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
+            $data[Fields::REF1]                  = $emData[RHeadings::MERCHANT_UNIQUE_REFERENCE_NO];
+            $data[Fields::REF2]                  = $emData[RHeadings::CUSTOMER_NAME];
+            $data[Fields::REF3]                  = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
+            $data[Fields::REF4]                  = $input['payment']['amount'] / 100;
+            $data[Fields::REF5]                  = $emData[RHeadings::FREQUENCY];
+            $data[Fields::REF6]                  = $emData[RHeadings::MANDATE_SERIAL_NUMBER];
+            $data[Fields::REF7]                  = $emData[RHeadings::MANDATE_ID];
+            $data[Fields::REF8]                  = $emData[RHeadings::MERCHANT_REQUEST_NO];
+            $data[Fields::REF9]                  = $emData[RHeadings::AMOUNT_TYPE];
+            $data[Fields::REF10]                 = $emData[RHeadings::CLIENT_NAME];
+            $data[Fields::DATE1]                 = $startDate;
+            $data[Fields::DATE2]                 = $endDate;
         }
 
         // Moving this as the HDFC TPV requires the ClientAccCode to

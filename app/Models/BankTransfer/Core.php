@@ -19,8 +19,8 @@ class Core extends Base\Core
     protected $mutex;
 
     const NRE_FAILURE_MESSAGES = [
-        'NEFT-RETURN Credit to NRI Account',
-        'IMPS-RTN-NRE ACCOUNT',
+        'neft-return credit to nri account',
+        'imps-rtn-nre account',
     ];
 
     public function __construct()
@@ -265,7 +265,25 @@ class Core extends Base\Core
         $latestAttempt = $refund->fundTransferAttempts->last();
 
         if (($latestAttempt !== null) and
-            (in_array($latestAttempt->getRemarks(), self::NRE_FAILURE_MESSAGES, true)))
+            ($this->isRefundToNreAccount($latestAttempt) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * If the last attempt failed with one of these messages, we
+     * can consider it a hard bounce and not make more attempts.
+     *
+     * @return boolean
+     */
+    protected function isRefundToNreAccount($latestAttempt)
+    {
+        $msg = strtolower($latestAttempt->getRemarks());
+
+        if (in_array($msg, self::NRE_FAILURE_MESSAGES, true) === true)
         {
             return true;
         }

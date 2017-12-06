@@ -448,7 +448,6 @@ class Gateway extends Base\Gateway
             Entity::RECEIVED      => true,
             Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM],
             Entity::RESPONSE_CODE => $response[ResponseFields::RESPONSE_CODE],
-            Entity::REQUEST_ID    => $response[ResponseFields::REQUEST_ID],
         ];
 
         return $attributes;
