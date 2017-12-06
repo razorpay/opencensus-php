@@ -24,15 +24,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchRelevantEmiPlan(IIN\Entity $iin, int $duration, string $subvention)
+    public function fetchRelevantEmiPlan(IIN\Entity $iin, int $duration)
     {
         $bank = $iin->getIssuer();
         $network = $iin->getNetworkCode();
 
         $query = $this->newQuery()
-                      ->where(Entity::DURATION, '=', $duration)
-                      ->where(Entity::SUBVENTION, $subvention);
-
+                      ->where(Entity::DURATION, '=', $duration);
         if ($bank)
         {
             $query->where(Entity::BANK, '=', $bank);

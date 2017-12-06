@@ -39,4 +39,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Emi\Entity', self::EMI_PLAN_ID, self::ID);
     }
+
+    // ----------------------- Getters -----------------------
+
+    public function getMerchantPayback()
+    {
+        return $this->getAttribute(self::MERCHANT_PAYBACK);
+    }
 }

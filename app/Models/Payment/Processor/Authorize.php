@@ -2061,11 +2061,24 @@ trait Authorize
 
         $payment->setBank($iinEntity->getIssuer());
 
-        $subvention = $payment->merchant->getEmiSubvention();
-
         // Set emi plan id
         $emiPlan = $this->repo->emi_plan->fetchRelevantEmiPlan(
-                                            $iinEntity, $emiDuration, $subvention);
+                                            $iinEntity, $emiDuration);
+
+        $emiMerchantSubvention = $this->repo->emi_merchant_subvention->fetchByMerchantAndEmiPlan(
+                                                                        $payment->merchant->getId(),
+                                                                        $emiPlan->getId());
+
+        if ($emiMerchantSubvention !== null)
+        {
+            $amount = $payment->getAmount();
+
+            $merchantPayback = $emiMerchantSubvention->getMerchantPayback();
+
+            $baseAmount = ceil($payment->getAmount() - ($amount * $merchantPayback/10000));
+
+            $payment->setAmountAttribute($baseAmount);
+        }
 
         $payment->getValidator()->validateMinAmountWithEmiPlanAmount($emiPlan);
 
