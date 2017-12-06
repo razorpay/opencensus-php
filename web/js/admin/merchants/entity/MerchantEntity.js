@@ -350,9 +350,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
         <ShowWhen permission="view_activation_form">
           <div onClick={actions.ViewTeam}>See Team Details</div>
         </ShowWhen>
-        <Link to={`/merchants/${merchantId}/stats`}>
-          See Merchant Analytics Stats
-        </Link>
+        {!isDetailsLoading &&
+          merchant.details.activated && (
+            <Link to={`/merchants/${merchantId}/stats`}>
+              See Merchant Analytics Stats
+            </Link>
+          )}
         <ShowWhen permission="edit_merchant_comments">
           <div onClick={actions.EditComment}>
             Edit Comment
