@@ -59,6 +59,7 @@ const DateInput = ({
       dayPickerProps={dayPickerProps}
       format={format}
       inputProps={props}
+      value={props.value}
     />
   );
 };

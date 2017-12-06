@@ -32,7 +32,7 @@ GenerateRefundsExcel.title = 'Generate Refund Excel';
 export default function GenerateRefundsExcel() {
   return (
     <Form>
-      <DateField label="Date" name="on" value={new Date()} />
+      <DateField label="Date" value={new Date()} />
       <FromField name="from" />
       <ToField name="to" />
       <br />
