@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
+
+import { formatDate } from 'util/index';
+import { adminFetch } from 'util/fetch';
+import { openMerchantEntity } from './entity/entity-resources';
+
 import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import Field, { SelectField, SwitchField } from 'ui/Field';
 import Collection from 'model/collection';
-import { adminFetch } from 'util/fetch';
-import { openMerchantEntity } from './entity/entity-resources';
 
 const defaultFilters = {
   account_status: 'pending',
@@ -64,10 +67,23 @@ const fields = [
   ['Merchant ID', item => item.id],
   ['Name', item => item.name],
   ['Email', item => item.email],
-  ['Referrer', item => item.referrer],
-  ['Marketplace Owner', item => item.parent_id],
-  ['Status', item => item.count],
-  ['Registered At', item => item.created_at],
-  ['Submitted At', item => item.merchant_detail.submitted_at],
+  ['Referrer', item => item.referrer || '--'],
+  ['Marketplace Owner', item => item.parent_id || '--'],
+  [
+    'Activated',
+    item => (
+      <i
+        class={`i ${
+          item.activated_at ? 'i-yes  text-success' : 'i-no text-danger'
+        }`}
+      />
+    ),
+  ],
+  ['Registered At', item => formatDate(item.created_at)],
+  [
+    'Submitted At',
+    item =>
+      item.submitted_at ? formatDate(item.merchant_detail.submitted_at) : '--',
+  ],
   ['Tags', item => item.tag_list.join()],
 ];
