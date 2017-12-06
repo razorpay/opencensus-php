@@ -40,15 +40,13 @@ export default ({ props, merchantId }) => {
 
     for (let method in methods) {
       fields.push(
-        <Fragment>
-          <span key={method}>
-            <SwitchField
-              name={method}
-              disabledLabel={method}
-              defaultValue={methods[method]}
-              nocaption
-            />
-          </span>
+        <Fragment key={method}>
+          <SwitchField
+            name={method}
+            disabledLabel={method}
+            defaultValue={methods[method]}
+            nocaption
+          />
           <br />
         </Fragment>
       );
@@ -93,13 +91,14 @@ export default ({ props, merchantId }) => {
 
   return (
     <BaseModal header="Activate/Deactivate Merchant Payment Methods">
-      <Form class="full-span full-elements">
+      <Form class="">
         {getFormFields()}
 
         <br />
+        <div class="separate" />
         <AsyncButton
           text="OK"
-          class="btn"
+          class="btn pull-right"
           pendingClass="small spinner"
           onSubmit={onSubmit}
         />

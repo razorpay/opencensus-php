@@ -143,6 +143,7 @@ export default class CreateOffer extends Component {
             this.state.payment_method
           ) === -1 && (
             <SelectField label="Payment Network" name="payment_network">
+              <option value="">All</option>
               {Object.keys(CARD_NETWORK_MAP).map(key => (
                 <option key={key} value={key}>
                   {CARD_NETWORK_MAP[key]}

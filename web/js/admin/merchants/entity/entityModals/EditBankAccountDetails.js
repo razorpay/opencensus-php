@@ -120,7 +120,7 @@ export default class EditBankAccountDetails extends Component {
                 defaultValue={bankAccount.beneficiary_state}
                 required
               >
-                <option value="? undefined:undefined ?" />
+                <option value="" />
                 {Object.keys(beneficiaryStateMap).map(key => (
                   <option key={key} value={key}>
                     {beneficiaryStateMap[key]}

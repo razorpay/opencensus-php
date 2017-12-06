@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import BaseModal from 'ui/BaseModal';
 
 import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
@@ -40,13 +40,15 @@ export default class PricingPlanModal extends Component {
 
     for (let bank in this.state.banksList) {
       fields.push(
-        <SwitchField
-          key={bank}
-          name={bank}
-          disabledLabel={this.state.merchantBanksMapping[bank]}
-          defaultValue={this.state.banksList[bank]}
-          nocaption
-        />
+        <Fragment key={bank}>
+          <SwitchField
+            name={bank}
+            disabledLabel={this.state.merchantBanksMapping[bank]}
+            defaultValue={this.state.banksList[bank]}
+            nocaption
+          />
+          <br />
+        </Fragment>
       );
     }
 
@@ -93,21 +95,23 @@ export default class PricingPlanModal extends Component {
             <div>
               {this.getFormFields()}
 
-              <AsyncButton
-                text="Cancel"
-                class="btn btn-default"
-                pendingClass="small spinner"
-                onSubmit={closeModal}
-              />
+              <br />
+              <br />
+              <div class="separate" />
               <AsyncButton
                 text="Ok"
-                class="btn"
-                pendingClass="small spinner"
+                class="btn pull-right"
+                pendingClass="small spinner pull-right"
                 onSubmit={this.handleConfirm}
+              />
+              <AsyncButton
+                text="Cancel"
+                class="btn btn-default pull-right"
+                pendingClass="small spinner pull-right"
+                onSubmit={closeModal}
               />
             </div>
           )}
-          <br />
         </Form>
       </BaseModal>
     );
