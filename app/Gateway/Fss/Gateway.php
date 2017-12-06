@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Gateway\Base;
 use phpseclib\Crypt\TripleDES;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
@@ -109,6 +110,14 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
+        // Trace payment callback
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'gateway' => $input['gateway']
+            ]
+        );
 
         $this->checkErrorMessage($input['gateway']);
 
