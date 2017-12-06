@@ -40,7 +40,17 @@ import AuditLog from 'admin/auditlog/List';
 import OrgEntity from 'admin/organizations/Entity';
 import InvitesList from 'admin/invites/List';
 
+import AsyncButton from 'ui/AsyncButton';
+
+import { adminFetch } from 'util/fetch';
+
 export default class App extends Component {
+  handleLogout = () => {
+    return adminFetch({}, '/admin/user/logout').then(r => {
+      window.location.reload();
+    });
+  };
+
   render() {
     return (
       <div id="app-container">
@@ -100,9 +110,14 @@ export default class App extends Component {
               <Link to="/profile">
                 <i class="i-user" />Profile
               </Link>
-              <Link to="/logout">
+              <AsyncButton
+                onClick={this.handleLogout}
+                class="logout-btn btn-default"
+                pendingClass="logout-btn btn-default btn-pending"
+              >
                 <i class="i-logout" />Logout
-              </Link>
+                <span class="spin-btn" />
+              </AsyncButton>
             </div>
           </div>
         </header>

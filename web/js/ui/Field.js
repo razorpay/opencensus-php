@@ -24,6 +24,7 @@ export default function Field({
     props.type = 'text';
   }
   let Tag = tag;
+
   return (
     <div class={`field ${fieldClass}`}>
       <label class={props.required ? 'required' : ''} onClick={focusInput}>
@@ -43,12 +44,30 @@ export default function Field({
 export const SelectField = _ => <Field {..._} tag="select" />;
 export const TextAreaField = _ => <Field {..._} tag="textarea" />;
 export const FileField = _ => <Field {..._} type="file" />;
+
+const DateInput = ({
+  onDayChange,
+  dayPickerProps,
+  format,
+  hideOnDayClick,
+  ...props
+}) => {
+  return (
+    <DayPickerInput
+      hideOnDayClick={hideOnDayClick}
+      onDayChange={onDayChange}
+      dayPickerProps={dayPickerProps}
+      format={format}
+      inputProps={props}
+    />
+  );
+};
 export const DateField = _ => (
   <Field
     type="text"
     format="MM/DD/YYYY"
     {..._}
-    tag={DayPickerInput}
+    tag={DateInput}
     icon={'i-date'}
   />
 );
