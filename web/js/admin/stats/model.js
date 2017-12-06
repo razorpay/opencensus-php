@@ -101,7 +101,7 @@ class Stat {
     }).then(response => {
       var result;
       if (response) {
-        result = response.result;
+        result = response.recent_payments;
       } else {
         return;
       }

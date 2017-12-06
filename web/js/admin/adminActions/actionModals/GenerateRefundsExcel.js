@@ -32,11 +32,7 @@ GenerateRefundsExcel.title = 'Generate Refund Excel';
 export default function GenerateRefundsExcel() {
   return (
     <Form>
-      <DateField
-        label="Date"
-        name="on"
-        defaultValue={new Date().toISOString().split('T')[0]}
-      />
+      <DateField label="Date" name="on" value={new Date()} />
       <FromField name="from" />
       <ToField name="to" />
       <br />
@@ -71,9 +67,7 @@ export default function GenerateRefundsExcel() {
             route_name: 'refund_generate_excel',
           }).then(response => {
             if (response) {
-              notifySuccess(
-                'Refunds Excel Generated (count = ' + response.count + ')'
-              );
+              notifySuccess('Refunds Excel Generated');
               closeModal();
             }
           });
