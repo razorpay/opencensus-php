@@ -9,6 +9,7 @@ use RZP\Jobs\RequestJob;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Method;
 use Illuminate\Foundation\Bus\DispatchesJobs;
+use RZP\Trace\TraceCode;
 
 abstract class AbstractEventClient extends Base\Core
 {
@@ -74,7 +75,7 @@ abstract class AbstractEventClient extends Base\Core
 
             $this->sendEventRequest($headers, $url, $eventData);
         }
-        catch (Exception $e)
+        catch (\Exception $e)
         {
             $errorContext = [
                 'class'     => get_class($this),
@@ -110,7 +111,7 @@ abstract class AbstractEventClient extends Base\Core
 
             $this->dispatch($job);
         }
-        catch (Exception $e)
+        catch (\Exception $e)
         {
             $errorContext = [
                 'class'     => get_class($this),
