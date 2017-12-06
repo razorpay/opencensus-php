@@ -11,6 +11,7 @@ import {
 } from 'common/modal';
 import { SelectField } from 'ui/Field';
 import Form from 'ui/Form';
+import { isWorkflow } from 'util/index';
 
 import Model from './model';
 import EntityRow from 'ui/EntityRow';
@@ -142,6 +143,10 @@ export default class MerchantActivationForm extends Component {
       body,
     }).then(response => {
       if (response) {
+        if (isWorkflow(response)) {
+          return;
+        }
+
         details.merchant_details.activation_status = response.activation_status;
         notifySuccess('Status updated successfully.');
         closeModal();

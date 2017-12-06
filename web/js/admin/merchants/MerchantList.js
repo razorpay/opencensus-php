@@ -9,7 +9,6 @@ import { formatDate } from 'util/index';
 
 const defaultFilters = {
   account_status: 'pending',
-  activation_status: 'under_review',
 };
 
 export default class MerchantList extends Component {
@@ -28,6 +27,13 @@ export default class MerchantList extends Component {
     if (filters['sub_accounts'] == 0) {
       delete filters['sub_accounts'];
     }
+
+    //hijack account_status based on activation_status value
+    if (filters.account_status === 'pending') {
+      filters.account_status = filters.activation_status;
+      delete filters.activation_status;
+    }
+
     return this.collection.applyFilters(filters);
   };
 
@@ -56,14 +62,12 @@ export default class MerchantList extends Component {
               <option value="suspended">Suspended</option>
             </SelectField>
             {this.state.accountStatus === 'pending' && (
-              <SelectField
-                name="activation_status"
-                label="State"
-                defaultValue={defaultFilters.activation_status}
-              >
-                <option value="">All</option>
-                <option value="under_review">Under Review</option>
-                <option value="needs_clarification">Needs Clarification</option>
+              <SelectField name="activation_status" label="State">
+                <option value="pending">All</option>
+                <option value="pending_under_review">Under Review</option>
+                <option value="pending_needs_clarification">
+                  Needs Clarification
+                </option>
               </SelectField>
             )}
             <Field name="sub_accounts" label="Linked-accounts for ID" />
