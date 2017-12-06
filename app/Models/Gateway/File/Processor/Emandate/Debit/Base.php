@@ -53,7 +53,7 @@ abstract class Base extends EMandate\Base
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
                 [
-                    'id'        => $this->gatewayFile->getId(),
+                    'id' => $this->gatewayFile->getId(),
                 ],
                 $e);
         }

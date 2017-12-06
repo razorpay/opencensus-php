@@ -240,6 +240,7 @@ class Gateway extends Base\Gateway
             '8uBU8ZQZzvSM4W',
             '8tvbuB51qty9RN',
             '91qJqyReNvKHbk',
+            '8vjTsAAWgin76p',
         ];
 
         if (in_array($input['refund']['id'], $unprocessedRefunds) === true)

@@ -330,6 +330,8 @@ trait RepositoryFetch
 
         $this->addQueryOrder($query);
 
+        // $this->addForceIndexForNestaway($query);
+
         $this->buildFetchQueryAdditional($params, $query);
 
         return $query;
@@ -770,6 +772,11 @@ trait RepositoryFetch
     protected function addQueryOrder($query)
     {
         $query->orderBy(Common::ID, 'desc');
+    }
+
+    protected function addForceIndexForNestaway($query)
+    {
+        ;
     }
 
     protected function addQueryParamCount($query, $params)

@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Models\Batch\Processor\HdfcEmandateRegister;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
@@ -52,25 +53,25 @@ class Validator extends Base\Validator
     ];
 
     protected static $paymentLinkCreateRules = [
-        Entity::TYPE                 => 'required|in:payment_link',
-        Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
-        Invoice\Entity::DRAFT        => 'filled|in:0,1',
-        Invoice\Entity::SMS_NOTIFY   => 'filled|in:0,1',
-        Invoice\Entity::EMAIL_NOTIFY => 'filled|in:0,1',
+        Entity::TYPE                    => 'required|in:payment_link',
+        Entity::FILE                    => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Invoice\Entity::DRAFT           => 'filled|in:0,1',
+        Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
+        Invoice\Entity::EMAIL_NOTIFY    => 'filled|in:0,1',
     ];
 
     protected static $reconciliationCreateRules = [
-        Entity::TYPE          => 'required|in:reconciliation',
-        Entity::GATEWAY       => 'required|string|max:25',
-        Entity::FILE          => 'required|file',
-        Entity::INPUT_DETAILS => 'required|array',
+        Entity::TYPE            => 'required|in:reconciliation',
+        Entity::GATEWAY         => 'required|string|max:25',
+        Entity::FILE            => 'required|file',
+        Entity::INPUT_DETAILS   => 'required|array',
     ];
 
     protected static $emandateCreateRules = [
-        Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
-        Entity::TYPE                 => 'required|in:emandate',
-        Entity::SUB_TYPE             => 'required|string|in:register,debit',
-        Entity::GATEWAY              => 'required|string',
+        Entity::FILE        => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE        => 'required|in:emandate',
+        Entity::SUB_TYPE    => 'required|string|in:register,debit',
+        Entity::GATEWAY     => 'required|string',
     ];
 
     /**
@@ -80,9 +81,21 @@ class Validator extends Base\Validator
      * @var array
      */
     protected static $emandateRegisterHdfcRequiredEntries = [
-        HdfcEMRegisterHeadings::MANDATE_ID              => 'Mandate ID must be present',
-        HdfcEMRegisterHeadings::CUSTOMER_ACCOUNT_NUMBER => 'Customer Account Number must be present',
-        HdfcEMRegisterHeadings::STATUS                  => 'Status must be present',
+        HdfcEMRegisterHeadings::MANDATE_ID                  => 'Mandate ID must be present',
+        HdfcEMRegisterHeadings::CUSTOMER_ACCOUNT_NUMBER     => 'Customer Account Number must be present',
+        HdfcEMRegisterHeadings::STATUS                      => 'Status must be present',
+    ];
+
+    /**
+     * Defines the required keys to be present in emandate hdfc debit file
+     * and the corresponding error message to be thrown when they are absent or empty
+     *
+     * @var array
+     */
+    protected static $emandateDebitHdfcRequiredHeaders = [
+        HdfcEMDebitHeadings::TRANSACTION_REF_NO     => 'Transaction Reference No. must be present',
+        HdfcEMDebitHeadings::ACCOUNT_NO             => 'Account No must be present',
+        HdfcEMDebitHeadings::STATUS                 => 'Status must be present',
     ];
 
     protected function validateType($attribute, $value)
@@ -98,16 +111,16 @@ class Validator extends Base\Validator
         if ($this->entity->isProcessed() === true)
         {
             throw new BadRequestException(
-                        ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED,
-                        Entity::STATUS,
-                        $this->entity->toArray());
+                ErrorCode::BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED,
+                Entity::STATUS,
+                $this->entity->toArray());
         }
         else if ($this->entity->isProcessing() === true)
         {
             throw new BadRequestException(
-                        ErrorCode::BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING,
-                        Entity::STATUS,
-                        $this->entity->toArray());
+                ErrorCode::BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING,
+                Entity::STATUS,
+                $this->entity->toArray());
         }
     }
 
@@ -115,9 +128,9 @@ class Validator extends Base\Validator
      * Validates entries(array) of batch input file before
      * creating the batch entity.
      *
-     * @param array           $entries
-     * @param array           $params
-     * @param Merchant\Entity $merchant
+     * @param array             $entries
+     * @param array             $params
+     * @param Merchant\Entity   $merchant
      *
      * @throws BadRequestException
      */
@@ -172,7 +185,7 @@ class Validator extends Base\Validator
         if (empty($gateway) === false)
         {
             $headerRuleName .= '_' . strtolower($gateway);
-            $limitValidatorName .= '_'. strtolower($gateway);
+            $limitValidatorName .= '_' . strtolower($gateway);
             $validatorMethodName .= studly_case($gateway);
         }
 
@@ -194,25 +207,25 @@ class Validator extends Base\Validator
 
         foreach ($entries as $entry)
         {
-            $amount    = $entry[Header::AMOUNT];
-            $paymentId = $entry[Header::PAYMENT_ID];
+            $amount     = $entry[Header::AMOUNT];
+            $paymentId  = $entry[Header::PAYMENT_ID];
 
             if (empty($paymentId) === true)
             {
                 throw new BadRequestException(
-                            ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_PAYMENT_ID);
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_PAYMENT_ID);
             }
 
             if (empty($amount) === true)
             {
                 throw new BadRequestException(
-                            ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT);
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT);
             }
 
             if ((is_numeric($amount) === false) or ($amount <= 0))
             {
                 throw new BadRequestException(
-                            ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT);
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_AMOUNT);
             }
 
             // Batch File should not contain multiple entries for the same
@@ -221,7 +234,7 @@ class Validator extends Base\Validator
             if (in_array($paymentId, $existingPaymentIds))
             {
                 throw new BadRequestException(
-                            ErrorCode::BAD_REQUEST_BATCH_FILE_DUPLICATE_PAYMENT_ID);
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_DUPLICATE_PAYMENT_ID);
             }
 
             $existingPaymentIds[] = $paymentId;
@@ -233,9 +246,9 @@ class Validator extends Base\Validator
      * - Creates dummy invoice object and validates them as it happens
      *   otherwise in creation by API flow. This approach let us re-use code.
      *
-     * @param array           $entries
-     * @param array           $params
-     * @param Merchant\Entity $merchant
+     * @param array             $entries
+     * @param array             $params
+     * @param Merchant\Entity   $merchant
      *
      * @throws BadRequestException
      */
@@ -355,4 +368,22 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateEmandateDebitHdfcEntries(
+        array & $entries, array $params, Merchant\Entity $merchant)
+    {
+        foreach ($entries as $entry)
+        {
+            $entry = array_map('trim', $entry);
+
+            foreach (self::$emandateDebitHdfcRequiredHeaders as $attr => $errorMessage)
+            {
+                if (empty($attr) === true)
+                {
+                    throw new BadRequestValidationFailureException(
+                        $errorMessage, $attr, $entry);
+                }
+            }
+        }
+    }
 }
+
