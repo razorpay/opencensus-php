@@ -881,4 +881,14 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function enableEmiMerchantSubvention(string $id, string $emiPlanId)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->enableEmiMerchantSubvention($id, $emiPlanId, $input);
+
+        return ApiResponse::json($data);
+    }
+
 }

@@ -2,8 +2,9 @@
 
 namespace RZP\Models\Emi;
 
-use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Models\Emi\MerchantSubvention;
 
 class Core extends Base\Core
 {
@@ -16,5 +17,16 @@ class Core extends Base\Core
         $this->repo->saveOrFail($emiPlan);
 
         return $emiPlan;
+    }
+
+    public function enableEmiMerchantSubvention(Merchant\Entity $merchant, Entity $emiPlan, array $input)
+    {
+        $emiMerchantSub = (new MerchantSubvention\Entity)->build($input);
+
+        $emiMerchantSub->merchant()->associate($merchant);
+
+        $emiMerchantSub->emiPlan()->associate($emiPlan);
+
+        return $emiMerchantSub->toArray();
     }
 }

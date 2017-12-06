@@ -25,6 +25,7 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Transaction;
 use RZP\Models\User;
 use RZP\Trace\TraceCode;
+use RZP\Models\Emi;
 use RZP\Mail\Payout\Payout as PayoutMail;
 
 class Core extends Base\Core
