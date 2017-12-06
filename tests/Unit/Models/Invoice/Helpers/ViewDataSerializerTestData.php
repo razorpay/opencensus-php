@@ -65,8 +65,8 @@ return [
             // 'expire_by_formatted'   => '6 Dec 2017',
             'expired_at_formatted'  => null,
             'type_label'            => 'Invoice',
-            'pdf_url'               => 'http://api.razorpay.dev/v1/invoices/inv_1000000invoice/pdf',
-            'dashboard_url'         => 'http://betadashboard.razorpay.com/#/app/invoices/inv_1000000invoice',
+            'pdf_url'               => 'https://api.razorpay.com/v1/invoices/inv_1000000invoice/pdf',
+            'dashboard_url'         => 'http://dashboard.razorpay.com/#/app/invoices/inv_1000000invoice',
         ],
     ],
 
