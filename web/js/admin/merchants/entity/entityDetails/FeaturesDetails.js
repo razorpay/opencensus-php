@@ -13,28 +13,27 @@ export default class Features extends Component {
 
     testModeFeatures = this.props.features['test'] && (
       <Table
-        items={this.props.features['test'].assigned_features}
+        items={toJS(this.props.features['test'].assigned_features)}
         fields={this.props.getFeaturesFields('test')}
         animateRow={false}
       />
     );
 
-    if (
-      this.props.features['live'] &&
-      Object.keys(this.props.features['live'].assigned_features).length
-    ) {
-      liveModeFeatures = (
-        <Table
-          items={this.props.features['live'].assigned_features}
-          fields={this.props.getFeaturesFields('live')}
-          animateRow={false}
-        />
-      );
-    }
+    console.log(this.props.features['live'].assigned_features);
+    liveModeFeatures = this.props.features['live'] && (
+      <Table
+        items={toJS(this.props.features['live'].assigned_features)}
+        fields={this.props.getFeaturesFields('live')}
+        animateRow={false}
+      />
+    );
 
     return (
       <div>
         {testModeFeatures}
+        <br />
+        <div class="separate" />
+        <br />
         {liveModeFeatures}
       </div>
     );
