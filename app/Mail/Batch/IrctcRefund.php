@@ -41,7 +41,7 @@ class IrctcRefund extends Base
     {
         $time = Carbon::yesterday(Timezone::IST)->format('Ymd');
 
-        $prefix = self::FILE_PREFIX[$this->merchant->getId()];
+        $prefix = self::FILE_PREFIX[$this->merchant['id']];
 
         $name = $prefix . $time . '_V1';
 
