@@ -10,7 +10,10 @@ use RZP\Mail\Base\Constants;
 
 class IrctcRefund extends Base
 {
-    const FILE_TO_WRITE_NAME       = 'refundvalidation_RZRPAY_BRDS_';
+    const FILE_PREFIX = [
+        '8ST00QgEPT14cE' => 'refundvalidation_RZP_BRDS_',
+        '8YPFnW5UOM91H7' => 'refundvalidation_RZRPAY_BRDS_',
+    ];
 
     protected static $mailTag     = MailTags::BATCH_IRCTC_REFUNDS_FILE;
 
@@ -38,7 +41,7 @@ class IrctcRefund extends Base
     {
         $time = Carbon::yesterday(Timezone::IST)->format('Ymd');
 
-        $prefix = self::FILE_TO_WRITE_NAME;
+        $prefix = self::FILE_PREFIX[$this->merchant->getId()];
 
         $name = $prefix . $time . '_V1';
 
