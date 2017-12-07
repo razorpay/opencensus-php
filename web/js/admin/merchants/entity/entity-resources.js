@@ -528,7 +528,7 @@ export function getDetailsViewMap(model) {
       value: details.merchant_details
         ? () => (
             <span
-              class={`pills ${
+              class={`pill ${
                 details.merchant_details.activation_progress < 100
                   ? 'label-danger'
                   : 'label-success'

@@ -215,7 +215,7 @@ export default class BusinessDetails extends Component {
             {this.state.companyInfo && (
               <div class="field">
                 {Object.keys(this.state.companyInfo.company).map(key => {
-                  let className = 'pills';
+                  let className = 'pill';
                   if (key === 'defaulter') {
                     if (this.state.companyInfo.company[key]) {
                       className += ' label-danger';

@@ -17,6 +17,7 @@ import Field, {
 import { PageTable } from 'ui/Table';
 import Collection, { defaultFilters } from 'model/collection';
 import Amount from 'ui/Amount';
+import { statusPill } from 'util/data';
 
 // fetch entity columns
 var sharedData;
@@ -206,7 +207,7 @@ export default class EntityList extends Component {
             </Link>
           );
         } else if (this.selectedEntity === 'payment' && key === 'status') {
-          return getStatusPill(value);
+          return statusPill(value);
         } else if (key.indexOf('_at') > -1 || key.indexOf('_until') > -1) {
           // Value is time
           value = formatDate(value);
@@ -321,30 +322,6 @@ export default class EntityList extends Component {
     );
   };
 }
-
-const getStatusPill = value => {
-  let className = 'pills ';
-
-  switch (value) {
-    case 'open':
-    case 'captured':
-      className += 'label-success';
-      break;
-    case 'authorized':
-      className += 'label-info';
-      break;
-
-    case 'closed':
-    case 'failed':
-      className += 'label-danger';
-      break;
-    case 'refunded':
-      className += 'label-primary';
-      break;
-  }
-
-  return <span class={className}>{value}</span>;
-};
 
 const parseFilters = filters =>
   filters &&

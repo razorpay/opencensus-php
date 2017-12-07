@@ -116,7 +116,7 @@ const fields = [
     'Type',
     item => (
       <span
-        class={`pills ${
+        class={`pill ${
           item.type === 'filter' ? 'label-yellow' : 'label-primary'
         }`}
       >
@@ -131,7 +131,7 @@ const fields = [
         item.load
       ) : (
         <span
-          class={`pills ${
+          class={`pill ${
             item.filter_type === 'select' ? 'label-success' : 'label-danger'
           }`}
         >

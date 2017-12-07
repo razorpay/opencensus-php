@@ -78,9 +78,7 @@ const fields = [
   ['Created At', item => formatDate(item.created_at)],
   [
     'State',
-    item => (
-      <span class={`pills status ${item.state}-state`}>{item.state}</span>
-    ),
+    item => <span class={`pill status ${item.state}-state`}>{item.state}</span>,
   ],
 ];
 
