@@ -10,7 +10,7 @@ import AsyncButton from 'ui/AsyncButton';
 import { isWorkflow } from 'util/index';
 
 const methodMapping = {
-  null: 'All',
+  '': 'All',
   card: 'Card',
   netbanking: 'Netbanking',
   upi: 'UPI',

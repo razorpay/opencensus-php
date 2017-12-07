@@ -223,7 +223,7 @@ export default class GenerateReports extends Component {
     };
 
     if (type === 'daily') {
-      data.day = date[2];
+      data.day = Number(date[2]);
     }
 
     // let ajaxUrl__merchant_dash = '/reports/' + entity;
@@ -260,7 +260,7 @@ export default class GenerateReports extends Component {
             return saveAs(blob, 'broking_report.xlsx');
           }
 
-          location.href = data.url;
+          setTimeout(() => window.open(data.url, '_blank'), 1000);
         }
       })
       .catch(e => {

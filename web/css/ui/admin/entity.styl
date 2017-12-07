@@ -1,0 +1,25 @@
+.entity-page
+  @media (min-width: 1180px)
+    main
+      right: 24px
+
+    aside
+      width: 220px
+      position: fixed
+      right: 0
+      top: 80px
+      text-align: center
+
+      .header
+        margin: 24px 10px 12px
+
+      .btn
+        min-width: 155px
+  @media (max-width: 1179px)
+    aside
+      @extend .limited
+      margin-bottom: 24px
+
+      .header
+        display: none
+

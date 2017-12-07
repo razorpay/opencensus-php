@@ -7,7 +7,7 @@ import AsyncButton from 'ui/AsyncButton';
 import { notifyDone, notifyError, notifySuccess } from 'common/modal';
 import ShowWhen from 'admin/components/ShowWhen';
 
-import { PaymentRefunds } from './entityActions/payment';
+import { PaymentRefundsList } from './entityActions/payment';
 import * as action from './entityActions/index';
 import ToggleEntityRow from 'ui/ToggleEntityRow';
 
@@ -57,36 +57,44 @@ export default class GenericEntity extends Component {
     }
 
     return (
-      <div class="box limited">
-        {data &&
-          data.merchant_id && (
-            <Link to={'/merchants/' + data.merchant_id}>
-              <i class="box-icon i-user-circle"> {data.merchant_id}</i>
-            </Link>
-          )}
-        <header>
-          <span class="capitalize">{this.title}</span>
-          <code>{id}</code>
-        </header>
-        <Duplex pending={!data} model={data} fields={this.fields()} />
-        {type === 'payment' &&
-          data && (
-            <PaymentRefunds
-              id={data.id}
-              merchant_id={data.merchant_id}
-              mode={data.mode}
-            />
-          )}
+      <div class="entity-page">
+        <main class="box limited">
+          {data &&
+            data.merchant_id && (
+              <Link to={'/merchants/' + data.merchant_id}>
+                <i class="box-icon i-user-circle"> {data.merchant_id}</i>
+              </Link>
+            )}
+          <header>
+            <span class="capitalize">{this.title}</span>
+            <code>{id}</code>
+          </header>
+          <Duplex pending={!data} model={data} fields={this.fields()} />
+          {type === 'payment' &&
+            data && (
+              <PaymentRefundsList
+                id={data.id}
+                merchant_id={data.merchant_id}
+                mode={data.mode}
+              />
+            )}
 
-        <br />
-        {data && (
-          <ToggleEntityRow label="Raw Data">
-            <div class="code">{JSON.stringify(data, null, 4)}</div>
-          </ToggleEntityRow>
-        )}
-        <div class="separate" style={{ padding: '10px' }}>
+          <br />
+          {data && (
+            <ToggleEntityRow label="Raw Data">
+              <div class="code">{JSON.stringify(data, null, 4)}</div>
+            </ToggleEntityRow>
+          )}
+        </main>
+        <aside class="container">
+          {data &&
+            actions[type] && (
+              <div class="header">
+                <b>ACTIONS</b>
+              </div>
+            )}
           {data && actions[type] && actions[type](data, this)}
-        </div>
+        </aside>
       </div>
     );
   }

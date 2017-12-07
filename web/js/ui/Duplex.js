@@ -93,7 +93,7 @@ function getValue(result, mode) {
         <i class={`${value ? 'i-yes text-success' : 'i-no text-danger'}`} />
       </span>
     );
-  } else if (result[0] === 'status') {
+  } else if (result[0].indexOf('status') > -1) {
     value = statusPill(result[1]);
   } else if (
     result[0].indexOf('amount') > -1 ||
