@@ -152,7 +152,7 @@ class Pagination extends Component {
           </div>
         )) ||
           null}
-        {(model.filters.count === model.items.length && (
+        {(model.filters.count == model.items.length && (
           <div class="next" onClick={model::this.next}>
             Next →
           </div>

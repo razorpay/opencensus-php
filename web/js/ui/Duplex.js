@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Amount from 'ui/Amount';
 import { snakeToTitleCase, formatDate } from 'util/index';
+import { statusPill } from 'util/data';
 
 const defaultClass = 'table table-striped';
 
@@ -35,49 +36,6 @@ export default class Duplex extends Component {
       </div>
     );
   }
-}
-
-function statusLabel(status) {
-  var mapper = {
-    // Common
-    created: 'label-semi-muted',
-    failed: 'label-danger',
-
-    // payment
-    authorized: 'label-info',
-    captured: 'label-success',
-    refunded: 'label-primary',
-
-    // order
-    attempted: 'label-info',
-    paid: 'label-success',
-
-    // settlement
-    processed: 'label-success',
-
-    // billdesk
-    cancelled: 'label-danger',
-    null: 'label-pending',
-
-    // batch
-    processing: 'label-info',
-
-    // refund
-    partial: 'label-info', // payment.refund_status
-
-    // invoice
-    draft: 'label-semi-muted',
-    issued: 'label-info',
-    expired: 'label-danger',
-
-    // dispute
-    open: 'label-primary',
-    under_review: 'label-pending',
-    won: 'label-success',
-    lost: 'label-danger',
-  };
-
-  return mapper[status];
 }
 
 function getPrefixType(entityType, value) {
@@ -132,11 +90,11 @@ function getValue(result, mode) {
   if (typeof value === 'boolean') {
     value = (
       <span>
-        <i class={`i ${value ? 'i-yes text-success' : 'i-no text-danger'}`} />
+        <i class={`${value ? 'i-yes text-success' : 'i-no text-danger'}`} />
       </span>
     );
   } else if (result[0] === 'status') {
-    value = <span class={`pills ${statusLabel(result[1])}`}>{result[1]}</span>;
+    value = statusPill(result[1]);
   } else if (
     result[0].indexOf('amount') > -1 ||
     result[0].indexOf('fee') > -1 ||

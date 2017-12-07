@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { methods } from 'util/data';
 import { prevent } from 'util/index';
 import { Input as DayPickerInput } from 'react-day-picker';
+import moment from 'moment';
 
 function focusInput(e) {
   e.target.nextElementSibling.focus();
@@ -48,36 +49,34 @@ export const FileField = _ => <Field {..._} type="file" />;
 const DateInput = ({
   onDayChange,
   dayPickerProps,
-  format,
+  format = 'DD/MM/YYYY',
   hideOnDayClick,
   value,
   ...props
 }) => {
   return (
     <DayPickerInput
-      hideOnDayClick={hideOnDayClick}
-      onDayChange={onDayChange}
-      dayPickerProps={dayPickerProps}
       format={format}
+      formatDate={date => moment(date).format(format)}
+      parseDate={input => moment(input, format).toDate()}
+      placeholder={format}
       value={value}
       inputProps={props}
     />
   );
 };
 export const DateField = _ => (
-  <Field
-    type="text"
-    format="MM/DD/YYYY"
-    {..._}
-    tag={DateInput}
-    icon={'i-date'}
-  />
+  <Field type="text" {..._} tag={DateInput} icon={'i-date'} />
 );
 export const TimeField = _ => <Field {..._} type="time" />;
 export const DataListField = _ => <Field {..._} tag="datalist" />;
 
-export const FromField = _ => <DateField {..._} name="from" label="From" />;
-export const ToField = _ => <DateField {..._} name="to" label="To" />;
+export const FromField = _ => (
+  <DateField {..._} name="from" label="From" placeholder="" />
+);
+export const ToField = _ => (
+  <DateField {..._} name="to" label="To" placeholder="" />
+);
 
 export function RadioField({ label, value, defaultValue, ...props }) {
   return (

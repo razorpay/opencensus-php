@@ -124,3 +124,50 @@ export const categories = {
   hospitality: 'Hospitality',
   logistics: 'Logistics',
 };
+
+const statusPillClasses = {
+  // Common
+  // created: 'label-semi-muted',
+  failed: 'label-danger',
+
+  // payment
+  authorized: 'label-info',
+  captured: 'label-success',
+  refunded: 'label-primary',
+
+  // order
+  attempted: 'label-info',
+  paid: 'label-success',
+
+  // settlement
+  processed: 'label-success',
+
+  // billdesk
+  cancelled: 'label-danger',
+  null: 'label-pending',
+
+  // batch
+  processing: 'label-info',
+
+  // refund
+  partial: 'label-info', // payment.refund_status
+
+  // invoice
+  // draft: 'label-semi-muted',
+  issued: 'label-info',
+  expired: 'label-danger',
+
+  // dispute
+  open: 'label-primary',
+  under_review: 'label-pending',
+  won: 'label-success',
+  lost: 'label-danger',
+
+  closed: 'label-danger',
+};
+
+export const statusPill = status => (
+  <span class={`pill ${statusPillClasses[status] || 'label-semi-muted'}`}>
+    {status}
+  </span>
+);
