@@ -92,6 +92,7 @@ export default class SubscriptionDetailsContainer extends Component {
     this.props.invoice_id && this.fetchInvoice(this.props.invoice_id);
 
     // fetching checkout
+    // TODO: transfer this to a utility
     Promise.all([
       this.props.fetchHost().then(({ data }) => {
         return this.props.loadCheckout(data);
