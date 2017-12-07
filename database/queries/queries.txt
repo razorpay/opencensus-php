@@ -2682,3 +2682,9 @@ ALTER TABLE `merchant_details`
 
 ALTER TABLE batches
     MODIFY COLUMN upload_file_url varchar(255) DEFAULT NULL;
+
+# Pre deployment of drop_batch_url_columns pr
+
+ALTER TABLE batches
+    DROP COLUMN download_file_url,
+    DROP COLUMN upload_file_url;
