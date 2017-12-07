@@ -106,7 +106,15 @@ export default ({ entity, mode, updateEntity }) => {
       .then(data => {
         if (data) {
           notifySuccess('Dispute is created');
-          location.reload();
+          if (
+            typeof data.id !== 'undefined' &&
+            data.id.indexOf('w_action') === 0 &&
+            typeof data.workflow_id !== 'undefined'
+          ) {
+            setTimeout(() => window.open(`/admin/requests/${data.id}`), 1000);
+          } else {
+            location.reload();
+          }
         }
       })
       .catch(err => notifyError(JSON.stringify(err)));
