@@ -14,3 +14,4 @@ export RetryFailedSettlements from './RetryFailedSettlements';
 export EditMerchantInvoice from './EditMerchantInvoice';
 export AddDisputeReason from './AddDisputeReason';
 export TriggerDummyError from './TriggerDummyError';
+export IRCTC from './IRCTC';

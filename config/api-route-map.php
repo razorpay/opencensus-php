@@ -613,7 +613,8 @@ return [
         'offer_create'                      => 'offers',
         'offer_update'                      => 'offers/{id}',
         'invitation_fetch'                  => 'invitations',
-    ],
+        'reports_refund_irctc'              => 'reports/refund/irctc',
+      ],
 
     // auth
     'internal' => [
