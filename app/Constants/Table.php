@@ -128,6 +128,7 @@ class Table
     const NETBANKING            = 'netbanking';
     const FIRST_DATA            = 'first_data';
     const CYBERSOURCE           = 'cybersource';
+    const FSS                   = 'fss';
 
     // Sessions table
     const SESSION               = 'sessions';

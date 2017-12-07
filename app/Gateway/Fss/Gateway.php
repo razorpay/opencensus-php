@@ -19,16 +19,29 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $contentArray = $this->getPurchaseRequestContent($input);
+        $purchaseRequestFields = $this->getPurchaseRequestContentArray($input);
 
-        $request = $this->getStandardRequestArray($contentArray, 'get', Constants::PURCHASE);
+        $purchaseRequestContent = $this->getPurchaseRequestContent($purchaseRequestFields);
+
+        $request = $this->getStandardRequestArray($purchaseRequestContent, 'get', Constants::PURCHASE);
+
+        $purchaseFields = $this->getPurchaseFields($purchaseRequestFields);
+
+        $this->createGatewayPaymentEntity($purchaseFields, $input);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
     }
 
-    protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
+    /**
+     * @param array       $content
+     * @param string      $method
+     * @param string|null $type
+     *
+     * @return array
+     */
+    protected function getStandardRequestArray(array $content = [], string $method = 'post', string $type = null)
     {
         $request = parent::getStandardRequestArray([], $method, $type);
 
@@ -38,13 +51,29 @@ class Gateway extends Base\Gateway
     }
 
     /**
+     * Frames fields to create gateway entity.
+     * @param array $requestFields
+     *
+     * @return array
+     */
+    private function getPurchaseFields(array $requestFields)
+    {
+        $attributes = [
+            Entity::AMOUNT      => $requestFields[Fields::AMOUNT] * 100,
+            Entity::CURRENCY    => $requestFields[Fields::CURRENCY_CODE],
+        ];
+
+        return $attributes;
+    }
+
+    /**
      * Gets all the required fields for making purchase request.
      *
      * @param array $input
      *
      * @return array
      */
-    private function getPurchaseRequestContent(array $input)
+    private function getPurchaseRequestContentArray(array $input)
     {
         $requestContent = [
             Fields::CARD          => $input[E::CARD][Card\Entity::NUMBER],
@@ -67,18 +96,52 @@ class Gateway extends Base\Gateway
             Fields::PASSWORD      => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD],
         ];
 
+        return $requestContent;
+    }
+
+    /**
+     * @param array $requestContent
+     *
+     * @return array
+     */
+    protected function getPurchaseRequestContent(array $requestContent)
+    {
         // Entire request content is wrapped in xml.
         $requestBuffer = Utility::createRequestXml($requestContent);
+
         // Encrypted request content
         $tranData = $this->getEncryptedRequestContent($requestBuffer);
+
         $content = [
             Fields::TRAN_DATA     => $tranData,
-            Fields::ERROR_URL     => $input['callbackUrl'],
-            Fields::RESPONSE_URL  => $input['callbackUrl'],
-            Fields::TRANPORTAL_ID => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
+            Fields::ERROR_URL     => $this->input['callbackUrl'],
+            Fields::RESPONSE_URL  => $this->input['callbackUrl'],
+            Fields::TRANPORTAL_ID => $this->input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
         ];
 
         return $content;
+    }
+
+    /**
+     * Creates a gateway payment entry.
+     * @param array $purchaseFields
+     * @param array $input
+     *
+     * @return array
+     */
+    protected function createGatewayPaymentEntity(array $purchaseFields, array $input)
+    {
+        $gatewayPaymentEntity = $this->getNewGatewayPaymentEntity();
+
+        $gatewayPaymentEntity->setPaymentId($input['payment']['id']);
+
+        $gatewayPaymentEntity->setAction($this->action);
+
+        $gatewayPaymentEntity->fill($purchaseFields);
+
+        $this->repo->saveOrFail($gatewayPaymentEntity);
+
+        return $gatewayPaymentEntity;
     }
 
     protected function getEncryptedRequestContent($str)
@@ -107,6 +170,12 @@ class Gateway extends Base\Gateway
         return $decryptedResult;
     }
 
+    /**
+     * callback function for all the purchase requests.
+     * @param array $input
+     *
+     * @return array
+     */
     public function callback(array $input)
     {
         parent::callback($input);
@@ -142,7 +211,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function getErrorCode($errorText)
+    private function getErrorCode($errorText)
     {
         return trim(current(explode('-', $errorText)));
     }
