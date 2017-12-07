@@ -386,6 +386,32 @@ export default class SubscriptionDetailsContainer extends Component {
     });
   };
 
+  // testing charge while subscription status is created
+  onTestChargeAttemptWhileCreate = () => {
+    const { plan, user } = this.props;
+    const razorpay = new window.Razorpay({
+      key: this.key,
+      amount: this.props.plan.item.amount,
+      prefill: {
+        name: user.name,
+        email: user.email,
+        contact: user.contact_mobile,
+      },
+      notes: {
+        dashboard: true,
+      },
+      handler: () => {
+        // something needs to be done
+      },
+    });
+
+    try {
+      razorpay.open();
+    } catch (e) {
+      // do something
+    }
+  };
+
   // Check if next due invoice is valid for current subscription
   checkNextDueInvoiceValidity(subsStatus, subsType) {
     return (
@@ -575,7 +601,10 @@ export default class SubscriptionDetailsContainer extends Component {
           onCancelClick={this.cancelSubscription}
           onManualAttempt={this.onManualAttempt}
           onTestChargeAttempt={
-            this.props.mode === 'test' && this.onTestChargeAttempt
+            this.props.mode === 'test' &&
+            (entity.status === 'created'
+              ? this.onTestChargeAttemptWhileCreate
+              : this.onTestChargeAttempt)
           }
         />
 
