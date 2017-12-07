@@ -538,17 +538,9 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Activation Form Status',
-      value: details.merchant_details
-        ? () => (
-            <pre>
-              {
-                formActivationStatusMap[
-                  details.merchant_details.activation_status
-                ]
-              }
-            </pre>
-          )
-        : null,
+      value:
+        details.merchant_details &&
+        formActivationStatusMap[details.merchant_details.activation_status],
     },
     {
       label: 'Rejection Reason',
