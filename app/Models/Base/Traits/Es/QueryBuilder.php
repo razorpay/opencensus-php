@@ -193,6 +193,11 @@ trait QueryBuilder
 
     // Helper methods
 
+    public function getTermQuery(string $field, string $value): array
+    {
+        return [Es::TERM => [$field => [Es::VALUE => $value]]];
+    }
+
     public function getExistsQueryForField(string $field): array
     {
         return [Es::EXISTS => [Es::FIELD => $field]];
@@ -216,6 +221,11 @@ trait QueryBuilder
     public function addMust(array & $query, array $clause)
     {
         $query[Es::BOOLQ][Es::MUST][] = $clause;
+    }
+
+    public function addMustNot(array & $query, array $clause)
+    {
+        $query[Es::BOOLQ][Es::MUST_NOT][] = $clause;
     }
 
     public function addFilter(array & $query, array $filter)

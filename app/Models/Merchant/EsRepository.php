@@ -12,6 +12,7 @@ use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Merchant\Detail\Status as DetailStatus;
 
 class EsRepository extends Base\EsRepository
 {
@@ -37,6 +38,8 @@ class EsRepository extends Base\EsRepository
         DetailEntity::MERCHANT_ID,
         DetailEntity::STEPS_FINISHED,
         DetailEntity::ACTIVATION_PROGRESS,
+        DetailEntity::ACTIVATION_STATUS,
+        DetailEntity::ARCHIVED_AT,
         DetailEntity::SUBMITTED_AT,
         DetailEntity::UPDATED_AT,
     ];
@@ -112,9 +115,16 @@ class EsRepository extends Base\EsRepository
 
     public function buildQueryForAccountStatus(array & $query, string $value)
     {
-        // Used in few of filters below
-        $submittedAtAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::SUBMITTED_AT;
+        $activationStatusAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::ACTIVATION_STATUS;
 
+        //
+        // For different value of account status (Refer AccountStatus.php)
+        // we need to build query accordingly.
+        //
+        // E.g. for pending the logic is:
+        //      (activation_status = under_review) OR
+        //      (activation_status = needs_clarification AND archived_at IS NULL)
+        //
         switch ($value)
         {
             case AccountStatus::ALL:
@@ -144,15 +154,33 @@ class EsRepository extends Base\EsRepository
 
             case AccountStatus::PENDING:
 
-                $this->addNotNullFilterForField($query, $submittedAtAttr);
+                $pendingQuery = [];
 
-                $this->addNullFilterForField($query, Entity::ACTIVATED_AT);
-                $this->addNullFilterForField($query, Entity::SUSPENDED_AT);
-                $this->addNullFilterForField($query, Entity::ARCHIVED_AT);
+                $clause1 = $this->getTermQuery($activationStatusAttr, DetailStatus::UNDER_REVIEW);
+                $clause2 = $this->getNeedsClarificationAndUnarchivedQuery();
+
+                $this->addShould($pendingQuery, $clause1);
+                $this->addShould($pendingQuery, $clause2);
+
+                $this->addMust($query, $pendingQuery);
+
+                break;
+
+            case AccountStatus::PENDING_UNDER_REVIEW:
+
+                $this->addMust($query, $this->getTermQuery($activationStatusAttr, DetailStatus::UNDER_REVIEW));
+
+                break;
+
+            case AccountStatus::PENDING_NEEDS_CLARIFICATION:
+
+                $this->addMust($query, $this->getNeedsClarificationAndUnarchivedQuery());
 
                 break;
 
             case AccountStatus::DEAD:
+
+                $submittedAtAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::SUBMITTED_AT;
 
                 $this->addNullFilterForField($query, $submittedAtAttr);
                 $this->addNullFilterForField($query, Entity::SUSPENDED_AT);
@@ -225,5 +253,28 @@ class EsRepository extends Base\EsRepository
         {
             $this->addFilter($query, $aclQuery);
         }
+    }
+
+    /**
+     * Gets used in buildQueryForAccountStatus() method. Serves as query for
+     * account_status=pending_needs_clarification and one clause for
+     * account_status=pending.
+     *
+     * @return array
+     */
+    protected function getNeedsClarificationAndUnarchivedQuery(): array
+    {
+        $archivedAtAttr       = E::MERCHANT_DETAIL . '.' . DetailEntity::ARCHIVED_AT;
+        $activationStatusAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::ACTIVATION_STATUS;
+
+        $query = [];
+
+        $clause1 = $this->getTermQuery($activationStatusAttr, DetailStatus::NEEDS_CLARIFICATION);
+        $clause2 = $this->getExistsQueryForField($archivedAtAttr);
+
+        $this->addMust($query, $clause1);
+        $this->addMustNot($query, $clause2);
+
+        return $query;
     }
 }
