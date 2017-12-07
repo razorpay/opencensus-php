@@ -2,7 +2,7 @@ import React from 'react';
 import Field, { FileField, SelectField, SelectMode } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import Form from 'ui/Form';
-import { notifySuccess, closeModal } from 'common/modal';
+import { notifySuccess, notifyError, closeModal } from 'common/modal';
 
 import { adminFormUpload } from 'util/fetch';
 
@@ -63,9 +63,11 @@ export default function UploadReconciliationFile() {
             form,
             '/admin/' + data.mode + '/reconciliate'
           ).then(response => {
-            if (response) {
+            if (response.data.success) {
               notifySuccess('Reconciliation Response successful');
               closeModal();
+            } else {
+              notifyError(response.data.errors.join(', '));
             }
           });
         }}
