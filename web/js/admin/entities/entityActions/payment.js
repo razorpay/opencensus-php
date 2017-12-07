@@ -64,7 +64,8 @@ export default ({ entity, mode, updateEntity }) => {
     }).then(data => {
       if (data) {
         notifyDone();
-        updateEntity(data);
+        // data belongs to refund entity, not payment
+        location.reload();
       }
     });
   }
@@ -81,7 +82,7 @@ export default ({ entity, mode, updateEntity }) => {
       .then(data => {
         if (data) {
           notifySuccess('Dispute is created');
-          //TODO: Update entity that dispute is created
+          location.reload();
         }
       })
       .catch(err => notifyError(JSON.stringify(err)));
@@ -94,8 +95,9 @@ export default ({ entity, mode, updateEntity }) => {
       },
       mode: mode,
       route_name: 'payment_authorize_failed',
-    }).then(response => {
-      if (response) {
+    }).then(data => {
+      if (data) {
+        updateEntity(data);
         notifySuccess('Payment Authorized Successfully.');
         closeModal();
       }
