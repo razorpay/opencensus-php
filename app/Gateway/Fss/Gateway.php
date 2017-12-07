@@ -180,6 +180,7 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
         // Trace payment callback
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -194,33 +195,108 @@ class Gateway extends Base\Gateway
             $input['payment']['id'],
             Action::PURCHASE);
 
-        if (isset($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]) === true)
+        if (empty($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]) === false)
         {
             $gatewayPayment->setGatewayPaymentId($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]);
         }
 
         try
         {
-            $this->checkErrorMessage($input['gateway']);
+            $this->checkErrorMessage($input['gateway'], $gatewayPayment);
 
-            $trandata = $input['gateway']['trandata'];
+            $gatewayContent = $this->getDecryptedRequestContent($gatewayResponse['trandata']);
 
-            $gateway = $this->getDecryptedRequestContent($trandata);
+            $attributes = $this->getCallbackFields($gatewayContent);
 
-        }
-        catch (\Exception $e)
-        {
+            $gatewayPayment->fill($attributes);
 
+            $expectedAmount = $this->getFormattedAmount($input['payment']['amount'] / 100);
+            $actualAmount = $this->getFormattedAmount($gatewayContent[Fields::AMOUNT]);
+
+            $this->assertAmount($expectedAmount, $actualAmount);
         }
         finally
         {
             $this->repo->saveOrFail($gatewayPayment);
         }
 
-        return $gatewayPayment;
+        $response = $this->getCallbackResponseData($input);
+
+        return $response;
     }
 
-    public function checkErrorMessage($input)
+    /**
+     * Filters out the relevant mappings and gets the data.
+     * @param array $gatewayContent
+     *
+     * @return array
+     */
+    public function getCallbackFields(array $gatewayContent)
+    {
+        $attributes = [
+            Entity::RECEIVED => true,
+        ];
+
+        $mandatoryFields = [
+            Entity::GATEWAY_PAYMENT_ID,
+            Entity::GATEWAY_TRANSACTION_ID,
+            Entity::STATUS,
+        ];
+
+        // Razorpay vs FSS Field mapping
+        $callbackFieldMapping = [
+            Entity::GATEWAY_PAYMENT_ID     => Fields::GATEWAY_CALLBACK_PAYMENT_ID,
+            Entity::GATEWAY_TRANSACTION_ID => Entity::GATEWAY_TRANSACTION_ID,
+            Entity::REF                    => Entity::REF,
+            Entity::AUTH                   => Entity::AUTH,
+            Entity::POST_DATE              => Entity::POST_DATE,
+            Entity::STATUS                 => Fields::RESULT,
+            Entity::AUTH_RES_CODE          => Fields::AUTH_RES_CODE,
+        ];
+
+        $missingCallbackFields = [];
+
+        foreach ($callbackFieldMapping as $key => $value)
+        {
+            // Checking with empty "null" because we use simple_xml to deserialize the data
+            // so null is converted to string.
+            if (empty($gatewayContent[$value]) === false and
+                $gatewayContent[$value] != "null")
+            {
+                $attributes[$key] = $gatewayContent[$value];
+            }
+            else
+            {
+                $missingCallbackFields[] = $key;
+            }
+        }
+
+        // Calculate missing fields.
+        $missingFields = array_intersect($mandatoryFields, $missingCallbackFields);
+
+        if (count($missingFields) > 0)
+        {
+            $this->trace->error(
+                TraceCode::GATEWAY_PAYMENT_MISSING_FIELD,
+                [
+                    'payment_id' => $this->input['payment']['id'],
+                    'fields'     => $missingFields,
+                    'message'    => "Mandatory Fields are missing",
+                    'gateway'    => $this->gateway,
+                ]
+            );
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @param array  $input
+     * @param Entity $gatewayPayment
+     *
+     * @throws Exception\GatewayErrorException
+     */
+    public function checkErrorMessage(array $input, Entity $gatewayPayment)
     {
         if (empty($input[Constants::ERROR_TEXT]) === false)
         {
@@ -229,6 +305,8 @@ class Gateway extends Base\Gateway
             $errorDesc = ErrorCodes::getErrorDesc($gatewayCode);
 
             $errorCode = ErrorCodes::getMappedCode($gatewayCode);
+
+            $gatewayPayment->setErrorMessage($errorDesc);
 
             throw new Exception\GatewayErrorException($errorCode, $gatewayCode, $errorDesc, $input);
         }
@@ -259,5 +337,10 @@ class Gateway extends Base\Gateway
         }
 
         return Constants::CREDIT_CARD_TYPE;
+    }
+
+    private function getFormattedAmount($amount)
+    {
+        return number_format($amount, 2,'.', '');
     }
 }
