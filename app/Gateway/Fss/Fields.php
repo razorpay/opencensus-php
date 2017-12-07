@@ -10,38 +10,44 @@ class Fields
 
     const CURRENCY_CODE     = 'currencycode';
 
-    const EXPIRY_YEAR       = 'expyear';
+    const EXPIRY_YEAR = 'expyear';
 
-    const EXPIRY_MONTH      = 'expmonth';
+    const EXPIRY_MONTH = 'expmonth';
 
     // Transaction type Debit/Credit
-    const TYPE              = 'type';
+    const TYPE = 'type';
 
     // Card holders name.
-    const MEMBER            = 'member';
+    const MEMBER = 'member';
 
-    const AMOUNT            = 'amt';
+    const AMOUNT = 'amt';
 
     // Purchase, Credit, etc,
-    const ACTION            = 'action';
+    const ACTION = 'action';
 
-    const TRACK_ID          = 'trackid';
+    const TRACK_ID = 'trackid';
 
-    const ERROR_URL         = 'errorURL';
+    const ERROR_URL = 'errorURL';
 
-    const RESPONSE_URL      = 'responseURL';
+    const RESPONSE_URL = 'responseURL';
 
-    const ID                = 'id';
+    const ID = 'id';
 
-    const PASSWORD          = 'password';
+    const PASSWORD = 'password';
 
-    const REQUEST               = 'request';
+    const REQUEST = 'request';
 
-    const UDF5                  = 'udf5';
+    const UDF5 = 'udf5';
 
-    const TRAN_DATA             = 'trandata';
+    const TRAN_DATA = 'trandata';
 
-    const TRANPORTAL_ID         = 'tranportalId';
+    const TRANPORTAL_ID = 'tranportalId';
 
-    const GATEWAY_PAYMENT_ID    = 'paymentid';
+    const GATEWAY_PAYMENT_ID = 'paymentid';
+
+    const RESULT = 'result';
+
+    const GATEWAY_CALLBACK_PAYMENT_ID = 'payid';
+
+    const AUTH_RES_CODE = 'authrescode';
 }
