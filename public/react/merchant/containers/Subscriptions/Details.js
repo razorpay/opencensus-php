@@ -391,6 +391,7 @@ export default class SubscriptionDetailsContainer extends Component {
     const { plan, user } = this.props;
     const razorpay = new window.Razorpay({
       key: this.key,
+      description: 'Start Subscription',
       amount: this.props.plan.item.amount,
       prefill: {
         name: user.name,

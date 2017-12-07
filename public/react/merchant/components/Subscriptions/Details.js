@@ -70,8 +70,9 @@ export default ({
           ' Attempt scheduled retry now for last issued invoice. ';
         break;
       case 'created':
-        testModeMsg.btnLabel = 'Something new';
-        testModeMsg.infoMsg = 'Something New';
+        testModeMsg.btnLabel = 'Start Subscription';
+        testModeMsg.infoMsg =
+          ' Make the first payment to start the subscription. ';
         break;
 
       default:
