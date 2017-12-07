@@ -69,6 +69,10 @@ export default ({
         testModeMsg.infoMsg =
           ' Attempt scheduled retry now for last issued invoice. ';
         break;
+      case 'created':
+        testModeMsg.btnLabel = 'Something new';
+        testModeMsg.infoMsg = 'Something New';
+        break;
 
       default:
         testModeMsg.btnLabel = 'Charge this now';
