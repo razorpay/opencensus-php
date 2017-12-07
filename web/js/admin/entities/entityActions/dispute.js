@@ -73,7 +73,7 @@ export class DisputeForm extends Component {
       url_params: {
         type: 'dispute_reason',
       },
-      mode: this.props.isEditMode,
+      mode: this.props.mode,
     })
       .then(data => {
         this.setState({ reasonIds: data.items });

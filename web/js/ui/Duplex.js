@@ -6,7 +6,7 @@ const defaultClass = 'table table-striped';
 
 export default class Duplex extends Component {
   render() {
-    let { fields, pending, model } = this.props;
+    let { fields, pending, model, mode } = this.props;
 
     return (
       <div class="duplex">
@@ -19,7 +19,7 @@ export default class Duplex extends Component {
                   if (!result) {
                     return;
                   }
-                  let value = getValue(result, model.mode);
+                  let value = getValue(result, mode || model.mode);
 
                   return (
                     result && (

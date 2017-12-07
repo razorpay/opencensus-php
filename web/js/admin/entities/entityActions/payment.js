@@ -251,9 +251,10 @@ class PaymentAnalytics extends Component {
     return (
       <BaseModal header="Payment Analytics">
         <Duplex
-          pending={typeof this.state.data === 'undefined'}
+          pending={!this.state.data}
           fields={this.fields()}
           model={this.state.data}
+          mode={this.props.mode}
         />
       </BaseModal>
     );
