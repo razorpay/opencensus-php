@@ -196,7 +196,7 @@ class Core extends Base\Core
             $methods->setPayumoney(true);
             $methods->setOlamoney(true);
             $methods->setFreecharge(true);
-            $methods->setAirtelmoney(true);
+            $methods->setAirtelmoney(false);
             $methods->setBankTransfer(true);
             // Initializing Disabled bank with empty array
             $methods->setDisabledBanks([]);

@@ -47,7 +47,8 @@ class Raven
 
         $this->baseUrl = $this->config['url'];
 
-        $this->mode = $app['rzp.mode'];
+        // Refer: https://github.com/razorpay/api/issues/6385
+        $this->mode = (isset($app['rzp.mode']) === true) ? $app['rzp.mode'] : null;
 
         $this->key = 'rzp';
 
