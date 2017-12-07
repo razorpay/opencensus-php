@@ -438,4 +438,30 @@ class Service extends Base\Service
             Entity::DEPARTMENT         => $department,
         ];
     }
+
+    /**
+     * This function is used to get zapier data for activation
+     *
+     * @param Entity $merchant
+     *
+     * @return array
+     */
+    public function getActivationZapierData(Merchant\Entity $merchant): array
+    {
+        $date = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('j/m/Y');
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        return [
+            Constants::DATE          => $date,
+            Merchant\Entity::ID      => $merchant->id,
+            Merchant\Entity::EMAIL   => $merchant->email,
+            Merchant\Entity::NAME    => $merchant->name,
+            Entity::CONTACT_NAME     => $merchantDetails->contact_name,
+            Entity::BUSINESS_NAME    => $merchantDetails->business_name,
+            Entity::BUSINESS_DBA     => $merchantDetails->business_dba,
+            Entity::BUSINESS_WEBSITE => $merchantDetails->business_website,
+            Constants::REF           => $merchant->referrer,
+        ];
+    }
 }

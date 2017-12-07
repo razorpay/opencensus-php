@@ -15,10 +15,13 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Merchant\Activation as ActivationMail;
-
+use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Merchant\Notify as NotifyTrait;
 
 class Activate extends Base\Core
 {
+    use NotifyTrait;
+
     const MAIL_EXCLUDED_METHODS = [
         // Don't include marketplace transfer method (for now)
         Payment\Method::TRANSFER,
@@ -120,6 +123,15 @@ class Activate extends Base\Core
             ['merchant_id' => $merchant->getId()]);
 
         $this->sendMerchantActivatedEvents($merchant);
+
+        if ($activateByStatus === true)
+        {
+            $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
+
+            (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
+
+            $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
+        }
 
         return $merchant->toArrayPublic();
     }
