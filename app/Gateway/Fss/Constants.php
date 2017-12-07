@@ -22,4 +22,8 @@ class Constants
     const ACTION_REFUND         = '2';
 
     const ACTION_INQUIRY        = '8';
+
+    const LANGUAGE              = 'USA';
+
+    const TRACK_ID              = 'TrackID';
 }

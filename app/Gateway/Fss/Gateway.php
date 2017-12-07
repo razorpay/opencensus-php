@@ -88,7 +88,7 @@ class Gateway extends Base\Gateway
             Fields::MEMBER        => $input[E::CARD][Card\Entity::NAME],
             Fields::AMOUNT        => $input[E::PAYMENT][Payment\Entity::AMOUNT] / 100, //use number_format
 
-            Fields::ACTION        => Action::PURCHASE,
+            Fields::ACTION        => Constants::ACTION_PURCHASE,
 
             Fields::TRACK_ID      => $input[E::PAYMENT][Payment\Entity::ID],
             Fields::ERROR_URL     => $input['callbackUrl'],
@@ -288,6 +288,34 @@ class Gateway extends Base\Gateway
         }
 
         return $attributes;
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $refundRequestContentArray = $this->getRefundRequestContentArray($input);
+    }
+
+    public function getRefundRequestContentArray($input)
+    {
+        $requestContent = [
+            Fields::CURRENCY_CODE  => Constants::CURRENCY_CODE,
+            Fields::TYPE           => $this->getFormattedCardType($input[E::CARD][Card\Entity::TYPE]),
+            Fields::TRANSACTION_ID => $input['payment']['id'],
+            Fields::AMOUNT         => $input[E::REFUND][Entity::AMOUNT] / 100,
+
+            Fields::ACTION         => Constants::ACTION_REFUND,
+
+            Fields::TRACK_ID       => $input[E::REFUND][Entity::ID],
+            Fields::UDF5           => Constants::TRACK_ID,
+            Fields::LANGUAGE_ID    => Constants::LANGUAGE,
+
+            Fields::ID             => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
+            Fields::PASSWORD       => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD],
+        ];
+
+        return $requestContent;
     }
 
     /**

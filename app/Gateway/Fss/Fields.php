@@ -50,4 +50,8 @@ class Fields
     const GATEWAY_CALLBACK_PAYMENT_ID = 'payid';
 
     const AUTH_RES_CODE = 'authrescode';
+
+    const TRANSACTION_ID    = 'transid';
+
+    const LANGUAGE_ID   = 'langid';
 }
