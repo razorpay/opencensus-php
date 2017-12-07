@@ -11,7 +11,7 @@ import Sticky from 'rzp/ui/Sticky';
 
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
-import PaymentMethods from './PaymentMethods';
+import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 
@@ -100,11 +100,13 @@ export default class HomeContainer extends Component {
             </div>
           </div>
 
-          <div className="row hide">
+          <div className="row">
             <div className="col-md-12">
               <p>Payment methods drilldown</p>
             </div>
-            <div className="col-md-12" />
+            <div className="col-md-12">
+              <PaymentMethods startDate={startDate} endDate={endDate} />
+            </div>
           </div>
 
           <div className="row">

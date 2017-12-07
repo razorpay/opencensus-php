@@ -21,6 +21,7 @@
     "chart.js": "^2.5.0",
     "classnames": "^2.2.5",
     "css-loader": "^0.26.1",
+    "d3": "^3.5.17",
     "deepmerge": "^2.0.1",
     "dot": "^1.1.1",
     "dot-tpl-loader": "^1.2.1",
