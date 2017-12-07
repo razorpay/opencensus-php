@@ -4,7 +4,7 @@ import CollectionItem from './collectionItem';
 import { notifySuccess, notifyError } from 'common/modal';
 import { adminDelete } from 'util/fetch';
 
-const defaultFilters = {
+export const defaultFilters = {
   count: 20,
   skip: 0,
 };
@@ -23,6 +23,7 @@ export default class Collection extends BaseModel {
 
     this.filters = observable.shallowObject(newFilters);
   }
+
   applyFilters(filters) {
     this.setFilters(filters);
     return this.fetch();

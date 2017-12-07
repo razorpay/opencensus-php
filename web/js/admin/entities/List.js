@@ -15,7 +15,7 @@ import Field, {
   SelectMode,
 } from 'ui/Field';
 import { PageTable } from 'ui/Table';
-import Collection from 'model/collection';
+import Collection, { defaultFilters } from 'model/collection';
 import Amount from 'ui/Amount';
 
 // fetch entity columns
@@ -24,22 +24,30 @@ var sharedData;
 @withRouter
 @observer
 export default class EntityList extends Component {
-  initialMode = this.props.match.params.mode || 'live';
+  initialQueryParams = location.search
+    .slice(1)
+    .split(/&|=/)
+    .reduce((p, n, i, a) => {
+      if (n && !(i % 2)) {
+        p[decodeURIComponent(n)] = decodeURIComponent(a[i + 1]);
+      }
+      return p;
+    }, {});
 
   collection = new Collection({
     data: {
       route_name: 'admin_fetch_entity_multiple',
-      mode: this.initialMode,
+      mode: this.props.match.params.mode || 'live',
       url_params: {
         type: this.props.match.params.selectedEntity || 'payment',
       },
     },
+    filters: this.initialQueryParams,
     fetchFn: adminFetch,
   });
 
   submit = filters => {
     filters = parseFilters(filters);
-    this.updateUrl();
 
     if (filters) {
       if (filters['entity-id']) {
@@ -60,13 +68,31 @@ export default class EntityList extends Component {
       }
     }
 
-    return this.collection.applyFilters(filters);
+    let returnPromise = this.collection.applyFilters(filters);
+
+    // depends on updated value of filters
+    this.updateUrl();
+    return returnPromise;
   };
 
-  updateUrl = _ =>
-    this.props.history.replace(
-      `/entities/${this.collection.data.mode}/${this.selectedEntity}`
-    );
+  updateUrl = _ => {
+    let filters = this.collection.filters;
+    let query = Object.keys(filters)
+      .filter(filter => !(filter in defaultFilters))
+      .map(
+        filter =>
+          `${encodeURIComponent(filter)}=${encodeURIComponent(filters[filter])}`
+      )
+      .join('&');
+
+    let newLocation = `/entities/${this.collection.data.mode}/${
+      this.selectedEntity
+    }`;
+    if (query) {
+      newLocation += '?' + query;
+    }
+    this.props.history.replace(newLocation);
+  };
 
   componentWillMount() {
     extendObservable(this, {
@@ -92,6 +118,7 @@ export default class EntityList extends Component {
     this.collection.data.url_params.type = value;
     this.selectedEntity = value;
 
+    this.collection.setFilters({});
     this.clearForm(value);
 
     this.submit();
@@ -115,9 +142,7 @@ export default class EntityList extends Component {
     }
   };
 
-  onModeChange = e => {
-    this.collection.data.mode = e.target.value;
-
+  onSelectChange = e => {
     const form = e.currentTarget.closest('form');
     let formData;
 
@@ -126,6 +151,12 @@ export default class EntityList extends Component {
     }
 
     this.submit(formData);
+    this.updateUrl();
+  };
+
+  onModeChange = e => {
+    this.collection.data.mode = e.target.value;
+    this.onSelectChange(e);
   };
 
   morphKey(key) {
@@ -195,7 +226,9 @@ export default class EntityList extends Component {
     let selectedFilters = sharedData.entities[this.selectedEntity];
     let selectedFiltersArray = [];
     if (selectedFilters) {
-      selectedFiltersArray = Object.keys(selectedFilters);
+      selectedFiltersArray = Object.keys(selectedFilters).sort(
+        (a, b) => (b.endsWith('_id') ? 1 : -1)
+      );
     }
 
     return (
@@ -224,7 +257,7 @@ export default class EntityList extends Component {
               name={null}
               onChange={this.onModeChange}
               id="entity-mode"
-              defaultValue={this.initialMode}
+              defaultValue={this.collection.data.mode}
             />
             <Field
               class="small"
@@ -249,7 +282,12 @@ export default class EntityList extends Component {
               if (typeof filterValue === 'string') {
                 filterValue = sharedData.fields[filterValue];
               }
-              return fieldTypes[filterValue.type](f, filterValue);
+              return fieldTypes[filterValue.type](
+                f,
+                filterValue,
+                this.collection.filters[f],
+                this
+              );
             })}
 
             <button>Go</button>
@@ -324,8 +362,14 @@ const parseFilters = filters =>
   }, {});
 
 const fieldTypes = {
-  object: (name, { label, values }) => (
-    <SelectField key={name} name={name} label={label}>
+  object: (name, { label, values }, defaultValue, entityList) => (
+    <SelectField
+      key={name}
+      name={name}
+      label={label}
+      defaultValue={defaultValue}
+      onChange={entityList.onSelectChange}
+    >
       <option value="">All</option>
       {Object.keys(values).map(value => (
         <option value={value} key={value}>
@@ -335,8 +379,14 @@ const fieldTypes = {
     </SelectField>
   ),
 
-  array: (name, { label, values }) => (
-    <SelectField key={name} name={name} label={label}>
+  array: (name, { label, values }, defaultValue, entityList) => (
+    <SelectField
+      key={name}
+      name={name}
+      label={label}
+      defaultValue={defaultValue}
+      onChange={entityList.onSelectChange}
+    >
       <option value="">All</option>
       {values.map(v => (
         <option value={v} key={v}>
@@ -346,10 +396,18 @@ const fieldTypes = {
     </SelectField>
   ),
 
-  string: (name, { label }) => <Field key={name} name={name} label={label} />,
+  string: (name, { label }, defaultValue, entityList) => (
+    <Field key={name} name={name} label={label} defaultValue={defaultValue} />
+  ),
 
-  boolean: (name, { label }) => (
-    <SelectField key={name} name={name} label={label}>
+  boolean: (name, { label }, defaultValue, entityList) => (
+    <SelectField
+      key={name}
+      name={name}
+      label={label}
+      defaultValue={defaultValue}
+      onChange={entityList.onSelectChange}
+    >
       <option value="">All</option>
       <option value="1">Yes</option>
       <option value="0">No</option>
