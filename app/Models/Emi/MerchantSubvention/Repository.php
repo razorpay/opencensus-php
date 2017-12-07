@@ -15,4 +15,12 @@ class Repository extends Base\Repository
                     ->where(Entity::EMI_PLAN_ID, '=', $emiPlanId)
                     ->first();
     }
+
+    public function fetchByMerchant(string $merchantId)
+    {
+        return $this->newQuery()
+                    ->select(Entity::EMI_PLAN_ID)
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->get();
+    }
 }

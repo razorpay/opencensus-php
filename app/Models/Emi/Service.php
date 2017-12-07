@@ -14,9 +14,9 @@ class Service extends Base\Service
 {
     public function all()
     {
-        $subvention = $this->merchant->getEmiSubvention();
+        $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
 
-        $emiPlans = $this->repo->emi_plan->fetchEmiPlans($subvention);
+        $merchantSubventedPlans = $this->repo->emi_merchant_subvention->fetchByMerchant($this->merchant->getId());
 
         $plans = [];
 
@@ -32,6 +32,11 @@ class Service extends Base\Service
             $plans[$issuer][Emi\Entity::MIN_AMOUNT] = $amount;
 
             $plans[$issuer]['plans'][$duration] = $plan->getRate() / 100;
+
+            if (in_array($plan->getId(), $merchantSubventedPlans) === true)
+            {
+                $plans[$issuer]['merchant_subvented_plans'][] = $duration;
+            }
         }
 
         return $plans;
