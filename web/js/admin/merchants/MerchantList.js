@@ -50,7 +50,7 @@ export default class MerchantList extends Component {
             <Field name="q" label="Search" />
             <SelectField
               name="account_status"
-              label="Status"
+              label="Account Status"
               value={this.state.accountStatus}
               onChange={this.handleAccountStatusChange}
             >
@@ -62,7 +62,7 @@ export default class MerchantList extends Component {
               <option value="suspended">Suspended</option>
             </SelectField>
             {this.state.accountStatus === 'pending' && (
-              <SelectField name="activation_status" label="State">
+              <SelectField name="activation_status" label="Activation Status">
                 <option value="pending">All</option>
                 <option value="pending_under_review">Under Review</option>
                 <option value="pending_needs_clarification">
