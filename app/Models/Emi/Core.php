@@ -27,6 +27,8 @@ class Core extends Base\Core
 
         $emiMerchantSub->emiPlan()->associate($emiPlan);
 
+        $this->repo->saveOrFail($emiMerchantSub);
+
         return $emiMerchantSub->toArray();
     }
 }

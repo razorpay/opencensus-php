@@ -306,6 +306,15 @@ final class FactoryData
             'min_amount' => 500000,
         ]);
 
+        $factory(\RZP\Models\Emi\MerchantSubvention\Entity::class, [
+            'id'               => $faker->uniqueid,
+            'merchant_id'      => '10000000000000',
+            'emi_plan_id'      => '10101010101010',
+            'merchant_payback' => 1500,
+            'created_at'       => $faker->timestamp,
+            'updated_at'       => $faker->timestamp,
+        ]);
+
         $factory(\RZP\Models\Order\Entity::class, [
             'id'              => $faker->uniqueid,
             'merchant_id'     => '10000000000000',

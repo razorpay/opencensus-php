@@ -116,4 +116,11 @@ class EmiPlan extends Base
 
         return $emiPlans;
     }
+
+    public function enableMerchantSubvention(string $planId)
+    {
+        $attributes = ['emi_plan_id' => $planId];
+
+        $this->fixtures->create('emi_merchant_subvention', $attributes);
+    }
 }

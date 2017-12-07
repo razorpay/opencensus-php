@@ -28,6 +28,10 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     ];
 
+    protected $casts = [
+        self::MERCHANT_PAYBACK => 'integer',
+    ];
+
     // ----------------------- Relations -----------------------
 
     public function merchant()

@@ -21,6 +21,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->select(Entity::EMI_PLAN_ID)
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
-                    ->get();
+                    ->pluck(Entity::EMI_PLAN_ID)
+                    ->all();
     }
 }

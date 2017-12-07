@@ -29,6 +29,21 @@ return [
         ],
     ],
 
+    'testEnableMerchantSubvention' => [
+        'request' => [
+            'content' => [
+                'merchant_payback' => 1300
+            ],
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'      => '10000000000000',
+                'merchant_payback' => 1300
+            ],
+        ],
+    ],
+
     'testFetchAllEmiPlansOnPublicAuth' => [
         'request' => [
             'content' => [
@@ -42,6 +57,28 @@ return [
                     'min_amount' => 500000,
                     'plans' => [
                         9 => 12,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchAllEmiPlansOnPublicAuthWithMerchantSubvention' => [
+        'request' => [
+            'content' => [
+            ],
+            'url'    => '/emi',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'HDFC' => [
+                    'min_amount' => 500000,
+                    'plans' => [
+                        9 => 12,
+                    ],
+                    'merchant_subvented_plans' =>[
+                        9
                     ],
                 ],
             ],
