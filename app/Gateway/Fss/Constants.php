@@ -16,4 +16,10 @@ class Constants
     const CREDIT_CARD_TYPE      = 'C';
 
     const DEBIT_CARD_TYPE       = 'D';
+
+    const ACTION_PURCHASE       = '1';
+
+    const ACTION_REFUND         = '2';
+
+    const ACTION_INQUIRY        = '8';
 }

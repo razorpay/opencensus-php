@@ -35,11 +35,13 @@ class Fields
 
     const PASSWORD          = 'password';
 
-    const REQUEST           = 'request';
+    const REQUEST               = 'request';
 
-    const UDF5              = 'udf5';
+    const UDF5                  = 'udf5';
 
-    const TRAN_DATA         = 'trandata';
+    const TRAN_DATA             = 'trandata';
 
-    const TRANPORTAL_ID     = 'tranportalId';
+    const TRANPORTAL_ID         = 'tranportalId';
+
+    const GATEWAY_PAYMENT_ID    = 'paymentid';
 }

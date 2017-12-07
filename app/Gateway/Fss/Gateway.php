@@ -10,6 +10,7 @@ use RZP\Models\Terminal;
 use RZP\Gateway\Base;
 use phpseclib\Crypt\TripleDES;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\Action;
 
 class Gateway extends Base\Gateway
 {
@@ -17,7 +18,7 @@ class Gateway extends Base\Gateway
 
     public function authorize(array $input)
     {
-        parent::authorize($input);
+        parent::action($input, Action::PURCHASE);
 
         $purchaseRequestFields = $this->getPurchaseRequestContentArray($input);
 
@@ -41,7 +42,7 @@ class Gateway extends Base\Gateway
      *
      * @return array
      */
-    protected function getStandardRequestArray(array $content = [], string $method = 'post', string $type = null)
+    protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
     {
         $request = parent::getStandardRequestArray([], $method, $type);
 
@@ -179,7 +180,6 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
-
         // Trace payment callback
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -188,13 +188,36 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $this->checkErrorMessage($input['gateway']);
+        $gatewayResponse = $input['gateway'];
 
-        $trandata = $input['gateway']['trandata'];
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'],
+            Action::PURCHASE);
 
-        $gateway = $this->getDecryptedRequestContent($trandata);
+        if (isset($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]) === true)
+        {
+            $gatewayPayment->setGatewayPaymentId($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]);
+        }
 
-        return $gateway;
+        try
+        {
+            $this->checkErrorMessage($input['gateway']);
+
+            $trandata = $input['gateway']['trandata'];
+
+            $gateway = $this->getDecryptedRequestContent($trandata);
+
+        }
+        catch (\Exception $e)
+        {
+
+        }
+        finally
+        {
+            $this->repo->saveOrFail($gatewayPayment);
+        }
+
+        return $gatewayPayment;
     }
 
     public function checkErrorMessage($input)
