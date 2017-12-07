@@ -242,7 +242,9 @@ class IrctcRefundReport extends BasicEntityReport
 
         if (isset($input['email']) === true)
         {
-            array_push($emails, $input['email']);
+            $inputEmails = explode(',', $input['email']);
+
+            $emails = array_merge($emails, $inputEmails);
         }
 
         $data = [
