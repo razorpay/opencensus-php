@@ -9,7 +9,7 @@ import Duplex from 'ui/Duplex';
 import AsyncButton from 'ui/AsyncButton';
 import BaseModal from 'ui/BaseModal';
 import Form from 'ui/Form';
-import Field from 'ui/Field';
+import Field, { CheckField, TextAreaField } from 'ui/Field';
 import Table from 'ui/Table';
 import { DisputeForm } from './dispute';
 import ToggleEntityRow from 'ui/ToggleEntityRow';
@@ -70,6 +70,30 @@ export default ({ entity, mode, updateEntity }) => {
     });
   }
 
+  function refundPayment(body) {
+    body.amount = parseInt(body.amount);
+
+    const unrefundedAmount =
+      parseInt(entity.amount) - parseInt(entity.amount_refunded);
+
+    return adminPost({
+      route_name: 'payment_refund',
+      mode: mode,
+      url_params: {
+        id: entity.id,
+      },
+      merchant_id: entity.merchant_id,
+      body,
+    }).then(data => {
+      if (data) {
+        notifySuccess('Refund is successful');
+        closeModal();
+
+        setTimeout(() => window.location.reload(), 1000);
+      }
+    });
+  }
+
   function createDispute(body) {
     adminPost({
       route_name: 'payment_disputes',
@@ -112,6 +136,10 @@ export default ({ entity, mode, updateEntity }) => {
           openModal(<PaymentAnalytics mode={mode} paymentId={entity.id} />)
         }
       >
+        <i
+          class="i-chart-bar text-success"
+          style={{ marginRight: '6px', fontSize: '11px' }}
+        />
         Payment Analytics
       </button>
       {entity.status === 'failed' &&
@@ -138,18 +166,36 @@ export default ({ entity, mode, updateEntity }) => {
         )}
       {entity.status === 'authorized' && (
         <AsyncButton
-          class="btn"
+          class="btn btn-default text-primary"
           confirm="Are you sure you want to Refund this authorized payment?"
-          onClick={refundAuthorizedPayment}
+          onClick={refundPayment}
         >
           Refund
         </AsyncButton>
       )}
 
+      {entity.status === 'captured' &&
+        entity.refund_status !== 'full' && (
+          <AsyncButton
+            class="btn btn-default text-primary"
+            onClick={() =>
+              openModal(
+                <PaymentRefundModal
+                  refundPayment={refundPayment}
+                  maxRefundableAmount={entity.amount - entity.amount_refunded}
+                  currency={entity.currency}
+                />
+              )
+            }
+          >
+            Refund
+          </AsyncButton>
+        )}
+
       <AsyncButton
         onClick={verifyPayment}
-        class="btn btn-default"
-        pendingClass="btn btn-default btn-pending"
+        class="btn btn-default text-primary"
+        pendingClass="btn btn-default text-primary btn-pending"
         confirm="Are you sure you want to Verify this payment?"
       >
         Verify Payment
@@ -263,7 +309,72 @@ class PaymentAnalytics extends Component {
   }
 }
 
-export class PaymentRefunds extends Component {
+class PaymentRefundModal extends Component {
+  state = { amountToRefund: this.props.maxRefundableAmount, partial: false };
+
+  handleAmountChange = e => {
+    if (e.target.value < this.props.maxRefundableAmount) {
+      this.setState({ partial: true });
+    }
+    if (e.target.value == this.props.maxRefundableAmount) {
+      this.setState({ partial: false });
+    }
+    this.setState({ amountToRefund: e.target.value });
+  };
+
+  handleCheckboxChange = e => {
+    if (this.state.amountToRefund === this.props.maxRefundableAmount) {
+      return;
+    }
+    if (!e.target.checked) {
+      this.setState({ amountToRefund: this.props.maxRefundableAmount });
+    }
+    this.setState({ partial: e.target.checked });
+  };
+
+  render() {
+    const { refundPayment, maxRefundableAmount, currency } = this.props;
+
+    return (
+      <BaseModal header="Refund Payment">
+        <Form class="full-span" style={{ width: '500px' }}>
+          <Field
+            label="Amount to Refund (Paisa)"
+            name="amount"
+            type="number"
+            onChange={this.handleAmountChange}
+            value={this.state.amountToRefund}
+          />
+          <CheckField
+            label="Partial Refund"
+            checked={this.state.partial}
+            onChange={this.handleCheckboxChange}
+            readOnly
+          />
+          <TextAreaField
+            label="Comment"
+            name="notes[admin_comment]"
+            placeholder="Add a comment (visible to merchant)"
+            style={{ width: '300px' }}
+          />
+
+          <AsyncButton
+            class="btn"
+            pendingClass="small spinner"
+            disabled={
+              this.state.amountToRefund > this.props.maxRefundableAmount
+            }
+            onSubmit={refundPayment}
+          >
+            Refund
+          </AsyncButton>
+        </Form>
+      </BaseModal>
+    );
+  }
+}
+
+export class PaymentRefundsList extends Component {
   state = {};
 
   fields = [
