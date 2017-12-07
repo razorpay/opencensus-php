@@ -78,7 +78,7 @@ return [
                         9 => 12,
                     ],
                     'merchant_subvented_plans' =>[
-                        9
+                        9 => 1500
                     ],
                 ],
             ],

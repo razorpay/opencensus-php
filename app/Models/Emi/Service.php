@@ -33,9 +33,9 @@ class Service extends Base\Service
 
             $plans[$issuer]['plans'][$duration] = $plan->getRate() / 100;
 
-            if (in_array($plan->getId(), $merchantSubventedPlans) === true)
+            if (array_key_exists($plan->getId(), $merchantSubventedPlans) === true)
             {
-                $plans[$issuer]['merchant_subvented_plans'][] = $duration;
+                $plans[$issuer]['merchant_subvented_plans'][$duration] = $merchantSubventedPlans[$plan->getId()];
             }
         }
 

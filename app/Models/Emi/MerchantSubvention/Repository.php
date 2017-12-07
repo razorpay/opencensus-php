@@ -19,9 +19,9 @@ class Repository extends Base\Repository
     public function fetchByMerchant(string $merchantId)
     {
         return $this->newQuery()
-                    ->select(Entity::EMI_PLAN_ID)
+                    ->select(Entity::EMI_PLAN_ID, Entity::MERCHANT_PAYBACK)
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
-                    ->pluck(Entity::EMI_PLAN_ID)
+                    ->pluck(Entity::MERCHANT_PAYBACK, Entity::EMI_PLAN_ID)
                     ->all();
     }
 }
