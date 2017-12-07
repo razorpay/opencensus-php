@@ -100,8 +100,6 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS            => 0,
         self::STATUS              => Status::CREATED,
         self::PROCESSING          => 0,
-        self::UPLOAD_FILE_URL     => '', // TODO: Remove after column dropped
-        self::DOWNLOAD_FILE_URL   => null,
         self::TOTAL_COUNT         => 0,
         self::SUCCESS_COUNT       => 0,
         self::FAILURE_COUNT       => 0,
