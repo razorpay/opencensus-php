@@ -20,7 +20,7 @@ export default ({ entity, mode, updateEntity }) => {
       params: {
         route_name: 'dispute_edit',
         url_params: {
-          '{id}': entity.id,
+          id: entity.id,
         },
         mode: mode,
       },
@@ -55,7 +55,7 @@ export default ({ entity, mode, updateEntity }) => {
       <button
         class="btn btn-default label-pending"
         disabled={['won', 'lost'].indexOf(entity.status) !== -1}
-        onclick={openDisputeModal}
+        onClick={openDisputeModal}
       >
         Edit Dispute
       </button>
