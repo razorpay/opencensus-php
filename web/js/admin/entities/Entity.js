@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyDone, notifyError, notifySuccess } from 'common/modal';
 import ShowWhen from 'admin/components/ShowWhen';
-import user from 'admin/user';
 
 import { PaymentRefunds } from './entityActions/payment';
 import * as action from './entityActions/index';

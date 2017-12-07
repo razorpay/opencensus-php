@@ -48,6 +48,16 @@ export default class EntityList extends Component {
       } else {
         this.collection.data.route_name = 'admin_fetch_entity_multiple';
       }
+
+      if (filters['from']) {
+        filters['from'] = Math.round(
+          new Date(filters['from']).getTime() / 1000
+        );
+      }
+
+      if (filters['to']) {
+        filters['to'] = Math.round(new Date(filters['to']).getTime() / 1000);
+      }
     }
 
     return this.collection.applyFilters(filters);
@@ -118,13 +128,25 @@ export default class EntityList extends Component {
     this.submit(formData);
   };
 
+  morphKey(key) {
+    if (
+      key.indexOf('amount') > -1 ||
+      key.indexOf('fee') > -1 ||
+      key.indexOf('tax') > -1 ||
+      key.indexOf('charge') > -1
+    ) {
+      return (key += ' (Paisa)');
+    }
+    return key;
+  }
+
   fields() {
     var items = this.collection.items;
     if (!items.length) {
       return [];
     }
     return Object.keys(items[0]).map(key => [
-      key,
+      this.morphKey(key),
       item => {
         let value = item[key];
 
@@ -154,13 +176,6 @@ export default class EntityList extends Component {
           );
         } else if (this.selectedEntity === 'payment' && key === 'status') {
           return getStatusPill(value);
-        } else if (
-          key.indexOf('amount') > -1 ||
-          key.indexOf('fee') > -1 ||
-          key.indexOf('tax') > -1 ||
-          key.indexOf('charge') > -1
-        ) {
-          value = <Amount value={value} />;
         } else if (key.indexOf('_at') > -1 || key.indexOf('_until') > -1) {
           // Value is time
           value = formatDate(value);

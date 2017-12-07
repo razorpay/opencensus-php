@@ -5,6 +5,7 @@ import { notifyError, notifySuccess, notifyDone } from 'common/modal';
 import { getFields } from '../Entity';
 import user from 'admin/user';
 
+import Duplex from 'ui/Duplex';
 import AsyncButton from 'ui/AsyncButton';
 import BaseModal from 'ui/BaseModal';
 import Form from 'ui/Form';
