@@ -15,20 +15,17 @@ import { adminPost } from 'util/fetch';
 
 const options = {
   bank: {
-    HDFC: 'HDFC',
     Kotak: 'KKBK',
     Axis: 'UTIB',
-    ICICI: 'ICIC',
-    Federal: 'FDRL',
-    Corporation: 'CORP',
     Indusind: 'INDB',
     RBL: 'RATN',
-    PNB: 'PUNB',
+    SCBL: 'SCBL',
+    ICICI: 'ICIC',
   },
 };
 
-GenerateRefundsExcel.permission = 'create_netbanking_refund';
-GenerateRefundsExcel.title = 'Generate Refunds Excel (Netbanking)';
+GenerateRefundsExcel.permission = 'create_emi_files';
+GenerateRefundsExcel.title = 'Generate EMI Excel';
 export default function GenerateRefundsExcel() {
   return (
     <Form>
@@ -51,23 +48,38 @@ export default function GenerateRefundsExcel() {
         class="btn"
         pendingClass="small spinner"
         onSubmit={data => {
+          const tzGMTToIST = 19800;
+
           let body = {
             bank: data.bank,
             mode: data.mode,
-            method: 'netbanking',
           };
+
           if (data.to && data.from) {
-            body.to = new Date(data.to).getTime();
-            body.from = new Date(data.from).getTime();
+            // Date from the date api is in GMT
+            let fromInGMT = new Date(data.from).getTime() / 1000;
+            let toInGMT = new Date(data.to).getTime() / 1000;
+
+            // Subtract 19800 from GMT to convert timestamps to IST
+            let fromInIST = fromInGMT - tzGMTToIST;
+            let toInIST = toInGMT - tzGMTToIST;
+
+            body.to = toInIST;
+            body.from = fromInIST;
           } else {
             body.on = data.on;
           }
           return adminPost({
+            route_name: 'emi_generate_excel',
             body,
-            route_name: 'refund_generate_excel',
+            mode: data.mode,
           }).then(response => {
             if (response) {
-              notifySuccess(`${data.bank} Refunds Excel Generated`);
+              notifySuccess(
+                `${data.bank} Refunds EMI Excel Generated. (Count = ${
+                  response[data.bank].count
+                })`
+              );
               closeModal();
             }
           });

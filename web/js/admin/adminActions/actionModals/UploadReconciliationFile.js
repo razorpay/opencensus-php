@@ -50,6 +50,10 @@ export default function UploadReconciliationFile() {
         pendingClass="small spinner"
         onSubmit={data => {
           let files = document.querySelector('[name=files]').files || [];
+          if (!files.length) {
+            notifyError('Please select a file');
+            return;
+          }
           let form = {
             manual: 1,
             'attachment-count': files.length || 0,
