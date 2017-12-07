@@ -222,6 +222,8 @@ export default class BusinessDetails extends Component {
                     } else {
                       className += ' label-success';
                     }
+                  } else {
+                    className += ' label-semi-muted';
                   }
                   return (
                     <EntityRow
