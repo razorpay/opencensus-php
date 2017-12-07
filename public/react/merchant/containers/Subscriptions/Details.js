@@ -400,8 +400,8 @@ export default class SubscriptionDetailsContainer extends Component {
       notes: {
         dashboard: true,
       },
-      handler: () => {
-        // something needs to be done
+      handler: status => {
+        this.postChargeAttempt();
       },
     });
 
