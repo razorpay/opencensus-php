@@ -62,11 +62,11 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function createLog(string $configId)
+    public function createLog()
     {
         $input = Request::all();
 
-        $data = $this->reportingService->createLog($configId, $input);
+        $data = $this->reportingService->createLog($input);
 
         return ApiResponse::json($data);
     }

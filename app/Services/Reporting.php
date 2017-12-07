@@ -87,13 +87,12 @@ class Reporting
         return $this->makeRequestAndSend(null, $url, 'delete');
     }
 
-    public function generateReport(string $configId, array $input): array
+    public function createLog(array $input): array
     {
         $url = self::REPORT_LOG;
 
         // Prepare input
         $input['mode']      = $this->app['rzp.mode'];
-        $input['config_id'] = $configId;
 
         return $this->makeRequestAndSend($input, $url, 'post');
     }

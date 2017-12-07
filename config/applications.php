@@ -155,17 +155,17 @@ return [
     ],
     'reporting' => [
         'mock' => env('REPORTING_MOCK', false),
+        'url' => env('REPORTING_BASE_URL'),
         'auth' => [
-            'username' => env('REPORTING_USERNAME'),
+            'username' => 'api',
             'password' => env('REPORTING_PASSWORD'),
         ],
-        'url' => env('REPORTING_BASE_URL'),
     ],
     'ufh' => [
         'mock'  => env('UFH_MOCK', false),
         'url'   => env('UFH_BASE_URL'),
         'auth' => [
-            'username' => env('UFH_USERNAME'),
+            'username' => 'api',
             'password' => env('UFH_PASSWORD'),
         ],
 
