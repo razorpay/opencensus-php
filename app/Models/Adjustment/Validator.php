@@ -62,8 +62,10 @@ class Validator extends Base\Validator
      * @param array $input
      * @throws BadRequestValidationFailureException
      */
-    public function validateMerchantBalanceForAdjustment(Merchant\Entity $merchant, string $entityType,
-                                                         string $entityId, array $input)
+    public function validateMerchantBalanceForAdjustment(Merchant\Entity $merchant,
+                                                         string $entityType,
+                                                         string $entityId,
+                                                         array $input)
     {
         if (isset($input[Entity::AMOUNT]) and
             $input[Entity::AMOUNT] < 0)
