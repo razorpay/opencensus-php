@@ -352,7 +352,10 @@ final class FactoryData
             'email_status'             => 'sent',
             'notes'                    => null,
             'status'                   => 'issued',
-            'due_by'                   => $faker->timestamp,
+            'date'                     => null,
+            'issued_at'                => null,
+            'expired_at'               => null,
+            'due_by'                   => $faker->timestamp('+2 day'),
             'scheduled_at'             => $faker->timestamp,
             'expire_by'                => $faker->timestamp('+2 day'),
             'amount'                   => 100000,
@@ -442,6 +445,11 @@ final class FactoryData
             'merchant_id'     => '10000000000000',
             'status'          => 'created',
             'upload_file_url' => 'batch/upload/text.xlsx',
+            'processing'      => 0,
+            'total_count'     => 0,
+            'attempts'        => 0,
+            'created_at'      => $faker->timestamp,
+            'updated_at'      => $faker->timestamp,
         ]);
 
         $factory(\RZP\Gateway\Wallet\Base\Entity::class, [

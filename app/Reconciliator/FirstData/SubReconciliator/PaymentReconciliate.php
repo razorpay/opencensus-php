@@ -59,14 +59,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * @param array $row
      * @return integer $paymentAmount
      */
-    protected function getGatewayPaymentAmount($row)
+    protected function getReconPaymentAmount($row)
     {
         $paymentAmount = floatval($row[self::COLUMN_PAYMENT_AMOUNT]) * 100;
 
         // We are converting to int after casting to string as PHP randomly
         // returns wrong int values due to differing floating point precisions
         // So something like intval(31946.0) may give 31945 or 31946.
-        // Convering to string using number_format and then converting
+        // Converting to string using number_format and then converting
         // is a hack to avoid this issue
         return intval(number_format($paymentAmount, 2, '.', ''));
     }
@@ -111,13 +111,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
-        if ($this->payment->getAmount() !== $this->getGatewayPaymentAmount($row))
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
         {
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'message'         => 'Payment amount mismatch',
-                    'expected_amount' => $this->payment->getAmount(),
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
                     'gateway'         => get_called_class()
                 ]);

@@ -113,6 +113,7 @@ class FirstDataGatewayTest extends TestCase
         // Another payment to test auto-refund
         $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
+
         $this->refundAuthorizedPayment($paymentId);
 
         $payment = $this->getLastEntity('payment', true);
@@ -299,13 +300,12 @@ class FirstDataGatewayTest extends TestCase
         $this->doAuthPayment($payment);
 
         $paymentRes = $this->getLastPayment(true);
-        
+
         $transRes = $this->getLastTransaction(true);
 
         // FirstData now should get selected
         $this->assertEquals('first_data', $paymentRes['gateway']);
         $this->assertEquals($transRes['entity_id'], $paymentRes['id']);
-
 
         $payment['card']['number'] = '5109591717594888';
 
@@ -404,9 +404,10 @@ class FirstDataGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->refundpayment($payment['id']);
-        });
+        $this->runRequestResponseFlow($data,
+            function() use ($payment) {
+                $this->refundPayment($payment['id']);
+            });
     }
 
     public function testPaymentReverse()
@@ -678,4 +679,38 @@ class FirstDataGatewayTest extends TestCase
 
         $this->doAuthPayment($this->payment);
     }
+
+    public function testTransactionTimedOut()
+    {
+        $time_out_error_codes = ['N:-30052', 'N:-30053', 'N:-7778'];
+
+        foreach ($time_out_error_codes as $error_code)
+        {
+            $this->getErrorTransactionTimedout($error_code);
+
+            $data = $this->testData[__FUNCTION__];
+
+            $this->runRequestResponseFlow($data, function() {
+                $this->doAuthPayment($this->payment);
+            });
+
+        }
+    }
+
+    public function testMinimumCardNameLimit()
+    {
+        $this->payment['card']['name'] = 'A ';
+
+        $this->mockServerContentFunction(
+            function($content)
+            {
+                if (is_array($content) === true)
+                {
+                    $this->assertSame('AXX', $content['bname']);
+                }
+            });
+
+        $this->doAuthPayment($this->payment);
+    }
 }
+

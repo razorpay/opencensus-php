@@ -256,6 +256,12 @@ trait Refund
                 'input'         => $input,
             ]);
 
+        // Some bank transfer payments cannot be refunded.
+        if ($payment->isBankTransfer() === true)
+        {
+            $this->validateBankTransferPaymentForRefund($payment);
+        }
+
         $this->setPayment($payment);
 
         if ($this->payment->isAuthorized() === false)
@@ -988,8 +994,13 @@ trait Refund
         // Some bank transfer payments cannot be refunded.
         if ($payment->isBankTransfer() === true)
         {
-            (new BankTransfer\Validator)->validatePaymentForRefund($payment);
+            $this->validateBankTransferPaymentForRefund($payment);
         }
+    }
+
+    protected function validateBankTransferPaymentForRefund(Payment\Entity $payment)
+    {
+        (new BankTransfer\Validator)->validatePaymentForRefund($payment);
     }
 
     protected function setPaymentAndRefundInfo($refund, $payment)

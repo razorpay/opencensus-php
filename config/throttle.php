@@ -24,15 +24,15 @@ return [
 
     'skip' => env('SKIP_THROTTLE', false),
 
-    // Time interval for throttle in minutes
-    'time_interval' => 1,
+    // Time interval for key expiry in redis in minutes
+    'time_interval' => 2,
 
     'limits' => [
         'live' => [
             'default'                             => 100,
             RZP\Http\BasicAuth\Type::ADMIN_AUTH   => 1000,
             RZP\Http\BasicAuth\Type::DIRECT_AUTH  => 1000,
-            RZP\Http\BasicAuth\Type::PRIVATE_AUTH => 1500,
+            RZP\Http\BasicAuth\Type::PRIVATE_AUTH => 150,
             RZP\Http\BasicAuth\Type::DEVICE_AUTH  => 100,
 
             // Highest we have seen is 50
@@ -40,14 +40,14 @@ return [
             RZP\Http\BasicAuth\Type::PUBLIC_AUTH  => 500,
 
             // Shared between all users of a merchant
-            RZP\Http\BasicAuth\Type::PROXY_AUTH   => 2000,
+            RZP\Http\BasicAuth\Type::PROXY_AUTH   => 200,
         ],
 
         'test' => [
             'default'                             => 20,
             RZP\Http\BasicAuth\Type::ADMIN_AUTH   => 100,
             RZP\Http\BasicAuth\Type::DIRECT_AUTH  => 100,
-            RZP\Http\BasicAuth\Type::PRIVATE_AUTH => 300,
+            RZP\Http\BasicAuth\Type::PRIVATE_AUTH => 150,
             RZP\Http\BasicAuth\Type::DEVICE_AUTH  => 100,
             RZP\Http\BasicAuth\Type::PUBLIC_AUTH  => 100,
             RZP\Http\BasicAuth\Type::PROXY_AUTH   => 500,

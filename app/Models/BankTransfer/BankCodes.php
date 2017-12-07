@@ -33,6 +33,7 @@ class BankCodes
     const IFSC_KVBL = 'KVBL0001101';
     const IFSC_KVGB = 'KVGB0000001';
     const IFSC_MAHB = 'MAHB0001150';
+    const IFSC_MSNU = 'MSNU0000001';
     const IFSC_ORBC = 'ORBC0100001';
     const IFSC_PMCB = 'PMCB0000002';
     const IFSC_PUNB = 'PUNB0000100';
@@ -63,7 +64,7 @@ class BankCodes
         'COB'   => self::IFSC_COSB,
         'CUB'   => self::IFSC_CIUB,
         'DCB'   => self::IFSC_DCBL,
-        'DUS'   => self::IFSC_DNSB,
+        'DNS'   => self::IFSC_DNSB,
         'ESF'   => self::IFSC_ESFB,
         'FBL'   => self::IFSC_FDRL,
         'GSC'   => self::IFSC_GSCB,
@@ -82,6 +83,7 @@ class BankCodes
         'KVBN3' => self::IFSC_KVBL,
         'KVBN4' => self::IFSC_KVBL,
         'KVG'   => self::IFSC_KVGB,
+        'MUC'   => self::IFSC_MSNU,
         'OBC'   => self::IFSC_ORBC,
         'PMC'   => self::IFSC_PMCB,
         'PNB'   => self::IFSC_PUNB,
@@ -110,12 +112,16 @@ class BankCodes
     ];
 
     const STRIP_LEADING_ZEROES_BANKS_IMPS = [
-        'CNB'
+        'CNB',
+        'SIB',
     ];
 
     const STRIP_LEADING_ZEROES_BANKS_NEFT = [
         IFSC::CNRB,
+        IFSC::SIBL,
     ];
+
+    const ACCOUNT_NUMBER_LENGTH = 13;
 
     public static function getIfscForBankCode(string $bankCode)
     {
@@ -177,8 +183,27 @@ class BankCodes
 
         if (in_array($needle, $haystack, true) === true)
         {
-            $account = ltrim($account, '0');
+            $account = self::modifyPayerAccount($account);
         }
+
+        return $account;
+    }
+
+    /**
+     * Canara bank account numbers are received like this:
+     * - 00000683101027109
+     * - 00002724129002387
+     * In the former case, the last leading zero is significant. In
+     * the latter case, it is not. Result should be 13 characters.
+     *
+     * @param  string $account
+     * @return string $account
+     */
+    public static function modifyPayerAccount(string $account)
+    {
+        $account = ltrim($account, '0');
+
+        $account = str_pad($account, self::ACCOUNT_NUMBER_LENGTH, '0', STR_PAD_LEFT);
 
         return $account;
     }

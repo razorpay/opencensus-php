@@ -8,6 +8,7 @@ use Config;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\BankAccount;
 use RZP\Models\Payment\Refund as PaymentRefund;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -18,8 +19,8 @@ class Core extends Base\Core
     protected $mutex;
 
     const NRE_FAILURE_MESSAGES = [
-        'NEFT-RETURN Credit to NRI Account',
-        'IMPS-RTN-NRE ACCOUNT',
+        'neft-return credit to nri account',
+        'imps-rtn-nre account',
     ];
 
     public function __construct()
@@ -264,7 +265,25 @@ class Core extends Base\Core
         $latestAttempt = $refund->fundTransferAttempts->last();
 
         if (($latestAttempt !== null) and
-            (in_array($latestAttempt->getRemarks(), self::NRE_FAILURE_MESSAGES, true)))
+            ($this->isRefundToNreAccount($latestAttempt) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * If the last attempt failed with one of these messages, we
+     * can consider it a hard bounce and not make more attempts.
+     *
+     * @return boolean
+     */
+    protected function isRefundToNreAccount($latestAttempt)
+    {
+        $msg = strtolower($latestAttempt->getRemarks());
+
+        if (in_array($msg, self::NRE_FAILURE_MESSAGES, true) === true)
         {
             return true;
         }
@@ -317,9 +336,20 @@ class Core extends Base\Core
     {
         $payerBankAccount = $bankTransfer->payerBankAccount;
 
-        $payerBankAccount = $payerBankAccount->edit($input, 'editVirtualBankAccount');
+        if ($payerBankAccount === null)
+        {
+            $payerBankAccount = $this->createPayerBankAccount($bankTransfer, $input);
+
+            $bankTransfer->payerBankAccount()->associate($payerBankAccount);
+        }
+        else
+        {
+            $payerBankAccount = $payerBankAccount->edit($input, 'editVirtualBankAccount');
+        }
 
         $this->repo->saveOrFail($payerBankAccount);
+
+        $this->repo->saveOrFail($bankTransfer);
 
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED,
@@ -329,5 +359,20 @@ class Core extends Base\Core
             ]);
 
         return $bankTransfer;
+    }
+
+    protected function createPayerBankAccount(Entity $bankTransfer, array $input)
+    {
+        $bankAccount = new BankAccount\Entity;
+
+        $bankAccountInput = PayerBankAccount::getBankAccountInput($bankTransfer, $input);
+
+        $bankAccount = $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
+
+        $bankAccount->merchant()->associate($bankTransfer->merchant);
+
+        $bankAccount->associateVirtualAccount($bankTransfer->virtualAccount);
+
+        return $bankAccount;
     }
 }

@@ -30,6 +30,18 @@ class Repository extends Base\Repository
         return Type::validateType($value);
     }
 
+    protected function addQueryParamSourceId($query, $params)
+    {
+        $id = $params[Entity::SOURCE_ID];
+
+        if (strpos($id, '_') !== false)
+        {
+            list($sign, $id) = explode('_', $id);
+        }
+
+        $query->where(Entity::SOURCE_ID, '=', $id);
+    }
+
     public function getFundTransferAttemptsByBatchIdWithRelations(
         string $batchFundTransferId,
         array $relations = [])

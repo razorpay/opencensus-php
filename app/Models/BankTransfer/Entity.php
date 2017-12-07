@@ -133,6 +133,7 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = [
         self::DESCRIPTION,
+        self::PAYEE_ACCOUNT,
     ];
 
     protected $defaults = [
@@ -245,6 +246,20 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function modifyPayeeAccount(array & $input)
+    {
+        //
+        // Removing spaces, since Kotak credits us even when
+        // customer enters R A Z O R P A Y 1 2 3. Can change to
+        // remove all whitespaces later, if required to do so.
+        //
+
+        if (isset($input[self::PAYEE_ACCOUNT]) === true)
+        {
+            $input[self::PAYEE_ACCOUNT] = str_replace(' ', '', $input[self::PAYEE_ACCOUNT]);
+        }
+    }
+
     // -------------------------- Getters --------------------------------------
 
     public function getAmount()
@@ -312,6 +327,11 @@ class Entity extends Base\PublicEntity
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);
+    }
+
+    public function getPayerBankAccountId()
+    {
+        return $this->getAttribute(self::PAYER_BANK_ACCOUNT_ID);
     }
 
     public function isNotified()
