@@ -212,6 +212,13 @@ return [
 
     'aeps_icici' => [
         'terminal_id'           => env('AEPS_TERMINAL_ID'),
+        'payer_mobile'          => env('AEPS_ICICI_PAYER_MOBILE'),
+        'payer_vpa'             => env('AEPS_ICICI_PAYER_VPA'),
+        'device_id'             => env('AEPS_ICICI_DEVICE_ID'),
+        'profile_id'            => env('AEPS_ICICI_PROFILE_ID'),
+        'channel_code'          => env('AEPS_ICICI_CHANNEL_CODE'),
+        'account_provider'      => env('AEPS_ICICI_ACCOUNT_PROVIDER'),
+        'refund_api_key'        => env('AEPS_ICICI_REFUND_API_KEY'),
     ],
 
     'upi_npci' => [
@@ -350,12 +357,12 @@ return [
         'live_hash_secret_corporate' => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_CORPORATE'),
         'test_hash_secret_corporate' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_CORPORATE'),
         'test_merchant_id_corporate' => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_CORPORATE'),
-        
+
         // recurring
         'test_hash_secret_rec'       => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_REC'),
         'test_hash_secret_encrec'    => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_ENCREC'),
         'test_merchant_id_rec'       => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_REC'),
-        
+
     ],
 
     'netbanking_airtel' => [
