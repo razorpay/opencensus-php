@@ -172,6 +172,11 @@ class Constants
             'display_name'  => 'Smart Collect',
             'documentation' => 'smart-collect'
         ],
+        self::REPORT_V2 => [
+            'feature'       => self::REPORT_V2,
+            'display_name'  => 'Report V2',
+            'documentation' => ''
+        ],
     ];
 
     /*
