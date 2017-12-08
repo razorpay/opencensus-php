@@ -295,6 +295,51 @@ class Gateway extends Base\Gateway
         parent::refund($input);
 
         $refundRequestContentArray = $this->getRefundRequestContentArray($input);
+
+        $refundRequestContent = $this->getRefundRequestContent($refundRequestContentArray);
+
+        $request = parent::getStandardRequestArray($refundRequestContent, 'post', Action::REFUND);
+
+        $response = $this->postRequest($request);
+
+        sd($response);
+    }
+
+    public function getRefundRequestContent($requestContent)
+    {
+        // Entire request content is wrapped in xml.
+        $requestBuffer = Utility::createRequestXml($requestContent);
+
+        return $requestBuffer;
+    }
+
+    public function postRequest($request)
+    {
+        $request['options'] = $this->getRequestOptions();
+
+        $request['headers'] = $this->getRequestHeaders();
+
+        $response = $this->sendGatewayRequest($request);
+
+        return $response;
+    }
+
+    protected function getRequestHeaders()
+    {
+        $headers = [
+            'Content-Type:application/xml',
+            'Cache-Control: no-cache',
+        ];
+
+        return $headers;
+    }
+
+    protected function getRequestOptions()
+    {
+        $options['verify'] = false;
+        $options['timeout'] = 60;
+
+        return $options;
     }
 
     public function getRefundRequestContentArray($input)
