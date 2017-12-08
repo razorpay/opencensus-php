@@ -132,6 +132,13 @@ export class DisputeForm extends Component {
   render() {
     const { isEditMode, handleSubmit, entity } = this.props;
 
+    const raisedOn = entity.raised_on
+      ? moment(new Date(entity.raised_on * 1000)).format('DD/MM/YYY')
+      : null;
+    const expiresOn = entity.expires_on
+      ? moment(new Date(entity.expires_on * 1000)).format('DD/MM/YYY')
+      : null;
+
     return (
       <BaseModal header={`${isEditMode ? 'Edit' : 'Create'} Dispute`}>
         <Form class="full-span full-elements">
@@ -174,7 +181,7 @@ export class DisputeForm extends Component {
           <DateField
             name="raised_on"
             label="Raised on"
-            defaultValue={entity.raised_on}
+            defaultValue={raisedOn}
             required={!isEditMode}
             disabled={isEditMode}
           />
@@ -183,7 +190,7 @@ export class DisputeForm extends Component {
           <DateField
             name="expires_on"
             label="Expires on"
-            defaultValue={entity.expires_on}
+            defaultValue={expiresOn}
             required={!isEditMode}
           />
 
