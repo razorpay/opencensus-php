@@ -143,6 +143,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function runPreReconciledAtCheckRecon($rowDetails)
     {
+        // If the row is present in MIS file, it means it's captured on the gateway end.
+        $this->persistPaymentData($rowDetails);
+
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
     }
 
@@ -444,11 +447,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function persistReconciliationData($rowDetails)
     {
-        //
-        // If the row reaches this part of the code, that means that it is captured on the gateway's end.
-        //
-        $this->persistPaymentData($rowDetails);
-
         $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);
 
         if ($recordSuccess === true)
