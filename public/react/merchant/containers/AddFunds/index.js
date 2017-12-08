@@ -10,6 +10,7 @@ import * as AddFundsActions from 'merchant/modules/addfunds';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
 
 @connect(state => state.session, {
   ...AddFundsActions,
@@ -34,31 +35,30 @@ export default class AddFundsContainer extends Component {
   }
 
   componentWillMount() {
-    Promise.all([
-      this.props.fetchHost().then(response => {
-        return this.props.loadCheckout(response.data);
-      }),
-      this.props.fetchKeys(this.props.user.current).then(key => {
+    fetchKeysAndCheckout(
+      this.props.user.current,
+      key => {
         this.key = key;
-      }),
-    ]).catch(error => {
-      this.setState({
-        status: {
-          type: 'info',
-          message: (
-            <span>
-              API keys need to be generated before adding funds.{' '}
+      },
+      error => {
+        this.setState({
+          status: {
+            type: 'info',
+            message: (
               <span>
-                Keys can be generated{' '}
-                <Link to="/keys">
-                  <u>here.</u>
-                </Link>
+                API keys need to be generated before adding funds.{' '}
+                <span>
+                  Keys can be generated{' '}
+                  <Link to="/keys">
+                    <u>here.</u>
+                  </Link>
+                </span>
               </span>
-            </span>
-          ),
-        },
-      });
-    });
+            ),
+          },
+        });
+      }
+    );
   }
 
   addFunds(transaction) {

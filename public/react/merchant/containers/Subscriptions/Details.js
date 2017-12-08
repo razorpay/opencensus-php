@@ -17,6 +17,7 @@ import { deleteAddOn } from 'merchant/modules/addons';
 import { showNotification } from 'rzp/modules/notifications';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
 import * as AddFundsActions from 'merchant/modules/addfunds';
+import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
 
 import { openModal, closeModal } from 'rzp/modules/modals';
 import CancellationModal from './CancellationModal';
@@ -91,18 +92,16 @@ export default class SubscriptionDetailsContainer extends Component {
     this.checkSecView(); // Reset view
     this.props.invoice_id && this.fetchInvoice(this.props.invoice_id);
 
-    // fetching checkout
-    // TODO: transfer this to a utility
-    Promise.all([
-      this.props.fetchHost().then(({ data }) => {
-        return this.props.loadCheckout(data);
-      }),
-      this.props.fetchKeys(this.props.user.current).then(key => {
+    // fetching key and checkout js
+    fetchKeysAndCheckout(
+      this.props.user.current,
+      key => {
         this.key = key;
-      }),
-    ]).catch(error => {
-      // do something for error
-    });
+      },
+      error => {
+        // do something for error
+      }
+    );
   }
 
   componentWillReceiveProps(nextProps) {
