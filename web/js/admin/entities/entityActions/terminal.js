@@ -88,6 +88,8 @@ export default ({ entity, mode, updateEntity }) => {
       .then(data => {
         if (data) {
           notifySuccess('Submerchant is successfully added');
+          window.location.reload();
+          closeModal();
         }
       })
       .catch(err => notifyError(JSON.stringify(err)));
@@ -199,11 +201,14 @@ const AssignSubMerchants = ({ submerchants, handleSubmit }) => {
       ['Name', item => item.name],
       [
         'Website',
-        item => (
-          <a class="link" target="_blank" href={item.website}>
-            {item.website}
-          </a>
-        ),
+        item =>
+          item.website ? (
+            <a class="link" target="_blank" href={item.website}>
+              {item.website}
+            </a>
+          ) : (
+            '--'
+          ),
       ],
     ];
   }
@@ -220,7 +225,7 @@ const AssignSubMerchants = ({ submerchants, handleSubmit }) => {
         />
       </Form>
       {submerchants &&
-        submerchants.length && (
+        submerchants.length > 0 && (
           <Table
             items={submerchants}
             fields={getSubmerchantFields()}
