@@ -1,7 +1,7 @@
 import { Component } from 'react';
 
 import { openModal, closeModal, confirm } from 'common/modal';
-import { adminFetch } from 'util/fetch';
+import fetch, { adminFetch } from 'util/fetch';
 import { notifyError, notifySuccess } from 'common/modal';
 
 import ShowWhen from 'admin/components/ShowWhen';
@@ -20,7 +20,7 @@ export default ({ entity, mode, updateEntity }) => {
       params: {
         route_name: 'dispute_edit',
         url_params: {
-          id: entity.id,
+          '{id}': entity.id,
         },
         mode: mode,
       },
@@ -133,12 +133,11 @@ export class DisputeForm extends Component {
     const { isEditMode, handleSubmit, entity } = this.props;
 
     const raisedOn = entity.raised_on
-      ? moment(new Date(entity.raised_on * 1000)).format('DD/MM/YYY')
+      ? moment(new Date(entity.raised_on * 1000)).format('DD/MM/YYYY')
       : null;
     const expiresOn = entity.expires_on
-      ? moment(new Date(entity.expires_on * 1000)).format('DD/MM/YYY')
+      ? moment(new Date(entity.expires_on * 1000)).format('DD/MM/YYYY')
       : null;
-
     return (
       <BaseModal header={`${isEditMode ? 'Edit' : 'Create'} Dispute`}>
         <Form class="full-span full-elements">
@@ -181,7 +180,7 @@ export class DisputeForm extends Component {
           <DateField
             name="raised_on"
             label="Raised on"
-            defaultValue={raisedOn}
+            value={raisedOn}
             required={!isEditMode}
             disabled={isEditMode}
           />
@@ -190,7 +189,7 @@ export class DisputeForm extends Component {
           <DateField
             name="expires_on"
             label="Expires on"
-            defaultValue={expiresOn}
+            value={expiresOn}
             required={!isEditMode}
           />
 
