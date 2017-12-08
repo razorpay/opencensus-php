@@ -1120,6 +1120,7 @@ class DatabaseSeeder extends Seeder
         $this->createVodafoneMpesaTerminal();
         $this->createNetbankingRblTerminal();
         $this->createEbsTerminal();
+        $this->createAepsTerminal();
     }
 
     protected function createNetbankingCorporationTerminals()
@@ -1928,6 +1929,25 @@ class DatabaseSeeder extends Seeder
                 'card'                  => '0',
                 'netbanking'            => '1',
                 'recurring'             => '0',
+                'gateway_merchant_id'   => 'abcd',
+                'gateway_secure_secret' => 'secret',
+                'created_at'            => time(),
+                'updated_at'            => time()
+            ]
+        );
+    }
+
+    protected function createAepsTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::AEPS_ICICI_RAZORPAY_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::AEPS_ICICI,
+                'card'                  => '0',
+                'netbanking'            => '0',
+                'recurring'             => '0',
+                'aeps'                  => '1',
                 'gateway_merchant_id'   => 'abcd',
                 'gateway_secure_secret' => 'secret',
                 'created_at'            => time(),
