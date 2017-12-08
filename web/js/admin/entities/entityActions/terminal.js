@@ -129,7 +129,7 @@ export default ({ entity, mode, updateEntity }) => {
       .then(data => {
         if (data) {
           notifySuccess('Terminal is deleted successfully');
-          window.open(`/admin/entity/terminal`);
+          window.open(`/admin/entities/${mode}/terminal`, '_self');
         }
       })
       .catch(err => {
