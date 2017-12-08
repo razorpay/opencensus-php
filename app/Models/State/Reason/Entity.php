@@ -4,15 +4,18 @@ namespace RZP\Models\State\Reason;
 
 use RZP\Models\Base;
 use RZP\Models\State;
+use RZP\Models\Merchant\Detail\RejectionReasons;
 
 class Entity extends Base\PublicEntity
 {
-    const STATE_ID        = 'state_id';
-    const REASON_TYPE     = 'reason_type';
-    const REASON_CATEGORY = 'reason_category';
-    const REASON_CODE     = 'reason_code';
-    const CREATED_AT      = 'created_at';
-    const UPDATED_AT      = 'updated_at';
+    const STATE_ID           = 'state_id';
+    const REASON_TYPE        = 'reason_type';
+    const REASON_CATEGORY    = 'reason_category';
+    const REASON_CODE        = 'reason_code';
+    const CREATED_AT         = 'created_at';
+    const UPDATED_AT         = 'updated_at';
+
+    const REASON_DESCRIPTION = 'reason_description';
 
     protected $entity = 'state_reason';
 
@@ -38,6 +41,7 @@ class Entity extends Base\PublicEntity
         self::REASON_TYPE,
         self::REASON_CATEGORY,
         self::REASON_CODE,
+        self::REASON_DESCRIPTION,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -46,6 +50,25 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
+
+    protected $publicSetters = [
+        self::REASON_DESCRIPTION,
+    ];
+
+    protected function setPublicReasonDescriptionAttribute(array & $array)
+    {
+        if ($array[self::REASON_TYPE] !== ReasonType::REJECTION)
+        {
+            return;
+        }
+
+        $reasonCodesDescriptionsMapping = RejectionReasons::REASON_CODES_DESCRIPTIONS_MAPPING;
+
+        if (empty($reasonCodesDescriptionsMapping[$array[self::REASON_CODE]]) === false)
+        {
+            $array[self::REASON_DESCRIPTION] = $reasonCodesDescriptionsMapping[$array[self::REASON_CODE]];
+        }
+    }
 
     public function state()
     {

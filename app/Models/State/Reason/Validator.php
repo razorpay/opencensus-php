@@ -55,7 +55,9 @@ class Validator extends Base\Validator
                 self::INVALID_REASON_CATEGORY_MESSAGE);
         }
 
-        if (in_array($rejectionReasonCode, RejectionReasons::ALLOWED_REASON_CODES, true) === false)
+        $allowedRejectionReasonCodes = array_keys(RejectionReasons::REASON_CODES_DESCRIPTIONS_MAPPING);
+
+        if (in_array($rejectionReasonCode, $allowedRejectionReasonCodes, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 self::INVALID_REASON_CODE_MESSAGE);

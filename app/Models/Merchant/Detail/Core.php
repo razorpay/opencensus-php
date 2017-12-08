@@ -325,8 +325,6 @@ class Core extends Base\Core
                      ->setOriginal($oldMerchantDetails)
                      ->setDirty($newMerchantDetails);
 
-                $this->setBankAccountForMerchant($merchantDetails);
-
                 (new Merchant\Activate)->activate($merchantDetails->merchant, true);
             }
 
@@ -347,12 +345,7 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
-    /**
-     * This function is used for setting bank account for merchant
-     * @param Entity $merchantDetails
-     *
-     */
-    protected function setBankAccountForMerchant(Entity $merchantDetails)
+    public function setBankAccountForMerchant(Entity $merchantDetails)
     {
         $bankCore = (new BankAccount\Core);
 
@@ -434,17 +427,6 @@ class Core extends Base\Core
             //
             $response['need_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
         }
-
-        $activationStatus = $merchantDetails->getActivationStatus();
-
-        $allowedNextActivationStatuses = [];
-
-        if (empty($activationStatus) === false)
-        {
-            $allowedNextActivationStatuses = Status::ALLOWED_NEXT_ACTIVATION_STATUSES[$activationStatus];
-        }
-
-        $response['allowed_next_activation_statuses'] = $allowedNextActivationStatuses;
 
         $currentActivationState = $merchant->currentActivationState();
 

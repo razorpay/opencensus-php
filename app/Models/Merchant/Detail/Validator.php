@@ -196,7 +196,7 @@ class Validator extends Base\Validator
 
     public function validateActivationStatus(array $input)
     {
-        $validActivationStatuses = array_keys(Status::ALLOWED_NEXT_ACTIVATION_STATUSES);
+        $validActivationStatuses = array_keys(Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING);
 
         if (in_array($input[Entity::ACTIVATION_STATUS], $validActivationStatuses, true) === false)
         {
@@ -232,7 +232,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (in_array($newStatus, Status::ALLOWED_NEXT_ACTIVATION_STATUSES[$currentStatus], true) === false)
+        if (in_array($newStatus, Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$currentStatus], true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_STATUS_CHANGE_MESSAGE);
         }

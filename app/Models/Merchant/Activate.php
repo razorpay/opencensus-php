@@ -37,6 +37,8 @@ class Activate extends Base\Core
      * @param bool $activateByStatus which is by default false, it determines
      * if the activation is done by the new activation status `activated`.
      *
+     * @throws Exception\BadRequestException
+     *
      * @return array
      */
     public function activate(Entity $merchant, bool $activateByStatus = false): array
@@ -56,6 +58,11 @@ class Activate extends Base\Core
         //     throw new Exception\BadRequestException(
         //         ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
         // }
+
+        if ($activateByStatus === true)
+        {
+            (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
+        }
 
         $ba = $this->repo->bank_account->getBankAccount($merchant);
 

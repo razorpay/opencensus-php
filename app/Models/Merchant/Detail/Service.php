@@ -442,7 +442,7 @@ class Service extends Base\Service
     /**
      * This function is used to get zapier data for activation
      *
-     * @param Entity $merchant
+     * @param Merchant\Entity $merchant
      *
      * @return array
      */
