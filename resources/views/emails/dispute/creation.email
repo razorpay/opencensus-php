@@ -7,7 +7,6 @@
         $brand_color = '#6A75ED';
         $brand_text_color = '#FFFFFF';
 
-        $createdDate = date('jS F Y', $dispute['created_at']);
         $expiryDate = date('jS F Y', $dispute['expires_on']);
 
         $remainingDays = floor(( $dispute['expires_on'] - time() ) / 86400);
@@ -49,7 +48,7 @@
 
 
 
-        <table class="table" border="0" cellpadding="0" cellspacing="0" style="margin-top: -100px !important; height: 100%; wdith: 80%; max-width: 600px; margin: 0 auto;">
+        <table class="table" border="0" cellpadding="0" cellspacing="0" style="margin-top: -100px !important; height: 100%; wdith: 80%; max-width: 600px; margin: 0 auto; font-size: 12px;">
           <tbody>
 
             <tr>
@@ -82,14 +81,6 @@
                     <div>
                         <strong class="text-uppercase lh-26">Dispute Type and Reason</strong> <br>
                         <span style="text-transform: capitalize"> <b> {{ $dispute['phase'] }} </b> : {{ $dispute['reason_description'] }} </span>
-                    </div>
-                </td>
-            </tr>
-
-            <tr>
-                <td class="content">
-                    <div>
-                        <strong class="text-uppercase lh-26">Date of Dispute</strong> <br> {{ $createdDate }}
                     </div>
                 </td>
             </tr>
