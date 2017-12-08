@@ -3,7 +3,6 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Models\Customer;
 use Request;
 use RZP\Constants\Entity as E;
 

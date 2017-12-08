@@ -60,7 +60,7 @@ class Raven extends Base\Core
 
     public function updateSmsStatus($gateway, $input)
     {
-        $this->trace->info(TraceCode::RAVEN_REQUEST,
+        $this->trace->info(TraceCode::RAVEN_CALLBACK_REQUEST,
             [
                 'gateway' => $gateway,
                 'input'   => $input,
