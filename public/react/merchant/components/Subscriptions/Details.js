@@ -54,8 +54,7 @@ export default ({
     (['authenticated', 'active', 'halted', 'pending'].indexOf(
       subscription.status
     ) > -1 ||
-      (subscription.status === 'created' &&
-        (subscription.type === 0 || subscription.type === 2)));
+      subscription.status === 'created');
 
   const testModeMsg = {};
   if (showTestChargeBtn) {
