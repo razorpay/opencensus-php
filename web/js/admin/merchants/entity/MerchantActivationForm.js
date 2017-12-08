@@ -147,7 +147,10 @@ export default class MerchantActivationForm extends Component {
           return;
         }
 
-        details.merchant_details.activation_status = response.activation_status;
+        details.merchant_details.activation_status =
+          response.merchant_details.activation_status;
+        details.merchant_details.allowed_next_activation_statuses =
+          response.merchant_details.allowed_next_activation_statuses;
         notifySuccess('Status updated successfully.');
         closeModal();
       }
@@ -248,22 +251,26 @@ function _getOverviewFields(details) {
     },
     {
       label: 'Activation Form Status',
-      value: () => (
-        <Form onSubmit={this.openActivationModal}>
-          <SelectField
-            name="activation_status"
-            defaultValue={details.merchant_details.activation_status || ''}
-          >
-            <option value="">Select status</option>
-            {Object.keys(statusMap).map(status => (
-              <option key={status} value={status}>
-                {statusMap[status]}
+      value: () =>
+        details.merchant_details.allowed_next_activation_statuses.length ? (
+          <Form onSubmit={this.openActivationModal}>
+            <SelectField name="activation_status">
+              <option value="">
+                {statusMap[details.merchant_details.activation_status]}
               </option>
-            ))}
-          </SelectField>
-          <button>Change</button>
-        </Form>
-      ),
+              {details.merchant_details.allowed_next_activation_statuses.map(
+                status => (
+                  <option key={status} value={status}>
+                    {statusMap[status]}
+                  </option>
+                )
+              )}
+            </SelectField>
+            <button>Change</button>
+          </Form>
+        ) : (
+          details.merchant_details.activation_status || '--'
+        ),
     },
   ];
 }
