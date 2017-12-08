@@ -33,6 +33,14 @@ export default ({ entity, mode, updateEntity }) => {
           notifySuccess('Dispute is successfully updated');
           updateEntity(data);
           closeModal();
+
+          if (
+            typeof data.id !== 'undefined' &&
+            data.id.indexOf('w_action') === 0 &&
+            typeof data.workflow_id !== 'undefined'
+          ) {
+            setTimeout(() => window.open(`/admin/requests/${data.id}`), 1000);
+          }
         }
       })
       .catch(err => {
@@ -84,7 +92,7 @@ export class DisputeForm extends Component {
   cleanFields(body) {
     body.raised_on = new Date(body.raised_on).getTime() / 1000;
     body.expires_on = new Date(body.expires_on).getTime() / 1000;
-    body.amount = body.amount * 100;
+    body.amount = body.amount;
     body.deduct_at_onset = body.deduct_at_onset ? 1 : 0;
     body.skip_email = body.skip_email ? 1 : 0;
     if (body.merchant_emails) {
@@ -110,7 +118,7 @@ export class DisputeForm extends Component {
         editModeDisputeFields.status = body.status;
       }
       if (body.accepted_amount) {
-        editModeDisputeFields.accepted_amount = body.accepted_amount * 100;
+        editModeDisputeFields.accepted_amount = body.accepted_amount;
       }
 
       body = editModeDisputeFields;
@@ -125,8 +133,6 @@ export class DisputeForm extends Component {
     return (
       <BaseModal header={`${isEditMode ? 'Edit' : 'Create'} Dispute`}>
         <Form class="full-span full-elements">
-          <Field label="Name" name="name" defaultValue={entity.name} />
-
           {/* Gate Dispute Id */}
           <Field
             label="Gateway Dispute Id"
@@ -141,7 +147,6 @@ export class DisputeForm extends Component {
             label="Gateway Dispute Status"
             name="gateway_dispute_status"
             defaultValue={entity.gateway_dispute_status}
-            required={!isEditMode}
           />
 
           {/* Phase */}
@@ -220,7 +225,7 @@ export class DisputeForm extends Component {
 
           {/* Amount */}
           <Field
-            label={`Amount ${'(INR)'}`}
+            label="Amount (Paisa)"
             name="amount"
             defaultValue={entity.amount}
             required={!isEditMode}
@@ -228,13 +233,15 @@ export class DisputeForm extends Component {
           />
 
           {/* Accepted Amount */}
-          <Field
-            label={`Accepted Amount ${'(INR)'}`}
-            name="accepted_amount"
-            defaultValue={entity.accepted_amount}
-            required={!isEditMode}
-            disabled={isEditMode}
-          />
+          {isEditMode && (
+            <Field
+              label="Accepted Amount (Paisa)"
+              name="accepted_amount"
+              defaultValue={entity.accepted_amount}
+              required={!isEditMode}
+              disabled={isEditMode}
+            />
+          )}
 
           {/* Merchant Email */}
           <Field
@@ -246,7 +253,7 @@ export class DisputeForm extends Component {
 
           {/* Deduct on Onset */}
           <CheckField
-            label="Dedcut at Onset"
+            label="Deduct at Onset"
             name="deduct_at_onset"
             defaultChecked={entity.deduct_at_onset}
             disabled={isEditMode}

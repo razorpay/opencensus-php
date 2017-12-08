@@ -30,7 +30,7 @@ class EntityProps extends Component {
 
     return (
       <BaseModal
-        header={`${isEditable ? 'Edit' : 'View'} Rule`}
+        header={`${isEditable ? 'Edit Rule' : 'View Rule'}`}
         noPadding={!isEditable}
       >
         {isEditable ? (
