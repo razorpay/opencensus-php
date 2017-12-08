@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "5ee93e508a2e81bb5025831bdb77eaaa",
+    "content-hash": "161f0b738bb29b00cf92d8a9dbff51aa",
     "packages": [
         {
             "name": "anlutro/l4-settings",
-            "version": "0.5.0",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/anlutro/laravel-settings.git",
-                "reference": "8bbaa98a7962e0e6106eb98aae03cfcabe78d848"
+                "url": "https://github.com/pratikkapasi/laravel-settings.git",
+                "reference": "57144f4c19833d260336c3baaf1885ac922ec7c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/anlutro/laravel-settings/zipball/8bbaa98a7962e0e6106eb98aae03cfcabe78d848",
-                "reference": "8bbaa98a7962e0e6106eb98aae03cfcabe78d848",
+                "url": "https://api.github.com/repos/pratikkapasi/laravel-settings/zipball/57144f4c19833d260336c3baaf1885ac922ec7c3",
+                "reference": "57144f4c19833d260336c3baaf1885ac922ec7c3",
                 "shasum": ""
             },
             "require": {
@@ -39,7 +39,6 @@
                     "anlutro\\LaravelSettings\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -50,7 +49,10 @@
                 }
             ],
             "description": "Persistent settings in Laravel.",
-            "time": "2017-03-06T09:37:21+00:00"
+            "support": {
+                "source": "https://github.com/pratikkapasi/laravel-settings/tree/master"
+            },
+            "time": "2017-12-08T10:09:45+00:00"
         },
         {
             "name": "aws/aws-sdk-php",
@@ -5368,7 +5370,7 @@
                 "source": "https://github.com/razorpay/upi-clients/tree/master",
                 "issues": "https://github.com/razorpay/upi-clients/issues"
             },
-            "time": "2017-06-09T09:05:10+00:00"
+            "time": "2017-08-10T18:30:30+00:00"
         },
         {
             "name": "react/promise",
@@ -8959,6 +8961,7 @@
         "razorpay/razorpay": 20,
         "razorpay/spine": 20,
         "razorpay/upi-clients": 20,
+        "anlutro/l4-settings": 20,
         "razorpay/oauth": 20,
         "codacy/coverage": 20,
         "symfony/phpunit-bridge": 20
