@@ -127,7 +127,7 @@ class IrctcRefundReport extends BasicEntityReport
 
     protected function getPaymentDate(Payment\Entity $payment)
     {
-        $ts = $payment->getAuthorizeTimestamp();
+        $ts = $payment->getCreatedAt();
 
         $paymentDate = Carbon::createFromTimestamp($ts, Timezone::IST)
                              ->format('Ymd');
@@ -166,7 +166,7 @@ class IrctcRefundReport extends BasicEntityReport
     {
         list($data, $count) = $this->getReportDataForMerchant($from, $to, self::BATCH_LIMIT, $skip, $merchantId);
 
-        $txt = $this->generateText($data, '|');
+        $txt = $this->generateText($data, ',');
 
         $fullpath = $this->createTxtFile($filename, $txt);
 
