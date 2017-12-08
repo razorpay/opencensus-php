@@ -24,7 +24,7 @@ function fetchFn() {
 export default class PublicFeaturesList extends Component {
   collection = new Collection({
     data: {
-      route_name: 'onboarding_features_fetch_submissions',
+      route_name: 'onboarding_features_get_submissions',
     },
     fetchFn,
     filters: defaultFilters,
