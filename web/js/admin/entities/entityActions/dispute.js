@@ -90,8 +90,10 @@ export class DisputeForm extends Component {
   }
 
   cleanFields(body) {
-    body.raised_on = new Date(body.raised_on).getTime() / 1000;
-    body.expires_on = new Date(body.expires_on).getTime() / 1000;
+    body.raised_on =
+      new Date(moment(body.raised_on, 'DD/MM/YYYY')).getTime() / 1000;
+    body.expires_on =
+      new Date(moment(body.expires_on, 'DD/MM/YYYY')).getTime() / 1000;
     body.amount = body.amount;
     body.deduct_at_onset = body.deduct_at_onset ? 1 : 0;
     body.skip_email = body.skip_email ? 1 : 0;
