@@ -130,8 +130,12 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (($this->entity->isNonTransactional() === true) and
-            in_array($input[Entity::STATUS], Status::getTransactionalStatuses(),true))
+        if ($this->entity->isNonTransactional() === false)
+        {
+            return;
+        }
+
+        if (in_array($input[Entity::STATUS], Status::getTransactionalStatuses(), true) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Non-transactional disputes can only be closed.',
