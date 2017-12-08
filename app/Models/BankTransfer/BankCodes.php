@@ -34,6 +34,7 @@ class BankCodes
     const IFSC_KVGB = 'KVGB0000001';
     const IFSC_MAHB = 'MAHB0001150';
     const IFSC_MSNU = 'MSNU0000001';
+    const IFSC_NKGS = 'NKGS0000096';
     const IFSC_ORBC = 'ORBC0100001';
     const IFSC_PMCB = 'PMCB0000002';
     const IFSC_PUNB = 'PUNB0000100';
@@ -84,6 +85,7 @@ class BankCodes
         'KVBN4' => self::IFSC_KVBL,
         'KVG'   => self::IFSC_KVGB,
         'MUC'   => self::IFSC_MSNU,
+        'NGB'   => self::IFSC_NKGS,
         'OBC'   => self::IFSC_ORBC,
         'PMC'   => self::IFSC_PMCB,
         'PNB'   => self::IFSC_PUNB,

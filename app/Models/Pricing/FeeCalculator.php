@@ -187,10 +187,6 @@ class FeeCalculator
 
         $rulesCount = count($rules);
 
-        $this->trace->debug(
-            TraceCode::PRICING_RULE_SELECTION,
-            ['count' => $rulesCount]);
-
         //
         // If pricing for the feature is optional, no rules may exist
         // In this case, we add the zero pricing rule and return

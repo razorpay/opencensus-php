@@ -187,6 +187,8 @@ class Gateway
         $this->route = $this->app['api.route'];
 
         $this->request = $this->app['request'];
+
+        $this->cache = $this->app['cache'];
     }
 
     public function authorize(array $input)
@@ -946,6 +948,30 @@ class Gateway
     protected function getCacheKey($input)
     {
         return $this->gateway . '_' . $input['payment']['id'];
+    }
+
+    protected function getProcessedRefunds()
+    {
+        $refunds =  $this->cache->get(strtoupper($this->gateway) . '_PROCESSED_REFUNDS');
+
+        if (empty($refunds) === true)
+        {
+            $refunds = [];
+        }
+
+        return $refunds;
+    }
+
+    protected function getUnprocessedRefunds()
+    {
+        $refunds = $this->cache->get(strtoupper($this->gateway) . '_UNPROCESSED_REFUNDS');
+
+        if (empty($refunds) === true)
+        {
+            $refunds = [];
+        }
+
+        return $refunds;
     }
 
     protected function isSecondRecurringPayment(array $input)
