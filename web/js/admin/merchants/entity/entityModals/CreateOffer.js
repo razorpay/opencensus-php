@@ -61,11 +61,13 @@ export default class CreateOffer extends Component {
 
     if (offer.starts_at) {
       offer.starts_at =
-        new Date(offer.starts_at).getTime() / 1000 + offsetStart;
+        new Date(moment(offer.starts_at, 'DD/MM/YYYY')).getTime() / 1000 +
+        offsetStart * 1000;
     }
     if (offer.ends_at) {
       offer.ends_at =
-        new Date(offer.ends_at).getTime() / 1000 + offsetEnd * 1000;
+        new Date(moment(offer.ends_at, 'DD/MM/YYYY')).getTime() /
+        (1000 + offsetEnd * 1000);
     }
 
     delete offer.starts_at_time;
