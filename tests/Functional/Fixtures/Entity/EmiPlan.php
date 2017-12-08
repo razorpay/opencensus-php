@@ -14,15 +14,6 @@ class EmiPlan extends Base
             'min_amount'        => '300000',
         ],
         [
-            'id'                => '10101010101000',
-            'duration'          => '9',
-            'subvention'        => 'merchant',
-            'rate'              => '1200',
-            'methods'           => 'debitcard',
-            'bank'              => 'HDFC',
-            'min_amount'        => '300000',
-        ],
-        [
             'id'                => '10101010101011',
             'duration'          => '3',
             'rate'              => '1400',

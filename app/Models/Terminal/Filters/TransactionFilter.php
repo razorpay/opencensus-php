@@ -300,10 +300,8 @@ class TransactionFilter extends Terminal\Filter
         }
 
         $emiDuration = $this->input['payment']->emiPlan->getDuration();
-
-        $subvention = $this->input['payment']->emiPlan->getSubvention();
-
-        return $terminal->isValidEmiTerminal($gateway, $emiDuration, $subvention);
+        
+        return $terminal->isValidEmiTerminal($gateway, $emiDuration);
     }
 
     public function pharmaFilter(Terminal\Entity $terminal)
