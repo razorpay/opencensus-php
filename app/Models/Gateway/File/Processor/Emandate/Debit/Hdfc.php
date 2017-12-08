@@ -24,41 +24,6 @@ class Hdfc extends Base
     const EXTENSION     = FileStore\Format::XLSX;
     const FILE_TYPE     = FileStore\Type::HDFC_EMANDATE_DEBIT;
 
-    protected function createGatewayEntity(Payment\Entity $payment): Netbanking\Base\Entity
-    {
-        $paymentId = $payment->getId();
-
-        $gatewayPayment = new Netbanking\Base\Entity;
-
-        $gatewayPayment->setPaymentId($paymentId);
-
-        $gatewayPayment->setAction(GatewayAction::AUTHORIZE);
-
-        $gatewayPayment->setBank($payment->getBank());
-
-        $merchant = $payment->merchant;
-
-        if ($merchant->isTPVRequired() === true)
-        {
-            $gatewayPayment->setAccountNumber($payment->order->getAccountNumber());
-        }
-
-        $date = $date = Carbon::now(Timezone::IST)->format('d/m/Y H:m:s');
-
-        $attr = [
-            Netbanking\Base\Entity::CLIENT_CODE       => $this->getClientCode($payment),
-            Netbanking\Base\Entity::MERCHANT_CODE     => $payment->getMerchantId(),
-            Netbanking\Base\Entity::AMOUNT            => $payment->getAmount(),
-            Netbanking\Base\Entity::DATE              => $date,
-        ];
-
-        $gatewayPayment->fill($attr);
-
-        $this->repo->netbanking->saveOrFail($gatewayPayment);
-
-        return $gatewayPayment;
-    }
-
     protected function getClientCode(Payment\Entity $payment): string
     {
         $email = $payment->getEmail() ?: Payment\Entity::DUMMY_EMAIL;
@@ -96,5 +61,12 @@ class Hdfc extends Base
         }
 
         return $rows;
+    }
+
+    protected function getGatewayAttributes(Payment\Entity $payment): array
+    {
+        return [
+            Netbanking\Base\Entity::CLIENT_CODE => $this->getClientCode($payment),
+        ];
     }
 }

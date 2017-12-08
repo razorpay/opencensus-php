@@ -66,17 +66,15 @@ class Core extends Base\Core
      * - Amount fields
      * - TPV data
      *
-     * @param string          $id
+     * @param Entity          $order
      * @param Merchant\Entity $merchant
      *
      * @return array
      */
     public function getFormattedDataForCheckout(
-        string $id,
+        Entity $order,
         Merchant\Entity $merchant): array
     {
-        $order = $this->repo->order->findByPublicIdAndMerchant($id, $merchant);
-
         $data = [
             Entity::PARTIAL_PAYMENT => $order->isPartialPaymentAllowed(),
             Entity::AMOUNT          => $order->getAmount(),
@@ -89,6 +87,12 @@ class Core extends Base\Core
             $data += [
                 Entity::BANK           => $order->getBank(),
                 Entity::ACCOUNT_NUMBER => $order->getMaskedAccountNumber(),
+            ];
+        }
+        else if ($order->getBank() !== null)
+        {
+            $data += [
+                Entity::BANK           => $order->getBank(),
             ];
         }
 

@@ -15,7 +15,7 @@ class Validator extends Base\Validator
         'MerchantRefNo'         => 'required|alpha_num|size:14',
         'SuccessStaticFlag'     => 'required|in:N',
         'FailureStaticFlag'     => 'required|in:N',
-        'Date'                  => 'required',
+        'Date'                  => 'required|date_format:"d/m/Y H:i:s"',
         'DynamicUrl'            => 'required|url',
         'CheckSum'              => 'required',
         'ClientAccNum'          => 'sometimes|string|max:14',
@@ -23,7 +23,7 @@ class Validator extends Base\Validator
 
     protected static $verifyRules = array(
         'MerchantCode'          => 'required|alpha_num|max:12',
-        'Date'                  => 'required|',
+        'Date'                  => 'required|date_format:"d/m/Y H:i:s"',
         'MerchantRefNo'         => 'required|alpha_num|size:14',
         'TransactionId'         => 'required|in:XTXTV01',
         'FlgVerify'             => 'required|in:Y,V',

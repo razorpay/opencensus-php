@@ -113,6 +113,7 @@ class FirstDataGatewayTest extends TestCase
         // Another payment to test auto-refund
         $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
+
         $this->refundAuthorizedPayment($paymentId);
 
         $payment = $this->getLastEntity('payment', true);
@@ -281,7 +282,7 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals('first_data', $paymentRes['gateway']);
     }
 
-    public function testIciciDebitCardIsFiltered()
+    public function testIciciDebitCard()
     {
         $this->fixtures->create('terminal:shared_sharp_terminal');
 
@@ -300,8 +301,12 @@ class FirstDataGatewayTest extends TestCase
 
         $paymentRes = $this->getLastPayment(true);
 
+        $transRes = $this->getLastTransaction(true);
+
         // FirstData now should get selected
         $this->assertEquals('first_data', $paymentRes['gateway']);
+        $this->assertEquals($transRes['entity_id'], $paymentRes['id']);
+
 
         $payment['card']['number'] = '5109591717594888';
 
@@ -661,5 +666,17 @@ class FirstDataGatewayTest extends TestCase
         // The value is hardcoded in SoapWrapper,
         // it also makes sure that the first TransactionValues is picked if there are many
         $this->assertEquals('543210', $gatewayPayment['auth_code']);
+    }
+
+    public function testPaymentForMissingIin()
+    {
+        $iinCode = '466522';
+
+        $iin = $this->getEntityById('iin', $iinCode);
+        $this->assertArrayHasKey('error', $iin);
+
+        $this->payment['card']['number'] = $iinCode . '00000000000';
+
+        $this->doAuthPayment($this->payment);
     }
 }

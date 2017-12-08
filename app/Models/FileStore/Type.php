@@ -18,11 +18,15 @@ class Type
 
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
+    const BOB_NETBANKING_REFUND             = 'bob_netbanking_refund';
+
     const ICICI_NETBANKING_REFUND           = 'icici_netbanking_refund';
 
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
 
     const AXIS_NETBANKING_CLAIMS            = 'axis_netbanking_claims';
+
+    const AXIS_EMANDATE_DEBIT               = 'axis_emandate_debit';
 
     const FEDERAL_NETBANKING_REFUND         = 'federal_netbanking_refund';
 
@@ -101,8 +105,10 @@ class Type
             self::HDFC_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
+            self::AXIS_EMANDATE_DEBIT,
             self::FEDERAL_NETBANKING_REFUND,
             self::CORPORATION_NETBANKING_REFUND,
+            self::BOB_NETBANKING_REFUND,
             self::RBL_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_CLAIM,
@@ -178,9 +184,11 @@ class Type
         self::HDFC_NETBANKING_REFUND,
         self::HDFC_EMANDATE_REGISTER,
         self::HDFC_EMANDATE_DEBIT,
+        self::BOB_NETBANKING_REFUND,
         self::CORPORATION_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
+        self::AXIS_EMANDATE_DEBIT,
         self::FEDERAL_NETBANKING_REFUND,
         self::RBL_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_REFUND,
@@ -245,6 +253,10 @@ class Type
             self::FUND_TRANSFER_H2H,
             self::ICICI_EMI_FILE_SFTP,
             self::YES_EMI_FILE_SFTP,
+        ],
+
+        self::RECON_BUCKET_CONFIG => [
+            self::RECONCILIATION_BATCH_INPUT,
         ],
     ];
 

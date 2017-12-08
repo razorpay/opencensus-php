@@ -9,7 +9,7 @@ class ResponseCode
     public static $codes = array(
         0   => 'Successful transaction',
         1   => 'Invalid Action',
-        2   => 'Invalid Account ID/Secret Key',
+        2   => 'Payment processing failed due to error at bank or wallet gateway',
         3   => 'Invalid Reference No',
         4   => 'Invalid TransactionID/PaymentID',
         5   => 'Problem in retrieving transaction',
@@ -31,7 +31,7 @@ class ResponseCode
 
     public static $codeMap = array(
         1   => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
-        2   => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_SECRET,
+        2   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         3   => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_REFERENCE_NO,
         4   => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ID,
         5   => ErrorCode::GATEWAY_ERROR_PAYMENT_CANNOT_BE_RETRIEVED,

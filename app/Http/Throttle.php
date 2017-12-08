@@ -3,8 +3,10 @@
 namespace RZP\Http;
 
 use App;
+use Carbon\Carbon;
 use RZP\Http\Route;
 use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Trace\TraceCode;
 use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -14,6 +16,12 @@ use GrahamCampbell\Throttle\Facades\Throttle as ThrottleFacade;
 
 class Throttle
 {
+    protected $app;
+    protected $request;
+    protected $router;
+    protected $config;
+    protected $trace;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -38,7 +46,11 @@ class Throttle
         {
             $this->throttle($auth);
         }
-        catch (BaseException $e)
+        catch (ThrottleException $e)
+        {
+            throw $e;
+        }
+        catch (\Throwable $e)
         {
             $this->trace->traceException($e);
         }
@@ -61,6 +73,11 @@ class Throttle
                 'ip'    => $this->request->ip(),
                 'route' => $identifier,
             ];
+
+            if ($auth === Type::PRIVATE_AUTH)
+            {
+                $throttleData['ip'] = '1.1.1.1';
+            }
 
             $time = $this->config['time_interval'];
 
@@ -94,6 +111,18 @@ class Throttle
     {
         $route = $this->request->route()->getName();
 
+        $nykaaThrottleRoutes = [
+            'customer_create',
+            'customer_fetch_tokens'
+        ];
+
+        // Nykaa key id
+        if (($this->getKeyId() === 'zyRUD5exRM0CGk') and
+            (in_array($route, $nykaaThrottleRoutes, true) === true))
+        {
+            return false;
+        }
+
         return (in_array($route, Route::$throttledRoutes, true) === false);
     }
 
@@ -101,12 +130,19 @@ class Throttle
     {
         $routeName = $this->request->route()->getName();
 
-        $identifier = $mode;
+        $minute = Carbon::now(Timezone::IST)->minute;
+
+        $identifier = $mode . $routeName . ':' . $minute;
 
         switch ($auth)
         {
+            /**
+             * On Admin Auth, same route can be accessed via different apps
+             * Each app has a different password, we can use password for
+             * differentiating the requests from different apps
+             */
             case Type::ADMIN_AUTH:
-                $resource = $routeName . $this->request->header(BasicAuth::ADMIN_TOKEN_HEADER);
+                $resource = $this->request->getPassword();
                 break;
 
             /**
@@ -122,7 +158,7 @@ class Throttle
              * model for that
              */
             case Type::DIRECT_AUTH:
-                $resource = $routeName;
+                $resource = '';
                 break;
 
             case Type::DEVICE_AUTH:
@@ -135,7 +171,7 @@ class Throttle
              * against one dashboard instance
              */
             case Type::PROXY_AUTH:
-                $resource = $this->getKeyId();
+                $resource = $this->request->header(RequestHeader::X_DASHBOARD_USER_ID);
                 break;
 
             /**
@@ -148,7 +184,7 @@ class Throttle
              * checkout_public
              */
             case Type::PUBLIC_AUTH:
-                $resource = $this->request->route()->getName();
+                $resource = $this->getKeyId();
                 break;
         }
 

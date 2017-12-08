@@ -1,4 +1,4 @@
-Subscription is completed. Like a wow!
+Subscription is completed.
 
 --
 Team Razorpay

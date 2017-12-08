@@ -74,6 +74,11 @@ class Validator extends Base\Validator
      */
     public function validatePublicIpAddress(string $url)
     {
+        if (App::getFacadeRoot()->environment('testing') === true)
+        {
+            return true;
+        }
+
         $components = parse_url($url);
 
         $host = $components['host'];

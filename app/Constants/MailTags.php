@@ -21,6 +21,7 @@ class MailTags
 
     const CORPORATION_NETBANKING_REFUNDS_MAIL   = 'corporation_netbanking_refunds_mail';
     const HDFC_NETBANKING_REFUNDS_MAIL          = 'hdfc_netbanking_refunds_mail';
+    const BOB_NETBANKING_REFUNDS_MAIL           = 'bob_netbanking_refunds_mail';
     const AXIS_NETBANKING_REFUNDS_MAIL          = 'axis_netbanking_refunds_mail';
     const AIRTEL_MONEY_REFUNDS_MAIL             = 'airtel_money_refunds_mail';
     const ICICI_NETBANKING_REFUNDS_MAIL         = 'icici_netbanking_refunds_mail';
@@ -42,6 +43,8 @@ class MailTags
     const FAILED_TO_AUTHORIZED             = 'failed_to_authorized';
     const CARD_SAVING                      = 'card_saving';
 
+    const PAYOUT_SUCCESSFUL                = 'payout_successful';
+
     const INVOICE                          = 'invoice';
     const ECOD                             = 'ecod';
     const LINK                             = 'link';
@@ -58,8 +61,11 @@ class MailTags
     const HDFC_EMANDATE_REGISTER_MAIL      = 'hdfc_emandate_register_mail';
     const HDFC_EMANDATE_DEBIT_MAIL         = 'hdfc_emandate_debit_mail';
 
+    const AXIS_EMANDATE_DEBIT_MAIL         = 'axis_emandate_debit_mail';
+
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
+    const IRCTC_REFUND_REPORT              = 'irctc_refund_report';
     const AUTH_REMINDER                    = 'auth_reminder';
     const HOLIDAY_NOTIFICATION             = 'holiday_notification';
     const WEBHOOK                          = 'webhook';

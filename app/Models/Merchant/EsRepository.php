@@ -99,9 +99,7 @@ class EsRepository extends Base\EsRepository
 
     public function buildQueryForOrgId(array & $query, string $value)
     {
-        $filter = [Es::TERM => [Entity::ORG_ID => [Es::VALUE => $value]]];
-
-        $this->addFilter($query, $filter);
+        $this->addTermFilter($query, Entity::ORG_ID, $value);
     }
 
     public function buildQueryForAdmins(array & $query, array $value)

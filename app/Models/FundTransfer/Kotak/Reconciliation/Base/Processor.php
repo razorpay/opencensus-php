@@ -114,49 +114,48 @@ class Processor extends Base\Core
 
     protected function startReconciliation($data): array
     {
-        $this->repo->beginTransaction();
-
-        try
+        $summary = $this->repo->transactionOnLiveAndTest(function() use ($data)
         {
-            foreach ($data as $row)
+            try
             {
-                $entity = $this->reconcileEntity($row);
-
-                if ($entity === null)
+                foreach ($data as $row)
                 {
-                    $this->unprocessedIds[] = $row[Kotak\Headings::PAYMENT_REF_NO] ?? 'null';
+                    $entity = $this->reconcileEntity($row);
+
+                    if ($entity === null)
+                    {
+                        $this->unprocessedIds[] = $row[Kotak\Headings::PAYMENT_REF_NO] ?? 'null';
+                    }
+                    else
+                    {
+                        $this->allEntities[] = $entity;
+
+                        $this->updateBatchFundTransferStats($entity);
+                    }
                 }
-                else
-                {
-                    $this->allEntities[] = $entity;
 
-                    $this->updateBatchFundTransferStats($entity);
+                // Update batch stats post reconciliations
+                foreach ($this->batchFundTransferStats as $batchId => $attrs)
+                {
+                    $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
+                    $batchEntity->setProcessedCount($attrs['processed_count']);
+                    $batchEntity->setProcessedAmount($attrs['processed_amount']);
+                    $batchEntity->saveOrFail();
                 }
             }
-
-            // Update batch stats post reconciliations
-            foreach ($this->batchFundTransferStats as $batchId => $attrs)
+            catch (\Exception $e)
             {
-                $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
-                $batchEntity->setProcessedCount($attrs['processed_count']);
-                $batchEntity->setProcessedAmount($attrs['processed_amount']);
-                $batchEntity->saveOrFail();
+                (new SlackNotification)->failure('setl_reconciliation', $e);
+
+                throw $e;
             }
 
-            $this->repo->commit();
-        }
-        catch (\Exception $e)
-        {
-            $this->repo->rollback();
+            $summary = $this->getSummary();
 
-            (new SlackNotification)->failure('setl_reconciliation', $e);
+            (new SlackNotification)->success('setl_reconciliation', $summary);
 
-            throw $e;
-        }
-
-        $summary = $this->getSummary();
-
-        (new SlackNotification)->success('setl_reconciliation', $summary);
+            return $summary;
+        });
 
         return $summary;
     }
@@ -234,19 +233,26 @@ class Processor extends Base\Core
         $failureEntityIds = $successEntityIds = $allEntityIds = [];
         $failureEntities = new Base\PublicCollection;
 
+        $settlementsCount = 0;
+
         foreach ($this->allEntities as $entity)
         {
             $entityId = $entity->getId();
 
             $allEntityIds[] = $entityId;
 
-            if ($entity->isStatusFailed())
+            if ($entity->isStatusFailed() === true)
             {
                 $failureEntities[] = $entity;
             }
             else
             {
                 $successEntityIds[] = $entityId;
+            }
+
+            if ($entity->getEntityName() === EntityConstants::SETTLEMENT)
+            {
+                $settlementsCount += 1;
             }
         }
 
@@ -272,58 +278,75 @@ class Processor extends Base\Core
         // settlement, we do this
         $failureEntityIds = array_diff($failureEntityIds, $successEntityIds);
 
-        $failureAmount = 0;
-
-        foreach ($failureEntities as $entity)
-        {
-            if (in_array($entity->getId(), $failureEntityIds, true) === true)
-            {
-                $failureAmount += $entity->getAmount();
-            }
-        }
-
-        $failureAmount = $failureAmount / 100;
-
-        $totalCount = count($allEntityIds);
         $failureCount = count($failureEntityIds);
 
         $summary = [
-            'total_count'               => $totalCount,
-            'unprocessed_ids'           => implode(', ', $this->unprocessedIds),
-            'failures_count'            => $failureCount,
-            'failure_amount (in Rs.)'   => $failureAmount,
-            'failure ids'               => $failureEntityIds,
+            'total_count'                   => count($allEntityIds),
+            'unprocessed_ids'               => implode(', ', $this->unprocessedIds),
+            'failures_count'                => $failureCount,
+            'settlement_failure_amount'     => 0,
         ];
 
+        $settlementsFailureIds = [];
+
+        foreach ($failureEntities as $entity)
+        {
+            $entityName = $entity->getEntityName();
+
+            if ($entityName === EntityConstants::SETTLEMENT)
+            {
+                $settlementsFailureIds[] = $entity->getId();
+
+                $summary['settlement_failure_amount'] += $entity->getAmount();
+            }
+
+            $key = $entityName. '_failure_count';
+
+            // Adds keys settlement_failure_count, payout_failure_count, refund_failure_count to summary
+            $summary[$key] = ($summary[$key] ?? 0) + 1;
+        }
+
+        // If any of the entities were marked failed
         if ($failureCount > 0)
         {
             $this->trace->error(
                 TraceCode::SETTLEMENT_RECONCILIATION_FAILED, $summary);
-
-            if ($totalCount === $failureCount)
-            {
-                $failureRemark = 'All settlements failed.';
-            }
-            else
-            {
-                $failureRemark = $failureCount . ' settlement(s) failed.';
-            }
-
-            if ($failureCount > 5)
-            {
-                $failureEntityIds = array_slice($failureEntityIds, 0, 5, true);
-
-                $failureIdMsg = ' A few failed settlement IDs: ';
-            }
-            else
-            {
-                $failureIdMsg = ' Settlement IDs: ';
-            }
-
-            $summary['failure remarks'] = $failureRemark;
-
-            $summary['failure ids'] = $failureIdMsg . implode(', ', $failureEntityIds);
         }
+
+        // if no settlement entities were marked failed
+        if (isset($summary['settlement_failure_count']) === false)
+        {
+            return $summary;
+        }
+
+        //
+        // Get slack summary for settlement failures
+        //
+        $settlementsFailureCount = $summary['settlement_failure_count'];
+
+        if ($settlementsCount === $settlementsFailureCount)
+        {
+            $failureRemark = 'All settlements failed.';
+        }
+        else
+        {
+            $failureRemark = $settlementsFailureCount . ' settlement(s) failed.';
+        }
+
+        if ($settlementsFailureCount > 5)
+        {
+            $settlementsFailureIds = array_slice($settlementsFailureIds, 0, 5, true);
+
+            $failureIdMsg = ' A few failed settlement IDs: ';
+        }
+        else
+        {
+            $failureIdMsg = ' Settlement IDs: ';
+        }
+
+        $summary['settlement_failure_remarks'] = $failureRemark;
+
+        $summary['settlement_failure_ids'] = $failureIdMsg . implode(', ', $settlementsFailureIds);
 
         return $summary;
     }
@@ -341,11 +364,6 @@ class Processor extends Base\Core
         $failureCount = $response['failures_count'];
 
         $msg .= 'Failure Count: ' . $failureCount . PHP_EOL;
-
-        if ($failureCount !== 0)
-        {
-            $msg .= $response['failure ids'];
-        }
 
         $data['date'] = $this->date;
         $data['body'] = $msg;

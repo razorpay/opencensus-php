@@ -10,7 +10,6 @@ use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
-use RZP\Exception\GatewayFileException;
 use RZP\Mail\Gateway\EMandate\Base as RegisterMail;
 use RZP\Models\Gateway\File\Processor\EMandate\Base;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as Headings;

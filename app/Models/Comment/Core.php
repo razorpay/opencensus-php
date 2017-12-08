@@ -1,0 +1,47 @@
+<?php
+
+namespace RZP\Models\Comment;
+
+use RZP\Models\Base;
+use RZP\Models\Admin\Admin;
+use RZP\Models\Workflow\Action;
+
+class Core extends Base\Core
+{
+    /**
+     * @param array         $input
+     * @param Action\Entity $action
+     * @param Admin\Entity  $admin
+     *
+     * @return Entity $comment
+     */
+    public function createForWorkflowAction(
+        array $input,
+        Action\Entity $action,
+        Admin\Entity $admin): Entity
+    {
+        $comment = $this->create($input);
+
+        $comment->admin()->associate($admin);
+
+        $comment->entity()->associate($action);
+
+        $this->repo->saveOrFail($comment);
+
+        return $comment;
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return Entity
+     */
+    protected function create(array $input): Entity
+    {
+        $comment = new Entity;
+
+        $comment->build($input);
+
+        return $comment;
+    }
+}

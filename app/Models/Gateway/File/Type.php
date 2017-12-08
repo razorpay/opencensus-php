@@ -12,32 +12,38 @@ class Type
     const EMANDATE_DEBIT    = 'emandate_debit';
 
     // Sub types for gateway_file entity
-    const TPV     = 'tpv';
-    const NON_TPV = 'non_tpv';
+    const TPV           = 'tpv';
+    const NON_TPV       = 'non_tpv';
+    const CORPORATE     = 'corporate';
+    const NON_CORPORATE = 'non_corporate';
 
-    const VALID_TYPES = [
-        self::EMI,
-        self::CLAIM,
-        self::REFUND,
-        self::COMBINED,
-        self::EMANDATE_REGISTER,
-        self::EMANDATE_DEBIT,
+    const TARGET_SUBTYPES = [
+        self::COMBINED => [
+            Constants::KOTAK => [self::TPV, self::NON_TPV],
+            Constants::AXIS  => [self::CORPORATE, self::NON_CORPORATE],
+        ],
     ];
 
-    const VALID_SUB_TYPES = [
-        self::TPV,
-        self::NON_TPV,
-    ];
-
-    public static function isValidType(string $type)
+    public static function isValidType(string $type): bool
     {
         $key = __CLASS__ . '::' . strtoupper($type);
 
         return ((defined($key) === true) and (constant($key) === $type));
     }
 
-    public static function isValidSubType(string $subType)
+    public static function isValidSubTypeForTargetAndType(
+        string $target,
+        string $type,
+        string $subType = null): bool
     {
-        return (in_array($subType, self::VALID_SUB_TYPES, true) === true);
+        if ((isset(self::TARGET_SUBTYPES[$type]) === true) and
+            (isset(self::TARGET_SUBTYPES[$type][$target]) === true))
+        {
+            $validSubTypesForTarget = self::TARGET_SUBTYPES[$type][$target];
+
+            return (in_array($subType, $validSubTypesForTarget, true) === true);
+        }
+
+        return (empty($subType) === true) ? true : false;
     }
 }

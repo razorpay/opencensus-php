@@ -132,6 +132,9 @@ class Entity extends Base\PublicEntity
         self::GLOBAL_CARD_ID    => null,
         self::VAULT             => null,
         self::VAULT_TOKEN       => null,
+        self::ISSUER            => null,
+        self::COUNTRY           => null,
+        self::TRIVIA            => null,
     ];
 
     public function merchant()
@@ -421,11 +424,14 @@ class Entity extends Base\PublicEntity
 
     public function setPublicIinAttribute(array & $array)
     {
-        // Allowing only for akbar travels and shared merchant account
+        // Allowing only for akbar travels, irctc merchants and shared merchant account
         $allowedMerchantIds = [
             '62UtF084z3H6RT',
             '6o1ohA0HNz3B2S',
             '6z1Uc42LAxBGpl',
+            '8ST00QgEPT14cE', // IRCTC WEB
+            '8YPFnW5UOM91H7', // IRCTC Mobile
+            '8byazTDARv4Io0', // IRCTC Air Ticketing
             Merchant\Account::TEST_ACCOUNT,
             Merchant\Account::SHARED_ACCOUNT,
         ];

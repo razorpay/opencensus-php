@@ -59,6 +59,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT                          = 'Payout cannot be created on a payment that has not been settled to your account';
     const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_CAPTURED               = 'The payout amount provided is greater than the payment amount captured';
     const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING                = 'The payout amount provided is greater than the payout amount pending for the payment';
+    const BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT               = 'Payouts of method fund_transfer cannot be created on Credit Card payments';
     const BAD_REQUEST_PAYMENT_FULLY_PAIDOUT                                     = 'The payment has been fully paidout already';
     const BAD_REQUEST_GATEWAY_TOKEN_EMPTY                                       = 'Invalid token has been passed for recurring payment';
     const BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING                           = 'Invalid token has been passed for recurring payment';
@@ -225,6 +226,15 @@ class PublicErrorDescription
     const BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH                 = 'Invalid length for descriptor.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE                               = 'A virtual account with this descriptor is unavailable at this time.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE                    = 'Descriptor field cannot be used as merchant handle is not set for your account.';
+
+    const BAD_REQUEST_ACCOUNT_CLOSED                                            = 'Bank Account is closed.';
+    const BAD_REQUEST_ACCOUNT_NUMBER_MISMATCH                                   = 'Bank Account Number does not match.';
+    const BAD_REQUEST_ACCOUNT_BLOCKED                                           = 'Bank Account is blocked.';
+    const BAD_REQUEST_ACCOUNT_DORMANT                                           = 'Bank account is dormant.';
+    const BAD_REQUEST_NO_DR_ALLOWED                                             = 'Debit is not allowed on the bank account.';
+    const BAD_REQUEST_TRANSACTION_AMOUT_GREATER_THAN_REGISTERED_AMOUNT          = 'Transaction amount exceeds the allowed amount.';
+    const BAD_REQUEST_FREQUENCY_DEBIT_LIMIT_EXCEEDED                            = 'The frequency of debit on the account has been exceeded.';
+
     const BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED                                = 'The merchant has already been activated';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED                                    = 'The merchant has not been activated. This action can only be taken for activated merchants';
     const BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION                      = 'The merchant must be unarchived before being activated.';
@@ -353,6 +363,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_ACCOUNT_NUMBER_REQUIRED_FOR_MERCHANT                = 'Account number is mandatory for this merchant';
     const BAD_REQUEST_ORDER_ACCOUNT_NUMBER_INCORRECT_LENGTH                     = 'Account number is of incorrect length for this bank.';
     const BAD_REQUEST_ORDER_BANK_INVALID                                        = 'Bank code provided is invalid.';
+    const BAD_REQUEST_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK                    = 'Bank code provided does not match order bank.';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                   = 'Customer already exists for the merchant';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                 = 'Customer contact number is not set';
@@ -443,7 +454,6 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE                       = 'You cannot enable/disable features in live mode';
     const BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED                         = 'The given feature is already assigned to the merchant';
     const BAD_REQUEST_MERCHANT_FEATURE_ONBOARDING_STATUS_INVALID                = 'The product onboarding status provided is invalid';
-    const BAD_REQUEST_MERCHANT_FEATURE_NOT_ASSIGNED                             = 'The merchant feature has not been assigned';
     const BAD_REQUEST_MERCHANT_FEATURE_ACTIVATION_FORM_ALREADY_SUBMITTED        = 'The product activation form is already submitted.';
 
     const BAD_REQUEST_INVALID_ADMIN_EMAIL                                       = 'Email provided is not a valid email';
@@ -517,7 +527,6 @@ class PublicErrorDescription
     const BAD_REQUEST_CHECK_NOT_REQUIRED_IN_CURRENT_LEVEL                       = 'No check required from checker roles in the current workflow action level';
     const BAD_REQUEST_ACTION_INVALID_TYPE                                       = 'The given action type is not valid';
     const BAD_REQUEST_ACTION_INVALID_METHOD                                     = 'The given action method is not valid';
-    const BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE                             = 'Action State is not valid';
     const BAD_REQUEST_WORKFLOW_INVALID_CHECKER                                  = 'The checker review is invalid for this action';
     const BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND                                 = 'The requested action is not found';
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSE_NOT_AUTHORIZED                      = 'Workflow Action can only be closed by maker.';
@@ -536,6 +545,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES                                 = 'Workflow action is not in any open state';
     const BAD_REQUEST_WORKFLOW_STEPS_CANNOT_BE_EDITED                           = 'Workflow steps cannot be edited';
     const BAD_REQUEST_WORKFLOW_DUTY_TYPE_INVALID                                = 'Workflow requests listing duty/type params are invalid';
+    const BAD_REQUEST_INVALID_STATE                                             = 'Invalid state passed in query parameters';
 
     const BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED                                = 'This service can only be accessed by superadmins';
 
@@ -555,7 +565,11 @@ class PublicErrorDescription
 
     const BAD_REQUEST_ADMIN_TOKEN_MISMATCH                                      = 'Admin Token Mismatch';
 
+    const BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION                             = 'Payment is pending authorization from approver.';
+
     const BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE                                = 'This gateway file generation attempt is not retriable';
+    const BAD_REQUEST_GATEWAY_FILE_ANOTHER_OPERATION_IN_PROGRESS                = 'Another operation is in progress on the gateway_file entity';
+    const BAD_REQUEST_MORPHED_ENTITY_INVALID                                    = 'Invalid entity passed in query parameters';
 
     const SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND                               = 'No data present for gateway file processing in the given time period';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE                       = 'Error occurred trying to create file';

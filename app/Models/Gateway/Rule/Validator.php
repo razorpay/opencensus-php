@@ -19,32 +19,33 @@ class Validator extends Base\Validator
         Entity::GATEWAY          => 'required_if:type,sorter|string|max:50|custom',
         Entity::MERCHANT_ID      => 'required|alpha_num|size:14',
         Entity::TYPE             => 'required|in:sorter,filter',
-        Entity::GROUP            => 'sometimes|filled|string|max:50',
+        Entity::GROUP            => 'filled|string|max:50',
         Entity::FILTER_TYPE      => 'required_unless:type,sorter|required_only_if:type,filter|in:select,reject',
         Entity::LOAD             => 'required_unless:type,filter|required_only_if:type,sorter|numeric|between:0,100',
-        Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string|max:30',
-        Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string',
-        Entity::INTERNATIONAL    => 'sometimes|filled|boolean',
+        Entity::GATEWAY_ACQUIRER => 'sometimes_if:type,filter|string|max:30',
+        Entity::INTERNATIONAL    => 'filled|boolean',
         Entity::NETWORK_CATEGORY => 'sometimes_if:type,filter|string|max:30',
         Entity::CATEGORY2        => 'sometimes_if:type,filter|string|max:30|custom',
         Entity::SHARED_TERMINAL  => 'sometimes_if:type,filter|boolean',
         Entity::METHOD           => 'required|string|max:30',
-        Entity::METHOD_TYPE      => 'sometimes|filled|string|max:10',
-        Entity::ISSUER           => 'sometimes|filled|string',
-        Entity::NETWORK          => 'sometimes|filled|string|max:10',
-        Entity::MIN_AMOUNT       => 'sometimes|filled|integer|min:0',
-        Entity::MAX_AMOUNT       => 'sometimes|filled|integer|min:1',
+        Entity::METHOD_TYPE      => 'filled|string|max:10',
+        Entity::ISSUER           => 'filled|string',
+        Entity::NETWORK          => 'filled|string|max:10',
+        Entity::MIN_AMOUNT       => 'filled|integer|min:0',
+        Entity::MAX_AMOUNT       => 'filled|integer|min:1',
         Entity::EMI_DURATION     => 'required_only_if:method,emi|integer|in:3,6,9,12,18,24',
         Entity::EMI_SUBVENTION   => 'required_only_if:method,emi|in:customer,merchant',
-        Entity::IINS             => 'sometimes|filled|array',
-        Entity::CURRENCY         => 'sometimes|filled|in:INR,USD'
+        Entity::IINS             => 'filled|array',
+        Entity::CURRENCY         => 'filled|in:INR,USD',
+        Entity::COMMENTS         => 'filled|string|max:255',
     ];
 
     protected static $editRules = [
-        Entity::GROUP       => 'sometimes|filled|string|max:50',
-        Entity::FILTER_TYPE => 'sometimes|filled|in:select,reject',
-        Entity::LOAD        => 'sometimes|filled|numeric|between:0,100',
-        Entity::IINS        => 'sometimes|filled|array',
+        Entity::GROUP       => 'filled|string|max:50',
+        Entity::FILTER_TYPE => 'filled|in:select,reject',
+        Entity::LOAD        => 'filled|numeric|between:0,100',
+        Entity::IINS        => 'filled|array',
+        Entity::COMMENTS    => 'filled|string|max:255',
     ];
 
     protected static $createValidators = [
@@ -188,7 +189,8 @@ class Validator extends Base\Validator
                 if (empty($input[Entity::ISSUER]) === false)
                 {
                     throw new Exception\BadRequestValidationFailureException(
-                        'Issuer ' . $issuer . ' for method ' . $method . ' is not supported');
+                        'Issuer ' . $input[Entity::ISSUER] .
+                        ' for method ' . $method . ' is not supported');
                 }
         }
     }

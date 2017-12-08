@@ -2,10 +2,7 @@
 
 namespace RZP\Models\Workflow\Action\State;
 
-use RZP\Exception;
 use RZP\Models\Workflow\Base;
-use RZP\Models\Workflow\Action;
-use RZP\Models\Workflow\Action\Checker;
 use RZP\Models\Workflow\Action\State;
 
 class Core extends Base\Core
