@@ -4,11 +4,14 @@ namespace RZP\Models\VirtualAccount;
 
 use Config;
 use Lib\CRC16;
+use Mailgun\Api\Tag;
 use RZP\Base\Luhn;
 use RZP\Exception;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
-use RZP\Models\BharatQr;
+use RZP\Models\BharatQr\Tags;
+use RZP\Models\BharatQr\Lengths;
+use RZP\Models\BharatQr\Constants;
 use RZP\Models\Card\NetworkName;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
@@ -205,27 +208,27 @@ class Provider
 
         $masterCardIdentifier =  $this->generateBharatQrMerchantIdentifier(NetworkName::MC);
 
-        $visaTlv = BharatQr\Constants::VISA_TAG . strlen($visaIdentifier) . $visaIdentifier;
+        $visaTlv = Tags::VISA . strlen($visaIdentifier) . $visaIdentifier;
 
-        $masterCardTlv = BharatQr\Constants::MASTERCARD_TAG . strlen($masterCardIdentifier) . $masterCardIdentifier;
+        $masterCardTlv = Tags::MASTERCARD . strlen($masterCardIdentifier) . $masterCardIdentifier;
 
         $tagArray = [
-            BharatQr\Constants::VERSION_TLV,
+            Tags::VERSION . Lengths::VERSION . Constants::VERSION,
             $visaTlv,
             $masterCardTlv,
-            BharatQr\Constants::MERCHANT_CATEGORY_TLV,
-            BharatQr\Constants::CURRENCY_CODE_TLV,
+            Tags::MERCHANT_CATEGORY . Lengths::MERCHANT_CATEGORY . Constants::MERCHANT_CATEGORY,
+            Tags::CURRENCY_CODE . Lengths::CURRENCY_CODE . Constants::CURRENCY_CODE,
             $this->getBharatQrAmountTlv($qrCode),
-            BharatQr\Constants::COUNTRY_CODE_TLV,
-            BharatQr\Constants::MERCHANT_NAME_TLV,
-            BharatQr\Constants::MERCHANT_CITY_TLV,
+            Tags::COUNTRY_CODE . Lengths::COUNTRY_CODE . Constants::COUNTRY_CODE,
+            Tags::MERCHANT_NAME . Lengths::MERCHANT_NAME . Constants::MERCHANT_NAME,
+            Tags::MERCHANT_CITY . Lengths::MERCHANT_CITY . Constants::MERCHANT_CITY,
             $this->getBharatQrAdditionalDetailTlv($qrCode),
         ];
 
         $qrString =  implode('', $tagArray);
 
         // This is the CRC TL
-        $qrString .= BharatQr\Constants::CRC_TL;
+        $qrString .= Tags::CRC . Lengths::CRC;
 
         $crc = (new CRC16)->calculateCrc($qrString);
 
@@ -236,11 +239,11 @@ class Provider
 
     protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode)
     {
-        $idTlv = BharatQr\Constants::ID_TL . $qrCode->getId();
+        $idTlv = Tags::ID . Lengths::ID . $qrCode->getId();
 
         $additionalDetailsString = $idTlv;
 
-        return BharatQr\Constants::ADDITIONAL_DETAIL_TAG . strlen($additionalDetailsString) . $additionalDetailsString;
+        return Tags::ADDITIONAL_DETAIL . strlen($additionalDetailsString) . $additionalDetailsString;
     }
 
     protected function getBharatQrAmountTlv(QrCode\Entity $qrCode)
@@ -252,7 +255,7 @@ class Provider
             return '';
         }
 
-        return BharatQr\Constants::AMOUNT_TAG . str_pad(strlen($amount), 2, '0', STR_PAD_LEFT) . $amount;
+        return Tags::AMOUNT . str_pad(strlen($amount), 2, '0', STR_PAD_LEFT) . $amount;
     }
 
     /**

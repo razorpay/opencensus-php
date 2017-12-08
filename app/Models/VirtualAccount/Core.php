@@ -88,6 +88,10 @@ class Core extends Base\Core
                 break;
 
             default:
+                // We don't throw exception here
+                // because receiver is already validated
+                // and we don't want to put any validation
+                // for receiver being enabled by default
                 return;
         }
     }
