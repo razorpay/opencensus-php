@@ -4,15 +4,17 @@ namespace RZP\Gateway\Aeps\Icici;
 
 use Cache;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use RZP\Exception;
+
 use RZP\Constants\Mode;
-use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
-use RZP\Models\Bank\IFSC;
-use RZP\Models\Terminal;
+use RZP\Exception;
 use RZP\Gateway\Aeps\Base;
+use RZP\Gateway\Base\Action;
+use RZP\Models\Bank\IFSC;
+use RZP\Models\Payment;
+use RZP\Models\Terminal;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
@@ -129,66 +131,79 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $iv = $this->getIV();
-
-        $encryptor = (new Encryptor(2, $iv));
-
-        $sKey = $encryptor->generateSkey();
-
-        $data = [
-            'account-provider'    => '1',
-            'mobile'              => '9999999999', // TDOO Read from config
-            'payer-va'            => 'razorpay1@icici', // TDOO Read from config
-            'amount'              => '100.00',  // TDOO Read from input
-            'note'                => 'test',
-            'device-id'           => '107824107824107824107824',
-            'seq-no'              => 'ef1e92b4a01d4618a0eca5fdecc37ff23f3', // TODO generate random no
-            'channel-code'        => 'EAZYPAY',
-            'profile-id'          => '723',
-            'account-type'        => 'Saving',
-            'ifsc'                => '',
-            'account-number'      => '',
-            'mpin'                => '',
-            'pre-approved'        => 'A',
-            'use-default-acc'     => 'D',
-            'default-debit'       => 'N',
-            'default-credit'      => 'N',
-            'global-address-type' => 'AADHAR',
-            'payee-aadhar'        => '123456789012', // TODO read form gateway input
-            'payee-iin'           => '',
-            'payee-name'          => '',
-            'mcc'                 => '5411',
-            'merchant-type'       => 'ENTITY',
-        ];
-
-        $data = $encryptor->encryptUsingSessionKey($data, $sKey);
-
-        $encryptedKey = $encryptor($sKey, $this->mode, 'refund');
-
-        $contents = [
-            'requestId'            => '',
-            'service'              => 'UPI',
-            'encryptedKey'         => $encryptedKey,
-            'oaepHashingAlgorithm' => 'NONE',
-            'iv'                   => $iv,
-            'encryptedData'        => $data,
-            'clientInfo'           => '',
-            'optionalParam'        => '',
-        ];
-
-        $request = [
-            'url'     =>  Url::TEST_REFUND_URL,
-            'method'  => 'POST',
-            'content' => json_encode($contents),
-        ];
+        $request = $this->getRefundRequest($input);
 
         $response = $this->sendGatewayRequest($request);
+        sd($response);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [$response->body]);
 
         //TODO do stuff after this is done
+    }
+
+    protected function getRefundRequest(array $input): array
+    {
+        $iv = $this->getIV();
+
+        $encryptor = (new Encryptor(2, $iv));
+
+        $sKey = $encryptor->generateSkey();
+
+        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        $data = [
+            RequestConstants::REFUND_DATA_ACCOUNT_PROVIDER    => '1',
+            RequestConstants::REFUND_DATA_MOBILE              => $this->config['payer_mobile'],
+            RequestConstants::REFUND_DATA_PAYER_VA            => $this->config['payer_vpa'],
+            RequestConstants::REFUND_DATA_AMOUNT              => $input['payment']['amount'],
+            RequestConstants::REFUND_DATA_NOTE                => 'test',
+            RequestConstants::REFUND_DATA_DEVICE_ID           => $this->config['device_id'],
+            RequestConstants::REFUND_DATA_SEQ_NO              => 'ef1e92b4a01d4618a0eca5fdecc37ff23f3',
+            RequestConstants::REFUND_DATA_CHANNEL_CODE        => $this->config['channel_code'],
+            RequestConstants::REFUND_DATA_PROFILE_ID          => $this->config['profile_id'],
+            RequestConstants::REFUND_DATA_ACCOUNT_TYPE        => 'Saving',
+            RequestConstants::REFUND_DATA_IFSC                => '',
+            RequestConstants::REFUND_DATA_ACCOUNT_NUMBER      => '',
+            RequestConstants::REFUND_DATA_MPIN                => '',
+            RequestConstants::REFUND_DATA_PRE_APPROVED        => 'A',
+            RequestConstants::REFUND_DATA_USE_DEFAULT_ACC     => 'D',
+            RequestConstants::REFUND_DATA_DEFAULT_DEBIT       => 'N',
+            RequestConstants::REFUND_DATA_DEFAULT_CREDIT      => 'N',
+            RequestConstants::REFUND_DATA_GLOBAL_ADDRESS_TYPE => 'AADHAR',
+            RequestConstants::REFUND_DATA_PAYEE_AADHAR        => $gatewayEntity[Base\Entity::AADHAAR_NUMBER]
+            RequestConstants::REFUND_DATA_PAYEE_IIN           => '',
+            RequestConstants::REFUND_DATA_PAYEE_NAME          => '',
+            RequestConstants::REFUND_DATA_MCC                 => '5411',
+            RequestConstants::REFUND_DATA_MERCHANT_TYPE       => 'ENTITY',
+        ];
+
+        $data = $encryptor->encryptUsingSessionKey($data, $sKey);
+
+        $encryptedKey = $encryptor->encryptSessionKey($sKey, $this->mode, 'refund');
+
+        $contents = [
+            RequestConstants::REFUND_REQUEST_REQUESTID            => '',
+            RequestConstants::REFUND_REQUEST_SERVICE              => 'UPI',
+            RequestConstants::REFUND_REQUEST_ENCRYPTEDKEY         => $encryptedKey,
+            RequestConstants::REFUND_REQUEST_OAEPHASHINGALGORITHM => 'NONE',
+            RequestConstants::REFUND_REQUEST_IV                   => $iv,
+            RequestConstants::REFUND_REQUEST_ENCRYPTEDDATA        => $data,
+            RequestConstants::REFUND_REQUEST_CLIENTINFO           => '',
+            RequestConstants::REFUND_REQUEST_OPTIONALPARAM        => '',
+        ];
+
+        $request = [
+            'url'     => ($this->mode === Mode::TEST ? Url::TEST_REFUND_URL : Url::LIVE_REFUND_URL),
+            'method'  => 'POST',
+            'content' => json_encode($contents),
+            'headers' => [
+                RequestConstants::REFUND_REQUEST_API_KEY => $this->config['refund_api_key']
+            ]
+        ];
+
+        return $request;
     }
 
     protected function getIV()
@@ -348,7 +363,10 @@ class Gateway extends Base\Gateway
 
         $date = Carbon::now(Timezone::IST)->format('Y-m-d\TH:i:s');
 
-        $extraBlock = '001344' . $input['aadhaar']['session_key'] . '002008' . $input['aadhaar']['cert_expiry'] . '003064' . $input['aadhaar']['hmac'];
+        $extraBlock = '001344'
+                    . $input['aadhaar']['session_key']
+                    . '002008' . $input['aadhaar']['cert_expiry']
+                    . '003064' . $input['aadhaar']['hmac'];
 
         $fpInfo = '001009nnnyFMRnn008001X401019' . $date . '402001F403001Y404006607580412008' . $terminalId;
 
