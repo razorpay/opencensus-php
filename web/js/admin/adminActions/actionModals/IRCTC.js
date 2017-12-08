@@ -7,12 +7,15 @@ import { notifyDone, closeModal } from 'common/modal';
 import { adminFetch } from 'util/fetch';
 
 IRCTC.title = 'IRCTC';
-// TODO : need to change permission for this.
-IRCTC.permission = 'to_be_added';
 export default function IRCTC() {
   return (
     <Form class="full-span full-elements" style={{ minHeight: '300px' }}>
-      <DateField label="Date" name="on" value={new Date()} />
+      <DateField
+        label="Date"
+        name="on"
+        value={new Date()}
+        format="YYYY-MM-DD"
+      />
       <Field label="Merchant ID" name="merchant_id" />
       <Field label="Email" name="email" type="email" />
       <SelectMode />
