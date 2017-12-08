@@ -134,18 +134,17 @@ class Gateway extends Base\Gateway
         $request = $this->getRefundRequest($input);
 
         $response = $this->sendGatewayRequest($request);
-        sd($response);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [$response->body]);
-
+        sd($response->body);
         //TODO do stuff after this is done
     }
 
     protected function getRefundRequest(array $input): array
     {
-        $iv = $this->getIV();
+        $iv = $this->getIv();
 
         $encryptor = (new Encryptor(2, $iv));
 
@@ -153,14 +152,16 @@ class Gateway extends Base\Gateway
 
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
+        $amount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+
         $data = [
             RequestConstants::REFUND_DATA_ACCOUNT_PROVIDER    => '1',
             RequestConstants::REFUND_DATA_MOBILE              => $this->config['payer_mobile'],
             RequestConstants::REFUND_DATA_PAYER_VA            => $this->config['payer_vpa'],
-            RequestConstants::REFUND_DATA_AMOUNT              => $input['payment']['amount'],
+            RequestConstants::REFUND_DATA_AMOUNT              => $amount,
             RequestConstants::REFUND_DATA_NOTE                => 'test',
             RequestConstants::REFUND_DATA_DEVICE_ID           => $this->config['device_id'],
-            RequestConstants::REFUND_DATA_SEQ_NO              => 'ef1e92b4a01d4618a0eca5fdecc37ff23f3',
+            RequestConstants::REFUND_DATA_SEQ_NO              => upi_uuid(),
             RequestConstants::REFUND_DATA_CHANNEL_CODE        => $this->config['channel_code'],
             RequestConstants::REFUND_DATA_PROFILE_ID          => $this->config['profile_id'],
             RequestConstants::REFUND_DATA_ACCOUNT_TYPE        => 'Saving',
@@ -172,32 +173,45 @@ class Gateway extends Base\Gateway
             RequestConstants::REFUND_DATA_DEFAULT_DEBIT       => 'N',
             RequestConstants::REFUND_DATA_DEFAULT_CREDIT      => 'N',
             RequestConstants::REFUND_DATA_GLOBAL_ADDRESS_TYPE => 'AADHAR',
-            RequestConstants::REFUND_DATA_PAYEE_AADHAR        => $gatewayEntity[Base\Entity::AADHAAR_NUMBER]
+            RequestConstants::REFUND_DATA_PAYEE_AADHAR        => $gatewayEntity[Base\Entity::AADHAAR_NUMBER],
             RequestConstants::REFUND_DATA_PAYEE_IIN           => '',
             RequestConstants::REFUND_DATA_PAYEE_NAME          => '',
             RequestConstants::REFUND_DATA_MCC                 => '5411',
             RequestConstants::REFUND_DATA_MERCHANT_TYPE       => 'ENTITY',
         ];
 
-        $data = $encryptor->encryptUsingSessionKey($data, $sKey);
+        $encryptedData = $encryptor->encryptUsingSessionKey(http_build_query($data), $sKey);
 
         $encryptedKey = $encryptor->encryptSessionKey($sKey, $this->mode, 'refund');
 
-        $contents = [
+        $content = [
             RequestConstants::REFUND_REQUEST_REQUESTID            => '',
             RequestConstants::REFUND_REQUEST_SERVICE              => 'UPI',
             RequestConstants::REFUND_REQUEST_ENCRYPTEDKEY         => $encryptedKey,
             RequestConstants::REFUND_REQUEST_OAEPHASHINGALGORITHM => 'NONE',
             RequestConstants::REFUND_REQUEST_IV                   => $iv,
-            RequestConstants::REFUND_REQUEST_ENCRYPTEDDATA        => $data,
+            RequestConstants::REFUND_REQUEST_ENCRYPTEDDATA        => $encryptedData,
             RequestConstants::REFUND_REQUEST_CLIENTINFO           => '',
             RequestConstants::REFUND_REQUEST_OPTIONALPARAM        => '',
         ];
 
+        $content = json_encode($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_REQUEST,
+            [
+                'gateway'        => $this->gateway,
+                'payment_id'     => $input['payment']['id'],
+                'data'           => $data,
+                'encrypted_data' => $encryptedData,
+                'content'        => $content,
+            ]
+        );
+
         $request = [
             'url'     => ($this->mode === Mode::TEST ? Url::TEST_REFUND_URL : Url::LIVE_REFUND_URL),
             'method'  => 'POST',
-            'content' => json_encode($contents),
+            'content' => $content,
             'headers' => [
                 RequestConstants::REFUND_REQUEST_API_KEY => $this->config['refund_api_key']
             ]
@@ -206,7 +220,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getIV()
+    protected function getIv()
     {
         return '';
     }
@@ -431,7 +445,9 @@ class Gateway extends Base\Gateway
     {
         $xmlString = '';
 
-        $xmlStringPrefix = "\n<isomsg direction=\"incoming\">\n<!-- org.jpos.iso.packager.GenericPackager[cfg/iso87binary-sarvatra.xml] -->\n<header>00000000</header>\n";
+        $xmlStringPrefix = "\n<isomsg direction=\"incoming\">"
+                         . "\n<!-- org.jpos.iso.packager.GenericPackager[cfg/iso87binary-sarvatra.xml] -->"
+                         . "\n<header>00000000</header>\n";
 
         $xmlStringPostfix = "</isomsg>\n";
 
