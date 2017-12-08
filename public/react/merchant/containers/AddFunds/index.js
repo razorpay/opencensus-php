@@ -9,7 +9,7 @@ import { required } from 'rzp/utils/validators';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import { rupeesToPaise } from 'rzp/utils/rzp-utils';
-import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
+import fetchKeysAndCheckout from 'merchant/utils/fetchkeysandcheckout';
 import addFunds from 'merchant/utils/addfunds';
 
 @connect(state => state.session, {

@@ -16,7 +16,7 @@ import { fetchSubscriptionAddOns } from 'merchant/modules/addons';
 import { deleteAddOn } from 'merchant/modules/addons';
 import { showNotification } from 'rzp/modules/notifications';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
-import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
+import fetchKeysAndCheckout from 'merchant/utils/fetchkeysandcheckout';
 
 import { openModal, closeModal } from 'rzp/modules/modals';
 import CancellationModal from './CancellationModal';
@@ -54,7 +54,6 @@ import { getEventCategoryFromPath } from 'rzp/utils/rzp-utils';
     showNotification,
     openModal,
     closeModal,
-    ...AddFundsActions,
   }
 )
 export default class SubscriptionDetailsContainer extends Component {
