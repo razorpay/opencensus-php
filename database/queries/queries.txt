@@ -2679,3 +2679,15 @@ ALTER TABLE `merchant_details`
     ADD COLUMN `archived_at` INT(11) DEFAULT NULL AFTER `clarification_mode`,
     ADD INDEX `merchant_details_activation_status_index` (`activation_status`),
     ADD INDEX `merchant_details_archived_at_index` (`archived_at`);
+
+ALTER TABLE batches
+    MODIFY COLUMN upload_file_url varchar(255) DEFAULT NULL;
+
+# Pre deployment of drop_batch_url_columns pr
+
+ALTER TABLE batches
+    DROP COLUMN download_file_url,
+    DROP COLUMN upload_file_url;
+
+ALTER TABLE orders
+    MODIFY COLUMN receipt VARCHAR(40), ALGORITHM=INPLACE;

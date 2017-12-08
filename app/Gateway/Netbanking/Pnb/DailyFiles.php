@@ -25,7 +25,6 @@ class DailyFiles extends Base\DailyFiles
         $amount = [
             'claims'  => $claimData['total_amount'],
             'refunds' => $refundData['total_amount'],
-            'total'   => $claimData['total_amount'],
         ];
 
         $count = [
@@ -45,7 +44,7 @@ class DailyFiles extends Base\DailyFiles
         ];
 
         // Send the mail only when there is at least 1 claim or refund
-        if ($amount['claims'] + $amount['refunds'] > 0)
+        if ($count['claims'] + $count['refunds'] > 0)
         {
             $this->sendMail(
                 $amount,
