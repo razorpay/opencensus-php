@@ -14,7 +14,7 @@ class Encryptor
     const CERT_EXPIRY = '20191230';
 
     const CERT_PATH_UAT = 'certs/public_uat.cer';
-    const ICICI_CERT_PATH_UAT = 'certs/public_uat_icici.cer';
+    const ICICI_CERT_PATH_UAT = 'certs/public_uat_icici_refund.cer';
     const CERT_EXPIRY_UAT = '20171105';
 
     public function __construct($mode=1, $iv='')
