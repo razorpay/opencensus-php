@@ -723,6 +723,16 @@ return [
     'testEditDisputeMerchantDocumentUploadByPrivate' => [
         'request' => [
             'content' => [
+                'file_details'  =>  [
+                    [
+                        'name'      => 'myfile1.png',
+                        'category'  => 'explanation_letter',
+                    ],
+                    [
+                        'name'      => 'myfile2.pdf',
+                        'category'  => 'delivery_proof',
+                    ]
+                ],
             ],
             'method' => 'patch',
             'files' => [],
@@ -736,6 +746,16 @@ return [
     'testEditDisputeMerchantDocumentUploadByProxy' => [
         'request' => [
             'content' => [
+                'file_details'  =>  [
+                    [
+                        'name'      => 'myfile1.png',
+                        'category'  => 'explanation_letter',
+                    ],
+                    [
+                        'name'      => 'myfile2.pdf',
+                        'category'  => 'delivery_proof',
+                    ]
+                ],
             ],
             'method' => 'patch',
             'files' => [],

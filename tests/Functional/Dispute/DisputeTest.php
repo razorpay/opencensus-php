@@ -538,8 +538,6 @@ class DisputeTest extends TestCase
 
         $testData = $this->updateUploadDocumentData();
 
-        $testData['request']['files'][DisputeFileEntity::FILES] = $this->getTestFiles();
-
         $content = $this->runRequestResponseFlow($testData);
 
         $this->checkUploadedFilesArray($content);
@@ -550,8 +548,6 @@ class DisputeTest extends TestCase
         $this->ba->proxyAuth();
 
         $testData = $this->updateUploadDocumentData();
-
-        $testData['request']['files'][DisputeFileEntity::FILES] = $this->getTestFiles();
 
         $content = $this->runRequestResponseFlow($testData);
 
@@ -682,6 +678,8 @@ class DisputeTest extends TestCase
         $testData = &$this->testData[$name];
 
         $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
+
+        $testData['request']['files'][DisputeFileEntity::FILES] = $this->getTestFiles();
 
         return $testData;
     }

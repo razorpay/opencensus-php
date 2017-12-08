@@ -14,7 +14,7 @@ class Validator extends Base\Validator
         Entity::DISPUTE_ID         => 'required|string|max:14',
         Entity::URL                => 'required|string|max:255',
         Entity::NAME               => 'required|string|max:50',
-        Entity::CATEGORY           => 'sometimes|string|max:50',
+        Entity::CATEGORY           => 'required|string|custom',
     ];
 
     protected static $uploadFileRules = [
@@ -26,6 +26,15 @@ class Validator extends Base\Validator
                                         . 'image/jpg,'
                                         . 'image/jpeg,'
     ];
+
+    protected function validateCategory(string $attribute, string $value)
+    {
+        if (Category::exists($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Not a valid dispute file category: ' . $value);
+        }
+    }
 
     public function validateFileDetails(UploadedFile $file)
     {
