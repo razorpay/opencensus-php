@@ -265,9 +265,9 @@ class Service extends Base\Service
      *
      * @param array $input
      *
-     * @return array
+     * @return Base\PublicCollection
      */
-    public function getFeatureOnboardingRequestsByStatus(array $input): array
+    public function getFeatureOnboardingRequestsByStatus(array $input): Base\PublicCollection
     {
         $status = $input[Constants::STATUS];
 
