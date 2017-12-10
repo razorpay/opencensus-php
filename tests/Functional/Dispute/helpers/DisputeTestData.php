@@ -117,7 +117,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Merchant does not have enough balance for negative adjustment.',
+                    'description' => 'Merchant does not have enough balance for negative adjustment',
                 ],
             ],
             'status_code' => 400,

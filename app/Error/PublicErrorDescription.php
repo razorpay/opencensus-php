@@ -571,6 +571,8 @@ class PublicErrorDescription
     const BAD_REQUEST_GATEWAY_FILE_ANOTHER_OPERATION_IN_PROGRESS                = 'Another operation is in progress on the gateway_file entity';
     const BAD_REQUEST_MORPHED_ENTITY_INVALID                                    = 'Invalid entity passed in query parameters';
 
+    const BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT                       = 'Merchant does not have enough balance for negative adjustment';
+
     const SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND                               = 'No data present for gateway file processing in the given time period';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE                       = 'Error occurred trying to create file';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE                          = 'Error occurred while sending file';

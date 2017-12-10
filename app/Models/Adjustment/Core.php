@@ -91,8 +91,7 @@ class Core extends Base\Core
                 'merchant_id' => $dispute->getMerchantId()
             ]);
 
-        (new Validator)->validateMerchantBalanceForAdjustment($dispute->merchant,
-            'dispute', $dispute->getId(), $input);
+        (new Validator)->validateMerchantBalanceForAdjustment($dispute->merchant, $dispute, $input);
 
         $adjustment = $this->createAdjustment($input, $dispute->merchant);
 

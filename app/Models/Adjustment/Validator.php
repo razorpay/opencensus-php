@@ -3,6 +3,9 @@
 namespace RZP\Models\Adjustment;
 
 use RZP\Base;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
@@ -57,37 +60,36 @@ class Validator extends Base\Validator
      * Validate merchant balance before an adjustment is processed
      *
      * @param Merchant\Entity $merchant
-     * @param string $entityType
-     * @param string $entityId
+     * @param PublicEntity $entity
      * @param array $input
-     * @throws BadRequestValidationFailureException
+     * @throws BadRequestException
      */
-    public function validateMerchantBalanceForAdjustment(Merchant\Entity $merchant,
-                                                         string $entityType,
-                                                         string $entityId,
-                                                         array $input)
+    public function validateMerchantBalance(Merchant\Entity $merchant,
+                                            PublicEntity $entity,
+                                            array $input)
     {
-        if (isset($input[Entity::AMOUNT]) and
-            $input[Entity::AMOUNT] < 0)
+        if ((isset($input[Entity::AMOUNT]) === false) or
+            $input[Entity::AMOUNT] > 0)
         {
-            $amount = $input[Entity::AMOUNT];
+            return;
+        }
 
-            $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
+        $amount = $input[Entity::AMOUNT];
 
-            if (($balance->getBalance() + $amount) < 0)
-            {
-                $traceData = [
-                    'message'               => 'Not enough balance',
-                    'merchant_balance'      => $balance->getBalance(),
-                    'adjustment_amount'     => $amount,
-                    'entity_type'           => $entityType,
-                    'entity_id'             => $entityId,
-                ];
+        $balance = $this->repo->balance->getMerchantBalance($merchant);
 
-                throw new BadRequestValidationFailureException('Merchant does not have enough balance for negative adjustment.',
-                    Entity::AMOUNT,
-                    $traceData);
-            }
+        if (($balance->getBalance() + $amount) < 0)
+        {
+            $traceData = [
+                'message'               => 'Not enough balance',
+                'merchant_balance'      => $balance->getBalance(),
+                'adjustment_amount'     => $amount,
+                'entity_type'           => $entity->getEntityName(),
+                'entity_id'             => $entity->getId(),
+            ];
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT,
+                $traceData);
         }
     }
 }
