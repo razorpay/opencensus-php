@@ -436,20 +436,6 @@ class Gateway extends Base\Gateway
         $gatewayCallback[ConnectResponseFields::APPROVAL_CODE] = $mockedApprovalCode;
     }
 
-    protected function setApproval(string $approvalCode)
-    {
-        // Request has failed if the first character
-        // of the approval code string isn't 'Y'
-        if ($approvalCode[0] === 'Y')
-        {
-            $this->approval = true;
-        }
-        else
-        {
-            $this->approval = false;
-        }
-    }
-
     protected function getSoapResponse(array $requestContent)
     {
         $xmlResponse = $this->postSoapRequest($requestContent, ApiRequestFields::ORDER_REQUEST);
@@ -467,7 +453,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->approval === false)
         {
-            $approvalCode = $this->getActualCodeFromApprovalCode($gatewayEntity->getApprovalCode());
+            $approvalCode = $this->getErrorCodeFromApprovalCode($gatewayEntity->getApprovalCode());
 
             $gatewayErrorDesc = ErrorCodes::getErrorDesc($approvalCode);
 
@@ -494,20 +480,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getActualCodeFromApprovalCode(string $approvalCode)
-    {
-        // Approval Code is sent as a concatenation of the code ('N:224')
-        // and the reason ('Timed out') separated by a ':'.
-        // Eg. "N:87:Bad Track Data"
-        // Break it using the ':' separator.
-        $approvalCodeArray = explode(':', $approvalCode);
-
-        // Retrieve only approval code
-        $code = implode(array_slice($approvalCodeArray, 0, 2), ':');
-
-        return $code;
-    }
-
     protected function getAuthorizeFields(array $authRequest)
     {
         $attributes = [
@@ -523,7 +495,8 @@ class Gateway extends Base\Gateway
     {
         $attributes = [
             Entity::RECEIVED                => true,
-            Entity::APPROVAL_CODE           => $callbackBody[ConnectResponseFields::APPROVAL_CODE],
+            Entity::APPROVAL_CODE           => $this->getFormattedApprovalCode(
+                                                         $callbackBody[ConnectResponseFields::APPROVAL_CODE]),
         ];
 
         $this->setFieldIfPresent($attributes, Entity::TRANSACTION_RESULT,
@@ -542,7 +515,8 @@ class Gateway extends Base\Gateway
         {
             $attributes[Entity::STATUS]    = Status::AUTHORIZED;
 
-            $attributes[Entity::AUTH_CODE] = $this->getAuthCodeFromCallback($callbackBody);
+            $attributes[Entity::AUTH_CODE] = $this->getAuthCodeFromApprovalCode(
+                                                        $callbackBody[ConnectResponseFields::APPROVAL_CODE]);
 
             $attributes[Entity::TDATE]     = $callbackBody[ConnectResponseFields::TDATE];
         }
@@ -599,7 +573,8 @@ class Gateway extends Base\Gateway
 
         $attributes = [
             Entity::RECEIVED      => true,
-            Entity::APPROVAL_CODE => $response[ApiResponseFields::APPROVAL_CODE],
+            Entity::APPROVAL_CODE => $this->getFormattedApprovalCode(
+                                                $response[ApiResponseFields::APPROVAL_CODE]),
             Entity::AMOUNT        => $input['amount'],
             Entity::CURRENCY      => $currencyCode,
             Entity::STATUS        => Status::CAPTURED,
@@ -673,7 +648,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->approval === false)
         {
-            $approvalCode = $this->getActualCodeFromApprovalCode($attributes[Entity::APPROVAL_CODE]);
+            $approvalCode = $this->getErrorCodeFromApprovalCode($attributes[Entity::APPROVAL_CODE]);
 
             $attributes[Entity::ERROR_MESSAGE] = ErrorCodes::getErrorDesc($approvalCode);
             $attributes[Entity::STATUS]        = Status::FAILED;
@@ -1571,22 +1546,6 @@ class Gateway extends Base\Gateway
         return (in_array($gatewayMerchantId, self::OLD_STORE_IDS, true) === true);
     }
 
-    protected function getAuthCodeFromCallback($callbackBody)
-    {
-        $authCode = null;
-
-        $approvalCodeArray = explode(':', $callbackBody[ConnectResponseFields::APPROVAL_CODE]);
-
-        // Only when call had succeed, we get authCode in approvalCode
-        if (($approvalCodeArray[0] === 'Y') and
-            (isset($approvalCodeArray[1]) === true))
-        {
-            $authCode = $approvalCodeArray[1];
-        }
-
-        return $authCode;
-    }
-
     /**
      * FirstData has a minimum limit on card name(bname)
      *
@@ -1603,5 +1562,46 @@ class Gateway extends Base\Gateway
         }
 
         return $name;
+    }
+
+    /**
+     * In case of failure, we will only store error code from approval code.
+     * This makes sure there is no inconsistency in old and new data.
+     * Also success check is done on formatted approval code
+     *
+     * @param string $approvalCode
+     * @return string
+     */
+    protected function getFormattedApprovalCode(string $approvalCode)
+    {
+        $parsed = new ApprovalCodeParser($approvalCode);
+
+        if ($parsed->isSuccess())
+        {
+            return $approvalCode;
+        }
+
+        return $parsed->getErrorCode();
+    }
+
+    protected function setApproval(string $approvalCode)
+    {
+        $parsed = new ApprovalCodeParser($approvalCode);
+
+        $this->approval = $parsed->isSuccess();
+    }
+
+    protected function getErrorCodeFromApprovalCode(string $approvalCode)
+    {
+        $parsed = new ApprovalCodeParser($approvalCode);
+
+        return $parsed->getErrorCode();
+    }
+
+    protected function getAuthCodeFromApprovalCode(string $approvalCode)
+    {
+        $parsed = new ApprovalCodeParser($approvalCode);
+
+        return $parsed->getAuthCode();
     }
 }
