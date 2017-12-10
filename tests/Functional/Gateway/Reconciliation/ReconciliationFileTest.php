@@ -71,6 +71,18 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[1][FDPaymentRecon::COLUMN_ARN], $updatedPayment2['reference1']);
         // Recon should not overwrite reference2 if it was saved before
         $this->assertEquals($payment2['reference2'], $updatedPayment2['reference2']);
+
+        // Overriding Entity to test force update
+        unset($entries[1]);
+        $entries[0][FDPaymentRecon::COLUMN_ARN]         = 'force_updated_arn';
+        $entries[0][FDPaymentRecon::COLUMN_AUTH_CODE]   = 'force_updated_auth_code';
+
+        $file = $this->writeToExcelFile($entries, 'first_data');
+        $this->runForFiles([$file], 'FirstData', ['payment_arn', 'payment_auth_code']);
+
+        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
+        $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
+        $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
     }
 
     public function testHdfcFssReconPaymentFile()

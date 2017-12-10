@@ -26,8 +26,8 @@ class Base extends Core
      * These field can be force updated with passed with request
      */
     const REFUND_ARN            = 'refund_arn';
-    const PAYMENT_REFERENCE_1   = 'payment_reference_1';
-    const PAYMENT_REFERENCE_2   = 'payment_reference_2';
+    const PAYMENT_ARN           = 'payment_arn';
+    const PAYMENT_AUTH_CODE     = 'payment_auth_code';
 
     /******************
      * Gateway constants

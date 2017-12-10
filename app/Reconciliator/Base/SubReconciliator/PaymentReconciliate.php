@@ -1076,7 +1076,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     /**
      * If reference1 is not already set in DB, set it from recon.
      * If reference1 is already set, then it must be the same as
-     * what is present in recon. If it's not the same, raise an alert.
+     * what is present in recon. If it's not the same, and
+     * force updated for it is false, raise an alert.
      *
      * @param string $reference1
      */
@@ -1084,28 +1085,38 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     {
         $dbReference1 = $this->payment->getReference1();
 
-        if (empty($dbReference1) === true)
+        if ((empty($dbReference1) === false))
         {
-            $this->payment->setReference1($reference1);
+            if ($dbReference1 === $reference1)
+            {
+                return;
+            }
+            else
+            {
+                if ($this->shouldForceUpdate(RequestProcessor\Base::PAYMENT_ARN) === false)
+                {
+                    $this->messenger->raiseReconAlert(
+                        [
+                            'trace_code'        => TraceCode::RECON_MISMATCH,
+                            'message'           => 'Reference1 is not same as in recon',
+                            'payment_id'        => $this->payment->getId(),
+                            'api_reference1'    => $dbReference1,
+                            'recon_reference1'  => $reference1
+                        ]);
+
+                    return;
+                }
+            }
         }
-        else if ((empty($reference1) === false) and
-                 ($dbReference1 !== $reference1))
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'        => TraceCode::RECON_MISMATCH,
-                    'message'           => 'Reference1 is not same as in recon',
-                    'payment_id'        => $this->payment->getId(),
-                    'api_reference1'    => $dbReference1,
-                    'recon_reference1'  => $reference1
-                ]);
-        }
+
+        $this->payment->setReference1($reference1);
     }
 
     /**
      * If reference2 is not already set in DB, set it from recon.
      * If reference2 is already set, then it must be the same as
-     * what is present in recon. If it's not the same, raise an alert.
+     * what is present in recon. If it's not the same, and
+     * force updated for it is false, raise an alert.
      *
      * Not already set is defined by either `empty` or `00`.
      * `00` is currently being stored for FirstData.
@@ -1116,22 +1127,31 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     {
         $dbReference2 = $this->payment->getReference2();
 
-        if ((empty($dbReference2) === true) or ($dbReference2 === '00'))
+        if (empty($dbReference2) === false)
         {
-            $this->payment->setReference2($reference2);
+            if ($dbReference2 === $reference2)
+            {
+                return;
+            }
+            else if ($dbReference2 !== '00')
+            {
+                if ($this->shouldForceUpdate(RequestProcessor\Base::PAYMENT_AUTH_CODE) === false)
+                {
+                    $this->messenger->raiseReconAlert(
+                        [
+                            'trace_code'        => TraceCode::RECON_MISMATCH,
+                            'message'           => 'Reference2 is not same as in recon',
+                            'payment_id'        => $this->payment->getId(),
+                            'api_reference2'    => $dbReference2,
+                            'recon_reference2'  => $reference2
+                        ]);
+
+                    return;
+                }
+            }
         }
-        else if ((empty($reference2) === false) and
-                 ($dbReference2 !== $reference2))
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'        => TraceCode::RECON_MISMATCH,
-                    'message'           => 'Reference2 is not same as in recon',
-                    'payment_id'        => $this->payment->getId(),
-                    'api_reference2'    => $dbReference2,
-                    'recon_reference2'  => $reference2
-                ]);
-        }
+
+        $this->payment->setReference2($reference2);
     }
 
     protected function markGatewayCapturedAsTrue()
