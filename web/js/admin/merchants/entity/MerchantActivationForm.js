@@ -2,16 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
 import { adminFetch, adminPatch } from 'util/fetch';
-import {
-  openModal,
-  closeModal,
-  confirm,
-  notifySuccess,
-  notifyError,
-} from 'common/modal';
-import { SelectField } from 'ui/Field';
-import Form from 'ui/Form';
-import { isWorkflow } from 'util/index';
+import { closeModal, confirm, notifySuccess } from 'common/modal';
 
 import Model from './model';
 import EntityRow from 'ui/EntityRow';
@@ -23,11 +14,7 @@ import BankAccountDetails from './merchantActivationForms/BankAccountDetails';
 import DocumentDetails from './merchantActivationForms/DocumentDetails';
 import ProductOnboarding from './merchantActivationForms/ProductOnboarding';
 import BusinessDetails from './merchantActivationForms/BusinessDetails';
-
-import {
-  NeedClarificationActivation,
-  RejectActivation,
-} from './merchantActivationForms/ActivationReasonModal';
+import ActivationDetails from './merchantActivationForms/ActivationDetails';
 
 import { Link } from 'react-router-dom';
 
@@ -94,66 +81,6 @@ export default class MerchantActivationForm extends Component {
           closeModal();
         }
       });
-    });
-  };
-
-  openActivationModal = body => {
-    const prevStatus = this.model.merchant.details.merchant_details
-      .activation_status;
-    //check whether status has changed or is undefined/null/empty
-    if (!body.activation_status) {
-      notifyError('Please select a status from the drop down menu.');
-      return;
-    }
-
-    if (body.activation_status === 'rejected') {
-      openModal(
-        <RejectActivation
-          status={body.activation_status}
-          fetchFn={this.updateActivationStatus}
-        />
-      );
-      return;
-    }
-
-    if (body.activation_status === 'needs_clarification') {
-      openModal(
-        <NeedClarificationActivation fetchFn={this.updateActivationStatus} />
-      );
-      return;
-    }
-
-    confirm(`Change Status to ${statusMap[body.activation_status]}?`).then(
-      () => {
-        this.updateActivationStatus({
-          activation_status: body.activation_status,
-        });
-      }
-    );
-  };
-
-  updateActivationStatus = body => {
-    const { details } = this.model.merchant;
-
-    return adminPatch({
-      route_name: 'merchant_activation_status',
-      url_params: {
-        id: this.merchantId,
-      },
-      body,
-    }).then(response => {
-      if (response) {
-        if (isWorkflow(response)) {
-          return;
-        }
-
-        details.merchant_details.activation_status =
-          response.merchant_details.activation_status;
-        details.merchant_details.allowed_next_activation_statuses =
-          response.merchant_details.allowed_next_activation_statuses;
-        notifySuccess('Status updated successfully.');
-        closeModal();
-      }
     });
   };
 
@@ -253,21 +180,13 @@ function _getOverviewFields(details) {
       label: 'Activation Form Status',
       value: () =>
         details.merchant_details.allowed_next_activation_statuses.length ? (
-          <Form onSubmit={this.openActivationModal}>
-            <SelectField name="activation_status">
-              <option value="">
-                {statusMap[details.merchant_details.activation_status]}
-              </option>
-              {details.merchant_details.allowed_next_activation_statuses.map(
-                status => (
-                  <option key={status} value={status}>
-                    {statusMap[status]}
-                  </option>
-                )
-              )}
-            </SelectField>
-            <button>Change</button>
-          </Form>
+          <ActivationDetails
+            status={details.merchant_details.activation_status}
+            allowedStatuses={toJS(
+              details.merchant_details.allowed_next_activation_statuses
+            )}
+            merchantId={this.merchantId}
+          />
         ) : (
           details.merchant_details.activation_status || '--'
         ),
@@ -283,10 +202,3 @@ const tabNames = [
   'Document Uploads',
   'Product Onboading',
 ];
-
-const statusMap = {
-  under_review: 'Under Review',
-  needs_clarification: 'Needs Clarification',
-  activated: 'Activated',
-  rejected: 'Rejected',
-};

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { observer } from 'mobx-react';
 
 import BaseModal from 'ui/BaseModal';
 import fetch, { adminFetch } from 'util/fetch';
@@ -8,6 +9,8 @@ import Table from 'ui/Table';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError } from 'common/modal';
 
+//Modal when activation status is set to "Rejected"
+@observer
 export class RejectActivation extends Component {
   state = {
     selectedCategory: '',
@@ -164,7 +167,8 @@ export class RejectActivation extends Component {
   }
 }
 
-export const NeedClarificationActivation = ({ fetchFn }) => (
+//Modal when activation state is set to "needs_clarification"
+export const NeedClarificationActivation = observer(({ fetchFn }) => (
   <BaseModal header="Change Status to: Needs Clarification">
     <Form>
       <input
@@ -189,7 +193,7 @@ export const NeedClarificationActivation = ({ fetchFn }) => (
       />
     </Form>
   </BaseModal>
-);
+));
 
 const categoryMap = {
   others: 'Others',

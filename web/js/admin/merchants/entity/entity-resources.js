@@ -167,7 +167,11 @@ function _getRejectedReasonsFields() {
 
   return [
     ['Category', item => categoryMap[item.reason_category]],
-    ['Reason', item => item.reason_code],
+    [
+      'Reason',
+      item =>
+        item.reason_description ? item.reason_description : item.reason_code,
+    ],
   ];
 }
 
