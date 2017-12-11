@@ -9,14 +9,14 @@ class Constants
 
     const PAYMENT_ID            = 'PaymentID';
 
-    const ERROR_TEXT            = 'ErrorText';
-
     const PURCHASE              = 'PURCHASE';
 
+    // Credit card type is sent as C and debit as D respectively.
     const CREDIT_CARD_TYPE      = 'C';
 
     const DEBIT_CARD_TYPE       = 'D';
 
+    // Actions have there own representation as per fss.
     const ACTION_PURCHASE       = '1';
 
     const ACTION_REFUND         = '2';

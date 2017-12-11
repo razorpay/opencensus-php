@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Fss;
 
 use RZP\Constants\Entity as E;
-use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card;
 use RZP\Exception;
@@ -18,6 +17,12 @@ class Gateway extends Base\Gateway
 {
     protected $gateway = E::FSS;
 
+    /**
+     * Fss Gateway has purchase model so framing the request here after persisting the gateway entity.
+     * @param array $input
+     *
+     * @return array
+     */
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -59,7 +64,7 @@ class Gateway extends Base\Gateway
      *
      * @return array
      */
-    private function getPurchaseFields(array $requestFields)
+    private function getPurchaseFields(array $requestFields): array
     {
         $attributes = [
             Entity::AMOUNT      => $requestFields[Fields::AMOUNT] * 100,
@@ -107,7 +112,7 @@ class Gateway extends Base\Gateway
      *
      * @return array
      */
-    protected function getPurchaseRequestContent(array $requestContent)
+    protected function getPurchaseRequestContent(array $requestContent): array
     {
         // Entire request content is wrapped in xml.
         $requestBuffer = Utility::createRequestXml($requestContent);
@@ -132,7 +137,7 @@ class Gateway extends Base\Gateway
      *
      * @return Entity
      */
-    protected function createGatewayPaymentEntity(array $attributes, array $input)
+    protected function createGatewayPaymentEntity(array $attributes, array $input): Entity
     {
         $gatewayPaymentEntity = $this->getNewGatewayPaymentEntity();
 
@@ -152,7 +157,13 @@ class Gateway extends Base\Gateway
         return $gatewayPaymentEntity;
     }
 
-    protected function getEncryptedRequestContent($str)
+    /**
+     * Encrypts the string as per the encryption rules of the gateway provider.
+     * @param string $str
+     *
+     * @return string
+     */
+    protected function getEncryptedRequestContent(string $str): string
     {
         $secretKey = $this->getSecret();
 
@@ -161,7 +172,12 @@ class Gateway extends Base\Gateway
         return $crypto->encryptString($str);
     }
 
-    protected function getDecryptedRequestContent($str)
+    /**
+     * @param string $str
+     *
+     * @return array
+     */
+    protected function getDecryptedRequestContent(string $str): array
     {
         $secretKey = $this->getSecret();
 
@@ -184,7 +200,7 @@ class Gateway extends Base\Gateway
      *
      * @return array
      */
-    public function callback(array $input)
+    public function callback(array $input): array
     {
         parent::callback($input);
 
@@ -240,7 +256,7 @@ class Gateway extends Base\Gateway
      *
      * @return array
      */
-    public function getCallbackFields(array $gatewayContent)
+    public function getCallbackFields(array $gatewayContent): array
     {
         $attributes = [
             Entity::RECEIVED => true,
@@ -299,6 +315,11 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
+    /**
+     * Refund Method for gateway Entity
+     *
+     * @param array $input
+     */
     public function refund(array $input)
     {
         parent::refund($input);
@@ -331,7 +352,7 @@ class Gateway extends Base\Gateway
         {
             try
             {
-                $refundContent[Constants::ERROR_TEXT] = $errorStatus;
+                $refundContent[Fields::ERROR_TEXT] = $errorStatus;
 
                 $this->checkErrorMessage($refundContent, $gatewayEntity);
             }
@@ -344,6 +365,13 @@ class Gateway extends Base\Gateway
         $this->checkCapturedStatus($gatewayEntity, ErrorCode::BAD_REQUEST_REFUND_FAILED);
     }
 
+    /**
+     * Refund Fields to set the gateway entity.
+     * @param $response
+     * @param $input
+     *
+     * @return array
+     */
     public function getRefundFields($response, $input)
     {
         $responseBody = $response->body;
@@ -362,6 +390,11 @@ class Gateway extends Base\Gateway
         return $refundFields;
     }
 
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
     public function verify(array $input)
     {
         parent::verify($input);
@@ -371,6 +404,11 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    /**
+     * @param array $input
+     *
+     * @return bool
+     */
     public function verifyRefund(array $input)
     {
         parent::action($input, Action::VERIFY_REFUND);
@@ -379,18 +417,16 @@ class Gateway extends Base\Gateway
 
         $this->sendPaymentVerifyRequest($verify);
 
-        return $this->verifyRefundRequest($verify);
+        return $this->verifyRefundResponse($verify);
     }
 
-    public function getRefundToVerify($verify)
-    {
-        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
-            $verify->input['payment']['id'], Action::REFUND);
-
-        $verify->payment = $gatewayPayment;
-    }
-
-    public function verifyRefundRequest(Base\Verify $verify)
+    /**
+     * parsing the verify refund Request Response a
+     * @param Base\Verify $verify
+     *
+     * @return bool
+     */
+    public function verifyRefundResponse(Base\Verify $verify)
     {
         $verifyResponse = $verify->verifyResponseContent;
 
@@ -463,6 +499,12 @@ class Gateway extends Base\Gateway
         $verify->amountMismatch = ($expectedAmount !== $actualAmount);
     }
 
+    /**
+     * @param Base\Entity $gatewayPayment
+     * @param array       $payment
+     *
+     * @return bool
+     */
     protected function getVerifyApiStatus(Base\Entity $gatewayPayment, array $payment)
     {
         if (($payment['status'] === 'failed') or
@@ -523,6 +565,11 @@ class Gateway extends Base\Gateway
         $verify->setVerifyResponseContent($response);
     }
 
+    /**
+     * @param $response
+     *
+     * @return array|string
+     */
     public function parseVerifyResponse($response)
     {
         $responseBody = $response->body;
@@ -542,6 +589,11 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
+    /**
+     * Traces verify request for the gateway becuase we don't persist the trackId.
+     *
+     * @param $requestContent
+     */
     public function traceGatewayVerifyRequest($requestContent)
     {
         $requestContent = $this->removeSensitiveRequestFields($requestContent);
@@ -616,7 +668,12 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function getGatewayRequestContent($requestContent)
+    /**
+     * @param array $requestContent
+     *
+     * @return string
+     */
+    public function getGatewayRequestContent(array $requestContent): string
     {
         // Entire request content is wrapped in xml.
         $requestBuffer = Utility::createRequestXml($requestContent);
@@ -624,6 +681,11 @@ class Gateway extends Base\Gateway
         return $requestBuffer;
     }
 
+    /**
+     * @param $request
+     *
+     * @return \Requests_Response
+     */
     public function postRequest($request)
     {
         $request['options'] = $this->getRequestOptions();
@@ -635,6 +697,10 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
+    /**
+     * Headers for the s2s call.
+     * @return array
+     */
     protected function getRequestHeaders()
     {
         $headers = [
@@ -645,6 +711,10 @@ class Gateway extends Base\Gateway
         return $headers;
     }
 
+    /**
+     * Verify of ssl certs should be false.
+     * @return mixed
+     */
     protected function getRequestOptions()
     {
         $options['verify'] = false;
@@ -661,9 +731,9 @@ class Gateway extends Base\Gateway
      */
     public function checkErrorMessage(array $input, Entity $gatewayPayment)
     {
-        if (empty($input[Constants::ERROR_TEXT]) === false)
+        if (empty($input[Fields::ERROR_TEXT]) === false)
         {
-            $gatewayCode = $this->getErrorCode($input[Constants::ERROR_TEXT]);
+            $gatewayCode = $this->getErrorCode($input[Fields::ERROR_TEXT]);
 
             $errorDesc = ErrorCodes::getErrorDesc($gatewayCode);
 
@@ -675,11 +745,23 @@ class Gateway extends Base\Gateway
         }
     }
 
+    /**
+     * Util function to split errorcodes
+     * @param $errorText
+     *
+     * @return string
+     */
     private function getErrorCode($errorText)
     {
         return trim(current(explode('-', $errorText)));
     }
 
+    /**
+     * Formats expmonth for the gateways desire.
+     * @param $expMonth
+     *
+     * @return string
+     */
     private function getFormattedExpMonth($expMonth)
     {
         return str_pad($expMonth, 2, '0', STR_PAD_LEFT);
@@ -702,6 +784,11 @@ class Gateway extends Base\Gateway
         return Constants::CREDIT_CARD_TYPE;
     }
 
+    /**
+     * @param $amount
+     *
+     * @return string
+     */
     private function getFormattedAmount($amount)
     {
         return number_format($amount, 2,'.', '');
