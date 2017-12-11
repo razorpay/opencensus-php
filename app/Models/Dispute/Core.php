@@ -11,6 +11,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
+use RZP\Constants\Timezone;
 use RZP\Models\Admin\Action;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Dispute as DisputeMailer;
@@ -393,13 +394,24 @@ class Core extends Base\Core
         }
 
         $data = [
-            'merchant' => [
-                'name'      => $merchant->getName(),
-                'email'     => $email,
+            'merchant'      => [
+                'name'          => $merchant->getName(),
+                'email'         => $email,
             ],
-            'dispute' => $dispute->toArrayPublic(),
+            'dispute'       => $dispute->toArrayPublic(),
+            'remainingDays' => $this->getRemainingDays($dispute),
         ];
 
         Mail::queue(new DisputeMailer\Creation($data));
+    }
+
+    private function getRemainingDays(Entity $dispute): int
+    {
+        $endDate = Carbon::createFromTimestamp(
+            $dispute->getExpiresOn(), Timezone::IST);
+
+        $length = $endDate->diffInDays(Carbon::now(Timezone::IST));
+
+        return $length;
     }
 }

@@ -9,8 +9,6 @@
 
         $expiryDate = date('jS F Y', $dispute['expires_on']);
 
-        $remainingDays = floor(( $dispute['expires_on'] - time() ) / 86400);
-
         $amount = sprintf('%0.2f', ($dispute['amount'] / 100));
         $amount = floatval($amount);
 
