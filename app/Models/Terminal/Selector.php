@@ -64,7 +64,6 @@ class Selector extends Base\Core
     {
         $allTerminals = $this->getTerminals();
 
-        return $allTerminals;
         $verbose = $this->isVerboseLogEnabled();
 
         $this->traceTerminals($allTerminals, 'Terminals fetched from db', $verbose);
