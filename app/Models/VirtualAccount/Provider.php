@@ -213,22 +213,22 @@ class Provider
         $masterCardTlv = Tags::MASTERCARD . strlen($masterCardIdentifier) . $masterCardIdentifier;
 
         $tagArray = [
-            Tags::VERSION . Lengths::VERSION . Constants::VERSION,
+            Tags::VERSION . $this->getStringLengthAndValue(Constants::VERSION),
             $visaTlv,
             $masterCardTlv,
-            Tags::MERCHANT_CATEGORY . Lengths::MERCHANT_CATEGORY . Constants::MERCHANT_CATEGORY,
-            Tags::CURRENCY_CODE . Lengths::CURRENCY_CODE . Constants::CURRENCY_CODE,
+            Tags::MERCHANT_CATEGORY .$this->getStringLengthAndValue(Constants::MERCHANT_CATEGORY),
+            Tags::CURRENCY_CODE . $this->getStringLengthAndValue(Constants::CURRENCY_CODE),
             $this->getBharatQrAmountTlv($qrCode),
-            Tags::COUNTRY_CODE . Lengths::COUNTRY_CODE . Constants::COUNTRY_CODE,
-            Tags::MERCHANT_NAME . Lengths::MERCHANT_NAME . Constants::MERCHANT_NAME,
-            Tags::MERCHANT_CITY . Lengths::MERCHANT_CITY . Constants::MERCHANT_CITY,
+            Tags::COUNTRY_CODE . $this->getStringLengthAndValue(Constants::COUNTRY_CODE),
+            Tags::MERCHANT_NAME . $this->getStringLengthAndValue(Constants::MERCHANT_NAME),
+            Tags::MERCHANT_CITY . $this->getStringLengthAndValue(Constants::MERCHANT_CITY),
             $this->getBharatQrAdditionalDetailTlv($qrCode),
         ];
 
         $qrString =  implode('', $tagArray);
 
-        // This is the CRC TL
-        $qrString .= Tags::CRC . Lengths::CRC;
+        // This is the CRC TL. Length of CRC is always 2
+        $qrString .= Tags::CRC . '02';
 
         $crc = (new CRC16)->calculateCrc($qrString);
 
@@ -239,7 +239,7 @@ class Provider
 
     protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode)
     {
-        $idTlv = Tags::ID . Lengths::ID . $qrCode->getId();
+        $idTlv = Tags::ID . $this->$this->getStringLengthAndValue($qrCode->getId());
 
         $additionalDetailsString = $idTlv;
 
@@ -255,7 +255,12 @@ class Provider
             return '';
         }
 
-        return Tags::AMOUNT . str_pad(strlen($amount), 2, '0', STR_PAD_LEFT) . $amount;
+        return Tags::AMOUNT . $this->getStringLengthAndValue($amount);
+    }
+
+    protected function getStringLengthAndValue(string $str)
+    {
+        return str_pad(strlen($str), 2, '0', STR_PAD_LEFT) . $str;
     }
 
     /**
