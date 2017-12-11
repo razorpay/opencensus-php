@@ -112,9 +112,13 @@ class Constants
     ];
 
     // Keys used in the feature on-boarding workflow
-    const ONBOARDING = 'onboarding';
-    const FEATURES   = 'features';
-    const MERCHANT   = 'merchant';
+    const STATUS                        = 'status';
+    const PRODUCT                       = 'product';
+    const FEATURES                      = 'features';
+    const MERCHANT                      = 'merchant';
+    const ONBOARDING                    = 'onboarding';
+    const ONBOARDING_SUBMISSIONS_FETCH  = 'onboarding_submissions_fetch';
+    const ONBOARDING_SUBMISSIONS_UPSERT = 'onboarding_submissions_upsert';
 
     // Keys used to define the question names in the on-boarding process
     const BUSINESS_MODEL           = 'business_model';

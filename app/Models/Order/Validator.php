@@ -13,7 +13,7 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         Entity::AMOUNT          =>  'required|integer|min:100',
         Entity::CURRENCY        =>  'required|size:3|in:INR,USD',
-        Entity::RECEIPT         =>  'required|string|max:40',
+        Entity::RECEIPT         =>  'sometimes|nullable|string|max:40',
         Entity::PAYMENT_CAPTURE =>  'filled|boolean',
         Entity::CUSTOMER_ID     =>  'sometimes|filled',
         Entity::NOTES           =>  'sometimes|notes',

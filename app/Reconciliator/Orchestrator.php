@@ -390,7 +390,7 @@ class Orchestrator extends Base\Core
             $spoutLib = true;
 
             // getting contents using spout library for xlsx
-            $sheetsContents = $this->converter->getRowsFromExcelSheetsSpout($fileDetails, $sheetNames);
+            $sheetsContents = $this->converter->getRowsFromExcelSheetsSpout($fileDetails, $sheetNames, $startRow);
         }
         else
         {

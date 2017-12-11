@@ -8,7 +8,8 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
-
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 class MerchantDetailTest extends TestCase
 {
@@ -149,6 +150,104 @@ class MerchantDetailTest extends TestCase
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->startTest();
+    }
+
+    public function testMerchantFormArchive()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/archive";
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->startTest();
+
+        $testData['request']['content']['archive'] = 0;
+
+        $testData['response']['content']['archived'] = 0;
+
+        $this->startTest();
+    }
+
+    public function testMerchantActivationStatus()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->startTest();
+
+        // under_review to needs_clarification
+        $this->changeActivationStatusFromUnderReviewToNeedsClarification(
+            $testData['request']['content'],
+            $testData['response']['content']);
+
+        $this->startTest();
+
+        // needs_clarification to under_review
+        $this->changeActivationStatusFromNeedsClarificationToUnderReview(
+            $testData['request']['content'],
+            $testData['response']['content']);
+
+        $this->startTest();
+
+        // under_review to rejected
+        $this->changeActivationStatusFromUnderReviewToRejected(
+            $testData['request']['content'],
+            $testData['response']['content']);
+
+        $this->startTest();
+    }
+
+    protected function changeActivationStatusFromUnderReviewToNeedsClarification(& $requestContent, & $responseContent)
+    {
+        $requestContent['activation_status'] = 'needs_clarification';
+
+        $requestContent['clarification_mode'] = 'email';
+
+        $responseContent['activation_status'] = 'needs_clarification';
+
+        $responseContent['clarification_mode'] = 'email';
+    }
+
+    protected function changeActivationStatusFromNeedsClarificationToUnderReview(& $requestContent, & $responseContent)
+    {
+        $requestContent['activation_status'] = 'under_review';
+
+        unset($requestContent['clarification_mode']);
+
+        $responseContent['activation_status'] = 'under_review';
+
+        unset($responseContent['clarification_mode']);
+    }
+
+    protected function changeActivationStatusFromUnderReviewToRejected(& $requestContent, & $responseContent)
+    {
+        // under_review to rejected
+        $requestContent['activation_status'] = 'rejected';
+
+        $requestContent['rejection_reasons'] = [
+            [
+                'reason_category' => 'risky_business',
+                'reason_code'     => 'refurbished_goods',
+            ],
+            [
+                'reason_category' => 'risky_business',
+                'reason_code'     => 'gift_cards',
+            ],
+        ];
+
+        $responseContent['activation_status'] = 'rejected';
     }
 
     public function testCommentMerchant()

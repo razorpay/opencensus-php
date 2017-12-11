@@ -49,7 +49,13 @@ class IrctcRefundReport extends BasicEntityReport
 
         $timestamp = Carbon::yesterday(Timezone::IST)->subDays(self::AUTO_REFUND_DELAY)->timestamp;
 
-        if (isset($input['from']) === true)
+        if (isset($input['on']) === true)
+        {
+            $from = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST)->setTime(0,0,0);
+
+            $timestamp = $from->getTimestamp();
+        }
+        elseif (isset($input['from']) === true)
         {
             $timestamp = $input['from'];
         }
@@ -121,7 +127,7 @@ class IrctcRefundReport extends BasicEntityReport
 
     protected function getPaymentDate(Payment\Entity $payment)
     {
-        $ts = $payment->getAuthorizeTimestamp();
+        $ts = $payment->getCreatedAt();
 
         $paymentDate = Carbon::createFromTimestamp($ts, Timezone::IST)
                              ->format('Ymd');
@@ -160,7 +166,7 @@ class IrctcRefundReport extends BasicEntityReport
     {
         list($data, $count) = $this->getReportDataForMerchant($from, $to, self::BATCH_LIMIT, $skip, $merchantId);
 
-        $txt = $this->generateText($data, '|');
+        $txt = $this->generateText($data, ',');
 
         $fullpath = $this->createTxtFile($filename, $txt);
 
@@ -172,6 +178,17 @@ class IrctcRefundReport extends BasicEntityReport
         $from = Carbon::yesterday(Timezone::IST)->subDay(self::AUTO_REFUND_DELAY)->timestamp;
 
         $to = Carbon::yesterday(Timezone::IST)->subDays(self::AUTO_REFUND_DELAY - 1)->timestamp;
+
+        if (isset($input['on']) === true)
+        {
+            $from = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST)->setTime(0,0,0);
+
+            $fromTimeStamp = $from->getTimestamp();
+
+            $to = $from->addDay()->getTimestamp() - 1;
+
+            $from = $fromTimeStamp;
+        }
 
         if (isset($input['from']) === true)
         {
@@ -221,12 +238,21 @@ class IrctcRefundReport extends BasicEntityReport
 
         $tdate = Carbon::createFromTimestamp($to, Timezone::IST)->format('Y-m-d');
 
+        $emails = $this->merchant['transaction_report_email'];
+
+        if (isset($input['email']) === true)
+        {
+            $inputEmails = explode(',', $input['email']);
+
+            $emails = array_merge($emails, $inputEmails);
+        }
+
         $data = [
             'subject'    => 'Irctc Delta Refunds Report - ' . $fdate .' to ' . $tdate,
             'body'       => '',
             'signed_url' => $signedUrl,
             'filename'   => $filename,
-            'emails'     => $input['email']
+            'emails'     => $emails,
         ];
 
         return $data;

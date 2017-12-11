@@ -112,6 +112,7 @@ class Table
     const STATE                 = 'action_state';
     const ACTION_CHECKER        = 'action_checker';
     const WORKFLOW_PERMISSION   = 'workflow_permissions';
+    const STATE_REASON          = 'action_state_reasons';
 
     // Gateway related
     const EBS                   = 'ebs';

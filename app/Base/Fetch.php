@@ -34,13 +34,16 @@ class Fetch
     const TYPE_ARRAY           = 'array';
     const TYPE_OBJECT          = 'object';
 
-    const FIELD_MERCHANT_ID    = 'merchant_id';
-    const FIELD_GATEWAY        = 'gateway';
-    const FIELD_PAYMENT_ID     = 'payment_id';
-    const FIELD_PAYMENT_STATUS = 'payment_status';
-    const FIELD_METHOD         = 'method';
-    const FIELD_WALLET         = 'wallet';
-    const FIELD_UPI            = 'upi';
+    const FIELD_MERCHANT_ID         = 'merchant_id';
+    const FIELD_GATEWAY             = 'gateway';
+    const FIELD_PAYMENT_ID          = 'payment_id';
+    const FIELD_PAYMENT_STATUS      = 'payment_status';
+    const FIELD_METHOD              = 'method';
+    const FIELD_WALLET              = 'wallet';
+    const FIELD_UPI                 = 'upi';
+    const FIELD_SUBSCRIPTION_ID     = 'subscription_id';
+    const FIELD_REFUND_ID           = 'refund_id';
+    const FIELD_NOTES               = 'notes';
 
     /**
      * Validation rules for all fields in Entity, is an multi-dimensional array
@@ -567,7 +570,19 @@ class Fetch
                 self::LABEL     => 'UPI',
                 self::TYPE      => self::TYPE_OBJECT,
                 self::VALUES    => $upiList
-            ]
+            ],
+            self::FIELD_SUBSCRIPTION_ID => [
+                self::LABEL     => 'Subscription Id',
+                self::TYPE      => self::TYPE_STRING,
+            ],
+            self::FIELD_REFUND_ID => [
+                self::LABEL     => 'Refund Id',
+                self::TYPE      => self::TYPE_STRING
+            ],
+            self::FIELD_NOTES => [
+                Fetch::LABEL  => 'Notes',
+                Fetch::TYPE   => Fetch::TYPE_STRING,
+            ],
         ];
     }
 }

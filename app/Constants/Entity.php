@@ -113,6 +113,7 @@ class Entity
     // Generic comment and state entities
     const COMMENT               = 'comment';
     const STATE                 = 'state';
+    const STATE_REASON          = 'state_reason';
 
     //
     // Gateway entities
@@ -278,6 +279,7 @@ class Entity
         self::ACTION_CHECKER        => \RZP\Models\Workflow\Action\Checker::class,
         self::ACTION_STATE          => \RZP\Models\Workflow\Action\State::class,
         self::ACTION_COMMENT        => \RZP\Models\Workflow\Action\Comment::class,
+        self::STATE_REASON          => \RZP\Models\State\Reason::class,
 
         self::TAX_GROUP             => \RZP\Models\Tax\Group::class,
         self::LINE_ITEM_TAX         => \RZP\Models\LineItem\Tax::class,
