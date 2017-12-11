@@ -21,6 +21,7 @@ class BankCodes
     const IFSC_DNSB = 'DNSB00000CO';
     const IFSC_ESFB = 'ESFB0000002';
     const IFSC_FDRL = 'FDRL0000121';
+    const IFSC_GBCB = 'GBCB0000024';
     const IFSC_GSCB = 'GSCB0000001';
     const IFSC_HDFC = 'HDFC0000001';
     const IFSC_IBKL = 'IBKL0000001';
@@ -68,6 +69,7 @@ class BankCodes
         'DNS'   => self::IFSC_DNSB,
         'ESF'   => self::IFSC_ESFB,
         'FBL'   => self::IFSC_FDRL,
+        'GBB'   => self::IFSC_GBCB,
         'GSC'   => self::IFSC_GSCB,
         'HDB'   => self::IFSC_HDFC,
         'ICI'   => self::IFSC_ICIC,
