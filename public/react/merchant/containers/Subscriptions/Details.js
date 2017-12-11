@@ -390,7 +390,6 @@ export default class SubscriptionDetailsContainer extends Component {
     const razorpay = new window.Razorpay({
       key: this.key,
       description: 'Start Subscription',
-      amount: this.props.plan.item.amount,
       prefill: {
         name: user.name,
         email: user.email,
@@ -399,6 +398,7 @@ export default class SubscriptionDetailsContainer extends Component {
       notes: {
         dashboard: true,
       },
+      subscription_id: this.props.entity.id,
       handler: status => {
         this.postChargeAttempt();
       },
