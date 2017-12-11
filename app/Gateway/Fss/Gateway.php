@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Gateway\Base;
+use RZP\Gateway\Base\VerifyResult;
 use phpseclib\Crypt\TripleDES;
 use RZP\Trace\TraceCode;
 
@@ -19,7 +20,7 @@ class Gateway extends Base\Gateway
 
     public function authorize(array $input)
     {
-        parent::action($input, Action::PURCHASE);
+        parent::authorize($input);
 
         $purchaseRequestFields = $this->getPurchaseRequestContentArray($input);
 
@@ -326,7 +327,7 @@ class Gateway extends Base\Gateway
 
         $gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input);
 
-        if ($attributes[Entity::STATUS] === Constants::NOT_CAPTURED)
+        if ($attributes[Entity::STATUS] === Status::NOT_CAPTURED)
         {
             try
             {
@@ -372,6 +373,8 @@ class Gateway extends Base\Gateway
 
     /**
      * @param Base\Verify $verify
+     *
+     * @throws Exception\GatewayErrorException
      */
     public function verifyPayment(Base\Verify $verify)
     {
@@ -381,7 +384,62 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
-        $verify->status = Base\VerifyResult::STATUS_MATCH;
+        $verify->status = VerifyResult::STATUS_MATCH;
+
+        if (empty($verifyResponse[Fields::RESULT]) === true)
+        {
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
+        }
+
+        $status = $verifyResponse[Fields::RESULT];
+
+        $verify->gatewaySuccess = ($status === Status::SUCCESS);
+
+        $verify->apiSuccess = $this->getVerifyApiStatus($gatewayPayment, $input['payment']);
+
+        if ($verify->apiSuccess !== $verify->gatewaySuccess)
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+    }
+
+    protected function getVerifyApiStatus(Base\Entity $gatewayPayment, array $payment)
+    {
+        if (($payment['status'] === 'failed') or
+            ($payment['status'] === 'created'))
+        {
+            $apiStatus = false;
+
+            if ($gatewayPayment['status'] === Status::CAPTURED)
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+                    [
+                        'payment_id'                => $payment['id'],
+                        'api_payment_status'        => $payment['status'],
+                        'gateway_payment_status'    => $gatewayPayment['status'],
+                    ]);
+            }
+        }
+        else
+        {
+            $apiStatus = true;
+
+            if ($gatewayPayment['status'] !== Status::CAPTURED)
+            {
+                $this->trace->info(
+                    TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+                    [
+                        'payment_id'                => $payment['id'],
+                        'api_payment_status'        => $payment['status'],
+                        'gateway_payment_status'    => $gatewayPayment['status'],
+                    ]);
+            }
+        }
+
+        return $apiStatus;
     }
 
     /**
@@ -402,7 +460,6 @@ class Gateway extends Base\Gateway
 
         $response = $this->postRequest($request);
 
-        sd($response);
         $response = $this->parseVerifyResponse($response);
 
         $verify->setVerifyResponseContent($response);
@@ -465,7 +522,7 @@ class Gateway extends Base\Gateway
         {
             case Action::VERIFY:
 //                $requestContent[Fields::TRANSACTION_ID] =  $input['payment']['id'];
-                $requestContent[Fields::TRANSACTION_ID] = '3704207366';
+                $requestContent[Fields::TRANSACTION_ID] = '1716777247';
                 $requestContent[Fields::ACTION] = Constants::ACTION_INQUIRY;
                 // In verify also fss needs a trackId.
                 $requestContent[Fields::TRACK_ID] = Entity::generateUniqueId();
@@ -496,9 +553,9 @@ class Gateway extends Base\Gateway
         $status = $attributes[Entity::STATUS];
 
         if (empty($status) === false and
-            trim($status) !== Constants::CAPTURED)
+            trim($status) !== Status::CAPTURED)
         {
-            $attributes[Entity::STATUS] = Constants::NOT_CAPTURED;
+            $attributes[Entity::STATUS] = Status::NOT_CAPTURED;
         }
     }
 
@@ -605,7 +662,7 @@ class Gateway extends Base\Gateway
     {
         $status = $gateway->getStatus();
 
-        if ($status !== Constants::CAPTURED)
+        if ($status !== Status::CAPTURED)
         {
             throw new Exception\GatewayErrorException($errorCode);
         }

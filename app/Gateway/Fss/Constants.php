@@ -26,8 +26,4 @@ class Constants
     const LANGUAGE              = 'USA';
 
     const TRACK_ID              = 'TrackID';
-
-    const CAPTURED              = 'CAPTURED';
-
-    const NOT_CAPTURED          = 'NOT CAPTURED';
 }
