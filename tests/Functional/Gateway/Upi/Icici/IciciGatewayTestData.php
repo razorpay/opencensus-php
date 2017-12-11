@@ -30,6 +30,22 @@ return [
         'entity' => 'payment',
     ],
 
+    'testPaymentWithExpiryPublicAuth'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'upi is/are not required and should not be sent'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testLongVPA'   => [
         'response'  => [
             'content'     => [

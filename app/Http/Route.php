@@ -208,6 +208,8 @@ final class Route
         'merchant_activation_upload_file_admin'   => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'              => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
         'merchant_activation_migrate'             => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
+        'merchant_activation_archive'             => ['patch',    'merchant/activation/{id}/archive',               'MerchantController@updateActivationArchive'                        ],
+        'merchant_activation_status'              => ['patch',    'merchant/activation/{id}/activation_status',     'MerchantController@updateActivationStatus'                         ],
         'merchant_get_rejection_reasons'          => ['get',      'merchant/activation/rejection_reasons',          'MerchantController@getRejectionReasons'                            ],
         'merchant_batches'                        => ['post',     'merchant/{id}/batches',                          'MerchantController@createBatches'                                  ],
         'merchant_payout_mail'                    => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
@@ -659,10 +661,13 @@ final class Route
         'onboarding_features_fetch_submission'    => ['get',      'onboarding/features/{feature}',                  'FeatureController@getOnboardingSubmissions'                        ],
         'onboarding_features_create'              => ['post',     'onboarding/features/{feature}',                  'FeatureController@postOnboardingSubmissions'                       ],
         'onboarding_features_update'              => ['post',     'onboarding/features/{feature}/update',           'FeatureController@updateOnboardingSubmissions'                     ],
-        'onboarding_features_fetch_submissions'   => ['get',      'onboarding/features/submissions',                'FeatureController@getFeatureOnboardingRequests'                    ],
+        'onboarding_features_get_submissions'     => ['get',      'onboarding/features/submissions/fetch',          'FeatureController@getFeatureOnboardingRequests'                    ],
         'onboarding_features_update_status'       => ['put',      'onboarding/features/{feature}/status',           'FeatureController@updateFeatureActivationStatus'                   ],
         'onboarding_features_fetch_status'        => ['get',      'onboarding/features/{feature}/status',           'FeatureController@getFeatureActivationStatus'                      ],
-        'onboarding_features_bulk_update_status'  => ['put',      'onboarding/features/status/bulk',                'FeatureController@bulkUpdateFeatureActivationStatus'                      ],
+        'onboarding_features_bulk_update_status'  => ['put',      'onboarding/features/status/bulk',                'FeatureController@bulkUpdateFeatureActivationStatus'               ],
+
+        // Deprecated routes - maintaining for BC - Remove after dashboard changes
+        'onboarding_features_fetch_submissions'   => ['get',      'onboarding/features/submissions',                'FeatureController@getFeatureOnboardingRequestsByStatus'            ],
 
         // Deprecated routes - maintaining for BC - Remove after dashboard changes
         'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                   'FeatureController@postOnboardingSubmissions'                       ],
@@ -1269,7 +1274,10 @@ final class Route
         'merchant_get_rejection_reasons',
         'merchant_batches',
         'admin_fetch_all_entities',
+        'merchant_activation_archive',
+        'merchant_activation_status',
         'onboarding_features_fetch_submissions',
+        'onboarding_features_get_submissions',
         'onboarding_features_update_status',
         'onboarding_features_fetch_status',
         'onboarding_features_bulk_update_status',
@@ -1405,6 +1413,8 @@ final class Route
         'settings_delete'                        => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'                     => '*',
         'merchant_activation_files'              => '*',
+        'merchant_activation_archive'            => '*',
+        'merchant_activation_status'             => '*',
         'merchant_get_rejection_reasons'         => '*',
         'dispute_reason_create'                  => Permission::CREATE_DISPUTE_REASON,
         'user_confirm_by_data'                   => '*',
@@ -1414,8 +1424,10 @@ final class Route
         'onboarding_features_bulk_update_status' => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_update'             => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_fetch_details'      => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
+        'onboarding_features_get_submissions'    => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'geoip_update'                           => '*',
         'batch_process_by_id'                    => Permission::RETRY_BATCH,
+        'reports_refund_irctc'                   => '*',
     ];
 
     public static $direct = [
@@ -1554,6 +1566,7 @@ final class Route
 
     public static $slaveRoutes = [
         'payment_fetch_transaction',
+        'payment_fetch_multiple',
     ];
 
     protected static $jsonpRoutes = [

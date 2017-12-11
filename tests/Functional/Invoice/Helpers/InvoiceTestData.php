@@ -257,6 +257,24 @@ return [
         ],
     ],
 
+    'testCreateLinkWithoutReceipt' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'amount'      => 100,
+                'description' => 'Sample Description',
+                'type'        => 'link',
+                'source'      => 'seller_app',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt' => null,
+            ],
+        ],
+    ],
+
     'testCreateLinkWithTooLargeAmount' => [
         'request' => [
             'url' => '/invoices',

@@ -55,6 +55,31 @@ return [
         ],
     ],
 
+    'testCreateOrderWithoutReceipt' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/orders',
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'order',
+                'amount'      => 50000,
+                'amount_paid' => 0,
+                'amount_due'  => 50000,
+                'currency'    => 'INR',
+                'receipt'     => null,
+                'offer_id'    => null,
+                'status'      => 'created',
+                'attempts'    => 0,
+                'notes'       => [],
+            ],
+        ],
+    ],
+
     'testCreateAutoCaptureOrder' => [
         'request' => [
             'content' => [

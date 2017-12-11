@@ -82,6 +82,11 @@ class Processor
     const ASYNC_PAYMENT_TIMEOUT = 300;
 
     /**
+     * Default UPI collect request expiry time in minutes.
+     */
+    const UPI_COLLECT_EXPIRY = 5;
+
+    /**
      * @var Merchant\Entity
      */
     protected $merchant;

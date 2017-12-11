@@ -33,6 +33,9 @@ class Gateway extends Base\Gateway
 
     const CHECKSUM_ATTRIBUTE         = ConnectResponseFields::RESPONSE_HASH;
 
+    const MINIMUM_CARD_NAME_LENGTH   = 3;
+    const CARD_NAME_PADDING          = 'X';
+
     protected $gateway = Constants\Entity::FIRST_DATA;
 
     const TRACE_CODE_MAPPING = [
@@ -1094,7 +1097,7 @@ class Gateway extends Base\Gateway
             ConnectRequestFields::DYNAMIC_MERCHANT_NAME     => $this->getDynamicMerchantName($input['merchant']),
             ConnectRequestFields::LANGUAGE                  => Codes::ENGLISH_UK_LANG_CODE_CONNECT,
             ConnectRequestFields::CARD_NUMBER               => $input['card'][Card\Entity::NUMBER],
-            ConnectRequestFields::NAME                      => $input['card'][Card\Entity::NAME],
+            ConnectRequestFields::NAME                      => $this->getFormattedCardName($input['card']),
             ConnectRequestFields::EXP_MONTH                 => $input['card'][Card\Entity::EXPIRY_MONTH],
             ConnectRequestFields::EXP_YEAR                  => $input['card'][Card\Entity::EXPIRY_YEAR],
             ConnectRequestFields::CVV                       => $input['card'][Card\Entity::CVV],
@@ -1571,5 +1574,23 @@ class Gateway extends Base\Gateway
         }
 
         return $authCode;
+    }
+
+    /**
+     * FirstData has a minimum limit on card name(bname)
+     *
+     * @param array $card
+     * @return string
+     */
+    protected function getFormattedCardName(array $card): string
+    {
+        $name = trim($card[Card\Entity::NAME]);
+
+        if (strlen($name) < self::MINIMUM_CARD_NAME_LENGTH)
+        {
+            $name = str_pad($name, self::MINIMUM_CARD_NAME_LENGTH, self::CARD_NAME_PADDING);
+        }
+
+        return $name;
     }
 }

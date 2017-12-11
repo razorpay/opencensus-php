@@ -345,7 +345,7 @@ class Generator extends Base\Core
     {
         $orderAmount   = $this->invoice->getAmount();
         $orderCurrency = $this->invoice->getCurrency();
-        $orderReceipt  = 'Invoice Order';
+        $orderReceipt  = $this->invoice->getReceipt();
 
         $orderInput = [
             Order\Entity::AMOUNT          => $orderAmount,

@@ -17,7 +17,7 @@ class DefaultConnection
         $slaveRoutes = \RZP\Http\Route::getSlaveRoutes();
 
         // In the testing environment, we can't set slave connection because all
-        // entitites created during test execution are not commited and we can't
+        // entities created during test execution are not committed and we can't
         // fetch them using a different slave connection
         if ((\App::getFacadeRoot()['env'] !== 'testing') and
             (in_array($currentRoute, $slaveRoutes) === true))

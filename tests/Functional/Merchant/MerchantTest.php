@@ -1132,7 +1132,9 @@ class MerchantTest extends TestCase
             'starts_at'        => $startsAt,
         ]);
 
-        $this->startTest();
+        $content = $this->startTest();
+
+        $this->assertCount(1, $content['offers']);
     }
 
     public function testGetCheckoutPreferencesWithMerchantSpecificAndSharedOffers()
