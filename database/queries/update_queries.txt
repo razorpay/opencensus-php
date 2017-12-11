@@ -1358,3 +1358,6 @@ WHERE created_at < 1512201600
   AND settled = 0
   AND (TYPE = 'payment'
        OR TYPE = 'refund') LIMIT 5906
+
+UPDATE settings
+    SET created_at = 1505957400, updated_at = 1505957400;
