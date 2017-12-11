@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "161f0b738bb29b00cf92d8a9dbff51aa",
+    "content-hash": "06f77c0b664fe3728dae303e830790de",
     "packages": [
         {
             "name": "anlutro/l4-settings",
-            "version": "dev-master",
+            "version": "0.5.3",
             "source": {
                 "type": "git",
-                "url": "https://github.com/pratikkapasi/laravel-settings.git",
-                "reference": "57144f4c19833d260336c3baaf1885ac922ec7c3"
+                "url": "https://github.com/razorpay/laravel-settings.git",
+                "reference": "571f2ad7e3cb24af309f6f9f4bb4821bce5cf911"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pratikkapasi/laravel-settings/zipball/57144f4c19833d260336c3baaf1885ac922ec7c3",
-                "reference": "57144f4c19833d260336c3baaf1885ac922ec7c3",
+                "url": "https://api.github.com/repos/razorpay/laravel-settings/zipball/571f2ad7e3cb24af309f6f9f4bb4821bce5cf911",
+                "reference": "571f2ad7e3cb24af309f6f9f4bb4821bce5cf911",
                 "shasum": ""
             },
             "require": {
@@ -50,9 +50,9 @@
             ],
             "description": "Persistent settings in Laravel.",
             "support": {
-                "source": "https://github.com/pratikkapasi/laravel-settings/tree/master"
+                "source": "https://github.com/razorpay/laravel-settings/tree/0.5.3"
             },
-            "time": "2017-12-08T10:09:45+00:00"
+            "time": "2017-12-11T11:53:04+00:00"
         },
         {
             "name": "aws/aws-sdk-php",
@@ -8961,7 +8961,6 @@
         "razorpay/razorpay": 20,
         "razorpay/spine": 20,
         "razorpay/upi-clients": 20,
-        "anlutro/l4-settings": 20,
         "razorpay/oauth": 20,
         "codacy/coverage": 20,
         "symfony/phpunit-bridge": 20
