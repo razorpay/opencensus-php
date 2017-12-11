@@ -4,13 +4,17 @@ import { set, merge, unshift } from 'rzp/utils/immutable';
 const ACCOUNTS_FETCH = 'ACCOUNTS_FETCH';
 const ACCOUNT_CREATE = 'ACCOUNT_CREATE';
 
+export const fetchAccountsApi = params => {
+  return ajax({
+    url: '/accounts',
+    data: params,
+  });
+};
+
 export const fetchAccounts = params => {
   return {
     type: ACCOUNTS_FETCH,
-    payload: ajax({
-      url: '/accounts',
-      data: params,
-    }),
+    payload: fetchAccountsApi(params),
   };
 };
 

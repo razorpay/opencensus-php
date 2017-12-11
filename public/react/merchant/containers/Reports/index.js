@@ -11,6 +11,7 @@ import * as NotificationsActions from 'rzp/modules/notifications';
 import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import { PowerSelect, TypeAhead } from 'react-power-select';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
+import ReportsContainerNew from 'merchant/containers/Reports/ReportsNew';
 
 function validYear(current) {
   return current._d.getTime() <= Date.now() && current.year() >= 2015;
@@ -43,7 +44,7 @@ const selector = formValueSelector('generateReports');
       .startOf('month'), // Merchant can not download invoice of current month
   },
 })
-export default class ReportsContainer extends Component {
+export class ReportsContainer extends Component {
   state = { merchantAccounts: [] };
 
   componentWillMount() {
@@ -516,6 +517,27 @@ export default class ReportsContainer extends Component {
           </div>
         </content>
       </tabbed-container>
+    );
+  }
+}
+
+@connect(state => {
+  return {
+    user: state.session.user,
+  };
+})
+export default class ReportsSwitcher extends Component {
+  render() {
+    const { user } = this.props;
+
+    return (
+      <div>
+        {user.isReportV2Enabled ? (
+          <ReportsContainerNew />
+        ) : (
+          <ReportsContainer />
+        )}
+      </div>
     );
   }
 }
