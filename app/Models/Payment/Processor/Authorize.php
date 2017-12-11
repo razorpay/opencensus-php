@@ -1639,6 +1639,11 @@ trait Authorize
         // Key may not be present. Hence `??` and not `?:`
         $gatewayInput['upi']['expiry_time'] = $input['upi']['expiry_time'] ??
                                               Processor::UPI_COLLECT_EXPIRY;
+
+        if (isset($input['_']['flow']) === true)
+        {
+            $gatewayInput['upi']['flow'] = $input['_']['flow'];
+        }
     }
 
     protected function setGatewayInputForAeps($input, & $gatewayInput)
@@ -2126,6 +2131,10 @@ trait Authorize
 
                 return $this->getAsyncPaymentCreatedResponse($request, $payment);
 
+            case $this->canRunAsyncIntentPaymentFlow($payment):
+
+                return $this->getIntentPaymentCreatedResponse($request, $payment);
+
             case $this->canRunOtpPaymentFlow($payment):
 
                 return $this->getOtpPaymentCreatedResponse($request, $payment);
@@ -2148,6 +2157,27 @@ trait Authorize
 
         $response = [
             'type'          => 'async',
+            'version'       => 1,
+            'payment_id'    => $id,
+            'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),
+            'data'          => $request['data'],
+            'request'       => [
+                'url'    => $this->route->getUrlWithPublicAuthInQueryParam('payment_get_status', ['id' => $id]),
+                'method' => 'GET',
+            ]
+        ];
+
+        $this->segment->trackPayment($payment, TraceCode::ASYNC_PAYMENT_RESPONSE, $response);
+
+        return $response;
+    }
+
+    protected function getIntentPaymentCreatedResponse($request, Payment\Entity $payment): array
+    {
+        $id = $payment->getPublicId();
+
+        $response = [
+            'type'          => 'intent',
             'version'       => 1,
             'payment_id'    => $id,
             'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),
@@ -3270,7 +3300,20 @@ trait Authorize
     protected function canRunAsyncPaymentFlow($payment)
     {
         if ((Payment\Method::supportsAsync($payment->getMethod()) === true) and
-            (Payment\Gateway::supportsAsync($payment->getGateway()) === true))
+            (Payment\Gateway::supportsAsync($payment->getGateway()) === true) and
+            ($payment->getMetadata('flow') !== 'intent'))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function canRunAsyncIntentPaymentFlow($payment)
+    {
+        if ((Payment\Method::supportsAsync($payment->getMethod()) === true) and
+            (Payment\Gateway::supportsAsync($payment->getGateway()) === true) and
+            ($payment->getMetadata('flow') == 'intent'))
         {
             return true;
         }

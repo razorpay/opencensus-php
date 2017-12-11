@@ -68,6 +68,12 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if ((isset($input['upi']['flow']) === true) and
+            ($input['upi']['flow'] === 'intent'))
+        {
+            return $this->authorizeIntent($input);
+        }
+
         $attributes = $this->getGatewayEntityAttributes($input);
 
         $attributes[Entity::EXPIRY_TIME] = $input['upi']['expiry_time'];
@@ -127,6 +133,51 @@ class Gateway extends Base\Gateway
                 'vpa'   => $vpa
             ]
         ];
+    }
+
+    protected function authorizeIntent(array $input)
+    {
+        $payment = $this->createGatewayPaymentEntity([]);
+
+        $request =  $this->getPayAuthorizeRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $response = $this->parseGatewayResponse($response->body);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $response);
+
+        $this->updateGatewayPaymentResponse($payment, $response);
+
+        $status = (int) $response['response'];
+
+        if ($status !== Status::TXN_STATUS)
+        {
+            $errorCode = ResponseCodeMap::getApiErrorCode($status);
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $status,
+                ResponseCode::getResponseMessage($status));
+        }
+
+        return $this->getIntentRequest($input, $response);
+    }
+
+    protected function getIntentRequest($input, $response)
+    {
+        $content = [
+            IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA,
+            IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+            IntentParams::TXN_REF_ID    => $response['refId'],
+            IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
+            IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
+            IntentParams::TXN_CURRENCY  => 'INR',
+        ];
+
+        $query = http_build_query($content);
+
+        return ['data' => ['intent_url' => 'upi://pay?' . $query]];
     }
 
     /**
@@ -349,6 +400,34 @@ class Gateway extends Base\Gateway
         $content = $this->transformRequestArrayToContent($data);
 
         $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request'           => $request,
+                'decrypted_content' => $data,
+                'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
+            ]);
+
+        return $request;
+    }
+
+    protected function getPayAuthorizeRequestArray(array $input): array
+    {
+        $payment = $input['payment'];
+
+        $data = [
+            Fields::AMOUNT           => $this->formatAmount($payment['amount']),
+            Fields::BILL_NUMBER      => '1234',
+            Fields::MERCHANT_ID      => $this->getMerchantId(),
+            Fields::MERCHANT_TRAN_ID => $payment['id'],
+            Fields::TERMINAL_ID      => $this->getTerminalId($input),
+        ];
+
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content, 'post', 'pay');
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
@@ -867,5 +946,4 @@ class Gateway extends Base\Gateway
 
         return (new $class)->generate($input);
     }
-
 }
