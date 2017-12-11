@@ -9,4 +9,6 @@ class Url
     const PURCHASE = '/VPAS.htm?actionVPAS=VbvVEReqProcessHTTP&';
 
     const REFUND   = '/tranPipe.htm?param=tranInit';
+
+    const VERIFY = '/tranPipe.htm?param=tranInit';
 }

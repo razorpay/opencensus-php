@@ -12,7 +12,6 @@ use RZP\Models\Terminal;
 use RZP\Gateway\Base;
 use phpseclib\Crypt\TripleDES;
 use RZP\Trace\TraceCode;
-use RZP\Gateway\Base\Action;
 
 class Gateway extends Base\Gateway
 {
@@ -303,9 +302,9 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $refundRequestContentArray = $this->getRefundRequestContentArray($input);
+        $refundRequestContentArray = $this->getGatewayRequestContentArray($input);
 
-        $refundRequestContent = $this->getRefundRequestContent($refundRequestContentArray);
+        $refundRequestContent = $this->getGatewayRequestContent($refundRequestContentArray);
 
         $request = parent::getStandardRequestArray($refundRequestContent, 'post', Action::REFUND);
 
@@ -362,6 +361,132 @@ class Gateway extends Base\Gateway
         return $refundFields;
     }
 
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    /**
+     * @param Base\Verify $verify
+     */
+    public function verifyPayment(Base\Verify $verify)
+    {
+        $gatewayPayment = $verify->payment;
+
+        $verifyResponse = $verify->verifyResponseContent;
+
+        $input = $verify->input;
+
+        $verify->status = Base\VerifyResult::STATUS_MATCH;
+    }
+
+    /**
+     * Verify payment Request
+     * @param Base\Verify $verify
+     */
+    public function sendPaymentVerifyRequest(Base\Verify $verify)
+    {
+        $input = $verify->input;
+
+        $requestContentArray = $this->getGatewayRequestContentArray($input);
+
+        $requestContent = $this->getGatewayRequestContent($requestContentArray);
+
+        $request = parent::getStandardRequestArray($requestContent, 'post', Action::VERIFY);
+
+        $this->traceGatewayVerifyRequest($requestContentArray);
+
+        $response = $this->postRequest($request);
+
+        sd($response);
+        $response = $this->parseVerifyResponse($response);
+
+        $verify->setVerifyResponseContent($response);
+    }
+
+    public function parseVerifyResponse($response)
+    {
+        $responseBody = $response->body;
+
+        //we wrap around response to use simplexml.
+        $response = "<response>" . trim($responseBody) . "</response>";
+
+        $response = (array) simplexml_load_string($response);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT,
+            [
+                'body' => $response
+            ]
+        );
+
+        return $response;
+    }
+
+    public function traceGatewayVerifyRequest($requestContent)
+    {
+        $requestContent = $this->removeSensitiveRequestFields($requestContent);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'verify_content' => $requestContent
+            ]
+        );
+    }
+    public function removeSensitiveRequestFields(array $requestContent)
+    {
+        $sensitiveKeys = [
+            Fields::ID,
+            Fields::PASSWORD
+        ];
+
+        return array_diff_key($requestContent, array_flip($sensitiveKeys));
+    }
+
+    public function getGatewayRequestContentArray($input)
+    {
+        $requestContent = [
+            Fields::CURRENCY_CODE  => Constants::CURRENCY_CODE,
+            Fields::TYPE           => $this->getFormattedCardType($input[E::CARD][Card\Entity::TYPE]),
+
+            Fields::UDF5           => Constants::TRACK_ID,
+            Fields::LANGUAGE_ID    => Constants::LANGUAGE,
+
+            Fields::ID             => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
+            Fields::PASSWORD       => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD],
+        ];
+
+        switch ($this->action)
+        {
+            case Action::VERIFY:
+//                $requestContent[Fields::TRANSACTION_ID] =  $input['payment']['id'];
+                $requestContent[Fields::TRANSACTION_ID] = '3704207366';
+                $requestContent[Fields::ACTION] = Constants::ACTION_INQUIRY;
+                // In verify also fss needs a trackId.
+                $requestContent[Fields::TRACK_ID] = Entity::generateUniqueId();
+                $requestContent[Fields::AMOUNT] = $input[E::PAYMENT][Entity::AMOUNT] / 100;
+                break;
+            case Action::VERIFY_REFUND:
+                $requestContent[Fields::TRANSACTION_ID] =  $input['refund']['id'];
+                $requestContent[Fields::ACTION] = Constants::ACTION_INQUIRY;
+                $requestContent[Fields::TRACK_ID] = Entity::generateUniqueId();
+                $requestContent[Fields::AMOUNT] = $input[E::REFUND][Entity::AMOUNT] / 100;
+                break;
+            case Action::REFUND:
+                $requestContent[Fields::TRANSACTION_ID] = $input['payment']['id'];
+                $requestContent[Fields::ACTION] = Constants::ACTION_REFUND;
+                $requestContent[Fields::TRACK_ID] = $input[E::REFUND][Entity::ID];
+                $requestContent[Fields::AMOUNT] = $input[E::REFUND][Entity::AMOUNT] / 100;
+        }
+
+        return $requestContent;
+    }
+
     /**
      * FSS sends error messages in status, so parsing the same for storing.
      * @param array $attributes
@@ -377,7 +502,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function getRefundRequestContent($requestContent)
+    public function getGatewayRequestContent($requestContent)
     {
         // Entire request content is wrapped in xml.
         $requestBuffer = Utility::createRequestXml($requestContent);
@@ -412,27 +537,6 @@ class Gateway extends Base\Gateway
         $options['timeout'] = 60;
 
         return $options;
-    }
-
-    public function getRefundRequestContentArray($input)
-    {
-        $requestContent = [
-            Fields::CURRENCY_CODE  => Constants::CURRENCY_CODE,
-            Fields::TYPE           => $this->getFormattedCardType($input[E::CARD][Card\Entity::TYPE]),
-            Fields::TRANSACTION_ID => $input['payment']['id'],
-            Fields::AMOUNT         => $input[E::REFUND][Entity::AMOUNT] / 100,
-
-            Fields::ACTION         => Constants::ACTION_REFUND,
-
-            Fields::TRACK_ID       => $input[E::REFUND][Entity::ID],
-            Fields::UDF5           => Constants::TRACK_ID,
-            Fields::LANGUAGE_ID    => Constants::LANGUAGE,
-
-            Fields::ID             => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
-            Fields::PASSWORD       => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD],
-        ];
-
-        return $requestContent;
     }
 
     /**
