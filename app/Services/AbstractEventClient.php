@@ -29,6 +29,10 @@ abstract class AbstractEventClient extends Base\Core
 
     const TIMEZONE = Timezone::IST;
 
+    // SQS limit is 256 KB, but keeping the event size limit
+    // at 225 KB, so as to adjust any unforseen data additions.
+    const MAX_EVENT_DATA_SIZE = 230400;
+
     /**
      * List of sensitive keys to exclude from sengding to external services
      */
@@ -65,15 +69,18 @@ abstract class AbstractEventClient extends Base\Core
                 return false;
             }
 
-            $headers = [
-                'content-type'  => self::CONTENT_TYPE,
-                'x-signature'   => $this->generateSignature(json_encode($eventData)),
-                'x-identifier'  => $this->config['identifier']
-            ];
+            foreach ($eventData as $eventDataChunk)
+            {
+                $headers = [
+                    'content-type'  => self::CONTENT_TYPE,
+                    'x-signature'   => $this->generateSignature(json_encode($eventDataChunk)),
+                    'x-identifier'  => $this->config['identifier']
+                ];
 
-            $url = $this->config['url'] . $this->urlPattern;
+                $url = $this->config['url'] . $this->urlPattern;
 
-            $this->sendEventRequest($headers, $url, $eventData);
+                $this->sendEventRequest($headers, $url, $eventDataChunk);
+            }
         }
         catch (\Exception $e)
         {
@@ -157,31 +164,69 @@ abstract class AbstractEventClient extends Base\Core
      */
     protected function getEventTrackerData()
     {
-        $eventData = [];
+        $eventChunksData = [];
 
         if (empty($this->events) === false)
         {
-            $eventData = [
-                'mode'      => $this->mode,
-                'events'    => $this->events
-            ];
-
-            // For lumberjack old authentication
-            if (isset($this->config['key']) === true)
+            $eventChunks = $this->getEventChunks();
+            
+            foreach ($eventChunks as $eventChunk)
             {
-                $eventData['key'] = $this->config['key'];
-            }
+                $eventData = [
+                    'mode'      => $this->mode,
+                    'events'    => $eventChunk
+                ];
 
-            $context = $this->getEventContext();
+                // For lumberjack old authentication
+                if (isset($this->config['key']) === true)
+                {
+                    $eventData['key'] = $this->config['key'];
+                }
 
-            if ((isset($context) === true) and
-                (empty($context) === false))
-            {
-                $eventData['context'] = $context;
+                $context = $this->getEventContext();
+
+                if ((isset($context) === true) and
+                    (empty($context) === false))
+                {
+                    $eventData['context'] = $context;
+                }
+
+                $eventChunksData[] = $eventData;
             }
         }
 
-        return $eventData;
+        return $eventChunksData;
+    }
+
+    /**
+     * Function breaks events into smaller chunks
+     * as sqs has a limit of 256 kb data size
+     *
+     * @return array $eventChunkData
+     */
+    protected function getEventChunks()
+    {
+        $counter = 0;
+
+        $eventChunksData = [];
+
+        foreach ($this->events as $event)
+        {
+            $eventChunksData[$counter][] = $event;
+            
+            $totalEventsLength = strlen(json_encode($eventChunksData[$counter]));
+
+            if ($totalEventsLength > self::MAX_EVENT_DATA_SIZE)
+            {
+                array_pop($eventChunksData[$counter]);
+
+                $counter++;
+
+                $eventChunksData[$counter][] = $event;
+            }
+        }
+
+        return $eventChunksData;
     }
 
     /**
