@@ -4,13 +4,13 @@ import BaseModal from 'ui/BaseModal';
 import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
-import { SelectField } from 'ui/Field';
+import Field, { SelectField } from 'ui/Field';
 import { adminFetch, adminPost } from 'util/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import { isWorkflow } from 'util/index';
 
 export default class PricingPlanModal extends Component {
-  state = { pricingPlans: {} };
+  state = { pricingPlans: {}, pending: true };
 
   componentWillMount() {
     adminFetch({
@@ -23,7 +23,7 @@ export default class PricingPlanModal extends Component {
         pricingPlans[value.plan_id] = value.plan_name;
       }
 
-      this.setState({ pricingPlans });
+      this.setState({ pricingPlans, pending: false });
     });
   }
 
@@ -60,6 +60,8 @@ export default class PricingPlanModal extends Component {
   };
 
   render() {
+    const pricingPlanId = this.props.props.merchant.details.pricing_plan_id;
+
     return (
       <BaseModal header="Assign Pricing Plan">
         <Form class="full-span full-elements" style={{ width: '450px' }}>
@@ -69,22 +71,27 @@ export default class PricingPlanModal extends Component {
               pricing plan and affect all future test/live transactions.
             </strong>
           </div>
-          <SelectField
-            name="pricing_plan_id"
-            label="Plans to be Assigned"
-            defaultValue={''}
-          >
-            {Object.keys(this.state.pricingPlans).map(key => (
-              <option key={key} value={key}>
-                {this.state.pricingPlans[key]}
-              </option>
-            ))}
-          </SelectField>
+          {this.state.pending ? (
+            <Field label="Plans to be Assigned" value="Loading..." disabled />
+          ) : (
+            <SelectField
+              name="pricing_plan_id"
+              label="Plans to be Assigned"
+              defaultValue={pricingPlanId || '1In3Yh5Mluj605'}
+            >
+              {Object.keys(this.state.pricingPlans).map(key => (
+                <option key={key} value={key}>
+                  {this.state.pricingPlans[key]}
+                </option>
+              ))}
+            </SelectField>
+          )}
 
           <AsyncButton
             text="Ok"
             class="btn"
             pendingClass="small spinner"
+            disabled={this.state.pending}
             onSubmit={this.handleConfirm}
           />
         </Form>

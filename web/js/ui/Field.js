@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { methods } from 'util/data';
 import { prevent } from 'util/index';
 import { Input as DayPickerInput } from 'react-day-picker';
+import moment from 'moment';
 
 function focusInput(e) {
   e.target.nextElementSibling.focus();
@@ -17,21 +18,23 @@ export default function Field({
   label,
   infoMsg,
   fieldClass = '',
+  icon,
   ...props
 }) {
   if (tag === 'input' && !props.type) {
     props.type = 'text';
   }
   let Tag = tag;
+
   return (
     <div class={`field ${fieldClass}`}>
       <label class={props.required ? 'required' : ''} onClick={focusInput}>
         {label}
       </label>
       <Tag {...props} />
+      {icon && <i class={`post-field-icon ${icon}`} />}
       {infoMsg && (
         <div class="info-block">
-          {/*<i class="i i-info-circle" />*/}
           {typeof infoMsg === 'function' ? infoMsg() : infoMsg}
         </div>
       )}
@@ -42,14 +45,38 @@ export default function Field({
 export const SelectField = _ => <Field {..._} tag="select" />;
 export const TextAreaField = _ => <Field {..._} tag="textarea" />;
 export const FileField = _ => <Field {..._} type="file" />;
+
+const DateInput = ({
+  onDayChange,
+  dayPickerProps,
+  format = 'DD/MM/YYYY',
+  hideOnDayClick,
+  value,
+  ...props
+}) => {
+  return (
+    <DayPickerInput
+      format={format}
+      formatDate={date => moment(date).format(format)}
+      parseDate={input => moment(input, format).toDate()}
+      placeholder={format}
+      value={value}
+      inputProps={props}
+    />
+  );
+};
 export const DateField = _ => (
-  <Field type="text" format="MM/DD/YYYY" {..._} tag={DayPickerInput} />
+  <Field type="text" {..._} tag={DateInput} icon={'i-date'} />
 );
 export const TimeField = _ => <Field {..._} type="time" />;
 export const DataListField = _ => <Field {..._} tag="datalist" />;
 
-export const FromField = _ => <DateField {..._} name="from" label="From" />;
-export const ToField = _ => <DateField {..._} name="to" label="To" />;
+export const FromField = _ => (
+  <DateField {..._} name="from" label="From" placeholder="" />
+);
+export const ToField = _ => (
+  <DateField {..._} name="to" label="To" placeholder="" />
+);
 
 export function RadioField({ label, value, defaultValue, ...props }) {
   return (
@@ -66,13 +93,14 @@ export function RadioField({ label, value, defaultValue, ...props }) {
   );
 }
 
-export function CheckField({ label, ...props }) {
+export function CheckField({ label, children, ...props }) {
   return (
     <div class="field">
       <label class={props.required ? 'required' : ''} onClick={toggleChecked}>
         {label}
       </label>
       <input {...props} type="checkbox" />
+      {children}
     </div>
   );
 }
@@ -141,7 +169,7 @@ export class Switch extends Component {
   }
 }
 
-export function SelectMode({ defaultValue, ...props }) {
+export function SelectMode({ defaultValue = 'live', ...props }) {
   return (
     <SelectField
       name="mode"

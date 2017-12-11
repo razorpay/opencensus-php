@@ -30,7 +30,7 @@ class EntityProps extends Component {
 
     return (
       <BaseModal
-        header={`${isEditable ? 'Edit' : 'View'} Rule`}
+        header={`${isEditable ? 'Edit Rule' : 'View Rule'}`}
         noPadding={!isEditable}
       >
         {isEditable ? (
@@ -191,69 +191,14 @@ class GatewayRuleForm extends Component {
         >
           <option value="">All</option>
           {model.method &&
-            Object.keys(gateways[model.method]).map((m, index) => (
-              <option key={index} value={m}>
-                {gateways[model.method][m]}
-              </option>
-            ))}
+            Object.keys(gateways[model.method]).map((m, index) => {
+              return (
+                <option key={index} value={m}>
+                  {gateways[model.method][m]}
+                </option>
+              );
+            })}
         </SelectField>
-        {(model.method === 'card' || model.method === 'emi') && (
-          <Fragment>
-            <SelectField
-              name="method_type"
-              label="Card Type"
-              defaultValue={model.method_type}
-              disabled={!!model.id}
-            >
-              <option value="">All</option>
-              {Object.keys(cardTypes).map((m, index) => (
-                <option key={index} value={m}>
-                  {cardTypes[m]}
-                </option>
-              ))}
-            </SelectField>
-            <SelectField
-              defaultValue={model.network}
-              name="network"
-              label="Card Network"
-              disabled={!!model.id}
-            >
-              <option value="">All</option>
-              {Object.keys(networks).map((m, index) => (
-                <option key={index} value={m}>
-                  {networks[m]}
-                </option>
-              ))}
-            </SelectField>
-            <SelectField
-              name="currency"
-              label="Currency"
-              defaultValue={model.currency}
-              disabled={!!model.id}
-            >
-              <option value="INR">INR</option>
-              <option value="USD">USD</option>
-            </SelectField>
-            <SelectField
-              name="international"
-              label="International"
-              defaultValue={model.international}
-              disabled={!!model.id}
-            >
-              <option value="" />
-              <option value="0">No</option>
-              <option value="1">Yes</option>
-            </SelectField>
-            <Field
-              style={{ width: 300 }}
-              label="IINs"
-              name="iins"
-              defaultValue={model.iins}
-              placeholder="6 digit IINs, comma separated"
-              pattern="^(\d{6},)*\d{6}$"
-            />
-          </Fragment>
-        )}
 
         <Field
           type="number"

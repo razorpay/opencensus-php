@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
+
+import { formatDate } from 'util/index';
+import { adminFetch } from 'util/fetch';
+import { openMerchantEntity } from './entity/entity-resources';
+
 import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import Field, { SelectField, SwitchField } from 'ui/Field';
 import Collection from 'model/collection';
-import { adminFetch } from 'util/fetch';
-import { openMerchantEntity } from './entity/entity-resources';
-import { formatDate } from 'util/index';
 
 const defaultFilters = {
   account_status: 'pending',
@@ -87,6 +89,7 @@ export default class MerchantList extends Component {
 
 const fields = [
   ['Merchant ID', item => item.id],
+  ['Referrer', item => item.referrer || '--'],
   ['Name', item => item.name],
   ['Email', item => item.email],
   [

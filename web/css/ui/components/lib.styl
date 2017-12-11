@@ -10,7 +10,7 @@ header
   .field
     margin: 0 6px
   .btn
-    margin: -2px 16px
+    margin: 2px 16px
     &.pull-right
       margin-right: 0
 
@@ -50,6 +50,7 @@ header
   display: none !important
 
 .code
+  overflow: auto
   white-space: pre
   font-family: monospace
   background: #f6f6f6
@@ -124,14 +125,14 @@ header + banner
   white-space: nowrap
   margin: 1px
 
-.pills
+.pill
   @extend .square-pills
   display: inline-block;
   border-radius 16px
 
 
 .status-label
-  @extend .pills
+  @extend .pill
   font-size: 75%
   font-weight: 700
 
@@ -157,10 +158,10 @@ header + banner
   background-color: $color-info
 
 .label-yellow
-  background-color: #FCCB00
+  background-color: #fad733
 
-.label-dark-blue
-  background-color: #0057fc
+.label-primary
+  background-color: $prime
 
 
 //-------------
@@ -174,6 +175,15 @@ header + banner
 
 .text-success
   color: $success !important
+
+.text-faded
+  color: #dfe0e0 !important
+
+.text-white
+  color: #fff
+
+.text-primary
+  color: $prime
 
 
 //------------
@@ -237,6 +247,10 @@ banner
 
   &--highlighted
     background-color: #f1f1f1
+
+
+.multi-select .PowerSelect__TriggerInput
+  min-width: 135px
 
 
 //----------

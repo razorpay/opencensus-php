@@ -76,7 +76,7 @@ export default class MerchantActivationForm extends Component {
           notifySuccess(
             `Form ${
               response.archived ? 'archived' : 'unarchived'
-            } updated successfully.`
+            } successfully.`
           );
           closeModal();
         }

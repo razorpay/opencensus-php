@@ -24,7 +24,6 @@ export default class MerchantStats extends Component {
             <Field
               name="merchant_id"
               label="Merchant Id"
-              required
               value={formData.merchant_id}
               onChange={this.updateData}
             />

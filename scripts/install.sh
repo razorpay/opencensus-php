@@ -26,6 +26,10 @@ cd $DASHBOARD_INSTALL_DIR && sudo chmod 777 -R storage
 $ALOHOMORA_BIN cast --region ap-south-1 --env $DEPLOYMENT_GROUP_NAME --app $APPLICATION_NAME "$DASHBOARD_INSTALL_DIR/environment/.env.vault.j2"
 $ALOHOMORA_BIN cast --region ap-south-1 --env $DEPLOYMENT_GROUP_NAME --app $APPLICATION_NAME "$DASHBOARD_INSTALL_DIR/environment/env.php.j2"
 
+# start supervisor as root
+echo  "Supervisor Start"
+sudo systemctl start supervisor
+
 # DB Migrate
 # force flag is required because the app is in production
 echo "== php artisan migrate --force == "

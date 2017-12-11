@@ -124,7 +124,7 @@ const RequestActionCheckers = ({ checkers }) => {
             <b>Approved By:</b>
           </div>
           {approvalMap['approved'].map((name, idx) => (
-            <span class="pills" key={idx}>
+            <span class="pill" key={idx}>
               {name}
             </span>
           ))}
@@ -136,7 +136,7 @@ const RequestActionCheckers = ({ checkers }) => {
             <b>Rejected By:</b>
           </div>
           {approvalMap['rejected'].map((name, idx) => (
-            <span class="pills" key={idx}>
+            <span class="pill" key={idx}>
               {name}
             </span>
           ))}

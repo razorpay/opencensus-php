@@ -5,9 +5,15 @@ import Field, {
   TextAreaField,
   FileField,
 } from 'ui/Field';
+import BaseModal from 'ui/BaseModal';
 import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
-import { notifySuccess, closeModal, notifyError } from 'common/modal';
+import {
+  notifySuccess,
+  openModal,
+  closeModal,
+  notifyError,
+} from 'common/modal';
 
 import { adminFormUpload } from 'util/fetch';
 
@@ -94,27 +100,29 @@ export default class MakeAPICall extends Component {
             text="OK"
             class="btn"
             pendingClass="small spinner"
-            onSubmit={data => {
-              let form = { ...data };
-              let file = document.querySelector('[name=file]').files[0];
-              //If file is sent, we don't need contentType field
-              if (file) {
-                form.file = file;
-                delete form.content_type;
+            onSubmit={body => {
+              let url = body.url;
+              delete body.url;
+
+              if (!body.file) {
+                body.file = null;
               }
 
-              delete form.url;
-
-              return adminFormUpload(form, '/api/' + data.url).then(
-                response => {
-                  if (response.data.success) {
-                    notifySuccess('API Request successful');
-                    closeModal();
-                  } else {
-                    notifyError(response.data.errors.join(', '));
-                  }
+              return adminFormUpload(body, '/api/' + url).then(response => {
+                if (response.data.success) {
+                  notifySuccess('API Request successful');
+                  // closeModal();
+                  openModal(
+                    <BaseModal header="Api Response:" noPadding>
+                      <div class="code" style={{ width: '650px' }}>
+                        {JSON.stringify(response.data.data, null, 4)}}
+                      </div>
+                    </BaseModal>
+                  );
+                } else {
+                  notifyError(response.data.errors.join(', '));
                 }
-              );
+              });
             }}
           />
         </Form>
@@ -123,4 +131,5 @@ export default class MakeAPICall extends Component {
   }
 }
 
+MakeAPICall.permission = 'make_api_call';
 MakeAPICall.title = 'Make Raw API Call';

@@ -61,7 +61,8 @@ button, .btn
 .field
   display: inline-block
   margin: 10px
-  vertical-align: top;
+  vertical-align: bottom
+  position: relative
 
   // Add fieldClass="inline-field" to <Field>
   &.inline-field
@@ -132,6 +133,13 @@ form
     input, select // add textarea, etc. if needed
       margin-left: 10px
 
+  .post-field-icon
+    opacity: .4
+    position: absolute
+    right: 7%
+    bottom: 5px
+    pointer-events: none
+
   // full-span class on <Form> makes the <Field> elements to come in separates lines
   &.full-span
     margin: 0 auto
@@ -155,8 +163,14 @@ form
       >select, >input, >textarea, >button, >i, .DayPickerInput
         margin-left: 10px
 
-      >i
+      >i:not(.post-field-icon)
         width: 55%
+
+      .post-field-icon
+        position: absolute
+        right: 10%
+        top: 5px
+        pointer-events: none
 
       .info-block
         width: 55%
@@ -174,9 +188,16 @@ form
   content: '*'
   color: red
 
+.DayPicker-Day
+  padding: 0
+  min-width: 32px
+  height: 32px
+
 .DayPickerInput-OverlayWrapper
   z-index: 1
 
+.DayPickerInput input
+  width: 100%
 
 .entity-container
   position: relative

@@ -4,6 +4,7 @@ import { notifySuccess, closeModal } from 'common/modal';
 
 import { adminFetch } from 'util/fetch';
 
+TriggerDummyError.permission = 'trigger_dummy_error';
 TriggerDummyError.title = 'Trigger Dummy Error';
 export default function TriggerDummyError() {
   return (

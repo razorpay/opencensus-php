@@ -46,6 +46,20 @@ export default class MerchantEntity extends Component {
     merchantId = this.merchantId;
   }
 
+  toHideEntity(toHide, permission, tag) {
+    if (toHide) {
+      return true;
+    }
+
+    if (permission) {
+      if (!user.permissions.find(perm => perm === permission)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   getMainContent() {
     const detailsMap = getDetailsViewMap(this.model);
 
@@ -56,6 +70,10 @@ export default class MerchantEntity extends Component {
         </div>
 
         {detailsMap.map(item => {
+          if (this.toHideEntity(item.toHide, item.permission, item.tag)) {
+            return;
+          }
+
           if (item.children) {
             return (
               <ToggleEntityRow
@@ -283,6 +301,9 @@ const ActionsList = ({ model, merchantId, actions }) => {
     )
       .then(response => {
         if (response) {
+          if (isWorkflow(reponse)) {
+            return;
+          }
           notifySuccess('Merchant is successfully updated');
           model.updateDetails(response);
         }
@@ -334,9 +355,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
         <ShowWhen permission="view_activation_form">
           <div onClick={actions.ViewTeam}>See Team Details</div>
         </ShowWhen>
-        <Link to={`/merchants/${merchantId}/stats`}>
-          See Merchant Analytics Stats
-        </Link>
+        {!isDetailsLoading &&
+          merchant.details.activated && (
+            <Link to={`/merchants/${merchantId}/stats`}>
+              See Merchant Analytics Stats
+            </Link>
+          )}
         <ShowWhen permission="edit_merchant_comments">
           <div onClick={actions.EditComment}>
             Edit Comment
@@ -401,15 +425,17 @@ const ActionsList = ({ model, merchantId, actions }) => {
         </ShowWhen>
 
         <ShowWhen permission="edit_merchant_pricing">
-          <div onClick={actions.AssignPricingPlan}>
+          <div onClick={isDetailsLoading ? null : actions.AssignPricingPlan}>
             Assign Pricing
             <i class="pull-right i">%</i>
+            {isDetailsLoading && <div class="dot-loader">.</div>}
           </div>
         </ShowWhen>
         <ShowWhen permission="schedule_assign">
-          <div onClick={actions.AssignSchedule}>
+          <div onClick={isDetailsLoading ? null : actions.AssignSchedule}>
             Assign Schedule
             <i class="pull-right i i-schedule" />
+            {isDetailsLoading && <div class="dot-loader">.</div>}
           </div>
         </ShowWhen>
         <ShowWhen permission="edit_merchant_tags">

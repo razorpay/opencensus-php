@@ -5,16 +5,20 @@ import Amount from 'ui/Amount';
 
 import fetch, { adminPost } from 'util/fetch';
 import { openModal, confirm } from 'common/modal';
+import { notifySuccess, notifyError } from 'common/modal';
 
 import AsyncButton from 'ui/AsyncButton';
 import { FromField, ToField } from 'ui/Field';
 import Form from 'ui/Form';
 import EntityRow from 'ui/EntityRow';
 import Table from 'ui/Table';
+import Duplex from 'ui/Duplex';
 
 @observer
-export default class MerchantTeamDetails extends Component {
+export default class MerchantAnalyticStats extends Component {
   state = {};
+  fromDate = new Date(new Date().setDate(new Date().getDate() - 7));
+  toDate = new Date();
 
   constructor(props) {
     super();
@@ -81,10 +85,26 @@ export default class MerchantTeamDetails extends Component {
     });
   }
 
-  fetchDetails() {
-    const today = new Date();
-    const from_timestamp = new Date().setDate(today.getDate() - 7) / 1000;
-    const to_timestamp = Math.round(today.getTime()) / 1000;
+  handleSearch = body => {
+    if (!(body.from && body.to)) {
+      notifyError('Please enter valid dates');
+
+      return;
+    }
+    this.fromDate = new Date(body.from);
+    this.toDate = new Date(body.to);
+
+    this.fetchDetails();
+  };
+
+  fetchDetails = () => {
+    const from_timestamp = Math.round(this.fromDate.getTime() / 1000);
+    const to_timestamp = Math.round(this.toDate.getTime() / 1000);
+
+    if (from_timestamp > to_timestamp) {
+      notifyError('From date cannot be after To date');
+      return;
+    }
 
     const requestData = {
       filters: {
@@ -209,7 +229,9 @@ export default class MerchantTeamDetails extends Component {
       body: requestData,
     })
       .then(response => {
+        response = dummyResponse;
         if (response) {
+          this.setState({ merchant_analytics: response });
           notifySuccess('Adjustment added successfully.');
           closeModal();
         }
@@ -217,12 +239,10 @@ export default class MerchantTeamDetails extends Component {
       .catch(err => {
         notifyError(JSON.stringify(err.response));
       });
-  }
-
-  onSubmit(body) {}
+  };
 
   render() {
-    const { merchant_analytics } = this.props;
+    const { merchant_analytics } = this.state;
 
     return (
       <div class="entity-container">
@@ -232,14 +252,24 @@ export default class MerchantTeamDetails extends Component {
 
         <div class="box">
           <Form>
-            <FromField />
-            <ToField />
+            <FromField
+              label="From"
+              format="YYYY-MM-DD"
+              placeholder="YYYY-MM-DD"
+              value={new Date(new Date().setDate(new Date().getDate() - 7))}
+            />
+            <ToField
+              label="To"
+              format="YYYY-MM-DD"
+              placeholder="YYYY-MM-DD"
+              value={new Date()}
+            />
 
             <AsyncButton
               text="Fetch Stats"
               class="btn"
               pendingClass="small spinner"
-              onSubmit={this.onSubmit}
+              onSubmit={this.handleSearch}
             />
           </Form>
         </div>
@@ -247,74 +277,74 @@ export default class MerchantTeamDetails extends Component {
         <div class="box">
           <div class="heading">Payment Details</div>
           <EntityRow label={'Property'} value={'Value'} />
-          <EntityRow
-            label={'Payments Volume'}
-            value={
-              <Amount value={merchant_analytics.payments_volume[0].value} />
-            }
-          />
-          <EntityRow
-            label={'Total Payments'}
-            value={
-              <Amount value={merchant_analytics.total_payments[0].value} />
-            }
-          />
-          <EntityRow
-            label={'Total Refunds'}
-            value={<Amount value={merchant_analytics.total_refunds[0].value} />}
-          />
-          <EntityRow
-            label={'Total Settlements'}
-            value={
-              <Amount value={merchant_analytics.total_settlements[0].value} />
-            }
-          />
-          <EntityRow
-            label={'Recent Balance'}
-            value={
-              <Amount value={merchant_analytics.recent_balance[0].value} />
-            }
-          />
+          {!merchant_analytics ? (
+            <div class="small spinner center" />
+          ) : (
+            <Duplex
+              fields={_getPaymentDetailsFields()}
+              model={merchant_analytics}
+            />
+          )}
         </div>
 
         <div class="box">
           <div class="heading">Payment Method Bars</div>
-          <Table
-            items={merchant_analytics.payment_method_bars}
-            fields={_getMethodsFields()}
-          />
+          {!merchant_analytics ? (
+            <div class="small spinner center" />
+          ) : (
+            <Table
+              items={merchant_analytics.payment_method_bars}
+              fields={_getMethodsFields()}
+            />
+          )}
         </div>
 
         <div class="box">
           <div class="heading">Recent Payments</div>
-          <Table
-            items={merchant_analytics.recent_payments}
-            fields={_getGenericFields()}
-          />
+          {!merchant_analytics ? (
+            <div class="small spinner center" />
+          ) : (
+            <Table
+              items={merchant_analytics.recent_payments}
+              fields={_getGenericFields()}
+            />
+          )}
         </div>
 
         <div class="box">
           <div class="heading">Recent Refunds</div>
-          <Table
-            items={merchant_analytics.recent_refunds}
-            fields={_getGenericFields()}
-          />
+          {!merchant_analytics ? (
+            <div class="small spinner center" />
+          ) : (
+            <Table
+              items={merchant_analytics.recent_refunds}
+              fields={_getGenericFields()}
+            />
+          )}
         </div>
 
         <div class="box">
           <div class="heading">Recent Settlements</div>
-          <Table
-            items={merchant_analytics.recent_settlements}
-            fields={_getGenericFields()}
-          />
+          {!merchant_analytics ? (
+            <div class="small spinner center" />
+          ) : (
+            <Table
+              items={merchant_analytics.recent_settlements}
+              fields={_getGenericFields()}
+            />
+          )}
         </div>
 
         <div class="box">
           <div class="heading">Recent Transactions</div>
-          <Table
-            items={merchant_analytics.recent_transactions}
-            fields={_getGenericFields()}
-          />
+          {!merchant_analytics ? (
+            <div class="small spinner center" />
+          ) : (
+            <Table
+              items={merchant_analytics.recent_transactions}
+              fields={_getGenericFields()}
+            />
+          )}
         </div>
       </div>
     );
@@ -339,6 +369,31 @@ function _getGenericFields() {
   ];
 }
 
-function _getPendingInvitesFields() {
-  return [['Email', item => item.email], ['Role', item => item.role]];
+function _getPaymentDetailsFields() {
+  return [
+    item => [
+      'Payments Volume',
+      item.payments_volume[0] && (
+        <Amount value={item.payments_volume[0].value} />
+      ),
+    ],
+    item => [
+      'Total Payments',
+      item.total_payments[0] && <Amount value={item.total_payments[0].value} />,
+    ],
+    item => [
+      'Total Refunds',
+      item.total_refunds[0] && <Amount value={item.total_refunds[0].value} />,
+    ],
+    item => [
+      'Total Settlements',
+      item.total_settlements[0] && (
+        <Amount value={item.total_settlements[0].value} />
+      ),
+    ],
+    item => [
+      'Total Balance',
+      item.recent_balance[0] && <Amount value={item.recent_balance[0].value} />,
+    ],
+  ];
 }

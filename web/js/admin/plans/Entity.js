@@ -94,10 +94,10 @@ const fields = [
       item.selectField('payment_network', {
         ...options.payment_network,
         ...sharedNetworks.get()[item.payment_method],
-      }),
+      }) || 'Any',
   ],
-  ['Issuer', item => item.selectField('payment_issuer')],
-  ['Amount Range', item => item.selectField('amount_range')],
+  ['Issuer', item => item.selectField('payment_issuer') || 'Any'],
+  ['Amount Range', item => item.selectField('amount_range') || 'None'],
   [
     'Rate (%)',
     item =>

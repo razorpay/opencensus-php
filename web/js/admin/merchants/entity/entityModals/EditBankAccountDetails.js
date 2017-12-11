@@ -16,6 +16,17 @@ export default class EditBankAccountDetails extends Component {
     body.beneficiary_email = this.state.bankAccount.beneficiary_email;
     body.beneficiary_mobile = this.state.bankAccount.beneficiary_mobile;
 
+    let isAllSame = true;
+    for (let key in body) {
+      if (body[key] !== this.state.bankAccount[key]) {
+        isAllSame = false;
+      }
+    }
+    if (isAllSame) {
+      notifyError('Make some changes before save');
+      return;
+    }
+
     return adminPost({
       route_name: 'merchant_add_bank_account',
       url_params: {
@@ -120,7 +131,7 @@ export default class EditBankAccountDetails extends Component {
                 defaultValue={bankAccount.beneficiary_state}
                 required
               >
-                <option value="? undefined:undefined ?" />
+                <option value="" />
                 {Object.keys(beneficiaryStateMap).map(key => (
                   <option key={key} value={key}>
                     {beneficiaryStateMap[key]}

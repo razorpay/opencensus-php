@@ -131,7 +131,7 @@ export default class RequestEntity extends Component {
                     {formatDate(data.created_at)}
                   </span>
                 ) : null}
-                <span class={`pills status ${RequestState[data.state]}`}>
+                <span class={`pill ${RequestState[data.state]}`}>
                   {data.state}
                 </span>
               </div>

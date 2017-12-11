@@ -55,15 +55,15 @@ function _getAdminsFields(adminsMap) {
 
 function _getPricingPlansFields() {
   return [
-    ['Payment Method', item => item.payment_method],
-    ['Payment Method Type', item => item.payment_method_type],
-    ['Payment Network', item => item.payment_network],
-    ['Payment Issuer', item => item.payment_issuer],
-    ['International', item => item.international],
-    ['Amount Range Active', item => item.amount_range_active],
-    ['Amount Range Min', item => item.amount_range_min / 100],
-    ['Amount Range Max', item => item.amount_range_max / 100],
-    ['Percent Rate', item => item.percent_rate / 100],
+    ['Payment Method', item => item.payment_method || 'Any'],
+    ['Payment Method Type', item => item.payment_method_type || 'Any'],
+    ['Payment Network', item => item.payment_network || 'Any'],
+    ['Payment Issuer', item => item.payment_issuer || 'Any'],
+    ['International', item => item.international || 'false'],
+    ['Amount Range Active', item => item.amount_range_active || 'false'],
+    ['Amount Range Min', item => <Amount value={item.amount_range_min} />],
+    ['Amount Range Max', item => <Amount value={item.amount_range_max} />],
+    ['Percent Rate', item => <span>{item.percent_rate / 100}%</span>],
     ['Fixed Rate', item => <Amount value={item.fixed_rate} />],
   ];
 }
@@ -96,7 +96,10 @@ function _getOfferFields() {
   return [
     ['Offer Id', item => item.id],
     ['Name', item => item.name],
+    ['Percentage', item => item.percent_rate],
+    ['Flat Cashback', item => item.flat_cashback],
     ['Starts At', item => formatDate(item.starts_at)],
+    ['Ends At', item => formatDate(item.ends_at)],
     ['Display Text', item => item.display_text],
   ];
 }
@@ -245,6 +248,7 @@ const utilMapping = {
   gatewayUpi: {
     upi_idfc: 'IDFC UPI',
     upi_icici: 'ICICI UPI',
+    upi_hulk: 'UPI/HULK',
     upi_mindgate: 'Mindgate/HDFC UPI',
     sharp: 'Sharp',
   },
@@ -365,10 +369,12 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Tags',
-      value: details && details.tags ? details.tags.join(', ') : '',
+      value:
+        details && details.tags ? details.tags.join(', ').toLowerCase() : '',
     },
     {
       label: 'Features',
+      permission: 'view_merchant_features',
       children: () => (
         <FeaturesDetails
           features={features}
@@ -377,7 +383,20 @@ export function getDetailsViewMap(model) {
       ),
     },
     {
+      label: 'Marketplace Merchant',
+      toHide: !details.parent_id,
+      value: details.parent_id
+        ? () => (
+            <a href={`/admin/merchants/${details.parent_id}`}>
+              {details.parent_id}
+            </a>
+          )
+        : null,
+      class: 'label-success text-white',
+    },
+    {
       label: 'Balance',
+      permission: 'view_merchant_balance',
       value: Object.keys(balanceDetails).length
         ? () => (
             <div style={{ width: '80%', borderLeft: '1px solid #edf1f2' }}>
@@ -471,6 +490,10 @@ export function getDetailsViewMap(model) {
       value: details.email,
     },
     {
+      label: 'GST Number',
+      value: details.gstin || null,
+    },
+    {
       label: 'Website',
       value: details.website
         ? () => (
@@ -529,7 +552,7 @@ export function getDetailsViewMap(model) {
       value: details.merchant_details
         ? () => (
             <span
-              class={`pills ${
+              class={`pill ${
                 details.merchant_details.activation_progress < 100
                   ? 'label-danger'
                   : 'label-success'
@@ -641,6 +664,7 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Pricing Plan',
+      permission: 'view_merchant_pricing',
       children: () => (
         <div>
           <EntityRow label="Plan Id" value={pricingPlans.id} />
@@ -689,6 +713,7 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Credits',
+      permission: 'view_merchant_credits_log',
       children: () => (
         <CreditsDetails
           creditsLogs={creditsLogs}

@@ -4,7 +4,7 @@ import CollectionItem from './collectionItem';
 import { notifySuccess, notifyError } from 'common/modal';
 import { adminDelete } from 'util/fetch';
 
-const defaultFilters = {
+export const defaultFilters = {
   count: 20,
   skip: 0,
 };
@@ -12,11 +12,18 @@ const defaultFilters = {
 export default class Collection extends BaseModel {
   animateItems = true;
 
-  setFilters(filters) {
-    this.filters = observable.shallowObject(
-      Object.assign({}, defaultFilters, filters)
-    );
+  setFilters(filters, noPagination) {
+    let newFilters;
+
+    if (noPagination) {
+      newFilters = Object.assign({}, filters);
+    } else {
+      newFilters = Object.assign({}, defaultFilters, filters);
+    }
+
+    this.filters = observable.shallowObject(newFilters);
   }
+
   applyFilters(filters) {
     this.setFilters(filters);
     return this.fetch();
@@ -28,18 +35,38 @@ export default class Collection extends BaseModel {
         filters[f] = Number(filters[f]);
       }
     }
+
+    // Clear the empty values. Send value = null, in case you want to clear out the value from the final filters
+    for (let key in filters) {
+      if (filters[key] == null) {
+        delete filters[key];
+
+        if (typeof this.filters[key] !== 'undefined') {
+          delete this.filters[key];
+        }
+      }
+    }
+
     Object.assign(this.filters, defaultFilters, filters);
     return this.fetch();
   }
 
   constructor(props) {
     super(props);
-    let { data, fetchFn, filters, items, model, deleteRouteName } = props;
+    let {
+      data,
+      fetchFn,
+      filters,
+      items,
+      model,
+      noPagination,
+      deleteRouteName,
+    } = props;
     Object.assign(this, { data, fetchFn, model });
 
     this.deleteRouteName = deleteRouteName;
 
-    this.setFilters(filters);
+    this.setFilters(filters, noPagination);
 
     // load initial values
     // fetch if not pre-populated
@@ -65,7 +92,13 @@ export default class Collection extends BaseModel {
         let Model = this.model || CollectionItem;
 
         const items = data.items ? data.items : data; // pricing_get_merchant_plans api no longer has data.items
-        data.items = items.map(i => new Model(this, i));
+
+        // If searching for particular id
+        if (items instanceof Array) {
+          data.items = items.map(i => new Model(this, i));
+        } else {
+          data.items = [new Model(this, items)];
+        }
         this.items.replace(data.items);
         this.animateItems = false;
       }

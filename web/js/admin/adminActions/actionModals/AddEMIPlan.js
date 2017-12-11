@@ -22,6 +22,7 @@ const options = {
   subvention: ['', 'customer', 'merchant'],
 };
 
+AddEMIPlan.permission = 'create_emi_plan';
 AddEMIPlan.title = 'Add EMI Plan';
 export default function AddEMIPlan() {
   return (

@@ -2,7 +2,7 @@ import React from 'react';
 import Field, { FileField, SelectField, SelectMode } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import Form from 'ui/Form';
-import { notifySuccess, closeModal } from 'common/modal';
+import { notifySuccess, notifyError, closeModal } from 'common/modal';
 
 import { adminFormUpload } from 'util/fetch';
 
@@ -30,6 +30,7 @@ const gateWayOptions = [
   'Virtual Accounts Kotak',
 ];
 
+UploadReconciliationFile.permission = 'add_reconciliation_file';
 UploadReconciliationFile.title = 'Upload Reconciliation File (Payment/Refund)';
 export default function UploadReconciliationFile() {
   return (
@@ -49,6 +50,10 @@ export default function UploadReconciliationFile() {
         pendingClass="small spinner"
         onSubmit={data => {
           let files = document.querySelector('[name=files]').files || [];
+          if (!files.length) {
+            notifyError('Please select a file');
+            return;
+          }
           let form = {
             manual: 1,
             'attachment-count': files.length || 0,
@@ -62,9 +67,11 @@ export default function UploadReconciliationFile() {
             form,
             '/admin/' + data.mode + '/reconciliate'
           ).then(response => {
-            if (response) {
+            if (response.data.success) {
               notifySuccess('Reconciliation Response successful');
               closeModal();
+            } else {
+              notifyError(response.data.errors.join(', '));
             }
           });
         }}

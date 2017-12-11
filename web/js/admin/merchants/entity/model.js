@@ -54,7 +54,10 @@ export default class Model extends BaseModel {
           this.fetchPricingPlans();
         }
 
-        this.fetchBalance();
+        if (user.permissions.find(perm => perm === 'view_merchant_balance')) {
+          this.fetchBalance();
+        }
+
         this.fetchScheduleTasks();
         this.fetchGatewayRules();
 
@@ -62,9 +65,10 @@ export default class Model extends BaseModel {
 
         this.fetchTerminals('live');
         // this.fetchTerminals('test');
-
-        this.fetchFeatures('live');
-        this.fetchFeatures('test');
+        if (user.permissions.find(perm => perm === 'view_merchant_features')) {
+          this.fetchFeatures('live');
+          this.fetchFeatures('test');
+        }
       }
     );
   }
@@ -255,6 +259,7 @@ export default class Model extends BaseModel {
       adminDelete(data).then(data => {
         if (data.success) {
           notifySuccess('Credit Log deleted successfully');
+
           this.fetchCreditsLogs(mode);
         }
       })

@@ -6,6 +6,7 @@ import { notifySuccess, closeModal } from 'common/modal';
 
 import { adminPost } from 'util/fetch';
 
+AuthorizeFailedPayment.permission = 'edit_authorized_failed_payment';
 AuthorizeFailedPayment.title = 'Authorize Failed Payment';
 export default function AuthorizeFailedPayment() {
   return (

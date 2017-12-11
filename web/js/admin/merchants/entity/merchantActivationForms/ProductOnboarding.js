@@ -58,16 +58,19 @@ export default class ProductOnboarding extends Component {
                             key={questionName}
                             label={snakeToTitleCase(questionName)}
                             value={
-                              questionName === 'vendor_agreement' ? (
-                                <a
-                                  href={questionsList[questionName]}
-                                  target="_blank"
-                                >
-                                  {questionsList[questionName]}
-                                </a>
-                              ) : (
-                                questionsList[questionName]
-                              )
+                              questionName === 'vendor_agreement' ||
+                              questionName === 'website_details'
+                                ? () => (
+                                    <a
+                                      href={questionsList[questionName]}
+                                      target="_blank"
+                                    >
+                                      {questionsList[questionName].length <= 25
+                                        ? questionsList[questionName]
+                                        : 'Link'}
+                                    </a>
+                                  )
+                                : questionsList[questionName]
                             }
                           />
                         ))}

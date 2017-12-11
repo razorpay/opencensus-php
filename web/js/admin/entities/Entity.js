@@ -1,13 +1,21 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
+import { withRouter } from 'react-router-dom';
 import Duplex from 'ui/Duplex';
-import { adminFetch, adminDelete } from 'util/fetch';
+import { adminFetch, adminDelete, adminPost } from 'util/fetch';
 import { Link } from 'react-router-dom';
 import AsyncButton from 'ui/AsyncButton';
-import { notifyError } from 'common/modal';
+import { notifyDone, notifyError, notifySuccess } from 'common/modal';
+import ShowWhen from 'admin/components/ShowWhen';
 
+import { PaymentRefundsList } from './entityActions/payment';
+import * as action from './entityActions/index';
+import ToggleEntityRow from 'ui/ToggleEntityRow';
+
+@withRouter
 export default class GenericEntity extends Component {
   params = this.props.match.params;
   title = this.title();
+  fields = this::getFields;
 
   title() {
     let type = this.params.type.replace('_', ' ');
@@ -40,42 +48,87 @@ export default class GenericEntity extends Component {
   }
 
   render() {
-    let { id, type } = this.params;
+    let { id, type, mode = null } = this.params;
     let { data } = this.state;
 
+    //pass mode value for respective api's
+    if (data && mode) {
+      data.mode = mode;
+    }
+
     return (
-      <div class="box limited">
-        {data &&
-          data.merchant_id && (
-            <Link to={'/merchants/' + data.merchant_id}>
-              <i class="box-icon i-user-circle"> {data.merchant_id}</i>
-            </Link>
+      <div class="entity-page">
+        <main class="box limited">
+          {data &&
+            data.merchant_id && (
+              <Link to={'/merchants/' + data.merchant_id}>
+                <i class="box-icon i-user-circle"> {data.merchant_id}</i>
+              </Link>
+            )}
+          <header>
+            <span class="capitalize">{this.title}</span>
+            <code>{id}</code>
+          </header>
+          <Duplex pending={!data} model={data} fields={this.fields()} />
+          {type === 'payment' &&
+            data && (
+              <PaymentRefundsList
+                id={data.id}
+                merchant_id={data.merchant_id}
+                mode={data.mode}
+              />
+            )}
+
+          <br />
+          {data && (
+            <ToggleEntityRow label="Raw Data">
+              <div class="code">{JSON.stringify(data, null, 4)}</div>
+            </ToggleEntityRow>
           )}
-        <header class="capitalize">
-          {this.title} <code>{id}</code>
-        </header>
-        {actions[type] && actions[type](data)}
-        <Duplex pending={!data} model={data} fields={this.fields()} />
-        {data && <div class="code">{JSON.stringify(data, null, 4)}</div>}
+        </main>
+        <aside class="container">
+          {data &&
+            actions[type] && (
+              <div class="header">
+                <b>ACTIONS</b>
+              </div>
+            )}
+          {data && actions[type] && actions[type](data, this)}
+        </aside>
       </div>
     );
   }
+}
 
-  fields() {
-    let data = this.state.data;
-    if (data) {
-      return Object.keys(data).map(key => {
-        let value = data[key];
-        if (value) {
-          if (typeof value === 'object') {
-            value = <pre>{JSON.stringify(value)}</pre>;
-          }
+export function getFields() {
+  let data = this.state.data;
+  if (data) {
+    let fields = Object.keys(data).map(key => {
+      let value = data[key];
+      if (value) {
+        if (typeof value === 'object') {
+          value = <pre>{JSON.stringify(value)}</pre>;
         }
-        return item => [key, value];
-      });
+      }
+      return item => [key, value];
+    });
+    let moreFields = extraFields[data.entity];
+    if (moreFields) {
+      fields = moreFields.concat(fields);
     }
+    return fields;
   }
 }
+
+const extraFields = {
+  payment: [item => ['verified', verifyStatus[item.verified] || '?']],
+};
+
+const verifyStatus = {
+  1: <i class="i-yes" />,
+  0: <i class="i-yes" />,
+  2: 'Verify Error',
+};
 
 const actions = {
   emi_plan: entity => (
@@ -93,7 +146,64 @@ const actions = {
       Download
     </button>
   ),
+
+  payment: (entity, entityComponent) => (
+    <action.PaymentActions
+      entity={entity}
+      mode={entityComponent.params.mode}
+      updateEntity={entityComponent::updateEntity}
+    />
+  ),
+
+  offer: (entity, entityComponent) => (
+    <action.OfferActions
+      entity={entity}
+      mode={entityComponent.params.mode}
+      updateEntity={entityComponent::updateEntity}
+    />
+  ),
+
+  terminal: (entity, entityComponent) => (
+    <action.TerminalActions
+      entity={entity}
+      mode={entityComponent.params.mode}
+      updateEntity={entityComponent::updateEntity}
+    />
+  ),
+
+  dispute: (entity, entityComponent) => (
+    <action.DisputeActions
+      entity={entity}
+      mode={entityComponent.params.mode}
+      updateEntity={entityComponent::updateEntity}
+    />
+  ),
+
+  iin: (entity, entityComponent) => (
+    <action.IINActions
+      entity={entity}
+      mode={entityComponent.params.mode}
+      updateEntity={entityComponent::updateEntity}
+    />
+  ),
+  batch: (entity, entityComponent) => (
+    <ShowWhen permission="retry_batch">
+      <AsyncButton
+        class="btn"
+        pendingClass="small spinner"
+        onClick={retryBatch.bind(entity, entityComponent::updateEntity)}
+        text="Retry batch"
+        confirm="Confirm retry batch?"
+      />
+    </ShowWhen>
+  ),
 };
+
+function updateEntity(data) {
+  this.setState({
+    data: { ...this.state.data, ...data },
+  });
+}
 
 function deleteEmiPlan() {
   return adminDelete({
@@ -117,6 +227,23 @@ function downloadFile() {
     } else {
       windowRef.close();
       notifyError(data.errors.join(', '));
+    }
+  });
+}
+
+function retryBatch(updateEntity) {
+  const params = {
+    route_name: 'batch_process_by_id',
+    url_params: {
+      id: this.id,
+    },
+    mode: this.mode,
+  };
+
+  return adminPost(params).then(response => {
+    if (response) {
+      updateEntity();
+      notifySuccess(`Batch: ${response.id} retried successfully.`);
     }
   });
 }

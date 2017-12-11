@@ -155,6 +155,17 @@
         </button>
       </div>
     </div>
+    <div class="panel-footer row" ng-show="(admin.permissions && admin.permissions.indexOf('retry_batch') !== -1) && (entity.entity === 'batch') && (entity.status !== 'processed')">
+      <div class="btn-group text-left m-b" role="group"
+        aria-label="File Actions"
+      >
+        <button class="btn btn-info">
+        <a ng-click="batch.retry()">
+          Retry batch
+        </a>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 

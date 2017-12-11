@@ -6,6 +6,7 @@ import AsyncButton from 'ui/AsyncButton';
 import { adminPut } from 'util/fetch';
 import { notifySuccess, closeModal } from 'common/modal';
 
+ConfirmUser.permission = 'edit_merchant_confirm';
 ConfirmUser.title = 'Confirm User';
 export default function ConfirmUser() {
   return (

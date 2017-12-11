@@ -6,7 +6,7 @@ export default class ShowWhen extends Component {
     var permission = this.props.permission;
     var permissions = user.permissions;
 
-    if (!permission || permissions.find(perm => permission === perm)) {
+    if (!permissions || permissions.find(perm => permission === perm)) {
       return this.props.children;
     }
 

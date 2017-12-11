@@ -69,7 +69,9 @@ export default class EditMerchant extends Component {
 
   handleConfirm = body => {
     body.groups = this.selectedGroups.keys();
-    body.admins = body.admins.split(',');
+    if (body.admin) {
+      body.admins = body.admins.split(',');
+    }
     body.max_payment_amount *= 100;
     body.transaction_report_email = body.transaction_report_email.split(',');
 
@@ -295,24 +297,24 @@ export default class EditMerchant extends Component {
 
 /* Resources */
 const category2Map = {
-  lending: 'Lending',
-  securities: 'Securities',
   commodities: 'Commodities',
-  grocery: 'Grocery',
-  ecommerce: 'Ecommerce',
-  govt_education: 'Govt Education',
-  pvt_education: 'Pvt Education',
-  utilities: 'Utilities',
   corporate: 'Corporate',
-  insurance: 'Insurance',
-  housing: 'Housing',
-  mutual_funds: 'Mutual funds',
-  travel_agency: 'Travel Agency',
-  pharma: 'Pharma',
   cryptocurrency: 'Cryptocurrency',
+  ecommerce: 'Ecommerce',
   government: 'Government',
+  govt_education: 'Govt Education',
+  grocery: 'Grocery',
+  housing: 'Housing',
   forex: 'Forex',
   hospitality: 'Hospitality',
+  insurance: 'Insurance',
+  lending: 'Lending',
   logistics: 'Logistics',
+  mutual_funds: 'Mutual funds',
   others: 'Others',
+  pharma: 'Pharma',
+  pvt_education: 'Pvt Education',
+  securities: 'Securities',
+  travel_agency: 'Travel Agency',
+  utilities: 'Utilities',
 };

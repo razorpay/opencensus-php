@@ -6,6 +6,7 @@ import { notifySuccess, closeModal } from 'common/modal';
 
 import { adminPost } from 'util/fetch';
 
+RetryFailedSettlements.permission = 'retry_settlement';
 RetryFailedSettlements.title = 'Retry Failed Settlements';
 export default function RetryFailedSettlements() {
   return (

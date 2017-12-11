@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import Form from 'ui/Form';
 import Field, { SelectField, CheckField } from 'ui/Field';
-import AsyncButton from 'ui/AsyncButton';
 import Table from 'ui/Table';
 import MultiSelectField from 'ui//MultiSelectField';
 

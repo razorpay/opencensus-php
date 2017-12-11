@@ -1544,10 +1544,12 @@ app
           }
         });
       };
-      $scope.merchantUploadBatchFiles = function(files) {
+      $scope.merchantUploadBatchFiles = function(data) {
         var fileUploaded = false;
         var fd = new FormData();
+
         fd.append('route_name', 'merchant_batches');
+        fd.append('mode', data.mode);
         fd.append(
           'url_params',
           JSON.stringify({
@@ -1555,12 +1557,12 @@ app
           })
         );
         fd.append('body[type]', 'irctc');
-        if (files.hasOwnProperty('refund') === true) {
-          fd.append('file[data][refund]', files.refund);
+        if (data.files.hasOwnProperty('refund') === true) {
+          fd.append('file[data][refund]', data.files.refund);
           fileUploaded = true;
         }
-        if (files.hasOwnProperty('settlement') === true) {
-          fd.append('file[data][settlement]', files.settlement);
+        if (data.files.hasOwnProperty('settlement') === true) {
+          fd.append('file[data][settlement]', data.files.settlement);
           fileUploaded = true;
         }
 
@@ -1598,8 +1600,8 @@ app
           templateUrl: 'merchantBatchUploadContent.html',
           controller: 'merchantBatchUploadCtrl',
         });
-        modalInstance.result.then(function(files) {
-          $scope.merchantUploadBatchFiles(files);
+        modalInstance.result.then(function(data) {
+          $scope.merchantUploadBatchFiles(data);
         }, $.noop);
       };
       $scope.openUploadScreenshot = function() {
@@ -2670,7 +2672,7 @@ app
         var offer = Object.assign({}, $scope.offer);
         // 1. iins is for only card and emi.
         if (
-          ['netbanking', 'wallet', 'upi'].indexOf(offer.payment_method) === -1
+          ['netbanking', 'wallet', 'upi'].indexOf(offer.payment_method) !== -1
         ) {
           delete offer['iins'];
         } else if (offer['iins']) {
@@ -2853,13 +2855,19 @@ app
     '$scope',
     '$modalInstance',
     function($scope, $modalInstance) {
+      $scope.mode = 'live';
       $scope.files = {};
       $scope.onFileSelect = function($files, fileName) {
         var file = $files[0];
         $scope.files[fileName] = file;
       };
-      $scope.ok = function() {
-        $modalInstance.close($scope.files);
+      $scope.ok = function(mode) {
+        var data = {
+          files: $scope.files,
+          mode: mode,
+        };
+
+        $modalInstance.close(data);
       };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');

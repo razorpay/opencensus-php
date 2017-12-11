@@ -11,7 +11,7 @@ const options = {
 };
 
 CreateSchedule.title = 'Add Schedule';
-
+CreateSchedule.permission = 'schedule_create';
 export default function CreateSchedule() {
   return (
     <Form>

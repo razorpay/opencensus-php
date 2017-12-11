@@ -25,6 +25,7 @@ export default function Table({
   href,
   header = true,
   indexFn = defaultIndexFn,
+  customClass = '',
 }) {
   let Row = href ? Link : 'div';
   let rowClass = href || onClick ? 'tr clickable' : 'tr';
@@ -38,15 +39,15 @@ export default function Table({
   }
 
   if (pending) {
-    return <div class="table-pending" />;
+    return <div class={`table-pending ${customClass}`} />;
   }
 
   if (!items || !items.length) {
-    return <div class="table-empty" />;
+    return <div class={`table-empty ${customClass}`} />;
   }
 
   return (
-    <div class="table-container">
+    <div class={`table-container ${customClass}`}>
       <TransitionGroup class={tableClass} enter={animateRow} exit={animateRow}>
         {header && (
           <CSSTransition timeout={0}>
@@ -151,7 +152,7 @@ class Pagination extends Component {
           </div>
         )) ||
           null}
-        {(model.filters.count === model.items.length && (
+        {(model.filters.count == model.items.length && (
           <div class="next" onClick={model::this.next}>
             Next →
           </div>
