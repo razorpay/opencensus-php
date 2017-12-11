@@ -27,7 +27,7 @@ const TabContent = ({ name, value, isCurrency, title, isLoading }) => {
   /*
    * checks if the current tab is showing currency values and renders
    * content in the tab
-   * 
+   *
    */
   return (
     <a>

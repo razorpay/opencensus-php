@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Line } from 'react-chartjs-2';
 
 import Definition from 'rzp/ui/Definition';
-import Change from 'rzp/ui/Change';
+import ChangeRange from 'rzp/ui/ChangeRange';
 import { BtnGroup, Btn } from 'rzp/ui/BtnGroup';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/index.js';
@@ -21,7 +21,7 @@ const chartOptions = {
 
 /*
  * This component is responsible to show tab content in `KeyMetrics`
- * component. 
+ * component.
  */
 
 class Panel extends Component {
@@ -61,6 +61,7 @@ class Panel extends Component {
       <div className="panel p-all">
         <div className="clearfix">
           <div className="pull-left">
+            <ChangeRange previous={20} current={17} />
             <Definition>
               <span className="text-fade">
                 As compared to: {startDate.format(dateFormat)} to{' '}

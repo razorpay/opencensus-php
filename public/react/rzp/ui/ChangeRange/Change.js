@@ -4,7 +4,7 @@ import { getFormattedNumber } from 'rzp/utils/rzp-utils';
 
 import './styles.styl';
 
-export default ({ value }) => {
+export default ({ value, children }) => {
   const classNames = ['rzp-change'];
 
   if (value < 0) {
@@ -13,7 +13,10 @@ export default ({ value }) => {
 
   return (
     <span className={classNames.join(' ')}>
-      <span className="text">{getFormattedNumber(Math.abs(value))}</span>
+      <span className="text">
+        {value && getFormattedNumber(Math.abs(value))}
+        {children}
+      </span>
     </span>
   );
 };
