@@ -200,7 +200,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'],
-            Action::PURCHASE);
+            Action::AUTHORIZE);
 
         if (empty($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]) === false)
         {
@@ -371,6 +371,48 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function verifyRefund(array $input)
+    {
+        parent::action($input, Action::VERIFY_REFUND);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        return $this->verifyRefundRequest($verify);
+    }
+
+    public function getRefundToVerify($verify)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+            $verify->input['payment']['id'], Action::REFUND);
+
+        $verify->payment = $gatewayPayment;
+    }
+
+    public function verifyRefundRequest(Base\Verify $verify)
+    {
+        $verifyResponse = $verify->verifyResponseContent;
+
+        if (empty($verifyResponse[Fields::RESULT]) === false and
+            $verifyResponse[Fields::RESULT] === Status::SUCCESS)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Capture is empty here becuase this gateway is purchase model.
+     *
+     * @param array $input
+     */
+    public function capture(array $input)
+    {
+        parent::capture($input);
+    }
+
     /**
      * @param Base\Verify $verify
      *
@@ -537,8 +579,7 @@ class Gateway extends Base\Gateway
         switch ($this->action)
         {
             case Action::VERIFY:
-//                $requestContent[Fields::TRANSACTION_ID] =  $input['payment']['id'];
-                $requestContent[Fields::TRANSACTION_ID] = '1716777247';
+                $requestContent[Fields::TRANSACTION_ID] =  $input['payment']['id'];
                 $requestContent[Fields::ACTION] = Constants::ACTION_INQUIRY;
                 // In verify also fss needs a trackId.
                 $requestContent[Fields::TRACK_ID] = Entity::generateUniqueId();
