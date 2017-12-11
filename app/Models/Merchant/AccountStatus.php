@@ -30,7 +30,7 @@ final class AccountStatus
         if (self::isValid($value) === false)
         {
             throw new BadRequestValidationFailureException(
-                'Not a valid account status: ' . $type);
+                'Not a valid account status: ' . $value);
         }
     }
 }

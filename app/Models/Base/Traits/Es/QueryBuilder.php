@@ -179,7 +179,7 @@ trait QueryBuilder
      *
      * @return array
      */
-    public function getSortParameter()
+    public function getSortParameter(): array
     {
         return [
             Es::_SCORE => [
