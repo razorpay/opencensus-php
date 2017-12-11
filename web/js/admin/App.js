@@ -94,7 +94,11 @@ export default class App extends Component {
               <Route path="/permissions" component={PermissionsList} />
               <Route path="/audit-log" component={AuditLog} />
 
-              <Route path="/entity/:type/:mode/:id" component={GenericEntity} />
+              <Route
+                path="/entity/:type/:mode(live|test)/:id"
+                component={GenericEntity}
+              />
+              <Route path="/entity/:type/:id" component={GenericEntity} />
 
               <Route path="/invites" component={InvitesList} />
 

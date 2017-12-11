@@ -12,7 +12,6 @@ import Form from 'ui/Form';
 import Field, { CheckField, TextAreaField } from 'ui/Field';
 import Table from 'ui/Table';
 import { DisputeForm } from './dispute';
-import ToggleEntityRow from 'ui/ToggleEntityRow';
 import { formatDate } from 'util/index';
 import Amount from 'ui/Amount';
 
@@ -418,13 +417,11 @@ export class PaymentRefundsList extends Component {
   }
   render() {
     return (
-      <ToggleEntityRow label="Refunds">
-        <Table
-          pending={typeof this.state.refunds === 'undefined'}
-          fields={this.fields}
-          items={this.state.refunds}
-        />
-      </ToggleEntityRow>
+      <Table
+        pending={typeof this.state.refunds === 'undefined'}
+        fields={this.fields}
+        items={this.state.refunds}
+      />
     );
   }
 }

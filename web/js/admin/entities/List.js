@@ -52,11 +52,13 @@ export default class EntityList extends Component {
 
     if (filters) {
       if (filters['entity-id']) {
-        this.collection.data.route_name = 'admin_fetch_entity_by_id';
-        delete filters['entity-id'];
-      } else {
-        this.collection.data.route_name = 'admin_fetch_entity_multiple';
+        window.open(
+          `/admin/entity/${this.selectedEntity}/${filters['entity-id']}`
+        );
+        return;
       }
+
+      this.collection.data.route_name = 'admin_fetch_entity_multiple';
 
       if (filters['from']) {
         filters['from'] = Math.round(

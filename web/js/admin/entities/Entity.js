@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import Duplex from 'ui/Duplex';
-import { adminFetch, adminDelete, adminPost } from 'util/fetch';
+import fetch, { adminFetch, adminDelete, adminPost } from 'util/fetch';
 import { Link } from 'react-router-dom';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyDone, notifyError, notifySuccess } from 'common/modal';
@@ -14,36 +14,54 @@ import ToggleEntityRow from 'ui/ToggleEntityRow';
 @withRouter
 export default class GenericEntity extends Component {
   params = this.props.match.params;
-  title = this.title();
   fields = this::getFields;
 
-  title() {
+  getTitle(mode) {
     let type = this.params.type.replace('_', ' ');
-    if (this.params.mode) {
-      type = this.params.mode + ' ' + type;
+    mode = mode || this.params.mode;
+    if (mode) {
+      type = mode + ' ' + type;
     }
     return type;
   }
 
   state = {
     data: null,
+    title: this.getTitle(),
   };
 
   componentWillMount() {
-    let { type, mode, id } = this.params;
+    if (!this.params.mode) {
+      this.fetchEntity('live', true);
+      this.fetchEntity('test', true);
+    } else {
+      this.fetchEntity(this.params.mode);
+    }
+  }
 
-    adminFetch({
-      mode,
-      route_name: 'admin_fetch_entity_by_id',
-      url_params: {
-        id,
-        type: type,
+  fetchEntity(mode, suppressDefaultError) {
+    let { type, id } = this.params;
+
+    fetch(
+      {
+        url: '/admin/generic',
+        params: {
+          mode,
+          route_name: 'admin_fetch_entity_by_id',
+          url_params: {
+            '{id}': id,
+            '{type}': type,
+          },
+        },
       },
-    }).then(data => {
-      if (data) {
-        this.setState({ data });
-        return data;
+      suppressDefaultError
+    ).then(data => {
+      if (!data.errors && data) {
+        data.mode = mode;
+        this.setState({ data, title: this.getTitle(mode) });
       }
+
+      return data;
     });
   }
 
@@ -66,17 +84,19 @@ export default class GenericEntity extends Component {
               </Link>
             )}
           <header>
-            <span class="capitalize">{this.title}</span>
+            <span class="capitalize">{this.state.title}</span>
             <code>{id}</code>
           </header>
           <Duplex pending={!data} model={data} fields={this.fields()} />
           {type === 'payment' &&
             data && (
-              <PaymentRefundsList
-                id={data.id}
-                merchant_id={data.merchant_id}
-                mode={data.mode}
-              />
+              <ToggleEntityRow label="Refunds">
+                <PaymentRefundsList
+                  id={data.id}
+                  merchant_id={data.merchant_id}
+                  mode={data.mode}
+                />
+              </ToggleEntityRow>
             )}
 
           <br />

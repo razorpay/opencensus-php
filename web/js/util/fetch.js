@@ -2,7 +2,7 @@ import axios from 'axios';
 import { deepClone } from 'util/index';
 import { notifyError } from 'common/modal';
 
-export default function fetch(options) {
+export default function fetch(options, suppressError) {
   return axios(options)
     .then(({ data }) => {
       if (typeof data !== 'object') {
@@ -11,7 +11,11 @@ export default function fetch(options) {
       }
 
       if (!data.success) {
-        notifyError(data.errors.join('\n'));
+        if (!suppressError) {
+          notifyError(data.errors.join('\n'));
+        }
+
+        return data;
       } else {
         return data.data;
       }
