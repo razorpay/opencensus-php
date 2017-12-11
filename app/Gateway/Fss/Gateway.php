@@ -402,7 +402,23 @@ class Gateway extends Base\Gateway
             $verify->status = VerifyResult::STATUS_MISMATCH;
         }
 
+        $this->verifyAmountMismatch($verify, $input, $verifyResponse, E::PAYMENT);
+
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+    }
+
+    /**
+     * @param Base\Verify $verify
+     * @param array       $input
+     * @param array       $response
+     * @param string      $entity       Payment|Refund
+     */
+    protected function verifyAmountMismatch(Base\Verify $verify, array $input, array $response, string $entity)
+    {
+        $expectedAmount = $this->getFormattedAmount($input[$entity]['amount'] / 100);
+        $actualAmount = $this->getFormattedAmount($response[Fields::AMOUNT]);
+
+        $verify->amountMismatch = ($expectedAmount !== $actualAmount);
     }
 
     protected function getVerifyApiStatus(Base\Entity $gatewayPayment, array $payment)
