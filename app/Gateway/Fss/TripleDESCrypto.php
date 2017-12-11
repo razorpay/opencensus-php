@@ -34,7 +34,10 @@ class TripleDESCrypto extends BaseTripeDESCrypto
 
         $decryptedData = parent::decryptString($data);
 
-        $decryptedData = substr($decryptedData, 0, (strpos($decryptedData, '^') - 1));
+        if (empty(strpos($decryptedData, '^')) === false)
+        {
+            $decryptedData = substr($decryptedData, 0, (strpos($decryptedData, '^') - 1));
+        }
 
         $decryptedData = rtrim($decryptedData, "\0");
 

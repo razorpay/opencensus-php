@@ -110,6 +110,11 @@ class Entity extends Base\Entity
         $this->setAttribute(self::GATEWAY_PAYMENT_ID, $paymentId);
     }
 
+    public function setRefundId($refundId)
+    {
+        $this->setAttribute(self::REFUND_ID, $refundId);
+    }
+
     public function setErrorMessage($errorMessage)
     {
         $this->setAttribute(self::ERROR_MESSAGE, $errorMessage);

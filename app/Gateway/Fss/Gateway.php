@@ -3,6 +3,8 @@
 namespace RZP\Gateway\Fss;
 
 use RZP\Constants\Entity as E;
+use RZP\Error\Error;
+use RZP\Error\ErrorCode;
 use RZP\Models\Card;
 use RZP\Exception;
 use RZP\Models\Payment;
@@ -125,20 +127,25 @@ class Gateway extends Base\Gateway
 
     /**
      * Creates a gateway payment entry.
-     * @param array $purchaseFields
+     * @param array $attributes
      * @param array $input
      *
-     * @return array
+     * @return Entity
      */
-    protected function createGatewayPaymentEntity(array $purchaseFields, array $input)
+    protected function createGatewayPaymentEntity(array $attributes, array $input)
     {
         $gatewayPaymentEntity = $this->getNewGatewayPaymentEntity();
 
         $gatewayPaymentEntity->setPaymentId($input['payment']['id']);
 
+        if (empty($input['refund']['id']) === false)
+        {
+            $gatewayPaymentEntity->setRefundId($input['refund']['id']);
+        }
+
         $gatewayPaymentEntity->setAction($this->action);
 
-        $gatewayPaymentEntity->fill($purchaseFields);
+        $gatewayPaymentEntity->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPaymentEntity);
 
@@ -214,6 +221,8 @@ class Gateway extends Base\Gateway
             $actualAmount = $this->getFormattedAmount($gatewayContent[Fields::AMOUNT]);
 
             $this->assertAmount($expectedAmount, $actualAmount);
+
+            $this->checkCapturedStatus($gatewayPayment, ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
         finally
         {
@@ -302,7 +311,70 @@ class Gateway extends Base\Gateway
 
         $response = $this->postRequest($request);
 
-        sd($response);
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            [
+                'refund_id' => $input['refund']['id'],
+                'response'  => $response->body,
+            ]
+        );
+
+        $attributes = $this->getRefundFields($response, $input);
+
+        $errorStatus = $attributes[Entity::STATUS];
+
+        $this->parseResponseStatus($attributes);
+
+        $gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input);
+
+        if ($attributes[Entity::STATUS] === Constants::NOT_CAPTURED)
+        {
+            try
+            {
+                $refundContent[Constants::ERROR_TEXT] = $errorStatus;
+
+                $this->checkErrorMessage($refundContent, $gatewayEntity);
+            }
+            finally
+            {
+                $this->repo->saveOrfail($gatewayEntity);
+            }
+        }
+
+        $this->checkCapturedStatus($gatewayEntity, ErrorCode::BAD_REQUEST_REFUND_FAILED);
+    }
+
+    public function getRefundFields($response, $input)
+    {
+        $responseBody = $response->body;
+
+        //we wrap around response to use simplexml.
+        $refundResponse = "<response>" . trim($responseBody) . "</response>";
+
+        $refundResponse = (array) simplexml_load_string($refundResponse);
+
+        $refundFields = $this->getCallbackFields($refundResponse);
+
+        $refundFields[Entity::AMOUNT] = $input[E::REFUND][Entity::AMOUNT];
+
+        $refundFields[Entity::CURRENCY] = Constants::CURRENCY_CODE;
+
+        return $refundFields;
+    }
+
+    /**
+     * FSS sends error messages in status, so parsing the same for storing.
+     * @param array $attributes
+     */
+    public function parseResponseStatus(array & $attributes)
+    {
+        $status = $attributes[Entity::STATUS];
+
+        if (empty($status) === false and
+            trim($status) !== Constants::CAPTURED)
+        {
+            $attributes[Entity::STATUS] = Constants::NOT_CAPTURED;
+        }
     }
 
     public function getRefundRequestContent($requestContent)
@@ -415,5 +487,24 @@ class Gateway extends Base\Gateway
     private function getFormattedAmount($amount)
     {
         return number_format($amount, 2,'.', '');
+    }
+
+    /**
+     * Fss sends captured/success if it's a successful transaction else it will send error messages.
+     *
+     * @param Entity $gateway
+     * @param String $errorCode
+     *
+     * @throws Exception\GatewayErrorException
+     */
+    private function checkCapturedStatus(Entity $gateway, $errorCode)
+    {
+        $status = $gateway->getStatus();
+
+        if ($status !== Constants::CAPTURED)
+        {
+            throw new Exception\GatewayErrorException($errorCode);
+        }
+
     }
 }
