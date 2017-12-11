@@ -74,16 +74,15 @@ class Validator extends Base\Validator
             return;
         }
 
-        $amount = $input[Entity::AMOUNT];
+        $amountToBeDeducted = abs($input[Entity::AMOUNT]);
 
-        $balance = $this->repo->balance->getMerchantBalance($merchant);
+        $isSufficientBalance = (new Merchant\Balance\Core)->checkMerchantBalance($merchant, $amountToBeDeducted);
 
-        if (($balance->getBalance() + $amount) < 0)
+        if ($isSufficientBalance === false)
         {
             $traceData = [
                 'message'               => 'Not enough balance',
-                'merchant_balance'      => $balance->getBalance(),
-                'adjustment_amount'     => $amount,
+                'adjustment_amount'     => $amountToBeDeducted,
                 'entity_type'           => $entity->getEntityName(),
                 'entity_id'             => $entity->getId(),
             ];

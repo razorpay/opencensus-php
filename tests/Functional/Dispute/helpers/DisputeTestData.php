@@ -123,8 +123,8 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT,
         ],
     ],
 
