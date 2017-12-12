@@ -17,6 +17,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use RZP\Constants\HashAlgo;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
@@ -1278,9 +1279,29 @@ class Gateway extends Base\Gateway
             ];
         }
 
-        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $input[$amountEntity]['amount'] / 100;
+        $body[ApiRequestFields::V1_PAYMENT]
+            [ApiRequestFields::V1_CHARGE_TOTAL] = $this->getFormattedAmount($input, $amountEntity);
 
         $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY] = $currencyCode;
+    }
+
+    protected function getFormattedAmount(array $input, string $amountEntity)
+    {
+        $amount = $input[$amountEntity]['amount'] / 100;
+
+        $affectedPayments = [
+            'ids_of_affected_payments',
+        ];
+
+        // The amount should be in the format like 100.00, or 1500.00
+        // Trying it out only for specific payments
+        if ((in_array($input['payment']['id'], $affectedPayments, true) === true) or
+            ($input['merchant']['id'] === Merchant\Account::TEST_ACCOUNT))
+        {
+            $amount = number_format(($amount / 100), 2, '.', '');
+        }
+
+        return $amount;
     }
 
     /**
