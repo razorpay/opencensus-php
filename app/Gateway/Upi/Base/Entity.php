@@ -145,6 +145,11 @@ class Entity extends Base\Entity
 
     protected function generateProvider(array &$input)
     {
+        if (isset($input[self::VPA]) === false)
+        {
+            return;
+        }
+
         $vpa = $input[self::VPA];
 
         $vpaParts = explode('@', $vpa);
@@ -157,6 +162,11 @@ class Entity extends Base\Entity
     protected function generateBank($input)
     {
         $provider = $this->getAttribute(self::PROVIDER);
+
+        if (isset($provider) === false)
+        {
+            return;
+        }
 
         $bank = ProviderCode::getBankCode($provider);
 
