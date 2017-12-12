@@ -1388,7 +1388,7 @@ class Gateway extends Base\Gateway
         if ((in_array($input['payment']['id'], $affectedPayments, true) === true) or
             ($input['merchant']['id'] === Merchant\Account::TEST_ACCOUNT))
         {
-            $amount = number_format(($amount / 100), 2, '.', '');
+            $amount = number_format($amount, 2, '.', '');
         }
 
         return $amount;
