@@ -45,6 +45,7 @@ class Validator extends Base\Validator
 
     protected static $editTerminalGateways = [
         Payment\Gateway::HDFC,
+        Payment\Gateway::HITACHI,
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::UPI_ICICI,
