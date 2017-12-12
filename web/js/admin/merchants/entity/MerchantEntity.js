@@ -133,9 +133,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
     } else {
       todo = 'archive';
     }
-    return `Are you sure you want to ${
-      todo
-    } merchant? (Make sure you have attempted all ways of convincing him before doing this)`;
+    return `Are you sure you want to ${todo} merchant? (Make sure you have attempted all ways of convincing him before doing this)`;
   };
 
   const toggleSuspensionCM = function() {
