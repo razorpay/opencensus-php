@@ -106,6 +106,7 @@ return [
 
     'hitachi' => [
         'test_merchant_id'  => env('HITACHI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_terminal_id'  => env('HITACHI_GATEWAY_TEST_TERMINAL_ID'),
         'test_hash_secret'  => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
         'test_hash_secret2' => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
     ],
@@ -350,12 +351,12 @@ return [
         'live_hash_secret_corporate' => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_CORPORATE'),
         'test_hash_secret_corporate' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_CORPORATE'),
         'test_merchant_id_corporate' => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_CORPORATE'),
-        
+
         // recurring
         'test_hash_secret_rec'       => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_REC'),
         'test_hash_secret_encrec'    => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_ENCREC'),
         'test_merchant_id_rec'       => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_REC'),
-        
+
     ],
 
     'netbanking_airtel' => [
