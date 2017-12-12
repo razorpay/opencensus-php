@@ -44,6 +44,7 @@ class Netbanking
         IFSC::ICIC,
         IFSC::HDFC,
         IFSC::CORP,
+        IFSC::BARB,
         IFSC::UTIB,
         IFSC::KKBK,
         IFSC::AIRP,
@@ -64,7 +65,7 @@ class Netbanking
         IFSC::UTIB,
         IFSC::FDRL,
         IFSC::RATN,
-
+        IFSC::INDB,
     ];
 
     protected static $paytm = array(
