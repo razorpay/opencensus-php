@@ -435,11 +435,8 @@
 }
 
 .reports-entity-options {
-  input[type=radio].report-type {
-    display: none;
-  }
 
-  input[type=radio].report-type + label {
+  label {
     width: 100%;
     padding: 12px 24px;
     margin: 0;
@@ -447,25 +444,25 @@
     font-size: 14px;
     font-weight: 400;
     cursor: pointer;
+
+    :hover {
+      background-color: #f9f9f9;
+    }
+
+    &.active {
+      color: #6A55D1;
+      background-color: #f9f9f9;
+    }
   }
 
   &:not(:last-child) {
-    input[type=radio].report-type + label {
+    label {
       border-bottom: 1px solid rgba(0,0,0,0.03);
     }
   }
 
-  input[type=radio].report-type + label:hover {
-    background-color: #f9f9f9;
-  }
-
-  input[type=radio].report-type:checked + label {
-    color: #6A55D1;
-    background-color: #f9f9f9;
-  }
-
   @media(min-width: 992px) {
-    input[type=radio].report-type:checked + label:after {
+    label:after {
       float: right;
       content: "\25BA";
       color: #a5a5a5;

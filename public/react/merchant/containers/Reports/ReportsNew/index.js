@@ -216,7 +216,7 @@ export default class ReportsContainer extends Component {
 
   generateReport() {
     const { selectedConfig, selectedAccount } = this.state,
-      { date, type } = this.props;
+      { date, type, invoiceDate } = this.props;
 
     if (selectedConfig.type !== 'custom') {
       const timeFactor = type === 'daily' ? 'day' : 'month',
@@ -265,6 +265,13 @@ export default class ReportsContainer extends Component {
         .catch(() => {
           // TODO: Handle error
         });
+    } else if (selectedConfig.value === 'monthlyInvoice') {
+      return window.open(
+        `/${this.props.mode}/reports/invoice` +
+          `?year=${invoiceDate.year()}` +
+          `&month=${invoiceDate.month() + 1}`,
+        '_blank'
+      );
     }
   }
 
@@ -317,7 +324,7 @@ export default class ReportsContainer extends Component {
                 <div class="form-heading">{selectedConfig.label}</div>
               )}
               {selectedConfig.type in marketplaceConfigTypes ? (
-                <div>
+                <div className="form-element">
                   <div className="title">SELECT ACCOUNT</div>
                   <AccountsList
                     accounts={accounts}
@@ -332,7 +339,7 @@ export default class ReportsContainer extends Component {
                   </small>
                 </div>
               ) : (
-                <div>
+                <div className="form-element">
                   <div className="title">ACCOUNT</div>
                   <div class="account">
                     <strong>{this.defaultAccount.name}</strong>
