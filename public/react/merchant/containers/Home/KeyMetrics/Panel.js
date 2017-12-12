@@ -64,25 +64,14 @@ class Panel extends Component {
             <ChangeRange previous={20} current={17} />
             <Definition>
               <span className="text-fade">
-                As compared to: {startDate.format(dateFormat)} to{' '}
-                {endDate.format(dateFormat)}
+                Compared to
+                <strong> {startDate.format(dateFormat)} </strong>
+                to
+                <strong> {endDate.format(dateFormat)} </strong>
               </span>
             </Definition>
           </div>
           <div className="panel-actions pull-right">
-            <BtnGroup
-              className="panel-action-item"
-              value={selectedBreakdown}
-              onChange={this.handleBreakdownChange}
-            >
-              {breakdownVals.map((item, index) => {
-                return (
-                  <Btn value={item} key={index} className="btn-default">
-                    {titleCase(item)}
-                  </Btn>
-                );
-              })}
-            </BtnGroup>
             <div className="panel-action-item">
               {grouping.length > 0 && (
                 <select
@@ -100,8 +89,23 @@ class Panel extends Component {
                 </select>
               )}
             </div>
+            <BtnGroup
+              className="panel-action-item"
+              value={selectedBreakdown}
+              onChange={this.handleBreakdownChange}
+            >
+              {breakdownVals.map((item, index) => {
+                return (
+                  <Btn value={item} key={index} className="btn-default">
+                    {titleCase(item)}
+                  </Btn>
+                );
+              })}
+            </BtnGroup>
             <div className="panel-action-item">
-              <button className="btn btn-default">...</button>
+              <button className="btn btn-default">
+                <i class="fa fa-ellipsis-h" />
+              </button>
             </div>
           </div>
         </div>

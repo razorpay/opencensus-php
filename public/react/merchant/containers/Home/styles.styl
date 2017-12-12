@@ -46,13 +46,18 @@
 
         background-color: transparent;
         border: none;
-      } 
+      }
 
       &.active > a > div {
 
         background-color: #ffffff;
         border: 1px solid #ffffff;
-        box-shadow: 0 -3px 3px rgba(0,0,0,0.1);
+        color: #4C58C7;
+
+        > h1 {
+
+          color: #2D3042;
+        }
       }
 
       > a {
@@ -60,7 +65,9 @@
         border: none;
         padding-left: 0;
         padding-bottom: 0;
-
+        padding-right: 0;
+        text-align: left;
+        color: #686D87;
         &:hover {
 
           padding-left: 0;
@@ -69,7 +76,14 @@
         > div {
 
           padding: 10px;
+          padding-left: 24px;
           box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+
+          > h1 {
+
+            font-weight: 300;
+            color: #2D3042;
+          }
         }
       }
     }
