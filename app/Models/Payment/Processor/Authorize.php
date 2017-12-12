@@ -1481,7 +1481,11 @@ trait Authorize
         {
             $this->setGatewayInputForUpiCollect($input, $gatewayInput);
 
-            $this->validateUpiPspIsAllowed($payment);
+            if ((isset($input['_']['flow']) === false) or
+                ($input['_']['flow'] !== 'intent'))
+            {
+                $this->validateUpiPspIsAllowed($payment);
+            }
         }
 
         if ($payment->isAeps() === true)
