@@ -53,6 +53,7 @@ class Shared
     const SBIBUDDY_RAZORPAY_TERMINAL        = '1000SbibdyTmnl';
     const OPENWALLET_RAZORPAY_TERMINAL      = '100OpenwalltTl';
     const MPESA_RAZORPAY_TERMINAL           = '100VodaMpesaTl';
+    const FSS_RAZORPAY_TERMINAL             = '100FssTerminal';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
