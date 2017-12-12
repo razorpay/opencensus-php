@@ -80,6 +80,12 @@ class Validator extends Base\Validator
         Entity::CURRENCY                   => 'sometimes|alpha|size:3',
     ];
 
+    protected static $hitachiTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:hitachi',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string|max:15',
+        Entity::GATEWAY_TERMINAL_ID        => 'required|string|max:8',
+    ];
+
     protected static $aepsIciciTerminalRules = [
         Entity::GATEWAY                    => 'required|in:aeps_icici',
         Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num',
@@ -176,6 +182,11 @@ class Validator extends Base\Validator
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
+    ];
+
+    protected static $hitachiEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:hitachi',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string|max:8',
     ];
 
     protected static $firstDataEditTerminalRules = [
