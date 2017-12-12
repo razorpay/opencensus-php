@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateways\Upi\Icici;
+namespace RZP\Gateway\Upi\Icici;
 
 class IntentParams
 {
