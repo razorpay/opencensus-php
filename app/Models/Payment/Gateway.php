@@ -378,6 +378,14 @@ class Gateway
             Network::MAES,
             Network::RUPAY,
         ],
+        self::FSS => [
+            Network::MC,
+            Network::VISA,
+            Network::MAES,
+            Network::DICL,
+            Network::RUPAY,
+            Network::UNKNOWN
+        ],
     ];
 
     public static $walletToGatewayMap = [

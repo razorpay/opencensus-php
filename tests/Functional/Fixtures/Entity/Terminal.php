@@ -233,7 +233,6 @@ class Terminal extends Base
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'fss',
             'card'                      => 1,
-            'shared'                    => 1,
             'gateway_merchant_id'       => 'random',
             'gateway_terminal_id'       => '123',
             'gateway_terminal_password' => 'password',
