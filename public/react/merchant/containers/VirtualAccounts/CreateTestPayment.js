@@ -51,7 +51,7 @@ export default class CreateTestPayment extends Component {
     let { virtualAccount, mode } = this.props;
     let bankAccount = virtualAccount.receivers[0];
 
-    if (mode === 'test' && props.amount >= 1e7) {
+    if (mode === 'test' && props.amount > 1e7) {
       return this.props.showNotification({
         type: 'error',
         message: 'Amount should not be greater than 1Cr. in Test Mode',
