@@ -63,19 +63,21 @@ export const timeScale = ({ xLabel, yLabel }) => {
             source: 'data',
             autoSkip: true,
           },
-          stacked: true,
         },
       ],
-      yAxes: {
-        ticks: {
-          beginAtZero: true,
-          suggestedMax: 10,
-          maxTicksLimit: 10,
+      yAxes: [
+        {
+          stacked: true,
+          ticks: {
+            beginAtZero: true,
+            suggestedMax: 10,
+            maxTicksLimit: 10,
+          },
+          gridLines: {
+            color: '#FFFFFF',
+          },
         },
-        gridLines: {
-          color: '#FFFFFF',
-        },
-      },
+      ],
     },
   };
 
