@@ -133,20 +133,34 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRefundRequest($input);
 
+        //TODO: Create refund gateway entry
+
         $response = $this->sendGatewayRequest($request);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [$response->body]);
-        sd($response->body);
-        //TODO do stuff after this is done
+
+        $responseData = json_decode($response->body, true);
+
+        // TODO: Store  refund response
+
+        if ($responseData[RequestConstants::REFUND_SUCCESS] !== Status::STATUS_SUCCESS)
+        {
+            // Can't validate amount here, since amount does not exist in response
+
+            // Payment fails, throw exception
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_REFUND_FAILED,
+                $content[ResponseConstants::REFUND_RESPONSE],
+                $content[ResponseConstants::REFUND_MESSAGE]
+            );
+        }
     }
 
     protected function getRefundRequest(array $input): array
     {
-        $iv = $this->getIv();
-
-        $encryptor = (new Encryptor(2, $iv));
+        $encryptor = $this->getEncryptor();
 
         $sKey = $encryptor->generateSkey();
 
@@ -161,7 +175,7 @@ class Gateway extends Base\Gateway
             RequestConstants::REFUND_DATA_AMOUNT              => $amount,
             RequestConstants::REFUND_DATA_NOTE                => 'test',
             RequestConstants::REFUND_DATA_DEVICE_ID           => $this->config['device_id'],
-            RequestConstants::REFUND_DATA_SEQ_NO              => upi_uuid(),
+            RequestConstants::REFUND_DATA_SEQ_NO              => strtolower(upi_uuid()),
             RequestConstants::REFUND_DATA_CHANNEL_CODE        => $this->config['channel_code'],
             RequestConstants::REFUND_DATA_PROFILE_ID          => $this->config['profile_id'],
             RequestConstants::REFUND_DATA_ACCOUNT_TYPE        => 'Saving',
@@ -180,7 +194,7 @@ class Gateway extends Base\Gateway
             RequestConstants::REFUND_DATA_MERCHANT_TYPE       => 'ENTITY',
         ];
 
-        $encryptedData = $encryptor->encryptUsingSessionKey(http_build_query($data), $sKey);
+        $encryptedData = $encryptor->encryptUsingSessionKey(json_encode($data), $sKey);
 
         $encryptedKey = $encryptor->encryptSessionKey($sKey, $this->mode, 'refund');
 
@@ -189,7 +203,7 @@ class Gateway extends Base\Gateway
             RequestConstants::REFUND_REQUEST_SERVICE              => 'UPI',
             RequestConstants::REFUND_REQUEST_ENCRYPTEDKEY         => $encryptedKey,
             RequestConstants::REFUND_REQUEST_OAEPHASHINGALGORITHM => 'NONE',
-            RequestConstants::REFUND_REQUEST_IV                   => $iv,
+            RequestConstants::REFUND_REQUEST_IV                   => $this->getIv(),
             RequestConstants::REFUND_REQUEST_ENCRYPTEDDATA        => $encryptedData,
             RequestConstants::REFUND_REQUEST_CLIENTINFO           => '',
             RequestConstants::REFUND_REQUEST_OPTIONALPARAM        => '',
@@ -220,9 +234,15 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getIv()
+    // This gets overridden in Mock gateway
+    protected function getEncryptor(): Encryptor
     {
-        return '';
+        return new Encryptor(2, $this->getIv());
+    }
+
+    public function getIv()
+    {
+        return 'asdasd';
     }
 
     protected function setEncryptedFingerPrintDataInCache($input)

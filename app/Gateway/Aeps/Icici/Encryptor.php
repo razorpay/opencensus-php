@@ -9,15 +9,20 @@ use RZP\Constants\Mode;
 
 class Encryptor
 {
-    const CERT_PATH  = 'certs/public.cer';
-    const ICICI_CERT_PATH  = 'certs/public_icici.cer';
-    const CERT_EXPIRY = '20191230';
+    const CERT_PATH       = 'certs/public.cer';
+    const ICICI_CERT_PATH = 'certs/public_icici.cer';
+    const CERT_EXPIRY     = '20191230';
 
-    const CERT_PATH_UAT = 'certs/public_uat.cer';
+    const CERT_PATH_UAT       = 'certs/public_uat.cer';
     const ICICI_CERT_PATH_UAT = 'certs/public_uat_icici_refund.cer';
-    const CERT_EXPIRY_UAT = '20171105';
+    const CERT_EXPIRY_UAT     = '20171105';
 
-    public function __construct($mode=1, $iv='')
+    const MOCK_CERT_PATH_PUBLIC  = 'Mock/certificates/cert.pem';
+    const MOCK_CERT_PATH_PRIVATE = 'Mock/certificates/key.pem';
+
+    protected $mockCert = false;
+
+    public function __construct($mode = 1, $iv = '', $MockCert = false)
     {
         $this->encryptionMode = $mode;
 
@@ -25,13 +30,16 @@ class Encryptor
         {
             $this->iv = '';
         }
+
+        $this->mockCert = $MockCert;
     }
 
     protected function createPidXml($fpData)
     {
         $date = Carbon::now(Timezone::IST)->format('Y-m-d\TH:i:s');
 
-        $pidBlock = '<Pid ts="' . $date . '" ver="1.0"><Bios><Bio type="FMR" posh="UNKNOWN">' . $fpData . '</Bio></Bios></Pid>';
+        $pidBlock = '<Pid ts="' . $date . '" ver="1.0"><Bios><Bio type="FMR" posh="UNKNOWN">' .
+                    $fpData . '</Bio></Bios></Pid>';
 
         return $pidBlock;
     }
@@ -50,7 +58,21 @@ class Encryptor
         return base64_encode($cipher->encrypt($data));
     }
 
-    public function encryptSessionKey($skey, $mode, $type='')
+    public function decryptUsingSessionKey($data, $skey)
+    {
+        $cipher = new AES($this->encryptionMode);
+
+        if ($this->encryptionMode === 2)
+        {
+            $cipher->setIV($this->iv);
+        }
+
+        $cipher->setKey($skey);
+
+        return $cipher->decrypt(base64_decode($data));
+    }
+
+    public function encryptSessionKey($skey, $mode, $type = '')
     {
         if ($mode === Mode::LIVE)
         {
@@ -73,6 +95,11 @@ class Encryptor
             }
         }
 
+        if ($this->mockCert === true)
+        {
+            $certPath = self::MOCK_CERT_PATH_PUBLIC;
+        }
+
         $publicKey = file_get_contents(__DIR__ . '/' . $certPath);
 
         openssl_public_encrypt($skey, $encrypted, $publicKey);
@@ -80,6 +107,20 @@ class Encryptor
         $encoded = base64_encode($encrypted);
 
         return $encoded;
+    }
+
+    /**
+     * This would be used only in mocks. So, we use the mock certificate no matter which action it is.
+     */
+    public function decryptSessionKey($skey)
+    {
+        $key = file_get_contents(__DIR__ . '/' . self::MOCK_CERT_PATH_PRIVATE);
+
+        $decoded = base64_decode($skey);
+
+        openssl_private_decrypt($decoded, $decrypted, $key);
+
+        return $decrypted;
     }
 
     public function generateHmac($fpData, $skey)
