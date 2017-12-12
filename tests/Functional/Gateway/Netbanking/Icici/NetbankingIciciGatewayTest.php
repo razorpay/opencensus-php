@@ -53,18 +53,25 @@ class NetbankingIciciGatewayTest extends TestCase
     {
         $this->fixtures->terminal->edit($this->sharedTerminal->getId(), ['corporate' => 1]);
 
+        $this->payment = $this->getDefaultNetbankingPaymentArray('ICIC_C');
+
         $this->doAuthAndCapturePayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
 
         $content = $this->verifyPayment($payment['id']);
 
-        $this->assertTestResponse($payment, 'testPayment');
+        $testData = $this->testData['testPayment'];
+        $testData['bank'] = 'ICIC_C';
+
+        $this->assertArraySelectiveEquals($testData, $payment);
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNetbankingEntity'], $gatewayPayment);
+        $testData = $this->testData['testPaymentNetbankingEntity'];
+        $testData['bank'] = 'ICIC_C';
+
+        $this->assertArraySelectiveEquals($testData, $gatewayPayment);
 
         // Asserts that bank payment id exists in response and is an int
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);

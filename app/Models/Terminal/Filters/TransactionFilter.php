@@ -33,6 +33,7 @@ class TransactionFilter extends Terminal\Filter
         'subscription',
         'tpv',
         'pharma',
+        'corporate',
     ];
 
     public function methodFilter($terminal)
@@ -239,6 +240,22 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return ($terminal->isNonRecurring() === true);
+    }
+
+    protected function corporateFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        $bank = $payment->getBank();
+
+        $isTerminalCorporate = $terminal->isCorporate();
+
+        if (Netbanking::isCorporateTerminalRequired($bank) === true)
+        {
+            return ($isTerminalCorporate === true);
+        }
+
+        return true;
     }
 
     protected function subscriptionFilter(Terminal\Entity $terminal)
