@@ -32,7 +32,7 @@ const SelectConfig = ({
     ) : (
       <div>
         {configs.map((config, index) => (
-          <div class="reports-entity-options" key={index}>
+          <div class="reports-entity-options new" key={index}>
             <label
               className={selectedConfig.value === config.value ? 'active' : ''}
               onClick={() => onConfigChange({ option: config })}
