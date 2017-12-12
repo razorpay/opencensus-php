@@ -13,6 +13,7 @@ class BankCodes
         IFSC::CIUB => 'CUB',                    // City Union Bank
         IFSC::UTIB => 'UTI',                    // Axis Bank
         IFSC::ICIC => 'ICI',                    // ICICI Bank
+        Netbanking::ICIC_C => 'ICO',            // ICICI Corporate Banking
         IFSC::ANDB => 'ADB',                    // Andhra Bank
         IFSC::BBKM => 'BBK',                    // Bank of Bahrain and Kuwait
         IFSC::MAHB => 'BOM',                    // Maharashtra Bank

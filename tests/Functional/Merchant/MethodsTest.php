@@ -39,7 +39,7 @@ class MethodsTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(59, $count);
+        $this->assertEquals(61, $count);
     }
 
     public function testGetPaymentMethodsRouteWithNetbankingFalse()
@@ -62,7 +62,7 @@ class MethodsTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(59, $count);
+        $this->assertEquals(61, $count);
     }
 
     public function testBulkMethodUpdate()

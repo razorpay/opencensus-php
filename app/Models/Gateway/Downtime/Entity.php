@@ -206,6 +206,8 @@ class Entity extends Base\PublicEntity
                     $input[Entity::ISSUER] = Entity::ALL;
 
                     // If gateway is a direct netbanking gateway we set the issuer
+                    // @TODO : This can show the issue without distinction between corporate and
+                    //         Non corporate banking
                     if (Payment\Gateway::isDirectNetbankingGateway($gateway) === true)
                     {
                         $input[Entity::ISSUER] = Payment\Gateway::getBankForDirectNetbankingGateway($gateway);
@@ -458,6 +460,8 @@ class Entity extends Base\PublicEntity
             }
         }
         // For directly supporteed gateways we always dsiplay the data
+        // @TODO : This can show the issue without distinction between corporate and
+        //         Non corporate banking
         else if (Payment\Gateway::isDirectNetbankingGateway($gateway) === true)
         {
             $issuer = Payment\Gateway::getBankForDirectNetbankingGateway($gateway);

@@ -1382,14 +1382,14 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'BARB_C',
+                            'issuer' => 'BARB_R',
                         ],
                     ],
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'BARB_R',
+                            'issuer' => 'BARB_C',
                         ],
                     ],
                     [
@@ -1614,14 +1614,14 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'BARB_C',
+                            'issuer' => 'BARB_R',
                         ],
                     ],
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'BARB_R',
+                            'issuer' => 'BARB_C',
                         ],
                     ],
                     [
@@ -1857,8 +1857,8 @@ return [
                                 'SYNB',
                                 'TMBL',
                                 'TNSC',
-                                'BARB_C',
                                 'BARB_R',
+                                'BARB_C',
                                 'PUNB_C',
                                 'LAVB_C'
                             ],

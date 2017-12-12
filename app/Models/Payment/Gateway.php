@@ -551,6 +551,11 @@ class Gateway
      * @var array
      */
     public static $netbankingToGatewayMap = [
+        //corp banks
+        Netbanking::ICIC_C => Gateway::NETBANKING_ICICI,
+        Netbanking::UTIB_C => Gateway::NETBANKING_AXIS,
+
+        // retail banks
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::BARB => Gateway::NETBANKING_BOB,

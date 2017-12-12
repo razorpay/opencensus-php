@@ -180,6 +180,8 @@ class Collection extends Base\PublicCollection
         }
 
         // For directly supporteed gateways we always dsiplay the data
+        // @TODO : This can show the issue without distinction between corporate and
+        //         Non corporate banking
         if (Payment\Gateway::isDirectNetbankingGateway($gateway) === true)
         {
             $data[Entity::ISSUER] = (array) Payment\Gateway::getBankForDirectNetbankingGateway($gateway);
