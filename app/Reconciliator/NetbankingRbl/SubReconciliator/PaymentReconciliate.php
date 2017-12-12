@@ -22,7 +22,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId($row)
     {
-        sd($row);
         if (empty($row[ClaimFields::BANK_REFERENCE]) === false)
         {
             return $row[ClaimFields::BANK_REFERENCE];
