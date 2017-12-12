@@ -25,14 +25,15 @@ class TripleDESCrypto extends BaseTripeDESCrypto
      * Instead of removing the extra padded string, FSS is attaching '^' as a End of data.
      * so after decrypting data truncating the last extra padded part.
      * @param $ciphertext
+     * @param $padding
      *
      * @return string
      */
-    public function decryptString($ciphertext)
+    public function decryptString($ciphertext, $padding = false)
     {
         $data = hex2bin($ciphertext);
 
-        $decryptedData = parent::decryptString($data);
+        $decryptedData = parent::decryptString($data, $padding);
 
         if (empty(strpos($decryptedData, '^')) === false)
         {

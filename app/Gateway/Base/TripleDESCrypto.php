@@ -27,12 +27,16 @@ class TripleDESCrypto
     /**
      * Decrypts string.
      * @param $ciphertext
+     * @param $padding
      *
      * @return string
      */
-    public function decryptString($ciphertext)
+    public function decryptString($ciphertext, $padding = false)
     {
-        $this->des->disablePadding();
+        if ($padding === false)
+        {
+            $this->des->disablePadding();
+        }
 
         return $this->des->decrypt($ciphertext);
     }

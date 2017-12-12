@@ -56,4 +56,6 @@ class Fields
     const LANGUAGE_ID                   = 'langid';
 
     const ERROR_TEXT                    = 'ErrorText';
+
+    const ACTIONVPAS                    = 'actionVPAS';
 }
