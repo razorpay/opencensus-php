@@ -73,9 +73,9 @@ class Repository extends Base\Repository
      *
      * @param string $status
      *
-     * @return Base\PublicCollection
+     * @return array
      */
-    public function getFeatureOnboardingRequestsByStatus(string $status): Base\PublicCollection
+    public function getFeatureOnboardingRequestsByStatus(string $status): array
     {
         return $this->newQueryWithConnection(Mode::LIVE)
                     ->select(
@@ -87,7 +87,8 @@ class Repository extends Base\Repository
                     ->where(Entity::MARKETPLACE_ACTIVATION_STATUS, $status)
                     ->orWhere(Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS, $status)
                     ->orWhere(Entity::SUBSCRIPTIONS_ACTIVATION_STATUS, $status)
-                    ->get();
+                    ->get()
+                    ->toArray();
     }
 
     /**

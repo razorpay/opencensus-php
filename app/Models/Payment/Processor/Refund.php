@@ -698,7 +698,7 @@ trait Refund
 
     protected function callRefundFunction($payment, $data)
     {
-        if ($this->shouldHitGateway($payment) === true)
+        if ($this->shouldHitGatewayForRefund($payment) === true)
         {
             return $this->callGatewayRefundFunction($payment, $data);
         }
