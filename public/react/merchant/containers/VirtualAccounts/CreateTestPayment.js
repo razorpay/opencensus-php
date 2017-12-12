@@ -54,7 +54,7 @@ export default class CreateTestPayment extends Component {
     if (mode === 'test' && props.amount >= 1e7) {
       return this.props.showNotification({
         type: 'error',
-        message: 'Amount should not be greater then 1Cr. in Test Mode',
+        message: 'Amount should not be greater than 1Cr. in Test Mode',
       });
     }
 
