@@ -105,7 +105,6 @@ class Gateway extends Base\Gateway
                 ]);
         }
 
-        // Authorization was successful
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
         $this->checkResponseStatus($content[ResponseFields::STATUS]);
