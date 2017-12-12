@@ -60,12 +60,12 @@ class BankCodes
         IFSC::SBTR => 'SBI',                    // State Bank of Travancore - Silent redirect to SBI
         IFSC::DBSS => 'DBS',                    // DBS Bank
         IFSC::IDFB => 'IDN',                    // IDFC Bank
-        Netbanking::BARB_C => 'BBC',            // Bank of Baroda - Corporate
         Netbanking::BARB_R => 'BBR',            // Bank of Baroda - Retail
-        Netbanking::PUNB_C => 'CPN',            // Punjab National Bank - Corporate
         Netbanking::PUNB_R => 'PNB',            // Punjab National Bank - Retail
-        Netbanking::LAVB_C => 'LVC',            // Laxmi Vilas Bank - Corporate
         Netbanking::LAVB_R => 'LVR',            // Laxmi Vilas Bank - Retail
+        Netbanking::BARB_C => 'BBC',            // Bank of Baroda - Corporate
+        Netbanking::PUNB_C => 'CPN',            // Punjab National Bank - Corporate
+        Netbanking::LAVB_C => 'LVC',            // Laxmi Vilas Bank - Corporate
     ];
 
     public static $corporateBankCodeMap  = [

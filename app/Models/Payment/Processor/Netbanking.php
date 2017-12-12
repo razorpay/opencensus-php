@@ -12,19 +12,27 @@ use RZP\Models\Terminal\Category;
 class Netbanking
 {
     const BARB_C = 'BARB_C';
-    const BARB_R = 'BARB_R';
     const PUNB_C = 'PUNB_C';
-    const PUNB_R = 'PUNB_R';
     const LAVB_C = 'LAVB_C';
+    const ICIC_C = 'ICIC_C';
+    const UTIB_C = 'UTIB_C';
+
+    // Need to be deprecated
+    // once merchants are notified
+    const BARB_R = 'BARB_R';
+    const PUNB_R = 'PUNB_R';
     const LAVB_R = 'LAVB_R';
 
     protected static $names = array(
-        self::BARB_C => 'Bank of Baroda - Corporate Banking',
         self::BARB_R => 'Bank of Baroda - Retail Banking',
-        self::PUNB_C => 'Punjab National Bank - Corporate Banking',
         self::PUNB_R => 'Punjab National Bank - Retail Banking',
-        self::LAVB_C => 'Lakshmi Vilas Bank - Corporate Banking',
         self::LAVB_R => 'Lakshmi Vilas Bank - Retail Banking',
+
+        self::BARB_C => 'Bank of Baroda - Corporate Banking',
+        self::PUNB_C => 'Punjab National Bank - Corporate Banking',
+        self::LAVB_C => 'Lakshmi Vilas Bank - Corporate Banking',
+        self::ICIC_C => 'ICICI Bank - Corporate Banking',
+        self::UTIB_C => 'Axis Bank - Corporate Banking',
     );
 
     const ACCOUNT_NUMBER_LENGTHS = [
@@ -35,7 +43,6 @@ class Netbanking
     protected static $self = [
         IFSC::ICIC,
         IFSC::HDFC,
-        IFSC::BARB,
         IFSC::CORP,
         IFSC::UTIB,
         IFSC::KKBK,
@@ -44,6 +51,10 @@ class Netbanking
         IFSC::RATN,
         IFSC::INDB,
         IFSC::PUNB,
+
+        // self::BARB_R,
+        self::ICIC_C,
+        self::UTIB_C,
     ];
 
     protected static $selfTPV = [
@@ -53,7 +64,7 @@ class Netbanking
         IFSC::UTIB,
         IFSC::FDRL,
         IFSC::RATN,
-     // IFSC::INDB,
+
     ];
 
     protected static $paytm = array(
@@ -132,12 +143,12 @@ class Netbanking
         IFSC::UTIB,
         IFSC::VIJB,
         IFSC::YESB,
-        Netbanking::BARB_C,
         Netbanking::BARB_R,
-        Netbanking::PUNB_C,
         Netbanking::PUNB_R,
-        Netbanking::LAVB_C,
         Netbanking::LAVB_R,
+        Netbanking::BARB_C,
+        Netbanking::PUNB_C,
+        Netbanking::LAVB_C,
     );
 
     protected static $billdeskTPV = array(
@@ -184,7 +195,7 @@ class Netbanking
         IFSC::KARB,
         IFSC::KVBL,
         IFSC::KKBK,
-        IFSC::LAVB,
+        Netbanking::LAVB_R,
         IFSC::SIBL,
         // IFSC::SBBJ,
         IFSC::SBHY,
@@ -225,7 +236,6 @@ class Netbanking
         IFSC::YESB,
         Netbanking::LAVB_R,
         Netbanking::PUNB_R,
-
         IFSC::UTIB,
         IFSC::BKID,
         IFSC::CIUB,
