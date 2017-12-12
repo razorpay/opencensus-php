@@ -151,7 +151,7 @@ class Gateway extends Base\Gateway
 
         $status = (int) $response['response'];
 
-        if ($status !== Status::TXN_STATUS)
+        if ($status !== Status::TXN_SUCCESS)
         {
             $errorCode = ResponseCodeMap::getApiErrorCode($status);
 
