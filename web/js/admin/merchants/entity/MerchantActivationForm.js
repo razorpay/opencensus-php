@@ -14,7 +14,9 @@ import BankAccountDetails from './merchantActivationForms/BankAccountDetails';
 import DocumentDetails from './merchantActivationForms/DocumentDetails';
 import ProductOnboarding from './merchantActivationForms/ProductOnboarding';
 import BusinessDetails from './merchantActivationForms/BusinessDetails';
-import ActivationDetails from './merchantActivationForms/ActivationDetails';
+import ActivationDetails, {
+  statusMap,
+} from './merchantActivationForms/ActivationDetails';
 
 import { Link } from 'react-router-dom';
 
@@ -188,7 +190,7 @@ function _getOverviewFields(details) {
             merchantId={this.merchantId}
           />
         ) : (
-          details.merchant_details.activation_status || '--'
+          statusMap[details.merchant_details.activation_status] || '--'
         ),
     },
   ];

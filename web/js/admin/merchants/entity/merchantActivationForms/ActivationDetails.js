@@ -98,7 +98,7 @@ export default class ActivationDetails extends Component {
   }
 }
 
-const statusMap = {
+export const statusMap = {
   under_review: 'Under Review',
   needs_clarification: 'Needs Clarification',
   activated: 'Activated',
