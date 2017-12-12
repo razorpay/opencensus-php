@@ -10,13 +10,20 @@ import { closeModal } from 'rzp/modules/modals';
 import { createTestPayment } from 'merchant/modules/virtualaccounts';
 import { fetchItem, fetchVAPayments } from 'merchant/modules/virtualaccounts';
 
-@connect(null, {
-  closeModal,
-  showNotification,
-  fetchItem,
-  fetchVAPayments,
-  createTestPayment,
-})
+@connect(
+  state => {
+    return {
+      mode: state.session.mode,
+    };
+  },
+  {
+    closeModal,
+    showNotification,
+    fetchItem,
+    fetchVAPayments,
+    createTestPayment,
+  }
+)
 @reduxForm({
   form: 'createTestPayment',
   initialValues: {
@@ -41,8 +48,15 @@ export default class CreateTestPayment extends Component {
   }
 
   createTestPayment = props => {
-    let { virtualAccount } = this.props;
+    let { virtualAccount, mode } = this.props;
     let bankAccount = virtualAccount.receivers[0];
+
+    if (mode === 'test' && props.amount >= 1e7) {
+      return this.props.showNotification({
+        type: 'error',
+        message: 'Amount should not be greater then 1Cr. in Test Mode',
+      });
+    }
 
     let fieldProps = {
       ...props,
