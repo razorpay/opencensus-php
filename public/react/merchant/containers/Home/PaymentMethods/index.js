@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import Treemap from './Treemap';
 import { fetch } from 'merchant/modules/pokedex';
 import { getQuery } from './data';
 
+@connect(null, null)
 class PaymentMethods extends Component {
   constructor(props) {
     super(props);
