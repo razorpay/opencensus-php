@@ -293,6 +293,12 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'sometimes|boolean|in:1',
     ];
 
+    protected static $upiSbiTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_sbi',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::UPI                        => 'sometimes|boolean|in:1',
+    ];
+
     protected static $netbankingAirtelTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_airtel',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
