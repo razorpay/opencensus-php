@@ -42,6 +42,18 @@ export const getLog = logId => {
   });
 };
 
+export const getFile = fileId => {
+  return ajax({
+    ...commonOptions,
+    data: {
+      route_name: 'ufh_get_file_signed_url',
+      url_params: JSON.stringify({
+        '{fileId}': fileId,
+      }),
+    },
+  });
+};
+
 export const generateReport = ajaxParams => {
   return {
     type: GENERATE_REPORT,
