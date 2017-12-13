@@ -57,6 +57,15 @@ export function adminFormUpload(form, customUrl) {
   return axios.post(url, fData);
 }
 
+//TODO: [CRITICAL] Merchant batch upload broke due to change in createFormData supporting array
+export function adminFormUpload2(form, customUrl) {
+  //Let axios decide which "Content-Type" to send
+  let url = customUrl ? customUrl : '/admin/generic';
+  let fData = createFormData2(form);
+
+  return axios.post(url, fData);
+}
+
 export function adminDelete(params) {
   return fetch({
     url: '/admin/generic',
@@ -83,6 +92,15 @@ function parseParams(origParams) {
 }
 
 const createFormData = (form = {}) => {
+  let formData = new FormData();
+
+  Object.keys(form).map(key => {
+    formData.append(key, form[key]);
+  });
+  return formData;
+};
+
+const createFormData2 = (form = {}) => {
   let formData = new FormData();
 
   Object.keys(form).map(key => {

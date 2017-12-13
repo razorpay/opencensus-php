@@ -5,7 +5,7 @@ import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
 import Field, { SelectField, FileField, CheckField } from 'ui/Field';
-import { adminFetch, adminPost, adminFormUpload } from 'util/fetch';
+import { adminFetch, adminPost, adminFormUpload2 } from 'util/fetch';
 import AsyncButton from 'ui/AsyncButton';
 
 const gatewayMapping = {
@@ -88,7 +88,7 @@ export default class TerminalForm extends Component {
       delete body.file;
     }
 
-    return adminFormUpload(
+    return adminFormUpload2(
       body,
       '/admin/merchant/' + this.props.merchantId + '/terminal'
     )
