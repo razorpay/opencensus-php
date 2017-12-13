@@ -123,6 +123,8 @@ class FssGatewayTest extends TestCase
 
         $response = $this->retryFailedRefunds();
 
+        Carbon::setTestNow();
+
         $actualRefund = $this->getEntityById('refund', $refundId, true);
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
@@ -134,5 +136,20 @@ class FssGatewayTest extends TestCase
 
         $this->assertEquals($actualRefund['id'], 'rfnd_'.$fss['refund_id']);
         $this->assertEquals('CAPTURED', $fss['status']);
+    }
+
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['amt'] = '100';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $this->doAuthPayment();
+        });
     }
 }

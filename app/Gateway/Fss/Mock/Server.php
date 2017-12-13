@@ -43,6 +43,8 @@ class Server extends Base\Mock\Server
             Fields::RESULT                  => Fss\Status::CAPTURED,
         ];
 
+        $this->content($responseTranData);
+
         $responseData = [
             Fields::GATEWAY_PAYMENT_ID      => $gatewayPaymentId,
             Fields::TRAN_DATA               => $this->getEncryptedData($responseTranData),
