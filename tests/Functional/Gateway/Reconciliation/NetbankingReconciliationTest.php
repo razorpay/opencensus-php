@@ -145,10 +145,6 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->mockReconContentFunction(function(& $content, $action = null)
         {
-            if ($action === 'claims_data')
-            {
-                $content['0']['account_number'] = self::ACCOUNT_NUMBER;
-            }
         });
 
         $fileContents = $this->generateFile('pnb', []);
@@ -159,7 +155,6 @@ class NetbankingReconciliationTest extends TestCase
 
         $gatewayEntity = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEntity['account_number']);
     }
 
     public function testPnbFailedPaymentReconciliation()

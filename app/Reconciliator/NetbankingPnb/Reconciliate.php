@@ -7,11 +7,11 @@ use RZP\Reconciliator\Base;
 class Reconciliate extends Base\Reconciliate
 {
     const PAYMENT_COLUMN_HEADER = [
+        'arn',
+        'payment_id',
         'bank_reference',
         'amount',
         'date',
-        'payment_id',
-        'account_number',
     ];
 
     const TYPE_TO_COLUMN_HEADER_MAP = [
@@ -36,6 +36,6 @@ class Reconciliate extends Base\Reconciliate
 
     public function getDelimiter()
     {
-        return '^';
+        return '|';
     }
 }

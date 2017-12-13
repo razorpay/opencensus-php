@@ -11,11 +11,22 @@ use RZP\Models\Payment\Status as PaymentStatus;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
+    const COLUMN_ARN                 = 'arn';
     const COLUMN_PAYMENT_ID          = 'payment_id';
-    const COLUMN_GATEWAY_PAYMENT_ID  = 'bank_reference';
-    const COLUMN_BANK_ACCOUNT_NUMBER = 'account_number';
+    const COLUMN_GATEWAY_PAYMENT_ID   = 'bank_reference';
     const COLUMN_PAYMENT_AMOUNT      = 'amount';
     const COLUMN_DATE                = 'date';
+
+
+    protected function getArn($row)
+    {
+        if (empty($row[self::COLUMN_ARN]) === false)
+        {
+            return trim($row[self::COLUMN_ARN]);
+        }
+
+        return null;
+    }
 
     protected function getPaymentId($row)
     {
@@ -25,6 +36,16 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return null;
+    }
+
+    protected function getReferenceNumber($row)
+    {
+        if (isset($row[self::COLUMN_GATEWAY_PAYMENT_ID]) === true)
+        {
+            $referenceNumber = $row[self::COLUMN_GATEWAY_PAYMENT_ID];
+
+            return $referenceNumber;
+        }
     }
 
     protected function getGatewayPayment($paymentId)
@@ -47,23 +68,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         // Converting to string using number_format and then converting
         // is a hack to avoid this issue
         return intval(number_format($paymentAmount, 2, '.', ''));
-    }
-
-    protected function getNbAccountDetails($row)
-    {
-        return [
-            Base\Reconciliate::ACCOUNT_NUMBER => $this->getDebitAccountNumber($row)
-        ];
-    }
-
-    protected function getDebitAccountNumber($row)
-    {
-        if (empty($row[self::COLUMN_BANK_ACCOUNT_NUMBER]) === false)
-        {
-            return trim($row[self::COLUMN_BANK_ACCOUNT_NUMBER]);
-        }
-
-        return null;
     }
 
     protected function shouldAttemptForceAuthorizeFailed()
