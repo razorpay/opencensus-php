@@ -174,17 +174,34 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     {
         $reconPaymentStatus = $this->getPaymentStatus($row);
 
+        $paymentStatus = $this->payment->getStatus();
+
         //
-        // In some cases the recon file contains failed payments too,
-        // In this case we do not want to reconcile them
+        // In some cases the recon file contains failed payments,
+        // too, In this case we do not want to reconcile them
         //
         if ($reconPaymentStatus === Payment\Status::FAILED)
         {
-            return true;
+            $apiSuccess = [Payment\Status::FAILED, Payment\Status::CREATED];
+
+            if (in_array($paymentStatus, $apiSuccess, true) === false)
+            {
+                //
+                // Recon status is failed, and apiSuccess is not created / failed
+                // This would be an error, as there's a status mismatch.
+                //
+
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code' => TraceCode::RECON_CRITICAL_ALERT,
+                        'message'    => 'Recon status is failed, and apiSuccess is successful',
+                        'payment_id' => $this->payment->getId(),
+                        'gateway'    => get_called_class()
+                    ]);
+            }
+
             return false;
         }
-
-        $paymentStatus = $this->payment->getStatus();
 
         if ($paymentStatus !== Payment\Status::FAILED)
         {

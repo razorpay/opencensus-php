@@ -2,9 +2,8 @@
 
 namespace RZP\Reconciliator\UpiSbi;
 
-use RZP\Models\Base\PublicEntity;
-use RZP\Models\Payment;
 use RZP\Reconciliator\Base;
+use RZP\Models\Base\PublicEntity;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -41,14 +40,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentStatus(array $row)
     {
-        $status = $row[self::TRANSACTION_STATUS];
+        $status = strtolower($row[self::TRANSACTION_STATUS]);
 
-        $map = [
-            'success' => Payment\Status::AUTHORIZED,
-            'failed' => Payment\Status::FAILED,
-        ];
-
-        return $map[strtolower($status)];
+        return Status::getPaymentStatus($status);
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
