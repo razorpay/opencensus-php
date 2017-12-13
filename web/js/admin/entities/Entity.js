@@ -242,8 +242,8 @@ function downloadFile() {
       fileId: this.id,
     },
   }).then(data => {
-    if (data.success) {
-      windowRef.location.href = data.data.url;
+    if (data) {
+      windowRef.location.href = data.url;
     } else {
       windowRef.close();
       notifyError(data.errors.join(', '));
