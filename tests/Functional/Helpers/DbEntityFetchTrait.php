@@ -9,7 +9,7 @@ trait DbEntityFetchTrait
 {
     protected function getDbEntities(string $entity, array $input = array(), $mode = 'test')
     {
-        return $this->getEntityClass($entity, $mode)
+        return $this->getEntityObjectForMode($entity, $mode)
                     ->where($input)
                     ->get();
     }
@@ -18,25 +18,19 @@ trait DbEntityFetchTrait
     {
         $entities = $this->getDbEntities($entity, [], $mode);
 
-        if (count($entities) > 0)
-        {
-            return $entities[(count($entities) - 1)];
-        }
+        return $entities->last();
     }
 
     protected function getDbLastEntityToArray($entity, $mode = 'test')
     {
         $lastEntity = $this->getDbLastEntity($entity, $mode);
 
-        if (empty($lastEntity) === false)
-        {
-            return $lastEntity->toArray();
-        }
+        return $lastEntity ? $lastEntity->toArray() : [];
     }
 
     protected function getDbEntityById($entity, $id, $mode = 'test')
     {
-        $entityClass = $this->getEntityClass($entity, $mode);
+        $entityClass = $this->getEntityObjectForMode($entity, $mode);
 
         $id = $entityClass::verifyIdAndStripSign($id);
 
@@ -53,7 +47,7 @@ trait DbEntityFetchTrait
         return $this->getDbLastEntity('refund');
     }
 
-    private function getEntityClass($entity, $mode = 'test')
+    private function getEntityObjectForMode($entity, $mode = 'test')
     {
         $entityObject =  Entity::getEntityObject($entity);
 

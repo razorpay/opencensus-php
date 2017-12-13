@@ -84,30 +84,37 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             if ($reconciled === true)
             {
                 $this->handleAlreadyReconciled($paymentId);
-
-                return null;
             }
-
-            // Increment the total count for the summary
-            $this->setSummaryCount(self::TOTAL_SUMMARY, $paymentId);
-
-            $validate = $this->validatePaymentDetails($row);
-
-            if ($validate === true)
+            else
             {
-                $persistSuccess = $this->persistReconciliationData($rowDetails);
+                // Increment the total count for the summary
+                $this->setSummaryCount(self::TOTAL_SUMMARY, $paymentId);
 
-                if ($persistSuccess === false)
+                $validate = $this->validatePaymentDetails($row);
+
+                if ($validate === true)
+                {
+                    $persistSuccess = $this->persistReconciliationData($rowDetails);
+
+                    if ($persistSuccess === false)
+                    {
+                        // Increment the failure count for the summary.
+                        $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
+                    }
+                }
+                else
                 {
                     // Increment the failure count for the summary.
                     $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
                 }
             }
-            else
-            {
-                // Increment the failure count for the summary.
-                $this->setSummaryCount(self::FAILURES_SUMMARY, $paymentId);
-            }
+
+            //
+            // Payment can be updated from setPaymentAcquirerData before validation or
+            // from markGatewayCapturedAsTrue after validation, for both cases we are
+            // saving payment entity here from single location to save update queries
+            //
+            $this->repo->saveOrFail($this->payment);
         }
         catch (\Exception $ex)
         {
@@ -143,8 +150,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function runPreReconciledAtCheckRecon($rowDetails)
     {
-        // If the row is present in MIS file, it means it's captured on the gateway end.
-        $this->persistPaymentData($rowDetails);
+        // Setting acquirer data, will be persist from persistPaymentData method
+        $this->setPaymentAcquirerData($rowDetails);
 
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
     }
@@ -447,6 +454,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function persistReconciliationData($rowDetails)
     {
+        //
+        // If the row reaches this part of the code, that means that it is captured on the gateway's end.
+        //
+        $this->markGatewayCapturedAsTrue();
+
         $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);
 
         if ($recordSuccess === true)
@@ -589,14 +601,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
-     * Update payment entity according to row details
-     * 1. Mark payment captured is was not already
+     * set payment entity according to row details
+     * 1. Update ARN if found and was not updated before
      * 2. Update AuthCode if found and was not updated before
-     * 3. Update ARN if found and was not updated before
      *
      * @param $rowDetails
      */
-    protected function persistPaymentData($rowDetails)
+    protected function setPaymentAcquirerData($rowDetails)
     {
         if (empty($rowDetails[BaseReconciliate::ARN]) === false)
         {
@@ -607,10 +618,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->setPaymentReference2($rowDetails[BaseReconciliate::AUTH_CODE]);
         }
-
-        $this->markGatewayCapturedAsTrue();
-
-        $this->repo->saveOrFail($this->payment);
     }
 
     /**
@@ -1085,28 +1092,20 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     {
         $dbReference1 = $this->payment->getReference1();
 
-        if ((empty($dbReference1) === false))
+        if ((empty($dbReference1) === false) and
+            ($dbReference1 !== $reference1) and
+            ($this->shouldForceUpdate(RequestProcessor\Base::PAYMENT_ARN) === false))
         {
-            if ($dbReference1 === $reference1)
-            {
-                return;
-            }
-            else
-            {
-                if ($this->shouldForceUpdate(RequestProcessor\Base::PAYMENT_ARN) === false)
-                {
-                    $this->messenger->raiseReconAlert(
-                        [
-                            'trace_code'        => TraceCode::RECON_MISMATCH,
-                            'message'           => 'Reference1 is not same as in recon',
-                            'payment_id'        => $this->payment->getId(),
-                            'api_reference1'    => $dbReference1,
-                            'recon_reference1'  => $reference1
-                        ]);
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_MISMATCH,
+                    'message'           => 'Reference1 is not same as in recon',
+                    'payment_id'        => $this->payment->getId(),
+                    'api_reference1'    => $dbReference1,
+                    'recon_reference1'  => $reference1
+                ]);
 
-                    return;
-                }
-            }
+            return;
         }
 
         $this->payment->setReference1($reference1);
@@ -1127,28 +1126,21 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     {
         $dbReference2 = $this->payment->getReference2();
 
-        if (empty($dbReference2) === false)
+        if ((empty($dbReference2) === false) and
+            ($dbReference2 !== '00') and
+            ($dbReference2 !== $reference2) and
+            ($this->shouldForceUpdate(RequestProcessor\Base::PAYMENT_AUTH_CODE) === false))
         {
-            if ($dbReference2 === $reference2)
-            {
-                return;
-            }
-            else if ($dbReference2 !== '00')
-            {
-                if ($this->shouldForceUpdate(RequestProcessor\Base::PAYMENT_AUTH_CODE) === false)
-                {
-                    $this->messenger->raiseReconAlert(
-                        [
-                            'trace_code'        => TraceCode::RECON_MISMATCH,
-                            'message'           => 'Reference2 is not same as in recon',
-                            'payment_id'        => $this->payment->getId(),
-                            'api_reference2'    => $dbReference2,
-                            'recon_reference2'  => $reference2
-                        ]);
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_MISMATCH,
+                    'message'           => 'Reference2 is not same as in recon',
+                    'payment_id'        => $this->payment->getId(),
+                    'api_reference2'    => $dbReference2,
+                    'recon_reference2'  => $reference2
+                ]);
 
-                    return;
-                }
-            }
+            return;
         }
 
         $this->payment->setReference2($reference2);
