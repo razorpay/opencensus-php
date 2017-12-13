@@ -138,7 +138,7 @@ return [
         'dispute_reason_create'             => 'disputes/reasons',
 
         // Product Submissions
-        'onboarding_features_fetch_submissions' => 'onboarding/features/submissions/fetch',
+        'onboarding_features_fetch_submissions' => 'onboarding/features/submissions',
 
         'onboarding_features_update'        => 'onboarding/features/{feature}/update',
     ],
