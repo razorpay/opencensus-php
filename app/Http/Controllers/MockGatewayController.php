@@ -6,10 +6,22 @@ use ApiResponse;
 use Redirect;
 use Request;
 use RZP\Constants\Mode;
+use RZP\Gateway\GatewayManager;
 use View;
+use \RZP\Gateway\Hdfc;
 
 class MockGatewayController extends Controller
 {
+    /**
+     * @var GatewayManager
+     */
+    protected $gateway;
+
+    /**
+     * @var Hdfc\Mock\Server
+     */
+    protected $mockHdfcGatewayServer;
+
     public function __construct()
     {
         parent::__construct();
@@ -277,13 +289,11 @@ class MockGatewayController extends Controller
         return;
     }
 
-    public function generateNetbankingReconciliation($bank)
+    public function generateNetbankingReconciliation(string $gateway)
     {
         $input = Request::all();
 
-        $driver = 'netbanking_' . $bank;
-
-        $recon = $this->gateway->recon($driver);
+        $recon = $this->gateway->recon($gateway);
 
         return $recon->generateReconciliation($input);
     }

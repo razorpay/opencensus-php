@@ -828,6 +828,31 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
+    public function fetchAllPaymentsFromYesterday()
+    {
+        $createdAtStart = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+        $createdAtEnd = Carbon::today(Timezone::IST)->getTimestamp();
+
+        return $this->newQuery()
+                    ->where(Entity::CREATED_AT, '>=', $createdAtStart)
+                    ->where(Entity::CREATED_AT, '<=', $createdAtEnd)
+                    ->get();
+    }
+
+    public function fetchAllSuccessFullPaymentsFromYesterday()
+    {
+        $createdAtStart = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+        $createdAtEnd = Carbon::today(Timezone::IST)->getTimestamp();
+
+        return $this->newQuery()
+                    ->where(Entity::CREATED_AT, '>=', $createdAtStart)
+                    ->where(Entity::CREATED_AT, '<=', $createdAtEnd)
+                    ->whereIn(Entity::STATUS, [Status::AUTHORIZED, Status::CAPTURED, Status::REFUNDED])
+                    ->get();
+    }
+
     public function fetchCapturedSummaryBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
