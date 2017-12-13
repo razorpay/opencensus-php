@@ -116,15 +116,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code'        => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Merchant does not have enough balance for negative adjustment',
                 ],
             ],
-            'status_code' => 500,
+            'status_code' => 400,
         ],
         'exception' => [
-            'class'               => RZP\Exception\LogicException::class,
-            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT,
         ],
     ],
 
