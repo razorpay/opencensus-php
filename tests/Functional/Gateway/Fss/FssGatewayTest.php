@@ -39,6 +39,8 @@ class FssGatewayTest extends TestCase
         $this->gateway = 'fss';
 
         $this->payment = $this->getDefaultPaymentArray();
+
+        Carbon::setTestNow();
     }
 
     public function testPaymentAuthAndCapture()
@@ -115,7 +117,7 @@ class FssGatewayTest extends TestCase
 
         $this->assertEquals(Status::NOT_CAPTURED, $fss['status']);
 
-        $time = Carbon::now(Timezone::IST)->addMinutes(random_integer(9));
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $refundId = explode('_', $refund['id'], 2)[1];
