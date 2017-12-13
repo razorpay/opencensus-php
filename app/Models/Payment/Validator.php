@@ -61,7 +61,7 @@ class Validator extends Base\Validator
         '_'                          => 'sometimes|array',
         'test_success'               => 'sometimes|boolean',
         'subscription_card_change'   => 'sometimes|boolean',
-        'account_number'             => 'sometimes|alpha_num|between:5,20|nullable',
+        'account_number'             => 'filled|alpha_num|between:5,20',
         'upi'                        => 'sometimes_if:method,upi|array',
         'upi.expiry_time'            => 'sometimes_if:method,upi|integer|between:5,30|filled',
     ];
