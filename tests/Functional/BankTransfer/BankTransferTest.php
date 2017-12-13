@@ -861,6 +861,17 @@ class BankTransferTest extends TestCase
         $oldBankTransferId = $bankTransfer['id'];
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($oldBankTransferId, $bankTransfer['id']);
+
+        // Another payment, same UTR, made to a different account
+        $response = $this->processBankTransfer('RAZORPAYDIFFERENT', $ifsc, $utr);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // New entity created, as this is not a duplicate payment
+        $oldBankTransferId = $bankTransfer['id'];
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertNotEquals($oldBankTransferId, $bankTransfer['id']);
+        $this->assertEquals('RAZORPAYDIFFERENT', $bankTransfer['payee_account']);
     }
 
     public function testBankTransferProcessInvalidAccount()

@@ -51,6 +51,11 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateOrderWithoutReceipt()
+    {
+        $this->startTest();
+    }
+
     public function testCreateAutoCaptureOrder()
     {
         $order = $this->startTest();

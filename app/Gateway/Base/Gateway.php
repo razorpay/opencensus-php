@@ -10,7 +10,6 @@ use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
 use RZP\Http\Route;
-use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
@@ -18,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
 use RZP\Models\Payment\Status;
+use RZP\Constants\Entity as ConstantsEntity;
 
 class Gateway
 {
@@ -187,6 +187,8 @@ class Gateway
         $this->route = $this->app['api.route'];
 
         $this->request = $this->app['request'];
+
+        $this->cache = $this->app['cache'];
     }
 
     public function authorize(array $input)
@@ -314,8 +316,10 @@ class Gateway
 
         $input = $verify->input;
 
-        if (($input['payment'][Payment\Entity::STATUS] === Payment\Status::FAILED) or
-            ($input['payment'][Payment\Entity::STATUS] === Payment\Status::CREATED))
+        // If payment status is either failed or created,
+        // this is an api failure
+        if (($input[ConstantsEntity::PAYMENT][Payment\Entity::STATUS] === Payment\Status::FAILED) or
+            ($input[ConstantsEntity::PAYMENT][Payment\Entity::STATUS] === Payment\Status::CREATED))
         {
             $verify->apiSuccess = false;
         }
@@ -944,6 +948,30 @@ class Gateway
     protected function getCacheKey($input)
     {
         return $this->gateway . '_' . $input['payment']['id'];
+    }
+
+    protected function getProcessedRefunds()
+    {
+        $refunds =  $this->cache->get(strtoupper($this->gateway) . '_PROCESSED_REFUNDS');
+
+        if (empty($refunds) === true)
+        {
+            $refunds = [];
+        }
+
+        return $refunds;
+    }
+
+    protected function getUnprocessedRefunds()
+    {
+        $refunds = $this->cache->get(strtoupper($this->gateway) . '_UNPROCESSED_REFUNDS');
+
+        if (empty($refunds) === true)
+        {
+            $refunds = [];
+        }
+
+        return $refunds;
     }
 
     protected function isSecondRecurringPayment(array $input)

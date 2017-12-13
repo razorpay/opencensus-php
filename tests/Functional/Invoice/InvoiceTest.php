@@ -10,7 +10,6 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
-use RZP\Mail\Invoice\Expired as InvoiceExpiredMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
 use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
@@ -61,6 +60,11 @@ class InvoiceTest extends TestCase
 
         $this->assertEquals($customer['id'], $response['customer_id']);
         $this->assertEquals('10000000000000', $customer['merchant_id']);
+
+        // Asserts if order.receipt = invoice.receipt
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertEquals($response['receipt'], $order['receipt']);
 
         // Asserts if have assigned default value to invoices.date
         $this->assertNotNull($response['date']);
@@ -145,6 +149,16 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateLinkWithoutReceipt()
+    {
+        $this->startTest();
+
+        // Assert corresponding order.receipt = null
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertNull($order['receipt']);
+    }
+
     public function testCreateLinkWithTooLargeAmount()
     {
         $this->startTest();
@@ -152,7 +166,7 @@ class InvoiceTest extends TestCase
 
     public function testCreateLinkAndPayAndCheckCustomerDetailsInInvoice()
     {
-        $order = $this->createOrder();
+        $this->createOrder();
 
         $invoice = $this->fixtures->create('invoice',
             [
