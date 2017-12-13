@@ -49,9 +49,19 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
     }
 
+    /**
+     * Backward compatibility test
+     **/
+    public function testRetailPaymentWithCorpTerminalPresent()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_netbanking_icici_corp_terminal');
+
+        $this->testPayment();
+    }
+
     public function testPaymentCorporate()
     {
-        $this->fixtures->terminal->edit($this->sharedTerminal->getId(), ['corporate' => 1]);
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_netbanking_icici_corp_terminal');
 
         $this->payment = $this->getDefaultNetbankingPaymentArray('ICIC_C');
 
@@ -63,6 +73,7 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $testData = $this->testData['testPayment'];
         $testData['bank'] = 'ICIC_C';
+        $testData['terminal_id'] = '100NbIcicCrpTl';
 
         $this->assertArraySelectiveEquals($testData, $payment);
 

@@ -246,13 +246,13 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        $bank = $payment->getBank();
-
-        $isTerminalCorporate = $terminal->isCorporate();
-
-        if (Netbanking::isCorporateTerminalRequired($bank) === true)
+        if ($payment->isNetbanking() === true)
         {
-            return ($isTerminalCorporate === true);
+            $bank = $payment->getBank();
+
+            // If a bank does not require a corporate terminal
+            // a corporate terminal should not allow the payment.
+            return (Netbanking::isCorporateTerminalRequired($bank) === $terminal->isCorporate());
         }
 
         return true;

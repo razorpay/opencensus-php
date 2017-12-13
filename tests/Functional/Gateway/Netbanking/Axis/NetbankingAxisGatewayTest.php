@@ -108,28 +108,47 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($data['request']['content'], $order);
     }
 
+    // Backward compatibility test
+    public function testRetailPaymentWithCorpTerminalPresent()
+    {
+        $this->terminal = $this->fixtures->create('terminal:shared_netbanking_axis_corp_terminal');
+
+        $this->testPayment();
+    }
+
+    // New expected flow
     public function testCorporatePayment()
     {
-        $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 1]);
+        $this->terminal = $this->fixtures->create('terminal:shared_netbanking_axis_corp_terminal');
 
-        $this->doAuthAndCapturePayment($this->payment);
+        $this->payment = $this->getDefaultNetbankingPaymentArray('UTIB_C');
+
+        $this->doAuthPayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNetbankingEntity'], $gatewayPayment);
+        $testData = $this->testData['testPayment'];
+        $testData['bank'] = 'UTIB_C';
+        $testData['terminal_id'] = '100NbAxisCrpTl';
+
+        $this->assertArraySelectiveEquals($testData, $payment);
+
+        $testData = $this->testData['testPaymentNetbankingEntity'];
+        $testData['bank'] = 'UTIB_C';
+
+        $this->assertArraySelectiveEquals($testData, $gatewayPayment);
 
         // Asserts that bank payment id exists in response and is an int
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
-
-        $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 0]);
     }
 
     public function testCorporatePendingPayment()
     {
-        $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 1]);
+        $this->terminal = $this->fixtures->create('terminal:shared_netbanking_axis_corp_terminal');
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray('UTIB_C');
 
         $this->server = $this->mockPendingResponse();
 
@@ -150,18 +169,20 @@ class NetbankingAxisGatewayTest extends TestCase
         // Entry refreshed with the actual payment
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNetbankingEntity'], $gatewayPayment);
+        $testData = $this->testData['testPaymentNetbankingEntity'];
+        $testData['bank'] = 'UTIB_C';
+
+        $this->assertArraySelectiveEquals($testData, $gatewayPayment);
 
         // Asserts that bank payment id exists in response and is an int
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
-
-        $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 0]);
     }
 
     public function testVerifyDisabledForCorporatePayments()
     {
-        $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 1]);
+        $this->terminal = $this->fixtures->create('terminal:shared_netbanking_axis_corp_terminal');
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray('UTIB_C');
 
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
@@ -177,8 +198,6 @@ class NetbankingAxisGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         assert($payment['verified'] === null);
-
-        $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 0]);
     }
 
     public function testTpvVerifyPayment()
