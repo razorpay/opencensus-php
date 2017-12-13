@@ -401,28 +401,35 @@ class Netbanking
             return self::isBankSupportedByGatewayForTPV($bank, $gateway);
         }
 
-        return in_array($bank, self::$$gateway);
+        $functionName = 'is'.title_case($gateway).'SupportedBank';
+
+        return self::$functionName($bank);
     }
 
     public static function isBankSupportedByGatewayForTPV($bank, $gateway)
     {
         // Direct gateways are handled seperately
-        return in_array($bank, self::${$gateway.'TPV'});
+        return in_array($bank, self::${$gateway.'TPV'}, true);
     }
 
     public static function isPaytmSupportedBank($bank)
     {
-        return in_array($bank, self::$paytm);
+        return in_array($bank, self::$paytm, true);
     }
 
     public static function isEbsSupportedBank($bank)
     {
-        return in_array($bank, self::$ebs);
+        return in_array($bank, self::$ebs, true);
     }
 
     public static function isBilldeskSupportedBank($bank)
     {
-        return in_array($bank, array_merge(self::$billdesk, self::$billdeskCorp));
+        return in_array($bank, array_merge(self::$billdesk, self::$billdeskCorp), true);
+    }
+
+    public static function isAtomSupportedBank($bank)
+    {
+        return in_array($bank, self::$atom, true);
     }
 
     public static function getAccountNumberLengths()

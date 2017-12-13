@@ -104,7 +104,7 @@ class BilldeskGatewayTest extends TestCase
 
         $data = $this->testData['testMakerCheckerPaymentNormalCallbackForFailed'];
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
+        $payment = $this->getDefaultNetbankingPaymentArray('ICIC_C');
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {

@@ -13,6 +13,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\Preferences;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
 {
