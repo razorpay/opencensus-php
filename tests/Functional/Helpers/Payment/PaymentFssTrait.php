@@ -2,6 +2,9 @@
 
 namespace RZP\Tests\Functional\Helpers\Payment;
 
+use RZP\Gateway\Fss\Fields;
+use RZP\Gateway\Fss\Status;
+
 trait PaymentFssTrait
 {
     protected function runPaymentCallbackFlowFss($response, &$callback = null)
@@ -18,4 +21,11 @@ trait PaymentFssTrait
         return $this->submitPaymentCallbackRedirect($url);
     }
 
+    public function setNotCapturedInReturn()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content[Fields::RESULT] = Status::NOT_CAPTURED;
+        });
+    }
 }

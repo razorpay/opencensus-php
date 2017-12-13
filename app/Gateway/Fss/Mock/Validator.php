@@ -17,6 +17,19 @@ class Validator extends Base\Validator
         Fields::TRANPORTAL_ID       => 'required:string',
     ];
 
+    protected static $refundRules = [
+        Fields::CURRENCY_CODE       => 'required:string',
+        Fields::TYPE                => 'required:string:custom',
+        Fields::UDF5                => 'required:string:in:TrackID',
+        Fields::LANGUAGE_ID         => 'required:string:in:USA',
+        Fields::ID                  => 'required:string',
+        Fields::PASSWORD            => 'required:string',
+        Fields::TRANSACTION_ID      => 'required:string',
+        Fields::ACTION              => 'required:string',
+        Fields::TRACK_ID            => 'required:string',
+        Fields::AMOUNT              => 'required',
+    ];
+
     protected static $authTransactionDataRules = [
         Fields::CARD                => 'required:string',
         Fields::CVV                 => 'required:string:size:3',

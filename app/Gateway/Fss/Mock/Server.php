@@ -55,11 +55,46 @@ class Server extends Base\Mock\Server
         return $url;
     }
 
+    public function refund($input)
+    {
+        parent::refund($input);
+
+        $this->request($input);
+
+        $input = (array) simplexml_load_string($input);
+
+        $this->validateRefundInput($input);
+
+        $refundResponse = [
+            Fields::RESULT                      => Fss\Status::CAPTURED,
+            Entity::GATEWAY_TRANSACTION_ID      => $this->generateId(15),
+            Fields::TRACK_ID                    => $input[Fields::TRACK_ID],
+            Fields::GATEWAY_CALLBACK_PAYMENT_ID => $this->generateId(15),
+            Fields::AMOUNT                      => $input[Fields::AMOUNT],
+            Fields::AUTH_RES_CODE               => $this->generateId(3),
+        ];
+
+        $this->content($refundResponse);
+
+        $content = Fss\Utility::createRequestXml($refundResponse, false);
+
+        return $this->prepareResponse($content);
+    }
+
+    protected function prepareResponse($content)
+    {
+        $response = \Response::make($content);
+
+        $response->headers->set('Content-Type', 'application/xml');
+
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
+    }
+
     protected function getEncryptedData($responseTrandata)
     {
-        $tranData = Fss\Utility::createRequestXml($responseTrandata);
-
-        $tranData = getTextBetweenStrings($tranData,'<request>', '</request>');
+        $tranData = Fss\Utility::createRequestXml($responseTrandata, false);
 
         $secretKey = $this->getGatewayInstance()->getSecret();
 

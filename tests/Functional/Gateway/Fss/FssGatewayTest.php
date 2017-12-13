@@ -53,4 +53,18 @@ class FssGatewayTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals('passed', $payment['two_factor_auth']);
     }
+
+    public function testVerifyRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->setNotCapturedInReturn();
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+    }
 }

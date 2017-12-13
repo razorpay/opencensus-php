@@ -6,7 +6,14 @@ use phpseclib\Crypt\TripleDES;
 
 class TripleDESCrypto
 {
-    public function __construct(int $mode, string $masterKey, $padding)
+    /**
+     * TripleDESCrypto constructor.
+     *
+     * @param int    $mode
+     * @param string $masterKey
+     *
+     */
+    public function __construct(int $mode, string $masterKey, bool $padding)
     {
         $this->des = new TripleDES($mode);
 
@@ -16,7 +23,6 @@ class TripleDESCrypto
         {
             $this->des->disablePadding();
         }
-
     }
 
     /**
@@ -33,7 +39,6 @@ class TripleDESCrypto
     /**
      * Decrypts string.
      * @param $ciphertext
-     * @param $padding
      *
      * @return string
      */
