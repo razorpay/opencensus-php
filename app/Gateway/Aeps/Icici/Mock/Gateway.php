@@ -30,6 +30,8 @@ class Gateway extends Icici\Gateway
             'method'  => 'POST'
         ];
 
-        return $this->sendGatewayRequest($request);
+        $response = $this->sendGatewayRequest($request);
+
+        return $response->body;
     }
 }
