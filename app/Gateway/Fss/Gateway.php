@@ -167,7 +167,7 @@ class Gateway extends Base\Gateway
     {
         $secretKey = $this->getSecret();
 
-        $crypto = new TripleDESCrypto(TripleDES::MODE_ECB, $secretKey);
+        $crypto = new TripleDESCrypto(TripleDES::MODE_ECB, $secretKey, true);
 
         return $crypto->encryptString($str);
     }
@@ -181,7 +181,7 @@ class Gateway extends Base\Gateway
     {
         $secretKey = $this->getSecret();
 
-        $crypto = new TripleDESCrypto(TripleDES::MODE_ECB, $secretKey);
+        $crypto = new TripleDESCrypto(TripleDES::MODE_ECB, $secretKey, false);
 
         $decryptedString = $crypto->decryptString($str);
 
