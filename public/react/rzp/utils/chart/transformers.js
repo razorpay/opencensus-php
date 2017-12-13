@@ -13,13 +13,13 @@ export const getTimelineData = ({
   /*
    * Pokedex data will be completely denormalized without any grouping
    * this function, groups the data (for series) based on the
-   * `groupByColumnName` parameter and transforms the data which 
+   * `groupByColumnName` parameter and transforms the data which
    * one can use directly as `data` option for chart.js
    *
    * @param {Array} data*
    * @param {String} groupByColumnName*
    * @param {Object} groupTitleMap
-   * @param {Function} valueTransformer 
+   * @param {Function} valueTransformer
    *
    * Description:
    * `data` is the pokedex response
@@ -29,7 +29,7 @@ export const getTimelineData = ({
    *
    * `groupTitleMap` is a dictionary that maps group values to custom names
    *
-   * `valueTransformer` a function that will be called on each value in 
+   * `valueTransformer` a function that will be called on each value in
    * the record, if passed the function will get the following arguments
    * 1) the value of the current point
    * 2) the total record given by pokedex
@@ -49,7 +49,7 @@ export const getTimelineData = ({
          *   }
          * }
          *
-         * used to get all the timestamps 
+         * used to get all the timestamps
          * used to check if the all groups have data for the particular
          * timestamp , else 0 will be put. it serves as a quick reference
          * of what is the value present in certain group at certain
@@ -57,7 +57,7 @@ export const getTimelineData = ({
          */
     timelineGroupMap = {},
     /*
-     * `datasets` contain data as defined in chart.js 
+     * `datasets` contain data as defined in chart.js
      * http://www.chartjs.org/docs/latest/#creating-a-chart
      */
     datasets = [],
@@ -79,7 +79,7 @@ export const getTimelineData = ({
       groupColor = colors[index % colors.length];
 
     const dataset = {
-      label: groupLabel,
+      label: fromCamelToTitleCase(groupLabel),
       backgroundColor: groupColor,
       data: [],
     };
@@ -166,7 +166,7 @@ export const getPieData = ({
    * @param {Array} data*
    * @param {String} groupByColumnName*
    * @param {Object} groupTitleMap
-   * @param {Function} valueTransformer 
+   * @param {Function} valueTransformer
    *
    * Description:
    * `data` is the pokedex response
@@ -176,7 +176,7 @@ export const getPieData = ({
    *
    * `groupTitleMap` is a dictionary that maps group values to custom names
    *
-   * `valueTransformer` a function that will be called on each value in 
+   * `valueTransformer` a function that will be called on each value in
    * the record, if passed the function will get the following arguments
    * 1) the value of the current point
    * 2) the total record given by pokedex

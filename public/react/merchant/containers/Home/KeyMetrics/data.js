@@ -87,7 +87,7 @@ export const tabsMeta = {
   [tabsOrder[2]]: {
     name: tabsOrder[2],
     title: 'Refunds in total',
-    grouping: [defaultGroupingVals[0]],
+    grouping: defaultGroupingVals,
     options: [],
     getCountQuery: function() {
       return {
