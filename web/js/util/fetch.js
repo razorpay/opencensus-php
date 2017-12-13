@@ -86,7 +86,13 @@ const createFormData = (form = {}) => {
   let formData = new FormData();
 
   Object.keys(form).map(key => {
-    formData.append(key, form[key]);
+    if (typeof form[key] === 'object') {
+      Object.keys(form[key]).map(item => {
+        formData.append(key + '[' + item + ']', form[key][item]); // Object, eg= type:{a:2,b:4} will be sent as type[a] = 2, type[b] = 4 separately
+      });
+    } else {
+      formData.append(key, form[key]);
+    }
   });
   return formData;
 };
