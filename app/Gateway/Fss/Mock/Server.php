@@ -103,6 +103,27 @@ class Server extends Base\Mock\Server
         return $this->prepareResponse($content);
     }
 
+    public function verify($input)
+    {
+        parent::verify($input);
+
+        $this->request($input);
+
+        $input = (array) simplexml_load_string($input);
+
+        $responseData = [
+            Fields::RESULT => Fss\Status::SUCCESS,
+            Fields::AMOUNT  => $input[Fields::AMOUNT],
+            Fields::TRACK_ID => $input[Fields::TRACK_ID],
+            Fields::TRANSACTION_ID => $input[Fields::TRANSACTION_ID],
+        ];
+
+        $this->content($request);
+
+        $content = Fss\Utility::createRequestXml($responseData, false);
+
+        return $this->prepareResponse($content);
+    }
     protected function prepareResponse($content)
     {
         $response = \Response::make($content);
