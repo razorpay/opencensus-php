@@ -102,6 +102,8 @@ class Gateway extends Base\Gateway
             ]
         );
 
+        $this->setApproval($response[ApiResponseFields::APPROVAL_CODE]);
+
         $purchaseFields = $this->getPurchaseFields($response, $input['payment']);
 
         $purchaseEntity = $this->createGatewayPaymentEntity($purchaseFields, $input);
@@ -130,14 +132,16 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($input['gateway']);
 
-        $this->mockApprovalCodeIfNeeded($input['gateway']);
-
         $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
 
         $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
         $actualAmount = number_format($input['gateway'][ConnectResponseFields::CHARGE_TOTAL], 2, '.', '');
 
         $this->assertAmount($expectedAmount, $actualAmount);
+
+        $this->mockApprovalCodeIfNeeded($input['gateway']);
+
+        $this->setApproval($input['gateway'][ConnectResponseFields::APPROVAL_CODE]);
 
         $attributes = $this->getCallbackFields($input['gateway']);
 
@@ -210,6 +214,8 @@ class Gateway extends Base\Gateway
             ]
         );
 
+        $this->setApproval($response[ApiResponseFields::APPROVAL_CODE]);
+
         $captureFields = $this->getCaptureFields($response, $input['payment']);
 
         $captureEntity = $this->createGatewayPaymentEntity($captureFields, $input);
@@ -239,6 +245,8 @@ class Gateway extends Base\Gateway
             ]
         );
 
+        $this->setApproval($response[ApiResponseFields::APPROVAL_CODE]);
+
         $refundFields = $this->getRefundFields($response, $input['refund']);
 
         $refundEntity = $this->createGatewayPaymentEntity($refundFields, $input);
@@ -267,6 +275,8 @@ class Gateway extends Base\Gateway
                 'refund_id' => $input['refund']['id'],
                 'response'  => $response,
             ]);
+
+        $this->setApproval($response[ApiResponseFields::APPROVAL_CODE]);
 
         $reverseFields = $this->getReverseFields($response, $input['refund']);
 
@@ -350,6 +360,8 @@ class Gateway extends Base\Gateway
                                              ->children('ipgapi', true);
 
         $refundResponse = json_decode(json_encode($xmlResponse), true);
+
+        $this->setApproval($refundResponse[ApiResponseFields::APPROVAL_CODE]);
 
         $refundFields = $this->getRefundFields($refundResponse, $input['refund']);
 
@@ -440,9 +452,9 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * The method is called at the beginning of all methods
+     * Must be called before processing Gateway response
      * where we expect the approval code. It set approvalCode
-     * property and from that approval
+     * property and from that approval(boolean) property
      *
      * @param string $approvalCode
      */
@@ -510,8 +522,6 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackFields(array $callbackBody)
     {
-        $this->setApproval($callbackBody[ConnectResponseFields::APPROVAL_CODE]);
-
         $attributes = [
             Entity::RECEIVED                => true,
             Entity::APPROVAL_CODE           => $this->approvalCode->getFormattedCode(),
@@ -587,8 +597,6 @@ class Gateway extends Base\Gateway
     protected function getCommonResponseFields(array $response, array $input)
     {
         $currencyCode = Currency::ISO_NUMERIC_CODES[$input['currency']];
-
-        $this->setApproval($response[ApiResponseFields::APPROVAL_CODE]);
 
         $attributes = [
             Entity::RECEIVED      => true,
