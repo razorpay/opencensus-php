@@ -229,7 +229,9 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
     return adminPut(data)
       .then(data => {
-        if (data) {
+        console.log('RECEIPT EMAIL', data);
+        if (data && (typeof data.success === 'undefined' || data.success)) {
+          // In some cases, data is not data.data, but {success, data, error}
           if (isWorkflow(data)) {
             return;
           }
