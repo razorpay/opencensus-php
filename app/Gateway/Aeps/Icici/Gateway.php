@@ -243,7 +243,7 @@ class Gateway extends Base\Gateway
 
     public function getIv()
     {
-        return 'gyt7891bhsdtd1bv';
+        return '';
     }
 
     protected function setEncryptedFingerPrintDataInCache($input)
