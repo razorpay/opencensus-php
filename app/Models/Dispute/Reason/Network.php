@@ -35,4 +35,9 @@ class Network
     {
         return (in_array($network, self::$networksList, true) === true);
     }
+
+    public static function list(): array
+    {
+        return self::$networksList;
+    }
 }

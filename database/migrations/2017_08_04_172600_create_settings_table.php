@@ -11,6 +11,8 @@ class CreateSettingsTable extends Migration
     const ENTITY_TYPE = 'entity_type';
     const ENTITY_ID   = 'entity_id';
     const MODULE      = 'module';
+    const CREATED_AT  = 'created_at';
+    const UPDATED_AT  = 'updated_at';
 
     /**
      * @var string
@@ -55,6 +57,12 @@ class CreateSettingsTable extends Migration
 
             $table->text($this->valueColumn);
 
+            $table->integer(self::CREATED_AT)
+                  ->nullable();
+
+            $table->integer(self::UPDATED_AT)
+                  ->nullable();
+
             $table->index(self::ENTITY_TYPE);
 
             $table->index(self::ENTITY_ID);
@@ -62,6 +70,10 @@ class CreateSettingsTable extends Migration
             $table->index(self::MODULE);
 
             $table->index($this->keyColumn);
+
+            $table->index(self::CREATED_AT);
+
+            $table->index(self::UPDATED_AT);
         });
     }
 
