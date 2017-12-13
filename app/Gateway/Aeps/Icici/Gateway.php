@@ -301,9 +301,9 @@ class Gateway extends Base\Gateway
 
     protected function updateGatewayPaymentForReversal($gatewayPayment, $response)
     {
-        if (isset($response[ResponseConstants::STATUS]) === true)
+        if (isset($response[ResponseConstants::AUTH_RESPONSE_CODE]) === true)
         {
-            if ($response[ResponseConstants::STATUS] === '00')
+            if ($response[ResponseConstants::AUTH_RESPONSE_CODE] === '00')
             {
                 $gatewayPayment->setReversed(1);
             }
@@ -311,11 +311,11 @@ class Gateway extends Base\Gateway
             {
                 $gatewayPayment->setReversed(0);
 
-                $gatewayPayment->setReversalErrorCode($response[ResponseConstants::STATUS]);
+                $gatewayPayment->setReversalErrorCode($response[ResponseConstants::AUTH_RESPONSE_CODE]);
 
-                if (isset($response[ResponseConstants::DESCRIPTION]) === true)
+                if (isset($response[ResponseConstants::AUTH_ADDITIONAL_DATA]) === true)
                 {
-                    $gatewayPayment->setReversalErrorDescription($response[ResponseConstants::DESCRIPTION]);
+                    $gatewayPayment->setReversalErrorDescription($response[ResponseConstants::AUTH_ADDITIONAL_DATA]);
                 }
             }
         }
@@ -329,14 +329,14 @@ class Gateway extends Base\Gateway
     {
         $paymentStatus = self::FAILED;
 
-        if (isset($response[ResponseConstants::RRN]) === true)
+        if (isset($response[ResponseConstants::AUTH_RRN]) === true)
         {
-            $gatewayPayment->setRrn($response[ResponseConstants::RRN]);
+            $gatewayPayment->setRrn($response[ResponseConstants::AUTH_RRN]);
         }
 
-        if (isset($response[ResponseConstants::STATUS]) === true)
+        if (isset($response[ResponseConstants::AUTH_RESPONSE_CODE]) === true)
         {
-            if ($response[ResponseConstants::STATUS] === '00')
+            if ($response[ResponseConstants::AUTH_RESPONSE_CODE] === '00')
             {
                 $gatewayPayment->setReceived(1);
 
@@ -345,11 +345,11 @@ class Gateway extends Base\Gateway
             else
             {
                 $gatewayPayment->setReceived(0);
-                $gatewayPayment->setErrorCode($response[ResponseConstants::STATUS]);
+                $gatewayPayment->setErrorCode($response[ResponseConstants::AUTH_RESPONSE_CODE]);
 
-                if (isset($response[ResponseConstants::DESCRIPTION]) === true)
+                if (isset($response[ResponseConstants::AUTH_ADDITIONAL_DATA]) === true)
                 {
-                    $gatewayPayment->setErrorDescription($response[ResponseConstants::DESCRIPTION]);
+                    $gatewayPayment->setErrorDescription($response[ResponseConstants::AUTH_ADDITIONAL_DATA]);
                 }
             }
         }
