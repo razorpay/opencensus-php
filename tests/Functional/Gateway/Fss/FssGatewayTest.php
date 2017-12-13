@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Gateway\Fss;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Gateway\Fss\Constants;
 use RZP\Gateway\Fss\Status;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -86,6 +87,8 @@ class FssGatewayTest extends TestCase
         $gatewayPayment = $this->getLastEntity('fss', true);
 
         $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(Status::CAPTURED, $gatewayPayment['status']);
 
         $this->assertEquals('rfnd_' . $gatewayPayment['refund_id'], $refund['id']);
     }
