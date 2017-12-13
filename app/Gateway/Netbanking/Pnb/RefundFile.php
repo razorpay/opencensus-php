@@ -67,7 +67,7 @@ class RefundFile extends Base\RefundFile
 
             $refundAmount = number_format($row['refund']['amount'] / 100, 2, '.', '');
 
-            $txnAmount = number_format($row['payment']['amount'], 2, '.', '');
+            $txnAmount = number_format($row['payment']['amount'] / 100, 2, '.', '');
 
              // This field is left blank currently
             $cancellationTransactionId = '';
