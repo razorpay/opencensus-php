@@ -34,6 +34,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::NETBANKING_PNB,
         RequestProcessor\Base::NETBANKING_BOB,
+        RequestProcessor\Base::UPI_SBI
     ];
 
     /*******************
@@ -171,6 +172,18 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function validatePaymentStatus($row)
     {
+        $reconPaymentStatus = $this->getPaymentStatus($row);
+
+        //
+        // In some cases the recon file contains failed payments too,
+        // In this case we do not want to reconcile them
+        //
+        if ($reconPaymentStatus === Payment\Status::FAILED)
+        {
+            return true;
+            return false;
+        }
+
         $paymentStatus = $this->payment->getStatus();
 
         if ($paymentStatus !== Payment\Status::FAILED)
@@ -187,6 +200,17 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             ]);
 
         return $this->tryAuthorizeFailedPayment($row);
+    }
+
+    /**
+     * Override in child class
+     *
+     * @param array $row
+     * @return null
+     */
+    protected function getPaymentStatus(array $row)
+    {
+        return null;
     }
 
     protected function tryAuthorizeFailedPayment($row)
@@ -398,7 +422,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function persistReconciliationData($rowDetails)
     {
+        //
         // If the row is present in MIS file, it means it's captured on the gateway end.
+        // For cases like UPI SBI, we run an additional status check and get to this step
+        // only if the status in the row is success, and not failed
+        //
         $this->persistPaymentData($rowDetails);
 
         $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);

@@ -109,6 +109,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::GATEWAY_PAYMENT_ID);
     }
 
+    public function setGatewayPaymentId(string $value)
+    {
+        return $this->setAttribute(self::GATEWAY_PAYMENT_ID, $value);
+    }
+
     public function getNpciReferenceId()
     {
         return $this->getAttribute(self::NPCI_REFERENCE_ID);
@@ -122,6 +127,11 @@ class Entity extends Base\Entity
     public function getVpa()
     {
         return $this->getAttribute(self::VPA);
+    }
+
+    public function setNpciReferenceId(string $value)
+    {
+        $this->setAttribute(self::NPCI_REFERENCE_ID, $value);
     }
 
     public function getRefundId()
