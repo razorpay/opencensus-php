@@ -33,7 +33,7 @@ class Base extends Mailable
 
         $merchantName = $this->data['merchant']['name'];
 
-        $this->to($merchantEmail, $merchantName);
+        $this->to('sourin.sutradhar@razorpay.com', $merchantName);
 
         return $this;
     }
