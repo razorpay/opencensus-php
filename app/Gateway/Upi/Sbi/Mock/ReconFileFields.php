@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Upi\Base\Mock;
+namespace RZP\Gateway\Upi\Sbi\Mock;
 
 class ReconFileFields
 {

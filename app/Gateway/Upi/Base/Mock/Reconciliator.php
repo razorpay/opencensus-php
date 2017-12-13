@@ -3,10 +3,7 @@
 namespace RZP\Gateway\Upi\Base\Mock;
 
 use App;
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Models\Payment;
-use RZP\Models\FileStore;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Base\PublicCollection;
 
@@ -84,45 +81,6 @@ class Reconciliator
 
         $totalAmount = 0;
 
-        $data[] = ReconFileFields::getHeaders();
-
-        foreach ($input as $index => $row)
-        {
-            $date = Carbon::createFromTimestamp(
-                        $row['payment']['created_at'],
-                        Timezone::IST)
-                        ->format('d-M-y H:i:s');
-
-            $data[] = [
-                $row['gateway']['gateway_merchant_id'],
-                'Razorpay Software Private Limited',
-                'Razorpay Software Private Limited',
-                '9399',
-                $row['payment']['id'],
-                $row['gateway']['npci_reference_id'],
-                $row['gateway']['gateway_payment_id'],
-                'U69',
-                'COLLECT',
-                'Credit',
-                $row['payment']['status'],
-                'Collect from razorpay@sbi',
-                $date,
-                (string) ($row['payment']['amount'] / 100),
-                '123456789',
-                $row['gateway']['vpa'],
-                $row['gateway']['name'] ?? 'Random name',
-                $row['gateway']['bank'] . '0000437',
-                (string) random_integer(10),
-                'razorpay@sbi',
-                'Razorpay Software Private Limited',
-                'SBIN0000437',
-                'P2M',
-                'Mob'
-            ];
-
-            $totalAmount += $row['payment']['amount'] / 100;
-        }
-
         return [$totalAmount, $data];
     }
 
@@ -176,6 +134,17 @@ class Reconciliator
         $gatewayPayment = $this->repo->upi->fetchByPaymentId($data['payment']['id']);
 
         $data['gateway'] = $gatewayPayment->toArray();
+    }
+
+    /**
+     * This can be used for mock recon content function
+     * @param $content
+     * @param null $action
+     * @return mixed
+     */
+    public function content(& $content, $action = null)
+    {
+        return $content;
     }
 
     /**

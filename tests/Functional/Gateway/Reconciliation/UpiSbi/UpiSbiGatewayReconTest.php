@@ -59,17 +59,13 @@ class UpiSbiGatewayReconTest extends TestCase
 
             $transaction = $this->getEntityById('transaction', $transactionId, true);
 
-            $this->assertNull($transaction['reconciled_at']);
-
-            // TODO: Potentially more assertions
+            $this->assertNotNull($transaction['reconciled_at']);
         }
 
-        $gatewayEntity = $this->getLastEntity('netbanking', true);
-
-        // TODO: Add assertions for gateway entity after discussion with yv and ria
-        // TODO: Should the details be persisted only after a dirty check???
-        // TODO: Check if this is already being done in the code base.
+        // TODO: Add assertions for gateway payment id? Ensure that values haven't changed before and after recon
     }
+
+    // TODO: Test case for validate payment status mismatch in base / payment recon
 
     protected function createUploadedFile($file)
     {
