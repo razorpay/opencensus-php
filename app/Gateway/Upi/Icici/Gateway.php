@@ -817,11 +817,15 @@ class Gateway extends Base\Gateway
                 $status,
                 $message);
         }
-
+        s($content);
         // Authorization was successful
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
-        return [];
+        return [
+            'acquirer' => [
+                'vpa' => $gatewayPayment->getVpa()
+            ]
+        ];
     }
 
     public function refund(array $input)

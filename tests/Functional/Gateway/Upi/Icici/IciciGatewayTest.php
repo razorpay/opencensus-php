@@ -46,6 +46,51 @@ class IciciGatewayTest extends TestCase
         return $paymentId;
     }
 
+    public function testIntentPayment($status = 'created')
+    {
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'crims0n@icici';
+            }
+        });
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $this->checkPaymentStatus($paymentId, $status);
+
+        $upiEntity = $this->getLastEntity('upi_icici', true);
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNull($payment['vpa']);
+
+        $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
+        // ;
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals($payment['vpa'], 'crims0n@icici');
+
+        return $paymentId;
+    }
+
     public function testPaymentWithExpiryPublicAuth()
     {
         $payment = $this->payment;
