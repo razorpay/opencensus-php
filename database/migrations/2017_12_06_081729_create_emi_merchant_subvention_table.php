@@ -29,12 +29,11 @@ class CreateEmiMerchantSubventionTable extends Migration
 
             $table->char(MerchantSubvention::EMI_PLAN_ID, MerchantSubvention::ID_LENGTH);
 
-            $table->integer(MerchantSubvention::MERCHANT_PAYBACK)
-                  ->default(0);
-
             $table->integer(MerchantSubvention::CREATED_AT);
 
             $table->integer(MerchantSubvention::UPDATED_AT);
+
+            $table->integer(MerchantSubvention::DELETED_AT);
 
             $table->unique([MerchantSubvention::MERCHANT_ID, MerchantSubvention::EMI_PLAN_ID]);
 

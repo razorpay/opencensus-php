@@ -8,7 +8,6 @@ use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
-use RZP\Models\Emi;
 
 class Service extends Base\Service
 {
@@ -29,13 +28,25 @@ class Service extends Base\Service
             $amount = $plan->getMinAmount();
 
             // all plans of a bank will have same min amount
-            $plans[$issuer][Emi\Entity::MIN_AMOUNT] = $amount;
+            $plans[$issuer][Entity::MIN_AMOUNT] = $amount;
 
             $plans[$issuer]['plans'][$duration] = $plan->getRate() / 100;
 
-            if (array_key_exists($plan->getId(), $merchantSubventedPlans) === true)
+            if (in_array($plan->getId(), $merchantSubventedPlans) === true)
             {
-                $plans[$issuer]['merchant_subvented_plans'][$duration] = $merchantSubventedPlans[$plan->getId()];
+                $plans[$issuer]['new_plans'][] = [
+                        'duration'   => $duration,
+                        'interest'   => 0,
+                        'subvention' => Subvention::MERCHANT,
+                ];
+            }
+            else
+            {
+                $plans[$issuer]['new_plans'][] = [
+                    'duration'   => $duration,
+                    'interest'   => $plan->getRate() / 100,
+                    'subvention' => Subvention::CUSTOMER,
+                ];
             }
         }
 
@@ -95,7 +106,7 @@ class Service extends Base\Service
 
         foreach ($emiFileBanks as $bankIfsc)
         {
-            $bank = Emi\Issuer::$emiFileBanks[$bankIfsc];
+            $bank = Issuer::$emiFileBanks[$bankIfsc];
 
             $returnValue[$bankIfsc] = $this->generateEmiFileForBank($bankIfsc, $from, $to, $bank, $email);
         }

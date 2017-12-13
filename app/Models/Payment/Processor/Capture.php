@@ -70,6 +70,15 @@ trait Capture
             $amount -= $payment->getFee();
         }
 
+        if ($payment->isEmiMerchantSubvented() === true)
+        {
+            $emiPlan = $payment->emiPlan;
+
+            $merchantPayback = $emiPlan->getMerchantPayback();
+
+            $amount = (int)ceil ($amount *  (10000/(10000 - $merchantPayback)));
+        }
+
         // set auto-capture 1
         $payment->setAutoCapturedTrue();
 
@@ -313,6 +322,15 @@ trait Capture
                     'capture_amount'    => $captureAmount,
                     'message'           => 'Adds fee to the amount because fee bearer is customer',
                 ]);
+        }
+
+        if ($payment->isEmiMerchantSubvented() === true)
+        {
+            $emiPlan = $payment->emiPlan;
+
+            $merchantPayback = $emiPlan->getMerchantPayback();
+
+            $captureAmount = (int)ceil($captureAmount - ($captureAmount * $merchantPayback/10000));
         }
 
         if ($captureAmount !== $payment->getAmount())

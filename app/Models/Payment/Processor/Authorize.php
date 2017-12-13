@@ -2069,15 +2069,19 @@ trait Authorize
                                                                         $payment->merchant->getId(),
                                                                         $emiPlan->getId());
 
+        $payment->setEmiSubvention(Emi\Subvention::CUSTOMER);
+
         if ($emiMerchantSubvention !== null)
         {
             $amount = $payment->getAmount();
 
-            $merchantPayback = $emiMerchantSubvention->getMerchantPayback();
+            $merchantPayback = $emiPlan->getMerchantPayback();
 
             $baseAmount = ceil($payment->getAmount() - ($amount * $merchantPayback/10000));
 
             $payment->setAmountAttribute($baseAmount);
+
+            $payment->setEmiSubvention(Emi\Subvention::MERCHANT);
         }
 
         $payment->getValidator()->validateMinAmountWithEmiPlanAmount($emiPlan);

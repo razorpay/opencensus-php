@@ -12,6 +12,7 @@ class EmiPlan extends Base
             'methods'           => 'debitcard',
             'bank'              => 'HDFC',
             'min_amount'        => '300000',
+            'merchant_payback'  => '518',
         ],
         [
             'id'                => '10101010101011',

@@ -77,8 +77,12 @@ return [
                     'plans' => [
                         9 => 12,
                     ],
-                    'merchant_subvented_plans' =>[
-                        9 => 1500
+                    'new_plans' =>[
+                        [
+                            'duration'  => 9,
+                            'interest'  => 0,
+                            'subvention'=> 'merchant'
+                        ]
                     ],
                 ],
             ],

@@ -58,6 +58,67 @@ class EMIPaymentTest extends TestCase
         $this->fixtures->merchant->disableEmi();
     }
 
+    public function testEmiPaymentCreateWithMerchantSub()
+    {
+        $emiPlan = $this->emiPlan;
+
+        $emiPlanId = $emiPlan[0]['id'];
+
+        $this->fixtures->create('emi_merchant_subvention', ['emi_plan_id' => $emiPlanId]);
+
+        $this->fixtures->merchant->enableEmi();
+        $this->ba->publicAuth();
+        $this->payment['amount'] = 500000;
+        $this->payment['method'] = 'emi';
+        $this->payment['emi_duration'] = 9;
+        $this->payment['card']['number'] = '41476700000006';
+
+        $content = $this->doAuthAndGetPayment($this->payment);
+
+        $payment = $this->capturePayment(
+            $content['id'],
+            500000, 'INR', 474100);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['emi_plan_id'], $emiPlan[0]['id']);
+        $this->assertEquals($payment['method'], 'emi');
+        $this->assertEquals($payment['status'], 'captured');
+
+        $this->fixtures->merchant->disableEmi();
+    }
+
+    public function testEmiPaymentAutoCaptureWithMerchantSub()
+    {
+        $emiPlan = $this->emiPlan;
+
+        $emiPlanId = $emiPlan[0]['id'];
+
+        $this->fixtures->create('emi_merchant_subvention', ['emi_plan_id' => $emiPlanId]);
+
+        $this->fixtures->merchant->enableEmi();
+        $this->ba->publicAuth();
+        $this->payment['amount'] = 500000;
+        $this->payment['method'] = 'emi';
+        $this->payment['emi_duration'] = 9;
+        $this->payment['card']['number'] = '41476700000006';
+
+        $content = $this->doAuthAndGetPayment($this->payment);
+
+        $this->fixtures->edit('payment', $content['id'], ['created_at' => time() - (36 * 60 * 60)]);
+
+        $this->doAutoCapture();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['emi_plan_id'], $emiPlan[0]['id']);
+        $this->assertEquals($payment['method'], 'emi');
+        $this->assertEquals($payment['status'], 'captured');
+
+        $this->fixtures->merchant->disableEmi();
+
+    }
+
     public function testMultipleEmiPayments()
     {
         $this->testEmiPaymentCreate();
