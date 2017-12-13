@@ -914,20 +914,17 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-           $this->doAuthPayment($payment);
-        });
+        $this->doAuthPayment($payment);
 
         $payment1 = $this->getLastEntity('payment', true);
         $billdesk = $this->getLastEntity('billdesk', true);
 
-        $this->assertEquals('DrctNbBdkTmnl1', $payment1['terminal_id']);
-        $this->assertEquals('ICO', $billdesk['BankID']);
+        $this->assertEquals('SharNbBdkTmnl1', $payment1['terminal_id']);
+        $this->assertEquals('ICI', $billdesk['BankID']);
 
         $this->fixtures->merchant->editCategory2('corporate');
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
+        $payment = $this->getDefaultNetbankingPaymentArray('ICIC_C');
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {

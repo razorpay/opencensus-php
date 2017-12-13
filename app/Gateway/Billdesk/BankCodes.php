@@ -13,7 +13,7 @@ class BankCodes
         IFSC::CIUB => 'CUB',                    // City Union Bank
         IFSC::UTIB => 'UTI',                    // Axis Bank
         IFSC::ICIC => 'ICI',                    // ICICI Bank
-        Netbanking::ICIC_C => 'ICO',            // ICICI Corporate Banking
+//        Netbanking::ICIC_C => 'ICO',            // ICICI Corporate Banking
         IFSC::ANDB => 'ADB',                    // Andhra Bank
         IFSC::BBKM => 'BBK',                    // Bank of Bahrain and Kuwait
         IFSC::MAHB => 'BOM',                    // Maharashtra Bank
@@ -70,14 +70,14 @@ class BankCodes
     ];
 
     public static $corporateBankCodeMap  = [
-        IFSC::ICIC => 'ICO',
+        Netbanking::ICIC_C => 'ICO',
     ];
 
     // We are not using Deusctche Bank corporate net-banking currently.
 
     public static function getBankCode($ifsc, $corporate = false)
     {
-        $bankId = self::$bankCodeMap[$ifsc];
+        $bankId = self::$bankCodeMap[$ifsc] ?? null;
 
         if ($corporate === true)
         {
