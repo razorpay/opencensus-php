@@ -55,6 +55,13 @@ class Gateway extends Base\Gateway
         '3396093976',
     ];
 
+    /**
+     * A Parsed object for approval_code string
+     *
+     * @var ApprovalCode
+     */
+    protected $approvalCode;
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -410,8 +417,6 @@ class Gateway extends Base\Gateway
     {
         if (empty($gatewayCallback[ConnectResponseFields::APPROVAL_CODE]) === false)
         {
-            $this->setApproval($gatewayCallback[ConnectResponseFields::APPROVAL_CODE]);
-
             return;
         }
 
@@ -431,9 +436,21 @@ class Gateway extends Base\Gateway
             $mockedApprovalCode = implode(':', ['N', Codes::MOCK_FAIL_APPROVAL_CODE]);
         }
 
-        $this->setApproval($mockedApprovalCode);
-
         $gatewayCallback[ConnectResponseFields::APPROVAL_CODE] = $mockedApprovalCode;
+    }
+
+    /**
+     * The method is called at the beginning of all methods
+     * where we expect the approval code. It set approvalCode
+     * property and from that approval
+     *
+     * @param string $approvalCode
+     */
+    protected function setApproval(string $approvalCode)
+    {
+        $this->approvalCode = new ApprovalCode($approvalCode);
+
+        $this->approval = $this->approvalCode->isSuccess();
     }
 
     protected function getSoapResponse(array $requestContent)
@@ -453,16 +470,16 @@ class Gateway extends Base\Gateway
     {
         if ($this->approval === false)
         {
-            $approvalCode = $this->getErrorCodeFromApprovalCode($gatewayEntity->getApprovalCode());
+            $errorCode = $this->approvalCode->getErrorCode();
 
-            $gatewayErrorDesc = ErrorCodes::getErrorDesc($approvalCode);
+            $gatewayErrorDesc = ErrorCodes::getErrorDesc($errorCode);
 
-            $errorCode = ErrorCodes::getMappedCode($approvalCode);
+            $mappedErrorCode = ErrorCodes::getMappedCode($errorCode);
 
             // Cryptic error messages that First Data keeps sending us
-            $this->checkSpecialCases($approvalCode, $gatewayEntity, $gatewayErrorDesc);
+            $this->checkSpecialCases($errorCode, $gatewayEntity, $gatewayErrorDesc);
 
-            throw new Exception\GatewayErrorException($errorCode, $approvalCode, $gatewayErrorDesc);
+            throw new Exception\GatewayErrorException($mappedErrorCode, $errorCode, $gatewayErrorDesc);
         }
     }
 
@@ -493,10 +510,11 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackFields(array $callbackBody)
     {
+        $this->setApproval($callbackBody[ConnectResponseFields::APPROVAL_CODE]);
+
         $attributes = [
             Entity::RECEIVED                => true,
-            Entity::APPROVAL_CODE           => $this->getFormattedApprovalCode(
-                                                         $callbackBody[ConnectResponseFields::APPROVAL_CODE]),
+            Entity::APPROVAL_CODE           => $this->approvalCode->getFormattedCode(),
         ];
 
         $this->setFieldIfPresent($attributes, Entity::TRANSACTION_RESULT,
@@ -515,8 +533,7 @@ class Gateway extends Base\Gateway
         {
             $attributes[Entity::STATUS]    = Status::AUTHORIZED;
 
-            $attributes[Entity::AUTH_CODE] = $this->getAuthCodeFromApprovalCode(
-                                                        $callbackBody[ConnectResponseFields::APPROVAL_CODE]);
+            $attributes[Entity::AUTH_CODE] = $this->approvalCode->getAuthCode();
 
             $attributes[Entity::TDATE]     = $callbackBody[ConnectResponseFields::TDATE];
         }
@@ -571,16 +588,15 @@ class Gateway extends Base\Gateway
     {
         $currencyCode = Currency::ISO_NUMERIC_CODES[$input['currency']];
 
+        $this->setApproval($response[ApiResponseFields::APPROVAL_CODE]);
+
         $attributes = [
             Entity::RECEIVED      => true,
-            Entity::APPROVAL_CODE => $this->getFormattedApprovalCode(
-                                                $response[ApiResponseFields::APPROVAL_CODE]),
+            Entity::APPROVAL_CODE => $this->approvalCode->getFormattedCode(),
             Entity::AMOUNT        => $input['amount'],
             Entity::CURRENCY      => $currencyCode,
             Entity::STATUS        => Status::CAPTURED,
         ];
-
-        $this->setApproval($attributes[Entity::APPROVAL_CODE]);
 
         $this->setFieldIfPresent($attributes, Entity::TDATE,
                     ApiResponseFields::TDATE, $response);
@@ -648,12 +664,12 @@ class Gateway extends Base\Gateway
     {
         if ($this->approval === false)
         {
-            $approvalCode = $this->getErrorCodeFromApprovalCode($attributes[Entity::APPROVAL_CODE]);
+            $errorCode = $this->approvalCode->getErrorCode();
 
-            $attributes[Entity::ERROR_MESSAGE] = ErrorCodes::getErrorDesc($approvalCode);
+            $attributes[Entity::ERROR_MESSAGE] = ErrorCodes::getErrorDesc($errorCode);
             $attributes[Entity::STATUS]        = Status::FAILED;
 
-            if ($approvalCode === ErrorCodes::getTimeoutCode())
+            if ($errorCode === ErrorCodes::getTimeoutCode())
             {
                 $attributes[Entity::RECEIVED] = false;
             }
@@ -1562,46 +1578,5 @@ class Gateway extends Base\Gateway
         }
 
         return $name;
-    }
-
-    /**
-     * In case of failure, we will only store error code from approval code.
-     * This makes sure there is no inconsistency in old and new data.
-     * Also success check is done on formatted approval code
-     *
-     * @param string $approvalCode
-     * @return string
-     */
-    protected function getFormattedApprovalCode(string $approvalCode)
-    {
-        $parsed = new ApprovalCodeParser($approvalCode);
-
-        if ($parsed->isSuccess())
-        {
-            return $approvalCode;
-        }
-
-        return $parsed->getErrorCode();
-    }
-
-    protected function setApproval(string $approvalCode)
-    {
-        $parsed = new ApprovalCodeParser($approvalCode);
-
-        $this->approval = $parsed->isSuccess();
-    }
-
-    protected function getErrorCodeFromApprovalCode(string $approvalCode)
-    {
-        $parsed = new ApprovalCodeParser($approvalCode);
-
-        return $parsed->getErrorCode();
-    }
-
-    protected function getAuthCodeFromApprovalCode(string $approvalCode)
-    {
-        $parsed = new ApprovalCodeParser($approvalCode);
-
-        return $parsed->getAuthCode();
     }
 }
