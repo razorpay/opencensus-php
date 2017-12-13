@@ -59,39 +59,49 @@ export default class TerminalForm extends Component {
 
   // Creates terminal
   handleConfirm = body => {
-    return confirm(
-      'Any previously assigned plan for the merchant will be replace with selected.',
-      'Submit'
-    ).then(_ => {
-      let file = body.file[0];
-      if (
-        body.gateway === 'first_data' &&
-        file.type !== 'application/x-pkcs12'
-      ) {
-        notifyError(JSON.stringify('Invalid certificate file'));
+    let file;
 
-        return;
+    for (let key in body.type) {
+      if (body.type[key] == '0') {
+        delete body.type[key];
       }
+    }
+
+    if (body.file) {
+      file = body.file[0];
+    }
+
+    if (
+      body.gateway === 'first_data' &&
+      (file && file.type !== 'application/x-pkcs12')
+    ) {
+      notifyError(JSON.stringify('Invalid certificate file'));
+
+      return;
+    }
+
+    if (file) {
       body.gateway_client_certificate = file;
+      delete body.file;
+    }
 
-      return adminFormUpload(
-        body,
-        '/admin/merchant/' + this.props.merchantId + '/terminal'
-      )
-        .then(response => {
-          if (response.data.success) {
-            notifySuccess('Terminal assigned successfully.');
-            closeModal();
+    return adminFormUpload(
+      body,
+      '/admin/merchant/' + this.props.merchantId + '/terminal'
+    )
+      .then(response => {
+        if (response.data.success) {
+          notifySuccess('Terminal assigned successfully.');
+          closeModal();
 
-            // Post success calculations in 'merchant.terminals' in model
-          } else {
-            response.data.errors.map(error => notifyError(error));
-          }
-        })
-        .catch(err => {
-          notifyError(JSON.stringify(err.response));
-        });
-    });
+          // Post success calculations in 'merchant.terminals' in model
+        } else {
+          response.data.errors.map(error => notifyError(error));
+        }
+      })
+      .catch(err => {
+        notifyError(JSON.stringify(err.response));
+      });
   };
 
   render() {
@@ -142,6 +152,7 @@ export default class TerminalForm extends Component {
             label="Gateway Acquirer"
             defaultValue={''}
           >
+            <option value="">NA</option>
             {Object.keys(gatewayAcquirerMapping).map(key => (
               <option key={key} value={key}>
                 {gatewayAcquirerMapping[key]}
@@ -181,13 +192,15 @@ export default class TerminalForm extends Component {
           <SelectField
             name="card"
             label="Card Allowed (Always Yes for HDFC)"
-            defaultValue="1"
+            defaultValue=""
           >
+            <option value="" />
             <option value="1">Yes</option>
             <option value="0">No</option>
           </SelectField>
 
-          <SelectField name="upi" label="UPI" defaultValue="0">
+          <SelectField name="upi" label="UPI" defaultValue="">
+            <option value="" />
             <option value="1">Yes</option>
             <option value="0">No</option>
           </SelectField>
@@ -195,28 +208,33 @@ export default class TerminalForm extends Component {
           <SelectField
             name="netbanking"
             label="Netbanking Allowed"
-            defaultValue="0"
+            defaultValue=""
           >
+            <option value="" />
             <option value="1">Yes</option>
             <option value="0">No</option>
           </SelectField>
 
-          <SelectField name="tpv" label="TPV" defaultValue="0">
+          <SelectField name="tpv" label="TPV" defaultValue="">
+            <option value="" />
             <option value="1">Yes</option>
             <option value="0">No</option>
           </SelectField>
 
-          <SelectField name="corporate" label="Corporate" defaultValue="0">
+          <SelectField name="corporate" label="Corporate" defaultValue="">
+            <option value="" />
             <option value="1">Yes</option>
             <option value="0">No</option>
           </SelectField>
 
-          <SelectField name="currency" label="Currency" defaultValue="INR">
+          <SelectField name="currency" label="Currency" defaultValue="">
+            <option value="" />
             <option value="INR">INR</option>
             <option value="USD">USD</option>
           </SelectField>
 
-          <SelectField name="emi" label="Emi" defaultValue="0">
+          <SelectField name="emi" label="Emi" defaultValue="">
+            <option value="">-NA-</option>
             <option value="1">Yes</option>
             <option value="0">No</option>
           </SelectField>
@@ -226,6 +244,7 @@ export default class TerminalForm extends Component {
             label="Emi Duration"
             defaultValue={''}
           >
+            <option value="">-NA-</option>
             <option value="3">3</option>
             <option value="6">6</option>
             <option value="9">9</option>
@@ -239,12 +258,14 @@ export default class TerminalForm extends Component {
             label="Emi Subvention"
             defaultValue={''}
           >
+            <option value="">-NA-</option>
             <option value="merchant">Merchant</option>
             <option value="customer">Customer</option>
           </SelectField>
 
           {!isEditMode && (
             <SelectField name="shared" label="Shared" defaultValue={''}>
+              <option value="" />
               <option value="1">Yes</option>
               <option value="0">No</option>
             </SelectField>
@@ -255,6 +276,7 @@ export default class TerminalForm extends Component {
             label="International"
             defaultValue={''}
           >
+            <option value="" />
             <option value="1">Yes</option>
             <option value="0">No</option>
           </SelectField>
@@ -271,7 +293,7 @@ export default class TerminalForm extends Component {
 
           <CheckField
             label="Non recurring"
-            name="type[non-recurring]"
+            name="type[non_recurring]"
             defaultChecked={
               entity && entity.type ? entity.type['non_recurring'] : ''
             }
@@ -304,11 +326,17 @@ export default class TerminalForm extends Component {
             onSubmit={closeModal}
           />
           <AsyncButton
-            text="Ok"
+            onSubmit={handleEdit ? handleEdit : this.handleConfirm}
             class="btn"
             pendingClass="small spinner"
-            onSubmit={handleEdit ? handleEdit : this.handleConfirm}
-          />
+            confirm={
+              handleEdit
+                ? 'Are you sure you want to edit this terminal?'
+                : 'Any previously assigned plan for the merchant will be replace with selected.'
+            }
+          >
+            Ok
+          </AsyncButton>
         </Form>
       </BaseModal>
     );
