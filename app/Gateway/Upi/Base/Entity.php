@@ -104,11 +104,6 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::PAYMENT_ID);
     }
 
-    public function getVpa()
-    {
-        return $this->getAttribute(self::VPA);
-    }
-
     public function getGatewayPaymentId()
     {
         return $this->getAttribute(self::GATEWAY_PAYMENT_ID);

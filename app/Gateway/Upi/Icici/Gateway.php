@@ -175,7 +175,7 @@ class Gateway extends Base\Gateway
             IntentParams::TXN_CURRENCY  => 'INR',
         ];
 
-        $query = http_build_query($content);
+        $query = urldecode(http_build_query($content));
 
         return ['data' => ['intent_url' => 'upi://pay?' . $query]];
     }
@@ -817,7 +817,7 @@ class Gateway extends Base\Gateway
                 $status,
                 $message);
         }
-        s($content);
+
         // Authorization was successful
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
