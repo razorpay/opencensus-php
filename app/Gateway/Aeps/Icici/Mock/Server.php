@@ -7,6 +7,11 @@ use RZP\Gateway\Aeps\Icici;
 
 class Server extends Base\Mock\Server
 {
+    public function authorize($input)
+    {
+        sd($input);
+    }
+
     public function refund($input)
     {
         $input = json_decode($input, true);
