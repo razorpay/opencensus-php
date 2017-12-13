@@ -160,3 +160,57 @@
     }
   }
 }
+
+#chartjs-tooltip {
+
+    position: absolute;
+    background-color: #FFF;
+    box-shadow: 0 0 50px #CCC;
+    width: 218px;
+    z-index: 100;
+
+    .custom-tooltip-inner {
+
+      width: 100%;
+
+      .tooltip-body {
+        text-align: left;
+
+        .title {
+
+          color: #252939;
+        }
+
+        .label-icon {
+
+          padding: 1px 8px;
+        }
+
+        .label {
+
+          color: #8991AE;
+        }
+
+        .label-value {
+
+          color: #252939;
+          float: right;
+        }
+      }
+
+    }
+
+
+    &::after {
+      content: ' ';
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+
+      border-top: 10px solid #FFF;
+      position: absolute;
+      left: 48%;
+      top: 100%;
+    }
+}
