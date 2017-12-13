@@ -152,7 +152,7 @@ class MockGatewayController extends Controller
         return Redirect::to($url);
     }
 
-    public function postFssPayment()
+    public function getFssPayment()
     {
         $input = Request::all();
 

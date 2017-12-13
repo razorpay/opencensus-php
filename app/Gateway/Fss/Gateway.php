@@ -234,6 +234,7 @@ class Gateway extends Base\Gateway
             $gatewayPayment->fill($attributes);
 
             $expectedAmount = $this->getFormattedAmount($input['payment']['amount'] / 100);
+
             $actualAmount = $this->getFormattedAmount($gatewayContent[Fields::AMOUNT]);
 
             $this->assertAmount($expectedAmount, $actualAmount);

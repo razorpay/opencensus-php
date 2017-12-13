@@ -281,7 +281,7 @@ final class Route
         'mock_sharp_payment_post'                 => ['post',     'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
         'mock_sharp_payment_get'                  => ['get',      'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
         'mock_amex_payment'                       => ['post',     'gateway/mockamex/payment',                       'MockGatewayController@postAmexPayment'                             ],
-        'mock_fss_payment'                        => ['post',     'gateway/mockfss/payment',                        'MockGatewayController@postFssPayment'                              ],
+        'mock_fss_payment'                        => ['get',      'gateway/mockfss/payment',                        'MockGatewayController@getFssPayment'                              ],
         'mock_sharp_payment_submit'               => ['post',     'gateway/mocksharp/payment/submit',               'MockGatewayController@postSharpPayment'                            ],
         'mock_netbanking_payment'                 => ['post',     'gateway/mock/netbanking/{bank}',                 'MockGatewayController@postNetbankingPayment'                       ],
         'mock_wallet_payment'                     => ['post',     'gateway/mock/wallet/{wallet}',                   'MockGatewayController@walletPayment'                               ],

@@ -19,8 +19,13 @@ class TripleDESCrypto
      *
      * @return string
      */
-    public function encryptString($plaintext)
+    public function encryptString($plaintext, $padding = true)
     {
+        if ($padding === false)
+        {
+            $this->des->disablePadding();
+        }
+
         return $this->des->encrypt($plaintext);
     }
 
