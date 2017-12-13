@@ -187,7 +187,7 @@ export default class TerminalForm extends Component {
             <option value="0">No</option>
           </SelectField>
 
-          <SelectField name="upi" label="UPI" defaultValue="1">
+          <SelectField name="upi" label="UPI" defaultValue="0">
             <option value="1">Yes</option>
             <option value="0">No</option>
           </SelectField>
@@ -195,7 +195,7 @@ export default class TerminalForm extends Component {
           <SelectField
             name="netbanking"
             label="Netbanking Allowed"
-            defaultValue="1"
+            defaultValue="0"
           >
             <option value="1">Yes</option>
             <option value="0">No</option>
