@@ -22,11 +22,15 @@ export default ({ entity, mode, updateEntity }) => {
       delete body.emi_duration;
     }
 
-    // Remove empty or untouched variables
-    for (let key in body) {
-      if (body[key] === '' || body[key] === null || body[key] === entity[key]) {
-        delete body[key];
+    // Remove the unchanged keys inside body.type
+    for (let key in body.type) {
+      if (body.type[key] == '0') {
+        // Remove if value is 0
+        delete body.type[key];
       }
+    }
+    if (!Object.keys(body.type).length) {
+      delete body.type;
     }
 
     return adminPut({
@@ -38,7 +42,7 @@ export default ({ entity, mode, updateEntity }) => {
       body,
     })
       .then(data => {
-        if (data) {
+        if (data && (typeof data.success === 'undefined' || data.success)) {
           notifySuccess('Terminal is successfully updated');
           updateEntity(data);
           closeModal();

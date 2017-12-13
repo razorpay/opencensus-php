@@ -285,9 +285,9 @@ export default class Model extends BaseModel {
         }
 
         notifySuccess(
-          `${titleCase(featureMode)} feature '${
-            featureName
-          }' removed successfully`
+          `${titleCase(
+            featureMode
+          )} feature '${featureName}' removed successfully`
         );
 
         // Update assigned_features for that mode and allow re-render
@@ -318,6 +318,12 @@ export default class Model extends BaseModel {
     ].assigned_features.concat(features);
 
     this.merchant.features = { ...this.merchant.features };
+  }
+
+  // Updates only for live mode
+  updateTerminal(data) {
+    this.merchant.terminals.items.push(data);
+    this.merchant.terminals.count += 1;
   }
 
   updateMerchantDetails(data) {

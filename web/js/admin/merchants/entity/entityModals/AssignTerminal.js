@@ -58,13 +58,16 @@ export default class TerminalForm extends Component {
   state = { pricingPlans: {} };
 
   // Creates terminal
-  handleConfirm = body => {
+  handleCreate = body => {
     let file;
 
     for (let key in body.type) {
       if (body.type[key] == '0') {
         delete body.type[key];
       }
+    }
+    if (!Object.keys(body.type).length) {
+      delete body.type;
     }
 
     if (body.file) {
@@ -94,7 +97,10 @@ export default class TerminalForm extends Component {
           notifySuccess('Terminal assigned successfully.');
           closeModal();
 
-          // Post success calculations in 'merchant.terminals' in model
+          // We're displaying only live terminal on right side of merchant details, so update only for live mode
+          if (body.mode === 'live') {
+            this.props.props.updateTerminal(response.data.data);
+          }
         } else {
           response.data.errors.map(error => notifyError(error));
         }
@@ -168,13 +174,16 @@ export default class TerminalForm extends Component {
           <Field
             label="Gateway Terminal Password"
             name="gateway_terminal_password"
+            defaultValue={isEditMode ? entity.gateway_terminal_password : ''}
             type="password"
           />
-          <Field
-            label="Confirm Gateway Terminal Password"
-            name="gateway_terminal_password_confirmation"
-            type="password"
-          />
+          {!isEditMode && (
+            <Field
+              label="Confirm Gateway Terminal Password"
+              name="gateway_terminal_password_confirmation"
+              type="password"
+            />
+          )}
 
           <Field label="Gateway Access Code" name="gateway_access_code" />
           <Field label="Gateway Secure Secret" name="gateway_secure_secret" />
@@ -286,6 +295,7 @@ export default class TerminalForm extends Component {
             label="Terminal Mode"
             defaultValue={''}
           >
+            <option value="" />
             <option value="3">Dual</option>
             <option value="1">Auth-Capture</option>
             <option value="2">Purchase</option>
@@ -326,7 +336,7 @@ export default class TerminalForm extends Component {
             onSubmit={closeModal}
           />
           <AsyncButton
-            onSubmit={handleEdit ? handleEdit : this.handleConfirm}
+            onSubmit={handleEdit ? handleEdit : this.handleCreate}
             class="btn"
             pendingClass="small spinner"
             confirm={
