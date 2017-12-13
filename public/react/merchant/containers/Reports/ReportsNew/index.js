@@ -8,25 +8,19 @@ import moment from 'moment';
 import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import AccountsList from 'rzp/ui/AccountsList';
-import poll from 'rzp/utils/poll/longPoll';
 
 import { fetchAccountsApi } from 'merchant/modules/marketplace/accounts';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import {
   getConfigs,
-  createLog,
-  getLog,
-  getFile,
+  generateReport,
+  generateReportV2,
 } from 'merchant/modules/reports';
 import { getCustomConfig, marketplaceConfigTypes } from './data';
 import SelectConfig from 'merchant/components/Reports/ReportsNew/SelectConfig';
 
 const validYear = current => {
   return current._d.getTime() <= Date.now() && current.year() >= 2015;
-};
-
-const reportErrorMsg = {
-  error: 'Oops!, Unable to generate report!',
 };
 
 const selector = formValueSelector('generateReports');
@@ -87,11 +81,11 @@ export default class ReportsContainer extends Component {
     }
 
     if (tags.indexOf('Rpp_Report') !== -1) {
-      configs.push(getCustomConfig('emitra'));
+      configs.push(getCustomConfig('rpp_report'));
     }
 
     if (tags.indexOf('Dsp_Report') !== -1) {
-      configs.push(getCustomConfig('dsp'));
+      configs.push(getCustomConfig('dsp_report'));
     }
 
     // if markerplace is enabled, get and show linked accounts
@@ -238,73 +232,21 @@ export default class ReportsContainer extends Component {
           .endOf(timeFactor)
           .unix();
 
-      return createLog({
+      return generateReportV2({
         config_id: selectedConfig._item.id,
         generated_by: selectedAccount.id,
         start_time: startTime,
         end_time: endTime,
-      })
-        .then(resp => {
-          if (!resp.success) {
-            return reportErrorMsg;
-          }
-
-          const logId = resp.data.id;
-
-          const logPoll = poll({
-            fetchFunc: () => getLog(resp.data.id),
-            validator: resp => {
-              return resp.error || resp.data.status === 'processed';
-            },
-            minWaitTime: 4000,
+      }).then(data => {
+        if (data.error) {
+          return this.props.showNotification({
+            type: 'error',
+            message: data.error,
           });
+        }
 
-          return logPoll.promise
-            .then(resp => {
-              if (resp.error) {
-                return reportErrorMsg;
-              }
-
-              const fileId = resp.data.file_id;
-
-              if (!fileId) {
-                return {
-                  error: 'No data found for the given dates',
-                };
-              }
-
-              return getFile(fileId)
-                .then(resp => {
-                  if (!resp.success) {
-                    return reportErrorMsg;
-                  }
-
-                  return {
-                    url:
-                      'https://api-settlement.s3.amazonaws.com/reports/10000000000000_payment_1513161866.csv?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Security-Token=FQoDYXdzECsaDMxm79FR9%2FsLtJ1KACK5A8r4o1Qv5NujVnfLRBnWSv07JGQo2K6%2BmlZAvQ1iyQuR%2F%2B868b6kKcTmKbs4uVdn9uJ%2BCOgoZrdt15BJfph9dox77MtK3Y0xmYvDkJRz%2Fl9Wu6AougxSFrKx0xOK%2BMipyCRW0A4HoAi5P74W4WZjluxGkLBP6CBIk4AXgFZrQrcghUm3SdvfZltEFh9YlRkZ20Cdul6jxoj%2FpnHlmkLMna8MVJZOQEYGCDi1Etfh2QvnuuP15rc9tno2%2BMZ7iJqldc8%2F9OD1pNxgXEhTIO25hPovjKSEZYq5xybDZ%2BkH%2BnWYoGu5iPc5rzFMxsQjE8e7Zm0arcbkNPPCEjCvg2YbnkM8SVgm12mqjKteh3QE%2F%2FT0NNScbklOiEnaqnrI9Rnj54Svq60U2f0IJ8mpUb0G09CVcFSzk%2Fj1NRMmZwBm7zZe%2BKbhqCMKAcBMh9anP0UXTZ6K92LY1%2BboCJqy6tR9MbciPnV327yZsJ3P6sbjcFokYoNjJts9U5VX%2F6cTeQ0UeNgD65gBd0BArYG6cRcb9Ptcwvsuh%2BgBmmss96iCjUj7fCnFMzH9VM1TsDdQbO%2F8XKuVcuNEEwQRISiK7cPRBQ%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAJCCTN4J54U6637SA%2F20171213%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20171213T104427Z&X-Amz-SignedHeaders=host&X-Amz-Expires=900&X-Amz-Signature=08dee462c9872ffe360668bc3f44c9c66ef1287d9a22d8b3fb96da6d21bea683',
-                  };
-                })
-                .catch(() => {
-                  return reportErrorMsg;
-                });
-            })
-            .catch(() => {
-              return reportErrorMsg;
-            });
-        })
-        .catch(() => {
-          return reportErrorMsg;
-        })
-        .then(data => {
-          if (data.error) {
-            return this.props.showNotification({
-              type: 'error',
-              message: data.error,
-            });
-          }
-
-          window.location = data.url;
-        });
+        window.location = data.url;
+      });
     } else if (selectedConfig.value === 'monthlyInvoice') {
       return window.open(
         `/${this.props.mode}/reports/invoice` +
@@ -312,6 +254,61 @@ export default class ReportsContainer extends Component {
           `&month=${invoiceDate.month() + 1}`,
         '_blank'
       );
+    } else {
+      const account_id = selectedAccount.id,
+        entity = selectedConfig.value;
+
+      let data = {
+        month: date.month() + 1, // Jan is 0 in moment library
+        year: date.year(),
+      };
+
+      if (type === 'daily') {
+        data.day = date.date();
+      }
+
+      const ajaxParams = {
+        url: '/reports/' + entity,
+        data: data,
+      };
+
+      if (
+        this.props.user.isMarketplaceEnabled &&
+        account_id !== this.props.user.current
+      ) {
+        data.account_id = 'acc_' + account_id; // It will be handled at api level later
+      }
+
+      if (entity === 'broking') {
+        ajaxParams.headers = {
+          Accept:
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        };
+      }
+
+      return generateReport(ajaxParams)
+        .payload.then(data => {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Your report will download shortly',
+          });
+
+          if (entity === 'broking') {
+            var blob = new Blob([data], {
+              type:
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+            return saveAs(blob, 'broking_report.xlsx');
+          }
+
+          location.href = data.data.url;
+        })
+        .catch(e => {
+          this.props.showNotification({
+            type: 'error',
+            message: 'No data found for given time range',
+          });
+        });
     }
   }
 

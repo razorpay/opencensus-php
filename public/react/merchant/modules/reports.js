@@ -1,7 +1,12 @@
 import ajax from 'merchant/utils/ajax';
 import { set } from 'rzp/utils/immutable';
+import poll from 'rzp/utils/poll/longPoll';
 
 const GENERATE_REPORT = 'GENERATE_REPORT';
+
+const reportErrorMsg = {
+  error: 'Oops!, Unable to generate report!',
+};
 
 const commonOptions = {
   url: '/user/generic',
@@ -10,16 +15,7 @@ const commonOptions = {
   appendModeInQueryParam: true,
 };
 
-export const getConfigs = () => {
-  return ajax({
-    ...commonOptions,
-    data: {
-      route_name: 'reporting_config_list',
-    },
-  });
-};
-
-export const createLog = body => {
+const createLog = body => {
   return ajax({
     ...commonOptions,
     method: 'post',
@@ -30,7 +26,7 @@ export const createLog = body => {
   });
 };
 
-export const getLog = logId => {
+const getLog = logId => {
   return ajax({
     ...commonOptions,
     data: {
@@ -42,7 +38,7 @@ export const getLog = logId => {
   });
 };
 
-export const getFile = fileId => {
+const getFile = fileId => {
   return ajax({
     ...commonOptions,
     data: {
@@ -54,9 +50,72 @@ export const getFile = fileId => {
   });
 };
 
+export const getConfigs = () => {
+  return ajax({
+    ...commonOptions,
+    data: {
+      route_name: 'reporting_config_list',
+    },
+  });
+};
+
 export const generateReport = ajaxParams => {
   return {
     type: GENERATE_REPORT,
     payload: ajax(ajaxParams),
   };
+};
+
+export const generateReportV2 = params => {
+  return createLog(params)
+    .then(resp => {
+      if (!resp.success) {
+        return reportErrorMsg;
+      }
+
+      const logId = resp.data.id;
+
+      const logPoll = poll({
+        fetchFunc: () => getLog(resp.data.id),
+        validator: resp => {
+          return resp.error || resp.data.status === 'processed';
+        },
+        minWaitTime: 2000,
+      });
+
+      return logPoll.promise
+        .then(resp => {
+          if (resp.error) {
+            return reportErrorMsg;
+          }
+
+          const fileId = resp.data.file_id;
+
+          if (!fileId) {
+            return {
+              error: 'No data found for the given dates',
+            };
+          }
+
+          return getFile(fileId)
+            .then(resp => {
+              if (!resp.success) {
+                return reportErrorMsg;
+              }
+
+              return {
+                url: '/download',
+              };
+            })
+            .catch(() => {
+              return reportErrorMsg;
+            });
+        })
+        .catch(() => {
+          return reportErrorMsg;
+        });
+    })
+    .catch(() => {
+      return reportErrorMsg;
+    });
 };

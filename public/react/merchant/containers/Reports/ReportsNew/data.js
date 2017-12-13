@@ -1,8 +1,8 @@
 const customConfigsMap = {
   monthlyInvoice: 'Monthly Invoice',
-  dsp: 'DSP Transaction Report',
+  dsp_report: 'DSP Transaction Report',
   broking: 'Broking Report',
-  emitra: 'e-Mitra Report',
+  rpp_report: 'e-Mitra Report',
 };
 
 export const getCustomConfig = key => {
