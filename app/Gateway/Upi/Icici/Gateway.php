@@ -615,6 +615,20 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
+
+        $processedRefunds = $this->getProcessedRefunds();
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        {
+            return false;
+        }
+
+        if (in_array($input['refund']['id'], $processedRefunds) === true)
+        {
+            return true;
+        }
+
         $content = $this->sendRefundVerifyRequest($input);
 
         if ($content['status'] === Status::SUCCESS)
