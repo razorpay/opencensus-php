@@ -71,6 +71,8 @@ class Entity extends Base\PublicEntity
     const PROMOTER_PAN_URL                  =      'promoter_pan_url';
     const PROMOTER_ADDRESS_URL              =      'promoter_address_url';
     const TRANSACTION_REPORT_EMAIL          =      'transaction_report_email';
+    const TECHNICAL_SPOC_EMAIL              =      'technical_spoc_email';
+    const BUSINESS_SPOC_EMAIL               =      'business_spoc_email';
     const COMMENT                           =      'comment';
     const ROLE                              =      'role';
     const DEPARTMENT                        =      'department';
@@ -145,6 +147,8 @@ class Entity extends Base\PublicEntity
         self::PROMOTER_PAN_URL,
         self::PROMOTER_ADDRESS_URL,
         self::TRANSACTION_REPORT_EMAIL,
+        self::TECHNICAL_SPOC_EMAIL,
+        self::BUSINESS_SPOC_EMAIL,
         self::ROLE,
         self::DEPARTMENT,
         self::COMMENT,
@@ -198,6 +202,8 @@ class Entity extends Base\PublicEntity
         self::SUBMITTED,
         self::SUBMITTED_AT,
         self::TRANSACTION_REPORT_EMAIL,
+        self::TECHNICAL_SPOC_EMAIL,
+        self::BUSINESS_SPOC_EMAIL,
         self::BANK_ACCOUNT_NUMBER,
         self::BANK_ACCOUNT_NAME,
         self::BANK_ACCOUNT_TYPE,

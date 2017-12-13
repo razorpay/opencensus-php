@@ -16,6 +16,8 @@ final class Constants
         Detail\Entity::CONTACT_NAME                => 1,
         Detail\Entity::CONTACT_EMAIL               => 1,
         Detail\Entity::TRANSACTION_REPORT_EMAIL    => 1,
+        Detail\Entity::TECHNICAL_SPOC_EMAIL        => 1,
+        Detail\Entity::BUSINESS_SPOC_EMAIL         => 1,
         Detail\Entity::CONTACT_MOBILE              => 1,
         Detail\Entity::CONTACT_LANDLINE            => 1,
 

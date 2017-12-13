@@ -68,6 +68,8 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_ADDRESS_URL            => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
+        Entity::TECHNICAL_SPOC_EMAIL            => 'sometimes|custom',
+        Entity::BUSINESS_SPOC_EMAIL             => 'sometimes|custom',
         Entity::ROLE                            => 'sometimes|max:255',
         Entity::DEPARTMENT                      => 'sometimes|max:255',
         Entity::LOCKED                          => 'sometimes|boolean',
@@ -132,6 +134,8 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_ADDRESS_URL            => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
+        Entity::TECHNICAL_SPOC_EMAIL            => 'sometimes|custom',
+        Entity::BUSINESS_SPOC_EMAIL             => 'sometimes|custom',
         Entity::ROLE                            => 'sometimes|max:255',
         Entity::DEPARTMENT                      => 'sometimes|max:255',
         Entity::LOCKED                          => 'sometimes|boolean',
@@ -139,6 +143,14 @@ class Validator extends Base\Validator
         Entity::SUBMIT                          => 'sometimes|boolean',
     ];
 
+    /**
+     * Validate the transaction report email
+     *
+     * @param $attribute
+     * @param $value
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function validateTransactionReportEmail($attribute, $value)
     {
         $emails = explode(',', $value);
@@ -150,6 +162,54 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException(
                     "The provided transaction report email is invalid: $email",
                     Entity::TRANSACTION_REPORT_EMAIL
+                );
+            }
+        }
+    }
+
+    /**
+     * Validate the technical spoc email
+     *
+     * @param $attribute
+     * @param $value
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateTechnicalSpocEmail($attribute, $value)
+    {
+        $emails = explode(',', $value);
+
+        foreach ($emails as $email)
+        {
+            if (filter_var($email, FILTER_VALIDATE_EMAIL) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "The provided technical spoc email is invalid: $email",
+                    Entity::TECHNICAL_SPOC_EMAIL
+                );
+            }
+        }
+    }
+
+    /**
+     * Validate the business spoc email
+     *
+     * @param $attribute
+     * @param $value
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateBusinessSpocEmail($attribute, $value)
+    {
+        $emails = explode(',', $value);
+
+        foreach ($emails as $email)
+        {
+            if (filter_var($email, FILTER_VALIDATE_EMAIL) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "The provided business spoc email is invalid: $email",
+                    Entity::BUSINESS_SPOC_EMAIL
                 );
             }
         }

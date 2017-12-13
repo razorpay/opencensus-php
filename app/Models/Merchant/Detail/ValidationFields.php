@@ -41,6 +41,8 @@ class ValidationFields
             Entity::PROMOTER_ADDRESS_URL,
             Entity::PROMOTER_PAN_NAME,
             Entity::TRANSACTION_REPORT_EMAIL,
+            Entity::TECHNICAL_SPOC_EMAIL,
+            Entity::BUSINESS_SPOC_EMAIL,
             Entity::TRANSACTION_VALUE,
             Entity::TRANSACTION_VOLUME,
             Entity::WEBSITE_ABOUT,

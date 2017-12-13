@@ -2524,3 +2524,13 @@ DELETE FROM bank_transfers
 # Makes invoices.user_id refer to users.id
 ALTER TABLE invoices
     ADD CONSTRAINT invoices_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT;
+
+ALTER TABLE merchant_details
+    ADD COLUMN technical_spoc_email VARCHAR(255) AFTER transaction_report_email,
+    ADD COLUMN business_spoc_email VARCHAR(255) AFTER technical_spoc_email;
+
+UPDATE merchant_details
+    JOIN merchants ON merchants.id = merchant_details.merchant_id
+    SET
+        technical_spoc_email=merchants.email,
+        business_spoc_email=merchants.email;
