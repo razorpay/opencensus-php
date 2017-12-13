@@ -171,12 +171,53 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function validatePaymentStatus($row)
     {
+        $reconPaymentStatus = $this->getPaymentStatus($row);
+
         $paymentStatus = $this->payment->getStatus();
 
-        if ($paymentStatus !== Payment\Status::FAILED)
+        $apiFailed = [Payment\Status::FAILED, Payment\Status::CREATED];
+
+        $isApiPaymentSuccess = (in_array($paymentStatus, $apiFailed, true) === false);
+
+        //
+        // In some cases the recon file contains failed payments,
+        // too, In this case we do not want to reconcile them
+        //
+        if ($reconPaymentStatus === Payment\Status::FAILED)
+        {
+            if ($isApiPaymentSuccess === true)
+            {
+                //
+                // Recon status is failed, and apiSuccess is not created / failed
+                // This would be an error, as there's a status mismatch.
+                //
+
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code' => TraceCode::RECON_CRITICAL_ALERT,
+                        'message'    => 'Recon status is failed, and apiSuccess is successful',
+                        'payment_id' => $this->payment->getId(),
+                        'gateway'    => get_called_class()
+                    ]);
+            }
+
+            return false;
+        }
+
+        //
+        // If payment status is not failed or created, provided that recon status is not failed,
+        // we can safely return that the payment status is valid for reconciliation of row.
+        //
+
+        if ($isApiPaymentSuccess === true)
         {
             return true;
         }
+
+        //
+        // In case the recon row's status field is a success, and api payment status is failed or created,
+        // we would need to run the flow below, where we try to authorize the payment forcefully or via verify.
+        //
 
         $this->trace->info(
             TraceCode::RECON_INFO,
@@ -187,6 +228,20 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             ]);
 
         return $this->tryAuthorizeFailedPayment($row);
+    }
+
+    /**
+     * Override in child class
+     *
+     * @param array $row
+     * @return null
+     */
+    protected function getPaymentStatus(array $row)
+    {
+        //
+        // The return value of this method must be mapped to one of the statuses in Payment\Status
+        //
+        return null;
     }
 
     protected function tryAuthorizeFailedPayment($row)
