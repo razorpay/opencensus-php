@@ -92,7 +92,7 @@ class Gateway extends Base\Gateway
 
             try
             {
-                $reversalResponse = $this->sendReversalRequest($reversalRequestXmlData);
+                $reversalResponse = $this->sendRequest($reversalRequestXmlData);
 
                 $parsedReversalResponse = $this->parseResponse($reversalResponse);
 
@@ -361,11 +361,6 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         return $paymentStatus;
-    }
-
-    protected function sendReversalRequest($reversalRequestXmlData)
-    {
-        $response = $this->sendRequest($reversalRequestXmlData);
     }
 
     protected function sendRequest($requestXmlData)
