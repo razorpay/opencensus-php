@@ -28,4 +28,15 @@ trait PaymentFssTrait
             $content[Fields::RESULT] = Status::NOT_CAPTURED;
         });
     }
+
+    public function setVerifyRefundNotCapturedResult()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content[Fields::RESULT] = 'Failure(NOT CAPTURED)';
+            }
+        });
+    }
 }

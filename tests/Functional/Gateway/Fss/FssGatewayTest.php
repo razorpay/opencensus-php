@@ -2,7 +2,9 @@
 
 namespace RZP\Tests\Functional\Gateway\Fss;
 
-
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+use RZP\Gateway\Fss\Status;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -54,6 +56,32 @@ class FssGatewayTest extends TestCase
         $this->assertEquals('passed', $payment['two_factor_auth']);
     }
 
+    public function testPaymentRefund()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('txn_'.$payment['transaction_id'], $txn['id']);
+
+        $this->refundPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('refunded', $payment['status']);
+
+        $gatewayPayment = $this->getLastEntity('fss', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('rfnd_' . $gatewayPayment['refund_id'], $refund['id']);
+    }
+
+    /**
+     * TODO Refactor and move this function to base gateway test. it's almost same for all the gateways.
+     */
     public function testVerifyRefund()
     {
         $payment = $this->doAuthAndCapturePayment();
@@ -66,5 +94,34 @@ class FssGatewayTest extends TestCase
 
         $this->assertEquals('failed', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
+
+        $fss = $this->getLastEntity('fss', true);
+
+        $this->assertEquals($refund['id'], 'rfnd_'.$fss['refund_id']);
+
+        $this->assertEquals(Status::NOT_CAPTURED, $fss['status']);
+
+        $time = Carbon::now(Timezone::IST)->addMinutes(random_integer(9));
+        Carbon::setTestNow($time);
+
+        $refundId = explode('_', $refund['id'], 2)[1];
+
+        $this->clearMockFunction();
+
+        $this->setVerifyRefundNotCapturedResult();
+
+        $response = $this->retryFailedRefunds();
+
+        $actualRefund = $this->getEntityById('refund', $refundId, true);
+
+        $this->assertEquals($refund['amount'], $actualRefund['amount']);
+        $this->assertEquals('processed', $actualRefund['status']);
+        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(true, $actualRefund['gateway_refunded']);
+
+        $fss = $this->getLastEntity('fss', true);
+
+        $this->assertEquals($actualRefund['id'], 'rfnd_'.$fss['refund_id']);
+        $this->assertEquals('CAPTURED', $fss['status']);
     }
 }
