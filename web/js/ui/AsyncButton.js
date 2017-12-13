@@ -27,7 +27,9 @@ export default class AsyncButton extends Component {
 
       let formData = {};
       if (onSubmit) {
-        let form = e.currentTarget.closest('form');
+        let form = e.currentTarget
+          ? e.currentTarget.closest('form')
+          : e.target.closest('form');
         if (form) {
           formData = serialize(form);
         }
