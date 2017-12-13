@@ -61,7 +61,9 @@ class Validator extends Base\Validator
         '_'                          => 'sometimes|array',
         'test_success'               => 'sometimes|boolean',
         'subscription_card_change'   => 'sometimes|boolean',
-        'account_number'             => 'sometimes|alpha_num|between:5,20|nullable',
+        'account_number'             => 'filled|alpha_num|between:5,20',
+        'upi'                        => 'sometimes_if:method,upi|array',
+        'upi.expiry_time'            => 'sometimes_if:method,upi|integer|between:5,30|filled',
     ];
 
     protected static $editRules = [
@@ -113,6 +115,7 @@ class Validator extends Base\Validator
         'customer_id',
         'test_success',
         'account_number',
+        'upi_expiry_time',
     ];
 
     protected function validateAccountNumber(array $input)
@@ -134,6 +137,22 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Account Number passed for non-recurring payment');
+        }
+    }
+
+    protected function validateUpiExpiryTime(array $input)
+    {
+        if (isset($input['upi']['expiry_time']) === false)
+        {
+            return;
+        }
+
+        $app = App::getFacadeRoot();
+
+        if ($app['basicauth']->isPrivateAuth() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'upi is/are not required and should not be sent');
         }
     }
 

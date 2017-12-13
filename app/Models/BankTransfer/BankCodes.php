@@ -21,6 +21,7 @@ class BankCodes
     const IFSC_DNSB = 'DNSB00000CO';
     const IFSC_ESFB = 'ESFB0000002';
     const IFSC_FDRL = 'FDRL0000121';
+    const IFSC_GBCB = 'GBCB0000024';
     const IFSC_GSCB = 'GSCB0000001';
     const IFSC_HDFC = 'HDFC0000001';
     const IFSC_IBKL = 'IBKL0000001';
@@ -33,6 +34,8 @@ class BankCodes
     const IFSC_KVBL = 'KVBL0001101';
     const IFSC_KVGB = 'KVGB0000001';
     const IFSC_MAHB = 'MAHB0001150';
+    const IFSC_MSNU = 'MSNU0000001';
+    const IFSC_NKGS = 'NKGS0000096';
     const IFSC_ORBC = 'ORBC0100001';
     const IFSC_PMCB = 'PMCB0000002';
     const IFSC_PUNB = 'PUNB0000100';
@@ -63,9 +66,10 @@ class BankCodes
         'COB'   => self::IFSC_COSB,
         'CUB'   => self::IFSC_CIUB,
         'DCB'   => self::IFSC_DCBL,
-        'DUS'   => self::IFSC_DNSB,
+        'DNS'   => self::IFSC_DNSB,
         'ESF'   => self::IFSC_ESFB,
         'FBL'   => self::IFSC_FDRL,
+        'GBB'   => self::IFSC_GBCB,
         'GSC'   => self::IFSC_GSCB,
         'HDB'   => self::IFSC_HDFC,
         'ICI'   => self::IFSC_ICIC,
@@ -82,6 +86,8 @@ class BankCodes
         'KVBN3' => self::IFSC_KVBL,
         'KVBN4' => self::IFSC_KVBL,
         'KVG'   => self::IFSC_KVGB,
+        'MUC'   => self::IFSC_MSNU,
+        'NGB'   => self::IFSC_NKGS,
         'OBC'   => self::IFSC_ORBC,
         'PMC'   => self::IFSC_PMCB,
         'PNB'   => self::IFSC_PUNB,
@@ -111,10 +117,12 @@ class BankCodes
 
     const STRIP_LEADING_ZEROES_BANKS_IMPS = [
         'CNB',
+        'SIB',
     ];
 
     const STRIP_LEADING_ZEROES_BANKS_NEFT = [
         IFSC::CNRB,
+        IFSC::SIBL,
     ];
 
     const ACCOUNT_NUMBER_LENGTH = 13;

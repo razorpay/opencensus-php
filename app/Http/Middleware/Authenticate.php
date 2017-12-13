@@ -12,6 +12,7 @@ use RZP\Http\OAuth;
 use RZP\Http\Throttle;
 use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Base\PublicCollection;
 
 class Authenticate
 {

@@ -55,6 +55,31 @@ return [
         ],
     ],
 
+    'testCreateOrderWithoutReceipt' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/orders',
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'order',
+                'amount'      => 50000,
+                'amount_paid' => 0,
+                'amount_due'  => 50000,
+                'currency'    => 'INR',
+                'receipt'     => null,
+                'offer_id'    => null,
+                'status'      => 'created',
+                'attempts'    => 0,
+                'notes'       => [],
+            ],
+        ],
+    ],
+
     'testCreateAutoCaptureOrder' => [
         'request' => [
             'content' => [
@@ -378,6 +403,22 @@ return [
     ],
 
     'testPaymentWithFailedOfferWithCustomErrorMessage' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Custom error message',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPaymentWithOfferOnNullMethodAndIinAndIssuer' => [
         'response' => [
             'content' => [
                 'error' => [

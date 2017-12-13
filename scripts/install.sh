@@ -14,7 +14,7 @@ cd "$BASEDIR" && sudo chmod 777 -R storage
 
 # Install new version
 echo  "Install new version"
-cd $BASEDIR && rsync -avz --force --delete --progress --exclude-from=./.rsyncignore ./ "$API_INSTALL_DIR"
+cd $BASEDIR && rsync -avz --no-times --force --delete --progress --exclude-from=./.rsyncignore ./ "$API_INSTALL_DIR"
 
 # TODO remove this, as this is already done
 # Fix permissions

@@ -46,6 +46,7 @@ class Gateway extends Base\Gateway
 
     protected $map = [
         Entity::VPA                       => Entity::VPA,
+        Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
         Entity::PROVIDER                  => Entity::PROVIDER,
         Entity::BANK                      => Entity::BANK,
         Entity::RECEIVED                  => Entity::RECEIVED,
@@ -68,6 +69,8 @@ class Gateway extends Base\Gateway
         parent::authorize($input);
 
         $attributes = $this->getGatewayEntityAttributes($input);
+
+        $attributes[Entity::EXPIRY_TIME] = $input['upi']['expiry_time'];
 
         $payment = $this->createGatewayPaymentEntity($attributes);
 
@@ -323,7 +326,9 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
-        $collectByTimestamp = Carbon::now(Timezone::IST)->addMinutes(5)->format('d/m/Y h:i A');
+        $expiryTime = $input['upi']['expiry_time'];
+
+        $collectByTimestamp = Carbon::now(Timezone::IST)->addMinutes($expiryTime)->format('d/m/Y h:i A');
 
         $data = [
             Fields::AMOUNT           => $this->formatAmount($payment['amount']),
@@ -609,6 +614,20 @@ class Gateway extends Base\Gateway
     public function verifyRefund(array $input)
     {
         parent::verify($input);
+
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
+
+        $processedRefunds = $this->getProcessedRefunds();
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        {
+            return false;
+        }
+
+        if (in_array($input['refund']['id'], $processedRefunds) === true)
+        {
+            return true;
+        }
 
         $content = $this->sendRefundVerifyRequest($input);
 

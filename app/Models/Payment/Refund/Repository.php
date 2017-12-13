@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Refund;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Constants\Table;
@@ -499,7 +500,7 @@ class Repository extends Base\Repository
         // for older refunds, 1493323209 is April 28, 2017 1:30:09 AM when 1st
         // processed refund was done.
 
-        return $this->newQuery()
+        $query = $this->newQuery()
                     ->select($attrs)
                     ->join($pTableName, $rPaymentId, '=', $pId)
                     ->where($rAttempts, '<', $attempts)
@@ -508,9 +509,19 @@ class Repository extends Base\Repository
                     ->whereIn($pGateway, $gateways)
                     ->where($rLastAttemptedAt, '<', $timeLimit)
                     ->with(['payment','payment.terminal'])
-                    ->limit(50)
-                    ->inRandomOrder()
-                    ->get();
+                    ->limit(100);
+
+        if ((count($gateways) === 1) and
+            ($gateways[0] === 'first_data'))
+        {
+            $query->orderBy('updated_at');
+        }
+        else
+        {
+            $query->inRandomOrder();
+        }
+
+        return $query->get();
     }
 
     public function fetchFailedRefundsByMethod(string $method)
@@ -554,21 +565,39 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchByMerchantBetweenTimestamps(string $merchantId, int $from, int $to, $receipt = null)
+    public function fetchIrctcDeltaRefunds(string $merchantId, int $from, int $to)
     {
         $query = $this->newQuery()
-                      ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
-                      ->where(Refund\Entity::CREATED_AT, '>=', $from)
-                      ->where(Refund\Entity::CREATED_AT, '<=', $to);
+                      ->select($this->dbColumn('*'))
+                      ->whereIn(Entity::ID, function ($query) use($merchantId, $from, $to)
+                        {
+                            $pId = $this->repo->payment->dbColumn(Payment\Entity::ID);
 
-        if (empty($receipt) === true)
-        {
-            $query->whereNull(Refund\Entity::RECEIPT);
-        }
-        else
-        {
-            $query->where(Refund\Entity::RECEIPT, '=', $receipt);
-        }
+                            $pOrderId = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
+
+                            $rPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
+
+                            $rMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
+
+                            $orderId = $this->repo->order->dbColumn(Order\Entity::ID);
+
+                            $pCreatedAt = $this->repo->payment->dbColumn(Entity::CREATED_AT);
+
+                            $receipt = $this->dbColumn(Entity::RECEIPT);
+
+                            $status = $this->repo->order->dbColumn(Order\Entity::STATUS);
+
+                            $query->select(\DB::raw('max(refunds.id)'))
+                                  ->from('refunds')
+                                  ->join(Table::PAYMENT, $rPaymentId, '=', $pId)
+                                  ->join(Table::ORDER, $orderId, $pOrderId)
+                                  ->where($rMerchantId, '=', $merchantId)
+                                  ->where($pCreatedAt, '>=', $from)
+                                  ->where($pCreatedAt, '<=', $to)
+                                  ->whereNull($receipt)
+                                  ->where($status, '!=', Order\Status::PAID)
+                                  ->groupBy($orderId);
+                          });
 
         return $query->get();
     }

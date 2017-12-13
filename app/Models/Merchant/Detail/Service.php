@@ -16,6 +16,7 @@ use RZP\Models\Merchant\Detail\ValidationFields;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
 class Service extends Base\Service
 {
@@ -238,6 +239,49 @@ class Service extends Base\Service
         }
 
         return $stepFinished;
+    }
+
+    /**
+     * This function is used for archiving merchant activation form
+     * @param string $merchantId
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateActivationArchive(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $merchantDetails = (new Core)->updateActivationArchive($merchantDetails, $input);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
+    /**
+     * This function is used for updating merchant activation status
+     * @param string $merchantId
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateActivationStatus(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $merchantDetails = (new Core)->updateActivationStatus($merchantDetails, $input, $admin);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
+    public function getRejectionReasons()
+    {
+        return RejectionReasons::$reasons;
     }
 
     public function getMerchantDetailsForAdmin() : array

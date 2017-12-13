@@ -20,6 +20,7 @@ class Entity extends Base\Entity
     const NPCI_REFERENCE_ID     = 'npci_reference_id';
     const PAYMENT_ID            = 'payment_id';
     const REFUND_ID             = 'refund_id';
+    const EXPIRY_TIME           = 'expiry_time';
     const RECEIVED              = 'received';
     const STATUS_CODE           = 'status_code';
     const VPA                   = 'vpa';
@@ -46,6 +47,7 @@ class Entity extends Base\Entity
         self::RECEIVED,
         self::STATUS_CODE,
         self::VPA,
+        self::EXPIRY_TIME,
     ];
 
     protected $fillable = [
@@ -65,6 +67,7 @@ class Entity extends Base\Entity
         self::RECEIVED,
         self::STATUS_CODE,
         self::VPA,
+        self::EXPIRY_TIME,
     ];
 
     protected $casts = [
@@ -109,6 +112,16 @@ class Entity extends Base\Entity
     public function getNpciReferenceId()
     {
         return $this->getAttribute(self::NPCI_REFERENCE_ID);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getVpa()
+    {
+        return $this->getAttribute(self::VPA);
     }
 
     public function getRefundId()
