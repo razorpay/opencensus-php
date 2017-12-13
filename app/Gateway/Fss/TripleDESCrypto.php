@@ -13,9 +13,9 @@ class TripleDESCrypto extends BaseTripeDESCrypto
      *
      * @return string
      */
-    public function encryptString($plaintext)
+    public function encryptString($plaintext, $padding = true)
     {
-        $encryptedData = parent::encryptString($plaintext);
+        $encryptedData = parent::encryptString($plaintext, $padding);
 
         return bin2hex($encryptedData);
     }

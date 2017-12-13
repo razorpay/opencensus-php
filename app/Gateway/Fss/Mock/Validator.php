@@ -3,7 +3,9 @@
 namespace RZP\Gateway\Fss\Mock;
 
 use RZP\Base;
+use RZP\Gateway\Fss\Constants;
 use RZP\Gateway\Fss\Fields;
+use RZP\Exception;
 
 class Validator extends Base\Validator
 {
@@ -15,7 +17,7 @@ class Validator extends Base\Validator
         Fields::TRANPORTAL_ID       => 'required:string',
     ];
 
-    protected static $transactionDataRules = [
+    protected static $authTransactionDataRules = [
         Fields::CARD                => 'required:string',
         Fields::CVV                 => 'required:string:size:3',
         Fields::CURRENCY_CODE       => 'required:string',
@@ -31,4 +33,26 @@ class Validator extends Base\Validator
         Fields::ID                  => 'required:string',
         Fields::PASSWORD            => 'required:string',
     ];
+
+    protected static $authTransactionDataValidators = [
+        Fields::CURRENCY_CODE,
+        Fields::TYPE,
+    ];
+
+    protected function validateCurrencyCode($input)
+    {
+        if ($input[Fields::CURRENCY_CODE] !== Constants::CURRENCY_CODE)
+        {
+            throw new Exception\BadRequestValidationFailureException("Invalid CurrencyCode");
+        }
+    }
+
+    protected function validateType($input)
+    {
+        if ($input[Fields::TYPE] !== Constants::CREDIT_CARD_TYPE and
+            $input[Fields::TYPE] !== Constants::DEBIT_CARD_TYPE)
+        {
+            throw new Exception\BadRequestValidationFailureException( "Invalid Card Type");
+        }
+    }
 }
