@@ -145,7 +145,7 @@ class Gateway extends Base\Gateway
 
         // TODO: Store  refund response
 
-        if ($responseData[RequestConstants::REFUND_SUCCESS] !== Status::STATUS_SUCCESS)
+        if ($responseData[ResponseConstants::REFUND_SUCCESS] !== Status::STATUS_SUCCESS)
         {
             // Can't validate amount here, since amount does not exist in response
 
@@ -199,11 +199,11 @@ class Gateway extends Base\Gateway
         $encryptedKey = $encryptor->encryptSessionKey($sKey, $this->mode, 'refund');
 
         $content = [
-            RequestConstants::REFUND_REQUEST_REQUESTID            => '',
+            RequestConstants::REFUND_REQUEST_REQUESTID            => $input['refund']['id'],
             RequestConstants::REFUND_REQUEST_SERVICE              => 'UPI',
             RequestConstants::REFUND_REQUEST_ENCRYPTEDKEY         => $encryptedKey,
             RequestConstants::REFUND_REQUEST_OAEPHASHINGALGORITHM => 'NONE',
-            RequestConstants::REFUND_REQUEST_IV                   => $this->getIv(),
+            RequestConstants::REFUND_REQUEST_IV                   => base64_encode($this->getIv()),
             RequestConstants::REFUND_REQUEST_ENCRYPTEDDATA        => $encryptedData,
             RequestConstants::REFUND_REQUEST_CLIENTINFO           => '',
             RequestConstants::REFUND_REQUEST_OPTIONALPARAM        => '',
@@ -227,7 +227,8 @@ class Gateway extends Base\Gateway
             'method'  => 'POST',
             'content' => $content,
             'headers' => [
-                RequestConstants::REFUND_REQUEST_API_KEY => $this->config['refund_api_key']
+                RequestConstants::REFUND_REQUEST_API_KEY => $this->config['refund_api_key'],
+                'Content-Type' => 'application/json'
             ]
         ];
 
@@ -242,7 +243,7 @@ class Gateway extends Base\Gateway
 
     public function getIv()
     {
-        return 'asdasd';
+        return 'gyt7891bhsdtd1bv';
     }
 
     protected function setEncryptedFingerPrintDataInCache($input)

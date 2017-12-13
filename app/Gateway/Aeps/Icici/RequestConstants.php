@@ -60,5 +60,5 @@ class RequestConstants
     const REFUND_REQUEST_ENCRYPTEDDATA        = 'encryptedData';
     const REFUND_REQUEST_CLIENTINFO           = 'clientInfo';
     const REFUND_REQUEST_OPTIONALPARAM        = 'optionalParam';
-    const REFUND_REQUEST_API_KEY              = 'RazorPayUPIAPIKey';
+    const REFUND_REQUEST_API_KEY              = 'apikey';
 }
