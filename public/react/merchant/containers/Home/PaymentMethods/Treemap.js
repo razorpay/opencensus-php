@@ -8,20 +8,35 @@ export default class Treemap extends Component {
     this.state = {
       scriptsLoaded: false,
     };
+
+    this.treemapApi = null;
+    this.onTransition = ::this.onTransition;
   }
 
   async componentWillMount() {
     this.d3 = await import('d3');
 
     this.setState({ scriptsLoaded: true });
+
+    //TODO: render treemap if data is ready
+    return this.props.data && renderTreemap(data);
+  }
+
+  onTransition(d) {
+    const { onLevelChange } = this.props;
+
+    return typeof onLevelChange === 'function' && onLevelChange(d);
   }
 
   renderTreemap(data) {
-    return (
-      data &&
-      this.state.scriptsLoaded &&
-      renderTreemap(this.node, data, this.d3)
-    );
+    if (data && this.state.scriptsLoaded) {
+      this.treemapApi = renderTreemap(
+        this.node,
+        data,
+        this.d3,
+        this.onTransition
+      );
+    }
   }
 
   componentDidMount() {
@@ -29,7 +44,9 @@ export default class Treemap extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    return this.renderTreemap(nextProps.data);
+    if (this.props.data !== nextProps.data) {
+      return this.renderTreemap(nextProps.data);
+    }
   }
 
   render() {

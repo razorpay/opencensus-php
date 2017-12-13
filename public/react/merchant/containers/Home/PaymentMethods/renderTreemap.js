@@ -1,5 +1,5 @@
 var defaults = {
-  margin: { top: 24, right: 0, bottom: 0, left: 0 },
+  margin: { top: 0, right: 0, bottom: 0, left: 0 },
   rootname: 'TOP',
   format: ',d',
   title: '',
@@ -7,7 +7,7 @@ var defaults = {
   height: 500,
 };
 
-function main(node, o, data, d3) {
+function main(node, o, data, d3, onTransition) {
   var root,
     opts = { ...defaults, ...o },
     formatNumber = d3.format(opts.format),
@@ -53,20 +53,6 @@ function main(node, o, data, d3) {
     .append('g')
     .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
     .style('shape-rendering', 'crispEdges');
-
-  var grandparent = svg.append('g').attr('class', 'grandparent');
-
-  grandparent
-    .append('rect')
-    .attr('y', -margin.top)
-    .attr('width', width)
-    .attr('height', margin.top);
-
-  grandparent
-    .append('text')
-    .attr('x', 6)
-    .attr('y', 6 - margin.top)
-    .attr('dy', '.75em');
 
   if (data instanceof Array) {
     root = { key: rname, values: data };
@@ -137,14 +123,8 @@ function main(node, o, data, d3) {
   }
 
   function display(d) {
-    grandparent
-      .datum(d.parent)
-      .on('click', transition)
-      .select('text')
-      .text(name(d));
-
     var g1 = svg
-      .insert('g', '.grandparent')
+      .append('g')
       .datum(d)
       .attr('class', 'depth');
 
@@ -243,6 +223,10 @@ function main(node, o, data, d3) {
         svg.style('shape-rendering', 'crispEdges');
         transitioning = false;
       });
+
+      if (typeof onTransition === 'function') {
+        onTransition(d);
+      }
     }
 
     return g;
@@ -283,11 +267,9 @@ function main(node, o, data, d3) {
       });
   }
 
-  function name(d) {
-    return d.parent
-      ? name(d.parent) + ' / ' + d.key + ' (' + formatNumber(d.value) + ')'
-      : d.key + ' (' + formatNumber(d.value) + ')';
-  }
+  return {
+    display,
+  };
 }
 const getGroupingFactor = groupKey => {
   if (groupKey === 'method') {
@@ -300,7 +282,7 @@ const getGroupingFactor = groupKey => {
   return d => d[groupKey];
 };
 
-export default function renderTreemap(node, res, d3) {
+export default function renderTreemap(node, res, d3, onTransition) {
   node.innerHTML = '';
 
   res = d3
@@ -328,10 +310,11 @@ export default function renderTreemap(node, res, d3) {
     return grouper && (item.values = grouper.entries(item.values));
   });
 
-  main(
+  return main(
     node,
     { width: node.clientWidth },
     { key: 'All Methods', values: res },
-    d3
+    d3,
+    onTransition
   );
 }

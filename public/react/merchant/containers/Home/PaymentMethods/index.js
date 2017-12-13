@@ -1,8 +1,24 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+
+import Breadcrumb, { BreadcrumbItem } from 'rzp/ui/Breadcrumb';
+
 import Treemap from './Treemap';
 import { fetch } from 'merchant/modules/pokedex';
 import { getQuery } from './data';
+
+function getLevels(hierarchy, levels = []) {
+  if (hierarchy.parent) {
+    getLevels(hierarchy.parent, levels);
+  }
+
+  levels.push({
+    name: hierarchy.key,
+    data: hierarchy,
+  });
+
+  return levels;
+}
 
 @connect(null, null)
 class PaymentMethods extends Component {
@@ -11,7 +27,10 @@ class PaymentMethods extends Component {
 
     this.state = {
       data: null,
+      levels: [],
     };
+
+    this.onLevelChange = ::this.onLevelChange;
   }
 
   fetchData(startDate, endDate) {
@@ -23,6 +42,12 @@ class PaymentMethods extends Component {
       })
     ).then(resp => {
       this.setState({ data: resp.data.agg });
+    });
+  }
+
+  onLevelChange(hierarchy) {
+    this.setState({
+      levels: getLevels(hierarchy),
     });
   }
 
@@ -44,10 +69,23 @@ class PaymentMethods extends Component {
   }
 
   render() {
+    const { levels } = this.state;
+
     return (
       <div className="panel">
         <div className="clearfix">
-          <div className="pull-left">Showing: All Payment Methods</div>
+          <div className="pull-left">
+            <span>Showing:</span>
+            <Breadcrumb>
+              {levels.length > 0 ? (
+                levels.map((level, index) => (
+                  <BreadcrumbItem key={index}>{level.name}</BreadcrumbItem>
+                ))
+              ) : (
+                <BreadcrumbItem>All Methods</BreadcrumbItem>
+              )}
+            </Breadcrumb>
+          </div>
           <div className="pull-right">...</div>
           <div className="pull-right">
             <select>
@@ -57,7 +95,7 @@ class PaymentMethods extends Component {
           </div>
         </div>
         <div>
-          <Treemap data={this.state.data} />
+          <Treemap data={this.state.data} onLevelChange={this.onLevelChange} />
         </div>
       </div>
     );
