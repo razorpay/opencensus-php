@@ -126,6 +126,7 @@ class Server extends Base\Mock\Server
 
         return $this->prepareResponse($content);
     }
+
     protected function prepareResponse($content)
     {
         $response = \Response::make($content);
