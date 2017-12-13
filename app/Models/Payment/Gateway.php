@@ -9,7 +9,6 @@ use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
-use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -44,6 +43,7 @@ class Gateway
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
+    const UPI_SBI                = 'upi_sbi';
     const UPI_ICICI              = 'upi_icici';
     const AEPS_ICICI             = 'aeps_icici';
 
@@ -313,6 +313,7 @@ class Gateway
     public static $asynchronous = [
         self::UPI_MINDGATE,
         self::UPI_ICICI,
+        self::UPI_SBI,
         self::SHARP,
     ];
 
@@ -405,6 +406,7 @@ class Gateway
     public static $upiToGatewayMap = [
         Upi::HDFC  => Gateway::UPI_MINDGATE,
         Upi::ICIC  => Gateway::UPI_ICICI,
+        Upi::SBIN  => Gateway::UPI_SBI,
     ];
 
     public static $acquirerToCodeMap = [
@@ -508,6 +510,7 @@ class Gateway
 
         Gateway::BILLDESK,
         Gateway::UPI_MINDGATE,
+        Gateway::UPI_SBI,
         Gateway::UPI_ICICI,
         Gateway::WALLET_OLAMONEY,
         Gateway::NETBANKING_CORPORATION,

@@ -96,7 +96,7 @@ trait Authorize
         //
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
-        if ($this->shouldHitGateway($payment) === false)
+        if ($this->shouldHitGatewayForPayment($payment) === false)
         {
             $this->repo->saveOrFail($payment);
 

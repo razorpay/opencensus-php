@@ -56,10 +56,19 @@ class Repository extends Base\Repository
         $query->select($this->getTableName().'.*');
     }
 
-    public function findByUtr(string $utr)
+    public function findByUtrAndPayeeIfsc(string $utr, string $payeeIfsc)
     {
         return $this->newQuery()
                     ->where(Entity::UTR, '=', $utr)
+                    ->where(Entity::PAYEE_IFSC, '=', $payeeIfsc)
+                    ->first();
+    }
+
+    public function findByUtrAndPayeeAccount(string $utr, string $payeeAccount)
+    {
+        return $this->newQuery()
+                    ->where(Entity::UTR, '=', $utr)
+                    ->where(Entity::PAYEE_ACCOUNT, '=', $payeeAccount)
                     ->first();
     }
 

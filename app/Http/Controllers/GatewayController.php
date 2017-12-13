@@ -7,11 +7,10 @@ use Redirect;
 use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Rule;
-use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Netbanking\Corporation;
@@ -102,14 +101,13 @@ class GatewayController extends Controller
             case Gateway::WALLET_FREECHARGE:
             case Gateway::BILLDESK:
             case Gateway::NETBANKING_AXIS:
+            case Gateway::UPI_SBI:
             case 'axis_corporate':
-
                 // TODO : Remove before prod merge. temporary hack for testing.
                 if ($gateway === 'axis_corporate')
                 {
                     $gateway = Gateway::NETBANKING_AXIS;
                 }
-
                 $data = $this->processServerCallback($input, $gateway);
                 break;
 
