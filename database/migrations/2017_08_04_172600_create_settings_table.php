@@ -57,11 +57,9 @@ class CreateSettingsTable extends Migration
 
             $table->text($this->valueColumn);
 
-            $table->integer(self::CREATED_AT)
-                  ->nullable();
+            $table->integer(self::CREATED_AT);
 
-            $table->integer(self::UPDATED_AT)
-                  ->nullable();
+            $table->integer(self::UPDATED_AT);
 
             $table->index(self::ENTITY_TYPE);
 

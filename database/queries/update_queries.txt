@@ -1359,8 +1359,11 @@ WHERE created_at < 1512201600
   AND (TYPE = 'payment'
        OR TYPE = 'refund') LIMIT 5906
 
+# Update the settings timestamps to 2.0 Launch 7am IST
 UPDATE settings
-    SET created_at = 1505957400, updated_at = 1505957400;
+    SET created_at = 1505957400 WHERE created_at IS NULL;
+UPDATE settings
+    SET updated_at = 1505957400 WHERE updated_at IS NULL;
 
 UPDATE billdesk SET RefundId = 'LSBI58696359251' WHERE id = 3067096;
 

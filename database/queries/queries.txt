@@ -2697,3 +2697,7 @@ ALTER TABLE settings
     ADD COLUMN updated_at INT(11) DEFAULT NULL AFTER created_at,
     ADD INDEX settings_created_at_index (created_at),
     ADD INDEX settings_updated_at_index (updated_at);
+
+ALTER TABLE settings
+    MODIFY COLUMN created_at INT(11) NOT NULL,
+    MODIFY COLUMN updated_at INT(11) NOT NULL;
