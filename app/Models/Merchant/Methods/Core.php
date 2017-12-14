@@ -145,6 +145,11 @@ class Core extends Base\Core
             // $data['emandate_banks'] = $this->getBankNames($eMandateBanks);
         }
 
+        if ($merchant->isFeatureEnabled(Constants::UPI_INTENT) === true)
+        {
+            $data['upi_intent'] = true;
+        }
+
         return $data;
     }
 
