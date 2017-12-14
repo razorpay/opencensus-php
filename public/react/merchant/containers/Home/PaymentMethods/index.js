@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import Breadcrumb, { BreadcrumbItem } from 'rzp/ui/Breadcrumb';
 
-import Treemap from './Treemap';
+import Treemap from 'merchant/containers/Home/PaymentMethods/Treemap';
 import { fetch } from 'merchant/modules/pokedex';
 import { getQuery } from './data';
 
@@ -28,6 +28,7 @@ class PaymentMethods extends Component {
     this.state = {
       data: null,
       levels: [],
+      currentLevel: null,
     };
 
     this.onLevelChange = ::this.onLevelChange;
@@ -48,6 +49,7 @@ class PaymentMethods extends Component {
   onLevelChange(hierarchy) {
     this.setState({
       levels: getLevels(hierarchy),
+      currentLevel: hierarchy,
     });
   }
 
@@ -69,22 +71,28 @@ class PaymentMethods extends Component {
   }
 
   render() {
-    const { levels } = this.state;
+    const { levels } = this.state,
+      levelsLength = levels.length;
 
     return (
       <div className="panel">
         <div className="clearfix">
           <div className="pull-left">
             <span>Showing:</span>
-            <Breadcrumb>
-              {levels.length > 0 ? (
-                levels.map((level, index) => (
-                  <BreadcrumbItem key={index}>{level.name}</BreadcrumbItem>
-                ))
-              ) : (
-                <BreadcrumbItem>All Methods</BreadcrumbItem>
-              )}
-            </Breadcrumb>
+            {levelsLength > 0 && (
+              <Breadcrumb>
+                {levels.map((level, index) => (
+                  <BreadcrumbItem
+                    key={index}
+                    onClick={() =>
+                      index + 1 !== levelsLength &&
+                      this.onLevelChange(level.data)}
+                  >
+                    {level.name}
+                  </BreadcrumbItem>
+                ))}
+              </Breadcrumb>
+            )}
           </div>
           <div className="pull-right">...</div>
           <div className="pull-right">
@@ -95,7 +103,11 @@ class PaymentMethods extends Component {
           </div>
         </div>
         <div>
-          <Treemap data={this.state.data} onLevelChange={this.onLevelChange} />
+          <Treemap
+            data={this.state.data}
+            onLevelChange={this.onLevelChange}
+            currentLevel={this.state.currentLevel}
+          />
         </div>
       </div>
     );

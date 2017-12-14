@@ -12,14 +12,14 @@ function main(node, o, data, d3, onTransition) {
     opts = { ...defaults, ...o },
     formatNumber = d3.format(opts.format),
     rname = opts.rootname,
-    margin = opts.margin,
-    theight = 36 + 16;
+    margin = opts.margin;
 
   node.style.width = opts.width + 'px';
   node.style.height = opts.height + 'px';
+  node.style.position = 'realtive';
 
   var width = opts.width - margin.left - margin.right,
-    height = opts.height - margin.top - margin.bottom - theight,
+    height = opts.height - margin.top - margin.bottom,
     transitioning;
 
   var x = d3.scale
@@ -40,7 +40,7 @@ function main(node, o, data, d3, onTransition) {
     .sort(function(a, b) {
       return a.value - b.value;
     })
-    .ratio(1)
+    .size([1, 1])
     .round(false);
 
   var svg = d3
@@ -66,13 +66,18 @@ function main(node, o, data, d3, onTransition) {
     bank_transfer: 'rgb(117, 194, 216)',
     upi: 'rgb(172, 172, 231)',
     wallet: 'rgb(235, 120, 120)',
+    emi: 'rgb(75, 84, 113)',
   };
 
   initialize(root);
   accumulate(root);
   layout(root);
   console.log(root);
-  display(root);
+  var transition = display(root).transition;
+
+  if (typeof onTransition === 'function') {
+    onTransition(root);
+  }
 
   function initialize(root) {
     root.x = root.y = 0;
@@ -139,7 +144,11 @@ function main(node, o, data, d3, onTransition) {
         return d._children;
       })
       .classed('children', true)
-      .on('click', transition);
+      .on('click', function(d) {
+        if (typeof onTransition === 'function') {
+          onTransition(d);
+        }
+      });
 
     var children = g
       .selectAll('.child')
@@ -187,7 +196,7 @@ function main(node, o, data, d3, onTransition) {
       if (transitioning || !d) return;
       transitioning = true;
 
-      var g2 = display(d),
+      var g2 = display(d).g,
         t1 = g1.transition().duration(750),
         t2 = g2.transition().duration(750);
 
@@ -223,13 +232,9 @@ function main(node, o, data, d3, onTransition) {
         svg.style('shape-rendering', 'crispEdges');
         transitioning = false;
       });
-
-      if (typeof onTransition === 'function') {
-        onTransition(d);
-      }
     }
 
-    return g;
+    return { g: g, transition: transition };
   }
 
   function text(text) {
@@ -268,6 +273,7 @@ function main(node, o, data, d3, onTransition) {
   }
 
   return {
+    transition,
     display,
   };
 }
