@@ -6,6 +6,7 @@ import ChangeRange from 'rzp/ui/ChangeRange';
 import { BtnGroup, Btn } from 'rzp/ui/BtnGroup';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/index.js';
+import { humanReadableIndian } from 'rzp/utils/numerals';
 
 import { tabsMeta, breakdownVals } from './data';
 import Legend from 'merchant/components/Home/Legend';
@@ -38,7 +39,9 @@ const customToolTip = function(tooltipModel) {
       0
     );
 
-    innerHtml += `<div class="title">₹ ${sumOfAllDataPoints}</div>`;
+    innerHtml += `<div class="title">₹ ${humanReadableIndian(
+      sumOfAllDataPoints
+    )}</div>`;
 
     var bodyLines = tooltipModel.body.map(({ lines }) => lines[0]);
     let rows = '';
@@ -51,7 +54,9 @@ const customToolTip = function(tooltipModel) {
         index
       ].backgroundColor}"></span>`;
       const label = `<span class="label">${bodyItems[0]}</span>`;
-      const labelValue = `<span class="label-value">${bodyItems[1].trim()}</span>`;
+      const labelValue = `<span class="label-value">${humanReadableIndian(
+        Number(bodyItems[1].trim())
+      )}</span>`;
       rows += `<div class="tooltip-row">${labelIcon}${label}${labelValue}</div>`;
     });
 
@@ -184,7 +189,10 @@ class Panel extends Component {
         {!data.loading &&
           data.legendData && (
             <div className="p-t">
-              <Legend data={data.legendData} />
+              <Legend
+                data={data.legendData}
+                valueTransformer={humanReadableIndian}
+              />
             </div>
           )}
       </div>

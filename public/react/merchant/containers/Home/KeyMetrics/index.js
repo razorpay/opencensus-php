@@ -6,6 +6,7 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import Amount from 'rzp/ui/Amount';
 import { paiseToRupees } from 'rzp/utils/rzp-utils';
 import { getTimelineData } from 'rzp/utils/chart/transformers';
+import { humanReadableIndian } from 'rzp/utils/numerals';
 
 import { fetch } from 'merchant/modules/pokedex';
 import { tabsOrder, tabsMeta, getQuery, breakdownVals } from './data';
@@ -21,7 +22,7 @@ const TabContent = ({ name, value, isCurrency, title, isLoading }) => {
 
   if (value >= 1000) {
     // formatting number, eg. 1200 as 1.2 k , decimal part is optional
-    formattedValue = numeral(value).format('0.[0] a');
+    formattedValue = humanReadableIndian(value);
   }
 
   /*
@@ -135,7 +136,6 @@ class KeyMetricsContainer extends Component {
 
         // Timeline data
         const histogram = resp.data[`${tabName}Histogram`];
-
         if (histogram) {
           const { labels, datasets, aggregates } = getTimelineData({
             data: histogram.result,
