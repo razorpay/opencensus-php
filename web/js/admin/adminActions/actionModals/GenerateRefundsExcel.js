@@ -32,7 +32,12 @@ GenerateRefundsExcel.title = 'Generate Refunds Excel (Netbanking)';
 export default function GenerateRefundsExcel() {
   return (
     <Form>
-      <DateField label="Date" name="on" value={new Date()} />
+      <DateField
+        label="Date"
+        name="on"
+        value={new Date()}
+        format="YYYY-MM-DD"
+      />
       <FromField name="from" />
       <ToField name="to" />
       <br />
