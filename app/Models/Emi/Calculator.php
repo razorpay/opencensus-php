@@ -12,6 +12,6 @@ class Calculator
 
         $mp = 100 * (($term * $monthlyInterest * $num) - $num + 1) / ($term * $monthlyInterest * $num);
 
-        return (int) 100 * ceil($mp);
+        return intval(100 * $mp);
     }
 }
