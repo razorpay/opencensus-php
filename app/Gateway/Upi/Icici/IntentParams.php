@@ -10,4 +10,5 @@ class IntentParams
     const TXN_NOTE      = 'tn';
     const TXN_AMOUNT    = 'am';
     const TXN_CURRENCY  = 'cu';
+    const MCC           = 'mc';
 }

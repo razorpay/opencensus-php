@@ -173,9 +173,10 @@ class Gateway extends Base\Gateway
             IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
             IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
             IntentParams::TXN_CURRENCY  => 'INR',
+            IntentParams::MCC           => '5411',
         ];
 
-        $query = urldecode(http_build_query($content));
+        $query = str_replace(' ', '', urldecode(http_build_query($content)));
 
         return ['data' => ['intent_url' => 'upi://pay?' . $query]];
     }
