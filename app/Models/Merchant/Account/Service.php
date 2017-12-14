@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant\Account;
 
 use RZP\Models\Merchant;
+use RZP\Models\BankAccount;
+use RZP\Models\Merchant\SlackActions as SlackActions;
 
 class Service extends Merchant\Service
 {
@@ -91,5 +93,24 @@ class Service extends Merchant\Service
         $accountDetails = $this->core->updateDetails($account, $input);
 
         return $accountDetails;
+    }
+
+    /**
+     * Adds a new settlement destination
+     *
+     * @param string $id
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function addSettlementDestination(string $id, array $input) : array
+    {
+        $merchant = $this->repo->account->findOrFailPublic($id);
+
+        $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
+
+        $this->logActionToSlack($merchant, SlackActions::EDIT_BANK_DETAILS, $input);
+
+        return $ba->toArray();
     }
 }

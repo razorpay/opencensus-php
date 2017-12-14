@@ -29,4 +29,13 @@ class AccountController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function postSettlementDestinations(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->addSettlementDestination($id, $input);
+
+        return ApiResponse::json($response);
+    }
 }
