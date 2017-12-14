@@ -145,7 +145,8 @@ class Base extends Mailable
 
         // Default text
         $supportTextPlain = 'You can contact us at contact@razorpay.com in case of any discrepancy.';
-        $supportTextHtml  = 'Please <a title="Click to send us a mail" href="mailto:contact@razorpay.com" ' . 'style="font-family: \'Century Gothic\', \'Lucida Sans\', \'Tahoma\', \'Arial\' !important; color: #2ba6cb; text-decoration: none;">contact us</a> in case of any discrepancy.';
+        $supportTextHtml  = "Please <a title=\"Click to send us a mail\" href=\"mailto:contact@razorpay.com\" "
+                            . "style=\"font-family: \'Century Gothic\', \'Lucida Sans\', \'Tahoma\', \'Arial\' !important; color: #2ba6cb; text-decoration: none;\">contact us</a> in case of any discrepancy.";
 
         // Zebpay
         if ($merchantId === '8iMbVsEnv1HCo0')
