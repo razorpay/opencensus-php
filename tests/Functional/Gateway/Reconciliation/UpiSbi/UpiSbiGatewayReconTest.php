@@ -28,8 +28,6 @@ class UpiSbiGatewayReconTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/UpiSbiGatewayReconTestData.php';
-
         parent::setUp();
 
         $this->ba->appAuth();

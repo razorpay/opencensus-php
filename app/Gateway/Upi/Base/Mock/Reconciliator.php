@@ -3,6 +3,8 @@
 namespace RZP\Gateway\Upi\Base\Mock;
 
 use App;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Base\PublicCollection;
@@ -120,7 +122,7 @@ class Reconciliator
 
     /**
      * Not all methods need the gateway entity to generate the recon file.
-     * The purpose of this method is to eliminate O(n) DB calls for n payments.
+     * The purpose of this method is to eliminate n DB calls for n payments.
      *
      * @param array $data
      */
@@ -155,6 +157,16 @@ class Reconciliator
      */
     protected function getAllPaymentsToReconcile()
     {
-        return $this->repo->payment->fetchAllSuccessFullPaymentsFromYesterday();
+        $createdAtStart = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+        $createdAtEnd = Carbon::today(Timezone::IST)->getTimestamp();
+
+        $statuses = [
+            Payment\Status::AUTHORIZED,
+            Payment\Status::CAPTURED,
+            Payment\Status::REFUNDED
+        ];
+
+        return $this->repo->payment->fetchPaymentsWithStatus($createdAtStart, $createdAtEnd, $this->gateway, $statuses);
     }
 }
