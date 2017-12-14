@@ -2668,7 +2668,7 @@ ALTER TABLE bank_transfers
 #changes adjustment amount to bigint
 ALTER TABLE adjustment
     MODIFY COLUMN amount BIGINT SIGNED NOT NULL;
-    
+
 # changes for UPI table
 ALTER TABLE upi
     ADD COLUMN expiry_time MEDIUMINT SIGNED NULL;
@@ -2701,3 +2701,6 @@ ALTER TABLE settings
 ALTER TABLE settings
     MODIFY COLUMN created_at INT(11) NOT NULL,
     MODIFY COLUMN updated_at INT(11) NOT NULL;
+
+ALTER TABLE upi
+    ADD COLUMN type VARCHAR(32) DEFAULT NULL AFTER action;
