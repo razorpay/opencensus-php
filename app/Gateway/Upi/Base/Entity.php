@@ -151,6 +151,13 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID);
     }
 
+    public function generatePspData($input)
+    {
+        $this->generateProvider($input);
+
+        $this->generateBank($input);
+    }
+
     protected function generateProvider(array &$input)
     {
         if (isset($input[self::VPA]) === false)

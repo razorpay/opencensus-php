@@ -138,7 +138,7 @@ class Gateway extends Base\Gateway
     protected function authorizeIntent(array $input)
     {
         $attributes = [
-            Entity::TYPE => Base\Type::COLLECT,
+            Entity::TYPE => Base\Type::PAY,
         ];
 
         $payment = $this->createGatewayPaymentEntity($attributes);
@@ -504,6 +504,8 @@ class Gateway extends Base\Gateway
         $attr[Entity::RECEIVED] = 1;
 
         $payment->fill($attr);
+
+        $payment->generatePspData($attr);
 
         $payment->saveOrFail();
     }

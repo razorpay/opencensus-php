@@ -46,8 +46,10 @@ class IciciGatewayTest extends TestCase
         return $paymentId;
     }
 
-    public function testIntentPayment($status = 'created')
+    public function testIntentPayment()
     {
+        $this->fixtures->merchant->addFeatures(['upi_intent']);
+
         unset($this->payment['description']);
         unset($this->payment['vpa']);
 
@@ -72,7 +74,7 @@ class IciciGatewayTest extends TestCase
         $this->assertEquals('intent', $response['type']);
         $this->assertArrayHasKey('intent_url', $response['data']);
 
-        $this->checkPaymentStatus($paymentId, $status);
+        $this->checkPaymentStatus($paymentId, 'created');
 
         $upiEntity = $this->getLastEntity('upi_icici', true);
         $payment = $this->getEntityById('payment', $paymentId, true);
@@ -80,15 +82,12 @@ class IciciGatewayTest extends TestCase
         $this->assertNull($payment['vpa']);
 
         $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
-        // ;
 
         $response = $this->makeS2SCallbackAndGetContent($content);
 
         $payment = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertEquals($payment['vpa'], 'crims0n@icici');
-
-        return $paymentId;
     }
 
     public function testPaymentWithExpiryPublicAuth()

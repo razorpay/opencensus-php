@@ -1479,12 +1479,18 @@ trait Authorize
 
         if ($payment->isUpi() === true)
         {
-            $this->setGatewayInputForUpiCollect($input, $gatewayInput);
+            $gatewayInput['upi']['flow'] = $input['_']['flow'] ?? null;
 
             if ((isset($input['_']['flow']) === false) or
                 ($input['_']['flow'] !== 'intent'))
             {
+                $this->setGatewayInputForUpi($input, $gatewayInput);
+
                 $this->validateUpiPspIsAllowed($payment);
+            }
+            else
+            {
+                $this->validateIfIntentEnabled($payment);
             }
         }
 
@@ -1638,16 +1644,11 @@ trait Authorize
         $payment->subscription()->associate($subscription);
     }
 
-    protected function setGatewayInputForUpiCollect($input, & $gatewayInput)
+    protected function setGatewayInputForUpi($input, & $gatewayInput)
     {
         // Key may not be present. Hence `??` and not `?:`
         $gatewayInput['upi']['expiry_time'] = $input['upi']['expiry_time'] ??
                                               Processor::UPI_COLLECT_EXPIRY;
-
-        if (isset($input['_']['flow']) === true)
-        {
-            $gatewayInput['upi']['flow'] = $input['_']['flow'];
-        }
     }
 
     protected function setGatewayInputForAeps($input, & $gatewayInput)
@@ -3644,6 +3645,15 @@ trait Authorize
 
         $payment->getValidator()->validateUpiVpaPsp(
             $payment->getVpa(), $disallowedPsps);
+    }
+
+    protected function validateIfIntentEnabled(Payment\Entity $payment)
+    {
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::UPI_INTENT) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'UPI intent is not enabled for the merchant');
+        }
     }
 
     protected function checkAndValidateAmexIfNotEnabled($methods, $card)
