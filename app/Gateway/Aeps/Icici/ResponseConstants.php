@@ -35,4 +35,13 @@ class ResponseConstants
     const REFUND_USERPROFILE   = 'UserProfile';
     const REFUND_SEQNO         = 'SeqNo';
     const REFUND_MOBILEAPPDATA = 'MobileAppData';
+
+    const REFUND_RESPONSE_REQUESTID            = 'requestId';
+    const REFUND_RESPONSE_SERVICE              = 'service';
+    const REFUND_RESPONSE_ENCRYPTEDKEY         = 'encryptedKey';
+    const REFUND_RESPONSE_OAEPHASHINGALGORITHM = 'oaepHashingAlgorithm';
+    const REFUND_RESPONSE_IV                   = 'iv';
+    const REFUND_RESPONSE_ENCRYPTEDDATA        = 'encryptedData';
+    const REFUND_RESPONSE_CLIENTINFO           = 'clientInfo';
+    const REFUND_RESPONSE_OPTIONALPARAM        = 'optionalParam';
 }
