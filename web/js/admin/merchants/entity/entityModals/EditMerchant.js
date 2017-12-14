@@ -225,7 +225,11 @@ export default class EditMerchant extends Component {
           <Field
             label="Website"
             name="website"
-            defaultValue={details.website}
+            defaultValue={
+              details.website
+                ? details.website
+                : details.merchant_details.business_website
+            }
           />
           <Field
             label="Billing Label"

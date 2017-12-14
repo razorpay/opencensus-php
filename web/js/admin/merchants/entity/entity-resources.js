@@ -471,10 +471,10 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Website',
-      value: details.website
+      value: details.merchant_details
         ? () => (
-            <a href={details.website} target="_blank">
-              {details.website}
+            <a href={details.merchant_details.business_website} target="_blank">
+              {details.merchant_details.business_website}
             </a>
           )
         : null,

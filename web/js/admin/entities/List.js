@@ -52,9 +52,13 @@ export default class EntityList extends Component {
 
     if (filters) {
       if (filters['entity-id']) {
-        window.open(
-          `/admin/entity/${this.selectedEntity}/${filters['entity-id']}`
-        );
+        const id = filters['entity-id'].trim();
+        if (this.selectedEntity === 'merchant') {
+          window.open(`/admin/merchants/${id}`);
+        } else {
+          window.open(`/admin/entity/${this.selectedEntity}/${id}`);
+        }
+
         return;
       }
 

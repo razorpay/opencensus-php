@@ -103,7 +103,7 @@ export default class EditFeatures extends Component {
           <TextAreaField
             label="Assigned Features"
             name="assigned_features"
-            defaultValue={
+            value={
               features[this.state.mode]
                 ? features[this.state.mode].assigned_features.join(', ')
                 : ''
