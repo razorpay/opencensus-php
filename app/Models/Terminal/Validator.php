@@ -188,6 +188,7 @@ class Validator extends Base\Validator
     protected static $hitachiEditTerminalRules = [
         Entity::GATEWAY                    => 'required|in:hitachi',
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string|max:8',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
     ];
 
     protected static $firstDataEditTerminalRules = [
