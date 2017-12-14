@@ -49,6 +49,7 @@ class Gateway extends Base\Gateway
         Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
         Entity::PROVIDER                  => Entity::PROVIDER,
         Entity::BANK                      => Entity::BANK,
+        Entity::TYPE                      => Entity::TYPE,
         Entity::RECEIVED                  => Entity::RECEIVED,
         Fields::PAYER_VA                  => Entity::VPA,
         Fields::PAYER_NAME                => Entity::NAME,
