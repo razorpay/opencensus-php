@@ -43,13 +43,17 @@ class UpiSbiGatewayReconTest extends TestCase
 
     public function testUpiSbiReconciliation()
     {
-        $this->do3UpiSbiPaymentsYesterday();
+        $this->doNUpiSbiPaymentsYesterday();
 
         $fileContents = $this->generateReconFile();
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $this->reconcile($uploadedFile);
+        $response = $this->reconcile($uploadedFile);
+
+        // We assert that all 3 payments were reconciled
+        $this->assertEquals(3, $response['total_count']);
+        $this->assertEquals(3, $response['success_count']);
 
         $payments = $this->getEntities('payment', [], true);
 
@@ -65,7 +69,39 @@ class UpiSbiGatewayReconTest extends TestCase
         // TODO: Add assertions for gateway payment id? Ensure that values haven't changed before and after recon
     }
 
-    // TODO: Test case for validate payment status mismatch in base / payment recon
+    public function testFailedUpiSbiReconciliation()
+    {
+        $this->doNUpiSbiPaymentsYesterday(1);
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = null)
+            {
+                $content[1][10] = 'FAILED';
+            });
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $response = $this->reconcile($uploadedFile);
+
+        // We assert that the payment was not reconciled
+        $this->assertEquals(1, $response['total_count']);
+        $this->assertEquals(1, $response['failure_count']);
+
+        $payments = $this->getEntities('payment', [], true);
+
+        foreach ($payments['items'] as $payment)
+        {
+            $transactionId = $payment['transaction_id'];
+
+            $transaction = $this->getEntityById('transaction', $transactionId, true);
+
+            $this->assertNull($transaction['reconciled_at']);
+        }
+
+        // TODO: Add assertions for gateway payment id?
+    }
 
     protected function createUploadedFile($file)
     {
@@ -102,7 +138,7 @@ class UpiSbiGatewayReconTest extends TestCase
             ],
         ];
 
-        return $this->makeRequestAndGetContent($request);
+        return $this->makeRequestAndGetContent($request)[0];
     }
 
     protected function generateReconFile()
@@ -116,11 +152,12 @@ class UpiSbiGatewayReconTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function do3UpiSbiPaymentsYesterday()
+    protected function doNUpiSbiPaymentsYesterday(int $count = 3)
     {
-        $payments[] = $this->doUpiSbiPayment();
-        $payments[] = $this->doUpiSbiPayment();
-        $payments[] = $this->doUpiSbiPayment();
+        for ($i = 0; $i < $count; $i++)
+        {
+            $payments[] = $this->doUpiSbiPayment();
+        }
 
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
