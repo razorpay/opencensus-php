@@ -26,22 +26,14 @@ class IciciGatewayTest extends TestCase
 
     public function testPayment()
     {
-        unset($this->payment['description']);
+        $data = $this->testData[__FUNCTION__];
 
-        $this->doAuthAndCapturePayment($this->payment);
+        $response = $this->doAuthAndCapturePayment($this->payment);
 
-        $payment = $this->getLastEntity('payment', true);
+        $this->assertTestResponse($response);
 
-        sd($payment);
+        // $gatewayPayment = $this->getLastEntity('aeps', true);
 
-        // $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
-        // $paymentId = $response['payment_id'];
-
-        // // Co Proto must be working
-        // $this->assertEquals('async', $response['type']);
-
-        // $this->checkPaymentStatus($paymentId, $status);
-
-        // return $paymentId;
+        // sd($gatewayPayment);
     }
 }
