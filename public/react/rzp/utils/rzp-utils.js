@@ -102,7 +102,7 @@ export const normalizeBoolean = bool => {
 export const getFixedINRAmount = amount => (Number(amount) / 100).toFixed(2);
 
 export const getFormattedNumber = value => {
-  return value.toString().replace(/(.{1,2})(?=.(..)+(\...)?$)/g, '$1,');
+  return value.toString().replace(/(.{1,2})(?=.(..)+(\...)$)/g, '$1,');
 };
 
 // following regex formats in indian comma separated, i.e. 2,01,20,45,222.66

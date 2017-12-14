@@ -38,9 +38,11 @@ class Traffic extends Component {
     this.data = null;
   }
 
-  getData(isInitialLoad) {
-    const { startDate, endDate } = this.props,
-      { selectedGrouping, groupsState } = this.state,
+  getData(isInitialLoad, startDate, endDate) {
+    startDate = startDate || this.props.startDate;
+    endDate = endDate || this.props.endDate;
+
+    const { selectedGrouping, groupsState } = this.state,
       groupState = groupsState[selectedGrouping],
       meta = groupMeta[selectedGrouping],
       query = getQuery({
@@ -103,7 +105,7 @@ class Traffic extends Component {
       startDate.toDate() !== props.startDate.toDate() ||
       endDate.toDate() !== props.endDate.toDate()
     ) {
-      this.getData();
+      this.getData(false, startDate, endDate);
     }
   }
 
