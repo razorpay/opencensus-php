@@ -33,7 +33,7 @@ class Server extends Base\Mock\Server
         $gatewayPaymentId = $this->generateId(15);
 
         $responseTranData = [
-            Fields::GATEWAY_CALLBACK_PAYMENT_ID => $gatewayPaymentId,
+            Fields::PAY_ID                      => $gatewayPaymentId,
             Fields::TRACK_ID                    => $requestData[Fields::TRACK_ID],
             Entity::GATEWAY_TRANSACTION_ID      => $this->generateId(15),
             Entity::REF                         => $this->generateId(9),
@@ -71,7 +71,7 @@ class Server extends Base\Mock\Server
             Fields::RESULT                      => Fss\Status::CAPTURED,
             Entity::GATEWAY_TRANSACTION_ID      => $this->generateId(15),
             Fields::TRACK_ID                    => $input[Fields::TRACK_ID],
-            Fields::GATEWAY_CALLBACK_PAYMENT_ID => $this->generateId(15),
+            Fields::PAY_ID                      => $this->generateId(15),
             Fields::AMOUNT                      => $input[Fields::AMOUNT],
             Fields::AUTH_RES_CODE               => $this->generateId(3),
         ];

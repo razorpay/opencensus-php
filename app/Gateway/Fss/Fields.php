@@ -47,7 +47,7 @@ class Fields
 
     const RESULT                        = 'result';
 
-    const GATEWAY_CALLBACK_PAYMENT_ID   = 'payid';
+    const PAY_ID                        = 'payid';
 
     const AUTH_RES_CODE                 = 'authrescode';
 

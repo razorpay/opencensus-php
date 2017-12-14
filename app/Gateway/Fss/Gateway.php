@@ -18,7 +18,9 @@ class Gateway extends Base\Gateway
     protected $gateway = E::FSS;
 
     /**
-     * Fss Gateway has purchase model so framing the request here after persisting the gateway entity.
+     * Fss Gateway has purchase model so framing the request here
+     * after persisting the gateway entity.
+     *
      * @param array $input
      *
      * @return array
@@ -103,6 +105,15 @@ class Gateway extends Base\Gateway
             Fields::ID            => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
             Fields::PASSWORD      => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD],
         ];
+
+        $traceData = $this->removeSensitiveRequestFields($requestContent);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request_data' => $traceData,
+            ]
+        );
 
         return $requestContent;
     }
@@ -271,7 +282,7 @@ class Gateway extends Base\Gateway
 
         // Razorpay vs FSS Field mapping
         $callbackFieldMapping = [
-            Entity::GATEWAY_PAYMENT_ID     => Fields::GATEWAY_CALLBACK_PAYMENT_ID,
+            Entity::GATEWAY_PAYMENT_ID     => Fields::PAY_ID,
             Entity::GATEWAY_TRANSACTION_ID => Entity::GATEWAY_TRANSACTION_ID,
             Entity::REF                    => Entity::REF,
             Entity::AUTH                   => Entity::AUTH,
@@ -343,8 +354,6 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getRefundFields($response, $input);
 
-        $errorStatus = $attributes[Entity::STATUS];
-
         $this->parseResponseStatus($attributes);
 
         $gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input);
@@ -353,6 +362,8 @@ class Gateway extends Base\Gateway
         {
             try
             {
+                $errorStatus = $attributes[Entity::STATUS];
+
                 $refundContent[Fields::ERROR_TEXT] = $errorStatus;
 
                 $this->checkErrorMessage($refundContent, $gatewayEntity);
@@ -610,7 +621,11 @@ class Gateway extends Base\Gateway
     {
         $sensitiveKeys = [
             Fields::ID,
-            Fields::PASSWORD
+            Fields::PASSWORD,
+            Fields::CARD,
+            Fields::CVV,
+            Fields::EXPIRY_MONTH,
+            Fields::EXPIRY_YEAR,
         ];
 
         return array_diff_key($requestContent, array_flip($sensitiveKeys));
@@ -623,7 +638,7 @@ class Gateway extends Base\Gateway
             Fields::TYPE           => $this->getFormattedCardType($input[E::CARD][Card\Entity::TYPE]),
 
             Fields::UDF5           => Constants::TRACK_ID,
-            Fields::LANGUAGE_ID    => Constants::LANGUAGE,
+            Fields::LANGUAGE_ID    => Constants::LANGUAGE_USA,
 
             Fields::ID             => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
             Fields::PASSWORD       => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD],
