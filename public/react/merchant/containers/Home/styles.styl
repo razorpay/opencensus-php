@@ -100,7 +100,15 @@
 
          margin-left: 0;
        }
+
+       &.btn-group {
+
+         .active {
+           z-index: auto;
+         }
+       }
      }
+
   }
 
   div.chart-container {
@@ -167,7 +175,7 @@
     background-color: #FFF;
     box-shadow: 0 0 50px #CCC;
     width: 218px;
-    z-index: 100;
+    z-index: 10000;
 
     .custom-tooltip-inner {
 
@@ -210,7 +218,7 @@
 
       border-top: 10px solid #FFF;
       position: absolute;
-      left: 48%;
+      left: 50%;
       top: 100%;
     }
 }

@@ -25,53 +25,112 @@ const customToolTip = function(tooltipModel) {
   }
 
   // Hide if no tooltip
+  // TODO: wants a better option than opacity
   if (!tooltipModel.opacity) {
     tooltipDOM.style.opacity = 0;
     return;
   }
 
-  // Setting the body and title of tooltip
+  /* Setting the body and title of tooltip only if model has body */
   if (tooltipModel.body) {
+    // data member to hold going to be rendered html
     var innerHtml = '';
+
+    // calculating the title: sum of all data
     const dataPoints = tooltipModel.dataPoints;
     const sumOfAllDataPoints = dataPoints.reduce(
       (tempSum, { yLabel }) => tempSum + yLabel,
       0
     );
 
+    // appending title to innerHtml
     innerHtml += `<div class="title">₹ ${humanReadableIndian(
       sumOfAllDataPoints
     )}</div>`;
 
+    /**
+     * extracting lines inside each elements of body array has actual text to be rendered
+     */
     var bodyLines = tooltipModel.body.map(({ lines }) => lines[0]);
+
+    // variable to hold rows
     let rows = '';
     bodyLines.forEach((body, index) => {
-      // var colors = tooltipModel.labelColors[i];
       const labelColors = tooltipModel.labelColors;
+
+      /**
+       * body is a string with format label: value
+       * splitting it into array will give us [label, value];
+       */
       const bodyItems = body.split(':');
 
+      // label icon is the colored (color same as in legend) square box
       const labelIcon = `<span class="label-icon" style="background-color: ${labelColors[
         index
       ].backgroundColor}"></span>`;
+
+      // first element of bodyItems is label
       const label = `<span class="label">${bodyItems[0]}</span>`;
+
+      // second element of bodyItem is value corresponding to label extracted in first line
       const labelValue = `<span class="label-value">${humanReadableIndian(
         Number(bodyItems[1].trim())
       )}</span>`;
+
+      // appending rows with each line
       rows += `<div class="tooltip-row">${labelIcon}${label}${labelValue}</div>`;
     });
 
+    // adding rows to innerHtml
     innerHtml += `<div class="tooltip-body">${rows}</div>`;
 
+    // inserting innerHtml into inner div of chart js tooltip
     var innerTooltip = tooltipDOM.querySelector('.custom-tooltip-inner');
     innerTooltip.innerHTML = innerHtml;
   }
 
+  /**
+   * calculation of position of tooltip
+   */
+
   var { offsetTop /*offsetLeft*/ } = this._chart.canvas;
 
+  // width of y-axis of chart
+  const widthOfYAxis = this._chart.boxes.find(({ id }) => id === 'y-axis-0')
+    .width;
+
+  // absolute position of chart from left edge
+  const { x: chartX } = this._chart.canvas.getBoundingClientRect();
+
+  // distance of right edge of inner chart (where actual graph is rendered) area from edge of body
+  const chartRight = this._chart.boxes[0].chart.chartArea.right;
+
+  // no of data points on x-axis
+  const noOfDataLabels = this._data.labels.length;
+
+  // index of current point (horizontally) hovered on x-axis
+  const dataPointIndex = tooltipModel.dataPoints
+    ? tooltipModel.dataPoints[0].index
+    : 0;
+
+  // width of span between to data points on x-axis
+  const widthOfEachLabel = Math.round(
+    (chartRight - widthOfYAxis) / (noOfDataLabels - 1)
+  );
+
+  // opactity is 1 to display tooltip
   tooltipDOM.style.opacity = 1;
-  tooltipDOM.style.left = `${tooltipModel.caretX +
-    this._chart.width / this._data.labels.length}px`;
+
+  // left of tooltip is absoluteLeft of chart + widthOfYAxis + widthOfEachLabel (added according to index)
+  tooltipDOM.style.left = `${chartX / 2 +
+    widthOfYAxis +
+    widthOfEachLabel * dataPointIndex}px`;
+
+  // TODO: precise the calculation of y position of tooltip
   tooltipDOM.style.top = `${offsetTop + tooltipModel.caretY}px`;
+
+  // setting the padding
+  // BUG: not getting reflected in browser
   tooltipDOM.style.padding = `${tooltipModel.yPadding}px ${tooltipModel.xPadding}px`;
 };
 
