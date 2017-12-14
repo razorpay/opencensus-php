@@ -167,7 +167,7 @@ export default class RequestEntity extends Component {
                       >
                         {kdx < data.current_level ||
                         (kdx == data.current_level && shouldShowTick) ? (
-                          <i class="i-yes" />
+                          <i class="i-yes text-success" />
                         ) : null}
 
                         <span class="square-pills no-color">STEP {key}</span>
