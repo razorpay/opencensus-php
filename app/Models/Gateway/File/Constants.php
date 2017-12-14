@@ -15,6 +15,7 @@ class Constants
     const INDUSIND        = 'indusind';
     const RBL             = 'rbl';
     const SCBL            = 'scbl';
+    const UPI_ICICI       = 'upi_icici';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -47,6 +48,9 @@ class Constants
             self::HDFC,
             self::AXIS,
         ],
+        TYPE::REFUND_FAILED => [
+            self::UPI_ICICI,
+        ]
     ];
 
     const TYPE_SENDER_MAPPING = [
@@ -56,6 +60,7 @@ class Constants
         Type::EMI               => MailConstants::MAIL_ADDRESSES[MailConstants::EMI],
         Type::EMANDATE_REGISTER => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::EMANDATE_DEBIT    => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
+        TYPE::REFUND_FAILED     => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
     ];
 
     const RECIPIENTS_MAP = [
@@ -87,6 +92,11 @@ class Constants
             self::KOTAK    => ['kotakcards.emi@razorpay.com'],
             self::RBL      => ['Rblcards.emi@razorpay.com'],
             self::SCBL     => ['scbl.emi@razorpay.com'],
-        ]
+        ],
+
+        TYPE::REFUND_FAILED => [
+            self::UPI_ICICI => ['settlements@razorpay.com'],
+        ],
+
     ];
 }
