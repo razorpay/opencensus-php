@@ -13,9 +13,9 @@ export default function fetch(options, suppressError) {
       if (!data.success) {
         if (!suppressError) {
           notifyError(data.errors.join('\n'));
+        } else {
+          return data;
         }
-
-        return data;
       } else {
         return data.data;
       }

@@ -61,13 +61,11 @@ export default class EntityList extends Component {
       this.collection.data.route_name = 'admin_fetch_entity_multiple';
 
       if (filters['from']) {
-        filters['from'] = Math.round(
-          new Date(filters['from']).getTime() / 1000
-        );
+        filters['from'] = filters['from'];
       }
 
       if (filters['to']) {
-        filters['to'] = Math.round(new Date(filters['to']).getTime() / 1000);
+        filters['to'] = filters['to'];
       }
     }
 

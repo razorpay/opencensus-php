@@ -59,6 +59,7 @@ const DateInput = ({
       format={format}
       formatDate={date => moment(date).format(format)}
       parseDate={input => moment(input, format).toDate()}
+      onDayChange={onDayChange}
       placeholder={format}
       value={value}
       inputProps={props}

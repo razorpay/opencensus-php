@@ -49,10 +49,8 @@ class Stat {
     var filters = {
       merchant_id: [data.merchant_id],
       created_at: {
-        gte: (data.from && parseInt(new Date(data.from).getTime() / 1000)) || 0,
-        lte:
-          data.to &&
-          parseInt((new Date(data.to).getTime() || Date.now()) / 1000),
+        gte: data.from,
+        lte: data.to,
       },
     };
 
