@@ -33,14 +33,12 @@ return [
     'testEnableMerchantSubvention' => [
         'request' => [
             'content' => [
-                'merchant_payback' => 1300
             ],
             'method' => 'POST',
         ],
         'response' => [
             'content' => [
                 'merchant_id'      => '10000000000000',
-                'merchant_payback' => 1300
             ],
         ],
     ],
