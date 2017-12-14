@@ -33,7 +33,8 @@ class CreateEmiMerchantSubventionTable extends Migration
 
             $table->integer(MerchantSubvention::UPDATED_AT);
 
-            $table->integer(MerchantSubvention::DELETED_AT);
+            $table->integer(MerchantSubvention::DELETED_AT)
+                  ->nullable();;
 
             $table->unique([MerchantSubvention::MERCHANT_ID, MerchantSubvention::EMI_PLAN_ID]);
 
