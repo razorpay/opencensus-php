@@ -94,9 +94,7 @@ export class DisputeForm extends Component {
       new Date(moment(body.raised_on, 'DD/MM/YYYY')).getTime() / 1000;
     body.expires_on =
       new Date(moment(body.expires_on, 'DD/MM/YYYY')).getTime() / 1000;
-    body.amount = body.amount;
-    body.deduct_at_onset = body.deduct_at_onset ? 1 : 0;
-    body.skip_email = body.skip_email ? 1 : 0;
+
     if (body.merchant_emails) {
       body.merchant_emails = body.merchant_emails
         .replace(/,*$/, '')
@@ -132,12 +130,14 @@ export class DisputeForm extends Component {
   render() {
     const { isEditMode, handleSubmit, entity } = this.props;
 
-    const raisedOn = entity.raised_on
-      ? moment(new Date(entity.raised_on * 1000)).format('DD/MM/YYYY')
-      : null;
-    const expiresOn = entity.expires_on
-      ? moment(new Date(entity.expires_on * 1000)).format('DD/MM/YYYY')
-      : null;
+    const raisedOn =
+      isEditMode && entity.raised_on
+        ? moment(new Date(entity.raised_on * 1000)).format('DD/MM/YYYY')
+        : '';
+    const expiresOn =
+      isEditMode && entity.expires_on
+        ? moment(new Date(entity.expires_on * 1000)).format('DD/MM/YYYY')
+        : '';
     return (
       <BaseModal header={`${isEditMode ? 'Edit' : 'Create'} Dispute`}>
         <Form class="full-span full-elements">
@@ -145,7 +145,7 @@ export class DisputeForm extends Component {
           <Field
             label="Gateway Dispute Id"
             name="gateway_dispute_id"
-            defaultValue={entity.gateway_dispute_id}
+            defaultValue={isEditMode ? entity.gateway_dispute_id : ''}
             required={!isEditMode}
             disabled={isEditMode}
           />
@@ -154,14 +154,14 @@ export class DisputeForm extends Component {
           <Field
             label="Gateway Dispute Status"
             name="gateway_dispute_status"
-            defaultValue={entity.gateway_dispute_status}
+            defaultValue={isEditMode ? entity.gateway_dispute_status : ''}
           />
 
           {/* Phase */}
           <SelectField
             label="Phase"
             name="phase"
-            defaultValue={entity.phase}
+            defaultValue={isEditMode ? entity.phase : ''}
             required={!isEditMode}
             disabled={isEditMode}
           >
@@ -198,7 +198,7 @@ export class DisputeForm extends Component {
             <SelectField
               label="Status"
               name="status"
-              defaultValue={entity.status}
+              defaultValue={isEditMode ? entity.status : ''}
             >
               <option value="" disabled>
                 Select..
@@ -216,7 +216,7 @@ export class DisputeForm extends Component {
             <SelectField
               label="Reason Id"
               name="reason_id"
-              defaultValue={entity.reason_id}
+              defaultValue={isEditMode ? entity.reason_id : ''}
               disabled={isEditMode}
               required={!isEditMode}
             >
@@ -235,7 +235,7 @@ export class DisputeForm extends Component {
           <Field
             label="Amount (Paisa)"
             name="amount"
-            defaultValue={entity.amount}
+            defaultValue={isEditMode ? entity.amount : ''}
             required={!isEditMode}
             disabled={isEditMode}
           />
@@ -245,7 +245,7 @@ export class DisputeForm extends Component {
             <Field
               label="Accepted Amount (Paisa)"
               name="accepted_amount"
-              defaultValue={entity.accepted_amount}
+              defaultValue={isEditMode ? entity.accepted_amount : ''}
               required={!isEditMode}
               disabled={isEditMode}
             />
@@ -255,7 +255,7 @@ export class DisputeForm extends Component {
           <Field
             label="Merchant Email"
             name="merchant_emails"
-            defaultValue={entity.merchant_emails}
+            defaultValue={isEditMode ? entity.merchant_emails : ''}
             disabled={isEditMode}
           />
 
@@ -263,7 +263,7 @@ export class DisputeForm extends Component {
           <CheckField
             label="Deduct at Onset"
             name="deduct_at_onset"
-            defaultChecked={entity.deduct_at_onset}
+            defaultChecked={isEditMode ? entity.deduct_at_onset : ''}
             disabled={isEditMode}
           />
 
@@ -271,7 +271,7 @@ export class DisputeForm extends Component {
           <CheckField
             label="Skip Merchant Email"
             name="skip_email"
-            defaultChecked={entity.skip_email}
+            defaultChecked={isEditMode ? entity.skip_email : ''}
             disabled={isEditMode}
           />
 
