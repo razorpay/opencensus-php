@@ -131,17 +131,25 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $request = $this->getRefundRequest($input);
+        list($request, $sKey) = $this->getRefundRequest($input);
 
-        //TODO: Create refund gateway entry
+        // TODO: Create refund gateway entry
 
         $response = $this->sendGatewayRequest($request);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
-            [$response->body]);
+            [
+                'refund_id' => $input['refund']['id'],
+                'response_body' => $response->body,
+            ]
+        );
 
         $responseData = json_decode($response->body, true);
+
+        // TODO: Here, we need to decrypt the session key which they use using our private key
+        // instead of using the same key which we generated for the request.
+        $responseData = $this->getRefundDecryptedData($responseData, $sKey);
 
         // TODO: Store  refund response
 
@@ -169,19 +177,16 @@ class Gateway extends Base\Gateway
         $amount = number_format($input['payment']['amount'] / 100, 2, '.', '');
 
         $data = [
-            RequestConstants::REFUND_DATA_ACCOUNT_PROVIDER    => '1',
+            RequestConstants::REFUND_DATA_ACCOUNT_PROVIDER    => '74',
             RequestConstants::REFUND_DATA_MOBILE              => $this->config['payer_mobile'],
             RequestConstants::REFUND_DATA_PAYER_VA            => $this->config['payer_vpa'],
             RequestConstants::REFUND_DATA_AMOUNT              => $amount,
             RequestConstants::REFUND_DATA_NOTE                => 'test',
             RequestConstants::REFUND_DATA_DEVICE_ID           => $this->config['device_id'],
-            RequestConstants::REFUND_DATA_SEQ_NO              => strtolower(upi_uuid()),
+            RequestConstants::REFUND_DATA_SEQ_NO              => strtolower('ici' . upi_uuid(false)),
             RequestConstants::REFUND_DATA_CHANNEL_CODE        => $this->config['channel_code'],
             RequestConstants::REFUND_DATA_PROFILE_ID          => $this->config['profile_id'],
             RequestConstants::REFUND_DATA_ACCOUNT_TYPE        => 'Saving',
-            RequestConstants::REFUND_DATA_IFSC                => '',
-            RequestConstants::REFUND_DATA_ACCOUNT_NUMBER      => '',
-            RequestConstants::REFUND_DATA_MPIN                => '',
             RequestConstants::REFUND_DATA_PRE_APPROVED        => 'A',
             RequestConstants::REFUND_DATA_USE_DEFAULT_ACC     => 'D',
             RequestConstants::REFUND_DATA_DEFAULT_DEBIT       => 'N',
@@ -189,12 +194,19 @@ class Gateway extends Base\Gateway
             RequestConstants::REFUND_DATA_GLOBAL_ADDRESS_TYPE => 'AADHAR',
             RequestConstants::REFUND_DATA_PAYEE_AADHAR        => $gatewayEntity[Base\Entity::AADHAAR_NUMBER],
             RequestConstants::REFUND_DATA_PAYEE_IIN           => '',
-            RequestConstants::REFUND_DATA_PAYEE_NAME          => '',
+            // TODO: Change this later
+            RequestConstants::REFUND_DATA_PAYEE_NAME          => 'Test',
             RequestConstants::REFUND_DATA_MCC                 => '5411',
             RequestConstants::REFUND_DATA_MERCHANT_TYPE       => 'ENTITY',
         ];
 
-        $encryptedData = $encryptor->encryptUsingSessionKey(json_encode($data), $sKey);
+        $data = json_encode($data);
+
+        // This is because they were stripping the first 16 characters from the data we sent
+        // and hence they could not parse that json string.
+        $data = str_repeat(" ", 16) . $data;
+
+        $encryptedData = $encryptor->encryptUsingSessionKey($data, $sKey);
 
         $encryptedKey = $encryptor->encryptSessionKey($sKey, $this->mode, 'refund');
 
@@ -219,6 +231,7 @@ class Gateway extends Base\Gateway
                 'data'           => $data,
                 'encrypted_data' => $encryptedData,
                 'content'        => $content,
+                'session_key'    => $sKey,
             ]
         );
 
@@ -232,7 +245,19 @@ class Gateway extends Base\Gateway
             ]
         ];
 
-        return $request;
+        return [$request, $sKey];
+    }
+
+    protected function getRefundDecryptedData(array $data, string $sessionKey): array
+    {
+        $encryptor = $this->getEncryptor();
+
+        $data = $encryptor->decryptUsingSessionKey(
+            $data[ResponseConstants::REFUND_RESPONSE_ENCRYPTEDDATA],
+            $sessionKey
+        );
+
+        return $data;
     }
 
     // This gets overridden in Mock gateway
