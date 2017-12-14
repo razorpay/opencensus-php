@@ -34,7 +34,11 @@ class Base extends Refund\Base
 
     public function checkIfValidDataAvailable(PublicCollection $refunds)
     {
-
+        if ($refunds->isEmpty() === true)
+        {
+            throw new GatewayFileException(
+                    ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
+        }
     }
 
     public function generateData(PublicCollection $refunds)
