@@ -393,7 +393,6 @@ export class PaymentRefundsList extends Component {
           class="link"
           href={`/admin/entity/refund/${this.props.mode}/${item.id}`}
         >
-          s
           {item.id}
         </a>
       ),
