@@ -306,7 +306,15 @@ class Entity extends Base\PublicEntity
 
     public function isMobikwikEnabled()
     {
-        return $this->getAttribute(self::MOBIKWIK);
+        //
+        // Mobikwik MID was unexpectedly disabled, this change is
+        // needed for merchants using razorpay.js and S2S.
+        //
+        // https://github.com/razorpay/incidents/issues/157
+        //
+
+        return false;
+        // return $this->getAttribute(self::MOBIKWIK);
     }
 
     public function isOpenwalletEnabled()
