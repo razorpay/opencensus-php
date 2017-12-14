@@ -109,7 +109,8 @@ class CreatePayments extends Migration
             $table->char(Payment::EMI_PLAN_ID, 14)
                   ->nullable();
 
-            $table->string(Payment::EMI_SUBVENTION, 10);
+            $table->string(Payment::EMI_SUBVENTION, 10)
+                  ->nullable();
 
             $table->string(Payment::ERROR_CODE, 100)
                   ->nullable();
