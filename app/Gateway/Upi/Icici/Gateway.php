@@ -137,7 +137,11 @@ class Gateway extends Base\Gateway
 
     protected function authorizeIntent(array $input)
     {
-        $payment = $this->createGatewayPaymentEntity([]);
+        $attributes = [
+            Entity::TYPE => Base\Type::COLLECT,
+        ];
+
+        $payment = $this->createGatewayPaymentEntity($attributes);
 
         $request =  $this->getPayAuthorizeRequestArray($input);
 
@@ -191,6 +195,7 @@ class Gateway extends Base\Gateway
     {
         return [
             Entity::VPA => $input['payment']['vpa'],
+            Entity::TYPE => Base\Type::COLLECT,
         ];
     }
 

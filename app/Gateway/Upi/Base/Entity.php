@@ -8,6 +8,7 @@ class Entity extends Base\Entity
 {
     const ID                    = 'id';
     const ACTION                = 'action';
+    const TYPE                  = 'type';
     const NAME                  = 'name';
     const AMOUNT                = 'amount';
     const ACQUIRER              = 'acquirer';
@@ -33,6 +34,7 @@ class Entity extends Base\Entity
         self::ID,
         self::ACTION,
         self::AMOUNT,
+        self::TYPE,
         self::ACQUIRER,
         self::BANK,
         self::PROVIDER,
@@ -52,6 +54,7 @@ class Entity extends Base\Entity
 
     protected $fillable = [
         self::ACTION,
+        self::TYPE,
         self::AMOUNT,
         self::ACQUIRER,
         self::BANK,
@@ -82,6 +85,11 @@ class Entity extends Base\Entity
     public function setAcquirer($acquirer)
     {
         $this->setAttribute(self::ACQUIRER, $acquirer);
+    }
+
+    public function setType($type)
+    {
+        $this->setAttribute(self::TYPE, $type);
     }
 
     public function setBank($bank)
