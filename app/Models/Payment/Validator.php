@@ -163,7 +163,8 @@ class Validator extends Base\Validator
         if ((isset($input['_']['flow']) === false) or
             ($input['_']['flow'] !== 'intent'))
         {
-            if (empty($input[Entity::VPA]) === true)
+            if (($input[Entity::METHOD] === Method::UPI) and
+                (empty($input[Entity::VPA]) === true))
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'The vpa field is required when method is upi.');
