@@ -39,7 +39,7 @@ export const getTimelineData = ({
 
   // grouping by column, ex. group by payment method (card, netbanking)
   const groupedData = groupBy(data, groupByColumnName),
-    groups = Object.keys(groupedData),
+    groups = Object.keys(groupedData).sort(),
     /* `timelineGroupMap` is like
          * {
          *   "<timestamp1>": {
