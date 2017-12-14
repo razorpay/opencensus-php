@@ -85,6 +85,19 @@ class Entity extends Base\PublicEntity
         self::ISSUER_NAME,
     ];
 
+    protected static $modifiers = [
+        self::MERCHANT_PAYBACK,
+    ];
+
+    public function modifyMerchantPayback(& $input)
+    {
+        if ((isset($input[self::RATE]) === true) and
+            (isset($input[self::DURATION]) == true))
+        {
+            $input[self::MERCHANT_PAYBACK] = Calculator::calculateMerchantPayback($input[self::RATE], $input[self::DURATION]);
+        }
+    }
+
     public function getRate()
     {
         return $this->getAttribute(self::RATE);

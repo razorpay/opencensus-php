@@ -310,7 +310,6 @@ final class FactoryData
             'id'               => $faker->uniqueid,
             'merchant_id'      => '10000000000000',
             'emi_plan_id'      => '10101010101010',
-            'merchant_payback' => 1500,
             'created_at'       => $faker->timestamp,
             'updated_at'       => $faker->timestamp,
         ]);
