@@ -6,6 +6,7 @@ use RZP\Constants\Entity as E;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card;
 use RZP\Exception;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Gateway\Base;
@@ -31,7 +32,7 @@ class Gateway extends Base\Gateway
 
         $purchaseRequestFields = $this->getPurchaseRequestContentArray($input);
 
-        $purchaseRequestContent = $this->getPurchaseRequestContent($purchaseRequestFields);
+        $purchaseRequestContent = $this->getPurchaseRequestContent($purchaseRequestFields, $input);
 
         $request = $this->getStandardRequestArray($purchaseRequestContent, 'get', Constants::PURCHASE);
 
@@ -66,7 +67,7 @@ class Gateway extends Base\Gateway
      *
      * @return array
      */
-    private function getPurchaseFields(array $requestFields): array
+    protected function getPurchaseFields(array $requestFields): array
     {
         $attributes = [
             Entity::AMOUNT      => $requestFields[Fields::AMOUNT] * 100,
@@ -83,22 +84,18 @@ class Gateway extends Base\Gateway
      *
      * @return array
      */
-    private function getPurchaseRequestContentArray(array $input)
+    protected function getPurchaseRequestContentArray(array $input)
     {
         $requestContent = [
             Fields::CARD          => $input[E::CARD][Card\Entity::NUMBER],
             Fields::CVV           => $input[E::CARD][Card\Entity::CVV],
-            Fields::CURRENCY_CODE => Constants::CURRENCY_CODE,
+            Fields::CURRENCY_CODE => Currency::getIsoCode(Currency::INR),
             Fields::EXPIRY_YEAR   => $input[E::CARD][Card\Entity::EXPIRY_YEAR],
-
             Fields::EXPIRY_MONTH  => $this->getFormattedExpMonth($input[E::CARD][Card\Entity::EXPIRY_MONTH]),
-            Fields::TYPE          => $this->getFormattedCardType($input[E::CARD][Card\Entity::TYPE]),
-
+            Fields::TYPE          => $this->getCardType($input[E::CARD][Card\Entity::TYPE]),
             Fields::MEMBER        => $input[E::CARD][Card\Entity::NAME],
             Fields::AMOUNT        => $input[E::PAYMENT][Payment\Entity::AMOUNT] / 100, //use number_format
-
             Fields::ACTION        => Constants::ACTION_PURCHASE,
-
             Fields::TRACK_ID      => $input[E::PAYMENT][Payment\Entity::ID],
             Fields::ERROR_URL     => $input['callbackUrl'],
             Fields::RESPONSE_URL  => $input['callbackUrl'],
@@ -106,6 +103,7 @@ class Gateway extends Base\Gateway
             Fields::PASSWORD      => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD],
         ];
 
+        // Trace the payment request after removing the sensitive fields.
         $traceData = $this->removeSensitiveRequestFields($requestContent);
 
         $this->trace->info(
@@ -120,10 +118,11 @@ class Gateway extends Base\Gateway
 
     /**
      * @param array $requestContent
+     * @array array $input
      *
      * @return array
      */
-    protected function getPurchaseRequestContent(array $requestContent): array
+    protected function getPurchaseRequestContent(array $requestContent, array $input): array
     {
         // Entire request content is wrapped in xml.
         $requestBuffer = Utility::createRequestXml($requestContent);
@@ -133,9 +132,9 @@ class Gateway extends Base\Gateway
 
         $content = [
             Fields::TRAN_DATA     => $tranData,
-            Fields::ERROR_URL     => $this->input['callbackUrl'],
-            Fields::RESPONSE_URL  => $this->input['callbackUrl'],
-            Fields::TRANPORTAL_ID => $this->input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
+            Fields::ERROR_URL     => $input['callbackUrl'],
+            Fields::RESPONSE_URL  => $input['callbackUrl'],
+            Fields::TRANPORTAL_ID => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
         ];
 
         return $content;
@@ -250,6 +249,8 @@ class Gateway extends Base\Gateway
 
             $this->assertAmount($expectedAmount, $actualAmount);
 
+            $this->assertPaymentId($input['payment']['id'], $gatewayContent[Fields::TRACK_ID]);
+
             $this->checkCapturedStatus($gatewayPayment, ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
         finally
@@ -268,7 +269,7 @@ class Gateway extends Base\Gateway
      *
      * @return array
      */
-    public function getCallbackFields(array $gatewayContent): array
+    protected function getCallbackFields(array $gatewayContent): array
     {
         $attributes = [
             Entity::RECEIVED => true,
@@ -283,10 +284,10 @@ class Gateway extends Base\Gateway
         // Razorpay vs FSS Field mapping
         $callbackFieldMapping = [
             Entity::GATEWAY_PAYMENT_ID     => Fields::PAY_ID,
-            Entity::GATEWAY_TRANSACTION_ID => Entity::GATEWAY_TRANSACTION_ID,
-            Entity::REF                    => Entity::REF,
-            Entity::AUTH                   => Entity::AUTH,
-            Entity::POST_DATE              => Entity::POST_DATE,
+            Entity::GATEWAY_TRANSACTION_ID => Fields::TRAN_ID,
+            Entity::REF                    => Fields::REF,
+            Entity::AUTH                   => Fields::AUTH,
+            Entity::POST_DATE              => Fields::POST_DATE,
             Entity::STATUS                 => Fields::RESULT,
             Entity::AUTH_RES_CODE          => Fields::AUTH_RES_CODE,
         ];
@@ -298,7 +299,7 @@ class Gateway extends Base\Gateway
             // Checking with empty "null" because we use simple_xml to deserialize the data
             // so null is converted to string.
             if (empty($gatewayContent[$value]) === false and
-                $gatewayContent[$value] != "null")
+                ($gatewayContent[$value] !== "null"))
             {
                 $attributes[$key] = $gatewayContent[$value];
             }
@@ -384,7 +385,7 @@ class Gateway extends Base\Gateway
      *
      * @return array
      */
-    public function getRefundFields($response, $input)
+    protected function getRefundFields($response, $input)
     {
         $responseBody = $response->body;
 
@@ -438,7 +439,7 @@ class Gateway extends Base\Gateway
      *
      * @return bool
      */
-    public function verifyRefundResponse(Base\Verify $verify)
+    protected function verifyRefundResponse(Base\Verify $verify)
     {
         $verifyResponse = $verify->verifyResponseContent;
 
@@ -466,7 +467,7 @@ class Gateway extends Base\Gateway
      *
      * @throws Exception\GatewayErrorException
      */
-    public function verifyPayment(Base\Verify $verify)
+    protected function verifyPayment(Base\Verify $verify)
     {
         $gatewayPayment = $verify->payment;
 
@@ -558,7 +559,7 @@ class Gateway extends Base\Gateway
      * Verify payment Request
      * @param Base\Verify $verify
      */
-    public function sendPaymentVerifyRequest(Base\Verify $verify)
+    protected function sendPaymentVerifyRequest(Base\Verify $verify)
     {
         $input = $verify->input;
 
@@ -582,7 +583,7 @@ class Gateway extends Base\Gateway
      *
      * @return array|string
      */
-    public function parseVerifyResponse($response)
+    protected function parseVerifyResponse($response)
     {
         $responseBody = $response->body;
 
@@ -606,7 +607,7 @@ class Gateway extends Base\Gateway
      *
      * @param $requestContent
      */
-    public function traceGatewayVerifyRequest($requestContent)
+    protected function traceGatewayVerifyRequest($requestContent)
     {
         $requestContent = $this->removeSensitiveRequestFields($requestContent);
 
@@ -617,7 +618,8 @@ class Gateway extends Base\Gateway
             ]
         );
     }
-    public function removeSensitiveRequestFields(array $requestContent)
+
+    protected function removeSensitiveRequestFields(array $requestContent)
     {
         $sensitiveKeys = [
             Fields::ID,
@@ -631,11 +633,13 @@ class Gateway extends Base\Gateway
         return array_diff_key($requestContent, array_flip($sensitiveKeys));
     }
 
-    public function getGatewayRequestContentArray($input)
+    protected function getGatewayRequestContentArray($input)
     {
+        $traceCode = '';
+
         $requestContent = [
             Fields::CURRENCY_CODE  => Constants::CURRENCY_CODE,
-            Fields::TYPE           => $this->getFormattedCardType($input[E::CARD][Card\Entity::TYPE]),
+            Fields::TYPE           => $this->getCardType($input[E::CARD][Card\Entity::TYPE]),
 
             Fields::UDF5           => Constants::TRACK_ID,
             Fields::LANGUAGE_ID    => Constants::LANGUAGE_USA,
@@ -647,24 +651,40 @@ class Gateway extends Base\Gateway
         switch ($this->action)
         {
             case Action::VERIFY:
-                $requestContent[Fields::TRANSACTION_ID] =  $input['payment']['id'];
-                $requestContent[Fields::ACTION] = Constants::ACTION_INQUIRY;
                 // In verify also fss needs a trackId.
-                $requestContent[Fields::TRACK_ID] = Entity::generateUniqueId();
-                $requestContent[Fields::AMOUNT] = $input[E::PAYMENT][Entity::AMOUNT] / 100;
+                $requestContent[Fields::TRANSACTION_ID] =  $input['payment']['id'];
+                $requestContent[Fields::ACTION]         = Constants::ACTION_INQUIRY;
+                $requestContent[Fields::TRACK_ID]       = Entity::generateUniqueId();
+                $requestContent[Fields::AMOUNT]         = $input[E::PAYMENT][Entity::AMOUNT] / 100;
+
+                $traceCode = TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST;
                 break;
             case Action::VERIFY_REFUND:
                 $requestContent[Fields::TRANSACTION_ID] =  $input['refund']['id'];
-                $requestContent[Fields::ACTION] = Constants::ACTION_INQUIRY;
-                $requestContent[Fields::TRACK_ID] = Entity::generateUniqueId();
-                $requestContent[Fields::AMOUNT] = $input[E::REFUND][Entity::AMOUNT] / 100;
+                $requestContent[Fields::ACTION]         = Constants::ACTION_INQUIRY;
+                $requestContent[Fields::TRACK_ID]       = Entity::generateUniqueId();
+                $requestContent[Fields::AMOUNT]         = $input[E::REFUND][Entity::AMOUNT] / 100;
+
+                $traceCode = TraceCode::GATEWAY_REFUND_VERIFY_REQUEST;
                 break;
             case Action::REFUND:
                 $requestContent[Fields::TRANSACTION_ID] = $input['payment']['id'];
-                $requestContent[Fields::ACTION] = Constants::ACTION_REFUND;
-                $requestContent[Fields::TRACK_ID] = $input[E::REFUND][Entity::ID];
-                $requestContent[Fields::AMOUNT] = $input[E::REFUND][Entity::AMOUNT] / 100;
+                $requestContent[Fields::ACTION]         = Constants::ACTION_REFUND;
+                $requestContent[Fields::TRACK_ID]       = $input[E::REFUND][Entity::ID];
+                $requestContent[Fields::AMOUNT]         = $input[E::REFUND][Entity::AMOUNT] / 100;
+
+                $traceCode = TraceCode::GATEWAY_REFUND_REQUEST;
+                break;
         }
+
+        $traceData = $this->removeSensitiveRequestFields($requestContent);
+
+        $this->trace->info(
+            $traceCode,
+            [
+                'request_data' => $traceData,
+            ]
+        );
 
         return $requestContent;
     }
@@ -673,7 +693,7 @@ class Gateway extends Base\Gateway
      * FSS sends error messages in status, so parsing the same for storing.
      * @param array $attributes
      */
-    public function parseResponseStatus(array & $attributes)
+    protected function parseResponseStatus(array & $attributes)
     {
         $status = $attributes[Entity::STATUS];
 
@@ -689,7 +709,7 @@ class Gateway extends Base\Gateway
      *
      * @return string
      */
-    public function getGatewayRequestContent(array $requestContent): string
+    protected function getGatewayRequestContent(array $requestContent): string
     {
         // Entire request content is wrapped in xml.
         $requestBuffer = Utility::createRequestXml($requestContent);
@@ -702,7 +722,7 @@ class Gateway extends Base\Gateway
      *
      * @return \Requests_Response
      */
-    public function postRequest($request)
+    protected function postRequest($request)
     {
         $request['options'] = $this->getRequestOptions();
 
@@ -745,7 +765,7 @@ class Gateway extends Base\Gateway
      *
      * @throws Exception\GatewayErrorException
      */
-    public function checkErrorMessage(array $input, Entity $gatewayPayment)
+    protected function checkErrorMessage(array $input, Entity $gatewayPayment)
     {
         if (empty($input[Fields::ERROR_TEXT]) === false)
         {
@@ -790,7 +810,7 @@ class Gateway extends Base\Gateway
      *
      * @return string
      */
-    private function getFormattedCardType($cardType)
+    private function getCardType($cardType)
     {
         if ($cardType === Card\Type::DEBIT)
         {
@@ -818,7 +838,7 @@ class Gateway extends Base\Gateway
      *
      * @throws Exception\GatewayErrorException
      */
-    private function checkCapturedStatus(Entity $gateway, $errorCode)
+    protected function checkCapturedStatus(Entity $gateway, $errorCode)
     {
         $status = $gateway->getStatus();
 

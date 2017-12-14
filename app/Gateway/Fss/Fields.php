@@ -55,7 +55,16 @@ class Fields
 
     const LANGUAGE_ID                   = 'langid';
 
+    // Response Fields
     const ERROR_TEXT                    = 'ErrorText';
 
     const ACTIONVPAS                    = 'actionVPAS';
+
+    const TRAN_ID                       = 'tranid';
+
+    const REF                           = 'ref';
+
+    const AUTH                          = 'auth';
+
+    const POST_DATE                     = 'postdate';
 }
