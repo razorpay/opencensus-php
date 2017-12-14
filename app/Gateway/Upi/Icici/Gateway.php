@@ -831,7 +831,7 @@ class Gateway extends Base\Gateway
 
         return [
             'acquirer' => [
-                'vpa' => $gatewayPayment->getVpa()
+                Payment\Entity::VPA => $gatewayPayment->getVpa()
             ]
         ];
     }

@@ -67,7 +67,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::VPA                  => 'string|max:100',
+        Entity::VPA                  => 'sometimes|string|max:100',
         Entity::APPROVAL_CODE        => 'sometimes|string|max:6',
         Entity::REFERENCE1           => 'sometimes|string',
         Entity::REFERENCE2           => 'sometimes|string',
@@ -117,6 +117,7 @@ class Validator extends Base\Validator
         'test_success',
         'account_number',
         'upi_expiry_time',
+        'upi_vpa',
     ];
 
     protected function validateAccountNumber(array $input)
@@ -154,6 +155,19 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'upi is/are not required and should not be sent');
+        }
+    }
+
+    protected function validateUpiVpa(array $input)
+    {
+        if ((isset($input['_']['flow']) === false) or
+            ($input['_']['flow'] !== 'intent'))
+        {
+            if (empty($input[Entity::VPA]) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The vpa field is required when method is upi.');
+            }
         }
     }
 
