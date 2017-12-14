@@ -164,9 +164,6 @@ class Server extends Base\Mock\Server
 
         $decryptedString = $crypto->decryptString($str, true);
 
-        // By default decrypted comes with only fields instead of nested, to let simple xml understand the data.
-        //we wrap around response.
-
         $decryptedResult = (array) simplexml_load_string($decryptedString);
 
         return $decryptedResult;

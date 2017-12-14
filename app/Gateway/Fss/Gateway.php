@@ -389,7 +389,8 @@ class Gateway extends Base\Gateway
     {
         $responseBody = $response->body;
 
-        //we wrap around response to use simplexml.
+        // Bank will send text witj only child nodes with out parent
+        // So wrapping around the data to use simplexml.
         $refundResponse = "<response>" . trim($responseBody) . "</response>";
 
         $refundResponse = (array) simplexml_load_string($refundResponse);
@@ -479,7 +480,7 @@ class Gateway extends Base\Gateway
 
         if (empty($verifyResponse[Fields::RESULT]) === true)
         {
-            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
 
         $status = $verifyResponse[Fields::RESULT];
@@ -775,7 +776,7 @@ class Gateway extends Base\Gateway
 
             $errorCode = ErrorCodes::getMappedCode($gatewayCode);
 
-            $gatewayPayment->setErrorMessage($errorDesc);
+            $gatewayPayment->setErrorMessage($input[Fields::ERROR_TEXT]);
 
             throw new Exception\GatewayErrorException($errorCode, $gatewayCode, $errorDesc, $input);
         }
