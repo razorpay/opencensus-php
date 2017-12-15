@@ -108,7 +108,9 @@ export default class ReportsContainer extends Component {
     this.state = {
       isLoading: true,
       configs,
+      selectedConfig: configs[0],
       accounts,
+      selectedAccount: accounts[0],
       date: moment(),
       // Merchant can not download invoice of current month
       invoiceDate: moment()
@@ -159,71 +161,76 @@ export default class ReportsContainer extends Component {
     // 992 is col-md bootstrap (for adaptive design)
     this.isMobileDevice = window.outerWidth < 992;
 
-    this.requests.then(resps => {
-      const { 0: configResp, 1: accountsResp } = resps,
-        { configs, accounts } = this.state;
+    this.requests
+      .then(resps => {
+        const { 0: configResp, 1: accountsResp } = resps,
+          { configs, accounts } = this.state;
 
-      if (configResp.success) {
-        let selectedConfig = null;
+        if (configResp.success) {
+          let selectedConfig = null;
 
-        if (this.isMarketplaceEnabled) {
-          if (!accountsResp.success) {
-            return this.props.showNotification({
-              type: 'error',
-              message: 'Unable to get your linked accounts',
+          if (this.isMarketplaceEnabled) {
+            if (!accountsResp.success) {
+              this.props.showNotification({
+                type: 'error',
+                message: 'Unable to get your linked accounts',
+              });
+            } else {
+              accounts.splice(1, 0, ...accountsResp.data.items);
+            }
+          }
+
+          let hasConfigs =
+            !!configResp.data.items && configResp.data.items.length > 0;
+
+          if (hasConfigs) {
+            configResp.data.items.forEach(configItem => {
+              if (
+                configItem.type in marketplaceConfigTypes &&
+                !this.isMarketplaceEnabled
+              ) {
+                return;
+              }
+
+              const { type, description } = configItem,
+                config = {
+                  label: configItem.name,
+                  value: configItem.id,
+                  type,
+                  description,
+                  _item: configItem,
+                };
+
+              configs.unshift(config);
+
+              if (type === defaultSelectedConfigType) {
+                selectedConfig = config;
+              }
             });
+
+            if (!selectedConfig) {
+              selectedConfig = configs[0];
+            }
           }
 
-          accounts.splice(1, 0, ...accountsResp.data.items);
-        }
-
-        let hasConfigs =
-          !!configResp.data.items && configResp.data.items.length > 0;
-
-        if (hasConfigs) {
-          configResp.data.items.forEach(configItem => {
-            if (
-              configItem.type in marketplaceConfigTypes &&
-              !this.isMarketplaceEnabled
-            ) {
-              return;
-            }
-
-            const { type, description } = configItem,
-              config = {
-                label: configItem.name,
-                value: configItem.id,
-                type,
-                description,
-                _item: configItem,
-              };
-
-            configs.unshift(config);
-
-            if (type === defaultSelectedConfigType) {
-              selectedConfig = config;
-            }
+          this.setState({
+            configs,
+            selectedConfig,
+            accounts,
+            selectedAccount: this.defaultAccount,
           });
-
-          if (!selectedConfig) {
-            selectedConfig = configs[0];
-          }
+        } else {
+          return this.props.showNotification({
+            type: 'error',
+            message: 'Unable to get the Reports List',
+          });
         }
-
+      })
+      .then(() => {
         this.setState({
           isLoading: false,
-          configs,
-          selectedConfig,
-          accounts,
-          selectedAccount: this.defaultAccount,
         });
-      } else {
-        return this.props.showNotification({
-          type: 'error',
-          message: 'Unable to get the Reports List',
-        });
-      }
-    });
+      });
   }
 
   generateReport() {
