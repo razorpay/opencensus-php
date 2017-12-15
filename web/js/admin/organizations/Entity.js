@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import fetch from 'util/fetch';
 import { adminFetch, adminPut } from 'util/fetch';
 import OrgForm from './OrganizationForm';
-import normalize from 'util/normalize';
 import { notifyError, notifySuccess, notifyDone } from 'common/modal';
 
 import { adminDelete } from 'util/fetch';
@@ -144,12 +143,13 @@ export default class EditOrg extends Component {
         if (response) notifySuccess('Org successfully added!');
       });
     } else {
-      data.body.admin = {};
-
       //Add admin props into body
       for (let prop in data.body) {
         if (data.body.hasOwnProperty(prop) && prop.indexOf('admin.') > -1) {
           let adminProp = prop.split('.')[1];
+          if (!data.body.admin) {
+            data.body.admin = {};
+          }
           data.body.admin[adminProp] = data.body[prop];
           delete data.body[prop];
         }
@@ -157,20 +157,14 @@ export default class EditOrg extends Component {
 
       data.route_name = 'org_create';
 
-      //custom post needed to normalize data
       return fetch({
         url: '/admin/generic',
         method: 'post',
-        transformRequest: [
-          (req, headers) => {
-            let newData = normalize.serialize(data);
-            headers['Content-Type'] =
-              'application/x-www-form-urlencoded; charset=utf-8';
-            return newData;
-          },
-        ],
+        data,
       }).then(data => {
-        notifySuccess('Org successfully added!');
+        if (data) {
+          notifySuccess('Org successfully added!');
+        }
       });
     }
   };

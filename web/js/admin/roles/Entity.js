@@ -7,8 +7,7 @@ import {
   closeModal,
   notifyDone,
 } from 'common/modal';
-import { adminFetch, adminPost, adminDelete } from 'util/fetch';
-import normalize from 'util/normalize';
+import { fetch, adminFetch, adminPost, adminDelete } from 'util/fetch';
 import { isWorkflow } from 'util/index';
 import RolesForm from './RolesForm';
 
@@ -59,9 +58,9 @@ class EditRole extends Component {
         if (selectedPerms.hasOwnProperty(sPerm))
           data.body.permissions.push(sPerm);
       }
-      // TODO: { fetch } is already being exposed from fetch.js. Don't use axios. Replace in other files also
+
       //customer request
-      axios({
+      fetch({
         url: '/admin/generic',
         method: 'put',
         params: {
@@ -70,23 +69,13 @@ class EditRole extends Component {
             '{roleId}': model.id,
           },
         },
-        transformRequest: [
-          (req, headers) => {
-            let newData = normalize.serialize(data);
-            headers['Content-Type'] =
-              'application/x-www-form-urlencoded; charset=utf-8';
-            return newData;
-          },
-        ],
-      }).then(response => {
-        if (response.data.success) {
-          if (isWorkflow(response.data.data)) {
-            return;
+        data,
+      }).then(data => {
+        if (data) {
+          if (!isWorkflow(data)) {
+            notifySuccess('Role edited successfully.');
+            closeModal();
           }
-          notifySuccess('Role edited successfully.');
-          closeModal();
-        } else {
-          response.data.errors.forEach(err => notifyError(err));
         }
       });
     } else {
@@ -94,14 +83,13 @@ class EditRole extends Component {
       return adminPost({
         route_name: 'role_create',
         body,
-      }).then(response => {
-        if (response) {
-          if (isWorkflow(response)) {
-            return;
+      }).then(data => {
+        if (data) {
+          if (!isWorkflow(data)) {
+            this.props.collection.push(data);
+            notifySuccess('Roles added successfully.');
+            closeModal();
           }
-          this.props.collection.items.push(response.data);
-          notifySuccess('Roles added successfully.');
-          closeModal();
         }
       });
     }
