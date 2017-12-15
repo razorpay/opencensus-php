@@ -335,6 +335,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CONTACT_MOBILE);
     }
 
+    public function getTransactionReportEmail()
+    {
+        return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
+    }
+
+    public function getTechnicalSpocEmail()
+    {
+        return $this->getAttribute(self::TECHNICAL_SPOC_EMAIL);
+    }
+
+    public function getBusinessSpocEmail()
+    {
+        return $this->getAttribute(self::BUSINESS_SPOC_EMAIL);
+    }
+
     public function toArrayGST()
     {
         return array_only($this->toArrayPublic(), self::GST_FIELDS);
