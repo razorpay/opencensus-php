@@ -10,7 +10,8 @@ const SelectConfig = ({
   isMobileDevice,
 }) => {
   if (isLoading) {
-    configs = ['Please wait', null, null];
+    // this is two show three placeholder entries while loading
+    configs = [null, null, null];
     selectedConfig = '';
   }
 
