@@ -110,13 +110,19 @@ export default class HomeContainer extends Component {
           </div>
 
           <div className="row">
-            <div className="col-md-6">
-              <p>Traffic split on platforms</p>
-              <Traffic startDate={startDate} endDate={endDate} />
-            </div>
-            <div className="col-md-6">
-              <p>Recent Activity</p>
-              <RecentActivity />
+            <div className="col-md-12 traffic-activity-row">
+              <div className="traffic-container">
+                <p className="content-title">Traffic split on platforms</p>
+                <div className="content">
+                  <Traffic startDate={startDate} endDate={endDate} />
+                </div>
+              </div>
+              <div className="activity-container">
+                <p className="content-title">Recent Activity</p>
+                <div className="content">
+                  <RecentActivity />
+                </div>
+              </div>
             </div>
           </div>
         </div>

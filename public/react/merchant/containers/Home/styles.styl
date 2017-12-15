@@ -93,4 +93,56 @@
 
     height: 300px;
   }
+
+  div.traffic-activity-row {
+
+    display: flex;
+    flex-flow: row wrap;
+    align-items: stretch;
+
+    &> div {
+
+      width: 50%;
+      display: block;
+      position: relative;
+
+      p.content-title {
+
+        margin-bottom: 0;
+        padding-bottom: 10px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+      }
+
+      div.content {
+
+        position: relative;
+        width: 100%;
+        height: 100%;
+        padding-top: 30px;
+
+        div.panel {
+
+          height: 100%;
+        }
+      }
+
+      &.traffic-container {
+
+        padding-right: 10px;
+      }
+
+      &.activity-container {
+
+        padding-left: 10px;
+      }
+
+      div.panel {
+
+        margin-bottom: 0;
+      }
+    }
+  }
 }
