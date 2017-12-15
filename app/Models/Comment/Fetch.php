@@ -15,7 +15,7 @@ class Fetch extends BaseFetch
             Entity::ENTITY_ID   => 'filled|string|min:14|max:25',
             Entity::ADMIN_ID    => 'filled|string|min:14|max:19',
             Entity::MERCHANT_ID => 'filled|string|size:14',
-        ]
+        ],
     ];
 
     const ACCESSES = [
@@ -24,7 +24,7 @@ class Fetch extends BaseFetch
             Entity::ENTITY_ID,
             Entity::ADMIN_ID,
             Entity::MERCHANT_ID,
-        ]
+        ],
     ];
 
     protected function validateEntityType($attribute, $value)

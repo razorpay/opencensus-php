@@ -18,6 +18,6 @@ class Fetch extends BaseFetch
         AuthType::PRIVILEGE_AUTH => [
             Entity::ORG_ID,
             Entity::HOSTNAME,
-        ]
+        ],
     ];
 }

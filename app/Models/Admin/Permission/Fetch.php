@@ -11,13 +11,13 @@ class Fetch extends BaseFetch
         self::DEFAULTS => [
             Entity::CATEGORY  => 'sometimes|string|max:255',
             Entity::NAME      => 'sometimes|string',
-        ]
+        ],
     ];
 
     const ACCESSES = [
         AuthType::PROXY_AUTH => [
             Entity::CATEGORY,
             Entity::NAME,
-        ]
+        ],
     ];
 }

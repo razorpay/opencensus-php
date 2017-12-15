@@ -21,7 +21,7 @@ class Fetch extends BaseFetch
             Entity::VAULT_TOKEN     => 'sometimes|alpha_num',
             Entity::VAULT           => 'required_with:token|in:tokenex',
             Entity::GLOBAL_CARD_ID  => 'sometimes|alpha_num',
-        ]
+        ],
     ];
 
     const ACCESSES = [
@@ -37,6 +37,6 @@ class Fetch extends BaseFetch
             Entity::VAULT_TOKEN,
             Entity::VAULT,
             Entity::GLOBAL_CARD_ID,
-        ]
+        ],
     ];
 }

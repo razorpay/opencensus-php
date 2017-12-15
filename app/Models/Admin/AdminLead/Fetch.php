@@ -12,7 +12,7 @@ class Fetch extends BaseFetch
             Entity::ADMIN_ID => 'sometimes|string|max:14',
             Entity::EMAIL    => 'sometimes|email',
             Entity::ORG_ID   => 'sometimes|string|max:14',
-        ]
+        ],
     ];
 
     const ACCESSES = [
@@ -20,6 +20,6 @@ class Fetch extends BaseFetch
             Entity::ADMIN_ID,
             Entity::EMAIL,
             Entity::ORG_ID,
-        ]
+        ],
     ];
 }

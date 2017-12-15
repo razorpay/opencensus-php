@@ -11,13 +11,13 @@ class Fetch extends BaseFetch
         self::DEFAULTS => [
             Entity::ORG_ID  => 'sometimes|string',
             Entity::NAME    => 'sometimes|string',
-        ]
+        ],
     ];
 
     const ACCESSES = [
         AuthType::PROXY_AUTH => [
             Entity::ORG_ID,
             Entity::NAME,
-        ]
+        ],
     ];
 }

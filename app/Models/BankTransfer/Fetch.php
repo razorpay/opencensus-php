@@ -19,8 +19,8 @@ class Fetch extends BaseFetch
             Entity::AMOUNT             => 'sometimes|integer',
             Entity::MODE               => 'sometimes|string|max:4',
             Entity::UTR                => 'sometimes|alpha_num|max:22',
-            Repository::REFUND_ID      => 'sometimes|string|min:14|max:19',
-        ]
+            Entity::REFUND_ID      => 'sometimes|string|min:14|max:19',
+        ],
     ];
 
     const ACCESSES = [
@@ -35,13 +35,13 @@ class Fetch extends BaseFetch
             Entity::AMOUNT,
             Entity::MODE,
             Entity::UTR,
-            Repository::REFUND_ID,
-        ]
+            Entity::REFUND_ID,
+        ],
     ];
 
     const SIGNED_IDS = [
         Entity::PAYMENT_ID,
         Entity::VIRTUAL_ACCOUNT_ID,
-        Repository::REFUND_ID,
+        Entity::REFUND_ID,
     ];
 }

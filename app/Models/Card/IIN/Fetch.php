@@ -16,7 +16,7 @@ class Fetch extends BaseFetch
             Entity::TYPE            => 'sometimes|string|in:debit,credit,unknown',
             Entity::OTP_READ        => 'sometimes|in:0,1',
             Entity::ISSUER          => 'sometimes|string',
-        ]
+        ],
     ];
 
     const ACCESSES = [
@@ -28,6 +28,6 @@ class Fetch extends BaseFetch
             Entity::TYPE,
             Entity::OTP_READ,
             Entity::ISSUER,
-        ]
+        ],
     ];
 }

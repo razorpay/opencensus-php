@@ -13,7 +13,7 @@ class Fetch extends BaseFetch
             Entity::AUTH_TYPE             => 'sometimes|string|max:50',
             Entity::EMAIL_DOMAINS         => 'sometimes|string|max:500',
             Entity::ALLOW_SIGN_UP         => 'sometimes|boolean',
-        ]
+        ],
     ];
 
     const ACCESSES = [
@@ -22,6 +22,6 @@ class Fetch extends BaseFetch
             Entity::AUTH_TYPE,
             Entity::EMAIL_DOMAINS,
             Entity::ALLOW_SIGN_UP,
-        ]
+        ],
     ];
 }

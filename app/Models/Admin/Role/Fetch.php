@@ -11,7 +11,7 @@ class Fetch extends BaseFetch
         self::DEFAULTS => [
             Entity::NAME    => 'sometimes|string',
             Entity::ORG_ID  => 'sometimes',
-        ]
+        ],
     ];
 
     const ACCESSES = [
@@ -20,6 +20,6 @@ class Fetch extends BaseFetch
         ],
         AuthType::ADMIN_AUTH => [
             Entity::ORG_ID,
-        ]
+        ],
     ];
 }

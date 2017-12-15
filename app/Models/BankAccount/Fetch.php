@@ -12,8 +12,8 @@ class Fetch extends BaseFetch
             Entity::MERCHANT_ID      => 'sometimes|alpha_num',
             Repository::WITH_TRASHED => 'sometimes|in:0,1',
             Entity::TYPE             => 'sometimes|in:customer,merchant',
-            Entity::ENTITY_ID        => 'sometimes|alpha_num'
-        ]
+            Entity::ENTITY_ID        => 'sometimes|alpha_num',
+        ],
     ];
 
     const ACCESSES = [
@@ -22,6 +22,6 @@ class Fetch extends BaseFetch
             Repository::WITH_TRASHED,
             Entity::TYPE,
             Entity::ENTITY_ID,
-        ]
+        ],
     ];
 }

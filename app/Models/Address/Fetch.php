@@ -14,7 +14,7 @@ class Fetch extends BaseFetch
             Entity::TYPE        => 'sometimes|string|max:32',
             Entity::STATE       => 'sometimes|string|max:64',
             Entity::COUNTRY     => 'sometimes|string|max:64',
-        ]
+        ],
     ];
 
     const ACCESSES = [

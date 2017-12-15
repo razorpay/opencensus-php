@@ -13,7 +13,7 @@ class Fetch extends BaseFetch
             Entity::ENTITY_ID           => 'sometimes|alpha_num|max:14',
             Entity::ENTITY_TYPE         => 'sometimes|string|in:promotion',
             Entity::CODE                => 'sometimes|string',
-        ]
+        ],
     ];
 
     const ACCESSES = [
@@ -22,6 +22,6 @@ class Fetch extends BaseFetch
             Entity::ENTITY_ID,
             Entity::ENTITY_TYPE,
             Entity::CODE,
-        ]
+        ],
     ];
 }

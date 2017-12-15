@@ -10,13 +10,13 @@ class Fetch extends BaseFetch
     const RULES = [
         self::DEFAULTS => [
             Entity::EMAIL => 'sometimes|email',
-        ]
+        ],
     ];
 
     const ACCESSES = [
         AuthType::PRIVILEGE_AUTH => [
             Entity::EMAIL,
-        ]
+        ],
     ];
 }
 
