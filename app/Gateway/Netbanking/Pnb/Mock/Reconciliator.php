@@ -58,6 +58,9 @@ class Reconciliator extends Base\RefundFile
                         ->format('d/m/y');
             s($row);
             $data[] = [
+                //
+                // We dont know prn So just setting a random data
+                //
                 'prn'            => $row['payment']['reference1'],
                 'payment_id'     => $row['payment']['id'],
                 'bank_reference' => $row['gateway']['bank_payment_id'],
