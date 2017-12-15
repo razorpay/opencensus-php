@@ -84,7 +84,15 @@ function _getTerminalFields() {
     ],
     ['Mode', item => item.mode],
     ['Gateway', item => item.gateway],
-    ['Deleted', item => !!item.deleted_at],
+    [
+      'Deleted',
+      item =>
+        item.deleted_at ? (
+          <i class="i i-yes text-danger" />
+        ) : (
+          <span style={{ textAlign: 'center' }}>--</span>
+        ),
+    ],
     ['Created At', item => formatDate(item.created_at)],
   ];
 }
