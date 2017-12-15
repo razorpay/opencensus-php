@@ -129,10 +129,10 @@ class KeyMetricsContainer extends Component {
         const tabState = tabsState[tabName];
 
         // Main stat showin in the tab
-        const mainStat = resp.data[tabName].result;
+        const mainStat = resp.data[tabName];
 
-        if (mainStat && mainStat[0]) {
-          tabState.data.count = mainStat[0].value;
+        if (mainStat && mainStat.result[0]) {
+          tabState.data.count = mainStat.result[0].value;
         }
 
         // Timeline data
