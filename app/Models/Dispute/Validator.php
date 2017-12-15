@@ -32,6 +32,14 @@ class Validator extends Base\Validator
         Entity::PARENT_ID               => 'sometimes|alpha_num|size:14',
     ];
 
+    protected static $createValidators = [
+        'deduct_onset_for_non_transactional_phases',
+    ];
+
+    protected static $editValidators = [
+        'non_transactional_disputes_closure',
+    ];
+
     protected function validatePhase(string $attribute, string $value)
     {
         if (Phase::exists($value) === false)
@@ -112,6 +120,45 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'The parent dispute is linked to another dispute entity.',
                 Entity::PARENT_ID);
+        }
+    }
+
+    protected function validateNonTransactionalDisputesClosure($input)
+    {
+        if (isset($input[Entity::STATUS]) === false)
+        {
+            return;
+        }
+
+        if ($this->entity->isNonTransactional() === false)
+        {
+            return;
+        }
+
+        if (in_array($input[Entity::STATUS], Status::getTransactionalStatuses(), true) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Non-transactional disputes can only be closed.',
+                Entity::STATUS,
+                $input);
+        }
+    }
+
+    public function validateDeductOnsetForNonTransactionalPhases(array $input)
+    {
+        if (empty($input[Entity::DEDUCT_AT_ONSET]) === true)
+        {
+            return;
+        }
+
+        $nonTransactionalPhases = Phase::getNonTransactionalPhases();
+
+        if (in_array($input[Entity::PHASE], $nonTransactionalPhases,true) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Deduct at onset cannot be done for disputes in phase ' . $input[Entity::PHASE],
+                Entity::DEDUCT_AT_ONSET,
+                $input);
         }
     }
 }

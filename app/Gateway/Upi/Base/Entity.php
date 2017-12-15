@@ -8,6 +8,7 @@ class Entity extends Base\Entity
 {
     const ID                    = 'id';
     const ACTION                = 'action';
+    const TYPE                  = 'type';
     const NAME                  = 'name';
     const AMOUNT                = 'amount';
     const ACQUIRER              = 'acquirer';
@@ -33,6 +34,7 @@ class Entity extends Base\Entity
         self::ID,
         self::ACTION,
         self::AMOUNT,
+        self::TYPE,
         self::ACQUIRER,
         self::BANK,
         self::PROVIDER,
@@ -52,6 +54,7 @@ class Entity extends Base\Entity
 
     protected $fillable = [
         self::ACTION,
+        self::TYPE,
         self::AMOUNT,
         self::ACQUIRER,
         self::BANK,
@@ -84,6 +87,11 @@ class Entity extends Base\Entity
         $this->setAttribute(self::ACQUIRER, $acquirer);
     }
 
+    public function setType($type)
+    {
+        $this->setAttribute(self::TYPE, $type);
+    }
+
     public function setBank($bank)
     {
         $this->setAttribute(self::BANK, $bank);
@@ -114,6 +122,16 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::NPCI_REFERENCE_ID);
     }
 
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getVpa()
+    {
+        return $this->getAttribute(self::VPA);
+    }
+
     public function getRefundId()
     {
         return $this->getAttribute(self::REFUND_ID);
@@ -133,8 +151,20 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID);
     }
 
+    public function generatePspData($input)
+    {
+        $this->generateProvider($input);
+
+        $this->generateBank($input);
+    }
+
     protected function generateProvider(array &$input)
     {
+        if (isset($input[self::VPA]) === false)
+        {
+            return;
+        }
+
         $vpa = $input[self::VPA];
 
         $vpaParts = explode('@', $vpa);
@@ -147,6 +177,11 @@ class Entity extends Base\Entity
     protected function generateBank($input)
     {
         $provider = $this->getAttribute(self::PROVIDER);
+
+        if (isset($provider) === false)
+        {
+            return;
+        }
 
         $bank = ProviderCode::getBankCode($provider);
 

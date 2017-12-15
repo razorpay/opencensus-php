@@ -32,6 +32,12 @@ class MobikwikGatewayTest extends TestCase
         $this->payment = $this->getDefaultPaymentArray();
         $this->payment['wallet'] = 'mobikwik';
         $this->payment['method'] = 'wallet';
+
+        //
+        // Mobikwik MID was unexpectedly disabled
+        // https://github.com/razorpay/incidents/issues/157
+        //
+        $this->markTestSkipped('Mobikwik temporarily disabled.');
     }
 
     public function testPayment()

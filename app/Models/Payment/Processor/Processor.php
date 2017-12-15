@@ -1683,7 +1683,17 @@ class Processor
         return $merchant->methods;
     }
 
-    protected function shouldHitGateway(Payment\Entity $payment)
+    protected function shouldHitGatewayForRefund(Payment\Entity $payment): bool
+    {
+        if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function shouldHitGatewayForPayment(Payment\Entity $payment): bool
     {
         if ($payment->isFileBasedEmandateDebitPayment() === true)
         {

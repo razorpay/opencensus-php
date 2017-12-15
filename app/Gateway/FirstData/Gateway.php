@@ -17,6 +17,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use RZP\Constants\HashAlgo;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
@@ -1278,9 +1279,119 @@ class Gateway extends Base\Gateway
             ];
         }
 
-        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $input[$amountEntity]['amount'] / 100;
+        $body[ApiRequestFields::V1_PAYMENT]
+            [ApiRequestFields::V1_CHARGE_TOTAL] = $this->getFormattedAmount($input, $amountEntity);
 
         $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY] = $currencyCode;
+    }
+
+    protected function getFormattedAmount(array $input, string $amountEntity)
+    {
+        $amount = $input[$amountEntity]['amount'] / 100;
+
+        $affectedPayments = [
+            '9B7vE1xutqQLJ8',
+            '9B7vRv6NlcqEDR',
+            '9B7dD1YdncnxM7',
+            '9B7tH2RHeWH21V',
+            '9BBP6xtmpSOg92',
+            '9B7scL14DV4fFI',
+            '9B83ERu9GFSnUV',
+            '9BCHs7HepzJ1xQ',
+            '9B7vP8cBETnrHi',
+            '9BAGbC6OXYhbms',
+            '9BDfaydQ8zsHDG',
+            '9B7hmnA3yjlpfp',
+            '9B4uHosyDln6iG',
+            '9B5xYgbgfRABsS',
+            '9B7umAQkBLOBfR',
+            '9B7tOFWAwh2RuY',
+            '9B7sIRxluCNjd2',
+            '9B7t8tCu9lNTOW',
+            '9B7e3pkeMGps94',
+            '9B7rdyxxxMQb3t',
+            '9B6xWQ4zW4DOKh',
+            '9B7lIWWYNbGSAZ',
+            '9B5d6p4OJHjmoS',
+            '9BGFzmaOCHnwzt',
+            '9B5CNwIgW22L6d',
+            '9B7truRGz17Cxs',
+            '9B61rFOLbcbilI',
+            '9B7sTQmwz2b6zx',
+            '9BCNGHrTfAJd1i',
+            '9B5dkKNgKAnb76',
+            '9B8SXCXPf16WQ4',
+            '9BFPwqtpTRLIEB',
+            '9BF3DeUDZDo44h',
+            '9BBVoqJ7xpIUNU',
+            '9B6q1SbzJZ2rY5',
+            '9BAs3ny3bzIQ3P',
+            '9B6bXbrUR9K4mt',
+            '9BAmZIQxfYAk0k',
+            '9B98NEFcfTPR9Q',
+            '9BBXMkqLGZGau5',
+            '9BAb6PmD2fRHG8',
+            '9B7zvax11ylNX4',
+            '9B9Y6HGsik29aV',
+            '9B8SBveHopVJyn',
+            '9B2Q9QSGPqLFpJ',
+            '9B7t8XqkdQgsvA',
+            '9B7052o9hOQzdF',
+            '9BGWtbcrrOb7Qf',
+            '9B5GdXWc9oual5',
+            '9B7xZWa2kbXfDv',
+            '9B7r5Z6DtAt767',
+            '9BJ96cdiwkKUyJ',
+            '9B7wuKjWh4KJFP',
+            '9BAJS5McODeR9Y',
+            '9BKPoVRQiBzudY',
+            '9BHYvwfFaiPAYG',
+            '9B5JCrkPApJKCN',
+            '9BIjxZ5SmiR02y',
+            '9B7Dbz5zo5LCYO',
+            '9BHpsynEz0vuPw',
+            '9B83bdoJk9K1Ya',
+            '9BFzmzOmF6D2wz',
+            '9B8M2gRGUFVoir',
+            '9B9RppkNcdbf7o',
+            '9B9akLYCvAXTvU',
+            '9B7szQraxSEY7W',
+            '9BG4B7EqLtY2Qf',
+            '9BJarwzSIg9WKj',
+            '9B3nbJ5nlfIrwJ',
+            '9B64aLYKKYqMjN',
+            '9BAcw4QRKqrLz6',
+            '9BDHFogmDNym2R',
+            '9B97SpsTJt73Rw',
+            '9BFnq4yoEpg5aL',
+            '9B7xSt4vBDLjmB',
+            '9BCVngQZvLHSDM',
+            '9B7skoiJlKO1Fd',
+            '9B99rtKg0GBK3c',
+            '9B92GnfjfbNzQm',
+            '9BE5q0i4em8wcE',
+            '9BADfW1EcBw8U3',
+            '9B7zS3o5RD0Y6N',
+            '9BJT3Sbg3TIc6L',
+            '9BI7stRNeH603q',
+            '9BEbkFPqM4kmKV',
+            '9B87YPcAKH9QKn',
+            '9BJbeJBjuV9bGt',
+            '9B9dLG2BSdWbzu',
+            '9B7wQ65Wduk9RB',
+            '9BCfsTtjNwQ78B',
+            '9BEBkWpCreeFom',
+        ];
+
+        // The amount should be in the format like 100.00, or 1500.00
+        // Trying it out only for specific payments
+        if ((in_array($input['payment']['id'], $affectedPayments, true) === true) or
+            ($input['merchant']['id'] === Merchant\Account::TEST_ACCOUNT))
+        {
+            $amount = number_format($amount, 2, '.', '');
+        }
+
+        return $amount;
     }
 
     /**
