@@ -72,6 +72,7 @@ class Repository extends Base\Repository
         Entity::LATE_AUTHORIZED    => 'sometimes|in:0,1',
         Entity::AMOUNT             => 'sometimes|integer',
         Entity::TERMINAL_ID        => 'sometimes|alpha_num|size:14',
+        Entity::CREATED_AT         => 'sometimes|numeric',
     ];
 
     protected $signedIds = [
@@ -826,18 +827,6 @@ class Repository extends Base\Repository
                     ->where(Entity::TRANSFER_ID, $transferId)
                     ->merchantId($accountId)
                     ->firstOrFailPublic();
-    }
-
-    public function fetchAllPaymentsFromYesterday()
-    {
-        $createdAtStart = Carbon::yesterday(Timezone::IST)->getTimestamp();
-
-        $createdAtEnd = Carbon::today(Timezone::IST)->getTimestamp();
-
-        return $this->newQuery()
-                    ->where(Entity::CREATED_AT, '>=', $createdAtStart)
-                    ->where(Entity::CREATED_AT, '<=', $createdAtEnd)
-                    ->get();
     }
 
     public function fetchCapturedSummaryBetweenTimestamp($from, $to)

@@ -4,6 +4,7 @@ namespace RZP\Gateway\Upi\Sbi\Mock;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
@@ -52,8 +53,17 @@ class Reconciliator extends Base\Mock\Reconciliator
      */
     protected function getAllPaymentsToReconcile()
     {
-        // TODO: Use $this->repo->payment->fetch();
-        return $this->repo->payment->fetchAllPaymentsFromYesterday();
+        $createdAtStart = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+        $createdAtEnd = Carbon::today(Timezone::IST)->getTimestamp();
+
+        return $this->repo
+                    ->payment
+                    ->fetch([
+                        'gateway' => $this->gateway,
+                        'from'    => $createdAtStart,
+                        'to'      => $createdAtEnd,
+                    ]);
     }
 
     /**
