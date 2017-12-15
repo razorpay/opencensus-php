@@ -227,7 +227,7 @@ export default class BusinessDetails extends Component {
                   }
                   return (
                     <EntityRow
-                      class="info-block no-padding"
+                      class="info-block no-padding m-t m-b"
                       key={key}
                       label={`${titleCase(key)}:`}
                       value={() => (
@@ -346,7 +346,7 @@ export default class BusinessDetails extends Component {
 
 function _getCompanyInfoFields() {
   return [
-    ['Name', item => item.name],
+    ['Name', item => item.Name],
     ['PAN/DIN', item => item.PAN_DIN],
     ['Start Date', item => item.StartDate],
     ['End Date', item => item.EndDate],
@@ -354,6 +354,7 @@ function _getCompanyInfoFields() {
       'Defaulter',
       item => (
         <i
+          style={{ fontSize: '16px' }}
           class={`i ${
             item.Defaulter ? 'i-warning text-danger' : 'i-smile text-success'
           }`}
