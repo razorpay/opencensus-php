@@ -173,14 +173,14 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     {
         $reconPaymentStatus = $this->getPaymentStatus($row);
 
-        $isApiPaymentSuccess = $this->payment->hasBeenAuthorized();
-
         //
         // In some cases the recon file contains failed payments,
         // too, In this case we do not want to reconcile them
         //
         if ($reconPaymentStatus === Payment\Status::FAILED)
         {
+            $isApiPaymentSuccess = $this->payment->hasBeenAuthorized();
+
             if ($isApiPaymentSuccess === true)
             {
                 //
@@ -201,11 +201,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
 
         //
-        // If payment status has been authorized, provided that recon status is not failed,
+        // If payment status is authorized, captured or refunded, provided that recon status is not failed,
         // we can safely return that the payment status is valid for reconciliation of row.
         //
 
-        if ($isApiPaymentSuccess === true)
+        if ($this->payment->isFailed() === false)
         {
             return true;
         }
