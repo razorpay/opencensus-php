@@ -310,9 +310,9 @@ export default class TerminalForm extends Component {
           />
           <CheckField
             label="Recurring 3DS"
-            name="type[non_recurring_3ds]"
+            name="type[recurring_3ds]"
             defaultChecked={
-              entity && entity.type ? entity.type['non_recurring_3ds'] : ''
+              entity && entity.type ? entity.type['recurring_3ds'] : ''
             }
           />
           <CheckField
