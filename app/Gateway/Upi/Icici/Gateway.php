@@ -815,7 +815,6 @@ class Gateway extends Base\Gateway
 
         assertTrue($content[Fields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
         assertTrue($content[Fields::MERCHANT_TRAN_ID] === $gatewayPayment->getPaymentId());
-        assertTrue($content[Fields::BANK_RRN] === $gatewayPayment->getGatewayPaymentId());
 
         if ($status !== Status::SUCCESS)
         {
