@@ -12,10 +12,11 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
+    const NAME_REGEX = '/(^[a-zA-Z\s][a-zA-Z0-9-&\'._()\s–]+[a-zA-Z0-9\s.)]$)/';
+
     protected static $createRules = array(
         Entity::CONTACT             => 'sometimes|nullable|contact_syntax',
-        Entity::NAME                => 'sometimes|regex:/(^[a-zA-Z\s][a-zA-Z0-9-&\'._()\s–]+[a-zA-Z0-9\s.)]$)/|
-                                        max:50|nullable',
+        Entity::NAME                => 'sometimes|string|max:50|nullable|custom',
         Entity::EMAIL               => 'sometimes|nullable|email',
         Entity::NOTES               => 'sometimes|notes',
         Entity::SHIPPING_ADDRESS    => 'sometimes',
@@ -24,8 +25,7 @@ class Validator extends Base\Validator
 
     protected static $editRules = array(
         Entity::CONTACT         => 'sometimes|contact_syntax',
-        Entity::NAME            => 'sometimes|sometimes|regex:/(^[a-zA-Z\s][a-zA-Z0-9-&\'.()\s]+[a-zA-Z0-9\s.)]$)/|
-                                    max:50|nullable',
+        Entity::NAME            => 'sometimes|string|max:50|nullable|custom',
         Entity::ACTIVE          => 'sometimes|in:0,1',
         Entity::EMAIL           => 'sometimes|email',
     );
@@ -49,9 +49,14 @@ class Validator extends Base\Validator
     protected static $walletAppCreateRules = [
         Entity::CONTACT         => 'required|contact_syntax',
         Entity::EMAIL           => 'sometimes|email',
-        Entity::NAME            => 'sometimes|string|max:50',
+        Entity::NAME            => 'sometimes|string|max:50|nullable|custom',
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
     ];
+
+    protected function validateName($attribute, $value)
+    {
+        return (preg_match(self::NAME_REGEX, trim($value)) > 0);
+    }
 
     /**
      * - Validates given contact string using contact rules
