@@ -49,7 +49,7 @@ class Validator extends Base\Validator
     protected static $walletAppCreateRules = [
         Entity::CONTACT         => 'required|contact_syntax',
         Entity::EMAIL           => 'sometimes|email',
-        Entity::NAME            => 'sometimes|string|max:50|nullable|custom',
+        Entity::NAME            => 'sometimes|string|nullable|custom',
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
     ];
 

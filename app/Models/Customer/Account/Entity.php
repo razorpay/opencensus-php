@@ -184,11 +184,6 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::EMAIL] = mb_strtolower($email);
     }
 
-    protected function setNameAttribute($name)
-    {
-        $this->attributes[self::NAME] = trim($name);
-    }
-
     // ----------------------------------- END MUTATORS -----------------------------------
 
     // ----------------------------------- RELATIONS -----------------------------------
