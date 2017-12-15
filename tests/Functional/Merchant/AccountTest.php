@@ -2,10 +2,13 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Mail;
+
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 
 class AccountTest extends TestCase
 {
@@ -45,5 +48,27 @@ class AccountTest extends TestCase
         $this->assertEquals($account['id'], 'acc_' . $lastAccount['id']);
 
         $this->assertEquals('10000000000000', $lastAccount['parent_id']);
+    }
+
+    public function testSettlementDestinations()
+    {
+        Mail::fake();
+
+        $testData = $this->testData['testAddSettlementDestination'];
+
+        $this->startTest($testData);
+
+        Mail::assertSent(BankAccountChangeMail::class, function ($mail)
+        {
+            $testData = $this->testData['testAddSettlementDestination']['response']['content'];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            return true;
+        });
+
+        $testData = $this->testData['fetchSettlementDestinations'];
+
+        $this->startTest($testData);
     }
 }

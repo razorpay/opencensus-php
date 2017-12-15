@@ -29,6 +29,22 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    /**
+     * Returns an array of all the bank accounts for a merchant
+     *
+     * @param $merchant
+     *
+     * @return array
+     */
+    public function getAllBankAccounts($merchant)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, '=', $merchant->getId())
+                    ->where(Entity::TYPE, '=', Type::MERCHANT)
+                    ->get()
+                    ->toArray();
+    }
+
     public function getBankAccountsForCustomer($customer, $ifsc = null)
     {
         $query = $this->newQuery()
