@@ -30,6 +30,15 @@ class AccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchSettlementDestinations(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getSettlementDestinations($id);
+
+        return ApiResponse::json($response);
+    }
+
     public function postSettlementDestinations(string $id)
     {
         $input = Request::all();

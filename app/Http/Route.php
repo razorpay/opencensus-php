@@ -643,6 +643,7 @@ final class Route
         'account_create_files'                    => ['post',     'accounts/{id}/files',                            'AccountController@postAccountFiles'                                ],
         'account_edit'                            => ['patch',    'accounts/{id}',                                  'AccountController@update'                                          ],
         'account_edit_details'                    => ['patch',    'accounts/{id}/details',                          'AccountController@patchAccountDetails'                             ],
+        'account_fetch_settlement_destinations'   => ['get',      'accounts/{id}/settlement-destinations',          'AccountController@fetchSettlementDestinations'                     ],
         'account_post_settlement_destinations'    => ['post',     'accounts/{id}/settlement-destinations',          'AccountController@postSettlementDestinations'                      ],
     ];
 
@@ -844,6 +845,7 @@ final class Route
         'account_edit',
         'account_edit_details',
         'account_post_settlement_destinations',
+        'account_fetch_settlement_destinations',
     ];
 
     public static $internal = [

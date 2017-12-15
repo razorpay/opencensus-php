@@ -50,11 +50,13 @@ class AccountTest extends TestCase
         $this->assertEquals('10000000000000', $lastAccount['parent_id']);
     }
 
-    public function testAddSettlementDestination()
+    public function testSettlementDestinations()
     {
         Mail::fake();
 
-        $this->startTest();
+        $testData = $this->testData['testAddSettlementDestination'];
+
+        $this->startTest($testData);
 
         Mail::assertSent(BankAccountChangeMail::class, function ($mail)
         {
@@ -64,5 +66,9 @@ class AccountTest extends TestCase
 
             return true;
         });
+
+        $testData = $this->testData['fetchSettlementDestinations'];
+
+        $this->startTest($testData);
     }
 }
