@@ -905,7 +905,9 @@ class Entity extends Base\PublicEntity
         {
             case Method::CARD:
 
-                $acquirerData = [];
+                $acquirerData = [
+                    'auth_code' => $this->getAttribute(self::REFERENCE2),
+                ];
                 break;
 
             case Method::NETBANKING:

@@ -70,7 +70,7 @@ class PaymentRetrieveTest extends TestCase
 
         $this->assertEquals($id, $payment['id']);
         $this->assertTrue(isset($payment['acquirer_data']));
-        $this->assertEquals([], $payment['acquirer_data']);
+        $this->assertEquals(['auth_code' => null], $payment['acquirer_data']);
     }
 
     public function testRetrievePaymentWithCount()
