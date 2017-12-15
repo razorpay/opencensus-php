@@ -78,14 +78,14 @@ export const generateReportV2 = params => {
       const logPoll = poll({
         fetchFunc: () => getLog(resp.data.id),
         validator: resp => {
-          return resp.error || resp.data.status === 'processed';
+          return resp.error || resp.data.status !== 'created';
         },
         minWaitTime: 2000,
       });
 
       return logPoll.promise
         .then(resp => {
-          if (resp.error) {
+          if (resp.error || resp.data.status === 'failed') {
             return reportErrorMsg;
           }
 
@@ -104,7 +104,7 @@ export const generateReportV2 = params => {
               }
 
               return {
-                url: '/download',
+                url: resp.data.signed_url,
               };
             })
             .catch(() => {

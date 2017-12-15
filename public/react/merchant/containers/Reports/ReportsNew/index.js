@@ -25,6 +25,10 @@ const validYear = current => {
 
 const selector = formValueSelector('generateReports');
 
+const reportWrapperClasses = 'report-wrapper col-lg-8 col-sm-10 col-xs-11',
+  reportPanelClasses =
+    'col-lg-8 col-md-8 col-sm-12 col-xs-12' + ' report-generate-panel';
+
 const requestFailedFunc = () => {
     return {
       success: false,
@@ -164,8 +168,10 @@ export default class ReportsContainer extends Component {
 
         if (this.isMarketplaceEnabled) {
           if (!accountsResp.success) {
-            // TODO: handle error
-            return;
+            return this.props.showNotification({
+              type: 'error',
+              message: 'Unable to get your linked accounts',
+            });
           }
 
           accounts.splice(1, 0, ...accountsResp.data.items);
@@ -212,7 +218,10 @@ export default class ReportsContainer extends Component {
           selectedAccount: this.defaultAccount,
         });
       } else {
-        // TODO: handle error
+        return this.props.showNotification({
+          type: 'error',
+          message: 'Unable to get the Reports List',
+        });
       }
     });
   }
@@ -324,16 +333,129 @@ export default class ReportsContainer extends Component {
 
     const { type, date, invoiceDate } = this.props;
 
+    const entity = selectedConfig && selectedConfig.value;
+
+    let content = null;
+
     if (isLoading) {
-      // TODO: need to put spinner
-      return null;
-    }
+      content = (
+        <div className={reportWrapperClasses}>
+          {/*Report Type Selection*/}
+          <SelectConfig isLoading={true} />
+          {/*Report Generate Panel*/}
+          <div className={reportPanelClasses} />
+        </div>
+      );
+    } else {
+      content = (
+        <div className={reportWrapperClasses}>
+          {/*Report Type Selection*/}
+          <SelectConfig
+            configs={configs}
+            selectedConfig={selectedConfig}
+            onConfigChange={this.onConfigChange}
+            isMobileDevice={this.isMobileDevice}
+          />
+          {/*Report Generate Panel*/}
+          <div className={reportPanelClasses}>
+            {!this.isMobileDevice && (
+              <div class="form-heading">{selectedConfig.label}</div>
+            )}
+            {selectedConfig.type in marketplaceConfigTypes ? (
+              <div className="form-element">
+                <div className="title">SELECT ACCOUNT</div>
+                <AccountsList
+                  accounts={accounts}
+                  selectedAccount={selectedAccount}
+                  onChange={this.onAccountChange}
+                />
+                <small class="help-block">
+                  <i class="icon icon-info-circle" />
+                  <span>
+                    You can also select a linked account from the list
+                  </span>
+                </small>
+              </div>
+            ) : (
+              <div className="form-element">
+                <div className="title">ACCOUNT</div>
+                <div class="account">
+                  <strong>{this.defaultAccount.name}</strong>
+                </div>
+              </div>
+            )}
 
-    if (configs.length === 0) {
-      return <center>No downloadable reports found for your account.</center>;
-    }
+            <div class="form-element">
+              <div class="title">PERIOD</div>
+              {entity === 'monthlyInvoice' || (
+                <div class="col-sm-3 col-xs-12">
+                  <div class="form-group form-control">
+                    <Field name="type" class="fix-select" component="select">
+                      <option value="daily">Daily</option>
+                      <option value="monthly">Monthly</option>
+                    </Field>
+                  </div>
+                </div>
+              )}
 
-    const entity = selectedConfig.value;
+              {(type === 'monthly' || entity === 'monthlyInvoice') && (
+                <div class="col-sm-4 col-xs-12">
+                  <div class="form-group">
+                    <Field
+                      name={
+                        entity === 'monthlyInvoice' ? 'invoiceDate' : 'date'
+                      }
+                      component={ReduxDatetime}
+                      dateFormat="MMM, YYYY"
+                      closeOnSelect={true}
+                      isValidDate={
+                        entity === 'invoice'
+                          ? this.validateInvoiceMonthYear
+                          : validYear
+                      }
+                      placeholder="Select Year-Month"
+                      timeFormat={false}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {type === 'daily' &&
+                entity !== 'monthlyInvoice' && (
+                  <div class="col-sm-4 col-xs-12">
+                    <div class="form-group">
+                      <Field
+                        name="date"
+                        dateFormat="DD MMM, YYYY"
+                        closeOnSelect={true}
+                        component={ReduxDatetime}
+                        placeholder="Select Date-Month-Year"
+                        isValidDate={validYear}
+                        timeFormat={false}
+                      />
+                    </div>
+                  </div>
+                )}
+            </div>
+
+            <div class="form-element">
+              <AsyncButton
+                class="btn btn-primary"
+                onClick={this.generateReport}
+                text="Generate and Download Report"
+                pendingText="Generating..."
+              />
+
+              {selectedConfig.description && (
+                <footer style={{ marginTop: '16px' }}>
+                  {selectedConfig.description}
+                </footer>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <tabbed-container>
@@ -341,119 +463,7 @@ export default class ReportsContainer extends Component {
           <NavLink to="/reports">Download Reports</NavLink>
         </header>
         <TestModeBanner />
-        <content>
-          {/*Report Type Selection*/}
-          <div class="report-wrapper col-lg-8 col-sm-10 col-xs-11">
-            <SelectConfig
-              configs={configs}
-              selectedConfig={selectedConfig}
-              onConfigChange={this.onConfigChange}
-              isMobileDevice={this.isMobileDevice}
-            />
-            {/*Report Generate Panel*/}
-            <div
-              className={
-                'col-lg-8 col-md-8 col-sm-12 col-xs-12' +
-                ' report-generate-panel'
-              }
-            >
-              {!this.isMobileDevice && (
-                <div class="form-heading">{selectedConfig.label}</div>
-              )}
-              {selectedConfig.type in marketplaceConfigTypes ? (
-                <div className="form-element">
-                  <div className="title">SELECT ACCOUNT</div>
-                  <AccountsList
-                    accounts={accounts}
-                    selectedAccount={selectedAccount}
-                    onChange={this.onAccountChange}
-                  />
-                  <small class="help-block">
-                    <i class="icon icon-info-circle" />
-                    <span>
-                      You can also select a linked account from the list
-                    </span>
-                  </small>
-                </div>
-              ) : (
-                <div className="form-element">
-                  <div className="title">ACCOUNT</div>
-                  <div class="account">
-                    <strong>{this.defaultAccount.name}</strong>
-                  </div>
-                </div>
-              )}
-
-              <div class="form-element">
-                <div class="title">PERIOD</div>
-                {entity === 'monthlyInvoice' || (
-                  <div class="col-sm-3 col-xs-12">
-                    <div class="form-group form-control">
-                      <Field name="type" class="fix-select" component="select">
-                        <option value="daily">Daily</option>
-                        <option value="monthly">Monthly</option>
-                      </Field>
-                    </div>
-                  </div>
-                )}
-
-                {(type === 'monthly' || entity === 'monthlyInvoice') && (
-                  <div class="col-sm-4 col-xs-12">
-                    <div class="form-group">
-                      <Field
-                        name={
-                          entity === 'monthlyInvoice' ? 'invoiceDate' : 'date'
-                        }
-                        component={ReduxDatetime}
-                        dateFormat="MMM, YYYY"
-                        closeOnSelect={true}
-                        isValidDate={
-                          entity === 'invoice'
-                            ? this.validateInvoiceMonthYear
-                            : validYear
-                        }
-                        placeholder="Select Year-Month"
-                        timeFormat={false}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {type === 'daily' &&
-                  entity !== 'monthlyInvoice' && (
-                    <div class="col-sm-4 col-xs-12">
-                      <div class="form-group">
-                        <Field
-                          name="date"
-                          dateFormat="DD MMM, YYYY"
-                          closeOnSelect={true}
-                          component={ReduxDatetime}
-                          placeholder="Select Date-Month-Year"
-                          isValidDate={validYear}
-                          timeFormat={false}
-                        />
-                      </div>
-                    </div>
-                  )}
-              </div>
-
-              <div class="form-element">
-                <AsyncButton
-                  class="btn btn-primary"
-                  onClick={this.generateReport}
-                  text="Generate and Download Report"
-                  pendingText="Generating..."
-                />
-
-                {selectedConfig.description && (
-                  <footer style={{ marginTop: '16px' }}>
-                    {selectedConfig.description}
-                  </footer>
-                )}
-              </div>
-            </div>
-          </div>
-        </content>
+        <content>{content}</content>
       </tabbed-container>
     );
   }
