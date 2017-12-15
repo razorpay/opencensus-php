@@ -1,6 +1,5 @@
 <?php
 
-//use Mockery;
 use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -11,10 +10,12 @@ use RZP\Tests\Functional\Gateway\Upi\Sbi\Constants;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 
 class UpiSbiGatewayReconTest extends TestCase
 {
     use PaymentTrait;
+    use ReconTrait;
 
     /**
      * @var string
@@ -47,7 +48,7 @@ class UpiSbiGatewayReconTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $response = $this->reconcile($uploadedFile);
+        $response = $this->reconcile($uploadedFile, 'UpiSbi');
 
         // We assert that all 3 payments were reconciled
         $this->assertEquals(3, $response['total_count']);
@@ -81,7 +82,7 @@ class UpiSbiGatewayReconTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $response = $this->reconcile($uploadedFile);
+        $response = $this->reconcile($uploadedFile, 'UpiSbi');
 
         // We assert that the payment was not reconciled
         $this->assertEquals(1, $response['total_count']);
@@ -117,37 +118,6 @@ class UpiSbiGatewayReconTest extends TestCase
         );
 
         return $uploadedFile;
-    }
-
-    protected function reconcile(UploadedFile $uploadedFile)
-    {
-        $input = [
-            'manual'           => true,
-            'gateway'          => 'UpiSbi',
-            'attachment-count' => 1,
-        ];
-
-        $request = [
-            'url'     => '/reconciliate',
-            'content' => $input,
-            'method'  => 'POST',
-            'files'   => [
-                'attachment-1' => $uploadedFile,
-            ],
-        ];
-
-        return $this->makeRequestAndGetContent($request)[0];
-    }
-
-    protected function generateReconFile()
-    {
-        $request = [
-            'url'     => '/gateway/mock/reconciliation/' . $this->gateway,
-            'content' => [],
-            'method'  => 'POST'
-        ];
-
-        return $this->makeRequestAndGetContent($request);
     }
 
     protected function doNUpiSbiPaymentsYesterday(int $count = 3)

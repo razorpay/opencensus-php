@@ -1425,25 +1425,6 @@ trait PaymentTrait
         return Mockery::mock($class, [])->makePartial();
     }
 
-    protected function setMockRecon($recon, $gateway = null)
-    {
-        $gateway = $gateway ?: $this->gateway;
-
-        $this->app['gateway']->setRecon($gateway, $recon);
-    }
-
-    protected function mockReconContentFunction($closure, $gateway = null)
-    {
-        $recon = $this->mockRecon()
-                      ->shouldReceive('content')
-                      ->andReturnUsing($closure)
-                      ->mock();
-
-        $this->setMockRecon($recon, $gateway);
-
-        return $recon;
-    }
-
     protected function mockServerRequestFunction($closure, $gateway = null)
     {
         $server = $this->mockServer($gateway)

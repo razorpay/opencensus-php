@@ -3,8 +3,8 @@
 namespace RZP\Gateway\Upi\Sbi\Mock;
 
 use Carbon\Carbon;
+use RZP\Gateway\Base;
 use RZP\Models\Payment;
-use RZP\Gateway\Upi\Base;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
@@ -19,12 +19,40 @@ class Reconciliator extends Base\Mock\Reconciliator
      */
     protected static $fileToWriteName = 'MerchantReport';
 
+    const HEADERS = [
+        'PG Merchant ID',
+        'Legal Name',
+        'Store Name',
+        'MCC',
+        'Order No',
+        'Trans Ref No.',
+        'Customer Ref No.',
+        'NPCI Response Code',
+        'Trans Type',
+        'DR/CR',
+        'Transaction Status',
+        'Transaction Remarks',
+        'Transaction Date',
+        'Transaction Amount',
+        'Payer A/c No.',
+        'Payer Virtual Address',
+        'Payer A/C Name',
+        'Payer IFSC Code',
+        'Payee A/C No',
+        'Payee Virtual Address',
+        'Payee A/C Name',
+        'Payee IFSC Code',
+        'Pay Type',
+        'Device Type',
+    ];
+
     /**
      * @override
      * @return PublicCollection
      */
     protected function getAllPaymentsToReconcile()
     {
+        // TODO: Use $this->repo->payment->fetch();
         return $this->repo->payment->fetchAllPaymentsFromYesterday();
     }
 
@@ -39,7 +67,7 @@ class Reconciliator extends Base\Mock\Reconciliator
 
         $totalAmount = 0;
 
-        $data[] = ReconFileFields::getHeaders();
+        $data[] = self::HEADERS;
 
         foreach ($input as $index => $row)
         {

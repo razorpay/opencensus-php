@@ -1,11 +1,12 @@
 <?php
 
-namespace RZP\Gateway\Upi\Base\Mock;
+namespace RZP\Gateway\Base\Mock;
 
 use App;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+use RZP\Exception\LogicException;
 use RZP\Models\Payment;
+use RZP\Constants\Timezone;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Base\PublicCollection;
 
@@ -89,12 +90,12 @@ class Reconciliator
     /**
      * Override this method in the child class
      * @param $content
-     * @return null
+     * @throws LogicException
      */
     protected function createReconFile($content)
     {
         // If this method is not overridden, we will have an exception be thrown
-        return null;
+        throw new LogicException('createReconFile needs to be implemented in child gateway recon file');
     }
 
     protected function generateText($data, $glue = '~', $ignoreLastNewline = false)
