@@ -32,7 +32,15 @@ export default function RetryFailedSettlements() {
               route_name: 'setl_retry',
             }).then(response => {
               if (response) {
-                notifySuccess(response.message);
+                let message = '';
+
+                for (const key in response) {
+                  if (response.hasOwnProperty(key) && response.message) {
+                    message += response.message + '\n';
+                  }
+                }
+
+                notifySuccess(message);
                 closeModal();
               }
             });
