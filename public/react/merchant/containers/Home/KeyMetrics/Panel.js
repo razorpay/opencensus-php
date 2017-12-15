@@ -13,6 +13,9 @@ import Legend from 'merchant/components/Home/Legend';
 
 /* function for custom tooltip */
 const customToolTip = function(tooltipModel) {
+  console.log(tooltipModel.caretY);
+  console.log(this._chart.canvas.getBoundingClientRect());
+  console.log(this);
   // Tooltip Element
   var tooltipDOM = document.getElementById('chartjs-tooltip');
 
@@ -96,9 +99,15 @@ const customToolTip = function(tooltipModel) {
 
   var { offsetTop /*offsetLeft*/ } = this._chart.canvas;
 
-  // refer styling file
+  /* refer styling file */
   // and width property of #chartjs-tooltip
   const widthOfTooltip = 218;
+
+  // border size of #chart-js-tooltip
+  const heightOfCaret = 10;
+  /* * */
+
+  /* calculations for left of tooltip */
 
   // width of y-axis of chart
   const widthOfYAxis = this._chart.boxes.find(({ id }) => id === 'y-axis-0')
@@ -108,6 +117,7 @@ const customToolTip = function(tooltipModel) {
   // fullChartRight: absolute right edge of full chart
   const {
     x: chartX,
+    y: chartY,
     right: fullChartRight,
   } = this._chart.canvas.getBoundingClientRect();
 
@@ -130,20 +140,44 @@ const customToolTip = function(tooltipModel) {
   // opactity is 1 to display tooltip
   tooltipDOM.style.opacity = 1;
 
-  // left of tooltip is absoluteLeft of chart + widthOfYAxis + widthOfEachLabel (added according to index)
-
   // max left tooltip can have - should not exceed extreme right of full chart
   const tooltipMaxLeft = fullChartRight - widthOfTooltip;
 
+  // left of tooltip is absoluteLeft of chart + widthOfYAxis + widthOfEachLabel (added according to index)
   // left computed for tooltip
   const computedLeft =
     chartX / 2 + widthOfYAxis + widthOfEachLabel * dataPointIndex;
 
-  // left of tooltip cannot exceed tooltipMaxLeft
-  tooltipDOM.style.left = `${Math.min(tooltipMaxLeft, computedLeft)}px`;
+  /* * */
+
+  /* calculating different elements for top of tooltip */
+
+  // extract the actual height of tooltip DOM
+  const actualTooltipHeight = Number(
+    window.getComputedStyle(tooltipDOM).height.replace('px', '')
+  );
+
+  // top of chart w.r.t document top
+  const chartTop = chartY + window.scrollY;
+  /* * */
+
+  /* calculation of elements for caret position */
 
   // small inverted arrow attached to tooltip
   const caret = tooltipDOM.querySelector('.caret');
+
+  /* * */
+
+  /* applying the formulae for top, left and caret position */
+
+  // left of tooltip cannot exceed tooltipMaxLeft
+  tooltipDOM.style.left = `${Math.min(tooltipMaxLeft, computedLeft)}px`;
+
+  // top of tooltip is chart top (w.r.t doc.) - height + the caretY - caret height
+  tooltipDOM.style.top = `${chartTop -
+    actualTooltipHeight +
+    tooltipModel.caretY -
+    heightOfCaret}px`;
 
   // resetting any left given to caret in previous iteration
   caret.style.left = '';
@@ -152,9 +186,7 @@ const customToolTip = function(tooltipModel) {
   if (computedLeft > tooltipMaxLeft) {
     caret.style.left = `${0.48 * 218 + (computedLeft - tooltipMaxLeft)}px`;
   }
-
-  // TODO: precise the calculation of y position of tooltip
-  tooltipDOM.style.top = `${offsetTop + tooltipModel.caretY}px`;
+  /* * */
 
   // setting the padding
   // BUG: not getting reflected in browser
