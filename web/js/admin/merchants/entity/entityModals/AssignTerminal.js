@@ -143,7 +143,7 @@ export default class TerminalForm extends Component {
           <SelectField
             name="gateway"
             label="Gateway"
-            defaultValue={''}
+            defaultValue={isEditMode ? entity.gateway : ''}
             disabled={isEditMode}
           >
             {Object.keys(gatewayMapping).map(key => (
