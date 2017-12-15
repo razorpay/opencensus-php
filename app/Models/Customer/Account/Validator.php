@@ -12,11 +12,11 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    const NAME_REGEX = '/(^[a-zA-Z\s][a-zA-Z0-9-&\'._()\s–]+[a-zA-Z0-9\s.)]$)/';
+    const NAME_REGEX = '/(^[a-zA-Z0-9\s][a-zA-Z0-9-&\'._()\s–]+[a-zA-Z0-9\s.)]$)/';
 
     protected static $createRules = array(
         Entity::CONTACT             => 'sometimes|nullable|contact_syntax',
-        Entity::NAME                => 'sometimes|string|max:50|nullable|custom',
+        Entity::NAME                => 'sometimes|string|nullable|custom',
         Entity::EMAIL               => 'sometimes|nullable|email',
         Entity::NOTES               => 'sometimes|notes',
         Entity::SHIPPING_ADDRESS    => 'sometimes',
@@ -25,7 +25,7 @@ class Validator extends Base\Validator
 
     protected static $editRules = array(
         Entity::CONTACT         => 'sometimes|contact_syntax',
-        Entity::NAME            => 'sometimes|string|max:50|nullable|custom',
+        Entity::NAME            => 'sometimes|string|nullable|custom',
         Entity::ACTIVE          => 'sometimes|in:0,1',
         Entity::EMAIL           => 'sometimes|email',
     );
@@ -55,7 +55,16 @@ class Validator extends Base\Validator
 
     protected function validateName($attribute, $value)
     {
-        return (preg_match(self::NAME_REGEX, trim($value)) > 0);
+        if (strlen($value) > 50)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The name may not be greater than 50 characters.');
+        }
+        if (preg_match(self::NAME_REGEX, trim($value)) != 1)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The name format is invalid.');
+        }
     }
 
     /**
