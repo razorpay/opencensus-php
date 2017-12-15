@@ -7,7 +7,7 @@ use RZP\Reconciliator\Base;
 class Reconciliate extends Base\Reconciliate
 {
     const PAYMENT_COLUMN_HEADER = [
-        'arn',
+        'prn',
         'payment_id',
         'bank_reference',
         'amount',

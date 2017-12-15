@@ -11,18 +11,18 @@ use RZP\Models\Payment\Status as PaymentStatus;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
-    const COLUMN_ARN                 = 'arn';
+    const COLUMN_PRN                 = 'prn';
     const COLUMN_PAYMENT_ID          = 'payment_id';
-    const COLUMN_GATEWAY_PAYMENT_ID   = 'bank_reference';
+    const COLUMN_GATEWAY_PAYMENT_ID  = 'bank_reference';
     const COLUMN_PAYMENT_AMOUNT      = 'amount';
     const COLUMN_DATE                = 'date';
 
 
-    protected function getArn($row)
+    protected function getPrn($row)
     {
-        if (empty($row[self::COLUMN_ARN]) === false)
+        if (empty($row[self::COLUMN_PRN]) === false)
         {
-            return trim($row[self::COLUMN_ARN]);
+            return trim($row[self::COLUMN_PRN]);
         }
 
         return null;

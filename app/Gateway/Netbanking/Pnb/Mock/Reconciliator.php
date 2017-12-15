@@ -56,8 +56,9 @@ class Reconciliator extends Base\RefundFile
                         $row[self::PAYMENT_ENTITY][Payment\Entity::CREATED_AT],
                         Timezone::IST)
                         ->format('d/m/y');
+            s($row);
             $data[] = [
-                'arn'            => $row['payment']['reference1'],
+                'prn'            => $row['payment']['reference1'],
                 'payment_id'     => $row['payment']['id'],
                 'bank_reference' => $row['gateway']['bank_payment_id'],
                 'amount'         => $row['payment']['amount'],
