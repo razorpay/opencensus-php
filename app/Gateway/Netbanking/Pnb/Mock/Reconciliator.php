@@ -56,7 +56,6 @@ class Reconciliator extends Base\RefundFile
                         $row[self::PAYMENT_ENTITY][Payment\Entity::CREATED_AT],
                         Timezone::IST)
                         ->format('d/m/y');
-            s($row);
             $data[] = [
                 //
                 // We dont know prn So just setting a random data
