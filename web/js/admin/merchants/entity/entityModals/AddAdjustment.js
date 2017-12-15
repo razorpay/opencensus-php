@@ -17,6 +17,7 @@ export default ({ merchantId }) => {
     ).then(_ => {
       const mode = body.mode;
       delete body.mode;
+      body.merchant_id = merchantId;
 
       return adminPost({
         route_name: 'adj_add',
