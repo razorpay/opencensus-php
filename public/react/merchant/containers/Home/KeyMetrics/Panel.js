@@ -20,7 +20,8 @@ const customToolTip = function(tooltipModel) {
   if (!tooltipDOM) {
     tooltipDOM = document.createElement('div');
     tooltipDOM.id = 'chartjs-tooltip';
-    tooltipDOM.innerHTML = '<div class="custom-tooltip-inner"></div>';
+    tooltipDOM.innerHTML =
+      '<div class="custom-tooltip-inner"></div><div class="caret"/>';
     document.body.appendChild(tooltipDOM);
   }
 
@@ -95,12 +96,20 @@ const customToolTip = function(tooltipModel) {
 
   var { offsetTop /*offsetLeft*/ } = this._chart.canvas;
 
+  // refer styling file
+  // and width property of #chartjs-tooltip
+  const widthOfTooltip = 218;
+
   // width of y-axis of chart
   const widthOfYAxis = this._chart.boxes.find(({ id }) => id === 'y-axis-0')
     .width;
 
-  // absolute position of chart from left edge
-  const { x: chartX } = this._chart.canvas.getBoundingClientRect();
+  // chartX: absolute position of chart from left edge
+  // fullChartRight: absolute right edge of full chart
+  const {
+    x: chartX,
+    right: fullChartRight,
+  } = this._chart.canvas.getBoundingClientRect();
 
   // distance of right edge of inner chart (where actual graph is rendered) area from edge of body
   const chartRight = this._chart.boxes[0].chart.chartArea.right;
@@ -122,9 +131,27 @@ const customToolTip = function(tooltipModel) {
   tooltipDOM.style.opacity = 1;
 
   // left of tooltip is absoluteLeft of chart + widthOfYAxis + widthOfEachLabel (added according to index)
-  tooltipDOM.style.left = `${chartX / 2 +
-    widthOfYAxis +
-    widthOfEachLabel * dataPointIndex}px`;
+
+  // max left tooltip can have - should not exceed extreme right of full chart
+  const tooltipMaxLeft = fullChartRight - widthOfTooltip;
+
+  // left computed for tooltip
+  const computedLeft =
+    chartX / 2 + widthOfYAxis + widthOfEachLabel * dataPointIndex;
+
+  // left of tooltip cannot exceed tooltipMaxLeft
+  tooltipDOM.style.left = `${Math.min(tooltipMaxLeft, computedLeft)}px`;
+
+  // small inverted arrow attached to tooltip
+  const caret = tooltipDOM.querySelector('.caret');
+
+  // resetting any left given to caret in previous iteration
+  caret.style.left = '';
+
+  // shifting caret towards right if tooltip has max left
+  if (computedLeft > tooltipMaxLeft) {
+    caret.style.left = `${0.48 * 218 + (computedLeft - tooltipMaxLeft)}px`;
+  }
 
   // TODO: precise the calculation of y position of tooltip
   tooltipDOM.style.top = `${offsetTop + tooltipModel.caretY}px`;
