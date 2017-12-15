@@ -90,7 +90,7 @@ function _getTerminalFields() {
         item.deleted_at ? (
           <i class="i i-yes text-danger" />
         ) : (
-          <span style={{ textAlign: 'center' }}>--</span>
+          <div style={{ textAlign: 'center' }}>--</div>
         ),
     ],
     ['Created At', item => formatDate(item.created_at)],
