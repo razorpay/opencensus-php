@@ -352,10 +352,10 @@ function _getCompanyInfoFields() {
     ['End Date', item => item.EndDate],
     [
       'Defaulter',
-      () => (
+      item => (
         <i
           class={`i ${
-            person.Defaulter ? 'i-warning text-danger' : 'i-smile text-success'
+            item.Defaulter ? 'i-warning text-danger' : 'i-smile text-success'
           }`}
         />
       ),
