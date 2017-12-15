@@ -129,7 +129,7 @@ class KeyMetricsContainer extends Component {
         const tabState = tabsState[tabName];
 
         // Main stat showin in the tab
-        const mainStat = resp.data[tabName];
+        const mainStat = resp.data[tabName].result;
 
         if (mainStat && mainStat[0]) {
           tabState.data.count = mainStat[0].value;
@@ -140,7 +140,7 @@ class KeyMetricsContainer extends Component {
 
         if (histogram) {
           const { labels, datasets, aggregates } = getTimelineData({
-            data: histogram,
+            data: histogram.result,
             groupByColumnName: tabState.selectedGrouping,
             groupTitleMap: {},
             valueTransformer: tabsMeta[tabName].isCurrency && paiseToRupees,

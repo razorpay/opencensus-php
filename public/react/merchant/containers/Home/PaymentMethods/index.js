@@ -42,7 +42,7 @@ class PaymentMethods extends Component {
         endTime: endDate.unix(),
       })
     ).then(resp => {
-      this.setState({ data: resp.data.agg });
+      this.setState({ data: resp.data.agg.result });
     });
   }
 

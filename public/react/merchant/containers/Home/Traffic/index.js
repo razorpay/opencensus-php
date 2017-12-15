@@ -62,7 +62,7 @@ class Traffic extends Component {
 
     fetch(query).then(resp => {
       const { labels, datasets, legendData } = getPieData({
-        data: resp.data.distribution,
+        data: resp.data.distribution.result,
         groupByColumnName: meta.groupBy,
       });
 
