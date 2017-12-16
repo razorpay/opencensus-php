@@ -65,7 +65,13 @@ class UpiSbiGatewayReconTest extends TestCase
             $this->assertNotNull($transaction['reconciled_at']);
         }
 
-        // TODO: Add assertions for gateway payment id? Ensure that values haven't changed before and after recon
+        // We assert that the entity's values have changed since recon -
+        // as recon persists recon data into the DB
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals(99999999998, $upiEntity['gateway_payment_id']);
+
+        $this->assertEquals(12345, $upiEntity['npci_reference_id']);
     }
 
     public function testFailedUpiSbiReconciliation()
@@ -99,7 +105,13 @@ class UpiSbiGatewayReconTest extends TestCase
             $this->assertNull($transaction['reconciled_at']);
         }
 
-        // TODO: Add assertions for gateway payment id?
+        // We assert that the entity's values remain the same as before
+        // This is because the payment is failed, and we do not reconcile failed payments
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals(99999999999, $upiEntity['gateway_payment_id']);
+
+        $this->assertEquals(99999, $upiEntity['npci_reference_id']);
     }
 
     protected function createUploadedFile($file)

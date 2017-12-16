@@ -61,13 +61,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
     {
-        // TODO: Should we do a dirty check here?
         $gatewayPayment->setNpciReferenceId($referenceNumber);
     }
 
     protected function persistNbCustomerId(array $customerDetails, PublicEntity $gatewayPayment)
     {
-        // TODO: Should we do a dirty check here, or should we log if values are different?
         $customerId = $customerDetails[Base\Reconciliate::CUSTOMER_ID];
 
         $gatewayPayment->setGatewayPaymentId($customerId);
