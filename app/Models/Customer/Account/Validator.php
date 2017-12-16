@@ -12,58 +12,58 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    const NAME_REGEX = '/(^[a-zA-Z0-9\s][a-zA-Z0-9-&\'._()\s–]+[a-zA-Z0-9\s.)]$)/';
+    /**
+     * Regular expression for valid names:
+     * - Must start with a-z/A-Z/0-9
+     * - Must end with a-z/A-Z/0-9/./)
+     * - Can have anything from a-z/A-Z/0-9/'/-/–/./_/(/)/space in between
+     */
+    const NAME_REGEX = '/(^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–]+[a-zA-Z0-9.)]$)/';
 
-    protected static $createRules = array(
+    protected static $createRules = [
         Entity::CONTACT             => 'sometimes|nullable|contact_syntax',
-        Entity::NAME                => 'sometimes|string|nullable|custom',
+        Entity::NAME                => 'sometimes|string|max:50|nullable|custom',
         Entity::EMAIL               => 'sometimes|nullable|email',
         Entity::NOTES               => 'sometimes|notes',
         Entity::SHIPPING_ADDRESS    => 'sometimes',
         Entity::BILLING_ADDRESS     => 'sometimes',
-    );
+    ];
 
-    protected static $editRules = array(
+    protected static $editRules = [
         Entity::CONTACT         => 'sometimes|contact_syntax',
-        Entity::NAME            => 'sometimes|string|nullable|custom',
+        Entity::NAME            => 'sometimes|string|max:50|nullable|custom',
         Entity::ACTIVE          => 'sometimes|in:0,1',
         Entity::EMAIL           => 'sometimes|email',
-    );
+    ];
 
-    protected static $globalCreateRules = array(
+    protected static $globalCreateRules = [
         Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line',
         Entity::EMAIL           => 'required|email',
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
         'device_token'          => 'sometimes|string|max:14',
         '_'                     => 'sometimes|array'
-    );
+    ];
 
-    protected static $contactRules = array(
+    protected static $contactRules = [
         Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line'
-    );
+    ];
 
-    protected static $paymentRules = array(
+    protected static $paymentRules = [
         'skip'                  => 'sometimes|integer'
-    );
+    ];
 
     protected static $walletAppCreateRules = [
         Entity::CONTACT         => 'required|contact_syntax',
         Entity::EMAIL           => 'sometimes|email',
-        Entity::NAME            => 'sometimes|string|nullable|custom',
+        Entity::NAME            => 'sometimes|string|max:50|nullable|custom',
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
     ];
 
     protected function validateName($attribute, $value)
     {
-        if (strlen($value) > 50)
+        if (preg_match(self::NAME_REGEX, trim($value)) !== 1)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'The name may not be greater than 50 characters.');
-        }
-        if (preg_match(self::NAME_REGEX, trim($value)) != 1)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'The name format is invalid.');
+            throw new Exception\BadRequestValidationFailureException('The name format is invalid.');
         }
     }
 

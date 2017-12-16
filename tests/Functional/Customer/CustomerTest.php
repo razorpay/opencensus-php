@@ -75,7 +75,9 @@ class CustomerTest extends TestCase
 
         foreach ($validNameEmailMap as $name => $email)
         {
-            $testData['request']['content']['name'] = $testData['response']['content']['name'] = trim($name);
+            $testData['request']['content']['name']  = $name;
+            $testData['response']['content']['name'] = trim($name); // In db it should get mutated(trimmed) before persistence
+
             $testData['request']['content']['email'] = $testData['response']['content']['email'] =  $email;
 
             $this->startTest();
@@ -91,7 +93,8 @@ class CustomerTest extends TestCase
             'Sample"s name'                                       => 'The name format is invalid.',
             'A very big big big name off some big big big person' => 'The name may not be greater than 50 characters.',
             'A weird? name'                                       => 'The name format is invalid.',
-            '-AB weired name'                                     => 'The name format is invalid.'
+            '-AB weired name'                                     => 'The name format is invalid.',
+            '  -AB weired name'                                   => 'The name format is invalid.', // Validation must happens on trimmed value
         ];
 
         $testData = & $this->testData[__FUNCTION__];
