@@ -33,9 +33,12 @@ class Reconciliator
      */
     protected static $fileToWriteName;
 
-    const GATEWAYS_NEEDING_GATEWAY_ENTITY = [
-        Payment\Gateway::UPI_SBI
-    ];
+    /**
+     * List of banks that would need the gateway entity to make the recon file.
+     * Ideally, we can use constants in place of gateway entity attributes to
+     * avoid n additional DB calls for n payments to be reconciled.
+     */
+    const GATEWAYS_NEEDING_GATEWAY_ENTITY = [];
 
     public function __construct()
     {
@@ -143,12 +146,9 @@ class Reconciliator
      * This can be used for mock recon content function
      * @param $content
      * @param null $action
-     * @return mixed
+     * @return void
      */
-    public function content(& $content, $action = null)
-    {
-        return $content;
-    }
+    public function content(& $content, $action = null) {}
 
     /**
      * Different gateways return different types of payments,

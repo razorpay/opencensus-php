@@ -79,7 +79,7 @@ class Reconciliator extends Base\Mock\Reconciliator
 
         $data[] = self::HEADERS;
 
-        foreach ($input as $index => $row)
+        foreach ($input as $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment']['created_at'],
@@ -87,13 +87,13 @@ class Reconciliator extends Base\Mock\Reconciliator
                 ->format('d-M-y H:i:s');
 
             $data[] = [
-                $row['gateway']['gateway_merchant_id'],
+                'random_merchant_id',
                 'Razorpay Software Private Limited',
                 'Razorpay Software Private Limited',
                 '9399',
                 $row['payment']['id'],
-                $row['gateway']['npci_reference_id'],
-                $row['gateway']['gateway_payment_id'],
+                99999999999,
+                random_int(100000, 999999),
                 'U69',
                 'COLLECT',
                 'Credit',
@@ -102,9 +102,9 @@ class Reconciliator extends Base\Mock\Reconciliator
                 $date,
                 (string) ($row['payment']['amount'] / 100),
                 '123456789',
-                $row['gateway']['vpa'],
-                $row['gateway']['name'] ?? 'Random name',
-                $row['gateway']['bank'] . '0000437',
+                'random@vpa',
+                'Random name',
+                'SBIN0000437',
                 (string) random_integer(10),
                 'razorpay@sbi',
                 'Razorpay Software Private Limited',
