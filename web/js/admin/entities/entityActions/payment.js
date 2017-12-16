@@ -149,14 +149,15 @@ export default ({ entity, mode, updateEntity }) => {
         />
         Payment Analytics
       </button>
-      {entity.status === 'failed' &&
-        !entity.verified && (
+      {entity.gateway != null &&
+        entity.status === 'failed' &&
+        entity.verified === 0 && (
           <AsyncButton
             class="btn"
             confirm="Are you sure you want to Authorize this failed payment?"
             onClick={authorizePayment}
           >
-            Authorize Pyament
+            Authorize Payment
           </AsyncButton>
         )}
       {entity.status === 'authorized' &&
@@ -199,15 +200,17 @@ export default ({ entity, mode, updateEntity }) => {
           </AsyncButton>
         )}
 
-      <AsyncButton
-        onClick={verifyPayment}
-        class="btn btn-default text-primary"
-        pendingClass="btn btn-default text-primary btn-pending"
-        confirm="Are you sure you want to Verify this payment?"
-      >
-        Verify Payment
-        <span class="spin-btn" />
-      </AsyncButton>
+      {entity.gateway != null && (
+        <AsyncButton
+          onClick={verifyPayment}
+          class="btn btn-default text-primary"
+          pendingClass="btn btn-default text-primary btn-pending"
+          confirm="Are you sure you want to Verify this payment?"
+        >
+          Verify Payment
+          <span class="spin-btn" />
+        </AsyncButton>
+      )}
 
       {!entity.disputed && (
         <button
