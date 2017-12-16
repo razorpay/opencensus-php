@@ -171,7 +171,6 @@ class Fetch
 
     public function isEnabled(): bool
     {
-        sd($this->enabled);
         return ($this->enabled === true);
     }
 
