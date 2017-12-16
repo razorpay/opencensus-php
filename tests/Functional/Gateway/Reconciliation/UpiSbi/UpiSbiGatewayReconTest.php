@@ -114,7 +114,7 @@ class UpiSbiGatewayReconTest extends TestCase
         $this->assertEquals(99999, $upiEntity['npci_reference_id']);
     }
 
-    protected function createUploadedFile($file)
+    private function createUploadedFile($file)
     {
         $this->assertFileExists($file);
 
@@ -132,7 +132,7 @@ class UpiSbiGatewayReconTest extends TestCase
         return $uploadedFile;
     }
 
-    protected function doNUpiSbiPaymentsYesterday(int $count = 3)
+    private function doNUpiSbiPaymentsYesterday(int $count = 3)
     {
         for ($i = 0; $i < $count; $i++)
         {
@@ -147,7 +147,7 @@ class UpiSbiGatewayReconTest extends TestCase
         }
     }
 
-    protected function doUpiSbiPayment()
+    private function doUpiSbiPayment()
     {
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
 
@@ -170,7 +170,7 @@ class UpiSbiGatewayReconTest extends TestCase
         return $paymentId;
     }
 
-    protected function checkPaymentStatus(string $id, string $status)
+    private function checkPaymentStatus(string $id, string $status)
     {
         $response = $this->getPaymentStatus($id);
 

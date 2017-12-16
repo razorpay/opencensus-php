@@ -135,7 +135,7 @@ class Reconciliator extends Base\Mock\Reconciliator
                 );
     }
 
-    protected function createFile(
+    private function createFile(
         string $extension,
         array $content,
         string $fileName,
