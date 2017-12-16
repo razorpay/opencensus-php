@@ -6,7 +6,7 @@ import { methods } from 'util/data';
 import { notifySuccess, notifyError } from 'common/modal';
 import { deepClone } from 'util/index';
 import { cardTypes } from 'util/data';
-import { Switch } from 'ui/Field';
+import { SwitchField } from 'ui/Field';
 
 export default class Plan extends Collection {
   constructor(props = {}) {
@@ -56,7 +56,7 @@ export default class Plan extends Collection {
       adminPost({
         route_name: 'pricing_create_plan',
         body: {
-          name,
+          plan_name: name,
           rules: this.items.slice(0, -1).map(p => p.serialize()),
         },
       }).then(data => {
@@ -269,7 +269,7 @@ class Rule extends CollectionItem {
   }
 
   binaryField(name) {
-    return this.field(Switch, name);
+    return this.field(SwitchField, name);
   }
 
   paymentMethodTypeField() {
