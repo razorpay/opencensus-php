@@ -106,6 +106,8 @@ export default class MakeAPICall extends Component {
 
               if (!body.file) {
                 body.file = null;
+              } else {
+                body.file = body.file[0];
               }
 
               return adminFormUpload(body, '/api/' + url).then(response => {
