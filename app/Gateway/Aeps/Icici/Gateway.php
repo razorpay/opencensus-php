@@ -147,9 +147,7 @@ class Gateway extends Base\Gateway
 
         $responseData = json_decode($response->body, true);
 
-        // TODO: Here, we need to decrypt the session key which they use using our private key
-        // instead of using the same key which we generated for the request.
-        $responseData = $this->getRefundDecryptedData($responseData, $sKey);
+        $responseData = $this->getRefundDecryptedData($responseData);
 
         // TODO: Store  refund response
 
@@ -172,7 +170,7 @@ class Gateway extends Base\Gateway
 
         $sKey = $encryptor->generateSkey();
 
-        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+        // $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
         $amount = number_format($input['payment']['amount'] / 100, 2, '.', '');
 
@@ -192,7 +190,7 @@ class Gateway extends Base\Gateway
             RequestConstants::REFUND_DATA_DEFAULT_DEBIT       => 'N',
             RequestConstants::REFUND_DATA_DEFAULT_CREDIT      => 'N',
             RequestConstants::REFUND_DATA_GLOBAL_ADDRESS_TYPE => 'AADHAR',
-            RequestConstants::REFUND_DATA_PAYEE_AADHAR        => $gatewayEntity[Base\Entity::AADHAAR_NUMBER],
+            RequestConstants::REFUND_DATA_PAYEE_AADHAR        => '123456789012',//$gatewayEntity[Base\Entity::AADHAAR_NUMBER],
             RequestConstants::REFUND_DATA_PAYEE_IIN           => '',
             // TODO: Change this later
             RequestConstants::REFUND_DATA_PAYEE_NAME          => 'Test',
@@ -248,16 +246,32 @@ class Gateway extends Base\Gateway
         return [$request, $sKey];
     }
 
-    protected function getRefundDecryptedData(array $data, string $sessionKey): array
+    protected function getRefundDecryptedData(array $data): array
     {
         $encryptor = $this->getEncryptor();
+
+        $encryptor->setPrivateKey($this->getRefundPrivateKey());
+
+        $sessionKey = $encryptor->decryptSessionKey($data[ResponseConstants::REFUND_RESPONSE_ENCRYPTEDKEY]);
 
         $data = $encryptor->decryptUsingSessionKey(
             $data[ResponseConstants::REFUND_RESPONSE_ENCRYPTEDDATA],
             $sessionKey
         );
 
+        $data = mb_convert_encoding( $data, 'Windows-1252', 'UTF-8');
+
+        // Strip out the random 16 characters at the beginning
+        $data = json_decode(substr($data, 16), true);
+
         return $data;
+    }
+
+    protected function getRefundPrivateKey()
+    {
+        $key = $this->config['refund_private_key'];
+
+        return trim(str_replace('\n', "\n", $key));
     }
 
     // This gets overridden in Mock gateway

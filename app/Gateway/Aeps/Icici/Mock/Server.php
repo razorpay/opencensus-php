@@ -48,9 +48,11 @@ class Server extends Base\Mock\Server
     {
         $input = json_decode($input, true);
 
-        $encryptor = new Icici\Encryptor(2, $this->getGatewayInstance()->getIv(), true);
+        $encryptor = new Icici\Encryptor(2, $this->getGatewayInstance()->getIv());
 
-        $sessionKey = $encryptor->decryptSessionKey($input[Icici\RequestConstants::REFUND_REQUEST_ENCRYPTEDKEY]);
+        $encryptoy->setMock(true);
+
+        $sessionKey = $encryptor->decryptSessionKey($input[Icici\RequestConstants::REFUND_REQUEST_ENCRYPTEDKEY], true);
 
         $decryptedData = $encryptor->decryptUsingSessionKey(
             $input[Icici\RequestConstants::REFUND_REQUEST_ENCRYPTEDDATA],

@@ -22,7 +22,9 @@ class Encryptor
 
     protected $mockCert = false;
 
-    public function __construct($mode = 1, $iv = '', $MockCert = false)
+    protected $privateKey = '';
+
+    public function __construct($mode = 1, $iv = '')
     {
         $this->encryptionMode = $mode;
 
@@ -30,8 +32,16 @@ class Encryptor
         {
             $this->iv = '';
         }
+    }
 
-        $this->mockCert = $MockCert;
+    public function setMock(bool $mock)
+    {
+        $this->mockCert = $mock;
+    }
+
+    public function setPrivateKey(string $key)
+    {
+        $this->privateKey = $key;
     }
 
     protected function createPidXml($fpData)
@@ -114,7 +124,15 @@ class Encryptor
      */
     public function decryptSessionKey($skey)
     {
-        $key = file_get_contents(__DIR__ . '/' . self::MOCK_CERT_PATH_PRIVATE);
+        if ($this->mockCert === true)
+        {
+            $key = file_get_contents(__DIR__ . '/' . self::MOCK_CERT_PATH_PRIVATE);
+        }
+        else
+        {
+
+            $key = $this->privateKey;
+        }
 
         $decoded = base64_decode($skey);
 

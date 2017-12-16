@@ -219,6 +219,7 @@ return [
         'channel_code'          => env('AEPS_ICICI_CHANNEL_CODE'),
         'account_provider'      => env('AEPS_ICICI_ACCOUNT_PROVIDER'),
         'refund_api_key'        => env('AEPS_ICICI_REFUND_API_KEY'),
+        'refund_private_key'    => env('AEPS_ICICI_REFUND_TEST_PRIVATE_KEY'),
     ],
 
     'upi_npci' => [
