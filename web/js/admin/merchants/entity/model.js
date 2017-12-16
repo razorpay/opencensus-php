@@ -81,17 +81,15 @@ export default class Model extends BaseModel {
         type: 'offer',
       },
       mode: 'live',
-    };
-
-    const queryParams = {
-      merchant_id: this.merchantId,
+      query_params: {
+        merchant_id: this.merchantId,
+      },
     };
 
     return this.request(
       'fetchMerchantOffers',
       this.fetchFn({
         ...data,
-        queryParams,
       })
     ).then(data => {
       if (data) {
@@ -345,17 +343,15 @@ export default class Model extends BaseModel {
       url_params: {
         type: 'schedule_task',
       },
-    };
-
-    const queryParams = {
-      merchant_id: this.merchantId,
+      query_params: {
+        merchant_id: this.merchantId,
+      },
     };
 
     return this.request(
       'fetchMerchantScheduleTasks',
       this.fetchFn({
         ...data,
-        queryParams,
       })
     ).then(data => {
       if (data) {
