@@ -31,9 +31,16 @@ class IciciGatewayTest extends TestCase
         $response = $this->doAuthAndCapturePayment($this->payment);
 
         $this->assertTestResponse($response);
+    }
 
-        // $gatewayPayment = $this->getLastEntity('aeps', true);
+    public function testRefund()
+    {
+        $data = $this->testData[__FUNCTION__];
 
-        // sd($gatewayPayment);
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $response = $this->refundPayment($payment['id']);
+
+        $this->assertTestResponse($response);
     }
 }

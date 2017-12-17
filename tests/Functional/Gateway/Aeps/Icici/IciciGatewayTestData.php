@@ -6,4 +6,7 @@ return [
         'status' => 'captured',
         'method' => 'aeps'
     ],
+    'testRefund' => [
+        'amount' => 50000,
+    ]
 ];
