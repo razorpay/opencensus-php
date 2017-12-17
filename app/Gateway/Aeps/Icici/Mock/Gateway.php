@@ -12,7 +12,11 @@ class Gateway extends Icici\Gateway
 
     protected function getEncryptor(): Icici\Encryptor
     {
-        return new Icici\Encryptor(2, $this->getIv(), true);
+        $encryptor = new Icici\Encryptor(2, $this->getIv(), true);
+
+        $encryptor->setMock(true);
+
+        return $encryptor;
     }
 
     /**
