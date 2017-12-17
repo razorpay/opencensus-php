@@ -31,10 +31,13 @@ class Server extends Base\Mock\Server
             Icici\ResponseConstants::AUTH_RESPONSE_CODE                         => '00"/>',
             Icici\ResponseConstants::AUTH_CARD_ACCEPTOR_TERMINAL_IDENTIFICATION => '13016403"/>',
             Icici\ResponseConstants::AUTH_CARD_ACCEPTOR_NAME                    => 'Pune - Check PUNE',
-            Icici\ResponseConstants::AUTH_ADDITIONAL_AMOUNTS                    => '1001356C0000002548081002356C000000254737"/>',
-            Icici\ResponseConstants::AUTH_AUTHENTICATION_CODE                   => 'da433aa16bd84a479300a8f75e329eae"/>',
+            Icici\ResponseConstants::AUTH_ADDITIONAL_AMOUNTS
+                => '1001356C0000002548081002356C000000254737"/>',
+            Icici\ResponseConstants::AUTH_AUTHENTICATION_CODE
+                => 'da433aa16bd84a479300a8f75e329eae"/>',
             Icici\ResponseConstants::AUTH_BENEF_ACCOUNT_NUMBER                  => '1111111111111"/>',
-            Icici\ResponseConstants::AUTH_REMITTER                              => 'null|ANIL V KAPOOR|cwduid| | |Card not present.| |n/a||da433aa16bd84a479300a8f75e329eae',
+            Icici\ResponseConstants::AUTH_REMITTER
+                => 'null|ANIL V KAPOOR|cwduid| | |Card not present.| |n/a||da433aa16bd84a479300a8f75e329eae',
         ];
 
         $this->content($data, 'auth');
@@ -48,9 +51,7 @@ class Server extends Base\Mock\Server
     {
         $input = json_decode($input, true);
 
-        $encryptor = new Icici\Encryptor(2, $this->getGatewayInstance()->getIv());
-
-        $encryptoy->setMock(true);
+        $encryptor = $this->getEncryptor();
 
         $sessionKey = $encryptor->decryptSessionKey($input[Icici\RequestConstants::REFUND_REQUEST_ENCRYPTEDKEY], true);
 
@@ -61,12 +62,12 @@ class Server extends Base\Mock\Server
 
         $data = json_decode($decryptedData, true);
 
-        $responseData = $this->getRefundResponse($data);
+        $responseData = $this->getRefundResponse($encryptor, $data);
 
         return $this->prepareResponse($responseData);
     }
 
-    protected function getRefundResponse($data)
+    protected function getRefundResponse($encryptor, $data)
     {
         $data = [
             Icici\ResponseConstants::REFUND_SUCCESS       => 'true',
@@ -81,7 +82,26 @@ class Server extends Base\Mock\Server
 
         $this->content($data, 'refund');
 
-        return $data;
+        $encryptor = $this->getEncryptor();
+
+        $sessionKey = $encryptor->generateSkey();
+
+        $encryptedData = $encryptor->encryptUsingSessionKey(json_encode($data), $sessionKey);
+
+        $encryptedSessionKey = $encryptor->encryptSessionKey($sessionKey, $this->mode, 'refund');
+
+        $responseData = [
+            Icici\ResponseConstants::REFUND_RESPONSE_REQUESTID            => '',
+            Icici\ResponseConstants::REFUND_RESPONSE_SERVICE              => 'UPI',
+            Icici\ResponseConstants::REFUND_RESPONSE_ENCRYPTEDKEY         => $encryptedSessionKey,
+            Icici\ResponseConstants::REFUND_RESPONSE_OAEPHASHINGALGORITHM => 'NONE',
+            Icici\ResponseConstants::REFUND_RESPONSE_IV                   => '',
+            Icici\ResponseConstants::REFUND_RESPONSE_ENCRYPTEDDATA        => $encryptedData,
+            Icici\ResponseConstants::REFUND_RESPONSE_CLIENTINFO           => '',
+            Icici\ResponseConstants::REFUND_RESPONSE_OPTIONALPARAM        => '',
+        ];
+
+        return json_encode($responseData);
     }
 
     protected function prepareResponse($content)
@@ -116,5 +136,14 @@ class Server extends Base\Mock\Server
         $content .= '</isomsg>';
 
         return $content;
+    }
+
+    protected function getEncryptor()
+    {
+        $encryptor = new Icici\Encryptor(2, $this->getGatewayInstance()->getIv());
+
+        $encryptor->setMock(true);
+
+        return $encryptor;
     }
 }
