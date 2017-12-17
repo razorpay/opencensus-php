@@ -200,10 +200,6 @@ class Gateway extends Base\Gateway
 
         $data = json_encode($data);
 
-        // This is because they were stripping the first 16 characters from the data we sent
-        // and hence they could not parse that json string.
-        $data = str_repeat(" ", 16) . $data;
-
         $encryptedData = $encryptor->encryptUsingSessionKey($data, $sKey);
 
         $encryptedKey = $encryptor->encryptSessionKey($sKey, $this->mode, 'refund');
@@ -262,9 +258,7 @@ class Gateway extends Base\Gateway
         $data = mb_convert_encoding( $data, 'Windows-1252', 'UTF-8');
 
         // Strip out the random 16 characters at the beginning
-        $data = json_decode(substr($data, 16), true);
-
-        return $data;
+        return json_decode($data, true);
     }
 
     protected function getRefundPrivateKey()

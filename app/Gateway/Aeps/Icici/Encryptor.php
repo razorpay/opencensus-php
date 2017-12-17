@@ -56,6 +56,10 @@ class Encryptor
 
     public function encryptUsingSessionKey($data, $skey)
     {
+        // This is because they were stripping the first 16 characters from the data we sent
+        // and hence they could not parse that json string.
+        $data = str_repeat(" ", 16) . $data;
+
         $cipher = new AES($this->encryptionMode);
 
         if ($this->encryptionMode === 2)
@@ -79,7 +83,10 @@ class Encryptor
 
         $cipher->setKey($skey);
 
-        return $cipher->decrypt(base64_decode($data));
+        $data = $cipher->decrypt(base64_decode($data));
+
+        // First 16 characters are garbage. Need to check this with them.
+        return substr($data, 16);
     }
 
     public function encryptSessionKey($skey, $mode, $type = '')
@@ -130,7 +137,6 @@ class Encryptor
         }
         else
         {
-
             $key = $this->privateKey;
         }
 
@@ -172,7 +178,7 @@ class Encryptor
         }
     }
 
-    function generateSkey($length = 16)
+    public function generateSkey($length = 16)
     {
         //TODO : make it better
         $result = '';
