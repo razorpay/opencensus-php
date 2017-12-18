@@ -17,7 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
-use RZP\Models\Admin\Admin\Entity as AdminEntity;
+use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
@@ -68,6 +68,12 @@ class Core extends Base\Core
             if ($this->canSubmit($input, $response) === true)
             {
                 $this->fireActivationTrigger($merchantDetails, $merchant);
+
+                $activationStatusData = [
+                    Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+                ];
+
+                $this->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
             }
 
             $response['auto_activated'] = $autoActivated;
@@ -272,11 +278,11 @@ class Core extends Base\Core
      * This function is used for updating merchant activation status
      * @param Entity $merchantDetails
      * @param array $input
-     * @param AdminEntity $admin
+     * @param PublicEntity $maker [can be one of Admin\Admin\Entity or Merchant\Entity]
      *
      * @return Entity
      */
-    public function updateActivationStatus(Entity $merchantDetails, array $input, AdminEntity $admin): Entity
+    public function updateActivationStatus(Entity $merchantDetails, array $input, PublicEntity $maker): Entity
     {
         $merchantDetails->getValidator()->validateInput('activationStatus', $input);
 
@@ -300,7 +306,7 @@ class Core extends Base\Core
             unset($input[Entity::REJECTION_REASONS]);
         }
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input, $rejectionReasons, $admin)
+        $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input, $rejectionReasons, $maker)
         {
             $merchantDetails->edit($input);
 
@@ -310,7 +316,7 @@ class Core extends Base\Core
                 State\Entity::NAME => $input[Entity::ACTIVATION_STATUS],
             ];
 
-            $state = (new State\Core)->createForActivation($stateData, $merchantDetails, $admin);
+            $state = (new State\Core)->createForActivation($stateData, $merchantDetails, $maker);
 
             if (empty($rejectionReasons) === false)
             {
