@@ -78,9 +78,10 @@ return [
                     ],
                     'new_plans' =>[
                         [
-                            'duration'  => 9,
-                            'interest'  => 0,
-                            'subvention'=> 'merchant'
+                            'duration'   => 9,
+                            'interest'   => 0,
+                            'subvention' => 'merchant',
+                            'min_amount' => 526316
                         ]
                     ],
                 ],

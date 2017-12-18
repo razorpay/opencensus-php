@@ -14,4 +14,14 @@ class Calculator
 
         return intval(100 * $mp);
     }
+
+    public static function calculateMinAmount(int $minAmount, int $merchantPayback)
+    {
+     return ceil((100 * $minAmount) / (100 - $merchantPayback));
+    }
+
+    public static function calculateSubventedAmount(int $amount, int $merchantPayback)
+    {
+        return ceil($amount - ($amount * $merchantPayback/100));
+    }
 }

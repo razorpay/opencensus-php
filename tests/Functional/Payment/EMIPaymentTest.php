@@ -128,6 +128,8 @@ class EMIPaymentTest extends TestCase
 
     public function testEmiFileGenerate()
     {
+        Mail::fake();
+
         $emiPlan = $this->emiPlan;
 
         //Making transactions hapen yesterday

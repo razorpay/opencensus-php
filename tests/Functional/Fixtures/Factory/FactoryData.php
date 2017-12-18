@@ -298,12 +298,13 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Emi\Entity::class, [
-            'id'         => '10101010101010',
-            'duration'   => 9,
-            'rate'       => 1200,
-            'bank'       => 'HDFC',
-            'methods'    => 'card',
-            'min_amount' => 500000,
+            'id'               => '10101010101010',
+            'duration'         => 9,
+            'rate'             => 1200,
+            'bank'             => 'HDFC',
+            'methods'          => 'card',
+            'min_amount'       => 500000,
+            'merchant_payback' => 518
         ]);
 
         $factory(\RZP\Models\Emi\MerchantSubvention\Entity::class, [

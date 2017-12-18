@@ -27,6 +27,9 @@ class Service extends Base\Service
 
             $amount = $plan->getMinAmount();
 
+            // min amount in paisa
+            $minAmount = $plan->getMinAmount();
+
             // all plans of a bank will have same min amount
             $plans[$issuer][Entity::MIN_AMOUNT] = $amount;
 
@@ -34,10 +37,13 @@ class Service extends Base\Service
 
             if (in_array($plan->getId(), $merchantSubventedPlans) === true)
             {
+                $minAmount = Calculator::calculateMinAmount($minAmount, $plan->getMerchantPayback()/100);
+
                 $plans[$issuer]['new_plans'][] = [
-                        'duration'   => $duration,
-                        'interest'   => 0,
-                        'subvention' => Subvention::MERCHANT,
+                    'duration'   => $duration,
+                    'interest'   => 0,
+                    'subvention' => Subvention::MERCHANT,
+                    'min_amount' => $minAmount,
                 ];
             }
             else
@@ -46,6 +52,7 @@ class Service extends Base\Service
                     'duration'   => $duration,
                     'interest'   => $plan->getRate() / 100,
                     'subvention' => Subvention::CUSTOMER,
+                    'min_amount' => $minAmount,
                 ];
             }
         }

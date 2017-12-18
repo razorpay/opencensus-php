@@ -11,6 +11,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Currency;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
+use RZP\Models\Emi;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
@@ -68,15 +69,6 @@ trait Capture
         if ($this->merchant->isFeeBearerCustomer())
         {
             $amount -= $payment->getFee();
-        }
-
-        if ($payment->isEmiMerchantSubvented() === true)
-        {
-            $emiPlan = $payment->emiPlan;
-
-            $merchantPayback = $emiPlan->getMerchantPayback();
-
-            $amount = (int)ceil ($amount *  (10000/(10000 - $merchantPayback)));
         }
 
         // set auto-capture 1
@@ -324,13 +316,16 @@ trait Capture
                 ]);
         }
 
-        if ($payment->isEmiMerchantSubvented() === true)
+        $autoCaptured = $payment->getAutoCaptured();
+
+        if (($payment->isEmiMerchantSubvented() === true) and
+            ($autoCaptured === false))
         {
             $emiPlan = $payment->emiPlan;
 
             $merchantPayback = $emiPlan->getMerchantPayback();
 
-            $captureAmount = (int)ceil($captureAmount - ($captureAmount * $merchantPayback/10000));
+            $captureAmount = Emi\Calculator::calculateSubventedAmount($captureAmount, $merchantPayback/100);
         }
 
         if ($captureAmount !== $payment->getAmount())
