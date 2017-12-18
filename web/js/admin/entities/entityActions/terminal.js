@@ -1,5 +1,5 @@
 import { openModal, closeModal, confirm } from 'common/modal';
-import fetch, { adminPut } from 'util/fetch';
+import fetch, { adminPut, adminDelete } from 'util/fetch';
 import { notifyError, notifySuccess } from 'common/modal';
 
 import BaseModal from 'ui/BaseModal';
@@ -76,6 +76,7 @@ export default ({ entity, mode, updateEntity }) => {
       <AssignSubMerchants
         submerchants={entity.sub_merchants}
         handleSubmit={updateSubmerchants}
+        deleteSubmerchant={deleteSubmerchant}
       />
     );
   }
@@ -97,6 +98,24 @@ export default ({ entity, mode, updateEntity }) => {
         }
       })
       .catch(err => notifyError(JSON.stringify(err)));
+  }
+
+  function deleteSubmerchant(submerchantId) {
+    adminDelete({
+      route_name: 'terminal_remove_merchant',
+      url_params: {
+        id: entity.id,
+        mid: submerchantId,
+      },
+      mode: mode,
+    })
+      .then(response => {
+        notifySuccess('Sub merchant unassigned from the terminal successfully');
+        closeModal();
+
+        setTimeout(() => window.location.reload(), 1000); // TODO: Make request again instead of page refresh;
+      })
+      .catch(e => notifyError(JSON.stringify(e)));
   }
 
   function updatePrimaryMerchant(body) {
@@ -133,7 +152,10 @@ export default ({ entity, mode, updateEntity }) => {
       .then(data => {
         if (data) {
           notifySuccess('Terminal is deleted successfully');
-          window.open(`/admin/entities/${mode}/terminal`, '_self');
+          setTimeout(
+            () => window.open(`/admin/entities/${mode}/terminal`, '_self'),
+            1000
+          ); // TODO: Make request again instead of page refresh;
         }
       })
       .catch(err => {
@@ -198,7 +220,11 @@ export default ({ entity, mode, updateEntity }) => {
 };
 
 // Assign Submerchant to terminal form
-const AssignSubMerchants = ({ submerchants, handleSubmit }) => {
+const AssignSubMerchants = ({
+  submerchants,
+  handleSubmit,
+  deleteSubmerchant,
+}) => {
   function getSubmerchantFields() {
     return [
       ['Id', item => item.id],
@@ -213,6 +239,14 @@ const AssignSubMerchants = ({ submerchants, handleSubmit }) => {
           ) : (
             '--'
           ),
+      ],
+      [
+        'Delete',
+        item => (
+          <div class="link danger" onClick={() => deleteSubmerchant(item.id)}>
+            Delete
+          </div>
+        ),
       ],
     ];
   }
@@ -233,7 +267,7 @@ const AssignSubMerchants = ({ submerchants, handleSubmit }) => {
           <Table
             items={submerchants}
             fields={getSubmerchantFields()}
-            customClass="limited"
+            customClass="limited assign-submerchants"
           />
         )}
     </BaseModal>
