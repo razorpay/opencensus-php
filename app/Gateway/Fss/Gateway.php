@@ -369,11 +369,11 @@ class Gateway extends Base\Gateway
 
         $gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input);
 
-        if ($responseFields[Entity::STATUS] !== Status::CAPTURED)
+        // Doing Additional check with the result because error messages are sent in result.
+        if ($responseFields[Fields::RESULT] !== Status::CAPTURED and
+            substr($responseFields[Fields::RESULT], 0, 4) === Constants::ERROR_MESSAGE_START)
         {
-            $errorStatus = $response[Entity::STATUS];
-
-            $refundContent[Fields::ERROR_TEXT] = $errorStatus;
+            $refundContent[Fields::ERROR_TEXT] = $responseFields[Fields::RESULT];
 
             $this->checkErrorMessage($refundContent);
         }
@@ -713,7 +713,13 @@ class Gateway extends Base\Gateway
         if (empty($status) === false and
             trim($status) !== Status::CAPTURED)
         {
-            $attributes[Entity::STATUS] = Status::NOT_CAPTURED;
+            // Error message is sent as status.
+            if (substr($status, 0, 4) === Constants::ERROR_MESSAGE_START)
+            {
+                $attributes[Entity::ERROR_MESSAGE] = $status;
+
+                $attributes[Entity::STATUS] = Status::NOT_CAPTURED;
+            }
         }
     }
 

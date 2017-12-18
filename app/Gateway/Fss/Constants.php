@@ -21,4 +21,6 @@ class Constants
     const LANGUAGE_USA          = 'USA';
 
     const TRACK_ID              = 'TrackID';
+
+    const ERROR_MESSAGE_START   = 'IPAY';
 }
