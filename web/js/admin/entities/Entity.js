@@ -235,6 +235,7 @@ function downloadFile() {
     url_params: {
       fileId: this.id,
     },
+    mode: this.mode,
   }).then(data => {
     if (data) {
       windowRef.location.href = data.url;
