@@ -8,7 +8,8 @@ use RZP\Models\Payment;
 class Upi
 {
     const ICIC      = 'ICIC';
-    const HDFC      = 'HDFC';
+    const HDFC      = 'HDFC';   
+    const SBIN      = 'SBIN';
 
     public static function exists($bank)
     {

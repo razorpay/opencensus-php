@@ -158,7 +158,7 @@ class Core extends Base\Core
         {
             $result =  $this->shouldApplySharedOffer($sharedOffer, $directOffers, $merchantId);
 
-            if ($result === false)
+            if ($result === true)
             {
                 $applicableOffers->push($sharedOffer);
             }
@@ -198,10 +198,18 @@ class Core extends Base\Core
             }
         }
 
-        return $directOffers->search(function ($offer) use ($sharedOffer)
+        //
+        // Find matching direct offers for the shared offer
+        //
+        $matchingDirectOfferPresent = $directOffers->search(function ($offer) use ($sharedOffer)
         {
             return $offer->matches($sharedOffer);
         });
+
+        //
+        // Only apply shared offer when no direct offer is found.
+        //
+        return ($matchingDirectOfferPresent === false);
     }
 
     protected function checkConflictingOffers(Entity $offer)

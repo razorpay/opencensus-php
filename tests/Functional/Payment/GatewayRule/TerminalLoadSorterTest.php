@@ -23,6 +23,12 @@ class TerminalLoadSorterTest extends TestCase
 
     public function testTerminalSelectionWithRule()
     {
+        //
+        // Mobikwik MID was unexpectedly disabled
+        // https://github.com/razorpay/incidents/issues/157
+        //
+        $this->markTestSkipped('Mobikwik temporarily disabled.');
+
         $this->setUpTerminals();
 
         $this->fixtures->merchant->enableMobikwik();

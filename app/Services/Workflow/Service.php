@@ -344,12 +344,13 @@ class Service
 
         $count = $workflowAction->count();
 
+        $admin = $this->ba->getAdmin();
+
         // Transaction failed and no entry was created
         if ($count === 0)
         {
-            $admin = $this->ba->getAdmin();
-
             // Let's re-try creating workflow action and relevant entities
+
             $action = $core->create($data, $retry = true, $admin);
         }
         else

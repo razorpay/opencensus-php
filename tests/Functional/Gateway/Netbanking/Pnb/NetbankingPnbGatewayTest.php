@@ -308,39 +308,29 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $claimsFileContents = file($data['netbanking_pnb']['claims']);
 
-        // 2 refunds + 1 total line
-        assert(count($refundsFileContents) === 3);
+        $refundsFilePath = explode('/', $data['netbanking_pnb']['refunds']);
+
+        $claimsFilePath = explode('/', $data['netbanking_pnb']['claims']);
+
+        $refundsFileName = end($refundsFilePath);
+
+        $claimsFileName = end($claimsFilePath);
+
+        $time = Carbon::now(Timezone::IST);
+
+        $this->assertEquals($refundsFileName, 'refund_PNB_NB_'. $time->format('Ymd') . '_V1_test.txt');
+
+        $this->assertEquals($claimsFileName, 'PNB_Netbanking_Claims_test_'. $time->format('d-m-Y') .  '.txt');
+
+        assert(count($refundsFileContents) === 2);
 
         assert(count($claimsFileContents) === 4);
 
-        $this->checkFileContent($refundsFileContents, ['INR0120000 C 100.00Refund', 'INR0120000 C 400.00Refund']);
+        $refundsFileContentLine = explode('|', $refundsFileContents[0]);
 
-        $this->checkFileContent($claimsFileContents, ['INR0120000 D 500.00Payment', 'INR0120000 C 100.00Refund']);
+        assert(count($refundsFileContentLine), 7);
     }
 
-    protected function checkFileContent(array $fileContents, array $expectedContent)
-    {
-        foreach ($fileContents as $content)
-        {
-            $compare = false;
-
-            foreach ($expectedContent as $expected)
-            {
-                $compare = substr_compare($content, $expected, 0);
-
-                if ($compare >= 0)
-                {
-                    $compare = true;
-                    continue;
-                }
-            }
-
-            if ($compare === false)
-            {
-                throw new Exception("Contents do not match", 1);
-            }
-        }
-    }
 
     protected function checkEmptyRefundTextData($data)
     {
@@ -364,12 +354,11 @@ class NetbankingPnbGatewayTest extends TestCase
                 'amount' => [
                     'claims'  => 500.0,
                     'refunds' => 500.0,
-                    'total'   => 500.0,
                 ],
                 'count'   => [
                     'claims'  => 4,
-                    'refunds' => 3,
-                    'total'   => 7
+                    'refunds' => 2,
+                    'total'   => 6
                 ]
         ];
 
@@ -392,7 +381,6 @@ class NetbankingPnbGatewayTest extends TestCase
                 'amount' => [
                     'claims'  => 1000.0,
                     'refunds' => 0,
-                    'total'   => 1000.0,
                 ],
                 'count'   => [
                     'claims'  => 2,

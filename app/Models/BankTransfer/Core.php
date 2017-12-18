@@ -2,7 +2,6 @@
 
 namespace RZP\Models\BankTransfer;
 
-use Cache;
 use Config;
 
 use RZP\Models\Base;
@@ -19,8 +18,8 @@ class Core extends Base\Core
     protected $mutex;
 
     const NRE_FAILURE_MESSAGES = [
-        'NEFT-RETURN Credit to NRI Account',
-        'IMPS-RTN-NRE ACCOUNT',
+        'neft-return credit to nri account',
+        'imps-rtn-nre account',
     ];
 
     public function __construct()
@@ -109,35 +108,34 @@ class Core extends Base\Core
      */
     protected function alertException(\Throwable $ex, array $input)
     {
-        // Any exception is critical, as bank transfers are never
-        // supposed to fail. Trace accordingly, as then rethrow
-        // the exception, so that Kotak retries the request.
+        //
+        // Empty request is not really actionable, trace info and skip Slack
+        //
+        if (empty($input) === true)
+        {
+            $this->trace->info(
+                TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
+                [
+                    'input' => $input
+                ]);
+
+            return;
+        }
+
+        // Any non-trivial (non-empty request) exception is critical, as
+        // bank transfers are never supposed to fail. Trace accordingly.
         $this->trace->traceException(
             $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
 
-        // To avoid overloading Slack with errors messages (Kotak does retry)
-        // we cache a specific alert for an hour.
-        // Even Payee Account may not be set.
-        $subKey = $input[Entity::PAYEE_ACCOUNT] ?? '';
-
-        $cacheKey = 'slack.bank_transfer_processing_failed.' . $subKey;
-
-        if (Cache::get($cacheKey) === null)
-        {
-            $data = array_merge($input, ['message' => $ex->getMessage()]);
-
-            $this->app['slack']->queue(
-                TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
-                $data,
-                [
-                    'channel'  => Config::get('slack.channels.virtual_accounts_log'),
-                    'username' => 'Scrooge',
-                    'icon'     => ':x:'
-                ]
-            );
-
-            Cache::put($cacheKey, $ex->getMessage(), 60);
-        }
+        $this->app['slack']->queue(
+            TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
+            array_merge($input, ['message' => $ex->getMessage()]),
+            [
+                'channel'  => Config::get('slack.channels.virtual_accounts_log'),
+                'username' => 'Scrooge',
+                'icon'     => ':x:'
+            ]
+        );
     }
 
     /**
@@ -155,7 +153,11 @@ class Core extends Base\Core
         // This is effectively just a modify-and-validate.
         $this->create($input);
 
-        $bankTransfer = $this->repo->bank_transfer->findByUtr($input[Entity::REQ_UTR]);
+        $bankTransfer = $this->repo
+                             ->bank_transfer
+                             ->findByUtrAndPayeeIfsc(
+                                $input[Entity::REQ_UTR],
+                                $input[Entity::PAYEE_IFSC]);
 
         if ($bankTransfer !== null)
         {
@@ -265,7 +267,25 @@ class Core extends Base\Core
         $latestAttempt = $refund->fundTransferAttempts->last();
 
         if (($latestAttempt !== null) and
-            (in_array($latestAttempt->getRemarks(), self::NRE_FAILURE_MESSAGES, true)))
+            ($this->isRefundToNreAccount($latestAttempt) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * If the last attempt failed with one of these messages, we
+     * can consider it a hard bounce and not make more attempts.
+     *
+     * @return boolean
+     */
+    protected function isRefundToNreAccount($latestAttempt)
+    {
+        $msg = strtolower($latestAttempt->getRemarks());
+
+        if (in_array($msg, self::NRE_FAILURE_MESSAGES, true) === true)
         {
             return true;
         }

@@ -168,6 +168,12 @@ class PricingTest extends TestCase
 
     public function testMerchantAssignPricingPlanDefault()
     {
+        //
+        // Mobikwik MID was unexpectedly disabled
+        // https://github.com/razorpay/incidents/issues/157
+        //
+        $this->markTestSkipped('Mobikwik temporarily disabled.');
+
         $id = $this->createPricingPlan()['id'];
         $testData['request']['content']['pricing_plan_id'] = $id;
 
@@ -215,6 +221,12 @@ class PricingTest extends TestCase
 
     public function testMerchantWithAmexEnabled()
     {
+        //
+        // Mobikwik MID was unexpectedly disabled
+        // https://github.com/razorpay/incidents/issues/157
+        //
+        $this->markTestSkipped('Mobikwik temporarily disabled.');
+
         $id = $this->createPricingPlan()['id'];
 
         $this->setDefaultMerchantMethods();
@@ -229,6 +241,12 @@ class PricingTest extends TestCase
 
     public function testMerchantAssignAndGetPricingPlan()
     {
+        //
+        // Mobikwik MID was unexpectedly disabled
+        // https://github.com/razorpay/incidents/issues/157
+        //
+        $this->markTestSkipped('Mobikwik temporarily disabled.');
+
         $content = $this->assignPricingPlanToMerchant();
 
         $testData['response']['content']['id'] = $content['id'];
@@ -240,6 +258,12 @@ class PricingTest extends TestCase
 
     public function testMerchantReplacePricingPlan()
     {
+        //
+        // Mobikwik MID was unexpectedly disabled
+        // https://github.com/razorpay/incidents/issues/157
+        //
+        $this->markTestSkipped('Mobikwik temporarily disabled.');
+
         $this->testMerchantAssignPricingPlanDefault();
 
         $id = $this->createPricingPlan2()['id'];

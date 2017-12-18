@@ -570,6 +570,12 @@ class AuthorizeTest extends TestCase
 
     public function testMobikwikPaymentViaWalletS2S()
     {
+        //
+        // Mobikwik MID was unexpectedly disabled
+        // https://github.com/razorpay/incidents/issues/157
+        //
+        $this->markTestSkipped('Mobikwik temporarily disabled.');
+
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_mobikwik_terminal');
 
         $this->fixtures->merchant->addFeatures(['s2swallet']);
