@@ -3,6 +3,8 @@
 namespace RZP\Tests\Functional\Gateway\File;
 
 use Carbon\Carbon;
+use Mail;
+
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Gateway;
@@ -28,5 +30,60 @@ class FailedRefundFileTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+    }
+
+
+    public function testUpiFailedRefundFile()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('terminal:shared_upi_icici_terminal');
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $paymentId1 = $this->createAndCaptureUpiPayment();
+
+        $paymentId2 =  $this->createAndCaptureUpiPayment();
+
+        $this->refundPayment($paymentId1, 10000);
+        $this->refundPayment($paymentId2, 10000);
+        $this->refundPayment($paymentId2);
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        foreach ($refunds['items'] as $refund)
+        {
+            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
+        }
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+    }
+
+    protected function createAndCaptureUpiPayment()
+    {
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['payment_id'];
+
+        $this->gateway = 'upi_icici';
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->capturePayment($payment['id'], 50000);
+
+        return $paymentId;
+
     }
 }
