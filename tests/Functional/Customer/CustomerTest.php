@@ -93,8 +93,8 @@ class CustomerTest extends TestCase
             'Sample"s name'                                       => 'The name format is invalid.',
             'A very big big big name off some big big big person' => 'The name may not be greater than 50 characters.',
             'A weird? name'                                       => 'The name format is invalid.',
-            '-AB weired name'                                     => 'The name format is invalid.',
-            '  -AB weired name'                                   => 'The name format is invalid.', // Validation must happens on trimmed value
+            '-AB weird name'                                     => 'The name format is invalid.',
+            '  -AB weird name'                                   => 'The name format is invalid.', // Validation must happens on trimmed value
         ];
 
         $testData = & $this->testData[__FUNCTION__];
