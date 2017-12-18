@@ -283,6 +283,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::SUBMITTED) === true);
     }
 
+    public function getCompanyCin()
+    {
+        return $this->getAttribute(self::COMPANY_CIN);
+    }
+
     public function getGstin()
     {
         return $this->getAttribute(self::GSTIN);
@@ -293,9 +298,74 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::P_GSTIN);
     }
 
+    public function getPan()
+    {
+        return $this->getAttribute(self::COMPANY_PAN);
+    }
+
+    public function getPanName()
+    {
+        return $this->getAttribute(self::COMPANY_PAN_NAME);
+    }
+
+    public function getPromoterPan()
+    {
+        return $this->getAttribute(self::PROMOTER_PAN);
+    }
+
+    public function getPromoterPanName()
+    {
+        return $this->getAttribute(self::PROMOTER_PAN_NAME);
+    }
+
+    public function getBusinessProofFile()
+    {
+        return $this->getAttribute(self::BUSINESS_PROOF_URL);
+    }
+
+    public function getAddressProofFile()
+    {
+        return $this->getAttribute(self::ADDRESS_PROOF_URL);
+    }
+
     public function getBusinessRegisteredAddress()
     {
         return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS);
+    }
+
+    public function getBusinessRegisteredCity()
+    {
+        return $this->getAttribute(self::BUSINESS_REGISTERED_CITY);
+    }
+
+    public function getBusinessRegisteredState()
+    {
+        return $this->getAttribute(self::BUSINESS_REGISTERED_STATE);
+    }
+
+    public function getBusinessRegisteredPin()
+    {
+        return $this->getAttribute(self::BUSINESS_REGISTERED_PIN);
+    }
+
+    public function getBusinessOperationAddress()
+    {
+        return $this->getAttribute(self::BUSINESS_OPERATION_ADDRESS);
+    }
+
+    public function getBusinessOperationCity()
+    {
+        return $this->getAttribute(self::BUSINESS_OPERATION_CITY);
+    }
+
+    public function getBusinessOperationState()
+    {
+        return $this->getAttribute(self::BUSINESS_OPERATION_STATE);
+    }
+
+    public function getBusinessOperationPin()
+    {
+        return $this->getAttribute(self::BUSINESS_OPERATION_PIN);
     }
 
     public function getBusinessStateCode()
@@ -335,6 +405,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CONTACT_MOBILE);
     }
 
+    public function getContactLandline()
+    {
+        return $this->getAttribute(self::CONTACT_LANDLINE);
+    }
+
+    public function getBusinessType()
+    {
+        return $this->getAttribute(self::BUSINESS_TYPE);
+    }
+
     public function getTransactionReportEmail()
     {
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
@@ -348,6 +428,31 @@ class Entity extends Base\PublicEntity
     public function getBusinessSpocEmail()
     {
         return $this->getAttribute(self::BUSINESS_SPOC_EMAIL);
+    }
+
+    public function getBusinessPaymentDetails()
+    {
+        return $this->getAttribute(self::BUSINESS_PAYMENTDETAILS);
+    }
+
+    public function getBusinessDateOfEstablishment()
+    {
+        return $this->getAttribute(self::BUSINESS_DOE);
+    }
+
+    public function getTransactionVolume()
+    {
+        return $this->getAttribute(self::TRANSACTION_VOLUME);
+    }
+
+    public function getTransactionValue()
+    {
+        return $this->getAttribute(self::TRANSACTION_VALUE);
+    }
+
+    public function getBusinessModel()
+    {
+        return $this->getAttribute(self::BUSINESS_MODEL);
     }
 
     public function toArrayGST()

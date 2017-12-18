@@ -10,20 +10,45 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Entity extends Merchant\Entity
 {
-    const NOTES                   = 'notes';
-    const STATUS                  = 'status';
-    const CAN_SUBMIT              = 'can_submit';
-    const DESTINATION             = 'destination';
-    const SCHEDULE                = 'schedule';
-    const FUNDS_ON_HOLD           = 'funds_on_hold';
-    const FIELDS_PENDING          = 'fields_pending';
-    const BUSINESS_DETAILS        = 'business_details';
-    const SECONDARY_EMAILS        = 'secondary_emails';
-    const ACTIVATION_STATUS       = 'activation_status';
-    const ACTIVATION_DETAILS      = 'activation_details';
-    const SETTLEMENT_DETAILS      = 'settlement_details';
-    const SETTLEMENT_SCHEDULES    = 'settlement_schedules';
-    const MERCHANT_CONFIGURATIONS = 'merchant_configurations';
+    const CIN                      = 'cin';
+    const PAN                      = 'pan';
+    const PIN                      = 'pin';
+    const CITY                     = 'city';
+    const TYPE                     = 'type';
+    const MODEL                    = 'model';
+    const GSTIN                    = 'gstin';
+    const NOTES                    = 'notes';
+    const STATE                    = 'state';
+    const STATUS                   = 'status';
+    const MOBILE                   = 'mobile';
+    const P_GSTIN                  = 'p_gstin';
+    const ADDRESS                  = 'address';
+    const COUNTRY                  = 'country';
+    const PAN_NAME                 = 'pan_name';
+    const LANDLINE                 = 'landline';
+    const SCHEDULE                 = 'schedule';
+    const CAN_SUBMIT               = 'can_submit';
+    const DESTINATION              = 'destination';
+    const KYC_DETAILS              = 'kyc_details';
+    const PROMOTER_PAN             = 'promoter_pan';
+    const FUNDS_ON_HOLD            = 'funds_on_hold';
+    const FIELDS_PENDING           = 'fields_pending';
+    const PAYMENTDETAILS           = 'paymentdetails';
+    const BUSINESS_DETAILS         = 'business_details';
+    const DATE_ESTABLISHED         = 'date_established';
+    const SECONDARY_EMAILS         = 'secondary_emails';
+    const ACTIVATION_STATUS        = 'activation_status';
+    const PROMOTER_PAN_NAME        = 'promoter_pan_name';
+    const ACTIVATION_DETAILS       = 'activation_details';
+    const ADDRESS_PROOF_URL        = 'address_proof_file';
+    const REGISTERED_ADDRESS       = 'registered_address';
+    const SETTLEMENT_DETAILS       = 'settlement_details';
+    const TRANSACTION_VOLUME       = 'transaction_volume';
+    const BUSINESS_PROOF_URL       = 'business_proof_file';
+    const OPERATIONAL_ADDRESS      = 'operational_address';
+    const SETTLEMENT_SCHEDULES     = 'settlement_schedules';
+    const MERCHANT_CONFIGURATIONS  = 'merchant_configurations';
+    const AVERAGE_TRANSACTION_SIZE = 'average_transaction_size';
 
     protected static $sign = 'acc';
 
@@ -42,8 +67,7 @@ class Entity extends Merchant\Entity
         self::BUSINESS_DETAILS,
         self::NOTES,
         self::SETTLEMENT_DETAILS,
-        self::MERCHANT_CONFIGURATIONS,
-        self::CREATED_AT,
+        self::MERCHANT_CONFIGURATIONS
     ];
 
     protected $publicSetters = [
@@ -84,7 +108,7 @@ class Entity extends Merchant\Entity
 
     public function getSchedule()
     {
-        return $this->schedules()->first()->toArrayPublic();
+        return $this->schedules()->first();
     }
 
     public function getActivatedAt()
@@ -100,6 +124,53 @@ class Entity extends Merchant\Entity
     public function getNotes()
     {
         return $this->getAttribute(self::NOTES);
+    }
+
+    public function getRegisteredAddress()
+    {
+        $merchantDetail = $this->merchantDetail;
+
+        $address = [
+            self::ADDRESS => $merchantDetail->getBusinessRegisteredAddress(),
+            self::CITY    => $merchantDetail->getBusinessRegisteredCity(),
+            self::STATE   => $merchantDetail->getBusinessRegisteredState(),
+            self::PIN     => $merchantDetail->getBusinessRegisteredPin()
+        ];
+
+        return $address;
+    }
+
+    public function getOperationAddress()
+    {
+        $merchantDetail = $this->merchantDetail;
+
+        $address = [
+            self::ADDRESS => $merchantDetail->getBusinessOperationAddress(),
+            self::CITY    => $merchantDetail->getBusinessOperationCity(),
+            self::STATE   => $merchantDetail->getBusinessOperationState(),
+            self::PIN     => $merchantDetail->getBusinessOperationPin()
+        ];
+
+        return $address;
+    }
+
+    public function getKYCDetails()
+    {
+        $merchantDetail = $this->merchantDetail;
+
+        $array = [
+            self::CIN                => $merchantDetail->getCompanyCin(),
+            self::GSTIN              => $merchantDetail->getGstin(),
+            self::P_GSTIN            => $merchantDetail->getPGstin(),
+            self::PAN                => $merchantDetail->getPan(),
+            self::PAN_NAME           => $merchantDetail->getPanName(),
+            self::PROMOTER_PAN       => $merchantDetail->getPromoterPan(),
+            self::PROMOTER_PAN_NAME  => $merchantDetail->getPromoterPanName(),
+            self::BUSINESS_PROOF_URL => $merchantDetail->getBusinessProofFile(),
+            self::ADDRESS_PROOF_URL  => $merchantDetail->getAddressProofFile()
+        ];
+
+        return $array;
     }
     // ----------------------- End of getters -------------------------------------
 
@@ -135,7 +206,21 @@ class Entity extends Merchant\Entity
 
     public function setPublicBusinessDetailsAttribute(array & $array)
     {
-        $array[self::BUSINESS_DETAILS] = '';
+        $merchantDetail = $this->merchantDetail;
+
+        $array[self::BUSINESS_DETAILS] = [
+            self::MOBILE                   => $this->merchantDetail->getContactMobile(),
+            self::LANDLINE                 => $this->merchantDetail->getContactLandline(),
+            self::TYPE                     => $this->merchantDetail->getBusinessType(),
+            self::PAYMENTDETAILS           => $this->merchantDetail->getBusinessPaymentdetails(),
+            self::MODEL                    => $this->merchantDetail->getBusinessModel(),
+            self::REGISTERED_ADDRESS       => $this->getRegisteredAddress(),
+            self::OPERATIONAL_ADDRESS      => $this->getOperationAddress(),
+            self::DATE_ESTABLISHED         => $this->merchantDetail->getBusinessDateOfEstablishment(),
+            self::TRANSACTION_VOLUME       => $this->merchantDetail->getTransactionVolume(),
+            self::AVERAGE_TRANSACTION_SIZE => $merchantDetail->getTransactionValue(),
+            self::KYC_DETAILS              => $this->getKYCDetails()
+        ];
     }
 
     public function setPublicNotesAttribute(array & $array)
@@ -154,7 +239,7 @@ class Entity extends Merchant\Entity
             $settlementDestinationId = BankAccount\Entity::getSignedId($settlementDestination->getId());
         }
 
-        $schedule = $this->getSchedule();
+        $schedule = $this->getSchedule()->toArrayPublic();
 
         // Unset the keys that are not required
         unset($schedule[Schedule\Entity::MERCHANT_ID]);
