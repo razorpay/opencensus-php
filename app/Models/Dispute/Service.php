@@ -39,4 +39,11 @@ class Service extends Base\Service
 
         return $reason->toArrayPublic();
     }
+
+    public function fetch(string $id): array
+    {
+        $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
+
+        return $dispute->toArrayPublic();
+    }
 }
