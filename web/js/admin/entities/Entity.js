@@ -57,7 +57,6 @@ export default class GenericEntity extends Component {
       suppressDefaultError
     ).then(data => {
       if (!data.errors && data) {
-        data.mode = mode;
         this.setState({ data, title: this.getTitle(mode) });
       }
 
