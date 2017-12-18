@@ -30,6 +30,7 @@ class ErrorCode
     const GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE                                = 'GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE';
     const GATEWAY_ERROR_INVALID_TERMINAL_ID                                         = 'GATEWAY_ERROR_INVALID_TERMINAL_ID';
     const GATEWAY_ERROR_INVALID_TERMINAL_SECRET                                     = 'GATEWAY_ERROR_INVALID_TERMINAL_SECRET';
+    const GATEWAY_ERROR_TERMINAL_SECRET_EXPIRED                                     = 'GATEWAY_ERROR_TERMINAL_SECRET_EXPIRED';
     const GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED                               = 'GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED';
     const GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED                                 = 'GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED';
     const GATEWAY_ERROR_INVALID_SUBSEQUENT_PAYMENT                                  = 'GATEWAY_ERROR_INVALID_SUBSEQUENT_PAYMENT';
@@ -46,6 +47,9 @@ class ErrorCode
     const GATEWAY_ERROR_FALSE_AUTHORIZE                                             = 'GATEWAY_ERROR_FALSE_AUTHORIZE';
     const GATEWAY_ERROR_UNKNOWN_ERROR                                               = 'GATEWAY_ERROR_UNKNOWN_ERROR';
     const GATEWAY_ERROR_INVALID_TERMINAL                                            = 'GATEWAY_ERROR_INVALID_TERMINAL';
+    const GATEWAY_ERROR_TERMINAL_NOT_ENABLED                                        = 'GATEWAY_ERROR_TERMINAL_NOT_ENABLED';
+    const GATEWAY_ERROR_INSTITUTION_NOT_ENABLED                                     = 'GATEWAY_ERROR_INSTITUTION_NOT_ENABLED';
+    const GATEWAY_ERROR_TERMINAL_ACTION_NOT_ENABLED                                 = 'GATEWAY_ERROR_TERMINAL_ACTION_NOT_ENABLED';
     const GATEWAY_ERROR_INVALID_RESPONSE                                            = 'GATEWAY_ERROR_INVALID_RESPONSE';
     const GATEWAY_ERROR_PAYMENT_ALREADY_SETTLED                                     = 'GATEWAY_ERROR_PAYMENT_ALREADY_SETTLED';
     const GATEWAY_ERROR_PAYMENT_VOID_FAILED                                         = 'GATEWAY_ERROR_PAYMENT_VOID_FAILED';
@@ -101,6 +105,7 @@ class ErrorCode
     const GATEWAY_ERROR_PAYMENT_MISSING_DATA                                        = 'GATEWAY_ERROR_PAYMENT_MISSING_DATA';
     const GATEWAY_ERROR_INVALID_PARAMETERS                                          = 'GATEWAY_ERROR_INVALID_PARAMETERS';
     const GATEWAY_ERROR_INVALID_CALLBACK_URL                                        = 'GATEWAY_ERROR_INVALID_CALLBACK_URL';
+    const GATEWAY_ERROR_INVALID_PAYMENT_DATA                                        = 'GATEWAY_ERROR_INVALID_PAYMENT_DATA';
 
     const GATEWAY_ERROR_PAYMENT_TRANSACTION_NOT_FOUND                               = 'GATEWAY_ERROR_PAYMENT_TRANSACTION_NOT_FOUND';
 
@@ -110,6 +115,9 @@ class ErrorCode
     const GATEWAY_ERROR_MERCHANT_IP_NOT_WHITELISTED                                 = 'GATEWAY_ERROR_MERCHANT_IP_NOT_WHITELISTED';
     const GATEWAY_ERROR_PREMATURE_SI_EXECUTION                                      = 'GATEWAY_ERROR_PREMATURE_SI_EXECUTION';
     const GATEWAY_ERROR_SI_EXECUTION_ALREADY_DONE                                   = 'GATEWAY_ERROR_SI_EXECUTION_ALREADY_DONE';
+
+    const GATEWAY_ERROR_ENCRYPTION_PROCESS_NOT_ENABLED                              = 'GATEWAY_ERROR_ENCRYPTION_PROCESS_NOT_ENABLED';
+    const GATEWAY_ERROR_RESPONSE_ENCRYPTION_FAILED                                  = 'GATEWAY_ERROR_RESPONSE_ENCRYPTION_FAILED';
 
     const GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE                                   = 'GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE';
 
