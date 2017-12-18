@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant\Account;
 
 use RZP\Models\Merchant;
+use RZP\Models\Schedule;
+use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail as MerchantDetail;
 use RZP\Models\Schedule\Task as ScheduleTask;
 
@@ -69,10 +71,20 @@ class Entity extends Merchant\Entity
         return 'merchant';
     }
 
+    public function schedules()
+    {
+        return $this->hasMany('RZP\Models\Schedule\Entity');
+    }
+
     // ----------------------- Getters --------------------------------------------
     public function getSettlementDestination()
     {
         return $this->bankAccount()->first();
+    }
+
+    public function getSchedule()
+    {
+        return $this->schedules()->first()->toArrayPublic();
     }
 
     public function getActivatedAt()
@@ -133,9 +145,24 @@ class Entity extends Merchant\Entity
 
     public function setPublicSettlementDetailsAttribute(array & $array)
     {
+        $settlementDestinationId = null;
+
+        $settlementDestination = $this->getSettlementDestination();
+
+        if ($settlementDestination !== null)
+        {
+            $settlementDestinationId = BankAccount\Entity::getSignedId($settlementDestination->getId());
+        }
+
+        $schedule = $this->getSchedule();
+
+        // Unset the keys that are not required
+        unset($schedule[Schedule\Entity::MERCHANT_ID]);
+        unset($schedule[Schedule\Entity::ID]);
+
         $array[self::SETTLEMENT_DETAILS] = [
-            self::DESTINATION => $this->getSettlementDestination(),
-            self::SCHEDULE    => $this->getSettlementSchedule()
+            self::DESTINATION => $settlementDestinationId,
+            self::SCHEDULE    => $schedule
         ];
     }
 
