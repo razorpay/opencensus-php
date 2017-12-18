@@ -238,7 +238,7 @@ class Gateway extends Base\Gateway
 
             $this->repo->saveOrFail($gatewayPayment);
 
-            $this->checkErrorMessage($gatewayPayment);
+            $this->checkErrorMessage($gatewayPayment, $gatewayContent);
 
             $expectedAmount = $this->getFormattedAmount($input['payment']['amount'] / 100);
 
@@ -360,7 +360,7 @@ class Gateway extends Base\Gateway
         if ($responseFields[Fields::RESULT] !== Status::CAPTURED and
             substr($responseFields[Fields::RESULT], 0, 4) === Constants::ERROR_MESSAGE_START)
         {
-            $this->checkErrorMessage($gatewayEntity);
+            $this->checkErrorMessage($gatewayEntity, $responseFields);
         }
 
         $this->checkCapturedStatus($gatewayEntity, ErrorCode::BAD_REQUEST_REFUND_FAILED);
@@ -765,10 +765,11 @@ class Gateway extends Base\Gateway
 
     /**
      * @param Entity $gatewayPayment
+     * @param array  $gatewayContent
      *
      * @throws Exception\GatewayErrorException
      */
-    protected function checkErrorMessage($gatewayPayment)
+    protected function checkErrorMessage($gatewayPayment, $gatewayContent)
     {
         if (empty($gatewayPayment->getErrorMessage()) === false)
         {
@@ -778,7 +779,7 @@ class Gateway extends Base\Gateway
 
             $errorCode = ErrorCodes::getMappedCode($gatewayCode);
 
-            throw new Exception\GatewayErrorException($errorCode, $gatewayCode, $errorDesc, $input);
+            throw new Exception\GatewayErrorException($errorCode, $gatewayCode, $errorDesc, $gatewayContent);
         }
     }
 
