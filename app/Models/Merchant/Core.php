@@ -413,7 +413,7 @@ class Core extends Base\Core
         }
     }
 
-    public function validateFilterAttributesAndAddMerchantId($merchantId, $input)
+    public function validateFilterAttributesAndAddMerchantId($merchantId, $input): array
     {
         $filters = $input[Entity::FILTERS];
 
@@ -421,13 +421,15 @@ class Core extends Base\Core
 
         foreach ($filters as $key => $filter)
         {
-            array_push($input[Entity::FILTERS][$key], [Entity::KEY_MERCHANT_ID => $merchantId]);
-
-            foreach ($filter as $attributes)
+            foreach ($filter as $subKey => $subFilter)
             {
-                $validator->validateAnalyticsInputFilter($attributes);
+                $validator->validateAnalyticsInputFilter($subFilter);
+
+                $input[Entity::FILTERS][$key][$subKey][Entity::KEY_MERCHANT_ID] = $merchantId;
             }
         }
+
+        return $input;
     }
 
     /**

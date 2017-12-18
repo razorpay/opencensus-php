@@ -1550,7 +1550,7 @@ class Service extends Base\Service
 
     public function fetchAnalytics($input)
     {
-        (new Core())->validateFilterAttributesAndAddMerchantId($this->merchant->getId(), $input);
+        $input = (new Core())->validateFilterAttributesAndAddMerchantId($this->merchant->getId(), $input);
 
         return $this->app['eventManager']->query($input);
     }
