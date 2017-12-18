@@ -10,6 +10,8 @@ use RZP\Constants\Mode;
 use RZP\Gateway\Utility;
 use RZP\Trace\TraceCode;
 
+use RZP\Models\Feature\Constants as Feature;
+
 class Reporting
 {
     const REQUEST_TIMEOUT = 30;
@@ -63,7 +65,37 @@ class Reporting
     {
         $url = self::REPORT_CONFIG;
 
-        return $this->makeRequestAndSend($input, $url, 'get');
+        $configs = $this->makeRequestAndSend($input, $url, 'get');
+
+        $configValues = $configs['items'];
+
+        $merchant = $this->auth->getMerchant();
+
+        // Currently, all the merchant reports, and shared reports are returned from reporting service
+        // Reversals, Transfers are shared reports, which should be applicable only to marketplace merchants.
+        // If `marketplace` feature is not enabled for the merchant, then we remove the reversals and transfers reports.
+        if ($merchant->isFeatureEnabled(Feature::MARKETPLACE) === false)
+        {
+            $configValues = array_values(array_filter($configValues, function($configValue) {
+                return (($configValue['type'] !== 'reversals') and
+                    ($configValue['type'] !== 'transfers'));
+            }, ARRAY_FILTER_USE_BOTH));
+        }
+
+        // PaymentLinks Report should be only shown to merchants having tag `Payment_Link_Report`
+        $tags = $merchant->tagNames();
+
+        if (in_array('Payment_Link_Report', $tags, true) === false)
+        {
+            $configValues = array_values(array_filter($configValues, function($configValue) {
+                return ($configValue['type'] !== 'invoices');
+            }, ARRAY_FILTER_USE_BOTH));
+        }
+
+        $configs['items'] = $configValues;
+        $configs['count'] = count($configValues);
+
+        return $configs;
     }
 
     public function fetchConfigById(string $id): array
