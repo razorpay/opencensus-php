@@ -3,7 +3,6 @@
 namespace RZP\Models\Merchant\Methods;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 
 class Entity extends Base\PublicEntity
@@ -307,16 +306,7 @@ class Entity extends Base\PublicEntity
 
     public function isMobikwikEnabled()
     {
-        //
-        // Mobikwik MID was unexpectedly disabled, this change is
-        // needed for merchants using razorpay.js and S2S.
-        //
-        // https://github.com/razorpay/incidents/issues/157
-        //
-
-        return (($this->merchant->getId() === '5ubLZpACTmD8D4') or
-                ($this->merchant->getId() === Merchant\Account::TEST_ACCOUNT));
-        // return $this->getAttribute(self::MOBIKWIK);
+        return $this->getAttribute(self::MOBIKWIK);
     }
 
     public function isOpenwalletEnabled()
