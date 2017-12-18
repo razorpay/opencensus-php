@@ -61,10 +61,27 @@ class AepsIciciGatewayTest extends TestCase
 
     public function testRefund()
     {
-        $payment = $this->doAuthPayment($this->payment);
+        $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $response = $this->refundPayment($payment['id']);
 
         $this->assertTestResponse($response);
+    }
+
+    public function testRefundFailure()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content[Icici\ResponseConstants::REFUND_RESPONSE] = '11';
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->refundPayment($payment['id']);
     }
 }
