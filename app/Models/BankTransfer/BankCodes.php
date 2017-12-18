@@ -45,6 +45,7 @@ class BankCodes
     const IFSC_SIBL = 'SIBL0000084';
     const IFSC_SRCB = 'SRCB0000024';
     const IFSC_SYNB = 'SYNB0000005';
+    const IFSC_TJSB = 'TJSB0000002';
     const IFSC_TMBL = 'TMBL0000001';
     const IFSC_UBIN = 'UBIN0538167';
     const IFSC_UCBA = 'UCBA0000002';
@@ -98,6 +99,7 @@ class BankCodes
         'SRC'   => self::IFSC_SRCB,
         'SYB'   => self::IFSC_SYNB,
         'TMB'   => self::IFSC_TMBL,
+        'TSB'   => self::IFSC_TJSB,
         'UBI'   => self::IFSC_UTBI,
         'UCO'   => self::IFSC_UCBA,
         'UOB'   => self::IFSC_UBIN,
