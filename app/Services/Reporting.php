@@ -16,8 +16,8 @@ class Reporting
 {
     const REQUEST_TIMEOUT = 30;
 
-    const REPORT_CONFIG   = '/configs';
-    const REPORT_LOG      = '/logs';
+    const REPORT_CONFIG   = '/v1/configs';
+    const REPORT_LOG      = '/v1/logs';
 
     /**
      * Configuration array

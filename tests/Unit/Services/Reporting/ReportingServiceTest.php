@@ -18,7 +18,7 @@ class ReportingServiceTest extends TestCase
         $authHeaders = $auth->invokeArgs($reporting, []);
 
         assert(count($authHeaders) === 2);
-        $this->assertEquals($authHeaders[0], 'rzp');
+        $this->assertEquals($authHeaders[0], 'api');
     }
 
     protected function getMethod($name)
