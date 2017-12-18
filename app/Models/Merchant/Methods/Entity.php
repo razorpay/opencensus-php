@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Methods;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 
 class Entity extends Base\PublicEntity
@@ -313,7 +314,8 @@ class Entity extends Base\PublicEntity
         // https://github.com/razorpay/incidents/issues/157
         //
 
-        return false;
+        return (($this->merchant->getId() === '5ubLZpACTmD8D4') or
+                ($this->merchant->getId() === Merchant\Account::TEST_ACCOUNT));
         // return $this->getAttribute(self::MOBIKWIK);
     }
 
