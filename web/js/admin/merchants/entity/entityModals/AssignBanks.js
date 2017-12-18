@@ -29,17 +29,17 @@ export default class PricingPlanModal extends Component {
         merchantBanksMapping[key] = data.enabled[key];
         banksList[key] = '1';
       }
-
-      this.setState({ merchantBanksMapping, banksList });
+      const banksListInOrder = Object.keys(banksList).sort();
+      this.setState({ merchantBanksMapping, banksList, banksListInOrder });
     });
   }
 
   /* UI fields for methods */
   getFormFields() {
-    const fields = [];
+    let fields;
 
-    for (let bank in this.state.banksList) {
-      fields.push(
+    fields = this.state.banksListInOrder.map(bank => {
+      return (
         <Fragment key={bank}>
           <SwitchField
             name={bank}
@@ -50,7 +50,7 @@ export default class PricingPlanModal extends Component {
           <br />
         </Fragment>
       );
-    }
+    });
 
     return fields;
   }
@@ -61,9 +61,8 @@ export default class PricingPlanModal extends Component {
       'Submit'
     ).then(_ => {
       const banksData = {
-        banks: Object.keys(body),
+        banks: Object.keys(body).filter(bank => body[bank] == '1'),
       };
-
       return adminPost({
         route_name: 'merchant_set_banks',
         url_params: {
@@ -76,7 +75,7 @@ export default class PricingPlanModal extends Component {
             return;
           }
 
-          notifySuccess('Pricing Plan assigned successfully.');
+          notifySuccess('Banks Assigned successfully');
           closeModal();
         })
         .catch(err => {
