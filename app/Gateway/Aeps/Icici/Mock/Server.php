@@ -71,12 +71,12 @@ class Server extends Base\Mock\Server
     {
         $data = [
             Icici\ResponseConstants::REFUND_SUCCESS       => 'true',
-            Icici\ResponseConstants::REFUND_RESPONSE      => '11',
-            Icici\ResponseConstants::REFUND_MESSAGE       => 'Success',
+            Icici\ResponseConstants::REFUND_RESPONSE      => '0',
+            Icici\ResponseConstants::REFUND_MESSAGE       => 'Transaction Successful',
             Icici\ResponseConstants::REFUND_BANKRRN       => '732516577130',
             Icici\ResponseConstants::REFUND_UPITRANLOGID  => '577130',
             Icici\ResponseConstants::REFUND_USERPROFILE   => '723',
-            Icici\ResponseConstants::REFUND_SEQNO         => Icici\RequestConstants::REFUND_DATA_SEQ_NO,
+            Icici\ResponseConstants::REFUND_SEQNO         => $data[Icici\RequestConstants::REFUND_DATA_SEQ_NO],
             Icici\ResponseConstants::REFUND_MOBILEAPPDATA => 'MobileAppData',
         ];
 
