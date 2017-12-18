@@ -195,7 +195,7 @@ export default class EntityList extends Component {
               {value}
             </Link>
           );
-        } else if (key === 'payment_id') {
+        } else if (key === 'payment_id' && value) {
           if (value.indexOf('pay_') === -1) {
             value = 'pay_' + value;
           }
