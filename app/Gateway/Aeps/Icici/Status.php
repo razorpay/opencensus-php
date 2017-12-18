@@ -4,5 +4,5 @@ namespace RZP\Gateway\Aeps\Icici;
 
 class Status
 {
-    const STATUS_SUCCESS = 'true';
+    const REFUND_STATUS_SUCCESS = '0';
 }

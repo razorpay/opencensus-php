@@ -158,17 +158,24 @@ class Gateway extends Base\Gateway
 
         $responseData = $this->getRefundDecryptedData($responseData);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            [
+                'refund_id'          => $input['refund']['id'],
+                'decrypted_response' => $responseData,
+            ]
+        );
         // TODO: Store  refund response
 
-        if ($responseData[ResponseConstants::REFUND_SUCCESS] !== Status::STATUS_SUCCESS)
+        if ($responseData[ResponseConstants::REFUND_RESPONSE] !== Status::REFUND_STATUS_SUCCESS)
         {
             // Can't validate amount here, since amount does not exist in response
 
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED,
-                $content[ResponseConstants::REFUND_RESPONSE],
-                $content[ResponseConstants::REFUND_MESSAGE]
+                $responseData[ResponseConstants::REFUND_RESPONSE],
+                $responseData[ResponseConstants::REFUND_MESSAGE]
             );
         }
     }
