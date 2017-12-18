@@ -68,11 +68,6 @@ export default class GenericEntity extends Component {
     let { id, type, mode = null } = this.params;
     let { data } = this.state;
 
-    //pass mode value for respective api's
-    if (data && mode) {
-      data.mode = mode;
-    }
-
     return (
       <div class="entity-page">
         <main class="box limited">
