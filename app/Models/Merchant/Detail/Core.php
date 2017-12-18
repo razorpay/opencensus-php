@@ -52,6 +52,12 @@ class Core extends Base\Core
             {
                 $this->markSubmitted($merchantDetails);
 
+                $activationStatusData = [
+                    Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
+                ];
+
+                $this->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
+
                 $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
             }
 
@@ -68,12 +74,6 @@ class Core extends Base\Core
             if ($this->canSubmit($input, $response) === true)
             {
                 $this->fireActivationTrigger($merchantDetails, $merchant);
-
-                $activationStatusData = [
-                    Entity::ACTIVATION_STATUS => Status::ACTIVATED,
-                ];
-
-                $this->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
             }
 
             $response['auto_activated'] = $autoActivated;
@@ -320,7 +320,8 @@ class Core extends Base\Core
                                                             $rejectionReasons,
                                                             $maker)
         {
-            if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED)
+            if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED) and
+                ($merchantDetails->merchant->isLinkedAccount() === false))
             {
                 /*
                  * Setup workflow for activation_status change in merchantDetail entity,
@@ -386,6 +387,12 @@ class Core extends Base\Core
             $bankCore->createOrChangeBankAccount($bankData, $merchant);
 
             (new Merchant\Activate)->autoActivate($merchant);
+
+            $activationStatusData = [
+                Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+            ];
+
+            $this->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
 
             $merchantDetails->setLocked(true);
 
