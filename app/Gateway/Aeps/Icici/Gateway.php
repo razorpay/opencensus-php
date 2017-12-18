@@ -186,9 +186,9 @@ class Gateway extends Base\Gateway
 
         $sKey = $encryptor->generateSkey();
 
-        // $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
-        $amount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $amount = number_format($input['refund']['amount'] / 100, 2, '.', '');
 
         $data = [
             RequestConstants::REFUND_DATA_ACCOUNT_PROVIDER    => '74',
@@ -206,7 +206,7 @@ class Gateway extends Base\Gateway
             RequestConstants::REFUND_DATA_DEFAULT_DEBIT       => 'N',
             RequestConstants::REFUND_DATA_DEFAULT_CREDIT      => 'N',
             RequestConstants::REFUND_DATA_GLOBAL_ADDRESS_TYPE => 'AADHAR',
-            RequestConstants::REFUND_DATA_PAYEE_AADHAR        => '123456789012',//$gatewayEntity[Base\Entity::AADHAAR_NUMBER],
+            RequestConstants::REFUND_DATA_PAYEE_AADHAR        => $gatewayEntity[Base\Entity::AADHAAR_NUMBER],
             RequestConstants::REFUND_DATA_PAYEE_IIN           => '',
             // TODO: Change this later
             RequestConstants::REFUND_DATA_PAYEE_NAME          => 'Test',
@@ -527,24 +527,5 @@ class Gateway extends Base\Gateway
         return $xmlString;
     }
 
-    protected function createGatewayPaymentEntity($input, $requestData)
-    {
-        $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
-        $gatewayPayment->setPaymentId($input['payment'][Payment\Entity::ID]);
-
-        $gatewayPayment->setAadhaarNumber($input['aadhaar']['number']);
-
-        $gatewayPayment->setAmount($input['payment']['amount']);
-
-        $gatewayPayment->setAcquirer($input['terminal']['gateway_acquirer']);
-
-        $gatewayPayment->setAction($this->action);
-
-        $gatewayPayment->setCounter($requestData[RequestConstants::COUNTER]);
-
-        $this->repo->saveOrFail($gatewayPayment);
-
-        return $gatewayPayment;
-    }
 }
