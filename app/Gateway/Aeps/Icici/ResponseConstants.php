@@ -15,7 +15,7 @@ class ResponseConstants
     const AUTH_DATE                                  = '13';
     const AUTH_NETWORK_INTERNATIONAL_IDENTIFIER      = '24';
     const AUTH_POINT_OF_SERVICE_CONDITION_CODE       = '25';
-    const AUTH_ADDITIONAL_DATE                       = '36';
+    const AUTH_ADDITIONAL_DATA                       = '36';
     const AUTH_RRN                                   = '37';
     const AUTH_AUTHORIZATION_IDENTIFICATION_RESPONSE = '38';
     const AUTH_RESPONSE_CODE                         = '39';

@@ -64,24 +64,33 @@ class Gateway extends Base\Gateway
         {
             $response = $this->sendRequest($requestXmlData);
 
-            $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
-                'gateway' => $this->gateway,
-                'response' => $response
-            ]);
+            $this->trace->info(
+                TraceCode::GATEWAY_RESPONSE, [
+                    'gateway'    => $this->gateway,
+                    'payment_id' => $input['payment']['id'],
+                    'response'   => $response,
+                ]
+            );
 
             $parsedResponse = $this->parseResponse($response);
 
-            $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
-                'gateway' => $this->gateway,
-                'response' => $parsedResponse
-            ]);
+            $this->trace->info(
+                TraceCode::GATEWAY_RESPONSE,
+                [
+                    'gateway'    => $this->gateway,
+                    'payment_id' => $input['payment']['id'],
+                    'response'   => $parsedResponse,
+                ]
+            );
 
             $paymentStatus = $this->updateGatewayPaymentAndGetStatus($gatewayPayment, $parsedResponse);
 
             if ($paymentStatus !== SELF::SUCCESS)
             {
                 throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    $parsedResponse[ResponseConstants::AUTH_RESPONSE_CODE]
+                );
             }
         }
         catch (Exception\GatewayTimeoutException $e)
