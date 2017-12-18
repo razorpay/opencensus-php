@@ -26,7 +26,7 @@ class Netbanking
     // @TODO : Somehow map the older IFSC's to point
     // to the self gateways now.
 
-    protected static $names = array(
+    protected static $names = [
         self::BARB_R => 'Bank of Baroda - Retail Banking',
         self::PUNB_R => 'Punjab National Bank - Retail Banking',
         self::LAVB_R => 'Lakshmi Vilas Bank - Retail Banking',
@@ -36,7 +36,7 @@ class Netbanking
         self::LAVB_C => 'Lakshmi Vilas Bank - Corporate Banking',
         self::ICIC_C => 'ICICI Bank - Corporate Banking',
         self::UTIB_C => 'Axis Bank - Corporate Banking',
-    );
+    ];
 
     const ACCOUNT_NUMBER_LENGTHS = [
         IFSC::UTIB => 15,

@@ -44,7 +44,9 @@ class Axis extends Base
 
         $corporate = $this->gatewayFile->getCorporate();
 
-        $gatewayCode = $corporate ? self::CORPORATE_GATEWAY_CODE : self::NON_CORPORATE_GATEWAY_CODE;
+        $gatewayCode = ($corporate === true) ?
+                        self::CORPORATE_GATEWAY_CODE :
+                        self::NON_CORPORATE_GATEWAY_CODE;
 
         $refunds = $this->repo->refund->fetchCorporateRefundsBetweenTimestamps(
             static::PAYMENT_TYPE_ATTRIBUTE,
