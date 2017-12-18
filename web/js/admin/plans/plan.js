@@ -226,7 +226,16 @@ class Rule extends CollectionItem {
   }
 
   field(Component, name, props = {}) {
-    var value = this[name] || '';
+    let value;
+
+    if (name === 'amount_range') {
+      value =
+        this['amount_range_min'] != null
+          ? this['amount_range_min'] + '-' + this['amount_range_max']
+          : this[name];
+    } else {
+      value = this[name] || '';
+    }
 
     if (this.readonly) {
       return value;
