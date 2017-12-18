@@ -231,17 +231,26 @@ class Gateway extends Base\Gateway
         if (empty($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]) === false)
         {
             $gatewayPayment->setGatewayPaymentId($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]);
+
+            if (empty($gatewayResponse[Fields::ERROR_TEXT]) === false)
+            {
+                $gatewayPayment->setErrorMessage($gatewayResponse[Fields::ERROR_TEXT]);
+
+                $this->checkErrorMessage($gatewayResponse);
+            }
+
+            $this->repo->saveOrFail($gatewayPayment);
         }
 
-        try
+        if (empty($gatewayResponse['trandata']) === false)
         {
-            $this->checkErrorMessage($input['gateway'], $gatewayPayment);
-
             $gatewayContent = $this->getDecryptedRequestContent($gatewayResponse['trandata']);
 
             $attributes = $this->getCallbackFields($gatewayContent);
 
             $gatewayPayment->fill($attributes);
+
+            $this->repo->saveOrFail($gatewayPayment);
 
             $expectedAmount = $this->getFormattedAmount($input['payment']['amount'] / 100);
 
@@ -250,13 +259,11 @@ class Gateway extends Base\Gateway
             $this->assertAmount($expectedAmount, $actualAmount);
 
             $this->assertPaymentId($input['payment']['id'], $gatewayContent[Fields::TRACK_ID]);
+        }
 
-            $this->checkCapturedStatus($gatewayPayment, ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-        finally
-        {
-            $this->repo->saveOrFail($gatewayPayment);
-        }
+        $this->checkErrorMessage($gatewayResponse);
+
+        $this->checkCapturedStatus($gatewayPayment, ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
 
         $response = $this->getCallbackResponseData($input);
 
@@ -290,6 +297,7 @@ class Gateway extends Base\Gateway
             Entity::POST_DATE              => Fields::POST_DATE,
             Entity::STATUS                 => Fields::RESULT,
             Entity::AUTH_RES_CODE          => Fields::AUTH_RES_CODE,
+            Entity::ERROR_MESSAGE          => Fields::ERROR_TEXT,
         ];
 
         $missingCallbackFields = [];
@@ -353,48 +361,52 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $attributes = $this->getRefundFields($response, $input);
+        $responseFields = $this->getResponseFields($response);
+
+        $attributes = $this->getRefundFields($responseFields, $input);
 
         $this->parseResponseStatus($attributes);
 
         $gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input);
 
-        if ($attributes[Entity::STATUS] === Status::NOT_CAPTURED)
+        if ($responseFields[Entity::STATUS] !== Status::CAPTURED)
         {
-            try
-            {
-                $errorStatus = $attributes[Entity::STATUS];
+            $errorStatus = $response[Entity::STATUS];
 
-                $refundContent[Fields::ERROR_TEXT] = $errorStatus;
+            $refundContent[Fields::ERROR_TEXT] = $errorStatus;
 
-                $this->checkErrorMessage($refundContent, $gatewayEntity);
-            }
-            finally
-            {
-                $this->repo->saveOrfail($gatewayEntity);
-            }
+            $this->checkErrorMessage($refundContent);
         }
 
         $this->checkCapturedStatus($gatewayEntity, ErrorCode::BAD_REQUEST_REFUND_FAILED);
     }
 
     /**
-     * Refund Fields to set the gateway entity.
      * @param $response
-     * @param $input
      *
      * @return array
      */
-    protected function getRefundFields($response, $input)
+    protected function getResponseFields($response)
     {
         $responseBody = $response->body;
 
         // Bank will send text witj only child nodes with out parent
         // So wrapping around the data to use simplexml.
-        $refundResponse = "<response>" . trim($responseBody) . "</response>";
+        $responseBody = "<response>" . trim($responseBody) . "</response>";
 
-        $refundResponse = (array) simplexml_load_string($refundResponse);
+        $responseFields = (array) simplexml_load_string($responseBody);
 
+        return $responseFields;
+    }
+    /**
+     * Refund Fields to set the gateway entity.
+     * @param $refundResponse
+     * @param $input
+     *
+     * @return array
+     */
+    protected function getRefundFields($refundResponse, $input)
+    {
         $refundFields = $this->getCallbackFields($refundResponse);
 
         $refundFields[Entity::AMOUNT] = $input[E::REFUND][Entity::AMOUNT];
@@ -762,11 +774,10 @@ class Gateway extends Base\Gateway
 
     /**
      * @param array  $input
-     * @param Entity $gatewayPayment
      *
      * @throws Exception\GatewayErrorException
      */
-    protected function checkErrorMessage(array $input, Entity $gatewayPayment)
+    protected function checkErrorMessage(array $input)
     {
         if (empty($input[Fields::ERROR_TEXT]) === false)
         {
@@ -775,8 +786,6 @@ class Gateway extends Base\Gateway
             $errorDesc = ErrorCodes::getErrorDesc($gatewayCode);
 
             $errorCode = ErrorCodes::getMappedCode($gatewayCode);
-
-            $gatewayPayment->setErrorMessage($input[Fields::ERROR_TEXT]);
 
             throw new Exception\GatewayErrorException($errorCode, $gatewayCode, $errorDesc, $input);
         }
