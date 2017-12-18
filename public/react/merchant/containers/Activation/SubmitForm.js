@@ -57,6 +57,16 @@ export default class SubmitForm extends Component {
                     and agree to abide by them at all times.
                   </div>
                 </label>
+                <div class="m-t">
+                  <em>
+                    Please review the form before submitting. After submitting,
+                    the form will get locked and thereafter for any changes you
+                    may contact&nbsp;
+                    <a href="mailto:support@razorpay.com" class="highlight">
+                      support@razorpay.com
+                    </a>.
+                  </em>
+                </div>
               </div>
             </div>
           </div>
