@@ -63,6 +63,7 @@ return [
     ],
 
     'raven' => [
+        'mock'      => env('RAVEN_MOCK', false),
         'url'       => env('RAVEN_URL'),
         'secret'    => env('RAVEN_SECRET'),
     ],

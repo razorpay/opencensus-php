@@ -49,6 +49,7 @@ class Gateway extends Base\Gateway
         Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
         Entity::PROVIDER                  => Entity::PROVIDER,
         Entity::BANK                      => Entity::BANK,
+        Entity::TYPE                      => Entity::TYPE,
         Entity::RECEIVED                  => Entity::RECEIVED,
         Fields::PAYER_VA                  => Entity::VPA,
         Fields::PAYER_NAME                => Entity::NAME,
@@ -67,6 +68,12 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        if ((isset($input['upi']['flow']) === true) and
+            ($input['upi']['flow'] === 'intent'))
+        {
+            return $this->authorizeIntent($input);
+        }
 
         $attributes = $this->getGatewayEntityAttributes($input);
 
@@ -129,6 +136,56 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    protected function authorizeIntent(array $input)
+    {
+        $attributes = [
+            Entity::TYPE => Base\Type::PAY,
+        ];
+
+        $payment = $this->createGatewayPaymentEntity($attributes);
+
+        $request =  $this->getPayAuthorizeRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $response = $this->parseGatewayResponse($response->body);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $response);
+
+        $this->updateGatewayPaymentResponse($payment, $response);
+
+        $status = (int) $response['response'];
+
+        if ($status !== Status::TXN_SUCCESS)
+        {
+            $errorCode = ResponseCodeMap::getApiErrorCode($status);
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $status,
+                ResponseCode::getResponseMessage($status));
+        }
+
+        return $this->getIntentRequest($input, $response);
+    }
+
+    protected function getIntentRequest($input, $response)
+    {
+        $content = [
+            IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA,
+            IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+            IntentParams::TXN_REF_ID    => $response['refId'],
+            IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
+            IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
+            IntentParams::TXN_CURRENCY  => 'INR',
+            IntentParams::MCC           => '5411',
+        ];
+
+        $query = str_replace(' ', '', urldecode(http_build_query($content)));
+
+        return ['data' => ['intent_url' => 'upi://pay?' . $query]];
+    }
+
     /**
      * We only store the VPA, bank and provider because the rest of the fields
      * are filled by the callback
@@ -139,6 +196,7 @@ class Gateway extends Base\Gateway
     {
         return [
             Entity::VPA => $input['payment']['vpa'],
+            Entity::TYPE => Base\Type::COLLECT,
         ];
     }
 
@@ -268,7 +326,7 @@ class Gateway extends Base\Gateway
      */
     protected function getUrl($type = null): string
     {
-        $url = parent::getUrl();
+        $url = parent::getUrl($type);
 
         return sprintf($url, $this->getMerchantId());
     }
@@ -362,6 +420,34 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function getPayAuthorizeRequestArray(array $input): array
+    {
+        $payment = $input['payment'];
+
+        $data = [
+            Fields::AMOUNT           => $this->formatAmount($payment['amount']),
+            Fields::BILL_NUMBER      => '1234',
+            Fields::MERCHANT_ID      => $this->getMerchantId(),
+            Fields::MERCHANT_TRAN_ID => $payment['id'],
+            Fields::TERMINAL_ID      => $this->getTerminalId($input),
+        ];
+
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content, 'post', 'pay');
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request'           => $request,
+                'decrypted_content' => $data,
+                'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
+            ]);
+
+        return $request;
+    }
+
     protected function getTerminalId(array $input): string
     {
         $mcc = (string) $input['merchant']->getCategory();
@@ -419,6 +505,8 @@ class Gateway extends Base\Gateway
         $attr[Entity::RECEIVED] = 1;
 
         $payment->fill($attr);
+
+        $payment->generatePspData($attr);
 
         $payment->saveOrFail();
     }
@@ -615,6 +703,20 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
+
+        $processedRefunds = $this->getProcessedRefunds();
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        {
+            return false;
+        }
+
+        if (in_array($input['refund']['id'], $processedRefunds) === true)
+        {
+            return true;
+        }
+
         $content = $this->sendRefundVerifyRequest($input);
 
         if ($content['status'] === Status::SUCCESS)
@@ -713,7 +815,6 @@ class Gateway extends Base\Gateway
 
         assertTrue($content[Fields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
         assertTrue($content[Fields::MERCHANT_TRAN_ID] === $gatewayPayment->getPaymentId());
-        assertTrue($content[Fields::BANK_RRN] === $gatewayPayment->getGatewayPaymentId());
 
         if ($status !== Status::SUCCESS)
         {
@@ -728,7 +829,11 @@ class Gateway extends Base\Gateway
         // Authorization was successful
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
-        return [];
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA => $gatewayPayment->getVpa()
+            ]
+        ];
     }
 
     public function refund(array $input)
@@ -853,5 +958,4 @@ class Gateway extends Base\Gateway
 
         return (new $class)->generate($input);
     }
-
 }

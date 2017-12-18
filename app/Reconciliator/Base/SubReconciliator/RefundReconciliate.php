@@ -58,7 +58,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         if (empty($rowDetails) === true)
         {
-            return;
+            return $this->handleUnprocessedRow($row);
         }
 
         $refundId = $rowDetails[BaseReconciliate::REFUND_ID];

@@ -41,7 +41,7 @@
         "graham-campbell/throttle": "^5.3",
         "rtconner/laravel-tagging": "~2.2",
         "razorpay/trace": "2.0.6",
-        "anlutro/l4-settings": "^0.5.0",
+        "anlutro/l4-settings": "0.5.3",
         "razorpay/oauth": "dev-master",
         "drewm/mailchimp-api": "^2.1",
         "razorpay/ufh-sdk-php": "dev-master"
@@ -62,6 +62,10 @@
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/oauth.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:razorpay/laravel-settings.git"
         },
         {
             "type": "vcs",

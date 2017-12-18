@@ -302,19 +302,22 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Gets list of invoices of given batch ids. If a non-empty array of ids
-     * are passed only those out of total invoices of batch are returned.
+     * Gets list of draft invoices of given batch ids. If a non-empty array of
+     * ids are passed only those out of total invoices of batch are returned.
+     * This method is used in BatchIssue job.
      *
-     * @param string $batchId
-     * @param array  $ids
+     * @param  string $batchId
+     * @param  array  $ids
      *
      * @return Base\PublicCollection
      */
-    public function findByBatchIdAndPublicIds(
+    public function findDraftsByBatchIdAndPublicIds(
         string $batchId,
         array $ids = []): Base\PublicCollection
     {
-        $query = $this->newQuery()->where(Entity::BATCH_ID, $batchId);
+        $query = $this->newQuery()
+                      ->where(Entity::BATCH_ID, $batchId)
+                      ->where(Entity::STATUS, Status::DRAFT);
 
         if (empty($ids) === false)
         {
