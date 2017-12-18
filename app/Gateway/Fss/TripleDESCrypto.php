@@ -25,7 +25,6 @@ class TripleDESCrypto extends BaseTripeDESCrypto
      * Instead of removing the extra padded string, FSS is attaching '^' as a End of data.
      * so after decrypting data truncating the last extra padded part.
      * @param $ciphertext
-     * @param $padding
      *
      * @return string
      */
@@ -37,8 +36,10 @@ class TripleDESCrypto extends BaseTripeDESCrypto
 
         if (empty(strpos($decryptedData, '^')) === false)
         {
-            $decryptedData = substr($decryptedData, 0, (strpos($decryptedData, '^') - 1));
+            $decryptedData = substr($decryptedData, 0, (strpos($decryptedData, '^')));
         }
+
+        $decryptedData = rtrim($decryptedData, "&");
 
         $decryptedData = rtrim($decryptedData, "\0");
 

@@ -85,6 +85,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function getErrorMessage()
+    {
+        return $this->getAttribute(self::ERROR_MESSAGE);
+    }
+
     public function setStatus($status)
     {
         $this->setAttribute(self::STATUS, $status);

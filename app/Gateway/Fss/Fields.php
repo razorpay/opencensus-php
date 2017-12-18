@@ -56,7 +56,7 @@ class Fields
     const LANGUAGE_ID                   = 'langid';
 
     // Response Fields
-    const ERROR_TEXT                    = 'ErrorText';
+    const ERROR_TEXT                    = 'error_text';
 
     const ACTIONVPAS                    = 'actionVPAS';
 
@@ -67,4 +67,6 @@ class Fields
     const AUTH                          = 'auth';
 
     const POST_DATE                     = 'postdate';
+
+    const TRANDATA                      = 'trandata';
 }

@@ -228,29 +228,17 @@ class Gateway extends Base\Gateway
             $input['payment']['id'],
             Action::AUTHORIZE);
 
-        if (empty($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]) === false)
+        if (empty($gatewayResponse[Fields::TRANDATA]) === false)
         {
-            $gatewayPayment->setGatewayPaymentId($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]);
-
-            if (empty($gatewayResponse[Fields::ERROR_TEXT]) === false)
-            {
-                $gatewayPayment->setErrorMessage($gatewayResponse[Fields::ERROR_TEXT]);
-
-                $this->checkErrorMessage($gatewayResponse);
-            }
-
-            $this->repo->saveOrFail($gatewayPayment);
-        }
-
-        if (empty($gatewayResponse['trandata']) === false)
-        {
-            $gatewayContent = $this->getDecryptedRequestContent($gatewayResponse['trandata']);
+            $gatewayContent = $this->getDecryptedRequestContent($gatewayResponse[Fields::TRANDATA]);
 
             $attributes = $this->getCallbackFields($gatewayContent);
 
             $gatewayPayment->fill($attributes);
 
             $this->repo->saveOrFail($gatewayPayment);
+
+            $this->checkErrorMessage($gatewayPayment);
 
             $expectedAmount = $this->getFormattedAmount($input['payment']['amount'] / 100);
 
@@ -260,8 +248,6 @@ class Gateway extends Base\Gateway
 
             $this->assertPaymentId($input['payment']['id'], $gatewayContent[Fields::TRACK_ID]);
         }
-
-        $this->checkErrorMessage($gatewayResponse);
 
         $this->checkCapturedStatus($gatewayPayment, ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
 
@@ -320,7 +306,8 @@ class Gateway extends Base\Gateway
         // Calculate missing fields.
         $missingFields = array_intersect($mandatoryFields, $missingCallbackFields);
 
-        if (count($missingFields) > 0)
+        // When error message is present mandatory fields are not required.
+        if (count($missingFields) > 0 and empty($attributes[Entity::ERROR_MESSAGE]) === true)
         {
             $this->trace->error(
                 TraceCode::GATEWAY_PAYMENT_MISSING_FIELD,
@@ -373,9 +360,7 @@ class Gateway extends Base\Gateway
         if ($responseFields[Fields::RESULT] !== Status::CAPTURED and
             substr($responseFields[Fields::RESULT], 0, 4) === Constants::ERROR_MESSAGE_START)
         {
-            $refundContent[Fields::ERROR_TEXT] = $responseFields[Fields::RESULT];
-
-            $this->checkErrorMessage($refundContent);
+            $this->checkErrorMessage($gatewayEntity);
         }
 
         $this->checkCapturedStatus($gatewayEntity, ErrorCode::BAD_REQUEST_REFUND_FAILED);
@@ -779,15 +764,15 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * @param array  $input
+     * @param Entity $gatewayPayment
      *
      * @throws Exception\GatewayErrorException
      */
-    protected function checkErrorMessage(array $input)
+    protected function checkErrorMessage($gatewayPayment)
     {
-        if (empty($input[Fields::ERROR_TEXT]) === false)
+        if (empty($gatewayPayment->getErrorMessage()) === false)
         {
-            $gatewayCode = $this->getErrorCode($input[Fields::ERROR_TEXT]);
+            $gatewayCode = $this->getErrorCode($gatewayPayment->getErrorMessage());
 
             $errorDesc = ErrorCodes::getErrorDesc($gatewayCode);
 
