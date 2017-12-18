@@ -306,9 +306,33 @@ class Core extends Base\Core
             unset($input[Entity::REJECTION_REASONS]);
         }
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input, $rejectionReasons, $maker)
+        $oldMerchantDetails = clone $merchantDetails;
+
+        $merchantDetails->edit($input);
+
+        $newMerchantDetails = clone $merchantDetails;
+
+        $this->repo->transactionOnLiveAndTest(function() use (
+                                                            $merchantDetails,
+                                                            $oldMerchantDetails,
+                                                            $newMerchantDetails,
+                                                            $input,
+                                                            $rejectionReasons,
+                                                            $maker)
         {
-            $merchantDetails->edit($input);
+            if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED)
+            {
+                /*
+                 * Setup workflow for activation_status change in merchantDetail entity,
+                 * which will be triggered once all the validations are checked in the activate method.
+                 */
+                $this->app['workflow']
+                     ->setEntity($merchantDetails->getEntity())
+                     ->setOriginal($oldMerchantDetails)
+                     ->setDirty($newMerchantDetails);
+
+                (new Merchant\Activate)->activate($merchantDetails->merchant, true);
+            }
 
             $this->repo->saveOrFail($merchantDetails);
 
@@ -325,6 +349,16 @@ class Core extends Base\Core
         });
 
         return $merchantDetails;
+    }
+
+    public function setBankAccountForMerchant(Entity $merchantDetails)
+    {
+        $bankCore = (new BankAccount\Core);
+
+        // Build the input array for the merchant's bank account creation
+        $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchantDetails);
+
+        $bankCore->createOrChangeBankAccount($bankData, $merchantDetails->merchant);
     }
 
     /**
@@ -400,16 +434,15 @@ class Core extends Base\Core
             $response['need_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
         }
 
-        $activationStatus = $merchantDetails->getActivationStatus();
+        $currentActivationState = $merchant->currentActivationState();
 
-        $allowedNextActivationStatuses = [];
-
-        if (empty($activationStatus) === false)
+        if ((empty($currentActivationState) === false) and
+            ($currentActivationState->name === Status::REJECTED))
         {
-            $allowedNextActivationStatuses = Status::ALLOWED_NEXT_ACTIVATION_STATUSES[$activationStatus];
-        }
+            $rejectionReasons = $currentActivationState->rejectionReasons()->get();
 
-        $response['allowed_next_activation_statuses'] = $allowedNextActivationStatuses;
+            $response[Entity::REJECTION_REASONS] = $rejectionReasons->toArrayPublic();
+        }
 
         $totalFields = count($validationFields);
 
