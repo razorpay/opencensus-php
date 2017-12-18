@@ -15,8 +15,5 @@ use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class UpiIcici extends Base
 {
-     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
-     const GATEWAY_CODE           = 'NPCI';
      const GATEWAY                = Payment\Gateway::UPI_ICICI;
-
 }

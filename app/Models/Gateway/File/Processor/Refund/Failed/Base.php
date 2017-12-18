@@ -22,9 +22,7 @@ class Base extends Refund\Base
     {
         $begin = $this->gatewayFile->getBegin();
         $end = $this->gatewayFile->getEnd();
-        $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
-                    static::PAYMENT_TYPE_ATTRIBUTE,
-                    static::GATEWAY_CODE,
+        $refunds = $this->repo->refund->fetchFailedRefundsForGatewayBetweenTimestamps(
                     $begin,
                     $end,
                     static::GATEWAY
