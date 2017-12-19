@@ -45,6 +45,155 @@ class Gateway extends Base\Gateway
     }
 
     /**
+     * callback function for all the purchase requests.
+     * @param array $input
+     *
+     * @return array
+     */
+    public function callback(array $input): array
+    {
+        parent::callback($input);
+
+        // Trace payment callback
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'gateway' => $input['gateway']
+            ]
+        );
+
+        $gatewayResponse = $input['gateway'];
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'],
+            Action::AUTHORIZE);
+
+        if (empty($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]) === false)
+        {
+            $gatewayPayment->setGatewayPaymentId($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]);
+
+            if (empty($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]) === false)
+            {
+                $gatewayPayment->setErrorMessage($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]);
+            }
+
+            $this->repo->saveOrFail($gatewayPayment);
+        }
+
+        if (empty($gatewayResponse[Fields::TRANDATA]) === false)
+        {
+            $gatewayContent = $this->getDecryptedRequestContent($gatewayResponse[Fields::TRANDATA]);
+
+            $attributes = $this->getCallbackFields($gatewayContent);
+
+            $gatewayPayment->fill($attributes);
+
+            $this->repo->saveOrFail($gatewayPayment);
+
+            $this->checkErrorMessage($gatewayPayment, $gatewayContent);
+
+            $expectedAmount = $this->getFormattedAmount($input['payment']['amount'] / 100);
+
+            $actualAmount = $this->getFormattedAmount($gatewayContent[Fields::AMOUNT]);
+
+            $this->assertAmount($expectedAmount, $actualAmount);
+
+            $this->assertPaymentId($input['payment']['id'], $gatewayContent[Fields::TRACK_ID]);
+        }
+
+        $this->checkErrorMessage($gatewayPayment, $gatewayResponse);
+
+        $this->checkCapturedStatus($gatewayPayment, ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+
+        $response = $this->getCallbackResponseData($input);
+
+        return $response;
+    }
+
+    /**
+     * Refund Method for gateway Entity
+     *
+     * @param array $input
+     */
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $refundRequestContentArray = $this->getGatewayRequestContentArray($input);
+
+        $refundRequestContent = $this->getGatewayRequestContent($refundRequestContentArray);
+
+        $request = parent::getStandardRequestArray($refundRequestContent, 'post', Action::REFUND);
+
+        $response = $this->postRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            [
+                'refund_id' => $input['refund']['id'],
+                'response'  => $response->body,
+            ]
+        );
+
+        $responseFields = $this->getResponseFields($response);
+
+        $attributes = $this->getRefundFields($responseFields, $input);
+
+        $this->parseResponseStatus($attributes);
+
+        $gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input);
+
+        // Doing Additional check with the result because error messages are sent in result.
+        if ($responseFields[Fields::RESULT] !== Status::CAPTURED and
+            substr($responseFields[Fields::RESULT], 0, 4) === Constants::ERROR_MESSAGE_START)
+        {
+            $this->checkErrorMessage($gatewayEntity, $responseFields);
+        }
+
+        $this->checkCapturedStatus($gatewayEntity, ErrorCode::BAD_REQUEST_REFUND_FAILED);
+    }
+
+    /**
+     * Capture is empty here becuase this gateway is purchase model.
+     *
+     * @param array $input
+     */
+    public function capture(array $input)
+    {
+        parent::capture($input);
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return bool
+     */
+    public function verifyRefund(array $input)
+    {
+        parent::action($input, Action::VERIFY_REFUND);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        return $this->verifyRefundResponse($verify);
+    }
+
+    /**
      * @param array       $content
      * @param string      $method
      * @param string|null $type
@@ -200,72 +349,6 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * callback function for all the purchase requests.
-     * @param array $input
-     *
-     * @return array
-     */
-    public function callback(array $input): array
-    {
-        parent::callback($input);
-
-        // Trace payment callback
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            [
-                'gateway' => $input['gateway']
-            ]
-        );
-
-        $gatewayResponse = $input['gateway'];
-
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'],
-            Action::AUTHORIZE);
-
-        if (empty($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]) === false)
-        {
-            $gatewayPayment->setGatewayPaymentId($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]);
-
-            if (empty($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]) === false)
-            {
-                $gatewayPayment->setErrorMessage($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]);
-            }
-
-             $this->repo->saveOrFail($gatewayPayment);
-        }
-
-        if (empty($gatewayResponse[Fields::TRANDATA]) === false)
-        {
-            $gatewayContent = $this->getDecryptedRequestContent($gatewayResponse[Fields::TRANDATA]);
-
-            $attributes = $this->getCallbackFields($gatewayContent);
-
-            $gatewayPayment->fill($attributes);
-
-            $this->repo->saveOrFail($gatewayPayment);
-
-            $this->checkErrorMessage($gatewayPayment, $gatewayContent);
-
-            $expectedAmount = $this->getFormattedAmount($input['payment']['amount'] / 100);
-
-            $actualAmount = $this->getFormattedAmount($gatewayContent[Fields::AMOUNT]);
-
-            $this->assertAmount($expectedAmount, $actualAmount);
-
-            $this->assertPaymentId($input['payment']['id'], $gatewayContent[Fields::TRACK_ID]);
-        }
-
-        $this->checkErrorMessage($gatewayPayment, $gatewayResponse);
-
-        $this->checkCapturedStatus($gatewayPayment, ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-
-        $response = $this->getCallbackResponseData($input);
-
-        return $response;
-    }
-
-    /**
      * Filters out the relevant mappings and gets the data.
      * @param array $gatewayContent
      *
@@ -333,49 +416,6 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * Refund Method for gateway Entity
-     *
-     * @param array $input
-     */
-    public function refund(array $input)
-    {
-        parent::refund($input);
-
-        $refundRequestContentArray = $this->getGatewayRequestContentArray($input);
-
-        $refundRequestContent = $this->getGatewayRequestContent($refundRequestContentArray);
-
-        $request = parent::getStandardRequestArray($refundRequestContent, 'post', Action::REFUND);
-
-        $response = $this->postRequest($request);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_REFUND_RESPONSE,
-            [
-                'refund_id' => $input['refund']['id'],
-                'response'  => $response->body,
-            ]
-        );
-
-        $responseFields = $this->getResponseFields($response);
-
-        $attributes = $this->getRefundFields($responseFields, $input);
-
-        $this->parseResponseStatus($attributes);
-
-        $gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input);
-
-        // Doing Additional check with the result because error messages are sent in result.
-        if ($responseFields[Fields::RESULT] !== Status::CAPTURED and
-            substr($responseFields[Fields::RESULT], 0, 4) === Constants::ERROR_MESSAGE_START)
-        {
-            $this->checkErrorMessage($gatewayEntity, $responseFields);
-        }
-
-        $this->checkCapturedStatus($gatewayEntity, ErrorCode::BAD_REQUEST_REFUND_FAILED);
-    }
-
-    /**
      * @param $response
      *
      * @return array
@@ -407,36 +447,6 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * @param array $input
-     *
-     * @return array
-     */
-    public function verify(array $input)
-    {
-        parent::verify($input);
-
-        $verify = new Base\Verify($this->gateway, $input);
-
-        return $this->runPaymentVerifyFlow($verify);
-    }
-
-    /**
-     * @param array $input
-     *
-     * @return bool
-     */
-    public function verifyRefund(array $input)
-    {
-        parent::action($input, Action::VERIFY_REFUND);
-
-        $verify = new Base\Verify($this->gateway, $input);
-
-        $this->sendPaymentVerifyRequest($verify);
-
-        return $this->verifyRefundResponse($verify);
-    }
-
-    /**
      * parsing the verify refund Request Response a
      * @param Base\Verify $verify
      *
@@ -453,16 +463,6 @@ class Gateway extends Base\Gateway
         }
 
         return false;
-    }
-
-    /**
-     * Capture is empty here becuase this gateway is purchase model.
-     *
-     * @param array $input
-     */
-    public function capture(array $input)
-    {
-        parent::capture($input);
     }
 
     /**
