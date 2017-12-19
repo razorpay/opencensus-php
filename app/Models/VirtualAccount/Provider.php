@@ -239,7 +239,7 @@ class Provider
 
     protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode)
     {
-        $idTlv = Tags::ID . $this->$this->getStringLengthAndValue($qrCode->getId());
+        $idTlv = Tags::ID . $this->getStringLengthAndValue($qrCode->getId());
 
         $additionalDetailsString = $idTlv;
 

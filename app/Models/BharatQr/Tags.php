@@ -16,4 +16,8 @@ class Tags
     const ID                    = '05';
     const ADDITIONAL_DETAIL     = '62';
     const AMOUNT                = '54';
+
+    //To be added
+    const RUPAY                 = '28';
+    const AMEX                  = '11';
 }
