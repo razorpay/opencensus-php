@@ -17,6 +17,8 @@ use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
+use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
@@ -253,12 +255,18 @@ class Core extends Base\Core
      * This function is used for archiving merchant activation form
      * @param Entity $merchantDetails
      * @param array $input
+     * @param AdminEntity $admin
      *
      * @return Entity
      */
-    public function updateActivationArchive(Entity $merchantDetails, array $input): Entity
+    public function updateActivationArchive(Entity $merchantDetails, array $input, AdminEntity $admin): Entity
     {
         $merchantDetails->getValidator()->validateInput('archiveForm', $input);
+
+        $archiveAction = (empty($input[Entity::ARCHIVE]) === false) ? Action::ARCHIVE : Action::UNARCHIVE;
+
+        // Check for admin permission
+        $admin->hasMerchantActionPermissionOrFail($archiveAction);
 
         $archivedAt = null;
 
