@@ -4,7 +4,6 @@ namespace RZP\Models\VirtualAccount;
 
 use Config;
 use Lib\CRC16;
-use Mailgun\Api\Tag;
 use RZP\Base\Luhn;
 use RZP\Exception;
 use RZP\Models\QrCode;
