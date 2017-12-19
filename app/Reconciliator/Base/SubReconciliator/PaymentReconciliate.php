@@ -171,7 +171,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function validatePaymentStatus($row)
     {
-        $reconPaymentStatus = $this->getPaymentStatus($row);
+        $reconPaymentStatus = $this->getReconPaymentStatus($row);
 
         //
         // In some cases the recon file contains failed payments,
@@ -232,7 +232,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @param array $row
      * @return null
      */
-    protected function getPaymentStatus(array $row)
+    protected function getReconPaymentStatus(array $row)
     {
         //
         // The return value of this method must be mapped to one of the statuses in Payment\Status
