@@ -64,7 +64,7 @@ function renderDiffRow(type) {
           {item[type].map(value => {
             return Object.keys(value).map(key => (
               <li key={type + '-' + key + '-' + index + '-' + key}>
-                <b>{key}:</b> {value[key]}
+                <b>{key}:</b> {JSON.stringify(value[key]) || '--'}
               </li>
             ));
           })}
