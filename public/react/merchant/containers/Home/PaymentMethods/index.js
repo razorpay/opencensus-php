@@ -44,8 +44,11 @@ class PaymentMethods extends Component {
         startTime: startDate.unix(),
         endTime: endDate.unix(),
       })
-    ).then(resp => {
-      this.setState({ data: resp.data.agg.result });
+    ).then(({ data: { agg } }) => {
+      this.setState({
+        data: agg.result,
+        lastUpdatedAt: agg.last_updated_at,
+      });
     });
   }
 
@@ -111,7 +114,7 @@ class PaymentMethods extends Component {
           />
         </div>
         <div className="panel-footer">
-          <LastUpdated at={new Date().getTime() / 1000} />
+          <LastUpdated at={this.state.lastUpdatedAt} />
         </div>
       </div>
     );

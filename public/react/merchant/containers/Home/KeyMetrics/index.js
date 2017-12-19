@@ -145,7 +145,7 @@ class KeyMetricsContainer extends Component {
           });
 
           tabState.data.histogram = { labels, datasets };
-
+          tabState.lastUpdatedAt = histogram.last_updated_at;
           tabState.data.legendData = aggregates;
         }
       });
@@ -271,6 +271,7 @@ class KeyMetricsContainer extends Component {
                 data={tabsState[tabName].data}
                 startDate={startDate}
                 endDate={endDate}
+                lastUpdatedAt={tabsState[tabName].lastUpdatedAt}
               />
             </TabPanel>
           );

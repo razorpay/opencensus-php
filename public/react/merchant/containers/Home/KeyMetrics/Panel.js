@@ -239,6 +239,7 @@ class Panel extends Component {
         startDate,
         endDate,
         selectedBreakdown,
+        lastUpdatedAt,
       } = this.props,
       dateFormat = 'DD MMM YYYY',
       { grouping, options } = this.meta,
@@ -313,9 +314,11 @@ class Panel extends Component {
               </div>
             )}
         </div>
-        <div className="panel-footer">
-          <LastUpdated at={new Date().getTime() / 1000} />
-        </div>
+        {!data.loading && (
+          <div className="panel-footer">
+            <LastUpdated at={lastUpdatedAt} />
+          </div>
+        )}
       </div>
     );
   }

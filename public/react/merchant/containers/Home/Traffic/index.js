@@ -62,14 +62,15 @@ class Traffic extends Component {
 
     this.setState(this.state);
 
-    fetch(query).then(resp => {
+    fetch(query).then(({ data: { distribution } }) => {
       const { labels, datasets, legendData } = getPieData({
-        data: resp.data.distribution.result,
+        data: distribution.result,
         groupByColumnName: meta.groupBy,
       });
 
       groupState.chartData = { labels, datasets };
       groupState.legendData = legendData;
+      groupState.lastUpdatedAt = distribution.last_updated_at;
 
       if (isInitialLoad) {
         this.state.loading = false;
@@ -157,7 +158,7 @@ class Traffic extends Component {
           </div>
         </div>
         <div className="panel-footer">
-          <LastUpdated at={new Date().getTime() / 1000} />
+          <LastUpdated at={groupState.lastUpdatedAt} />
         </div>
       </div>
     );
