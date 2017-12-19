@@ -1,3 +1,5 @@
+import { titleCase } from 'rzp/utils/rzp-utils';
+
 var defaults = {
   margin: { top: 0, right: 0, bottom: 0, left: 0 },
   rootname: 'TOP',
@@ -7,7 +9,7 @@ var defaults = {
   height: 500,
 };
 
-function main(node, o, data, d3, onTransition) {
+function main(node, o, data, d3, onTransition, groupTitleMap) {
   var root,
     opts = { ...defaults, ...o },
     formatNumber = d3.format(opts.format),
@@ -89,7 +91,18 @@ function main(node, o, data, d3, onTransition) {
   function colorize(node, color) {
     node.color = color || colors[node.method] || 'black';
 
-    return node.depth === 1 && node.parent && colorize(node.parent, node.color);
+    if (node.depth === 1 && node.parent) {
+      if (!node.percent) {
+        const sum = node.parent._children.reduce(
+          (result, child) => result + child.value,
+          0
+        );
+
+        node.percent = (node.value / sum * 100).toFixed(2);
+      }
+
+      colorize(node.parent, node.color);
+    }
   }
 
   // Aggregate the values for internal nodes. This is normally done by the
@@ -97,11 +110,17 @@ function main(node, o, data, d3, onTransition) {
   // We also take a snapshot of the original children (_children) to avoid
   // the children being overwritten when when layout is computed.
   function accumulate(d) {
+    d.displayText = '';
+
+    if (d.key) {
+      d.displayText = groupTitleMap[d.key] || titleCase(d.key);
+    }
+
     return (d._children = d.values)
       ? (d.value = d.values.reduce(function(p, v) {
           return p + accumulate(v);
         }, 0))
-      : (d.value = d.percent);
+      : d.value;
   }
 
   // Compute the treemap layout recursively such that each group of siblings
@@ -186,15 +205,35 @@ function main(node, o, data, d3, onTransition) {
       .attr('class', 'ptext')
       .attr('dy', '.75em');
 
-    t.append('tspan').text(function(d) {
-      return d.key;
-    });
     t
       .append('tspan')
-      .attr('dy', '1.0em')
+      .attr('class', 'amount')
+      .style('font-size', '24px')
+      .style('line-height', '29px')
       .text(function(d) {
-        return formatNumber(d.value);
+        return '₹' + formatNumber(d.value);
       });
+
+    t
+      .append('tspan')
+      .style('font-size', '14px')
+      .style('line-height', '17px')
+      .attr('dy', '1.5em')
+      .attr('class', 'group-name')
+      .text(function(d) {
+        return d.displayText;
+      });
+
+    t
+      .append('tspan')
+      .style('font-size', '14px')
+      .style('line-height', '17px')
+      .attr('dy', '1.5em')
+      .attr('class', 'percentage')
+      .text(d => {
+        return d.percent + '%';
+      });
+
     t.call(text);
 
     g.selectAll('rect').style('fill', function(d) {
@@ -250,21 +289,22 @@ function main(node, o, data, d3, onTransition) {
 
   function text(text) {
     text.selectAll('tspan').attr('x', function(d) {
-      return x(d.x) + 6;
+      return x(d.x) + 23.5;
     });
     text
       .attr('x', function(d) {
-        return x(d.x) + 6;
+        return x(d.x);
       })
       .attr('y', function(d) {
-        return y(d.y) + 6;
+        return y(d.y) + 15 + 19.5;
       })
       .style('opacity', function(d) {
         return this.getComputedTextLength() > x(d.x + d.dx) - x(d.x) ||
           this.getBoundingClientRect().height > y(d.y + d.dy) - y(d.y)
           ? 0
           : 1;
-      });
+      })
+      .style('fill', '#ffffff');
   }
 
   function rect(rect) {
@@ -300,7 +340,13 @@ const getGroupingFactor = groupKey => {
   return d => d[groupKey];
 };
 
-export default function renderTreemap(node, res, d3, onTransition) {
+export default function renderTreemap(
+  node,
+  res,
+  d3,
+  onTransition,
+  groupTitleMap
+) {
   node.innerHTML = '';
 
   res = d3
@@ -333,6 +379,7 @@ export default function renderTreemap(node, res, d3, onTransition) {
     { width: node.clientWidth },
     { key: 'All Methods', values: res },
     d3,
-    onTransition
+    onTransition,
+    groupTitleMap || {}
   );
 }

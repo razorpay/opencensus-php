@@ -7,13 +7,15 @@ import Treemap from 'merchant/containers/Home/PaymentMethods/Treemap';
 import { fetch } from 'merchant/modules/pokedex';
 import { getQuery } from './data';
 
+import './styles.styl';
+
 function getLevels(hierarchy, levels = []) {
   if (hierarchy.parent) {
     getLevels(hierarchy.parent, levels);
   }
 
   levels.push({
-    name: hierarchy.key,
+    name: hierarchy.displayText,
     data: hierarchy,
   });
 
@@ -75,9 +77,9 @@ class PaymentMethods extends Component {
       levelsLength = levels.length;
 
     return (
-      <div className="panel">
+      <div className="panel p-all payment-methods-container">
         <div className="clearfix">
-          <div className="pull-left">
+          <div className="panel-actions p-b pull-left">
             <span>Showing:</span>
             {levelsLength > 0 && (
               <Breadcrumb>
@@ -94,12 +96,10 @@ class PaymentMethods extends Component {
               </Breadcrumb>
             )}
           </div>
-          <div className="pull-right">...</div>
-          <div className="pull-right">
-            <select>
-              <option>By Transaction Volume</option>
-              <option>By Issuer</option>
-            </select>
+          <div className="panel-actions p-b pull-right">
+            <div className="panel-action-item">
+              <button className="btn btn-default">...</button>
+            </div>
           </div>
         </div>
         <div>

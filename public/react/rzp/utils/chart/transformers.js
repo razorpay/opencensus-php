@@ -1,5 +1,6 @@
 import moment from 'moment';
 
+import { titleCase } from 'rzp/utils/rzp-utils';
 import colors from './colors';
 import { groupBy } from '../pokedex';
 
@@ -74,7 +75,7 @@ export const getTimelineData = ({
 
   // populates default data , avoids `if` conditions in next loop
   groups.forEach((groupName, index) => {
-    const groupLabel = groupTitleMap[groupName] || groupName,
+    const groupLabel = groupTitleMap[groupName] || titleCase(groupName),
       groupColor = colors[index % colors.length];
 
     const dataset = {
@@ -189,7 +190,7 @@ export const getPieData = ({
     legendData = [];
 
   groups.forEach((groupName, index) => {
-    const groupTitle = groupTitleMap[groupName] || groupName;
+    const groupTitle = groupTitleMap[groupName] || titleCase(groupName);
 
     labels.push(groupTitle);
 
