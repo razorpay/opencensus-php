@@ -139,13 +139,13 @@ export function getFields() {
 }
 
 const extraFields = {
-  payment: [item => ['verified', verifyStatus[item.verified] || '?']],
+  payment: [item => ['verified', verifyStatus[item.verified] || 'UNKNOWN']],
 };
 
 const verifyStatus = {
-  1: <i class="i-yes text-success text-right" />,
-  0: <i class="i-yes text-success text-right" />,
-  2: 'Verify Error',
+  0: <span class="text-danger text-right">FAILED</span>,
+  1: <span class="text-success text-right">SUCCESS</span>,
+  2: <span class="text-danger">ERROR</span>,
 };
 
 const actions = {
