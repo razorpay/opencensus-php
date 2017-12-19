@@ -261,7 +261,7 @@ class Gateway extends Base\Gateway
             $this->assertPaymentId($input['payment']['id'], $gatewayContent[Fields::TRACK_ID]);
         }
 
-        $this->checkErrorMessage($gatewayPayment, $input);
+        $this->checkErrorMessage($gatewayPayment, $gatewayResponse);
 
         $this->checkCapturedStatus($gatewayPayment, ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
 
