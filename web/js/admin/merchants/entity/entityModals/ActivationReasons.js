@@ -114,52 +114,61 @@ export class RejectActivation extends Component {
       pending,
     } = this.state;
 
-    if (pending) {
-      return <div class="spinner" />;
-    }
-
     return (
-      <BaseModal header="Change status to: Rejected">
-        <Form class="full-span full-elements">
-          <SelectField
-            label="Select Category:"
-            name="category"
-            value={selectedCategory}
-            onChange={this.handleCategoryChange}
-          >
-            {Object.keys(categoryMap).map((key, idx) => (
-              <option value={key} key={idx}>
-                {categoryMap[key]}
-              </option>
-            ))}
-          </SelectField>
-          <SelectField
-            label="Select Code:"
-            name="code"
-            value={selectedCode}
-            onChange={this.handleCodeChange}
-          >
-            {this.allReasons[selectedCategory].map(reason => (
-              <option value={reason.code} key={reason.code}>
-                {reason.description}
-              </option>
-            ))}
-          </SelectField>
-          <div class="btn" onClick={this.handleReasonAdd}>
-            + Add Reason
-          </div>
-          <AsyncButton
-            onSubmit={this.save}
-            text="Save"
-            class="btn"
-            pendingClass="small spinner"
-          />
-          {selectedReasons.length > 0 && (
-            <Table
-              animateRow={false}
-              items={selectedReasons}
-              fields={this.fields()}
+      <BaseModal
+        header={
+          <div>
+            "Change status to: Rejected"
+            <AsyncButton
+              onSubmit={this.save}
+              text="Save"
+              class="btn pull-right"
+              pendingClass="pull-right small spinner"
+              disabled={selectedReasons.length < 1}
             />
+          </div>
+        }
+      >
+        <Form class="full-span full-elements">
+          {pending ? (
+            <div class="spinner center" />
+          ) : (
+            <div>
+              <SelectField
+                label="Select Category:"
+                name="category"
+                value={selectedCategory}
+                onChange={this.handleCategoryChange}
+              >
+                {Object.keys(categoryMap).map((key, idx) => (
+                  <option value={key} key={idx}>
+                    {categoryMap[key]}
+                  </option>
+                ))}
+              </SelectField>
+              <SelectField
+                label="Select Code:"
+                name="code"
+                value={selectedCode}
+                onChange={this.handleCodeChange}
+              >
+                {this.allReasons[selectedCategory].map(reason => (
+                  <option value={reason.code} key={reason.code}>
+                    {reason.description}
+                  </option>
+                ))}
+              </SelectField>
+              <div class="btn" onClick={this.handleReasonAdd}>
+                + Add Reason
+              </div>
+              {selectedReasons.length > 0 && (
+                <Table
+                  animateRow={false}
+                  items={selectedReasons}
+                  fields={this.fields()}
+                />
+              )}
+            </div>
           )}
         </Form>
       </BaseModal>
