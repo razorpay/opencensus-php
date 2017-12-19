@@ -421,11 +421,18 @@ class Core extends Base\Core
 
         foreach ($filters as $key => $filter)
         {
-            foreach ($filter as $subKey => $subFilter)
+            if (empty($filter) === true)
             {
-                $validator->validateAnalyticsInputFilter($subFilter);
+                array_push($input[Entity::FILTERS][$key], [Entity::KEY_MERCHANT_ID => $merchantId]);
+            }
+            else
+            {
+                foreach ($filter as $subKey => $subFilter)
+                {
+                    $validator->validateAnalyticsInputFilter($subFilter);
 
-                $input[Entity::FILTERS][$key][$subKey][Entity::KEY_MERCHANT_ID] = $merchantId;
+                    $input[Entity::FILTERS][$key][$subKey][Entity::KEY_MERCHANT_ID] = $merchantId;
+                }
             }
         }
 

@@ -32,6 +32,13 @@ class MerchantAnalyticsTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testMerchantAnalyticsNoFilter()
+    {
+        $testData = $this->initializeMerchantAnalyticsRequest();
+
+        $this->startTest($testData);
+    }
+
     public function testMerchantAnalyticsDeviceValidation()
     {
         $testData = $this->initializeMerchantAnalyticsRequest();
