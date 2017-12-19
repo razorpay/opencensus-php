@@ -29,7 +29,11 @@ export const prevent = e => {
   e.stopPropagation();
 };
 
-export const titleCase = (str = '--') => {
+export const titleCase = str => {
+  if (!str) {
+    // to handle empty string or null values
+    str = '--';
+  }
   const chars = str.split('');
 
   return chars[0].toUpperCase() + chars.splice(1).join('');

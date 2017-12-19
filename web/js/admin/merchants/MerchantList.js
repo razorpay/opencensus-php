@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 
+import { statusPill } from 'util/data';
 import { formatDate } from 'util/index';
 import { adminFetch } from 'util/fetch';
 import { openMerchantEntity } from './entity/entity-resources';
@@ -95,21 +96,28 @@ const fields = [
   [
     'Activation Progress',
     item => (
-      <span class="pills label-success">{`${
-        item.merchant_detail.activation_progress
-      } %`}</span>
+      <span
+        class={`pill ${
+          item.merchant_detail.activation_progress < 100
+            ? 'label-danger'
+            : 'label-success'
+        }`}
+      >
+        {item.merchant_detail.activation_progress}%
+      </span>
     ),
   ],
-  ['Activation Status', item => item.merchant_detail.activation_status],
-  ['Registered At', item => formatDate(item.created_at)],
-  ['Submitted At', item => formatDate(item.merchant_detail.submitted_at)],
   [
-    'Tags',
-    item =>
-      item.tag_list.map((tag, idx) => (
-        <span class="pills label-muted" key={idx}>
-          {tag}
-        </span>
-      )),
+    'Activation Status',
+    item => statusPill(item.merchant_detail.activation_status),
   ],
+  ['Registered At', item => formatDate(item.created_at)],
+  [
+    'Submitted At',
+    item =>
+      item.merchant_detail.submitted_at
+        ? formatDate(item.merchant_detail.submitted_at)
+        : '--',
+  ],
+  ['Tags', item => item.tag_list.join(', ')],
 ];

@@ -172,8 +172,12 @@ const statusPillClasses = {
   closed: 'label-danger',
 };
 
-export const statusPill = status => (
-  <span class={`pill ${statusPillClasses[status] || 'label-semi-muted'}`}>
-    {snakeToTitleCase(status)}
-  </span>
-);
+export const statusPill = status => {
+  return status ? (
+    <span class={`pill ${statusPillClasses[status] || 'label-semi-muted'}`}>
+      {snakeToTitleCase(status)}
+    </span>
+  ) : (
+    '--'
+  );
+};
