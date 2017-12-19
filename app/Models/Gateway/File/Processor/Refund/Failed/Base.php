@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
+use Mail;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
@@ -11,9 +12,10 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Gateway\File\Status;
-use RZP\Models\Gateway\File\Processor\Refund;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
+use RZP\Models\Gateway\File\Processor\Refund;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
 
 class Base extends Refund\Base
@@ -119,7 +121,29 @@ class Base extends Refund\Base
 
     public function sendFile($data)
     {
+        // try
+        // {
+            $recipients = $this->gatewayFile->getRecipients();
 
+            $mailData = $this->formatDataForMail($data);
+
+            $refundFileMail = new RefundFileMail($mailData, static::GATEWAY, $recipients);
+
+            Mail::send($refundFileMail);
+
+            $this->gatewayFile->setFileSentAt(time());
+
+            $this->gatewayFile->setStatus(Status::FILE_SENT);
+        // }
+        // catch (\Throwable $e)
+        // {
+        //     throw new GatewayFileException(
+        //         ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
+        //         [
+        //             'id'        => $this->gatewayFile->getId(),
+        //         ],
+        //         $e);
+        // }
     }
 
     protected function shouldNotReportFailure(string $code): bool
@@ -132,5 +156,22 @@ class Base extends Refund\Base
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         return static::FILE_NAME . '_' . $this->mode . '_' . $time;
+    }
+
+    protected function formatDataForMail()
+    {
+        $file = $this->gatewayFile
+                     ->files()
+                     ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
+                     ->first();
+
+        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
+
+        $mailData = [
+            'file_name' => $file->getLocation(),
+            'signed_url' => $signedUrl
+        ];
+
+        return $mailData;
     }
 }
