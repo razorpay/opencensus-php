@@ -17,7 +17,6 @@ use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\Processor\Refund;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
-
 class Base extends Refund\Base
 {
     public function fetchEntities(): PublicCollection
@@ -121,8 +120,8 @@ class Base extends Refund\Base
 
     public function sendFile($data)
     {
-        // try
-        // {
+        try
+        {
             $recipients = $this->gatewayFile->getRecipients();
 
             $mailData = $this->formatDataForMail($data);
@@ -134,16 +133,16 @@ class Base extends Refund\Base
             $this->gatewayFile->setFileSentAt(time());
 
             $this->gatewayFile->setStatus(Status::FILE_SENT);
-        // }
-        // catch (\Throwable $e)
-        // {
-        //     throw new GatewayFileException(
-        //         ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
-        //         [
-        //             'id'        => $this->gatewayFile->getId(),
-        //         ],
-        //         $e);
-        // }
+        }
+        catch (\Throwable $e)
+        {
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
+                [
+                    'id'        => $this->gatewayFile->getId(),
+                ],
+                $e);
+        }
     }
 
     protected function shouldNotReportFailure(string $code): bool
