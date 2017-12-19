@@ -22,7 +22,11 @@ Customer Details:
 
 If this is correct, you don't need to take any further action.
 
+@if((isset($data) === true) and (isset($data['support_text_plain']) === true))
+{{$data['support_text_plain']}}
+@else
 You can contact us at contact@razorpay.com in case of any discrepancy.
+@endif
 
 --
 Team Razorpay

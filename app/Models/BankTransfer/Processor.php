@@ -52,7 +52,7 @@ class Processor extends VirtualAccount\Processor
 
         $isPaymentExpected = $this->isPaymentExpected($bankTransfer);
 
-        if (($this->utrCheck($bankTransfer) === true) and
+        if (($this->isDuplicate($bankTransfer) === false) and
             ($isPaymentExpected === true))
         {
             $bankTransfer->setExpected(true);
@@ -160,24 +160,32 @@ class Processor extends VirtualAccount\Processor
     }
 
     /**
-     * Check if the UTR received has ever been encountered before.
-     * If it has, this is a duplicate payment, being processed again.
+     * Check if the UTR received has ever been encountered before for the same
+     * account. If it has, this is a duplicate payment, being processed again.
+     *
+     * The ref number for IMPS (RRN) actually can be the same for
+     * two distinct transactions (around the same time), as long
+     * as the remitter bank is different. Here, we query by ref
+     * number + virtual account number to identify a duplicate
+     * (we can't use source bank info, as it is not always available).
      *
      * @param Entity $bankTransfer
      *
      * @return bool
      */
-    protected function utrCheck(Entity $bankTransfer): bool
+    protected function isDuplicate(Entity $bankTransfer): bool
     {
         $utr = $bankTransfer->getUtr();
 
+        $payerIfsc = $bankTransfer->getPayerIfsc();
+
         $duplicateBankTransfer = $this->repo
                                       ->bank_transfer
-                                      ->findByUtr($utr);
+                                      ->findByUtrAndPayerIfsc($utr, $payerIfsc);
 
         if ($duplicateBankTransfer === null)
         {
-            return true;
+            return false;
         }
 
         $this->trace->error(
@@ -189,7 +197,7 @@ class Processor extends VirtualAccount\Processor
             ]
         );
 
-        return false;
+        return true;
     }
 
     /**

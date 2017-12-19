@@ -211,12 +211,10 @@ class Throttle
         }
         catch (ThrottleException $e)
         {
-            s("kjsfnvjkdfn");
             throw $e;
         }
         catch (\Throwable $e)
         {
-            s("enfjkvnfjkv");
             $this->trace->traceException($e);
         }
     }
@@ -399,11 +397,27 @@ class Throttle
 
     protected function isThrottleMocked($auth)
     {
-        return false;
         $route = $this->request->route()->getName();
 
+        $nykaaThrottleRoutes = [
+            'customer_create',
+            'customer_fetch_tokens'
+        ];
+
+        $nestawayThrottleRoutes = [
+            'payment_fetch_multiple'
+        ];
+
         // Nykaa key id
-        if ($this->getKeyId($auth) === 'zyRUD5exRM0CGk')
+        if (($this->getKeyId($auth) === 'zyRUD5exRM0CGk') and
+            (in_array($route, $nykaaThrottleRoutes, true) === true))
+        {
+            return false;
+        }
+
+        // Nestaway key id
+        if (($this->getKeyId($auth) === 'qaD5HXqij3FnDj') and
+            (in_array($route, $nestawayThrottleRoutes, true) === true))
         {
             return false;
         }

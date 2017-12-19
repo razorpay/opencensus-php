@@ -55,11 +55,17 @@ class Constants
     const MOBIKWIK_OFFERS               = 'mobikwik_offers';
     const ALLOW_DC_RECURRING            = 'allow_dc_recurring';
     const SKIP_HOLD_FUNDS_ON_PAYOUT     = 'skip_hold_funds_on_payout';
+    const UPI_INTENT                    = 'upi_intent';
 
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
+
+    public static $recurringFeatures = [
+        self::CHARGE_AT_WILL,
+        self::SUBSCRIPTIONS,
+    ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -109,12 +115,17 @@ class Constants
         self::MOBIKWIK_OFFERS               => true,
         self::ALLOW_DC_RECURRING            => true,
         self::SKIP_HOLD_FUNDS_ON_PAYOUT     => true,
+        self::UPI_INTENT                    => true,
     ];
 
     // Keys used in the feature on-boarding workflow
-    const ONBOARDING = 'onboarding';
-    const FEATURES   = 'features';
-    const MERCHANT   = 'merchant';
+    const STATUS                        = 'status';
+    const PRODUCT                       = 'product';
+    const FEATURES                      = 'features';
+    const MERCHANT                      = 'merchant';
+    const ONBOARDING                    = 'onboarding';
+    const ONBOARDING_SUBMISSIONS_FETCH  = 'onboarding_submissions_fetch';
+    const ONBOARDING_SUBMISSIONS_UPSERT = 'onboarding_submissions_upsert';
 
     // Keys used to define the question names in the on-boarding process
     const BUSINESS_MODEL           = 'business_model';

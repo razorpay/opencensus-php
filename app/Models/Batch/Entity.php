@@ -7,15 +7,6 @@ use RZP\Models\FileStore;
 
 class Entity extends Base\PublicEntity
 {
-    /**
-     * @deprecated
-     *
-     * Previously we didn't use UFH and stored the file key names in
-     * following two attributes.
-     */
-    const UPLOAD_FILE_URL           = 'upload_file_url';
-    const DOWNLOAD_FILE_URL         = 'download_file_url';
-
     const STATUS                    = 'status';
     const PROCESSING                = 'processing';
     const TOTAL_COUNT               = 'total_count';
@@ -100,8 +91,6 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS            => 0,
         self::STATUS              => Status::CREATED,
         self::PROCESSING          => 0,
-        self::UPLOAD_FILE_URL     => '', // TODO: Remove after column dropped
-        self::DOWNLOAD_FILE_URL   => null,
         self::TOTAL_COUNT         => 0,
         self::SUCCESS_COUNT       => 0,
         self::FAILURE_COUNT       => 0,
@@ -251,16 +240,6 @@ class Entity extends Base\PublicEntity
     public function getGateway()
     {
         return $this->getAttribute(self::GATEWAY);
-    }
-
-    public function getUploadFileUrl()
-    {
-        return $this->getAttribute(self::UPLOAD_FILE_URL);
-    }
-
-    public function getDownloadFileUrl()
-    {
-        return $this->getAttribute(self::DOWNLOAD_FILE_URL);
     }
 
     public function isProcessed(): bool
