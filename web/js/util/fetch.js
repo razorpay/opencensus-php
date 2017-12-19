@@ -17,7 +17,7 @@ export default function fetch(options, suppressError) {
           return data;
         }
       } else {
-        return data.data;
+        return data.data || data; // Cases like retry settlement doesn't have data.data but have data.kotak
       }
     })
     .catch(e => notifyError(e));

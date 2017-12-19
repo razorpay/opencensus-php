@@ -31,6 +31,7 @@ export default function RetryFailedSettlements() {
               body,
               route_name: 'setl_retry',
             }).then(response => {
+              console.log('retry settlement', response);
               if (response) {
                 let message = '';
 
