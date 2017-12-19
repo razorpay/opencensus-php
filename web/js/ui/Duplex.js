@@ -24,7 +24,7 @@ export default class Duplex extends Component {
 
                   return (
                     result && (
-                      <div class="tr" key={index}>
+                      <div class="tr" key={index} onClick={copyValue}>
                         <div class="td">{snakeToTitleCase(result[0])}</div>
                         <div class="td text-right">{value}</div>
                       </div>
@@ -36,6 +36,17 @@ export default class Duplex extends Component {
       </div>
     );
   }
+}
+
+function copyValue(e) {
+  let textEl = document.createElement('textarea');
+  textEl.readOnly = true;
+  textEl.value = e.currentTarget.querySelector('.td:last-child').innerText;
+  document.body.appendChild(textEl);
+  textEl.select();
+  textEl.setSelectionRange(0, textEl.value.length);
+  document.execCommand('copy');
+  document.body.removeChild(textEl);
 }
 
 function getValue(result, mode, attributes) {
