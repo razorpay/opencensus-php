@@ -1,5 +1,6 @@
 import React from 'react';
 import { titleCase, formatDate } from 'util/index';
+import { statusPill } from 'util/data';
 
 import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';
@@ -325,13 +326,6 @@ export const beneficiaryStateMap = {
   WB: 'West Bengal',
 };
 
-const formActivationStatusMap = {
-  under_review: 'Under Review',
-  needs_clarification: 'Needs Clarification',
-  activated: 'Activated',
-  rejected: 'Rejected',
-};
-
 /*---------------------------------------- Render UI resource --------------------------------------------*/
 export function getDetailsViewMap(model) {
   const {
@@ -565,9 +559,9 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Activation Form Status',
-      value:
-        details.merchant_details &&
-        formActivationStatusMap[details.merchant_details.activation_status],
+      value: details.merchant_details
+        ? () => statusPill(details.merchant_details.activation_status)
+        : '--',
     },
     {
       label: 'Rejection Reason',

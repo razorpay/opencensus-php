@@ -1,4 +1,5 @@
 export const testMerchantId = '10000000000000';
+import { snakeToTitleCase } from 'util/index';
 
 // TODO: All below mappings exists in 'entity-resources.js' as well. "Check if they've exactly same data". Merge Accordingly.
 export const methods = {
@@ -163,11 +164,16 @@ const statusPillClasses = {
   won: 'label-success',
   lost: 'label-danger',
 
+  // activation form status
+  needs_clarification: 'label-pending',
+  activated: 'label-success',
+  rejected: 'label-danger',
+
   closed: 'label-danger',
 };
 
 export const statusPill = status => (
   <span class={`pill ${statusPillClasses[status] || 'label-semi-muted'}`}>
-    {status}
+    {snakeToTitleCase(status)}
   </span>
 );

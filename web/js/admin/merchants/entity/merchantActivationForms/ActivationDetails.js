@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 
+import { snakeToTitleCase } from 'util/index';
+
 import Form from 'ui/Form';
 import { SelectField } from 'ui/Field';
 import { adminPatch } from 'util/fetch';
@@ -85,10 +87,10 @@ export default class ActivationDetails extends Component {
     return (
       <Form onSubmit={this.openActivationModal}>
         <SelectField name="activation_status" defaultValue={this.state.status}>
-          <option value="">{statusMap[this.state.status]}</option>
+          <option value="">{snakeToTitleCase(this.state.status)}</option>
           {this.state.allowedStatuses.map(status => (
             <option key={status} value={status}>
-              {statusMap[status]}
+              {snakeToTitleCase(status)}
             </option>
           ))}
         </SelectField>
