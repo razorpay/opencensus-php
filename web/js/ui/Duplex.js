@@ -70,11 +70,8 @@ function getValue(result, mode, attributes) {
     // Value is time
     value = formatDate(value);
   } else if (
-    key.includes('amount') ||
-    // exclude fee_bearer
-    key.endsWith('fee') ||
-    key.includes('tax') ||
-    key.includes('charge')
+    typeof value === 'number' &&
+    /amount|fee|tax|credit|charge/.test(key)
   ) {
     value = <Amount value={value} />;
   } else if (
