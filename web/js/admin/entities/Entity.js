@@ -143,8 +143,8 @@ const extraFields = {
 };
 
 const verifyStatus = {
-  1: <i class="i-yes" />,
-  0: <i class="i-yes" />,
+  1: <i class="i-yes text-success text-right" />,
+  0: <i class="i-yes text-success text-right" />,
   2: 'Verify Error',
 };
 

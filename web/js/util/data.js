@@ -135,6 +135,8 @@ const statusPillClasses = {
   captured: 'label-success',
   refunded: 'label-primary',
 
+  initiated: 'label-info',
+
   // order
   attempted: 'label-info',
   paid: 'label-success',

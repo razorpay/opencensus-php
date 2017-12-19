@@ -219,7 +219,7 @@ export default class EntityList extends Component {
               {value}
             </Link>
           );
-        } else if (this.selectedEntity === 'payment' && key === 'status') {
+        } else if (key === 'status') {
           return statusPill(value);
         } else if (key.indexOf('_at') > -1 || key.indexOf('_until') > -1) {
           // Value is time

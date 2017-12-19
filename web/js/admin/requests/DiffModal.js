@@ -24,8 +24,8 @@ export default class DiffModal extends Component {
       Object.keys(response.new).forEach(key => {
         items.push({
           property: key,
-          old: response.old[key],
-          new: response.new[key],
+          old: JSON.stringify(response.old[key]),
+          new: JSON.stringify(response.new[key]),
         });
       });
 
@@ -64,7 +64,7 @@ function renderDiffRow(type) {
           {item[type].map(value => {
             return Object.keys(value).map(key => (
               <li key={type + '-' + key + '-' + index + '-' + key}>
-                <b>{key}:</b> {JSON.stringify(value[key]) || '--'}
+                <b>{key}:</b> {value[key]}
               </li>
             ));
           })}

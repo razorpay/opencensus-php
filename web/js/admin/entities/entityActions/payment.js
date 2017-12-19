@@ -153,7 +153,7 @@ export default ({ entity, mode, updateEntity }) => {
       </button>
       {entity.gateway != null &&
         entity.status === 'failed' &&
-        entity.verified === 0 && (
+        entity.verified == 0 && (
           <AsyncButton
             class="btn"
             confirm="Are you sure you want to Authorize this failed payment?"
@@ -202,17 +202,18 @@ export default ({ entity, mode, updateEntity }) => {
           </AsyncButton>
         )}
 
-      {entity.gateway != null && (
-        <AsyncButton
-          onClick={verifyPayment}
-          class="btn btn-default text-primary"
-          pendingClass="btn btn-default text-primary btn-pending"
-          confirm="Are you sure you want to Verify this payment?"
-        >
-          Verify Payment
-          <span class="spin-btn" />
-        </AsyncButton>
-      )}
+      {(entity.status === 'created' || entity.status === 'failed') &&
+        entity.gateway != null && (
+          <AsyncButton
+            onClick={verifyPayment}
+            class="btn btn-default text-primary"
+            pendingClass="btn btn-default text-primary btn-pending"
+            confirm="Are you sure you want to Verify this payment?"
+          >
+            Verify Payment
+            <span class="spin-btn" />
+          </AsyncButton>
+        )}
 
       {!entity.disputed && (
         <button
