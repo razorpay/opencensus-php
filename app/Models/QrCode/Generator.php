@@ -132,14 +132,13 @@ class Generator extends Base\Core
                     ->name($this->qrCode->getQrCodeFileName())
                     ->extension($ext)
                     ->entity($this->qrCode)
-                    ->merchant($this->merchant)
                     ->type(FileStore\Type::QR_CODE_IMAGE)
                     ->save();
     }
 
     protected function generateQrCodeImage()
     {
-        $renderer = new Renderer\Image\Png();
+        $renderer = new Renderer\Image\Png;
 
         $renderer->setHeight(Constants::QR_CODE_HEIGHT);
 

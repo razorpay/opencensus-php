@@ -386,6 +386,11 @@ class Creator extends Base\Core
     {
         $this->file->entity()->associate($entity);
 
+        if ($entity->hasRelation('merchant'))
+        {
+            $this->merchant = $entity->merchant;
+        }
+
         return $this;
     }
 
@@ -490,7 +495,6 @@ class Creator extends Base\Core
 
         return $this;
     }
-
 
     protected function deleteLocalFileIfRequired()
     {
