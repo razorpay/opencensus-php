@@ -206,6 +206,7 @@ class Gateway
             self::FIRST_DATA,
             self::BLADE,
             self::HITACHI,
+            self::FSS,
         ],
 
         Method::NETBANKING => [
