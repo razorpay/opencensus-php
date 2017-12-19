@@ -96,18 +96,20 @@ function getValue(result, mode) {
   } else if (result[0].indexOf('status') > -1) {
     value = statusPill(result[1]);
   } else if (
-    result[0].indexOf('amount') > -1 ||
-    result[0].indexOf('fee') > -1 ||
-    result[0].indexOf('tax') > -1 ||
-    result[0].indexOf('charge') > -1
-  ) {
-    value = <Amount value={value} />;
-  } else if (
-    result[0].indexOf('_at') > -1 ||
-    result[0].indexOf('_until') > -1
+    // charge_at is time
+    value &&
+    (result[0].indexOf('_at') > -1 || result[0].indexOf('_until') > -1)
   ) {
     // Value is time
     value = formatDate(value);
+  } else if (
+    value &&
+    (result[0].indexOf('amount') > -1 ||
+      result[0].indexOf('fee') > -1 ||
+      result[0].indexOf('tax') > -1 ||
+      result[0].indexOf('charge') > -1)
+  ) {
+    value = <Amount value={value} />;
   } else if (value && result[0] === 'merchant_id') {
     value = (
       <a class="link" target="_blank" href={`/admin/merchants/${value}`}>
