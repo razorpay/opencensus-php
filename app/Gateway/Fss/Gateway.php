@@ -195,8 +195,13 @@ class Gateway extends Base\Gateway
 
         $decryptedString = $crypto->decryptString($str);
 
-        // By default decrypted comes with only fields instead of nested, to let simple xml understand the data.
-        //we wrap around response.
+        /**
+         * By default decrypted comes with only fields instead of nested, to let simple xml understand the data.
+         * We wrap around response.
+         * Example: response with out a parent node = <result>SUCCESS</result><auth>0123</auth><payid>12314241</payid>
+         * Respoonse should be with a parent node for xml to array conversion
+         * <response><result>SUCCESS</result><auth>0123</auth><payid>12314241</payid></response>
+         */
         $decryptedString = "<response>" . $decryptedString . "</response>";
 
         $decryptedResult = (array) simplexml_load_string($decryptedString);

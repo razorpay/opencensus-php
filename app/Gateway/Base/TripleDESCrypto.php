@@ -13,7 +13,7 @@ class TripleDESCrypto
      * @param string $masterKey
      *
      */
-    public function __construct(int $mode, string $masterKey, bool $padding)
+    public function __construct(int $mode, string $masterKey, bool $padding = true)
     {
         $this->des = new TripleDES($mode);
 
