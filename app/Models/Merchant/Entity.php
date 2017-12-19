@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\State;
 use Conner\Tagging\Taggable;
 use RZP\Exception\LogicException;
 
@@ -1183,6 +1184,19 @@ class Entity extends Base\PublicEntity
     public function admins()
     {
         return $this->morphedByMany('\RZP\Models\Admin\Admin\Entity', 'entity', Table::MERCHANT_MAP);
+    }
+
+    public function activationStates()
+    {
+        return $this->hasMany('\RZP\Models\State\Entity', State\Entity::ENTITY_ID)
+                    ->where(State\Entity::ENTITY_TYPE, 'merchant_detail');
+    }
+
+    public function currentActivationState()
+    {
+        return $this->activationStates()
+                    ->orderBy(State\Entity::CREATED_AT, 'desc')
+                    ->first();
     }
 
     /**

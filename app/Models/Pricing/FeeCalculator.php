@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Pricing;
 
+use Cache;
+
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
@@ -12,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 
 use Razorpay\Trace\Logger as Trace;
@@ -160,10 +163,6 @@ class FeeCalculator
 
             $rules = $this->applyFiltersOnRules($pricing, $filters);
 
-            $this->trace->debug(
-                TraceCode::PRICING_RULE_SELECTION,
-                ['count' => count($rules)]);
-
             if ((count($rules) > 0) and
                 $entityName === Pricing\Feature::PAYMENT)
             {
@@ -186,10 +185,6 @@ class FeeCalculator
         $rules = $this->applyFiltersOnRules($pricing, $filters);
 
         $rulesCount = count($rules);
-
-        $this->trace->debug(
-            TraceCode::PRICING_RULE_SELECTION,
-            ['count' => $rulesCount]);
 
         //
         // If pricing for the feature is optional, no rules may exist
@@ -618,19 +613,47 @@ class FeeCalculator
     }
 
     protected function traceAllRules($rules)
-    {
-        // This is sending a lot of traces and so for
-        // this tracing is not required.
-        $array = [];
+     {
+         $verbose = $this->isVerboseLogEnabled();
 
-        foreach ($rules as $rule)
+         if ($verbose === false)
+         {
+             return;
+         }
+
+         // This is sending a lot of traces and so for
+         // this tracing is not required.
+         $array = [];
+
+         foreach ($rules as $rule)
+         {
+             $array[] = $rule->toArray();
+         }
+
+         $this->trace->info(
+             TraceCode::PAYMENT_PRICING_RULE_SELECTION,
+             ['rules' => $array]);
+    }
+
+    /**
+     * Verbosity of pricing rule selection logs are determined
+     * by a flag held in cache
+     * @return boolean verbosity flag
+     */
+    protected function isVerboseLogEnabled(): bool
+    {
+        try
         {
-            $array[] = $rule->toArray();
+            $verbose = (bool) Cache::get(ConfigKey::PRICING_RULE_SELECTION_LOG_VERBOSE);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::PRICING_RULE_CONFIG_FETCH_ERROR);
+
+            $verbose = false;
         }
 
-        $this->trace->debug(
-            TraceCode::PAYMENT_PRICING_RULE_SELECTION,
-            ['rules' => $array]);
+        return $verbose;
     }
 
     protected function createFeeBreakup($name, $percent, $amount, $pricingRuleId = null)

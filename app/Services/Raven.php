@@ -10,9 +10,11 @@ use RZP\Trace\TraceCode;
 
 class Raven
 {
-    const SMS_ID = 'sms_id';
+    const SMS_ID          = 'sms_id';
 
     const REQUEST_TIMEOUT = 60;
+
+    const TEST_SMS_ID     = '10000000000sms';
 
     protected $baseUrl;
 
@@ -47,10 +49,8 @@ class Raven
 
         $this->baseUrl = $this->config['url'];
 
-        if (isset($app['rzp.mode']) === true)
-        {
-            $this->mode = $app['rzp.mode'];
-        }
+        // Refer: https://github.com/razorpay/api/issues/6385
+        $this->mode = (isset($app['rzp.mode']) === true) ? $app['rzp.mode'] : null;
 
         $this->key = 'rzp';
 
@@ -59,13 +59,13 @@ class Raven
         $this->proxy = $app['config']->get('gateway.proxy_address');
     }
 
-    public function sendOtp($input)
+    public function sendOtp(array $input): array
     {
         $response = null;
 
         if ($this->mode === Mode::TEST)
         {
-            $response['sms_id'] = '10000000000sms';
+            $response[self::SMS_ID] = self::TEST_SMS_ID;
         }
         else
         {
@@ -75,13 +75,21 @@ class Raven
         return $response;
     }
 
-    public function sendSms($input)
+    /**
+     * Makes call to raven service to send an SMS. By default if it's test mode
+     * we return mock success response. But conditionally callee can specify
+     * if it should not mock test mode behavior.
+     *
+     * @param  array        $input
+     * @param  bool|boolean $mockInTestMode
+     *
+     * @return array
+     */
+    public function sendSms(array $input, bool $mockInTestMode = true): array
     {
-        $response = null;
-
-        if ($this->mode === Mode::TEST)
+        if (($this->mode === Mode::TEST) and ($mockInTestMode === true))
         {
-            $response['sms_id'] = '10000000000sms';
+            return [self::SMS_ID => self::TEST_SMS_ID];
         }
         else
         {
@@ -91,7 +99,7 @@ class Raven
         return $response;
     }
 
-    public function verifyOtp($input)
+    public function verifyOtp(array $input): array
     {
         $response = null;
 

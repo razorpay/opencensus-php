@@ -19,4 +19,5 @@ class Constants
     const PAYMENT        = 'Payment';
     const REFUND         = 'Refund';
     const SERVICE_OUTLET = '0120000';
+    const S_FLAG         = 'C';
 }

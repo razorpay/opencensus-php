@@ -318,12 +318,20 @@ class BankTransferTest extends TestCase
 
         $this->ba->appAuth();
 
+        $this->fixtures->base->editEntity(
+            'bank_account',
+            $bankAccount['id'],
+            [
+                'ifsc_code'=>'RAZR0000001'
+            ]);
+
         $response = $this->makeRequestAndGetContent([
             'method'  => 'POST',
             'url'     => '/bank_transfers/refunds/retry',
         ]);
 
-        // Refund is now marked created again
+        // Refund is now marked created again,
+        // because payer bank acc now has an IFSC
         $refund =  $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
         $this->assertEquals('created', $refund['status']);
@@ -861,6 +869,26 @@ class BankTransferTest extends TestCase
         $oldBankTransferId = $bankTransfer['id'];
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($oldBankTransferId, $bankTransfer['id']);
+
+        $differentAccountNumber = $this->createVirtualAccount()['account_number'];
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['payee_account'] = $differentAccountNumber;
+        $request['content']['payee_ifsc'] = $ifsc;
+        $request['content']['payer_ifsc'] = $ifsc;
+        $request['content']['transaction_id'] = $utr;
+        $this->ba->appAuth();
+        // Another payment, same UTR, made to a different account, from a different account
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // New entity created, as this is not a duplicate payment
+        $oldBankTransferId = $bankTransfer['id'];
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertNotEquals($oldBankTransferId, $bankTransfer['id']);
+        $this->assertEquals($differentAccountNumber, $bankTransfer['payee_account']);
     }
 
     public function testBankTransferProcessInvalidAccount()

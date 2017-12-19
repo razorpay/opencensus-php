@@ -107,7 +107,13 @@ trait Callback
                         $payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
 
                     throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+                        ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,
+                        null,
+                        [
+                            'payment_id' => $payment->getId(),
+                            'gateway'    => $payment->getGateway(),
+                            'status'     => $payment->getStatus(),
+                        ]);
                 }
 
                 $isS2sCallback = true;

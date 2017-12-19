@@ -36,6 +36,7 @@ class Validator extends Base\Validator
                                     . 'text/csv,'
                                     . 'text/plain'
                                 . '|mimes:'
+                                    . 'zip,'
                                     . 'xlsx,'
                                     . 'xls,'
                                     . 'csv,'

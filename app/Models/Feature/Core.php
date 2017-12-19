@@ -177,7 +177,7 @@ class Core extends Base\Core
 
         $data[$feature] = $input;
 
-        $status = $this->processOnboardingResponses(Constants::CREATE, $data, $merchant);
+        $status = $this->processOnboardingSubmissions(Constants::CREATE, $data, $merchant);
 
         return $status;
     }
@@ -189,7 +189,7 @@ class Core extends Base\Core
      *
      * @return bool
      */
-    public function processOnboardingResponses(
+    public function processOnboardingSubmissions(
         string $action,
         array $data,
         Merchant\Entity $merchant): bool
@@ -212,7 +212,7 @@ class Core extends Base\Core
         {
             $saved = true;
 
-            (new Validator)->validateInput(Constants::ONBOARDING, $data);
+            (new Validator)->validateInput(Constants::ONBOARDING_SUBMISSIONS_UPSERT, $data);
 
             // While updating the responses, the file gets overwritten,
             // so no need to delete the old file.

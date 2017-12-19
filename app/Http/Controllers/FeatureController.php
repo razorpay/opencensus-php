@@ -85,15 +85,29 @@ class FeatureController extends Controller
     }
 
     /**
-     * Deprecated. Added for BC. Remove after dashboard changes.
+     * @deprecated Added for BC. Remove after dashboard changes.
      *
      * @param string|null $feature
      *
-     * @return mixed
+     * @return \Illuminate\Http\Response
      */
     public function getOnboardingSubmissionsDeprecated(string $feature = null)
     {
         $response = $this->service()->getOnboardingSubmissions($feature);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @deprecated by getFeatureOnboardingRequests()
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getFeatureOnboardingRequestsByStatus()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getFeatureOnboardingRequestsByStatus($input);
 
         return ApiResponse::json($response);
     }

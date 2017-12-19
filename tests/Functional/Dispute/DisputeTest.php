@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Dispute;
 
 use Mail;
+use RZP\Models\Dispute\Phase;
 use RZP\Models\Dispute\Entity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -192,6 +193,13 @@ class DisputeTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testDisputeCreateNonTransactionalPhaseDeductAtOnset()
+    {
+        $this->updateCreateTestData();
+
+        $this->startTest();
+    }
+
     public function testDisputeCreateWithInvalidMerchantEmail()
     {
         $this->updateCreateTestData();
@@ -322,7 +330,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeReversalWinLogic()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10100,
             'deduct_at_onset'       => 1,
@@ -352,7 +359,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeReversalLostLogic()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10100,
             'deduct_at_onset'       => 1,
@@ -438,7 +444,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAccepted()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 1,
@@ -471,7 +476,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAcceptedForNoOnsetDeduct()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,
@@ -503,7 +507,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAcceptedWithInvalidAcceptedAmount()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,
@@ -517,7 +520,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAcceptedWithZeroAcceptedAmount()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,
@@ -525,6 +527,18 @@ class DisputeTest extends TestCase
         $testdata = $this->updateEditTestData($input);
 
         $testdata['request']['content'][Entity::ACCEPTED_AMOUNT] = 0;
+
+        $this->startTest($testdata);
+    }
+
+    public function testNonTransactionalDisputeInvalidClose()
+    {
+        $input = [
+            'amount'                => 10000,
+            'deduct_at_onset'       => 0,
+            'phase'                 => Phase::RETRIEVAL,
+        ];
+        $testdata = $this->updateEditTestData($input);
 
         $this->startTest($testdata);
     }
