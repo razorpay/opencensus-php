@@ -27,7 +27,8 @@ export default ({ entity, mode, updateEntity }) => {
     }).then(data => {
       if (data) {
         notifyDone();
-        updateEntity(data.payment);
+        setTimeout(() => window.location.reload(), 1500);
+        // updateEntity(data.payment);
       }
     });
   }
@@ -47,11 +48,11 @@ export default ({ entity, mode, updateEntity }) => {
     }).then(data => {
       if (data) {
         notifyDone();
-        updateEntity(data);
+        setTimeout(() => window.location.reload(), 1500);
+        // updateEntity(data);
       }
     });
   }
-
   function refundAuthorizedPayment() {
     return adminPost({
       route_name: 'payment_authorize_refund',
@@ -62,8 +63,9 @@ export default ({ entity, mode, updateEntity }) => {
       merchant_id: entity.merchant_id,
     }).then(data => {
       if (data) {
-        notifyDone();
+        notifySuccess('');
         // data belongs to refund entity, not payment
+        setTimeout(() => window.location.reload(), 1500);
         location.reload();
       }
     });
@@ -176,7 +178,7 @@ export default ({ entity, mode, updateEntity }) => {
         <AsyncButton
           class="btn btn-default text-primary"
           confirm="Are you sure you want to Refund this authorized payment?"
-          onClick={refundPayment}
+          onClick={refundAuthorizedPayment}
         >
           Refund
         </AsyncButton>
