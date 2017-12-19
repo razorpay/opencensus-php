@@ -7,9 +7,12 @@ class ConfigKey
     const TERMINAL_SELECTION_LOG_VERBOSE        = 'terminal_selection_log_verbose';
     const PRICING_RULE_SELECTION_LOG_VERBOSE    = 'pricing_rule_selection_log_verbose';
 
+    const SKIP_SLAVE = 'skip_slave';
+
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
+        self::SKIP_SLAVE,
     ];
 
     public static function isSensitive(string $key)

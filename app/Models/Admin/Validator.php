@@ -32,7 +32,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $setConfigKeysRules = [
-        ConfigKey::TERMINAL_SELECTION_LOG_VERBOSE       => 'filled|boolean',
-        ConfigKey::PRICING_RULE_SELECTION_LOG_VERBOSE   => 'filled|boolean',
+        ConfigKey::TERMINAL_SELECTION_LOG_VERBOSE     => 'filled|boolean',
+        ConfigKey::PRICING_RULE_SELECTION_LOG_VERBOSE => 'filled|boolean',
+        ConfigKey::SKIP_SLAVE                         => 'filled|boolean',
     ];
 }
