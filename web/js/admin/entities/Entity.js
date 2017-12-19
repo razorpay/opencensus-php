@@ -125,7 +125,7 @@ export function getFields() {
       let value = data[key];
       if (value) {
         if (typeof value === 'object') {
-          value = <pre>{JSON.stringify(value)}</pre>;
+          value = <pre class="duplex-json">{JSON.stringify(value)}</pre>;
         }
       }
       return item => [key, value];
