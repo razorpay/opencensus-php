@@ -207,20 +207,20 @@ class Provider
 
         $masterCardIdentifier =  $this->generateBharatQrMerchantIdentifier(NetworkName::MC);
 
-        $visaTlv = Tags::VISA . strlen($visaIdentifier) . $visaIdentifier;
+        $visaTlv = Tags::VISA . $this->getLengthAndValue($visaIdentifier);
 
-        $masterCardTlv = Tags::MASTERCARD . strlen($masterCardIdentifier) . $masterCardIdentifier;
+        $masterCardTlv = Tags::MASTERCARD . $this->getLengthAndValue($masterCardIdentifier);
 
         $tagArray = [
-            Tags::VERSION . $this->getStringLengthAndValue(Constants::VERSION),
+            Tags::VERSION . $this->getLengthAndValue(Constants::VERSION),
             $visaTlv,
             $masterCardTlv,
-            Tags::MERCHANT_CATEGORY .$this->getStringLengthAndValue(Constants::MERCHANT_CATEGORY),
-            Tags::CURRENCY_CODE . $this->getStringLengthAndValue(Constants::CURRENCY_CODE),
+            Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
+            Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
             $this->getBharatQrAmountTlv($qrCode),
-            Tags::COUNTRY_CODE . $this->getStringLengthAndValue(Constants::COUNTRY_CODE),
-            Tags::MERCHANT_NAME . $this->getStringLengthAndValue(Constants::MERCHANT_NAME),
-            Tags::MERCHANT_CITY . $this->getStringLengthAndValue(Constants::MERCHANT_CITY),
+            Tags::COUNTRY_CODE . $this->getLengthAndValue(Constants::COUNTRY_CODE),
+            Tags::MERCHANT_NAME . $this->getLengthAndValue(Constants::MERCHANT_NAME),
+            Tags::MERCHANT_CITY . $this->getLengthAndValue(Constants::MERCHANT_CITY),
             $this->getBharatQrAdditionalDetailTlv($qrCode),
         ];
 
@@ -238,7 +238,7 @@ class Provider
 
     protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode)
     {
-        $idTlv = Tags::ID . $this->getStringLengthAndValue($qrCode->getId());
+        $idTlv = Tags::ID . $this->getLengthAndValue($qrCode->getId());
 
         $additionalDetailsString = $idTlv;
 
@@ -254,10 +254,10 @@ class Provider
             return '';
         }
 
-        return Tags::AMOUNT . $this->getStringLengthAndValue($amount);
+        return Tags::AMOUNT . $this->getLengthAndValue($amount);
     }
 
-    protected function getStringLengthAndValue(string $str)
+    protected function getLengthAndValue(string $str)
     {
         return str_pad(strlen($str), 2, '0', STR_PAD_LEFT) . $str;
     }
