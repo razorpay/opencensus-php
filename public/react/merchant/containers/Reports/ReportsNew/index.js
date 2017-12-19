@@ -16,7 +16,7 @@ import {
   generateReport,
   generateReportV2,
 } from 'merchant/modules/reports';
-import { getCustomConfig } from './data';
+import { getCustomConfig, marketplaceConfigTypes } from './data';
 import SelectConfig from 'merchant/components/Reports/ReportsNew/SelectConfig';
 
 const validYear = current => {
@@ -361,7 +361,8 @@ export default class ReportsContainer extends Component {
             {!this.isMobileDevice && (
               <div class="form-heading">{selectedConfig.label}</div>
             )}
-            {this.isMarketplaceEnabled ? (
+            {this.isMarketplaceEnabled &&
+            selectedConfig.type in marketplaceConfigTypes ? (
               <div className="form-element">
                 <div className="title">SELECT ACCOUNT</div>
                 <AccountsList
@@ -409,7 +410,7 @@ export default class ReportsContainer extends Component {
                       dateFormat="MMM, YYYY"
                       closeOnSelect={true}
                       isValidDate={
-                        entity === 'invoice'
+                        entity === 'monthlyInvoice'
                           ? this.validateInvoiceMonthYear
                           : validYear
                       }

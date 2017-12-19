@@ -16,3 +16,10 @@ export const getCustomConfig = key => {
     type: 'custom',
   };
 };
+
+export const marketplaceConfigTypes = {
+  transactions: '',
+  payments: '',
+  refunds: '',
+  settlements: '',
+};
