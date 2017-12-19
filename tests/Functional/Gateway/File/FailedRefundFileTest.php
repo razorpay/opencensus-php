@@ -10,6 +10,7 @@ use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\GatewayFile as GatewayFileJob;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class FailedRefundFileTest extends TestCase
@@ -36,9 +37,7 @@ class FailedRefundFileTest extends TestCase
     public function testUpiFailedRefundFile()
     {
         Mail::fake();
-
         $this->fixtures->create('terminal:shared_upi_icici_terminal');
-
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
         $paymentId1 = $this->createAndCaptureUpiPayment();
@@ -71,6 +70,7 @@ class FailedRefundFileTest extends TestCase
             'extension'   => 'txt',
         ];
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
+        Mail::assertSent(RefundFileMail::class);
     }
 
     protected function createAndCaptureUpiPayment()

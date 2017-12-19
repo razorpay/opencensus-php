@@ -127,7 +127,7 @@ class Base extends Refund\Base
 
             $refundFileMail = new RefundFileMail($mailData, static::GATEWAY, $recipients);
 
-            Mail::send($refundFileMail);
+            Mail::queue($refundFileMail);
 
             $this->gatewayFile->setFileSentAt(time());
 
