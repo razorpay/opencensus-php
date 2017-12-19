@@ -9,15 +9,16 @@ use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Http\BasicAuth\Type as AuthType;
-use RZP\Tests\Unit\Models\Mock\MockBasicAuth;
+use RZP\Tests\Unit\Models\Mock\BasicAuth;
 use RZP\Tests\Unit\Models\Mock\MocksAppServices;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class FetchTest extends TestCase
 {
     use MocksAppServices;
+
     /**
-     * @var MockBasicAuth
+     * @var BasicAuth
      */
     protected $ba;
 
