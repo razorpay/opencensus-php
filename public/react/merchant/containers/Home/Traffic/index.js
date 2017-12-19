@@ -8,6 +8,7 @@ import { fetch } from 'merchant/modules/pokedex';
 import { humanReadableIndian } from 'rzp/utils/numerals';
 import { groupValues, groupMeta, getQuery } from './data';
 import Legend from 'merchant/components/Home/Legend';
+import LastUpdated from 'merchant/components/Home/LastUpdated';
 
 const chartOptions = {
   tooltips: {
@@ -154,6 +155,9 @@ class Traffic extends Component {
                 />
               )}
           </div>
+        </div>
+        <div className="panel-footer">
+          <LastUpdated at={new Date().getTime() / 1000} />
         </div>
       </div>
     );

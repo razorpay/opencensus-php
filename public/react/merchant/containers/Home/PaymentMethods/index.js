@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import Breadcrumb, { BreadcrumbItem } from 'rzp/ui/Breadcrumb';
 
 import Treemap from 'merchant/containers/Home/PaymentMethods/Treemap';
+import LastUpdated from 'merchant/components/Home/LastUpdated';
 import { fetch } from 'merchant/modules/pokedex';
 import { getQuery } from './data';
 
@@ -108,6 +109,9 @@ class PaymentMethods extends Component {
             onLevelChange={this.onLevelChange}
             currentLevel={this.state.currentLevel}
           />
+        </div>
+        <div className="panel-footer">
+          <LastUpdated at={new Date().getTime() / 1000} />
         </div>
       </div>
     );

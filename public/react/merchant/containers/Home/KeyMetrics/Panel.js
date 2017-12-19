@@ -10,6 +10,7 @@ import { humanReadableIndian } from 'rzp/utils/numerals';
 
 import { tabsMeta, breakdownVals } from './data';
 import Legend from 'merchant/components/Home/Legend';
+import LastUpdated from 'merchant/components/Home/LastUpdated';
 
 /* function for custom tooltip */
 const customToolTip = function(tooltipModel) {
@@ -244,72 +245,77 @@ class Panel extends Component {
       { loading } = data;
 
     return (
-      <div className="panel p-all">
-        <div className="clearfix">
-          <div className="pull-left">
-            <ChangeRange previous={20} current={17} />
-            <Definition>
-              <span className="text-fade">
-                Compared to
-                <strong> {startDate.format(dateFormat)} </strong>
-                to
-                <strong> {endDate.format(dateFormat)} </strong>
-              </span>
-            </Definition>
+      <div className="panel">
+        <div className="p-all">
+          <div className="clearfix">
+            <div className="pull-left">
+              <ChangeRange previous={20} current={17} />
+              <Definition>
+                <span className="text-fade">
+                  Compared to
+                  <strong> {startDate.format(dateFormat)} </strong>
+                  to
+                  <strong> {endDate.format(dateFormat)} </strong>
+                </span>
+              </Definition>
+            </div>
+            <div className="panel-actions pull-right">
+              <div className="panel-action-item">
+                {grouping.length > 0 && (
+                  <select
+                    className="form-control"
+                    value={selectedGrouping}
+                    onChange={this.handleGroupingChange}
+                  >
+                    {grouping.map((item, index) => {
+                      return (
+                        <option value={item.value} key={index}>
+                          {item.text}
+                        </option>
+                      );
+                    })}
+                  </select>
+                )}
+              </div>
+              <BtnGroup
+                className="panel-action-item"
+                value={selectedBreakdown}
+                onChange={this.handleBreakdownChange}
+              >
+                {breakdownVals.map((item, index) => {
+                  return (
+                    <Btn value={item} key={index} className="btn-default">
+                      {titleCase(item)}
+                    </Btn>
+                  );
+                })}
+              </BtnGroup>
+              <div className="panel-action-item">
+                <button className="btn btn-default">
+                  <i class="fa fa-ellipsis-h" />
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="panel-actions pull-right">
-            <div className="panel-action-item">
-              {grouping.length > 0 && (
-                <select
-                  className="form-control"
-                  value={selectedGrouping}
-                  onChange={this.handleGroupingChange}
-                >
-                  {grouping.map((item, index) => {
-                    return (
-                      <option value={item.value} key={index}>
-                        {item.text}
-                      </option>
-                    );
-                  })}
-                </select>
+          <div className="chart-container">
+            {!data.loading &&
+              data.histogram && (
+                <Line options={chartOptions} data={data.histogram} />
               )}
-            </div>
-            <BtnGroup
-              className="panel-action-item"
-              value={selectedBreakdown}
-              onChange={this.handleBreakdownChange}
-            >
-              {breakdownVals.map((item, index) => {
-                return (
-                  <Btn value={item} key={index} className="btn-default">
-                    {titleCase(item)}
-                  </Btn>
-                );
-              })}
-            </BtnGroup>
-            <div className="panel-action-item">
-              <button className="btn btn-default">
-                <i class="fa fa-ellipsis-h" />
-              </button>
-            </div>
           </div>
-        </div>
-        <div className="chart-container">
           {!data.loading &&
-            data.histogram && (
-              <Line options={chartOptions} data={data.histogram} />
+            data.legendData && (
+              <div className="p-t">
+                <Legend
+                  data={data.legendData}
+                  valueTransformer={humanReadableIndian}
+                />
+              </div>
             )}
         </div>
-        {!data.loading &&
-          data.legendData && (
-            <div className="p-t">
-              <Legend
-                data={data.legendData}
-                valueTransformer={humanReadableIndian}
-              />
-            </div>
-          )}
+        <div className="panel-footer">
+          <LastUpdated at={new Date().getTime() / 1000} />
+        </div>
       </div>
     );
   }
