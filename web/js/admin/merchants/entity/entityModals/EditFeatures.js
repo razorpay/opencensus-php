@@ -24,7 +24,7 @@ export default class EditFeatures extends Component {
       mode: body.mode,
     };
 
-    if (body.shouldSync === 1) {
+    if (body.shouldSync == 1) {
       requestData['mode'] = 'live';
       requestData['should_sync'] = 1;
     } else {
@@ -88,7 +88,11 @@ export default class EditFeatures extends Component {
             <option value="live">Live</option>
           </SelectField>
 
-          <SwitchField name="shouldSync" label="Add to both Test and Live" />
+          <SwitchField
+            name="shouldSync"
+            label="Add to both Test and Live"
+            style={{ marginTop: 0 }}
+          />
 
           <MultiSelectField
             label="Features"
