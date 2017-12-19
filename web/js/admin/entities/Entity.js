@@ -165,6 +165,10 @@ const actions = {
     </button>
   ),
 
+  refund: (entity, entityComponent) => (
+    <action.RefundActions entity={entity} mode={entityComponent.params.mode} />
+  ),
+
   payment: (entity, entityComponent) => (
     <action.PaymentActions
       entity={entity}

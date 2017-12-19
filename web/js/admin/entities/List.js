@@ -16,7 +16,6 @@ import Field, {
 } from 'ui/Field';
 import { PageTable } from 'ui/Table';
 import Collection, { defaultFilters } from 'model/collection';
-import Amount from 'ui/Amount';
 import { statusPill } from 'util/data';
 
 // fetch entity columns
