@@ -22,6 +22,6 @@ class Calculator
 
     public static function calculateSubventedAmount(int $amount, int $merchantPayback)
     {
-        return ceil($amount - ($amount * $merchantPayback/100));
+        return (int) ceil($amount - ($amount * $merchantPayback/100));
     }
 }

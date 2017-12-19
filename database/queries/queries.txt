@@ -2702,5 +2702,4 @@ ALTER TABLE settings
     MODIFY COLUMN created_at INT(11) NOT NULL,
     MODIFY COLUMN updated_at INT(11) NOT NULL;
 
-ALTER TABLE payments
-    ADD COLUMN emi_subvention varchar(10) DEFAULT NULL AFTER emi_plan_id;
+ALTER TABLE payments Change token emi_subvention varchar(10);
