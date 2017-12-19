@@ -58,8 +58,19 @@ class FailedRefundFileTest extends TestCase
 
         $this->ba->appAuth();
 
-        $this->startTest();
+        $data =  $this->startTest();
 
+        $entity_id = $data['items']['0']['id'];
+
+        $file = $this->getLastEntity('file_store', true);
+
+         $expectedFileContent = [
+            'type'        => 'icici_upi_refund',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $entity_id,
+            'extension'   => 'txt',
+        ];
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
     }
 
     protected function createAndCaptureUpiPayment()

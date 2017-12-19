@@ -50,7 +50,7 @@ return [
                 'admin' => true,
                 'items' => [
                     [
-                        'status'              => 'acknowledged',
+                        'status'              => 'file_generated',
                         'scheduled'           => true,
                         'partially_processed' => false,
                         'attempts'            => 1,
