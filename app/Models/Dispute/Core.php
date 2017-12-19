@@ -386,6 +386,13 @@ class Core extends Base\Core
             return;
         }
 
+        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        if ($currentTimestamp >= $dispute->getExpiresOn())
+        {
+            return;
+        }
+
         $email = $merchant->getEmail();
 
         if (empty($input[Entity::MERCHANT_EMAILS]) === false)
