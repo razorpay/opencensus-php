@@ -83,7 +83,6 @@ class Base extends Refund\Base
         {
             return;
         }
-
         try
         {
             $fileData = $this->formatDataForFile($data);
