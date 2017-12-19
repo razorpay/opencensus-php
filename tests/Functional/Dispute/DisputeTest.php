@@ -543,6 +543,15 @@ class DisputeTest extends TestCase
         $this->startTest($testdata);
     }
 
+    public function testFetchMerchantDetails()
+    {
+        $this->ba->privateAuth();
+
+        $testData = $this->updateFetchTestData();
+
+        $this->startTest($testData);
+    }
+
     // ---------------------------- helper methods-------------------------------
 
     protected function updateCreateTestData(string $paymentId = null): array
@@ -582,6 +591,23 @@ class DisputeTest extends TestCase
         $testData = &$this->testData[$name];
 
         $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
+
+        return $testData;
+    }
+
+    protected function updateFetchTestData(array $attributes = []): array
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+        $name = $trace[1]['function'];
+
+        $dispute = $this->fixtures->create('dispute', $attributes);
+
+        $this->merchant = $dispute->merchant;
+
+        $testData = &$this->testData[$name];
+
+        $testData['request']['url'] = '/dispute/' . $dispute->getPublicId();
 
         return $testData;
     }

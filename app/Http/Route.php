@@ -635,7 +635,7 @@ final class Route
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
         'dispute_migrate_adjustments'             => ['post',     'disputes/migrate_old_adjustments',               'DisputeController@migrateOldAdjustments'                           ],
         'dispute_reason_create'                   => ['post',     'disputes/reasons',                               'DisputeController@createReason'                                    ],
-        'dispute_fetch'                           => ['get',      'disputes/{id}',                                  'DisputeController@get'                                             ],
+        'dispute_fetch'                           => ['get',      'dispute/{id}',                                   'DisputeController@get'                                             ],
 
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
 

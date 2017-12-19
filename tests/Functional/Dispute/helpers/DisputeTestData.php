@@ -768,4 +768,22 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testFetchMerchantDetails' => [
+        'request' => [
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'   => '10000000000000',
+                'parent_id'     => null,
+                'amount'        => 1000000,
+                'currency'      => 'INR',
+                'reason_code'   => 'SOMETHING_BAD',
+                'status'        => 'open',
+                'phase'         => 'chargeback',
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];
