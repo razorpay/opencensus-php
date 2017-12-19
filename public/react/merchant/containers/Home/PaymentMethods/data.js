@@ -12,7 +12,7 @@ const getQuery = ({ merchantId, startTime, endTime }) => ({
   },
   aggregations: {
     agg: {
-      agg_type: 'sum',
+      agg_type: 'percent',
       details: {
         index: 'payments',
         column: 'base_amount',

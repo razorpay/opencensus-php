@@ -73,10 +73,10 @@ function main(node, o, data, d3, onTransition) {
   accumulate(root);
   layout(root);
   console.log(root);
-  var transition = display(root).transition;
+  var globalTransition = display(root).transition;
 
   if (typeof onTransition === 'function') {
-    onTransition(root);
+    onTransition(root, true);
   }
 
   function initialize(root) {
@@ -101,7 +101,7 @@ function main(node, o, data, d3, onTransition) {
       ? (d.value = d.values.reduce(function(p, v) {
           return p + accumulate(v);
         }, 0))
-      : d.value;
+      : (d.value = d.percent);
   }
 
   // Compute the treemap layout recursively such that each group of siblings
@@ -127,7 +127,9 @@ function main(node, o, data, d3, onTransition) {
     }
   }
 
-  function display(d) {
+  function display(d, isTransitioning) {
+    svg.selectAll('g').remove();
+
     var g1 = svg
       .append('g')
       .datum(d)
@@ -141,10 +143,17 @@ function main(node, o, data, d3, onTransition) {
 
     g
       .filter(function(d) {
-        return d._children;
+        return d.key && d._children;
       })
       .classed('children', true)
       .on('click', function(d) {
+        if (
+          d._children.length === 1 &&
+          typeof d._children[0].key === 'undefined'
+        ) {
+          return;
+        }
+
         if (typeof onTransition === 'function') {
           onTransition(d);
         }
@@ -234,6 +243,8 @@ function main(node, o, data, d3, onTransition) {
       });
     }
 
+    globalTransition = transition;
+
     return { g: g, transition: transition };
   }
 
@@ -273,8 +284,9 @@ function main(node, o, data, d3, onTransition) {
   }
 
   return {
-    transition,
+    transition: globalTransition,
     display,
+    reset: () => display(root),
   };
 }
 const getGroupingFactor = groupKey => {
