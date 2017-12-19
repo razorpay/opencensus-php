@@ -281,12 +281,10 @@ class Throttle
             return [];
         }
 
-        $throttleData = [
+        return [
             'ip'    => $ip,
             'route' => $identifier,
         ];
-
-        return $throttleData;
     }
 
     protected function getIdentifier(string $auth, string $mode)
@@ -355,9 +353,10 @@ class Throttle
                 break;
 
             default:
-                throw new LogicException(
-                    "Invalid auth passed for rate limiting",
-                    ErrorCode::SERVER_ERROR_INVALID_AUTH,
+                $resource = '';
+
+                $this->trace->error(
+                    TraceCode::INVALID_AUTH,
                     [
                         'auth' => $auth,
                         'mode' => $mode,
