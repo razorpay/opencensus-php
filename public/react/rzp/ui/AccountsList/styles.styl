@@ -1,0 +1,35 @@
+.rzp-accounts-list {
+
+  position: relative; 
+}
+
+.rzp-option-component {
+
+  padding: 5px;
+}
+
+.rzp-account-item {
+
+  margin-right: 5px;
+
+  .custom-tag {
+
+    &:before {
+
+      display: none;
+    }
+
+    @media (max-width: 992px) {
+
+      &:before {
+
+        display: inline;
+      }
+
+      &> span.text {
+
+        display: none;
+      }
+    }
+  }
+}

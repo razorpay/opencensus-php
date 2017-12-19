@@ -1,6 +1,8 @@
 import React from 'react';
 import { TypeAhead } from 'react-power-select';
 
+import './styles.styl';
+
 const CustomTag = ({ tag, tagIcon }) => {
   if (!tag) {
     return null;
@@ -14,8 +16,8 @@ const CustomTag = ({ tag, tagIcon }) => {
 };
 
 const AccountItem = ({ account, hideTagInfo }) => (
-  <div>
-    <b style={{ marginRight: '5px' }}>{account.name}</b>
+  <div className="rzp-account-item">
+    <b>{account.name}</b>
     <span>- {account.id}</span>
     {!hideTagInfo && <CustomTag tag={account.tag} tagIcon={account.tagIcon} />}
   </div>
@@ -25,7 +27,7 @@ const AccountsList = ({ accounts, selectedAccount, onChange }) => {
   let typeAheadSkin = null;
 
   return (
-    <div className="custom-select" style={{ position: 'relative' }}>
+    <div className="custom-select rzp-accounts-list">
       <i className="icon icon-search custom-icon" />
       <div
         className="typeAheadSkin"
@@ -49,12 +51,12 @@ const AccountsList = ({ accounts, selectedAccount, onChange }) => {
         selected={selectedAccount}
         showClear={false}
         optionComponent={({ option }) => (
-          <div style={{ padding: 5 }}>
+          <div className="rzp-option-component">
             <AccountItem account={option} />
           </div>
         )}
         selectedOptionComponent={({ option }) => (
-          <AccountItem account={option} hideTagInfo={true} />
+          <AccountItem account={option} />
         )}
         onChange={({ option }) => {
           if (option) {

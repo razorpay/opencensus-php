@@ -7,7 +7,7 @@ import moment from 'moment';
 
 import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import AccountsList from 'rzp/ui/AccountsList';
+import AccountsList from 'rzp/ui/AccountsList/index.js';
 
 import { fetchAccountsApi } from 'merchant/modules/marketplace/accounts';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
@@ -185,13 +185,6 @@ export default class ReportsContainer extends Component {
 
           if (hasConfigs) {
             configResp.data.items.forEach(configItem => {
-              if (
-                configItem.type in marketplaceConfigTypes &&
-                !this.isMarketplaceEnabled
-              ) {
-                return;
-              }
-
               const { type, description } = configItem,
                 config = {
                   label: configItem.name,
