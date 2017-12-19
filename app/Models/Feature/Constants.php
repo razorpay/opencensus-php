@@ -62,6 +62,11 @@ class Constants
     const CREATE           = 'create';
     const UPDATE           = 'update';
 
+    public static $recurringFeatures = [
+        self::CHARGE_AT_WILL,
+        self::SUBSCRIPTIONS,
+    ];
+
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
         self::DUMMY                         => true,

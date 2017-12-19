@@ -397,6 +397,22 @@ class Entity extends Base\PublicEntity
         return (in_array($featureName, $assignedFeatures, true) === true);
     }
 
+    public function isAtLeastOneFeatureEnabled(array $features): bool
+    {
+        $assignedFeatures = $this->getEnabledFeatures();
+
+        //
+        // NOTE that it should be weak check because
+        // array_intersect returns back an array.
+        //
+        return (array_intersect($features, $assignedFeatures) == true);
+    }
+
+    public function isRecurringEnabled(): bool
+    {
+        return ($this->isAtLeastOneFeatureEnabled(Feature\Constants::$recurringFeatures) === true);
+    }
+
     /**
      * Return an array of features enabled for the merchant entity
      *
