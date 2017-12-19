@@ -228,6 +228,18 @@ class Gateway extends Base\Gateway
             $input['payment']['id'],
             Action::AUTHORIZE);
 
+        if (empty($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]) === false)
+        {
+            $gatewayPayment->setGatewayPaymentId($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]);
+
+            if (empty($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]) === false)
+            {
+                $gatewayPayment->setErrorMessage($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]);
+            }
+
+             $this->repo->saveOrFail($gatewayPayment);
+        }
+
         if (empty($gatewayResponse[Fields::TRANDATA]) === false)
         {
             $gatewayContent = $this->getDecryptedRequestContent($gatewayResponse[Fields::TRANDATA]);
@@ -248,6 +260,8 @@ class Gateway extends Base\Gateway
 
             $this->assertPaymentId($input['payment']['id'], $gatewayContent[Fields::TRACK_ID]);
         }
+
+        $this->checkErrorMessage($gatewayPayment, $input);
 
         $this->checkCapturedStatus($gatewayPayment, ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
 

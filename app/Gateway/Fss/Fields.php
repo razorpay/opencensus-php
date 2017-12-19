@@ -58,6 +58,8 @@ class Fields
     // Response Fields
     const ERROR_TEXT                    = 'error_text';
 
+    const GATEWAY_ERROR_TEXT            = 'ErrorText';
+
     const ACTIONVPAS                    = 'actionVPAS';
 
     const TRAN_ID                       = 'tranid';
