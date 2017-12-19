@@ -79,7 +79,7 @@ return [
                     'mobikwik' => true,
                 ],
                 'recurring' => [
-                    'cards' => [
+                    'card' => [
                         'credit' => [
                             'MasterCard',
                             'Visa',
@@ -107,13 +107,12 @@ return [
                     'mobikwik' => true,
                 ],
                 'recurring' => [
-                    'cards' => [
+                    'card' => [
                         'credit' => [
                             'MasterCard',
                             'Visa',
                         ],
                     ],
-                    'netbanking' => []
                 ],
             ],
         ],

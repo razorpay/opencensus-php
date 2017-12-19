@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Methods;
 
 use Config;
 
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -161,7 +162,8 @@ class Core extends Base\Core
         //
         // Add debit when we start supporting debit cards for recurring
         //
-        $recurringData['cards'] = [
+
+        $recurringData['card'] = [
             'credit' => Network::getFullNames(Payment\Gateway::$recurringCardNetworks),
         ];
     }
@@ -184,26 +186,34 @@ class Core extends Base\Core
             return;
         }
 
-        $applicableEmandateTerminals = $this->repo
-                                            ->terminal
-                                            ->getTerminalsForMerchantAndSharedMerchant($merchant, true);
-
-        $availableGateways = $applicableEmandateTerminals->pluck(Terminal\Entity::GATEWAY);
-
         $availableEmandateBanks = [];
 
-        foreach ($availableGateways as $availableGateway)
+        if ($this->isTestMode() === true)
         {
-            $availableEmandateBanks = array_values(
-                                            array_unique(
-                                                array_merge(
-                                                    $availableEmandateBanks,
-                                                    Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway])));
+            $availableEmandateBanks = Payment\Gateway::$eMandateBanks;
+        }
+        else
+        {
+            $applicableEmandateTerminals = $this->repo
+                                                ->terminal
+                                                ->getTerminalsForMerchantAndSharedMerchant($merchant, true);
+
+            $availableGateways = $applicableEmandateTerminals->pluck(Terminal\Entity::GATEWAY);
+
+            foreach ($availableGateways as $availableGateway)
+            {
+                $availableEmandateBanks = array_merge(
+                                                $availableEmandateBanks,
+                                                Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
+            }
         }
 
-        $recurringData['netbanking'] = $this->getBankNames($availableEmandateBanks);
+        $availableEmandateBanks = array_values(array_unique($availableEmandateBanks));
 
-        // TODO: Test that in test mode, all the 4 banks are returned back.
+        if (empty($availableEmandateBanks) === false)
+        {
+            $recurringData['netbanking'] = $this->getBankNames($availableEmandateBanks);
+        }
     }
 
     public function getEnabledAndDisabledBanks($merchant)

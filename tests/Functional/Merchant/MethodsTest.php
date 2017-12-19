@@ -119,7 +119,7 @@ class MethodsTest extends TestCase
         $this->assertArrayNotHasKey('netbanking', $content['recurring']);
     }
 
-    public function testRecurringNetbankingOnChargeAtWill()
+    public function testRecurringNetbankingOnChargeAtWillInTest()
     {
         $this->ba->publicTestAuth();
 
@@ -127,9 +127,28 @@ class MethodsTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::CHARGE_AT_WILL, Feature\Constants::E_MANDATE]);
 
-        $content = $this->startTest();
+        $testData = $this->testData['testRecurringNetbankingOnChargeAtWill'];
 
-        $this->assertCount(0, $content['recurring']['netbanking']);
+        $content = $this->startTest($testData);
+
+        $this->assertCount(3, $content['recurring']['netbanking']);
+    }
+
+    public function testRecurringNetbankingOnChargeAtWillInLive()
+    {
+        $this->fixtures->merchant->activate();
+
+        $this->ba->publicLiveAuth();
+
+        $this->fixtures->merchant->enableMobikwik('10000000000000');
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CHARGE_AT_WILL, Feature\Constants::E_MANDATE]);
+
+        $testData = $this->testData['testRecurringNetbankingOnChargeAtWill'];
+
+        $content = $this->startTest($testData);
+
+        $this->assertArrayNotHasKey('netbanking', $content['recurring']);
 
         $attributes = [
             'merchant_id'               => '10000000000000',
@@ -140,16 +159,16 @@ class MethodsTest extends TestCase
             'gateway_terminal_id'       => 'nodal account billdesk',
             'gateway_terminal_password' => 'razorpay_password',
             'type'                      => [
-                                                Terminal\Type::RECURRING_3DS => '1',
-                                                Terminal\Type::RECURRING_NON_3DS => '1'
-                                           ],
+                Terminal\Type::RECURRING_3DS => '1',
+                Terminal\Type::RECURRING_NON_3DS => '1'
+            ],
             'enabled'                   => 1,
             'deleted_at'                => null,
         ];
 
         $this->fixtures->create('terminal', $attributes);
 
-        $content = $this->startTest();
+        $content = $this->startTest($testData);
 
         $this->assertArraySelectiveEquals(['ICIC' => 'ICICI Bank'], $content['recurring']['netbanking']);
     }
