@@ -720,23 +720,33 @@ return [
         ],
     ],
 
-    'testDisputeFetchForMerchantByProxy' => [
+    'testDisputeFetchForMerchant' => [
         'request'   => [
             'method'        => 'get',
             'url'           => '/merchant/disputes',
         ],
         'response'  => [
-            'content'       => [],
-        ],
-    ],
-
-    'testDisputeFetchForMerchantByPrivate' => [
-        'request'   => [
-            'method'        => 'get',
-            'url'           => '/merchant/disputes',
-        ],
-        'response'  => [
-            'content'       => [],
+            'content'       => [
+                'count'         => 2,
+                'items'         => [
+                    [
+                        'merchant_id'       => '10000000000000',
+                        'amount'            => 1000000,
+                        'currency'          => 'INR',
+                        'reason_code'       => 'SOMETHING_BAD',
+                        'status'            => 'open',
+                        'phase'             => 'chargeback',
+                    ],
+                    [
+                        'merchant_id'       => '10000000000000',
+                        'amount'            => 1000000,
+                        'currency'          => 'INR',
+                        'reason_code'       => 'SOMETHING_BAD',
+                        'status'            => 'open',
+                        'phase'             => 'chargeback',
+                    ],
+                ]
+            ],
         ],
     ],
 ];

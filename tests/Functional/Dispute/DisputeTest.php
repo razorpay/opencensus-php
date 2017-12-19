@@ -529,7 +529,7 @@ class DisputeTest extends TestCase
         $this->startTest($testdata);
     }
 
-    public function testDisputeFetchForMerchantByProxy()
+    public function testDisputeFetchForMerchant()
     {
         $this->ba->proxyAuth();
 
@@ -542,17 +542,8 @@ class DisputeTest extends TestCase
         $content = $this->runRequestResponseFlow($testData);
 
         $this->checkDisputeFetchForMerchant($disputes, $content);
-    }
 
-    public function testDisputeFetchForMerchantByPrivate()
-    {
         $this->ba->privateAuth();
-
-        $disputes[0] = $this->fixtures->create('dispute');
-
-        $disputes[1] = $this->fixtures->create('dispute');
-
-        $testData = $this->updateFetchTestData();
 
         $content = $this->runRequestResponseFlow($testData);
 
