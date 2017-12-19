@@ -70,11 +70,6 @@ class Entity extends Base\Entity
         return $this->belongsTo('RZP\Models\Refund\Entity', self::REFUND_ID, self::ID);
     }
 
-    public function getId()
-    {
-        return $this->getAttribute(self::ID);
-    }
-
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -90,24 +85,9 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ERROR_MESSAGE);
     }
 
-    public function setStatus($status)
-    {
-        $this->setAttribute(self::STATUS, $status);
-    }
-
     public function setAction($action)
     {
         $this->setAttribute(self::ACTION, $action);
-    }
-
-    public function setAmount($amount)
-    {
-        $this->setAttribute(self::AMOUNT, $amount);
-    }
-
-    public function setCurrency($currency)
-    {
-        $this->setAttribute(self::CURRENCY, $currency);
     }
 
     public function setGatewayPaymentId($paymentId)

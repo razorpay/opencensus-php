@@ -402,7 +402,7 @@ class Gateway extends Base\Gateway
 
         $refundFields[Entity::AMOUNT] = $input[E::REFUND][Entity::AMOUNT];
 
-        $refundFields[Entity::CURRENCY] = Constants::CURRENCY_CODE;
+        $refundFields[Entity::CURRENCY] = Currency::getIsoCode(Currency::INR);
 
         return $refundFields;
     }
@@ -639,7 +639,7 @@ class Gateway extends Base\Gateway
         $traceCode = '';
 
         $requestContent = [
-            Fields::CURRENCY_CODE  => Constants::CURRENCY_CODE,
+            Fields::CURRENCY_CODE  => Currency::getIsoCode(Currency::INR),
             Fields::TYPE           => $this->getCardType($input[E::CARD][Card\Entity::TYPE]),
 
             Fields::UDF5           => Constants::TRACK_ID,

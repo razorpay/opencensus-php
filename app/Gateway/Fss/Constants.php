@@ -4,9 +4,6 @@ namespace RZP\Gateway\Fss;
 
 class Constants
 {
-    // Currency Code for FSS Transactions.
-    const CURRENCY_CODE         = '356';
-
     const PURCHASE              = 'PURCHASE';
 
     // Credit card type is sent as C and debit as D respectively.

@@ -4,6 +4,7 @@ namespace RZP\Gateway\Fss\Mock;
 
 use RZP\Base;
 use RZP\Gateway\Fss\Constants;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Fss\Fields;
 use RZP\Exception;
 
@@ -49,7 +50,7 @@ class Validator extends Base\Validator
 
     protected function validateCurrencyCode($attribute, $value)
     {
-        if ($value !== Constants::CURRENCY_CODE)
+        if ($value !== Currency::getIsoCode(Currency::INR))
         {
             throw new Exception\BadRequestValidationFailureException("Invalid CurrencyCode");
         }
