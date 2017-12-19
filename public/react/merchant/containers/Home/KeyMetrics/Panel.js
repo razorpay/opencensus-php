@@ -13,9 +13,6 @@ import Legend from 'merchant/components/Home/Legend';
 
 /* function for custom tooltip */
 const customToolTip = function(tooltipModel) {
-  console.log(tooltipModel.caretY);
-  console.log(this._chart.canvas.getBoundingClientRect());
-  console.log(this);
   // Tooltip Element
   var tooltipDOM = document.getElementById('chartjs-tooltip');
 

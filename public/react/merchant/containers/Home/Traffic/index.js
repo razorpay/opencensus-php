@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { getPieData } from 'rzp/utils/chart/transformers';
 
 import { fetch } from 'merchant/modules/pokedex';
+import { humanReadableIndian } from 'rzp/utils/numerals';
 import { groupValues, groupMeta, getQuery } from './data';
 import Legend from 'merchant/components/Home/Legend';
 
@@ -146,7 +147,11 @@ class Traffic extends Component {
           <div className="col-md-5 col-sm-12">
             {!groupState.loading &&
               legendData && (
-                <Legend data={groupState.legendData} alignment="vertical" />
+                <Legend
+                  data={groupState.legendData}
+                  alignment="vertical"
+                  valueTransformer={humanReadableIndian}
+                />
               )}
           </div>
         </div>

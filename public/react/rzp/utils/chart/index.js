@@ -1,7 +1,6 @@
 import { defaults } from 'react-chartjs-2';
 import moment from 'moment';
-
-console.log('something');
+import { humanReadableIndian } from '../numerals';
 
 const global = defaults.global;
 global.maintainAspectRatio = false;
@@ -75,6 +74,9 @@ export const timeScale = ({ xLabel, yLabel }) => {
           },
           gridLines: {
             color: '#FFFFFF',
+          },
+          ticks: {
+            callback: value => humanReadableIndian(value),
           },
         },
       ],
