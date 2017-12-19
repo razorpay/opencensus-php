@@ -99,7 +99,7 @@ class Core extends Base\Core
         {
             // Use Startup Plan as the default for linked accounts
             // where transfer method pricing is 0
-            $subMerchant->setPricingPlan(Pricing\DefaultPlan::STARTUP_PLAN_ID);
+            $subMerchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
 
             $subMerchant->setMaxPaymentAmount($aggregatorMerchant->getMaxPaymentAmount());
 
@@ -476,25 +476,25 @@ class Core extends Base\Core
         $merchant->getValidator()->validateInput($type, $input);
 
         $batches = $this->repo->transaction(function() use ($input, $type, $merchant)
-                   {
-                        $batches = [];
+            {
+                $batches = [];
 
-                        foreach ($input as $key => $file)
-                        {
-                            $batchType =  $type . '_' . $key;
+                foreach ($input as $key => $file)
+                {
+                    $batchType =  $type . '_' . $key;
 
-                            $params = [
-                                Batch\Entity::FILE        => $file,
-                                Batch\Entity::TYPE        => $batchType
-                            ];
+                    $params = [
+                        Batch\Entity::FILE        => $file,
+                        Batch\Entity::TYPE        => $batchType
+                    ];
 
-                            $batch = (new Batch\Core)->create($params, $merchant);
+                    $batch = (new Batch\Core)->create($params, $merchant);
 
-                            $batches[$batchType] = $batch->getId();
-                        }
+                    $batches[$batchType] = $batch->getId();
+                }
 
-                        return $batches;
-                    });
+                return $batches;
+        });
 
         $class = 'RZP\\Jobs\\' . studly_case($type) . 'Batch';
 
@@ -559,7 +559,7 @@ class Core extends Base\Core
 
             $body = $body . 'Date Of Credit : ' . $date . '<br />';
 
-            $mailData = ['body'  =>  $body];
+            $mailData = ['body' => $body];
 
             $payoutMail = new PayoutMail(
                 $mailData,

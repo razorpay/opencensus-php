@@ -180,8 +180,8 @@ class Gateway extends Base\Gateway
 
     protected function validateEci(string $eci = null, string $networkCode)
     {
-        if ((($networkCode === Card\Network::VISA) and ($eci !== '05')) or
-            (($networkCode === Card\Network::MC) and ($eci !== '02')))
+        if ((($networkCode === Card\Network::VISA) and ($eci === '07')) or
+            (($networkCode === Card\Network::MC) and ($eci === '00')))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,

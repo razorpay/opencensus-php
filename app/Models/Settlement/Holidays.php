@@ -126,6 +126,25 @@ class Holidays
                 25 => 'Christmas',
             ],
         ],
+
+        2018 => [
+            1 => [
+                26 => 'Republic Day',
+            ],
+            3 => [
+                30 => 'Good Friday',
+            ],
+            8 => [
+                15 => 'Independece Day',
+                22 => 'Bakri ID (ld- UI-Zuha)',
+            ],
+            10 => [
+                2 => 'Mahatma Gandhi Jayanti',
+            ],
+            12 => [
+                25 => 'Christmas',
+            ],
+        ],
     ];
 
     /**

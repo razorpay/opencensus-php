@@ -82,22 +82,20 @@ class Validator extends Base\Validator
     {
         $bankTransfer = $this->entity;
 
-        if ($bankTransfer->getMode() === Mode::IMPS)
+        // Refunds are not permitted for 3 cases:
+        //  1. Payer bank account is unknown
+        //  2. IMPS bank code is not mapped to a valid IFSC
+        //  3. Payer bank account IFSC is not a valid one
+        //
+        //  Common to all these cases is that payer bank
+        //  account either doesn't exist or has null IFSC.
+
+        if (($bankTransfer->getPayerBankAccountId() === null) or
+            ($bankTransfer->payerBankAccount->getIfscCode() === null))
         {
-            $ifsc = $bankTransfer->getPayerIfsc();
-
-            $bankCode = substr($ifsc, 0, -10);
-
-            // Refunds are not permitted for 2 cases:
-            //  1. IMPS bank code is not mapped to ay valida IFSC
-            //  2. Payer bank account is unknown
-            if ((BankCodes::hasIfscMapping($bankCode) === false) or
-                ($bankTransfer->getPayerBankAccountId() === null))
-            {
-                throw new Exception\BadRequestException(
+            throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
                     $bankTransfer);
-            }
         }
     }
 }
