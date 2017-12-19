@@ -16,6 +16,7 @@ class Service extends Base\Service
      */
     public function fetchQrCodePath(string $id)
     {
+        // Can't use merchant here because this is a direct route
         $qrCode = $this->repo->qr_code->findByPublicId($id);
 
         $qrCodeFilePath = $this->core()->fetchQrCodePath($qrCode, $qrCode->merchant);

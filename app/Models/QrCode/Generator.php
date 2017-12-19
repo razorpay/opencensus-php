@@ -38,6 +38,9 @@ class Generator extends Base\Core
      */
     protected $baseQrCodeUrl;
 
+    // Qr code Extension
+    const QR_CODE_EXTENSION = FileStore\Format::PNG;
+
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
 
@@ -66,9 +69,12 @@ class Generator extends Base\Core
 
         $this->setShortUrl();
 
-        $this->repo->saveOrFail($qrCode);
+        $this->repo->transaction(function() use ($qrCode)
+        {
+            $this->repo->saveOrFail($qrCode);
 
-        $this->generateQrCodeFile();
+            $this->generateQrCodeFile();
+        });
 
         return $this->qrCode;
     }
@@ -124,7 +130,7 @@ class Generator extends Base\Core
     {
         $localFilePath = $this->generateQrCodeImage();
 
-        $ext = FileStore\Format::PNG;
+        $ext = self::QR_CODE_EXTENSION;
 
         return (new FileStore\Creator)
                     ->localFilePath($localFilePath)
@@ -146,7 +152,7 @@ class Generator extends Base\Core
 
         $writer = new Writer($renderer);
 
-        $localFilePath = $this->getLocalSaveDir() . '/' . $this->qrCode->getId() . '.png';
+        $localFilePath = $this->getLocalSaveDir() . '/' . $this->qrCode->getId() . '.' . self::QR_CODE_EXTENSION;
 
         $writer->writeFile($this->qrCode->getQrString(), $localFilePath);
 
