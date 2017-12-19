@@ -8,6 +8,7 @@ use Config;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\BankAccount;
 use RZP\Models\Payment\Refund as PaymentRefund;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -84,7 +85,7 @@ class Core extends Base\Core
         {
             $this->alertException($ex, $input);
 
-            throw $ex;
+            $valid = false;
         }
 
         return $valid;
@@ -115,8 +116,11 @@ class Core extends Base\Core
             $ex, Trace::CRITICAL, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
 
         // To avoid overloading Slack with errors messages (Kotak does retry)
-        // we cache a specific alert for an hour. Payee Account is always set.
-        $cacheKey = 'slack.bank_transfer_processing_failed.' . $input[Entity::PAYEE_ACCOUNT];
+        // we cache a specific alert for an hour.
+        // Even Payee Account may not be set.
+        $subKey = $input[Entity::PAYEE_ACCOUNT] ?? '';
+
+        $cacheKey = 'slack.bank_transfer_processing_failed.' . $subKey;
 
         if (Cache::get($cacheKey) === null)
         {
@@ -126,7 +130,7 @@ class Core extends Base\Core
                 TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
                 $data,
                 [
-                    'channel'  => Config::get('slack.channels.virtual_accounts'),
+                    'channel'  => Config::get('slack.channels.virtual_accounts_log'),
                     'username' => 'Scrooge',
                     'icon'     => ':x:'
                 ]
@@ -314,9 +318,20 @@ class Core extends Base\Core
     {
         $payerBankAccount = $bankTransfer->payerBankAccount;
 
-        $payerBankAccount = $payerBankAccount->edit($input, 'editVirtualBankAccount');
+        if ($payerBankAccount === null)
+        {
+            $payerBankAccount = $this->createPayerBankAccount($bankTransfer, $input);
+
+            $bankTransfer->payerBankAccount()->associate($payerBankAccount);
+        }
+        else
+        {
+            $payerBankAccount = $payerBankAccount->edit($input, 'editVirtualBankAccount');
+        }
 
         $this->repo->saveOrFail($payerBankAccount);
+
+        $this->repo->saveOrFail($bankTransfer);
 
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED,
@@ -326,5 +341,20 @@ class Core extends Base\Core
             ]);
 
         return $bankTransfer;
+    }
+
+    protected function createPayerBankAccount(Entity $bankTransfer, array $input)
+    {
+        $bankAccount = new BankAccount\Entity;
+
+        $bankAccountInput = PayerBankAccount::getBankAccountInput($bankTransfer, $input);
+
+        $bankAccount = $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
+
+        $bankAccount->merchant()->associate($bankTransfer->merchant);
+
+        $bankAccount->associateVirtualAccount($bankTransfer->virtualAccount);
+
+        return $bankAccount;
     }
 }

@@ -59,7 +59,7 @@ class NodalAccount extends NodalBase\NodalAccount
         $this->id = Base\UniqueIdEntity::generateUniqueId();
     }
 
-    public function generateTransferFile($amount)
+    public function initiateTransfer($amount)
     {
         $plainText = $this->getPlainText($amount);
 

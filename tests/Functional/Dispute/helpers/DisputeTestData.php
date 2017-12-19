@@ -723,7 +723,7 @@ return [
     'testDisputeFetchForMerchant' => [
         'request'   => [
             'method'        => 'get',
-            'url'           => '/merchant/disputes',
+            'url'           => '/disputes',
         ],
         'response'  => [
             'content'       => [

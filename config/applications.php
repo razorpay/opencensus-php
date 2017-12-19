@@ -81,6 +81,10 @@ return [
         'secret'    => env('YESBANK_SECRET'),
     ],
 
+    'bharatqr' => [
+        'secret' => env('BHARAT_QR_SECRET'),
+    ],
+
     'lumberjack' => [
         'url'           => env('LUMBERJACK_URL'),
         'secret'        => env('LUMBERJACK_SECRET'),

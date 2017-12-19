@@ -29,11 +29,11 @@ class Service extends Base\Service
         return $dispute->toArrayPublic();
     }
 
-    public function fetchForMerchant(): array
+    public function fetchMultiple(array $input): array
     {
         $merchantId = $this->merchant->getId();
 
-        $disputes = $this->repo->dispute->fetch([], $merchantId);
+        $disputes = $this->repo->dispute->fetch($input, $merchantId);
 
         return $disputes->toArrayPublic();
     }

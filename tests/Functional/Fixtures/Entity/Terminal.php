@@ -24,6 +24,7 @@ class Terminal extends Base
         $this->createSharedNetbankingAirtelTerminal();
         $this->createSharedNetbankingAxisTerminal();
         $this->createSharedNetbankingFederalTerminal();
+        $this->createSharedNetbankingBobTerminal();
         $this->createSharedNetbankingRblTerminal();
         $this->createSharedNetbankingIndusindTerminal();
         $this->createSharedNetbankingPnbTerminal();
@@ -215,27 +216,6 @@ class Terminal extends Base
             'gateway_acquirer'          => 'icic',
             'card'                      => 1,
             'gateway_merchant_id'       => 'random',
-        ];
-
-        $attributes = array_merge($defaultValues, $attributes);
-
-        return $this->createEntityInTestAndLive('terminal', $attributes);
-    }
-
-    public function createOldFirstDataTerminal()
-    {
-        $termId = \RZP\Models\Terminal\Shared::FIRST_DATA_RAZORPAY_TERMINAL;
-
-        $defaultValues = [
-            'id'                        => $termId,
-            'merchant_id'               => '100000Razorpay',
-            'gateway'                   => 'first_data',
-            'gateway_acquirer'          => 'icic',
-            'card'                      => 1,
-            'gateway_merchant_id'       => 'really_old',
-            'gateway_merchant_id2'      => 'really_old2',
-            'gateway_access_code'       => 'access_code',
-            'gateway_terminal_password' => 'terminal_password',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -1170,6 +1150,24 @@ class Terminal extends Base
         ];
 
         return $this->createSharedNetbankingFederalTerminal($attributes);
+    }
+
+    public function createSharedNetbankingBobTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_BOB_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_bob',
+            'gateway_merchant_id'       => 'netbanking_bob_merchant_id',
+            'netbanking'                => 1,
+            'shared'                    => 1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
     }
 
     public function createSharedNetbankingRblTerminal(array $attributes = [])

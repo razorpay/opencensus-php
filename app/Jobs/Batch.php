@@ -55,9 +55,9 @@ class Batch extends Job implements ShouldQueue
                     BatchModel\Entity::TYPE => $batch->getType(),
                 ]);
 
-            BatchModel\Processor\Base::get($batch)
-                                     ->setParams($this->params)
-                                     ->validateAndProcess();
+            $processor = BatchModel\Processor\Factory::get($batch)
+                                                     ->setParams($this->params)
+                                                     ->validateAndProcess();
 
             $timeTaken = microtime(true) - $timeStarted;
 
@@ -85,5 +85,21 @@ class Batch extends Job implements ShouldQueue
                     BatchModel\Entity::ID   => $this->id,
                 ]);
         }
+    }
+
+    /**
+     * @return string
+     */
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return array
+     */
+    public function getParams(): array
+    {
+        return $this->params;
     }
 }

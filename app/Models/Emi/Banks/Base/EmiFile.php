@@ -115,6 +115,8 @@ class EmiFile extends Base\Core
             $this->transferMode = EmiMode::MAIL;
 
             $this->shouldCompress = true;
+
+            $this->shouldEncrypt = false;
         }
     }
 

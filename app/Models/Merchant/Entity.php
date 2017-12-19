@@ -1048,18 +1048,18 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function getBusinessStateCode()
+    public function getGstStateCode()
     {
-        $businessStateCode = null;
+        $gstStateCode = null;
 
         $merchantDetail = $this->merchantDetail;
 
         if ($merchantDetail !== null)
         {
-            $businessStateCode = $merchantDetail->getBusinessStateCode();
+            $gstStateCode = $merchantDetail->getGstStateCode();
         }
 
-        return $businessStateCode;
+        return $gstStateCode;
     }
 
     public function getGstin()
@@ -1070,6 +1070,16 @@ class Entity extends Base\PublicEntity
         }
 
         return $this->merchantDetail->getGstin() ?? $this->merchantDetail->getPGstin();
+    }
+
+    public function getBusinessRegisteredState()
+    {
+        if ($this->merchantDetail === null)
+        {
+            return null;
+        }
+
+        return $this->merchantDetail->getBusinessRegisteredState();
     }
 
     public function enableReceiptEmails()
