@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Fss\Mock;
 
-use phpseclib\Crypt\TripleDES;
 use RZP\Gateway\Fss;
 use RZP\Gateway\Fss\Fields;
 use RZP\Gateway\Fss\Entity;
@@ -144,7 +143,7 @@ class Server extends Base\Mock\Server
 
         $secretKey = $this->getGatewayInstance()->getSecret();
 
-        $crypto = new Fss\TripleDESCrypto(TripleDES::MODE_ECB, $secretKey, false);
+        $crypto = new Fss\TripleDESCrypto(Fss\TripleDESCrypto::MODE_ECB, $secretKey, false);
 
         $encryptedText = $crypto->encryptString($tranData, false);
 
@@ -160,7 +159,7 @@ class Server extends Base\Mock\Server
     {
         $secretKey = $this->getGatewayInstance()->getSecret();
 
-        $crypto = new Fss\TripleDESCrypto(TripleDES::MODE_ECB, $secretKey, true);
+        $crypto = new Fss\TripleDESCrypto(Fss\TripleDESCrypto::MODE_ECB, $secretKey, true);
 
         $decryptedString = $crypto->decryptString($str, true);
 

@@ -11,12 +11,11 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
-use phpseclib\Crypt\TripleDES;
 use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
-    protected $gateway = E::FSS;
+    protected $gateway = Payment\Gateway::FSS;
 
     /**
      * Fss Gateway has purchase model so framing the request here
@@ -177,7 +176,7 @@ class Gateway extends Base\Gateway
     {
         $secretKey = $this->getSecret();
 
-        $crypto = new TripleDESCrypto(TripleDES::MODE_ECB, $secretKey, true);
+        $crypto = new TripleDESCrypto(TripleDESCrypto::MODE_ECB, $secretKey, true);
 
         return $crypto->encryptString($str);
     }
@@ -191,7 +190,7 @@ class Gateway extends Base\Gateway
     {
         $secretKey = $this->getSecret();
 
-        $crypto = new TripleDESCrypto(TripleDES::MODE_ECB, $secretKey, false);
+        $crypto = new TripleDESCrypto(TripleDESCrypto::MODE_ECB, $secretKey, false);
 
         $decryptedString = $crypto->decryptString($str);
 

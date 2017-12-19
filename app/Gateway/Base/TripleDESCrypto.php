@@ -6,6 +6,7 @@ use phpseclib\Crypt\TripleDES;
 
 class TripleDESCrypto
 {
+    const MODE_ECB = TripleDES::MODE_ECB;
     /**
      * TripleDESCrypto constructor.
      *
