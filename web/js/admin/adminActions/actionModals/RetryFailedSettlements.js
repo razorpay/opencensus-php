@@ -33,15 +33,25 @@ export default function RetryFailedSettlements() {
             }).then(response => {
               console.log('retry settlement', response);
               if (response) {
-                let message = '';
+                let message = [];
+                let skippedIds = [];
 
                 for (const key in response) {
-                  if (response.hasOwnProperty(key) && response.message) {
-                    message += response.message + '\n';
+                  if (response.hasOwnProperty(key)) {
+                    response[key].message &&
+                      message.push(response[key].message);
+                    response[key].retry_skipped_settlements &&
+                      skippedIds.push(response[key].retry_skipped_settlements);
                   }
                 }
 
-                notifySuccess(message);
+                notifySuccess(
+                  '*Message: ' +
+                    message.join(', ') +
+                    '\n' +
+                    '*Skipped Ids: ' +
+                    skippedIds.join(', ')
+                );
                 closeModal();
               }
             });
@@ -51,3 +61,5 @@ export default function RetryFailedSettlements() {
     </div>
   );
 }
+
+('No settlement id');
