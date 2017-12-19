@@ -191,7 +191,7 @@ export default class EntityList extends Component {
           (this.selectedEntity === 'merchant' && key === 'id')
         ) {
           return (
-            <Link to={`/merchants/${value}`} class="link">
+            <Link to={`/merchants/${value}`} class="link" target="_blank">
               {value}
             </Link>
           );
