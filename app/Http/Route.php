@@ -675,6 +675,20 @@ final class Route
         'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                   'FeatureController@postOnboardingSubmissions'                       ],
         'feature_onboarding_fetch_responses'      => ['get',      'feature/onboarding/{feature}/responses',         'FeatureController@getOnboardingSubmissionsDeprecated'              ],
         'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                   'FeatureController@getOnboardingSubmissionsDeprecated'              ],
+
+        // Reporting Service
+        'reporting_config_get'                    => ['get',      'reporting/configs/{id}',                          'ReportingController@getConfig'                                    ],
+        'reporting_config_list'                   => ['get',      'reporting/configs',                               'ReportingController@listConfig'                                   ],
+        'reporting_config_create'                 => ['post',     'reporting/configs',                               'ReportingController@createConfig'                                 ],
+        'reporting_config_edit'                   => ['patch',    'reporting/configs/{id}',                          'ReportingController@updateConfig'                                 ],
+        'reporting_config_delete'                 => ['delete',   'reporting/configs/{id}',                          'ReportingController@deleteConfig'                                 ],
+        'reporting_log_get'                       => ['get',      'reporting/logs/{id}',                             'ReportingController@getLog'                                       ],
+        'reporting_log_list'                      => ['get',      'reporting/logs',                                  'ReportingController@listLog'                                      ],
+        'reporting_log_create'                    => ['post',     'reporting/logs',                                  'ReportingController@createLog'                                    ],
+
+        // UFH Service
+        // TODO: Should change to just /signed_url (No 'get' and underscore)
+        'ufh_get_file_signed_url'                 => ['get',      'ufh/file/{fileId}/get-signed-url',               'UfhController@getSignedUrl'                                        ],
     ];
 
     public static $public = [
@@ -1191,6 +1205,15 @@ final class Route
         'onboarding_features_fetch_details',
         'onboarding_features_create',
         'onboarding_features_fetch_submission',
+        'reporting_config_get',
+        'reporting_config_list',
+        'reporting_config_create',
+        'reporting_config_edit',
+        'reporting_config_delete',
+        'reporting_log_get',
+        'reporting_log_list',
+        'reporting_log_create',
+        'ufh_get_file_signed_url',
     ];
 
     // These will run on internal auth with the assurance
@@ -1862,6 +1885,17 @@ final class Route
         'virtual_account_fetch_multiple'    => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_payments'    => [Feature::VIRTUAL_ACCOUNTS],
         'reports_refund_irctc'              => [Feature::IRCTC_REPORT],
+
+        // Reporting Service
+        'reporting_config_get'              => [Feature::REPORT_V2],
+        'reporting_config_list'             => [Feature::REPORT_V2],
+        'reporting_config_create'           => [Feature::REPORT_V2],
+        'reporting_config_edit'             => [Feature::REPORT_V2],
+        'reporting_config_delete'           => [Feature::REPORT_V2],
+        'reporting_log_get'                 => [Feature::REPORT_V2],
+        'reporting_log_list'                => [Feature::REPORT_V2],
+        'reporting_log_create'              => [Feature::REPORT_V2],
+        'ufh_get_file_signed_url'           => [Feature::REPORT_V2],
     ];
 
     /*
