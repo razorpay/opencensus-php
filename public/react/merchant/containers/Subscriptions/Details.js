@@ -16,6 +16,7 @@ import { fetchSubscriptionAddOns } from 'merchant/modules/addons';
 import { deleteAddOn } from 'merchant/modules/addons';
 import { showNotification } from 'rzp/modules/notifications';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
+import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
 
 import { openModal, closeModal } from 'rzp/modules/modals';
 import CancellationModal from './CancellationModal';
@@ -88,6 +89,20 @@ export default class SubscriptionDetailsContainer extends Component {
     this.props.id && this.fetchSubscriptionDetails(this.props.id);
     this.checkSecView(); // Reset view
     this.props.invoice_id && this.fetchInvoice(this.props.invoice_id);
+
+    // fetching key and checkout js
+    fetchKeysAndCheckout(
+      this.props.user.current,
+      key => {
+        this.key = key;
+      },
+      error => {
+        this.props.showNotification({
+          type: 'error',
+          message: error.errors,
+        });
+      }
+    );
   }
 
   componentWillReceiveProps(nextProps) {
@@ -372,6 +387,36 @@ export default class SubscriptionDetailsContainer extends Component {
     });
   };
 
+  // testing charge while subscription status is created
+  onTestChargeAttemptWhileCreate = () => {
+    const { plan, user } = this.props;
+    const razorpay = new window.Razorpay({
+      key: this.key,
+      description: 'Start Subscription',
+      prefill: {
+        name: user.name,
+        email: user.email,
+        contact: user.contact_mobile,
+      },
+      notes: {
+        dashboard: true,
+      },
+      subscription_id: this.props.entity.id,
+      handler: status => {
+        this.postChargeAttempt();
+      },
+    });
+
+    try {
+      razorpay.open();
+    } catch (e) {
+      this.props.showNotification({
+        type: 'error',
+        message: e.errors,
+      });
+    }
+  };
+
   // Check if next due invoice is valid for current subscription
   checkNextDueInvoiceValidity(subsStatus, subsType) {
     return (
@@ -561,7 +606,10 @@ export default class SubscriptionDetailsContainer extends Component {
           onCancelClick={this.cancelSubscription}
           onManualAttempt={this.onManualAttempt}
           onTestChargeAttempt={
-            this.props.mode === 'test' && this.onTestChargeAttempt
+            this.props.mode === 'test' &&
+            (entity.status === 'created'
+              ? this.onTestChargeAttemptWhileCreate
+              : this.onTestChargeAttempt)
           }
         />
 

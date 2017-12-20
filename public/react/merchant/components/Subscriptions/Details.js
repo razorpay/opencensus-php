@@ -54,8 +54,7 @@ export default ({
     (['authenticated', 'active', 'halted', 'pending'].indexOf(
       subscription.status
     ) > -1 ||
-      (subscription.status === 'created' &&
-        (subscription.type === 0 || subscription.type === 2)));
+      subscription.status === 'created');
 
   const testModeMsg = {};
   if (showTestChargeBtn) {
@@ -68,6 +67,11 @@ export default ({
         testModeMsg.btnLabel = 'Attempt Retry';
         testModeMsg.infoMsg =
           ' Attempt scheduled retry now for last issued invoice. ';
+        break;
+      case 'created':
+        testModeMsg.btnLabel = 'Start Subscription';
+        testModeMsg.infoMsg =
+          ' Make the first payment to start the subscription. ';
         break;
 
       default:

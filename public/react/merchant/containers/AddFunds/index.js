@@ -6,13 +6,13 @@ import AsyncButton from 'react-async-button';
 import Alert from 'rzp/ui/Forms/Alert';
 import InputField from 'rzp/ui/Forms/InputField';
 import { required } from 'rzp/utils/validators';
-import * as AddFundsActions from 'merchant/modules/addfunds';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
+import addFunds from 'merchant/utils/addfunds';
 
 @connect(state => state.session, {
-  ...AddFundsActions,
   ...NotificationsActions,
 })
 @reduxForm({
@@ -34,39 +34,37 @@ export default class AddFundsContainer extends Component {
   }
 
   componentWillMount() {
-    Promise.all([
-      this.props.fetchHost().then(response => {
-        return this.props.loadCheckout(response.data);
-      }),
-      this.props.fetchKeys(this.props.user.current).then(key => {
+    fetchKeysAndCheckout(
+      this.props.user.current,
+      key => {
         this.key = key;
-      }),
-    ]).catch(error => {
-      this.setState({
-        status: {
-          type: 'info',
-          message: (
-            <span>
-              API keys need to be generated before adding funds.{' '}
+      },
+      error => {
+        this.setState({
+          status: {
+            type: 'info',
+            message: (
               <span>
-                Keys can be generated{' '}
-                <Link to="/keys">
-                  <u>here.</u>
-                </Link>
+                API keys need to be generated before adding funds.{' '}
+                <span>
+                  Keys can be generated{' '}
+                  <Link to="/keys">
+                    <u>here.</u>
+                  </Link>
+                </span>
               </span>
-            </span>
-          ),
-        },
-      });
-    });
+            ),
+          },
+        });
+      }
+    );
   }
 
   addFunds(transaction) {
     this.setState({
       isSaving: true,
     });
-    return this.props
-      .addFunds(transaction)
+    return addFunds(transaction)
       .then(response => {
         this.setState({
           isSaving: false,
