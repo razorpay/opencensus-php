@@ -79,7 +79,7 @@ export const isWorkflow = response => {
     typeof response.workflow_id !== 'undefined'
   ) {
     const url = `/admin/requests/${response.id}`;
-    window.open(url, '_self');
+    return (location.href = url);
   } else {
     return false;
   }
