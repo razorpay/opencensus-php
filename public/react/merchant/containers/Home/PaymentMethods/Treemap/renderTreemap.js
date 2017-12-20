@@ -62,6 +62,8 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
     root = data;
   }
 
+  var g1;
+
   var colors = {
     card: 'rgb(75, 84, 113)',
     netbanking: 'rgb(95, 127, 185)',
@@ -146,10 +148,10 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
     }
   }
 
-  function display(d, isTransitioning) {
-    svg.selectAll('g').remove();
+  let transitionSubscriber = null;
 
-    var g1 = svg
+  function display(d, isTransitioning) {
+    g1 = svg
       .append('g')
       .datum(d)
       .attr('class', 'depth');
@@ -240,13 +242,27 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
       return d.color;
     });
 
-    function transition(d) {
-      if (transitioning || !d) return;
+    function transition(d, inboundElements) {
+      if (transitioning || !d) {
+        transitionSubscriber = () => transition(d);
+        return;
+      }
+
       transitioning = true;
 
+      let oldElements = svg.selectAll('g');
+
+      var oldG1 = g1;
+
       var g2 = display(d).g,
-        t1 = g1.transition().duration(750),
-        t2 = g2.transition().duration(750);
+        t1 = oldG1
+          .transition()
+          .duration(500)
+          .ease('expIn'),
+        t2 = g2
+          .transition()
+          .duration(500)
+          .ease('expOut');
 
       // Update the domain only after entering new elements.
       x.domain([d.x, d.x + d.dx]);
@@ -279,6 +295,12 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
       t1.remove().each('end', function() {
         svg.style('shape-rendering', 'crispEdges');
         transitioning = false;
+
+        if (typeof transitionSubscriber === 'function') {
+          transitionSubscriber();
+        }
+
+        transitionSubscriber = null;
       });
     }
 
