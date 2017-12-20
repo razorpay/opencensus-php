@@ -1114,6 +1114,8 @@ trait Refund
 
             $this->refund->setStatus(Payment\Refund\Status::CREATED);
 
+            $this->refund->setBatchFundTransferId(null);
+
             $refunded = true;
         }
         catch (Exception\BaseException $e)
