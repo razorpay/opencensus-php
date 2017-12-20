@@ -140,7 +140,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        list($request, $sKey) = $this->getRefundRequest($input);
+        $request = $this->getRefundRequest($input);
 
         $gatewayPayment = $this->createGatewayPaymentEntity($input);
 
@@ -260,7 +260,7 @@ class Gateway extends Base\Gateway
             ]
         ];
 
-        return [$request, $sKey];
+        return $request;
     }
 
     protected function getRefundDecryptedData(array $data): array
