@@ -1,6 +1,42 @@
 export const testMerchantId = '10000000000000';
 import { snakeToTitleCase } from 'util/index';
 
+export const entity2Prefix = {
+  balance_account: 'ba',
+  balance_transfer: 'bt',
+  card: 'card',
+  customer: 'cust',
+  dispute: 'dispute',
+  payment: 'pay',
+  offer: 'offer',
+  order: 'order',
+  plan: 'plan',
+  refund: 'rfnd',
+  reversal: 'rvrsl',
+  settlement: 'setl',
+  subscription: 'sub',
+  token: 'tkn',
+  transaction: 'txn',
+  transfer: 'trf',
+  virtual_account: 'va',
+};
+
+export const prefix2Entity = Object.keys(entity2Prefix).reduce((o, entity) => {
+  o[entity2Prefix[entity]] = entity;
+  return o;
+}, {});
+
+export function prefixEntityValue(entityName, value) {
+  // TODO: Ideally api should fix this. In some cases, eg- 'pay_' is prepended and in some cases not.
+  let prefix = entity2Prefix[entityName];
+  if (!value.includes('_')) {
+    value = `${prefix}_${value}`;
+  }
+  if (prefix) {
+    return value;
+  }
+}
+
 // TODO: All below mappings exists in 'entity-resources.js' as well. "Check if they've exactly same data". Merge Accordingly.
 export const methods = {
   card: 'Card',
@@ -135,6 +171,8 @@ const statusPillClasses = {
   authorized: 'label-info',
   captured: 'label-success',
   refunded: 'label-primary',
+
+  initiated: 'label-info',
 
   // order
   attempted: 'label-info',

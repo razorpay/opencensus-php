@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Amount from 'ui/Amount';
 import { snakeToTitleCase, formatDate } from 'util/index';
-import { statusPill } from 'util/data';
+import { statusPill, prefixEntityValue } from 'util/data';
 
 const defaultClass = 'table table-striped';
 
@@ -20,11 +20,11 @@ export default class Duplex extends Component {
                   if (!result) {
                     return;
                   }
-                  let value = getValue(result, mode || model.mode);
+                  let value = getValue(result, mode || model.mode, model);
 
                   return (
                     result && (
-                      <div class="tr" key={index}>
+                      <div class="tr" key={index} onClick={copyValue}>
                         <div class="td">{snakeToTitleCase(result[0])}</div>
                         <div class="td text-right">{value}</div>
                       </div>
@@ -38,94 +38,63 @@ export default class Duplex extends Component {
   }
 }
 
-function getPrefixType(entityType, value) {
-  // TODO: Ideally api should fix this. In some cases, eg- 'pay_' is prepended and in some cases not.
-  if (value.indexOf('_') > -1) {
-    return '';
-  }
-  switch (entityType) {
-    case 'balance_account':
-      return 'ba_';
-    case 'balance_transfer':
-      return 'bt_';
-    case 'card':
-      return 'card_';
-    case 'customer':
-      return 'cust_';
-    case 'dispute':
-      return 'dispute_';
-    case 'payment':
-      return 'pay_';
-    case 'offer':
-      return 'offer_';
-    case 'order':
-      return 'order_';
-    case 'plan':
-      return 'plan_';
-    case 'refund':
-      return 'rfnd_';
-    case 'reversal':
-      return 'rvrsl_';
-    case 'settlement':
-      return 'setl_';
-    case 'subscription':
-      return 'sub_';
-    case 'token':
-      return 'tkn_';
-    case 'transaction':
-      return 'txn_';
-    case 'transfer':
-      return 'trf_';
-    case 'virtual_account':
-      return 'va_';
-
-    default:
-      return '';
-  }
+function copyValue(e) {
+  let textEl = document.createElement('textarea');
+  textEl.readOnly = true;
+  textEl.value = e.currentTarget.querySelector('.td:last-child').innerText;
+  document.body.appendChild(textEl);
+  textEl.select();
+  textEl.setSelectionRange(0, textEl.value.length);
+  document.execCommand('copy');
+  document.body.removeChild(textEl);
 }
 
-function getValue(result, mode) {
-  let value = result[1];
+function getValue(result, mode, attributes) {
+  let [key, value] = result;
 
-  if (typeof value === 'boolean') {
+  if (!value) {
+    // do nothing
+  } else if (typeof value === 'boolean') {
     value = (
       <span>
         <i class={`${value ? 'i-yes text-success' : 'i-no text-danger'}`} />
       </span>
     );
-  } else if (result[0].indexOf('status') > -1) {
-    value = statusPill(result[1]);
+  } else if (key.endsWith('status')) {
+    value = statusPill(value);
   } else if (
-    result[0].indexOf('amount') > -1 ||
-    result[0].indexOf('fee') > -1 ||
-    result[0].indexOf('tax') > -1 ||
-    result[0].indexOf('charge') > -1
-  ) {
-    value = <Amount value={value} />;
-  } else if (
-    result[0].indexOf('_at') > -1 ||
-    result[0].indexOf('_until') > -1
+    // charge_at is time
+    key.endsWith('_at') ||
+    key.endsWith('_until')
   ) {
     // Value is time
     value = formatDate(value);
-  } else if (value && result[0] === 'merchant_id') {
+  } else if (
+    typeof value === 'number' &&
+    /amount|fee|tax|credit|charge/.test(key)
+  ) {
+    value = <Amount value={value} />;
+  } else if (
+    key === 'merchant_id' ||
+    (key === 'entity_id' && attributes.entity_type === 'merchant')
+  ) {
+    // entity_id & entity_type are returned in "feature" entity
     value = (
       <a class="link" target="_blank" href={`/admin/merchants/${value}`}>
         {value}
       </a>
     );
-  } else if (
-    value &&
-    result[0].indexOf('_id') > -1 &&
-    result[0] !== 'public_id'
-  ) {
-    let entityName = result[0].match(/(.+)(?:_id)/)[1];
-    let id = getPrefixType(entityName, value) + value;
-    value = (
-      <a class="link" href={`/admin/entity/${entityName}/${mode}/${id}`}>
-        {id}
-      </a>
-    );
+  } else if (key.endsWith('_id') && key !== 'public_id') {
+    // remove _id from tail
+    let entityName = key.slice(0, -3);
+    let id = prefixEntityValue(entityName, value);
+    if (id) {
+      value = (
+        <a class="link" href={`/admin/entity/${entityName}/${mode}/${id}`}>
+          {id}
+        </a>
+      );
+    }
   } else if (!value && typeof value !== 'undefined') {
     value = (
       <span class="square-pills label-pending">{JSON.stringify(value)}</span>

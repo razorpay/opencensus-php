@@ -24,8 +24,8 @@ export default class DiffModal extends Component {
       Object.keys(response.new).forEach(key => {
         items.push({
           property: key,
-          old: response.old[key],
-          new: response.new[key],
+          old: JSON.stringify(response.old[key]),
+          new: JSON.stringify(response.new[key]),
         });
       });
 

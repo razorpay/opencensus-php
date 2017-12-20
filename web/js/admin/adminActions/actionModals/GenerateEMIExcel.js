@@ -29,7 +29,12 @@ GenerateRefundsExcel.title = 'Generate EMI Excel';
 export default function GenerateRefundsExcel() {
   return (
     <Form>
-      <DateField label="Date" name="on" value={new Date()} />
+      <DateField
+        label="Date"
+        name="on"
+        value={new Date()}
+        format="YYYY-MM-DD"
+      />
       <FromField name="from" />
       <ToField name="to" />
       <br />
@@ -57,8 +62,10 @@ export default function GenerateRefundsExcel() {
 
           if (data.to && data.from) {
             // Date from the date api is in GMT
-            let fromInGMT = new Date(data.from).getTime() / 1000;
-            let toInGMT = new Date(data.to).getTime() / 1000;
+            let fromInGMT =
+              new Date(moment(data.from, 'DD-MM-YYYY')).getTime() / 1000;
+            let toInGMT =
+              new Date(moment(data.to, 'DD-MM-YYYY')).getTime() / 1000;
 
             // Subtract 19800 from GMT to convert timestamps to IST
             let fromInIST = fromInGMT - tzGMTToIST;

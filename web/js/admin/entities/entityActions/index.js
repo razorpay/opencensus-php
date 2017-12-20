@@ -3,3 +3,4 @@ export TerminalActions from './terminal';
 export IINActions from './iin';
 export PaymentActions from './payment';
 export DisputeActions from './dispute';
+export RefundActions from './refund';

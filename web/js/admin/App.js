@@ -1,5 +1,12 @@
 import React, { Component } from 'react';
-import { Route, matchPath, Switch, Redirect, Link } from 'react-router-dom';
+import {
+  Route,
+  matchPath,
+  Switch,
+  Redirect,
+  Link,
+  withRouter,
+} from 'react-router-dom';
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 import MainNavLink from 'admin/components/MainNavLink';
 import ErrorBoundary from 'common/ErrorBoundary';
@@ -44,7 +51,26 @@ import AsyncButton from 'ui/AsyncButton';
 
 import { adminFetch } from 'util/fetch';
 
+@withRouter
 export default class App extends Component {
+  /*
+    Following urls will be redirected to
+     - http://dashboard.razorpay.dev/admin#/app/entity/live/pricing_plan/8DayWD4r6ewju2
+     TO
+     http://dashboard.razorpay.dev/admin/entity/live/pricing_plan/8DayWD4r6ewju2
+     - http://dashboard.razorpay.dev/admin#/app/merchants/9FI02gqNcWhPxy/detail
+     TO
+     http://dashboard.razorpay.dev/admin/merchants/9FI02gqNcWhPxy/detail
+  */
+  componentWillUpdate() {
+    let hashUrl = this.props.location.hash;
+    if (hashUrl && hashUrl.indexOf('#/') > -1) {
+      hashUrl = hashUrl.substring(2); // Remove '#/'
+      hashUrl = hashUrl.replace('app', ''); // Remove 'app'
+      this.props.history.replace(hashUrl);
+    }
+  }
+
   handleLogout = () => {
     return adminFetch({}, '/admin/user/logout').then(r => {
       window.location.reload();
@@ -94,7 +120,11 @@ export default class App extends Component {
               <Route path="/permissions" component={PermissionsList} />
               <Route path="/audit-log" component={AuditLog} />
 
-              <Route path="/entity/:type/:mode/:id" component={GenericEntity} />
+              <Route
+                path="/entity/:type/:mode(live|test)/:id"
+                component={GenericEntity}
+              />
+              <Route path="/entity/:type/:id" component={GenericEntity} />
 
               <Route path="/invites" component={InvitesList} />
 

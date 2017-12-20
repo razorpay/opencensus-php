@@ -2,7 +2,7 @@ import React from 'react';
 import Field, { DateField, SelectMode } from 'ui/Field';
 import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
-import { notifyDone, closeModal } from 'common/modal';
+import { notifySuccess, closeModal } from 'common/modal';
 
 import { adminFetch } from 'util/fetch';
 
@@ -34,7 +34,7 @@ export default function IRCTC() {
             },
           }).then(response => {
             if (response) {
-              notifyDone();
+              notifySuccess('Report will be sent to the email provided');
               closeModal();
             }
           });

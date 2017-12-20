@@ -110,7 +110,13 @@ export default class RequestEntity extends Component {
         <header class="heading">
           {data.permission.description &&
             titleCase(data.permission.description)}{' '}
-          ({data.entity_id})
+          (<a
+            class="link"
+            href={`/admin/merchants/${data.entity_id}`}
+            target="_blank"
+          >
+            {data.entity_id}
+          </a>)
           <button
             class="pull-right"
             style={{ margin: '0' }}
@@ -131,7 +137,7 @@ export default class RequestEntity extends Component {
                     {formatDate(data.created_at)}
                   </span>
                 ) : null}
-                <span class={`pill ${RequestState[data.state]}`}>
+                <span class={`pill ${RequestState[data.state]} m-l`}>
                   {data.state}
                 </span>
               </div>
@@ -161,7 +167,7 @@ export default class RequestEntity extends Component {
                       >
                         {kdx < data.current_level ||
                         (kdx == data.current_level && shouldShowTick) ? (
-                          <i class="i-yes" />
+                          <i class="i-yes text-success" />
                         ) : null}
 
                         <span class="square-pills no-color">STEP {key}</span>

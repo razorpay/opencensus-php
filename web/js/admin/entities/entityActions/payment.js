@@ -12,7 +12,6 @@ import Form from 'ui/Form';
 import Field, { CheckField, TextAreaField } from 'ui/Field';
 import Table from 'ui/Table';
 import { DisputeForm } from './dispute';
-import ToggleEntityRow from 'ui/ToggleEntityRow';
 import { formatDate } from 'util/index';
 import Amount from 'ui/Amount';
 
@@ -28,7 +27,8 @@ export default ({ entity, mode, updateEntity }) => {
     }).then(data => {
       if (data) {
         notifyDone();
-        updateEntity(data.payment);
+        setTimeout(() => window.location.reload(), 1500);
+        // updateEntity(data.payment);
       }
     });
   }
@@ -48,11 +48,11 @@ export default ({ entity, mode, updateEntity }) => {
     }).then(data => {
       if (data) {
         notifyDone();
-        updateEntity(data);
+        setTimeout(() => window.location.reload(), 1500);
+        // updateEntity(data);
       }
     });
   }
-
   function refundAuthorizedPayment() {
     return adminPost({
       route_name: 'payment_authorize_refund',
@@ -63,8 +63,9 @@ export default ({ entity, mode, updateEntity }) => {
       merchant_id: entity.merchant_id,
     }).then(data => {
       if (data) {
-        notifyDone();
+        notifySuccess('');
         // data belongs to refund entity, not payment
+        setTimeout(() => window.location.reload(), 1500);
         location.reload();
       }
     });
@@ -150,14 +151,15 @@ export default ({ entity, mode, updateEntity }) => {
         />
         Payment Analytics
       </button>
-      {entity.status === 'failed' &&
-        !entity.verified && (
+      {entity.gateway != null &&
+        entity.status === 'failed' &&
+        entity.verified == 0 && (
           <AsyncButton
             class="btn"
             confirm="Are you sure you want to Authorize this failed payment?"
             onClick={authorizePayment}
           >
-            Authorize Pyament
+            Authorize Payment
           </AsyncButton>
         )}
       {entity.status === 'authorized' &&
@@ -176,7 +178,7 @@ export default ({ entity, mode, updateEntity }) => {
         <AsyncButton
           class="btn btn-default text-primary"
           confirm="Are you sure you want to Refund this authorized payment?"
-          onClick={refundPayment}
+          onClick={refundAuthorizedPayment}
         >
           Refund
         </AsyncButton>
@@ -200,15 +202,18 @@ export default ({ entity, mode, updateEntity }) => {
           </AsyncButton>
         )}
 
-      <AsyncButton
-        onClick={verifyPayment}
-        class="btn btn-default text-primary"
-        pendingClass="btn btn-default text-primary btn-pending"
-        confirm="Are you sure you want to Verify this payment?"
-      >
-        Verify Payment
-        <span class="spin-btn" />
-      </AsyncButton>
+      {(entity.status === 'created' || entity.status === 'failed') &&
+        entity.gateway != null && (
+          <AsyncButton
+            onClick={verifyPayment}
+            class="btn btn-default text-primary"
+            pendingClass="btn btn-default text-primary btn-pending"
+            confirm="Are you sure you want to Verify this payment?"
+          >
+            Verify Payment
+            <span class="spin-btn" />
+          </AsyncButton>
+        )}
 
       {!entity.disputed && (
         <button
@@ -394,7 +399,6 @@ export class PaymentRefundsList extends Component {
           class="link"
           href={`/admin/entity/refund/${this.props.mode}/${item.id}`}
         >
-          s
           {item.id}
         </a>
       ),
@@ -418,13 +422,11 @@ export class PaymentRefundsList extends Component {
   }
   render() {
     return (
-      <ToggleEntityRow label="Refunds">
-        <Table
-          pending={typeof this.state.refunds === 'undefined'}
-          fields={this.fields}
-          items={this.state.refunds}
-        />
-      </ToggleEntityRow>
+      <Table
+        pending={typeof this.state.refunds === 'undefined'}
+        fields={this.fields}
+        items={this.state.refunds}
+      />
     );
   }
 }

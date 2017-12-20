@@ -1,5 +1,5 @@
 import { openModal, closeModal, confirm } from 'common/modal';
-import fetch, { adminPut } from 'util/fetch';
+import fetch, { adminPut, adminDelete } from 'util/fetch';
 import { notifyError, notifySuccess } from 'common/modal';
 
 import BaseModal from 'ui/BaseModal';
@@ -22,11 +22,15 @@ export default ({ entity, mode, updateEntity }) => {
       delete body.emi_duration;
     }
 
-    // Remove empty or untouched variables
-    for (let key in body) {
-      if (body[key] === '' || body[key] === null || body[key] === entity[key]) {
-        delete body[key];
+    // Remove the unchanged keys inside body.type
+    for (let key in body.type) {
+      if (body.type[key] == '0') {
+        // Remove if value is 0
+        delete body.type[key];
       }
+    }
+    if (!Object.keys(body.type).length) {
+      delete body.type;
     }
 
     return adminPut({
@@ -38,7 +42,7 @@ export default ({ entity, mode, updateEntity }) => {
       body,
     })
       .then(data => {
-        if (data) {
+        if (data && (typeof data.success === 'undefined' || data.success)) {
           notifySuccess('Terminal is successfully updated');
           updateEntity(data);
           closeModal();
@@ -72,6 +76,7 @@ export default ({ entity, mode, updateEntity }) => {
       <AssignSubMerchants
         submerchants={entity.sub_merchants}
         handleSubmit={updateSubmerchants}
+        deleteSubmerchant={deleteSubmerchant}
       />
     );
   }
@@ -93,6 +98,24 @@ export default ({ entity, mode, updateEntity }) => {
         }
       })
       .catch(err => notifyError(JSON.stringify(err)));
+  }
+
+  function deleteSubmerchant(submerchantId) {
+    adminDelete({
+      route_name: 'terminal_remove_merchant',
+      url_params: {
+        id: entity.id,
+        mid: submerchantId,
+      },
+      mode: mode,
+    })
+      .then(response => {
+        notifySuccess('Sub merchant unassigned from the terminal successfully');
+        closeModal();
+
+        setTimeout(() => window.location.reload(), 1000); // TODO: Make request again instead of page refresh;
+      })
+      .catch(e => notifyError(JSON.stringify(e)));
   }
 
   function updatePrimaryMerchant(body) {
@@ -129,7 +152,10 @@ export default ({ entity, mode, updateEntity }) => {
       .then(data => {
         if (data) {
           notifySuccess('Terminal is deleted successfully');
-          window.open(`/admin/entities/${mode}/terminal`, '_self');
+          setTimeout(
+            () => window.open(`/admin/entities/${mode}/terminal`, '_self'),
+            1000
+          ); // TODO: Make request again instead of page refresh;
         }
       })
       .catch(err => {
@@ -194,7 +220,11 @@ export default ({ entity, mode, updateEntity }) => {
 };
 
 // Assign Submerchant to terminal form
-const AssignSubMerchants = ({ submerchants, handleSubmit }) => {
+const AssignSubMerchants = ({
+  submerchants,
+  handleSubmit,
+  deleteSubmerchant,
+}) => {
   function getSubmerchantFields() {
     return [
       ['Id', item => item.id],
@@ -209,6 +239,14 @@ const AssignSubMerchants = ({ submerchants, handleSubmit }) => {
           ) : (
             '--'
           ),
+      ],
+      [
+        'Delete',
+        item => (
+          <div class="link danger" onClick={() => deleteSubmerchant(item.id)}>
+            Delete
+          </div>
+        ),
       ],
     ];
   }
@@ -229,7 +267,7 @@ const AssignSubMerchants = ({ submerchants, handleSubmit }) => {
           <Table
             items={submerchants}
             fields={getSubmerchantFields()}
-            customClass="limited"
+            customClass="limited assign-submerchants"
           />
         )}
     </BaseModal>

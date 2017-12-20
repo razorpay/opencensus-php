@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import Duplex from 'ui/Duplex';
-import { adminFetch, adminDelete, adminPost } from 'util/fetch';
+import fetch, { adminFetch, adminDelete, adminPost } from 'util/fetch';
 import { Link } from 'react-router-dom';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyDone, notifyError, notifySuccess } from 'common/modal';
@@ -14,47 +14,63 @@ import ToggleEntityRow from 'ui/ToggleEntityRow';
 @withRouter
 export default class GenericEntity extends Component {
   params = this.props.match.params;
-  title = this.title();
   fields = this::getFields;
 
-  title() {
+  getTitle(mode) {
     let type = this.params.type.replace('_', ' ');
-    if (this.params.mode) {
-      type = this.params.mode + ' ' + type;
+    mode = mode || this.params.mode;
+    if (mode) {
+      type = mode + ' ' + type;
     }
     return type;
   }
 
   state = {
     data: null,
+    title: this.getTitle(),
   };
 
   componentWillMount() {
-    let { type, mode, id } = this.params;
+    if (!this.params.mode) {
+      this.fetchEntity('live', true);
+      this.fetchEntity('test', true);
+    } else {
+      this.fetchEntity(this.params.mode);
+    }
+  }
 
-    adminFetch({
-      mode,
-      route_name: 'admin_fetch_entity_by_id',
-      url_params: {
-        id,
-        type: type,
+  fetchEntity(mode, suppressDefaultError) {
+    let { type, id } = this.params;
+
+    fetch(
+      {
+        url: '/admin/generic',
+        params: {
+          mode,
+          route_name: 'admin_fetch_entity_by_id',
+          url_params: {
+            '{id}': id,
+            '{type}': type,
+          },
+        },
       },
-    }).then(data => {
-      if (data) {
-        this.setState({ data });
-        return data;
+      suppressDefaultError
+    ).then(data => {
+      if (!data.errors && data) {
+        if (data.mode) {
+          data[`${type} mode`] = data.mode;
+        }
+        data.mode = mode;
+        this.setState({ data, title: this.getTitle(mode) });
       }
+
+      return data;
     });
   }
 
   render() {
     let { id, type, mode = null } = this.params;
     let { data } = this.state;
-
-    //pass mode value for respective api's
-    if (data && mode) {
-      data.mode = mode;
-    }
 
     return (
       <div class="entity-page">
@@ -66,17 +82,19 @@ export default class GenericEntity extends Component {
               </Link>
             )}
           <header>
-            <span class="capitalize">{this.title}</span>
+            <span class="capitalize">{this.state.title}</span>
             <code>{id}</code>
           </header>
           <Duplex pending={!data} model={data} fields={this.fields()} />
           {type === 'payment' &&
             data && (
-              <PaymentRefundsList
-                id={data.id}
-                merchant_id={data.merchant_id}
-                mode={data.mode}
-              />
+              <ToggleEntityRow label="Refunds">
+                <PaymentRefundsList
+                  id={data.id}
+                  merchant_id={data.merchant_id}
+                  mode={data.mode}
+                />
+              </ToggleEntityRow>
             )}
 
           <br />
@@ -107,7 +125,7 @@ export function getFields() {
       let value = data[key];
       if (value) {
         if (typeof value === 'object') {
-          value = <pre>{JSON.stringify(value)}</pre>;
+          value = <pre class="duplex-json">{JSON.stringify(value)}</pre>;
         }
       }
       return item => [key, value];
@@ -121,13 +139,13 @@ export function getFields() {
 }
 
 const extraFields = {
-  payment: [item => ['verified', verifyStatus[item.verified] || '?']],
+  payment: [item => ['verified', verifyStatus[item.verified] || 'UNKNOWN']],
 };
 
 const verifyStatus = {
-  1: <i class="i-yes" />,
-  0: <i class="i-yes" />,
-  2: 'Verify Error',
+  0: <span class="text-danger text-right">FAILED</span>,
+  1: <span class="text-success text-right">SUCCESS</span>,
+  2: <span class="text-danger">ERROR</span>,
 };
 
 const actions = {
@@ -145,6 +163,10 @@ const actions = {
     <button class="btn" onClick={entity::downloadFile}>
       Download
     </button>
+  ),
+
+  refund: (entity, entityComponent) => (
+    <action.RefundActions entity={entity} mode={entityComponent.params.mode} />
   ),
 
   payment: (entity, entityComponent) => (
@@ -221,9 +243,10 @@ function downloadFile() {
     url_params: {
       fileId: this.id,
     },
+    mode: this.mode,
   }).then(data => {
-    if (data.success) {
-      windowRef.location.href = data.data.url;
+    if (data) {
+      windowRef.location.href = data.url;
     } else {
       windowRef.close();
       notifyError(data.errors.join(', '));

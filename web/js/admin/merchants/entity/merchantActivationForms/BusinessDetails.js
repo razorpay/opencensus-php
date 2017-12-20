@@ -215,7 +215,7 @@ export default class BusinessDetails extends Component {
             {this.state.companyInfo && (
               <div class="field">
                 {Object.keys(this.state.companyInfo.company).map(key => {
-                  let className = 'pill';
+                  let className = 'pill pill-wrap';
                   if (key === 'defaulter') {
                     if (this.state.companyInfo.company[key]) {
                       className += ' label-danger';
@@ -227,7 +227,7 @@ export default class BusinessDetails extends Component {
                   }
                   return (
                     <EntityRow
-                      class="info-block no-padding"
+                      class="info-block no-padding m-t m-b"
                       key={key}
                       label={`${titleCase(key)}:`}
                       value={() => (
@@ -346,16 +346,17 @@ export default class BusinessDetails extends Component {
 
 function _getCompanyInfoFields() {
   return [
-    ['Name', item => item.name],
+    ['Name', item => item.Name],
     ['PAN/DIN', item => item.PAN_DIN],
     ['Start Date', item => item.StartDate],
     ['End Date', item => item.EndDate],
     [
       'Defaulter',
-      () => (
+      item => (
         <i
+          style={{ fontSize: '16px' }}
           class={`i ${
-            person.Defaulter ? 'i-warning text-danger' : 'i-smile text-success'
+            item.Defaulter ? 'i-warning text-danger' : 'i-smile text-success'
           }`}
         />
       ),

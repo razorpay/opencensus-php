@@ -16,7 +16,6 @@ import Field, {
 } from 'ui/Field';
 import { PageTable } from 'ui/Table';
 import Collection, { defaultFilters } from 'model/collection';
-import Amount from 'ui/Amount';
 import { statusPill } from 'util/data';
 
 // fetch entity columns
@@ -52,20 +51,24 @@ export default class EntityList extends Component {
 
     if (filters) {
       if (filters['entity-id']) {
-        this.collection.data.route_name = 'admin_fetch_entity_by_id';
-        delete filters['entity-id'];
-      } else {
-        this.collection.data.route_name = 'admin_fetch_entity_multiple';
+        const id = filters['entity-id'].trim();
+        if (this.selectedEntity === 'merchant') {
+          window.open(`/admin/merchants/${id}`);
+        } else {
+          window.open(`/admin/entity/${this.selectedEntity}/${id}`);
+        }
+
+        return;
       }
 
+      this.collection.data.route_name = 'admin_fetch_entity_multiple';
+
       if (filters['from']) {
-        filters['from'] = Math.round(
-          new Date(filters['from']).getTime() / 1000
-        );
+        filters['from'] = filters['from'];
       }
 
       if (filters['to']) {
-        filters['to'] = Math.round(new Date(filters['to']).getTime() / 1000);
+        filters['to'] = filters['to'];
       }
     }
 
@@ -187,7 +190,16 @@ export default class EntityList extends Component {
           (this.selectedEntity === 'merchant' && key === 'id')
         ) {
           return (
-            <Link to={`/merchants/${value}`} class="link">
+            <Link to={`/merchants/${value}`} class="link" target="_blank">
+              {value}
+            </Link>
+          );
+        } else if (key === 'payment_id' && value) {
+          if (value.indexOf('pay_') === -1) {
+            value = 'pay_' + value;
+          }
+          return (
+            <Link to={`/entity/payment/${value}`} class="link" target="_blank">
               {value}
             </Link>
           );
@@ -206,7 +218,7 @@ export default class EntityList extends Component {
               {value}
             </Link>
           );
-        } else if (this.selectedEntity === 'payment' && key === 'status') {
+        } else if (key === 'status') {
           return statusPill(value);
         } else if (key.indexOf('_at') > -1 || key.indexOf('_until') > -1) {
           // Value is time

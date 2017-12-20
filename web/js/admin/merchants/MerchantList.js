@@ -79,6 +79,7 @@ export default class MerchantList extends Component {
           </Form>
         </div>
         <PageTable
+          customClass="merchants-list"
           model={this.collection}
           fields={fields}
           onClick={openMerchantEntity}
@@ -119,5 +120,13 @@ const fields = [
         ? formatDate(item.merchant_detail.submitted_at)
         : '--',
   ],
-  ['Tags', item => item.tag_list.join(', ')],
+  [
+    'Tags',
+    item =>
+      item.tag_list.map(tag => (
+        <span class="square-pills label-semi-muted" key={tag}>
+          {tag}
+        </span>
+      )),
+  ],
 ];

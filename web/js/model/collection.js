@@ -12,10 +12,10 @@ export const defaultFilters = {
 export default class Collection extends BaseModel {
   animateItems = true;
 
-  setFilters(filters, noPagination) {
+  setFilters(filters) {
     let newFilters;
 
-    if (noPagination) {
+    if (this.noPagination) {
       newFilters = Object.assign({}, filters);
     } else {
       newFilters = Object.assign({}, defaultFilters, filters);
@@ -65,8 +65,9 @@ export default class Collection extends BaseModel {
     Object.assign(this, { data, fetchFn, model });
 
     this.deleteRouteName = deleteRouteName;
+    this.noPagination = noPagination;
 
-    this.setFilters(filters, noPagination);
+    this.setFilters(filters);
 
     // load initial values
     // fetch if not pre-populated

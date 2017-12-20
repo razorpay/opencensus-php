@@ -71,10 +71,29 @@ function _getPricingPlansFields() {
 
 function _getTerminalFields() {
   return [
-    ['Terminal Id', item => item.id],
+    [
+      'Terminal Id',
+      item => (
+        <a
+          class="link"
+          href={`/admin/entity/terminal/${item.id}`}
+          target="_blank"
+        >
+          {item.id}
+        </a>
+      ),
+    ],
     ['Mode', item => item.mode],
     ['Gateway', item => item.gateway],
-    ['Deleted', item => !!item.deleted_at],
+    [
+      'Deleted',
+      item =>
+        item.deleted_at ? (
+          <i class="i i-yes text-danger" />
+        ) : (
+          <div style={{ textAlign: 'center' }}>--</div>
+        ),
+    ],
     ['Created At', item => formatDate(item.created_at)],
   ];
 }
@@ -95,7 +114,14 @@ function _getGatewayFields() {
 
 function _getOfferFields() {
   return [
-    ['Offer Id', item => item.id],
+    [
+      'Offer Id',
+      item => (
+        <a class="link" href={`/admin/entity/offer/${item.id}`} target="_blank">
+          {item.id}
+        </a>
+      ),
+    ],
     ['Name', item => item.name],
     ['Percentage', item => item.percent_rate],
     ['Flat Cashback', item => item.flat_cashback],
@@ -483,10 +509,10 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Website',
-      value: details.website
+      value: details.merchant_details
         ? () => (
-            <a href={details.website} target="_blank">
-              {details.website}
+            <a href={details.merchant_details.business_website} target="_blank">
+              {details.merchant_details.business_website}
             </a>
           )
         : null,

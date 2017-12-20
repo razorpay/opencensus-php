@@ -11,7 +11,13 @@ export default class MerchantStats extends Component {
 
   onSubmit = _ => this.model.submit();
 
-  updateData = e => (this.model.getData()[e.target.name] = e.target.value);
+  updateData = e => {
+    this.model.getData()[e.target.name] = e.target.value;
+  };
+
+  updateDates = (name, day) => {
+    this.model.getData()[name] = day.getTime() / 1000;
+  };
 
   render() {
     let model = this.model;
@@ -37,8 +43,8 @@ export default class MerchantStats extends Component {
               <option value="success_rate">Success Rate</option>
               <option value="summary">Summary</option>
             </SelectField>
-            <FromField onChange={this.updateData} />
-            <ToField onChange={this.updateData} />
+            <FromField onDayChange={day => this.updateDates('from', day)} />
+            <ToField onDayChange={day => this.updateDates('to', day)} />
             <SelectField
               name="interval"
               label="Interval"

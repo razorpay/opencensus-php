@@ -81,17 +81,15 @@ export default class Model extends BaseModel {
         type: 'offer',
       },
       mode: 'live',
-    };
-
-    const queryParams = {
-      merchant_id: this.merchantId,
+      query_params: {
+        merchant_id: this.merchantId,
+      },
     };
 
     return this.request(
       'fetchMerchantOffers',
       this.fetchFn({
         ...data,
-        queryParams,
       })
     ).then(data => {
       if (data) {
@@ -285,9 +283,9 @@ export default class Model extends BaseModel {
         }
 
         notifySuccess(
-          `${titleCase(featureMode)} feature '${
-            featureName
-          }' removed successfully`
+          `${titleCase(
+            featureMode
+          )} feature '${featureName}' removed successfully`
         );
 
         // Update assigned_features for that mode and allow re-render
@@ -320,6 +318,12 @@ export default class Model extends BaseModel {
     this.merchant.features = { ...this.merchant.features };
   }
 
+  // Updates only for live mode
+  updateTerminal(data) {
+    this.merchant.terminals.items.push(data);
+    this.merchant.terminals.count += 1;
+  }
+
   updateMerchantDetails(data) {
     // Value is changed and view is re-rendered
     this.merchant.details.merchant_details = data;
@@ -339,17 +343,15 @@ export default class Model extends BaseModel {
       url_params: {
         type: 'schedule_task',
       },
-    };
-
-    const queryParams = {
-      merchant_id: this.merchantId,
+      query_params: {
+        merchant_id: this.merchantId,
+      },
     };
 
     return this.request(
       'fetchMerchantScheduleTasks',
       this.fetchFn({
         ...data,
-        queryParams,
       })
     ).then(data => {
       if (data) {
