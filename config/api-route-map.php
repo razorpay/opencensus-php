@@ -139,6 +139,7 @@ return [
 
         // Product Submissions
         'onboarding_features_fetch_submissions' => 'onboarding/features/submissions',
+        'onboarding_features_get_submissions' => 'onboarding/features/submissions/fetch',
 
         'onboarding_features_update'        => 'onboarding/features/{feature}/update',
     ],
@@ -619,6 +620,7 @@ return [
         'offer_create'                      => 'offers',
         'offer_update'                      => 'offers/{id}',
         'invitation_fetch'                  => 'invitations',
+        'reports_refund_irctc'              => 'reports/refund/irctc',
     ],
 
     // auth

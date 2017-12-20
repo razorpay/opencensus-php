@@ -176,9 +176,9 @@ export default class WizardItem extends Component {
         <div class="panel-body">
           <div class="row">
             <div
-              class={`${this.props.accountId
-                ? ''
-                : 'col-lg-10'} col-md-12 col-sm-12`}
+              class={`${
+                this.props.accountId ? '' : 'col-lg-10'
+              } col-md-12 col-sm-12`}
             >
               <div class="row">
                 <div class="col-md-offset-3 col-md-9">

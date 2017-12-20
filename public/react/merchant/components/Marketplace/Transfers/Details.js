@@ -287,7 +287,8 @@ export default class TransferDetails extends Component {
                           onDateChange={this.onDateChange}
                           focused={this.state.focused}
                           onFocusChange={({ focused }) =>
-                            this.setState({ focused })}
+                            this.setState({ focused })
+                          }
                         />
                         {this.state.dateError && (
                           <div className="text-small text-danger text-right">

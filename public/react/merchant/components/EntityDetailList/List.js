@@ -139,7 +139,8 @@ export default class EntityDetailList extends Component {
           onClick={() =>
             this.setState({
               curLimit: items.length > 12 ? 12 : items.length,
-            })}
+            })
+          }
         >
           Show All <i class="icon icon-chevron-down" />
         </button>

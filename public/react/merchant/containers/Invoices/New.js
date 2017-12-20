@@ -328,8 +328,9 @@ export default class InvoicesNewContainer extends Component {
           window.rzpAnalytics({
             eventCategory: 'Dashboard - Invoice',
             eventAction: 'Resend - Invoice',
-            eventLabel: `invoice_id=${this.props.invoice
-              .id}|${stringifyQueryParamsWithPipe(props)}`,
+            eventLabel: `invoice_id=${
+              this.props.invoice.id
+            }|${stringifyQueryParamsWithPipe(props)}`,
           });
           this.props.showNotification({
             type: 'success',

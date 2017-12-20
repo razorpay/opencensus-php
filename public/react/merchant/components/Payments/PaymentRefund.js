@@ -31,7 +31,9 @@ const NumRefunds = ({ refunds, titleCase = false }) => {
 
   return (
     <span>
-      {refunds.loading ? <LoaderDots /> : numRefunds} {titleCase ? 'R' : 'r'}efund{refundSuffix}
+      {refunds.loading ? <LoaderDots /> : numRefunds} {titleCase ? 'R' : 'r'}efund{
+        refundSuffix
+      }
     </span>
   );
 };

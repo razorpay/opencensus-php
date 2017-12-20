@@ -234,10 +234,9 @@ export const getIntervalCycle = (interval, period) => {
 export const getCustomerDisplayName = ({ name, contact, email }) => {
   let displayParts = [name, contact, email].filter(item => !isBlank(item));
 
-  return `${displayParts.join(' / ').replace('/ ', '(')}${displayParts.length >
-  1
-    ? ')'
-    : ''}`;
+  return `${displayParts.join(' / ').replace('/ ', '(')}${
+    displayParts.length > 1 ? ')' : ''
+  }`;
 };
 
 /**

@@ -23,7 +23,7 @@ trait Logger
     {
         $label = $this->getBillingLabel($id);
 
-        $link = "https://dashboard.razorpay.com/admin#/app/merchants/$id/detail";
+        $link = "https://dashboard.razorpay.com/admin/merchants/$id";
 
         return "<$link|$label> ($id)";
     }

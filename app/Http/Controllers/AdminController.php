@@ -41,17 +41,11 @@ class AdminController extends Controller
     }
 
     /**
-     * Route = /admin/auth
-     * @return
+     * We always return the view, since it does not
+     * contain anything sensitive
      */
-    public function initiateAuth()
+    public function getIndex()
     {
-        // If already logged in
-        if (Auth::guard('api')->check())
-        {
-            return redirect('/admin');
-        }
-
         $org = $this->getOrg()->getData(true);
 
         if ($org['success'])
@@ -61,6 +55,18 @@ class AdminController extends Controller
         else
         {
             return AppResponse::jsonResponse(['Organization not found'], null);
+        }
+
+        // If already logged in
+        if (Auth::guard('api')->check())
+        {
+            $admin = $this->getAdmin()->getData(true);
+
+            return view('admin.index', [
+                'cdn' => \Config::get('app.cdn_dashboard_url'),
+                'org'   => $org,
+                'user'  => $admin['data'],
+            ]);
         }
 
         $code = Input::get('code');
@@ -75,6 +81,11 @@ class AdminController extends Controller
             }
         }
 
+        // /admin/merchants → /admin, to avoid google oauth error (redirect_uri_mismatch)
+        if (\Route::currentRouteName() === 'admin_catchall') {
+            return redirect('/admin');
+        }
+
         switch($org['auth_type'])
         {
             case 'google_auth':
@@ -82,22 +93,8 @@ class AdminController extends Controller
         }
 
         // Password login by default
-        return redirect('/admin#/access/auth/password');
-    }
-
-    /**
-     * We always return the view, since it does not
-     * contain anything sensitive
-     */
-    public function getIndex()
-    {
-        return view('admin.tmpgetIndex');
-    }
-
-    public function getPokedex()
-    {
-        return view('admin.pokedex', [
-            'cdn' => \Config::get('app.cdn_dashboard_url')
+        return view('admin.login', [
+            'org' => $org
         ]);
     }
 

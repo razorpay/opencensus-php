@@ -72,7 +72,8 @@ const RefundsTabbedContainer = () => {
             to="/refunds/batchuploads"
             isActive={(match, { pathname }) =>
               pathname === '/refunds/batchupload' ||
-              pathname === '/refunds/batchuploads'}
+              pathname === '/refunds/batchuploads'
+            }
           >
             Batch Refunds
           </NavLink>

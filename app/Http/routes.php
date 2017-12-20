@@ -15,7 +15,6 @@
 // here
 Route::group(['middleware' => ['web']], function () {
     Route::get('/', 'UserController@getIndex')->name('dashboard');
-    Route::get('/admin', 'AdminController@getIndex');
     Route::get('/status', 'AdminController@getStatus');
 
     // This is for enabling CORS support on contact form submissions
@@ -24,9 +23,9 @@ Route::group(['middleware' => ['web']], function () {
 
     // Org
     Route::group(['prefix' => 'admin'], function () {
-        Route::get('/auth', 'AdminController@initiateAuth');
         Route::get('/org', 'AdminController@getOrg');
         Route::post('/signin', 'AdminController@postSignin');
+        Route::get('/', 'AdminController@getIndex');
     });
 
     Route::group(['prefix' => 'user'], function()
@@ -101,7 +100,6 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::group(['middleware'  =>  ['admin', 'admin_access']], function()
     {
-        Route::get('/admin/pokedex', 'AdminController@getPokedex');
         Route::any('/admin/generic', 'GenericController@handle');
         Route::get('/admin/user', 'AdminController@getAdmin');
         Route::get('/admin/user/logout', 'AdminController@getLogout');
@@ -152,6 +150,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');
         Route::get('/admin/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');
     });
+
+    Route::get('admin/{all}', 'AdminController@getIndex')->name('admin_catchall')->where(['all' => '.*']);
 });
 
 Route::group(['middleware'  =>  'slack'], function ()

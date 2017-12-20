@@ -46,7 +46,9 @@ const VirtualAccountDetails = ({ virtualAccount, onCopy }) => {
       </div>
 
       <CustomClipboard
-        value={`Account Number: ${bankAccount.account_number}\nBeneficiary Name: ${virtualAccount.name}\nIFSC: ${bankAccount.ifsc}`}
+        value={`Account Number: ${
+          bankAccount.account_number
+        }\nBeneficiary Name: ${virtualAccount.name}\nIFSC: ${bankAccount.ifsc}`}
         onCopy={() => {
           onCopy(virtualAccount);
         }}
@@ -214,9 +216,9 @@ export default class CreateVirtualAccount extends Component {
                   disabled={customersLoading}
                   class="virtual-account-powerselect"
                   searchIndices={['id', 'name', 'email', 'contact']}
-                  placeholder={`${customersLoading
-                    ? 'Loading...'
-                    : 'Select a customer'}`}
+                  placeholder={`${
+                    customersLoading ? 'Loading...' : 'Select a customer'
+                  }`}
                   showClear={true}
                   selected={this.state.customerId}
                   selectedOptionLabelPath="selectedDisplayName"
@@ -260,7 +262,9 @@ export default class CreateVirtualAccount extends Component {
                     name="descriptor"
                     component="input"
                     class="form-control"
-                    placeholder={`Accepts alphanumberic, upto ${descriptorLimit} chars`}
+                    placeholder={`Accepts alphanumberic, upto ${
+                      descriptorLimit
+                    } chars`}
                     normalize={value => value.toUpperCase()}
                     onChange={event => {
                       let value = event.target.value;

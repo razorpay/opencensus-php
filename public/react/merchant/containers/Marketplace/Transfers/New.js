@@ -239,9 +239,11 @@ export default class TransferNew extends Component {
                       disabled={accounts.loading}
                       class="transfers-powerselect"
                       searchIndices={['id', 'name', 'email']}
-                      placeholder={`${accounts.loading
-                        ? 'Loading...'
-                        : 'Account ID, Account Name, Email Address'}`}
+                      placeholder={`${
+                        accounts.loading
+                          ? 'Loading...'
+                          : 'Account ID, Account Name, Email Address'
+                      }`}
                       showClear={true}
                       selected={this.state.selectedAccount}
                       selectedOptionLabelPath="name"

@@ -289,16 +289,12 @@ class Slack
 
         switch ($entity)
         {
-            case 'payment':
-                $url = url("admin#/app/payments/$mode/$id");
-                break;
-
             case 'merchant':
-                $url = url("admin#/app/merchants/${id}/detail");
+                $url = url("admin/merchants/${id}");
                 break;
 
             default:
-                $url = url("admin#/app/entity/$mode/$entity/$id");
+                $url = url("admin/entity/$mode/$entity/$id");
                 break;
         }
 
