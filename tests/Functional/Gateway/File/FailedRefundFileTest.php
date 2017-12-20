@@ -23,14 +23,6 @@ class FailedRefundFileTest extends TestCase
         parent::setUp();
     }
 
-    public function testWithInvalidTarget()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-
     public function testUpiFailedRefundFile()
     {
         Mail::fake();
