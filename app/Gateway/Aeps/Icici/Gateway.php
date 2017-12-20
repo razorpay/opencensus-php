@@ -165,9 +165,12 @@ class Gateway extends Base\Gateway
                 'decrypted_response' => $responseData,
             ]
         );
-        // TODO: Store  refund response
 
-        if ($responseData[ResponseConstants::REFUND_RESPONSE] !== Status::REFUND_STATUS_SUCCESS)
+        // Store  refund response
+        $this->updateRefundResponse($gatewayPayment, $responseData);
+
+        if (isset($responseData[ResponseConstants::REFUND_RESPONSE]) === false or
+            $responseData[ResponseConstants::REFUND_RESPONSE] !== Status::REFUND_STATUS_SUCCESS)
         {
             // Can't validate amount here, since amount does not exist in response
 
@@ -191,7 +194,7 @@ class Gateway extends Base\Gateway
         $amount = number_format($input['refund']['amount'] / 100, 2, '.', '');
 
         $data = [
-            RequestConstants::REFUND_DATA_ACCOUNT_PROVIDER    => '74',
+            RequestConstants::REFUND_DATA_ACCOUNT_PROVIDER    => $this->config['account_provider'],
             RequestConstants::REFUND_DATA_MOBILE              => $this->config['payer_mobile'],
             RequestConstants::REFUND_DATA_PAYER_VA            => $this->config['payer_vpa'],
             RequestConstants::REFUND_DATA_AMOUNT              => $amount,
@@ -209,7 +212,7 @@ class Gateway extends Base\Gateway
             RequestConstants::REFUND_DATA_PAYEE_AADHAR        => $gatewayEntity[Base\Entity::AADHAAR_NUMBER],
             RequestConstants::REFUND_DATA_PAYEE_IIN           => '',
             // TODO: Change this later
-            RequestConstants::REFUND_DATA_PAYEE_NAME          => 'Test',
+            RequestConstants::REFUND_DATA_PAYEE_NAME          => 'Razorpay',
             RequestConstants::REFUND_DATA_MCC                 => '5411',
             RequestConstants::REFUND_DATA_MERCHANT_TYPE       => 'ENTITY',
         ];
@@ -341,6 +344,20 @@ class Gateway extends Base\Gateway
         }
 
         return $responseArray;
+    }
+
+    protected function updateRefundResponse($gatewayPayment, $response)
+    {
+        $input = [
+            Base\Entity::RRN               => $response[ResponseConstants::REFUND_BANKRRN],
+            Base\Entity::RECEIVED          => 1,
+            Base\Entity::ERROR_CODE        => $response[ResponseConstants::REFUND_RESPONSE],
+            Base\Entity::ERROR_DESCRIPTION => $response[ResponseConstants::REFUND_MESSAGE],
+        ];
+
+        $gatewayPayment->build($input);
+
+        $this->repo->saveOrFail($gatewayPayment);
     }
 
     protected function getPaymentResponseData($gatewayPayment)
@@ -551,6 +568,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->setAction($this->action);
 
+        // This is used in auth
         if (isset($requestData[RequestConstants::COUNTER]) === true)
         {
             $gatewayPayment->setCounter($requestData[RequestConstants::COUNTER]);
