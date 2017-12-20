@@ -142,11 +142,19 @@ class Server extends Base\Mock\Server
     {
         $encryptor = new Icici\Encryptor(2, $this->getGatewayInstance()->getIv());
 
-        $encryptor->setMock(true);
-
-        $encryptor->setPublicCertificatePath(Constants::MOCK_CERT_PATH_PUBLIC);
-        $encryptor->setPrivateKeyPath(Constants::MOCK_CERT_PATH_PRIVATE);
+        $encryptor->setPublicKey($this->getPublicKey());
+        $encryptor->setPrivateKey($this->getPrivateKey());
 
         return $encryptor;
+    }
+
+    protected function getPublicKey()
+    {
+        return file_get_contents(__DIR__ . '/' . Gateway::MOCK_CERT_PATH_PUBLIC);
+    }
+
+    protected function getPrivateKey()
+    {
+        return file_get_contents(__DIR__ . '/' . Gateway::MOCK_CERT_PATH_PRIVATE);
     }
 }

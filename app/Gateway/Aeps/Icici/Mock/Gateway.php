@@ -10,14 +10,15 @@ class Gateway extends Icici\Gateway
 {
     use Base\Mock\GatewayTrait;
 
+    const MOCK_CERT_PATH_PUBLIC  = 'certificates/cert.pem';
+    const MOCK_CERT_PATH_PRIVATE = 'certificates/key.pem';
+
     protected function getEncryptor(): Icici\Encryptor
     {
         $encryptor = new Icici\Encryptor(2, $this->getIv(), true);
 
-        $encryptor->setMock(true);
-
-        $encryptor->setPublicCertificatePath(Constants::MOCK_CERT_PATH_PUBLIC);
-        $encryptor->setPrivateKeyPath(Constants::MOCK_CERT_PATH_PRIVATE);
+        $encryptor->setPublicKey($this->getPublicKey());
+        $encryptor->setPrivateKey($this->getPrivateKey());
 
         return $encryptor;
     }
@@ -40,5 +41,15 @@ class Gateway extends Icici\Gateway
         $response = $this->sendGatewayRequest($request);
 
         return $response->body;
+    }
+
+    protected function getPublicKey()
+    {
+        return file_get_contents(__DIR__ . '/' . self::MOCK_CERT_PATH_PUBLIC);
+    }
+
+    protected function getPrivateKey()
+    {
+        return file_get_contents(__DIR__ . '/' . self::MOCK_CERT_PATH_PRIVATE);
     }
 }

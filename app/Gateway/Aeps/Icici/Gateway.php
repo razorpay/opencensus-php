@@ -269,8 +269,6 @@ class Gateway extends Base\Gateway
     {
         $encryptor = $this->getEncryptor();
 
-        $encryptor->setPrivateKey($this->getRefundPrivateKey());
-
         $sessionKey = $encryptor->decryptSessionKey($data[ResponseConstants::REFUND_RESPONSE_ENCRYPTEDKEY]);
 
         $data = $encryptor->decryptUsingSessionKey(
@@ -287,7 +285,13 @@ class Gateway extends Base\Gateway
     // This gets overridden in Mock gateway
     protected function getEncryptor(): Encryptor
     {
-        return new Encryptor(AES::MODE_CBC, $this->getIv());
+        $encryptor = new Encryptor(AES::MODE_CBC, $this->getIv());
+
+        $encryptor->setPublicKey($this->getRefundPublicKey());
+
+        $encryptor->setPrivateKey($this->getRefundPrivateKey());
+
+        return $encryptor;
     }
 
     public function getIv()

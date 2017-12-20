@@ -15,8 +15,6 @@ class Encryptor
     const CERT_PATH_UAT       = 'certs/public_uat.cer';
     const CERT_EXPIRY_UAT     = '20171105';
 
-    protected $mockCert = false;
-
     protected $privateKey = '';
 
     protected $publicKey = '';
@@ -33,11 +31,6 @@ class Encryptor
         {
             $this->iv = '';
         }
-    }
-
-    public function setMock(bool $mock)
-    {
-        $this->mockCert = $mock;
     }
 
     public function setPrivateKey(string $key)
