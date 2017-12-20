@@ -544,6 +544,12 @@ return [
             'routeName' => 'subscriptions_write'
         ],
 
+        // Reporting Service
+        'reporting_config_list'   => 'reporting/configs',
+        'reporting_log_create'    => 'reporting/logs',
+        'reporting_log_get'       => 'reporting/logs/{id}',
+        'ufh_get_file_signed_url' => 'ufh/file/{fileId}/get-signed-url',
+
         // Addons
         'subscription_create_addon'      => 'subscriptions/{subscription_id}/addons',
         'addon_fetch'                    => 'addons/{addon_id}',

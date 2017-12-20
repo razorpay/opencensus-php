@@ -89,6 +89,10 @@ export default class User {
     return (this.tags || []).indexOf('Gst_Invoice_Disabled') !== -1;
   }
 
+  get isReportV2Enabled() {
+    return this.isFeatureEnabled('report_v2');
+  }
+
   get enabledFeatures() {
     let pluckKey = 'feature';
 

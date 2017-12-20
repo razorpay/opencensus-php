@@ -140,6 +140,7 @@
 
   .report-generate-panel {
     padding: 11px 24px 24px;
+    min-height: 300px;
 
     .title {
       color: #7f7f7f;
@@ -435,6 +436,7 @@
 }
 
 .reports-entity-options {
+
   input[type=radio].report-type {
     display: none;
   }
@@ -470,6 +472,43 @@
       content: "\25BA";
       color: #a5a5a5;
       font-size: 11px;
+    }
+  }
+
+  &.new {
+
+    label {
+      width: 100%;
+      padding: 12px 24px;
+      margin: 0;
+      color: #555555;
+      font-size: 14px;
+      font-weight: 400;
+      cursor: pointer;
+
+      :hover {
+        background-color: #f9f9f9;
+      }
+
+      &.active {
+        color: #6A55D1;
+        background-color: #f9f9f9;
+      }
+    }
+
+    &:not(:last-child) {
+      label {
+        border-bottom: 1px solid rgba(0,0,0,0.03);
+      }
+    }
+
+    @media(min-width: 992px) {
+      label:after {
+        float: right;
+        content: "\25BA";
+        color: #a5a5a5;
+        font-size: 11px;
+      }
     }
   }
 }
