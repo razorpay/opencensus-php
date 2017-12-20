@@ -5,9 +5,10 @@ import Breadcrumb, { BreadcrumbItem } from 'rzp/ui/Breadcrumb';
 
 import Treemap from 'merchant/containers/Home/PaymentMethods/Treemap';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
+import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
 import { fetch } from 'merchant/modules/pokedex';
-import { getQuery } from './data';
 
+import { getQuery } from './data';
 import './styles.styl';
 
 function getLevels(hierarchy, levels = []) {
@@ -102,7 +103,7 @@ class PaymentMethods extends Component {
           </div>
           <div className="panel-actions p-b pull-right">
             <div className="panel-action-item">
-              <button className="btn btn-default">...</button>
+              <MoreOptionsButton />
             </div>
           </div>
         </div>

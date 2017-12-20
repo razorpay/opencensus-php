@@ -9,6 +9,7 @@ import { humanReadableIndian } from 'rzp/utils/numerals';
 import { groupValues, groupMeta, getQuery } from './data';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
+import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
 
 const chartOptions = {
   tooltips: {
@@ -137,7 +138,7 @@ class Traffic extends Component {
               </select>
             </div>
             <div className="panel-action-item">
-              <button className="btn btn-default">...</button>
+              <MoreOptionsButton />
             </div>
           </div>
         </div>

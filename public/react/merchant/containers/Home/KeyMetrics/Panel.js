@@ -11,6 +11,7 @@ import { humanReadableIndian } from 'rzp/utils/numerals';
 import { tabsMeta, breakdownVals } from './data';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
+import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
 
 /* function for custom tooltip */
 const customToolTip = function(tooltipModel) {
@@ -292,9 +293,7 @@ class Panel extends Component {
                 })}
               </BtnGroup>
               <div className="panel-action-item">
-                <button className="btn btn-default">
-                  <i class="fa fa-ellipsis-h" />
-                </button>
+                <MoreOptionsButton />
               </div>
             </div>
           </div>
