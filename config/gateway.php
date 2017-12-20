@@ -224,6 +224,8 @@ return [
         'refund_api_key'          => env('AEPS_ICICI_REFUND_API_KEY'),
         'refund_test_private_key' => env('AEPS_ICICI_REFUND_TEST_PRIVATE_KEY'),
         'refund_live_private_key' => env('AEPS_ICICI_REFUND_LIVE_PRIVATE_KEY'),
+        'refund_test_public_key'  => env('AEPS_ICICI_REFUND_TEST_PUBLIC_KEY'),
+        'refund_live_public_key'  => env('AEPS_ICICI_REFUND_LIVE_PUBLIC_KEY'),
     ],
 
     'upi_npci' => [

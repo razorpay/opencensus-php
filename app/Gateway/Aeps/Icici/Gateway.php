@@ -4,6 +4,7 @@ namespace RZP\Gateway\Aeps\Icici;
 
 use Cache;
 use Carbon\Carbon;
+use phpseclib\Crypt\AES;
 
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
@@ -189,6 +190,8 @@ class Gateway extends Base\Gateway
     {
         $encryptor = $this->getEncryptor();
 
+        $encryptor->setPublicKey($this->getRefundPublicKey());
+
         $sKey = $encryptor->generateSkey();
 
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
@@ -213,7 +216,6 @@ class Gateway extends Base\Gateway
             RequestConstants::REFUND_DATA_GLOBAL_ADDRESS_TYPE => 'AADHAR',
             RequestConstants::REFUND_DATA_PAYEE_AADHAR        => $gatewayEntity[Base\Entity::AADHAAR_NUMBER],
             RequestConstants::REFUND_DATA_PAYEE_IIN           => '',
-            // TODO: Change this later
             RequestConstants::REFUND_DATA_PAYEE_NAME          => 'Razorpay',
             RequestConstants::REFUND_DATA_MCC                 => '5411',
             RequestConstants::REFUND_DATA_MERCHANT_TYPE       => 'ENTITY',
@@ -282,24 +284,10 @@ class Gateway extends Base\Gateway
         return json_decode($data, true);
     }
 
-    protected function getRefundPrivateKey()
-    {
-        if ($this->mode === Mode::TEST)
-        {
-            $key = $this->config['refund_test_private_key'];
-        }
-        else
-        {
-            $key = $this->config['refund_live_private_key'];
-        }
-
-        return trim(str_replace('\n', "\n", $key));
-    }
-
     // This gets overridden in Mock gateway
     protected function getEncryptor(): Encryptor
     {
-        return new Encryptor(2, $this->getIv());
+        return new Encryptor(AES::MODE_CBC, $this->getIv());
     }
 
     public function getIv()
@@ -586,5 +574,33 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
+    }
+
+    protected function getRefundPublicKey()
+    {
+        $key = $this->config['refund_live_public_key'];
+
+        if ($this->mode === Mode::TEST)
+        {
+            $key = $this->config['refund_test_public_key'];
+        }
+
+        // The trim is to make sure that the key doesn't end with
+        // an extra newline
+        return trim(str_replace('\n', "\n", $key));
+    }
+
+    protected function getRefundPrivateKey()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $key = $this->config['refund_test_private_key'];
+        }
+        else
+        {
+            $key = $this->config['refund_live_private_key'];
+        }
+
+        return trim(str_replace('\n', "\n", $key));
     }
 }

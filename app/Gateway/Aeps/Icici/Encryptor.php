@@ -10,16 +10,16 @@ use RZP\Constants\Mode;
 class Encryptor
 {
     const CERT_PATH       = 'certs/public.cer';
-    const ICICI_CERT_PATH = 'certs/public_icici.cer';
     const CERT_EXPIRY     = '20191230';
 
     const CERT_PATH_UAT       = 'certs/public_uat.cer';
-    const ICICI_CERT_PATH_UAT = 'certs/public_uat_icici_refund.cer';
     const CERT_EXPIRY_UAT     = '20171105';
 
     protected $mockCert = false;
 
     protected $privateKey = '';
+
+    protected $publicKey = '';
 
     protected $publicCertificatePath = '';
 
@@ -89,7 +89,7 @@ class Encryptor
         return substr($data, 16);
     }
 
-    public function encryptSessionKey($skey, $mode, $type = '')
+    public function encryptSessionKey($skey, $mode, $type = 'auth')
     {
         if ($mode === Mode::LIVE)
         {
@@ -100,24 +100,13 @@ class Encryptor
             $certPath = self::CERT_PATH_UAT;
         }
 
-        if ($type === 'refund')
-        {
-            if ($mode === Mode::LIVE)
-            {
-                $certPath = self::ICICI_CERT_PATH;
-            }
-            else
-            {
-                $certPath = self::ICICI_CERT_PATH_UAT;
-            }
-        }
-
-        if ($this->mockCert === true)
-        {
-            $certPath = $this->getPublicCertificatePath();
-        }
-
         $publicKey = file_get_contents(__DIR__ . '/' . $certPath);
+
+        // For refunds
+        if ($type !== 'auth')
+        {
+            $publicKey = $this->publicKey;
+        }
 
         openssl_public_encrypt($skey, $encrypted, $publicKey);
 
@@ -128,18 +117,9 @@ class Encryptor
 
     public function decryptSessionKey($skey)
     {
-        if ($this->mockCert === true)
-        {
-            $key = file_get_contents(__DIR__ . '/' . $this->privateKeyPath);
-        }
-        else
-        {
-            $key = $this->privateKey;
-        }
-
         $decoded = base64_decode($skey);
 
-        openssl_private_decrypt($decoded, $decrypted, $key);
+        openssl_private_decrypt($decoded, $decrypted, $this->privateKey);
 
         return $decrypted;
     }
@@ -188,9 +168,9 @@ class Encryptor
         return $result;
     }
 
-    public function setPublicCertificatePath(string $path)
+    public function setPublicKey(string $key)
     {
-        $this->publicCertificatePath = $path;
+        $this->publicKey = $key;
     }
 
     protected function getPublicCertificatePath()

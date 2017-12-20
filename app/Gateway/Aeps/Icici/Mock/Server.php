@@ -17,25 +17,25 @@ class Server extends Base\Mock\Server
     protected function getAuthResponse(string $input): string
     {
         $data = [
-            Icici\ResponseConstants::AUTH_MESSAGE_TYPE_INDICATOR                => '0110"/>',
-            Icici\ResponseConstants::AUTH_PAN                                   => '5085350123456789003"/>',
-            Icici\ResponseConstants::AUTH_PROC_CODE                             => '421000"/>',
-            Icici\ResponseConstants::AUTH_AMOUNT                                => '000000010000"/>',
-            Icici\ResponseConstants::AUTH_SYSTEM_TRACE_AUDIT_NO                 => '005810"/>',
-            Icici\ResponseConstants::AUTH_TIME                                  => '182938"/>',
-            Icici\ResponseConstants::AUTH_DATE                                  => '0321"/>',
-            Icici\ResponseConstants::AUTH_NETWORK_INTERNATIONAL_IDENTIFIER      => '001"/>',
-            Icici\ResponseConstants::AUTH_POINT_OF_SERVICE_CONDITION_CODE       => '05"/>',
-            Icici\ResponseConstants::AUTH_RRN                                   => '708018541465"/>',
-            Icici\ResponseConstants::AUTH_AUTHORIZATION_IDENTIFICATION_RESPONSE => '541465"/>',
-            Icici\ResponseConstants::AUTH_RESPONSE_CODE                         => '00"/>',
-            Icici\ResponseConstants::AUTH_CARD_ACCEPTOR_TERMINAL_IDENTIFICATION => '13016403"/>',
+            Icici\ResponseConstants::AUTH_MESSAGE_TYPE_INDICATOR                => '0110',
+            Icici\ResponseConstants::AUTH_PAN                                   => '5085350123456789003',
+            Icici\ResponseConstants::AUTH_PROC_CODE                             => '421000',
+            Icici\ResponseConstants::AUTH_AMOUNT                                => '000000010000',
+            Icici\ResponseConstants::AUTH_SYSTEM_TRACE_AUDIT_NO                 => '005810',
+            Icici\ResponseConstants::AUTH_TIME                                  => '182938',
+            Icici\ResponseConstants::AUTH_DATE                                  => '0321',
+            Icici\ResponseConstants::AUTH_NETWORK_INTERNATIONAL_IDENTIFIER      => '001',
+            Icici\ResponseConstants::AUTH_POINT_OF_SERVICE_CONDITION_CODE       => '05',
+            Icici\ResponseConstants::AUTH_RRN                                   => '708018541465',
+            Icici\ResponseConstants::AUTH_AUTHORIZATION_IDENTIFICATION_RESPONSE => '541465',
+            Icici\ResponseConstants::AUTH_RESPONSE_CODE                         => '00',
+            Icici\ResponseConstants::AUTH_CARD_ACCEPTOR_TERMINAL_IDENTIFICATION => '13016403',
             Icici\ResponseConstants::AUTH_CARD_ACCEPTOR_NAME                    => 'Pune - Check PUNE',
             Icici\ResponseConstants::AUTH_ADDITIONAL_AMOUNTS
-                => '1001356C0000002548081002356C000000254737"/>',
+                => '1001356C0000002548081002356C000000254737',
             Icici\ResponseConstants::AUTH_AUTHENTICATION_CODE
-                => 'da433aa16bd84a479300a8f75e329eae"/>',
-            Icici\ResponseConstants::AUTH_BENEF_ACCOUNT_NUMBER                  => '1111111111111"/>',
+                => 'da433aa16bd84a479300a8f75e329eae',
+            Icici\ResponseConstants::AUTH_BENEF_ACCOUNT_NUMBER                  => '1111111111111',
             Icici\ResponseConstants::AUTH_REMITTER
                 => 'null|ANIL V KAPOOR|cwduid| | |Card not present.| |n/a||da433aa16bd84a479300a8f75e329eae',
         ];
