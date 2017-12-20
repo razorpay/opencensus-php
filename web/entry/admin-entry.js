@@ -1,6 +1,6 @@
 function prefixCdn(url) {
   prefix = '';
-  var match = location.hostname.match(/(.*)dashboard\.razorpay\.com$/);
+  var match = location.hostname.match(/(.+dashboard)?\.razorpay\.com$/);
   if (location.protocol === 'https:' && match) {
     prefix =
       'https://' + (match[1] ? 'beta' : '') + 'cdn.razorpay.com/dashboard';
