@@ -1,5 +1,5 @@
 import React from 'react';
-import { titleCase, formatDate } from 'util/index';
+import { titleCase, snakeToTitleCase, formatDate } from 'util/index';
 import { statusPill } from 'util/data';
 
 import Amount from 'ui/Amount';
@@ -163,14 +163,8 @@ function _getFeaturesFields(deleteFeature) {
 }
 
 function _getRejectedReasonsFields() {
-  const categoryMap = {
-    others: 'Others',
-    risky_business: 'Risky Business',
-    unsupported_business_model: 'Unsupported Business Model',
-  };
-
   return [
-    ['Category', item => categoryMap[item.reason_category]],
+    ['Category', item => snakeToTitleCase(item.reason_category)],
     [
       'Reason',
       item =>
@@ -568,12 +562,10 @@ export function getDetailsViewMap(model) {
       children:
         details.merchant_details && details.merchant_details.rejection_reasons
           ? () => (
-              <div>
-                <Table
-                  items={details.merchant_details.rejection_reasons.items}
-                  fields={_getRejectedReasonsFields()}
-                />
-              </div>
+              <Table
+                items={details.merchant_details.rejection_reasons.items}
+                fields={_getRejectedReasonsFields()}
+              />
             )
           : null,
     },
