@@ -37,8 +37,6 @@ return [
             'content' => [
                 'type'    => 'refund_failed',
                 'targets' => ['upi_icici'],
-                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
-                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',
             'method' => 'POST'

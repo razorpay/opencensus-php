@@ -19,8 +19,8 @@ class Validator extends Base\Validator
         Entity::SUB_TYPE          => 'filled|string|max:25',
         Entity::RECIPIENTS        => 'filled|array',
         Entity::RECIPIENTS . '.*' => 'email',
-        Entity::BEGIN             => 'required|epoch',
-        Entity::END               => 'required|epoch',
+        Entity::BEGIN             => 'required_unless:type,refund_failed|epoch',
+        Entity::END               => 'required_unless:type,refund_failed|epoch',
         Entity::SCHEDULED         => 'filled|boolean',
     ];
 
@@ -92,7 +92,15 @@ class Validator extends Base\Validator
 
     protected function validateTimeRange(array $input)
     {
+        $target = $input[Entity::TYPE];
+
+        if ($target == TYPE::REFUND_FAILED)
+        {
+            return;
+        }
+
         $from = $input[Entity::BEGIN];
+
         $to = $input[Entity::END];
 
         $now = Carbon::now()->getTimestamp();
