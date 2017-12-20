@@ -191,7 +191,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code' => TraceCode::RECON_CRITICAL_ALERT,
-                        'message'    => 'Recon status is failed, and api status is successful',
+                        'message'    => 'Recon status is failed, but authorized_at is set in API',
                         'payment_id' => $this->payment->getId(),
                         'gateway'    => get_called_class()
                     ]);
