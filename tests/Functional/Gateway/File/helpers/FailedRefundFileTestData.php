@@ -15,7 +15,7 @@ return [
                 'end'   => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
             ],
             'url' => '/gateway/files/',
-            'method' => 'POST'
+            'method' => 'POST',
         ],
         'response' => [
             'content' => [
@@ -39,7 +39,7 @@ return [
                 'targets' => ['upi_icici'],
             ],
             'url' => '/gateway/files',
-            'method' => 'POST'
+            'method' => 'POST',
         ],
         'response' => [
             'content' => [
@@ -56,11 +56,11 @@ return [
                         'type'                => 'refund_failed',
                         'target'              => 'upi_icici',
                         'entity'              => 'gateway_file',
-                        'admin'               => true
-                    ]
-                ]
-            ]
-        ]
+                        'admin'               => true,
+                    ],
+                ],
+            ],
+        ],
     ],
 
     'testNoFailedRefunds' => [
@@ -88,10 +88,10 @@ return [
                         'type'                => 'refund_failed',
                         'target'              => 'upi_icici',
                         'entity'              => 'gateway_file',
-                        'admin'               => true
-                    ]
-                ]
-            ]
-        ]
-    ]
+                        'admin'               => true,
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];
