@@ -9,11 +9,11 @@ use RZP\Constants\Mode;
 
 class Encryptor
 {
-    const CERT_PATH       = 'certs/public.cer';
-    const CERT_EXPIRY     = '20191230';
+    const CERT_PATH   = 'certs/public.cer';
+    const CERT_EXPIRY = '20191230';
 
-    const CERT_PATH_UAT       = 'certs/public_uat.cer';
-    const CERT_EXPIRY_UAT     = '20171105';
+    const CERT_PATH_UAT   = 'certs/public_uat.cer';
+    const CERT_EXPIRY_UAT = '20171105';
 
     protected $privateKey = '';
 

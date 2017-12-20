@@ -150,9 +150,9 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
-                'gateway'       => $this->gateway,
-                'refund_id'     => $input['refund']['id'],
-                'response_body' => $response->body,
+                'gateway'   => $this->gateway,
+                'refund_id' => $input['refund']['id'],
+                'content'   => $response->body,
             ]
         );
 
@@ -163,9 +163,10 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
-                'gateway'            => $this->gateway,
-                'refund_id'          => $input['refund']['id'],
-                'decrypted_response' => $responseData,
+                'gateway'   => $this->gateway,
+                'refund_id' => $input['refund']['id'],
+                'decrypted' => true,
+                'response'  => $responseData,
             ]
         );
 
@@ -180,8 +181,8 @@ class Gateway extends Base\Gateway
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED,
-                $responseData[ResponseConstants::REFUND_RESPONSE],
-                $responseData[ResponseConstants::REFUND_MESSAGE]
+                $responseData[ResponseConstants::REFUND_RESPONSE] ?? '',
+                $responseData[ResponseConstants::REFUND_MESSAGE] ?? ''
             );
         }
     }
@@ -276,7 +277,7 @@ class Gateway extends Base\Gateway
             $sessionKey
         );
 
-        $data = mb_convert_encoding( $data, 'Windows-1252', 'UTF-8');
+        $data = mb_convert_encoding($data, 'Windows-1252', 'UTF-8');
 
         // Strip out the random 16 characters at the beginning
         return json_decode($data, true);
@@ -356,7 +357,7 @@ class Gateway extends Base\Gateway
             Base\Entity::ERROR_DESCRIPTION => $response[ResponseConstants::REFUND_MESSAGE],
         ];
 
-        $gatewayPayment->build($input);
+        $gatewayPayment->fill($input);
 
         $this->repo->saveOrFail($gatewayPayment);
     }
@@ -461,8 +462,10 @@ class Gateway extends Base\Gateway
 
         $extraBlock = '001344'
                     . $input['aadhaar']['session_key']
-                    . '002008' . $input['aadhaar']['cert_expiry']
-                    . '003064' . $input['aadhaar']['hmac'];
+                    . '002008'
+                    . $input['aadhaar']['cert_expiry']
+                    . '003064'
+                    . $input['aadhaar']['hmac'];
 
         $fpInfo = '001009nnnyFMRnn008001X401019' . $date . '402001F403001Y404006607580412008' . $terminalId;
 
