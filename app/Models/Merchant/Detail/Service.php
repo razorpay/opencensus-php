@@ -254,7 +254,9 @@ class Service extends Base\Service
 
         $merchantDetails = $merchant->merchantDetail;
 
-        $merchantDetails = (new Core)->updateActivationArchive($merchantDetails, $input);
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $merchantDetails = (new Core)->updateActivationArchive($merchantDetails, $input, $admin);
 
         return $merchantDetails->toArrayPublic();
     }

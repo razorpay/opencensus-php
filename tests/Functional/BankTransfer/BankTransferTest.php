@@ -242,8 +242,6 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
-        $data = $this->testData['bankTransferImpsFailedRefund'];
-
         // IMPS refunds are permitted...
         $this->refundPayment($payment['id'], 4000000);
 
@@ -870,8 +868,17 @@ class BankTransferTest extends TestCase
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($oldBankTransferId, $bankTransfer['id']);
 
-        // Another payment, same UTR, made to a different account
-        $response = $this->processBankTransfer('RAZORPAYDIFFERENT', $ifsc, $utr);
+        $differentAccountNumber = $this->createVirtualAccount()['account_number'];
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['payee_account'] = $differentAccountNumber;
+        $request['content']['payee_ifsc'] = $ifsc;
+        $request['content']['payer_ifsc'] = $ifsc;
+        $request['content']['transaction_id'] = $utr;
+        $this->ba->appAuth();
+        // Another payment, same UTR, made to a different account, from a different account
+        $response = $this->makeRequestAndGetContent($request);
         $this->assertEquals(true, $response['valid']);
         $this->assertNull($response['message']);
 
@@ -879,7 +886,7 @@ class BankTransferTest extends TestCase
         $oldBankTransferId = $bankTransfer['id'];
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertNotEquals($oldBankTransferId, $bankTransfer['id']);
-        $this->assertEquals('RAZORPAYDIFFERENT', $bankTransfer['payee_account']);
+        $this->assertEquals($differentAccountNumber, $bankTransfer['payee_account']);
     }
 
     public function testBankTransferProcessInvalidAccount()

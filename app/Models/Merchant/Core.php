@@ -70,7 +70,7 @@ class Core extends Base\Core
         return $merchant;
     }
 
-    public function createSubMerchant($input, $aggregatorMerchant): Entity
+    public function createSubMerchant($input, $aggregatorMerchant, $linkedAccount = true): Entity
     {
         // We only check for email uniqueness if the email
         // address is provided
@@ -95,7 +95,9 @@ class Core extends Base\Core
 
         $subMerchant->setPricingPlan($aggregatorMerchant->getPricingPlanId());
 
-        if ($aggregatorMerchant->isMarketplace() === true)
+        // The parent Id has to be linked only when it's a marketplace
+        // If both market place and referral are present when creating a referral account we should not link parentId.
+        if ($aggregatorMerchant->isMarketplace() === true and $linkedAccount === true)
         {
             // Use Startup Plan as the default for linked accounts
             // where transfer method pricing is 0

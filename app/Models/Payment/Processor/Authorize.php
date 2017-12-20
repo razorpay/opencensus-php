@@ -938,45 +938,37 @@ trait Authorize
                 //
                 if ($this->app['basicauth']->isProxyAuth() === true)
                 {
-                    $this->verifyAtLeastOneFeatureEnabledForMerchant(
-                        $merchant,
-                        [
-                            Feature\Constants::SUBSCRIPTIONS,
-                            Feature\Constants::CHARGE_AT_WILL,
-                        ]);
+                    $this->verifyRecurringEnabledForMerchant($merchant);
                 }
                 else
                 {
-                    // Merchants with subscriptions feature cannot make S2S calls
-                    // for recurring payments.
-                    $this->verifyAtLeastOneFeatureEnabledForMerchant(
-                        $merchant,
-                        [
-                            Feature\Constants::CHARGE_AT_WILL,
-                        ]);
+                    //
+                    // Merchants with subscriptions feature cannot
+                    // make S2S calls for recurring payments.
+                    //
+                    $this->verifyFeatureForMerchant($merchant, Feature\Constants::CHARGE_AT_WILL);
                 }
 
                 break;
 
             case BasicAuth\Type::PUBLIC_AUTH:
 
-                // Public payments can be made for recurring for merchants with either
-                // subscriptions or recurring features enabled.
-                $this->verifyAtLeastOneFeatureEnabledForMerchant(
-                    $merchant,
-                    [
-                        Feature\Constants::SUBSCRIPTIONS,
-                        Feature\Constants::CHARGE_AT_WILL,
-                    ]);
+                //
+                // Public payments can be made for recurring for merchants
+                // with either subscriptions or recurring features enabled.
+                //
+                $this->verifyRecurringEnabledForMerchant($merchant);
 
                 break;
 
             case BasicAuth\Type::PRIVILEGE_AUTH:
 
+                //
                 // Privilege auth for recurring should be used only for merchants
                 // who have subscriptions.
                 // But, since it's privilege auth, it can be used for merchants with
                 // recurring feature also, but no requirement right now.
+                //
                 $this->verifyFeatureForMerchant($merchant, Feature\Constants::SUBSCRIPTIONS);
 
                 break;
@@ -3579,31 +3571,13 @@ trait Authorize
         }
     }
 
-    protected function verifyAtLeastOneFeatureEnabledForMerchant(Merchant\Entity $merchant, array $features)
+    protected function verifyRecurringEnabledForMerchant(Merchant\Entity $merchant)
     {
-        $atLeastOneEnabled = false;
-
-        foreach ($features as $feature)
+        if ($merchant->isRecurringEnabled() === false)
         {
-            if ($merchant->isFeatureEnabled($feature) === true)
-            {
-                $atLeastOneEnabled = true;
-
-                break;
-            }
-        }
-
-        if ($atLeastOneEnabled === false)
-        {
-            //
-            // If not even one of the features is enabled for the merchant,
-            // throw an invalid URL error
-            //
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
-
-        return $atLeastOneEnabled;
     }
 
     protected function validateInternationalRecurringPaymentsAllowed(Payment\Entity $payment)
