@@ -6,6 +6,7 @@ export const groupMeta = {
     aggType: 'sum',
     column: 'base_amount',
     groupBy: 'platform',
+    isCurrency: true,
   },
   [groupValues[1]]: {
     title: 'By No. of Transactions',

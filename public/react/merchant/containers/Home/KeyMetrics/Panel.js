@@ -6,7 +6,10 @@ import ChangeRange from 'rzp/ui/ChangeRange';
 import { BtnGroup, Btn } from 'rzp/ui/BtnGroup';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/index.js';
-import { humanReadableIndian } from 'rzp/utils/numerals';
+import {
+  humanReadableIndian,
+  humanReadableIndianCurrency,
+} from 'rzp/utils/numerals';
 
 import { tabsMeta, breakdownVals } from './data';
 import Legend from 'merchant/components/Home/Legend';
@@ -241,6 +244,7 @@ class Panel extends Component {
         endDate,
         selectedBreakdown,
         lastUpdatedAt,
+        isCurrency,
       } = this.props,
       dateFormat = 'DD MMM YYYY',
       { grouping, options } = this.meta,
@@ -308,7 +312,11 @@ class Panel extends Component {
               <div className="p-t">
                 <Legend
                   data={data.legendData}
-                  valueTransformer={humanReadableIndian}
+                  valueTransformer={
+                    isCurrency
+                      ? humanReadableIndianCurrency
+                      : humanReadableIndian
+                  }
                 />
               </div>
             )}

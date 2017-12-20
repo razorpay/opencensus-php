@@ -125,12 +125,15 @@ class KeyMetricsContainer extends Component {
 
     return fetch(query).then(resp => {
       tabsOrder.forEach(tabName => {
-        const tabState = tabsState[tabName];
+        const tabState = tabsState[tabName],
+          { isCurrency } = tabsMeta[tabName];
 
         // Main stat showin in the tab
         const mainStat = resp.data[tabName];
 
         if (mainStat && mainStat.result[0]) {
+          const value = mainStat.result[0].value;
+
           tabState.data.count = mainStat.result[0].value;
         }
 
@@ -141,7 +144,7 @@ class KeyMetricsContainer extends Component {
             data: histogram.result,
             groupByColumnName: tabState.selectedGrouping,
             groupTitleMap: {},
-            valueTransformer: tabsMeta[tabName].isCurrency && paiseToRupees,
+            valueTransformer: isCurrency && paiseToRupees,
           });
 
           tabState.data.histogram = { labels, datasets };
@@ -258,7 +261,8 @@ class KeyMetricsContainer extends Component {
         </TabList>
 
         {tabsOrder.map((tabName, index) => {
-          const tabState = tabsState[tabName];
+          const tabState = tabsState[tabName],
+            { isCurrency } = tabsMeta[tabName];
 
           return (
             <TabPanel key={index}>
@@ -272,6 +276,7 @@ class KeyMetricsContainer extends Component {
                 startDate={startDate}
                 endDate={endDate}
                 lastUpdatedAt={tabsState[tabName].lastUpdatedAt}
+                isCurrency={isCurrency}
               />
             </TabPanel>
           );

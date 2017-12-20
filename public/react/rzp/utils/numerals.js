@@ -10,9 +10,12 @@ export const humanReadableIndian = (num, noOfVisibleDigits = 3) => {
   if (num < Math.pow(10, Math.max(noOfVisibleDigits, 3)))
     return formatNumberWithCommas(num);
 
-  const formattedNumberArr = formatNumberWithCommas(num).split(',');
+  const formattedNumberArr = formatNumberWithCommas(num.toFixed()).split(',');
   const suffix = suffixes[Math.min(2, formattedNumberArr.length - 2)] || '';
   return `${Number(`${formattedNumberArr[0]}.${formattedNumberArr[1]}`).toFixed(
     2
   )}${suffix}`;
 };
+
+export const humanReadableIndianCurrency = (...args) =>
+  '₹' + humanReadableIndian(...args);

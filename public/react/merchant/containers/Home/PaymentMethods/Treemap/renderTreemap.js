@@ -1,8 +1,4 @@
-import {
-  titleCase,
-  paiseToRupees,
-  getFormattedAmount,
-} from 'rzp/utils/rzp-utils';
+import { titleCase, getFormattedAmount } from 'rzp/utils/rzp-utils';
 
 var defaults = {
   margin: { top: 0, right: 0, bottom: 0, left: 0 },
@@ -126,7 +122,7 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
       ? (d.value = d.values.reduce(function(p, v) {
           return p + accumulate(v);
         }, 0))
-      : (d.value = paiseToRupees(d.value));
+      : d.value;
   }
 
   // Compute the treemap layout recursively such that each group of siblings
@@ -271,7 +267,7 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
         t1 = oldG1
           .transition()
           .duration(500)
-          .ease('expIn'),
+          .ease('expOut'),
         t2 = g2
           .transition()
           .duration(500)

@@ -3,9 +3,13 @@ import { Pie } from 'react-chartjs-2';
 import { connect } from 'react-redux';
 
 import { getPieData } from 'rzp/utils/chart/transformers';
+import { paiseToRupees } from 'rzp/utils/rzp-utils';
 
 import { fetch } from 'merchant/modules/pokedex';
-import { humanReadableIndian } from 'rzp/utils/numerals';
+import {
+  humanReadableIndian,
+  humanReadableIndianCurrency,
+} from 'rzp/utils/numerals';
 import { groupValues, groupMeta, getQuery } from './data';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
@@ -67,6 +71,7 @@ class Traffic extends Component {
       const { labels, datasets, legendData } = getPieData({
         data: distribution.result,
         groupByColumnName: meta.groupBy,
+        valueTransformer: meta.isCurrency && paiseToRupees,
       });
 
       groupState.chartData = { labels, datasets };
@@ -116,6 +121,7 @@ class Traffic extends Component {
   render() {
     const { loading, selectedGrouping, groupsState } = this.state,
       groupState = groupsState[selectedGrouping],
+      { isCurrency } = groupMeta[selectedGrouping],
       { chartData, legendData } = groupState;
 
     return (
@@ -153,7 +159,11 @@ class Traffic extends Component {
                 <Legend
                   data={groupState.legendData}
                   alignment="vertical"
-                  valueTransformer={humanReadableIndian}
+                  valueTransformer={
+                    isCurrency
+                      ? humanReadableIndianCurrency
+                      : humanReadableIndian
+                  }
                 />
               )}
           </div>
