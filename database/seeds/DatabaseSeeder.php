@@ -1946,6 +1946,7 @@ class DatabaseSeeder extends Seeder
                 'id'                    => Terminal\Shared::AEPS_ICICI_RAZORPAY_TERMINAL,
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::AEPS_ICICI,
+                'gateway_acquirer'      => 'icic',
                 'card'                  => '0',
                 'netbanking'            => '0',
                 'recurring'             => '0',
