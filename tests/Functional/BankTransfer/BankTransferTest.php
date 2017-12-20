@@ -242,8 +242,6 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
-        $data = $this->testData['bankTransferImpsFailedRefund'];
-
         // IMPS refunds are permitted...
         $this->refundPayment($payment['id'], 4000000);
 
