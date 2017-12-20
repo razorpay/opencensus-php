@@ -97,7 +97,10 @@ export default class SubscriptionDetailsContainer extends Component {
         this.key = key;
       },
       error => {
-        // do something for error
+        this.props.showNotification({
+          type: 'error',
+          message: error.errors,
+        });
       }
     );
   }
@@ -407,7 +410,10 @@ export default class SubscriptionDetailsContainer extends Component {
     try {
       razorpay.open();
     } catch (e) {
-      // do something
+      this.props.showNotification({
+        type: 'error',
+        message: e.errors,
+      });
     }
   };
 
