@@ -76,14 +76,14 @@ export const removeLineBreaks = str => str.replace(/[\n|\r]/g, ' ');
 /*
  * Check for pending workflow requests
 */
-export const isWorkflow = response => {
+export const isWorkflow = (response, history = null) => {
   if (
     typeof response.id !== 'undefined' &&
     response.id.indexOf('w_action') === 0 &&
     typeof response.workflow_id !== 'undefined'
   ) {
     const url = `/admin/requests/${response.id}`;
-    window.open(url, '_self');
+    return (location.href = url);
   } else {
     return false;
   }
