@@ -25,11 +25,11 @@ class Encryptor
 
     protected $privateKeyPath = '';
 
-    public function __construct($mode = 1, $iv = '')
+    public function __construct($mode = AES::MODE_ECB, $iv = '')
     {
         $this->encryptionMode = $mode;
 
-        if ($mode === 2)
+        if ($mode === AES::MODE_CBC)
         {
             $this->iv = '';
         }
@@ -49,8 +49,7 @@ class Encryptor
     {
         $date = Carbon::now(Timezone::IST)->format('Y-m-d\TH:i:s');
 
-        $pidBlock = '<Pid ts="' . $date . '" ver="1.0"><Bios><Bio type="FMR" posh="UNKNOWN">' .
-                    $fpData . '</Bio></Bios></Pid>';
+        $pidBlock = '<Pid ts="' . $date . '" ver="1.0"><Bios><Bio type="FMR" posh="UNKNOWN">' . $fpData . '</Bio></Bios></Pid>';
 
         return $pidBlock;
     }
@@ -63,7 +62,7 @@ class Encryptor
 
         $cipher = new AES($this->encryptionMode);
 
-        if ($this->encryptionMode === 2)
+        if ($this->encryptionMode === AES::MODE_CBC)
         {
             $cipher->setIV($this->iv);
         }
@@ -77,7 +76,7 @@ class Encryptor
     {
         $cipher = new AES($this->encryptionMode);
 
-        if ($this->encryptionMode === 2)
+        if ($this->encryptionMode === AES::MODE_CBC)
         {
             $cipher->setIV($this->iv);
         }
