@@ -1,9 +1,13 @@
-import { titleCase } from 'rzp/utils/rzp-utils';
+import {
+  titleCase,
+  paiseToRupees,
+  getFormattedAmount,
+} from 'rzp/utils/rzp-utils';
 
 var defaults = {
   margin: { top: 0, right: 0, bottom: 0, left: 0 },
   rootname: 'TOP',
-  format: ',d',
+  format: ',.2f',
   title: '',
   width: 500,
   height: 500,
@@ -12,7 +16,7 @@ var defaults = {
 function main(node, o, data, d3, onTransition, groupTitleMap) {
   var root,
     opts = { ...defaults, ...o },
-    formatNumber = d3.format(opts.format),
+    formatNumber = getFormattedAmount,
     rname = opts.rootname,
     margin = opts.margin;
 
@@ -122,7 +126,7 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
       ? (d.value = d.values.reduce(function(p, v) {
           return p + accumulate(v);
         }, 0))
-      : d.value;
+      : (d.value = paiseToRupees(d.value));
   }
 
   // Compute the treemap layout recursively such that each group of siblings
@@ -194,7 +198,12 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
       .call(rect)
       .append('title')
       .text(function(d) {
-        return d.key + ' (' + formatNumber(d.value) + ')';
+        return (
+          (d.displayText || d.parent.displayText) +
+          ' ( ₹' +
+          formatNumber(d.value) +
+          ' )'
+        );
       });
 
     g
@@ -235,6 +244,10 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
       .text(d => {
         return d.percent + '%';
       });
+
+    t.append('title').text(function(d) {
+      return '₹' + formatNumber(d.value);
+    });
 
     t.call(text);
 
