@@ -16,6 +16,9 @@ class Gateway extends Icici\Gateway
 
         $encryptor->setMock(true);
 
+        $encryptor->setPublicCertificatePath(Constants::MOCK_CERT_PATH_PUBLIC);
+        $encryptor->setPrivateKeyPath(Constants::MOCK_CERT_PATH_PRIVATE);
+
         return $encryptor;
     }
 

@@ -17,6 +17,4 @@ class Gateway extends BaseGateway
 
         return $this->app['repo']->$gateway;
     }
-
-
 }

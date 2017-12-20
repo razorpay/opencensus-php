@@ -17,12 +17,13 @@ class Encryptor
     const ICICI_CERT_PATH_UAT = 'certs/public_uat_icici_refund.cer';
     const CERT_EXPIRY_UAT     = '20171105';
 
-    const MOCK_CERT_PATH_PUBLIC  = 'Mock/certificates/cert.pem';
-    const MOCK_CERT_PATH_PRIVATE = 'Mock/certificates/key.pem';
-
     protected $mockCert = false;
 
     protected $privateKey = '';
+
+    protected $publicCertificatePath = '';
+
+    protected $privateKeyPath = '';
 
     public function __construct($mode = 1, $iv = '')
     {
@@ -114,7 +115,7 @@ class Encryptor
 
         if ($this->mockCert === true)
         {
-            $certPath = self::MOCK_CERT_PATH_PUBLIC;
+            $certPath = $this->getPublicCertificatePath();
         }
 
         $publicKey = file_get_contents(__DIR__ . '/' . $certPath);
@@ -126,14 +127,11 @@ class Encryptor
         return $encoded;
     }
 
-    /**
-     * This would be used only in mocks. So, we use the mock certificate no matter which action it is.
-     */
     public function decryptSessionKey($skey)
     {
         if ($this->mockCert === true)
         {
-            $key = file_get_contents(__DIR__ . '/' . self::MOCK_CERT_PATH_PRIVATE);
+            $key = file_get_contents(__DIR__ . '/' . $this->privateKeyPath);
         }
         else
         {
@@ -189,5 +187,25 @@ class Encryptor
         }
 
         return $result;
+    }
+
+    public function setPublicCertificatePath(string $path)
+    {
+        $this->publicCertificatePath = $path;
+    }
+
+    protected function getPublicCertificatePath()
+    {
+        return $this->publicCertificatePath;
+    }
+
+    public function setPrivateKeyPath(string $path)
+    {
+        $this->privateKeyPath = $path;
+    }
+
+    protected function getPrivateKeyPath()
+    {
+        return $this->privateKeyPath;
     }
 }

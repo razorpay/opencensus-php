@@ -26,7 +26,7 @@ class Gateway extends Base\Gateway
 
     const TERMINAL_ID = 'terminal_id';
 
-    const FAILED = 'failed';
+    const FAILED  = 'failed';
     const SUCCESS = 'success';
 
     public function __construct()
@@ -282,7 +282,14 @@ class Gateway extends Base\Gateway
 
     protected function getRefundPrivateKey()
     {
-        $key = $this->config['refund_private_key'];
+        if ($this->mode === Mode::TEST)
+        {
+            $key = $this->config['refund_test_private_key'];
+        }
+        else
+        {
+            $key = $this->config['refund_live_private_key'];
+        }
 
         return trim(str_replace('\n', "\n", $key));
     }
