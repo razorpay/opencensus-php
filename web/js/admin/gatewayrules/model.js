@@ -81,7 +81,7 @@ export default class GatewayRule extends CollectionItem {
 
     return this.request(
       fetch({
-        url: 'admin/generic',
+        url: '/admin/generic',
         method: 'patch',
         params: {
           route_name: 'gateway_update_rule',
