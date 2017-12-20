@@ -79,7 +79,7 @@ export const getTimelineData = ({
       groupColor = colors[index % colors.length];
 
     const dataset = {
-      label: fromCamelToTitleCase(groupLabel),
+      label: titleCase(groupLabel),
       backgroundColor: groupColor,
       data: [],
     };
