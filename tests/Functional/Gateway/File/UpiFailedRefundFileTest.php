@@ -2,18 +2,15 @@
 
 namespace RZP\Tests\Functional\Gateway\File;
 
-use Carbon\Carbon;
 use Mail;
+use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
-use RZP\Models\Gateway\File;
-use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
-use RZP\Jobs\GatewayFile as GatewayFileJob;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class FailedRefundFileTest extends TestCase
+class UpiFailedRefundFileTest extends TestCase
 {
     use PaymentTrait;
 
@@ -21,18 +18,10 @@ class FailedRefundFileTest extends TestCase
     {
         Carbon::setTestNow();
 
-        $this->testDataFilePath = __DIR__ . '/helpers/FailedRefundFileTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/UpiFailedRefundFileTestData.php';
 
         parent::setUp();
     }
-
-    public function testWithInvalidTarget()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
 
     public function testUpiFailedRefundFile()
     {

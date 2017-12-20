@@ -158,6 +158,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_TRANSFER_ATTEMPT_SOURCE_UPDATED          = 'FUND_TRANSFER_ATTEMPT_SOURCE_UPDATED';
 
     const MPESA_GATEWAY_PARAM_ARRAY                     = 'MPESA_GATEWAY_PARAM_ARRAY';
+    const INVALID_AUTH                                  = 'INVALID_AUTH';
 
     const GATEWAY_MULTIPLE_BANK_PAYMENT_IDS             = 'GATEWAY_MULTIPLE_BANK_PAYMENT_IDS';
     const MULTIPLE_TABLES_IN_VERIFY_RESPONSE            = 'MULTIPLE_TABLES_IN_VERIFY_RESPONSE';
@@ -646,6 +647,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED    = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
 
     const NODAL_INTEGRATION_ERROR                   = 'NODAL_INTEGRATION_ERROR';
+    const REPORTING_SERVICE_API_REQUEST             = 'REPORTING_SERVICE_API_REQUEST';
+    const REPORTING_SERVICE_API_RESPONSE            = 'REPORTING_SERVICE_API_RESPONSE';
+    const REPORTING_INTEGRATION_ERROR               = 'REPORTING_INTEGRATION_ERROR';
 
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
     const QUEUE_INVALID_CONFIG                      = 'QUEUE_INVALID_CONFIG';
@@ -714,6 +718,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_BEGIN_FILE_PARSING                  = 'RECON_BEGIN_FILE_PARSING';
     const RECON_END_FILE_PARSING                    = 'RECON_END_FILE_PARSING';
     const RECON_BATCH_CREATION_FAILED               = 'RECON_BATCH_CREATION_FAILED';
+    const RECON_UNPROCESSED_ROW                     = 'RECON_UNPROCESSED_ROW';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH           = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';

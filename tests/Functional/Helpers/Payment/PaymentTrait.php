@@ -1438,6 +1438,13 @@ trait PaymentTrait
         return Mockery::mock($class, [])->makePartial();
     }
 
+    protected function getMockServer($gateway = null)
+    {
+        $gateway = $gateway ?: $this->gateway;
+
+        return $this->app['gateway']->server($gateway);
+    }
+
     protected function setMockServer($server, $gateway = null)
     {
         $gateway = $gateway ?: $this->gateway;

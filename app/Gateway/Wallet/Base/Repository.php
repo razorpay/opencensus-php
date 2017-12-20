@@ -80,6 +80,6 @@ class Repository extends Base\Repository
                     ->where(Entity::GATEWAY_PAYMENT_ID, '=', $gatewayPaymentId)
                     ->where(Entity::ACTION, '=', Base\Action::AUTHORIZE)
                     ->where(Entity::WALLET, '=', $wallet)
-                    ->first();
+                    ->firstOrFail();
     }
 }
