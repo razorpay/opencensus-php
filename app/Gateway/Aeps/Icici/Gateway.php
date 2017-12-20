@@ -149,7 +149,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
-                'refund_id' => $input['refund']['id'],
+                'gateway'       => $this->gateway,
+                'refund_id'     => $input['refund']['id'],
                 'response_body' => $response->body,
             ]
         );
@@ -161,6 +162,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
+                'gateway'            => $this->gateway,
                 'refund_id'          => $input['refund']['id'],
                 'decrypted_response' => $responseData,
             ]
