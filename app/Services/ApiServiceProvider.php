@@ -128,11 +128,6 @@ class ApiServiceProvider extends BaseServiceProvider
             return new HarvesterClient($app);
         });
 
-        $this->app->singleton('reporting', function($app)
-        {
-            return new Reporting($app);
-        });
-
         $this->app->singleton('gateway_file', function($app)
         {
             return new GatewayFileManager($app);
@@ -194,7 +189,6 @@ class ApiServiceProvider extends BaseServiceProvider
             'workflow',
             'authservice',
             'sns',
-            'reporting',
         ];
     }
 

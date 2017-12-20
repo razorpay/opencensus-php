@@ -15,7 +15,7 @@ class ReportingServiceTest extends TestCase
         // In unit tests this is not set(otherwise it gets set via ba middleware)
         $this->app['rzp.mode'] = Mode::TEST;
 
-        $reporting = new \RZP\Services\Reporting($this->app);
+        $reporting = new \RZP\Services\Reporting();
 
         $auth = $this->getMethod('getAuthHeaders');
 

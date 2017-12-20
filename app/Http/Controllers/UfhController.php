@@ -10,7 +10,7 @@ class UfhController extends Controller
 {
     public function getSignedUrl(string $fileId)
     {
-        $response = $this->getUfhClient()->getSignedUrl($fileId, []);
+        $response = $this->ufhClient()->getSignedUrl($fileId, []);
 
         $data = json_decode($response->getBody(), true);
 
@@ -18,11 +18,11 @@ class UfhController extends Controller
     }
 
     /**
-     * Builds Ufh Client
+     * Builds and returns ufh client
      *
      * @return UfhClient
      */
-    protected function getUfhClient(): UfhClient
+    protected function ufhClient(): UfhClient
     {
         $ufhConfig = [
             'base_uri'      => $this->config['applications.ufh.url'],

@@ -4,73 +4,68 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 
+use RZP\Services\Reporting;
+
 class ReportingController extends Controller
 {
-    /**
-     * @var \RZP\Services\Reporting
-     */
-    protected $service;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->service = $this->app['reporting'];
-    }
-
     public function getConfig(string $id)
     {
-        $data = $this->service->fetchConfigById($id);
+        $data = $this->reportingService()->fetchConfigById($id);
 
         return ApiResponse::json($data);
     }
 
     public function listConfig()
     {
-        $data = $this->service->fetchConfigMultiple($this->input);
+        $data = $this->reportingService()->fetchConfigMultiple($this->input);
 
         return ApiResponse::json($data);
     }
 
     public function createConfig()
     {
-        $data = $this->service->createConfig($this->input);
+        $data = $this->reportingService()->createConfig($this->input);
 
         return ApiResponse::json($data);
     }
 
     public function updateConfig($id)
     {
-        $data = $this->service->editConfig($id, $this->input);
+        $data = $this->reportingService()->editConfig($id, $this->input);
 
         return ApiResponse::json($data);
     }
 
     public function deleteConfig(string $id)
     {
-        $data = $this->service->deleteConfig($id);
+        $data = $this->reportingService()->deleteConfig($id);
 
         return ApiResponse::json($data);
     }
 
     public function createLog()
     {
-        $data = $this->service->createLog($this->input);
+        $data = $this->reportingService()->createLog($this->input);
 
         return ApiResponse::json($data);
     }
 
     public function getLog(string $id)
     {
-        $data = $this->service->fetchLogById($id);
+        $data = $this->reportingService()->fetchLogById($id);
 
         return ApiResponse::json($data);
     }
 
     public function listLog()
     {
-        $data = $this->service->fetchLogMultiple($this->input);
+        $data = $this->reportingService()->fetchLogMultiple($this->input);
 
         return ApiResponse::json($data);
+    }
+
+    protected function reportingService(): Reporting
+    {
+        return new Reporting();
     }
 }

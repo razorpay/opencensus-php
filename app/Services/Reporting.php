@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use App;
 use Requests;
 
 use RZP\Exception;
@@ -36,8 +37,10 @@ class Reporting
      */
     protected $ba;
 
-    public function __construct($app)
+    public function __construct()
     {
+        $app = App::getFacadeRoot();
+
         $this->config = $app['config']['applications.reporting'];
         $this->trace  = $app['trace'];
         $this->mode   = $app['rzp.mode'];
@@ -61,14 +64,14 @@ class Reporting
 
     public function fetchConfigById(string $id): array
     {
-        $url = self::CONFIG_PATH . '/' . $id;
+        $path = self::CONFIG_PATH . '/' . $id;
 
         return $this->createAndSendRequest(Requests::GET, $path);
     }
 
     public function editConfig(string $id, array $input): array
     {
-        $url = self::CONFIG_PATH . '/' . $id;
+        $path = self::CONFIG_PATH . '/' . $id;
 
         return $this->createAndSendRequest(Requests::PATCH, $path, $input);
     }
