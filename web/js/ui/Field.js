@@ -50,6 +50,8 @@ const DateInput = ({
   onDayChange,
   dayPickerProps,
   format = 'DD/MM/YYYY',
+  formatDate = (date, format) => moment(date).format(format),
+  parseDate = (input, format) => moment(input, format).toDate(),
   hideOnDayClick,
   value,
   ...props
@@ -57,8 +59,8 @@ const DateInput = ({
   return (
     <DayPickerInput
       format={format}
-      formatDate={date => moment(date).format(format)}
-      parseDate={input => moment(input, format).toDate()}
+      formatDate={formatDate}
+      parseDate={parseDate}
       onDayChange={onDayChange}
       placeholder={format}
       value={value}
@@ -73,10 +75,31 @@ export const TimeField = _ => <Field {..._} type="time" />;
 export const DataListField = _ => <Field {..._} tag="datalist" />;
 
 export const FromField = _ => (
-  <DateField {..._} name="from" label="From" placeholder="" />
+  <DateField
+    name="from"
+    label="From"
+    placeholder=""
+    formatDate={(date, format) =>
+      moment(date)
+        .startOf('day')
+        .format(format)
+    }
+    {..._}
+  />
 );
+
 export const ToField = _ => (
-  <DateField {..._} name="to" label="To" placeholder="" />
+  <DateField
+    name="to"
+    label="To"
+    placeholder=""
+    formatDate={(date, format) =>
+      moment(date)
+        .endOf('day')
+        .format(format)
+    }
+    {..._}
+  />
 );
 
 export function RadioField({ label, value, defaultValue, ...props }) {
