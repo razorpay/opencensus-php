@@ -218,7 +218,7 @@ class RecurringPaymentTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->fixtures->merchant->addFeatures([Feature::RECURRING, Feature::S2S]);
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL, Feature::S2S]);
 
         $payment = $this->getDefaultRecurringPaymentArray();
 

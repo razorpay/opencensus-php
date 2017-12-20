@@ -1652,6 +1652,18 @@ class DatabaseSeeder extends Seeder
             'created_at'                => time(),
             'updated_at'                => time(),
         ]);
+
+        DB::table(Table::TERMINAL)->insert([
+            'id'                        => Terminal\Shared::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL,
+            'merchant_id'               => Account::SHARED_ACCOUNT,
+            'gateway'                   => Gateway::UPI_SBI,
+            'card'                      => '0',
+            'netbanking'                => '0',
+            'upi'                       => '1',
+            'gateway_merchant_id2'      => 'razorpay@sbibank',
+            'created_at'                => time(),
+            'updated_at'                => time(),
+        ]);
     }
 
     protected function createPayumoneyTerminals()

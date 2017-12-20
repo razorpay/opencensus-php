@@ -52,7 +52,7 @@ class Processor extends VirtualAccount\Processor
 
         $isPaymentExpected = $this->isPaymentExpected($bankTransfer);
 
-        if (($this->utrCheck($bankTransfer) === true) and
+        if (($this->isDuplicate($bankTransfer) === false) and
             ($isPaymentExpected === true))
         {
             $bankTransfer->setExpected(true);
@@ -73,14 +73,10 @@ class Processor extends VirtualAccount\Processor
             //
             // The transfer is an expected one, i.e. it is made to a valid account
             // but the UTR is a duplicate, indicating that a payment is being processed
-            // for a second time. In this case, we do not create anything but a
-            // bank_transfer entity, marked as unexpected.
+            // for a second time. In this case, we do nothing.
             //
-            $bankTransfer->setExpected(false);
 
-            $this->repo->saveOrFail($bankTransfer);
-
-            return $bankTransfer;
+            return null;
         }
 
         $this->processBankTransfer($bankTransfer);
@@ -164,24 +160,32 @@ class Processor extends VirtualAccount\Processor
     }
 
     /**
-     * Check if the UTR received has ever been encountered before.
-     * If it has, this is a duplicate payment, being processed again.
+     * Check if the UTR received has ever been encountered before for the same
+     * account. If it has, this is a duplicate payment, being processed again.
+     *
+     * The ref number for IMPS (RRN) actually can be the same for
+     * two distinct transactions (around the same time), as long
+     * as the remitter bank is different. Here, we query by ref
+     * number + virtual account number to identify a duplicate
+     * (we can't use source bank info, as it is not always available).
      *
      * @param Entity $bankTransfer
      *
      * @return bool
      */
-    protected function utrCheck(Entity $bankTransfer): bool
+    protected function isDuplicate(Entity $bankTransfer): bool
     {
         $utr = $bankTransfer->getUtr();
 
+        $payerIfsc = $bankTransfer->getPayerIfsc();
+
         $duplicateBankTransfer = $this->repo
                                       ->bank_transfer
-                                      ->findByUtr($utr);
+                                      ->findByUtrAndPayerIfsc($utr, $payerIfsc);
 
         if ($duplicateBankTransfer === null)
         {
-            return true;
+            return false;
         }
 
         $this->trace->error(
@@ -193,7 +197,7 @@ class Processor extends VirtualAccount\Processor
             ]
         );
 
-        return false;
+        return true;
     }
 
     /**
@@ -339,16 +343,28 @@ class Processor extends VirtualAccount\Processor
      * is created and associated with merchant and VA.
      *
      * @param Entity $bankTransfer
+     * @param array  $bankAccountInput
      *
      * @return $this|BankAccount\Entity
      */
-    protected function createPayerBankAccount(Entity $bankTransfer)
+    protected function createPayerBankAccount(
+        Entity $bankTransfer,
+        array $bankAccountInput = [])
     {
         $bankAccount = new BankAccount\Entity;
 
-        $bankAccountInput = $this->getBankAccountInput($bankTransfer);
+        $bankAccountInput = PayerBankAccount::getBankAccountInput($bankTransfer, $bankAccountInput);
 
-        $bankAccount = $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
+        $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
+
+        if ($bankAccount->getIfscCode() === null)
+        {
+            $this->trace->warning(
+                TraceCode::BANK_TRANSFER_IFSC_CODE_MISSING,
+                [
+                    'imps_ifsc' => $bankTransfer->getPayerIfsc(),
+                ]);
+        }
 
         $bankAccount->merchant()->associate($bankTransfer->merchant);
 
@@ -357,103 +373,6 @@ class Processor extends VirtualAccount\Processor
         $this->repo->saveOrFail($bankAccount);
 
         return $bankAccount;
-    }
-
-    /**
-     * Bank account creation requires limited fields, since we
-     * are using the addVirtualBankAccount validation rules.
-     *
-     * @param Entity $bankTransfer
-     *
-     * @return array
-     */
-    protected function getBankAccountInput(Entity $bankTransfer)
-    {
-        return [
-            BankAccount\Entity::IFSC_CODE        => $this->getPayerIfsc($bankTransfer),
-            BankAccount\Entity::ACCOUNT_NUMBER   => $this->getPayerAccount($bankTransfer),
-            BankAccount\Entity::BENEFICIARY_NAME => $this->getLabel($bankTransfer),
-        ];
-    }
-
-    /**
-     * Label (or beneficiary name) for created payer bank account. Use the
-     * payer_name given by Kotak if available, else merchant name. Sanitize!
-     *
-     * @param Entity $bankTransfer
-     *
-     * @return string
-     */
-    protected function getLabel(Entity $bankTransfer)
-    {
-        $label = $bankTransfer->getPayerName();
-
-        $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
-
-        // Label could be empty AFTER the preg_replace step
-        if (empty(trim($label)) === true)
-        {
-            $label = $bankTransfer->merchant->getBillingLabel();
-
-            // Still necessary to sanitize merchant name
-            $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
-        }
-
-        return substr($label, 0, 39);
-    }
-
-    /**
-     * Sanitizes account numbers received.
-     *
-     * @param Entity $bankTransfer
-     *
-     * @return null|string
-     */
-    protected function getPayerAccount(Entity $bankTransfer)
-    {
-        $account = $bankTransfer->getPayerAccount();
-
-        $account = preg_replace('/[^a-zA-Z0-9]+/', '', $account);
-
-        $account = BankCodes::modifyPayerAccountIfNeeded($account, $bankTransfer);
-
-        return $account;
-    }
-
-    /**
-     * We don't get valid IFSCs from Kotak for IMPS payments, only a bank code. To create the
-     * payer bank account anyway, we derive the bank from the code, and use a random IFSC.
-     * Later, IMPS refunds should go through, as IFSC isn't validated by Kotak for payments.
-     *
-     * @param Entity $bankTransfer
-     *
-     * @return mixed|null
-     */
-    public function getPayerIfsc(Entity $bankTransfer)
-    {
-        $ifsc = $bankTransfer->getPayerIfsc();
-
-        if ((strlen($ifsc) !== BankAccount\Entity::IFSC_CODE_LENGTH) and
-            ($bankTransfer->getMode() === Mode::IMPS))
-        {
-            //
-            // Last 10 characters are customer phone number
-            //
-            $bankCode = substr($ifsc, 0, -10);
-
-            $ifsc = BankCodes::getIfscForBankCode($bankCode);
-
-            if ($ifsc === null)
-            {
-                $this->trace->warning(
-                    TraceCode::BANK_TRANSFER_IFSC_CODE_MISSING,
-                    [
-                        'imps_ifsc' => $bankTransfer->getPayerIfsc(),
-                    ]);
-            }
-        }
-
-        return $ifsc;
     }
 
     /**

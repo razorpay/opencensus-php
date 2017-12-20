@@ -35,11 +35,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getPaymentId(array $row)
     {
-        if (isset($row[self::COLUMN_UTR]) === true)
-        {
-            $utr = $row[self::COLUMN_UTR];
-        }
-        else
+        if (isset($row[self::COLUMN_UTR]) === false)
         {
             $this->messenger->raiseReconAlert(
                 [
@@ -52,9 +48,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             return null;
         }
 
+        $utr = $row[self::COLUMN_UTR];
+
+        $payeeAccount = $row[self::COLUMN_PAYEE_ACCOUNT];
+
         $bankTransfer = $this->repo
                              ->bank_transfer
-                             ->findByUtr($utr);
+                             ->findByUtrAndPayeeAccount($utr, $payeeAccount);
 
         if ($bankTransfer === null)
         {

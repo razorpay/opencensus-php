@@ -47,7 +47,7 @@ return [
             'default'                             => 20,
             RZP\Http\BasicAuth\Type::ADMIN_AUTH   => 100,
             RZP\Http\BasicAuth\Type::DIRECT_AUTH  => 100,
-            RZP\Http\BasicAuth\Type::PRIVATE_AUTH => 300,
+            RZP\Http\BasicAuth\Type::PRIVATE_AUTH => 150,
             RZP\Http\BasicAuth\Type::DEVICE_AUTH  => 100,
             RZP\Http\BasicAuth\Type::PUBLIC_AUTH  => 100,
             RZP\Http\BasicAuth\Type::PROXY_AUTH   => 500,

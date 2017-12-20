@@ -16,6 +16,7 @@ use RZP\Models\Merchant\Detail\ValidationFields;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
 class Service extends Base\Service
 {
@@ -240,6 +241,51 @@ class Service extends Base\Service
         return $stepFinished;
     }
 
+    /**
+     * This function is used for archiving merchant activation form
+     * @param string $merchantId
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateActivationArchive(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $merchantDetails = (new Core)->updateActivationArchive($merchantDetails, $input, $admin);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
+    /**
+     * This function is used for updating merchant activation status
+     * @param string $merchantId
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateActivationStatus(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $merchantDetails = (new Core)->updateActivationStatus($merchantDetails, $input, $admin);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
+    public function getRejectionReasons()
+    {
+        return RejectionReasons::REJECTION_REASONS_MAPPING;
+    }
+
     public function getMerchantDetailsForAdmin() : array
     {
         // Formatting the data as required by the controller.
@@ -392,6 +438,32 @@ class Service extends Base\Service
             Entity::TRANSACTION_VOLUME => $transactionVolume,
             Entity::ROLE               => $role,
             Entity::DEPARTMENT         => $department,
+        ];
+    }
+
+    /**
+     * This function is used to get zapier data for activation
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
+    public function getActivationZapierData(Merchant\Entity $merchant): array
+    {
+        $date = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('j/m/Y');
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        return [
+            Constants::DATE          => $date,
+            Merchant\Entity::ID      => $merchant->id,
+            Merchant\Entity::EMAIL   => $merchant->email,
+            Merchant\Entity::NAME    => $merchant->name,
+            Entity::CONTACT_NAME     => $merchantDetails->contact_name,
+            Entity::BUSINESS_NAME    => $merchantDetails->business_name,
+            Entity::BUSINESS_DBA     => $merchantDetails->business_dba,
+            Entity::BUSINESS_WEBSITE => $merchantDetails->business_website,
+            Constants::REF           => $merchant->referrer,
         ];
     }
 }

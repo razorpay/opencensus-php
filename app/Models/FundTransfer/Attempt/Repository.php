@@ -34,7 +34,7 @@ class Repository extends Base\Repository
     {
         $id = $params[Entity::SOURCE_ID];
 
-        if (strpos($id, '_') !== 0)
+        if (strpos($id, '_') !== false)
         {
             list($sign, $id) = explode('_', $id);
         }

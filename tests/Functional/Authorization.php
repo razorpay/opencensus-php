@@ -19,6 +19,7 @@ class Authorization
     protected $adminHeaders;
     protected $admin;
     protected $appHeaders;
+    protected $bearerHeaders;
 
     protected $defaultKey               = 'rzp_test_TheTestAuthKey';
     protected $defaultSecret            = 'TheKeySecretForTests';

@@ -40,11 +40,11 @@ class Factory
     {
         $type = $batch->getType();
 
-        $namepsaceKeys = self::$typeToNamespaceKeyMap[$type] ?? self::$typeToNamespaceKeyMap[self::DEFAULT];
+        $namespaceKeys = self::$typeToNamespaceKeyMap[$type] ?? self::$typeToNamespaceKeyMap[self::DEFAULT];
 
         $processor = __NAMESPACE__ ;
 
-        foreach ($namepsaceKeys as $key)
+        foreach ($namespaceKeys as $key)
         {
             $methodValue = $batch->getAttribute($key);
 

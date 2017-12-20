@@ -227,20 +227,9 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $processedRefunds = [
-            '8fC4IPnITPqHt9',
-            '89EjEZhXy1P1PY',
-            '89vusCkrDiFjPG',
-        ];
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
 
-        $unprocessedRefunds = [
-            '8zFBRoJRgrHweO',
-            '8yTmterjOgf4bw',
-            '8vjTsAAWgin76p',
-            '8uBU8ZQZzvSM4W',
-            '8tvbuB51qty9RN',
-            '91qJqyReNvKHbk',
-        ];
+        $processedRefunds = $this->getProcessedRefunds();
 
         if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
         {

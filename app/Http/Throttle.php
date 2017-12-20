@@ -46,7 +46,11 @@ class Throttle
         {
             $this->throttle($auth);
         }
-        catch (BaseException $e)
+        catch (ThrottleException $e)
+        {
+            throw $e;
+        }
+        catch (\Throwable $e)
         {
             $this->trace->traceException($e);
         }
@@ -54,16 +58,6 @@ class Throttle
 
     protected function throttle(string $auth)
     {
-        $route = $this->request->route()->getName();
-
-        if (($this->getKeyId() === 'zyRUD5exRM0CGk') and
-            ($route !== 'payment_capture') and
-            ($route !== 'merchant_methods') and
-            ($route !== 'payment_refund'))
-        {
-            throw new ThrottleException(60 * 60, []);
-        }
-
         $mode = $this->getMode($auth);
 
         $limits = $this->config['limits'][$mode];
@@ -79,6 +73,11 @@ class Throttle
                 'ip'    => $this->request->ip(),
                 'route' => $identifier,
             ];
+
+            if ($auth === Type::PRIVATE_AUTH)
+            {
+                $throttleData['ip'] = '1.1.1.1';
+            }
 
             $time = $this->config['time_interval'];
 
@@ -111,6 +110,29 @@ class Throttle
     protected function isThrottleMocked()
     {
         $route = $this->request->route()->getName();
+
+        $nykaaThrottleRoutes = [
+            'customer_create',
+            'customer_fetch_tokens'
+        ];
+
+        $nestawayThrottleRoutes = [
+            'payment_fetch_multiple'
+        ];
+
+        // Nykaa key id
+        if (($this->getKeyId() === 'zyRUD5exRM0CGk') and
+            (in_array($route, $nykaaThrottleRoutes, true) === true))
+        {
+            return false;
+        }
+
+        // Nestaway key id
+        if (($this->getKeyId() === 'qaD5HXqij3FnDj') and
+            (in_array($route, $nestawayThrottleRoutes, true) === true))
+        {
+            return false;
+        }
 
         return (in_array($route, Route::$throttledRoutes, true) === false);
     }
@@ -160,7 +182,7 @@ class Throttle
              * against one dashboard instance
              */
             case Type::PROXY_AUTH:
-                $resource = $this->request->header('X_DASHBOARD_USER_ID');
+                $resource = $this->request->header(RequestHeader::X_DASHBOARD_USER_ID);
                 break;
 
             /**
