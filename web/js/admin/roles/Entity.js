@@ -7,7 +7,7 @@ import {
   closeModal,
   notifyDone,
 } from 'common/modal';
-import { fetch, adminFetch, adminPost, adminDelete } from 'util/fetch';
+import fetch, { adminFetch, adminPost, adminDelete } from 'util/fetch';
 import { isWorkflow } from 'util/index';
 import RolesForm from './RolesForm';
 
