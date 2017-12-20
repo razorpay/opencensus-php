@@ -1439,7 +1439,7 @@ final class Route
         'settings_delete'                        => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'                     => '*',
         'merchant_activation_files'              => '*',
-        'merchant_activation_archive'            => '*',
+        'merchant_activation_archive'            => '*', // permission handled in code
         'merchant_activation_status'             => Permission::EDIT_ACTIVATE_MERCHANT,
         'merchant_get_rejection_reasons'         => '*',
         'dispute_reason_create'                  => Permission::CREATE_DISPUTE_REASON,
