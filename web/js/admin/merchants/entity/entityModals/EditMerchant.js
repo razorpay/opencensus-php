@@ -54,7 +54,6 @@ export default class EditMerchant extends Component {
           // If array of objects (eg- admins/groups)
           tempBaseVal = valInBase.map(item => item.id);
         }
-
         isSame =
           tempBaseVal.sort().join(',') === requestData[key].sort().join(',');
 
@@ -69,7 +68,7 @@ export default class EditMerchant extends Component {
 
   handleConfirm = body => {
     body.groups = this.selectedGroups.keys();
-    if (body.admin) {
+    if (body.admins) {
       body.admins = body.admins.split(',');
     }
     body.max_payment_amount *= 100;
