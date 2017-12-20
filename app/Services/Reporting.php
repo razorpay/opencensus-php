@@ -5,8 +5,8 @@ namespace RZP\Services;
 use Requests;
 
 use RZP\Exception;
-use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Feature\Constants as Feature;
 
 /**
@@ -217,7 +217,7 @@ class Reporting
             });
         }
 
-        $configs['items'] = $items->all();
+        $configs['items'] = $items->values()->all();
         $configs['count'] = $items->count();
 
         return $configs;
