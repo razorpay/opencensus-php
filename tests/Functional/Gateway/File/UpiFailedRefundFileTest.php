@@ -10,7 +10,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class FailedRefundFileTest extends TestCase
+class UpiFailedRefundFileTest extends TestCase
 {
     use PaymentTrait;
 
@@ -18,7 +18,7 @@ class FailedRefundFileTest extends TestCase
     {
         Carbon::setTestNow();
 
-        $this->testDataFilePath = __DIR__ . '/helpers/FailedRefundFileTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/UpiFailedRefundFileTestData.php';
 
         parent::setUp();
     }
