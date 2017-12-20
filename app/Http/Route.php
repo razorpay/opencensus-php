@@ -685,6 +685,7 @@ final class Route
         'reporting_log_create'                    => ['post',     'reporting/logs',                                  'ReportingController@createLog'                                    ],
 
         // UFH Service
+        // TODO: Should change to just /signed_url (No 'get' and underscore)
         'ufh_get_file_signed_url'                 => ['get',      'ufh/file/{fileId}/get-signed-url',               'UfhController@getSignedUrl'                                        ],
     ];
 

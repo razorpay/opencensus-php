@@ -2,87 +2,74 @@
 
 namespace RZP\Http\Controllers;
 
-use Request;
 use ApiResponse;
-
-use RZP\Services;
 
 class ReportingController extends Controller
 {
     /**
-     * @var Services\Reporting
+     * @var \RZP\Services\Reporting
      */
-    protected $reportingService;
+    protected $service;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->reportingService = $this->app['reporting'];
+        $this->service = $this->app['reporting'];
     }
 
     public function getConfig(string $id)
     {
-        $data = $this->reportingService->fetchConfigById($id);
+        $data = $this->service->fetchConfigById($id);
 
         return ApiResponse::json($data);
     }
 
     public function listConfig()
     {
-        $input = Request::all();
-
-        $data = $this->reportingService->fetchConfigMultiple($input);
+        $data = $this->service->fetchConfigMultiple($this->input);
 
         return ApiResponse::json($data);
     }
 
     public function createConfig()
     {
-        $input = Request::all();
-
-        $data = $this->reportingService->createConfig($input);
+        $data = $this->service->createConfig($this->input);
 
         return ApiResponse::json($data);
     }
 
     public function updateConfig($id)
     {
-        $input = Request::all();
-
-        $data = $this->reportingService->editConfig($id, $input);
+        $data = $this->service->editConfig($id, $this->input);
 
         return ApiResponse::json($data);
     }
 
     public function deleteConfig(string $id)
     {
-        $data = $this->reportingService->deleteConfig($id);
+        $data = $this->service->deleteConfig($id);
 
         return ApiResponse::json($data);
     }
 
     public function createLog()
     {
-        $input = Request::all();
-
-        $data = $this->reportingService->createLog($input);
+        $data = $this->service->createLog($this->input);
 
         return ApiResponse::json($data);
     }
 
     public function getLog(string $id)
     {
-        $data = $this->reportingService->fetchLogById($id);
+        $data = $this->service->fetchLogById($id);
 
         return ApiResponse::json($data);
     }
 
     public function listLog()
     {
-        $input = Request::all();
-
-        $data = $this->reportingService->fetchLogMultiple($input);
+        $data = $this->service->fetchLogMultiple($this->input);
 
         return ApiResponse::json($data);
     }

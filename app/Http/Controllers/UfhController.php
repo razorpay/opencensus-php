@@ -8,9 +8,21 @@ use Razorpay\Ufh\Client as UfhClient;
 
 class UfhController extends Controller
 {
-    protected $ufhClient;
-
     public function getSignedUrl(string $fileId)
+    {
+        $response = $this->getUfhClient()->getSignedUrl($fileId, []);
+
+        $data = json_decode($response->getBody(), true);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Builds Ufh Client
+     *
+     * @return UfhClient
+     */
+    protected function getUfhClient(): UfhClient
     {
         $ufhConfig = [
             'base_uri'      => $this->config['applications.ufh.url'],
@@ -19,12 +31,6 @@ class UfhController extends Controller
             'X-Merchant-Id' => $this->ba->getMerchantId(),
         ];
 
-        $ufhClient = (new UfhClient)->setConfig($ufhConfig);
-
-        $response = $ufhClient->getSignedUrl($fileId, []);
-
-        $data = json_decode($response->getBody(), true);
-
-        return ApiResponse::json($data);
+        return (new UfhClient)->setConfig($ufhConfig);
     }
 }

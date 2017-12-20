@@ -5323,10 +5323,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/2.0.4",
+                "source": "https://github.com/razorpay/trace/tree/2.0.6",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2017-10-03T14:26:14+00:00"
+            "time": "2017-10-24T13:59:57+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
@@ -5426,7 +5426,7 @@
                 "source": "https://github.com/razorpay/upi-clients/tree/master",
                 "issues": "https://github.com/razorpay/upi-clients/issues"
             },
-            "time": "2017-06-09T09:05:10+00:00"
+            "time": "2017-08-10T18:30:30+00:00"
         },
         {
             "name": "react/promise",

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Unit\Services\Reporting;
 
 use RZP\Tests\TestCase;
+use RZP\Constants\Mode;
 
 class ReportingServiceTest extends TestCase
 {
@@ -11,6 +12,9 @@ class ReportingServiceTest extends TestCase
      */
     public function testReportingAuthHeaders()
     {
+        // In unit tests this is not set(otherwise it gets set via ba middleware)
+        $this->app['rzp.mode'] = Mode::TEST;
+
         $reporting = new \RZP\Services\Reporting($this->app);
 
         $auth = $this->getMethod('getAuthHeaders');

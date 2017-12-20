@@ -138,6 +138,7 @@ return [
             'api_key'  => env('STATUSCAKE_API_KEY')
         ]
     ],
+
     //
     // Configuration for one of the internal applications allowed
     // access to select routes of APIs.
@@ -146,6 +147,7 @@ return [
         'url'       => env('AUTH_SERVICE_URL'),
         'secret'    => env('AUTH_SERVICE_SECRET'),
     ],
+
     'nodal' => [
         'mock' => env('NODAL_MOCK', false),
         'auth' => [
@@ -154,21 +156,22 @@ return [
         ],
         'url' => env('NODAL_BASE_URL'),
     ],
+
     'reporting' => [
         'mock' => env('REPORTING_MOCK', false),
-        'url' => env('REPORTING_BASE_URL'),
+        'url'  => env('REPORTING_BASE_URL'),
         'auth' => [
             'username' => 'api',
             'password' => env('REPORTING_PASSWORD'),
         ],
     ],
+
     'ufh' => [
-        'mock'  => env('UFH_MOCK', false),
-        'url'   => env('UFH_BASE_URL'),
+        'mock' => env('UFH_MOCK', false),
+        'url'  => env('UFH_BASE_URL'),
         'auth' => [
             'username' => 'api',
             'password' => env('UFH_PASSWORD'),
         ],
-
     ],
 ];

@@ -2,150 +2,119 @@
 
 namespace RZP\Services;
 
-use App;
 use Requests;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Gateway\Utility;
 use RZP\Trace\TraceCode;
-
 use RZP\Models\Feature\Constants as Feature;
 
+/**
+ * Interface for api to talk to Reporting service
+ */
 class Reporting
 {
-    const REQUEST_TIMEOUT = 30;
-
-    const REPORT_CONFIG   = '/v1/configs';
-    const REPORT_LOG      = '/v1/logs';
+    const REQUEST_TIMEOUT = 30; // In secs
 
     /**
-     * Configuration array
-     *
+     * Path for various endpoints
+     */
+    const CONFIG_PATH   = '/v1/configs';
+    const LOG_PATH      = '/v1/logs';
+
+    /**
      * @var array
      */
     protected $config;
 
-    /**
-     * @var string
-     */
+    protected $trace;
+
     protected $mode;
 
-    protected $trace;
+    /**
+     * @var \RZP\Http\BasicAuth\BasicAuth
+     */
+    protected $ba;
 
     public function __construct($app)
     {
         $this->config = $app['config']['applications.reporting'];
+        $this->trace  = $app['trace'];
+        $this->mode   = $app['rzp.mode'];
 
-        if ($this->config === null)
-        {
-            throw new Exception\LogicException('Reporting Config not defined');
-        }
-
-        $this->app = $app;
-
-        $this->trace = $app['trace'];
-
-        $this->auth = $app['basicauth'];
-
-        if (isset($this->app['rzp.mode']) === true)
-        {
-            $this->mode = $this->app['rzp.mode'];
-        }
+        // TODO: This service should(to discuss) not depend on BA, better to pass
+        // or set merchant context on the instance before using.
+        $this->ba     = $app['basicauth'];
     }
 
     public function createConfig(array $input): array
     {
-        $url = self::REPORT_CONFIG;
-
-        return $this->makeRequestAndSend($input, $url, 'post');
+        return $this->createAndSendRequest(Requests::POST, self::CONFIG_PATH, $input);
     }
 
     public function fetchConfigMultiple(array $input): array
     {
-        $url = self::REPORT_CONFIG;
+        $configs = $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input);
 
-        $configs = $this->makeRequestAndSend($input, $url, 'get');
-
-        $configValues = $configs['items'];
-
-        $merchant = $this->auth->getMerchant();
-
-        // Currently, all the merchant reports, and shared reports are returned from reporting service
-        // Reversals, Transfers are shared reports, which should be applicable only to marketplace merchants.
-        // If `marketplace` feature is not enabled for the merchant, then we remove the reversals and transfers reports.
-        if ($merchant->isFeatureEnabled(Feature::MARKETPLACE) === false)
-        {
-            $configValues = array_values(array_filter($configValues, function($configValue) {
-                return (($configValue['type'] !== 'reversals') and
-                    ($configValue['type'] !== 'transfers'));
-            }, ARRAY_FILTER_USE_BOTH));
-        }
-
-        // PaymentLinks Report should be only shown to merchants having tag `Payment_Link_Report`
-        $tags = $merchant->tagNames();
-
-        if (in_array('Payment_Link_Report', $tags, true) === false)
-        {
-            $configValues = array_values(array_filter($configValues, function($configValue) {
-                return ($configValue['type'] !== 'invoices');
-            }, ARRAY_FILTER_USE_BOTH));
-        }
-
-        $configs['items'] = $configValues;
-        $configs['count'] = count($configValues);
-
-        return $configs;
+        return $this->filterConfigsByFeatureAndTags($configs);
     }
 
     public function fetchConfigById(string $id): array
     {
-        $url = self::REPORT_CONFIG . '/' . $id;
+        $url = self::CONFIG_PATH . '/' . $id;
 
-        return $this->makeRequestAndSend(null, $url, 'get');
+        return $this->createAndSendRequest(Requests::GET, $path);
     }
 
     public function editConfig(string $id, array $input): array
     {
-        $url = self::REPORT_CONFIG . '/' . $id;
+        $url = self::CONFIG_PATH . '/' . $id;
 
-        return $this->makeRequestAndSend($input, $url, 'patch');
+        return $this->createAndSendRequest(Requests::PATCH, $path, $input);
     }
 
     public function deleteConfig(string $id): array
     {
-        $url = self::REPORT_CONFIG . '/' . $id;
+        $path = self::CONFIG_PATH . '/' . $id;
 
-        return $this->makeRequestAndSend(null, $url, 'delete');
+        return $this->createAndSendRequest(Requests::DELETE, $path);
     }
 
     public function createLog(array $input): array
     {
-        $url = self::REPORT_LOG;
+        //
+        // Adds mode to create log input. Mode is only relavent in this endpoint
+        // (creating log) as log entity's mode attribute is used to query
+        // respective database of api. Config is mode independent in reporting service.
+        //
+        $input['mode'] = $this->mode;
 
-        // Prepare input
-        $input['mode']      = $this->app['rzp.mode'];
-
-        return $this->makeRequestAndSend($input, $url, 'post');
-    }
-
-    public function fetchLogMultiple(array $input): array
-    {
-        $url = self::REPORT_LOG;
-
-        return $this->makeRequestAndSend($input, $url, 'get');
+        return $this->createAndSendRequest(Requests::POST, self::LOG_PATH, $input);
     }
 
     public function fetchLogById(string $id): array
     {
-        $url = self::REPORT_LOG . '/' . $id;
+        $path = self::LOG_PATH . '/' . $id;
 
-        return $this->makeRequestAndSend(null, $url, 'get');
+        return $this->createAndSendRequest(Requests::GET, $path);
     }
 
-    protected function makeRequestAndSend(array $input = null, string $url, string $method = 'post')
+    public function fetchLogMultiple(array $input): array
     {
-        $response = null;
+        return $this->createAndSendRequest(Requests::GET, self::LOG_PATH, $input);
+    }
+
+    protected function createAndSendRequest(
+        string $method,
+        string $path,
+        array $input = []): array
+    {
+        // In case reporting is to be mocked, don't make any external call
+        // and just return empty array.
+        if ($this->config['mock'] === true)
+        {
+            return [];
+        }
 
         $options = [
             'timeout' => self::REQUEST_TIMEOUT,
@@ -153,83 +122,104 @@ class Reporting
         ];
 
         $headers = [
-            'X-Merchant-Id' => $this->auth->getMerchantId()
+            'X-Merchant-Id' => $this->ba->getMerchantId()
         ];
 
         $request = [
-            'url'     => $this->config['url'] . $url,
+            'url'     => $this->config['url'] . $path,
             'method'  => $method,
             'content' => $input,
             'options' => $options,
             'headers' => $headers
         ];
 
-        // TODO: fix mode
-        if ($this->mode === Mode::TEST)
-        {
-            $response['success'] = true;
-        }
-        else
-        {
-            $response = $this->sendRequest($request);
-        }
+        $response = $this->sendRequest($request);
 
         return json_decode($response->body, true);
     }
 
-    protected function sendRequest(array $request)
+    protected function sendRequest(array $request): \Requests_Response
     {
-        $request['options'] = $request['options'] ?? [];
-
-        $request['headers'] = $request['headers'] ?? [];
-
-        $method = 'POST';
-
-        if (isset($request['method']) === true)
-        {
-            $method = strtoupper($request['method']);
-        }
-
         try
         {
-            $response = Requests::request(
-                $request['url'],
-                $request['headers'],
-                $request['content'],
-                $method,
-                $request['options']);
-
-            return $response;
+            return Requests::request(
+                        $request['url'],
+                        $request['headers'],
+                        $request['content'],
+                        $request['method'],
+                        $request['options']);
         }
         catch (\Requests_Exception $e)
         {
-            $data = [
-                'service' => 'reporting-service',
-                'url'     => $request['url'],
-                'method'  => $request['method'],
-                'content' => $request['content'],
-            ];
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::REPORTING_INTEGRATION_ERROR,
+                array_except($request, ['options.auth']));
 
-            //
-            // Some error occurred.
-            // Check that whether the response timed out.
-            //
-            if (Utility::checkTimeout($e))
-            {
-                $this->trace->error(TraceCode::REPORTING_INTEGRATION_ERROR, $data);
-
-                throw new Exception\IntegrationException('Reporting Service Timed out', $data);
-            }
-
-            throw new Exception\IntegrationException($e->getMessage(), $data);
+            throw new Exception\IntegrationException('
+                Could not recieve proper response from reporting service');
         }
     }
 
-    private function getAuthHeaders(): array
+    /**
+     * Returns auth headers to be used to make requests to external reporting
+     * service.
+     *
+     * @return array
+     */
+    protected function getAuthHeaders(): array
     {
         return [
             $this->config['auth']['username'],
             $this->config['auth']['password'],
         ];
+    }
+
+    /**
+     * Currently, all the merchant reports, and shared reports are returned from
+     * reporting service. In this method we have some logic to filter out above
+     * such additional report configs basis merchant.
+     *
+     * @param  array  $configs
+     *
+     * @return array
+     */
+    protected function filterConfigsByFeatureAndTags(array $configs): array
+    {
+
+        // $item is a collection for easy operations. Also $configs is empty
+        // in case reporting is mocked.
+        $items = collect($configs['items'] ?? []);
+
+        $merchant = $this->ba->getMerchant();
+
+        // Reversals, transfers are shared reports, which should be applicable
+        // only to marketplace merchants and so we remove them fron configs list
+        // otherwise.
+        if ($merchant->isFeatureEnabled(Feature::MARKETPLACE) === false)
+        {
+            $items = $items->reject(function ($value, $key)
+            {
+                return in_array($value['type'], ['transfers', 'reversals'], true);
+            });
+        }
+
+        // Payment links report is shared as well but should only be visible to
+        // merchants with specific tags.
+        $merchantTags = $merchant->tagNames();
+
+        if (in_array('Payment_Link_Report', $merchantTags, true) === false)
+        {
+            $items = $items->reject(function ($value, $key)
+            {
+                return in_array($value['type'], ['invoices'], true);
+            });
+        }
+
+        $configs['items'] = $items->all();
+        $configs['count'] = $items->count();
+
+        return $configs;
     }
 }
