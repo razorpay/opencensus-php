@@ -37,7 +37,9 @@ class FailedRefundFileTest extends TestCase
     public function testUpiFailedRefundFile()
     {
         Mail::fake();
+
         $this->fixtures->create('terminal:shared_upi_icici_terminal');
+
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
         $paymentId1 = $this->createAndCaptureUpiPayment();
@@ -57,7 +59,7 @@ class FailedRefundFileTest extends TestCase
 
         $this->ba->appAuth();
 
-        $data =  $this->startTest();
+        $data = $this->startTest();
 
         $entity_id = $data['items']['0']['id'];
 
@@ -73,9 +75,17 @@ class FailedRefundFileTest extends TestCase
         Mail::assertSent(RefundFileMail::class);
     }
 
+    public function testNoFailedRefunds()
+    {
+        Mail::fake();
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     protected function createAndCaptureUpiPayment()
     {
-
         $payment = $this->getDefaultUpiPaymentArray();
 
         $response = $this->doAuthPayment($payment);
@@ -95,6 +105,5 @@ class FailedRefundFileTest extends TestCase
         $this->capturePayment($payment['id'], 50000);
 
         return $paymentId;
-
     }
 }
