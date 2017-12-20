@@ -4,10 +4,8 @@ namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
 use Mail;
 use Carbon\Carbon;
-use Razorpay\Trace\Logger as Trace;
 
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
