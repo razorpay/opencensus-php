@@ -469,6 +469,25 @@ class Gateway
     ];
 
     /**
+     * List of gateways and the banks that they support
+     * for e-mandate. This list is required because some
+     * gateways might support more than one bank for
+     * e-mandate.
+     *
+     * @var array
+     */
+    public static $gatewaysEmandateBanksMap = [
+        Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
+        Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
+        Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
+    ];
+
+    public static $recurringCardNetworks = [
+        Network::MC,
+        Network::VISA,
+    ];
+
+    /**
      * List of netbanking gateways that process recurring payments through file send
      *
      * @var array

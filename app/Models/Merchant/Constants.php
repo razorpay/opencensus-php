@@ -11,6 +11,7 @@ final class Constants
     const CONTACT                                 = 'contact';
     const TIMESTAMP                               = 'timestamp';
     const REF                                     = 'ref';
+    const DATE                                    = 'date';
 
     /**
      * Step Map gives information on attributes filled by merchant Step wise.
