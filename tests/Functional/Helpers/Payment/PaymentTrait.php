@@ -34,6 +34,7 @@ trait PaymentTrait
     use PaymentFirstDataTrait;
     use PaymentEbsTrait;
     use PaymentCreationTrait;
+    use PaymentWalletAirtelMoneyTrait;
 
     use RequestResponseFlowTrait
     {
