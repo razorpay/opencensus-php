@@ -4,6 +4,8 @@ namespace RZP\Services;
 
 use App;
 use Requests;
+use Requests_Response;
+use Requests_Exception;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -136,12 +138,16 @@ class Reporting
             'headers' => $headers
         ];
 
+        $this->traceReportingServiceRequest($request);
+
         $response = $this->sendRequest($request);
+
+        $this->traceReportingServiceResponse($response);
 
         return json_decode($response->body, true);
     }
 
-    protected function sendRequest(array $request): \Requests_Response
+    protected function sendRequest(array $request): Requests_Response
     {
         try
         {
@@ -152,13 +158,13 @@ class Reporting
                         $request['method'],
                         $request['options']);
         }
-        catch (\Requests_Exception $e)
+        catch (Requests_Exception $e)
         {
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
                 TraceCode::REPORTING_INTEGRATION_ERROR,
-                array_except($request, ['options.auth']));
+                $this->getTraceableRequest($request));
 
             throw new Exception\IntegrationException('
                 Could not recieve proper response from reporting service');
@@ -224,5 +230,37 @@ class Reporting
         $configs['count'] = $items->count();
 
         return $configs;
+    }
+
+    protected function traceReportingServiceRequest(array $request)
+    {
+        $this->trace->info(
+            TraceCode::REPORTING_SERVICE_API_REQUEST,
+            $this->getTraceableRequest($request));
+    }
+
+    protected function traceReportingServiceResponse(Requests_Response $response)
+    {
+        $payload = ['status_code' => $response->status_code, 'body' => null];
+
+        // Trace body only if response is non 200
+        if ($response->status_code !== 200)
+        {
+            $payload['body'] = $response->body;
+        }
+
+        $this->trace->info(TraceCode::REPORTING_SERVICE_API_RESPONSE, $payload);
+    }
+
+    /**
+     * Filters request array and returns only traceable data
+     *
+     * @param  array  $request
+     *
+     * @return array
+     */
+    protected function getTraceableRequest(array $request): array
+    {
+        return array_only($request, ['url', 'method', 'content', 'headers']);
     }
 }

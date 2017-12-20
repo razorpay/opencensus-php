@@ -64,6 +64,12 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * Returns reporting service instance. It's not in constructor as it
+     * depends on ba's vars which get set in middleware.
+     *
+     * @return Reporting
+     */
     protected function reportingService(): Reporting
     {
         return new Reporting();
