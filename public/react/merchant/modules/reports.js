@@ -8,6 +8,11 @@ const reportErrorMsg = {
   error: 'Oops!, Unable to generate report!',
 };
 
+const handleError = e => {
+  console.error(e);
+  return reportErrorMsg;
+};
+
 const commonOptions = {
   url: '/user/generic',
   method: 'get',
@@ -107,15 +112,9 @@ export const generateReportV2 = params => {
                 url: resp.data.signed_url,
               };
             })
-            .catch(() => {
-              return reportErrorMsg;
-            });
+            .catch(handleError);
         })
-        .catch(() => {
-          return reportErrorMsg;
-        });
+        .catch(handleError);
     })
-    .catch(() => {
-      return reportErrorMsg;
-    });
+    .catch(handleError);
 };
