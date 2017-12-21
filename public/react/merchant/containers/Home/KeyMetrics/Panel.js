@@ -21,7 +21,8 @@ const chartOptions = {
   ...timeScale({}),
   layout: {
     padding: {
-      top: 50,
+      left: 14,
+      right: 14,
     },
   },
   tooltips: {
@@ -78,9 +79,9 @@ class Panel extends Component {
     chartOptions.isCurrency = isCurrency;
 
     return (
-      <div className="panel">
+      <div className="panel key-metrics-container">
         <div className="p-all">
-          <div className="clearfix">
+          <div className="clearfix panel-topbar">
             <div className="pull-left">
               <ChangeRange previous={20} current={17} />
               <Definition>

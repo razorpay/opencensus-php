@@ -6,7 +6,7 @@ var defaults = {
   format: ',.2f',
   title: '',
   width: 500,
-  height: 500,
+  height: 300,
 };
 
 function main(node, o, data, d3, onTransition, groupTitleMap) {

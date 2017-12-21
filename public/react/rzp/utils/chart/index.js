@@ -57,10 +57,12 @@ export const timeScale = ({ xLabel, yLabel }) => {
           },
           gridLines: {
             color: '#FFFFFF',
+            drawOnChartArea: true,
           },
           ticks: {
             source: 'data',
             autoSkip: true,
+            fontColor: 'rgba(45, 48, 51, 0.5)',
           },
         },
       ],
@@ -71,12 +73,13 @@ export const timeScale = ({ xLabel, yLabel }) => {
             beginAtZero: true,
             suggestedMax: 10,
             maxTicksLimit: 10,
+            callback: value => humanReadableIndian(value),
+            fontColor: 'rgba(45, 48, 51, 0.5)',
           },
+          offset: true,
           gridLines: {
             color: '#FFFFFF',
-          },
-          ticks: {
-            callback: value => humanReadableIndian(value),
+            drawOnChartArea: true,
           },
         },
       ],

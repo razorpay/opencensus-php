@@ -95,6 +95,7 @@ export const tabsMeta = {
           agg_type: 'count',
           details: {
             index: 'refunds',
+            mode: 'test',
           },
         },
       };
@@ -105,6 +106,7 @@ export const tabsMeta = {
           agg_type: 'count',
           details: {
             index: 'refunds',
+            mode: 'test',
             group_by: [grouping, `histogram_${breakdown}`],
           },
         },
@@ -114,7 +116,7 @@ export const tabsMeta = {
   [tabsOrder[3]]: {
     name: tabsOrder[3],
     title: 'New Saved Cards',
-    grouping: [defaultGroupingVals[0]],
+    grouping: [],
     options: [],
     getCountQuery: function() {
       return {
@@ -134,7 +136,7 @@ export const tabsMeta = {
           filter_key: this.name,
           details: {
             index: 'payments',
-            group_by: [grouping, `histogram_${breakdown}`],
+            group_by: ['saved_card', `histogram_${breakdown}`],
           },
         },
       };
@@ -148,7 +150,7 @@ export const tabsMeta = {
               gte: startTime,
               lte: endTime,
             },
-            method: 'netbanking',
+            saved_card: true,
           },
         ],
       };
