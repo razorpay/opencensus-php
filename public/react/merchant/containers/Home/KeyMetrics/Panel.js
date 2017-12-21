@@ -75,6 +75,8 @@ class Panel extends Component {
       { grouping, options } = this.meta,
       { loading } = data;
 
+    chartOptions.isCurrency = isCurrency;
+
     return (
       <div className="panel">
         <div className="p-all">

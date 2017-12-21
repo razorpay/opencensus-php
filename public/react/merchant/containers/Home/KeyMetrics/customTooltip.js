@@ -1,11 +1,14 @@
-import { humanReadableIndian } from 'rzp/utils/numerals';
+import {
+  humanReadableIndian,
+  humanReadableIndianCurrency,
+} from 'rzp/utils/numerals';
 
 // tooltip element
 const tooltipDOM = document.createElement('div');
 
 let isTooltipHovered = false,
   isInsertedIntoBody = false,
-  shouldShowTooltip = false;
+  shouldShowTooltip = false; //set unset by chartjs
 
 tooltipDOM.id = 'chartjs-tooltip';
 tooltipDOM.innerHTML = '<div class="custom-tooltip-inner">' + '</div>';
@@ -47,6 +50,8 @@ const customToolTip = function(tooltipModel) {
     showTooltip();
   }
 
+  const isCurrency = this._chart.options.isCurrency;
+
   /* Setting the body and title of tooltip only if model has body */
   if (tooltipModel.body) {
     // data member to hold going to be rendered html
@@ -60,9 +65,9 @@ const customToolTip = function(tooltipModel) {
     );
 
     // appending title to innerHtml
-    innerHtml += `<div class="title">₹ ${humanReadableIndian(
-      sumOfAllDataPoints
-    )}</div>`;
+    innerHtml += `<div class="title">${(isCurrency
+      ? humanReadableIndianCurrency
+      : humanReadableIndian)(sumOfAllDataPoints)}</div>`;
 
     /**
      * extracting lines inside each elements of body array has actual text to be rendered
