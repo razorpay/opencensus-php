@@ -2,7 +2,7 @@ import { observable, observe } from 'mobx';
 import BaseModel from './base';
 import CollectionItem from './collectionItem';
 import { notifySuccess, notifyError } from 'common/modal';
-import { adminDelete } from 'util/fetch';
+import { adminDelete } from 'common/fetch';
 
 export const defaultFilters = {
   count: 20,

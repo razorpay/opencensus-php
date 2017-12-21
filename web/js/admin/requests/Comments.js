@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import Form from 'ui/Form';
-import { formatDate } from 'util/index';
+import { formatDate } from 'common/util';
 import { TextAreaField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
-import { adminPost } from 'util/fetch';
+import { adminPost } from 'common/fetch';
 
 @observer
 export default class Comments extends Component {

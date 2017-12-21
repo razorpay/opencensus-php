@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { methods } from 'util/data';
-import { prevent } from 'util/index';
+import { methods } from 'common/data';
+import { prevent } from 'common/util';
 import { Input as DayPickerInput } from 'react-day-picker';
 import moment from 'moment';
 

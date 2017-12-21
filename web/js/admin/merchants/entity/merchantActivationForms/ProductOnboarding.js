@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 
 import { notifyError } from 'common/modal';
-import { titleCase, snakeToTitleCase } from 'util/index';
+import { titleCase, snakeToTitleCase } from 'common/util';
 
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 import EntityRow from 'ui/EntityRow';
 
 export default class ProductOnboarding extends Component {

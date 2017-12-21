@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import BaseModal from 'ui/BaseModal';
 
-import fetch from 'util/fetch';
+import fetch from 'common/fetch';
 import { notifyError } from 'common/modal';
-import { removeLineBreaks } from 'util/index';
+import { removeLineBreaks } from 'common/util';
 
 import Form from 'ui/Form';
 import { SelectField } from 'ui/Field';

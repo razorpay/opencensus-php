@@ -7,11 +7,11 @@ import {
   closeModal,
   notifyDone,
 } from 'common/modal';
-import fetch, { adminFetch, adminPost, adminDelete } from 'util/fetch';
-import { isWorkflow } from 'util/index';
+import fetch, { adminFetch, adminPost, adminDelete } from 'common/fetch';
+import { isWorkflow } from 'common/util';
 import RolesForm from './RolesForm';
 
-import { prevent } from 'util/index';
+import { prevent } from 'common/util';
 
 @observer
 class EditRole extends Component {

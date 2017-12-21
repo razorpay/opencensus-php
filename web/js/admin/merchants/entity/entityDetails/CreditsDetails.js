@@ -4,7 +4,7 @@ import { notifyError, notifySuccess } from 'common/modal';
 import Table from 'ui/Table';
 import Form from 'ui/Form';
 import { SelectField, SwitchField } from 'ui/Field';
-import { adminFetch, adminPost } from 'util/fetch';
+import { adminFetch, adminPost } from 'common/fetch';
 
 export default class PricingPlanModal extends Component {
   state = { curMode: 'live' };

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 import { openRoleModal } from './RoleModal';
 import { showEntity, removeEntity } from './Entity';
 

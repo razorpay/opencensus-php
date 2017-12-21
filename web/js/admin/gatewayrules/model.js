@@ -1,7 +1,7 @@
 import { extendObservable } from 'mobx';
-import { prevent } from 'util/index';
+import { prevent } from 'common/util';
 import CollectionItem from 'model/collectionItem';
-import fetch, { adminPost, adminDelete } from 'util/fetch';
+import fetch, { adminPost, adminDelete } from 'common/fetch';
 import { closeModal, notifyError, notifySuccess, confirm } from 'common/modal';
 
 const defaultProps = {

@@ -17,7 +17,7 @@ import {
   networks,
   categories,
   gatewayAcquirers,
-} from 'util/data';
+} from 'common/data';
 
 import { merchantId } from 'ui/Item';
 import Duplex from 'ui/Duplex';

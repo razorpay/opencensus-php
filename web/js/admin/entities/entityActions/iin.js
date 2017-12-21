@@ -1,5 +1,5 @@
 import { openModal, closeModal, confirm } from 'common/modal';
-import { adminPut } from 'util/fetch';
+import { adminPut } from 'common/fetch';
 import { notifyError, notifySuccess } from 'common/modal';
 
 import ShowWhen from 'admin/components/ShowWhen';

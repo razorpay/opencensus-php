@@ -14,7 +14,7 @@ import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
 import { getMappingFor } from '../entity-resources';
 
-import { adminPost } from 'util/fetch';
+import { adminPost } from 'common/fetch';
 
 const WALLET_MAP = getMappingFor('wallet');
 const CARD_NETWORK_MAP = getMappingFor('network');

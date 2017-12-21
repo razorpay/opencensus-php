@@ -1,5 +1,5 @@
 import { openModal, closeModal, confirm } from 'common/modal';
-import fetch, { adminPut, adminDelete } from 'util/fetch';
+import fetch, { adminPut, adminDelete } from 'common/fetch';
 import { notifyError, notifySuccess } from 'common/modal';
 
 import BaseModal from 'ui/BaseModal';

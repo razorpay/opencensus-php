@@ -6,8 +6,8 @@ import Field, { SelectMode, SelectField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
-import { adminPost } from 'util/fetch';
-import { isWorkflow } from 'util/index';
+import { adminPost } from 'common/fetch';
+import { isWorkflow } from 'common/util';
 
 export default ({ merchantId }) => {
   function onSubmit(body) {

@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 
 import EntityRow from 'ui/EntityRow';
 import AsyncButton from 'ui/AsyncButton';
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 import { notifyError, notifySuccess } from 'common/modal';
-import { titleCase } from 'util/index';
+import { titleCase } from 'common/util';
 
 import Form from 'ui/Form';
 import Field, { SelectField, TextAreaField } from 'ui/Field';

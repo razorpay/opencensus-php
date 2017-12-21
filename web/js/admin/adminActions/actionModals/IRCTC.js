@@ -4,7 +4,7 @@ import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
 import { notifySuccess, closeModal } from 'common/modal';
 
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 
 IRCTC.title = 'IRCTC';
 export default function IRCTC() {

@@ -3,7 +3,7 @@ import BaseModal from 'ui/BaseModal';
 import { toJS, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
-import { adminFetch, adminPost } from 'util/fetch';
+import { adminFetch, adminPost } from 'common/fetch';
 import { getRiskRating } from '../entity-resources';
 import ShowWhen from 'admin/components/ShowWhen';
 import Form from 'ui/Form';

@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 
 import Amount from 'ui/Amount';
 
-import fetch, { adminPost } from 'util/fetch';
+import fetch, { adminPost } from 'common/fetch';
 import { openModal, confirm } from 'common/modal';
 import { notifySuccess, notifyError } from 'common/modal';
 

@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { observable, extendObservable, action } from 'mobx';
 import { observer } from 'mobx-react';
-import { adminFetch, adminPost, adminPut, adminDelete } from 'util/fetch';
+import { adminFetch, adminPost, adminPut, adminDelete } from 'common/fetch';
 import { notifyDone } from 'common/modal';
 import UserForm from './UserForm';
-import { isWorkflow } from 'util/index';
-import { prevent } from 'util/index';
+import { isWorkflow } from 'common/util';
+import { prevent } from 'common/util';
 
 @observer
 export default class EditUser extends Component {

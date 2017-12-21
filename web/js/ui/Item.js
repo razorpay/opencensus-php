@@ -1,4 +1,4 @@
-import { methods } from 'util/data';
+import { methods } from 'common/data';
 
 const methodKeys = Object.keys(methods);
 

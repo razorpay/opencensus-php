@@ -8,7 +8,7 @@ import * as item from 'ui/Item';
 import AsyncButton from 'ui/AsyncButton';
 import Field from 'ui/Field';
 import BaseModal from 'ui/BaseModal';
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 
 let sharedNetworks = observable.shallowBox();
 

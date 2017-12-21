@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observable } from 'mobx';
 import { notifyError } from 'common/modal';
-import { adminPost } from 'util/fetch';
+import { adminPost } from 'common/fetch';
 import {
   Single,
   ChartView,
@@ -9,7 +9,7 @@ import {
   tooltipYLabelPrefix,
   tooltipYLabelSuffix,
 } from './graphs';
-import { getFormattedAmount } from 'util/index';
+import { getFormattedAmount } from 'common/util';
 
 const defaultData = {
   merchant_id: '10000000000000',

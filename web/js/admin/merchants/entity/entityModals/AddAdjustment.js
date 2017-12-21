@@ -6,8 +6,8 @@ import Field, { SelectField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError, confirm, notifySuccess, closeModal } from 'common/modal';
 
-import { adminPost } from 'util/fetch';
-import { isWorkflow } from 'util/index';
+import { adminPost } from 'common/fetch';
+import { isWorkflow } from 'common/util';
 
 export default ({ merchantId }) => {
   function handleConfirm(body) {

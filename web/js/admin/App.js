@@ -1,3 +1,4 @@
+import 'common/polyfill';
 import React, { Component } from 'react';
 import {
   Route,
@@ -49,7 +50,7 @@ import InvitesList from 'admin/invites/List';
 
 import AsyncButton from 'ui/AsyncButton';
 
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 
 @withRouter
 export default class App extends Component {

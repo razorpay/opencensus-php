@@ -4,7 +4,7 @@ import Field, { SelectField, CheckField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { notifySuccess, closeModal } from 'common/modal';
 
-import { adminPost } from 'util/fetch';
+import { adminPost } from 'common/fetch';
 
 const options = {
   network: [

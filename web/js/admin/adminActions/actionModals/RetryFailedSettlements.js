@@ -4,7 +4,7 @@ import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
 import { notifySuccess, closeModal } from 'common/modal';
 
-import { adminPost } from 'util/fetch';
+import { adminPost } from 'common/fetch';
 
 RetryFailedSettlements.permission = 'retry_settlement';
 RetryFailedSettlements.title = 'Retry Failed Settlements';

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
-import { formatDate } from 'util/index';
-import { adminFetch } from 'util/fetch';
+import { formatDate } from 'common/util';
+import { adminFetch } from 'common/fetch';
 import { openMerchantEntity } from './entity/entity-resources';
 
 import Form from 'ui/Form';

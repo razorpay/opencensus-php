@@ -6,7 +6,7 @@ import Field from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
-import { adminPut } from 'util/fetch';
+import { adminPut } from 'common/fetch';
 
 export default ({ merchantId }) => {
   /* Submit button action */

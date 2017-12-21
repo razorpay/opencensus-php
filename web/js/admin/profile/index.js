@@ -6,10 +6,10 @@ import Field from 'ui/Field';
 import Form from 'ui/Form';
 import { DataTable } from 'ui/Table';
 import AsyncButton from 'ui/AsyncButton';
-import { formatDate } from 'util/index';
+import { formatDate } from 'common/util';
 import { observer } from 'mobx-react';
 import { observable, computed } from 'mobx';
-import fetch, { adminPost } from 'util/fetch';
+import fetch, { adminPost } from 'common/fetch';
 import {
   openModal,
   notifyError,

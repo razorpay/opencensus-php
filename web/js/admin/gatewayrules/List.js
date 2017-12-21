@@ -12,8 +12,8 @@ import { replaceSlider } from 'common/modal';
 import Collection from 'model/collection';
 import Model from './model';
 
-import { adminFetch } from 'util/fetch';
-import { methods, gateways } from 'util/data';
+import { adminFetch } from 'common/fetch';
+import { methods, gateways } from 'common/data';
 
 const defaultFilters = {
   merchant_id: '100000Razorpay',

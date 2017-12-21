@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import AsyncButton from 'ui/AsyncButton';
 import { notifySuccess, closeModal } from 'common/modal';
 
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 
 TriggerDummyError.permission = 'trigger_dummy_error';
 TriggerDummyError.title = 'Trigger Dummy Error';

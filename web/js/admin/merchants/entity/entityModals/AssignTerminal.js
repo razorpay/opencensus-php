@@ -5,7 +5,7 @@ import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
 import Field, { SelectField, FileField, CheckField } from 'ui/Field';
-import { adminFetch, adminPost, adminFormUpload2 } from 'util/fetch';
+import { adminFetch, adminPost, adminFormUpload2 } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
 
 const gatewayMapping = {

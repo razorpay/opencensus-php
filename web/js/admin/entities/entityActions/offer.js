@@ -1,5 +1,5 @@
 import { openModal, closeModal, confirm } from 'common/modal';
-import fetch from 'util/fetch';
+import fetch from 'common/fetch';
 import { notifyError, notifySuccess } from 'common/modal';
 
 import ShowWhen from 'admin/components/ShowWhen';

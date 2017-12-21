@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 import { openModal, confirm } from 'common/modal';
 
 import Model from './model';

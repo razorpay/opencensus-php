@@ -4,7 +4,7 @@ import AsyncButton from 'ui/AsyncButton';
 import Form from 'ui/Form';
 import { notifySuccess, notifyError, closeModal } from 'common/modal';
 
-import { adminFormUpload } from 'util/fetch';
+import { adminFormUpload } from 'common/fetch';
 
 UploadSettlementReconciliation.permission = 'add_settlement_reconciliation';
 UploadSettlementReconciliation.title = 'Upload Settlement Reconciliation (UTR)';

@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import fetch from 'util/fetch';
-import { adminFetch, adminPut } from 'util/fetch';
+import fetch from 'common/fetch';
+import { adminFetch, adminPut } from 'common/fetch';
 import OrgForm from './OrganizationForm';
 import { notifyError, notifySuccess, notifyDone } from 'common/modal';
 
-import { adminDelete } from 'util/fetch';
+import { adminDelete } from 'common/fetch';
 
 export default class EditOrg extends Component {
   state = {

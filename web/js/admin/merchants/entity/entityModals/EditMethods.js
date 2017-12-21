@@ -5,8 +5,8 @@ import { SwitchField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
-import { adminPut } from 'util/fetch';
-import { isWorkflow } from 'util/index';
+import { adminPut } from 'common/fetch';
+import { isWorkflow } from 'common/util';
 
 export default ({ props, merchantId }) => {
   let defaultMethods;

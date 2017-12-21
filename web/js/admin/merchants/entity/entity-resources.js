@@ -1,5 +1,5 @@
 import React from 'react';
-import { titleCase, formatDate } from 'util/index';
+import { titleCase, formatDate } from 'common/util';
 
 import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';

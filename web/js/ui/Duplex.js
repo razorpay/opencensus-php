@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Amount from 'ui/Amount';
-import { snakeToTitleCase, formatDate } from 'util/index';
-import { statusPill, prefixEntityValue } from 'util/data';
+import { snakeToTitleCase, formatDate } from 'common/util';
+import { statusPill, prefixEntityValue } from 'common/data';
 
 const defaultClass = 'table table-striped';
 

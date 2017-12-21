@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import { notifyError } from 'common/modal';
 
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 import EntityRow from 'ui/EntityRow';
 
 export default class DocumentDetails extends Component {

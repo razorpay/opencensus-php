@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Table from 'ui/Table';
 import { CheckField } from 'ui/Field';
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 
 class PermissionsList extends Component {
   state = {

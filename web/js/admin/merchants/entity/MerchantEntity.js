@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import ShowWhen from 'admin/components/ShowWhen';
-import { adminFetch, adminPut, adminPost } from 'util/fetch';
+import { adminFetch, adminPut, adminPost } from 'common/fetch';
 import {
   openModal,
   closeModal,
@@ -17,7 +17,7 @@ import EntityRow from 'ui/EntityRow';
 import ToggleEntityRow from 'ui/ToggleEntityRow';
 import Model from './model';
 import AsyncButton from 'ui/AsyncButton';
-import { isWorkflow } from 'util/index';
+import { isWorkflow } from 'common/util';
 
 let parentProps, merchantId;
 const actions = {};

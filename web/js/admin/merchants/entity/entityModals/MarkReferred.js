@@ -7,7 +7,7 @@ import Field from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
-import { adminPost } from 'util/fetch';
+import { adminPost } from 'common/fetch';
 
 export default ({ props, merchantId }) => {
   function onSubmit(body) {

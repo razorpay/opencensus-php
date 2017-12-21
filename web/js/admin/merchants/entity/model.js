@@ -3,9 +3,9 @@ import { notifySuccess } from 'common/modal';
 import BaseModel from 'model/base';
 
 import user from 'admin/user';
-import { adminDelete } from 'util/fetch';
-import { titleCase, removeFromArray } from 'util/index';
-import { isWorkflow } from 'util/index';
+import { adminDelete } from 'common/fetch';
+import { titleCase, removeFromArray } from 'common/util';
+import { isWorkflow } from 'common/util';
 
 export default class Model extends BaseModel {
   @observable
