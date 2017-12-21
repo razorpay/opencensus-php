@@ -77,7 +77,7 @@ class EMIPaymentTest extends TestCase
 
         $payment = $this->capturePayment(
             $content['id'],
-            500000, 'INR', 475000);
+            500000, 'INR', 474100);
 
         $payment = $this->getLastEntity('payment', true);
 

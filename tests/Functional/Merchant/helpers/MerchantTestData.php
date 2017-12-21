@@ -2138,7 +2138,7 @@ return [
                                 'duration'   => 9,
                                 'interest'   => 0,
                                 'subvention' => 'merchant',
-                                'min_amount' => 526316
+                                'min_amount' => 526315
                             ]
                         ]
                     ]

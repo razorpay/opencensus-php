@@ -25,7 +25,7 @@ return [
                 'rate'             => 1045,
                 'methods'          => 'card',
                 'min_amount'       => 400000,
-                'merchant_payback' => 171
+                'merchant_payback' => 172
             ],
         ],
     ],

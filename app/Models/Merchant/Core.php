@@ -16,6 +16,7 @@ use RZP\Models\Admin\Action;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Admin\Permission;
 use RZP\Models\BankAccount;
+use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Merchant;
@@ -637,7 +638,7 @@ class Core extends Base\Core
         }
     }
 
-    public function enableEmiMerchantSubvention(Entity $merchant, Entity $emiPlan, array $input)
+    public function enableEmiMerchantSubvention(Entity $merchant, Emi\Entity $emiPlan, array $input)
     {
         $emiMerchantSub = (new EmiPlans\Entity)->build($input);
 
