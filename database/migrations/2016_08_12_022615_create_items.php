@@ -64,6 +64,7 @@ class CreateItems extends Migration
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
             $table->index(Entity::DELETED_AT);
+            $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
 
             $table->foreign(Entity::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

@@ -177,11 +177,11 @@ class Processor extends VirtualAccount\Processor
     {
         $utr = $bankTransfer->getUtr();
 
-        $payeeIfsc = $bankTransfer->getPayeeIfsc();
+        $payerIfsc = $bankTransfer->getPayerIfsc();
 
         $duplicateBankTransfer = $this->repo
                                       ->bank_transfer
-                                      ->findByUtrAndPayeeIfsc($utr, $payeeIfsc);
+                                      ->findByUtrAndPayerIfsc($utr, $payerIfsc);
 
         if ($duplicateBankTransfer === null)
         {

@@ -17,8 +17,16 @@ trait Inquiry
 
     public function verifyRefund(array $input)
     {
-        // processed refund
-        if ($input['refund']['id'] === '897lDRdq5x9QL1')
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
+
+        $processedRefunds = $this->getProcessedRefunds();
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        {
+            return false;
+        }
+
+        if (in_array($input['refund']['id'], $processedRefunds) === true)
         {
             return true;
         }
