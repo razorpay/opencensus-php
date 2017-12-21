@@ -953,12 +953,14 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
-    public function createSharedNetbankingIciciCorpTerminal()
+    public function createSharedNetbankingIciciCorpTerminal(array $attributes = [])
     {
-        $attributes = [
+        $defaultValues = [
             'id'                => Shared::NETBANKING_ICICI_CRP_TERMINAL,
             'corporate'         => 1,
         ];
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createSharedNetbankingIciciTerminal($attributes);
     }

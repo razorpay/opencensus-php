@@ -76,7 +76,6 @@ class Server extends Base\Mock\Server
         switch ($input[RequestFields::PAYEE_ID])
         {
             case 'random_pid_corp':
-            case 'test_pid_corporate';
                 $bankingType = 'corporate';
                 break;
 

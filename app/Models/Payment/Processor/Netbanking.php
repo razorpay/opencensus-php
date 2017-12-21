@@ -23,9 +23,6 @@ class Netbanking
     const PUNB_R = 'PUNB_R';
     const LAVB_R = 'LAVB_R';
 
-    // @TODO : Somehow map the older IFSC's to point
-    // to the self gateways now.
-
     protected static $names = [
         self::BARB_R => 'Bank of Baroda - Retail Banking',
         self::PUNB_R => 'Punjab National Bank - Retail Banking',
@@ -357,6 +354,11 @@ class Netbanking
         return self::$ebs;
     }
 
+    public static function getAtomSupportedBanks()
+    {
+        return self::$atom;
+    }
+
     public static function getDirectlyNetbankingBanks()
     {
         return array_merge(self::$self, self::$selfCorp);
@@ -409,27 +411,32 @@ class Netbanking
     public static function isBankSupportedByGatewayForTPV($bank, $gateway)
     {
         // Direct gateways are handled seperately
-        return in_array($bank, self::${$gateway.'TPV'}, true);
+        return in_array($bank, self::${$gateway.'TPV'}, true) === true;
     }
 
     public static function isPaytmSupportedBank($bank)
     {
-        return in_array($bank, self::$paytm, true);
+        return in_array($bank, self::getPaytmSupportedBanks(), true) === true;
     }
 
     public static function isEbsSupportedBank($bank)
     {
-        return in_array($bank, self::$ebs, true);
+        return in_array($bank, self::getEbsSupportedBanks(), true) === true;
     }
 
     public static function isBilldeskSupportedBank($bank)
     {
-        return in_array($bank, array_merge(self::$billdesk, self::$billdeskCorp), true);
+        return in_array($bank, self::getBilldeskSupportedBanks(), true) === true;
     }
 
     public static function isAtomSupportedBank($bank)
     {
-        return in_array($bank, self::$atom, true);
+        return in_array($bank, self::getAtomSupportedBanks(), true) === true;
+    }
+
+    public static function isNetbankingBankDirectlySupported($bank)
+    {
+        return in_array($bank, self::getDirectlyNetbankingBanks(), true) === true;
     }
 
     public static function getAccountNumberLengths()
@@ -460,13 +467,13 @@ class Netbanking
     {
         $gatewayExclusiveBanks = self::getExclusiveIssuersForGateway($gateway);
 
-        return in_array($issuer, $gatewayExclusiveBanks, true);
+        return in_array($issuer, $gatewayExclusiveBanks, true) === true;
     }
 
     public static function isCorporateTerminalRequired($bank)
     {
-        $corpExclusiveBank = array_unique(array_merge(self::$selfCorp, self::$billdeskCorp));
+        $corpExclusiveBank = array_merge(self::$selfCorp, self::$billdeskCorp);
 
-        return in_array($bank, $corpExclusiveBank, true);
+        return in_array($bank, $corpExclusiveBank, true) === true;
     }
 }

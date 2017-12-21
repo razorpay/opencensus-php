@@ -646,11 +646,6 @@ class Gateway
         return BaseIFSC::getBankName($code);
     }
 
-    public static function isNetbankingBankDirectlySupported($bank)
-    {
-        return in_array($bank, Netbanking::getDirectlyNetbankingBanks());
-    }
-
     public static function isDirectNetbankingGateway(string $gateway)
     {
         $directNetbankingGateways = array_values(self::$netbankingToGatewayMap);
@@ -884,7 +879,7 @@ class Gateway
     {
         $exclusiveNetworks = self::getExclusiveNetworksForGateway($gateway);
 
-        return in_array($network, $exclusiveNetworks, true);
+        return in_array($network, $exclusiveNetworks, true) === true;
     }
 
     public static function getGatewaysForNetbankingBank($bank, $isTPV = false)
@@ -892,7 +887,7 @@ class Gateway
         $gateways = [];
 
         // Check for direct netbanking gateway
-        if (self::isNetbankingBankDirectlySupported($bank))
+        if (Netbanking::isNetbankingBankDirectlySupported($bank) === true)
         {
             $gateways[] = self::$netbankingToGatewayMap[$bank];
         }
@@ -900,7 +895,7 @@ class Gateway
         // Add netbanking gateways that support bank
         foreach (self::$netbankingGateways as $netbankingGateway)
         {
-            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway, $isTPV))
+            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway, $isTPV) === true)
             {
                 $gateways[] = $netbankingGateway;
             }
@@ -914,7 +909,7 @@ class Gateway
         $gateways = [];
 
         // Check for direct netbanking gateway
-        if (self::isNetbankingBankDirectlySupported($bank))
+        if (Netbanking::isNetbankingBankDirectlySupported($bank) === true)
         {
             $gateways['direct'] = self::$netbankingToGatewayMap[$bank];
         }

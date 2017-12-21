@@ -1161,6 +1161,22 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('ShrdNbBdkHouse', $payment1['terminal_id']);
     }
 
+    public function testCorporateBankTerminalSelection()
+    {
+        $this->fixtures->create('terminal:billdesk_terminal', ['corporate' => 1]);
+        $this->fixtures->create('terminal:shared_netbanking_icici_corp_terminal', ['merchant_id' => '10000000000000']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        // Amount filter should have rejected the housing terminal
+        $payment['bank'] = 'ICIC_C';
+
+        $this->doAuthAndCapturePayment($payment);
+        $payment1 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('100NbIcicCrpTl', $payment1['terminal_id']);
+    }
+
     public function testMccFilterWithSharedCategoryTerminal()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
