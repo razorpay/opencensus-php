@@ -35,6 +35,10 @@ const requestFailedFunc = () => {
       errors: ['Failed to fetch data'],
     };
   },
+  downloadStartedMessage = {
+    type: 'success',
+    message: 'Your report will download shortly',
+  },
   defaultSelectedConfigType = 'payments';
 
 @connect(
@@ -241,6 +245,8 @@ export default class ReportsContainer extends Component {
           .endOf(timeFactor)
           .unix();
 
+      this.props.showNotification(downloadStartedMessage);
+
       return generateReportV2({
         config_id: selectedConfig._item.id,
         generated_by: selectedAccount.id,
@@ -297,10 +303,7 @@ export default class ReportsContainer extends Component {
 
       return generateReport(ajaxParams)
         .payload.then(data => {
-          this.props.showNotification({
-            type: 'success',
-            message: 'Your report will download shortly',
-          });
+          this.props.showNotification(downloadStartedMessage);
 
           if (entity === 'broking') {
             var blob = new Blob([data], {
