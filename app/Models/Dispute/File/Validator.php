@@ -24,7 +24,10 @@ class Validator extends Base\Validator
                                         . 'application/pdf,'
                                         . 'image/png,'
                                         . 'image/jpg,'
-                                        . 'image/jpeg,'
+                                        . 'image/jpeg,',
+        Entity::NAME               => 'required|string|max:50',
+        Entity::CATEGORY           => 'required|string|custom',
+
     ];
 
     protected function validateCategory(string $attribute, string $value)
@@ -36,9 +39,9 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateFileDetails(UploadedFile $file)
+    public function validateFileDetails($file)
     {
-        $this->validateInput(self::operationUploadFile, [Entity::FILE => $file]);
+        $this->validateInput(self::operationUploadFile, $file);
     }
 
     public function validateNumberOfFiles(array $files)

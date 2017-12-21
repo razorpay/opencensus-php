@@ -254,6 +254,8 @@ class DisputeTest extends TestCase
 
         $this->assertEquals('payment', $txn['type']);
 
+        $this->ba->adminProxyAuth();
+
         $this->runRequestResponseFlow($data);
 
         $payment = $this->getLastEntity('payment', true);
@@ -284,6 +286,8 @@ class DisputeTest extends TestCase
         $this->assertEquals(1000000, $txn['debit']);
 
         $this->assertEquals(0, $txn['credit']);
+
+        $this->ba->adminProxyAuth();
 
         $this->runRequestResponseFlow($data);
 
@@ -333,6 +337,8 @@ class DisputeTest extends TestCase
         $testdata = $this->updateEditTestData($input);
 
         $oldMerchantBalance = $this->getEntityById('balance', $this->merchant['id'], true)['balance'];
+
+        $this->ba->adminProxyAuth();
 
         $content = $this->runRequestResponseFlow($testdata);
 
@@ -556,8 +562,6 @@ class DisputeTest extends TestCase
 
     public function testEditDisputeMerchantAcceptDispute()
     {
-        $this->ba->proxyAuth();
-
         // Input params while creating
         $input = [
             'amount'                => 10100,
@@ -565,6 +569,8 @@ class DisputeTest extends TestCase
         ];
 
         $testdata = $this->updateEditTestData($input);
+
+        $this->ba->proxyAuth();
 
         $this->startTest($testdata);
 
@@ -577,8 +583,6 @@ class DisputeTest extends TestCase
 
     public function testEditDisputeMerchantAcceptDisputeForNonTransactional()
     {
-        $this->ba->proxyAuth();
-
         // Input params while creating
         $input = [
             'amount'                => 10100,
@@ -587,6 +591,8 @@ class DisputeTest extends TestCase
         ];
 
         $testdata = $this->updateEditTestData($input);
+
+        $this->ba->proxyAuth();
 
         $this->startTest($testdata);
 
@@ -643,6 +649,10 @@ class DisputeTest extends TestCase
 
     protected function updateEditTestData(array $attributes = []): array
     {
+        $this->ba->adminProxyAuth();
+
+        $this->fixtures->edit('admin', 'RzrpySprAdmnId', ['allow_all_merchants' => 1]);
+
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
         $name = $trace[1]['function'];
@@ -679,7 +689,8 @@ class DisputeTest extends TestCase
 
         $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
 
-        $testData['request']['files'][DisputeFileEntity::FILES] = $this->getTestFiles();
+        $testData['request']['content'][DisputeFileEntity::FILES][0][DisputeFileEntity::FILE] = $this->getTestFile(0);
+        $testData['request']['content'][DisputeFileEntity::FILES][1][DisputeFileEntity::FILE] = $this->getTestFile(1);
 
         return $testData;
     }
@@ -704,22 +715,14 @@ class DisputeTest extends TestCase
         return $uploadedFile;
     }
 
-    protected function getTestFiles()
+    protected function getTestFile(int $num)
     {
-        $files = [];
+        $name = 'a' . $num . '.png';
 
         $originalFile = $this->createUploadedFile('tests/Functional/Storage/a.png');
 
-        copy($originalFile, 'tests/Functional/Storage/a2.png');
+        copy($originalFile, 'tests/Functional/Storage/' . $name);
 
-        $files[0] = $this->createUploadedFile('tests/Functional/Storage/a2.png');
-
-        $originalFile = $this->createUploadedFile('tests/Functional/Storage/chargeback_codes.pdf');
-
-        copy($originalFile, 'tests/Functional/Storage/chargeback_codes2.pdf');
-
-        $files[1] = $this->createUploadedFile('tests/Functional/Storage/chargeback_codes2.pdf');
-
-        return $files;
+        return $this->createUploadedFile('tests/Functional/Storage/' . $name);
     }
 }

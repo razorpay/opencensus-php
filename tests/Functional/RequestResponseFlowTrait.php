@@ -253,6 +253,16 @@ trait RequestResponseFlowTrait
             $request['content']['key_id'] = $this->ba->getKey();
         }
 
+        if ($this->ba->isAdminProxyAuth() === true)
+        {
+            $adminProxyHeaders = $this->ba->getAdminProxyHeaders();
+
+            if (empty($adminProxyHeaders) === false)
+            {
+                $request['server'] += $this->transformHeadersToServerVars($adminProxyHeaders);
+            }
+        }
+
         if ($this->ba->isAccountAuth() === true)
         {
             $accountHeader = $this->ba->getAccountHeader();

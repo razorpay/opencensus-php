@@ -349,26 +349,28 @@ class BasicAuth
 
             $this->setProxyTrue();
 
-            return $this->checkAndSetAccountScope();
-        }
-        else if (($this->isKeyBlank()) and
-            ($this->verifyInternalApp()))
-        {
-            $this->setType(Type::PRIVILEGE_AUTH);
-
-            $this->setAppTrue();
-
-            // TODO : Security check -- check if request is coming from merchant/admin dashboard
-
-            $response = $this->setAdminAuthIfApplicable();
-
-            if ($response !== null)
-            {
-                return $response;
-            }
+            $this->setAdminAuthIfApplicable();
 
             return $this->checkAndSetAccountScope();
         }
+//        else if (($this->isKeyBlank()) and
+//            ($this->verifyInternalApp()))
+//        {
+//            $this->setType(Type::PRIVILEGE_AUTH);
+//
+//            $this->setAppTrue();
+//
+//            // TODO : Security check -- check if request is coming from merchant/admin dashboard
+//
+//            $response = $this->setAdminAuthIfApplicable();
+//
+//            if ($response !== null)
+//            {
+//                return $response;
+//            }
+//
+//            return $this->checkAndSetAccountScope();
+//        }
 
         return $this->invalidApiKey();
     }
@@ -522,6 +524,7 @@ class BasicAuth
                 $this->setAdminTrue();
 
                 $this->admin = $token->admin;
+                // s($this->getAdmin());
 
                 $this->adminOrgId = $this->admin->getOrgId();
 
@@ -1207,6 +1210,11 @@ class BasicAuth
         return $this->isAdmin;
     }
 
+    public function isAdminProxyAuth()
+    {
+        return ($this->type === Type::ADMIN_PROXY_AUTH);
+    }
+
     public function isPublicAuth()
     {
         return ($this->type === Type::PUBLIC_AUTH);
@@ -1303,6 +1311,7 @@ class BasicAuth
         $account = $this->repo
                         ->merchant
                         ->find($this->getAccountId());
+//        s('>>>>> inside scope check $account = ' . $account);
 
         if (($account === null) or
             ($this->validateAccountForCurrentAuthType($account) === false))
@@ -1311,6 +1320,47 @@ class BasicAuth
         }
 
         $this->merchant = $account;
+    }
+
+    /**
+     * Check pre-conditions for setting account auth via
+     * the `X-Razorpay-Account` header
+     *
+     * @return bool
+     */
+    protected function isAccountAuthAllowed() : bool
+    {
+        $authType = $this->getAuthType();
+
+        if (($this->getAccountId() === '') or
+            (empty($authType) === true))
+        {
+            return false;
+        }
+
+        if ($this->isPrivilegeAuth() === true)
+        {
+            return true;
+        }
+
+        // For Admin auth requests - $this->admin should be set
+        if (($this->isAdminAuth() === true) and
+            (empty($this->admin) === false))
+        {
+            return true;
+        }
+
+        // For Private auth requests - $this->merchant should be set
+        if ($this->isPrivateAuth() === true)
+        {
+            if ((empty($this->merchant) === false) or
+                (empty($this->getAccountId()) === false))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function checkMerchantActivatedForLive()
@@ -1367,44 +1417,6 @@ class BasicAuth
         $secret = Crypt::decrypt($this->key->getSecret());
 
         return hash_hmac(self::HMAC_ALGO, $str, $secret);
-    }
-
-    /**
-     * Check pre-conditions for setting account auth via
-     * the `X-Razorpay-Account` header
-     *
-     * @return bool
-     */
-    protected function isAccountAuthAllowed() : bool
-    {
-        $authType = $this->getAuthType();
-
-        if (($this->getAccountId() === '') or
-            (empty($authType) === true))
-        {
-            return false;
-        }
-
-        if ($this->isPrivilegeAuth() === true)
-        {
-            return true;
-        }
-
-        // For Admin auth requests - $this->admin should be set
-        if (($this->isAdminAuth() === true) and
-            (empty($this->admin) === false))
-        {
-            return true;
-        }
-
-        // For Private auth requests - $this->merchant should be set
-        if (($this->isPrivateAuth() === true) and
-            (empty($this->merchant) === false))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     /**

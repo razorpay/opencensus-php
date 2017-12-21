@@ -33,4 +33,6 @@ class Type
      * Public auth based on just key id
      */
     const PUBLIC_AUTH       = 'public';
+
+    const ADMIN_PROXY_AUTH  = 'admin_proxy';
 }

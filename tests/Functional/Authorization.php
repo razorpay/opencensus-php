@@ -20,6 +20,7 @@ class Authorization
     protected $admin;
     protected $appHeaders;
     protected $bearerHeaders;
+    protected $adminProxyHeaders;
 
     protected $defaultKey               = 'rzp_test_TheTestAuthKey';
     protected $defaultSecret            = 'TheKeySecretForTests';
@@ -217,6 +218,19 @@ class Authorization
         $this->addAdminAuthHeaders($orgId, $token, $hostName);
     }
 
+    public function adminProxyAuth($account = '10000000000000',
+                                   $user = 'rzp_test_10000000000000',
+                                   $token = null,
+                                   $orgId = null,
+                                   $hostName = null)
+    {
+        $this->appAuth($user);
+
+        $this->addAdminProxyAuthHeaders($account, $orgId, $token, $hostName);
+
+        $this->type = 'admin_proxy';
+    }
+
     public function dashboardAuth($mode = 'test')
     {
         $this->appAuth('rzp_'.$mode, 'put dashboard pass here');
@@ -291,6 +305,46 @@ class Authorization
     }
 
     /**
+     * Adds admin_proxy auth headers to a request
+     * @param string|null $account
+     * @param string|null $orgId
+     * @param string|null $adminToken
+     * @param string|null $orgHostname
+     */
+    public function addAdminProxyAuthHeaders(string $account = null, string $orgId = null, string $adminToken = null, string $orgHostname = null)
+    {
+        if ($account === null)
+        {
+            $account = $this->defaultAccountId;
+        }
+
+        if ($adminToken === null)
+        {
+            $adminToken = $this->defaultToken;
+        }
+
+        if ($orgId === null)
+        {
+            $orgId = $this->defaultOrgId;
+        }
+
+        if ($orgHostname === null)
+        {
+            $orgHostname = $this->defaultDashboardHostname;
+        }
+
+        $this->setToken($adminToken);
+        $this->setOrganisation($orgId);
+
+        $this->adminProxyHeaders = [
+            'X-Org-Id'              => $orgId,
+            'X-Admin-Token'         => $adminToken,
+            'X-Org-Hostname'        => $orgHostname,
+            'X-Razorpay-Account'    => $account,
+        ];
+    }
+
+    /**
      * Remove account auth
      */
     public function deleteAccountAuth()
@@ -311,6 +365,11 @@ class Authorization
     public function isPublicAuth()
     {
         return ($this->type === 'public');
+    }
+
+    public function isAdminProxyAuth()
+    {
+        return ($this->type === 'admin_proxy');
     }
 
     public function isPrivateAuth()
@@ -350,6 +409,11 @@ class Authorization
     public function getAdminHeaders()
     {
         return $this->adminHeaders;
+    }
+
+    public function getAdminProxyHeaders()
+    {
+        return $this->adminProxyHeaders;
     }
 
     public function getKey()
