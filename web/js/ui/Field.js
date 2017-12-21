@@ -13,6 +13,8 @@ function toggleChecked(e) {
   sib.checked = !sib.checked;
 }
 
+const setDay = (date, timeOfDay) => moment(date)[timeOfDay]('day');
+
 export default function Field({
   tag = 'input',
   label,
@@ -74,30 +76,24 @@ export const DateField = _ => (
 export const TimeField = _ => <Field {..._} type="time" />;
 export const DataListField = _ => <Field {..._} tag="datalist" />;
 
-export const FromField = _ => (
+export const FromField = ({ onDayChange = () => {}, ..._ }) => (
   <DateField
     name="from"
     label="From"
     placeholder=""
-    formatDate={(date, format) =>
-      moment(date)
-        .startOf('day')
-        .format(format)
-    }
+    formatDate={(date, format) => setDay(date, 'startOf').format(format)}
+    onDayChange={day => onDayChange(setDay(day, 'startOf').toDate())}
     {..._}
   />
 );
 
-export const ToField = _ => (
+export const ToField = ({ onDayChange = () => {}, ..._ }) => (
   <DateField
     name="to"
     label="To"
     placeholder=""
-    formatDate={(date, format) =>
-      moment(date)
-        .endOf('day')
-        .format(format)
-    }
+    formatDate={(date, format) => setDay(date, 'endOf').format(format)}
+    onDayChange={day => onDayChange(setDay(day, 'endOf').toDate())}
     {..._}
   />
 );
