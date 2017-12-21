@@ -25,6 +25,7 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Transaction;
 use RZP\Models\User;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
 use RZP\Mail\Payout\Payout as PayoutMail;
 
 class Core extends Base\Core
@@ -387,6 +388,17 @@ class Core extends Base\Core
         $this->logActionToSlack($merchant, $action);
 
         return $merchant;
+    }
+
+    /**
+     * This function is used for getting the activation status change log of a merchant
+     * @param Entity $merchant
+     *
+     * @return PublicCollection
+     */
+    public function getActivationStatusChangeLog(Entity $merchant)
+    {
+        return $merchant->getActivationStatusChangeLog();
     }
 
     public function markGratisTransactionPostpaid(string $merchantId, int $from)
