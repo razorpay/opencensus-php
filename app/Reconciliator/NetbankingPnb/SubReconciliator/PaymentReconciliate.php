@@ -82,4 +82,24 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             'gateway_payment_id' => (string) $row[self::COLUMN_GATEWAY_PAYMENT_ID]
         ];
     }
+
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'message'         => 'Payment amount mismatch',
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'currency'        => $this->payment->getCurrency(),
+                    'row'             => $row,
+                    'gateway'         => get_called_class()
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
 }
