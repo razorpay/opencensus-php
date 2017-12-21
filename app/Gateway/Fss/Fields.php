@@ -37,6 +37,8 @@ class Fields
 
     const REQUEST                       = 'request';
 
+    const BANK_CODE                     = 'bankCode';
+
     const UDF5                          = 'udf5';
 
     const TRAN_DATA                     = 'trandata';
