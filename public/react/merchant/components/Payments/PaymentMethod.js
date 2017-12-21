@@ -110,7 +110,7 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
 
     el = (
       <ContentToggler>
-        <span>Virtual Account</span>
+        <span>Bank Transfer</span>
         <Definition allowEmptyTitle={true}>
           {null}
           {!!(
