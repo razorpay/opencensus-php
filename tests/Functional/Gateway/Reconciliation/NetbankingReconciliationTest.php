@@ -143,10 +143,6 @@ class NetbankingReconciliationTest extends TestCase
 
         $netbanking = $this->createNetbanking($payment['id'], 'PUNB', 'S');
 
-        $this->mockReconContentFunction(function(& $content, $action = null)
-        {
-        });
-
         $fileContents = $this->generateFile('pnb', []);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
