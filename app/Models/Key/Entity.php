@@ -50,12 +50,12 @@ class Entity extends Base\PublicEntity
 
         static::updated(function ($key)
         {
-            static::flushCache(['keys_' . $key->getId()]);
+            static::flushCache('keys_' . $key->getId());
         });
 
         static::saved(function ($key)
         {
-            static::flushCache(['keys_' . $key->getId()]);
+            static::flushCache('keys_' . $key->getId());
         });
     }
 

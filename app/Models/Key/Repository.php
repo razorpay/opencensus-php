@@ -6,6 +6,7 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
+    // Cache TTL defined in minutes
     const CACHE_TTL = 5;
 
     protected $entity = 'key';
@@ -13,6 +14,13 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
     );
+
+    protected function newQuery()
+    {
+        $query = parent::newQuery();
+
+        return $query->prefix('rememberable:v1');
+    }
 
     public function find($id, $columns = ['*'])
     {

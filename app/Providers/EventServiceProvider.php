@@ -25,11 +25,11 @@ class EventServiceProvider extends ServiceProvider
         ],
 
         'Illuminate\Cache\Events\CacheHit' => [
-            'RZP\Listeners\LogCache',
+            'RZP\Listeners\CacheEventLogger',
         ],
 
         'Illuminate\Cache\Events\CacheMissed' => [
-            'RZP\Listeners\LogCache',
+            'RZP\Listeners\CacheEventLogger',
         ],
     ];
 

@@ -5,7 +5,7 @@ namespace RZP\Listeners;
 use App;
 use RZP\Trace\TraceCode;
 
-class LogCache
+class CacheEventLogger
 {
     const REMEMBERABLE_KEY = 'rememberable';
 
