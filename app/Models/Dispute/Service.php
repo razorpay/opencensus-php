@@ -36,9 +36,9 @@ class Service extends Base\Service
 
         $dispute = $this->repo->dispute->findByPublicId($id);
 
-        if (Request::hasFile(DisputeFileEntity::FILES) === true)
+        if (array_key_exists(DisputeFileEntity::FILES, $input) === true)
         {
-            $files = Request::file(DisputeFileEntity::FILES);
+            $files = $input[DisputeFileEntity::FILES];
 
             $response['files'] = ((new File\Core)->uploadFiles($dispute, $files));
 

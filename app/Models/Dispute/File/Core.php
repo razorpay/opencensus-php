@@ -10,7 +10,7 @@ class Core extends Base\Core
 {
     use FileHandlerTrait;
 
-    public function create(DisputeEntity $dispute, array $input): array
+    public function create(DisputeEntity $dispute, array $input)
     {
         $this->trace->info(
             TraceCode::DISPUTE_FILE_CREATE,
@@ -27,26 +27,23 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($file);
 
-        return $file->toArrayPublic();
+        return $file;
     }
 
-    public function createFiles(DisputeEntity $dispute, array $fileUrls): array
+    protected function uploadAndCreateFile(DisputeEntity $dispute, array $fileInput)
     {
-        $disputeFiles = [];
+        $url = $this->uploadFileAndGetUrl($fileInput[Entity::FILE]);
 
-        foreach ($fileUrls as $fileUrl)
-        {
-            $input = [
-                Entity::DISPUTE_ID      => $dispute->getId(),
-                Entity::URL             => $fileUrl,
-            ];
+        $input = [
+            Entity::DISPUTE_ID          => $dispute->getId(),
+            Entity::URL                 => $url,
+            Entity::NAME                => $fileInput[Entity::NAME],
+            Entity::CATEGORY            => $fileInput[Entity::CATEGORY],
+        ];
 
-            $fileArray = $this->create($dispute, $input);
+        $file = $this->create($dispute, $input);
 
-            array_push($disputeFiles, $fileArray);
-        }
-
-        return $disputeFiles;
+        return $file;
     }
 
     public function uploadFiles(DisputeEntity $dispute, array $files): array
@@ -60,20 +57,18 @@ class Core extends Base\Core
 
         $validator = new Validator();
 
-        $fileUrls = [];
+        $disputeFiles = [];
 
         $validator->validateNumberOfFiles($files);
 
-        foreach ($files as $file)
+        foreach ($files as $fileInput)
         {
-            $validator->validateFileDetails($file);
+            $validator->validateFileDetails($fileInput);
 
-            $url = $this->uploadFileAndGetUrl($file);
+            $file = $this->uploadAndCreateFile($dispute, $fileInput);
 
-            array_push($fileUrls, $url);
+            array_push($disputeFiles, $file->toArrayPublic());
         }
-
-        $disputeFiles = $this->createFiles($dispute, $fileUrls);
 
         return $disputeFiles;
     }
