@@ -28,12 +28,12 @@ export const prefix2Entity = Object.keys(entity2Prefix).reduce((o, entity) => {
 export function prefixEntityValue(entityName, value) {
   // TODO: Ideally api should fix this. In some cases, eg- 'pay_' is prepended and in some cases not.
   let prefix = entity2Prefix[entityName];
+  if (!prefix) return value;
+
   if (!value.includes('_')) {
     value = `${prefix}_${value}`;
   }
-  if (prefix) {
-    return value;
-  }
+  return value;
 }
 
 // TODO: All below mappings exists in 'entity-resources.js' as well. "Check if they've exactly same data". Merge Accordingly.
