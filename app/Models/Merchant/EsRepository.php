@@ -162,6 +162,19 @@ class EsRepository extends Base\EsRepository
 
                 break;
 
+            // To be removed, for backward compatibility
+            case AccountStatus::PENDING_OLD:
+
+                $submittedAtAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::SUBMITTED_AT;
+
+                $this->addNotNullFilterForField($query, $submittedAtAttr);
+
+                $this->addNullFilterForField($query, Entity::ACTIVATED_AT);
+                $this->addNullFilterForField($query, Entity::SUSPENDED_AT);
+                $this->addNullFilterForField($query, Entity::ARCHIVED_AT);
+
+                break;
+
             case AccountStatus::PENDING:
 
                 $pendingQuery = [];
