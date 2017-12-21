@@ -527,9 +527,7 @@ class DisputeTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $disputes[0] = $this->fixtures->create('dispute');
-
-        $disputes[1] = $this->fixtures->create('dispute');
+        $disputes = $this->fixtures->times(2)->create('dispute');
 
         $testData = $this->updateFetchTestData();
 
