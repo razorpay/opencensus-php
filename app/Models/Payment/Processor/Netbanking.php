@@ -17,8 +17,8 @@ class Netbanking
     const ICIC_C = 'ICIC_C';
     const UTIB_C = 'UTIB_C';
 
-    // Need to be deprecated
-    // once merchants are notified
+    // These are the IFSC's that are to be used for these
+    // banks even if we integrate them directly.
     const BARB_R = 'BARB_R';
     const PUNB_R = 'PUNB_R';
     const LAVB_R = 'LAVB_R';
