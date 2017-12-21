@@ -21,19 +21,19 @@ class DisputeController extends Controller
     {
         $input = Request::all();
 
-        // For edits by merchant either from API or dashboard
+        $response = [];
 
-        if (($this->ba->isPrivateAuth() === true) or
-            ($this->ba->isProxyAuth() === true))
+        if ($this->ba->isAdminAuth())
+        {
+            $response = $this->service()->update($id, $input);
+        }
+        else if (($this->ba->isPrivateAuth() === true) or
+                ($this->ba->isProxyAuth() === true))
         {
             $response = $this->service()->updateForMerchant($id, $input);
-
-            return ApiResponse::json($response);
         }
 
-        $entity = $this->service()->update($id, $input);
-
-        return ApiResponse::json($entity);
+        return ApiResponse::json($response);
     }
 
     public function migrateOldAdjustments()
