@@ -62,33 +62,6 @@ return [
         ],
     ],
 
-    'testFetchAllEmiPlansOnPublicAuthWithMerchantSubvention' => [
-        'request' => [
-            'content' => [
-            ],
-            'url'    => '/emi',
-            'method' => 'get',
-        ],
-        'response' => [
-            'content' => [
-                'HDFC' => [
-                    'min_amount' => 500000,
-                    'plans' => [
-                        9 => 12,
-                    ],
-                    'new_plans' =>[
-                        [
-                            'duration'   => 9,
-                            'interest'   => 0,
-                            'subvention' => 'merchant',
-                            'min_amount' => 526316
-                        ]
-                    ],
-                ],
-            ],
-        ],
-    ],
-
     'testFetchEmiPlanUsingPlanId' => [
         'request' => [
             'content' => [

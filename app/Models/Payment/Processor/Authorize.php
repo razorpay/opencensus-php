@@ -2075,7 +2075,7 @@ trait Authorize
         $emiPlan = $this->repo->emi_plan->fetchRelevantEmiPlan(
                                             $iinEntity, $emiDuration);
 
-        $emiMerchantSubvention = $this->repo->emi_merchant_subvention->fetchByMerchantAndEmiPlan(
+        $emiMerchantSubvention = $this->repo->merchant_emi_plans->fetchByMerchantAndEmiPlan(
                                                                         $payment->merchant->getId(),
                                                                         $emiPlan->getId());
 

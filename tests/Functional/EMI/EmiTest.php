@@ -29,7 +29,7 @@ class EmiTest extends TestCase
 
         $emiPlanId = $emiPlan['id'];
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/merchant/10000000000000/emi/' . $emiPlanId;
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchant/10000000000000/emi_plan/' . $emiPlanId;
 
         $this->startTest();
     }
@@ -42,19 +42,6 @@ class EmiTest extends TestCase
     public function testFetchAllEmiPlansOnPublicAuth()
     {
         $this->fixtures->create('emi_plan');
-
-        $this->ba->publicAuth();
-
-        $this->startTest();
-    }
-
-    public function testFetchAllEmiPlansOnPublicAuthWithMerchantSubvention()
-    {
-        $emiPlan = $this->fixtures->create('emi_plan');
-
-        $emiPlanId = $emiPlan['id'];
-
-        $this->fixtures->create('emi_merchant_subvention', ['emi_plan_id' => $emiPlanId]);
 
         $this->ba->publicAuth();
 

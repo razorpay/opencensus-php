@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Emi\MerchantSubvention;
+namespace RZP\Models\Merchant\EmiPlans;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -14,7 +14,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID      = 'merchant_id';
     const EMI_PLAN_ID      = 'emi_plan_id';
 
-    protected $entity  = 'emi_merchant_subvention';
+    protected $entity  = 'merchant_emi_plans';
 
     protected $generateIdOnCreate = true;
 

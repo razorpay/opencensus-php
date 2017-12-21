@@ -1602,6 +1602,6 @@ class Service extends Base\Service
 
         $emiPlan = $this->repo->emi_plan->findOrFailPublic($emiPlanId);
 
-        return (new \RZP\Models\Emi\Core)->enableEmiMerchantSubvention($merchant, $emiPlan, $input);
+        return $this->core()->enableEmiMerchantSubvention($merchant, $emiPlan, $input);
     }
 }

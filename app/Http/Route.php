@@ -322,7 +322,7 @@ final class Route
         'emi_plan_fetch_by_id'                    => ['get',      'emi/{id}',                                       'EmiController@fetchEmiPlanById'                                    ],
         'emi_plan_delete'                         => ['delete',   'emi/{id}',                                       'EmiController@deleteEmiPlan'                                       ],
         'emi_generate_excel'                      => ['post',     'emi/generate/excel',                             'EmiController@generateEmiExcel'                                    ],
-        'enable_emi_merchant_sub'                 => ['post',     'merchant/{id}/emi/{emiPlanId}',                  'MerchantController@enableEmiMerchantSubvention'                    ],
+        'enable_emi_merchant_sub'                 => ['post',     'merchant/{id}/emi_plan/{emiPlanId}',             'MerchantController@enableEmiMerchantSubvention'                    ],
         'order_create'                            => ['post',     'orders',                                         'OrderController@createOrder'                                       ],
         'order_fetch'                             => ['get',      'orders',                                         'OrderController@getOrders'                                         ],
         'order_fetch_by_id'                       => ['get',      'orders/{id}',                                    'OrderController@fetchOrderById'                                    ],

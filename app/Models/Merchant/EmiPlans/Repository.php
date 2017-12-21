@@ -1,12 +1,14 @@
 <?php
 
-namespace RZP\Models\Emi\MerchantSubvention;
+namespace RZP\Models\Merchant\EmiPlans;
 
 use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'emi_merchant_subvention';
+    use Base\RepositoryUpdateTestAndLive;
+
+    protected $entity = 'merchant_emi_plans';
 
     public function fetchByMerchantAndEmiPlan(string $merchantId, string $emiPlanId)
     {

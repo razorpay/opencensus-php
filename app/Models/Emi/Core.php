@@ -18,17 +18,4 @@ class Core extends Base\Core
 
         return $emiPlan;
     }
-
-    public function enableEmiMerchantSubvention(Merchant\Entity $merchant, Entity $emiPlan, array $input)
-    {
-        $emiMerchantSub = (new MerchantSubvention\Entity)->build($input);
-
-        $emiMerchantSub->merchant()->associate($merchant);
-
-        $emiMerchantSub->emiPlan()->associate($emiPlan);
-
-        $this->repo->saveOrFail($emiMerchantSub);
-
-        return $emiMerchantSub->toArray();
-    }
 }

@@ -64,7 +64,7 @@ class EMIPaymentTest extends TestCase
 
         $emiPlanId = $emiPlan[0]['id'];
 
-        $this->fixtures->create('emi_merchant_subvention', ['emi_plan_id' => $emiPlanId]);
+        $this->fixtures->create('merchant_emi_plans', ['emi_plan_id' => $emiPlanId]);
 
         $this->fixtures->merchant->enableEmi();
         $this->ba->publicAuth();
@@ -94,7 +94,7 @@ class EMIPaymentTest extends TestCase
 
         $emiPlanId = $emiPlan[0]['id'];
 
-        $this->fixtures->create('emi_merchant_subvention', ['emi_plan_id' => $emiPlanId]);
+        $this->fixtures->create('merchant_emi_plans', ['emi_plan_id' => $emiPlanId]);
 
         $this->fixtures->merchant->enableEmi();
         $this->ba->publicAuth();

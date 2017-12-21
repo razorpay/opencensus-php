@@ -307,7 +307,7 @@ final class FactoryData
             'merchant_payback' => 518
         ]);
 
-        $factory(\RZP\Models\Emi\MerchantSubvention\Entity::class, [
+        $factory(\RZP\Models\Merchant\EmiPlans\Entity::class, [
             'id'               => $faker->uniqueid,
             'merchant_id'      => '10000000000000',
             'emi_plan_id'      => '10101010101010',

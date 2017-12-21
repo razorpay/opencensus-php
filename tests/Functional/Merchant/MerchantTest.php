@@ -1263,6 +1263,25 @@ class MerchantTest extends TestCase
         $this->assertEquals($response['methods']['emi'], true);
     }
 
+    public function testGetCheckoutRouteWithMerchantSubEmi()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->enableEmi();
+
+        $emiPlan = $this->fixtures->create('emi_plan');
+
+        $emiPlan = $this->fixtures->create('emi_plan', ['id' => '10101010101011']);
+
+        $emiPlanId = $emiPlan['id'];
+
+        $this->fixtures->create('merchant_emi_plans', ['emi_plan_id' => $emiPlanId]);
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['methods']['emi'], true);
+    }
+
     public function testGetCheckoutRouteWithSavedGlobal()
     {
         $this->ba->publicAuth();

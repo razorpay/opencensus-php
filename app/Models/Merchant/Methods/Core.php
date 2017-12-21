@@ -136,6 +136,8 @@ class Core extends Base\Core
             $data['emi_subvention'] = $merchant->getEmiSubvention();
 
             $data['emi_plans'] = (new Emi\Service)->all();
+
+            $data['emi_options'] = (new Emi\Service)->getEmiOptions();
         }
 
         if ($merchant->isFeatureEnabled(Constants::E_MANDATE) === true)

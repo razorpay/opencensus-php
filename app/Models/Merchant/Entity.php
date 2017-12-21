@@ -497,6 +497,11 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Customer\Entity');
     }
 
+    public function emiPlans()
+    {
+        return $this->hasMany('RZP\Models\Merchant\EmiPlans\Entity');
+    }
+
     // Linked-accounts belonging to the Marketplace
     public function accounts()
     {

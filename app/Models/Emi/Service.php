@@ -15,8 +15,6 @@ class Service extends Base\Service
     {
         $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
 
-        $merchantSubventedPlans = $this->repo->emi_merchant_subvention->fetchByMerchant($this->merchant->getId());
-
         $plans = [];
 
         foreach ($emiPlans as $plan)
@@ -27,19 +25,37 @@ class Service extends Base\Service
 
             $amount = $plan->getMinAmount();
 
-            // min amount in paisa
-            $minAmount = $plan->getMinAmount();
-
             // all plans of a bank will have same min amount
             $plans[$issuer][Entity::MIN_AMOUNT] = $amount;
 
             $plans[$issuer]['plans'][$duration] = $plan->getRate() / 100;
+        }
+
+        return $plans;
+    }
+
+    public function getEmiOptions()
+    {
+        $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
+
+        $merchantSubventedPlans = $this->repo->merchant_emi_plans->fetchByMerchant($this->merchant->getId());
+
+        $plans = [];
+
+        foreach ($emiPlans as $plan)
+        {
+            $issuer = $plan->getIssuer();
+
+            $duration = $plan->getDuration();
+
+            // min amount in paisa
+            $minAmount = $plan->getMinAmount();
 
             if (in_array($plan->getId(), $merchantSubventedPlans) === true)
             {
                 $minAmount = Calculator::calculateMinAmount($minAmount, $plan->getMerchantPayback()/100);
 
-                $plans[$issuer]['new_plans'][] = [
+                $plans[$issuer][] = [
                     'duration'   => $duration,
                     'interest'   => 0,
                     'subvention' => Subvention::MERCHANT,
@@ -48,7 +64,7 @@ class Service extends Base\Service
             }
             else
             {
-                $plans[$issuer]['new_plans'][] = [
+                $plans[$issuer][] = [
                     'duration'   => $duration,
                     'interest'   => $plan->getRate() / 100,
                     'subvention' => Subvention::CUSTOMER,
