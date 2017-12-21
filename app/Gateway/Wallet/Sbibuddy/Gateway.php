@@ -188,6 +188,15 @@ class Gateway extends Base\Gateway
      */
     protected function saveCallbackResponse(array $input, array $response)
     {
+        if(isset($response[ResponseFields::STATUS_CODE]) === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
+                'Status Code is missing'
+            );
+        }
+        
         $content = [
             Entity::RECEIVED                        => true,
             ResponseFields::ORDER_ID                => $response[ResponseFields::ORDER_ID],
