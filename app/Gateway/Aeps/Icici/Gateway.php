@@ -202,7 +202,7 @@ class Gateway extends Base\Gateway
             RequestConstants::REFUND_DATA_MOBILE              => $this->config['payer_mobile'],
             RequestConstants::REFUND_DATA_PAYER_VA            => $this->config['payer_vpa'],
             RequestConstants::REFUND_DATA_AMOUNT              => $amount,
-            RequestConstants::REFUND_DATA_NOTE                => 'test',
+            RequestConstants::REFUND_DATA_NOTE                => $input['payment']['id'],
             RequestConstants::REFUND_DATA_DEVICE_ID           => $this->config['device_id'],
             RequestConstants::REFUND_DATA_SEQ_NO              => strtolower('ici' . upi_uuid(false)),
             RequestConstants::REFUND_DATA_CHANNEL_CODE        => $this->config['channel_code'],
