@@ -55,7 +55,7 @@ class Reconciliator extends Base\RefundFile
             $date = Carbon::createFromTimestamp(
                         $row[self::PAYMENT_ENTITY][Payment\Entity::CREATED_AT],
                         Timezone::IST)
-                        ->format('d/m/y');
+                        ->format('Y-m-d');
             $data[] = [
                 //
                 // We dont know prn So just setting a random data
