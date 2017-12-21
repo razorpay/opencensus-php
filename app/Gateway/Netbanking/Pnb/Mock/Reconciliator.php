@@ -63,7 +63,7 @@ class Reconciliator extends Base\RefundFile
                 'prn'            => $row['payment']['reference1'],
                 'payment_id'     => $row['payment']['id'],
                 'bank_reference' => $row['gateway']['bank_payment_id'],
-                'amount'         => $row['payment']['amount'],
+                'amount'         => $this->getFormattedAmount($row['payment']['amount']),
                 'date'           => $date,
             ];
             $totalAmount += $row[self::PAYMENT_ENTITY][Payment\Entity::AMOUNT] / 100;
