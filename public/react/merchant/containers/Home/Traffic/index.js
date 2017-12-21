@@ -126,8 +126,8 @@ class Traffic extends Component {
 
     return (
       <div className="panel rzp-traffic p-all">
-        <div className="clearfix">
-          <div className="panel-actions p-b pull-right">
+        <div className="clearfix panel-actions">
+          <div className="pull-right">
             <div className="panel-action-item">
               <select
                 value={selectedGrouping}
@@ -149,11 +149,11 @@ class Traffic extends Component {
           </div>
         </div>
         <div className="row">
-          <div className="col-md-6 col-sm-12">
+          <div className="col-md-5 col-sm-12">
             {!groupState.loading &&
               chartData && <Pie options={chartOptions} data={chartData} />}
           </div>
-          <div className="col-md-5 col-sm-12">
+          <div className="col-md-7 col-sm-12">
             {!groupState.loading &&
               legendData && (
                 <Legend
