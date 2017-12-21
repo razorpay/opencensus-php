@@ -1,18 +1,3 @@
-const MONTHS = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
-
 export const getFormattedAmount = amount =>
   (amount / 100).toFixed(2).replace(/(.{1,2})(?=.(..)+(\...)$)/g, '$1,');
 
@@ -42,24 +27,15 @@ export const snakeToTitleCase = (str = '') => {
     .join(' ');
 };
 
-export const formatDate = unixTimestamp => {
-  //if null than return null value
-  if (!unixTimestamp) {
-    return null;
-  }
-
-  var date = new Date(1e3 * unixTimestamp);
-
-  var dateSuffix = 'th';
-  var dateOfMonth = date.getDate();
-  dateSuffix =
-    [0, 'st', 'nd', 'rd'][dateOfMonth === 31 ? 1 : dateOfMonth % 20] ||
-    dateSuffix;
-
-  return `${date.getDate()}${dateSuffix} ${
-    MONTHS[date.getMonth()]
-  }, ${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
-};
+/**
+ * gets date in format 21st Dec, 2017 05:00
+ * @param  {Number} unixTimestamp in seconds
+ * @return {String}               date in 21st Dec, 2017 05:00 format
+ */
+export const formatDate = unixTimestamp =>
+  unixTimestamp
+    ? moment(unixTimestamp, 'X').format('Do MMM, YYYY HH:MM')
+    : null;
 
 export const removeFromArray = (array, index) => {
   let newArray = array.slice();
