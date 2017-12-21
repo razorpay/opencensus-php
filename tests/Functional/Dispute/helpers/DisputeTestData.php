@@ -723,7 +723,7 @@ return [
     'testEditDisputeMerchantDocumentUploadByPrivate' => [
         'request' => [
             'content' => [
-                'file_details'  =>  [
+                'upload_files'  =>  [
                     [
                         'name'      => 'myfile1.png',
                         'category'  => 'explanation_letter',
@@ -746,7 +746,7 @@ return [
     'testEditDisputeMerchantDocumentUploadByProxy' => [
         'request' => [
             'content' => [
-                'file_details'  =>  [
+                'upload_files'  =>  [
                     [
                         'name'      => 'myfile1.png',
                         'category'  => 'explanation_letter',
