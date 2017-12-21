@@ -46,6 +46,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
             return $referenceNumber;
         }
+        return null;
     }
 
     protected function getGatewayPayment($paymentId)
