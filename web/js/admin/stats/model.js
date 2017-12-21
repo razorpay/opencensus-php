@@ -99,7 +99,7 @@ class Stat {
     }).then(response => {
       var result;
       if (response) {
-        result = response.recent_payments;
+        result = response.result.result;
       } else {
         return;
       }
