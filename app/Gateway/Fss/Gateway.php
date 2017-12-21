@@ -34,7 +34,7 @@ class Gateway extends Base\Gateway
 
         $purchaseRequestContent = $this->getPurchaseRequestContent($purchaseRequestFields, $input);
 
-        $request = $this->getStandardRequestArray($purchaseRequestContent, 'get', Constants::PURCHASE);
+        $request = $this->getStandardRequestArray($purchaseRequestContent, 'get', Action::PURCHASE);
 
         $purchaseFields = $this->getPurchaseFields($purchaseRequestFields);
 
@@ -195,6 +195,29 @@ class Gateway extends Base\Gateway
     }
 
     /**
+     * Since URls for all the acquirers are different handling seperately.
+     * @param string $type
+     *
+     * @return string
+     */
+    public function getUrl($type = null)
+    {
+        $gatewayAquirer = $this->input[E::TERMINAL]->getGatewayAcquirer();
+
+        $urlMap = Url::$urlMap;
+
+        $domainConstantName = $this->mode.'_domain';
+
+        $urlDomain = $urlMap[$gatewayAquirer][$domainConstantName];
+
+        $actionType = $type ?? $this->action;
+
+        $relativeUrl = $urlMap[$gatewayAquirer][$actionType];
+
+        return $urlDomain . $relativeUrl;
+    }
+
+    /**
      * @param array       $content
      * @param string      $method
      * @param string|null $type
@@ -205,7 +228,6 @@ class Gateway extends Base\Gateway
     {
         $request = parent::getStandardRequestArray([], $method, $type);
 
-        $request['url'] = 'https://merchanthubtest.fssnet.co.in/PGAggregator/MerchaggrPayment.htm?param=paymentInit&';
         $request['url'] .= http_build_query($content);
 
         return $request;
@@ -711,7 +733,7 @@ class Gateway extends Base\Gateway
             Fields::CURRENCY_CODE  => Currency::getIsoCode(Currency::INR),
             Fields::TYPE           => $this->getCardType($input[E::CARD][Card\Entity::TYPE]),
 
-            Fields::UDF5           => Constants::TRACK_ID,
+            Fields::UDF5           => 'trackid',
             Fields::LANGUAGE_ID    => Constants::LANGUAGE_USA,
 
             Fields::ID             => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
@@ -741,7 +763,7 @@ class Gateway extends Base\Gateway
                 $requestContent[Fields::TRANSACTION_ID] = $input['payment']['id'];
                 $requestContent[Fields::ACTION]         = Constants::ACTION_REFUND;
                 $requestContent[Fields::TRACK_ID]       = $input[E::REFUND][Entity::ID];
-                $requestContent[Fields::AMOUNT]         = $input[E::REFUND][Entity::AMOUNT] / 100;
+                $requestContent[Fields::AMOUNT]         = 100;
 
                 $traceCode = TraceCode::GATEWAY_REFUND_REQUEST;
                 break;
@@ -789,6 +811,8 @@ class Gateway extends Base\Gateway
     {
         // Entire request content is wrapped in xml.
         $requestBuffer = Utility::createRequestXml($requestContent);
+
+//        $requestBuffer = $this->getEncryptedRequestContent($requestBuffer, $this->input);
 
         return $requestBuffer;
     }
