@@ -2087,7 +2087,7 @@ trait Authorize
 
             $merchantPayback = $emiPlan->getMerchantPayback();
 
-            $baseAmount = Emi\Calculator::calculateSubventedAmount($amount, $merchantPayback/100);
+            $baseAmount = Emi\Calculator::calculateSubventedAmount($amount, $merchantPayback);
 
             $payment->setAmountAttribute($baseAmount);
 

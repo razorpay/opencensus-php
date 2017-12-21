@@ -53,7 +53,7 @@ class Service extends Base\Service
 
             if (in_array($plan->getId(), $merchantSubventedPlans) === true)
             {
-                $minAmount = Calculator::calculateMinAmount($minAmount, $plan->getMerchantPayback()/100);
+                $minAmount = Calculator::calculateMinAmount($minAmount, $plan->getMerchantPayback());
 
                 $plans[$issuer][] = [
                     'duration'   => $duration,

@@ -325,7 +325,7 @@ trait Capture
 
             $merchantPayback = $emiPlan->getMerchantPayback();
 
-            $captureAmount = Emi\Calculator::calculateSubventedAmount($captureAmount, $merchantPayback/100);
+            $captureAmount = Emi\Calculator::calculateSubventedAmount($captureAmount, $merchantPayback);
         }
 
         if ($captureAmount !== $payment->getAmount())

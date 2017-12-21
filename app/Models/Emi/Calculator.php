@@ -12,16 +12,16 @@ class Calculator
 
         $mp = 100 * (($term * $monthlyInterest * $num) - $num + 1) / ($term * $monthlyInterest * $num);
 
-        return intval(100 * $mp);
+        return (int) round(100 * $mp);
     }
 
     public static function calculateMinAmount(int $minAmount, int $merchantPayback)
     {
-     return ceil((100 * $minAmount) / (100 - $merchantPayback));
+        return (int) ceil((100 * $minAmount) / (100 - $merchantPayback/100));
     }
 
     public static function calculateSubventedAmount(int $amount, int $merchantPayback)
     {
-        return (int) ceil($amount - ($amount * $merchantPayback/100));
+        return (int) ceil($amount - ($amount * $merchantPayback/10000));
     }
 }

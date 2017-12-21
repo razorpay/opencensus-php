@@ -1371,4 +1371,4 @@ UPDATE billdesk SET RefundId = 'LSCB58725353091' WHERE id = 3179575;
 
 update emi_plans set deleted_at = now() where subvention = 'merchant';
 
-update emi_plans set merchant_payback = 10000 * (duration * rate/120000 * POWER(1 + rate/120000 , duration) - POWER(1 + rate/120000, duration) + 1)/ (duration * rate/120000 * POWER(1 + rate/120000, duration));
+update emi_plans set merchant_payback = ROUND(10000 * (duration * rate/120000 * POWER(1 + rate/120000 , duration) - POWER(1 + rate/120000, duration) + 1)/ (duration * rate/120000 * POWER(1 + rate/120000, duration)));
