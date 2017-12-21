@@ -9,7 +9,6 @@ use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
-use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -43,6 +42,7 @@ class Gateway
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
+    const UPI_SBI                = 'upi_sbi';
     const UPI_ICICI              = 'upi_icici';
     const AEPS_ICICI             = 'aeps_icici';
 
@@ -311,6 +311,7 @@ class Gateway
     public static $asynchronous = [
         self::UPI_MINDGATE,
         self::UPI_ICICI,
+        self::UPI_SBI,
         self::SHARP,
     ];
 
@@ -395,6 +396,7 @@ class Gateway
     public static $upiToGatewayMap = [
         Upi::HDFC  => Gateway::UPI_MINDGATE,
         Upi::ICIC  => Gateway::UPI_ICICI,
+        Upi::SBIN  => Gateway::UPI_SBI,
     ];
 
     public static $acquirerToCodeMap = [
@@ -467,6 +469,25 @@ class Gateway
     ];
 
     /**
+     * List of gateways and the banks that they support
+     * for e-mandate. This list is required because some
+     * gateways might support more than one bank for
+     * e-mandate.
+     *
+     * @var array
+     */
+    public static $gatewaysEmandateBanksMap = [
+        Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
+        Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
+        Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
+    ];
+
+    public static $recurringCardNetworks = [
+        Network::MC,
+        Network::VISA,
+    ];
+
+    /**
      * List of netbanking gateways that process recurring payments through file send
      *
      * @var array
@@ -498,6 +519,7 @@ class Gateway
 
         Gateway::BILLDESK,
         Gateway::UPI_MINDGATE,
+        Gateway::UPI_SBI,
         Gateway::UPI_ICICI,
         Gateway::WALLET_OLAMONEY,
         Gateway::NETBANKING_CORPORATION,
@@ -515,6 +537,7 @@ class Gateway
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
+        Gateway::HITACHI,
     ];
 
     /**

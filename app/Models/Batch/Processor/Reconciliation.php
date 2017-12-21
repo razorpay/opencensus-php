@@ -288,8 +288,14 @@ class Reconciliation extends Base
     {
         $arrayContent[self::EXTRA_DETAILS][RequestProcessor\Base::FILE_DETAILS] = $fileDetails;
 
+        //
+        // In some cases, like when batch is retried, there are no additional input_details
+        // set, in the request. So we set input_details as an empty array.
+        // TODO: This will cause problems with recon processes where force_update was set
+        // in the input request, as when such a batch is retried, force_update will not be respected.
+        // Need some way to store that information in batch.
         $arrayContent[self::EXTRA_DETAILS]
-            [RequestProcessor\Base::INPUT_DETAILS] = $this->params[Batch\Entity::INPUT_DETAILS];
+            [RequestProcessor\Base::INPUT_DETAILS] = $this->params[Batch\Entity::INPUT_DETAILS] ?? [];
     }
 
     /**

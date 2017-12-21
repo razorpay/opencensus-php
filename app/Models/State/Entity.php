@@ -7,6 +7,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Workflow\Action;
 use RZP\Constants\Entity as E;
+use RZP\Models\State\Reason;
 
 class Entity extends Base\PublicEntity
 {
@@ -66,6 +67,12 @@ class Entity extends Base\PublicEntity
     public function entity()
     {
         return $this->morphTo();
+    }
+
+    public function rejectionReasons()
+    {
+        return $this->hasMany('RZP\Models\State\Reason\Entity')
+                    ->where(Reason\Entity::REASON_TYPE, Reason\ReasonType::REJECTION);
     }
 
     public function setPublicAdminIdAttribute(array & $attributes)

@@ -31,20 +31,20 @@ class RateLimitingTest extends TestCase
 
     public function testThrottleAdmin()
     {
-        $this->app['config']->set('throttle.limits.test.admin', 2);
+        $this->app['config']->set('throttle.limits.test.privilege', 2);
 
-        $response = $this->postDummyRequestAdminAuth();
+        $response = $this->postDummyRequestPrivilegeAuth();
         $this->assertArrayHasKey('message', $response);
 
-        $response = $this->postDummyRequestAdminAuth();
+        $response = $this->postDummyRequestPrivilegeAuth();
         $this->assertArrayHasKey('message', $response);
 
-        $response = $this->postDummyRequestAdminAuth();
+        $response = $this->postDummyRequestPrivilegeAuth();
         $this->assertArrayNotHasKey('message', $response);
         $this->assertEquals('Request failed. Please try after sometime.', $response['error']['description']);
     }
 
-    protected function postDummyRequestAdminAuth()
+    protected function postDummyRequestPrivilegeAuth()
     {
         $request = [
             'method'  => 'POST',

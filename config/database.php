@@ -140,19 +140,26 @@ return array(
 
         'cluster' => false,
 
-        'default' => array(
+        'default' => [
             'host'                  => env('REDIS_HOST'),
             'port'                  => env('REDIS_PORT'),
             'database'              => env('REDIS_DB'),
             'timeout'               => 30,
-        ),
+        ],
 
-        'secure' => array(
+        'secure' => [
             'host'                  => env('SECURE_REDIS_HOST'),
             'port'                  => env('SECURE_REDIS_PORT'),
             'database'              => env('SECURE_REDIS_DB'),
             'timeout'               => 30,
-        )
+        ],
+
+        'throttle_redis' => [
+            'host'                  => env('REDIS_HOST'),
+            'port'                  => env('REDIS_PORT'),
+            'database'              => env('THROTTLE_REDIS_DB'),
+            'timeout'               => 30,
+        ]
     ),
 
     /*
