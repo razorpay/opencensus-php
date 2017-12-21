@@ -74,7 +74,7 @@ export default class RequestList extends Component {
 const fields = [
   ['Action', item => item.permission_description],
   ['Title', item => item.title],
-  ['Created By', item => item.admin.name],
+  ['Created By', item => (item.admin ? item.admin.name : '--')],
   ['Created At', item => formatDate(item.created_at)],
   [
     'State',
