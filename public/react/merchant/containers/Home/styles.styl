@@ -184,43 +184,44 @@
 
 #chartjs-tooltip {
 
-    position: absolute;
+  position: absolute;
+  width: 218px;
+  z-index: 10000;
+  padding-bottom: 10px;
+  transition: left 0.25s ease, top 0.25s ease;
+
+  .custom-tooltip-inner {
+
+    position: relative;
+    width: 100%;
     background-color: #FFF;
     box-shadow: 0 0 50px #CCC;
-    width: 218px;
-    z-index: 10000;
+    padding: 6px;
 
-    .custom-tooltip-inner {
+    .tooltip-body {
+      text-align: left;
 
-      width: 100%;
+      .title {
 
-      .tooltip-body {
-        text-align: left;
-
-        .title {
-
-          color: #252939;
-        }
-
-        .label-icon {
-
-          padding: 1px 8px;
-        }
-
-        .label {
-
-          color: #8991AE;
-        }
-
-        .label-value {
-
-          color: #252939;
-          float: right;
-        }
+        color: #252939;
       }
 
-    }
+      .label-icon {
 
+        padding: 1px 8px;
+      }
+
+      .label {
+
+        color: #8991AE;
+      }
+
+      .label-value {
+
+        color: #252939;
+        float: right;
+      }
+    }
 
     .caret {
       width: 0;
@@ -233,4 +234,5 @@
       left: 48%;
       top: 100%;
     }
+  }
 }
