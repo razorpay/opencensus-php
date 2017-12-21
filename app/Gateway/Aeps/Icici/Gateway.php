@@ -173,8 +173,8 @@ class Gateway extends Base\Gateway
         // Store  refund response
         $this->updateRefundResponse($gatewayPayment, $responseData);
 
-        if (isset($responseData[ResponseConstants::REFUND_RESPONSE]) === false or
-            $responseData[ResponseConstants::REFUND_RESPONSE] !== Status::REFUND_STATUS_SUCCESS)
+        if ((isset($responseData[ResponseConstants::REFUND_RESPONSE]) === false) or
+            ($responseData[ResponseConstants::REFUND_RESPONSE] !== Status::REFUND_STATUS_SUCCESS))
         {
             // Can't validate amount here, since amount does not exist in response
 
