@@ -65,7 +65,7 @@
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/laravel-settings.git"
-        },
+        }
     ],
     "require-dev": {
         "kint-php/kint": "1.*",
