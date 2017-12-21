@@ -27,10 +27,10 @@ export const prefix2Entity = Object.keys(entity2Prefix).reduce((o, entity) => {
 
 export function prefixEntityValue(entityName, value) {
   // TODO: Ideally api should fix this. In some cases, eg- 'pay_' is prepended and in some cases not.
+  if (value.includes('_')) return value;
   let prefix = entity2Prefix[entityName];
-  if (!prefix) return value;
 
-  if (!value.includes('_')) {
+  if (prefix) {
     value = `${prefix}_${value}`;
   }
   return value;

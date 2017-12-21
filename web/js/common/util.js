@@ -34,7 +34,7 @@ export const snakeToTitleCase = (str = '') => {
  */
 export const formatDate = unixTimestamp =>
   unixTimestamp
-    ? moment(unixTimestamp, 'X').format('Do MMM, YYYY HH:MM')
+    ? moment(unixTimestamp, 'X').format('Do MMM, YYYY hh:MM A')
     : null;
 
 export const removeFromArray = (array, index) => {
