@@ -43,7 +43,7 @@
         "razorpay/trace": "2.0.6",
         "anlutro/l4-settings": "0.5.3",
         "razorpay/oauth": "dev-master",
-        "drewm/mailchimp-api": "^2.1",
+        "drewm/mailchimp-api": "^2.1"
     },
     "repositories": [
         {
