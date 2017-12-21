@@ -760,15 +760,20 @@ trait Refund
     {
         $payment = $refund->payment;
 
+        // Refunds are typically retried in groups using long-running
+        // loops. This ensures that if a refund has been updated by a
+        // different process, it is processed accordingly here.
+        $this->repo->reload($refund);
+
         $this->setPaymentAndRefundInfo($refund, $payment);
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 
         $data = array_merge($data, $input);
 
-        if ($refund->isProcessed() === true)
+        if ($refund->isStatusFailed() === false)
         {
-            return Payment\Refund\Status::PROCESSED;
+            return $refund->getStatus();
         }
 
         // true  if refunded
@@ -786,16 +791,16 @@ trait Refund
         }
         else
         {
-            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
+            $refund->setStatus(Payment\Refund\Status::PROCESSED);
         }
 
-        $this->refund->setGatewayRefunded($refundedOnGateway);
+        $refund->setGatewayRefunded($refundedOnGateway);
 
-        $this->refund->incrementAttempts();
+        $refund->incrementAttempts();
 
-        $this->repo->saveOrFail($this->refund);
+        $this->repo->saveOrFail($refund);
 
-        return $this->refund->getStatus();
+        return $refund->getStatus();
     }
 
     protected function gatewaySupportsReversal($payment)
