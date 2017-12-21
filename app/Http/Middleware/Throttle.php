@@ -381,7 +381,7 @@ class Throttle
             // The merchant key itself is an identifier.
             // In case of public auth, the identifier is IP.
             //
-            $throttleData['ip'] = self::STATIC_PRIVATE_IP;
+            $ip = self::STATIC_PRIVATE_IP;
         }
 
         return $ip;

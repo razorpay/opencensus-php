@@ -9,6 +9,7 @@ use Requests_Exception;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Table;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Feature\Constants as Feature;
 
@@ -210,7 +211,7 @@ class Reporting
         {
             $items = $items->reject(function ($value, $key)
             {
-                return in_array($value['type'], ['transfers', 'reversals'], true);
+                return in_array($value['type'], [Table::TRANSFER, Table::REVERSAL], true);
             });
         }
 
@@ -222,7 +223,7 @@ class Reporting
         {
             $items = $items->reject(function ($value, $key)
             {
-                return in_array($value['type'], ['invoices'], true);
+                return in_array($value['type'], [Table::INVOICE], true);
             });
         }
 
