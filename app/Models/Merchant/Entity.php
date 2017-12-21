@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\State;
 use Conner\Tagging\Taggable;
 use RZP\Exception\LogicException;
 
@@ -394,6 +395,22 @@ class Entity extends Base\PublicEntity
         $assignedFeatures = $this->getEnabledFeatures();
 
         return (in_array($featureName, $assignedFeatures, true) === true);
+    }
+
+    public function isAtLeastOneFeatureEnabled(array $features): bool
+    {
+        $assignedFeatures = $this->getEnabledFeatures();
+
+        //
+        // NOTE that it should be weak check because
+        // array_intersect returns back an array.
+        //
+        return (array_intersect($features, $assignedFeatures) == true);
+    }
+
+    public function isRecurringEnabled(): bool
+    {
+        return ($this->isAtLeastOneFeatureEnabled(Feature\Constants::$recurringFeatures) === true);
     }
 
     /**
@@ -1183,6 +1200,19 @@ class Entity extends Base\PublicEntity
     public function admins()
     {
         return $this->morphedByMany('\RZP\Models\Admin\Admin\Entity', 'entity', Table::MERCHANT_MAP);
+    }
+
+    public function activationStates()
+    {
+        return $this->hasMany('\RZP\Models\State\Entity', State\Entity::ENTITY_ID)
+                    ->where(State\Entity::ENTITY_TYPE, 'merchant_detail');
+    }
+
+    public function currentActivationState()
+    {
+        return $this->activationStates()
+                    ->orderBy(State\Entity::CREATED_AT, 'desc')
+                    ->first();
     }
 
     /**

@@ -938,45 +938,37 @@ trait Authorize
                 //
                 if ($this->app['basicauth']->isProxyAuth() === true)
                 {
-                    $this->verifyAtLeastOneFeatureEnabledForMerchant(
-                        $merchant,
-                        [
-                            Feature\Constants::SUBSCRIPTIONS,
-                            Feature\Constants::CHARGE_AT_WILL,
-                        ]);
+                    $this->verifyRecurringEnabledForMerchant($merchant);
                 }
                 else
                 {
-                    // Merchants with subscriptions feature cannot make S2S calls
-                    // for recurring payments.
-                    $this->verifyAtLeastOneFeatureEnabledForMerchant(
-                        $merchant,
-                        [
-                            Feature\Constants::CHARGE_AT_WILL,
-                        ]);
+                    //
+                    // Merchants with subscriptions feature cannot
+                    // make S2S calls for recurring payments.
+                    //
+                    $this->verifyFeatureForMerchant($merchant, Feature\Constants::CHARGE_AT_WILL);
                 }
 
                 break;
 
             case BasicAuth\Type::PUBLIC_AUTH:
 
-                // Public payments can be made for recurring for merchants with either
-                // subscriptions or recurring features enabled.
-                $this->verifyAtLeastOneFeatureEnabledForMerchant(
-                    $merchant,
-                    [
-                        Feature\Constants::SUBSCRIPTIONS,
-                        Feature\Constants::CHARGE_AT_WILL,
-                    ]);
+                //
+                // Public payments can be made for recurring for merchants
+                // with either subscriptions or recurring features enabled.
+                //
+                $this->verifyRecurringEnabledForMerchant($merchant);
 
                 break;
 
             case BasicAuth\Type::PRIVILEGE_AUTH:
 
+                //
                 // Privilege auth for recurring should be used only for merchants
                 // who have subscriptions.
                 // But, since it's privilege auth, it can be used for merchants with
                 // recurring feature also, but no requirement right now.
+                //
                 $this->verifyFeatureForMerchant($merchant, Feature\Constants::SUBSCRIPTIONS);
 
                 break;
@@ -1479,9 +1471,19 @@ trait Authorize
 
         if ($payment->isUpi() === true)
         {
-            $this->setGatewayInputForUpiCollect($input, $gatewayInput);
+            $gatewayInput['upi']['flow'] = $input['_']['flow'] ?? null;
 
-            $this->validateUpiPspIsAllowed($payment);
+            if ((isset($input['_']['flow']) === false) or
+                ($input['_']['flow'] !== 'intent'))
+            {
+                $this->setGatewayInputForUpi($input, $gatewayInput);
+
+                $this->validateUpiPspIsAllowed($payment);
+            }
+            else
+            {
+                $this->validateIfIntentEnabled($payment);
+            }
         }
 
         if ($payment->isAeps() === true)
@@ -1634,7 +1636,7 @@ trait Authorize
         $payment->subscription()->associate($subscription);
     }
 
-    protected function setGatewayInputForUpiCollect($input, & $gatewayInput)
+    protected function setGatewayInputForUpi($input, & $gatewayInput)
     {
         // Key may not be present. Hence `??` and not `?:`
         $gatewayInput['upi']['expiry_time'] = $input['upi']['expiry_time'] ??
@@ -2126,6 +2128,10 @@ trait Authorize
 
                 return $this->getAsyncPaymentCreatedResponse($request, $payment);
 
+            case $this->canRunAsyncIntentPaymentFlow($payment):
+
+                return $this->getIntentPaymentCreatedResponse($request, $payment);
+
             case $this->canRunOtpPaymentFlow($payment):
 
                 return $this->getOtpPaymentCreatedResponse($request, $payment);
@@ -2148,6 +2154,27 @@ trait Authorize
 
         $response = [
             'type'          => 'async',
+            'version'       => 1,
+            'payment_id'    => $id,
+            'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),
+            'data'          => $request['data'],
+            'request'       => [
+                'url'    => $this->route->getUrlWithPublicAuthInQueryParam('payment_get_status', ['id' => $id]),
+                'method' => 'GET',
+            ]
+        ];
+
+        $this->segment->trackPayment($payment, TraceCode::ASYNC_PAYMENT_RESPONSE, $response);
+
+        return $response;
+    }
+
+    protected function getIntentPaymentCreatedResponse($request, Payment\Entity $payment): array
+    {
+        $id = $payment->getPublicId();
+
+        $response = [
+            'type'          => 'intent',
             'version'       => 1,
             'payment_id'    => $id,
             'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),
@@ -3270,7 +3297,20 @@ trait Authorize
     protected function canRunAsyncPaymentFlow($payment)
     {
         if ((Payment\Method::supportsAsync($payment->getMethod()) === true) and
-            (Payment\Gateway::supportsAsync($payment->getGateway()) === true))
+            (Payment\Gateway::supportsAsync($payment->getGateway()) === true) and
+            ($payment->getMetadata('flow') !== 'intent'))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function canRunAsyncIntentPaymentFlow($payment)
+    {
+        if ((Payment\Method::supportsAsync($payment->getMethod()) === true) and
+            (Payment\Gateway::supportsAsync($payment->getGateway()) === true) and
+            ($payment->getMetadata('flow') == 'intent'))
         {
             return true;
         }
@@ -3531,31 +3571,13 @@ trait Authorize
         }
     }
 
-    protected function verifyAtLeastOneFeatureEnabledForMerchant(Merchant\Entity $merchant, array $features)
+    protected function verifyRecurringEnabledForMerchant(Merchant\Entity $merchant)
     {
-        $atLeastOneEnabled = false;
-
-        foreach ($features as $feature)
+        if ($merchant->isRecurringEnabled() === false)
         {
-            if ($merchant->isFeatureEnabled($feature) === true)
-            {
-                $atLeastOneEnabled = true;
-
-                break;
-            }
-        }
-
-        if ($atLeastOneEnabled === false)
-        {
-            //
-            // If not even one of the features is enabled for the merchant,
-            // throw an invalid URL error
-            //
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
-
-        return $atLeastOneEnabled;
     }
 
     protected function validateInternationalRecurringPaymentsAllowed(Payment\Entity $payment)
@@ -3597,6 +3619,15 @@ trait Authorize
 
         $payment->getValidator()->validateUpiVpaPsp(
             $payment->getVpa(), $disallowedPsps);
+    }
+
+    protected function validateIfIntentEnabled(Payment\Entity $payment)
+    {
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::UPI_INTENT) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'UPI intent is not enabled for the merchant');
+        }
     }
 
     protected function checkAndValidateAmexIfNotEnabled($methods, $card)

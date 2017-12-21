@@ -45,6 +45,7 @@ class BankCodes
     const IFSC_SIBL = 'SIBL0000084';
     const IFSC_SRCB = 'SRCB0000024';
     const IFSC_SYNB = 'SYNB0000005';
+    const IFSC_TJSB = 'TJSB0000002';
     const IFSC_TMBL = 'TMBL0000001';
     const IFSC_UBIN = 'UBIN0538167';
     const IFSC_UCBA = 'UCBA0000002';
@@ -98,6 +99,7 @@ class BankCodes
         'SRC'   => self::IFSC_SRCB,
         'SYB'   => self::IFSC_SYNB,
         'TMB'   => self::IFSC_TMBL,
+        'TSB'   => self::IFSC_TJSB,
         'UBI'   => self::IFSC_UTBI,
         'UCO'   => self::IFSC_UCBA,
         'UOB'   => self::IFSC_UBIN,
@@ -127,36 +129,26 @@ class BankCodes
 
     const ACCOUNT_NUMBER_LENGTH = 13;
 
+    public static function getIfscForImpsBankCode(string $impsBankCode)
+    {
+        return self::CODE_TO_IFSC_MAPPING[$impsBankCode] ?? null;
+    }
+
     public static function getIfscForBankCode(string $bankCode)
     {
-        $ifsc = self::CODE_TO_IFSC_MAPPING[$bankCode] ?? null;
+        $key = __CLASS__ . '::' . 'IFSC_' . strtoupper($bankCode);
 
-        $ifsc = self::hackForTesting($bankCode, $ifsc);
-
-        return $ifsc;
-    }
-
-    public static function hasIfscMapping(string $bankCode)
-    {
-        return (self::getIfscForBankCode($bankCode) !== null);
-    }
-
-    public static function hackForTesting(string $bankCode, string $ifsc = null)
-    {
-        $app = App::getFacadeRoot();
-
-        // Bank transfers pass or fail depending on whether we have a valid IFSC
-        // for the payer in CODE_TO_IFSC_MAPPING. This makes it hard to test.
-        // Here, we mock a valid IFSC, for the last step of the test.
-        if (($app['env'] === 'testing') and
-            ($bankCode === 'XYZ') and
-            ($ifsc === null) and
-            ($app['api.route']->getCurrentRouteName() === 'bank_transfer_refund_retry'))
+        if ((defined($key) === true) and (constant($key) === $type))
         {
-            $ifsc = 'RAZR0000001';
+            return constant($key);
         }
 
-        return $ifsc;
+        return null;
+    }
+
+    public static function hasIfscMapping(string $impsBankCode)
+    {
+        return (self::getIfscForImpsBankCode($impsBankCode) !== null);
     }
 
     /**
