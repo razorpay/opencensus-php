@@ -9,7 +9,7 @@ class Constants
     const PURCHASE              = 'PURCHASE';
 
     // Credit card type is sent as C and debit as D respectively.
-    protected static $cardType = [
+    public static $cardType = [
         Acquirer::BOB => [
             CardType::CREDIT    => 'C',
             CardType::DEBIT     => 'D',

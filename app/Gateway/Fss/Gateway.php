@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Fss;
 
 use RZP\Constants\Entity as E;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card;
 use RZP\Exception;
@@ -82,7 +83,7 @@ class Gateway extends Base\Gateway
 
         if (empty($gatewayResponse[Fields::TRANDATA]) === false)
         {
-            $gatewayContent = $this->getDecryptedRequestContent($gatewayResponse[Fields::TRANDATA]);
+            $gatewayContent = $this->getDecryptedRequestContent($gatewayResponse[Fields::TRANDATA], $input);
 
             $attributes = $this->getCallbackFields($gatewayContent);
 
@@ -204,6 +205,7 @@ class Gateway extends Base\Gateway
     {
         $request = parent::getStandardRequestArray([], $method, $type);
 
+        $request['url'] = 'https://merchanthubtest.fssnet.co.in/PGAggregator/MerchaggrPayment.htm?param=paymentInit&';
         $request['url'] .= http_build_query($content);
 
         return $request;
@@ -247,9 +249,11 @@ class Gateway extends Base\Gateway
             Fields::TRACK_ID      => $input[E::PAYMENT][Payment\Entity::ID],
             Fields::ERROR_URL     => $input['callbackUrl'],
             Fields::RESPONSE_URL  => $input['callbackUrl'],
-            Fields::ID            => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
-            Fields::PASSWORD      => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD],
+            Fields::ID            => $input[E::TERMINAL][Terminal\Entity::ID],
+            Fields::LANGUAGE_ID   => Constants::LANGUAGE_USA,
         ];
+
+        $this->modifyPurchaseRequestContentArray($requestContent, $input);
 
         // Trace the payment request after removing the sensitive fields.
         $traceData = $this->removeSensitiveRequestFields($requestContent);
@@ -265,6 +269,43 @@ class Gateway extends Base\Gateway
     }
 
     /**
+     * Adds extra elements based on gateway acquirer.
+     *
+     * @param array $requestContent
+     * @param array $input
+     */
+    protected function modifyPurchaseRequestContentArray(array & $requestContent, array $input)
+    {
+        $gatewayAquirer = $input[E::TERMINAL]->getGatewayAcquirer();
+
+        switch ($gatewayAquirer)
+        {
+            case Acquirer::FSS:
+                $requestContent[Fields::BANK_CODE] = $input[E::TERMINAL][Terminal\Entity::GATEWAY_ACCESS_CODE];
+
+                if ($this->mode === Mode::TEST)
+                {
+                    $requestContent[Fields::ID]         = $this->config['fss_terminal_id'];
+                    $requestContent[Fields::BANK_CODE]  = $this->config['fss_bank_code'];
+                }
+
+                break;
+            case Acquirer::BOB:
+                $requestContent[Fields::PASSWORD] = $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+
+                if ($this->mode === Mode::TEST)
+                {
+                    $requestContent[Fields::ID]       = $this->config['bob_terminal_id'];
+                    $requestContent[Fields::PASSWORD] = $this->config['bob_terminal_password'];
+                }
+
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
      * @param array $requestContent
      * @array array $input
      *
@@ -274,15 +315,14 @@ class Gateway extends Base\Gateway
     {
         // Entire request content is wrapped in xml.
         $requestBuffer = Utility::createRequestXml($requestContent);
-
         // Encrypted request content
-        $tranData = $this->getEncryptedRequestContent($requestBuffer);
+        $tranData = $this->getEncryptedRequestContent($requestBuffer, $input);
 
         $content = [
             Fields::TRAN_DATA     => $tranData,
             Fields::ERROR_URL     => $input['callbackUrl'],
             Fields::RESPONSE_URL  => $input['callbackUrl'],
-            Fields::TRANPORTAL_ID => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
+            Fields::TRANPORTAL_ID => '10000435',
         ];
 
         return $content;
@@ -321,13 +361,27 @@ class Gateway extends Base\Gateway
      *
      * @return string
      */
-    protected function getEncryptedRequestContent(string $str): string
+    protected function getEncryptedRequestContent(string $str, array $input): string
     {
         $secretKey = $this->getSecret();
 
-        $crypto = new TripleDESCrypto(TripleDESCrypto::MODE_ECB, $secretKey, true);
+        $gatewayAquirer = $input[E::TERMINAL]->getGatewayAcquirer();
 
-        return $crypto->encryptString($str);
+        switch ($gatewayAquirer)
+        {
+            case Acquirer::FSS:
+                $crypto = new AESCrypto(AESCrypto::MODE_CBC, $secretKey, $secretKey);
+
+                return $crypto->encryptString($str);
+                break;
+            case Acquirer::BOB:
+                $crypto = new TripleDESCrypto(TripleDESCrypto::MODE_ECB, $secretKey, true);
+
+                return $crypto->encryptString($str);
+                break;
+            default:
+                break;
+        }
     }
 
     /**
@@ -335,13 +389,29 @@ class Gateway extends Base\Gateway
      *
      * @return array
      */
-    protected function getDecryptedRequestContent(string $str): array
+    protected function getDecryptedRequestContent(string $str, array $input)
     {
         $secretKey = $this->getSecret();
 
-        $crypto = new TripleDESCrypto(TripleDESCrypto::MODE_ECB, $secretKey, false);
+        $gatewayAquirer = $input[E::TERMINAL]->getGatewayAcquirer();
 
-        $decryptedString = $crypto->decryptString($str);
+        $decryptedString = '';
+
+        switch ($gatewayAquirer)
+        {
+            case Acquirer::FSS:
+                $crypto = new AESCrypto(AESCrypto::MODE_CBC, $secretKey, $secretKey);
+
+                $decryptedString = $crypto->decryptString($str);
+                break;
+            case Acquirer::BOB:
+                $crypto = new TripleDESCrypto(TripleDESCrypto::MODE_ECB, $secretKey, false);
+
+                $decryptedString = $crypto->decryptString($str);
+                break;
+            default:
+                break;
+        }
 
         $decryptedResult = Utility::createResponseArray($decryptedString);
 
@@ -816,12 +886,9 @@ class Gateway extends Base\Gateway
      */
     private function getCardType($cardType)
     {
-        if ($cardType === Card\Type::DEBIT)
-        {
-            return Constants::DEBIT_CARD_TYPE;
-        }
+        $gatewayAcquirer = $this->input[E::TERMINAL]->getGatewayAcquirer();
 
-        return Constants::CREDIT_CARD_TYPE;
+        return Constants::$cardType[$gatewayAcquirer][$cardType];
     }
 
     /**
@@ -846,10 +913,36 @@ class Gateway extends Base\Gateway
     {
         $status = $gateway->getStatus();
 
-        if ($status !== Status::CAPTURED)
+        if (in_array($status, Status::$successStates) === false)
         {
             throw new Exception\GatewayErrorException($errorCode);
         }
+    }
 
+    /**
+     * over riding getTestSecret becuase for different acquirers we ahve different
+     *
+     * @return mixed
+     */
+    protected function getTestSecret()
+    {
+        assert ($this->mode === Mode::TEST);
+
+        $gatewayAquirer = $this->input[E::TERMINAL]->getGatewayAcquirer();
+
+        switch ($gatewayAquirer)
+        {
+            case Acquirer::FSS:
+                return $this->config['fss_test_hash_secret'];
+                break;
+            case Acquirer::BOB:
+                return $this->config['bob_test_hash_secret'];
+                break;
+            default:
+                break;
+        }
+
+        // Default as test_hash_secret
+        return parent::getTestSecret();
     }
 }

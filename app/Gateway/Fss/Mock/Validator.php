@@ -56,10 +56,11 @@ class Validator extends Base\Validator
         }
     }
 
+    // TODO validate type based on acquirer.
     protected function validateType($attribute, $value)
     {
-        if ($value !== Constants::CREDIT_CARD_TYPE and
-            $value !== Constants::DEBIT_CARD_TYPE)
+        if ($value !== 'C' and
+            $value !== 'D')
         {
             throw new Exception\BadRequestValidationFailureException( "Invalid Card Type");
         }

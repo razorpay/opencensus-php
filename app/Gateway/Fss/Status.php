@@ -10,10 +10,8 @@ class Status
 
     const SUCCESS           = 'SUCCESS';
 
-    protected static $successStates = [
+    public static $successStates = [
         self::CAPTURED,
         self::SUCCESS
     ];
-
-
 }
