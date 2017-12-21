@@ -177,12 +177,6 @@ class AnalyticsTest extends TestCase
 
     public function testHttpRequestDataForOtpBasedPayment()
     {
-        //
-        // Mobikwik MID was unexpectedly disabled
-        // https://github.com/razorpay/incidents/issues/157
-        //
-        $this->markTestSkipped('Mobikwik temporarily disabled.');
-
         $this->sharedTerminal = $this->fixtures->create(
             'terminal:shared_mobikwik_terminal');
 

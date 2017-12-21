@@ -512,12 +512,6 @@ class OrderTest extends TestCase
 
     public function testPaymentWithFailedOfferCheckOnNullMethodOffer()
     {
-        //
-        // Mobikwik MID was unexpectedly disabled
-        // https://github.com/razorpay/incidents/issues/157
-        //
-        $this->markTestSkipped('Mobikwik temporarily disabled.');
-
         $offer = $this->fixtures->create('offer', [
             'starts_at' => Carbon::now(Timezone::IST)->subMonth()->timestamp,
             'issuer' => 'HDFC',
@@ -548,12 +542,6 @@ class OrderTest extends TestCase
 
     public function testPaymentWithFailedOfferWithCustomErrorMessage()
     {
-        //
-        // Mobikwik MID was unexpectedly disabled
-        // https://github.com/razorpay/incidents/issues/157
-        //
-        $this->markTestSkipped('Mobikwik temporarily disabled.');
-
         $this->fixtures->merchant->enableMobikwik();
 
         $offer = $this->fixtures->create('offer:card', ['error_message' => 'Custom error message']);
@@ -576,12 +564,6 @@ class OrderTest extends TestCase
 
     public function testPaymentWithBlockPaymentDisabledOnOffer()
     {
-        //
-        // Mobikwik MID was unexpectedly disabled
-        // https://github.com/razorpay/incidents/issues/157
-        //
-        $this->markTestSkipped('Mobikwik temporarily disabled.');
-
         $offer = $this->fixtures->create('offer:card', ['block' => false]);
 
         $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);

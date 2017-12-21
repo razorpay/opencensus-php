@@ -2704,3 +2704,6 @@ ALTER TABLE settings
 
 ALTER TABLE upi
     ADD COLUMN type VARCHAR(32) DEFAULT NULL AFTER action;
+
+ALTER TABLE `action_state_reasons`
+    ADD INDEX `action_state_reasons_reason_type_index` (`reason_type`);
