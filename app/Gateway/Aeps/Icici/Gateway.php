@@ -191,8 +191,6 @@ class Gateway extends Base\Gateway
     {
         $encryptor = $this->getEncryptor();
 
-        $encryptor->setPublicKey($this->getRefundPublicKey());
-
         $sKey = $encryptor->generateSkey();
 
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
