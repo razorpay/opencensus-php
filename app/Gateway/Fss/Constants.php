@@ -2,13 +2,25 @@
 
 namespace RZP\Gateway\Fss;
 
+use RZP\Models\Card\Type as CardType;
+
 class Constants
 {
     const PURCHASE              = 'PURCHASE';
 
     // Credit card type is sent as C and debit as D respectively.
-    const CREDIT_CARD_TYPE      = 'C';
-    const DEBIT_CARD_TYPE       = 'D';
+    protected static $cardType = [
+        Acquirer::BOB => [
+            CardType::CREDIT    => 'C',
+            CardType::DEBIT     => 'D',
+            CardType::UNKNOWN   => 'C',
+        ],
+        Acquirer::FSS   => [
+            CardType::CREDIT    => 'CP',
+            CardType::DEBIT     => 'DP',
+            CardType::UNKNOWN   => 'CP',
+        ],
+    ];
 
     // Actions have there own representation as per fss.
     const ACTION_PURCHASE       = '1';

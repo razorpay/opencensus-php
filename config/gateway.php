@@ -196,9 +196,12 @@ return [
     ],
 
     'fss' => [
-        'test_hash_secret'  => env('FSS_GATEWAY_TEST_HASH_SECRET', 'secret'),
-        'terminal_id'       => env('FSS_GATEWAY_TERMINAL_ID', '123'),
-        'terminal_password' => env('FSS_GATEWAY_TERMINAL_PASSWORD', 'password'),
+        'bob_test_hash_secret'  => env('FSS_BOB_GATEWAY_TEST_HASH_SECRET', 'secret'),
+        'bob_terminal_id'       => env('FSS_BOB_GATEWAY_TERMINAL_ID', '123'),
+        'bob_terminal_password' => env('FSS_BOB_GATEWAY_TERMINAL_PASSWORD', 'password'),
+        'fss_terminal_id'       => env('FSS_GATEWAY_TERMINAL_ID', '144'),
+        'fss_test_hash_secret'  => env('FSS_GATEWAY_TEST_HASH_SECRET', 'secret'),
+        'fss_bank_code'         => env('FSS_GATEWAY_BANK_CODE', '12345678'),
     ],
 
     'mobikwik' => [
