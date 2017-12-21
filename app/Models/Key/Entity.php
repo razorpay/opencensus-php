@@ -52,11 +52,6 @@ class Entity extends Base\PublicEntity
         {
             static::flushCache('keys_' . $key->getId());
         });
-
-        static::saved(function ($key)
-        {
-            static::flushCache('keys_' . $key->getId());
-        });
     }
 
     public function merchant()
