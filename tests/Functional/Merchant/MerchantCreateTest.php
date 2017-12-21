@@ -326,7 +326,7 @@ class MerchantCreateTest extends TestCase
         return [
             [
                 Header::BUSINESS_NAME       => 'test 1',
-                Header::BANK_ACCOUNT_NUMBER => '111000',
+                Header::BANK_ACCOUNT_NUMBER => 'BANKACCNUMBEROF22CHARS',
                 Header::BANK_BRANCH_IFSC    => 'SBIN0007105',
                 Header::BANK_ACCOUNT_TYPE   => 'Current',
                 Header::BANK_ACCOUNT_NAME   => 'Test Bank Account 1',

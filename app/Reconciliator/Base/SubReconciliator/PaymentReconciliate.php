@@ -75,7 +75,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if (empty($rowDetails) === true)
         {
-            return;
+            return $this->handleUnprocessedRow($row);
         }
 
         $paymentId = $rowDetails[BaseReconciliate::PAYMENT_ID];
@@ -90,7 +90,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             {
                 $this->handleAlreadyReconciled($paymentId);
 
-                return;
+                return null;
             }
 
             // Increment the total count for the summary

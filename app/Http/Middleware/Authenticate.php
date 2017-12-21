@@ -33,6 +33,8 @@ class Authenticate
      */
     protected $oauth;
 
+    protected $router;
+
     /**
      * Create a new filter instance.
      *
@@ -42,7 +44,9 @@ class Authenticate
     {
         $this->app = $app;
 
-        $this->ba  = $this->app['basicauth'];
+        $this->ba = $this->app['basicauth'];
+
+        $this->router = $this->app['router'];
 
         $this->oauth = new OAuth();
     }
@@ -57,17 +61,9 @@ class Authenticate
      */
     public function handle($request, Closure $next)
     {
-        $router = $this->app['router'];
+        $route = $this->router->currentRouteName();
 
-        $route = $router->currentRouteName();
-
-        // Check for disabled routes
-        if (in_array($route, Route::DISABLED_ROUTES, true) === true)
-        {
-            return ApiResponse::routeDisabled();
-        }
-
-        $this->ba->init($this->app);
+        $this->ba->init();
 
         $bearerToken = $this->getBearerTokenFromHeaders($request);
 
@@ -107,23 +103,23 @@ class Authenticate
     {
         $ret = null;
 
+        //
+        // TODO: This is not very ideal.
+        // In Throttle middleware also, we have very similar conditions.
+        // We should try to merge these or move out to a common function.
+        //
+
         if ((in_array($route, Route::$internal, true) === true) or
             (in_array($route, Route::$admin, true) === true))
         {
-            $this->throttleRequests($route, Type::ADMIN_AUTH);
-
             $ret = $this->ba->appAuth();
         }
         else if (in_array($route, Route::$private, true) === true)
         {
-            $this->throttleRequests($route, Type::PRIVATE_AUTH);
-
             $ret = $this->ba->privateAuth();
         }
         else if (in_array($route, Route::$public, true) === true)
         {
-            $this->throttleRequests($route, Type::PUBLIC_AUTH);
-
             //
             // For public routes, OAuth sends a public_token using BasicAuth
             // We check here if the key is an OAuth public token and
@@ -141,26 +137,18 @@ class Authenticate
         }
         else if (in_array($route, Route::$publicCallback, true) === true)
         {
-            $this->throttleRequests($route, Type::PUBLIC_AUTH);
-
             $ret = $this->ba->publicCallbackAuth();
         }
         else if (in_array($route, Route::$proxy, true) === true)
         {
-            $this->throttleRequests($route, Type::PROXY_AUTH);
-
             $ret = $this->ba->proxyAuth();
         }
         else if (in_array($route, Route::$device, true) === true)
         {
-            $this->throttleRequests($route, Type::DEVICE_AUTH);
-
             $ret = $this->ba->deviceAuth();
         }
         else if (in_array($route, Route::$direct, true) === true)
         {
-            $this->throttleRequests($route, Type::DIRECT_AUTH);
-
             // $ret = $this->ba->proxyAuth();
         }
         else
@@ -230,18 +218,6 @@ class Authenticate
         return null;
     }
 
-    /**
-     * This is our global rate throttling mechanism
-     *
-     * @param string $auth
-     */
-    private function throttleRequests(string $route, string $auth)
-    {
-        $throttle = new Throttle($this->app);
-
-        $throttle->process($auth);
-    }
-
     private function getBearerTokenFromHeaders($request)
     {
         //
@@ -250,10 +226,10 @@ class Authenticate
         //
         // But for now following are the issues:
         // - With apache, 'Authorization' headers is missing unless specific
-        //   configuration. So for that we started using getallheaders(). This
+        //   configuration. So for that we started using getAllHeaders(). This
         //   method is available when PHP is running with apache and so we have
         //   added a polyfill utility method in case on local someone is using
-        //   nginx.
+        //   Nginx.
         // - Now with tests, it's not actually an HTTP request during request
         //   response flow. Framework forms a Symfony request object and directly
         //   starts from framework kernel's instantiation(by passing actual HTTP flow).

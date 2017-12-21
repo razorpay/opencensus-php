@@ -33,11 +33,6 @@ class RefundReconciliate extends Base\RefundReconciliate
                                                             Action::AUTHORIZE,
                                                             Wallet::JIOMONEY);
 
-        if ($gatewayEntity === null)
-        {
-            return null;
-        }
-
         $paymentId = $gatewayEntity->getPaymentId();
 
         return $paymentId;
