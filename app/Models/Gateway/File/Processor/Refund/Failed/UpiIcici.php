@@ -7,14 +7,11 @@ use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class UpiIcici extends Base
 {
-    use FileHandler;
-
     const GATEWAY                = Payment\Gateway::UPI_ICICI;
-    const EXTENSION              = FileStore\Format::TXT;
+    const EXTENSION              = FileStore\Format::XLSX;
     const FILE_NAME              = 'UPI_ICICI_failed_refunds';
     const FILE_TYPE              = FileStore\Type::ICICI_UPI_REFUND;
 
@@ -38,6 +35,6 @@ class UpiIcici extends Base
             ];
         }
 
-        return $this->getTextData($formattedData);
+        return $formattedData;
     }
 }
