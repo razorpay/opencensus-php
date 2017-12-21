@@ -16,13 +16,11 @@ tooltipDOM.innerHTML = '<div class="custom-tooltip-inner">' + '</div>';
 const caretHtml = '<div class="caret"/>';
 
 const hideTooltip = () => {
-    return window.setTimeout(() => {
-      return (
-        !isTooltipHovered &&
-        !shouldShowTooltip &&
-        (tooltipDOM.style.display = 'none')
-      );
-    });
+    return (
+      !isTooltipHovered &&
+      !shouldShowTooltip &&
+      (tooltipDOM.style.display = 'none')
+    );
   },
   showTooltip = () => (tooltipDOM.style.display = 'block');
 
@@ -40,11 +38,21 @@ const customToolTip = function(tooltipModel) {
     isInsertedIntoBody = true;
   }
 
-  // Hide if no tooltip
-  // TODO: wants a better option than opacity
+  // Hide if no tooltip - screw chart.js for not providing
+  // callbacks before hiding tooltip
   if (!tooltipModel.opacity) {
     shouldShowTooltip = false;
-    return hideTooltip();
+
+    /*
+     * Puts hideTooltip at the end of callback queue
+     * as chartjs tries to hide the tooltip just before
+     * `mouseenter` is fired on `tooltipDOM`, which would
+     * lead to hiding of tooltip just before hovering on it,
+     * and makes the tooltip flicker and not useable
+     */
+    return window.setTimeout(() => {
+      hideTooltip();
+    });
   } else {
     shouldShowTooltip = true;
     showTooltip();
