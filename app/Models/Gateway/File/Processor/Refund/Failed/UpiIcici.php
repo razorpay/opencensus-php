@@ -7,31 +7,41 @@ use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Gateway\Upi\Icici\RefundFile;
 
 class UpiIcici extends Base
 {
     const GATEWAY                = Payment\Gateway::UPI_ICICI;
     const EXTENSION              = FileStore\Format::XLSX;
-    const FILE_NAME              = 'UPI_ICICI_failed_refunds';
+    const FILE_NAME              = 'Icici_Upi_Failed_Refunds';
     const FILE_TYPE              = FileStore\Type::ICICI_UPI_REFUND;
 
     protected function formatDataForFile(array $data)
     {
         $formattedData = [];
+
         foreach ($data as $row)
         {
+            if (isset($row['gateway']) === false)
+            {
+                continue;
+            }
+
             $date = Carbon::createFromTimestamp(
-                $row['payment']['created_at'],
-                Timezone::IST
-            )
-            ->format('Y-d-m');
+                $row['payment']['authorized_at'], Timezone::IST)->format('Y-m-d');
 
             $formattedData[] = [
-                'Payee ID'      => $row['terminal']['gateway_merchant_id'],
-                'Date'          => $date,
-                'payment ID'    => $row['gateway']['payment_id'],
-                'TXN Amount'    => $row['payment']['amount'] / 100,
-                'Refund Amount' => $row['refund']['amount'] / 100,
+                RefundFile::BANKADJREF         => $row['refund']['id'],
+                RefundFile::FLAG               => 'C',
+                RefundFile::SHTDAT             => $date,
+                RefundFile::ADJAMT             => ($row['refund']['amount'] / 100),
+                RefundFile::SHSER              => $row['gateway']['gateway_payment_id'],
+                RefundFile::SHCRD              => $row['gateway']['vpa'],
+                RefundFile::FILENAME           => self::FILE_NAME,
+                RefundFile::REASON             => 'NA',
+                RefundFile::SPECIFYOTHER       => $row['refund']['id'],
+                RefundFile::MERCHANTACCOUNT    => '',
+                RefundFile::MERCHANT_IFSC_CODE => '',
             ];
         }
 
