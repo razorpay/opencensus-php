@@ -283,13 +283,19 @@ class Netbanking
         return array_diff($banks, self::getAllBanks());
     }
 
-    public static function getAllBanks()
+    public static function getAllBanks(): array
     {
         //
         // Merge paytm and billdesk supported banks and remove
         // duplicate values
         //
-        return array_unique(array_merge(self::$paytm, self::$billdesk, self::$billdeskCorp, self::$ebs, self::$self, self::$selfCorp));
+        return array_values(array_unique(array_merge(
+                                            self::$paytm,
+                                            self::$billdesk,
+                                            self::$billdeskCorp,
+                                            self::$ebs,
+                                            self::$self,
+                                            self::$selfCorp)));
     }
 
     public static function enableDefaultBanks(array $banks)
@@ -378,7 +384,7 @@ class Netbanking
             $banks = self::getSupportedBanksForTPV();
         }
 
-        return array_unique($banks);
+        return array_values(array_unique($banks));
     }
 
     public static function removeDefaultDisableBanks(array $banks)
@@ -388,12 +394,17 @@ class Netbanking
 
     public static function getSupportedBanksInLiveMode()
     {
-        return array_unique(array_merge(self::$billdesk, self::$billdeskCorp, self::$ebs, self::$self, self::$selfCorp));
+        return array_values(array_unique(array_merge(
+                                            self::$billdesk,
+                                            self::$billdeskCorp,
+                                            self::$ebs,
+                                            self::$self,
+                                            self::$selfCorp)));
     }
 
     public static function getSupportedBanksForTPV()
     {
-        return array_unique(array_merge(self::$billdeskTPV, self::$selfTPV));
+        return array_values(array_unique(array_merge(self::$billdeskTPV, self::$selfTPV)));
     }
 
     public static function isBankSupportedByGateway($bank, $gateway, $isTPV = false)
@@ -403,7 +414,7 @@ class Netbanking
             return self::isBankSupportedByGatewayForTPV($bank, $gateway);
         }
 
-        $functionName = 'is'.title_case($gateway).'SupportedBank';
+        $functionName = 'is'. title_case($gateway) . 'SupportedBank';
 
         return self::$functionName($bank);
     }
@@ -411,7 +422,7 @@ class Netbanking
     public static function isBankSupportedByGatewayForTPV($bank, $gateway)
     {
         // Direct gateways are handled seperately
-        return in_array($bank, self::${$gateway.'TPV'}, true) === true;
+        return in_array($bank, self::${$gateway . 'TPV'}, true) === true;
     }
 
     public static function isPaytmSupportedBank($bank)
