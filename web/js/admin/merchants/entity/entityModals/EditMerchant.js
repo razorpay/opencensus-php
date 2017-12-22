@@ -76,6 +76,10 @@ export default class EditMerchant extends Component {
 
     this.dropUnchangedFields(body);
 
+    if (body.transaction_report_email) {
+      body.transaction_report_email = body.transaction_report_email.join(',');
+    }
+
     if (!Object.keys(body).length) {
       notifyError('Edit something before clicking Save');
       return;
