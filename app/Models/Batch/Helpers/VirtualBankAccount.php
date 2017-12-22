@@ -27,8 +27,10 @@ class VirtualBankAccount
                     VirtualAccount\Receiver::BANK_ACCOUNT,
                 ],
                 VirtualAccount\Entity::BANK_ACCOUNT => [
-                    VirtualAccount\Receiver::NUMERIC    => false,
-                    VirtualAccount\Receiver::DESCRIPTOR => $entry[Header::VA_DESCRIPTOR],
+                    VirtualAccount\Receiver::NUMERIC    => true,
+                    // Descriptor cannot be used with numeric accounts.
+                    // Uncomment when api#6587 is merged.
+                    // VirtualAccount\Receiver::DESCRIPTOR => $entry[Header::VA_DESCRIPTOR],
                 ],
             ],
         ];
