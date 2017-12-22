@@ -34,7 +34,7 @@ class UpiIcici extends Base
                 RefundFile::BANKADJREF         => $row['refund']['id'],
                 RefundFile::FLAG               => 'C',
                 RefundFile::SHTDAT             => $date,
-                RefundFile::ADJAMT             => ($row['refund']['amount'] / 100),
+                RefundFile::ADJAMT             =>  $this->getFormattedAmount($row['refund']['amount']),
                 RefundFile::SHSER              => $row['gateway']['gateway_payment_id'],
                 RefundFile::SHCRD              => $row['gateway']['vpa'],
                 RefundFile::FILENAME           => self::FILE_NAME,
@@ -44,7 +44,6 @@ class UpiIcici extends Base
                 RefundFile::MERCHANT_IFSC_CODE => '',
             ];
         }
-
         return $formattedData;
     }
 }
