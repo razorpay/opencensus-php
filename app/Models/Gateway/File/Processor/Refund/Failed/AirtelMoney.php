@@ -5,41 +5,49 @@ namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 use Carbon\Carbon;
 
 use RZP\Models\Payment;
-use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class AirtelMoney extends Base
 {
-    use FileHandler;
+    const GATEWAY            = Payment\Gateway::WALLET_AIRTELMONEY;
+    const EXTENSION          = FileStore\Format::XLSX;
+    const FILE_NAME          = 'Airtelmoney_Wallet_Failed_Refunds';
+    const FILE_TYPE          = FileStore\Type::AIRTELMONEY_WALLET_REFUND;
 
-    const GATEWAY                = Payment\Gateway::WALLET_AIRTELMONEY;
-    const EXTENSION              = FileStore\Format::XLSX;
-    const FILE_NAME              = 'airtel_money_failed_refunds';
-    const FILE_TYPE              = FileStore\Type::AIRTELMONEY_WALLET_REFUND;
+    const SR_NO              = 'Sr No';
+    const TRANSACTION_DATE   = 'Transaction date';
+    const GATEWAY_REFERENCE  = 'Gateway reference';
+    const ORDER              = 'Order #';
+    const ORDER_AMOUNT       = 'Order Amount';
+    const REFUND_AMOUNT      = 'Refund Amount';
+    const MERCHANT_CODE      = 'Merchant Code';
 
     protected function formatDataForFile(array $data)
     {
+        $i = 1;
+
         $formattedData = [];
 
         foreach ($data as $row)
         {
-            $refundDate = Carbon::createFromTimestamp(
-                $row['refund']['created_at'],
-                Timezone::IST
-                )
-                ->format('Y-d-m');
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['authorized_at'], Timezone::IST)->format('d/m/Y');
+
+            $i++;
 
             $formattedData[] = [
-                'Refund ID'     => $row['refund']['id'],
-                'Refund Date'   => $refundDate,
-                'payment ID'    => $row['gateway']['payment_id'],
-                'TXN Amount'    => $row['payment']['amount'] / 100,
-                'Refund Amount' => $row['refund']['amount'] / 100,
+                self::SR_NO             => $i,
+                self::TRANSACTION_DATE  => $date,
+                self::GATEWAY_REFERENCE => $row['gateway']['gateway_payment_id'],
+                self::ORDER             => $row['payment']['id'],
+                self::REFUND_AMOUNT     => $row['payment']['amount'] / 100,
+                self::REFUND_AMOUNT     => $row['refund']['amount'] / 100,
+                self::MERCHANT_CODE     => $row['terminal']['gateway_merchant_id']
             ];
         }
-        return $formattedData;
-    }
 
+        return $formattedData;
+
+    }
 }

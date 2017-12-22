@@ -31,7 +31,7 @@ class AirtelMoneyFailedRefundFileTest extends TestCase
 
     public function testAirtelMoneyFailedRefundFile()
     {
-         // Mail::fake();
+         Mail::fake();
 
         $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
 
@@ -67,6 +67,8 @@ class AirtelMoneyFailedRefundFileTest extends TestCase
             'extension'   => 'xlsx',
         ];
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Mail::assertSent(RefundFileMail::class);
     }
 
 }
