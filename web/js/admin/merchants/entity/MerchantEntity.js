@@ -301,11 +301,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
     )
       .then(response => {
         if (response) {
-          if (isWorkflow(reponse)) {
-            return;
-          }
           notifySuccess('Merchant is successfully updated');
-          model.updateDetails(response);
+          if (isWorkflow(response)) {
+            return;
+          } else {
+            model.updateDetails(response);
+          }
         }
       })
       .catch(err => {
