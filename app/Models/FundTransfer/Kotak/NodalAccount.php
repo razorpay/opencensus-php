@@ -237,22 +237,15 @@ class NodalAccount extends NodalBase\NodalAccount
 
     protected function getPaymentType(BankAccount\Entity $ba, $amount, Attempt\Entity $attempt)
     {
-        $ifsc = $ba->getIfscCode();
-
-        $ifscFirstFour = substr($ifsc, 0, 4);
-
-        if (($ifscFirstFour === 'KKBK') or
-            ($ifscFirstFour === 'VYSA'))
-        {
-            $type = FundTransfer\Mode::IFT;
-        }
-        else if (($amount <= self::IMPS_AMOUNT) and
+        // Settlements are not done via IMPS
+        if (($amount <= self::IMPS_AMOUNT) and
             ($attempt->getSourceType() !== Type::SETTLEMENT))
         {
             $type = FundTransfer\Mode::IMPS;
         }
         else
         {
+            // Check RTGS time and minimum
             $type = $this->getTransferMode($amount);
         }
 
@@ -260,6 +253,18 @@ class NodalAccount extends NodalBase\NodalAccount
         if ($attempt->getMode() != null)
         {
             $type = $attempt->getMode();
+        }
+
+        $ifsc = $ba->getIfscCode();
+
+        $ifscFirstFour = substr($ifsc, 0, 4);
+
+        // For Kotak beneficiaries, none of the
+        // above logic matters, we only do IFT
+        if (($ifscFirstFour === 'KKBK') or
+            ($ifscFirstFour === 'VYSA'))
+        {
+            $type = FundTransfer\Mode::IFT;
         }
 
         return $type;

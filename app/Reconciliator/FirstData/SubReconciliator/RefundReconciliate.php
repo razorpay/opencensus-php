@@ -29,6 +29,12 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function getRefundId($row)
     {
+
+        //
+        // For first_data, some rows contain entries with different gateway_transaction_id
+        // than what was received in the api response. In such cases, we mark the row as
+        // successfully processed.
+        //
         try
         {
             $refund = $this->getGatewayRefundFromGatewayTxnId($row);
@@ -43,6 +49,8 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'gateway'   => get_called_class()
                 ]);
 
+            $this->setFailUnprocessedRow(false);
+
             return null;
         }
 
@@ -55,6 +63,8 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'row'       => $row,
                     'gateway'   => get_called_class()
                 ]);
+
+            $this->setFailUnprocessedRow(false);
 
             return null;
         }

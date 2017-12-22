@@ -100,6 +100,8 @@ class CreatePayoutsTable extends Migration
 
             $table->index(Payout::STATUS);
 
+            $table->index([Payout::MERCHANT_ID, Payout::CREATED_AT]);
+
             $table->foreign(Payout::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
