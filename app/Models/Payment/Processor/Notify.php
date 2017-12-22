@@ -19,9 +19,9 @@ class Notify
     /**
      * The minimum amount for a transaction to be considered risky
      * This is used to decide low and high value transactions and pick
-     * the correct slack channel. Currently set to INR 3000
+     * the correct slack channel. Currently set to INR 10000
      */
-    const MIN_RISK_AMOUNT = 300000;
+    const MIN_RISK_AMOUNT = 1000000;
 
     /**
      * This is the minimum risk rating for a merchant that prompts a
