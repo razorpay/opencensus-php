@@ -455,42 +455,6 @@ const ActionsList = ({ model, merchantId, actions }) => {
         <ShowWhen permission="add_merchant_credits">
           <div onClick={actions.AddCredits}>Add Credits</div>
         </ShowWhen>
-
-        {merchant.details.activated == 0 && (
-          <ShowWhen permission="edit_activate_merchant">
-            <AsyncButton
-              onClick={activateMerchant}
-              pendingClass="btn-pending"
-              confirm="Are you sure you have validated all merchant details, assigned pricing plan and terminal to merchant before activating?"
-            >
-              Activate Merchant
-              <span class="spin-btn" />
-              <i class="pull-right i i-done-all" />
-            </AsyncButton>
-          </ShowWhen>
-        )}
-        <ShowWhen
-          permission={
-            merchant.details.archived_at === null
-              ? 'edit_merchant_archive'
-              : 'edit_merchant_unarchive'
-          }
-        >
-          <AsyncButton
-            onClick={toggleArchiveMerchant}
-            pendingClass="btn-pending"
-            confirm={toggleArchiveMerchantCM()}
-          >
-            {merchant.details.archived_at === null ? 'Archive' : 'Unarchive'}{' '}
-            <i
-              class={`pull-right i i-${
-                merchant.details.archived_at === null ? 'archive' : 'unarchive'
-              }`}
-            />
-            Merchant
-            <span class="spin-btn" />
-          </AsyncButton>
-        </ShowWhen>
       </div>
 
       <div class="group">
