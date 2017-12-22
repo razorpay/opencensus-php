@@ -24,11 +24,12 @@ class Receiver extends Base\Core
         self::QR_CODE,
     ];
 
-    const ROOT_LENGTH               = 4;
+    const ROOT_LENGTH                  = 4;
     // Handle length can be 3 also
-    const STANDARD_HANDLE_LENGTH    = 4;
-    const DESCRIPTOR_LENGTH         = 9;
-    const ACCOUNT_NUMBER_LENGTH     = 17;
+    const STANDARD_HANDLE_LENGTH       = 4;
+    const DESCRIPTOR_LENGTH            = 9;
+    const PRIVILEGED_DESCRIPTOR_LENGTH = 10;
+    const ACCOUNT_NUMBER_LENGTH        = 17;
 
     const DEFAULT_BANK_ACCOUNT_OPTIONS = [
         self::DESCRIPTOR => null,
@@ -296,6 +297,14 @@ class Receiver extends Base\Core
             }
         }
 
+        // Root is null if the selected provider doesn't give us that kind of root
+        // Eg. YesBank alphanumeric roots
+        if ($root === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE);
+        }
+
         return $root;
     }
 
@@ -316,6 +325,18 @@ class Receiver extends Base\Core
             ($this->numeric === true))
         {
             $handle = $this->getDefaultHandle($root);
+
+            $totalLength = self::ACCOUNT_NUMBER_LENGTH;
+
+            $availableDescriptorLength = $totalLength - strlen($root) - strlen($handle);
+
+            if ((strlen($availableDescriptorLength) < self::PRIVILEGED_DESCRIPTOR_LENGTH) and
+                ($this->isPrivilegedAccount() === true))
+            {
+                $merchantId = $this->merchant->getId();
+
+                $handle = Provider::PRIVILEGED_NUMERIC_HANDLE_MAPPING[$merchantId];
+            }
         }
 
         return $handle;

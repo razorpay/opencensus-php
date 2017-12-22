@@ -231,7 +231,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Shorter handle is set so special root is used with given descriptor
-        $this->assertEquals("22222200123456789", $vba['account_number']);
+        $this->assertEquals("11111110123456789", $vba['account_number']);
     }
 
     public function testCreateVirtualAccountWithIdenticalDescriptor()

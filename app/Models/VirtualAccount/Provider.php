@@ -49,14 +49,14 @@ class Provider
         self::YESBANK => [
             // Todo
             'numeric' => [
-                'default' => '',
-                'handle'  => '',
-                'special' => '',
+                'default' => '222444',
+                'handle'  => '222444',
+                'special' => '222444',
             ],
             'alpha_numeric' => [
-                'default' => '',
-                'handle'  => '',
-                'special' => '',
+                'default' => null,
+                'handle'  => null,
+                'special' => null,
             ],
             'reserved' => [],
         ],
@@ -87,7 +87,7 @@ class Provider
             'numeric' => [
                 'default' => '111111',
                 'handle'  => '111111',
-                'special' => '222222',
+                'special' => '111111',
             ],
             'alpha_numeric' => [
                 'default' => 'RAZO',
@@ -105,10 +105,18 @@ class Provider
         'RAZO'   => 'RPAY',
         // Test mode
         '111111' => '00',
-        '222222' => '0',
         // Kotak
         '139913' => '00',
         '139914' => '0',
+        // YesBank
+        '222444' => '00',
+    ];
+
+    // Zebpay gets 2224441
+    const PRIVILEGED_NUMERIC_HANDLE_MAPPING = [
+        '8iMbVsEnv1HCo0' => '1',
+        // Tests
+        '10000000000000' => '1',
     ];
 
     const IFSC = [
