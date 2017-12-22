@@ -60,7 +60,7 @@ class Constants
         Type::EMI               => MailConstants::MAIL_ADDRESSES[MailConstants::EMI],
         Type::EMANDATE_REGISTER => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::EMANDATE_DEBIT    => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
-        TYPE::REFUND_FAILED     => 'tessy.john@razorpay.com',
+        TYPE::REFUND_FAILED     => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
     ];
 
     const RECIPIENTS_MAP = [
@@ -95,7 +95,7 @@ class Constants
         ],
 
         TYPE::REFUND_FAILED => [
-            self::UPI_ICICI => ['tessy.john@razorpay.com'],
+            self::UPI_ICICI => ['settlements@razorpay.com'],
         ],
 
     ];
