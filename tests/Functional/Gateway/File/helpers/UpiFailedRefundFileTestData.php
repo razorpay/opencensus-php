@@ -1,11 +1,17 @@
 <?php
 
+use Carbon\Carbon;
+
+use RZP\Constants\Timezone;
+
 return [
    'testUpiFailedRefundFile' => [
         'request' => [
             'content' => [
                 'type'    => 'refund_failed',
                 'targets' => ['upi_icici'],
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
             ],
             'url' => '/gateway/files',
             'method' => 'POST',
@@ -37,6 +43,8 @@ return [
             'content' => [
                 'type'    => 'refund_failed',
                 'targets' => ['upi_icici'],
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
             ],
             'url' => '/gateway/files',
             'method' => 'POST'

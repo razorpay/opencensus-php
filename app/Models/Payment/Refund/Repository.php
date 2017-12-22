@@ -251,7 +251,7 @@ class Repository extends Base\Repository
         return $refunds;
     }
 
-    public function fetchFailedRefundsForGateway($gateway)
+    public function fetchFailedRefundsForGatewayBetweenTimestamps($from, $to, $gateway)
     {
         $attrs = $this->dbColumn('*');
 
@@ -259,20 +259,19 @@ class Repository extends Base\Repository
 
         $refunds = $query->select($attrs)->join(
             $this->repo->payment->getTableName(),
-            function ($join) use ($gateway)
+            function ($join) use ($from, $to, $gateway)
             {
                 $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
-
+                $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
                 $status    =  $this->dbColumn(Refund\Entity::STATUS);
 
                 $pRepo = $this->repo->payment;
-
                 $pId = $pRepo->dbColumn(Payment\Entity::ID);
-
                 $pGateway = $pRepo->dbColumn(Payment\Entity::GATEWAY);
-
                 $join->on($rPaymentId, '=', $pId)
+                     ->where($rCreatedAt, '>=', $from)
                      ->where($status, '=',Refund\STATUS::FAILED)
+                     ->where($rCreatedAt, '<=', $to)
                      ->where($pGateway, '=', $gateway);
             })
             ->with('payment')

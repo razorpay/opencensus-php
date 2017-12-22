@@ -36,11 +36,9 @@ class CreateGatewayFiles extends Migration
             $table->text(GatewayFile::RECIPIENTS)
                   ->nullable();
 
-            $table->integer(GatewayFile::BEGIN)
-                  ->nullable();
+            $table->integer(GatewayFile::BEGIN);
 
-            $table->integer(GatewayFile::END)
-                   ->nullable();
+            $table->integer(GatewayFile::END);
 
             $table->string(GatewayFile::STATUS, 20)
                   ->default('created');

@@ -19,7 +19,11 @@ class Base extends Refund\Base
 {
     public function fetchEntities(): PublicCollection
     {
-        $refunds = $this->repo->refund->fetchFailedRefundsForGateway(
+        $begin = $this->gatewayFile->getBegin();
+        $end = $this->gatewayFile->getEnd();
+        $refunds = $this->repo->refund->fetchFailedRefundsForGatewayBetweenTimestamps(
+                    $begin,
+                    $end,
                     static::GATEWAY
                 );
         return $refunds;
