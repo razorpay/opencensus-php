@@ -2774,3 +2774,7 @@ ALTER TABLE upi
 
 ALTER TABLE `action_state_reasons`
     ADD INDEX `action_state_reasons_reason_type_index` (`reason_type`);
+
+ALTER TABLE virtual_accounts
+    MODIFY COLUMN amount_received BIGINT UNSIGNED,
+    MODIFY COLUMN amount_paid BIGINT UNSIGNED;

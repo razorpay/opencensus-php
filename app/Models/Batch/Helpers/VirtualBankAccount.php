@@ -19,7 +19,7 @@ class VirtualBankAccount
 
     public static function getVirtualAccountCreateInput(array $entry, Customer\Entity $customer): array
     {
-        return [
+        $requestArray = [
             VirtualAccount\Entity::DESCRIPTOR  => $entry[Header::VA_DESCRIPTOR],
             VirtualAccount\Entity::CUSTOMER_ID => $customer->getPublicId(),
             VirtualAccount\Entity::RECEIVERS => [
@@ -28,11 +28,17 @@ class VirtualBankAccount
                 ],
                 VirtualAccount\Entity::BANK_ACCOUNT => [
                     VirtualAccount\Receiver::NUMERIC    => true,
-                    // Descriptor cannot be used with numeric accounts.
-                    // Uncomment when api#6587 is merged.
-                    // VirtualAccount\Receiver::DESCRIPTOR => $entry[Header::VA_DESCRIPTOR],
                 ],
             ],
         ];
+
+        if (empty($entry[Header::VA_DESCRIPTOR]) === false)
+        {
+            $requestArray[VirtualAccount\Entity::RECEIVERS]
+                [VirtualAccount\Entity::BANK_ACCOUNT]
+                [VirtualAccount\Receiver::DESCRIPTOR] = $entry[Header::VA_DESCRIPTOR];
+        }
+
+        return $requestArray;
     }
 }
