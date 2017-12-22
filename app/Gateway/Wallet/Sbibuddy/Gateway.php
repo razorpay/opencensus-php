@@ -188,14 +188,7 @@ class Gateway extends Base\Gateway
      */
     protected function saveCallbackResponse(array $input, array $response)
     {
-        if(isset($response[ResponseFields::STATUS_CODE]) === false)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                '',
-                'Status Code is missing'
-            );
-        }
+        $this->isStatusCodeMissing($response);
         
         $content = [
             Entity::RECEIVED                        => true,
@@ -508,6 +501,19 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::STATUS_CODE],
             $content[ResponseFields::ERROR_DESCRIPTION] ?? null
         );
+    }
+    
+    // Checks if status code is not present in response
+    protected function isStatusCodeMissing(array $response)
+    {
+        if(isset($response[ResponseFields::STATUS_CODE]) === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
+                'Status Code is missing'
+            );
+        }
     }
 
     protected function isStatusCodeSuccess(array $content): bool
