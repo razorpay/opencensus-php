@@ -85,9 +85,9 @@ class Provider
         ],
         self::DASHBOARD => [
             'numeric' => [
-                'default' => '111111',
-                'handle'  => '111111',
-                'special' => '111111',
+                'default' => '111222',
+                'handle'  => '111222',
+                'special' => '111222',
             ],
             'alpha_numeric' => [
                 'default' => 'RAZO',
@@ -104,7 +104,7 @@ class Provider
         // Default
         'RAZO'   => 'RPAY',
         // Test mode
-        '111111' => '00',
+        '111222' => '00',
         // Kotak
         '139913' => '00',
         '139914' => '0',
@@ -112,11 +112,11 @@ class Provider
         '222444' => '00',
     ];
 
-    // Zebpay gets 2224441
     const PRIVILEGED_NUMERIC_HANDLE_MAPPING = [
-        '8iMbVsEnv1HCo0' => '1',
+        // Zebpay gets 2224449
+        '8iMbVsEnv1HCo0' => '9',
         // Tests
-        '10000000000000' => '1',
+        '10000000000000' => '9',
     ];
 
     const IFSC = [

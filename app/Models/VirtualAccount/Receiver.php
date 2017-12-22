@@ -182,6 +182,12 @@ class Receiver extends Base\Core
     {
         $provider = Provider::KOTAK;
 
+        // Kotak does not support crypto merchants
+        if ($this->merchant->isCategoryCryptocurrency() === true)
+        {
+            $provider = Provider::YESBANK;
+        }
+
         if ($this->mode === Mode::TEST)
         {
             $provider = Provider::DASHBOARD;
@@ -326,11 +332,12 @@ class Receiver extends Base\Core
         {
             $handle = $this->getDefaultHandle($root);
 
+
             $totalLength = self::ACCOUNT_NUMBER_LENGTH;
 
             $availableDescriptorLength = $totalLength - strlen($root) - strlen($handle);
 
-            if ((strlen($availableDescriptorLength) < self::PRIVILEGED_DESCRIPTOR_LENGTH) and
+            if (($availableDescriptorLength < self::PRIVILEGED_DESCRIPTOR_LENGTH) and
                 ($this->isPrivilegedAccount() === true))
             {
                 $merchantId = $this->merchant->getId();
