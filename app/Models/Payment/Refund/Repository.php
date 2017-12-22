@@ -253,29 +253,28 @@ class Repository extends Base\Repository
 
     public function fetchFailedRefundsForGatewayBetweenTimestamps($from, $to, $gateway)
     {
-        $attrs = $this->dbColumn('*');
+        $refundAttrs = $this->dbColumn('*');
 
-        $query = $this->newQuery();
+        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
 
-        $refunds = $query->select($attrs)->join(
-            $this->repo->payment->getTableName(),
-            function ($join) use ($from, $to, $gateway)
-            {
-                $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
-                $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
-                $status    =  $this->dbColumn(Refund\Entity::STATUS);
+        $refundStatus = $this->dbColumn(Refund\Entity::STATUS);
 
-                $pRepo = $this->repo->payment;
-                $pId = $pRepo->dbColumn(Payment\Entity::ID);
-                $pGateway = $pRepo->dbColumn(Payment\Entity::GATEWAY);
-                $join->on($rPaymentId, '=', $pId)
-                     ->where($rCreatedAt, '>=', $from)
-                     ->where($status, '=',Refund\STATUS::FAILED)
-                     ->where($rCreatedAt, '<=', $to)
-                     ->where($pGateway, '=', $gateway);
-            })
-            ->with('payment')
-            ->get();
+        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $refundCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
+
+
+        return $this->newQuery()
+                    ->select($refundAttrs)
+                    ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                    ->where($refundStatus, '=',Refund\STATUS::FAILED)
+                    ->where($paymentGateway, '=', $gateway)
+                    ->where($refundCreatedAt, '>=', $from)
+                    ->where($refundCreatedAt, '<=', $to)
+                    ->with(['payment'])
+                    ->get();
 
         return $refunds;
     }
