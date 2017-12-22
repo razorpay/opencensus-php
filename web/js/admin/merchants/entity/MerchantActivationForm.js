@@ -86,6 +86,15 @@ export default class MerchantActivationForm extends Component {
     });
   };
 
+  handleActivationStatusChange = status => {
+    const { details } = this.model.merchant;
+
+    details.merchant_details = {
+      ...details.merchant_details,
+      activation_status: status,
+    };
+  };
+
   getOverview() {
     const { details } = this.model.merchant;
 
@@ -172,11 +181,13 @@ function _getOverviewFields(details) {
       label: details.merchant_details.archived
         ? 'Form is Archived'
         : 'Form is Unarchived',
-      value: () => (
-        <button onClick={this.handleArchive}>
-          {details.merchant_details.archived ? 'Unarchive' : 'Archive'}
-        </button>
-      ),
+      value: () =>
+        details.merchant_details.activation_status ===
+          'needs_clarification' && (
+          <button onClick={this.handleArchive}>
+            {details.merchant_details.archived ? 'Unarchive' : 'Archive'}
+          </button>
+        ),
     },
     {
       label: 'Activation Form Status',
@@ -187,6 +198,7 @@ function _getOverviewFields(details) {
             allowedStatuses={toJS(
               details.merchant_details.allowed_next_activation_statuses
             )}
+            onStatusChange={this.handleActivationStatusChange}
             merchantId={this.merchantId}
           />
         ) : (

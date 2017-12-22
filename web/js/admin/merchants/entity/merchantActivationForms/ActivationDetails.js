@@ -73,10 +73,15 @@ export default class ActivationDetails extends Component {
         if (isWorkflow(response)) {
           return;
         }
-        this.setState({
-          status: response.activation_status,
-          allowedStatuses: response.allowed_next_activation_statuses,
-        });
+        this.setState(
+          {
+            status: response.activation_status,
+            allowedStatuses: response.allowed_next_activation_statuses,
+          },
+          _ => {
+            this.props.onStatusChange(response.activation_status);
+          }
+        );
         notifySuccess('Status updated successfully.');
         closeModal();
       }
