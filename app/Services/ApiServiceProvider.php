@@ -91,11 +91,6 @@ class ApiServiceProvider extends BaseServiceProvider
             return new TokenEx($app);
         });
 
-        $this->app->bind('raven', function($app)
-        {
-            return new Raven($app);
-        });
-
         $this->app->singleton('authservice', function($app)
         {
             return new AuthService($app);
@@ -141,6 +136,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerApiMutex();
 
         $this->registerMaxMind();
+
+        $this->registerRaven();
 
         $this->registerElfin();
 
@@ -205,6 +202,18 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('Illuminate\Contracts\Queue\EntityResolver', function ()
         {
             return new \RZP\Base\QueueEntityResolver;
+        });
+    }
+
+    protected function registerRaven()
+    {
+        $this->app->bind('raven', function($app)
+        {
+            $mock = $app['config']->get('applications.raven.mock');
+
+            $implementation = $mock ? Mock\Raven::class : Raven::class;
+
+            return new $implementation($app);
         });
     }
 

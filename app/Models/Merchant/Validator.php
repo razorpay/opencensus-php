@@ -336,6 +336,12 @@ class Validator extends Base\Validator
     {
         $merchant = $this->entity;
 
+        if ($merchant->merchantDetail->isSubmitted() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED);
+        }
+
         if ($merchant->isActivated() === true)
         {
             throw new Exception\BadRequestException(

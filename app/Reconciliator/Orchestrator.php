@@ -89,14 +89,6 @@ class Orchestrator extends Base\Core
         // Run validations and conversions on each file
         foreach ($this->allFilesDetails as $file => $fileDetails)
         {
-            $this->trace->info(
-                TraceCode::RECON_FILE_DETAILS,
-                [
-                    'message'      => 'File details of the file being orchestrated.',
-                    'file_details' => $fileDetails
-                ]
-            );
-
             $skipFile = $this->shouldSkipFile($fileDetails);
 
             if ($skipFile === true)
@@ -175,14 +167,6 @@ class Orchestrator extends Base\Core
 
         foreach ($this->allFilesDetails as $fileIndex => $fileDetails)
         {
-            $this->trace->info(
-                TraceCode::RECON_FILE_DETAILS,
-                [
-                    'message'      => 'File details of the file being orchestrated.',
-                    'file_details' => $fileDetails
-                ]
-            );
-
             $skipFile = $this->shouldSkipFile($fileDetails);
 
             if ($skipFile === true)
@@ -390,7 +374,7 @@ class Orchestrator extends Base\Core
             $spoutLib = true;
 
             // getting contents using spout library for xlsx
-            $sheetsContents = $this->converter->getRowsFromExcelSheetsSpout($fileDetails, $sheetNames);
+            $sheetsContents = $this->converter->getRowsFromExcelSheetsSpout($fileDetails, $sheetNames, $startRow);
         }
         else
         {

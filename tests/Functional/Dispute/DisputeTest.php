@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Dispute;
 
 use Mail;
+use RZP\Models\Dispute\Phase;
 use RZP\Models\Dispute\Entity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -190,6 +191,13 @@ class DisputeTest extends TestCase
         $testData['request']['content']['parent_id'] = $disputeParent->getId();
 
         $this->startTest($testData);
+    }
+
+    public function testDisputeCreateNonTransactionalPhaseDeductAtOnset()
+    {
+        $this->updateCreateTestData();
+
+        $this->startTest();
     }
 
     public function testDisputeCreateWithInvalidMerchantEmail()
@@ -519,6 +527,18 @@ class DisputeTest extends TestCase
         $testdata = $this->updateEditTestData($input);
 
         $testdata['request']['content'][Entity::ACCEPTED_AMOUNT] = 0;
+
+        $this->startTest($testdata);
+    }
+
+    public function testNonTransactionalDisputeInvalidClose()
+    {
+        $input = [
+            'amount'                => 10000,
+            'deduct_at_onset'       => 0,
+            'phase'                 => Phase::RETRIEVAL,
+        ];
+        $testdata = $this->updateEditTestData($input);
 
         $this->startTest($testdata);
     }

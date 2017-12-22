@@ -158,6 +158,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_TRANSFER_ATTEMPT_SOURCE_UPDATED          = 'FUND_TRANSFER_ATTEMPT_SOURCE_UPDATED';
 
     const MPESA_GATEWAY_PARAM_ARRAY                     = 'MPESA_GATEWAY_PARAM_ARRAY';
+    const INVALID_AUTH                                  = 'INVALID_AUTH';
 
     const GATEWAY_MULTIPLE_BANK_PAYMENT_IDS             = 'GATEWAY_MULTIPLE_BANK_PAYMENT_IDS';
     const MULTIPLE_TABLES_IN_VERIFY_RESPONSE            = 'MULTIPLE_TABLES_IN_VERIFY_RESPONSE';
@@ -451,6 +452,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_PAYMENT_VERIFY_RESPONSE           = 'GATEWAY_PAYMENT_VERIFY_RESPONSE';
     const GATEWAY_PAYMENT_DATA_PICKUP               = 'GATEWAY_PAYMENT_DATA_PICKUP';
     const GATEWAY_PAYMENT_STATUS_CHANGED            = 'GATEWAY_PAYMENT_STATUS_CHANGED';
+    const GATEWAY_RESPONSE_STATUS_FAILURE           = 'GATEWAY_RESPONSE_STATUS_FAILURE';
     const GATEWAY_PAYMENT_CALLBACK                  = 'GATEWAY_PAYMENT_CALLBACK';
     const GATEWAY_PAYMENT_S2S_CALLBACK              = 'GATEWAY_PAYMENT_S2S_CALLBACK';
     const GATEWAY_PAYMENT_TOPUP_REQUEST             = 'GATEWAY_PAYMENT_TOPUP_REQUEST';
@@ -540,6 +542,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VPA_CREATED                               = 'VPA_CREATED';
     const VPA_DELETE_REQUEST                        = 'VPA_DELETE_REQUEST';
     const VPA_DELETED                               = 'VPA_DELETED';
+
+    const GATEWAY_VALIDATE_VPA_REQUEST              = 'GATEWAY_VALIDATE_VPA_REQUEST';
+    const GATEWAY_VALIDATE_VPA_RESPONSE             = 'GATEWAY_VALIDATE_VPA_RESPONSE';
 
     const SCHEDULE_RESOLUTION_INITIATED             = 'SCHEDULE_RESOLUTION_INITIATED';
     const SCHEDULE_ANCHORED_RESOLUTION              = 'SCHEDULE_ANCHORED_RESOLUTION';
@@ -642,6 +647,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED    = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
 
     const NODAL_INTEGRATION_ERROR                   = 'NODAL_INTEGRATION_ERROR';
+    const REPORTING_SERVICE_API_REQUEST             = 'REPORTING_SERVICE_API_REQUEST';
+    const REPORTING_SERVICE_API_RESPONSE            = 'REPORTING_SERVICE_API_RESPONSE';
+    const REPORTING_INTEGRATION_ERROR               = 'REPORTING_INTEGRATION_ERROR';
 
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
     const QUEUE_INVALID_CONFIG                      = 'QUEUE_INVALID_CONFIG';
@@ -654,6 +662,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREDITS_TRANSACTION_FAILED                = 'CREDITS_TRANSACTION_FAILED';
     const REDIS_KEY_SET                             = 'REDIS_KEY_SET';
     const TERMINAL_CONFIG_FETCH_ERROR               = 'TERMINAL_CONFIG_FETCH_ERROR';
+    const PRICING_RULE_CONFIG_FETCH_ERROR           = 'PRICING_RULE_CONFIG_FETCH_ERROR';
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
@@ -709,6 +718,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_BEGIN_FILE_PARSING                  = 'RECON_BEGIN_FILE_PARSING';
     const RECON_END_FILE_PARSING                    = 'RECON_END_FILE_PARSING';
     const RECON_BATCH_CREATION_FAILED               = 'RECON_BATCH_CREATION_FAILED';
+    const RECON_UNPROCESSED_ROW                     = 'RECON_UNPROCESSED_ROW';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH           = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';

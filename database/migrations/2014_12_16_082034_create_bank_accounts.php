@@ -88,6 +88,10 @@ class CreateBankAccounts extends Migration
 
             $table->index(BankAccount::ACCOUNT_NUMBER);
 
+            $table->index(BankAccount::CREATED_AT);
+
+            $table->index(BankAccount::UPDATED_AT);
+
             $table->foreign(BankAccount::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)

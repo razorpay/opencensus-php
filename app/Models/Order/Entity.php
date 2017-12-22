@@ -72,6 +72,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::PARTIAL_PAYMENT => false,
+        self::RECEIPT         => null,
         self::ATTEMPTS        => 0,
         self::STATUS          => Status::CREATED,
         self::PAYMENT_CAPTURE => 0,

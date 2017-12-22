@@ -19,7 +19,7 @@ class IrctcRefundReport extends Mailable
 
     protected function addRecipients()
     {
-        $emails = explode(',', $this->data['emails']);
+        $emails = $this->data['emails'];
 
         $this->to($emails);
 

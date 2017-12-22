@@ -217,6 +217,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function getPhase()
+    {
+        return $this->getAttribute(self::PHASE);
+    }
+
     public function getExpiresOn()
     {
         return $this->getAttribute(self::EXPIRES_ON);
@@ -299,4 +304,12 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getStatus() === Status::WON);
     }
+
+    public function isNonTransactional(): bool
+    {
+        $nonTransactionalPhases = Phase::getNonTransactionalPhases();
+
+        return (in_array($this->getPhase(), $nonTransactionalPhases, true) === true);
+    }
+
 }

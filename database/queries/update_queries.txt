@@ -1314,3 +1314,57 @@ WHERE id IN ("7CUWjFDrILputM",
 # and not dec 2nd since we decided that dec 1st is not a holiday
 # PR #6353
 UPDATE transactions SET settled_at = 1512120600 WHERE id in ('97CzYt6fw69cUG','979Wc72UkquGLZ','979ZmERmVyDu09','979dE1nfnuFHRq','979kUCxPwRsEXD','979suVFJbvbLqD','97A2teUtaF44rT','97A4AzvsdLYjiM','97A9NtgZlb49AX','97AAFC1mxElovo','97AISGZyuEjdSY','97ANVtoWzAvjsi','97APtLm64YQYpO','97APUCXiaaS1rB','97AVhI22rZY7PE','97ATjYTmXTnNtP','97AUXfn341X04g','97AW43VXTUIy6c','97AWXHE7oE28VQ','97AZ8bufR57oJB','97AcR9d4j1CChV','97AfXDAQMMYGj6','97AjUIkaqIHtjx','97AoBrgyjxjRMK','97AnTzJMZVGqjN','97AoU8JSG5kPZr','97Apu6PE9tX3bO','97ArhB6eP8DcSy','97AwSjeuXujLVO','97Ayo1h8rg820N','97Az0kGHKxuhh9','97B03McSAKixPf','97B59IiOS9IkFZ','97BE5d09YKWyP2','97BJOynGMJn7n1','97BEWxQmUHoGqi','97BEMFauyWpQF6','97BFcXBQJ2ZMQE','97BIvYvR4NKrpW','97BNoHhdWRK6PZ','97BPCVKymuFT5Q','97BTH1NltSTaNh','97BUjSPbfEoVw4','97BUpu8D4L5O48','97BWNFk3R369pJ','97BYN8q4GIuJfW','97Bc3ePlc1Ilpw','97BciD8FnAWCuR','97BdP2CnR7xyB6','97BfM8E5LHTpYm','97BghQlanuu44T','97BgYMZCVPQDAJ','97BijFkygR9o3X','97BhkNplSDnDvJ','97BmMK7MwPnQCV','97BtFihzNRJe26','97Buh2wQAjaFgU','97Bz8NKGDdPo2u','97C10arvLbtowV','97CA7njDohj88e','97CGgLJtRGyhBI','97CK11NzbiAS8p','97CJ7TPJLpt0Hy','97CM6E5nhLbGFn','97CSbI4AvUWRu9','97CTjgsRgiSizf','97CTILfdKI2qIv','97CSmzW1xLOLWZ','97CUjMTqC4IDs2','97CV1FzEYIb4sO','97CaUayLW9P7Nx','97CeFl2UZV70AO','97Cf4iZKL1UZsS','97CgExCMHa5c86','97ChpSALRvX9eS','97CrAsWNcGicIo','97CyL8AHIvh15D','97D3ms80bYlIwG','97DKQVGJnzAcw4','97DFX30fI06TSN','97DHmHZnquG2NV','97DInzNST9Jc60','97DNDa3WKXJI1t','97DTiW0UIYFePQ','97DYZsHo85HnSa','97Dfuz63mBCTzO','97DiOB3gU9Rg0u','97Dp16GOpSjT5D','97DxV5bl1qmiEg','97DyMVacJ9N9ag','97E3CTVST5j30J','97E70SgHteK1Cl','97E79I7cEJsKk4','97E9njpk7S921X','97EANO6HmL0tmd','97EIjiARZogp9X','97ESyIOnEVAD1P','97EW9XgMW5yWpe','97EgdGB45QHJgV','97EseF47pyFqs6','97EsO0TgDM6wap','97Evoo0VWXslHN','97F3TeJAdN6iLT','97FL8PAAgvxL9h','97FP2ny8PetAvI','97FS7UZkDLXmAX','97FvRWOtZJ3lnm','97GG0Ct4yXUJMw','97GOlhR84ZsEpS','97GZsDjjSlLZGi','97GeFkZT0RJrhK','97GicbQZNsjxWn','97Goet5LWvNtbv','97H62u8hOcnPks','97HAcLiHCUUwtg','97HRHWLCGkvwJ1','97HrQ6emkuK4R5','97Hvq354o0gFxV','97I4MJc5hINpRI') limit 119;
+
+#upi icici refunds
+update refunds set status = 'processed', gateway_refunded = 1
+where id in ("8qgIGn6TpEyC5O","8fSjei6awy1Nh8","8yFGSVtzQQOAGE","8eiYGIrBjrH1wp","8ekZh1XDwaEaKP","8elBJwP3k5xjWv",
+             "8iS81AgHPXEXic","8hV5Sewi1Ig2On","8hAY4oVaqjGEQO","8pkKqYBDSaarwp","8owJ28nr0xVFMC","8oJfhH3aSWu0uX",
+             "8pZjrZjRIb1P2s","8pyH6we11DAwYU","8oEvV1bRfAfTWp","8pyGcQ0S8JtOec","8nwIpRD7QU4b0q","8pyIdF4zuNGbN3",
+             "8pyKaGx6aLV3r2","8pyILN3zdqgscs","8pjURIfS7ldK0F","8qlOHRniLKiFOB","8p258QhWogugGQ","8t1sIBHj88IltI",
+             "8plxeJUzBdnbun","8pX9y6P3IDOcO6","8rAi1cv2AoW39d","8phsNt0vrqCINp","8q9Vqk2dDXYusX","8qAln22PRBu8Sp",
+             "8zLPBnAYuNVxey","8rjdqEqmx05aXd","8rtRXjo8Yn1xQN","8s267eLTBbtDAi","8vMvceALaaJzJo","8sdbkgRo2kQEJy",
+             "8sww1qjIsx9Lst","8t1yZgEnznOk5u","8ti40guGc5MTtr","8tjOzk7hwmL8YQ","8wUXvngvB2WMmB","8tVsXW3UK2wb02",
+             "8uhNt1HJEcEkJU","8zME3vstYTJiOO","8vNpiXgMbXTVYe","8x5xxf1uvutamX","93VOITa4wrXwHX","8xURiwmm8TPhLV",
+             "8w8GBFxBiiZg0z","8w6bJkya3Wy16E","8vOCaliFy6ybrr","8vOfVutSSxZILN","8vmL2T7gv94sZD","8wCl5MWrvoInYU",
+             "8yuGpLxQ2PMx4c","8zMOjGeb4CjJyq","90vXYtrJf5kPWi","8zLaDKcGwIlV3V","8ywtRuGfpm4mt1","8xYge6dUXOMwrh",
+             "8y30tsCqhGAEO5","8yTEn6tdJS0QVQ","8yTEo7aLFn32z6","90GBrwgVviOogZ","8yUGdSs6qgWRYy","8yGhPN4WTToKof",
+             "8ywOUMLWS1rA3o","8ygn2tunFjQzxV","8yeyWwrAWDrjeu","8zJFcctZnJIwmO","8ydxWIjwIJslH6","8z05t3p78Fcn8C",
+             "8z1yDK3KfDedKy","8yyeiRZk6qtqW2","8zKNz5xqnAOBpU","8ywFFgeVelY9Aw","90uuNNztuGVx6v","8zMgDqpqm4yTkD",
+             "8zKAEKhBL5wHJR","91RoPdOoptYBEE","90AHtDvT2kK0Fz","91qIqr6wXmiHps","8zdeE4bPd1ezSW","91qMsRyXPFFfjP",
+             "91qLEEJTaQl1dh","90uaQuieRStJw3","92Eto1j4xLsuuc","90c1VGD2E84Rkg","92EsJx9gGFl702","92EslYFmvgXbvH",
+             "91j1Y4U3jYfQX5","92EqzBcW9lrhxn","92vxlpg9gFFkfy","91JDZp7qR14oZu","91JBEzT1r5YOSq","92vxGw7bEvgN7z",
+             "90uVnai6bhlOwK","90pRYuEGWFwCiB","91J9wx2SVdMkks","91JGAP3fBS3Ook","931vtNisgeZSxG","931yPo9HeWhpcF",
+             "931ycbASLcz9nU","931uMjzpFyb3Nx","9321E6F7jEBbZS","931vG6rF92iU4K","931z8oUIZvwwQ2","931vy9UuyJ3Zr4",
+             "931vK91eUFI8cy","931uwOa22NJBjg","931zXwHEoxZAre","931vQ756IMRzIJ","931uLbA6tWZPh4","931vZdHFTBriRp",
+             "931xFn2A2dxbwS","931x2qGuuIJ02q","931wcEtLbZrvPL","931yqhdqIfEEHZ","931u8eGQyXKrL0","92WAemxqcigSU6",
+             "931tmwGSFAJx6G","92vmMkC1wacSwL","92W2iyEU6MmPxI","931walJBOkLYC3","93QRygx5tu3SCX","9263yajizUcJE8",
+             "93QRsJqOQjuFfd","92W1PXNwYy0dgK","92W8JcBBTENtqI","9265abLMkP0HPG","92W5tTSHquCRcF","92W0eJLpVoFqL3",
+             "92vphjhb30Xfxz","92W71Ma6c5mB4s","928gWnFA1v8liX","92W9mUT9Zoaczq","92vw7filJxKWeG","92NzZ6aA3tdJZl",
+             "92Nz7JFzPyjJJv","928j3QozD6yU8l","92WAskAUtd9mJh","92vl4sjT3C8587","92VsCwoihdPcWb","92vuKtc3JA2UTS",
+             "92a1HKGunBROai","92a4GRVj06l1R0","92zAijGRr6eupI","93HxqWtJJDfCSR","93IUcmHSgHpi6E");
+
+#updates timeout refund for billdesk
+UPDATE billdesk SET RefundId = 'JSBI58482255041' WHERE id = 2971603;
+
+# We were told by Kotak that H2H won't work on 2nd Dec between 3pm and 10pm.
+# So, settling all the transactions which were supposed to be settled during this
+# time, at 2pm itself. More details in the PR #6371
+UPDATE transactions
+SET settled_at = 1512203400
+WHERE created_at < 1512201600
+  AND settled_at >= 1512207000
+  AND settled_at < 1512214200
+  AND on_hold = 0
+  AND settled = 0
+  AND (TYPE = 'payment'
+       OR TYPE = 'refund') LIMIT 5906
+
+# Update the settings timestamps to 2.0 Launch 7am IST
+UPDATE settings
+    SET created_at = 1505957400 WHERE created_at IS NULL;
+UPDATE settings
+    SET updated_at = 1505957400 WHERE updated_at IS NULL;
+
+UPDATE billdesk SET RefundId = 'LSBI58696359251' WHERE id = 3067096;
+
+UPDATE billdesk SET RefundId = 'LSCB58725353091' WHERE id = 3179575;

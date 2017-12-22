@@ -4,7 +4,6 @@ namespace RZP\Gateway\Netbanking\Hdfc\Mock;
 
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking;
-use RZP\Gateway\Paytm;
 
 class Server extends Base\Mock\Server
 {

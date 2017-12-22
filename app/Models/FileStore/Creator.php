@@ -179,7 +179,7 @@ class Creator extends Base\Core
     /**
      * Set the Content of File
      *
-     * @param string $content Content of file
+     * @param mixed $content Content of file
      *
      * @return Creator object
      */
