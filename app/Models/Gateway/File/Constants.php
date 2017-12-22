@@ -95,7 +95,7 @@ class Constants
         ],
 
         TYPE::REFUND_FAILED => [
-            self::UPI_ICICI => ['settlements@razorpay.com'],
+            self::UPI_ICICI => ['supportteam@razorpay.com'],
         ],
 
     ];
