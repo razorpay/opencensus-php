@@ -15,3 +15,4 @@ export EditMerchantInvoice from './EditMerchantInvoice';
 export AddDisputeReason from './AddDisputeReason';
 export TriggerDummyError from './TriggerDummyError';
 export IRCTC from './IRCTC';
+export VerifyPayment from './VerifyPayment';
