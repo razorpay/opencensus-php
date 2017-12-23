@@ -88,6 +88,7 @@ class CreateOrders extends Migration
             $table->index(Order::AUTHORIZED);
             $table->index(Order::AMOUNT);
             $table->index(Order::AMOUNT_PAID);
+            $table->index([Order::MERCHANT_ID, Order::CREATED_AT]);
 
             // Commented parts to be added incrementally
 

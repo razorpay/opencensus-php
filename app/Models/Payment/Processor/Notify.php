@@ -10,10 +10,8 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
-use RZP\Jobs\DispatchRouter;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Payment as PaymentMail;
-use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Models\Invoice\ViewDataSerializer;
 
 class Notify
@@ -21,9 +19,9 @@ class Notify
     /**
      * The minimum amount for a transaction to be considered risky
      * This is used to decide low and high value transactions and pick
-     * the correct slack channel. Currently set to INR 3000
+     * the correct slack channel. Currently set to INR 10000
      */
-    const MIN_RISK_AMOUNT = 300000;
+    const MIN_RISK_AMOUNT = 1000000;
 
     /**
      * This is the minimum risk rating for a merchant that prompts a
@@ -246,8 +244,6 @@ class Notify
         //
         try
         {
-            $this->dispatchInvoiceJobIfApplicable($event);
-
             $this->notifyViaSlack($event);
 
             $this->notifyViaMail($event);
@@ -610,21 +606,5 @@ class Notify
             return 'RZP\\Mail\\Invoice\\Payment\\' . $event;
         }
         return 'RZP\\Mail\\Payment\\' . studly_case($event);
-    }
-
-    /**
-     * Dispatches invoice job on payment capture event. One purpose for now is
-     * to update the pdf version of invoice with paid amount details.
-     *
-     * @param string $event
-     */
-    protected function dispatchInvoiceJobIfApplicable(string $event)
-    {
-        if ($event === Payment\Event::INVOICE_PAYMENT_CAPTURED)
-        {
-            $job = new InvoiceJob($this->mode, InvoiceJob::CAPTURED, $this->invoice->getId());
-
-            (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
-        }
     }
 }

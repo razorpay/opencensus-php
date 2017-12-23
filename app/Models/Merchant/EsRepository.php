@@ -12,6 +12,7 @@ use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Merchant\Detail\Status as DetailStatus;
 
 class EsRepository extends Base\EsRepository
 {
@@ -37,6 +38,8 @@ class EsRepository extends Base\EsRepository
         DetailEntity::MERCHANT_ID,
         DetailEntity::STEPS_FINISHED,
         DetailEntity::ACTIVATION_PROGRESS,
+        DetailEntity::ACTIVATION_STATUS,
+        DetailEntity::ARCHIVED_AT,
         DetailEntity::SUBMITTED_AT,
         DetailEntity::UPDATED_AT,
     ];
@@ -69,6 +72,16 @@ class EsRepository extends Base\EsRepository
         Entity::ACCOUNT_STATUS,
         Entity::SUB_ACCOUNTS,
     ];
+
+    /**
+     * By default we sort by descending created_at but in merchants listing case
+     * if query was done for pending accounts we sort by ascending submitted_at.
+     *
+     * TODO: This approach can be made better.
+     *
+     * @var boolean
+     */
+    protected $sortBySubmittedAtAsc = false;
 
     // --------------- Getters -----------------------------
 
@@ -112,9 +125,16 @@ class EsRepository extends Base\EsRepository
 
     public function buildQueryForAccountStatus(array & $query, string $value)
     {
-        // Used in few of filters below
-        $submittedAtAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::SUBMITTED_AT;
+        $activationStatusAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::ACTIVATION_STATUS;
 
+        //
+        // For different value of account status (Refer AccountStatus.php)
+        // we need to build query accordingly.
+        //
+        // E.g. for pending the logic is:
+        //      (activation_status = under_review) OR
+        //      (activation_status = needs_clarification AND archived_at IS NULL)
+        //
         switch ($value)
         {
             case AccountStatus::ALL:
@@ -142,7 +162,10 @@ class EsRepository extends Base\EsRepository
 
                 break;
 
-            case AccountStatus::PENDING:
+            // To be removed, for backward compatibility
+            case AccountStatus::PENDING_OLD:
+
+                $submittedAtAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::SUBMITTED_AT;
 
                 $this->addNotNullFilterForField($query, $submittedAtAttr);
 
@@ -152,7 +175,41 @@ class EsRepository extends Base\EsRepository
 
                 break;
 
+            case AccountStatus::PENDING:
+
+                $pendingQuery = [];
+
+                $clause1 = $this->getTermQuery($activationStatusAttr, DetailStatus::UNDER_REVIEW);
+                $clause2 = $this->getNeedsClarificationAndUnarchivedQuery();
+
+                $this->addShould($pendingQuery, $clause1);
+                $this->addShould($pendingQuery, $clause2);
+
+                $this->addMust($query, $pendingQuery);
+
+                $this->sortBySubmittedAtAsc = true;
+
+                break;
+
+            case AccountStatus::PENDING_UNDER_REVIEW:
+
+                $this->addMust($query, $this->getTermQuery($activationStatusAttr, DetailStatus::UNDER_REVIEW));
+
+                $this->sortBySubmittedAtAsc = true;
+
+                break;
+
+            case AccountStatus::PENDING_NEEDS_CLARIFICATION:
+
+                $this->addMust($query, $this->getNeedsClarificationAndUnarchivedQuery());
+
+                $this->sortBySubmittedAtAsc = true;
+
+                break;
+
             case AccountStatus::DEAD:
+
+                $submittedAtAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::SUBMITTED_AT;
 
                 $this->addNullFilterForField($query, $submittedAtAttr);
                 $this->addNullFilterForField($query, Entity::SUSPENDED_AT);
@@ -195,6 +252,34 @@ class EsRepository extends Base\EsRepository
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * In case of account_status being sent as any of pending variations, we
+     * set sortBySubmittedAtAsc as true and override the sort parameter of
+     * query building.
+     *
+     * @return array
+     */
+    public function getSortParameter(): array
+    {
+        if ($this->sortBySubmittedAtAsc === false)
+        {
+            return parent::getSortParameter();
+        }
+
+        $submittedAtAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::SUBMITTED_AT;
+
+        return [
+            Es::_SCORE => [
+                Es::ORDER => Es::DESC,
+            ],
+            $submittedAtAttr => [
+                Es::ORDER => Es::ASC,
+            ],
+        ];
+    }
+
+    /**
      * Adds filter query using GROUPS and ADMINS value in $params.
      *
      * Builds new bool.should clause for matching either admins and
@@ -225,5 +310,28 @@ class EsRepository extends Base\EsRepository
         {
             $this->addFilter($query, $aclQuery);
         }
+    }
+
+    /**
+     * Gets used in buildQueryForAccountStatus() method. Serves as query for
+     * account_status=pending_needs_clarification and one clause for
+     * account_status=pending.
+     *
+     * @return array
+     */
+    protected function getNeedsClarificationAndUnarchivedQuery(): array
+    {
+        $archivedAtAttr       = E::MERCHANT_DETAIL . '.' . DetailEntity::ARCHIVED_AT;
+        $activationStatusAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::ACTIVATION_STATUS;
+
+        $query = [];
+
+        $clause1 = $this->getTermQuery($activationStatusAttr, DetailStatus::NEEDS_CLARIFICATION);
+        $clause2 = $this->getExistsQueryForField($archivedAtAttr);
+
+        $this->addMust($query, $clause1);
+        $this->addMustNot($query, $clause2);
+
+        return $query;
     }
 }

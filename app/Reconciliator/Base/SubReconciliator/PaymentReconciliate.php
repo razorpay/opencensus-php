@@ -76,7 +76,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if (empty($rowDetails) === true)
         {
-            return;
+            return $this->handleUnprocessedRow($row);
         }
 
         $paymentId = $rowDetails[BaseReconciliate::PAYMENT_ID];
@@ -91,7 +91,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             {
                 $this->handleAlreadyReconciled($paymentId);
 
-                return;
+                return null;
             }
 
             // Increment the total count for the summary
@@ -172,9 +172,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function validatePaymentStatus($row)
     {
-        $reconPaymentStatus = $this->getPaymentStatus($row);
-
-        $paymentStatus = $this->payment->getStatus();
+        $reconPaymentStatus = $this->getReconPaymentStatus($row);
 
         //
         // In some cases the recon file contains failed payments,
@@ -182,19 +180,19 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         //
         if ($reconPaymentStatus === Payment\Status::FAILED)
         {
-            $apiSuccess = [Payment\Status::FAILED, Payment\Status::CREATED];
+            $isApiPaymentSuccess = $this->payment->hasBeenAuthorized();
 
-            if (in_array($paymentStatus, $apiSuccess, true) === false)
+            if ($isApiPaymentSuccess === true)
             {
                 //
-                // Recon status is failed, and apiSuccess is not created / failed
+                // Recon status is failed, and payment has been authorized.
                 // This would be an error, as there's a status mismatch.
                 //
 
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code' => TraceCode::RECON_CRITICAL_ALERT,
-                        'message'    => 'Recon status is failed, and apiSuccess is successful',
+                        'message'    => 'Recon status is failed, but authorized_at is set in API',
                         'payment_id' => $this->payment->getId(),
                         'gateway'    => get_called_class()
                     ]);
@@ -203,10 +201,20 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return false;
         }
 
-        if ($paymentStatus !== Payment\Status::FAILED)
+        //
+        // If payment status is authorized, captured or refunded, provided that recon status is not failed,
+        // we can safely return that the payment status is valid for reconciliation of row.
+        //
+
+        if ($this->payment->isFailed() === false)
         {
             return true;
         }
+
+        //
+        // In case the recon row's status field is a success, and api payment status is failed or created,
+        // we would need to run the flow below, where we try to authorize the payment forcefully or via verify.
+        //
 
         $this->trace->info(
             TraceCode::RECON_INFO,
@@ -225,8 +233,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @param array $row
      * @return null
      */
-    protected function getPaymentStatus(array $row)
+    protected function getReconPaymentStatus(array $row)
     {
+        //
+        // The return value of this method must be mapped to one of the statuses in Payment\Status
+        //
         return null;
     }
 

@@ -104,7 +104,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is unset so default root is used with default handle
-        $this->assertRegexp("/11111100[0-9]{9}$/", $vba['account_number']);
+        $this->assertRegexp("/11122200[0-9]{9}$/", $vba['account_number']);
 
         $this->fixtures->merchant->setHandle('hand');
 
@@ -118,7 +118,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is set, but numeric accounts can still be created
-        $this->assertRegexp("/11111100[0-9]{9}$/", $vba['account_number']);
+        $this->assertRegexp("/11122200[0-9]{9}$/", $vba['account_number']);
     }
 
     public function testCreateVirtualAccountOldFormat()
@@ -128,7 +128,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is not set so default root is used with given descriptor
-        $this->assertStringStartsWith('11111100', $vba['account_number']);
+        $this->assertStringStartsWith('11122200', $vba['account_number']);
 
         // With handle
         $this->fixtures->merchant->setHandle('hand');
@@ -155,7 +155,7 @@ class VirtualAccountTest extends TestCase
         // receivers[types][]=bank_account
         $response = $this->createVirtualAccount([]);
         $vba = $this->getLastEntity('bank_account', true);
-        $this->assertStringStartsWith('11111100', $vba['account_number']);
+        $this->assertStringStartsWith('11122200', $vba['account_number']);
 
         // Sending descriptor throws error, can't use with numeric
         // receivers[types][]=bank_account&receivers[bank_account][desriptor]=desc
@@ -182,7 +182,7 @@ class VirtualAccountTest extends TestCase
         // receivers[types][]=bank_account
         $response = $this->createVirtualAccount([]);
         $vba = $this->getLastEntity('bank_account', true);
-        $this->assertStringStartsWith('11111100', $vba['account_number']);
+        $this->assertStringStartsWith('11122200', $vba['account_number']);
 
         // Sending descriptor throws error, can't use with numeric
         // receivers[types][]=bank_account&receivers[bank_account][desriptor]=desc
@@ -225,6 +225,13 @@ class VirtualAccountTest extends TestCase
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is set so standard root is used with given handle
         $this->assertEquals("RAZRHAN10CHARDESC", $vba['account_number']);
+
+        // 10 char descriptors are also allowed with numeric
+        $response = $this->createVirtualAccount([], true, '0123456789');
+
+        $vba = $this->getLastEntity('bank_account', true);
+        // Shorter handle is set so special root is used with given descriptor
+        $this->assertEquals("11122290123456789", $vba['account_number']);
     }
 
     public function testCreateVirtualAccountWithIdenticalDescriptor()

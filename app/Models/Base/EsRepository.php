@@ -12,7 +12,10 @@ use RZP\Exception\ServerErrorException;
 
 class EsRepository extends \Razorpay\Spine\Repository
 {
-    use Base\Traits\Es\QueryBuilder;
+    use Base\Traits\Es\QueryBuilder
+    {
+        getSortParameter as public getDefaultSortParameter;
+    }
 
     // Different actions on ES document
     const CREATE           = 'create';
@@ -261,6 +264,11 @@ class EsRepository extends \Razorpay\Spine\Repository
 
     public function buildQueryAdditional(array & $query, array $params)
     {
+    }
+
+    public function getSortParameter(): array
+    {
+        return $this->getDefaultSortParameter();
     }
 
     /**
