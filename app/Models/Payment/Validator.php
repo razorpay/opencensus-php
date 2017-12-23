@@ -26,7 +26,7 @@ class Validator extends Base\Validator
         'amount'                     => 'required|integer',
         'currency'                   => 'required|string|size:3',
         'method'                     => 'required|string|custom',
-        'vpa'                        => 'required_if:method,upi|string|max:100|custom',
+        'vpa'                        => 'sometimes_if:method,upi|string|max:100|custom',
         'aadhaar'                    => 'required_if:method,aeps|array',
         'aadhaar.number'             => 'required_if:method,aeps|size:12|string',
         'aadhaar.fingerprint'        => 'required_if:method,aeps|max:999|string',
@@ -67,6 +67,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
+        Entity::VPA                  => 'sometimes|string|max:100',
         Entity::APPROVAL_CODE        => 'sometimes|string|max:6',
         Entity::REFERENCE1           => 'sometimes|string',
         Entity::REFERENCE2           => 'sometimes|string',
@@ -116,6 +117,7 @@ class Validator extends Base\Validator
         'test_success',
         'account_number',
         'upi_expiry_time',
+        'upi_vpa',
     ];
 
     protected function validateAccountNumber(array $input)
@@ -153,6 +155,20 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'upi is/are not required and should not be sent');
+        }
+    }
+
+    protected function validateUpiVpa(array $input)
+    {
+        if ((isset($input['_']['flow']) === false) or
+            ($input['_']['flow'] !== 'intent'))
+        {
+            if (($input[Entity::METHOD] === Method::UPI) and
+                (empty($input[Entity::VPA]) === true))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The vpa field is required when method is upi.');
+            }
         }
     }
 
@@ -212,6 +228,13 @@ class Validator extends Base\Validator
 
     protected function validateVpa($attribute, $vpa, $parameter)
     {
+        if ((isset($this->data['_']['flow']) === true) and
+            ($this->data['_']['flow'] === 'intent'))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The vpa field is not required and not shouldn\'t be sent.');
+        }
+
         $vpaParts = explode('@', $vpa);
 
         if ((count($vpaParts) !== 2) or

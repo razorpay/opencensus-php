@@ -831,15 +831,16 @@ class Gateway extends Base\Gateway
     protected function getLiveSecret()
     {
         //
-        // For SI terminals, there's no concept of
-        // master merchant ID or master key.
-        // Every terminal will have a different secret and
-        // hence we take it from the terminal and not from
-        // the config like we do for retail and corp.
+        // For SI terminals, the live_merchant_id2 is different
+        // for every terminal. This is different from retail terminals
+        // where live_merchant_id2 is the same.
+        // A secret is configured at live_merchant_id2 level. But,
+        // we asked them to configure the retail terminal's
+        // live_merchant_id2's secret to all our SI terminals too.
         //
         if ($this->isRecurringBanking() === true)
         {
-            return $this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET];
+            return $this->config['live_hash_secret'];
         }
 
         switch ($this->getLiveMerchantId2())

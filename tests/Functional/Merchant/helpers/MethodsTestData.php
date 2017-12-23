@@ -6,7 +6,6 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-
     'testGetPaymentMethodsRoute' => [
         'request' => [
             'url' => '/methods',
@@ -59,6 +58,62 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testRecurringCards' => [
+        'request' => [
+            'url' => '/methods',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'methods',
+                'card' => true,
+                'netbanking' => [
+                    'UTIB' => 'Axis Bank',
+                    'YESB' => 'Yes Bank',
+                ],
+                'wallet' => [
+                    'mobikwik' => true,
+                ],
+                'recurring' => [
+                    'card' => [
+                        'credit' => [
+                            'MasterCard',
+                            'Visa',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testRecurringNetbankingOnChargeAtWill' => [
+        'request' => [
+            'url' => '/methods',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'methods',
+                'card' => true,
+                'netbanking' => [
+                    'UTIB' => 'Axis Bank',
+                    'YESB' => 'Yes Bank',
+                ],
+                'wallet' => [
+                    'mobikwik' => true,
+                ],
+                'recurring' => [
+                    'card' => [
+                        'credit' => [
+                            'MasterCard',
+                            'Visa',
+                        ],
+                    ],
+                ],
             ],
         ],
     ],
