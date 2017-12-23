@@ -114,6 +114,14 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE);
         }
 
+        // Removing the below check for crypto merchants so that they can
+        // create new VAs with the same descriptor, using a different provider.
+        // Default provider for crypto merchants has already been changed.
+        if ($virtualAccount->merchant->isCategoryCryptocurrency() === true)
+        {
+            return;
+        }
+
         $existingVirtualAccounts = $this->repo->virtual_account
                                         ->findActiveByDescriptorAndMerchant(
                                             $virtualAccount->getDescriptor(),
