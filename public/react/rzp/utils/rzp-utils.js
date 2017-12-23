@@ -238,9 +238,10 @@ export const getIntervalCycle = (interval, period) => {
 export const getCustomerDisplayName = ({ name, contact, email }) => {
   let displayParts = [name, contact, email].filter(item => !isBlank(item));
 
-  return `${displayParts.join(' / ').replace('/ ', '(')}${
-    displayParts.length > 1 ? ')' : ''
-  }`;
+  return `${displayParts.join(' / ').replace('/ ', '(')}${displayParts.length >
+  1
+    ? ')'
+    : ''}`;
 };
 
 /**
@@ -311,4 +312,24 @@ export const getEMI = (principle, length, rate) => {
   var multiplier = Math.pow(1 + rate, length);
 
   return parseInt(principle * rate * multiplier / (multiplier - 1), 10);
+};
+
+export const arrayToCsv = array => {
+  /*
+   * Converts array of arrays to csv
+   */
+
+  return array
+    .reduce((result, item) => {
+      return result.concat(Array.isArray(item) ? item.join(',') : String(item));
+    }, [])
+    .join('\n');
+};
+
+export const arrayToCsvDataUrl = array => {
+  /*
+   * converts array of arrays to csv data url
+   */
+
+  return 'data:text/csv;utf-8,' + encodeURIComponent(arrayToCsv(array));
 };

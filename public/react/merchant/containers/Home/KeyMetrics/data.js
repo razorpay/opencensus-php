@@ -133,7 +133,6 @@ export const tabsMeta = {
       return {
         [`${this.name}Histogram`]: {
           agg_type: 'count',
-          filter_key: this.name,
           details: {
             index: 'payments',
             group_by: ['saved_card', `histogram_${breakdown}`],
@@ -151,6 +150,15 @@ export const tabsMeta = {
               lte: endTime,
             },
             saved_card: true,
+          },
+        ],
+        default: [
+          {
+            merchant_id: [merchantId],
+            created_at: {
+              gte: startTime,
+              lte: endTime,
+            },
           },
         ],
       };

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 
-export default ({ children }) => (
+export default ({ csvData }) => (
   <div className="more-options-button">
     <Dropdown className="dropdown-toggle">
       <DropdownTrigger>
@@ -12,7 +12,13 @@ export default ({ children }) => (
       <DropdownContent>
         <div className="dropdown-menu">
           <div className="option">View detailed report</div>
-          <div className="option">Export as CSV</div>
+          {!!csvData && (
+            <div className="option">
+              <a href={csvData.url} download={csvData.name}>
+                Export as CSV
+              </a>
+            </div>
+          )}
           <div className="option">Download as PNG</div>
         </div>
       </DropdownContent>

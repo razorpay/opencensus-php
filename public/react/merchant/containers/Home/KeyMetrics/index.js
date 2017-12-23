@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import numeral from 'numeral';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import moment from 'moment';
 
 import Amount from 'rzp/ui/Amount';
 import { paiseToRupees } from 'rzp/utils/rzp-utils';
@@ -11,6 +12,8 @@ import { humanReadableIndian } from 'rzp/utils/numerals';
 import { fetch } from 'merchant/modules/pokedex';
 import { tabsOrder, tabsMeta, getQuery, breakdownVals } from './data';
 import Panel from './Panel';
+
+const csvDateFormat = 'DoMMMYYYY';
 
 const TabContent = ({ name, value, isCurrency, title, isLoading }) => {
   /*
@@ -140,7 +143,7 @@ class KeyMetricsContainer extends Component {
         // Timeline data
         const histogram = resp.data[`${tabName}Histogram`];
         if (histogram) {
-          const { labels, datasets, aggregates } = getTimelineData({
+          const { labels, datasets, aggregates, csv } = getTimelineData({
             data: histogram.result,
             groupByColumnName: tabState.selectedGrouping,
             groupTitleMap: {},
@@ -150,6 +153,14 @@ class KeyMetricsContainer extends Component {
           tabState.data.histogram = { labels, datasets };
           tabState.lastUpdatedAt = histogram.last_updated_at;
           tabState.data.legendData = aggregates;
+          tabState.data.csv = {
+            name: `${tabName}-${startDate.format(
+              csvDateFormat
+            )}to${endDate.format(
+              csvDateFormat
+            )}-${tabState.selectedGrouping}-${tabState.selectedGrouping}.csv`,
+            url: csv,
+          };
         }
       });
 

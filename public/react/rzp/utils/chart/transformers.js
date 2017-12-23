@@ -1,6 +1,6 @@
 import moment from 'moment';
 
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { titleCase, arrayToCsvDataUrl } from 'rzp/utils/rzp-utils';
 import colors from './colors';
 import { groupBy } from '../pokedex';
 
@@ -126,16 +126,21 @@ export const getTimelineData = ({
    * Transforms data into the input format for chart.js
    */
   const timestamps = Object.keys(timelineGroupMap).sort((a, b) => {
-    return Number(a) - Number(b);
-  });
+      return Number(a) - Number(b);
+    }),
+    groupsCsvData = [];
+
+  let csvData = [['', ...timestamps]];
 
   timestamps.forEach((timestamp, index) => {
     timestamp = Number(timestamp);
 
-    groups.forEach(groupName => {
+    groups.forEach((groupName, index) => {
       const groupData = groupDatasetsMap[groupName].data,
         aggregateData = groupAggregatesMap[groupName],
-        yAxisVal = timelineGroupMap[timestamp][groupName];
+        yAxisVal = timelineGroupMap[timestamp][groupName],
+        groupCsvData =
+          groupsCsvData[index] || (groupsCsvData[index] = [groupName]);
 
       // `datasets` variable will get populated due to reference
       groupData.push({
@@ -144,15 +149,20 @@ export const getTimelineData = ({
       });
 
       aggregateData.value += yAxisVal;
+
+      groupCsvData.push(yAxisVal);
     });
 
     timestamps[index] = moment(timestamp);
   });
 
+  csvData = csvData.concat(groupsCsvData);
+
   return {
     labels: timestamps,
     datasets,
     aggregates,
+    csv: arrayToCsvDataUrl(csvData),
   };
 };
 
@@ -213,5 +223,6 @@ export const getPieData = ({
     labels,
     datasets: [datasets],
     legendData,
+    csv: arrayToCsvDataUrl([labels, datasets.data]),
   };
 };

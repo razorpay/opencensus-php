@@ -125,7 +125,7 @@ class Panel extends Component {
                 })}
               </BtnGroup>
               <div className="panel-action-item">
-                <MoreOptionsButton />
+                <MoreOptionsButton csvData={data.csv} />
               </div>
             </div>
           </div>
