@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Helpers\Reconciliator;
 
+use Mockery;
 use Illuminate\Http\UploadedFile;
 
 trait ReconTrait
@@ -54,5 +55,14 @@ trait ReconTrait
         $this->setMockRecon($recon, $gateway);
 
         return $recon;
+    }
+
+    protected function mockRecon($gateway = null)
+    {
+        $gateway = $gateway ?: $this->gateway;
+
+        $class = $this->app['gateway']->getReconClass($gateway);
+
+        return Mockery::mock($class, [])->makePartial();
     }
 }
