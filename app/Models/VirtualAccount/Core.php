@@ -63,7 +63,7 @@ class Core extends Base\Core
         {
             $options = $receivers[$receiverType] ?? [];
 
-            $this->validateReceiver($receiverType);
+            $this->validateReceiver($receiverType, $virtualAccount);
 
             $func = 'build' . studly_case($receiverType);
 
@@ -75,12 +75,12 @@ class Core extends Base\Core
         }
     }
 
-    protected function validateReceiver(string $receiver)
+    protected function validateReceiver(string $receiver, Entity $virtualAccount)
     {
         switch ($receiver)
         {
             case Receiver::BANK_ACCOUNT:
-                $this->verifyBankTransferEnabled();
+                $this->verifyBankTransferEnabled($virtualAccount->merchant);
                 break;
 
             case Receiver::QR_CODE:
@@ -139,9 +139,9 @@ class Core extends Base\Core
         }
     }
 
-    protected function verifyBankTransferEnabled()
+    protected function verifyBankTransferEnabled(Merchant $merchant)
     {
-        $merchantMethods = $this->getMethodsForMerchant($this->merchant);
+        $merchantMethods = $this->getMethodsForMerchant($merchant);
 
         if (($merchantMethods === null) or
             ($merchantMethods->isBankTransferEnabled() === false))
