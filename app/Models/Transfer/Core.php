@@ -334,6 +334,8 @@ class Core extends Base\Core
             $this->trace->traceException($e);
         }
 
+        $originPayment = null;
+
         if (($source instanceof Payment\Entity) === true)
         {
             $originPayment = $source;
