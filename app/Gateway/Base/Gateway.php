@@ -2,20 +2,22 @@
 
 namespace RZP\Gateway\Base;
 
+use App;
 use Crypt;
 use Cache;
-use RZP\Models\Card;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Models\Payment\Status;
-use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
-use RZP\Gateway\Utility;
-
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
-use App;
+
+use RZP\Exception;
+use RZP\Http\Route;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Payment;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Gateway\Utility;
+use RZP\Models\Payment\Status;
+use RZP\Constants\Entity as ConstantsEntity;
 
 class Gateway
 {
@@ -65,6 +67,8 @@ class Gateway
      */
     protected $trace;
 
+    protected $repo;
+
     /**
      * @var array
      */
@@ -101,6 +105,8 @@ class Gateway
      */
     protected $mode;
 
+    protected $env;
+
     /**
      * Denotes if the gateway is a mock
      * @var boolean
@@ -133,11 +139,13 @@ class Gateway
     /**
      * Api Route instance
      *
-     * @var RZP\Http\Route
+     * @var Route
      */
     protected $route;
 
     protected $terminal;
+
+    protected $gateway;
 
     /**
      * Laravel request class instance
@@ -179,6 +187,8 @@ class Gateway
         $this->route = $this->app['api.route'];
 
         $this->request = $this->app['request'];
+
+        $this->cache = $this->app['cache'];
     }
 
     public function authorize(array $input)
@@ -191,7 +201,9 @@ class Gateway
      * Handles gateway callback
      *
      * @param array $input
+     *
      * @return array|null
+     * @throws Exception\GatewayErrorException
      */
     public function callback(array $input)
     {
@@ -304,8 +316,10 @@ class Gateway
 
         $input = $verify->input;
 
-        if (($input['payment'][Payment\Entity::STATUS] === Payment\Status::FAILED) or
-            ($input['payment'][Payment\Entity::STATUS] === Payment\Status::CREATED))
+        // If payment status is either failed or created,
+        // this is an api failure
+        if (($input[ConstantsEntity::PAYMENT][Payment\Entity::STATUS] === Payment\Status::FAILED) or
+            ($input[ConstantsEntity::PAYMENT][Payment\Entity::STATUS] === Payment\Status::CREATED))
         {
             $verify->apiSuccess = false;
         }
@@ -329,6 +343,19 @@ class Gateway
                 'Data tampering found.', null, [
                     'expected' => $expectedPaymentId,
                     'actual'   => $actualPaymentId
+                ]);
+        }
+    }
+
+    protected function assertAmount($expectedAmount, $actualAmount)
+    {
+        if ($expectedAmount !== $actualAmount)
+        {
+            throw new Exception\LogicException(
+                'Amount tampering found.',
+                ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED, [
+                    'expected' => $expectedAmount,
+                    'actual'   => $actualAmount
                 ]);
         }
     }
@@ -393,8 +420,7 @@ class Gateway
                 [
                     'actual'    => $actual,
                     'generated' => $generated
-                ]
-            );
+                ]);
 
             throw new Exception\RuntimeException('Failed checksum verification');
         }
@@ -454,12 +480,12 @@ class Gateway
     {
         if (isset($request['options']) === false)
         {
-            $request['options'] = array();
+            $request['options'] = [];
         }
 
         if (isset($request['headers']) === false)
         {
-            $request['headers'] = array();
+            $request['headers'] = [];
         }
 
         $method = 'post';
@@ -512,7 +538,7 @@ class Gateway
         return $response;
     }
 
-    protected function validateResponse($response)
+    protected function validateResponse(\Requests_Response $response)
     {
         if (in_array($response->status_code, [503, 504], true) === true)
         {
@@ -711,6 +737,16 @@ class Gateway
         return $this->input['terminal']['gateway_secure_secret'];
     }
 
+    protected function isTestMode() : bool
+    {
+        return ($this->mode === Mode::TEST);
+    }
+
+    protected function isLiveMode() : bool
+    {
+        return ($this->mode === Mode::LIVE);
+    }
+
     protected function getNewGatewayPaymentEntity()
     {
         $class = $this->getGatewayNamespace() . '\Entity';
@@ -743,7 +779,7 @@ class Gateway
     {
         $ns = $this->getGatewayNamespace();
 
-        return constant($ns.'\Url::'.$type);
+        return constant($ns . '\Url::' . $type);
     }
 
     protected function getUrl($type = null)
@@ -865,7 +901,7 @@ class Gateway
         return $request;
     }
 
-    protected function getDynamicMerchantName($merchant)
+    protected function getDynamicMerchantName(Merchant\Entity $merchant, $limit = 20) : string
     {
         $label = $merchant->getBillingLabel();
 
@@ -876,7 +912,7 @@ class Gateway
             $label = "Razorpay Payments";
         }
 
-        return str_limit($label, 20);
+        return str_limit($label, $limit);
     }
 
     protected function verifyOtpAttempts($payment, $limit = null)
@@ -912,6 +948,30 @@ class Gateway
     protected function getCacheKey($input)
     {
         return $this->gateway . '_' . $input['payment']['id'];
+    }
+
+    protected function getProcessedRefunds()
+    {
+        $refunds =  $this->cache->get('GATEWAY_PROCESSED_REFUNDS');
+
+        if (empty($refunds) === true)
+        {
+            $refunds = [];
+        }
+
+        return $refunds;
+    }
+
+    protected function getUnprocessedRefunds()
+    {
+        $refunds = $this->cache->get('GATEWAY_UNPROCESSED_REFUNDS');
+
+        if (empty($refunds) === true)
+        {
+            $refunds = [];
+        }
+
+        return $refunds;
     }
 
     protected function isSecondRecurringPayment(array $input)

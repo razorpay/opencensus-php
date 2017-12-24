@@ -5,13 +5,11 @@ namespace RZP\Tests\Functional\Merchant;
 use Mail;
 use Queue;
 
-use RZP\Models\Batch\Header;
-use RZP\Jobs\Batch as BatchJob;
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Tests\Functional\Batch\BatchTestTrait;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Batch\Header;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
 
 class MerchantCreateTest extends TestCase
 {
@@ -158,7 +156,11 @@ class MerchantCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
         $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
         $this->startTest();
 
@@ -172,13 +174,34 @@ class MerchantCreateTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
         $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
         $this->startTest();
     }
 
+    private function createUserMerchantMapping($merchantId, $role)
+    {
+        $user = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantId,
+            'role'        => $role,
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        return $user;
+
+    }
     public function testCreateSubMerchantWithDuplicateEmail()
     {
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
         // Just to check email collisions are still errors
         $this->fixtures->create('merchant', ['id' => '10000000000002', 'email' => 'test2@razorpay.com']);
 
@@ -186,25 +209,35 @@ class MerchantCreateTest extends TestCase
 
         $this->ba->proxyAuth();
 
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+
         $this->startTest();
     }
 
     public function testCreateMarketplaceLinkedAccount()
     {
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
         $this->startTest();
     }
 
     public function testCreateLinkedAccountMaxPaymentLimit()
     {
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 6000]);
 
         $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
         $this->startTest();
     }
@@ -216,6 +249,8 @@ class MerchantCreateTest extends TestCase
                                     'id' => '10000000000002',
                                     'email' => 'test2@razorpay.com'
                                 ]);
+
+        $user = $this->createUserMerchantMapping('10000000000002', 'owner');
 
         // Define T+2 cycle for new merchant
         $schedule = [
@@ -233,6 +268,8 @@ class MerchantCreateTest extends TestCase
         $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000002');
 
         $this->ba->proxyAuth('rzp_test_10000000000002');
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
         $linkedAcc = $this->startTest();
 
@@ -289,7 +326,7 @@ class MerchantCreateTest extends TestCase
         return [
             [
                 Header::BUSINESS_NAME       => 'test 1',
-                Header::BANK_ACCOUNT_NUMBER => '111000',
+                Header::BANK_ACCOUNT_NUMBER => 'BANKACCNUMBEROF22CHARS',
                 Header::BANK_BRANCH_IFSC    => 'SBIN0007105',
                 Header::BANK_ACCOUNT_TYPE   => 'Current',
                 Header::BANK_ACCOUNT_NAME   => 'Test Bank Account 1',

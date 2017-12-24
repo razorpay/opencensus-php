@@ -30,7 +30,6 @@ return [
                 'customer_id' => 'cust_100000customer',
                 'method'      => 'fund_transfer',
                 'destination' => 'ba_1000000lcustba',
-                'service_tax' => 92,
                 'tax'         => 92,
                 'fees'        => 602,
                 'notes'       => [
@@ -59,7 +58,6 @@ return [
                 'customer_id' => 'cust_100000customer',
                 'method'      => 'fund_transfer',
                 'destination' => 'ba_1000000lcustba',
-                'service_tax' => 92,
                 'tax'         => 92,
                 'fees'        => 602,
                 'notes'       => []
@@ -87,7 +85,6 @@ return [
                 'customer_id' => 'cust_100000customer',
                 'method'      => 'fund_transfer',
                 'destination' => 'ba_1000000lcustba',
-                'service_tax' => 92,
                 'tax'         => 92,
                 'fees'        => 602,
                 'notes'       => []
@@ -225,7 +222,6 @@ return [
                 'customer_id' => 'cust_100000customer',
                 'destination' => 'fund_transfer',
                 'destination' => 'ba_1000000lcustba',
-                'service_tax' => 92,
                 'tax'         => 92,
                 'fees'        => 602,
                 'notes'       => [
@@ -288,7 +284,6 @@ return [
                 'customer_id' => 'cust_100000customer',
                 'destination' => 'fund_transfer',
                 'destination' => 'ba_1000000lcustba',
-                'service_tax' => 94,
                 'tax'         => 94,
                 'fees'        => 614,
                 'notes'       => [
@@ -325,6 +320,36 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT,
+        ],
+    ],
+
+    'testCreateBankAccountPayoutOnCardPayment' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payments/{id}/payout',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'customer_id' => 'cust_100000customer',
+                'method'      => 'fund_transfer',
+                'destination' => 'ba_1000000lcustba',
+                'notes'       => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT,
         ],
     ],
 

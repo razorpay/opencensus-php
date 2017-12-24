@@ -9,7 +9,11 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    const INVALID_IFSC_CODE_MESSAGE = 'Invalid IFSC Code';
+    const INVALID_IFSC_CODE_MESSAGE                     = 'Invalid IFSC Code';
+    const INVALID_STATUS_MESSAGE                        = 'Invalid status';
+    const INVALID_STATUS_CHANGE_MESSAGE                 = 'Invalid status change';
+    const INVALID_CLARIFICATION_MODE_MESSAGE            = 'Invalid clarification mode';
+    const INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE = 'Clarification mode should not be sent for this status';
 
     protected static $createRules = [
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
@@ -17,8 +21,8 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
         Entity::CONTACT_LANDLINE                => 'sometimes|numeric|digits_between:8,11',
         Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
-        Entity::BUSINESS_NAME                   => 'sometimes|max:255',
-        Entity::BUSINESS_DBA                    => 'sometimes|max:255',
+        Entity::BUSINESS_NAME                   => 'sometimes|string|max:255',
+        Entity::BUSINESS_DBA                    => 'sometimes|string|max:255',
         Entity::BUSINESS_WEBSITE                => 'sometimes|max:255|url',
         Entity::BUSINESS_INTERNATIONAL          => 'sometimes|in:0,1',
         Entity::BUSINESS_PAYMENTDETAILS         => 'sometimes|max:2000',
@@ -108,7 +112,7 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN                    => 'sometimes|alpha_num|max:15',
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
-        Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|alpha_num|between:5,20',
+        Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|alpha_num|between:5,22',
         Entity::BANK_ACCOUNT_NAME               => 'sometimes|alpha_space_num|max:40',
         Entity::BANK_ACCOUNT_TYPE               => 'sometimes|alpha_space|max:20',
         Entity::BANK_BRANCH                     => 'sometimes|max:255',
@@ -141,6 +145,33 @@ class Validator extends Base\Validator
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
         Entity::SUBMIT                          => 'sometimes|boolean',
+        Entity::ACTIVATION_STATUS               => 'sometimes|max:255',
+        Entity::CLARIFICATION_MODE              => 'sometimes|max:255',
+    ];
+
+    protected static $preSignupRules = [
+        Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
+        Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
+        Entity::ROLE                            => 'sometimes|numeric|digits_between:1,6',
+        Entity::DEPARTMENT                      => 'sometimes|numeric|digits_between:1,6',
+        Entity::BUSINESS_NAME                   => 'sometimes|max:255',
+        Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
+        Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
+    ];
+
+    protected static $archiveFormRules = [
+        Entity::ARCHIVE                         => 'required|boolean',
+    ];
+
+    protected static $activationStatusRules = [
+        Entity::ACTIVATION_STATUS               => 'required|string|max:255',
+        Entity::CLARIFICATION_MODE              => 'filled|string|max:255',
+        Entity::REJECTION_REASONS               => 'filled|array',
+    ];
+
+    protected static $activationStatusValidators = [
+        'activation_status',
+        'clarification_mode',
     ];
 
     /**
@@ -220,6 +251,50 @@ class Validator extends Base\Validator
         if (IFSC::validate($value) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_IFSC_CODE_MESSAGE);
+        }
+    }
+
+    public function validateActivationStatus(array $input)
+    {
+        $validActivationStatuses = array_keys(Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING);
+
+        if (in_array($input[Entity::ACTIVATION_STATUS], $validActivationStatuses, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_STATUS_MESSAGE);
+        }
+    }
+
+    public function validateClarificationMode(array $input)
+    {
+        if (empty($input[Entity::CLARIFICATION_MODE]) === true)
+        {
+            return;
+        }
+
+        if ($input[Entity::ACTIVATION_STATUS] !== Status::NEEDS_CLARIFICATION)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE);
+        }
+
+        $allowedClarificationModes = ClarificationMode::ALLOWED_CLARIFICATION_MODES;
+
+        if (in_array($input[Entity::CLARIFICATION_MODE], $allowedClarificationModes, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_CLARIFICATION_MODE_MESSAGE);
+        }
+    }
+
+    public function validateActivationStatusChange($currentStatus, string $newStatus)
+    {
+        if (empty($currentStatus) === true)
+        {
+            return;
+        }
+
+        if (in_array($newStatus, Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$currentStatus], true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_STATUS_CHANGE_MESSAGE);
         }
     }
 

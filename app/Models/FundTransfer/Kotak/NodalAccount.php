@@ -10,11 +10,13 @@ use Mail;
 use App;
 use RZP\Exception;
 use RZP\Mail\Settlement as SettlementMail;
-use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Models\FileStore;
 use RZP\Models\FundTransfer;
+use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundTransfer\Attempt\Type;
+use RZP\Models\FundTransfer\Base as NodalBase;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Constants\MailTags;
@@ -22,7 +24,7 @@ use RZP\Constants\Entity;
 use RZP\Constants\Mode;
 use RZP\Models\Transaction;
 
-class NodalAccount
+class NodalAccount extends NodalBase\NodalAccount
 {
     use FileHandlerTrait;
 
@@ -30,8 +32,6 @@ class NodalAccount
 
     protected static $nodalAccountNumber = '7911547334';
 
-    // RTGS if amount is more that 10L
-    const RTGS_AMOUNT = 1000000.00;
     // IMPS if amount is less that 1L
     const IMPS_AMOUNT = 100000.00;
 
@@ -41,6 +41,8 @@ class NodalAccount
 
     public function __construct()
     {
+        //parent::__construct();
+
         // Date format is DD/MM/YYYY in human representation
         $this->date = Carbon::today(Timezone::IST)->format('d/m/Y');
 
@@ -96,7 +98,7 @@ class NodalAccount
 
             $amount = $source->getAmount() / 100;
 
-            $type = $this->getPaymentType($ba, $amount, $entity->getSourceType());
+            $type = $this->getPaymentType($ba, $amount, $entity);
 
             $this->updateSummary($type, $amount);
 
@@ -156,7 +158,7 @@ class NodalAccount
 
             $totalAmount += $amount;
 
-            $type = $this->getPaymentType($ba, $amount, $attempt->getSourceType());
+            $type = $this->getPaymentType($ba, $amount, $attempt);
 
             $array = [
                 Headings::CLIENT_CODE             => 'RAZORNODAL',
@@ -164,6 +166,7 @@ class NodalAccount
                 Headings::PAYMENT_TYPE            => $type,
                 Headings::PAYMENT_REF_NO          => $paymentRefNo,
                 Headings::PAYMENT_DATE            => $this->date,
+                Headings::INSTRUMENT_DATE         => $this->date,
                 Headings::DR_AC_NO                => static::$nodalAccountNumber,
                 Headings::AMOUNT                  => (string) $amount,
                 Headings::BANK_CODE_INDICATOR     => 'M',
@@ -232,30 +235,36 @@ class NodalAccount
         return [$version, $paymentRefNo, $source];
     }
 
-    protected function getPaymentType(BankAccount\Entity $ba, $amount, string $sourceType)
+    protected function getPaymentType(BankAccount\Entity $ba, $amount, Attempt\Entity $attempt)
     {
+        // Settlements are not done via IMPS
+        if (($amount <= self::IMPS_AMOUNT) and
+            ($attempt->getSourceType() !== Type::SETTLEMENT))
+        {
+            $type = FundTransfer\Mode::IMPS;
+        }
+        else
+        {
+            // Check RTGS time and minimum
+            $type = $this->getTransferMode($amount);
+        }
+
+        // Mode will be present only for attempts of type Refund
+        if ($attempt->getMode() != null)
+        {
+            $type = $attempt->getMode();
+        }
+
         $ifsc = $ba->getIfscCode();
 
         $ifscFirstFour = substr($ifsc, 0, 4);
 
+        // For Kotak beneficiaries, none of the
+        // above logic matters, we only do IFT
         if (($ifscFirstFour === 'KKBK') or
             ($ifscFirstFour === 'VYSA'))
         {
-            $type = 'IFT';
-        }
-        else if (($amount >= self::RTGS_AMOUNT) and
-                 ($this->hour <= 14))
-        {
-            $type = 'RTGS';
-        }
-        else if (($amount <= self::IMPS_AMOUNT) and
-                 ($sourceType !== Entity::SETTLEMENT))
-        {
-            $type = 'IMPS';
-        }
-        else
-        {
-            $type = 'NEFT';
+            $type = FundTransfer\Mode::IFT;
         }
 
         return $type;
@@ -363,7 +372,10 @@ class NodalAccount
 
         $data = compact('amounts', 'count');
 
-        $data['file'] = $this->getFullFilePath($fileName);
+        $data['file_data'] = [
+            'file_path'  => $this->getFullFilePath($fileName),
+            'file_name'  => $fileName,
+        ];
 
         $kotakPayoutMail = new SettlementMail\KotakPayout($data);
 

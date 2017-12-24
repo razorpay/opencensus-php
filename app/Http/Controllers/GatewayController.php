@@ -10,7 +10,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Rule;
-use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Netbanking\Corporation;
@@ -97,14 +97,22 @@ class GatewayController extends Controller
         switch ($gateway)
         {
             // Standard Cases
-            case 'upi_mindgate':
-            case 'wallet_freecharge':
-            case 'billdesk':
+            case Gateway::UPI_MINDGATE:
+            case Gateway::WALLET_FREECHARGE:
+            case Gateway::BILLDESK:
+            case Gateway::NETBANKING_AXIS:
+            case Gateway::UPI_SBI:
+            case 'axis_corporate':
+                // TODO : Remove before prod merge. temporary hack for testing.
+                if ($gateway === 'axis_corporate')
+                {
+                    $gateway = Gateway::NETBANKING_AXIS;
+                }
                 $data = $this->processServerCallback($input, $gateway);
                 break;
 
             // Only logs the response
-            case 'wallet_olamoney':
+            case Gateway::WALLET_OLAMONEY:
                 break;
 
             //Special case because gateway is upi_mindgate
@@ -114,7 +122,7 @@ class GatewayController extends Controller
                 break;
 
             // Special case because we need the raw request body
-            case 'upi_icici':
+            case Gateway::UPI_ICICI:
                 $input = Request::getContent();
 
                 $data = $this->processServerCallback($input, $gateway);

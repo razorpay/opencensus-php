@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant;
+use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Base\Traits\NotesTrait;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -32,12 +33,15 @@ class Entity extends Base\PublicEntity
     const AMOUNT_REVERSED      = 'amount_reversed';
     const BANK_ACCOUNT_ID      = 'bank_account_id';
     const VPA                  = 'vpa';
+    const QR_CODE_ID           = 'qr_code_id';
     const CUSTOMER_ID          = 'customer_id';
     const NOTES                = 'notes';
 
     const RECEIVER_TYPES       = 'receiver_types';
     const RECEIVERS            = 'receivers';
+    const TYPES                = 'types';
     const BANK_ACCOUNT         = 'bank_account';
+    const NUMERIC              = 'numeric';
 
     const DELETED_AT           = 'deleted_at';
 
@@ -56,6 +60,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::STATUS,
         self::DESCRIPTION,
+        self::AMOUNT_EXPECTED,
         self::NOTES,
         self::AMOUNT_PAID,
         self::CUSTOMER_ID,
@@ -105,6 +110,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\BankAccount\Entity');
     }
 
+    public function qrCode()
+    {
+        return $this->belongsTo('RZP\Models\QrCode\Entity');
+    }
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
@@ -141,6 +151,11 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
     }
 
+    public function hasQrCode()
+    {
+        return ($this->isAttributeNotNull(self::QR_CODE_ID));
+    }
+
     public function hasCustomer()
     {
         return ($this->isAttributeNotNull(self::CUSTOMER_ID));
@@ -152,6 +167,11 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- Getters -----------------------------------------
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
 
     public function getAmountPaid()
     {
@@ -187,6 +207,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NAME);
     }
 
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
     public function getDescriptor()
     {
         return $this->getAttribute(self::DESCRIPTOR);
@@ -211,7 +236,25 @@ class Entity extends Base\PublicEntity
         return $receivers;
     }
 
+    public function getReceiverBuilder()
+    {
+        return new Receiver($this);
+    }
+
     // ----------------------- Setters -----------------------------------------
+
+    /**
+     * Post-processing, VA amount fields are to be updated.
+     * Status change is done inside incrementAmountPaid.
+     *
+     * @param Entity $bankTransfer
+     */
+    public function updateWithBankTransfer(BankTransfer\Entity $bankTransfer)
+    {
+        $this->incrementAmountPaid($bankTransfer->getAmount());
+
+        $this->incrementAmountReceived($bankTransfer->getAmount());
+    }
 
     public function setStatus(string $status)
     {

@@ -80,7 +80,7 @@ class TransferTest extends TestCase
         // When Transfer Fee = 0, zero pricing
         $this->assertEquals($transfer['amount'], $this->getBalance($this->linkedAccountId));
 
-        $this->checkTransferAndTxnRecords($transfer, ['fees' => 0, 'service_tax' => 0, 'tax' => 0]);
+        $this->checkTransferAndTxnRecords($transfer, ['fees' => 0, 'tax' => 0]);
 
         $this->checkPaymentAndTxnRecords($transfer);
     }
@@ -104,12 +104,92 @@ class TransferTest extends TestCase
         $txnData = [
             'amount'      => $transfer['amount'],
             'fee'         => $expectedFee,
-            'service_tax' => $tax,
             'tax'         => $tax,
-            'debit'       => $transfer['amount'] + $expectedFee
+            'debit'       => $transfer['amount'] + $expectedFee,
+            'credit_type' => 'default',
+            'fee_credits' => 0,
         ];
 
         $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
+    }
+
+    public function testTransferToAccountWithFeeCredits()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
+
+        $this->fixtures->create('credits', ['type' => 'fee', 'value' => 10000]);
+        $this->fixtures->merchant->editFeeCredits(10000, '10000000000000');
+
+        $transfer = $this->createTransfer('account');
+
+        $tax = 4;
+        $expectedFee = 20 + $tax;
+
+        $transferData = [
+            'fees'  => $expectedFee,
+            'tax'   => $tax
+        ];
+
+        $txnData = [
+            'amount'      => $transfer['amount'],
+            'fee'         => $expectedFee,
+            'tax'         => $tax,
+            'debit'       => $transfer['amount'],
+            'fee_credits' => $expectedFee,
+            'credit_type' => 'fee',
+        ];
+
+        $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(10000 - $expectedFee, $balance['fee_credits']);
+
+        $creditTransactions = $this->getEntities('credit_transaction', [], true);
+        $this->assertEquals($expectedFee, $creditTransactions['items'][0]['credits_used']);
+    }
+
+    public function testTransferToAccountWithAmountCredits()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
+
+        $this->fixtures->create('credits', ['type' => 'amount', 'value' => 10000]);
+        $this->fixtures->merchant->editCredits(10000, '10000000000000');
+
+        $transfer = $this->createTransfer('account');
+
+        //
+        // We just need to assert in this test that no fees were charged
+        // for transfer with amount credits. This same thing we do for transfer
+        // and txn entity.
+        //
+
+        $transferData = [
+            'fees' => 0,
+            'tax'  => 0,
+        ];
+
+        $txnData = [
+            'amount'      => $transfer['amount'],
+            'fee'         => 0,
+            'tax'         => 0,
+            'fee_credits' => 0,
+            'gratis'      => true,
+            'debit'       => $transfer['amount'],
+            'credit_type' => 'amount',
+        ];
+
+        $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(0, $balance['fee_credits']);
+        $this->assertEquals(9000, $balance['credits']);
+
+        $creditTransactions = $this->getEntities('credit_transaction', [], true);
+        $this->assertEquals(1000, $creditTransactions['items'][0]['credits_used']);
     }
 
     public function testLiveModeTransferToNonActivatedAccount()
@@ -197,7 +277,7 @@ class TransferTest extends TestCase
     {
         $transfer = $this->createTransfer('account');
 
-        $transferId = $this->fixtures->transfer->stripSign($transfer['id']);
+        $transferId = $this->fixtures->stripSign($transfer['id']);
 
         $transferPayment = $this->getEntities('payment', ['transfer_id' => $transferId], true)['items'][0];
 
@@ -516,7 +596,6 @@ class TransferTest extends TestCase
             'credit'        => 0,
             'settled'       => false,
             'fee'           => 0,
-            'service_tax'   => 0,
             'tax'           => 0,
         ];
 
@@ -551,7 +630,6 @@ class TransferTest extends TestCase
             'on_hold'       => $transfer['on_hold'],
             'settled'       => false,
             'fee'           => 0,
-            'service_tax'   => 0,
             'tax'           => 0,
         ];
 

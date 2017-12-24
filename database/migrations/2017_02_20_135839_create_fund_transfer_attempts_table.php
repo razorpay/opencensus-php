@@ -41,6 +41,9 @@ class CreateFundTransferAttemptsTable extends Migration
             $table->string(FundTransferAttempt::BANK_STATUS_CODE, 4)
                   ->nullable();
 
+            $table->char(FundTransferAttempt::MODE, 30)
+                  ->nullable();
+
             $table->string(FundTransferAttempt::STATUS);
 
             $table->string(FundTransferAttempt::UTR)

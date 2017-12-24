@@ -193,10 +193,6 @@ class CreatePayments extends Migration
                   ->unsigned()
                   ->nullable();
 
-            $table->integer(Payment::SERVICE_TAX)
-                  ->unsigned()
-                  ->nullable();
-
             $table->integer(Payment::TAX)
                   ->unsigned()
                   ->nullable();
@@ -226,6 +222,9 @@ class CreatePayments extends Migration
             $table->tinyInteger(Payment::DISPUTED)
                   ->default(0);
 
+            $table->string(Payment::RECURRING_TYPE)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);
@@ -253,6 +252,7 @@ class CreatePayments extends Migration
             $table->index(Payment::DISPUTED);
             $table->index(Payment::UPDATED_AT);
             $table->index(Payment::CAPTURED_AT);
+            $table->index([Payment::MERCHANT_ID, Payment::CREATED_AT]);
 
             $table->foreign(Payment::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

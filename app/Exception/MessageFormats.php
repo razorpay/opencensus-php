@@ -61,7 +61,7 @@ trait MessageFormats
         {
             $this->messageFormat = 'array';
 
-            $message = $this->handleMessageArray();
+            $message = $this->handleMessageArray($message);
         }
 
         return $message;
@@ -151,7 +151,6 @@ trait MessageFormats
             ($this->messageFormat !== 'string'))
         {
             list($field, $desc) = $this->getFirstPair();
-
         }
 
         $this->error = new Error($code, $desc, $field);
@@ -167,7 +166,7 @@ trait MessageFormats
 
         $pos2 = strrpos($className, 'Exception');
 
-        $category = substr($className, $pos+1, $pos2 - $pos - 1);
+        $category = substr($className, $pos + 1, $pos2 - $pos - 1);
 
         switch($category)
         {

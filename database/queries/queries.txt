@@ -345,7 +345,7 @@ ALTER TABLE bank_accounts
 ALTER TABLE bank_accounts
     ADD INDEX bank_accounts_deleted_at_index (deleted_at);
 
-UPDATE settlements s
+UPDATE settlements
     JOIN bank_accounts b ON s.merchant_id = b.merchant_id
     SET s.bank_account_id = b.id;
 
@@ -2428,6 +2428,11 @@ ALTER TABLE merchant_invoice
 ALTER TABLE merchants
     ADD COLUMN invoice_code CHAR(12) DEFAULT NULL AFTER category2;
 
+ALTER TABLE tokens
+   ADD COLUMN recurring_status VARCHAR(32) AFTER recurring,
+   ADD COLUMN recurring_failure_reason TEXT AFTER recurring_status,
+   ADD COLUMN max_amount INTEGER AFTER recurring_failure_reason;
+
 # Adding index on settlements.updated_at, refunds.updated_at, transactions.updated_at
 # Useful for Merchant analytics queries
 ALTER TABLE settlements
@@ -2444,6 +2449,14 @@ ALTER TABLE transfers
     ADD COLUMN recipient_settlement_id CHAR(14) AFTER transaction_id,
     ADD CONSTRAINT transfers_recipient_settlement_id_foreign FOREIGN KEY(recipient_settlement_id)
     REFERENCES settlements(id) ON DELETE RESTRICT;
+
+ALTER TABLE netbanking
+    ADD COLUMN si_token VARCHAR(255) DEFAULT NULL AFTER caps_payment_id,
+    ADD COLUMN si_status VARCHAR(255) DEFAULT NULL AFTER si_token,
+    ADD COLUMN si_message VARCHAR(255) DEFAULT NULL AFTER si_status;
+
+ALTER TABLE payments
+    ADD COLUMN recurring_type VARCHAR(255) DEFAULT NULL AFTER updated_at;
 
 ALTER TABLE subscriptions
     ADD COLUMN type TINYINT(1) UNSIGNED DEFAULT 0 AFTER customer_notify;
@@ -2489,6 +2502,13 @@ ALTER TABLE subscriptions
 ALTER TABLE line_items
     MODIFY COLUMN type VARCHAR(16) NOT NULL DEFAULT 'invoice';
 
+# Adding these columns, since reconciliation send us these data
+# which we need to pass in the refund file for Corporation bank
+ALTER TABLE netbanking
+    ADD COLUMN account_branch_code VARCHAR(255) AFTER account_number,
+    ADD COLUMN account_subtype VARCHAR(255) AFTER account_number,
+    ADD COLUMN account_type VARCHAR(255) AFTER account_number;
+
 # Make adjustment morph to entity optionally
 ALTER TABLE adjustment
     ADD COLUMN entity_type VARCHAR(100) AFTER merchant_id,
@@ -2524,6 +2544,240 @@ DELETE FROM bank_transfers
 # Makes invoices.user_id refer to users.id
 ALTER TABLE invoices
     ADD CONSTRAINT invoices_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT;
+
+ALTER TABLE schedules
+    MODIFY COLUMN `anchor` int(11);
+
+ALTER TABLE tokens
+    ADD COLUMN account_number VARCHAR(40) AFTER wallet,
+    ADD INDEX `tokens_account_number_index` (`account_number`);
+
+ALTER TABLE batches
+    ADD COLUMN sub_type VARCHAR(25) DEFAULT NULL AFTER type,
+    ADD COLUMN gateway VARCHAR(25) DEFAULT NULL AFTER sub_type,
+    ADD COLUMN failure_reason TEXT DEFAULT NULL AFTER gateway,
+    ADD COLUMN processing TINYINT(1) DEFAULT 0 AFTER failure_reason,
+    ADD INDEX batches_gateway_index (gateway);
+
+ALTER TABLE disputes
+    ADD COLUMN parent_id CHAR(14) DEFAULT NULL AFTER merchant_id,
+    ADD CONSTRAINT disputes_parent_id_foreign FOREIGN KEY (parent_id) REFERENCES disputes(id) ON DELETE RESTRICT;
+
+ALTER TABLE bank_accounts
+    MODIFY COLUMN beneficiary_name VARCHAR(120) NOT NULL after account_number;
+
+# Adds tpv coulumn to gateway file
+ALTER TABLE gateway_files
+    ADD COLUMN sub_type VARCHAR(25) DEFAULT NULL AFTER target;
+
+ALTER TABLE merchant_details
+	ADD marketplace_activation_status VARCHAR(30) DEFAULT NULL AFTER locked,
+	ADD virtual_accounts_activation_status VARCHAR(30) DEFAULT NULL AFTER marketplace_activation_status,
+	ADD subscriptions_activation_status VARCHAR(30) DEFAULT NULL AFTER virtual_accounts_activation_status;
+
+ALTER TABLE virtual_accounts
+    ADD COLUMN qr_code_id CHAR(14) DEFAULT NULL after bank_account_id;
+
+ALTER TABLE fund_transfer_attempts
+	ADD mode VARCHAR(30) DEFAULT NULL AFTER bank_status_code;
+
+ALTER TABLE gateway_files
+    ADD COLUMN processing TINYINT(1) NOT NULL DEFAULT 0 AFTER status;
+
+ALTER TABLE payments
+    DROP COLUMN service_tax;
+
+ALTER TABLE transactions
+    DROP COLUMN service_tax;
+
+ALTER TABLE settlements
+    DROP COLUMN service_tax;
+
+ALTER TABLE payouts
+    DROP COLUMN service_tax;
+
+ALTER TABLE transfers
+    DROP COLUMN service_tax;
+
+ALTER TABLE daily_settlements
+    DROP COLUMN service_tax;
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN payer_account varchar(40) NOT NULL;
+
+#
+# Makes amount field of items, line_items, invoices unsigned and not null in
+# consistence with payment, orders and other tables.
+#
+# Some new amount fields were added later with default null but now they should
+# be not null.
+#
+
+ALTER TABLE items
+    MODIFY COLUMN amount INT(11) UNSIGNED NOT NULL;
+
+ALTER TABLE line_items
+    MODIFY COLUMN amount INT(11) UNSIGNED NOT NULL,
+    MODIFY COLUMN gross_amount INT(11) UNSIGNED NOT NULL,
+    MODIFY COLUMN tax_amount INT(11) UNSIGNED NOT NULL,
+    MODIFY COLUMN net_amount INT(11) UNSIGNED NOT NULL;
+
+ALTER TABLE invoices
+    MODIFY COLUMN gross_amount INT(11) UNSIGNED DEFAULT NULL,
+    MODIFY COLUMN tax_amount INT(11) UNSIGNED DEFAULT NULL;
+
+# PR - 5730
+ALTER TABLE action_comments
+    ADD COLUMN entity_id CHAR(14) AFTER action_id,
+    ADD COLUMN entity_type VARCHAR(100) AFTER entity_id,
+    ADD COLUMN merchant_id CHAR(14) AFTER admin_id,
+    MODIFY COLUMN action_id CHAR(14),
+    MODIFY COLUMN admin_id CHAR(14);
+
+# PR - 5730
+ALTER TABLE action_state
+    ADD COLUMN entity_id CHAR(14) AFTER action_id,
+    ADD COLUMN entity_type VARCHAR(100) AFTER entity_id,
+    ADD COLUMN merchant_id CHAR(14) AFTER admin_id,
+    MODIFY COLUMN action_id CHAR(14),
+    MODIFY COLUMN admin_id CHAR(14);
+
+# Renaming and altering geo_ips
+RENAME TABLE `gio_ips` TO `geo_ips`;
+
+ALTER TABLE `geo_ips`
+    CHANGE `created_at` `created_at` INT(11) NULL DEFAULT NULL,
+    CHANGE `updated_at` `updated_at` INT(11) NULL DEFAULT NULL;
+
+ALTER TABLE batches
+    MODIFY COLUMN upload_file_url VARCHAR(255) NOT NULL,
+    MODIFY COLUMN download_file_url VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE gateway_rules ADD COLUMN comments TEXT DEFAULT NULL AFTER category2;
+
+ALTER TABLE orders ADD INDEX orders_receipt1_index (receipt(25));
+ALTER TABLE orders DROP INDEX orders_receipt_index;
+ALTER TABLE orders ADD INDEX orders_receipt_index(receipt(25));
+ALTER TABLE orders DROP INDEX orders_receipt1_index;
+
+ALTER TABLE `customers` ADD INDEX `customers_email_index` (`email`);
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN payer_account varchar(40) NULL;
+
+#changes adjustment amount to bigint
+ALTER TABLE adjustment
+    MODIFY COLUMN amount BIGINT SIGNED NOT NULL;
+
+# changes for UPI table
+ALTER TABLE upi
+    ADD COLUMN expiry_time MEDIUMINT SIGNED NULL;
+
+ALTER TABLE `merchant_details`
+    ADD COLUMN `activation_status` VARCHAR(30) DEFAULT NULL AFTER `locked`,
+    ADD COLUMN `clarification_mode` VARCHAR(15) DEFAULT NULL AFTER `activation_status`,
+    ADD COLUMN `archived_at` INT(11) DEFAULT NULL AFTER `clarification_mode`,
+    ADD INDEX `merchant_details_activation_status_index` (`activation_status`),
+    ADD INDEX `merchant_details_archived_at_index` (`archived_at`);
+
+ALTER TABLE batches
+    MODIFY COLUMN upload_file_url varchar(255) DEFAULT NULL;
+
+# Pre deployment of drop_batch_url_columns pr
+
+ALTER TABLE batches
+    DROP COLUMN download_file_url,
+    DROP COLUMN upload_file_url;
+
+ALTER TABLE orders
+    MODIFY COLUMN receipt VARCHAR(40), ALGORITHM=INPLACE;
+
+ALTER TABLE settings
+    ADD COLUMN created_at INT(11) DEFAULT NULL AFTER value,
+    ADD COLUMN updated_at INT(11) DEFAULT NULL AFTER created_at,
+    ADD INDEX settings_created_at_index (created_at),
+    ADD INDEX settings_updated_at_index (updated_at);
+
+ALTER TABLE axis
+    ADD INDEX axis_vpc_TransactionNo_index (vpc_TransactionNo),
+    ADD INDEX axis_vpc_ShopTransactionNo_index (vpc_ShopTransactionNo),
+    ADD INDEX axis_vpc_TxnResponseCode_index (vpc_TxnResponseCode);
+
+ALTER TABLE emi_plans
+    ADD INDEX emi_plans_bank_index (bank),
+    ADD INDEX emi_plans_network_index (network),
+    ADD INDEX emi_plans_subvention_index (subvention);
+
+ALTER TABLE bank_accounts
+    ADD INDEX bank_accounts_created_at_index (created_at),
+    ADD INDEX bank_accounts_updated_at_index (updated_at);
+
+ALTER TABLE wallet
+    ADD INDEX wallet_gateway_refund_id_index (gateway_refund_id),
+    ADD INDEX wallet_wallet_index (wallet);
+
+ALTER TABLE disputes
+    ADD INDEX disputes_amount_index (amount),
+    ADD INDEX disputes_updated_at_index (updated_at);
+
+ALTER TABLE dispute_reasons
+    ADD INDEX dispute_reasons_network_index (network);
+
+ALTER TABLE orders
+    ADD INDEX orders_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE payments
+    ADD INDEX payments_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE refunds
+    ADD INDEX refunds_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE transactions
+    ADD INDEX transactions_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE payouts
+    ADD INDEX payouts_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE settlements
+    ADD INDEX settlements_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE transfers
+    ADD INDEX transfers_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE reversals
+    ADD INDEX reversals_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE invoices
+    ADD INDEX invoices_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE items
+    ADD INDEX items_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE subscriptions
+    ADD INDEX subscriptions_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE plans
+    ADD INDEX plans_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE addons
+    ADD INDEX addons_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE virtual_accounts
+    ADD INDEX virtual_accounts_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE settings
+    MODIFY COLUMN created_at INT(11) NOT NULL,
+    MODIFY COLUMN updated_at INT(11) NOT NULL;
+
+ALTER TABLE upi
+    ADD COLUMN type VARCHAR(32) DEFAULT NULL AFTER action;
+
+ALTER TABLE `action_state_reasons`
+    ADD INDEX `action_state_reasons_reason_type_index` (`reason_type`);
+
+ALTER TABLE virtual_accounts
+    MODIFY COLUMN amount_received BIGINT UNSIGNED,
+    MODIFY COLUMN amount_paid BIGINT UNSIGNED;
 
 ALTER TABLE merchant_details
     ADD COLUMN technical_spoc_email VARCHAR(255) AFTER transaction_report_email,

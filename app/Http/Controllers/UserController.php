@@ -1,11 +1,21 @@
 <?php
 namespace RZP\Http\Controllers;
 
+use Razorpay\Api\Api;
 use Request;
 use ApiResponse;
 
 class UserController extends Controller
 {
+    public function registerUser()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->register($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function createUser()
     {
         $input = Request::all();
@@ -55,7 +65,7 @@ class UserController extends Controller
 
         $input['action'] = $action;
 
-        $data = $this->service()->updateUserMerchantMapping($id, $input);
+        $data = $this->service()->updateMerchantManageTeam($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -72,6 +82,47 @@ class UserController extends Controller
     public function getUser(string $id)
     {
         $data = $this->service()->get($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postUpgradeUserToMerchant()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->upgradeUserToMerchant($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postResendVerificationMail()
+    {
+        $data = $this->service()->resendVerificationMail();
+
+        return $data;
+    }
+
+    public function getUserByEmail(string $email)
+    {
+        $data = $this->service()->getUserByEmail($email);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postResetPasswordByEmail()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->postResetPassword($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postChangePasswordByToken()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->changePasswordByToken($input);
 
         return ApiResponse::json($data);
     }

@@ -11,9 +11,6 @@ use Razorpay\Trace\Logger as Trace;
 
 /**
  * Represents asynchronous Batch job.
- *
- * Handler:
- * - Calls the batch processor on given batch id.
  */
 class Batch extends Job implements ShouldQueue
 {
@@ -52,39 +49,57 @@ class Batch extends Job implements ShouldQueue
             $timeStarted = microtime(true);
 
             $this->trace->debug(
-                            TraceCode::BATCH_JOB_RECEIVED,
-                            [
-                                BatchModel\Entity::ID => $this->id,
-                            ]);
+                TraceCode::BATCH_JOB_RECEIVED,
+                [
+                    BatchModel\Entity::ID   => $this->id,
+                    BatchModel\Entity::TYPE => $batch->getType(),
+                ]);
 
-            $batch->getValidator()->validateNotProcessedAlready();
-
-            BatchModel\Processor\Base::get($batch)
-                                     ->setParams($this->params)
-                                     ->process();
+            $processor = BatchModel\Processor\Factory::get($batch)
+                                                     ->setParams($this->params)
+                                                     ->validateAndProcess();
 
             $timeTaken = microtime(true) - $timeStarted;
 
             $this->trace->debug(
-                            TraceCode::BATCH_JOB_HANDLED,
-                            [
-                                BatchModel\Entity::ID => $this->id,
-                                'time_taken'          => $timeTaken,
-                            ]);
+                TraceCode::BATCH_JOB_HANDLED,
+                [
+                    BatchModel\Entity::TYPE => $batch->getType(),
+                    BatchModel\Entity::ID   => $this->id,
+                    'time_taken'            => $timeTaken,
+                ]);
         }
         catch (\Throwable $e)
         {
+            //
+            // At this stage if any exception is thrown, then we just trace it
+            // and don't update the batch, as all the error handling is done in
+            // the processor class itself and any exception thrown should be
+            // ideally handled before this itself.
+            //
             $this->trace->traceException(
-                            $e,
-                            null,
-                            TraceCode::BATCH_JOB_ERROR,
-                            [
-                                BatchModel\Entity::ID => $this->id,
-                            ]);
+                $e,
+                null,
+                TraceCode::BATCH_JOB_ERROR,
+                [
+                    BatchModel\Entity::ID   => $this->id,
+                ]);
         }
-        finally
-        {
-            $this->delete();
-        }
+    }
+
+    /**
+     * @return string
+     */
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return array
+     */
+    public function getParams(): array
+    {
+        return $this->params;
     }
 }

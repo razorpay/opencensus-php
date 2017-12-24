@@ -4,6 +4,8 @@ namespace RZP\Models\Batch;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
+use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 
 class Header
 {
@@ -57,12 +59,75 @@ class Header
     const REFERENCE_ID        = 'reference_id';
     const ACCOUNT_ID          = 'account_id';
 
+    //
+    // Virtual Account Bulk Creation Headers
+    //
+    const VA_CUSTOMER_ID         = 'customer_id';
+    const VA_CUSTOMER_NAME       = 'customer_name';
+    const VA_CUSTOMER_CONTACT    = 'customer_contact';
+    const VA_CUSTOMER_EMAIL      = 'customer_email';
+    const VA_ID                  = 'virtual_account_id';
+    const VA_DESCRIPTOR          = 'virtual_account_descriptor';
+    const VA_DESCRIPTION         = 'virtual_account_description';
+    const VA_NOTES               = 'virtual_account_notes';
+    const VA_BANK_ACCOUNT_ID     = 'bank_account_id';
+    const VA_BANK_ACCOUNT_NAME   = 'bank_account_name';
+    const VA_BANK_ACCOUNT_NUMBER = 'bank_account_number';
+    const VA_BANK_ACCOUNT_IFSC   = 'bank_account_ifsc';
+
+    //
+    // HDFC Emandate Debit Response File Headers
+    //
+    const HDFC_EM_DEBIT_TRANSACTION_REF_NO  = HdfcEMDebitHeadings::TRANSACTION_REF_NO;
+    const HDFC_EM_DEBIT_MANDATE_ID          = HdfcEMDebitHeadings::MANDATE_ID;
+    const HDFC_EM_DEBIT_ACCOUNT_NO          = HdfcEMDebitHeadings::ACCOUNT_NO;
+    const HDFC_EM_DEBIT_AMOUNT              = HdfcEMDebitHeadings::AMOUNT;
+    const HDFC_EM_DEBIT_SIP_DATE            = HdfcEMDebitHeadings::SIP_DATE;
+    const HDFC_EM_DEBIT_FREQUENCY           = HdfcEMDebitHeadings::FREQUENCY;
+    const HDFC_EM_DEBIT_FROM_DATE           = HdfcEMDebitHeadings::FROM_DATE;
+    const HDFC_EM_DEBIT_TO_DATE             = HdfcEMDebitHeadings::TO_DATE;
+    const HDFC_EM_DEBIT_STATUS              = HdfcEMDebitHeadings::STATUS;
+    const HDFC_EM_DEBIT_REJECTION_REMARKS   = HdfcEMDebitHeadings::REJECTION_REMARKS;
+
+    //
+    // Bank Transfer Bulk Insertion
+    //
+    const PROVIDER       = 'provider';
+    const PAYER_NAME     = 'payer_name';
+    const PAYER_ACCOUNT  = 'payer_account';
+    const PAYER_IFSC     = 'payer_ifsc';
+    const PAYEE_ACCOUNT  = 'payee_account';
+    const PAYEE_IFSC     = 'payee_ifsc';
+    const MODE           = 'mode';
+    const UTR            = 'utr';
+    const TIME           = 'time';
+
+    //
+    // HDFC Emandate Register Response File Headers
+    //
+    const HDFC_EM_REGISTER_CLIENT_NAME                      = HdfcEMRegisterHeadings::CLIENT_NAME;
+    const HDFC_EM_REGISTER_MERCHANT_UNIQUE_REFERENCE_NO     = HdfcEMRegisterHeadings::MERCHANT_UNIQUE_REFERENCE_NO;
+    const HDFC_EM_REGISTER_CUSTOMER_NAME                    = HdfcEMRegisterHeadings::CUSTOMER_NAME ;
+    const HDFC_EM_REGISTER_ACCOUNT_NUMBER                   = HdfcEMRegisterHeadings::CUSTOMER_ACCOUNT_NUMBER;
+    const HDFC_EM_REGISTER_AMOUNT                           = HdfcEMRegisterHeadings::AMOUNT;
+    const HDFC_EM_REGISTER_AMOUNT_TYPE                      = HdfcEMRegisterHeadings::AMOUNT_TYPE;
+    const HDFC_EM_REGISTER_START_DATE                       = HdfcEMRegisterHeadings::START_DATE;
+    const HDFC_EM_REGISTER_END_DATE                         = HdfcEMRegisterHeadings::END_DATE;
+    const HDFC_EM_REGISTER_FREQUENCY                        = HdfcEMRegisterHeadings::FREQUENCY;
+    const HDFC_EM_REGISTER_MANDATE_SERIAL_NUMBER            = HdfcEMRegisterHeadings::MANDATE_SERIAL_NUMBER;
+    const HDFC_EM_REGISTER_MERCHANT_REQUEST_NO              = HdfcEMRegisterHeadings::MERCHANT_REQUEST_NO;
+    const HDFC_EM_REGISTER_MANDATE_ID                       = HdfcEMRegisterHeadings::MANDATE_ID;
+    const HDFC_EM_REGISTER_STATUS                           = HdfcEMRegisterHeadings::STATUS;
+    const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
+
     /**
-     * Input and output file headers per type.
+     * Input and output file headers
+     * The keys need to be like <type>_<sub-type>_<gateway>.
+     * Above is subject to those value not being empty.
      *
      * @var array
      */
-    const PER_TYPE = [
+    const HEADER_MAP = [
 
         Type::REFUND => [
 
@@ -180,19 +245,107 @@ class Header
                 self::ACCOUNT_ID,
             ],
         ],
+
+        Type::VIRTUAL_BANK_ACCOUNT => [
+            self::INPUT => [
+                self::VA_CUSTOMER_ID,
+                self::VA_CUSTOMER_NAME,
+                self::VA_CUSTOMER_CONTACT,
+                self::VA_CUSTOMER_EMAIL,
+                self::VA_DESCRIPTOR,
+                self::VA_DESCRIPTION,
+                self::VA_NOTES,
+            ],
+
+            self::OUTPUT => [
+                self::VA_CUSTOMER_ID,
+                self::VA_CUSTOMER_NAME,
+                self::VA_CUSTOMER_CONTACT,
+                self::VA_CUSTOMER_EMAIL,
+                self::VA_ID,
+                self::VA_BANK_ACCOUNT_ID,
+                self::VA_BANK_ACCOUNT_NAME,
+                self::VA_BANK_ACCOUNT_NUMBER,
+                self::VA_BANK_ACCOUNT_IFSC,
+            ],
+        ],
+
+        'emandate_debit_hdfc' => [
+            self::INPUT => [
+                self::HDFC_EM_DEBIT_TRANSACTION_REF_NO,
+                self::HDFC_EM_DEBIT_MANDATE_ID,
+                self::HDFC_EM_DEBIT_ACCOUNT_NO,
+                self::HDFC_EM_DEBIT_AMOUNT,
+                self::HDFC_EM_DEBIT_SIP_DATE,
+                self::HDFC_EM_DEBIT_FREQUENCY,
+                self::HDFC_EM_DEBIT_FROM_DATE,
+                self::HDFC_EM_DEBIT_TO_DATE,
+                self::HDFC_EM_DEBIT_STATUS,
+                self::HDFC_EM_DEBIT_REJECTION_REMARKS
+            ]
+        ],
+
+        Type::BANK_TRANSFER => [
+            self::INPUT => [
+                self::PROVIDER,
+                self::PAYER_NAME,
+                self::PAYER_ACCOUNT,
+                self::PAYER_IFSC,
+                self::PAYEE_ACCOUNT,
+                self::PAYEE_IFSC,
+                self::MODE,
+                self::UTR,
+                self::TIME,
+                self::AMOUNT,
+                self::DESCRIPTION,
+            ],
+            self::OUTPUT => [
+                self::PROVIDER,
+                self::PAYER_NAME,
+                self::PAYER_ACCOUNT,
+                self::PAYER_IFSC,
+                self::PAYEE_ACCOUNT,
+                self::PAYEE_IFSC,
+                self::MODE,
+                self::UTR,
+                self::TIME,
+                self::AMOUNT,
+                self::DESCRIPTION,
+                self::STATUS,
+            ],
+        ],
+
+        'emandate_register_hdfc' => [
+            self::INPUT => [
+                self::HDFC_EM_REGISTER_ACCOUNT_NUMBER,
+                self::HDFC_EM_REGISTER_MANDATE_ID,
+                self::HDFC_EM_REGISTER_STATUS,
+                self::HDFC_EM_REGISTER_REMARK,
+                self::HDFC_EM_REGISTER_CLIENT_NAME,
+                self::HDFC_EM_REGISTER_MERCHANT_UNIQUE_REFERENCE_NO,
+                self::HDFC_EM_REGISTER_CUSTOMER_NAME,
+                self::HDFC_EM_REGISTER_AMOUNT,
+                self::HDFC_EM_REGISTER_AMOUNT_TYPE,
+                self::HDFC_EM_REGISTER_START_DATE,
+                self::HDFC_EM_REGISTER_END_DATE,
+                self::HDFC_EM_REGISTER_FREQUENCY,
+                self::HDFC_EM_REGISTER_MANDATE_SERIAL_NUMBER,
+                self::HDFC_EM_REGISTER_MERCHANT_REQUEST_NO,
+            ],
+        ],
     ];
 
     /**
      * Validates headers of batch input file.
      *
-     * @param string $type
+     * @param string $headerKey
      * @param array  $keys
      *
      * @throws BadRequestException
      */
-    public static function validate(string $type, array $keys)
+    public static function validate(string $headerKey, array $keys)
     {
-        $expectedHeaders = self::PER_TYPE[$type][self::INPUT];
+        $expectedHeaders = self::HEADER_MAP[$headerKey][self::INPUT];
 
         $headersMissing = (bool) array_diff($expectedHeaders, $keys);
 
@@ -214,11 +367,11 @@ class Header
 
     public static function getInputHeadersForType(string $type): array
     {
-        return self::PER_TYPE[$type][self::INPUT];
+        return self::HEADER_MAP[$type][self::INPUT];
     }
 
     public static function getOutputHeadersForType(string $type): array
     {
-        return self::PER_TYPE[$type][self::OUTPUT];
+        return self::HEADER_MAP[$type][self::OUTPUT];
     }
 }

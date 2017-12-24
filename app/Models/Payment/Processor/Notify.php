@@ -3,27 +3,25 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
-use Carbon\Carbon;
 use Mail;
-use RZP\Constants\MailTags;
+use Carbon\Carbon;
+
 use RZP\Constants\Mode;
-use RZP\Jobs\Invoice\Job as InvoiceJob;
-use RZP\Jobs\DispatchRouter;
-use RZP\Mail\Payment as PaymentMail;
-use RZP\Models\Invoice;
-use RZP\Models\Invoice\ViewDataSerializer;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Mail\Payment as PaymentMail;
+use RZP\Models\Invoice\ViewDataSerializer;
 
 class Notify
 {
     /**
      * The minimum amount for a transaction to be considered risky
      * This is used to decide low and high value transactions and pick
-     * the correct slack channel. Currently set to INR 3000
+     * the correct slack channel. Currently set to INR 10000
      */
-    const MIN_RISK_AMOUNT = 300000;
+    const MIN_RISK_AMOUNT = 1000000;
 
     /**
      * This is the minimum risk rating for a merchant that prompts a
@@ -239,46 +237,26 @@ class Notify
      */
     public function trigger(string $event)
     {
-        /**
-         * This is wrapped in a try-catch block as this is not
-         * critical path for the payment operation
-         * We should continue running even if this raises critical error.
-         */
+        //
+        // This is wrapped in a try-catch block as this is not
+        // critical path for the payment operation.
+        // We should continue running even if this raises critical error.
+        //
         try
         {
-            // If it's invoice payment authorization:
-            // - dispatch a queue job which updates the invoice pdf,
-            // - if invoice's email_notify is set to '0', just return.
-
-            if ($event === Payment\Event::INVOICE_PAYMENT_AUTHORIZED)
-            {
-                $job = new InvoiceJob(
-                            $this->mode,
-                            InvoiceJob::AUTHORIZED,
-                            $this->invoice->getId());
-
-                (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
-            }
-
-            // Send out notification for Slack
             $this->notifyViaSlack($event);
 
-            // Mails use the entire template
-            // So there is no need to get separate data for each
             $this->notifyViaMail($event);
         }
         catch (\Exception $e)
         {
-            // Shouldn't fail for any reason
-            $this->trace->error(
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
                 TraceCode::PAYMENT_NOTIFY_FAILED,
                 [
                     'payment_id' => $this->payment->getPublicId(),
-                    'message'    => 'Payment Notify raised an exception'
-                ]
-            );
-
-            $this->trace->traceException($e);
+                ]);
         }
     }
 
@@ -569,6 +547,12 @@ class Notify
     protected function isMerchantMailEnabled(PaymentMail\Base $mailable)
     {
         $merchantTransactionReportEmail = $this->merchant->getTransactionReportEmail();
+
+        // Do not email linked accounts
+        if ($this->merchant->isLinkedAccount() === true)
+        {
+            return false;
+        }
 
         return (($this->isEnabled() === true) and
                 (empty($merchantTransactionReportEmail) === false));

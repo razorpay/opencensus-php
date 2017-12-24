@@ -3,22 +3,30 @@
 namespace RZP\Tests\Functional\Invoice;
 
 use Mail;
+use Queue;
 use Carbon\Carbon;
 
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Models\Invoice\Entity as InvoiceEntity;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
-use RZP\Mail\Invoice\Expired as InvoiceExpiredMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
 use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
 
-use RZP\Models\Base\UniqueIdEntity;
 
+/**
+ * @group dns-sensitive
+ */
 class InvoiceTest extends TestCase
 {
     use InvoiceTestTrait;
     use PaymentTrait;
+    use MocksDnsTrait;
 
     const TEST_INV_ID = 'inv_1000000invoice';
 
@@ -39,6 +47,8 @@ class InvoiceTest extends TestCase
         $this->fixtures->create('user', ['id' => '1000000000user']);
 
         $this->ba->privateAuth();
+
+        $this->setupMockDns();
     }
 
     // ------------------------------------------------------------
@@ -56,6 +66,11 @@ class InvoiceTest extends TestCase
         $this->assertEquals($customer['id'], $response['customer_id']);
         $this->assertEquals('10000000000000', $customer['merchant_id']);
 
+        // Asserts if order.receipt = invoice.receipt
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertEquals($response['receipt'], $order['receipt']);
+
         // Asserts if have assigned default value to invoices.date
         $this->assertNotNull($response['date']);
     }
@@ -67,6 +82,11 @@ class InvoiceTest extends TestCase
         $this->assertInvoiceCreateResponse($response);
 
         $this->assertEquals('cust_100000customer', $response['customer_id']);
+    }
+
+    public function testCreateInvoiceWithCustomerIdAndDetails()
+    {
+        $this->startTest();
     }
 
     public function testCreateInvoiceAndPay()
@@ -131,10 +151,17 @@ class InvoiceTest extends TestCase
 
     public function testCreateLinkWithInvalidSource()
     {
-        //
-        // TODO: (Low priority)
-        // - Fix Source::checkType and Type::validateType methods.
-        //
+        $this->startTest();
+    }
+
+    public function testCreateLinkWithoutReceipt()
+    {
+        $this->startTest();
+
+        // Assert corresponding order.receipt = null
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertNull($order['receipt']);
     }
 
     public function testCreateLinkWithTooLargeAmount()
@@ -144,7 +171,7 @@ class InvoiceTest extends TestCase
 
     public function testCreateLinkAndPayAndCheckCustomerDetailsInInvoice()
     {
-        $order = $this->createOrder();
+        $this->createOrder();
 
         $invoice = $this->fixtures->create('invoice',
             [
@@ -529,8 +556,7 @@ class InvoiceTest extends TestCase
                 'name'    => 'test 2',
                 'email'   => 'test2@razorpay.com',
                 'contact' => null,
-            ]
-        );
+            ]);
 
         $this->startTest();
 
@@ -541,10 +567,7 @@ class InvoiceTest extends TestCase
     {
         $this->createDraftInvoice();
 
-        $response = $this->startTest();
-
-        $customer = $this->getLastEntity('customer', true);
-        $this->assertEquals($customer['id'], $response['customer_id']);
+        $this->startTest();
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
@@ -554,6 +577,59 @@ class InvoiceTest extends TestCase
         $this->createDraftInvoice();
 
         $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceWithCustomerBillingAddressId()
+    {
+        $this->fixtures->create(
+            'address',
+            [
+                'id'      => '1000000address',
+                'type'    => 'billing_address',
+                'primary' => false,
+            ]);
+
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceWithInvalidCustomerBillingAddressId()
+    {
+        //
+        // Creates a different customer and it's billing_address and that follows
+        // attempt to update invoice's customer's biling address with this id(of
+        // another customer) which should fail.
+        //
+        $this->fixtures->create(
+            'customer',
+            [
+                'id'      => '100001customer',
+                'name'    => 'test 2',
+                'email'   => 'test2@razorpay.com',
+                'contact' => null,
+            ]);
+
+        $this->fixtures->create(
+            'address',
+            [
+                'id'        => '1000001address',
+                'entity_id' => '100001customer',
+                'type'      => 'billing_address',
+            ]);
+
+        $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceUnsetCustomer()
+    {
+        $this->createDraftInvoice();
+
+        $this->startTest();
+
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testUpdateIssuedInvoice()
@@ -2139,6 +2215,46 @@ class InvoiceTest extends TestCase
         $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
     }
 
+    /**
+     * Asserts that after invoice's payment, Invoice\Job's captured handler is
+     * triggered which updates the invoice's pdf version and does few other things.
+     *
+     * @return void
+     */
+    public function testInvoicePaidAndCapturedJobQueued()
+    {
+        Queue::fake();
+
+        $order   = $this->createOrder();
+        $invoice = $this->createIssuedInvoice();
+
+        // Makes a payment on the invoice
+        $payment             = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = 100000;
+
+        $expectedPaymentResponse = [
+            'status'     => 'captured',
+            'order_id'   => $order->getPublicId(),
+            'invoice_id' => $invoice->getPublicId(),
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+
+        // Now we assert that an invoice job was queued with proper even name
+        // and payload.
+        Queue::assertPushed(
+            InvoiceJob::class,
+            function($job) use ($invoice, $payment)
+            {
+                $this->assertEquals(Mode::TEST, $job->getMode());
+                $this->assertEquals(InvoiceJob::CAPTURED, $job->getEvent());
+                $this->assertEquals($invoice->getId(), $job->getId());
+
+                return true;
+            });
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function assertInvoiceCreateResponse(array $response)
@@ -2151,7 +2267,7 @@ class InvoiceTest extends TestCase
         $this->assertEquals($order['id'], $response['order_id']);
         $this->assertEquals($order['payment_capture'], true);
         $this->assertEquals($invoice['id'], 'inv_' . $lineItem['entity_id']);
-        $this->assertContains('http://dwarf.razorpay.dev/', $invoice['short_url']);
+        $this->assertContains('http://dwarf.razorpay.in/', $invoice['short_url']);
         $this->assertEquals('10000000000000', $invoice['merchant_id']);
     }
 

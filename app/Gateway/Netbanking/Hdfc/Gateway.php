@@ -12,8 +12,10 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
+use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as RHeadings;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
+use RZP\Models\Customer\Token;
 
 class Gateway extends Base\Gateway
 {
@@ -60,7 +62,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
-        $gatewayPayment = $this->createGatewayPaymentEntity($content);
+        $this->createGatewayPaymentEntity($content);
 
         $request = array(
             'url' => $this->getUrl('pay'),
@@ -72,13 +74,8 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    public function capture(array $input = array())
-    {
-        return parent::capture($input);
-    }
-
     /**
-     * We recieve callback from atom after bank net-banking
+     * We receive callback from atom after bank net-banking
      * transaction is complete
      *
      * @param  array $input
@@ -91,18 +88,22 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            $input['gateway']);
+
         $this->validateCallbackChecksum($input);
 
         $this->assertPaymentId($input['payment']['id'], $input['gateway']['MerchRefNo']);
+
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($input['gateway']['TxnAmount'], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         unset($input['gateway']['CheckSum']);
 
         // Unset date because format of date returned is different than what we sent
         unset($input['gateway']['Date']);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            $input['gateway']);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
@@ -130,6 +131,13 @@ class Gateway extends Base\Gateway
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
+        if ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        {
+            $recurringData = $this->getRecurringData();
+
+            $acquirerData = array_merge($acquirerData, $recurringData);
+        }
+
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
@@ -142,11 +150,27 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function reconcileRegisterEmandate(array $input)
+    {
+        parent::reconcileRegisterEmandate($input);
+
+        $response = (new EMandateRegistrationReconFile)->process($input);
+
+        return $response;
+    }
+
     protected function validateCallbackChecksum($input)
     {
-        $expectedChecksum = $this->getCallbackChecksum($input['gateway']);
+        $checksum = $input['gateway']['CheckSum'] ?? null;
 
-        $checksum = $input['gateway']['CheckSum'];
+        // For an emandate/recurring payment, HDFC doesn't send back checksum
+        if (($checksum === null) and
+            ($this->isFirstRecurringPayment($input) === true))
+        {
+            return;
+        }
+
+        $expectedChecksum = $this->getCallbackChecksum($input['gateway']);
 
         if ($checksum !== $expectedChecksum)
         {
@@ -157,13 +181,15 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentRequestData($input)
     {
-        $date = Carbon::now(Timezone::IST)->format('d/m/Y H:m:s');
+        // Using created_at because the exact same date value will need to be sent for verify request
+        $date = Carbon::createFromTimestamp($input['payment'][Payment\Entity::CREATED_AT], Timezone::IST)
+                      ->format('d/m/Y H:i:s');
 
-        $clientCode = $this->stripEmailSpecialChars($input['payment']['email']);
+        $clientCode = $this->getClientCode($input);
 
-        $data = array(
+        $data = [
             'ClientCode'        => $clientCode,
-            'MerchantCode'      => $input['terminal']['gateway_merchant_id'],
+            'MerchantCode'      => $this->getMerchantId(),
             'TxnCurrency'       => 'INR',
             'TxnAmount'         => $input['payment']['amount'] / 100,
             'TxnScAmount'       => '0',
@@ -171,21 +197,46 @@ class Gateway extends Base\Gateway
             'SuccessStaticFlag' => 'N',
             'FailureStaticFlag' => 'N',
             'Date'              => $date,
-        );
-
-        if ($this->mode === Mode::TEST)
-        {
-            $data['MerchantCode'] = 'RAZORPAY';
-        }
+        ];
 
         if ($input['merchant']->isTPVRequired())
         {
-            $data['ClientAccNum'] = $input['order']['account_number'];
+            $data[Fields::CLIENT_ACCOUNT_NUMBER] = $input['order']['account_number'];
 
             if ($this->mode === Mode::TEST)
             {
                 $data['MerchantCode'] = 'RAZORPAY1';
             }
+        }
+
+        if ($this->isFirstRecurringPayment($input) === true)
+        {
+            //
+            // For e mandate registration we have to
+            // add the following data in the same sequence
+            //
+
+            $emData = Fields::getEMandateRegistrationData($input['token']);
+
+            $startDate = Carbon::createFromTimestamp($emData[Fields::START_TIMESTAMP], Timezone::IST)
+                               ->format('dmY');
+
+            $endDate = Carbon::createFromTimestamp($emData[Fields::END_TIMESTAMP], Timezone::IST)
+                             ->format('dmY');
+
+            $data[Fields::CLIENT_ACCOUNT_NUMBER] = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
+            $data[Fields::REF1]                  = $emData[RHeadings::MERCHANT_UNIQUE_REFERENCE_NO];
+            $data[Fields::REF2]                  = $emData[RHeadings::CUSTOMER_NAME];
+            $data[Fields::REF3]                  = $emData[RHeadings::CUSTOMER_ACCOUNT_NUMBER];
+            $data[Fields::REF4]                  = $input['payment']['amount'] / 100;
+            $data[Fields::REF5]                  = $emData[RHeadings::FREQUENCY];
+            $data[Fields::REF6]                  = $emData[RHeadings::MANDATE_SERIAL_NUMBER];
+            $data[Fields::REF7]                  = $emData[RHeadings::MANDATE_ID];
+            $data[Fields::REF8]                  = $emData[RHeadings::MERCHANT_REQUEST_NO];
+            $data[Fields::REF9]                  = $emData[RHeadings::AMOUNT_TYPE];
+            $data[Fields::REF10]                 = $emData[RHeadings::CLIENT_NAME];
+            $data[Fields::DATE1]                 = $startDate;
+            $data[Fields::DATE2]                 = $endDate;
         }
 
         // Moving this as the HDFC TPV requires the ClientAccCode to
@@ -196,13 +247,27 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
+    protected function isFirstRecurringPayment(array $input): bool
+    {
+        return ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL);
+    }
+
     protected function sendPaymentVerifyRequest($verify)
     {
         $payment = $verify->payment;
         $input = $verify->input;
 
-        $date = Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)
-                      ->format('d/m/Y H:m:s');
+        // Throw exception as verify is not available for second recurring request
+        if (($input['payment']['recurring_type'] === Payment\RecurringType::AUTO) and
+            ($input['payment']['recurring'] === true))
+        {
+            throw new Exception\PaymentVerificationException(
+                [], $verify, Payment\Verify\Action::FINISH);
+        }
+
+        // Using created_at because this value must match the one that we sent in payment request
+        $date = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)
+                      ->format('d/m/Y H:i:s');
 
         // if (empty($payment['date']) === false)
         // {
@@ -215,15 +280,17 @@ class Gateway extends Base\Gateway
 
         if ($clientCode === 'client_code')
         {
-            $clientCode = $input['payment']['email'];
+            $clientCode = $this->getClientCode($input);
         }
 
+        $flgVerify = ($input['payment']['recurring'] === true) ? 'V' : 'Y';
+
         $content = array(
-            'MerchantCode'          => $input['terminal']['gateway_merchant_id'],
+            'MerchantCode'          => $this->getMerchantId(),
             'Date'                  => $date,
             'MerchantRefNo'         => $payment['payment_id'],
             'TransactionId'         => 'XTXTV01',
-            'FlgVerify'             => 'Y',
+            'FlgVerify'             => $flgVerify,
             'ClientCode'            => $clientCode,
             'SuccessStaticFlag'     => 'N',
             'FailureStaticFlag'     => 'N',
@@ -374,6 +441,15 @@ class Gateway extends Base\Gateway
         return $this->getHashOfString($str);
     }
 
+    protected function getClientCode(array $input): string
+    {
+        $email = $input['payment'][Payment\Entity::EMAIL] ?: Payment\Entity::DUMMY_EMAIL;
+
+        $clientCode = $this->stripEmailSpecialChars($email);
+
+        return $clientCode;
+    }
+
     protected function sendGatewayRequest($request)
     {
         $response = parent::sendGatewayRequest($request);
@@ -396,6 +472,18 @@ class Gateway extends Base\Gateway
         $secret = $this->getSecret();
 
         return (string) crc32($str . $secret);
+    }
+
+    protected function getMerchantId()
+    {
+        $merchantId = $this->getLiveMerchantId();
+
+        if ($this->mode === Mode::TEST)
+        {
+            $merchantId = $this->getTestMerchantId();
+        }
+
+        return $merchantId;
     }
 
     protected function getLiveSecret()
@@ -456,5 +544,14 @@ class Gateway extends Base\Gateway
     protected function stripEmailSpecialChars($email)
     {
         return preg_replace("/[^a-zA-Z0-9]+/", "", $email);
+    }
+
+    protected function getRecurringData()
+    {
+        $recurringData = [
+            Token\Entity::RECURRING_STATUS         => Token\RecurringStatus::INITIATED,
+        ];
+
+        return $recurringData;
     }
 }

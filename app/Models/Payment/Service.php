@@ -908,6 +908,8 @@ class Service extends Base\Service
         {
             if ($payment->shouldTimeout($now) === true)
             {
+                $this->repo->payment->lockForUpdateAndReload($payment);
+
                 try
                 {
                     $this->getNewProcessor($payment->merchant)
@@ -1206,7 +1208,14 @@ class Service extends Base\Service
      */
     protected function sendAuthorizedPaymentsReminderMail($merchantId, $payments, $final)
     {
-        $merchant = (new Merchant\Entity)->findOrFail($merchantId)->toArray();
+        $merchant = (new Merchant\Entity)->findOrFail($merchantId);
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
+
+        $merchant = $merchant->toArray();
 
         $data = compact('merchant', 'payments', 'final');
 

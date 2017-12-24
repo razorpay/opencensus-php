@@ -81,13 +81,12 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Returns true if a feature belongs to the list of features for
-     * which the merchant should be notified.
+     * Returns true if a feature is a public facing product feature
      *
      * @return bool
      */
-    public function isNotifyFeature(): bool
+    public function isProductFeature(): bool
     {
-        return (in_array($this->getName(), Constants::$notifyFeatures) === true);
+        return (in_array($this->getName(), Constants::PRODUCT_FEATURES) === true);
     }
 }

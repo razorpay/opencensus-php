@@ -92,6 +92,9 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $input['gateway']['vpc_MerchTxnRef']);
 
+        $expectedAmount = (string) $input['payment']['amount'];
+        $this->assertAmount($expectedAmount, $input['gateway']['vpc_Amount']);
+
         $gatewayPayment = $this->repo->findByMerchantTxnRefAndCommand(
             $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
 
@@ -388,18 +391,16 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        // We have confirmed with acquirer banks that these refunds have
-        // not been processed.
-        $unprocessedRefundIds = ['87eSYBPtCyTapi'];
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
 
-        if (in_array($input['refund']['id'], $unprocessedRefundIds) === true)
+        $processedRefunds = $this->getProcessedRefunds();
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
         {
             return false;
         }
 
-        $processedRefundIds = ['8COZiOoXPgf2cI'];
-
-        if (in_array($input['refund']['id'], $processedRefundIds) === true)
+        if (in_array($input['refund']['id'], $processedRefunds) === true)
         {
             return true;
         }
@@ -979,7 +980,7 @@ class Gateway extends Base\Gateway
             if (($authStatus === Payment\TwoFactorAuth::FAILED) or
                 ($authStatus === Payment\TwoFactorAuth::UNKNOWN))
             {
-                if ($input['merchant']['international'] === false)
+                if ($this->shouldRaiseErrorForInternationalMerchant($input))
                 {
                     $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED;
                 }
@@ -1187,5 +1188,10 @@ class Gateway extends Base\Gateway
         $cardExp = substr($input['card']['expiry_year'], 2,2) . $expiryMonth;
 
         return $cardExp;
+    }
+
+    protected function shouldRaiseErrorForInternationalMerchant(array $input) : bool
+    {
+        return ($input['merchant']['international'] === false);
     }
 }

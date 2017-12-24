@@ -2,20 +2,21 @@
 
 namespace RZP\Models\Pricing;
 
-use Carbon\Carbon;
+use Cache;
 
+use RZP\Exception;
 use RZP\Constants;
-use RZP\Error\ErrorCode;
+use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
-use RZP\Models\Transaction;
-use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
-use RZP\Models\Base;
-use RZP\Exception;
-use RZP\Models\Emi;
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
+
 use Razorpay\Trace\Logger as Trace;
 
 class FeeCalculator
@@ -29,6 +30,8 @@ class FeeCalculator
 
     // '29' - Karnataka's state code
     const RZP_GST_STATE_CODE = '29';
+
+    const RZP_STATE = 'karnataka';
 
     const CARD_TAX_CUT_OFF = 200000;
 
@@ -103,15 +106,19 @@ class FeeCalculator
 
         $totalFees = $fees + $totalTaxes;
 
-        if ($totalFees > $amount)
+        // In case the merchant is customer fee bearer, we shouldn't check $amount < $totalFees
+        if ($this->entity->merchant->isFeeBearerCustomer() === false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
-                Payment\Entity::AMOUNT,
-                [
-                    'amount' => $amount,
-                    'fees'   => $totalFees
-                ]);
+            if ($totalFees > $amount)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
+                    Payment\Entity::AMOUNT,
+                    [
+                        'amount' => $amount,
+                        'fees'   => $totalFees
+                    ]);
+            }
         }
 
         return [$totalFees, $totalTaxes];
@@ -156,10 +163,6 @@ class FeeCalculator
 
             $rules = $this->applyFiltersOnRules($pricing, $filters);
 
-            $this->trace->debug(
-                TraceCode::PRICING_RULE_SELECTION,
-                ['count' => count($rules)]);
-
             if ((count($rules) > 0) and
                 $entityName === Pricing\Feature::PAYMENT)
             {
@@ -182,10 +185,6 @@ class FeeCalculator
         $rules = $this->applyFiltersOnRules($pricing, $filters);
 
         $rulesCount = count($rules);
-
-        $this->trace->debug(
-            TraceCode::PRICING_RULE_SELECTION,
-            ['count' => $rulesCount]);
 
         //
         // If pricing for the feature is optional, no rules may exist
@@ -313,8 +312,11 @@ class FeeCalculator
         if (count($rules) === 0)
         {
             throw new Exception\LogicException(
-                'Invalid rule count: 0, Payment Id: ' . $payment->getId(),
-                ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT);
+                'Invalid rule count: 0, Merchant Id: ' . $payment->getMerchantId(),
+                ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
+                [
+                    'payment_id' => $payment->getId()
+                ]);
         }
 
         $subventionType = $payment->merchant->getSubventionType();
@@ -324,8 +326,11 @@ class FeeCalculator
         if ($rule === null)
         {
             throw new Exception\LogicException(
-                'Failed to find a valid pricing rule for the payment. ' .
-                'Payment id: ' . $payment->getId());
+                'Failed to find a valid pricing rule for the payment, Merchant Id: ' . $payment->getMerchantId(),
+                ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+                [
+                    'payment_id' => $payment->getId()
+                ]);
         }
 
         return $rule;
@@ -608,19 +613,47 @@ class FeeCalculator
     }
 
     protected function traceAllRules($rules)
-    {
-        // This is sending a lot of traces and so for
-        // this tracing is not required.
-        $array = [];
+     {
+         $verbose = $this->isVerboseLogEnabled();
 
-        foreach ($rules as $rule)
+         if ($verbose === false)
+         {
+             return;
+         }
+
+         // This is sending a lot of traces and so for
+         // this tracing is not required.
+         $array = [];
+
+         foreach ($rules as $rule)
+         {
+             $array[] = $rule->toArray();
+         }
+
+         $this->trace->info(
+             TraceCode::PAYMENT_PRICING_RULE_SELECTION,
+             ['rules' => $array]);
+    }
+
+    /**
+     * Verbosity of pricing rule selection logs are determined
+     * by a flag held in cache
+     * @return boolean verbosity flag
+     */
+    protected function isVerboseLogEnabled(): bool
+    {
+        try
         {
-            $array[] = $rule->toArray();
+            $verbose = (bool) Cache::get(ConfigKey::PRICING_RULE_SELECTION_LOG_VERBOSE);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::PRICING_RULE_CONFIG_FETCH_ERROR);
+
+            $verbose = false;
         }
 
-        $this->trace->debug(
-            TraceCode::PAYMENT_PRICING_RULE_SELECTION,
-            ['rules' => $array]);
+        return $verbose;
     }
 
     protected function createFeeBreakup($name, $percent, $amount, $pricingRuleId = null)
@@ -666,6 +699,8 @@ class FeeCalculator
     {
         $totalTaxes = 0;
 
+        $totalPercentage = 0;
+
         $taxComponents = $this->taxComponents;
 
         // Check if GST needs to be levied
@@ -688,15 +723,14 @@ class FeeCalculator
 
             $taxValue = ($eligibleForGst === true) ? $taxValue: 0;
 
-            $taxBreakup = $this->createFeeBreakup(
-                                            $name,
-                                            $percentage,
-                                            $taxValue);
-
-            $this->feesSplit->push($taxBreakup);
-
             $totalTaxes += $taxValue;
+
+            $totalPercentage += $percentage;
         }
+
+        $tax = $this->createFeeBreakup(FeeBreakupName::TAX, $totalPercentage, $totalTaxes);
+
+        $this->feesSplit->push($tax);
 
         return $totalTaxes;
     }
@@ -727,15 +761,30 @@ class FeeCalculator
 
     protected static function getTaxComponents(Merchant\Entity $merchant): array
     {
-        $merchantBusinessStateCode = $merchant->getBusinessStateCode();
+        $gstin = $merchant->getGstin();
 
-        return self::getTaxComponentsFromStateCode($merchantBusinessStateCode);
+        return self::getTaxComponentsForMerchant($gstin, $merchant);
     }
 
-    public static function getTaxComponentsFromStateCode(string $merchantGstStateCode = null): array
+    public static function getTaxComponentsForMerchant(string $gstin = null, Merchant\Entity $merchant): array
     {
-        // Intrastate gst
-        if (($merchantGstStateCode === null) or ($merchantGstStateCode === self::RZP_GST_STATE_CODE))
+        $merchantGstStateCode = Merchant\Detail\Entity::getStateCodeFromGstin($gstin);
+
+        $registeredBusinessStateCode = $merchant->getBusinessRegisteredState();
+
+        // Intrastate => Within Karnataka
+        $intraStateGstApplicable = true;
+
+        if (empty($merchantGstStateCode) === false)
+        {
+            $intraStateGstApplicable = ($merchantGstStateCode === self::RZP_GST_STATE_CODE);
+        }
+        else if (empty($registeredBusinessStateCode) === false)
+        {
+            $intraStateGstApplicable = (strtolower($registeredBusinessStateCode) === self::RZP_STATE);
+        }
+
+        if ($intraStateGstApplicable === true)
         {
             return [
                 FeeBreakupName::CGST => self::CGST_PERCENTAGE,

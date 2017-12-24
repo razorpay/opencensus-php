@@ -4,14 +4,13 @@ namespace RZP\Models\Payment\Verify;
 
 use App;
 use Config;
-
 use Carbon\Carbon;
-use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Verify extends Base\Core
 {
@@ -98,7 +97,7 @@ class Verify extends Base\Core
 
     /**
      * No of Timeout that should occur in GATEWAY_TIMEOUT_BUCKET_INTERVAL
-     * for gayeway to be blocked
+     * for gateway to be blocked
      */
     const GATEWAY_TIMEOUT_THRESHOLD = 10;
 
@@ -320,6 +319,7 @@ class Verify extends Base\Core
             Result::SUCCESS       => 0,
             Result::TIMEOUT       => 0,
             Result::ERROR         => 0,
+            Result::UNKNOWN       => 0,
         ];
 
         $notApplicable = 0;
@@ -332,6 +332,13 @@ class Verify extends Base\Core
 
         foreach ($lockedPayments as $payment)
         {
+            if ($this->isGatewayBlocked($payment->getGateway()) === true)
+            {
+                $notApplicable++;
+
+                continue;
+            }
+
             $verifyResult = $this->verifyPayment($payment, $filter);
 
             if ($verifyResult === Result::AUTHORIZED)
@@ -516,6 +523,13 @@ class Verify extends Base\Core
 
             $result = Result::ERROR;
 
+            $this->trace->info(
+                TraceCode::VERIFY_ACTION,
+                [
+                    'action' => $action
+                ]
+            );
+
             switch ($action)
             {
                 case Action::BLOCK:
@@ -528,6 +542,8 @@ class Verify extends Base\Core
                     break;
 
                 case Action::FINISH:
+                    $result = Result::UNKNOWN;
+
                     $this->updateVerifyBucket($payment, $filter, self::LAST);
 
                     break;
@@ -535,7 +551,22 @@ class Verify extends Base\Core
                 default:
                     $this->updateVerifyBucket($payment, $filter, self::NEXT);
 
-                    $result = $this->authorizePayment($merchant, $payment, $e);
+                    try
+                    {
+                        $result = $this->authorizePayment($merchant, $payment, $e);
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->traceException(
+                            $e,
+                            Trace::ERROR,
+                            TraceCode::GATEWAY_VERIFY_ERROR,
+                            [
+                                'payment_id' => $payment->getId()
+                            ]);
+
+                        $result = Result::ERROR;
+                    }
 
                     break;
             }
@@ -567,13 +598,6 @@ class Verify extends Base\Core
             // Just continue
             $result = Result::ERROR;
         }
-
-        $this->trace->info(
-            TraceCode::PAYMENT_VERIFY_RESULT,
-            [
-                'payment_id'    => $payment->getId(),
-                'result'        => $result,
-            ]);
 
         return $result;
     }
@@ -632,6 +656,18 @@ class Verify extends Base\Core
         }
 
         return array_merge($verifyDisabledGateways, $blockedGateways);
+    }
+
+    protected function isGatewayBlocked(string $gateway)
+    {
+        $blockedGateways = $this->getBlockedGateways();
+
+        if (in_array($gateway, $blockedGateways, true) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function authorizePayment(

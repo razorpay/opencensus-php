@@ -13,25 +13,48 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Netbanking\Axis\Emandate;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
+use RZP\Gateway\Netbanking\Axis\Emandate\EmandateTrait;
 
 class Gateway extends Base\Gateway
 {
+    use EmandateTrait;
+
     use AuthorizeFailed;
 
     protected $gateway = 'netbanking_axis';
 
     protected $bank = 'axis';
 
+    protected $bankingType = self::RETAIL;
+
+    protected $sortRequestContent = false;
+
     protected $map = [
-        RequestFields::AMOUNT             => 'amount',
-        RequestFields::MERCHANT_REFERENCE => 'payment_id',
-        RequestFields::ITEM_CODE          => 'reference1'
+        RequestFields::AMOUNT                   => Base\Entity::AMOUNT,
+        RequestFields::MERCHANT_REFERENCE       => Base\Entity::PAYMENT_ID,
+        RequestFields::ITEM_CODE                => Base\Entity::REFERENCE1,
+
+        // E Mandate specific fields
+        Emandate\RequestFields::CUSTOMER_REF_NO => Base\Entity::SI_TOKEN
     ];
+
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        parent::setGatewayParams($input, $mode, $terminal);
+
+        $this->setBankingTypeAndDomainType($input, $terminal);
+    }
 
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        if ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        {
+            return $this->authorizeRecurring($input);
+        }
 
         $content = $this->getPaymentRequestData($input);
 
@@ -39,11 +62,17 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($entityAttributes);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content, 'post');
 
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
+    }
+
+
+    protected function getActionType()
+    {
+        return $this->getBankingType() . '_' . $this->getAction();
     }
 
     public function callback(array $input)
@@ -51,13 +80,38 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
-                           ['gateway_response' => $input['gateway'],
-                            'payment_id'       => $input['payment']['id']]);
+                           [
+                                'gateway_response' => $input['gateway'],
+                                'payment_id'       => $input['payment']['id'],
+                            ]);
 
-        $content = $this->getDataFromResponse($input['gateway']);
+        if ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        {
+            return $this->handleEmandateCallback($input);
+        }
+
+        if ((isset($input['s2s']) === true) and ($input['s2s'] === true))
+        {
+            // Should occur only in corporate payments.
+            assert($this->isCorporateBanking() === true);
+
+            $content = $input['gateway'];
+        }
+        else
+        {
+            $content = $this->getDataFromEncryptedResponse($input['gateway'], $input);
+        }
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
+                            ['content'        => $content,
+                             'payment_id'     => $input['payment']['id']]);
 
         $this->assertPaymentId($input['payment']['id'],
              $content[RequestFields::MERCHANT_REFERENCE]);
+
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($content['AMT'], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
@@ -86,9 +140,18 @@ class Gateway extends Base\Gateway
 
     public function sendPaymentVerifyRequest(Verify $verify)
     {
+        $this->handleCorporatePaymentVerify($verify);
+
+        if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
+        {
+            $this->sendEmandatePaymentVerifyRequest($verify);
+
+            return;
+        }
+
         $content = $this->getPaymentVerifyData($verify);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content ,'post');
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -96,19 +159,41 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
+        $verify->verifyResponseContent = $this->parseResponseXml($response->body);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'response_body' => $response->body,
+                'content'       => $verify->verifyResponseContent,
                 'payment_id'    => $verify->input['payment']['id'],
                 'status_code'   => $response->status_code
             ]);
+    }
 
-        $verify->verifyResponseContent = $this->parseResponseXml($response->body);
+    public function handleCorporatePaymentVerify(Verify $verify)
+    {
+        // Corporate payment currently do not support verification
+        if ($this->isCorporateBanking() === true)
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                Payment\Verify\Action::FINISH);
+        }
     }
 
     public function verifyPayment(Verify $verify)
     {
+        if ($verify->input['payment'][Payment\Entity::RECURRING] === true)
+        {
+            $this->setEmandateVerifyStatus($verify);
+
+            $verify->payment = $this->saveEmandateVerifyResponseIfNeeded($verify);
+
+            return;
+        }
+
         $this->setVerifyStatus($verify);
 
         $verify->payment = $this->saveVerifyResponseIfNeeded($verify);
@@ -130,6 +215,16 @@ class Gateway extends Base\Gateway
         $verify->status = $status;
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
+
+        $this->setVerifyAmountMismatch($verify);
+    }
+
+    protected function setVerifyAmountMismatch(Verify $verify)
+    {
+        $paymentAmount = $this->formatAmount($verify->input['payment'][Payment\Entity::AMOUNT]);
+
+        $verify->amountMismatch =
+            ($paymentAmount !== $verify->verifyResponseContent[ResponseFields::VERIFY_RESPONSE_AMT]);
     }
 
     protected function checkGatewaySuccess(Verify $verify)
@@ -164,7 +259,7 @@ class Gateway extends Base\Gateway
             RequestFields::VERIFY_ITC      => $this->getVerifyItc($verify),
             RequestFields::VERIFY_PRN      => $input['payment']['id'],
             RequestFields::VERIFY_DATE     => $date,
-            RequestFields::VERIFY_AMT      => $input['payment']['amount'] / 100,
+            RequestFields::VERIFY_AMT      => $this->formatAmount($input['payment']['amount']),
         ];
 
         return $data;
@@ -249,7 +344,7 @@ class Gateway extends Base\Gateway
         return [
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
             RequestFields::ITEM_CODE          => $this->getMerchantId(),
-            RequestFields::AMOUNT             => $input['payment']['amount'] / 100
+            RequestFields::AMOUNT             => $this->formatAmount($input['payment']['amount']),
         ];
     }
 
@@ -271,7 +366,7 @@ class Gateway extends Base\Gateway
         return $queryString;
     }
 
-    protected function getDataFromResponse(array $encryptedResponse)
+    protected function getDataFromEncryptedResponse(array $encryptedResponse, array $input)
     {
         $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_STRING];
 
@@ -283,32 +378,48 @@ class Gateway extends Base\Gateway
 
         parse_str($decryptedString, $response);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $response);
-
-        $this->checkDecryptionFailure($encryptedString, $response);
+        $this->checkDecryptionFailure($encryptedString, $response, $input);
 
         return $response;
     }
 
-    protected function checkDecryptionFailure(string $encryptedString, array $content)
+    protected function checkDecryptionFailure(string $encryptedString, array $content, array $input)
     {
         if (empty($content) === true)
         {
             $this->trace->error(TraceCode::PAYMENT_CALLBACK_FAILURE,
                 ['encrypted_string' => $encryptedString,
-                 'payment_id'       => $content[ResponseFields::MERCHANT_REFERENCE]]);
+                 'payment_id'       => $input['payment']['id']]);
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR);
         }
     }
 
-
-    protected function checkResponseStatus(array $attrs, array $content)
+    /**
+     * The default success status is Y, but this method accepts the any possible success value to ensure usability
+     *
+     * @param array $attributes
+     * @param array $content
+     * @param string $status
+     * @throws Exception\GatewayErrorException
+     */
+    protected function checkResponseStatus(array $attributes, array $content, string $status = Status::YES)
     {
-        if ((isset($attrs['status']) === false) or
-            ($attrs['status'] !== Status::YES))
+        if ((isset($attributes[Base\Entity::STATUS]) === false) or
+            ($attributes[Base\Entity::STATUS] !== $status))
         {
+            // Check for and if pending throw that instead
+            if ($content[ResponseFields::FLAG] === Status::PENDING)
+            {
+                $this->trace->info(
+                    TraceCode::PAYMENT_CALLBACK_PENDING,
+                    ['content' => $content]);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION);
+            }
+
             $this->trace->error(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
                 ['content' => $content]);
@@ -321,9 +432,9 @@ class Gateway extends Base\Gateway
     protected function getCallbackAttributes(array $content)
     {
         return [
-            'received'        => true,
-            'status'          => $content[ResponseFields::STATUS],
-            'bank_payment_id' => $content[ResponseFields::BANK_REFERENCE_ID],
+            Base\Entity::RECEIVED        => true,
+            Base\Entity::STATUS          => $content[ResponseFields::PAID] ?? $content[ResponseFields::STATUS],
+            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REFERENCE_ID],
         ];
     }
 
@@ -430,21 +541,83 @@ class Gateway extends Base\Gateway
         return Status::getAuthSuccessStatus();
     }
 
+    protected function setBankingTypeAndDomainType($input, $terminal)
+    {
+        if (
+            (isset($input['payment']) === true) and
+            ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        )
+        {
+            $this->setBankingType(self::EMANDATE);
+        }
+
+        // Default banking type is retail
+        if ((isset($terminal) === true) and
+            ($terminal->isCorporate() === true))
+        {
+            $this->setBankingType(self::CORPORATE);
+        }
+
+         $this->setDomainType();
+    }
+    protected function setDomainType()
+    {
+        $this->domainType = $this->getBankingType();
+
+        //  $this->domainType = $this->getActionType() . '_' . $this->getMode();
+    }
+
     /*
      *  Overriding parent class's method
      */
     protected function getUrlDomain()
     {
-        $this->domainType = $this->action;
+        $urlClass = $this->getGatewayNamespace() . '\Url';
 
-        return parent::getUrlDomain();
+        $domainType = $this->domainType ?? $this->mode;
+
+        if ($domainType !== self::EMANDATE)
+        {
+            $domainType .= '_' . $this->action;
+        }
+        else
+        {
+            // For EMandate, add test and live domain URLs
+            $domainType .= '_' . $this->getMode();
+        }
+
+        $domainConstantName = strtoupper($domainType).'_DOMAIN';
+
+        return constant($urlClass . '::' .$domainConstantName);
+    }
+
+    protected function getRelativeUrl($type)
+    {
+        $ns = $this->getGatewayNamespace();
+
+        $domainType = strtoupper($this->domainType);
+
+        return constant($ns.'\Url::'.$type.'_'.$domainType);
     }
 
     public function getMerchantId()
     {
+        if ($this->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        {
+            return $this->getEmandateMerchantId();
+        }
+
         if ($this->mode === Mode::TEST)
         {
-            return $this->getTestMerchantId();
+            if ($this->isRetailBanking() === true)
+            {
+                return $this->getTestMerchantId();
+            }
+            else if ($this->isCorporateBanking() === true)
+            {
+                return $this->getTestMerchantIdCorporate();
+            }
+
         }
         else
         {
@@ -452,10 +625,51 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function getTestMerchantIdCorporate()
+    {
+        return $this->config['test_merchant_id_corporate'];
+    }
+
     protected function getLiveSecret()
     {
         assert ($this->mode === Mode::LIVE);
 
-        return $this->config['live_hash_secret'];
+        if ($this->isRetailBanking() === true)
+        {
+            return $this->config['live_hash_secret'];
+        }
+        else if ($this->isCorporateBanking() === true)
+        {
+            return $this->config['live_hash_secret_corporate'];
+        }
+    }
+
+    protected function getTestSecret()
+    {
+        assert ($this->mode === Mode::TEST);
+
+        if ($this->isRetailBanking() === true)
+        {
+            return $this->config['test_hash_secret'];
+        }
+        else if ($this->isCorporateBanking() === true)
+        {
+            return $this->config['test_hash_secret_corporate'];
+        }
+    }
+
+    public function getPaymentIdFromServerCallback($input)
+    {
+        return $input[ResponseFields::MERCHANT_REFERENCE];
+    }
+
+    /**
+     * Formats amount to 2 decimal places
+     * @param  int $amount amount in paise (100)
+     * @return string amount in Rupees
+     */
+    protected function formatAmount(int $amount): string
+    {
+        return $amount / 100;
     }
 }

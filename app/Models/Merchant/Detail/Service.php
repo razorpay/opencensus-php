@@ -4,7 +4,9 @@ namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Timezone;
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
@@ -14,6 +16,7 @@ use RZP\Models\Merchant\Detail\ValidationFields;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
 class Service extends Base\Service
 {
@@ -243,6 +246,51 @@ class Service extends Base\Service
         return $stepFinished;
     }
 
+    /**
+     * This function is used for archiving merchant activation form
+     * @param string $merchantId
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateActivationArchive(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $merchantDetails = (new Core)->updateActivationArchive($merchantDetails, $input, $admin);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
+    /**
+     * This function is used for updating merchant activation status
+     * @param string $merchantId
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateActivationStatus(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $merchantDetails = (new Core)->updateActivationStatus($merchantDetails, $input, $admin);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
+    public function getRejectionReasons()
+    {
+        return RejectionReasons::REJECTION_REASONS_MAPPING;
+    }
+
     public function getMerchantDetailsForAdmin() : array
     {
         // Formatting the data as required by the controller.
@@ -277,5 +325,150 @@ class Service extends Base\Service
                 $merchantDetails['steps_finished'] = $finishedSteps;
             }
         }
+    }
+
+    /**
+     * Will get pre signup details from merchant details.
+     *
+     * @return array
+     */
+    public function getPreSignupDetails(): array
+    {
+        // Referrer merchant doesn't need to complete presignup details.
+        $referrerMerchant = $this->merchant->getReferrer();
+
+        $presignupDetails = [];
+
+        // Referrer Merchant check for presignup details.
+        if ((empty($referrerMerchant) === true) or
+            (Merchant\Entity::verifyUniqueId($referrerMerchant, false) === 0))
+        {
+            $merchantDetails = $this->fetchMerchantDetails();
+
+            $presignupFields = Constants::PRE_SIGNUP_FIELDS;
+
+            foreach ($presignupFields as $key)
+            {
+                if (empty($merchantDetails[$key]) === false)
+                {
+                    $presignupDetails[$key] = (string) $merchantDetails[$key];
+                }
+                else
+                {
+                    $presignupDetails[$key] = null;
+                }
+            }
+        }
+
+        return $presignupDetails;
+    }
+
+    /**
+     * Edit pre signup details.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function editPreSignupDetails(array $input) : array
+    {
+        (new Validator)->validateInput('pre_signup', $input);
+
+        $this->saveMerchantDetails($input);
+
+        if (empty($input[Entity::BUSINESS_NAME]) === false)
+        {
+            $inputName = ['name' => $input[Entity::BUSINESS_NAME]];
+
+            // Validate Input Name for merchant
+            (new Merchant\Validator)->validateInput('edit_name', $inputName);
+
+            (new Merchant\Service)->edit($this->merchant->id, $inputName);
+
+            // Save User Information of contact name nad contact Email.
+
+            $user = $this->merchant->primaryOwner();
+
+            $userEditData['contact_mobile'] = $input['contact_mobile'] ?? null;
+            $userEditData['name']           = $input['contact_name'] ?? null;
+
+            $userEditData = array_filter($userEditData);
+
+            (new User\Validator)->validateInput('pre_signup', $userEditData);
+
+            (new User\Service)->edit($user->id, $userEditData);
+
+            // Dump data to zapier.
+
+            $zapierData = $this->getZapierData($this->merchant, $input);
+
+            (new Core)->postFormSubmissionToZapier($zapierData, 'signups');
+        }
+
+        $preSignupDetails = $this->getPreSignupDetails();
+
+        return $preSignupDetails;
+    }
+
+    private function getZapierData($merchant, $input)
+    {
+        // This is the same format we'll set in the google spreadsheet
+        $timestamp = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('j/m/Y');
+
+        $userName = $input['contact_name'] ?? '';
+
+        $phoneNumber = $input['contact_mobile'] ?? '';
+
+        $businessType = isset($input['business_type']) ?
+            Merchant\Detail\BusinessType::getType($input['business_type']) : '';
+
+        $transactionVolume = isset($input['transaction_volume']) ?
+            Merchant\Detail\TransactionVolume::getVolume($input['transaction_volume']) : '';
+
+        $role = isset($input['role']) ? Merchant\Detail\Role::getType($input['role']) : '';
+
+        $department = isset($input['department']) ? Merchant\Detail\Department::getType($input['department']) : '';
+
+        $referrer = $merchant->referrer ?? '';
+
+        return [
+            Entity::ID                 => $merchant->id,
+            Merchant\Entity::EMAIL     => $merchant->email,
+            Constants::INDIVIDUAL      => $userName,
+            Merchant\Entity::NAME      => $merchant->name,
+            Constants::REF             => $referrer,
+            Constants::TIMESTAMP       => $timestamp,
+            Constants::CONTACT         => $phoneNumber,
+            Entity::BUSINESS_TYPE      => $businessType,
+            Entity::TRANSACTION_VOLUME => $transactionVolume,
+            Entity::ROLE               => $role,
+            Entity::DEPARTMENT         => $department,
+        ];
+    }
+
+    /**
+     * This function is used to get zapier data for activation
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
+    public function getActivationZapierData(Merchant\Entity $merchant): array
+    {
+        $date = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('j/m/Y');
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        return [
+            Constants::DATE          => $date,
+            Merchant\Entity::ID      => $merchant->id,
+            Merchant\Entity::EMAIL   => $merchant->email,
+            Merchant\Entity::NAME    => $merchant->name,
+            Entity::CONTACT_NAME     => $merchantDetails->contact_name,
+            Entity::BUSINESS_NAME    => $merchantDetails->business_name,
+            Entity::BUSINESS_DBA     => $merchantDetails->business_dba,
+            Entity::BUSINESS_WEBSITE => $merchantDetails->business_website,
+            Constants::REF           => $merchant->referrer,
+        ];
     }
 }

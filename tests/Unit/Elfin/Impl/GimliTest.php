@@ -26,7 +26,7 @@ class GimliTest extends TestCase
     {
         $url = 'https://www.duckduckgo.com';
 
-        $expectedUrl = 'http://gimli.razorpay.dev/v1/shorten';
+        $expectedUrl = 'http://gimli.razorpay.in/v1/shorten';
         $expectedHeaders = [
             'Content-Type' => 'application/json',
             'x-signature'  => '27041f5973ceb1d6aea57fb4827865e8f56316e8',
@@ -44,7 +44,7 @@ class GimliTest extends TestCase
                         [
                             'id' => 'something',
                             'url' => $url,
-                            'hash' => 'http://dwarf.razorpay.dev/xyz',
+                            'hash' => 'http://dwarf.razorpay.in/xyz',
                             'comment' => null,
                             'clicks' => 2,
                             'created_at' => time(),
@@ -53,6 +53,6 @@ class GimliTest extends TestCase
 
         $shortUrl = $this->gimli->shorten($url);
 
-        $this->assertContains('http://dwarf.razorpay.dev/', $shortUrl);
+        $this->assertContains('http://dwarf.razorpay.in/', $shortUrl);
     }
 }

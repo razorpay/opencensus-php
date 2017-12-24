@@ -53,9 +53,16 @@ class Service extends Base\Service
 
     public function getMerchantPricingPlans()
     {
-        $pricingPlans = $this->repo->pricing->getMerchantPricingPlans();
+        $pricingPlans = $this->repo->pricing->getMerchantPricingPlansSummary();
 
-        return $pricingPlans->toArrayMultiplePlansPublic();
+        $pricingPlans->map(function ($plan)
+        {
+            $plan->rules_count = (int) $plan->rules_count;
+
+            return $plan;
+        });
+
+        return $pricingPlans->toArray();
     }
 
     public function getGatewayPricingPlans()
@@ -85,13 +92,6 @@ class Service extends Base\Service
         }
     }
 
-    public function replacePricingPlanRule($input)
-    {
-        $this->core->checkPlanId($id);
-
-        $this->replacePlanRule($ruleId);
-    }
-
     public function deletePricingPlan($input)
     {
         ;
@@ -114,5 +114,4 @@ class Service extends Base\Service
 
         return $networks;
     }
-
 }

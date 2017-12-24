@@ -10,11 +10,16 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use RZP\Models\Base;
+use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\State\Reason;
+use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Admin\Admin\Entity as AdminEntity;
+use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
@@ -49,12 +54,18 @@ class Core extends Base\Core
             {
                 $this->markSubmitted($merchantDetails);
 
+                $activationStatusData = [
+                    Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
+                ];
+
+                $this->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
+
                 $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
             }
 
-            $response = $this->createResponse($merchantDetails);
-
             $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
+
+            $response = $this->createResponse($merchantDetails);
 
             $activationProgress = $response['verification']['activation_progress'];
 
@@ -159,7 +170,7 @@ class Core extends Base\Core
 
         $zapierData = $this->activationZapierData($customer, $merchant);
 
-        $this->postFormSubmissionToZapier($zapierData);
+        $this->postFormSubmissionToZapier($zapierData, 'submissions');
     }
 
     protected function activationZapierData(array $customer, Merchant\Entity $merchant)
@@ -174,14 +185,14 @@ class Core extends Base\Core
         return $customer;
     }
 
-    protected function postFormSubmissionToZapier($data)
+    public function postFormSubmissionToZapier($data, $zapierAction)
     {
         if (Config::get('zapier.mock'))
         {
             return;
         }
 
-        $url = Config::get('zapier.submissions');
+        $url = Config::get('zapier.' . $zapierAction);
 
         $request = [
             'url'     => $url,
@@ -241,6 +252,125 @@ class Core extends Base\Core
     }
 
     /**
+     * This function is used for archiving merchant activation form
+     * @param Entity $merchantDetails
+     * @param array $input
+     * @param AdminEntity $admin
+     *
+     * @return Entity
+     */
+    public function updateActivationArchive(Entity $merchantDetails, array $input, AdminEntity $admin): Entity
+    {
+        $merchantDetails->getValidator()->validateInput('archiveForm', $input);
+
+        $archiveAction = (empty($input[Entity::ARCHIVE]) === false) ? Action::ARCHIVE : Action::UNARCHIVE;
+
+        // Check for admin permission
+        $admin->hasMerchantActionPermissionOrFail($archiveAction);
+
+        $archivedAt = null;
+
+        if (empty($input[Entity::ARCHIVE]) === false)
+        {
+            $archivedAt = Carbon::now(Timezone::IST)->getTimestamp();
+        }
+
+        $merchantDetails->setArchivedAt($archivedAt);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        return $merchantDetails;
+    }
+
+    /**
+     * This function is used for updating merchant activation status
+     * @param Entity $merchantDetails
+     * @param array $input
+     * @param PublicEntity $maker [can be one of Admin\Admin\Entity or Merchant\Entity]
+     *
+     * @return Entity
+     */
+    public function updateActivationStatus(Entity $merchantDetails, array $input, PublicEntity $maker): Entity
+    {
+        $merchantDetails->getValidator()->validateInput('activationStatus', $input);
+
+        $currentActivationStatus = $merchantDetails->getActivationStatus();
+
+        $merchantDetails->getValidator()
+                        ->validateActivationStatusChange(
+                            $currentActivationStatus,
+                            $input[Entity::ACTIVATION_STATUS]);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS,
+            ['input' => $input]);
+
+        $rejectionReasons = [];
+
+        if (empty($input[Entity::REJECTION_REASONS]) === false)
+        {
+            $rejectionReasons = $input[Entity::REJECTION_REASONS];
+
+            unset($input[Entity::REJECTION_REASONS]);
+        }
+
+        $oldMerchantDetails = clone $merchantDetails;
+
+        $merchantDetails->edit($input);
+
+        $newMerchantDetails = clone $merchantDetails;
+
+        $this->repo->transactionOnLiveAndTest(function() use (
+                                                            $merchantDetails,
+                                                            $oldMerchantDetails,
+                                                            $newMerchantDetails,
+                                                            $input,
+                                                            $rejectionReasons,
+                                                            $maker)
+        {
+            if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED) and
+                ($merchantDetails->merchant->isLinkedAccount() === false))
+            {
+                /*
+                 * Setup workflow for activation_status change in merchantDetail entity,
+                 * which will be triggered once all the validations are checked in the activate method.
+                 */
+                $this->app['workflow']
+                     ->setEntity($merchantDetails->getEntity())
+                     ->setOriginal($oldMerchantDetails)
+                     ->setDirty($newMerchantDetails);
+
+                (new Merchant\Activate)->activate($merchantDetails->merchant, true);
+            }
+
+            $this->repo->saveOrFail($merchantDetails);
+
+            $stateData = [
+                State\Entity::NAME => $input[Entity::ACTIVATION_STATUS],
+            ];
+
+            $state = (new State\Core)->createForActivation($stateData, $merchantDetails, $maker);
+
+            if (empty($rejectionReasons) === false)
+            {
+                (new Reason\Core)->addRejectionReasons($rejectionReasons, $state);
+            }
+        });
+
+        return $merchantDetails;
+    }
+
+    public function setBankAccountForMerchant(Entity $merchantDetails)
+    {
+        $bankCore = (new BankAccount\Core);
+
+        // Build the input array for the merchant's bank account creation
+        $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchantDetails);
+
+        $bankCore->createOrChangeBankAccount($bankData, $merchantDetails->merchant);
+    }
+
+    /**
      * Checks and auto activates the merchant if possible, after form submission
      *
      * @param Entity $merchantDetails
@@ -265,6 +395,16 @@ class Core extends Base\Core
             $bankCore->createOrChangeBankAccount($bankData, $merchant);
 
             (new Merchant\Activate)->autoActivate($merchant);
+
+            $activationStatusData = [
+                Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+            ];
+
+            $this->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
+
+            $merchantDetails->setLocked(true);
+
+            $this->repo->saveOrFail($merchantDetails);
 
             return true;
         }
@@ -307,6 +447,16 @@ class Core extends Base\Core
             // for a linked accounts activation
             //
             $response['need_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
+        }
+
+        $currentActivationState = $merchant->currentActivationState();
+
+        if ((empty($currentActivationState) === false) and
+            ($currentActivationState->name === Status::REJECTED))
+        {
+            $rejectionReasons = $currentActivationState->rejectionReasons()->get();
+
+            $response[Entity::REJECTION_REASONS] = $rejectionReasons->toArrayPublic();
         }
 
         $totalFields = count($validationFields);

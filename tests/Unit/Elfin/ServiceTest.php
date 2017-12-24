@@ -54,7 +54,7 @@ class ServiceTest extends TestCase
                         [
                             'id' => 'something',
                             'url' => $this->testUrl,
-                            'hash' => 'http://dwarf.razorpay.dev/xyz',
+                            'hash' => 'http://dwarf.razorpay.in/xyz',
                             'comment' => null,
                             'clicks' => 2,
                             'created_at' => time(),
@@ -63,7 +63,7 @@ class ServiceTest extends TestCase
 
         $shortUrl = $this->service->shorten($this->testUrl);
 
-        $this->assertEquals('http://dwarf.razorpay.dev/xyz', $shortUrl);
+        $this->assertEquals('http://dwarf.razorpay.in/xyz', $shortUrl);
     }
 
     public function testShortenFallback()

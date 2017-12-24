@@ -12,8 +12,9 @@ class Repository extends Base\Repository
     protected $entity = 'wallet';
 
     protected $appFetchParamRules = array(
-        Entity::PAYMENT_ID    => 'sometimes|string|min:14|max:18',
-        Entity::WALLET        => 'sometimes|custom',
+        Entity::PAYMENT_ID         => 'sometimes|string|min:14|max:18',
+        Entity::WALLET             => 'sometimes|custom',
+        Entity::GATEWAY_PAYMENT_ID => 'sometimes|string|max:50',
     );
 
     protected function validateWallet($attribute, $value)
@@ -79,6 +80,6 @@ class Repository extends Base\Repository
                     ->where(Entity::GATEWAY_PAYMENT_ID, '=', $gatewayPaymentId)
                     ->where(Entity::ACTION, '=', Base\Action::AUTHORIZE)
                     ->where(Entity::WALLET, '=', $wallet)
-                    ->first();
+                    ->firstOrFail();
     }
 }

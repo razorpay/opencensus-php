@@ -8,7 +8,7 @@ class Service extends Base\Service
 {
     public function createBatch(array $input): array
     {
-        $batch = (new Core)->create($input);
+        $batch = (new Core)->create($input, $this->merchant);
 
         return $batch->toArrayPublic();
     }
@@ -23,15 +23,6 @@ class Service extends Base\Service
     public function getBatchById(string $id): array
     {
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
-
-        return $batch->toArrayPublic();
-    }
-
-    public function retryBatch(string $id): array
-    {
-        $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
-
-        (new Core)->retryBatch($batch);
 
         return $batch->toArrayPublic();
     }
@@ -74,18 +65,11 @@ class Service extends Base\Service
         return $batches->toArrayPublic();
     }
 
-    /**
-     * Processes particular batch id if not processed already.
-     *
-     * @param string $id
-     *
-     * @return array
-     */
-    public function processBatch(string $id): array
+    public function processBatch(string $id, array $input = []): array
     {
         $batch = $this->repo->batch->findByPublicId($id);
 
-        $batch = (new Core)->processBatchViaApi($batch);
+        $batch = (new Core)->processBatchAsync($batch, $input);
 
         return $batch->toArrayPublic();
     }

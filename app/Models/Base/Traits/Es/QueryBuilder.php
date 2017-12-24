@@ -130,6 +130,7 @@ trait QueryBuilder
 
     public function buildQueryForMerchantId(array & $query, string $value)
     {
+        //
         // In few cases we would want to add the clause as filter. Eg. in this case
         // we must use filter to filter out all results for a given merchant id
         // on top of which other queries/search are run. Filter queries are cached
@@ -138,16 +139,9 @@ trait QueryBuilder
         // Also notice that here we're using 'term' query. Ie. because we don't
         // want to do any analysis when searching for merchant_id unlike other
         // fields.
+        //
 
-        $filter = [
-            Es::TERM => [
-                Common::MERCHANT_ID => [
-                    Es::VALUE => $value,
-                ],
-            ],
-        ];
-
-        $this->addFilter($query, $filter);
+        $this->addTermFilter($query, Common::MERCHANT_ID, $value);
     }
 
     /**
@@ -185,7 +179,7 @@ trait QueryBuilder
      *
      * @return array
      */
-    public function getSortParameter()
+    public function getSortParameter(): array
     {
         return [
             Es::_SCORE => [
@@ -198,6 +192,11 @@ trait QueryBuilder
     }
 
     // Helper methods
+
+    public function getTermQuery(string $field, string $value): array
+    {
+        return [Es::TERM => [$field => [Es::VALUE => $value]]];
+    }
 
     public function getExistsQueryForField(string $field): array
     {
@@ -224,6 +223,11 @@ trait QueryBuilder
         $query[Es::BOOLQ][Es::MUST][] = $clause;
     }
 
+    public function addMustNot(array & $query, array $clause)
+    {
+        $query[Es::BOOLQ][Es::MUST_NOT][] = $clause;
+    }
+
     public function addFilter(array & $query, array $filter)
     {
         $query[Es::BOOLQ][Es::FILTER][Es::BOOLQ][Es::MUST][] = $filter;
@@ -232,5 +236,12 @@ trait QueryBuilder
     public function addNegativeFilter(array & $query, array $filter)
     {
         $query[Es::BOOLQ][Es::FILTER][Es::BOOLQ][Es::MUST_NOT][] = $filter;
+    }
+
+    public function addTermFilter(array & $query, string $field, $value)
+    {
+        $filter = [Es::TERM => [$field => [Es::VALUE => $value]]];
+
+        $this->addFilter($query, $filter);
     }
 }

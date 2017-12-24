@@ -55,7 +55,6 @@ return [
                 'two_factor_auth' => TwoFactorAuth::NOT_APPLICABLE,
                 'captured' => false,
                 'fee' => null,
-                'service_tax' => null,
                 'tax' => null,
             ],
         ],
@@ -106,6 +105,29 @@ return [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
+        ],
+    ],
+
+    'testAcsFailure' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '5200000000000064',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
         ],
     ],
 

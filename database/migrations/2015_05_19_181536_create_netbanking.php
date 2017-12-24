@@ -34,8 +34,14 @@ class CreateNetbanking extends Migration
             $table->string('status')->nullable();
             $table->string('error_message')->nullable();
             $table->string('reference1')->nullable();
+            $table->string('si_token')->nullable();
+            $table->string('si_status')->nullable();
+            $table->string('si_message')->nullable();
             $table->string('date')->nullable();
             $table->string('account_number')->nullable();
+            $table->string('account_type')->nullable();
+            $table->string('account_subtype')->nullable();
+            $table->string('account_branch_code')->nullable();
             $table->string('credit_account_number')->nullable();
 
             $table->char('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();

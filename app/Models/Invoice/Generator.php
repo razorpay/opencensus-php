@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Constants\Mode;
+use RZP\Models\Address;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\LineItem;
@@ -324,17 +325,6 @@ class Generator extends Base\Core
                 'long_url'       => $longUrl,
             ]);
 
-        //
-        // TODO: Currently, since we are not exposing the invoice
-        // to the customer at all, should we NOT generate
-        // a short_url at all? We can start exposing it when
-        // we start exposing the invoices to the customer.
-        // This might create issues because the merchant, when
-        // he sees a short_url, he might send the link to the
-        // customer and the customer might try paying it.
-        // We will have to make changes in the invoice
-        // template to remove the pay link.
-        //
         $this->invoice->setShortUrl($shortenedUrl);
     }
 
@@ -355,7 +345,7 @@ class Generator extends Base\Core
     {
         $orderAmount   = $this->invoice->getAmount();
         $orderCurrency = $this->invoice->getCurrency();
-        $orderReceipt  = 'Invoice Order';
+        $orderReceipt  = $this->invoice->getReceipt();
 
         $orderInput = [
             Order\Entity::AMOUNT          => $orderAmount,
@@ -377,55 +367,95 @@ class Generator extends Base\Core
     }
 
     /**
-     * Invoice can be created via passing customer_id which already exists
-     * or providing customer details in 'customer' array in input POST details.
-     *
-     * This function creates customer if it doesn't exist.
-     * It associates customer with invoice.
+     * Consumes customer related attributes of $input. Gets called in both create/
+     * update flow. Works as follows:
+     * - If customer_id is passed, use that and update invoice's copy of attributes
+     * - If customer is passed, override invoice copy of attributes with those details
      *
      * @param array $input
-     *
-     * @return null|Customer\Entity
-     * @throws BadRequestValidationFailureException
      */
     protected function associateCustomerWithInvoice(array $input)
     {
-        $customerDetails = ($input[Entity::CUSTOMER]) ?? [];
-
-        $customerId = ($input[Entity::CUSTOMER_ID]) ?? null;
-
-        if ($customerId and $customerDetails)
+        if (array_key_exists(Entity::CUSTOMER_ID, $input) === true)
         {
-            throw new BadRequestValidationFailureException(
-                'Expecting either customer_id or customer details'
-            );
+            $this->associateCustomerWithInvoiceById($input[Entity::CUSTOMER_ID]);
         }
 
-        $customer = null;
-
-        if ($customerId)
+        if (array_key_exists(Entity::CUSTOMER, $input) === true)
         {
-            $customer = $this->repo->customer->findByPublicIdAndMerchant(
-                                                $customerId, $this->merchant);
-
-            $this->trace->info(
-                TraceCode::INVOICE_EXISTING_CUSTOMER,
-                [
-                    'invoice_id' => $this->invoice->getId(),
-                    'customer_id' => $customer->getId(),
-                ]);
+            $this->associateCustomerWithInvoiceByDetails($input[Entity::CUSTOMER]);
         }
-        else if ($customerDetails)
+    }
+
+    protected function associateCustomerWithInvoiceById(string $id = null)
+    {
+        if (empty($id) === true)
         {
-            $core = new Customer\Core;
-            $customer = $core->createLocalCustomer(
-                            $customerDetails, $this->merchant, false);
+            $this->invoice->unsetCustomerDetails();
+
+            return;
         }
 
-        if ($customer)
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $this->invoice->associateAndSetCustomerDetails($customer);
+    }
+
+    protected function associateCustomerWithInvoiceByDetails(array $details)
+    {
+        if ($this->invoice->hasCustomer() === true)
         {
-            $this->invoice->customer()->associate($customer);
-            $this->invoice->setCustomerDetails($customer);
+            $this->overrideCustomerOfInvoiceWithDetails($details);
         }
+        else
+        {
+            $customer = (new Customer\Core)->createLocalCustomer($details, $this->merchant, false);
+
+            $this->invoice->associateAndSetCustomerDetails($customer);
+        }
+    }
+
+    /**
+     * Overrides invoice's copy of customer attributes with one provided in
+     * input as $details.
+     *
+     * @param array $details
+     */
+    protected function overrideCustomerOfInvoiceWithDetails(array $details)
+    {
+        $this->invoice->getValidator()->validateInput('editCustomerDetails', $details);
+
+        if (isset($details[Customer\Entity::BILLING_ADDRESS_ID]))
+        {
+            $billingAddressId = array_pull($details, Customer\Entity::BILLING_ADDRESS_ID);
+
+            $this->associateCustomerBillingAddressById($billingAddressId);
+        }
+
+        foreach ($details as $attribute => $value)
+        {
+            $setter = 'setCustomer' . studly_case($attribute);
+
+            $this->invoice->$setter($value);
+        }
+    }
+
+    protected function associateCustomerBillingAddressById(string $id = null)
+    {
+        if ($id === null)
+        {
+            $this->invoice->customerBillingAddress()->dissociate();
+
+            return;
+        }
+
+        $address = $this->repo
+                        ->address
+                        ->findByPublicIdEntityAndTypeOrFail(
+                            $id,
+                            $this->invoice->customer,
+                            Address\Type::BILLING_ADDRESS);
+
+        $this->invoice->customerBillingAddress()->associate($address);
     }
 }

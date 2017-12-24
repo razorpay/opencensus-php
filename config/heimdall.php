@@ -37,6 +37,10 @@ return [
                 'description' => 'View a particular merchant details',
                 'assignable'  => true,
             ],
+            Permission::MANAGE_ONBOARDING_SUBMISSIONS => [
+                'description' => 'View and update product onboarding submissions and the activation statuses',
+                'assignable'  => true,
+            ]
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [
@@ -109,6 +113,9 @@ return [
                 'assignable' => true,
             ],
             Permission::EDIT_MERCHANT_UNSUSPEND => [
+                'assignable' => true,
+            ],
+            Permission::EDIT_MERCHANT_RISK_THRESHOLD => [
                 'assignable' => true,
             ],
             Permission::EDIT_MERCHANT_METHODS => '',
@@ -223,15 +230,19 @@ return [
         ],
 
         PermissionCategory::DISPUTE => [
-            Permission::CREATE_DISPUTE => [
-                'description'   => 'Create Dispute Permission',
-                'assignable'    => true,
-                'workflow'      => true,
+            Permission::CREATE_DISPUTE        => [
+                'description' => 'Create Dispute Permission',
+                'assignable'  => true,
+                'workflow'    => true,
             ],
-            Permission::EDIT_DISPUTE    => [
-                'description'   => 'Edit Dispute Permission',
-                'assignable'    => true,
-                'workflow'      => true,
+            Permission::EDIT_DISPUTE          => [
+                'description' => 'Edit Dispute Permission',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
+            Permission::CREATE_DISPUTE_REASON => [
+                'description' => 'Create Dispute Reason Permission',
+                'assignable'  => true,
             ],
         ],
 
@@ -481,6 +492,13 @@ return [
                 'assignable'  => true
             ],
         ],
+
+        PermissionCategory::BATCH => [
+            Permission::RETRY_BATCH => [
+                'description' => 'Retry batch processing',
+                'assignable'  => true,
+            ]
+        ]
     ],
 
     'workflows' => [

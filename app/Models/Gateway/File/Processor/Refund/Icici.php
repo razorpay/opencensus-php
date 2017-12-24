@@ -9,10 +9,8 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor;
 
-class Icici extends Processor\Base
+class Icici extends Base
 {
-    use GenerateRefundFile;
-
     const FILE_NAME              = 'Icici_Netbanking_Refunds';
     const EXTENSION              = FileStore\Format::XLSX;
     const FILE_TYPE              = FileStore\Type::ICICI_NETBANKING_REFUND;
@@ -20,11 +18,11 @@ class Icici extends Processor\Base
     const GATEWAY_CODE           = IFSC::ICIC;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
-    protected function formatDataForFile()
+    protected function formatDataForFile(array $data)
     {
         $formattedData = [];
 
-        foreach ($this->data as $index => $row)
+        foreach ($data as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment']['created_at'], Timezone::IST)->format('jS F Y');
@@ -46,7 +44,7 @@ class Icici extends Processor\Base
         return $formattedData;
     }
 
-    protected function formatDataForMail()
+    protected function formatDataForMail(array $data)
     {
         $file = $this->gatewayFile
                      ->files()
@@ -55,7 +53,7 @@ class Icici extends Processor\Base
 
         $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
 
-        $totalAmount = array_reduce($this->data, function ($carry, $item)
+        $totalAmount = array_reduce($data, function ($carry, $item)
         {
             $carry += ($item['refund']['amount'] / 100);
 
@@ -67,7 +65,7 @@ class Icici extends Processor\Base
         $mailData = [
             'file_name'  => $file->getLocation(),
             'signed_url' => $signedUrl,
-            'count'      => count($this->data),
+            'count'      => count($data),
             'amount'     => number_format($totalAmount, 2, '.', ''),
             'date'       => $today
         ];

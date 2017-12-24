@@ -2,17 +2,21 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-use RZP\Error;
+use RZP\Models\Card;
+use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
-
-use RZP\Exception\RuntimeException;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant;
-use RZP\Models\Terminal\Category;
+use RZP\Error\PublicErrorCode;
 use RZP\Models\Terminal\Options;
+use RZP\Models\Terminal\Category;
+use RZP\Models\Terminal\Selector;
+use RZP\Tests\Functional\TestCase;
+use RZP\Exception\RuntimeException;
+use RZP\Models\Merchant\Preferences;
+use RZP\Error\PublicErrorDescription;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class TerminalSelectionTest extends TestCase
 {
@@ -206,7 +210,7 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $this->fixtures->create('terminal:multiple_category_terminals');
 
-        $this->fixtures->merchant->setCategory(123);
+        $this->fixtures->merchant->setCategory(124);
 
         // Make Payment
         $payment = $this->getDefaultPaymentArray();
@@ -214,7 +218,7 @@ class TerminalSelectionTest extends TestCase
 
         // Payment should have been made through shared terminl of correct category
         $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals('SharedTrmnl123', $payment['terminal_id']);
+        $this->assertEquals('SharedTrmnl124', $payment['terminal_id']);
     }
 
     public function testHDFCCardTerminalNotUsedForEmi()
@@ -762,13 +766,22 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
 
-        $data = [];
+        $this->doAuthPayment($payment);
 
-        // TPV payment should not be routed through either ecommerce or null terminal
-        $this->makeRequestAndCatchException(function () use ($payment)
-        {
-            $this->doAuthPayment($payment);
-        });
+        $payment2 = $this->getLastPayment(true);
+
+        $this->assertEquals('SharNbBdkTmnl1', $payment2['terminal_id']);
+
+        $this->fixtures->terminal->edit('SharNbBdkTmnl1',['enabled' => false]);
+
+        $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            RuntimeException::class);
     }
 
     public function testSecuritiesMerchantOnKKBKTerminalSelection()
@@ -936,38 +949,18 @@ class TerminalSelectionTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
-        $this->fixtures->create('terminal:shared_cybersource_axis_terminal');
-
-        $this->fixtures->create('gateway_rule', [
-            'method'           => 'card',
-            'merchant_id'      => '100000Razorpay',
-            'gateway'          => 'axis_migs',
-            'category2'        => 'pharma',
-            'type'             => 'filter',
-            'filter_type'      => 'reject',
-            'shared_terminal'  => 1,
-            'gateway_acquirer' => 'hdfc',
-            'group'            => 'pharma_filter',
+        $this->fixtures->create('terminal:shared_axis_terminal', [
+            'id'               => '1000AxisHdfcTl',
+            'gateway_acquirer' => 'hdfc'
         ]);
 
-        $this->fixtures->create('gateway_rule', [
-            'method'           => 'card',
-            'merchant_id'      => '100000Razorpay',
-            'gateway'          => 'cybersource',
-            'category2'        => 'pharma',
-            'type'             => 'filter',
-            'filter_type'      => 'reject',
-            'shared_terminal'  => 1,
-            'gateway_acquirer' => 'hdfc',
-            'group'            => 'pharma_filter',
-        ]);
+        $this->fixtures->create('terminal:shared_axis_terminal');
 
         $payment = $this->getDefaultPaymentArray();
         $this->doAuthAndCapturePayment($payment);
 
         $payment1 = $this->getLastEntity('payment', true);
-        $this->assertEquals('1000CybAxTrmnl', $payment1['terminal_id']);
+        $this->assertEquals('1000AxisMigsTl', $payment1['terminal_id']);
 
         $terminalAttrs = [
             'id' => 'DrctHDFCTermnl',
@@ -1169,5 +1162,143 @@ class TerminalSelectionTest extends TestCase
         $payment1 = $this->getLastEntity('payment', true);
 
         $this->assertEquals('ShrdNbBdkHouse', $payment1['terminal_id']);
+    }
+
+    public function testMccFilterWithSharedCategoryTerminal()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:multiple_category_terminals');
+
+        $expectedTerminalIds = ['SharedTrmnl124'];
+
+        $this->runTestCase($expectedTerminalIds);
+    }
+
+    public function testMccFilterWithSharedCategoryTerminalAndDirectTerminal()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->create('terminal:multiple_category_terminals');
+
+        $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'id'          => '1000HdfcDirect',
+            'merchant_id' => '10000000000000'
+        ]);
+
+        $expectedTerminalIds = ['1000HdfcDirect', 'SharedTrmnl124'];
+
+        $this->runTestCase($expectedTerminalIds);
+    }
+
+    protected function runTestCase(array $expectedTerminalIds)
+    {
+        $this->fixtures->merchant->setCategory(124);
+
+        $cardArray = [
+            'number'        => '4012001036275556',
+            'expiry_month'  => '1',
+            'expiry_year'   => '2035',
+            'cvv'           => '123',
+            'network'       => 'Visa',
+            'issuer'        => 'HDFC',
+            'name'          => 'Test',
+            'international' => false,
+        ];
+
+        $card = (new Card\Entity)->fill($cardArray);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']);
+        $paymentArray['status'] = 'created';
+        $paymentArray['method'] = 'card';
+
+        $payment = (new Payment\Entity)->fill($paymentArray);
+        $payment->card = $card;
+
+        $merchant = Merchant\Entity::find('10000000000000');
+        $payment->merchant()->associate($merchant);
+
+        $input = [
+            'payment' => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+        $selectedTerminals = $selector->select();
+        $selectedTerminalIds = array_pluck($selectedTerminals, 'id');
+
+        $this->assertArraySelectiveEquals($expectedTerminalIds, $selectedTerminalIds);
+    }
+
+    public function testGatewayFilterRejectsCyberSource()
+    {
+        $attributes = [
+            'id'              => '10000000001017',
+            'org_id'          => Org::RZP_ORG,
+            'activated'       => 1,
+            'live'            => 1,
+            'pricing_plan_id' => '1hDYlICobzOCYt',
+        ];
+
+        $this->fixtures->on(Mode::LIVE)->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->on(Mode::LIVE)->create('terminal:shared_cybersource_hdfc_terminal');
+
+        $this->fixtures->on(Mode::LIVE)->create('merchant', $attributes);
+        $this->fixtures->on(Mode::LIVE)->create('methods', [
+            'merchant_id'    => '10000000001017',
+            'disabled_banks' => [],
+            'banks'          => '[]'
+        ]);
+
+        $key = $this->fixtures->on(Mode::LIVE)->create('key', [
+            'id'          => '10000000rzpkey',
+            'merchant_id' => '10000000001017',
+        ]);
+
+        $key = 'rzp_live_' . $key->getId();
+
+        $data = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($data, function () use ($key)
+        {
+            $payment = $this->getDefaultPaymentArray();
+            $this->doAuthPayment($payment, null, $key);
+        });
+    }
+
+    public function testGatewayFilterRejectsMigsForZomato()
+    {
+        $attributes = [
+            'id'              => Preferences::MID_ZOMATO,
+            'org_id'          => Org::RZP_ORG,
+            'activated'       => 1,
+            'live'            => 1,
+            'pricing_plan_id' => '1hDYlICobzOCYt',
+        ];
+
+        $this->fixtures->on(Mode::LIVE)->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->on(Mode::LIVE)->create('terminal:shared_axis_terminal');
+
+        $this->fixtures->on(Mode::LIVE)->create('merchant', $attributes);
+        $this->fixtures->on(Mode::LIVE)->create('methods', [
+            'merchant_id'    => Preferences::MID_ZOMATO,
+            'disabled_banks' => [],
+            'banks'          => '[]'
+        ]);
+
+        $key = $this->fixtures->on(Mode::LIVE)->create('key', [
+            'id'          => '10000000rzpkey',
+            'merchant_id' => Preferences::MID_ZOMATO,
+        ]);
+
+        $key = 'rzp_live_' . $key->getId();
+
+        $data = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($data, function () use ($key)
+        {
+            $payment = $this->getDefaultPaymentArray();
+            $this->doAuthPayment($payment, null, $key);
+        });
     }
 }

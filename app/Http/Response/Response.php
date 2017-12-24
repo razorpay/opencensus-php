@@ -36,6 +36,8 @@ class Response
         $this->request = $app['request'];
 
         $this->ba = $app['basicauth'];
+
+        $this->route = $app['api.route'];
     }
 
     /**
@@ -161,7 +163,7 @@ class Response
                 return \Response::make($view);
             }
         }
-        else if ($this->isCallbackRoute($route))
+        else if ($this->isCheckoutCallbackRoute($route))
         {
             $data['http_status_code'] = $status;
 
@@ -267,6 +269,7 @@ class Response
     {
         $callbackRoutes = [
             'payment_create',
+            'payment_create_fees',
             'payment_create_checkout',
             'payment_callback_with_key_post',
             'payment_callback_with_key_get',
@@ -276,9 +279,14 @@ class Response
         return (in_array($route, $callbackRoutes));
     }
 
-    protected function isCallbackRoute($route)
+    /**
+     * These routes are the one which are used by checkout
+     * for payment creation
+     **/
+    protected function isCheckoutCallbackRoute($route)
     {
         $callbackRoutes = [
+            'payment_create_fees',
             'payment_create_checkout',
             'payment_callback_with_key_post',
             'payment_callback_with_key_get',
@@ -366,6 +374,6 @@ class Response
 
     protected function getCurrentRouteName()
     {
-        return $this->app['api.route']->getCurrentRouteName();
+        return $this->route->getCurrentRouteName();
     }
 }

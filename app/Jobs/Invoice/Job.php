@@ -34,7 +34,7 @@ class Job extends BaseJob implements ShouldQueue
     const ISSUED                = 'issued';
     const UPDATED               = 'updated';
     const EXPIRED               = 'expired';
-    const AUTHORIZED            = 'authorized';
+    const CAPTURED              = 'captured';
 
     protected $event;
     protected $id;
@@ -48,6 +48,16 @@ class Job extends BaseJob implements ShouldQueue
 
         $this->event = $event;
         $this->id    = $id;
+    }
+
+    public function getEvent(): string
+    {
+        return $this->event;
+    }
+
+    public function getId(): string
+    {
+        return $this->id;
     }
 
     public function handle()
@@ -122,7 +132,7 @@ class Job extends BaseJob implements ShouldQueue
 
     protected function handleUpdated()
     {
-        $pdfPath = $this->core->createInvoicePdf($this->invoice);
+        $pdfPath = $this->core->createInvoicePdfAndGetFilePath($this->invoice);
 
         return (new Invoice\Notifier($this->invoice, $pdfPath))
                     ->notifyInvoiceIssuedToCustomer();
@@ -130,7 +140,7 @@ class Job extends BaseJob implements ShouldQueue
 
     protected function handleIssued()
     {
-        $pdfPath = $this->core->createInvoicePdf($this->invoice);
+        $pdfPath = $this->core->createInvoicePdfAndGetFilePath($this->invoice);
 
         return (new Invoice\Notifier($this->invoice, $pdfPath))
                     ->notifyInvoiceIssuedToCustomer();
@@ -142,12 +152,10 @@ class Job extends BaseJob implements ShouldQueue
                     ->notifyInvoiceExpiredToCustomer();
     }
 
-    protected function handleAuthorized()
+    protected function handleCaptured()
     {
+        // Updates the invoice's pdf version after payment is done
         $this->core->createInvoicePdf($this->invoice);
-
-        // Unless it throws exception, above is assumed to be successful, hence
-        // returning true.
 
         return true;
     }

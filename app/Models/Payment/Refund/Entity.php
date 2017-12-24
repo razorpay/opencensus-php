@@ -4,13 +4,16 @@ namespace RZP\Models\Payment\Refund;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Currency;
-use RZP\Models\Transaction\Channel;
+use RZP\Models\Transaction;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
 
 /**
- * @property Payment\Entity $payment
+ * @property Payment\Entity     $payment
+ * @property Transaction\Entity $transaction
+ * @property Merchant\Entity    $merchant
  */
 class Entity extends Base\PublicEntity
 {
@@ -75,6 +78,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::RECEIPT,
         self::TRANSACTION_ID,
+        self::BATCH_FUND_TRANSFER_ID,
         self::BATCH_ID,
         self::ARN,
         self::ACQUIRER_DATA,
@@ -150,6 +154,12 @@ class Entity extends Base\PublicEntity
     public function batch()
     {
         return $this->belongsTo('RZP\Models\Batch\Entity', self::BATCH_ID);
+    }
+
+    public function fundTransferAttempts()
+    {
+        return $this->morphMany('RZP\Models\FundTransfer\Attempt\Entity', 'source')
+                    ->orderBy(self::CREATED_AT);
     }
 
     public function batchFundTransfer()
@@ -255,15 +265,10 @@ class Entity extends Base\PublicEntity
 
     public function getChannel()
     {
-        return Channel::KOTAK;
+        return Transaction\Channel::KOTAK;
     }
 
     public function getFees()
-    {
-        return 0;
-    }
-
-    public function getServiceTax()
     {
         return 0;
     }
@@ -356,7 +361,7 @@ class Entity extends Base\PublicEntity
         // 'RailYatri', 'Treebo', 'Goibibo',
         // 'Goeventz', 'RentoMojo', 'Voonik',
         // 'Zomato', 'Swiggy', 'Yatra'
-        //
+        // 'Mr Button', 'Zefo'
 
         $merchantIds = [
             '10000000000000', '6gn7Xc2gqK40c9', '4uObL8AHBqFNnP',
@@ -364,6 +369,7 @@ class Entity extends Base\PublicEntity
             '5yvFZKqbBjEBsr', '3d2EGdZF6CAYVc', '6ZLE5BE57SExGF',
             '6B94xSUfS76yht', '4bnk7yysqr5Wx5', '4zGGr9ZwCTH1gh',
             '6H7N6hlcv29OMG', '8S0i1kWYyF2woQ', '87qTXzFTBLFN7i',
+            '5PKFA3s9dpIwPn', '6RGC8wjp5U2K2e'
         ];
 
         $currentMerchantId = $this->getMerchantId();
@@ -396,7 +402,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECEIPT, $value);
     }
 
-    public function setUtr($value)
+    public function setUtr(string $value = null)
     {
         $this->setAttribute(self::REFERENCE1, $value);
     }
@@ -404,6 +410,11 @@ class Entity extends Base\PublicEntity
     public function setRemarks(string $value)
     {
         $this->setAttribute(self::REFERENCE2, $value);
+    }
+
+    public function setBatchFundTransferId($value)
+    {
+        $this->setAttribute(self::BATCH_FUND_TRANSFER_ID, $value);
     }
 
     public function isStatusFailed()

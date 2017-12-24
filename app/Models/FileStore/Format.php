@@ -14,8 +14,13 @@ class Format
     const PNG   = 'png';
     const TXT   = 'txt';
     const XLS   = 'xls';
+    const XLSB  = 'xlsb';
     const XLSX  = 'xlsx';
     const ZIP   = 'zip';
+    const DOC   = 'doc';
+    const DOCX  = 'docx';
+    const RPT   = 'rpt';
+    const DAT   = 'dat';
 
     const EXCEL_COLUMN_TEXT = '@';
 
@@ -28,8 +33,13 @@ class Format
         self::PNG,
         self::TXT,
         self::XLS,
+        self::XLSB,
         self::XLSX,
         self::ZIP,
+        self::DOC,
+        self::DOCX,
+        self::RPT,
+        self::DAT,
     ];
 
     const VALID_EXTENSION_MIME_MAP = [
@@ -41,10 +51,21 @@ class Format
         self::PDF   => ['application/pdf', 'application/x-pdf', 'application/pgp'],
         self::PNG   => ['image/png', 'application/pgp'],
         self::TXT   => ['text/plain', 'application/pgp'],
-        self::XLSX  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pgp'],
+        self::XLSX  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pgp',
+                        'application/octet-stream', 'text/plain'],
+        // `text/plain` is being added here because HDFC sends recon CSV files with XLS extension
+        // `application/CDFV2-unknown` is being sent as mime_type for FirstData recon files
         self::XLS   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
-                        'application/vnd.ms-office', 'application/pgp'],
-        self::ZIP   => ['application/zip', 'application/pgp'],
+                        'application/vnd.ms-office', 'application/octet-stream', 'text/plain',
+                        'application/cdfv2-unknown'],
+        self::XLSB  => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
+                        'application/vnd.ms-office', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        'application/zip', 'application/octet-stream', 'application/vnd.oasis.opendocument.spreadsheet'],
+        self::ZIP   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
+        self::DOC   => ['application/msword'],
+        self::DOCX  => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        self::RPT   => ['text/plain'],
+        self::DAT   => ['text/plain'],
     ];
 
     const VALID_LOCAL_EXTENSIONS = [

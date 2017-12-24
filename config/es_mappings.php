@@ -148,6 +148,9 @@ return [
             'status' => [
                 'type'            => 'keyword',
             ],
+            'user_id' => [
+                'type'            => 'keyword',
+            ],
             'receipt' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
@@ -265,7 +268,7 @@ return [
                 'type'   => 'date',
                 'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
             ],
-            'merchant_details' => [
+            'merchant_detail' => [
                 'properties' => [
                     'merchant_id' => [
                         'type'  => 'keyword',
@@ -277,6 +280,13 @@ return [
                     ],
                     'activation_progress' => [
                         'type' => 'byte',
+                    ],
+                    'activation_status' => [
+                        'type' => 'keyword',
+                    ],
+                    'archived_at' => [
+                        'type'   => 'date',
+                        'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
                     ],
                     'submitted_at' => [
                         'type'   => 'date',

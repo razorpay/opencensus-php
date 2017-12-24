@@ -24,6 +24,8 @@ class Server extends Base\Mock\Server
             'refid'         => '12345'
         );
 
+        $this->content($content);
+
         $content['checksum'] = $this->generateHash($content);
 
         $url = $input['redirecturl'] . '?' . http_build_query($content);
@@ -104,8 +106,9 @@ class Server extends Base\Mock\Server
 
     public function otpGenerate($input)
     {
-        // verify checksum.
+        $this->request($input);
 
+        // verify checksum.
         $content = array(
             'messagecode'       => '504',
             'status'            => 'SUCCESS',

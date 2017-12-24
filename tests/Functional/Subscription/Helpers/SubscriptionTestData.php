@@ -452,7 +452,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'plan_id should be sent in the request to create a subscription.',
+                    'description' => 'The plan id field is required.',
                 ],
             ],
             'status_code' => 400,
@@ -527,6 +527,37 @@ return [
                 'total_count' => 6,
                 'paid_count' => 0,
                 'auth_attempts' => 0,
+                'customer_notify' => true,
+            ],
+        ],
+    ],
+
+    'testCreateSubscriptionWithBlankStartAt' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'plan_id'         => 'plan_1000000000plan',
+                'quantity'        => 1,
+                'total_count'     => 6, // Every two months
+                'customer_notify' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'plan_id'         => 'plan_1000000000plan',
+                'status'          => 'created',
+                'current_start'   => null,
+                'current_end'     => null,
+                'ended_at'        => null,
+                'quantity'        => 1,
+                'notes'           => [],
+                'charge_at'       => null,
+                'start_at'        => null,
+                'end_at'          => null,
+                'total_count'     => 6,
+                'paid_count'      => 0,
+                'auth_attempts'   => 0,
                 'customer_notify' => true,
             ],
         ],
@@ -1188,8 +1219,8 @@ return [
             'entity'    => 'event',
             'event'     => 'subscription.pending',
             'contains' => [
-                // 'subscription', 'payment'
-                'subscription'
+                'subscription',
+                'payment'
             ],
             'payload'  => [
                 'subscription' => [
@@ -1212,32 +1243,32 @@ return [
                         'customer_notify'   => true,
                     ]
                 ],
-                // 'payment' => [
-                //     'entity' => [
-                //         'entity'            => 'payment',
-                //         'amount'            => 2000,
-                //         'currency'          => 'INR',
-                //         'status'            => 'authorized',
-                //         'international'     => false,
-                //         'method'            => 'card',
-                //         'amount_refunded'   => 0,
-                //         'refund_status'     => null,
-                //         'captured'          => false,
-                //         'description'       => 'Recurring Payment via Subscription',
-                //         'bank'              => null,
-                //         'wallet'            => null,
-                //         'vpa'               => null,
-                //         'email'             => 'test@razorpay.com',
-                //         'contact'           => '+911234567890',
-                //         'customer_id'       => 'cust_100000customer',
-                //         'notes'             => [],
-                //         'fee'               => null,
-                //         'service_tax'       => null,
-                //         'error_code'        => null,
-                //         'error_description' => null,
-                //         'acquirer_data'     => [],
-                //     ]
-                // ],
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'amount'            => 2000,
+                        'currency'          => 'INR',
+                        'status'            => 'authorized',
+                        'international'     => false,
+                        'method'            => 'card',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => false,
+                        'description'       => 'Recurring Payment via Subscription',
+                        'bank'              => null,
+                        'wallet'            => null,
+                        'vpa'               => null,
+                        'email'             => 'test@razorpay.com',
+                        'contact'           => '+911234567890',
+                        'customer_id'       => 'cust_100000customer',
+                        'notes'             => [],
+                        'fee'               => null,
+                        'tax'               => null,
+                        'error_code'        => null,
+                        'error_description' => null,
+                        'acquirer_data'     => [],
+                    ]
+                ],
             ],
         ],
     ],
@@ -1248,8 +1279,8 @@ return [
             'entity'    => 'event',
             'event'     => 'subscription.activated',
             'contains' => [
-                // 'subscription', 'payment'
-                'subscription'
+                'subscription',
+                'payment'
             ],
             'payload'  => [
                 'subscription' => [
@@ -1267,32 +1298,32 @@ return [
                         'customer_notify'   => true,
                     ]
                 ],
-                // 'payment' => [
-                //     'entity' => [
-                //         'entity'            => 'payment',
-                //         'amount'            => 2000,
-                //         'currency'          => 'INR',
-                //         'status'            => 'captured',
-                //         'international'     => false,
-                //         'method'            => 'card',
-                //         'amount_refunded'   => 0,
-                //         'refund_status'     => null,
-                //         'captured'          => true,
-                //         'description'       => 'Recurring Payment via Subscription',
-                //         'bank'              => null,
-                //         'wallet'            => null,
-                //         'vpa'               => null,
-                //         'email'             => 'test@razorpay.com',
-                //         'contact'           => '+911234567890',
-                //         'customer_id'       => 'cust_100000customer',
-                //         'notes'             => [],
-                //         'fee'               => 40,
-                //         'service_tax'       => 0,
-                //         'error_code'        => null,
-                //         'error_description' => null,
-                //         'acquirer_data'     => [],
-                //     ]
-                // ],
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'amount'            => 2000,
+                        'currency'          => 'INR',
+                        'status'            => 'captured',
+                        'international'     => false,
+                        'method'            => 'card',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => 'Recurring Payment via Subscription',
+                        'bank'              => null,
+                        'wallet'            => null,
+                        'vpa'               => null,
+                        'email'             => 'test@razorpay.com',
+                        'contact'           => '+911234567890',
+                        'customer_id'       => 'cust_100000customer',
+                        'notes'             => [],
+                        'fee'               => 40,
+                        'tax'               => 0,
+                        'error_code'        => null,
+                        'error_description' => null,
+                        'acquirer_data'     => [],
+                    ]
+                ],
             ],
         ],
     ],
@@ -1303,8 +1334,8 @@ return [
             'entity'    => 'event',
             'event'     => 'subscription.charged',
             'contains' => [
-                // 'subscription', 'payment'
-                'subscription'
+                'subscription',
+                'payment'
             ],
             'payload'  => [
                 'subscription' => [
@@ -1327,32 +1358,32 @@ return [
                         'customer_notify'   => true,
                     ]
                 ],
-                // 'payment' => [
-                //     'entity' => [
-                //         'entity'            => 'payment',
-                //         'amount'            => 2000,
-                //         'currency'          => 'INR',
-                //         'status'            => 'captured',
-                //         'international'     => false,
-                //         'method'            => 'card',
-                //         'amount_refunded'   => 0,
-                //         'refund_status'     => null,
-                //         'captured'          => true,
-                //         'description'       => 'Recurring Payment via Subscription',
-                //         'bank'              => null,
-                //         'wallet'            => null,
-                //         'vpa'               => null,
-                //         'email'             => 'test@razorpay.com',
-                //         'contact'           => '+911234567890',
-                //         'customer_id'       => 'cust_100000customer',
-                //         'notes'             => [],
-                //         'fee'               => 40,
-                //         'service_tax'       => 0,
-                //         'error_code'        => null,
-                //         'error_description' => null,
-                //         'acquirer_data'     => [],
-                //     ]
-                // ],
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'amount'            => 2000,
+                        'currency'          => 'INR',
+                        'status'            => 'captured',
+                        'international'     => false,
+                        'method'            => 'card',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => 'Recurring Payment via Subscription',
+                        'bank'              => null,
+                        'wallet'            => null,
+                        'vpa'               => null,
+                        'email'             => 'test@razorpay.com',
+                        'contact'           => '+911234567890',
+                        'customer_id'       => 'cust_100000customer',
+                        'notes'             => [],
+                        'fee'               => 40,
+                        'tax'               => 0,
+                        'error_code'        => null,
+                        'error_description' => null,
+                        'acquirer_data'     => [],
+                    ]
+                ],
             ],
         ],
     ],

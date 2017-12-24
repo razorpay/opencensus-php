@@ -52,13 +52,15 @@ class Core extends Base\Core
      */
     public function create(array $input, Plan\Entity $plan, Customer\Entity $customer = null): Entity
     {
-        $this->trace->info(
-            TraceCode::SUBSCRIPTION_CREATE_REQUEST,
-            [
-                'input'       => $input
-            ]);
+        $this->trace->info(TraceCode::SUBSCRIPTION_CREATE_REQUEST, $input);
 
-        return (new Creator)->create($input, $plan, $customer);
+        $subscription = (new Creator)->create($input, $plan, $customer);
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_CREATED,
+            $subscription->toArrayPublic());
+
+        return $subscription;
     }
 
     public function retry(Entity $subscription, array $options = [])
@@ -324,14 +326,11 @@ class Core extends Base\Core
             ApiEventSubscriber::MAIN => $subscription,
         ];
 
-        //
-        // For now, commenting this out. Will add it later
-        // depending on merchants' use cases.
-        //
-        // if ($payment !== null)
-        // {
-        //     $eventPayload[ApiEventSubscriber::WITH] = [Constants\Entity::PAYMENT => $payment];
-        // }
+        if ($payment !== null)
+        {
+            $eventPayload[ApiEventSubscriber::WITH] = [Constants\Entity::PAYMENT => $payment];
+        }
+
         $this->app['events']->fire('api.' . $event, $eventPayload);
     }
 
@@ -340,11 +339,7 @@ class Core extends Base\Core
         $eventPayload = [
             ApiEventSubscriber::MAIN => $subscription,
             ApiEventSubscriber::WITH => [
-                //
-                // For now, commenting this out. Will add it later
-                // depending on merchants' use cases.
-                //
-                // Constants\Entity::PAYMENT => $payment,
+                Constants\Entity::PAYMENT => $payment,
             ]
         ];
 
@@ -578,7 +573,7 @@ class Core extends Base\Core
             function () use ($subscription, $input)
             {
                 if ((isset($input[Entity::CANCEL_AT_CYCLE_END]) === true) and
-                    ($input[Entity::CANCEL_AT_CYCLE_END] = true))
+                    (boolval($input[Entity::CANCEL_AT_CYCLE_END]) === true))
                 {
                     $this->setupCancelAtCycleEnd($subscription);
                 }
@@ -868,8 +863,8 @@ class Core extends Base\Core
         $subscriptionAmount = $invoice->getAmount();
 
         $customer = $subscription->customer;
-        $tokenId = $subscription->token->getPublicId();
-        $order = $invoice->order;
+        $tokenId  = $subscription->token->getPublicId();
+        $order    = $invoice->order;
 
         $recurringPayload = [
             Payment\Entity::AMOUNT          => $subscriptionAmount,
@@ -880,8 +875,8 @@ class Core extends Base\Core
             // Payment\Entity::CUSTOMER_ID     => $customer->getPublicId(),
             Payment\Entity::ORDER_ID        => $order->getPublicId(),
             // TODO: These fields should not be required to be sent.
-            Payment\Entity::EMAIL           => $customer->getEmail(),
-            Payment\Entity::CONTACT         => $customer->getContact(),
+            Payment\Entity::EMAIL           => $customer->getEmail() ?: Payment\Entity::DUMMY_EMAIL,
+            Payment\Entity::CONTACT         => $customer->getContact() ?: Payment\Entity::DUMMY_PHONE,
             Payment\Entity::DESCRIPTION     => 'Recurring Payment via Subscription',
         ];
 

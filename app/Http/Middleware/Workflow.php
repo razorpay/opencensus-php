@@ -2,19 +2,14 @@
 
 namespace RZP\Http\Middleware;
 
-use App;
-use Request;
 use Closure;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Error\ErrorCode;
-use RZP\Models\Workflow\Action;
-use RZP\Models\Workflow\Action\State;
-use RZP\Models\Workflow\Action\Differ;
-use RZP\Models\Workflow\Service as WorkflowService;
 use Illuminate\Foundation\Application;
-use RZP\Models\Workflow\Action\Differ\EntityValidator;
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Workflow\Service as WorkflowService;
+use RZP\Models\Workflow\Action\Differ\EntityValidator;
 
 class Workflow
 {
@@ -39,6 +34,7 @@ class Workflow
         Permission::CREATE_PRICING_PLAN,
         Permission::CREATE_DISPUTE,
         Permission::EDIT_MERCHANT_BANK_DETAIL,
+        Permission::EDIT_MERCHANT_INVOICE_GSTIN,
     ];
 
     protected $app;

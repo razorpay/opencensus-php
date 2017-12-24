@@ -29,6 +29,11 @@ class Validator extends Base\Validator
      */
     const CANCEL = 'cancel';
 
+    /**
+     * Used for running the beforeCreate rules
+     */
+    const BEFORE_CREATE = 'before_create';
+
     protected static $createRules = [
         Entity::CUSTOMER_ID     => 'sometimes|string|size:19|public_id|nullable',
         Entity::PLAN_ID         => 'required|string|size:19|public_id',
@@ -38,7 +43,13 @@ class Validator extends Base\Validator
         Entity::START_AT        => 'sometimes|integer|custom|nullable',
         Entity::END_AT          => 'required_without:total_count|epoch',
         Entity::CUSTOMER_NOTIFY => 'sometimes|boolean',
-        Entity::ADDONS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_ADDONS,
+        Entity::ADDONS          => 'sometimes|array|sequential_array|min:1|max:' . self::MAX_ALLOWED_ADDONS,
+        Entity::ADDONS . '.*'   => 'sometimes|array|associative_array',
+    ];
+
+    protected static $beforeCreateRules = [
+        Entity::CUSTOMER_ID     => 'sometimes|string|size:19|public_id|nullable',
+        Entity::PLAN_ID         => 'required|string|size:19|public_id',
     ];
 
     protected static $cancelRules = [
@@ -92,31 +103,6 @@ class Validator extends Base\Validator
                     'current_time'      => $currentTime,
                     'subscription_id'   => $subscription->getId(),
                 ]);
-        }
-    }
-
-    public function validateInputBeforeBuild(array $input)
-    {
-        //
-        // Keeping it commented for now. Will remove this later, once confident.
-        //
-        // If customer_id is not sent in the input, we get the customer and associate
-        // during the auth transaction. We create a global customer.
-        //
-        //
-
-        // if (empty($input[Entity::CUSTOMER_ID]) === true)
-        // {
-        //     throw new Exception\BadRequestValidationFailureException(
-        //         'customer_id should be sent in the request to create a subscription.',
-        //         'customer_id');
-        // }
-
-        if (empty($input[Entity::PLAN_ID]) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'plan_id should be sent in the request to create a subscription.',
-                'plan_id');
         }
     }
 
@@ -343,6 +329,12 @@ class Validator extends Base\Validator
         if ($subscription->hasBeenAuthenticated() === false)
         {
             throw new BadRequestValidationFailureException("Subscription with id $id is not authenticated yet");
+        }
+
+        if ($subscription->isGlobal() === false)
+        {
+            throw new BadRequestValidationFailureException('Hosted page is not available. ' .
+                'Please contact the merchant for further details.');
         }
     }
 }

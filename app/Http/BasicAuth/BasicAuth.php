@@ -2,42 +2,49 @@
 
 namespace RZP\Http\BasicAuth;
 
-use ApiResponse;
-use Config;
 use Crypt;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
+use Config;
+use ApiResponse;
+
+use Illuminate\Routing\Router;
+use RZP\Base\RepositoryManager;
 use RZP\Exception;
-use RZP\Trace\TraceCode;
 use RZP\Http\Route;
 use RZP\Models\Key;
+use RZP\Models\Device;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 
+/**
+ * Class BasicAuth
+ *
+ *
+ * Basic Auth currently goes as follows:
+ *
+ * Public -
+ * rzp_mode_keyId:
+ *
+ * Private -
+ * rzp_mode_keyId:merchant_secret
+ *
+ * Application/Internal -
+ * rzp_mode:app_secret
+ *
+ * Application proxy -
+ * rzp_mode_merchantId:app_secret
+ *
+ * Device -
+ * rzp_mode_keyId:device_token
+ *
+ * Admin Auth
+ * rzp_mode_admin:auth_token
+ *
+ * @package RZP\Http\BasicAuth
+ */
 class BasicAuth
 {
-    /*
-     * Basic Auth currently goes as follows:
-     *
-     * Public -
-     * rzp_mode_keyId:
-     *
-     * Private -
-     * rzp_mode_keyId:merchant_secret
-     *
-     * Application/Internal -
-     * rzp_mode:app_secret
-     *
-     * Application proxy -
-     * rzp_mode_merchantId:app_secret
-     *
-     * Device -
-     * rzp_mode_keyId:device_token
-     *
-     * Admin Auth
-     * rzp_mode_admin:auth_token
-     *
-     */
-
     const HMAC_ALGO = 'sha256';
 
     /**
@@ -137,7 +144,7 @@ class BasicAuth
     /**
      * Device being used in device auth routes
      *
-     * @var  Device\Entity
+     * @var Device\Entity
      */
     private $device = null;
 
@@ -188,6 +195,21 @@ class BasicAuth
     protected $route;
 
     /**
+     * @var Router
+     */
+    protected $router;
+
+    /**
+     * @var RepositoryManager
+     */
+    protected $repo;
+
+    /**
+     * @var bool
+     */
+    protected $cloud;
+
+    /**
      * Array of dashboard headers
      * @var array
      */
@@ -212,6 +234,8 @@ class BasicAuth
     protected $adminOrgId = null;
 
     protected $orgId      = null;
+
+    protected $orgHostName = null;
 
     public function __construct($app)
     {
@@ -368,14 +392,18 @@ class BasicAuth
             $res = $this->setCredentials();
 
             if ($res !== null)
+            {
                 return $res;
+            }
         }
         else
         {
             $res = $this->setKeyFromQueryParams();
 
             if ($res !== null)
+            {
                 return $res;
+            }
         }
 
         $response = $this->verifyKeyExistence();
@@ -514,7 +542,7 @@ class BasicAuth
         // `Route::$admin` contains routes that should strictly
         // be on admin auth and cannot be accessed over others
         // (proxy, internal, etc.)
-        $currentRoute = $this->router->currentRouteName();
+        $currentRoute = $this->route->getCurrentRouteName();
 
         if (in_array($currentRoute, Route::$admin, true) === true)
         {
@@ -616,31 +644,35 @@ class BasicAuth
      */
     public function verifyFeatureAccess()
     {
+        $currentRoute = $this->route->getCurrentRouteName();
+
         //
         // A route can belong to multiple features
         // This fetches an array of all features mapped to the route
         //
-        $features = $this->route->getFeaturesForRoute();
+        // TODO: Fix this! BA calls Route and Route calls BA. Not a good design.
+        //
+        $features = Route::getFeaturesForRoute($currentRoute);
 
-        if (empty($features) === false)
+        if (empty($features) === true)
         {
-            //
-            // If the merchant has at least one of the features
-            // in the $features array enabled, we allow the request
-            //
-            $merchantFeatures = $this->merchant->getEnabledFeatures();
-
-            $commonFeatures = array_intersect($merchantFeatures, $features);
-
-            if (empty($commonFeatures) === false)
-            {
-                return null;
-            }
-
-            return ApiResponse::routeNotFound();
+            return null;
         }
 
-        return null;
+        //
+        // If the merchant has at least one of the features
+        // in the $features array enabled, we allow the request
+        //
+        $merchantFeatures = $this->merchant->getEnabledFeatures();
+
+        $commonFeatures = array_intersect($merchantFeatures, $features);
+
+        if (empty($commonFeatures) === false)
+        {
+            return null;
+        }
+
+        return ApiResponse::routeNotFound();
     }
 
     protected function verifyAccountId(string & $accountId)
@@ -868,7 +900,7 @@ class BasicAuth
             return true;
         }
 
-        if (in_array($this->getCurrentRouteName(), $appRoutes, true) === false)
+        if (in_array($this->route->getCurrentRouteName(), $appRoutes, true) === false)
         {
             return false;
         }
@@ -887,7 +919,9 @@ class BasicAuth
         // Only if the application is deployed in cloud,
         // then verify internal ip
         if ($this->cloud === false)
+        {
             return true;
+        }
 
         // Check request is from internal ip
         $clientIp = $this->request->getClientIp();
@@ -1061,11 +1095,6 @@ class BasicAuth
         return $this->creds['public_key'];
     }
 
-    protected function getCurrentRouteName()
-    {
-        return $this->app['api.route']->getCurrentRouteName();
-    }
-
     public function getAuthType()
     {
         return $this->type;
@@ -1092,10 +1121,17 @@ class BasicAuth
 
 // --------------------- Setters -----------------------------------------------
 
-    public function setMode($mode)
+    public function setMode(string $mode)
     {
         $this->mode = $mode;
         $this->app['rzp.mode'] = $mode;
+    }
+
+    public function setModeAndDbConnection(string $mode)
+    {
+        $this->setMode($mode);
+
+        \Database\DefaultConnection::set($mode);
     }
 
     /**
@@ -1456,5 +1492,25 @@ class BasicAuth
         }
 
         return $mode;
+    }
+
+    /**
+     * Each org can have multiple hostnames
+     * Keeping track of the hostname when request is received.
+     *
+     * @param $orgHostName
+     *
+     * @return $this
+     */
+    public function setOrgHostName($orgHostName)
+    {
+        $this->orgHostName = $orgHostName;
+
+        return $this;
+    }
+
+    public function getOrgHostName()
+    {
+        return $this->orgHostName;
     }
 }

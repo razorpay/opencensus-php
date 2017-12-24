@@ -15,6 +15,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Models\Payment;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 trait SettlementTrait
 {
@@ -144,7 +145,7 @@ trait SettlementTrait
             $setlGatewayFee += $txn->getGatewayFee();
             $setlApiFee     += $txn->getApiFee();
             $setlFee        += $txn->getFee();
-            $tax            += $txn->getServiceTax();
+            $tax            += $txn->getTax();
 
             $setlTxns->push($txn);
             $i++;
@@ -263,9 +264,31 @@ trait SettlementTrait
     /**
      * Settlement is done only bank account change is not recent as we need some
      * time till beneficiary is updated in kotak
+     *
+     * @param MerchantEntity $merchant
+     *
+     * @return bool
+     * @throws Exception\LogicException
      */
-    protected function shouldSettle($merchant): bool
+    protected function shouldSettle(MerchantEntity $merchant): bool
     {
+        //
+        // Skip settlements for few merchants
+        // Details in: https://github.com/razorpay/api/issues/5830
+        // Temporary, until https://github.com/razorpay/api/pull/6161
+        // is merged
+        //
+        $skipMerchantIds = [
+            '8ytYezIThlseJd', // Goalwise Non-TPV
+            '7BfRNg10LH7N6T', // Goalwise TPV
+            '8hXTLsmoM3F6PH', // Moneyview
+        ];
+
+        if (in_array($merchant->getId(), $skipMerchantIds, true) === true)
+        {
+            return false;
+        }
+
         $shouldSettle = true;
 
         $today = Carbon::today(Timezone::IST);

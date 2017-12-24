@@ -13,12 +13,13 @@ use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Order;
-use RZP\Models\Currency;
-use RZP\Models\Customer;
 use RZP\Models\Feature;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
+use RZP\Models\Currency;
+use RZP\Models\Customer;
+use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
@@ -28,6 +29,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 /**
  * @property Subscription\Entity    $subscription
  * @property Invoice\Entity         $invoice
+ * @property Terminal\Entity        $terminal
  * @property Merchant\Entity        $merchant
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
@@ -75,7 +77,6 @@ class Entity extends Base\PublicEntity
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
     const BANK                  = 'bank';
-    const CARD                  = 'card';
     const CARD_ID               = 'card_id';
     const WALLET                = 'wallet';
     const EMI_PLAN_ID           = 'emi_plan_id';
@@ -95,7 +96,6 @@ class Entity extends Base\PublicEntity
     // This is the bucket for the next verify and not the current verify.
     const VERIFY_BUCKET         = 'verify_bucket';
     const CALLBACK_URL          = 'callback_url';
-    const SERVICE_TAX           = 'service_tax';
     const TAX                   = 'tax';
     const OTP_ATTEMPTS          = 'otp_attempts';
     const OTP_COUNT             = 'otp_count';
@@ -114,6 +114,13 @@ class Entity extends Base\PublicEntity
     // Query params
     const TRANSFERRED           = 'transferred';
 
+    // Relations
+    const CARD                  = 'card';
+    const EMI_PLAN              = 'emi_plan';
+
+    // Tells us whether this payment is a initial or auto recurring type
+    const RECURRING_TYPE        = 'recurring_type';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
@@ -122,6 +129,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_TIMEOUT_NETBANKING        = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
     const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
+    const PAYMENT_TIMEOUT_FILE_BASED_DEBIT  = 864000;   // 10 Days -- TODO: Reduce later
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
@@ -151,7 +159,6 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::CALLBACK_URL,
         self::FEE,
-        self::SERVICE_TAX,
         self::TAX,
         self::RECURRING,
         self::SAVE,
@@ -222,7 +229,6 @@ class Entity extends Base\PublicEntity
         self::RECURRING,
         self::SAVE,
         self::FEE,
-        self::SERVICE_TAX,
         self::TAX,
         self::OTP_ATTEMPTS,
         self::OTP_COUNT,
@@ -232,6 +238,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DISPUTED,
+        self::RECURRING_TYPE,
     ];
 
     protected $public = [
@@ -260,13 +267,13 @@ class Entity extends Base\PublicEntity
         self::TOKEN_ID,
         self::NOTES,
         self::FEE,
-        self::SERVICE_TAX,
+        self::TAX,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::ACQUIRER_DATA,
         // self::SUBSCRIPTION_ID,
+        self::EMI_PLAN,
         self::CREATED_AT,
-        self::TAX,
     ];
 
     /**
@@ -338,7 +345,7 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD_UNTIL        => null,
         self::SAVE                 => false,
         self::FEE                  => null,
-        self::SERVICE_TAX          => null,
+        self::TAX                  => null,
         self::OTP_ATTEMPTS         => null,
         self::OTP_COUNT            => null,
         self::EMI_PLAN_ID          => null,
@@ -349,6 +356,7 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_ID          => null,
         self::TRANSFER_ID          => null,
         self::DISPUTED             => false,
+        self::RECURRING_TYPE       => null,
     ];
 
     protected $amounts = [
@@ -360,7 +368,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_TRANSFERRED,
         self::AMOUNT_PAIDOUT,
         self::FEE,
-        self::SERVICE_TAX,
         self::TAX,
     ];
 
@@ -378,7 +385,6 @@ class Entity extends Base\PublicEntity
         self::SIGNED               => 'bool',
         self::AMOUNT               => 'int',
         self::FEE                  => 'int',
-        self::SERVICE_TAX          => 'int',
         self::TAX                  => 'int',
         self::SAVE                 => 'bool',
         self::INTERNATIONAL        => 'bool',
@@ -582,6 +588,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
+    public function setGatewayBharatQr()
+    {
+        $this->setGateway(Payment\Gateway::BHARAT_QR);
+    }
+
     /**
      * This should be kept as protected so the gateway is only
      * set via associateTerminal function
@@ -635,6 +646,28 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BANK, $bank);
     }
 
+    /**
+     * Recurring Type is null by default, and will be set to initial or auto based on use case
+     *
+     * @param $type
+     */
+    public function setRecurringType($type)
+    {
+        RecurringType::validateRecurringType($type);
+
+        $this->setAttribute(self::RECURRING_TYPE, $type);
+    }
+
+    public function isRecurringTypeAuto()
+    {
+        return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::AUTO);
+    }
+
+    public function isRecurringTypeInitial()
+    {
+        return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::INITIAL);
+    }
+
     public function setSigned($signed = true)
     {
         $this->setAttribute(self::SIGNED, $signed);
@@ -673,11 +706,6 @@ class Entity extends Base\PublicEntity
     public function setGatewayCaptured($gatewayCaptured)
     {
         $this->setAttribute(self::GATEWAY_CAPTURED, $gatewayCaptured);
-    }
-
-    public function setServiceTax($serviceTax)
-    {
-        $this->setAttribute(self::SERVICE_TAX, $serviceTax);
     }
 
     public function setTax($tax)
@@ -756,6 +784,11 @@ class Entity extends Base\PublicEntity
         $this->metadata[$key] = $value;
     }
 
+    public function getRecurringType()
+    {
+        return $this->getAttribute(self::RECURRING_TYPE);
+    }
+
     public function setMetadata($input)
     {
         $this->metadata = $input['_'] ?? null;
@@ -764,6 +797,16 @@ class Entity extends Base\PublicEntity
     public function setDisputed($disputed)
     {
         $this->setAttribute(self::DISPUTED, $disputed);
+    }
+
+    public function setReference1(string $reference1)
+    {
+        $this->setAttribute(self::REFERENCE1, $reference1);
+    }
+
+    public function setReference2(string $reference2)
+    {
+        $this->setAttribute(self::REFERENCE2, $reference2);
     }
 
     public function decrementAmountTransferred(int $amount)
@@ -862,7 +905,9 @@ class Entity extends Base\PublicEntity
         {
             case Method::CARD:
 
-                $acquirerData = [];
+                $acquirerData = [
+                    'auth_code' => $this->getAttribute(self::REFERENCE2),
+                ];
                 break;
 
             case Method::NETBANKING:
@@ -1140,8 +1185,7 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        // return $this->getAttribute(self::INTERNATIONAL);
-        return $this->card->isInternational();
+        return $this->getAttribute(self::INTERNATIONAL);
     }
 
     public function isOpenWalletPayment()
@@ -1374,11 +1418,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE);
     }
 
-    public function getServiceTax()
-    {
-        return $this->getAttribute(self::SERVICE_TAX);
-    }
-
     public function getTax()
     {
         return $this->getAttribute(self::TAX);
@@ -1438,6 +1477,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::TWO_FACTOR_AUTH);
     }
+
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
@@ -1463,6 +1503,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TERMINAL_ID);
     }
 
+    public function getReference1()
+    {
+        return $this->getAttribute(self::REFERENCE1);
+    }
+
+    public function getReference2()
+    {
+        return $this->getAttribute(self::REFERENCE2);
+    }
+
     public function isSecondRecurring()
     {
         $app = \App::getFacadeRoot();
@@ -1479,6 +1529,26 @@ class Entity extends Base\PublicEntity
         $existingGatewayTokens = $app['repo']->gateway_token->findByTokenAndReference($token, $reference);
 
         return ($existingGatewayTokens->count() === 1);
+    }
+
+    public function isEmandatePayment()
+    {
+        $token = $this->getGlobalOrLocalTokenEntity();
+
+        //
+        // It's not an e-mandate payment if
+        // - Token not set
+        // - Payment not netbanking
+        // - Payment not recurring
+        //
+        if (($token === null) or
+            ($this->isNetbanking() === false) or
+            ($this->isRecurring() === false))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function getConvertCurrency()
@@ -1608,6 +1678,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SUBSCRIPTION_ID);
     }
 
+    /**
+     * @return Customer\Token\Entity
+     */
     public function getGlobalOrLocalTokenEntity()
     {
         $token = null;
@@ -1622,6 +1695,43 @@ class Entity extends Base\PublicEntity
         }
 
         return $token;
+    }
+
+    /**
+     * Checks whether the recurring payment will
+     * need to be authorized via sending a file
+     */
+    public function isFileBasedEmandateDebitPayment(): bool
+    {
+        if (($this->isEmandatePayment() === true) and
+            ($this->isRecurringTypeAuto() === true))
+        {
+            $gateway = $this->getGateway();
+
+            //
+            // This will be the case when during second recurring payment,
+            // we are deciding whether to hit the gateway or not.
+            // At that stage, the gateway is not yet set.
+            //
+            if ($gateway === null)
+            {
+                //
+                // We don't really have to use gateway token here because
+                // we are actually getting the gateway and not the terminal.
+                // Gateway tokens need to be used when we are getting a terminal.
+                // Since a token can have multiple terminals.
+                // TODO: Check again ^
+                //
+                // Token will always be set if it's
+                // emandate and recurring type is auto.
+                //
+                $gateway = $this->getGlobalOrLocalTokenEntity()->terminal->getGateway();
+            }
+
+            return (Gateway::isFileBasedEMandateDebitGateway($gateway) === true);
+        }
+
+        return false;
     }
 
     public function getReferenceForGatewayToken()
@@ -1749,8 +1859,8 @@ class Entity extends Base\PublicEntity
 
     public function setPublicAcquirerDataAttribute(array & $array)
     {
-        // Adding test merchants PolicyBazaar, DSP Blackrock merchant ID's
-        $merchantIds = ['10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f', '7thBRSDflu7NHL'];
+        // Adding test merchants PolicyBazaar, DSP Blackrock, Yatra merchant ID's
+        $merchantIds = ['10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f', '7thBRSDflu7NHL', '87qTXzFTBLFN7i'];
 
         $currentMerchantId = $this->getMerchantId();
 
@@ -1825,11 +1935,6 @@ class Entity extends Base\PublicEntity
     {
         $data = parent::toArrayReport();
 
-        $tax = $data[self::TAX];
-
-        // Add tax key at the end to maintain order of columns in the report
-        unset($data[self::TAX]);
-
         unset($data[self::CUSTOMER_ID]);
         unset($data[self::TOKEN_ID]);
 
@@ -1849,8 +1954,6 @@ class Entity extends Base\PublicEntity
         {
             $data['invoice_id'] = $this->getInvoiceId();
         }
-
-        $data[self::TAX] = $tax;
 
         return $data;
     }
@@ -2188,6 +2291,16 @@ class Entity extends Base\PublicEntity
             }
         }
 
+        //
+        // Irrespective of the created_flow or auto refund delay,
+        // if it's emandate debit payment, the timeout window
+        // defined for this must always take higher preference.
+        //
+        if ($this->isFileBasedEmandateDebitPayment() === true)
+        {
+             return self::PAYMENT_TIMEOUT_FILE_BASED_DEBIT;
+        }
+
         $autoRefundDelay = $this->merchant->getAutoRefundDelay();
 
         return min($timeWindow, $autoRefundDelay);
@@ -2195,15 +2308,28 @@ class Entity extends Base\PublicEntity
 
     public function shouldRunFraudChecks()
     {
-        if ($this->isCard() === true)
+        if ($this->isCard() === false)
         {
-            if (($this->card->isInternational() === true) or
-                ($this->card->isAmex() === true))
-            {
-                return true;
-            }
+            return false;
         }
 
-        return false;
+        //
+        // Since the first auth transaction would have already been
+        // done, we don't need to do any MaxMind risk checks for this.
+        //
+        if ($this->isSecondRecurring() === true)
+        {
+            return false;
+        }
+
+        return (($this->card->isInternational() === true) or
+                ($this->card->isAmex() === true));
+    }
+
+    public static function getFilteredDescription(string $description = null)
+    {
+        $filteredDescription = preg_replace('/[^a-zA-Z0-9 ]+/', '', $description);
+
+        return $filteredDescription;
     }
 }

@@ -2,38 +2,35 @@
 
 namespace RZP\Models\Merchant;
 
+use Carbon\Carbon;
+use Config;
 use DB;
 use Mail;
-use Config;
-use Carbon\Carbon;
-
-use Razorpay\OAuth\Token as OAuthToken;
 use Razorpay\OAuth\Client as OAuthClient;
-
-use RZP\Exception;
-use RZP\Models\Key;
-use RZP\Models\User;
-use RZP\Models\Base;
-use RZP\Models\Offer;
-use RZP\Models\Coupon;
+use Razorpay\OAuth\Token as OAuthToken;
+use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
-use RZP\Models\Feature;
-use RZP\Models\Schedule;
-use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
-use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
+use RZP\Models\Admin\Org;
 use RZP\Models\BankAccount;
-use RZP\Base\RuntimeManager;
-use RZP\Models\Merchant\Webhook;
-use Requests_Response as Response;
-use RZP\Models\Settlement\Holidays;
-use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Base;
+use RZP\Models\Coupon;
+use RZP\Models\Feature;
+use RZP\Models\Key;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\SlackActions as SlackActions;
-use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
+use RZP\Models\Merchant\Webhook;
+use RZP\Models\Offer;
+use RZP\Models\Schedule;
+use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Settlement\Holidays;
+use RZP\Models\User;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -46,9 +43,9 @@ class Service extends Base\Service
      * Creates a merchant and saves in database
      *
      * @param  array            $input
-     * @return Merchant\Entity
+     * @return array
      */
-    public function create(array $input)
+    public function create(array $input): array
     {
         if (empty($input[Entity::ADMINS]) === false)
         {
@@ -80,11 +77,26 @@ class Service extends Base\Service
         return $merchantData;
     }
 
-    public function createSubMerchant(array $input)
+    public function createSubMerchant(array $input): array
     {
         $merchant = $this->merchant;
 
-        $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant);
+        $linkedAccount = (bool) ($input['account'] ?? false);
+
+        if (($linkedAccount === false) and
+            ($merchant->isFeatureEnabled(Feature\Constants::AGGREGATOR) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_AGGREGRATOR);
+        }
+
+        $ownerId = $input['user_id'];
+
+        unset($input['user_id']);
+
+        unset($input['account']);
+
+        $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant, $linkedAccount);
 
         // This goes out to the aggregator
         // (skip if marketplace merchant)
@@ -93,11 +105,41 @@ class Service extends Base\Service
             $this->sendSubMerchantCreationMail($subMerchant, $merchant);
         }
 
+        if ($linkedAccount === false)
+        {
+            $this->addLinkedAccountReferral($merchant, $subMerchant);
+
+            $this->attachSubMerchantOwner($ownerId, $subMerchant);
+        }
+
         $subMerchantData = $this->saveMerchantAndApplyCoupon($subMerchant, $input);
 
         return $subMerchantData;
     }
 
+    /**
+     * @param string $ownerId
+     * @param Entity $subMerchant
+     */
+    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant)
+    {
+        $userMerchantMappingInputData = [
+            'action'      => 'attach',
+            'role'        => 'owner',
+            'merchant_id' => $subMerchant->id,
+        ];
+
+        (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
+    }
+
+    private function addLinkedAccountReferral($aggregratorMerchant, $account)
+    {
+        $tagInputData = [
+            'tags' => ['ref-'.$aggregratorMerchant->id],
+        ];
+
+        $this->addTags($account->id, $tagInputData);
+    }
     protected function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
     {
         $this->repo->saveOrFail($merchant);
@@ -181,11 +223,17 @@ class Service extends Base\Service
         Mail::queue($createSubMerchantMail);
     }
 
-    public function editEmail($id, array $input)
+    public function editEmail($id, array $input) :array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
+        $orignalEmail = $merchant->getEmail();
+
         $merchant = (new Merchant\Core)->editEmail($merchant, $input);
+
+        $newEmail = $merchant->getEmail();
+
+        (new Merchant\Core)->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail);
 
         return $merchant->toArrayPublic();
     }
@@ -717,7 +765,7 @@ class Service extends Base\Service
     {
         $formattedMethods = (new Methods\Core)->getFormattedMethods($this->merchant);
 
-        // licious has dependency on this field in their android app
+        // Licious has dependency on this field in their android app
         if ($this->merchant->getId() === '5yZ76HWrvL9g2l')
         {
             $formattedMethods['http_status_code'] = 200;
@@ -1093,8 +1141,9 @@ class Service extends Base\Service
      * used for adding tags to merchant
      * @param string $id
      * @param array $input which contains the tags of the merchant
+     * @param bool $slackNotify
      */
-    public function addTags($id, $input)
+    public function addTags($id, $input, $slackNotify = false)
     {
         (new Validator)->validateInput('addTags', $input);
 
@@ -1107,6 +1156,11 @@ class Service extends Base\Service
         $merchant->retag($tags);
 
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
+        if ($slackNotify === true)
+        {
+            $this->logActionToSlack($merchant, SlackActions::TAGGED, $input);
+        }
 
         return $merchant->tagNames();
     }
@@ -1197,6 +1251,66 @@ class Service extends Base\Service
         return $batches;
     }
 
+    public function sendPayoutMailForMultipleMerchants(array $input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_PAYOUT_NOTIFICATION_REQUEST,
+            $input
+        );
+
+        (new Validator)->validateInput('payout_mail', $input);
+
+        $merchantsData = $input['content'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantsData as $merchantData)
+        {
+            try
+            {
+                $merchantId = $merchantData['merchant_id'];
+
+                $email = $merchantData['email'] ?? null;
+
+                $processed = $this->sendPayoutMail($merchantId, $email);
+
+                if ($processed === true)
+                {
+                    $successCount++;
+                }
+                else
+                {
+                    $failedCount++;
+
+                    $failedIds[] = $merchantId;
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response['total'] = count($merchantsData);
+        $response['success'] = $successCount;
+        $response['failed'] = $failedCount;
+        $response['failedIds'] = $failedIds;
+
+        $this->trace->info(
+            TraceCode::MERCHANT_PAYOUT_NOTIFICATION_RESPONSE,
+            $response
+        );
+
+        return $response;
+
+    }
+
     /**
      * Return all submerchants of the master merchant (for aggregator model only)
      *
@@ -1214,6 +1328,26 @@ class Service extends Base\Service
         $merchants = $this->fetchReferredMerchants();
 
         return array_merge([$merchantId], $merchants->pluck('id')->toArray());
+    }
+
+
+    protected function sendPayoutMail(string $merchantId, string $email = null)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        list($from, $to) = $this->getTimestamps();
+
+        $processed = $this->core()->sendPayoutMail($merchant, $from, $to, $email);
+
+        return $processed;
+    }
+
+    private function getTimestamps()
+    {
+        $from = Carbon::today(Timezone::IST)->getTimestamp();
+        $to = Carbon::tomorrow(Timezone::IST)->getTimestamp() - 1;
+
+        return [$from, $to];
     }
 
     /**
@@ -1427,4 +1561,44 @@ class Service extends Base\Service
         return $this->app['eventManager']->query($input);
     }
 
+    /**
+     * Creates submerchant User and associates with the submerchant as owner.
+     * @param array $input
+     *
+     * @return array
+     */
+    public function createSubMerchantUser($merchantId, array $input): array
+    {
+        $subMerchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $input['email']  = $subMerchant->getEmail();
+
+        $input['merchant_id'] = $this->merchant->getId();
+
+        (new Merchant\Validator)->validateInput('createSubMerchantUser', $input);
+
+        unset($input['merchant_id']);
+
+        //Creates a user from the given data.
+        $userData = $this->formatUserCreationData($input, $subMerchant);
+
+        $subMerchantUser = (new User\Service)->create($userData);
+
+        $this->attachSubMerchantOwner($subMerchantUser['id'], $subMerchant);
+
+        (new User\Service)->sendConfirmationMail($subMerchantUser['id']);
+
+        return $subMerchantUser;
+    }
+
+    private function formatUserCreationData($input, $subMerchant)
+    {
+        return [
+            User\Entity::NAME                  => $subMerchant->getName(),
+            User\Entity::EMAIL                 => $input['email'],
+            User\Entity::PASSWORD              => $input['password'],
+            User\Entity::PASSWORD_CONFIRMATION => $input['password_confirmation'],
+            User\Entity::CAPTCHA_DISABLE       => User\Validator::DISABLE_CAPTCHA_SECRET,
+        ];
+    }
 }

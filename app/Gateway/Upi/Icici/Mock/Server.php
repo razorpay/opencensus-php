@@ -59,9 +59,10 @@ class Server extends Base\Mock\Server
             Fields::BANK_RRN         => random_int(111111111, 999999999),
         ];
 
-        $dontEncrypt = ($this->input['payerVa'] === 'dontencrypt@icici');
+        $dontEncrypt = ((isset($input['payerVa']) === true) and
+                        ($input['payerVa'] === 'dontencrypt@icici'));
 
-        $this->content($content);
+        $this->content($content, 'authorize');
 
         return $this->makeResponse($content, $dontEncrypt);
     }
@@ -144,6 +145,8 @@ class Server extends Base\Mock\Server
             'status'            => $status
         ];
 
+        $this->content($response, 'verify');
+
         $encrypt = (isset($payment['notes']['encrypt']) and ($payment['notes']['encrypt'] === 'true'));
 
         return $this->makeResponse($response, $encrypt);
@@ -180,21 +183,29 @@ class Server extends Base\Mock\Server
      */
     protected function getAuthorizeResponseCode()
     {
-        switch($this->input['payerVa'])
+        if (isset($this->input['payerVa']) === true)
         {
-            // Just make sure that this doesn't return 92
-            case 'unknownresponse@icici':
-                // Always return 93 error code
-                return '93';
-            case 'invalidvpa@icici':
-                return '5007';
-            case 'user@invalidbank':
-                return '5008';
-            case 'serverdown@icici':
-                return '5009';
-            default:
-                return '92';
+            switch ($this->input['payerVa'])
+            {
+                // Just make sure that this doesn't return 92
+                case 'unknownresponse@icici':
+                    // Always return 93 error code
+                    return '93';
+
+                case 'invalidvpa@icici':
+                    return '5007';
+
+                case 'user@invalidbank':
+                    return '5008';
+
+                case 'serverdown@icici':
+                    return '5009';
+            }
+
+            return '92';
         }
+
+        return '0';
     }
 
     protected function makeResponse($data, $dontEncrypt = false)

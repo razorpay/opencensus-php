@@ -4,6 +4,7 @@ namespace RZP\Models\Emi\Banks\Yesb;
 
 use Config;
 use Carbon\Carbon;
+use RZP\Models\Emi;
 use RZP\Constants\Timezone;
 use RZP\Models\Card;
 use RZP\Models\FileStore;
@@ -15,11 +16,15 @@ class EmiFile extends Base\EmiFile
 {
     protected static $fileToWriteName = 'Yesb_Emi_File';
 
-    protected $emailIdsToSendTo = ['yesb.emi@razorpay.com'];
+    protected $emailIdsToSendTo = ['yesbcards.emi@razorpay.com'];
 
     protected $bankName  = 'Yesb';
 
     protected $type = FileStore\Type::YES_EMI_FILE_SFTP;
+
+    protected $totalAmount;
+
+    protected $totalTransactions;
 
     public function __construct()
     {
@@ -36,6 +41,10 @@ class EmiFile extends Base\EmiFile
     {
         $data = [];
 
+        $totalAmount = 0;
+
+        $totalTransactions = 0;
+
         foreach ($input as $emiPayment)
         {
             $emiPlan = $emiPayment->emiPlan;
@@ -43,6 +52,25 @@ class EmiFile extends Base\EmiFile
             $emiTenure = $emiPlan['duration'];
 
             $emiPercent = $emiPlan['rate']/100;
+
+            $principalAmount = $emiPayment->getAmount()/100;
+
+            $totalAmount = $totalAmount + $principalAmount;
+
+            $totalTransactions++;
+
+            $subventionAmount = '0.00';
+
+            if ($emiPlan->getSubvention() === Emi\Subvention::MERCHANT)
+            {
+                $merchantPayback = $emiPlan->getMerchantPayback()/100;
+
+                $amount = ($principalAmount * $merchantPayback)/100;
+
+                $subventionAmount = $this->getFormattedAmount($amount);
+            }
+
+            $emiAmount = $this->getFormattedAmount($this->getEmiAmount($principalAmount, $emiPercent, $emiTenure));
 
             $notApplicable = 'NA';
 
@@ -59,7 +87,7 @@ class EmiFile extends Base\EmiFile
                 'Issuer'                       => 'YES',
                 'RRN'                          => $notApplicable,
                 'Auth Code'                    => $this->getAuthCode($emiPayment),
-                'Tx Amount'                    => $emiPayment->getAmount()/ 100,
+                'Tx Amount'                    => $this->getFormattedAmount($principalAmount),
                 'EMI_Offer'                    => $emiTenure.' Months',
                 'Manufacturer'                 => $notApplicable,
                 'Merchant Name'                => $notApplicable,
@@ -74,7 +102,7 @@ class EmiFile extends Base\EmiFile
                 'Customer Processing Fee'      => '0.00%',
                 'Customer Processing Amt'      => '0.00',
                 'Subvention payable to Issuer' => '0.0%',
-                'Subvention Amount (Rs.)'      => '0.00',
+                'Subvention Amount (Rs.)'      => $subventionAmount,
                 'Interest Rate'                => $emiPercent.'%',
                 'Tx Status'                    => 'Settled',
                 'Status'                       => 'online',
@@ -83,7 +111,7 @@ class EmiFile extends Base\EmiFile
                 'Product Sub-Category 2'       => $notApplicable,
                 'Model Name'                   => $notApplicable,
                 'Card Hash'                    => $notApplicable,
-                'EMI Amount'                   => $notApplicable,
+                'EMI Amount'                   => $emiAmount,
                 'Loan Amount'                  => $notApplicable,
                 'Discount / Cashback %'        => $notApplicable,
                 'Discount / Cashback Amount'   => $notApplicable,
@@ -93,6 +121,10 @@ class EmiFile extends Base\EmiFile
             ];
         }
 
+        $this->totalTransactions = $totalTransactions;
+
+        $this->totalAmount = $this->getFormattedAmount($totalAmount);
+
         return $data;
     }
 
@@ -100,31 +132,36 @@ class EmiFile extends Base\EmiFile
     {
         $fileData = null;
 
-        if ($this->transferMode === Base\EmiMode::MAIL)
+        // for sftp file is uploaded to
+        if ($this->transferMode === Base\EmiMode::SFTP)
+        {
+            $metadata = $this->getH2HMetadata();
+        }
+        else
         {
             $this->type = FileStore\Type::YES_EMI_FILE_MAIL;
         }
 
-        $fileData = parent::generateEmiFile($emiData);
+        $fileData = parent::generateEmiFile($emiData, $metadata);
 
         return $fileData;
     }
 
     protected function getFileToWriteName(array $data)
     {
-        $date = Carbon::now(Timezone::IST)->format('dmY');
+        $date = Carbon::now(Timezone::IST)->format('d-m-Y');
 
-        static::$fileToWriteName = 'Razorpay_YESEMI_' . $date;
+        static::$fileToWriteName = 'MEMI_MANI_' . $date;
 
         $filePath = '';
 
         // for sftp we put the file in a H2H path
         if ($this->transferMode === Base\EmiMode::SFTP)
         {
-           $filePath = 'yes/outgoing/';
+           $filePath = 'yesbank/outgoing/';
         }
 
-        return $filePath . static::$fileToWriteName;
+        return $filePath . static::$fileToWriteName . '.' . FileStore\Format::XLSX;
     }
 
     private function formattedDateFromTimestamp($timestamp)
@@ -139,5 +176,37 @@ class EmiFile extends Base\EmiFile
         $publicKey = trim(str_replace('\n', "\n", $publicKey));
 
         return [PGPEncryption::PUBLIC_KEY => $publicKey];
+    }
+
+    protected function sendEmiFile(array $fileData, $mailData = null)
+    {
+        $body = 'Emi File Uploaded <br />';
+        $body = $body . 'File Name : ' . static::$fileToWriteName . '<br />';
+        $body = $body . 'Total Amount : ' . $this->totalAmount . '<br />';
+        $body = $body . 'Transactions Count : ' . $this->totalTransactions;
+
+        $mailData = ['body'  =>  $body];
+
+        if ($this->transferMode === Base\EmiMode::SFTP)
+        {
+            $fileData = [];
+        }
+
+        parent::sendEmiFile($fileData, $mailData);
+    }
+
+    protected function getFormattedAmount($amount)
+    {
+        return number_format((float)$amount, 2, '.', '');
+    }
+
+    protected function getH2HMetadata()
+    {
+        return [
+            'gid'   => '10000',
+            'uid'   => '10004',
+            'mtime' => Carbon::now()->getTimestamp(),
+            'mode'  => '33188'
+        ];
     }
 }

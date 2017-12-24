@@ -98,9 +98,7 @@ class Gateway extends Base\Gateway
 
         if ($this->checkForSharedTerminal($terminal) === false)
         {
-            $merchant = $input['merchant'];
-
-            $referer = $merchant->getWebsite();
+            $referer = $terminal->merchant->getWebsite();
         }
 
         $this->referer = $referer;
@@ -125,9 +123,12 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             ['gateway' => $input['gateway']]);
 
-        $this->assertPaymentId($input['payment']['id'], $input['gateway'][Resp::MERCHANT_REF_NO]);
-
         $this->verifySecureHash($input['gateway']);
+
+        $this->assertPaymentId($input['payment']['id'], $input['gateway'][Resp::MERCHANT_REF_NO]);
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($input['gateway'][Resp::AMOUNT], 2, '.', '');
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
@@ -419,6 +420,28 @@ class Gateway extends Base\Gateway
         $verify->payment = $this->saveVerifyContentIfNeeded($gatewayPayment, $content);
 
         return $verify->status;
+    }
+
+    public function verifyRefund(array $input)
+    {
+        parent::verify($input);
+
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
+
+        $processedRefund = $this->getProcessedRefunds();
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        {
+            return false;
+        }
+
+        if (in_array($input['refund']['id'], $processedRefund) === true)
+        {
+            return true;
+        }
+
+        throw new Exception\LogicException(
+            'Shouldn\'t reach here');
     }
 
     protected function getVerifyGatewayStatus($content)

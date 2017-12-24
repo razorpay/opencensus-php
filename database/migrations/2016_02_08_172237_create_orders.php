@@ -49,7 +49,8 @@ class CreateOrders extends Migration
             $table->tinyInteger(Order::PAYMENT_CAPTURE)
                   ->default(false);
 
-            $table->string(Order::RECEIPT, 40);
+            $table->string(Order::RECEIPT, 40)
+                  ->nullable();
 
             $table->text(Order::NOTES);
 
@@ -72,8 +73,6 @@ class CreateOrders extends Migration
             $table->integer(Order::CREATED_AT);
             $table->integer(Order::UPDATED_AT);
 
-            // $table->integer(Order::CREATED_AT);
-
             // $table->integer(Order::VALIDITY)
             //       ->default(0);
 
@@ -81,16 +80,20 @@ class CreateOrders extends Migration
 
             $table->index(Order::CREATED_AT);
             $table->index(Order::STATUS);
+            // https://github.com/laravel/framework/issues/9293
+            // $table->index([DB::raw(Order::RECEIPT . '(25)')]);
+            // Use the above one once we move Wercker
+            // to use mysql instead of sqlite
             $table->index(Order::RECEIPT);
             $table->index(Order::AUTHORIZED);
             $table->index(Order::AMOUNT);
             $table->index(Order::AMOUNT_PAID);
+            $table->index([Order::MERCHANT_ID, Order::CREATED_AT]);
 
             // Commented parts to be added incrementally
 
             // $table->index(Order::METHOD);
             // $table->index(Order::ACCOUNT_ID);
-            // $table->index(Order::CREATED_AT);
             // $table->index(Order::VALID_TILL);
 
             // Commented parts to be added incrementally

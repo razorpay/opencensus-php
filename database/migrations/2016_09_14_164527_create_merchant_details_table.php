@@ -218,6 +218,24 @@ class CreateMerchantDetailsTable extends Migration
             $table->boolean(MerchantDetail::LOCKED)
                   ->default(0);
 
+            $table->string(MerchantDetail::ACTIVATION_STATUS, 30)
+                  ->nullable();
+
+            $table->string(MerchantDetail::CLARIFICATION_MODE, 15)
+                  ->nullable();
+
+            $table->integer(MerchantDetail::ARCHIVED_AT)
+                  ->nullable();
+
+            $table->string(MerchantDetail::MARKETPLACE_ACTIVATION_STATUS, 30)
+                ->nullable();
+
+            $table->string(MerchantDetail::SUBSCRIPTIONS_ACTIVATION_STATUS, 30)
+                ->nullable();
+
+            $table->string(MerchantDetail::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS, 30)
+                ->nullable();
+
             $table->boolean(MerchantDetail::SUBMITTED)
                   ->default(0);
 
@@ -232,6 +250,10 @@ class CreateMerchantDetailsTable extends Migration
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
+
+            $table->index(MerchantDetail::ACTIVATION_STATUS);
+
+            $table->index(MerchantDetail::ARCHIVED_AT);
         });
     }
 

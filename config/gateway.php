@@ -25,6 +25,7 @@ return [
         'mobikwik',
         'paytm',
         'netbanking_hdfc',
+        'netbanking_bob',
         'netbanking_corporation',
         'netbanking_kotak',
         'netbanking_icici',
@@ -38,6 +39,7 @@ return [
         'wallet_olamoney',
         'upi_icici',
         'upi_mindgate',
+        'upi_sbi',
         'upi_npci',
         'aeps_icici',
         'wallet_payzapp',
@@ -62,6 +64,7 @@ return [
     'mock_mobikwik'               => env('MOBIKWIK_MOCK'),
     'mock_paytm'                  => env('PAYTM_MOCK'),
     'mock_netbanking_hdfc'        => env('NETBANKING_HDFC_MOCK'),
+    'mock_netbanking_bob'         => env('NETBANKING_BOB_MOCK'),
     'mock_netbanking_corporation' => env('NETBANKING_CORPORATION_MOCK'),
     'mock_netbanking_kotak'       => env('NETBANKING_KOTAK_MOCK'),
     'mock_netbanking_icici'       => env('NETBANKING_ICICI_MOCK'),
@@ -81,6 +84,7 @@ return [
     'mock_wallet_jiomoney'        => env('JIOMONEY_MOCK'),
     'mock_wallet_sbibuddy'        => env('SBIBUDDY_MOCK'),
     'mock_upi_mindgate'           => env('UPI_MINDGATE_MOCK'),
+    'mock_upi_sbi'                => env('UPI_SBI_MOCK'),
     'mock_upi_icici'              => env('UPI_ICICI_MOCK'),
     'mock_upi_npci'               => env('UPI_NPCI_MOCK'),
     'mock_aeps_icici'             => env('AEPS_ICICI_MOCK'),
@@ -104,6 +108,7 @@ return [
 
     'hitachi' => [
         'test_merchant_id'  => env('HITACHI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_terminal_id'  => env('HITACHI_GATEWAY_TEST_TERMINAL_ID'),
         'test_hash_secret'  => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
         'test_hash_secret2' => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
     ],
@@ -162,21 +167,25 @@ return [
     ],
 
     'blade' => [
-        //TODO add all env variables
-        'cert_dir_name'                  => env('BLADE_CERT_DIR_NAME'),
-        'live_visa_certificate'          => env('BLADE_LIVE_VISA_CERTIFICATE'),
-        'live_visa_pem'                  => env('BLADE_LIVE_VISA_PEM'),
-        'live_mastercard_certificate'    => env('BLADE_LIVE_MASTERCARD_CERTIFICATE'),
-        'live_mastercard_pem'            => env('BLADE_LIVE_MASTERCARD_PEM'),
-        'gateway_access_code'            => env('BLADE_TEST_ACCESS_CODE'),
-        'gateway_merchant_id2'           => env('BLADE_TEST_MERCHANT_ID2'),
-        'gateway_terminal_password'      => env('BLADE_TEST_TERMINAL_PASSWORD'),
-        'live_mastercard_acq_bin'        => env('BLADE_LIVE_MASTERCARD_ACQ_BIN'),
-        'live_visa_acq_bin'              => env('BLADE_LIVE_VISA_ACQ_BIN'),
-        'test_acq_bin'                   => env('BLADE_TEST_ACQ_BIN'),
-        'live_mastercard_merchant_id'    => env('BLADE_LIVE_MASTERCARD_MERCHANT_ID2'),
-        'live_visa_merchant_id'          => env('BLADE_LIVE_VISA_MERCHANT_ID'),
-        'test_merchant_id'               => env('BLADE_TEST_MERCHANT_ID'),
+        'cert_dir_name'               => env('BLADE_CERT_DIR_NAME'),
+
+        'live_visa_certificate'       => env('BLADE_GATEWAY_LIVE_VISA_CERTIFICATE'),
+        'live_visa_key'               => env('BLADE_GATEWAY_LIVE_VISA_PEM'),
+
+        'live_mastercard_certificate' => env('BLADE_GATEWAY_LIVE_MASTERCARD_CERTIFICATE'),
+        'live_mastercard_key'         => env('BLADE_GATEWAY_LIVE_MASTERCARD_PEM'),
+
+        'live_mastercard_acq_bin'     => env('BLADE_LIVE_MASTERCARD_ACQ_BIN'),
+        'live_visa_acq_bin'           => env('BLADE_LIVE_VISA_ACQ_BIN'),
+
+        'live_mastercard_merchant_id' => env('BLADE_LIVE_MASTERCARD_MERCHANT_ID'),
+        'live_visa_merchant_id'       => env('BLADE_LIVE_VISA_MERCHANT_ID'),
+
+        'test_acq_bin'                => env('BLADE_TEST_ACQ_BIN'),
+        'test_merchant_id'            => env('BLADE_TEST_MERCHANT_ID'),
+        'gateway_access_code'         => env('BLADE_TEST_ACCESS_CODE'),
+        'gateway_merchant_id2'        => env('BLADE_TEST_MERCHANT_ID2'),
+        'gateway_terminal_password'   => env('BLADE_TEST_TERMINAL_PASSWORD'),
     ],
 
     'ebs' => [
@@ -219,6 +228,11 @@ return [
         'test_merchant_key'      => env('UPI_MINDGATE_TEST_MERCHANT_KEY'),
     ],
 
+    'upi_sbi' => [
+        'merchant_id'       => env('UPI_MINDGATE_SBI_MERCHANT_ID'),
+        'hash_secret'       => env('UPI_MINDGATE_SBI_HASH_SECRET'),
+    ],
+
     'wallet_payzapp' => [
         'pg_merchant_login_id'      => env('PAYZAPP_WALLET_PG_MERCHANT_LOGIN_ID'),
         'test_merchant_id'          => env('PAYZAPP_WALLET_TEST_MERCHANT_ID'),
@@ -253,8 +267,9 @@ return [
 
     'wallet_freecharge' => [
         'test_hash_secret'      => env('FREECHARGE_WALLET_TEST_HASH_SECRET'),
-        'test_merchant_id'      => env('FREECHARGE_WALLET_TEST_MERCHANT_ID'),
-        'test_dealer_id'        => env('FREECHARGE_WALLET_TEST_DEALER_ID'),
+        // Freecharge is little different hence exchanging values
+        'test_merchant_id'      => env('FREECHARGE_WALLET_TEST_DEALER_ID'),
+        'test_dealer_id'        => env('FREECHARGE_WALLET_TEST_MERCHANT_ID'),
     ],
 
     'wallet_jiomoney' => [
@@ -280,16 +295,22 @@ return [
     ],
 
     'netbanking_hdfc' => [
+        // TODO: Move constants to env file
+
         'live_hash_secret'  => env('NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret'  => '123456',
+
         // tpv
         'live_hash_secret_tpv' => env('NETBANKING_HDFC_GATEWAY_CUG_LIVE_HASH_SECRET'),
         'test_hash_secret_tpv' => '12345',
+
+        'test_merchant_id' => 'RAZORPAY',
     ],
 
     'netbanking_corporation' => [
-        'test_merchant_id'  => env('NETBANKING_CORPORATION_GATEWAY_TEST_MERCHANT_ID'),
-        'test_hash_secret'  => env('NETBANKING_CORPORATION_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id'       => env('NETBANKING_CORPORATION_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'       => env('NETBANKING_CORPORATION_GATEWAY_TEST_HASH_SECRET'),
+        'pooling_account_number' => env('KOTAK_NODAL_ACCOUNT_NUMBER'),
     ],
 
     'netbanking_kotak' => [
@@ -298,11 +319,19 @@ return [
         'live_hash_secret_tpv' => env('NETBANKING_KOTAK_GATEWAY_SEC_LIVE_HASH_SECRET'),
     ],
 
+    'netbanking_bob' => [
+        'test_merchant_id'       => env('NETBANKING_BOB_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'       => env('NETBANKING_BOB_GATEWAY_TEST_HASH_SECRET'),
+        'pooling_account_number' => env('KOTAK_NODAL_ACCOUNT_NUMBER'),
+    ],
+
     'netbanking_icici' => [
         //retail netbanking
         'test_hash_secret'       => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
+        'test_hash_secret_rec'   => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET_REC'),
         'test_merchant_id'       => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID'),
         'test_merchant_id2'      => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2'),
+        'test_merchant_id2_rec'  => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2_REC'),
 
         'live_hash_secret'       => env('NETBANKING_ICICI_LIVE_HASH_SECRET'),
         'live_merchant_id2'      => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
@@ -320,9 +349,21 @@ return [
     ],
 
     'netbanking_axis' => [
-        'live_hash_secret' => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET'),
-        'test_hash_secret' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
-        'test_merchant_id' => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
+        // retail netbanking
+        'live_hash_secret'           => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET'),
+        'test_hash_secret'           => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id'           => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
+
+        // corporate netbanking
+        'live_hash_secret_corporate' => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_CORPORATE'),
+        'test_hash_secret_corporate' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_CORPORATE'),
+        'test_merchant_id_corporate' => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_CORPORATE'),
+
+        // recurring
+        'test_hash_secret_rec'       => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_REC'),
+        'test_hash_secret_encrec'    => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_ENCREC'),
+        'test_merchant_id_rec'       => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_REC'),
+
     ],
 
     'netbanking_airtel' => [
@@ -356,6 +397,12 @@ return [
     ],
 
     'sharp' => [
+    ],
+
+    'bharat_qr' => [
+        'visa_acquirer_code'       => env('BHARAT_QR_VISA_ACQUIRER_CODE'),
+        'mastercard_acquirer_code' => env('BHARAT_QR_MASTERCARD_ACQUIRER_CODE'),
+        'identifier_padding'       => env('BHARAT_QR_IDENTIFIER_PADDING'),
     ],
 
     'proxy_enabled' => env('PROXY_ENABLED'),

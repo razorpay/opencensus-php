@@ -8,28 +8,25 @@ use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
-use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
-use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
+use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 
 class MerchantTest extends TestCase
 {
+    use PaymentTrait;
     use ScheduleTrait;
     use SettlementTrait;
     use InteractsWithSession;
-    use EntityActionTrait;
-    use RequestResponseFlowTrait;
     use HeimdallTrait;
 
     public function setUp()
@@ -300,6 +297,11 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditTestAccountMerchantEmail()
+    {
+        $this->startTest();
+    }
+
     public function testEditMerchantConfig()
     {
         $this->createMerchant();
@@ -373,6 +375,12 @@ class MerchantTest extends TestCase
     {
         $this->ba->appAuthLive();
 
+        $this->fixtures->on('live')->create('merchant_detail', [
+            'merchant_id' => '1cXSLlUU8V9sXl',
+            'submitted'   => true,
+            'locked'      => false
+        ]);
+
         $this->startTest();
     }
 
@@ -393,6 +401,12 @@ class MerchantTest extends TestCase
         $this->fixtures->create('org_hostname', [
             'org_id'    => '100000razorpay',
             'hostname'  => 'dashboard.razorpay.com'
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_detail', [
+            'merchant_id' => '1cXSLlUU8V9sXl',
+            'submitted'   => true,
+            'locked'      => false
         ]);
 
         $activatedAt = time();
@@ -635,7 +649,7 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
-        $merchantDetail = $this->fixtures->create('merchant_detail',
+        $this->fixtures->create('merchant_detail',
                                                 [
                                                     'merchant_id' => '10000000000000',
                                                 ]);
@@ -674,7 +688,7 @@ class MerchantTest extends TestCase
     {
         $this->testAddBankAccount();
 
-        $content = $this->startTest();
+        $this->startTest();
     }
 
     public function testChangeBankAccount()
@@ -683,7 +697,7 @@ class MerchantTest extends TestCase
 
         $this->testAddBankAccount();
 
-        $content = $this->startTest();
+        $this->startTest();
 
         $bankAccounts = $this->getEntities(
                             'bank_account', ['deleted' => true, 'type' => 'merchant'], true);
@@ -744,7 +758,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $content = $this->startTest();
+        $this->startTest();
     }
 
     public function testSetEmptyBanks()
@@ -795,9 +809,9 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->enablePaytm();
 
-        $terminal = $this->fixtures->on('live')->create('terminal', $attributes);
+        $this->fixtures->on('live')->create('terminal', $attributes);
 
-        $content = $this->startTest();
+        $this->startTest();
     }
 
     public function testGetCheckoutRoute()
@@ -1069,11 +1083,87 @@ class MerchantTest extends TestCase
         $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
 
         $offer = $this->fixtures->create('offer:wallet', [
-                'checkout_display' => true,
-                'display_text'     => 'Some display text',
-                'terms'            => 'Some terms',
-                'starts_at'        => $startsAt,
-            ]);
+            'checkout_display' => true,
+            'display_text'     => 'Some display text',
+            'terms'            => 'Some terms',
+            'starts_at'        => $startsAt,
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithSharedMerchantOffer()
+    {
+        $this->ba->publicAuth();
+
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $offer = $this->fixtures->create('offer:wallet', [
+            'merchant_id'      => '100000Razorpay',
+            'checkout_display' => true,
+            'display_text'     => 'Merchant specific offer',
+            'terms'            => 'Some terms',
+            'starts_at'        => $startsAt,
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithFreechargeOfferOnMerchantWithDirectFreechargeTerminal()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('terminal:direct_freecharge_terminal');
+
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $offer = $this->fixtures->create('offer:wallet', [
+            'merchant_id'      => '100000Razorpay',
+            'checkout_display' => true,
+            'display_text'     => 'Shared olamoney offer',
+            'terms'            => 'Some terms',
+            'starts_at'        => $startsAt,
+        ]);
+
+        //
+        // Tests that the freecharge offer is not shown as the merchant has a
+        // direct freecharge terminal.
+        //
+        $this->fixtures->create('offer:wallet', [
+            'merchant_id'      => '100000Razorpay',
+            'issuer'           => 'freecharge',
+            'checkout_display' => true,
+            'display_text'     => 'Shared freecharge offer',
+            'terms'            => 'Some terms',
+            'starts_at'        => $startsAt,
+        ]);
+
+        $content = $this->startTest();
+
+        $this->assertCount(1, $content['offers']);
+    }
+
+    public function testGetCheckoutPreferencesWithMerchantSpecificAndSharedOffers()
+    {
+        $this->ba->publicAuth();
+
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $offer1 = $this->fixtures->create('offer:wallet', [
+            'merchant_id'      => '100000Razorpay',
+            'checkout_display' => true,
+            'display_text'     => 'Some display text',
+            'terms'            => 'Some terms',
+            'starts_at'        => $startsAt,
+        ]);
+
+        $offer2 = $this->fixtures->create('offer:wallet', [
+            'merchant_id'      => '10000000000000',
+            'checkout_display' => true,
+            'display_text'     => 'Merchant specific offer',
+            'terms'            => 'Some terms',
+            'starts_at'        => $startsAt,
+        ]);
 
         $this->startTest();
     }
@@ -1213,7 +1303,7 @@ class MerchantTest extends TestCase
 
         $this->ba->appAuth();
 
-        $content = $this->startTest();
+        $this->startTest();
     }
 
     public function testPutEmiMethod()
@@ -1467,124 +1557,6 @@ class MerchantTest extends TestCase
         });
     }
 
-    public function testGetMerchantFeatures()
-    {
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a visible merchant feature: noflashcheckout
-     */
-    public function testUpdateMerchantFeatures()
-    {
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a non visble merchant feature: dummy
-     */
-    public function testUpdateMerchantUnEditableFeatures()
-    {
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
-     */
-    public function testAddMerchantUnEditableFeaturesOnLive()
-    {
-        $this->ba->proxyAuthLive();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
-     */
-    public function testAddMerchantEditableFeaturesOnTest()
-    {
-        $this->ba->proxyAuthTest();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a merchant feature with should_sync parameter
-     */
-    public function testAddMerchantFeaturesWithSyncOnLive()
-    {
-        $this->ba->proxyAuthLive();
-
-        $this->startTest();
-
-        $this->verifyFeaturePresence(Mode::TEST);
-
-        $this->verifyFeaturePresence(Mode::LIVE);
-    }
-
-    /**
-     * This function tests updating of a merchant feature with should_sync parameter
-     */
-    public function testAddMerchantFeaturesWithSyncOnTest()
-    {
-        $this->ba->proxyAuthTest();
-
-        $this->startTest();
-
-        $this->verifyFeaturePresence(Mode::TEST);
-
-        $this->verifyFeaturePresence(Mode::LIVE);
-    }
-
-    /**
-     * This function tests updating of a merchant feature that can
-     * be updated on test but not live mode: marketplace
-     */
-    public function testAddMerchantUneditableFeaturesWithSyncOnLive()
-    {
-        $this->ba->proxyAuthLive();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
-     */
-    public function testAddMerchantEditableFeaturesWithSyncOnTest()
-    {
-        $this->ba->proxyAuthTest();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
-     */
-    public function testDeleteMerchantUnEditableFeatureFromLive()
-    {
-        $this->ba->proxyAuthLive();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
-     */
-    public function testDeleteMerchantEditableFeatureFromTest()
-    {
-        $features = $this->fixtures->merchant->addFeatures(['marketplace']);
-
-        $this->ba->proxyAuthTest();
-
-        $this->startTest();
-    }
-
     public function testScheduleTaskMigration()
     {
         $this->ba->appAuth();
@@ -1634,6 +1606,55 @@ class MerchantTest extends TestCase
         $this->assertNotNull($row);
     }
 
+    public function testCreateNbRecurringTokenPreferencesRoute()
+    {
+        $this->markTestSkipped();
+        $this->fixtures->create('terminal:shared_netbanking_icici_recurring_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->create('customer');
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
+
+        $response = $this->makePreferencesRouteRequest();
+
+        $expectedTokenCount = $response['customer']['tokens']['count'];
+
+        $payment = $this->getNetbankingRecurringPaymentArray('ICIC');
+        unset($payment['card']);
+
+        // We create a new nb recurring token via payment
+        $this->doAuthPayment($payment);
+
+        // Asserting that token was created, using Netbanking ICICI's SI Ref ID
+        $netbanking = $this->getLastEntity('netbanking', true);
+        $this->assertEquals('ICIC', $netbanking['bank']);
+        $token = $this->getLastEntity('token', true);
+        $this->assertEquals($netbanking['si_token'], $token['gateway_token']);
+
+        $response = $this->makePreferencesRouteRequest();
+
+        // We expect that the token created above is not sent in the preferences response
+        $this->assertEquals($expectedTokenCount, $response['customer']['tokens']['count']);
+    }
+
+    protected function makePreferencesRouteRequest()
+    {
+        $this->ba->publicAuth();
+
+        $request = [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'contact' => '9918899029',
+                'customer_id' => 'cust_100000customer'
+            ],
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function createUserMerchantMapping(string $userId, string $merchantId, string $role)
     {
         DB::table('merchant_users')
@@ -1646,17 +1667,22 @@ class MerchantTest extends TestCase
             ]);
     }
 
-    /**
-     * Performs a GET request based on the mode received and verifies the
-     * presence of the dummy feature
-     *
-     * @param string $mode
-     */
-    private function verifyFeaturePresence($mode)
+    public function testUpdateSubmerchantEmail()
     {
-        $authMethod = 'appAuth' . studly_case($mode);
+        $user = $this->fixtures->create('user');
 
-        $this->ba->$authMethod();
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000044',
+            'name'   => 'Submerchant',
+            'org_id' => '100000razorpay',
+            'email'  => 'test@razorpay.com',
+        ]);
+
+        $merchant = Merchant\Entity::find("10000000000044");
+        $merchant->reTag(["ref-10000000000000"]);
+        $merchant->saveOrFail();
+
+        $this->ba->appAuth();
 
         $this->startTest();
     }

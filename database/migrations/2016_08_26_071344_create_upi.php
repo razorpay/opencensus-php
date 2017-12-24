@@ -30,6 +30,9 @@ class CreateUpi extends Migration
 
             $table->string(Upi::ACTION);
 
+            $table->string(Upi::TYPE)
+                  ->nullable();
+
             $table->string(Upi::AMOUNT);
 
             $table->string(Upi::ACQUIRER, 20);
@@ -50,6 +53,9 @@ class CreateUpi extends Migration
                   ->nullable();
 
             $table->string(Upi::NAME)
+                  ->nullable();
+
+            $table->mediumInteger(Upi::EXPIRY_TIME)
                   ->nullable();
 
             $table->tinyInteger(Upi::RECEIVED)

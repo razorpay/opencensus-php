@@ -298,11 +298,11 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Emi\Entity::class, [
-            'id' => 10101010101010,
-            'duration' => 9,
-            'rate' => 1200,
-            'bank' => 'HDFC',
-            'methods' => 'card',
+            'id'         => '10101010101010',
+            'duration'   => 9,
+            'rate'       => 1200,
+            'bank'       => 'HDFC',
+            'methods'    => 'card',
             'min_amount' => 500000,
         ]);
 
@@ -352,7 +352,10 @@ final class FactoryData
             'email_status'             => 'sent',
             'notes'                    => null,
             'status'                   => 'issued',
-            'due_by'                   => $faker->timestamp,
+            'date'                     => null,
+            'issued_at'                => null,
+            'expired_at'               => null,
+            'due_by'                   => $faker->timestamp('+2 day'),
             'scheduled_at'             => $faker->timestamp,
             'expire_by'                => $faker->timestamp('+2 day'),
             'amount'                   => 100000,
@@ -390,11 +393,11 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Customer\Entity::class, [
-            'id' => $faker->uniqueid,
+            'id'          => $faker->uniqueid,
             'merchant_id' => '10000000000000',
-            'name' => 'name',
-            'contact' => '9988776655',
-            'notes' => null,
+            'name'        => 'name',
+            'contact'     => '9988776655',
+            'notes'       => null,
         ]);
 
         $factory(\RZP\Models\Customer\Token\Entity::class, [
@@ -402,11 +405,13 @@ final class FactoryData
             'merchant_id' => '10000000000000',
             'customer_id' => '100000customer',
             'wallet'      => 'paytm',
-            'method'      => 'wallet',
-            'bank'        => null,
+            'method'      => 'netbanking',
+            'bank'        => 'ICIC',
             'card_id'     => null,
             'recurring'   => false,
             'used_count'  => 0,
+            'token'       => $faker->uniqueid,
+            'used_at'     => null,
         ]);
 
         $factory(\RZP\Models\Customer\AppToken\Entity::class, [
@@ -437,9 +442,13 @@ final class FactoryData
 
         $factory(\RZP\Models\Batch\Entity::class, [
             'id'          => $faker->uniqueid,
-            'merchant_id'     => '10000000000000',
-            'status'          => 'created',
-            'upload_file_url' => 'batch/upload/text.xlsx',
+            'merchant_id' => '10000000000000',
+            'status'      => 'created',
+            'processing'  => 0,
+            'total_count' => 0,
+            'attempts'    => 0,
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
         ]);
 
         $factory(\RZP\Gateway\Wallet\Base\Entity::class, [
@@ -805,25 +814,29 @@ final class FactoryData
             'workflow_id'       => \RZP\Tests\Functional\Fixtures\Entity\Workflow::DEFAULT_WORKFLOW_ID,
             'approved'          => false,
             'current_level'     => 1,
-            'state'             => \RZP\Models\Workflow\Action\State\Entity::OPEN,
+            'state'             => \RZP\Models\State\Name::OPEN,
             'org_id'            => \RZP\Tests\Functional\Fixtures\Entity\Org::RZP_ORG,
             'permission_id'     => 'factory:RZP\Models\Admin\Permission\Entity',
         ]);
 
-        $factory(\RZP\Models\Workflow\Action\State\Entity::class, [
+        $factory(\RZP\Models\State\Entity::class, [
             'id'                => $faker->uniqueid,
-            'name'              => \RZP\Models\Workflow\Action\State\Entity::OPEN,
+            'name'              => \RZP\Models\State\Name::OPEN,
         ]);
 
         $factory(\RZP\Models\Workflow\Action\Checker\Entity::class, [
             'id'                => $faker->uniqueid,
-            'name'              => \RZP\Models\Workflow\Action\State\Entity::OPEN,
+            'name'              => \RZP\Models\State\Name::OPEN,
         ]);
 
         $factory(\RZP\Models\Gateway\File\Entity::class, [
             'id'         => $faker->uniqueid,
             'created_at' => $faker->timestamp,
             'updated_at' => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\GeoIP\Entity::class, [
+            'ip'         => $faker->ipv4
         ]);
     }
 }

@@ -53,4 +53,14 @@ class KotakPayout extends Base
 
         return $subject;
     }
+
+    protected function addAttachments()
+    {
+        if (isset($this->data['file_data']) === true)
+        {
+            $this->attach($this->data['file_data']['file_path'], ['as' => $this->data['file_data']['file_name']]);
+        }
+
+        return $this;
+    }
 }

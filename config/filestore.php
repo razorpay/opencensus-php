@@ -27,6 +27,10 @@ return [
             'name'   => env('AWS_S3_INVOICES_BUCKET'),
             'region' => env('AWS_BUCKET_REGION', 'us-east-1')
         ],
+        'recon_bucket_config' => [
+            'name'   => env('AWS_S3_RECON_BUCKET'),
+            'region' => env('AWS_RECON_BUCKET_REGION', 'ap-south-1'),
+        ],
         'test_bucket_config' => [
             'name'   => env('AWS_S3_TEST_BUCKET'),
             'region' => env('AWS_BUCKET_REGION', 'us-east-1')
@@ -52,6 +56,10 @@ return [
         ],
         'invoice_bucket_config' => [
             'name'   => env('LOCAL_INVOICES_BUCKET', 'invoice_bucket'),
+            'region' => null,
+        ],
+        'recon_bucket_config' => [
+            'name'   => env('LOCAL_RECON_BUCKET', 'recon_bucket'),
             'region' => null,
         ],
         'test_bucket_config' => [

@@ -45,16 +45,25 @@ class Repository extends \Razorpay\Spine\Repository
     const TO           = 'to';
     const COUNT        = 'count';
     const SKIP         = 'skip';
+    const DELETED      = 'deleted';
 
     protected $app;
 
     protected $db;
 
+    /**
+     * @var \RZP\Http\BasicAuth\BasicAuth $auth;
+     */
     protected $auth;
 
     protected $trace;
 
     protected $manager;
+
+    /**
+     * @var null|Fetch
+     */
+    protected $entityFetch;
 
     /**
      * List of relations to be eager loaded when entity(s) is fetched via GET,
@@ -83,6 +92,8 @@ class Repository extends \Razorpay\Spine\Repository
         $this->auth = $this->app['basicauth'];
 
         $this->repo = $this->app['repo'];
+
+        $this->entityFetch = E::getEntityFetch($this->entity);
     }
 
     public static function getTableNameForEntity(string $entity)
@@ -361,8 +372,6 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * @param Models\Base\PublicEntity $entity
      * @param bool|boolean             $withTrashed
-     *
-     * @return
      *
      * @throws Exception\LogicException
      */
@@ -757,5 +766,10 @@ class Repository extends \Razorpay\Spine\Repository
             throw new Exception\LogicException(
                 'Unique id not generated for the entity');
         }
+    }
+
+    protected function hasEntityFetch(): bool
+    {
+        return ((empty($this->entityFetch) === false) and ($this->entityFetch->isEnabled() === true));
     }
 }

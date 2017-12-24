@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width"/>
+    @php
+        $brand_color = '#6A75ED';
+        $brand_text_color = '#FFFFFF';
+
+        $expiryDate = date('jS F Y', $dispute['expires_on']);
+
+        $amount = sprintf('%0.2f', ($dispute['amount'] / 100));
+        $amount = floatval($amount);
+
+        $paymentLink = 'https://dashboard.razorpay.com/#/app/payments/pay_' . $dispute['payment_id'];
+
+        $noteResult = 'failing which the case will be lost and the corresponding amount will be debited from the current balance. ';
+
+        if (($dispute['phase'] === 'retrieval') or ($dispute['phase'] === 'fraud'))
+        {
+            $noteResult = 'failing which the corresponding amount might be debited from the current balance. ';
+        }
+
+    @endphp
+  </head>
+  <body>
+    <center style="background-color: #fafafa">
+
+        <div style="
+            text-align: center;
+            background-color: {{ $brand_color }};
+            color: {{ $brand_text_color }};
+            padding: 30px 0 135px !important;
+            ">
+
+            <h2 style="color: {{ $brand_text_color }}">
+                  Dispute raised for Rs. {{ $amount }}
+              </h2>
+
+            <div style="margin-top: 12px; color: {{ $brand_text_color }}">
+                <div style="color: {{ $brand_text_color }}">
+                    Please respond by {{ $expiryDate }}
+                </div>
+              </div>
+        </div>
+
+
+
+        <table class="table" border="0" cellpadding="0" cellspacing="0" style="margin-top: -100px !important; height: 100%; wdith: 80%; max-width: 600px; margin: 0 auto; font-size: 12px;">
+          <tbody>
+
+            <tr>
+
+                <td class="content" style="
+                    padding-bottom: 24px;">
+                    <strong class="text-uppercase lh-26">Payment ID</strong> <br> <a href="{{ $paymentLink }}"> pay_{{ $dispute['payment_id'] }} </a>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="content" style="padding-bottom: 24px; padding-top: 0px;">
+                    <div>
+                        <strong class="text-uppercase lh-26">Dispute ID</strong> <br> {{ $dispute['id'] }}
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="content" style="padding-bottom: 24px; padding-top: 0px;">
+                    <div>
+                        <strong class="text-uppercase lh-26">Gateway case ID</strong> <br> {{ $dispute['gateway_dispute_id'] }}
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="content" style="padding-bottom: 0px; padding-top: 0px;">
+                    <div>
+                        <strong class="text-uppercase lh-26">Dispute Type and Reason</strong> <br>
+                        <span style="text-transform: capitalize"> <b> {{ $dispute['phase'] }} </b> : {{ $dispute['reason_description'] }} </span>
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="content" style="padding-bottom: 24px !important">
+                    <div>
+                        <strong class="text-uppercase lh-26">Deadline for resolution</strong> <br> <b> {{ $expiryDate }} </b> ( in {{ $remainingDays }} days )
+                    </div>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="content" style="border-top: dashed 1px rgba(0,0,0,0.1); border-bottom: solid 1px rgba(0,0,0,0.05); padding-top: 0px;">
+                    <div style="color:#000000">
+                        <br>
+                        Hi,
+                        <br><br>
+                        We have received a dispute for Rs. {{ $amount }} on pay_{{ $dispute['payment_id'] }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
+                        <br><br>
+                        Note: Kindly <b> reply to this email </b> with the requested documents in the required format by the deadline, {{ $noteResult }}
+                        <br><br>
+
+                    </div>
+                </td>
+            </tr>
+
+            <tr style="height: 30px;">
+            </tr>
+
+             <tr>
+                <td class="content" style="
+                    border-right: 0;
+                    vertical-align: top;
+                    border-bottom: 1px solid #f2f2f2;
+                    border-top: 1px solid #f2f2f2;
+                    border-right: 1px solid #f2f2f2;">
+
+                    <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
+                        <tbody>
+                            <tr>
+                                <td class="content" style="
+                                    vertical-align: top;">
+                                    <a href="https://razorpay.com/" target="_blank" style="height: 24px;">
+                                        <img style="height: 24px;" src="https://razorpay.com/images/logo-black.png"/>
+                                    </a>
+                                </td>
+                                <td class="content">
+                                    <div class="footerRZP">
+                                        For any queries, please reply to this email.
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+            <tr>
+                <td></td>
+            </tr>
+          </tbody>
+        </table>
+    </center>
+  </body>
+</html>
