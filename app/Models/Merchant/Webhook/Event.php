@@ -32,7 +32,6 @@ class Event
     const SUBSCRIPTION_CANCELLED    = 'subscription.cancelled';
     const SUBSCRIPTION_COMPLETED    = 'subscription.completed';
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
-
     const TOKEN_CONFIRMED           = 'token.confirmed';
     const TOKEN_REJECTED            = 'token.rejected';
     const ACCOUNT_ACTIVATED         = 'account.activated';
@@ -81,7 +80,7 @@ class Event
         self::INVOICE_PARTIALLY_PAID    => 0x17,
         self::TOKEN_CONFIRMED           => 0x18,
         self::TOKEN_REJECTED            => 0x19,
-        self::ACCOUNT_ACTIVATED         => 0x18,
+        self::ACCOUNT_ACTIVATED         => 0x20,
     ];
 
     /**
@@ -134,7 +133,7 @@ class Event
         self::INVOICE_PARTIALLY_PAID    => 18,
         self::TOKEN_CONFIRMED           => 19,
         self::TOKEN_REJECTED            => 20,
-        self::ACCOUNT_ACTIVATED         => 19,
+        self::ACCOUNT_ACTIVATED         => 21,
     ];
 
     /**

@@ -464,6 +464,7 @@ class ApiEventSubscriber extends Base\Core
         $eventFired = $this->event;
 
         $entity = $this->mainEntity;
+
         $webhook = $entity->merchant->webhook;
 
         $attributes = array(
