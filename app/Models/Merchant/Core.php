@@ -646,6 +646,8 @@ class Core extends Base\Core
 
         $emiMerchantSub->emiPlan()->associate($emiPlan);
 
+        $emiMerchantSub->generateId();
+
         $this->repo->saveOrFail($emiMerchantSub);
 
         return $emiMerchantSub->toArray();
