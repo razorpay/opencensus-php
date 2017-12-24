@@ -27,14 +27,28 @@ class AccountTest extends TestCase
 
     public function testRetrieveAccount()
     {
-        $this->fixtures->create('merchant:marketplace_account');
+        $merchant = $this->fixtures->create('merchant:marketplace_account');
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
 
         $this->startTest();
     }
 
     public function testRetrieveAccounts()
     {
-        $this->fixtures->create('merchant:marketplace_account');
+        $merchant = $this->fixtures->create('merchant:marketplace_account');
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
 
         $this->startTest();
     }

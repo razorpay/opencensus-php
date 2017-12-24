@@ -45,7 +45,7 @@ class Service extends Merchant\Service
         return $accounts->toArrayPublic();
     }
 
-    public function create(array $input)
+    public function create(array $input): array
     {
         $merchant = $this->core->createAccount($input, $this->merchant);
 
