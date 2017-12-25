@@ -38,7 +38,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         ];
     }
 
-    protected function getPaymentStatus(array $row)
+    protected function getReconPaymentStatus(array $row)
     {
         $status = strtolower($row[self::TRANSACTION_STATUS]);
 
