@@ -25,7 +25,7 @@ class UpiSbiGatewayReconTest extends TestCase
     /**
      * @var array
      */
-    protected $payment;
+    private $payment;
 
     public function setUp()
     {
@@ -48,6 +48,8 @@ class UpiSbiGatewayReconTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
+        $this->assertUpiEntityNotChanged();
+
         $response = $this->reconcile($uploadedFile, 'UpiSbi');
 
         // We assert that all 3 payments were reconciled
@@ -67,11 +69,7 @@ class UpiSbiGatewayReconTest extends TestCase
 
         // We assert that the entity's values have changed since recon -
         // as recon persists recon data into the DB
-        $upiEntity = $this->getLastEntity('upi', true);
-
-        $this->assertEquals(99999999998, $upiEntity['gateway_payment_id']);
-
-        $this->assertEquals(12345, $upiEntity['npci_reference_id']);
+        $this->assertUpiEntityChanged();
     }
 
     public function testFailedUpiSbiReconciliation()
@@ -87,6 +85,8 @@ class UpiSbiGatewayReconTest extends TestCase
         $fileContents = $this->generateReconFile();
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->assertUpiEntityNotChanged();
 
         $response = $this->reconcile($uploadedFile, 'UpiSbi');
 
@@ -107,6 +107,20 @@ class UpiSbiGatewayReconTest extends TestCase
 
         // We assert that the entity's values remain the same as before
         // This is because the payment is failed, and we do not reconcile failed payments
+        $this->assertUpiEntityNotChanged();
+    }
+
+    private function assertUpiEntityChanged()
+    {
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals(99999999998, $upiEntity['gateway_payment_id']);
+
+        $this->assertEquals(12345, $upiEntity['npci_reference_id']);
+    }
+
+    private function assertUpiEntityNotChanged()
+    {
         $upiEntity = $this->getLastEntity('upi', true);
 
         $this->assertEquals(99999999999, $upiEntity['gateway_payment_id']);
