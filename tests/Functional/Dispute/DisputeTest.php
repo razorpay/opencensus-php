@@ -607,7 +607,7 @@ class DisputeTest extends TestCase
 
         $testData = &$this->testData[$name];
 
-        $testData['request']['url'] = '/dispute/' . $dispute->getPublicId();
+        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
 
         return $testData;
     }
