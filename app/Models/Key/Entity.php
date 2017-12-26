@@ -24,6 +24,12 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    /**
+     * Cache driver to be used for query caching
+     * @var string
+     */
+    protected $rememberCacheDriver = 'query_cache';
+
     protected $public = array(
         self::ID,
         self::ENTITY,

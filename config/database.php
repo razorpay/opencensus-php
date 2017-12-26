@@ -136,7 +136,7 @@ return array(
     |
     */
 
-    'redis' => array(
+    'redis' => [
 
         'cluster' => false,
 
@@ -159,8 +159,15 @@ return array(
             'port'                  => env('REDIS_PORT'),
             'database'              => env('THROTTLE_REDIS_DB'),
             'timeout'               => 30,
-        ]
-    ),
+        ],
+
+        'query_cache' => [
+            'host'     => env('REDIS_HOST'),
+            'port'     => env('REDIS_PORT'),
+            'database' => env('REDIS_QUERY_CACHE_DB'),
+            'timeout'  => 30,
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------
