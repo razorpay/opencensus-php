@@ -158,11 +158,11 @@ class Traffic extends Component {
           </div>
         </div>
         <div className="row">
-          <div className="col-md-5 col-sm-12">
+          <div className="col-md-5 col-sm-12 column">
             {!groupState.loading &&
               chartData && <Pie options={chartOptions} data={chartData} />}
           </div>
-          <div className="col-md-7 col-sm-12">
+          <div className="col-md-7 col-sm-12 column">
             {!groupState.loading &&
               legendData && (
                 <Legend
