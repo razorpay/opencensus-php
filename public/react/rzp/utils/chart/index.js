@@ -51,7 +51,13 @@ export const timeScale = ({ xLabel, yLabel }) => {
           distribution: 'series',
           time: {
             displayFormats: {
-              day: 'DD MMM',
+              hour: 'MMM D',
+              month: 'MMM YYYY',
+              day: 'MMM D',
+              week: 'MMM YYYY',
+              second: 'MMM D',
+              millisecond: 'MMM D',
+              hour: 'MMM D',
             },
             tooltipFormat: 'ddd DD MMM YYYY',
           },
