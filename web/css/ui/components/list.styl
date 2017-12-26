@@ -91,3 +91,12 @@
 .duplex
   .table
     table-layout: fixed
+  .tr
+    position: relative
+    &:active .td:last-child:after
+      content: 'Copied'
+      position: absolute
+      left: 100%
+      background: #fff
+      padding: 2px 6px
+      border-radius: 3px
