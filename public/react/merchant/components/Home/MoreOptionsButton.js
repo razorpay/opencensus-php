@@ -18,7 +18,6 @@ export default ({ csvData }) => (
               </a>
             </div>
           )}
-          <div className="option">Download as PNG</div>
         </div>
       </DropdownContent>
     </Dropdown>
