@@ -16,18 +16,6 @@ class Reconciliate extends Base\Reconciliate
      */
     const TRANSACTION_REPORT = 'merchantreport';
 
-    public function inExcludeList(array $fileDetails)
-    {
-        $fileName = strtolower($fileDetails['file_name']);
-
-        if (strpos($fileName, self::TRANSACTION_REPORT) !== false)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     protected function getFileName(array $extraDetails): string
     {
         return $extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_NAME];

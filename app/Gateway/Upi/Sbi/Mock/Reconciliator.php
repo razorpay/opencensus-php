@@ -79,9 +79,7 @@ class Reconciliator extends Base\Mock\Reconciliator
     {
         $data = [];
 
-        $totalAmount = 0;
-
-        $data[] = self::HEADERS;
+//        $data[] = self::HEADERS;
 
         foreach ($input as $row)
         {
@@ -91,38 +89,36 @@ class Reconciliator extends Base\Mock\Reconciliator
                 ->format('d-M-y H:i:s');
 
             $data[] = [
-                'random_merchant_id',
-                'Razorpay Software Private Limited',
-                'Razorpay Software Private Limited',
-                '9399',
-                $row['payment']['id'],
-                12345,
-                99999999998,
-                'U69',
-                'COLLECT',
-                'Credit',
-                'SUCCESS',
-                'Collect from razorpay@sbi',
-                $date,
-                (string) ($row['payment']['amount'] / 100),
-                '123456789',
-                'random@vpa',
-                'Random name',
-                'SBIN0000437',
-                (string) random_integer(10),
-                'razorpay@sbi',
-                'Razorpay Software Private Limited',
-                'SBIN0000437',
-                'P2M',
-                'Mob'
+                'PG Merchant ID'        => 'random_merchant_id',
+                'Legal Name'            => 'Razorpay Software Private Limited',
+                'Store Name'            => 'Razorpay Software Private Limited',
+                'MCC'                   => '9399',
+                'Order No'              => $row['payment']['id'],
+                'Trans Ref No.'         => 12345,
+                'Customer Ref No.'      => 99999999998,
+                'NPCI Response Code'    => 'U69',
+                'Trans Type'            => 'COLLECT',
+                'DR/CR'                 => 'Credit',
+                'Transaction Status'    => 'SUCCESS',
+                'Transaction Remarks'   => 'Collect from razorpay@sbi',
+                'Transaction Date'      => $date,
+                'Transaction Amount'    => (string)($row['payment']['amount'] / 100),
+                'Payer A/c No.'         => '123456789',
+                'Payer Virtual Address' => 'random@vpa',
+                'Payer A/C Name'        => 'Random name',
+                'Payer IFSC Code'       => 'SBIN0000437',
+                'Payee A/C No'          => (string)random_integer(10),
+                'Payee Virtual Address' => 'razorpay@sbi',
+                'Payee A/C Name'        => 'Razorpay Software Private Limited',
+                'Payee IFSC Code'       => 'SBIN0000437',
+                'Pay Type'              => 'P2M',
+                'Device Type'           => 'Mob',
             ];
-
-            $totalAmount += $row['payment']['amount'] / 100;
         }
 
         $this->content($data, 'sbi_recon');
 
-        return [$totalAmount, $data];
+        return $data;
     }
 
     /**
@@ -143,7 +139,7 @@ class Reconciliator extends Base\Mock\Reconciliator
         string $extension,
         array $content,
         string $fileName,
-        string $type = FileStore\Type::UPI_SBI_RECONCILIATION,
+        string $type = FileStore\Type::MOCK_RECONCILIATION_FILE,
         string $store = FileStore\Store::S3)
     {
         $creator = new FileStore\Creator;
@@ -153,10 +149,14 @@ class Reconciliator extends Base\Mock\Reconciliator
                 ->name($fileName)
                 ->store($store)
                 ->type($type)
-                ->headers(false)
+                ->headers(true)
                 ->save();
 
         return $creator;
     }
 
+    protected function addGatewayEntityIfNeeded(array & $data)
+    {
+        return;
+    }
 }

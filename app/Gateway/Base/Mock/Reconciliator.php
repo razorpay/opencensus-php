@@ -4,7 +4,6 @@ namespace RZP\Gateway\Base\Mock;
 
 use App;
 use Carbon\Carbon;
-use RZP\Exception\LogicException;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Base\RepositoryManager;
@@ -33,13 +32,6 @@ class Reconciliator
      */
     protected static $fileToWriteName;
 
-    /**
-     * List of banks that would need the gateway entity to make the recon file.
-     * Ideally, we can use constants in place of gateway entity attributes to
-     * avoid n additional DB calls for n payments to be reconciled.
-     */
-    const GATEWAYS_NEEDING_GATEWAY_ENTITY = [];
-
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -67,7 +59,7 @@ class Reconciliator
 
     protected function generate(array $input)
     {
-        list($totalAmount, $data) = $this->getReconciliationData($input);
+        $data = $this->getReconciliationData($input);
 
         $creator = $this->createReconFile($data);
 
@@ -77,23 +69,18 @@ class Reconciliator
             'local_file_path' => $file['local_file_path'],
             'count'           => count($data),
             'file_name'       => basename($file['local_file_path']),
-            'total_amount'    => $totalAmount,
         ];
     }
 
     protected function getReconciliationData(array $input)
     {
-        $data = [];
-
-        $totalAmount = 0;
-
-        return [$totalAmount, $data];
+        return [];
     }
 
     /**
      * Override this method in the child class
      * @param $content
-     * @throws LogicException
+     * @throws \BadMethodCallException
      */
     protected function createReconFile($content)
     {
@@ -102,7 +89,6 @@ class Reconciliator
 
     protected function generateText($data, $glue = '~', $ignoreLastNewline = false)
     {
-        //TODO : For now just copy pasting this from refund file
         $txt = '';
 
         $count = count($data);
@@ -126,16 +112,12 @@ class Reconciliator
     /**
      * Not all methods need the gateway entity to generate the recon file.
      * The purpose of this method is to eliminate n DB calls for n payments.
+     * To eliminate the DB calls, override this method in the base class.
      *
      * @param array $data
      */
     protected function addGatewayEntityIfNeeded(array & $data)
     {
-        if (in_array($this->gateway, self::GATEWAYS_NEEDING_GATEWAY_ENTITY, true) === false)
-        {
-            return;
-        }
-
         $gatewayPayment = $this->repo->upi->fetchByPaymentId($data['payment']['id']);
 
         $data['gateway'] = $gatewayPayment->toArray();
@@ -150,8 +132,8 @@ class Reconciliator
     public function content(& $content, $action = null) {}
 
     /**
-     * Different gateways return different types of payments,
-     * so this method can be overridden in the child class
+     * Different gateways have different criteria for sending payments in the recon file.
+     * To send payments do not match the criteria below, override this method in child class.
      *
      * @return PublicCollection
      */

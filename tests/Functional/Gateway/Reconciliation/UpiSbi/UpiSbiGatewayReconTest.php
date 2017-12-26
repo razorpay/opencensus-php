@@ -79,7 +79,7 @@ class UpiSbiGatewayReconTest extends TestCase
         $this->mockReconContentFunction(
             function(& $content, $action = null)
             {
-                $content[1][10] = 'FAILED';
+                $content[0]['Transaction Status'] = 'FAILED';
             });
 
         $fileContents = $this->generateReconFile();

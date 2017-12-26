@@ -94,10 +94,7 @@ class Type
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
     const MARKETPLACE_VENDOR_AGREEMENT      = FeatureConstants::MARKETPLACE . "." . FeatureConstants::VENDOR_AGREEMENT;
 
-    // Recon file types
-    const RECON                                 = 'recon';
-
-    const UPI_SBI_RECONCILIATION                = 'upi_sbi_reconciliation';
+    const MOCK_RECONCILIATION_FILE             = 'mock_reconciliation_file';
 
     /**
      * Map of types allowed for each entity.
@@ -139,6 +136,7 @@ class Type
             self::ICICI_EMI_FILE_SFTP,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
+            self::MOCK_RECONCILIATION_FILE,
         ],
 
         Constants\Entity::BATCH => [
@@ -169,10 +167,6 @@ class Type
         Constants\Entity::FEATURE => [
             self::MARKETPLACE_VENDOR_AGREEMENT
         ],
-
-        self::RECON => [
-            self::UPI_SBI_RECONCILIATION
-        ]
     ];
 
     /**
@@ -215,7 +209,7 @@ class Type
         self::FUND_TRANSFER_H2H,
         self::PNB_NETBANKING_REFUND,
         self::PNB_NETBANKING_CLAIMS,
-        self::UPI_SBI_RECONCILIATION
+        self::MOCK_RECONCILIATION_FILE
     ];
 
     /**

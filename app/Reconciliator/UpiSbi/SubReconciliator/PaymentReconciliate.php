@@ -11,14 +11,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * @see https://drive.google.com/drive/u/0/folders/0B1kf6HOmx7JBTmMzTXgwQVRrNm8
      */
 
-    const ORDER_NUMBER = 'order_no';
-
-    const TRANS_REF_NUMBER = 'trans_ref_no';
-
-    const CUSTOMER_REF_NUM = 'customer_ref_no';
-
+    const ORDER_NUMBER       = 'order_no';
+    const TRANS_REF_NUMBER   = 'trans_ref_no';
+    const CUSTOMER_REF_NUM   = 'customer_ref_no';
     const TRANSACTION_STATUS = 'transaction_status';
-
     const TRANSACTION_AMOUNT = 'transaction_amount';
 
     protected function getPaymentId(array $row)
@@ -28,19 +24,19 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReferenceNumber($row)
     {
-        return $row[self::TRANS_REF_NUMBER];
+        return $row[self::TRANS_REF_NUMBER] ?? null;
     }
 
     protected function getCustomerDetails($row)
     {
         return [
-            Base\Reconciliate::CUSTOMER_ID => $row[self::CUSTOMER_REF_NUM]
+            Base\Reconciliate::CUSTOMER_ID => $row[self::CUSTOMER_REF_NUM] ?? null
         ];
     }
 
     protected function getReconPaymentStatus(array $row)
     {
-        $status = strtolower($row[self::TRANSACTION_STATUS]);
+        $status = strtolower($row[self::TRANSACTION_STATUS]) ?? null;
 
         return Status::getPaymentStatus($status);
     }

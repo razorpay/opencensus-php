@@ -451,9 +451,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected function persistReconciliationData($rowDetails)
     {
         //
-        // If the row is present in MIS file, it means it's captured on the gateway end.
-        // For cases like UPI SBI, we run an additional status check and get to this step
-        // only if the status in the row is success, and not failed
+        // If the row reaches this part of the code, that means that it is captured on the gateway's end.
         //
         $this->persistPaymentData($rowDetails);
 

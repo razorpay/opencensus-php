@@ -72,7 +72,6 @@ class Repository extends Base\Repository
         Entity::LATE_AUTHORIZED    => 'sometimes|in:0,1',
         Entity::AMOUNT             => 'sometimes|integer',
         Entity::TERMINAL_ID        => 'sometimes|alpha_num|size:14',
-        Entity::CREATED_AT         => 'sometimes|numeric',
     ];
 
     protected $signedIds = [
