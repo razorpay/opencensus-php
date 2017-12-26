@@ -40,6 +40,17 @@ class VirtualBankAccount extends Base
 
     protected function createCustomer(array & $entry)
     {
+        if (empty($entry[Header::VA_CUSTOMER_ID]) === false)
+        {
+            $customerId = $entry[Header::VA_CUSTOMER_ID];
+
+            $customer = $this->repo
+                             ->customer
+                             ->findbyPublicIdAndMerchant($customerId, $this->merchant);
+
+            return $customer;
+        }
+
         $customerCreateInput = Helper::getCustomerCreateInput($entry);
 
         $customer = $this->customerCore->createLocalCustomer($customerCreateInput, $this->merchant, false);

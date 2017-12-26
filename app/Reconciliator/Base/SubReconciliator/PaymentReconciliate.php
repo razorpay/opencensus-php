@@ -5,15 +5,12 @@ namespace RZP\Reconciliator\Base;
 use App;
 
 use RZP\Models\Card;
-use RZP\Models\Batch;
 use RZP\Models\Payment;
 use Rzp\Trace\TraceCode;
 use RZP\Models\Card\IIN;
-use RZP\Gateway\AxisMigs;
 use RZP\Models\Transaction;
 use RZP\Reconciliator\Messenger;
 use RZP\Models\Base\PublicEntity;
-use RZP\Reconciliator\Orchestrator;
 use RZP\Models\Base\PublicCollection;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
@@ -52,9 +49,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected $paymentIin;
     protected $paymentTransaction;
 
-    protected $app;
-    protected $repo;
-    protected $trace;
     protected $messenger;
 
     public function __construct()
@@ -704,7 +698,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistCustomerDetails($rowDetails, $gatewayPayment);
 
-        $gatewayPayment->saveOrFail();
+        $this->repo->saveOrFail($gatewayPayment);
     }
 
     /**
