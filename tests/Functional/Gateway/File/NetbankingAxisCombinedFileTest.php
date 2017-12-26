@@ -107,6 +107,7 @@ class NetbankingAxisCombinedFileTest extends TestCase
         Mail::fake();
 
         $this->fixtures->create('terminal:shared_netbanking_axis_corp_terminal');
+        $this->fixtures->merchant->addFeatures('corporate_banks');
 
         $payment = $this->getDefaultNetbankingPaymentArray('UTIB_C');
 

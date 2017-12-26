@@ -923,6 +923,7 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('ICI', $billdesk['BankID']);
 
         $this->fixtures->merchant->editCategory2('corporate');
+        $this->fixtures->merchant->addFeatures('corporate_banks');
 
         $payment = $this->getDefaultNetbankingPaymentArray('ICIC_C');
 
@@ -1165,6 +1166,7 @@ class TerminalSelectionTest extends TestCase
     {
         $this->fixtures->create('terminal:billdesk_terminal', ['corporate' => 1]);
         $this->fixtures->create('terminal:shared_netbanking_icici_corp_terminal', ['merchant_id' => '10000000000000']);
+        $this->fixtures->merchant->addFeatures('corporate_banks');
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 

@@ -101,6 +101,7 @@ class BilldeskGatewayTest extends TestCase
         ]);
 
         $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+        $this->fixtures->merchant->addFeatures('corporate_banks');
 
         $data = $this->testData['testMakerCheckerPaymentNormalCallbackForFailed'];
 
@@ -356,6 +357,7 @@ class BilldeskGatewayTest extends TestCase
         $this->ba->publicLiveAuth();
 
         $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->addFeatures('corporate_banks');
 
         $attributes = array(
             'merchant_id'               => '10000000000000',

@@ -8,6 +8,7 @@ use RZP\Models\Bank\Name;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Terminal\Category;
+use RZP\Models\Feature\Constants;
 
 class Netbanking
 {
@@ -377,6 +378,13 @@ class Netbanking
     public static function getSupportedBanks($merchant = null)
     {
         $banks = self::getSupportedBanksInLiveMode();
+
+        // Remove corporate banks if feature is not enabled.
+        if ((isset($merchant) === true) and
+            ($merchant->isFeatureEnabled(Constants::CORPORATE_BANKS) === false))
+        {
+            $banks = array_diff($banks, self::$billdeskCorp, self::$selfCorp);
+        }
 
         if ((isset($merchant) === true) and
             ($merchant->isTPVRequired() === true))

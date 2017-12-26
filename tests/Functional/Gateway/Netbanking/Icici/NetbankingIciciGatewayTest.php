@@ -62,6 +62,7 @@ class NetbankingIciciGatewayTest extends TestCase
     public function testPaymentCorporate()
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_netbanking_icici_corp_terminal');
+        $this->fixtures->merchant->addFeatures('corporate_banks');
 
         $this->payment = $this->getDefaultNetbankingPaymentArray('ICIC_C');
 

@@ -120,6 +120,7 @@ class NetbankingAxisGatewayTest extends TestCase
     public function testCorporatePayment()
     {
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_axis_corp_terminal');
+        $this->fixtures->merchant->addFeatures('corporate_banks');
 
         $this->payment = $this->getDefaultNetbankingPaymentArray('UTIB_C');
 
@@ -147,6 +148,7 @@ class NetbankingAxisGatewayTest extends TestCase
     public function testCorporatePendingPayment()
     {
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_axis_corp_terminal');
+        $this->fixtures->merchant->addFeatures('corporate_banks');
 
         $this->payment = $this->getDefaultNetbankingPaymentArray('UTIB_C');
 
@@ -181,6 +183,7 @@ class NetbankingAxisGatewayTest extends TestCase
     public function testVerifyDisabledForCorporatePayments()
     {
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_axis_corp_terminal');
+        $this->fixtures->merchant->addFeatures('corporate_banks');
 
         $this->payment = $this->getDefaultNetbankingPaymentArray('UTIB_C');
 
