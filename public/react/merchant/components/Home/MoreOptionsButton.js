@@ -11,7 +11,6 @@ export default ({ csvData }) => (
       </DropdownTrigger>
       <DropdownContent>
         <div className="dropdown-menu">
-          <div className="option">View detailed report</div>
           {!!csvData && (
             <div className="option">
               <a href={csvData.url} download={csvData.name}>

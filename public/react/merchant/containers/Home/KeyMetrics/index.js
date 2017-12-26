@@ -129,7 +129,9 @@ class KeyMetricsContainer extends Component {
     return fetch(query).then(resp => {
       tabsOrder.forEach(tabName => {
         const tabState = tabsState[tabName],
-          { isCurrency } = tabsMeta[tabName];
+          { selectedBreakdown } = tabState,
+          tabMeta = tabsMeta[tabName],
+          { isCurrency, title } = tabMeta;
 
         // Main stat showin in the tab
         const mainStat = resp.data[tabName];
@@ -154,11 +156,11 @@ class KeyMetricsContainer extends Component {
           tabState.lastUpdatedAt = histogram.last_updated_at;
           tabState.data.legendData = aggregates;
           tabState.data.csv = {
-            name: `${tabName}-${startDate.format(
+            name: `${selectedBreakdown} ${title} from ${startDate.format(
               csvDateFormat
-            )}to${endDate.format(
+            )} to ${endDate.format(
               csvDateFormat
-            )}-${tabState.selectedGrouping}-${tabState.selectedGrouping}.csv`,
+            )} group ${tabMeta.getGroupTitle(tabState.selectedGrouping)}.csv`,
             url: csv,
           };
         }

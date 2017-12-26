@@ -3,6 +3,14 @@ const defaultGroupingVals = [
   { value: 'platform', text: 'By Platforms' },
 ];
 
+function getGroupTitle(value) {
+  const groupObj = this.grouping.filter(
+    grouping => grouping.value === value
+  )[0];
+
+  return groupObj && groupObj.text;
+}
+
 const getDefaultFilterQuery = (merchantId, startTime, endTime) => {
   return {
     default: [
@@ -33,6 +41,7 @@ export const tabsMeta = {
     grouping: defaultGroupingVals,
     options: [],
     isCurrency: true,
+    getGroupTitle,
     getCountQuery: function() {
       return {
         [this.name]: {
@@ -62,6 +71,7 @@ export const tabsMeta = {
     title: 'Number of Transactions',
     grouping: defaultGroupingVals,
     options: [],
+    getGroupTitle,
     getCountQuery: function() {
       return {
         [this.name]: {
@@ -89,6 +99,7 @@ export const tabsMeta = {
     title: 'Refunds in total',
     grouping: defaultGroupingVals,
     options: [],
+    getGroupTitle,
     getCountQuery: function() {
       return {
         [this.name]: {
@@ -118,6 +129,7 @@ export const tabsMeta = {
     title: 'New Saved Cards',
     grouping: [],
     options: [],
+    getGroupTitle,
     getCountQuery: function() {
       return {
         [this.name]: {
