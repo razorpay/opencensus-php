@@ -65,18 +65,19 @@ class Repository extends Base\Repository
     {
         $merchantId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
-        $transactionMerchantId = $this->dbColumn(Transaction\Entity::MERCHANT_ID);
-        $transactionId = $this->dbColumn(Transaction\Entity::ID);
+        $transactionMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
+        $transactionId = $this->dbColumn(Entity::ID);
         $transactionData = $this->dbColumn('*');
+        $transactionChannel = $this->dbColumn(Entity::CHANNEL);
 
         $txns = $this->newQuery()
                     ->select($transactionData)
                     ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
-                    ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
-                    ->where(Transaction\Entity::ON_HOLD, 0)
-                    ->where(Transaction\Entity::SETTLED, '=', 0)
-                    ->where(Entity::CHANNEL, '=', $channel)
-                    ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
+                    ->where(Entity::SETTLED_AT, '<', $timestamp)
+                    ->where(Entity::ON_HOLD, 0)
+                    ->where(Entity::SETTLED, '=', 0)
+                    ->where($transactionChannel, '=', $channel)
+                    ->where(Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
                     ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
                     ->orderBy($transactionMerchantId)

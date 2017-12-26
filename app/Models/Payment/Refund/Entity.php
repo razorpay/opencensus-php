@@ -265,7 +265,7 @@ class Entity extends Base\PublicEntity
 
     public function getChannel()
     {
-        return Transaction\Channel::KOTAK;
+        return $this->merchant->getChannel();
     }
 
     public function getFees()
