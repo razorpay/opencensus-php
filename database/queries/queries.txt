@@ -2777,7 +2777,12 @@ ALTER TABLE `action_state_reasons`
 
 ALTER TABLE virtual_accounts
     MODIFY COLUMN amount_received BIGINT UNSIGNED,
-    MODIFY COLUMN amount_paid BIGINT UNSIGNED;
+    MODIFY COLUMN amount_paid BIGINT UNSIGNED,
+    MODIFY COLUMN amount_reversed BIGINT UNSIGNED,
+    MODIFY COLUMN amount_expected BIGINT UNSIGNED;
+
+ALTER TABLE `merchants`
+    ADD COLUMN `channel` VARCHAR(32) DEFAULT 'kotak' AFTER `billing_label`;
 
 ALTER TABLE merchant_banks
     ADD COLUMN emandate TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;

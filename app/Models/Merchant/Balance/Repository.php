@@ -39,7 +39,7 @@ class Repository extends Base\Repository
 
     public function editMerchantAmountCredits($merchant, $amountCredits)
     {
-        $channel = Settlement\Channel::KOTAK;
+        $channel = $merchant->getChannel();
 
         return $this->transaction(function () use ($merchant, $amountCredits, $channel)
         {
@@ -72,7 +72,7 @@ class Repository extends Base\Repository
 
     public function editMerchantFeeCredits($merchant, $feeCredits)
     {
-        $channel = Settlement\Channel::KOTAK;
+        $channel = $merchant->getChannel();
 
         return $this->transaction(function () use ($merchant, $feeCredits, $channel)
         {
