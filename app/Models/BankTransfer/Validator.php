@@ -68,19 +68,19 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
                     $bankTransfer);
         }
-
-        if ($bankTransfer->getPayeeIfsc() === Provider::IFSC[Provider::YESBANK])
-        {
-            throw new Exception\LogicException(
-                    'Not refunding YesBank payments at the moment.',
-                    ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
-                    $bankTransfer->toArray());
-        }
     }
 
     public function validateRefundIsAllowed()
     {
         $bankTransfer = $this->entity;
+
+        if ($bankTransfer->getPayeeIfsc() === Provider::IFSC[Provider::YESBANK])
+        {
+            // Not refunding YesBank payments at the moment
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                    $bankTransfer);
+        }
 
         // Refunds are not permitted if payer bank account is unknown
         if ($bankTransfer->getPayerBankAccountId() === null)

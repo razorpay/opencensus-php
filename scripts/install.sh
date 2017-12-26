@@ -26,6 +26,13 @@ echo  "Run alohomora"
 $ALOHOMORA_BIN cast --region ap-south-1 --env $DEPLOYMENT_GROUP_NAME --app $APPLICATION_NAME "$API_INSTALL_DIR/environment/.env.vault.j2"
 $ALOHOMORA_BIN cast --region ap-south-1 --env $DEPLOYMENT_GROUP_NAME --app $APPLICATION_NAME "$API_INSTALL_DIR/environment/env.php.j2"
 
+# This clears the mod_php opcache
+echo "== apache restart =="
+sudo service apache2 restart
+
+echo "== opcache cli clear =="
+php $BASEDIR/scripts/clear_cli_opcache.php
+
 # start supervisor as root
 echo  "Supervisor Start"
 sudo systemctl start supervisor

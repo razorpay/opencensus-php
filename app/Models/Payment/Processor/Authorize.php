@@ -144,6 +144,9 @@ trait Authorize
         {
             $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
+            // Uncomment this to test with Sharp or any other terminal locally.
+            // $currentTerminal = Terminal\Entity::findOrFail('2czHdeTG32rFhB');
+
             $payment->associateTerminal($currentTerminal);
 
             $terminalGatewayInput = $gatewayInput;

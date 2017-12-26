@@ -41,6 +41,8 @@ class CreateDisputeReasons extends Migration
 
             $table->index(DisputeReason::CODE);
 
+            $table->index(DisputeReason::NETWORK);
+
             $table->index(DisputeReason::CREATED_AT);
         });
     }

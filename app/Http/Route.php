@@ -3,6 +3,9 @@
 namespace RZP\Http;
 
 use ApiResponse;
+use Illuminate\Routing\Router;
+use RZP\Foundation\Application;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Feature\Constants as Feature;
 
 use RZP\Models\Admin\Permission\Name as Permission;
@@ -138,7 +141,6 @@ final class Route
         'merchant_get_terminal'                   => ['get',      'merchants/{mid}/terminals/{tid}',                'MerchantController@getTerminal'                                    ],
         'merchant_delete_terminal'                => ['delete',   'merchants/{mid}/terminals/{tid}',                'MerchantController@deleteTerminal'                                 ],
         'merchant_modify_terminal'                => ['put',      'merchants/{mid}/terminals/{tid}',                'MerchantController@putTerminal'                                    ],
-        'merchant_copy_terminal'                  => ['post',     'merchants/{mid}/terminals/{tid}/copy',           'MerchantController@postCopyTerminal'                               ],
         'merchant_put_payment_methods'            => ['put',      'merchants/{mid}/methods',                        'MerchantController@putMethods'                                     ],
         'merchant_activate'                       => ['post',     'merchants/{id}/activate',                        'MerchantController@postActivate'                                   ],
         'merchant_send_activation_mail'           => ['post',     'merchants/activation_mail',                      'MerchantController@postSendActivationMail'                         ],
@@ -912,7 +914,6 @@ final class Route
         'merchant_create_terminal',
         'merchant_daily_report',
         'merchant_delete_terminal',
-        'merchant_copy_terminal',
         'merchant_activate',
         'merchant_send_activation_mail',
         'merchant_live_enable',
@@ -1951,18 +1952,24 @@ final class Route
         'payment_redirect_callback',
     ];
 
-    /**
-     * Sometimes we need to disable routes without deleting them temporarily.
-     * It could be that the route is deleted later on and is here during
-     * the transition period only.
-     */
-    const DISABLED_ROUTES = [
-        'merchant_copy_terminal',
-    ];
-
     const WORKFLOW_EXECUTE_ROUTE_NAME = 'action_request_execute';
 
     const WORKFLOW_APPROVE_ROUTE_NAME = 'action_checker_create';
+
+    /**
+     * @var Router
+     */
+    protected $router;
+
+    /**
+     * @var BasicAuth
+     */
+    protected $ba;
+
+    /**
+     * @var Application
+     */
+    protected $app;
 
     public function __construct($app)
     {
@@ -2198,7 +2205,7 @@ final class Route
 
     public function isWorkflowExecuteOrApproveCall()
     {
-        $routeName = $this->router->currentRouteName();
+        $routeName = $this->getCurrentRouteName();
 
         if (($routeName === self::WORKFLOW_EXECUTE_ROUTE_NAME) or
             ($routeName === self::WORKFLOW_APPROVE_ROUTE_NAME))
@@ -2212,14 +2219,14 @@ final class Route
     /**
      * Returns an array of feature names to which the current route is mapped under
      *
+     * @param $route
+     *
      * @return array
      */
-    public function getFeaturesForRoute() : array
+    public static function getFeaturesForRoute($route) : array
     {
-        $currentRoute = $this->getCurrentRouteName();
-
         $features = self::$routeNameToFeaturesMap;
 
-        return $features[$currentRoute] ?? [];
+        return $features[$route] ?? [];
     }
 }
