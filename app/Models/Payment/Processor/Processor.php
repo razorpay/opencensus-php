@@ -326,9 +326,9 @@ class Processor
 
             $input[Payment\Entity::METHOD] = $tokenMethod;
 
-            if ($tokenMethod === Payment\Method::NETBANKING)
+            // TODO: Should we keep netbanking too for backward compatibility?
+            if ($tokenMethod === Payment\Method::EMANDATE)
             {
-                // TODO: Change to Emandate
                 $input[Payment\Entity::BANK] = $token->getBank();
             }
             else if ($tokenMethod === Payment\Method::WALLET)
@@ -765,8 +765,12 @@ class Processor
     {
         $payment = $this->payment;
 
-        // For Netbanking payments two_factor_auth was set to NOT_APPLICABLE on authorize itself
-        if ($payment->isNetbanking() === true)
+        //
+        // For Netbanking and emandate payments two_factor_auth
+        // was set to NOT_APPLICABLE on authorize itself
+        //
+        if (($payment->isNetbanking() === true) or
+            ($payment->isEmandate() === true))
         {
             $twoFactorAuth = Payment\TwoFactorAuth::UNAVAILABLE;
         }
@@ -1098,6 +1102,7 @@ class Processor
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
+            // TODO: Handle TPV for emandate too?
             if (($this->merchant->isTPVRequired() === true) and
                 ($payment->isNetbanking() === true))
             {

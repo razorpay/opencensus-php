@@ -190,7 +190,7 @@ class Core extends Base\Core
 
         if ($this->isTestMode() === true)
         {
-            $availableEmandateBanks = Payment\Gateway::$eMandateBanks;
+            $availableEmandateBanks = Payment\Gateway::getAvailableEmandateBanks();
         }
         else
         {

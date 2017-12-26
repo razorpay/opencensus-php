@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Customer;
+use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
@@ -135,8 +136,8 @@ class Core extends Base\Core
         // For cards, we check if there's already an existing
         // token with the same customer, and simply return that
         // instead of creating a new token altogether.
-        // However, for netbanking, we don't do this check,
-        // because netbanking tokens are newly created for each
+        // However, for emandate, we don't do this check,
+        // because emandate tokens are newly created for each
         // and every new first recurring payment, for now.
         //
         if ($existingToken !== null)
@@ -208,18 +209,19 @@ class Core extends Base\Core
     }
 
     /**
-     * This method takes in the current tokens collection, removes the netbanking
-     * recurring tokens and returns the remaining tokens as an array
+     * This method takes in the current tokens collection, removes the
+     * emandate tokens and returns the remaining tokens as an array
      *
      * @param $tokens
+     *
      * @return mixed
      */
-    public function removeNetbankingRecurringTokens($tokens)
+    public function removeEmandateRecurringTokens($tokens)
     {
         //
         // We are creating an array of all the items that do not pass the truth test
-        // that the token is recurring and netbanking - as we do not want to show
-        // recurring netbanking tokens to the merchant via preferences
+        // that the token is of emandate method - as we do not want to show
+        // emandate tokens to the merchant via preferences
         //
 
         if (Base\PublicCollection::isPublicCollection($tokens) === true)
@@ -227,8 +229,7 @@ class Core extends Base\Core
             $tokens = $tokens->reject(
                 function($token)
                 {
-                    if (($token->getMethod() === 'netbanking') and
-                        ($token->isRecurring() === true))
+                    if ($token->getMethod() === Method::EMANDATE)
                     {
                         return true;
                     }
@@ -241,18 +242,15 @@ class Core extends Base\Core
             $tokenItems = & $tokens['items'];
 
             $tokenItems = array_filter($tokenItems, function ($item)
-                        {
-                            $netbankingRecurring = (($item['method'] === 'netbanking') and
-                                                    ($item['recurring']));
-
-                            return ($netbankingRecurring === false);
-                        });
+            {
+                return ($item['method'] !== Method::EMANDATE);
+            });
         }
 
         return $tokens;
     }
 
-    public function updateTokenFromNetbankingGatewayData(Entity $token, array $gatewayData)
+    public function updateTokenFromEmandateGatewayData(Entity $token, array $gatewayData)
     {
         if (empty($gatewayData[Entity::RECURRING_STATUS]) === false)
         {
@@ -336,7 +334,7 @@ class Core extends Base\Core
         return null;
     }
 
-    protected function validateExistingTokenNetbanking($existingTokens, $newToken)
+    protected function validateExistingTokenEmandate($existingTokens, $newToken)
     {
         return null;
     }
