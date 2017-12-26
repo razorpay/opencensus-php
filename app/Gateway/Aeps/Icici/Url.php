@@ -11,6 +11,5 @@ class Url
     const LIVE_DOMAIN_PORT  = '4404';
 
     const TEST_REFUND_URL = 'https://apigwuat.icicibank.com:8443/api/UPIStack/v1/PayRequestGlobalOutward/RazorPay';
-    const LIVE_REFUND_URL = '';
-
+    const LIVE_REFUND_URL = 'https://api.icicibank.com:8443/api/UPIStack/v1/PayRequestGlobalOutward/RazorPay';
 }
