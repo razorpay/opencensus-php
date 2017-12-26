@@ -21,7 +21,6 @@ class Service extends Base\Service
     const BATCH_RECON_GATEWAYS = [
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::FIRST_DATA,
-//        RequestProcessor\Base::UPI_SBI
     ];
 
     public function initiateReconciliationProcess(array $input)

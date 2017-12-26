@@ -11,14 +11,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * @see https://drive.google.com/drive/u/0/folders/0B1kf6HOmx7JBTmMzTXgwQVRrNm8
      */
 
-    const ORDER_NUMBER = 'order_no';
-
-    const TRANS_REF_NUMBER = 'trans_ref_no';
-
-    const CUSTOMER_REF_NUM = 'customer_ref_no';
-
+    const ORDER_NUMBER       = 'order_no';
+    const TRANS_REF_NUMBER   = 'trans_ref_no';
+    const CUSTOMER_REF_NUM   = 'customer_ref_no';
     const TRANSACTION_STATUS = 'transaction_status';
-
     const TRANSACTION_AMOUNT = 'transaction_amount';
 
     protected function getPaymentId(array $row)
