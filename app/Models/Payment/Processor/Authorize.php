@@ -871,15 +871,15 @@ trait Authorize
 
         //
         // If payment type is card, validate that the card supports recurring
-        // or if payment type is netbanking, validate that the bank supports recurring
+        // or if payment type is emandate, validate that the bank supports emandate
         //
         if ($payment->isCard() === true)
         {
             $this->validateRecurringForCard($payment);
         }
-        else if ($payment->isNetbanking() === true)
+        else if ($payment->isEmandate() === true)
         {
-            $this->validateRecurringForNetbanking($payment, $token, $input);
+            $this->validateRecurringForEmandate($payment, $token, $input);
         }
 
         //
@@ -1008,7 +1008,7 @@ trait Authorize
         }
     }
 
-    protected function validateRecurringForNetbanking(
+    protected function validateRecurringForEmandate(
         Payment\Entity $payment, Token\Entity $token = null, array $input)
     {
         if ($token === null)
@@ -1017,10 +1017,11 @@ trait Authorize
         }
 
         $bank = $payment->getBank();
+        $authenticationType = $payment->getAuthenticationType();
 
         // TODO: Handle first recurring / second recurring based on token and route
 
-        if (Payment\Gateway::isRecurringSupportedOnBank($bank) === false)
+        if (Payment\Gateway::isEmandateSupportedOnBank($bank, $authenticationType) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
@@ -1061,7 +1062,7 @@ trait Authorize
             ($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_NB_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING,
+                ErrorCode::BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING,
                 Payment\Entity::BANK,
                     [
                          'payment' => $payment->toArray(),
@@ -1503,7 +1504,7 @@ trait Authorize
     {
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        if ($payment->isEmandatePayment() === true)
+        if ($payment->isEmandate() === true)
         {
             // True => auto, False => initial
             // TODO: Add support for when we allow recurring tokens for first payments
@@ -1785,13 +1786,13 @@ trait Authorize
 
         $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
 
-        if ($payment->isMethodCardOrEmi())
+        if ($payment->isMethodCardOrEmi() === true)
         {
             $payment->localToken()->associate($token);
 
             $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input);
         }
-        else if ($payment->isNetbanking())
+        else if ($payment->isEmandate() === true)
         {
             $payment->setBank($token->getBank());
 
@@ -1817,7 +1818,7 @@ trait Authorize
 
         $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
 
-        if ($payment->isMethodCardOrEmi())
+        if ($payment->isMethodCardOrEmi() === true)
         {
             $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
 
@@ -1827,14 +1828,12 @@ trait Authorize
 
             $this->repo->saveOrFail($payment->card);
         }
-        else if ($payment->isMethod(Payment\Method::WALLET))
+        else if ($payment->isWallet() === true)
         {
             $payment->setWallet($token->getWallet());
         }
-        else if ($payment->isMethod(Payment\Method::NETBANKING))
+        else if ($payment->isEmandate() === true)
         {
-            // TODO: Change to EMANDATE
-
             //
             // This should be here since, if a token is passed,
             // the bank would not be passed in the payment input.
@@ -1902,9 +1901,10 @@ trait Authorize
             // save local saved card for local customer
             $token = $this->savePaymentMethod($customer, $payment, $savedLocalCard->getId(), $input);
         }
-        else if ($payment->isNetbanking() === true)
+        else if ($payment->isEmandate() === true)
         {
-            // save netbanking bank locally for local customer
+            // TODO: Keep netbanking also for backward compatibility?
+            // save emandate bank locally for local customer
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
 
@@ -1939,9 +1939,10 @@ trait Authorize
             // save global saved card for global customer
             $token = $this->savePaymentMethod($customer, $payment, $savedGlobalCard->getId(), $input);
         }
-        else if ($payment->isNetbanking() === true)
+        else if ($payment->isEmandate() === true)
         {
-            // save netbanking bank token globally for global customer
+            // TODO: Keep netbanking check too for backward compatibility?
+            // save emandate bank token globally for global customer
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
 
@@ -1976,8 +1977,9 @@ trait Authorize
 
             $saveMethodInput[Token\Entity::CARD_ID] = $savedCardId;
         }
-        else if ($payment->isNetbanking() === true)
+        else if ($payment->isEmandate() === true)
         {
+            // TODO: Should we keep netbanking also for backward compatibility?
             $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
 
             // TODO: We need to get this from user input - hard coding for now
@@ -2298,22 +2300,22 @@ trait Authorize
 
         //
         // This is just in case. Payment recurring is anyway only
-        // allowed on cards and netbanking.
+        // allowed on cards and emandate.
         //
         if (($payment->isCard() === false) and
-            ($payment->isNetbanking() === false))
+            ($payment->isEmandate() === false))
         {
             return;
         }
 
         //
-        // For netbanking payments, we create a new token for every
+        // For emandate payments, we create a new token for every
         // single new first recurring payment.
-        // For existing recurring nb tokens, we do not update it.
+        // For existing recurring emandate tokens, we do not update it.
         // TODO: Remove this when we allow using the same token again
         // for another recurring payment.
         //
-        if (($payment->isNetbanking() === true) and
+        if (($payment->isEmandate() === true) and
             ($token->isRecurring() === true))
         {
             return;
@@ -2325,9 +2327,10 @@ trait Authorize
             // TODO: Back fill the data for all the other recurring card tokens!
             $token->setRecurringStatus(Token\RecurringStatus::CONFIRMED);
         }
-        else if ($payment->isNetbanking() === true)
+        else if ($payment->isEmandate() === true)
         {
-            $this->updateTokenOnAuthorizedForNetbankingRecurring($token, $data, $payment);
+            // TODO: Keep netbanking too for backward compatibility? Check in other places too in this function.
+            $this->updateTokenOnAuthorizedForEmandateRecurring($token, $data, $payment);
         }
 
         // Not required as we only use terminals through
@@ -2360,7 +2363,7 @@ trait Authorize
      * @param array             $gatewayData
      * @param Payment\Entity    $payment
      */
-    protected function updateTokenOnAuthorizedForNetbankingRecurring(
+    protected function updateTokenOnAuthorizedForEmandateRecurring(
         Token\Entity $token, array $gatewayData, Payment\Entity $payment)
     {
         //
@@ -2385,7 +2388,7 @@ trait Authorize
             return;
         }
 
-        (new Token\Core)->updateTokenFromNetbankingGatewayData($token, $gatewayData);
+        (new Token\Core)->updateTokenFromEmandateGatewayData($token, $gatewayData);
     }
 
     protected function createAndSetTerminalInGatewayToken(Payment\Entity $payment, Token\Entity $token)
@@ -2405,7 +2408,7 @@ trait Authorize
         }
         else if ($gatewayTokensCount === 1)
         {
-            if ($payment->isNetbanking() === true)
+            if ($payment->isEmandate() === true)
             {
                 //
                 // We do not reuse the tokens in case of NB.
@@ -2413,7 +2416,7 @@ trait Authorize
                 // token to be created.
                 //
                 throw new Exception\LogicException(
-                    'Tokens cannot be reused in netbanking payments',
+                    'Tokens cannot be reused in emandate payments',
                     null,
                     [
                         'payment'        => $payment->toArray(),

@@ -938,7 +938,7 @@ class Entity extends Base\PublicEntity
 
             case Method::EMANDATE:
 
-                // TODO: Will this be available for netbanking (both direct and npci?), aadhar?
+                // TODO: Will this be available for netbanking (both direct and npci?), aadhaar?
                 // TODO: What will reference1 be for debit requests? Where do we get this from?
                 // TODO: In debit request, authentication_type will be null?
 
