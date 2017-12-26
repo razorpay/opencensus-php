@@ -4,6 +4,8 @@ import { titleCase, arrayToCsvDataUrl } from 'rzp/utils/rzp-utils';
 import colors from './colors';
 import { groupBy } from '../pokedex';
 
+const dateFormat = 'Do MMM YYYY';
+
 export const getTimelineData = ({
   data,
   groupByColumnName,
@@ -130,17 +132,23 @@ export const getTimelineData = ({
     }),
     groupsCsvData = [];
 
-  let csvData = [['', ...timestamps]];
+  let csvData = [],
+    csvHeader = ['#', 'Date'],
+    csvFooter = ['', 'Total'],
+    grandTotal = 0;
 
-  timestamps.forEach((timestamp, index) => {
+  timestamps.forEach((timestamp, tsIndex) => {
     timestamp = Number(timestamp);
+
+    let totalAtTime = 0;
 
     groups.forEach((groupName, index) => {
       const groupData = groupDatasetsMap[groupName].data,
         aggregateData = groupAggregatesMap[groupName],
         yAxisVal = timelineGroupMap[timestamp][groupName],
         groupCsvData =
-          groupsCsvData[index] || (groupsCsvData[index] = [groupName]);
+          groupsCsvData[tsIndex] ||
+          (groupsCsvData[tsIndex] = [moment(timestamp).format(dateFormat)]);
 
       // `datasets` variable will get populated due to reference
       groupData.push({
@@ -150,13 +158,31 @@ export const getTimelineData = ({
 
       aggregateData.value += yAxisVal;
 
+      totalAtTime += yAxisVal;
+
       groupCsvData.push(yAxisVal);
     });
 
-    timestamps[index] = moment(timestamp);
+    groupsCsvData[tsIndex].unshift(tsIndex + 1);
+    groupsCsvData[tsIndex].push(totalAtTime);
+
+    timestamps[tsIndex] = moment(timestamp);
   });
 
   csvData = csvData.concat(groupsCsvData);
+
+  aggregates.forEach(aggregate => {
+    csvHeader.push(aggregate.label);
+    csvFooter.push(aggregate.value);
+
+    grandTotal += aggregate.value;
+  });
+
+  csvHeader.push('Total');
+  csvFooter.push(grandTotal);
+
+  csvData.unshift(csvHeader);
+  csvData.push(csvFooter);
 
   return {
     labels: timestamps,

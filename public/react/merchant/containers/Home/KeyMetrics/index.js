@@ -152,15 +152,17 @@ class KeyMetricsContainer extends Component {
             valueTransformer: isCurrency && paiseToRupees,
           });
 
+          const downloadFileName = `${selectedBreakdown} ${title} from ${startDate.format(
+            csvDateFormat
+          )} to ${endDate.format(csvDateFormat)} group ${tabMeta.getGroupTitle(
+            tabState.selectedGrouping
+          )}`;
+
           tabState.data.histogram = { labels, datasets };
           tabState.lastUpdatedAt = histogram.last_updated_at;
           tabState.data.legendData = aggregates;
           tabState.data.csv = {
-            name: `${selectedBreakdown} ${title} from ${startDate.format(
-              csvDateFormat
-            )} to ${endDate.format(
-              csvDateFormat
-            )} group ${tabMeta.getGroupTitle(tabState.selectedGrouping)}.csv`,
+            name: `${downloadFileName}.csv`,
             url: csv,
           };
         }
