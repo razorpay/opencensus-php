@@ -198,15 +198,35 @@ class Gateway extends Base\Gateway
         $amount = number_format($input['refund']['amount'] / 100, 2, '.', '');
 
         $data = [
-            RequestConstants::REFUND_DATA_ACCOUNT_PROVIDER    => $this->config['account_provider'],
-            RequestConstants::REFUND_DATA_MOBILE              => $this->config['payer_mobile'],
-            RequestConstants::REFUND_DATA_PAYER_VA            => $this->config['payer_vpa'],
+            RequestConstants::REFUND_DATA_ACCOUNT_PROVIDER    => (
+                                                                    $this->mode === Mode::TEST ?
+                                                                    $this->config['refund_account_provider_test'] :
+                                                                    $this->config['refund_account_provider_live']
+                                                                 ),
+            RequestConstants::REFUND_DATA_MOBILE              => (
+                                                                    $this->mode === Mode::TEST ?
+                                                                    $this->config['refund_payer_mobile_test'] :
+                                                                    $this->config['refund_payer_mobile_live']
+                                                                 ),
+            RequestConstants::REFUND_DATA_PAYER_VA            => (
+                                                                    $this->mode === Mode::TEST ?
+                                                                    $this->config['refund_payer_vpa_test'] :
+                                                                    $this->config['refund_payer_vpa_live']
+                                                                 ),
             RequestConstants::REFUND_DATA_AMOUNT              => $amount,
             RequestConstants::REFUND_DATA_NOTE                => $input['payment']['id'],
-            RequestConstants::REFUND_DATA_DEVICE_ID           => $this->config['device_id'],
+            RequestConstants::REFUND_DATA_DEVICE_ID           => (
+                                                                    $this->mode === Mode::TEST ?
+                                                                    $this->config['refund_device_id_test'] :
+                                                                    $this->config['refund_device_id_live']
+                                                                 ),
             RequestConstants::REFUND_DATA_SEQ_NO              => strtolower('ici' . upi_uuid(false)),
             RequestConstants::REFUND_DATA_CHANNEL_CODE        => $this->config['channel_code'],
-            RequestConstants::REFUND_DATA_PROFILE_ID          => $this->config['profile_id'],
+            RequestConstants::REFUND_DATA_PROFILE_ID          => (
+                                                                    $this->mode === Mode::TEST ?
+                                                                    $this->config['refund_profile_id_test'] :
+                                                                    $this->config['refund_profile_id_live']
+                                                                 ),
             RequestConstants::REFUND_DATA_ACCOUNT_TYPE        => Constants::REFUND_DATA_ACCOUNT_TYPE,
             RequestConstants::REFUND_DATA_PRE_APPROVED        => Constants::REFUND_DATA_PRE_APPROVED,
             RequestConstants::REFUND_DATA_USE_DEFAULT_ACC     => Constants::REFUND_DATA_USE_DEFAULT_ACC,
@@ -216,7 +236,11 @@ class Gateway extends Base\Gateway
             RequestConstants::REFUND_DATA_PAYEE_AADHAR        => $gatewayEntity[Base\Entity::AADHAAR_NUMBER],
             RequestConstants::REFUND_DATA_PAYEE_IIN           => '',
             RequestConstants::REFUND_DATA_PAYEE_NAME          => Constants::REFUND_DATA_PAYEE_NAME,
-            RequestConstants::REFUND_DATA_MCC                 => Constants::REFUND_DATA_MCC,
+            RequestConstants::REFUND_DATA_MCC                 => (
+                                                                    $this->mode === Mode::TEST ?
+                                                                    $this->config['refund_mcc_test'] :
+                                                                    $this->config['refund_mcc_live']
+                                                                 ),
             RequestConstants::REFUND_DATA_MERCHANT_TYPE       => Constants::REFUND_DATA_MERCHANT_TYPE,
         ];
 
@@ -256,7 +280,11 @@ class Gateway extends Base\Gateway
             'method'  => 'POST',
             'content' => $content,
             'headers' => [
-                RequestConstants::REFUND_REQUEST_API_KEY => $this->config['refund_api_key'],
+                RequestConstants::REFUND_REQUEST_API_KEY => (
+                                                                $this->mode === Mode::TEST ?
+                                                                $this->config['refund_api_key_test'] :
+                                                                $this->config['refund_api_key_live']
+                                                             ),
                 'Content-Type' => 'application/json'
             ]
         ];

@@ -11,6 +11,5 @@ class Constants
     const REFUND_DATA_DEFAULT_CREDIT      = 'N';
     const REFUND_DATA_GLOBAL_ADDRESS_TYPE = 'AADHAR';
     const REFUND_DATA_PAYEE_NAME          = 'Razorpay';
-    const REFUND_DATA_MCC                 = '5411';
     const REFUND_DATA_MERCHANT_TYPE       = 'ENTITY';
 }
