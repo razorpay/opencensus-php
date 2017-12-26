@@ -627,6 +627,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CATEGORY2);
     }
 
+    public function isCategoryCryptocurrency()
+    {
+        return ($this->getCategory2() === Terminal\Category::CRYPTOCURRENCY);
+    }
+
     public function getBillingLabelNotName()
     {
         return $this->attributes[self::BILLING_LABEL];
