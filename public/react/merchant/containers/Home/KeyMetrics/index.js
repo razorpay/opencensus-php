@@ -13,7 +13,7 @@ import { fetch } from 'merchant/modules/pokedex';
 import { tabsOrder, tabsMeta, getQuery, breakdownVals } from './data';
 import Panel from './Panel';
 
-const csvDateFormat = 'DoMMMYYYY';
+const csvDateFormat = 'Do MMM YYYY';
 
 const TabContent = ({ name, value, isCurrency, title, isLoading }) => {
   /*

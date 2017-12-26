@@ -16,10 +16,11 @@ import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
 
 const chartOptions = {
-  tooltips: {
-    enabled: false,
+    tooltips: {
+      enabled: false,
+    },
   },
-};
+  dateFormat = 'Do MMM YYYY';
 
 @connect(null, null)
 class Traffic extends Component {
@@ -67,8 +68,12 @@ class Traffic extends Component {
 
     this.setState(this.state);
 
+    const downloadFileName = `Traffic split on platforms grouped ${meta.title} from ${startDate.format(
+      dateFormat
+    )} to ${endDate.format(dateFormat)}`;
+
     fetch(query).then(({ data: { distribution } }) => {
-      const { labels, datasets, legendData } = getPieData({
+      const { labels, datasets, legendData, csv } = getPieData({
         data: distribution.result,
         groupByColumnName: meta.groupBy,
         valueTransformer: meta.isCurrency && paiseToRupees,
@@ -77,6 +82,10 @@ class Traffic extends Component {
       groupState.chartData = { labels, datasets };
       groupState.legendData = legendData;
       groupState.lastUpdatedAt = distribution.last_updated_at;
+      groupState.csvData = {
+        name: `${downloadFileName}.csv`,
+        url: csv,
+      };
 
       if (isInitialLoad) {
         this.state.loading = false;
@@ -144,7 +153,7 @@ class Traffic extends Component {
               </select>
             </div>
             <div className="panel-action-item">
-              <MoreOptionsButton />
+              <MoreOptionsButton csvData={groupState.csvData} />
             </div>
           </div>
         </div>
