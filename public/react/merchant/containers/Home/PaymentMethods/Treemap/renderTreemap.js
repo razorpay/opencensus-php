@@ -1,4 +1,9 @@
-import { titleCase, getFormattedAmount } from 'rzp/utils/rzp-utils';
+import {
+  titleCase,
+  getFormattedAmount,
+  paiseToRupees,
+} from 'rzp/utils/rzp-utils';
+import { humanReadableIndianCurrency } from 'rzp/utils/numerals';
 
 var defaults = {
   margin: { top: 0, right: 0, bottom: 0, left: 0 },
@@ -218,7 +223,7 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
       .style('font-size', '24px')
       .style('line-height', '29px')
       .text(function(d) {
-        return '₹' + formatNumber(d.value);
+        return humanReadableIndianCurrency(paiseToRupees(d.value));
       });
 
     t
