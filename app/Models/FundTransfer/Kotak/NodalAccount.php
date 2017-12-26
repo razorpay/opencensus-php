@@ -102,22 +102,64 @@ class NodalAccount extends NodalBase\NodalAccount
 
             $this->updateSummary($type, $amount);
 
-            $array = [
-                Headings::CLIENT_CODE             => 'RAZORNODAL',
-                Headings::PRODUCT_CODE            => 'MERPAY',
-                Headings::PAYMENT_TYPE            => $type,
-                Headings::PAYMENT_REF_NO          => $paymentRefNo,
-                Headings::PAYMENT_DATE            => $this->date,
-                Headings::DR_AC_NO                => static::$nodalAccountNumber,
-                Headings::AMOUNT                  => $amount,
-                Headings::BANK_CODE_INDICATOR     => 'M',
-                Headings::BENEFICIARY_CODE        => $ba->getBeneficiaryCode(),
-                Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
-                Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
-                Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
-                Headings::PAYMENT_DETAILS_3       => $version,
-                Headings::PAYMENT_DETAILS_4       => $entity->getBatchFundTransferId(),
-            ];
+            // For Hike retry settlement
+            if ((count($entities) === 1) and
+                ($ba->getAccountNumber() === '44449773833987'))
+            {
+                $mid = $merchant->getId();
+
+                if ($mid === '7I5sCUbi0P7eiL')
+                {
+                    $ifsc = 'KKBK000VRTL';
+                }
+                else if ($mid === '7C9vkxnJlNC6bY')
+                {
+                    $ifsc = 'KKBK0000958';
+                }
+                else
+                {
+                    continue;
+                }
+
+                $array = [
+                    Headings::CLIENT_CODE             => 'RAZORNODAL',
+                    Headings::PRODUCT_CODE            => 'REFUND',
+                    Headings::PAYMENT_TYPE            => 'NEFT',
+                    Headings::PAYMENT_REF_NO          => $paymentRefNo,
+                    Headings::PAYMENT_DATE            => $this->date,
+                    Headings::INSTRUMENT_DATE         => $this->date,
+                    Headings::DR_AC_NO                => static::$nodalAccountNumber,
+                    Headings::AMOUNT                  => (string) $amount,
+                    Headings::BANK_CODE_INDICATOR     => 'M',
+                    Headings::BENEFICIARY_NAME        => $ba->getBeneficiaryName(),
+                    Headings::IFSC_CODE               => $ifsc,
+                    Headings::BENEFICIARY_ACC_NO      => $ba->getAccountNumber(),
+                    Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
+                    Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
+                    Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
+                    Headings::PAYMENT_DETAILS_3       => $version,
+                    Headings::PAYMENT_DETAILS_4       => $entity->getBatchFundTransferId(),
+                ];
+            }
+            else
+            {
+                $array = [
+                    Headings::CLIENT_CODE             => 'RAZORNODAL',
+                    Headings::PRODUCT_CODE            => 'MERPAY',
+                    Headings::PAYMENT_TYPE            => $type,
+                    Headings::PAYMENT_REF_NO          => $paymentRefNo,
+                    Headings::PAYMENT_DATE            => $this->date,
+                    Headings::DR_AC_NO                => static::$nodalAccountNumber,
+                    Headings::AMOUNT                  => $amount,
+                    Headings::BANK_CODE_INDICATOR     => 'M',
+                    Headings::BENEFICIARY_CODE        => $ba->getBeneficiaryCode(),
+                    Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
+                    Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
+                    Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
+                    Headings::PAYMENT_DETAILS_3       => $version,
+                    Headings::PAYMENT_DETAILS_4       => $entity->getBatchFundTransferId(),
+                ];
+            }
 
             $array = $this->getAllFields($array);
 
