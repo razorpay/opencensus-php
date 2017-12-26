@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import Breadcrumb, { BreadcrumbItem } from 'rzp/ui/Breadcrumb';
 
@@ -79,6 +80,7 @@ class PaymentMethods extends Component {
 
   render() {
     const { levels } = this.state,
+      { startDate, endDate } = this.props,
       levelsLength = levels.length;
 
     return (
@@ -114,8 +116,17 @@ class PaymentMethods extends Component {
             currentLevel={this.state.currentLevel}
           />
         </div>
-        <div className="panel-footer">
-          <LastUpdated at={this.state.lastUpdatedAt} />
+        <div className="panel-footer clearfix">
+          <div className="pull-left">
+            <LastUpdated at={this.state.lastUpdatedAt} />
+          </div>
+          <div className="pull-right">
+            <Link
+              to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
+            >
+              View all Payments &gt;
+            </Link>
+          </div>
         </div>
       </div>
     );

@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { acronyms, shortenText } from './acronyms';
 
 moment.updateLocale('en', {
   relativeTime: {
@@ -333,3 +334,5 @@ export const arrayToCsvDataUrl = array => {
 
   return 'data:text/csv;utf-8,' + encodeURIComponent(arrayToCsv(array));
 };
+
+export { acronyms, shortenText };

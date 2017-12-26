@@ -5,7 +5,7 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import moment from 'moment';
 
 import Amount from 'rzp/ui/Amount';
-import { paiseToRupees } from 'rzp/utils/rzp-utils';
+import { paiseToRupees, titleCase, shortenText } from 'rzp/utils/rzp-utils';
 import { getTimelineData } from 'rzp/utils/chart/transformers';
 import { humanReadableIndian } from 'rzp/utils/numerals';
 
@@ -13,7 +13,7 @@ import { fetch } from 'merchant/modules/pokedex';
 import { tabsOrder, tabsMeta, getQuery, breakdownVals } from './data';
 import Panel from './Panel';
 
-const csvDateFormat = 'Do MMM YYYY';
+const csvDateFormat = 'DD-MM-YYYY';
 
 const TabContent = ({ name, value, isCurrency, title, isLoading }) => {
   /*
@@ -152,11 +152,17 @@ class KeyMetricsContainer extends Component {
             valueTransformer: isCurrency && paiseToRupees,
           });
 
-          const downloadFileName = `${selectedBreakdown} ${title} from ${startDate.format(
-            csvDateFormat
-          )} to ${endDate.format(csvDateFormat)} group ${tabMeta.getGroupTitle(
-            tabState.selectedGrouping
-          )}`;
+          // \u05C0 is pipe like character, as pipes are being converted
+          // into underscores by browser
+          const downloadFileName = titleCase(
+            shortenText(
+              `${selectedBreakdown} ${title} \u05C0 ${startDate.format(
+                csvDateFormat
+              )} - ${endDate.format(
+                csvDateFormat
+              )} \u05C0 ${tabMeta.getGroupTitle(tabState.selectedGrouping)}`
+            )
+          );
 
           tabState.data.histogram = { labels, datasets };
           tabState.lastUpdatedAt = histogram.last_updated_at;

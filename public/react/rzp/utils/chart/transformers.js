@@ -225,10 +225,17 @@ export const getPieData = ({
     datasets = { data: [], backgroundColor: colors },
     legendData = [];
 
+  let csvHeader = ['', 'Count', '%Split'],
+    csvFooter = ['Total'],
+    csvData = [],
+    grandTotal = 0;
+
   groups.forEach((groupName, index) => {
-    const groupTitle = groupTitleMap[groupName] || titleCase(groupName);
+    const groupTitle = groupTitleMap[groupName] || titleCase(groupName),
+      groupCSVData = [];
 
     labels.push(groupTitle);
+    groupCSVData.push(groupTitle);
 
     const item = groupedData[groupName][0],
       value =
@@ -237,18 +244,32 @@ export const getPieData = ({
           : item.value;
 
     datasets.data.push(value);
+    groupCSVData.push(value);
 
     legendData.push({
       color: colors[index % colors.length],
       label: groupTitle,
       value,
     });
+
+    csvData.push(groupCSVData);
+    grandTotal += value;
   });
+
+  csvData = csvData.map(row => {
+    row.push(`${grandTotal > 0 ? (row[1] / grandTotal * 100).toFixed(2) : 0}%`);
+    return row;
+  });
+
+  csvFooter.push(grandTotal);
+
+  csvData.unshift(csvHeader);
+  csvData.push(csvFooter);
 
   return {
     labels,
     datasets: [datasets],
     legendData,
-    csv: arrayToCsvDataUrl([labels, datasets.data]),
+    csv: arrayToCsvDataUrl(csvData),
   };
 };

@@ -3,12 +3,13 @@ import { Pie } from 'react-chartjs-2';
 import { connect } from 'react-redux';
 
 import { getPieData } from 'rzp/utils/chart/transformers';
-import { paiseToRupees } from 'rzp/utils/rzp-utils';
+import { paiseToRupees, shortenText, titleCase } from 'rzp/utils/rzp-utils';
 
 import { fetch } from 'merchant/modules/pokedex';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
+  shorte,
 } from 'rzp/utils/numerals';
 import { groupValues, groupMeta, getQuery } from './data';
 import Legend from 'merchant/components/Home/Legend';
@@ -20,7 +21,7 @@ const chartOptions = {
       enabled: false,
     },
   },
-  dateFormat = 'Do MMM YYYY';
+  csvDateFormat = 'DD-MM-YYYY';
 
 @connect(null, null)
 class Traffic extends Component {
@@ -68,9 +69,13 @@ class Traffic extends Component {
 
     this.setState(this.state);
 
-    const downloadFileName = `Traffic split on platforms grouped ${meta.title} from ${startDate.format(
-      dateFormat
-    )} to ${endDate.format(dateFormat)}`;
+    const downloadFileName = titleCase(
+      shortenText(
+        `Platform traffic split \u05C0 ${startDate.format(
+          csvDateFormat
+        )} - ${endDate.format(csvDateFormat)} \u05C0 ${meta.title}`
+      )
+    );
 
     fetch(query).then(({ data: { distribution } }) => {
       const { labels, datasets, legendData, csv } = getPieData({

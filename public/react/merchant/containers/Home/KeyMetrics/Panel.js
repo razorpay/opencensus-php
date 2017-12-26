@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Line } from 'react-chartjs-2';
+import { Link } from 'react-router-dom';
 
 import Definition from 'rzp/ui/Definition';
 import ChangeRange from 'rzp/ui/ChangeRange';
@@ -150,8 +151,17 @@ class Panel extends Component {
             )}
         </div>
         {!data.loading && (
-          <div className="panel-footer">
-            <LastUpdated at={lastUpdatedAt} />
+          <div className="panel-footer clearfix">
+            <div className="pull-left">
+              <LastUpdated at={lastUpdatedAt} />
+            </div>
+            <div className="pull-right">
+              <Link
+                to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
+              >
+                View all Payments &gt;
+              </Link>
+            </div>
           </div>
         )}
       </div>
