@@ -38,6 +38,7 @@ class Validator extends Base\Validator
     protected static $addPlanRuleValidators = [
         'addPlanRuleRate',
         'addPlanRuleNB',
+        'addPlanRuleEmandate',
         'addPlanRulePaymentNetwork',
         'addPlanRuleInternational',
         'addPlanRuleAmountRange',
@@ -92,6 +93,27 @@ class Validator extends Base\Validator
                 Transfer\ToType::validateDestination($method);
 
                 break;
+        }
+    }
+
+    protected function validateAddPlanRuleEmandate($input)
+    {
+        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE)
+        {
+            $fields = array(
+                Entity::PAYMENT_METHOD_TYPE,
+                Entity::PAYMENT_ISSUER);
+
+            foreach ($fields as $field)
+            {
+                if (isset($input[$field]) and
+                    $input[$field] !== null)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PRICING_FIELD_NOT_REQUIRED_FOR_EMANDATE,
+                        $field);
+                }
+            }
         }
     }
 
@@ -151,7 +173,8 @@ class Validator extends Base\Validator
             }
         }
 
-        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::NETBANKING)
+        if (($input[Entity::PAYMENT_METHOD] === Payment\Method::NETBANKING) or
+            ($input[Entity::PAYMENT_METHOD] === Payment\Method::NETBANKING))
         {
             if (IFSC::exists($input[Entity::PAYMENT_NETWORK]) === false)
             {

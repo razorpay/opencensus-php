@@ -247,6 +247,10 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPricingRuleForAeps($rules);
         }
+        else if ($method === Payment\Method::EMANDATE)
+        {
+            $rule = $this->getRelevantPricingRuleForEmandate($rules);
+        }
         else if ($method === Payment\Method::EMI)
         {
             $rule = $this->getRelevantPricingRuleForEmi($rules);
@@ -290,6 +294,11 @@ class FeeCalculator
     protected function getRelevantPricingRuleForAeps($rules)
     {
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
+    protected function getRelevantPricingRuleForEmandate($rules)
+    {
+        return $this->getRelevantPricingRuleForNBPayment($rules);
     }
 
     protected function getRelevantPricingRuleForUPI($rules)

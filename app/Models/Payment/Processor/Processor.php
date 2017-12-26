@@ -328,6 +328,7 @@ class Processor
 
             if ($tokenMethod === Payment\Method::NETBANKING)
             {
+                // TODO: Change to Emandate
                 $input[Payment\Entity::BANK] = $token->getBank();
             }
             else if ($tokenMethod === Payment\Method::WALLET)

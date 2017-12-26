@@ -104,6 +104,7 @@ class Entity extends Base\PublicEntity
     const SAVE                  = 'save';
     const LATE_AUTHORIZED       = 'late_authorized';
     const CONVERT_CURRENCY      = 'convert_currency';
+    const AUTHENTICATION_TYPE   = 'authentication_type';
 
     const SUBSCRIPTION_ID       = 'subscription_id';
 
@@ -235,6 +236,7 @@ class Entity extends Base\PublicEntity
         self::LATE_AUTHORIZED,
         self::SUBSCRIPTION_ID,
         self::CONVERT_CURRENCY,
+        self::AUTHENTICATION_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DISPUTED,
@@ -315,6 +317,7 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = [
         'metadata',
+        'recurring',
     ];
 
     protected $dates = [
@@ -357,6 +360,7 @@ class Entity extends Base\PublicEntity
         self::TRANSFER_ID          => null,
         self::DISPUTED             => false,
         self::RECURRING_TYPE       => null,
+        self::AUTHENTICATION_TYPE  => null,
     ];
 
     protected $amounts = [
@@ -457,7 +461,8 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        if (in_array($input['method'], [Method::NETBANKING, Method::AEPS]) === false)
+        // TODO: move the bank methods to an array in payment\gateway class or somewhere
+        if (in_array($input['method'], [Method::NETBANKING, Method::AEPS, Method::EMANDATE]) === false)
         {
             unset($input['bank']);
         }
@@ -497,8 +502,9 @@ class Entity extends Base\PublicEntity
 
     protected function modifyBank(& $input)
     {
+        // TODO: move the bank methods to an array in payment\gateway class or somewhere
         if ((isset($input['method'])) and
-            (in_array($input['method'], [Method::NETBANKING, Method::AEPS]) === false))
+            (in_array($input['method'], [Method::NETBANKING, Method::AEPS, Method::EMANDATE]) === false))
         {
             unset($input['bank']);
         }
@@ -532,6 +538,14 @@ class Entity extends Base\PublicEntity
             (isset($this->metadata['referer']) === false))
         {
             $this->metadata['referer'] = $input['referer'];
+        }
+    }
+
+    protected function generateRecurring($input)
+    {
+        if ($input[Entity::METHOD] === Method::EMANDATE)
+        {
+            $this->setAttribute(self::RECURRING, 1);
         }
     }
 
@@ -779,6 +793,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONVERT_CURRENCY, $convert);
     }
 
+    public function setAuthenticationType(string $authenticationType)
+    {
+        $this->setAttribute(self::AUTHENTICATION_TYPE, $authenticationType);
+    }
+
     public function setMetadataKey($key, $value)
     {
         $this->metadata[$key] = $value;
@@ -911,6 +930,17 @@ class Entity extends Base\PublicEntity
                 break;
 
             case Method::NETBANKING:
+
+                $acquirerData = [
+                    'bank_transaction_id' => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+
+            case Method::EMANDATE:
+
+                // TODO: Will this be available for netbanking (both direct and npci?), aadhar?
+                // TODO: What will reference1 be for debit requests? Where do we get this from?
+                // TODO: In debit request, authentication_type will be null?
 
                 $acquirerData = [
                     'bank_transaction_id' => $this->getAttribute(self::REFERENCE1)
@@ -1157,6 +1187,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::BANK_TRANSFER);
     }
 
+    public function isEmandate()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE);
+    }
+
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
@@ -1381,6 +1416,11 @@ class Entity extends Base\PublicEntity
     public function getVpa()
     {
         return $this->getAttribute(self::VPA);
+    }
+
+    public function getAuthenticationType()
+    {
+        return $this->getAttribute(self::AUTHENTICATION_TYPE);
     }
 
     public function getContact()
@@ -1609,6 +1649,8 @@ class Entity extends Base\PublicEntity
                 return [$method, ''];
             case Method::BANK_TRANSFER:
                 return [$method, ''];
+            case Method::EMANDATE:
+                return [$method, $this->getBankName()];
         }
     }
 

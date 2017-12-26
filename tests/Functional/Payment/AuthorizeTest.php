@@ -351,6 +351,8 @@ class AuthorizeTest extends TestCase
 
         $tokenId = $token['id'];
 
+        // TODO: Figure out how to write the test cases here!
+
         // Should timeout
         $payment2 = $this->fixtures->create('payment:status_created',
             [

@@ -125,6 +125,7 @@ class Category
                 self::HOUSING        => self::HOUSING,
             ],
         ]
+        // TODO: Do we need to add for emandate here?
     ];
 
     public static function isMerchantCategoryValid($category)

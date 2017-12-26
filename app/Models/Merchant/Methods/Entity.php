@@ -30,6 +30,7 @@ class Entity extends Base\PublicEntity
     const UPI               = 'upi';
     const BANK_TRANSFER     = 'bank_transfer';
     const AEPS              = 'aeps';
+    const EMANDATE          = 'emandate';
 
     const METHODS           = 'methods';
 
@@ -59,6 +60,7 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::UPI,
         self::AEPS,
+        self::EMANDATE,
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
@@ -84,6 +86,7 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::UPI,
         self::AEPS,
+        self::EMANDATE,
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
@@ -109,6 +112,7 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::UPI,
         self::AEPS,
+        self::EMANDATE,
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
@@ -134,6 +138,7 @@ class Entity extends Base\PublicEntity
         self::EMI            => false,
         self::UPI            => true,
         self::AEPS           => false,
+        self::EMANDATE       => false,
         self::NETBANKING     => true,
         self::CREDIT_CARD    => true,
         self::DEBIT_CARD     => true,
@@ -154,13 +159,14 @@ class Entity extends Base\PublicEntity
         self::MPESA,
     );
 
-    protected static $methods = array(
+    protected static $methods = [
         self::CARD,
         self::EMI,
         self::AMEX,
         self::UPI,
         self::BANK_TRANSFER,
         self::AEPS,
+        self::EMANDATE,
         self::NETBANKING,
         self::PAYTM,
         self::MOBIKWIK,
@@ -170,7 +176,7 @@ class Entity extends Base\PublicEntity
         self::AIRTELMONEY,
         self::FREECHARGE,
         self::MPESA,
-    );
+    ];
 
     // Casts the attributes to native types
     protected $casts = [
@@ -193,6 +199,7 @@ class Entity extends Base\PublicEntity
         self::UPI           => 'bool',
         self::BANK_TRANSFER => 'bool',
         self::AEPS          => 'bool',
+        self::EMANDATE      => 'bool',
     ];
 
     public function setMethods(array $input = array())
@@ -239,6 +246,11 @@ class Entity extends Base\PublicEntity
     public function isAepsEnabled()
     {
         return $this->getAttribute(self::AEPS);
+    }
+
+    public function isEmandateEnabled()
+    {
+        return $this->getAttribute(self::EMANDATE);
     }
 
     public function isWalletEnabled($wallet = null)

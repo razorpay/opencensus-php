@@ -223,6 +223,12 @@ class Gateway
             self::NETBANKING_PNB,
         ],
 
+        Method::EMANDATE    => [
+            self::NETBANKING_ICICI,
+            self::NETBANKING_HDFC,
+            self::NETBANKING_AXIS,
+        ],
+
         Method::WALLET => [
             self::MOBIKWIK,
             self::PAYTM,

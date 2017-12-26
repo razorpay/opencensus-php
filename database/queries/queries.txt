@@ -2778,3 +2778,12 @@ ALTER TABLE `action_state_reasons`
 ALTER TABLE virtual_accounts
     MODIFY COLUMN amount_received BIGINT UNSIGNED,
     MODIFY COLUMN amount_paid BIGINT UNSIGNED;
+
+ALTER TABLE merchant_banks
+    ADD COLUMN emandate TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
+
+ALTER TABLE terminals
+    ADD COLUMN emandate TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
+
+ALTER TABLE payments
+    ADD COLUMN authentication_type VARCHAR(255) DEFAULT NULL AFTER updated_at;

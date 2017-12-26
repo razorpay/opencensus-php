@@ -59,6 +59,9 @@ class TransactionFilter extends Terminal\Filter
             case Method::AEPS:
                 return $terminal->isAepsEnabled();
 
+            case Method::EMANDATE:
+                return $terminal->isEmandateEnabled();
+
             default:
                 throw new Exception\LogicException(
                     'Unknown payment method passed.',

@@ -106,6 +106,8 @@ class Repository extends Base\Repository
 
     public function getTokenByIdAndAccountNumber(string $tokenId, string $accountNumber)
     {
+        // TODO: Change to emandate
+
         return $this->newQuery()
                     ->where(Entity::METHOD, Method::NETBANKING)
                     ->where(Entity::ID, $tokenId)

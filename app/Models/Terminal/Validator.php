@@ -31,6 +31,7 @@ class Validator extends Base\Validator
         Entity::EMI                         => 'sometimes|boolean',
         Entity::UPI                         => 'sometimes|boolean',
         Entity::AEPS                        => 'sometimes|boolean',
+        Entity::EMANDATE                    => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|in:1,2,3',
@@ -619,6 +620,11 @@ class Validator extends Base\Validator
         if (empty($input[Entity::EMI]) === false)
         {
             return Method::EMI;
+        }
+
+        if (empty($input[Entity::EMANDATE]) === false)
+        {
+            return Method::EMANDATE;
         }
 
         return null;

@@ -380,6 +380,8 @@ class Gateway
     {
         $response[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::PASSED;
 
+        // TODO: What should we set 2fa for emandate? Unavailable? But, we kind of know here?
+
         if ($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING)
         {
             $response[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::UNAVAILABLE;

@@ -1833,6 +1833,8 @@ trait Authorize
         }
         else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
+            // TODO: Change to EMANDATE
+
             //
             // This should be here since, if a token is passed,
             // the bank would not be passed in the payment input.
@@ -2040,6 +2042,10 @@ trait Authorize
 
             case Payment\Method::AEPS:
                 $this->verifyAepsEnabled();
+                break;
+
+            case Payment\Method::EMANDATE:
+                $this->verifyEmandateEnabled();
                 break;
 
             default:
@@ -3520,6 +3526,19 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AEPS_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
+    protected function verifyEmandateEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isEmandateEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_EMANDATE_NOT_ENABLED_FOR_MERCHANT
+            );
         }
     }
 

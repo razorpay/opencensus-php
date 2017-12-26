@@ -148,7 +148,11 @@ class Gateway extends Base\Gateway
     {
         $acquirer = [];
 
-        if ($input['payment']['method'] === Payment\Method::NETBANKING)
+        // TODO: Will this be available for netbanking (both direct and npci?), aadhar?
+        // TODO: What will reference1 be for debit requests? Where do we get this from?
+
+        if (($input['payment']['method'] === Payment\Method::NETBANKING) or
+            ($input['payment']['method'] === Payment\Method::EMANDATE))
         {
             $acquirer = [
                 'reference1' => (string) random_integer(7)

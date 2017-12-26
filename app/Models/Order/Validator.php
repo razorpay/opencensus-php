@@ -159,6 +159,8 @@ class Validator extends Base\Validator
 
     protected function validateOrderTpvChecks(Payment\Entity $payment = null)
     {
+        // TODO: Handle TPV related stuff for emandate method + authentication type netbanking/aadhar?
+
         $order = $this->entity;
 
         // TPV - Third Party Validation
@@ -169,7 +171,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (empty($order->getMethod()))
+        if (empty($order->getMethod()) === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT);

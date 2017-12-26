@@ -34,7 +34,7 @@ class Validator extends Base\Validator
         'aadhaar.hmac'               => 'sometimes_if:method,aeps|size:64|string',
         'aadhaar.cert_expiry'        => 'sometimes_if:method,aeps|size:8|string',
         'card'                       => 'sometimes',
-        'bank'                       => 'required_if:method,netbanking,aeps',
+        'bank'                       => 'required_if:method,netbanking,aeps,emandate',
         'wallet'                     => 'required_if:method,wallet|custom',
         'emi_duration'               => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'                => 'sometimes|string|max:255|utf8',
@@ -50,7 +50,7 @@ class Validator extends Base\Validator
         'app_token'                  => 'sometimes',
         'token'                      => 'sometimes',
         'save'                       => 'sometimes|in:0,1',
-        'recurring'                  => 'sometimes_if:method,card,netbanking|in:0,1',
+        'recurring'                  => 'sometimes_if:method,card,emandate|in:0,1',
         'fee'                        => 'sometimes|filled|integer|max:50000000',
         Entity::TAX                  => 'sometimes|filled|integer|max:50000000',
         'on_hold'                    => 'sometimes_if:method,transfer|boolean',
@@ -64,6 +64,7 @@ class Validator extends Base\Validator
         'account_number'             => 'filled|alpha_num|between:5,20',
         'upi'                        => 'sometimes_if:method,upi|array',
         'upi.expiry_time'            => 'sometimes_if:method,upi|integer|between:5,30|filled',
+        'authentication_type'        => 'required_if:method,emandate|string|max:16'
     ];
 
     protected static $editRules = [
@@ -127,7 +128,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        if ($input[Entity::METHOD] !== Method::NETBANKING)
+        if ($input[Entity::METHOD] !== Method::EMANDATE)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Account Number passed for invalid method: ' . $input[Entity::METHOD]);
@@ -379,7 +380,8 @@ class Validator extends Base\Validator
 
     protected function validateBank($input)
     {
-        if ($input['method'] !== Payment\Method::NETBANKING)
+        if (($input['method'] !== Payment\Method::NETBANKING) and
+            ($input['method'] !== Payment\Method::EMANDATE))
         {
             return;
         }

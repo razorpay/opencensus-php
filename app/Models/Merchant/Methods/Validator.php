@@ -36,6 +36,7 @@ class Validator extends Base\Validator
         Entity::DEBIT_CARD     => 'sometimes|boolean',
         Entity::UPI            => 'sometimes|boolean',
         Entity::AEPS           => 'sometimes|boolean',
+        Entity::EMANDATE       => 'sometimes|boolean',
         Entity::MPESA          => 'sometimes|boolean',
         Entity::BANK_TRANSFER  => 'sometimes|boolean',
     ];

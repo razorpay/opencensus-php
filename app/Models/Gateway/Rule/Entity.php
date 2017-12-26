@@ -575,6 +575,9 @@ class Entity extends Base\PublicEntity
 
             case Method::AEPS:
                 return ($terminal->isAepsEnabled() === true);
+
+            case Method::EMANDATE:
+                return ($terminal->isEmandateEnabled() === true);
         }
 
         return false;
