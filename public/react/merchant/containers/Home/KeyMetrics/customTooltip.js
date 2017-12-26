@@ -110,9 +110,9 @@ const customToolTip = function(tooltipModel) {
       const label = `<span class="label">${bodyItems[0]}</span>`;
 
       // second element of bodyItem is value corresponding to label extracted in first line
-      const labelValue = `<span class="label-value">${humanReadableIndian(
-        Number(bodyItems[1].trim())
-      )}</span>`;
+      const labelValue = `<span class="label-value">${(isCurrency
+        ? humanReadableIndianCurrency
+        : humanReadableIndian)(Number(bodyItems[1].trim()))}</span>`;
 
       // appending rows with each line
       rows += `<div class="tooltip-row">${labelIcon}${label}${labelValue}</div>`;
