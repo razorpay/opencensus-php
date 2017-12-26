@@ -48,6 +48,10 @@ class Reconciliator extends Base\Mock\Reconciliator
     ];
 
     /**
+     * The parent class's method gets only successful payments,
+     * but for sbi recon, we need all payments - both successful
+     * and failed. This method accomplishes that.
+     *
      * @override
      * @return PublicCollection
      */

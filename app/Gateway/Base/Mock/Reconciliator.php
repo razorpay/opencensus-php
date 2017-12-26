@@ -13,7 +13,7 @@ use RZP\Models\Base\PublicCollection;
 class Reconciliator
 {
     /**
-     * @var
+     * @var App
      */
     protected $app;
 
@@ -97,8 +97,7 @@ class Reconciliator
      */
     protected function createReconFile($content)
     {
-        // If this method is not overridden, we will have an exception be thrown
-        throw new LogicException('createReconFile needs to be implemented in child gateway recon file');
+        throw new \BadMethodCallException('createReconFile needs to be implemented in child gateway recon file');
     }
 
     protected function generateText($data, $glue = '~', $ignoreLastNewline = false)
