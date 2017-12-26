@@ -95,7 +95,7 @@ export default class BusinessDetails extends Component {
             <SelectField
               label="International Payments Required?"
               name="business_international"
-              defaultValue={merchantDetails.business_international}
+              defaultValue={merchantDetails.business_international ? '1' : '0'}
               required
             >
               <option value="0">No</option>

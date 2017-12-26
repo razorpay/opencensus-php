@@ -31,7 +31,7 @@ GenerateRefundsExcel.permission = 'create_netbanking_refund';
 GenerateRefundsExcel.title = 'Generate Refunds Excel (Netbanking)';
 export default function GenerateRefundsExcel() {
   return (
-    <Form>
+    <Form style={{ minHeight: '330px', width: '650px' }}>
       <DateField
         label="Date"
         name="on"
