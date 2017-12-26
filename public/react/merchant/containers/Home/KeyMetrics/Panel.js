@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { Line } from 'react-chartjs-2';
 import { Link } from 'react-router-dom';
+import Chart from 'chart.js';
+import { Line } from 'react-chartjs-2';
 
 import Definition from 'rzp/ui/Definition';
 import ChangeRange from 'rzp/ui/ChangeRange';
@@ -16,7 +17,11 @@ import { tabsMeta, breakdownVals } from './data';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
-import customToolTip from 'merchant/containers/Home/KeyMetrics/customTooltip';
+import customToolTip, {
+  positioner,
+} from 'merchant/containers/Home/KeyMetrics/customTooltip';
+
+Chart.Tooltip.positioners.custom = positioner;
 
 const chartOptions = {
   ...timeScale({}),
@@ -28,7 +33,7 @@ const chartOptions = {
   },
   tooltips: {
     enabled: false,
-    position: 'nearest',
+    position: 'custom',
     caretPadding: 0,
     yPadding: 0,
     xPadding: 0,

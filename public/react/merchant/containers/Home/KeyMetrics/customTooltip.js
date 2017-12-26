@@ -13,7 +13,15 @@ let isTooltipHovered = false,
 tooltipDOM.id = 'chartjs-tooltip';
 tooltipDOM.innerHTML = '<div class="custom-tooltip-inner">' + '</div>';
 
-const caretHtml = '<div class="caret"/>';
+const caret = document.createElement('div'),
+  caretWidth = 20,
+  caretHeight = 10;
+caret.className = 'caret';
+
+const crossHair = document.createElement('div'),
+  crossHairWidth = 2;
+
+crossHair.className = 'cross-hair';
 
 const hideTooltip = () => {
     return (
@@ -44,12 +52,12 @@ const customToolTip = function(tooltipModel) {
     shouldShowTooltip = false;
 
     /*
-     * Puts hideTooltip at the end of callback queue
-     * as chartjs tries to hide the tooltip just before
-     * `mouseenter` is fired on `tooltipDOM`, which would
-     * lead to hiding of tooltip just before hovering on it,
-     * and makes the tooltip flicker and not useable
-     */
+   * Puts hideTooltip at the end of callback queue
+   * as chartjs tries to hide the tooltip just before
+   * `mouseenter` is fired on `tooltipDOM`, which would
+   * lead to hiding of tooltip just before hovering on it,
+   * and makes the tooltip flicker and not useable
+   */
     return window.setTimeout(() => {
       hideTooltip();
     });
@@ -111,105 +119,67 @@ const customToolTip = function(tooltipModel) {
     });
 
     // adding rows to innerHtml
-    innerHtml += `<div class="tooltip-body">${rows}</div>${caretHtml}`;
+    innerHtml += `<div class="tooltip-body">${rows}</div>`;
 
     // inserting innerHtml into inner div of chart js tooltip
     var innerTooltip = tooltipDOM.querySelector('.custom-tooltip-inner');
     innerTooltip.innerHTML = innerHtml;
+
+    innerTooltip.appendChild(caret);
+    innerTooltip.appendChild(crossHair);
   }
 
   /**
    * calculation of position of tooltip
    */
-
-  var { offsetTop /*offsetLeft*/ } = this._chart.canvas;
-
-  /* refer styling file */
-  // and width property of #chartjs-tooltip
-  const widthOfTooltip = 218;
-
-  // border size of #chart-js-tooltip
-  const heightOfCaret = 10;
-  /* * */
-
-  /* calculations for left of tooltip */
-
-  // width of y-axis of chart
-  const widthOfYAxis = this._chart.boxes.find(({ id }) => id === 'y-axis-0')
-    .width;
-
-  // chartX: absolute position of chart from left edge
-  // fullChartRight: absolute right edge of full chart
-  const {
-    x: chartX,
-    y: chartY,
-    right: fullChartRight,
-  } = this._chart.canvas.getBoundingClientRect();
-
-  // distance of right edge of inner chart (where actual graph is rendered) area from edge of body
-  const chartRight = this._chart.boxes[0].chart.chartArea.right;
-
-  // no of data points on x-axis
-  const noOfDataLabels = this._data.labels.length;
-
-  // index of current point (horizontally) hovered on x-axis
-  const dataPointIndex = tooltipModel.dataPoints
-    ? tooltipModel.dataPoints[0].index
-    : 0;
-
-  // width of span between to data points on x-axis
-  const widthOfEachLabel = Math.round(
-    (chartRight - widthOfYAxis) / (noOfDataLabels - 1)
-  );
-
-  // opactity is 1 to display tooltip
   tooltipDOM.style.opacity = 1;
+  tooltipDOM.style.top = tooltipModel.caretY - tooltipDOM.clientHeight + 'px';
+  tooltipDOM.style.left = tooltipModel.caretX + 'px';
+  caret.style.marginLeft = -(caretWidth / 2) + 'px';
 
-  // max left tooltip can have - should not exceed extreme right of full chart
-  const tooltipMaxLeft = fullChartRight - widthOfTooltip;
+  // correcting overflow of tootip on both the sidesi
+  const tooltipWidth = tooltipDOM.clientWidth,
+    tooltipLeft = tooltipModel.caretX - tooltipWidth / 2,
+    tooltipRight = tooltipModel.caretX + tooltipWidth / 2,
+    xAxisHeight = this._chart.scales['x-axis-0'].height,
+    {
+      left: chartLeft,
+      right: chartRight,
+      bottom: chartBottom,
+    } = this._chart.canvas.getBoundingClientRect(),
+    crossHairHeight = chartBottom - (tooltipModel.caretY + xAxisHeight);
 
-  // left of tooltip is absoluteLeft of chart + widthOfYAxis + widthOfEachLabel (added according to index)
-  // left computed for tooltip
-  const computedLeft =
-    chartX / 2 + widthOfYAxis + widthOfEachLabel * dataPointIndex;
+  crossHair.style.height = crossHairHeight + 'px';
+  crossHair.style.marginLeft = -(crossHairWidth / 2) + 'px';
 
-  /* * */
+  if (tooltipLeft < chartLeft) {
+    const diff = chartLeft - tooltipLeft;
 
-  /* calculating different elements for top of tooltip */
+    tooltipDOM.style.left = tooltipModel.caretX + diff + 'px';
+    caret.style.marginLeft = -(caretWidth / 2) - diff + 'px';
+    crossHair.style.marginLeft = -(crossHairWidth / 2) - diff + 'px';
+  } else if (tooltipRight > chartRight) {
+    const diff = tooltipRight - chartRight;
 
-  // extract the actual height of tooltip DOM
-  const actualTooltipHeight = Number(
-    window.getComputedStyle(tooltipDOM).height.replace('px', '')
-  );
-
-  // top of chart w.r.t document top
-  const chartTop = chartY + window.scrollY;
-  /* * */
-
-  /* calculation of elements for caret position */
-
-  // small inverted arrow attached to tooltip
-  const caret = tooltipDOM.querySelector('.caret');
-
-  /* * */
-
-  /* applying the formulae for top, left and caret position */
-
-  // left of tooltip cannot exceed tooltipMaxLeft
-  tooltipDOM.style.left = `${Math.min(tooltipMaxLeft, computedLeft)}px`;
-
-  // top of tooltip is chart top (w.r.t doc.) - height + the caretY - caret height
-  tooltipDOM.style.top = `${chartTop -
-    actualTooltipHeight +
-    tooltipModel.caretY}px`;
-
-  // resetting any left given to caret in previous iteration
-  caret.style.left = '';
-
-  // shifting caret towards right if tooltip has max left
-  if (computedLeft > tooltipMaxLeft) {
-    caret.style.left = `${0.48 * 218 + (computedLeft - tooltipMaxLeft)}px`;
+    tooltipDOM.style.left = tooltipModel.caretX - diff + 'px';
+    caret.style.marginLeft = -(caretWidth / 2) + diff + 'px';
+    crossHair.style.marginLeft = -(crossHairWidth / 2) + diff + 'px';
   }
 };
+
+function positioner(elements, eventPosition) {
+  if (elements.length === 0) {
+    return { x: 0, y: 0 };
+  }
+
+  const topEle = elements.sort(
+      (ele1, ele2) => ele1._model.y - ele2._model.y
+    )[0],
+    { left, top } = topEle._chart.canvas.getBoundingClientRect();
+
+  return { x: left + topEle._model.x, y: top + topEle._model.y };
+}
+
+export { positioner };
 
 export default customToolTip;
