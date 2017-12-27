@@ -22,11 +22,13 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'key';
 
+    protected $generateIdOnCreate = true;
+
     /**
      * Cache driver to be used for query caching
      * @var string
      */
-    // protected $rememberCacheDriver = 'query_cache';
+    protected $rememberCacheDriver = 'query_cache';
 
     protected $public = array(
         self::ID,
