@@ -56,9 +56,9 @@ class LinkedAccount
     public static function getBankAccountDetailInput(array $entry): array
     {
         return [
-            BankAccount\Entity::ACCOUNT_NUMBER => $entry[Header::BANK_ACCOUNT_NAME],
-            BankAccount\Entity::IFSC_CODE      => $entry[Header::BANK_BRANCH_IFSC],
-            BankAccount\Entity::ACCOUNT_NUMBER => $entry[Header::BANK_ACCOUNT_NUMBER],
+            BankAccount\Entity::BENEFICIARY_NAME => $entry[Header::BANK_ACCOUNT_NAME],
+            BankAccount\Entity::IFSC_CODE        => $entry[Header::BANK_BRANCH_IFSC],
+            BankAccount\Entity::ACCOUNT_NUMBER   => $entry[Header::BANK_ACCOUNT_NUMBER],
         ];
     }
 }

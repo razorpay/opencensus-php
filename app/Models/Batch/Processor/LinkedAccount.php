@@ -65,11 +65,11 @@ class LinkedAccount extends Base
                                 $accountId, $this->merchant, true);
 
             // Building input for bank core's method
-            $buildInput      = $this->bankAccountCore
-                                    ->buildBankAccountArrayFromMerchantDetail(
-                                        $account->merchantDetail, true);
+            $buildInput = $this->bankAccountCore
+                               ->buildBankAccountArrayFromMerchantDetail(
+                                    $account->merchantDetail, true);
             $overriddenInput = Helper::getBankAccountDetailInput($entry);
-            $input           = array_merge($buildInput, $overriddenInput);
+            $input = array_merge($buildInput, $overriddenInput);
 
             $this->bankAccountCore->createOrChangeBankAccount($input, $account);
         }
