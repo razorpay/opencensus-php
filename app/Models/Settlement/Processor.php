@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -109,6 +110,13 @@ class Processor extends Base\Core
         }
         catch (\Exception $e)
         {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_INITIATE_FAILED,
+                ['channel' => $channel]
+            );
+
             $this->settlementFailure($channel, $e, TraceCode::SETTLEMENT_INITIATE_FAILED);
         }
 

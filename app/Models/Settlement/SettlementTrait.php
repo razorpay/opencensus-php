@@ -338,9 +338,7 @@ trait SettlementTrait
     {
         $e = new SettlementFailureException($channel, $e->getMessage(), null, $e);
 
-        $this->failureNotification($e);
-
-        $this->trace->critical($traceCode);
+//        $this->failureNotification($e);
 
         throw $e;
     }

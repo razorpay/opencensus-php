@@ -277,6 +277,17 @@ class MockGatewayController extends Controller
         return;
     }
 
+    public function postAepsPayment($bank)
+    {
+        $input = Request::all();
+
+        $driver = 'aeps_' . $bank;
+
+        $server = $this->gateway->server($driver);
+
+        return $server->authorize($input);
+    }
+
     public function generateNetbankingReconciliation($bank)
     {
         $input = Request::all();
