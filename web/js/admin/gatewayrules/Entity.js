@@ -264,6 +264,7 @@ class GatewayRuleForm extends Component {
           name="network"
           label="Network"
           defaultValue={model.network}
+          disabled={!!model.id}
         >
           <option value="" />
           {Object.keys(networks).map((n, index) => (
