@@ -45,7 +45,7 @@ export default class MerchantList extends Component {
               <option value="activated">Activated</option>
               <option value="pending_old">Pending Activation</option>
               <option value="dead">Dead</option>
-              <option value="archived">Archived</option>
+              <option value="archived_old">Archived</option>
               <option value="suspended">Suspended</option>
             </SelectField>
             <Field name="sub_accounts" label="Linked-accounts for ID" />
@@ -73,9 +73,9 @@ const fields = [
     'Activated',
     item => (
       <i
-        class={`i ${
-          item.activated_at ? 'i-yes  text-success' : 'i-no text-danger'
-        }`}
+        class={`i ${item.activated_at
+          ? 'i-yes  text-success'
+          : 'i-no text-danger'}`}
       />
     ),
   ],
