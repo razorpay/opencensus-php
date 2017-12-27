@@ -154,14 +154,6 @@ class Core extends Base\Core
             $data['upi_intent'] = true;
         }
 
-        if ($merchant->isFeatureEnabled(Constants::CORPORATE_BANKS) === true)
-        {
-            $data['preferred_banks'] = [
-                Netbanking::ICIC_C,
-                Netbanking::UTIB_C,
-            ];
-        }
-
         return $data;
     }
 
