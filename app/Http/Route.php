@@ -289,7 +289,7 @@ final class Route
         'mock_wallet_payment'                     => ['post',     'gateway/mock/wallet/{wallet}',                   'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_get'                 => ['get',      'gateway/mock/wallet/{wallet}',                   'MockGatewayController@walletPayment'                               ],
         'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}',       'MockGatewayController@walletPayment'                               ],
-        'mock_generate_reconciliation'            => ['post',     'gateway/mock/reconciliation/{gateway}',             'MockGatewayController@generateGatewayReconciliationFile'           ],
+        'mock_generate_reconciliation'            => ['post',     'gateway/mock/reconciliation/{gateway}',          'MockGatewayController@generateGatewayReconciliationFile'           ],
         'mock_upi_payment'                        => ['post',     'gateway/mock/upi/{bank}',                        'MockGatewayController@postUpiPayment'                              ],
         'mock_aeps_payment'                       => ['post',     'gateway/mock/aeps/{bank}',                       'MockGatewayController@postAepsPayment'                             ],
         'admin_fetch_all_entities'                => ['get',      'admin/entities/all',                             'AdminController@getEntities'                                       ],

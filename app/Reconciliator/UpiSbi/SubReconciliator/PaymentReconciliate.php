@@ -5,6 +5,7 @@ namespace RZP\Reconciliator\UpiSbi;
 use RZP\Gateway\Upi\Sbi\Action;
 use RZP\Reconciliator\Base;
 use RZP\Models\Base\PublicEntity;
+use RZP\Trace\TraceCode;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -14,7 +15,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     const ORDER_NUMBER       = 'order_no';
     const TRANS_REF_NUMBER   = 'trans_ref_no';
-    const CUSTOMER_REF_NUM   = 'customer_ref_no';
     const TRANSACTION_STATUS = 'transaction_status';
     const TRANSACTION_AMOUNT = 'transaction_amount';
 
@@ -26,16 +26,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getReferenceNumber($row)
     {
         return $row[self::TRANS_REF_NUMBER] ?? null;
-    }
-
-    protected function getCustomerDetails($row)
-    {
-        if (empty($row[self::CUSTOMER_REF_NUM]) === true)
-        {
-            return parent::getCustomerDetails($row);
-        }
-
-        return [Base\Reconciliate::CUSTOMER_ID => $row[self::CUSTOMER_REF_NUM]];
     }
 
     protected function getReconPaymentStatus(array $row)
@@ -85,12 +75,5 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
     {
         $gatewayPayment->setNpciReferenceId($referenceNumber);
-    }
-
-    protected function persistNbCustomerId(array $customerDetails, PublicEntity $gatewayPayment)
-    {
-        $customerId = $customerDetails[Base\Reconciliate::CUSTOMER_ID];
-
-        $gatewayPayment->setGatewayPaymentId($customerId);
     }
 }

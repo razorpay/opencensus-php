@@ -114,16 +114,12 @@ class UpiSbiGatewayReconTest extends TestCase
     {
         $upiEntity = $this->getLastEntity('upi', true);
 
-        $this->assertEquals(99999999998, $upiEntity['gateway_payment_id']);
-
         $this->assertEquals(12345, $upiEntity['npci_reference_id']);
     }
 
     private function assertUpiEntityNotChanged()
     {
         $upiEntity = $this->getLastEntity('upi', true);
-
-        $this->assertEquals(99999999999, $upiEntity['gateway_payment_id']);
 
         $this->assertEquals(99999, $upiEntity['npci_reference_id']);
     }
