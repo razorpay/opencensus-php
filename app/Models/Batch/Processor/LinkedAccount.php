@@ -45,7 +45,7 @@ class LinkedAccount extends Base
 
             // Append account ID to output fields
             $entry[Header::STATUS]     = $status;
-            $entry[Header::ACCOUNT_ID] = Merchant\AccountEntity::getSignedId($account->getId());
+            $entry[Header::ACCOUNT_ID] = Merchant\Account\Entity::getSignedId($account->getId());
         });
     }
 
