@@ -186,7 +186,7 @@ class Entity extends Base\Entity
     {
         $data = $this->toArrayPublic();
 
-        $data['admin'] = $this->admin->toArrayPublic();
+        $data['admin'] = $this->admin()->withTrashed()->first()->toArrayPublic();
 
         $data['workflow_steps'] = [];
 
