@@ -10,7 +10,7 @@ class KotakSettlement extends Base
 {
     protected function getFromHeader()
     {
-        return 'Kotak Settlement';
+        return $this->data['channel'] . ' Settlement';
     }
 
     protected function addSubject()
@@ -57,7 +57,7 @@ class KotakSettlement extends Base
     {
         $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
-        $subject = "Kotak Settlement files for $today";
+        $subject = $this->data['channel'] . "settlement files for $today";
 
         return $subject;
     }
