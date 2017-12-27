@@ -969,6 +969,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GEOLOCATION_FAILURE                           = 'GEOLOCATION_FAILURE';
 
     const CACHE_EVENT                                   = 'CACHE_EVENT';
+    const QUERY_CACHE_ERROR                             = 'QUERY_CACHE_ERROR';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

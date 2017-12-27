@@ -7,12 +7,9 @@ use Crypt;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use Watson\Rememberable\Rememberable;
 
 class Entity extends Base\PublicEntity
 {
-    use Rememberable;
-
     const ID            = 'id';
     const MERCHANT_ID   = 'merchant_id';
     const SECRET        = 'secret';

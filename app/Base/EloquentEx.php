@@ -21,6 +21,42 @@ class EloquentEx extends \Razorpay\Spine\Entity
         return new BuilderEx($query);
     }
 
+    /**
+     * Get a new query builder instance for the connection.
+     *
+     * @return \Illuminate\Database\Query\Builder
+     */
+    protected function newBaseQueryBuilder()
+    {
+        $conn = $this->getConnection();
+
+        $grammar = $conn->getQueryGrammar();
+
+        $builder = new QueryBuilder($conn, $grammar, $conn->getPostProcessor());
+
+        if (isset($this->rememberFor) === true)
+        {
+            $builder->remember($this->rememberFor);
+        }
+
+        if (isset($this->rememberCacheTag) === true)
+        {
+            $builder->cacheTags($this->rememberCacheTag);
+        }
+
+        if (isset($this->rememberCachePrefix) === true)
+        {
+            $builder->prefix($this->rememberCachePrefix);
+        }
+
+        if (isset($this->rememberCacheDriver) === true)
+        {
+            $builder->cacheDriver($this->rememberCacheDriver);
+        }
+
+        return $builder;
+    }
+
     protected function throwException(array $e)
     {
         throw new Exception\DbQueryException($e);
