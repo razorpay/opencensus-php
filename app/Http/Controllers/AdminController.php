@@ -62,11 +62,14 @@ class AdminController extends Controller
         {
             $admin = $this->getAdmin()->getData(true);
 
-            return view('admin.index', [
-                'cdn' => \Config::get('app.cdn_dashboard_url'),
-                'org'   => $org,
-                'user'  => $admin['data'],
-            ]);
+            if (empty($admin['data']) === false)
+            {
+                return view('admin.index', [
+                    'cdn' => \Config::get('app.cdn_dashboard_url'),
+                    'org'   => $org,
+                    'user'  => $admin['data'],
+                ]);
+            }
         }
 
         $code = Input::get('code');
