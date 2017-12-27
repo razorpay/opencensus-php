@@ -133,18 +133,7 @@ class Core extends Base\Core
 
         $input = $this->generateInputForMerchantEdit($dispute, $input);
 
-        $dispute->edit($input);
-
-        $dispute->setAuditAction(Action::EDIT_DISPUTE);
-
-        return $this->repo->transaction(function() use ($dispute, $input)
-        {
-            $this->handleDisputeClosure($dispute, $input);
-
-            $this->repo->saveOrFail($dispute);
-
-            return $dispute;
-        });
+        return $this->update($dispute, $input);
     }
 
     /**
