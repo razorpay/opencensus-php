@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Functional\Gateway\File;
+namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
 use Carbon\Carbon;
@@ -18,6 +18,8 @@ class NetbankingHdfcRefundFileTest extends TestCase
 
     public function setUp()
     {
+        Carbon::setTestNow();
+
         $this->testDataFilePath = __DIR__ . '/helpers/NetbankingHdfcRefundFileTestData.php';
 
         parent::setUp();
@@ -50,7 +52,7 @@ class NetbankingHdfcRefundFileTest extends TestCase
 
         $expectedFileContent = [
             'type'        => 'hdfc_netbanking_refund',
-            'entity_type' => File\Entity::class,
+            'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'xlsx',
         ];

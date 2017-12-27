@@ -2,9 +2,10 @@
 
 namespace RZP\Tests\Functional\Gateway\Mobikwik;
 
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Wallet\Base\Otp;
+use RZP\Models\Feature\Constants;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class MobikwikGatewayTest extends TestCase
 {
@@ -44,6 +45,21 @@ class MobikwikGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testMobikwikWalletEntity'], $this->payment);
+    }
+
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['amount'] = '1';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $this->doAuthPayment($this->payment);
+        });
     }
 
     public function testPowerWalletPayment()
@@ -284,5 +300,29 @@ class MobikwikGatewayTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+    }
+
+    public function testMobikwikOfferEnabledForMerchant()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('mobikwik');
+        $payment['_']['source'] = 'checkoutjs';
+
+        $this->mockServerRequestFunction(
+            function($content)
+            {
+                $this->assertEquals('Razorpay', $content['merchantname']);
+            });
+
+        $this->doAuthPayment($payment);
+
+        $this->fixtures->merchant->addFeatures([Constants::MOBIKWIK_OFFERS]);
+
+        $this->mockServerRequestFunction(
+            function($content)
+            {
+                $this->assertEquals('Test Merchant', $content['merchantname']);
+            });
+
+        $this->doAuthPayment($payment);
     }
 }

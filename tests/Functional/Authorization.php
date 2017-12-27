@@ -19,6 +19,7 @@ class Authorization
     protected $adminHeaders;
     protected $admin;
     protected $appHeaders;
+    protected $bearerHeaders;
 
     protected $defaultKey               = 'rzp_test_TheTestAuthKey';
     protected $defaultSecret            = 'TheKeySecretForTests';
@@ -26,7 +27,7 @@ class Authorization
     protected $defaultToken             = Org::DEFAULT_TOKEN . Org::DEFAULT_TOKEN_PRINCIPAL;
     protected $defaultOrgId             = Org::RZP_ORG_SIGNED;
 
-    protected $defaultDashboardHostname = 'dashboard.razorpay.dev';
+    protected $defaultDashboardHostname = 'dashboard.razorpay.in';
     protected $defaultAccountId         = 'acc_10000000000001';
 
     public function __construct($test)

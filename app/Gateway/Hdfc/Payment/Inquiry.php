@@ -9,6 +9,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 trait Inquiry
 {
@@ -16,8 +17,16 @@ trait Inquiry
 
     public function verifyRefund(array $input)
     {
-        // processed refund
-        if ($input['refund']['id'] === '897lDRdq5x9QL1')
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
+
+        $processedRefunds = $this->getProcessedRefunds();
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        {
+            return false;
+        }
+
+        if (in_array($input['refund']['id'], $processedRefunds) === true)
         {
             return true;
         }
@@ -98,8 +107,22 @@ trait Inquiry
         return $payment;
     }
 
+    protected function checkResponseAndThrowExceptionIfRequired($verify)
+    {
+        if ((empty($verify->verifyResponse['error']['code']) === false) and
+            ($verify->verifyResponse['error']['code'] === 'GW00201'))
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                VerifyAction::FINISH);
+        }
+    }
+
     protected function verifyPayment($verify)
     {
+        $this->checkResponseAndThrowExceptionIfRequired($verify);
+
         // gateway entity in db
         // NOTE: This is an entity and not an array.
         $gatewayPayment = $verify->payment;

@@ -57,8 +57,11 @@ class Utility
     /**
      * Checks whether the SoapFault exception is a timeout exception
      * If so, this should be treated as a gateway failure
+     *
+     * @param \SoapFault $sf
+     *
+     * @return bool
      */
-
     public static function checkSoapTimeout(\SoapFault $sf)
     {
         $msg = strtolower($sf->getMessage());
@@ -79,5 +82,10 @@ class Utility
         $xml = trim($xml);
 
         return (mb_substr($xml, 0, 5) === '<?xml');
+    }
+
+    public static function stripEmailSpecialChars(string $email)
+    {
+        return preg_replace("/[^a-zA-Z0-9]+/", "", $email);
     }
 }

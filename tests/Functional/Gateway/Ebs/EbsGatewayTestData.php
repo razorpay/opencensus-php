@@ -28,9 +28,24 @@ return [
         'signed'                    => false,
         'verified'                  => null,
         'fee'                       => 1476,
-        'service_tax'               => 226,
         'tax'                       => 226,
         'entity'                    => 'payment',
+    ],
+
+    'testAmountTampering' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\LogicException',
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
+        ],
     ],
 
     'testTransactionAfterAuthorize' => [
@@ -38,7 +53,6 @@ return [
         'merchant_id'     => '10000000000000',
         'amount'          => 50000,
         'fee'             => 0,
-        'service_tax'     => 0,
         'tax'             => 0,
         'pricing_rule_id' => null,
         'debit'           => 0,
@@ -260,7 +274,6 @@ return [
         'gateway_fee'               => 0,
         'api_fee'                   => 0,
         'fee'                       => 0,
-        'service_tax'               => 0,
         'tax'                       => 0,
 //        'escrow_balance'            => 998562,
         'channel'                   => 'kotak',

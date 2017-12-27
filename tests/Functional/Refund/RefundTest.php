@@ -739,6 +739,38 @@ class RefundTest extends TestCase
         parent::startTest();
     }
 
+    public function testRefundIciciDebitCard()
+    {
+        Mail::fake();
+
+        $payment = $this->defaultAuthPayment();
+
+        $payment['card']['number'] = '6074667022059103';
+
+        $this->fixtures->create('iin',
+            [
+                'iin'    => '607466',
+                'issuer' => 'ICIC',
+                'type'   => 'debit',
+            ]);
+
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->mockDashboardRequest();
+        
+        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertEquals('refund',$txn['type']);
+
+        $this->assertEquals($refund['id'], $txn['entity_id']);
+
+        Mail::assertSent(RefundedMail::class);
+    }
+
     public function startTest($paymentId = null, $amount = null)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

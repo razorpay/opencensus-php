@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\State;
 use Conner\Tagging\Taggable;
 use RZP\Exception\LogicException;
 
@@ -131,7 +132,10 @@ class Entity extends Base\PublicEntity
 
     protected $revisionCreationsEnabled = true;
 
+    protected $generateIdOnCreate = true;
+
     protected static $generators = [
+        self::ID,
         self::TRANSACTION_REPORT_EMAIL,
         self::INVOICE_CODE,
     ];
@@ -210,6 +214,7 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR,
         self::HANDLE,
         self::RISK_RATING,
+        self::RISK_THRESHOLD,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::SUSPENDED_AT,
@@ -293,7 +298,7 @@ class Entity extends Base\PublicEntity
 
     protected function generateInvoiceCode($input)
     {
-        $id = $input[self::ID];
+        $id = $this->getAttribute(self::ID);
 
         $first8 = substr($id, 0, 8);
 
@@ -357,6 +362,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LINKED_ACCOUNT_KYC);
     }
 
+    public function getReferrer()
+    {
+        $tagNames = $this->tagNames();
+
+        foreach ($tagNames as $tagName)
+        {
+            if (substr($tagName, 0, 4) === 'Ref-')
+            {
+                return substr($tagName, 4);
+            }
+        }
+
+        return null;
+    }
+
     public function isEducationCategory()
     {
         $eduCategories = array(
@@ -370,11 +390,27 @@ class Entity extends Base\PublicEntity
         return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
     }
 
-    public function isFeatureEnabled($feature)
+    public function isFeatureEnabled(string $featureName): bool
     {
         $assignedFeatures = $this->getEnabledFeatures();
 
-        return (in_array($feature, $assignedFeatures, true) === true);
+        return (in_array($featureName, $assignedFeatures, true) === true);
+    }
+
+    public function isAtLeastOneFeatureEnabled(array $features): bool
+    {
+        $assignedFeatures = $this->getEnabledFeatures();
+
+        //
+        // NOTE that it should be weak check because
+        // array_intersect returns back an array.
+        //
+        return (array_intersect($features, $assignedFeatures) == true);
+    }
+
+    public function isRecurringEnabled(): bool
+    {
+        return ($this->isAtLeastOneFeatureEnabled(Feature\Constants::$recurringFeatures) === true);
     }
 
     /**
@@ -589,6 +625,11 @@ class Entity extends Base\PublicEntity
     public function getCategory2()
     {
         return $this->getAttribute(self::CATEGORY2);
+    }
+
+    public function isCategoryCryptocurrency()
+    {
+        return ($this->getCategory2() === Terminal\Category::CRYPTOCURRENCY);
     }
 
     public function getBillingLabelNotName()
@@ -1029,18 +1070,18 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function getBusinessStateCode()
+    public function getGstStateCode()
     {
-        $businessStateCode = null;
+        $gstStateCode = null;
 
         $merchantDetail = $this->merchantDetail;
 
         if ($merchantDetail !== null)
         {
-            $businessStateCode = $merchantDetail->getBusinessStateCode();
+            $gstStateCode = $merchantDetail->getGstStateCode();
         }
 
-        return $businessStateCode;
+        return $gstStateCode;
     }
 
     public function getGstin()
@@ -1051,6 +1092,16 @@ class Entity extends Base\PublicEntity
         }
 
         return $this->merchantDetail->getGstin() ?? $this->merchantDetail->getPGstin();
+    }
+
+    public function getBusinessRegisteredState()
+    {
+        if ($this->merchantDetail === null)
+        {
+            return null;
+        }
+
+        return $this->merchantDetail->getBusinessRegisteredState();
     }
 
     public function enableReceiptEmails()
@@ -1156,6 +1207,35 @@ class Entity extends Base\PublicEntity
         return $this->morphedByMany('\RZP\Models\Admin\Admin\Entity', 'entity', Table::MERCHANT_MAP);
     }
 
+    public function activationStates()
+    {
+        return $this->hasMany('\RZP\Models\State\Entity', State\Entity::ENTITY_ID)
+                    ->where(State\Entity::ENTITY_TYPE, 'merchant_detail');
+    }
+
+    public function currentActivationState()
+    {
+        return $this->activationStates()
+                    ->orderBy(State\Entity::CREATED_AT, 'desc')
+                    ->first();
+    }
+
+    /**
+     * Get the owners of the merchant.
+     */
+    public function owners()
+    {
+        return $this->users()->where('role','owner')->get();
+    }
+
+    /**
+     * Get the primary owner of the merchant.
+     */
+    public function primaryOwner()
+    {
+        return $this->owners()->first();
+    }
+
     public function users()
     {
         return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS)
@@ -1199,15 +1279,16 @@ class Entity extends Base\PublicEntity
     public function toArrayUser()
     {
         $attributes = [
-            self::ID           => $this->getAttribute(self::ID),
-            self::NAME         => $this->getAttribute(self::NAME),
-            self::EMAIL        => $this->getAttribute(self::EMAIL),
-            self::ACTIVATED    => $this->getAttribute(self::ACTIVATED),
-            self::ARCHIVED_AT  => $this->getAttribute(self::ARCHIVED_AT),
-            self::SUSPENDED_AT => $this->getAttribute(self::SUSPENDED_AT),
-            self::LOGO_URL     => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
-            self::CREATED_AT   => $this->getAttribute(self::CREATED_AT),
-            self::UPDATED_AT   => $this->getAttribute(self::UPDATED_AT),
+            self::ID            => $this->getAttribute(self::ID),
+            self::NAME          => $this->getAttribute(self::NAME),
+            self::BILLING_LABEL => $this->getAttribute(self::BILLING_LABEL),
+            self::EMAIL         => $this->getAttribute(self::EMAIL),
+            self::ACTIVATED     => $this->getAttribute(self::ACTIVATED),
+            self::ARCHIVED_AT   => $this->getAttribute(self::ARCHIVED_AT),
+            self::SUSPENDED_AT  => $this->getAttribute(self::SUSPENDED_AT),
+            self::LOGO_URL      => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
+            self::CREATED_AT    => $this->getAttribute(self::CREATED_AT),
+            self::UPDATED_AT    => $this->getAttribute(self::UPDATED_AT),
         ];
 
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;

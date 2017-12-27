@@ -184,6 +184,7 @@ class Entity extends Base\PublicEntity
         self::TPV                       => 'int',
         self::TYPE                      => 'int',
         self::MODE                      => 'int',
+        self::CATEGORY                  => 'int',
         self::CORPORATE                 => 'boolean',
         self::USED                      => 'boolean',
     ];
@@ -712,6 +713,12 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::NON_RECURRING) === true);
     }
 
+    public function isRecurring()
+    {
+        return (($this->is3DSRecurring() === true) or
+                ($this->isNon3DSRecurring() === true));
+    }
+
     public function is3DSRecurring()
     {
         return ($this->isTypeApplicable(Type::RECURRING_3DS) === true);
@@ -753,6 +760,8 @@ class Entity extends Base\PublicEntity
      * an individual terminal entity, we want to do it
      *
      * @param  boolean $subMerchantFlag Flag ti indicate if sub_merchants should be included
+     *
+     * @return array
      */
     public function toArrayPublic($subMerchantFlag = false)
     {

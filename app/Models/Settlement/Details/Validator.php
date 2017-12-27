@@ -32,7 +32,7 @@ class Validator extends Base\Validator
         $count = $input[Entity::COUNT];
 
         if (($type === Component::FEE) or
-            ($type === Component::SERVICE_TAX))
+            ($type === Component::TAX))
         {
             assert ($count === null);
         }

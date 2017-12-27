@@ -15,6 +15,13 @@ use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
 use RZP\Exception\BadRequestValidationFailureException;
 
+/**
+ * Trait RepositoryFetch
+ *
+ * @package RZP\Base
+ *
+ * @property Fetch $entityFetch
+ */
 trait RepositoryFetch
 {
     use EsHydrator;
@@ -36,6 +43,7 @@ trait RepositoryFetch
     protected $findParamRuleKeys = [
         self::EXPAND,
         self::EXPAND . '.*',
+        self::DELETED,
     ];
 
     protected $fetchParamRules = [
@@ -108,7 +116,8 @@ trait RepositoryFetch
     }
 
     /**
-     * Retrieves the entities according to given fetch params
+     * Retrieves the entities according to given fetch params and current auth
+     *
      *
      * @param array       $params
      * @param string|null $merchantId
@@ -126,6 +135,8 @@ trait RepositoryFetch
         $query = $this->newQuery()->with($expands);
 
         $this->addCommonQueryParamMerchantId($query, $merchantId);
+
+        $this->setEsRepoIfExist();
 
         // Splits the params into mysqlParams and esParams. Check methods doc on
         // how that happens.
@@ -167,7 +178,10 @@ trait RepositoryFetch
      */
     protected function getMysqlAndEsParams(array $params): array
     {
-        $this->setEsRepoIfExist();
+        if ($this->hasEntityFetch() === true)
+        {
+            return $this->entityFetch->groupMysqlAndEsParams($params);
+        }
 
         if ($this->esRepo === null)
         {
@@ -293,7 +307,7 @@ trait RepositoryFetch
         return $entities;
     }
 
-    protected function buildFetchQuery($query, $params)
+    protected function buildQueryWithParams($query, $params)
     {
         foreach ($params as $key => $value)
         {
@@ -308,8 +322,15 @@ trait RepositoryFetch
                 $this->addQueryParamDefault($query, $params, $key);
             }
         }
+    }
+
+    protected function buildFetchQuery($query, $params)
+    {
+        $this->buildQueryWithParams($query, $params);
 
         $this->addQueryOrder($query);
+
+        // $this->addForceIndexForNestaway($query);
 
         $this->buildFetchQueryAdditional($params, $query);
 
@@ -418,6 +439,11 @@ trait RepositoryFetch
      */
     protected function processFetchParams(array & $params)
     {
+        if ($this->hasEntityFetch() === true)
+        {
+            return $this->entityFetch->processFetchParams($params);
+        }
+
         $params = $this->unsetEmptyParams($params);
 
         $this->addDefaultParams($params);
@@ -517,6 +543,9 @@ trait RepositoryFetch
             (isset($this->appFetchParamRules)))
         {
             $rules = array_merge($rules, $this->appFetchParamRules);
+
+            // Temporary fix to add deleted rule, Actual fix is done in Base/Fetch
+            $rules[self::DELETED] = 'filled|string|in:0,1';
         }
 
         if (($this->auth->isAdminAuth()) and
@@ -604,16 +633,10 @@ trait RepositoryFetch
         Merchant\Entity $merchant,
         array $params = []): PublicEntity
     {
-        $params = $this->modifyFindParams($params);
+        $query = $this->getQueryForFindWithParams($params);
 
-        $this->validateFindParams($params);
-
-        $expands = $this->getExpandsForQueryFromInput($params);
-
-        $entity = $this->newQuery()
-                       ->with($expands)
-                       ->merchantId($merchant->getId())
-                       ->findOrFailPublic($id);
+        $entity = $query->merchantId($merchant->getId())
+                        ->findOrFailPublic($id);
 
         //
         // Entities can be filtered on Merchant ID virtually and
@@ -637,6 +660,26 @@ trait RepositoryFetch
                     ->findOrFailPublic($id);
     }
 
+    /**
+     * Along with Id, other allowed parameter can also be passed
+     * Like: deleted
+     *
+     * @param string $id
+     * @param array  $params
+     *
+     * @return PublicEntity
+     */
+    public function findOrFailByPublicIdWithParams(
+        string $id,
+        array $params) : PublicEntity
+    {
+        $query = $this->getQueryForFindWithParams($params);
+
+        $entity = $query->findOrFailPublic($id);
+
+        return $entity;
+    }
+
     public function validateCustom($func, $attribute, $value, $parameters)
     {
         // Function name should start from 'validator'
@@ -644,6 +687,36 @@ trait RepositoryFetch
         assert (strpos($func, 'validate') === 0);
 
         $this->$func($attribute, $value, $parameters);
+    }
+
+    /**
+     * Build query for find by id routes. In such routes expand[] or deleted
+     * (for now) can be sent conditionally.
+     *
+     * @param array $params
+     *
+     * @return BuilderEx
+     */
+    protected function getQueryForFindWithParams(array $params): BuilderEx
+    {
+        if ($this->hasEntityFetch() === true)
+        {
+            $this->entityFetch->processFindParams($params);
+        }
+        else
+        {
+            $params = $this->modifyFindParams($params);
+
+            $this->validateFindParams($params);
+        }
+
+        $expands = $this->getExpandsForQueryFromInput($params);
+
+        $query = $this->newQuery()->with($expands);
+
+        $this->buildQueryWithParams($query, $params);
+
+        return $query;
     }
 
     protected function addQueryParamDefault($query, $params, $key)
@@ -710,6 +783,11 @@ trait RepositoryFetch
         $query->orderBy(Common::ID, 'desc');
     }
 
+    protected function addForceIndexForNestaway($query)
+    {
+        ;
+    }
+
     protected function addQueryParamCount($query, $params)
     {
         $query->take($params['count']);
@@ -720,6 +798,25 @@ trait RepositoryFetch
         $query->skip($params['skip']);
     }
 
+    protected function addQueryParamDeleted($query, $param)
+    {
+        $deleted = (bool) $param[self::DELETED];
+
+        if (($deleted === true) and ($this->doesEntityUseSoftdeletes() === true))
+        {
+            $query->withTrashed();
+        }
+    }
+
+    protected function doesEntityUseSoftdeletes() : bool
+    {
+        $entity = $this->getEntityClass();
+
+        return in_array(
+            \Illuminate\Database\Eloquent\SoftDeletes::class,
+            class_uses($entity),
+            true);
+    }
     /**
      * Add default params to the param list required
      * for fetch operation.

@@ -308,7 +308,7 @@ class Notify extends Processor\Notify
                 Item\Entity::DESCRIPTION       => $this->subscription->plan->item->getDescription(),
                 Item\Entity::AMOUNT            => $this->subscription->plan->item->getFormattedAmount(),
             ],
-            'merchant'  => [
+            'merchant' => [
                 Merchant\Entity::BILLING_LABEL => $this->merchant->getBillingLabel(),
                 Merchant\Entity::WEBSITE       => $this->merchant->getWebsite(),
                 Merchant\Entity::EMAIL         => $this->merchant->getTransactionReportEmail(),
@@ -318,6 +318,7 @@ class Notify extends Processor\Notify
                 'email' => $this->subscription->customer->getEmail(),
                 'phone' => $this->subscription->customer->getContact()
             ],
+            'mode' => $this->mode,
         ];
 
         if ($this->subscription->token->card !== null)
@@ -460,6 +461,11 @@ class Notify extends Processor\Notify
             return false;
         }
 
+        if ($this->subscription->isGlobal() === false)
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -467,7 +473,8 @@ class Notify extends Processor\Notify
     {
         $merchantTransactionReportEmail = $this->merchant->getTransactionReportEmail();
 
-        return (empty($merchantTransactionReportEmail) === false);
+        return ((empty($merchantTransactionReportEmail) === false) and
+                ($this->merchant->isLinkedAccount() === false));
     }
 
     protected function getMailableClass(string $event)

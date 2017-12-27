@@ -81,7 +81,7 @@ class Core extends Base\Core
     {
         // Reversals not handled yet for customer wallet - transfer refunds
         // @todo: Change flow to create reversals for both customer/account transfers
-        if ($transfer->getToType() !== E::ACCOUNT)
+        if ($transfer->getToType() !== E::MERCHANT)
         {
             throw new Exception\LogicException(
                 'Reversal attempted on invalid transfer to_type - ' . $transfer->getToType()

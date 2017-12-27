@@ -5,7 +5,9 @@ namespace RZP\Models\Gateway\File\Processor;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\Core;
+use RZP\Models\FileStore;
 use RZP\Models\Gateway\File;
+use RZP\Models\Gateway\File\Type;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 
@@ -16,7 +18,51 @@ use RZP\Models\Base\PublicCollection;
  */
 abstract class Base extends Core
 {
+    /**
+     * Mutex lock is acquired by default for 900s (15 minutes)
+     */
+    const MUTEX_LOCK_TIMEOUT = 900;
+
+    protected $mutex;
+
     protected $gatewayFile;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
+    /**
+     * Before starting the file generation, we acquire a mutex lock over the
+     * gateway_file entity and check if it can be processed.This is to prevent
+     * parallel requests from operating on the same gateway_file entity
+     *
+     * @param  File\Entity $gatewayFile
+     */
+    public function validateAndProcess(File\Entity $gatewayFile)
+    {
+        $this->gatewayFile = $gatewayFile;
+
+        $this->mutex->acquireAndRelease(
+            $this->gatewayFile->getId(),
+            function ()
+            {
+                $this->gatewayFile->reload();
+
+                $this->gatewayFile->getValidator()->validateIfProcessable();
+
+                $this->gatewayFile->setProcessing(true);
+
+                $this->repo->saveOrFail($this->gatewayFile);
+
+                $this->process();
+            },
+            static::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_GATEWAY_FILE_ANOTHER_OPERATION_IN_PROGRESS
+        );
+    }
 
     /**
      * We perform the following steps to process the gateway_file entity
@@ -25,23 +71,19 @@ abstract class Base extends Core
      * 3. Send the mail to gateway
      * Each of the steps needs to be implemented for respective child classes
      */
-    public function process(File\Entity $gatewayFile)
+    protected function process()
     {
-        $this->gatewayFile = $gatewayFile;
-
-        $this->checkIfRetriable();
-
         try
         {
-            $entites = $this->fetchEntities();
+            $entities = $this->fetchEntities();
 
-            $this->checkIfValidDataAvailable($entites);
+            $this->checkIfValidDataAvailable($entities);
 
-            $this->generateData($entites);
+            $data = $this->generateData($entities);
 
-            $this->createFile();
+            $this->createFile($data);
 
-            $this->sendFile();
+            $this->sendFile($data);
         }
         catch (Exception\GatewayFileException $e)
         {
@@ -66,6 +108,13 @@ abstract class Base extends Core
         $this->repo->saveOrFail($gatewayFile);
     }
 
+    public function setGatewayFile(File\Entity $gatewayFile)
+    {
+        $this->gatewayFile = $gatewayFile;
+
+        return $this;
+    }
+
     /**
      * Handles any exception thrown during processing. Here we update the status as failed
      * with appropriate failure_code.
@@ -79,7 +128,7 @@ abstract class Base extends Core
         if ($this->shouldNotReportFailure($e->getCode()) === true)
         {
             $this->acknowledge($this->gatewayFile, [
-                File\Entity::COMMENTS => 'Valid data not available for file processing'
+                File\Entity::COMMENTS => $e->getMessage(),
             ]);
 
             return;
@@ -101,28 +150,32 @@ abstract class Base extends Core
     {
         $this->gatewayFile->incrementAttempts();
 
+        $this->gatewayFile->setProcessing(false);
+
         $this->repo->saveOrFail($this->gatewayFile);
     }
 
-    /**
-     * If it is a retry attempt for an existing gateway file, we check if it is
-     * in a valid state to be reried depending on the type of the gateway file
-     */
-    protected function checkIfRetriable()
+    protected function isFileGenerated(): bool
     {
-        if ($this->canRetry() === false)
+        if ($this->gatewayFile->isFileGenerated() === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE);
-        }
-    }
+            $file = $this->gatewayFile
+                               ->files()
+                               ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
+                               ->first();
 
-    abstract protected function canRetry(): bool;
+            return $file !== null;
+        }
+
+        return false;
+    }
 
     /**
      * If the processing fails due to some known reason like no data found for file
-     * generation. In such cases, we mark the gateway_file entity as acknowledged
-     * @param  string   Error code / reason for failure
+     * generation. In such cases, we mark the gateway_file entity as acknowledged.
+     *
+     * @param  string $code  Error code / reason for failure
+     *
      * @return bool
      */
     abstract protected function shouldNotReportFailure(string $code): bool;
@@ -136,9 +189,25 @@ abstract class Base extends Core
      */
     abstract public function checkIfValidDataAvailable(PublicCollection $entites);
 
-    abstract public function generateData(PublicCollection $entites): array;
+    abstract public function generateData(PublicCollection $entites);
 
-    abstract public function createFile();
+    abstract public function createFile($data);
 
-    abstract public function sendFile();
+    abstract public function sendFile($data);
+
+    protected function getTpv()
+    {
+        $subType = $this->gatewayFile->getSubType();
+
+        if ($subType === Type::TPV)
+        {
+            return true;
+        }
+        else if ($subType === Type::NON_TPV)
+        {
+            return false;
+        }
+
+        return null;
+    }
 }

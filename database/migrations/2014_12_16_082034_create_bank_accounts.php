@@ -39,7 +39,7 @@ class CreateBankAccounts extends Migration
 
             $table->string(BankAccount::ACCOUNT_NUMBER, 40);
 
-            $table->string(BankAccount::BENEFICIARY_NAME, 40);
+            $table->string(BankAccount::BENEFICIARY_NAME, 120);
 
             $table->string(BankAccount::BENEFICIARY_ADDRESS1, 30)
                   ->nullable();
@@ -87,6 +87,10 @@ class CreateBankAccounts extends Migration
             $table->index(BankAccount::TYPE);
 
             $table->index(BankAccount::ACCOUNT_NUMBER);
+
+            $table->index(BankAccount::CREATED_AT);
+
+            $table->index(BankAccount::UPDATED_AT);
 
             $table->foreign(BankAccount::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

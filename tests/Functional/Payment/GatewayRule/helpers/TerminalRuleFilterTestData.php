@@ -626,9 +626,7 @@ return [
         [
             'payment_options' => [
                 'method' => Method::CARD,
-                'card' => [
-                    'international' => true
-                ]
+                'international' => true,
             ],
             'fixtures' => [
                 [
@@ -683,6 +681,7 @@ return [
     'testDomesticPaymentFilter' => [
         'payment_options' => [
             'method' => Method::CARD,
+            'international' => false,
         ],
         'fixtures' => [
             [

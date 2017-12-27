@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Functional\Gateway\File;
+namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
 use Queue;
@@ -56,7 +56,7 @@ class GatewayRefundFileTest extends TestCase
 
         $expectedFileContent = [
             'type'        => 'hdfc_netbanking_refund',
-            'entity_type' => File\Entity::class,
+            'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'xlsx',
         ];
@@ -225,7 +225,7 @@ class GatewayRefundFileTest extends TestCase
 
         $expectedFileContent = [
             'type'        => 'hdfc_netbanking_refund',
-            'entity_type' => File\Entity::class,
+            'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'xlsx',
         ];
@@ -274,7 +274,7 @@ class GatewayRefundFileTest extends TestCase
 
         $expectedFileContent = [
             'type'        => 'hdfc_netbanking_refund',
-            'entity_type' => File\Entity::class,
+            'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'xlsx',
         ];
@@ -307,7 +307,7 @@ class GatewayRefundFileTest extends TestCase
 
         $expectedFileContent = [
             'type'        => 'hdfc_netbanking_refund',
-            'entity_type' => File\Entity::class,
+            'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'xlsx',
         ];

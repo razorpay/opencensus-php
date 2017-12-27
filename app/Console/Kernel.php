@@ -13,16 +13,16 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
+        Commands\Index::class,
         Commands\Inspire::class,
         Commands\AddDbData::class,
-        Commands\GenerateEmailTemplates::class,
-        Commands\RzpDbRefresh::class,
         Commands\IinImport::class,
-        Commands\UidCheckDigitVerify::class,
-        Commands\Index::class,
         Commands\IndexCreate::class,
+        Commands\RzpDbRefresh::class,
         Commands\VerifyUpiProviders::class,
+        Commands\UidCheckDigitVerify::class,
         Commands\VerifyTopLevelDomain::class,
+        Commands\GenerateEmailTemplates::class,
         \Laravel\Tinker\Console\TinkerCommand::class,
     ];
 

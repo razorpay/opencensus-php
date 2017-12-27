@@ -5,7 +5,6 @@ namespace RZP\Gateway\Netbanking\Icici;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Mail;
-use RZP\Constants\MailTags;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
@@ -73,6 +72,10 @@ class RefundFile extends Base\RefundFile
             $date = Carbon::createFromTimestamp(
                 $row['payment']['created_at'], Timezone::IST)->format('jS F Y');
 
+            //
+            // Although for recurring payments we use token ID as the ITC parameter, we use
+            // payment ID as the PRN, therefore we can use the same transaction ID below
+            //
             $data[] = [
                 RefundFileFields::SERIAL_NO          => $index + 1,
                 RefundFileFields::PAYEE_ID           => $row['terminal']['gateway_merchant_id'],

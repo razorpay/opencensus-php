@@ -15,10 +15,13 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Merchant\Activation as ActivationMail;
-
+use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Merchant\Notify as NotifyTrait;
 
 class Activate extends Base\Core
 {
+    use NotifyTrait;
+
     const MAIL_EXCLUDED_METHODS = [
         // Don't include marketplace transfer method (for now)
         Payment\Method::TRANSFER,
@@ -28,7 +31,17 @@ class Activate extends Base\Core
         Payment\Method::BANK_TRANSFER
     ];
 
-    public function activate(Entity $merchant)
+    /**
+     * This function is used for activating merchant
+     * @param Entity $merchant
+     * @param bool $activateByStatus which is by default false, it determines
+     * if the activation is done by the new activation status `activated`.
+     *
+     * @throws Exception\BadRequestException
+     *
+     * @return array
+     */
+    public function activate(Entity $merchant, bool $activateByStatus = false): array
     {
         $merchant->getValidator()->validateBeforeActivate();
 
@@ -45,6 +58,11 @@ class Activate extends Base\Core
         //     throw new Exception\BadRequestException(
         //         ErrorCode::BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED);
         // }
+
+        if ($activateByStatus === true)
+        {
+            (new Detail\Core)->setBankAccountForMerchant($merchant->merchantDetail);
+        }
 
         $ba = $this->repo->bank_account->getBankAccount($merchant);
 
@@ -80,20 +98,47 @@ class Activate extends Base\Core
 
         $merchant->activate();
 
-        // Triggering
-        $workflow = $this->app['workflow']
-                         ->setEntity($merchant->getEntity())
-                         ->handle($oldMerchant, $merchant);
+        if ($activateByStatus === true)
+        {
+            // Triggering workflow for the activation_status change in merchantDetail entity
+            $workflow = $this->app['workflow']
+                             ->handle();
+        }
+        else
+        {
+            // Triggering
+            $workflow = $this->app['workflow']
+                             ->setEntity($merchant->getEntity())
+                             ->handle($oldMerchant, $merchant);
+        }
 
         (new Merchant\Core)->createBalance($merchant, 'live');
 
-        $this->repo->saveOrFail($merchant);
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $this->repo->saveOrFail($merchant);
+
+            $merchantDetail = $merchant->merchantDetail;
+
+            $merchantDetail->setLocked(true);
+
+            $this->repo->saveOrFail($merchantDetail);
+        });
 
         $this->trace->info(
             TraceCode::MERCHANT_ACCOUNT_ACTIVATED,
             ['merchant_id' => $merchant->getId()]);
 
         $this->sendMerchantActivatedEvents($merchant);
+
+        if ($activateByStatus === true)
+        {
+            $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
+
+            (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
+
+            $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
+        }
 
         return $merchant->toArrayPublic();
     }

@@ -9,7 +9,7 @@
       <tr>
         <td>
           @include('emails.partials.header', ['message'=>$message])
-          <!-- Payment Successfull Header -->
+          <!-- Payment Successful Header -->
           <table class="row">
             <tr>
               <td class="center" align="center">

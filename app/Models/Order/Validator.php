@@ -13,7 +13,7 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         Entity::AMOUNT          =>  'required|integer|min:100',
         Entity::CURRENCY        =>  'required|size:3|in:INR,USD',
-        Entity::RECEIPT         =>  'required|string|max:40',
+        Entity::RECEIPT         =>  'sometimes|nullable|string|max:40',
         Entity::PAYMENT_CAPTURE =>  'filled|boolean',
         Entity::CUSTOMER_ID     =>  'sometimes|filled',
         Entity::NOTES           =>  'sometimes|notes',
@@ -57,7 +57,10 @@ class Validator extends Base\Validator
 
         $this->validateOrderCurrency($payment->getCurrency());
 
+        // TPV Check is done before check for generic order payment match.
         $this->validateMerchantSpecificData($payment);
+
+        $this->validateOrderBank($payment->getBank());
     }
 
     /**
@@ -136,6 +139,16 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH);
+        }
+    }
+
+    protected function validateOrderBank($bank)
+    {
+        if (($this->entity->getBank() !== null) and
+            ($this->entity->getBank() !== $bank))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK);
         }
     }
 

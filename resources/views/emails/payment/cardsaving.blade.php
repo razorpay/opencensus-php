@@ -56,7 +56,7 @@
         </tr>
         <tr>
             <td style="font-family:-apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif;">
-            <center><a href="https://razorpay.com/" target="_blank"><img height="28px" src="http://i.imgur.com/c4jDjyI.png" width="126px"></a></center>
+            <center><a href="https://razorpay.com/" target="_blank"><img height="28px" src="https://cdn.razorpay.com/logo.png" width="126px"></a></center>
             </td>
         </tr>
         <tr style="height: 25px">
@@ -165,7 +165,7 @@
         </tr>
         <tr>
             <td style="font-family:-apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif;">
-            <center><a href="https://razorpay.com/" target="_blank"><img height="28px" src="http://i.imgur.com/c4jDjyI.png" width="126px"></a></center>
+            <center><a href="https://razorpay.com/" target="_blank"><img height="28px" src="https://cdn.razorpay.com/logo.png" width="126px"></a></center>
             </td>
         </tr>
         <tr style="height: 10px;font-size:1px;">

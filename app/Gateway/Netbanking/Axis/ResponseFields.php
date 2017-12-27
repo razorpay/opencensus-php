@@ -16,4 +16,7 @@ class ResponseFields
     const DATE                = 'PaymentDate';
     const PAYMENT_STATUS      = 'PaymentStatus';
     const VERIFY_RESPONSE_AMT = 'Amount';
+
+    const PAID                = 'Paid';
+    const TRAN_DATE_TIME      = 'TRANDATETIME';
 }

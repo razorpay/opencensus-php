@@ -4,75 +4,31 @@ namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\FileStore;
-use RZP\Jobs\DispatchRouter;
 use RZP\Base\RuntimeManager;
+use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\Batch as BatchJob;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class Core extends Base\Core
 {
-    use FileHandlerTrait;
-
-    public function create(array $input): Entity
+    public function create(array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
-        if (isset($input['merchant_id']) === true)
-        {
-            $this->merchant = $this->repo->merchant->findOrFailPublic($input['merchant_id']);
-        }
-
         $batch = (new Entity)->build($input);
 
-        $batch->merchant()->associate($this->merchant);
+        $batch->merchant()->associate($merchant);
 
-        //
-        // Does following inside transaction:
-        // - Uploads file to s3 and gets FileStore\Entity created
-        // - Validates the file
-        // - Updates batch entity with aggregate details of file (if applicable)
-        // - Saves batch entity
-        //
-        $this->repo->transaction(function () use ($batch, $input)
-        {
-            $processor = Processor\Base::get($batch);
+        $processor = Processor\Factory::get($batch);
 
-            $inputFile = $input[Entity::FILE];
-
-            $file = $processor->saveInputFile($inputFile);
-
-            $entries = $processor->parseInputFileAndValidate($file->getPathname(), $input);
-
-            $this->fillBatchEntityWithInputFileDetails($batch, $entries);
-
-            $this->repo->saveOrFail($batch);
-        });
+        $processor->storeInputFileAndSaveBatch($input);
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
 
         $this->dispatchOnQueueForProcessingIfApplicable($batch, $input);
 
         return $batch;
-    }
-
-    /**
-     * Retry batch entity.
-     *
-     * - Only sets the status to PROCESSING so it gets picked by
-     *   the next cron run.
-     *
-     * @param Entity $batch
-     */
-    public function retryBatch(Entity $batch)
-    {
-        $batch->getValidator()->validateNotProcessedAlready();
-
-        $batch->setStatus(Status::PROCESSING);
-
-        $this->repo->saveOrFail($batch);
-
-        $this->trace->info(TraceCode::BATCH_RETRY, $batch->toArrayPublic());
     }
 
     /**
@@ -89,14 +45,15 @@ class Core extends Base\Core
      */
     public function retryBatchOutputFile(Entity $batch): Entity
     {
-        Processor\Base::get($batch)->retryBatchOutputFile();
+        Processor\Factory::get($batch)->retryBatchOutputFile();
 
         return $batch;
     }
 
     /**
-     * Returns signed url of the batch file: output file if that exists else
-     * the input file itself.
+     * Returns signed URL of the batch's most recent file
+     * If batch is processed that will be the output file, else the batch input
+     * file is returned.
      *
      * @param Entity $batch
      *
@@ -104,28 +61,9 @@ class Core extends Base\Core
      */
     public function downloadBatch(Entity $batch): string
     {
-        $file = ($batch->getStatus() === Status::CREATED) ?
-                    $batch->inputFile() : $batch->outputFile();
+        $file = $batch->latestFile();
 
-        // Backward compatibility:
-        // - If file relation exists use that else to handle BC
-        //   form the AWS key and get the signed URL as done previously.
-
-        if ($file === null)
-        {
-            $signedUrl = $this->getSignedUrlOfBatchFile($batch);
-        }
-        else
-        {
-            $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
-        }
-
-        $this->trace->info(
-            TraceCode::BATCH_DOWNLOAD,
-            [
-                'batch_id' => $batch->getId(),
-                'url'      => $signedUrl,
-            ]);
+        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
 
         return $signedUrl;
     }
@@ -145,102 +83,26 @@ class Core extends Base\Core
 
         foreach ($batches as $batch)
         {
-            $this->processBatch($batch);
+            try
+            {
+                Processor\Factory::get($batch)->validateAndProcess();
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e);
+            }
         }
 
         return $batches;
     }
 
-    /**
-     * Processes individual batch via API
-     *
-     * @param Entity $batch
-     *
-     * @return Entity
-     */
-    public function processBatchViaApi(Entity $batch)
+    public function processBatchAsync(Entity $batch, array $input = []): Entity
     {
-        return $this->processBatch($batch, true);
-    }
+        $this->trace->info(TraceCode::BATCH_PROCESS_ASYNC, [$batch->toArrayPublic(), $input]);
 
-    /**
-     * Process a particular batch entity.
-     *
-     * @param Entity  $batch
-     * @param boolean $bubbleEx   - When called iteratively over batch collection
-     *                            we don't break execution. But when called via
-     *                            API for individual batch we bubble exception
-     *                            to response.
-     *
-     * @return Entity
-     * @throws \Throwable
-     */
-    public function processBatch(Entity $batch, bool $bubbleEx = false): Entity
-    {
-        try
-        {
-            $batch->getValidator()->validateNotProcessedAlready();
-
-            Processor\Base::get($batch)->process();
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::BATCH_PROCESSING_ERROR,
-                [
-                    'batch' => $batch->toArray(),
-                ]);
-
-            // Even if there is any error during processing of batch
-            // we for now still set the status as PROCESSED.
-
-            $batch->setStatus(Status::PROCESSED);
-
-            $this->repo->saveOrFail($batch);
-
-            if ($bubbleEx === true)
-            {
-                throw $e;
-            }
-        }
+        $this->queueBatchForProcessing($batch, $input);
 
         return $batch;
-    }
-
-    /**
-     * Fills Batch entity with details extracted from the input file.
-     * Eg.
-     * - Total row count
-     * - Aggregate sum of amount field
-     *
-     * @param Entity $batch
-     * @param array $entries
-     */
-    protected function fillBatchEntityWithInputFileDetails(
-        Entity $batch,
-        array $entries)
-    {
-        $totalAmount = array_sum(array_column($entries, Header::AMOUNT));
-        $totalCount  = count($entries);
-
-        $batch->setAmount($totalAmount);
-        $batch->setTotalCount($totalCount);
-    }
-
-    /**
-     * Get signed URL of batch file in old way.
-     *
-     * @param Entity $batch
-     *
-     * @return string
-     */
-    protected function getSignedUrlOfBatchFile(Entity $batch): string
-    {
-        $awsKey = $batch->getFilePrefix() . $batch->getFileKeyWithExt();
-
-        return $this->getPreSignedUrlFromAws($awsKey);
     }
 
     protected function increaseAllowedSystemLimits()
@@ -260,16 +122,16 @@ class Core extends Base\Core
      */
     protected function dispatchOnQueueForProcessingIfApplicable(Entity $batch, array $input)
     {
-        if (Type::isQueueGroup($batch->getType()) === false)
+        if (Type::isQueueGroup($batch->getType()) === true)
         {
-            return;
+            unset($input[Entity::FILE]);
+
+            $this->queueBatchForProcessing($batch, $input);
         }
+    }
 
-        unset($input[Entity::FILE]);
-
-        // For now this is being pushed onto invoice_emails queue only and
-        // later we might have a new queue for this purpose only.
-
+    protected function queueBatchForProcessing(Entity $batch, array $input = [])
+    {
         $job = new BatchJob($this->mode, $batch->getId(), $input);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);

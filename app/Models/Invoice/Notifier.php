@@ -35,12 +35,7 @@ class Notifier extends Base\Core
 
         $this->issuedPdfPath = $issuedPdfPath;
 
-        $this->mode = Mode::TEST;
-
-        if (isset($this->app['rzp.mode']) === true)
-        {
-            $this->mode = $this->app['rzp.mode'];
-        }
+        $this->mode = $this->app['rzp.mode'];
 
         $this->raven = $this->app['raven'];
 
@@ -185,7 +180,7 @@ class Notifier extends Base\Core
 
         try
         {
-            $response = $this->raven->sendSms($request);
+            $response = $this->raven->sendSms($request, false);
         }
         catch (\Exception $ex)
         {
@@ -341,9 +336,9 @@ class Notifier extends Base\Core
 
         $request = [
             'receiver' => $contact,
-            'source' => 'api.invoice',
+            'source'   => "api.{$this->mode}.invoice",
             'template' => 'sms.invoice',
-            'params' => [
+            'params'   => [
                 'merchant_name' => $merchant->getBillingLabel(),
                 'invoice_link'  => $this->invoice->getShortUrl(),
                 'amount'        => $this->invoice->getAmount() / 100,

@@ -4,7 +4,6 @@ namespace RZP\Gateway\Netbanking\Hdfc\Mock;
 
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking;
-use RZP\Gateway\Paytm;
 
 class Server extends Base\Mock\Server
 {
@@ -30,7 +29,17 @@ class Server extends Base\Mock\Server
             'fldSessionNbr' => '5',
         );
 
-        $content['CheckSum'] = $this->getCallbackChecksum($content);
+        $this->content($content);
+
+        // Send checksum only if it's not an emandate/recurring payment
+        if (isset($input['ClientAccNum']) === true)
+        {
+            unset($content['CheckSum']);
+        }
+        else
+        {
+            $content['CheckSum'] = $this->getCallbackChecksum($content);
+        }
 
         $url = $input['DynamicUrl'];
         $url .= '?' . http_build_query($content);
@@ -58,7 +67,7 @@ class Server extends Base\Mock\Server
             'FailureStaticFlag' => 'N',
             'Date'              => $input['Date'],
             'TransactionId'     => 'XTXTV01',
-            'flgVerify'         => 'Y',
+            'flgVerify'         => $input['FlgVerify'],
             'BankRefNo'         => $payment['bank_payment_id'],
             'flgSuccess'        => 'S',
             'Message'           => $payment['error_message'],

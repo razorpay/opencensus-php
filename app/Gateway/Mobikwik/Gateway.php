@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Trace\TraceCode;
+use RZP\Models\Feature;
 
 class Gateway extends Base\Gateway
 {
@@ -56,6 +57,10 @@ class Gateway extends Base\Gateway
         $this->verifySecureHash($input['gateway']);
 
         $this->assertPaymentId($input['payment']['id'], $input['gateway']['orderid']);
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($input['gateway']['amount'], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
                             $input['gateway']['orderid'], Action::AUTHORIZE);
@@ -194,88 +199,16 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        // Hardcoding these refunds for processing
-        $unprocessedRefunds = [
-            '8AHuvxdoMaJMDX',
-            '8IfIfZVgn9Ksx9',
-            '8IfJeT8xFyJTDo',
-            '8Ne2lcJV3uDyVA',
-            '8Ne2nMY5XYhf2L',
-            '8Ng48zHWoQkGat',
-            '8NnNeVXRKMQfcT',
-            '8NnNgCfYrKXUR1',
-            '8NpHaqbICamUSy',
-            '8NpITT8U6PLubY',
-            '8OaJNUUngRnKnr',
-            '8OaOr75PLMDL0F',
-            '8ObSDll9WxvX85',
-            '8Px8uF3VgsuRsy',
-            '8QqMkxC5IRnlFO',
-            '8QvbnhNoRWtvEw',
-            '8QxWAfWRYgtE2t',
-            '8S88qALM0M3XXX',
-            '8SBFSAL1j4TLqi',
-            '8SBFRMRdGD17HH',
-            '8XTEH7Rx92OosI',
-        ];
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
 
-        $processedRefund = [
-            '84gP7q9fAdiBR5',
-            '8CIghtkfW9hzlK',
-            '8HtGEjs7n0RpSE',
-            '8IgLdpjdxeOJyl',
-            '8NOgRgsCC7HhaF',
-            '8Ng4HozIvr6ZQI',
-            '8Ng79SRpHPrlT0',
-            '8Ng7upjjGxClQb',
-            '8Ng99HlUYeCj1r',
-            '8Ng9WTYH0xQSt7',
-            '8Ng9ebSADBwEW8',
-            '8NgAGGOfM0Q3Lv',
-            '8NgANs4DxvsGQO',
-            '8NgB2i6OYo38ic',
-            '8NmSd66uSDWQ29',
-            '8NnNg4ndBuSQlh',
-            '8NpGG1tx8QSeYG',
-            '8NpHCcofbocXtB',
-            '8NpHCaZNEdOHXj',
-            '8NpHabOt8AExXA',
-            '8NpHtdkelr7gn0',
-            '8NpHtcqclTpWId',
-            '8NpHtcBTN5DzVu',
-            '8NpIC5RAUpSX8i',
-            '8NqHLfDga5LP66',
-            '8NgCSZXHRMPxhs',
-            '8O6jgqpeosLOSB',
-            '8OTSRa0c61JxEE',
-            '8OaJYbvCoS8e6s',
-            '8QqKtUuUbLjM4T',
-            '8QqLPTSA3IMHbx',
-            '8QvVh9h9Dqbvjf',
-            '8QwUF14Q7tYsIC',
-            '8QwX2E18F43qaq',
-            '8QxVI3NQ5aGEjN',
-            '8QxWQ5Crgp0kHa',
-            '8Qxd9Z03INqwXq',
-            '8R0cnkX8i58tET',
-            '8R0iKVIxy9oXoC',
-            '8RjXh9X6RdRti4',
-            '8QzYdyAHl7OhIh',
-            '8S963yzk3QhDkN',
-            '8S965pXTKnVXa6',
-            '8S96RryP3xFuUX',
-            '8S96xwBW5vN5nY',
-            '8SxB9rXUJ49Nwf',
-            '8SyCW3SZbT3oc4',
-            '8aMAT2zNmqMcta',
-        ];
+        $processedRefunds = $this->getProcessedRefunds();
 
         if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
         {
             return false;
         }
 
-        if (in_array($input['refund']['id'], $processedRefund) === true)
+        if (in_array($input['refund']['id'], $processedRefunds) === true)
         {
             return true;
         }
@@ -437,14 +370,14 @@ class Gateway extends Base\Gateway
         $content = array(
             'amount'       => $input['payment']['amount'] / 100,
             'cell'         => $this->getFormattedContact($input['payment']['contact']),
-            'merchantname' => $input['merchant']->getFilteredDba(),
+            'merchantname' => $this->getMobikwikMerchantName($input['merchant']),
             'mid'          => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'      => MessageCode::OTP_GENERATE,
             'tokentype'    => '0',
         );
 
         $content['checksum'] = $this->getHashOfArray($content);
-        $content['merchantAlias'] = $input['merchant']->getFilteredDba();
+        $content['merchantAlias'] = $this->getMobikwikMerchantName($input['merchant']);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -481,7 +414,7 @@ class Gateway extends Base\Gateway
             'amount'        => (string) ($input['payment']['amount'] / 100),
             'cell'          => $this->getFormattedContact($input['payment']['contact']),
             'comment'       => 'Order id - ' . $input['payment']['public_id'],
-            'merchantname'  => $input['merchant']->getFilteredDba(),
+            'merchantname'  => $this->getMobikwikMerchantName($input['merchant']),
             'mid'           => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'       => MessageCode::OTP_SUBMIT,
             'orderid'       => $input['payment']['id'],
@@ -589,7 +522,7 @@ class Gateway extends Base\Gateway
             'amount'        => $input['payment']['amount'] / 100,
             'cell'          => $this->getFormattedContact($input['payment']['contact']),
             'orderid'       => $input['payment']['id'],
-            'merchantname'  => $input['merchant']->getFilteredDba(),
+            'merchantname'  => $this->getMobikwikMerchantName($input['merchant']),
             'mid'           => $input['terminal']['gateway_merchant_id'],
             'redirecturl'   => $input['callbackUrl'],
         );
@@ -601,7 +534,7 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
         $content['checksum'] = $this->getHashForAuthorizeRequest($content);
-        $content['merchantAlias'] = $input['merchant']->getFilteredDba();
+        $content['merchantAlias'] = $this->getMobikwikMerchantName($input['merchant']);
 
         return $content;
     }
@@ -688,6 +621,21 @@ class Gateway extends Base\Gateway
         }
 
         return $terminal['gateway_merchant_id'];
+    }
+
+    protected function getMobikwikMerchantName($merchant) : string
+    {
+        if ($this->isMobikwikOffersEnabled($merchant) === true)
+        {
+            return $merchant->getFilteredDba();
+        }
+
+        return 'Razorpay';
+    }
+
+    protected function isMobikwikOffersEnabled($merchant) : bool
+    {
+        return ($merchant->isFeatureEnabled(Feature\Constants::MOBIKWIK_OFFERS) === true);
     }
 
     protected function verifySecureHash(array $content)

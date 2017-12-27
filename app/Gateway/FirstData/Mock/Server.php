@@ -22,6 +22,10 @@ class Server extends Base\Mock\Server
 
     public function purchase($input)
     {
+        $body = $this->parseRequest($input);
+
+        $this->request($body);
+
         return $this->capture($input);
     }
 
@@ -103,11 +107,7 @@ class Server extends Base\Mock\Server
     {
         parent::capture($input);
 
-        $xml = simplexml_load_string($input);
-
-        $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('v1', true);
-
-        $body = json_decode(json_encode($xmlBody), true);
+        $body = $this->parseRequest($input);
 
         $dateTime = Carbon::now(Timezone::IST);
 
@@ -273,15 +273,24 @@ class Server extends Base\Mock\Server
         return $this->prepareResponse($soapContent);
     }
 
+    protected function parseRequest(string $input)
+    {
+        $xml = simplexml_load_string($input);
+
+        $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('v1', true);
+
+        return json_decode(json_encode($xmlBody), true);
+    }
+
     protected function setResponseHash($input, & $content)
     {
         $approvalCode = $content[FirstData\ConnectResponseFields::APPROVAL_CODE];
 
         $txnDateTime = $content[FirstData\ConnectResponseFields::TXN_DATE_TIME];
 
-        $chargeTotal = $input[FirstData\ConnectRequestFields::CHARGE_TOTAL];
+        $chargeTotal = $content[FirstData\ConnectRequestFields::CHARGE_TOTAL];
 
-        $currencyCode = $input[FirstData\ConnectRequestFields::CURRENCY];
+        $currencyCode = $content[FirstData\ConnectRequestFields::CURRENCY];
 
         $storeName = $input[FirstData\ConnectRequestFields::STORE_NAME];
 

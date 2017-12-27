@@ -105,6 +105,13 @@ class Creator extends Base\Core
      */
     protected $shouldEncrypt = false;
 
+    /**
+     * Flag to signify if file has to be base64 encoded
+     *
+     * @var boolean Encode flag
+     */
+    protected $shouldEncode = false;
+
      /**
      * Encryption Handler Instance
      *
@@ -172,7 +179,7 @@ class Creator extends Base\Core
     /**
      * Set the Content of File
      *
-     * @param string $content Content of file
+     * @param mixed $content Content of file
      *
      * @return Creator object
      */
@@ -268,6 +275,16 @@ class Creator extends Base\Core
         $this->shouldEncrypt = true;
 
         $this->encryptionHandler = new Encryption\Handler($type, $params);
+
+        return $this;
+    }
+
+    /** Encodes the given file with base64
+     * @return $this
+     */
+    public function encode()
+    {
+        $this->shouldEncode = true;
 
         return $this;
     }
@@ -673,6 +690,11 @@ class Creator extends Base\Core
             $this->compressFile();
         }
 
+        if ($this->shouldEncode === true)
+        {
+            $this->encodeFile();
+        }
+
         $this->updateFilePermission();
     }
 
@@ -681,6 +703,17 @@ class Creator extends Base\Core
         $fileToBeEncrypted = $this->getFullFilePath();
 
         $this->encryptionHandler->encryptFile($fileToBeEncrypted);
+    }
+
+    protected function encodeFile()
+    {
+        $fileToBeEncoded = $this->getFullFilePath();
+
+        $data = file_get_contents($fileToBeEncoded);
+
+        $encodedData = base64_encode($data);
+
+        file_put_contents($fileToBeEncoded, $encodedData);
     }
 
     /*

@@ -161,8 +161,6 @@ class Core extends Base\Core
 
         $transfer->setFees($txn->getFee());
 
-        $transfer->setServiceTax($txn->getServiceTax());
-
         $transfer->setTax($txn->getTax());
 
         $this->repo->saveOrFail($txn);
@@ -335,6 +333,8 @@ class Core extends Base\Core
             // @todo: Add proper code.
             $this->trace->traceException($e);
         }
+
+        $originPayment = null;
 
         if (($source instanceof Payment\Entity) === true)
         {

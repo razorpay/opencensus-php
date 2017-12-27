@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const CHANNEL                = 'channel';
     const VERSION                = 'version';
     const BANK_STATUS_CODE       = 'bank_status_code';
+    const MODE                   = 'mode';
     const STATUS                 = 'status';
     const UTR                    = 'utr';
     const NARRATION              = 'narration';
@@ -34,6 +35,10 @@ class Entity extends Base\PublicEntity
         self::VERSION,
         self::STATUS,
         self::NARRATION,
+        self::BANK_STATUS_CODE,
+        self::STATUS,
+        self::REMARKS,
+        self::FAILURE_REASON,
     ];
 
     protected $visible = [
@@ -45,6 +50,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::VERSION,
         self::BANK_STATUS_CODE,
+        self::MODE,
         self::STATUS,
         self::UTR,
         self::NARRATION,
@@ -134,6 +140,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
     }
 
+    public function getMode()
+    {
+        return $this->getAttribute(self::MODE);
+    }
+
     // ------------------------------- setters ---------------------------------
 
     public function setRemarks($remarks)
@@ -215,6 +226,23 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::FAILED);
     }
 
+    /**
+     * One attempt has one source
+     * One source has many attempts, created incrementally
+     * @return boolean
+     */
+    public function isLatest()
+    {
+        $attempts = $this->source->fundTransferAttempts;
+
+        if ($attempts->last()->getId() === $this->getId())
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     // ---------------------------- public setters -----------------------------
     public function setPublicSourceAttribute(array & $attributes)
     {
@@ -225,5 +253,10 @@ class Entity extends Base\PublicEntity
         $entity = E::getEntityClass($sourceType);
 
         $attributes[self::SOURCE] = $entity::getSignedId($sourceId);
+    }
+
+    public function setMode($mode)
+    {
+        return $this->setAttribute(self::MODE, $mode);
     }
 }

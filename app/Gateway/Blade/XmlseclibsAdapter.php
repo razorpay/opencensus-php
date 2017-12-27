@@ -11,7 +11,6 @@ use RuntimeException;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 use RobRichards\XMLSecLibs\XMLSecurityDSig;
 use UnexpectedValueException;
-use File_X509;
 
 /**
  * XmlDSig adapter based on "xmlseclibs" library
@@ -47,9 +46,10 @@ class XmlseclibsAdapter
      * create a new chain and use that
      */
     const ROOT_CERT_FINGERPRINTS = [
-        '2fc57c21ea9d79e87bba91413a439a56a4b6033d',
-        '4b2252395bac2a7f7852ae12f17fcf4b1f56528f',
-        '3621a169aba9bb3496a804102acfb127761ab5a9'
+        // MasterCard Root
+        '32dfd35574d8811bb90ebe33846dd3a0b945e0d9',
+        // VISA
+        '70179b868c00a4fa609152223f9f3e32bde00562'
     ];
 
     /**
@@ -186,6 +186,14 @@ class XmlseclibsAdapter
         }
     }
 
+    public function assert($bool, $msg = 'assertion failed')
+    {
+        if ($bool !== true)
+        {
+            throw new RuntimeException($msg);
+        }
+    }
+
     /**
      * This method is implemented using staticLocateKeyInfo
      * as the base code.
@@ -220,14 +228,7 @@ class XmlseclibsAdapter
 
         foreach ($certNodes as $certNode)
         {
-            // Create an empty key. We ignore the algorithm for now
-
-            // The reason we are suppressing errors for now is because
-            // laravel 4 binds to phpseclib 0.3, which has old-style
-            // php 4 constructor and raises a deprecation error
-            $cert = @(new File_X509);
-
-            $this->assert(is_a($cert, 'File_X509'));
+            $cert = new X509;
 
             // Parse the node into a PEM cert
             $certText = $this->parseCert($certNode);
@@ -388,6 +389,7 @@ class XmlseclibsAdapter
          * Since the above internally calls openssl_verify, we are returned
          * 1 for success and 0 for failure instead of true/false
          */
+
         return ($signatureVerifyResult === 1 and $certVerify);
     }
 
@@ -442,11 +444,11 @@ class XmlseclibsAdapter
 
     /**
      * Verify that $cert is signed by $signer
-     * @param  File_X509 $cert   [description]
-     * @param  string   $signer PEM Encoded signer
+     * @param  X509   $cert   [description]
+     * @param  string $signer PEM Encoded signer
      * @return boolean
      */
-    protected function verifyCertSignedBy(File_X509 $cert, $signer)
+    protected function verifyCertSignedBy(X509 $cert, $signer)
     {
         $cert->loadCA($signer);
 
@@ -454,10 +456,10 @@ class XmlseclibsAdapter
         // Instead of using the entire CA bundle
         $this->assert(count($cert->CAs) === 1);
 
-        return @($cert->validateSignature($signer));
+        return $cert->validateSignature(false);
     }
 
-    protected function verifySingleCert(File_X509 $cert)
+    protected function verifySingleCert(X509 $cert)
     {
         return $cert->validateDate();
     }

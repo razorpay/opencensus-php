@@ -18,12 +18,26 @@ class Validator extends Base\Validator
         Entity::REASON_ID              => 'required|alpha_num|size:14',
         Entity::AMOUNT                 => 'required|integer|min:100',
         Entity::DEDUCT_AT_ONSET        => 'sometimes|boolean',
+        Entity::PARENT_ID              => 'sometimes|alpha_num|size:14',
+        Entity::MERCHANT_EMAILS        => 'sometimes|array',
+        Entity::MERCHANT_EMAILS . '.*' => 'email',
+        Entity::SKIP_EMAIL             => 'sometimes|boolean',
     ];
 
     protected static $editRules = [
-        Entity::GATEWAY_DISPUTE_STATUS => 'sometimes|string',
-        Entity::STATUS                 => 'sometimes|string|custom',
-        Entity::EXPIRES_ON             => 'sometimes|epoch',
+        Entity::GATEWAY_DISPUTE_STATUS  => 'sometimes|string',
+        Entity::STATUS                  => 'sometimes|string|custom',
+        Entity::ACCEPTED_AMOUNT         => 'sometimes|integer|min:100',
+        Entity::EXPIRES_ON              => 'sometimes|epoch',
+        Entity::PARENT_ID               => 'sometimes|alpha_num|size:14',
+    ];
+
+    protected static $createValidators = [
+        'deduct_onset_for_non_transactional_phases',
+    ];
+
+    protected static $editValidators = [
+        'non_transactional_disputes_closure',
     ];
 
     protected function validatePhase(string $attribute, string $value)
@@ -76,6 +90,74 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'reason_id should be sent in the request to create a dispute.',
                 Entity::REASON_ID,
+                $input);
+        }
+    }
+
+    /**
+     *  We ensured via $editRules that $input[Entity::ACCEPTED_DISPUTE_AMOUNT] must be positive value.
+     *  Here we put an upper limit to value of same.
+     *
+     * @param int $disputedAmount
+     * @param array $input
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateAcceptedDisputeAmount(int $disputedAmount, array $input)
+    {
+        if ($input[Entity::ACCEPTED_AMOUNT] > $disputedAmount)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Accepted chargeback amount cannot be greater than disputed amount.',
+                Entity::ACCEPTED_AMOUNT,
+                $input);
+        }
+    }
+
+    public function validateDisputeCanBecomeParent()
+    {
+        if ($this->entity->child !== null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The parent dispute is linked to another dispute entity.',
+                Entity::PARENT_ID);
+        }
+    }
+
+    protected function validateNonTransactionalDisputesClosure($input)
+    {
+        if (isset($input[Entity::STATUS]) === false)
+        {
+            return;
+        }
+
+        if ($this->entity->isNonTransactional() === false)
+        {
+            return;
+        }
+
+        if (in_array($input[Entity::STATUS], Status::getTransactionalStatuses(), true) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Non-transactional disputes can only be closed.',
+                Entity::STATUS,
+                $input);
+        }
+    }
+
+    public function validateDeductOnsetForNonTransactionalPhases(array $input)
+    {
+        if (empty($input[Entity::DEDUCT_AT_ONSET]) === true)
+        {
+            return;
+        }
+
+        $nonTransactionalPhases = Phase::getNonTransactionalPhases();
+
+        if (in_array($input[Entity::PHASE], $nonTransactionalPhases,true) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Deduct at onset cannot be done for disputes in phase ' . $input[Entity::PHASE],
+                Entity::DEDUCT_AT_ONSET,
                 $input);
         }
     }

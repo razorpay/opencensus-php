@@ -46,11 +46,16 @@ class Repository extends Base\Repository
         EsRepository::SEARCH_HITS       => 'filled|boolean',
         EsRepository::QUERY             => 'filled|string|min:2|max:100',
         Entity::ORG_ID                  => 'sometimes|string|size:14',
-        Entity::ACCOUNT_STATUS          => 'filled|string|in:all,suspended,archived,activated,pending,dead',
+        Entity::ACCOUNT_STATUS          => 'filled|custom',
         Entity::SUB_ACCOUNTS            => 'filled|custom',
         Entity::GROUPS                  => 'sometimes|array',
         Entity::ADMINS                  => 'sometimes|array|min:1|max:1',
     ];
+
+    protected function validateAccountStatus($attribute, $value)
+    {
+        AccountStatus::validate($value);
+    }
 
     protected function validateSubAccounts($attribute, $value)
     {
@@ -559,5 +564,13 @@ class Repository extends Base\Repository
         $model->__unset(Entity::GROUPS);
         $model->__unset(Entity::ADMINS);
         $model->__unset(Entity::MERCHANT_DETAIL);
+    }
+
+    public function getMerchantUserMapping(string $merchantId, string $userId)
+    {
+        return $this->find($merchantId)
+                    ->users()
+                    ->where('id', $userId)
+                    ->first();
     }
 }

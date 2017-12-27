@@ -5,10 +5,13 @@ namespace RZP\Tests\Functional\Batch;
 use Mail;
 use Illuminate\Support\Facades\Queue;
 
-use RZP\Tests\Functional\TestCase;
+use RZP\Constants\Mode;
+use RZP\Models\Invoice;
+use RZP\Models\Batch\Type;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Entity;
 use RZP\Jobs\Batch as BatchJob;
+use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Batch\PaymentLink as BatchPaymentLinkFileMail;
 
 class PaymentLinkTest extends TestCase
@@ -52,6 +55,7 @@ class PaymentLinkTest extends TestCase
 
         // Gets last entity (Post queue processing) and asserts attributes
         $entities = $this->getLastEntity('batch', true);
+
         $this->assertEquals(2, $entities['success_count']);
         $this->assertEquals(1, $entities['failure_count']);
 
@@ -123,6 +127,40 @@ class PaymentLinkTest extends TestCase
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
         $this->startTest();
+    }
+
+    public function testProcessPaymentLinkBatchById()
+    {
+        $this->fixtures
+             ->batch
+             ->create(
+                [
+                    Entity::ID   => '00000000000001',
+                    Entity::TYPE => Type::PAYMENT_LINK,
+                ]);
+
+        $this->ba->appAuth();
+
+        Queue::fake();
+
+        $this->startTest();
+
+        Queue::assertPushed(BatchJob::class, function($job)
+        {
+            $this->assertEquals(Mode::TEST, $job->getMode());
+
+            $this->assertEquals('00000000000001', $job->getId());
+
+            $this->assertArraySelectiveEquals(
+                [
+                    Invoice\Entity::SMS_NOTIFY   => '1',
+                    Invoice\Entity::EMAIL_NOTIFY => '0',
+                    Invoice\Entity::DRAFT        => '0',
+                ],
+                $job->getParams());
+
+            return true;
+        });
     }
 
     protected function getDefaultPaymentLinkFileEntries()

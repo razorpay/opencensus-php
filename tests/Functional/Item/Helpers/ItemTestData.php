@@ -61,6 +61,30 @@ return [
         ],
     ],
 
+    'testCreateItemWithoutCurrency' => [
+        'request' => [
+            'url'     => '/items',
+            'method'  => 'post',
+            'content' => [
+                'name'        => 'Item 1',
+                'description' => 'Item 1 description :) ..',
+                'amount'      => 100,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The currency field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 
     'testCreateItemWithTaxId' => [
         'request' => [

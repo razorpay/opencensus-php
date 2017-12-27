@@ -3,28 +3,39 @@
 namespace RZP\Models\Payout;
 
 use Carbon\Carbon;
-use RZP\Error\ErrorCode;
+
 use RZP\Exception;
-use RZP\Constants\Mode;
-use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
-use RZP\Models\Payment;
+use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
-use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Transaction;
-use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Constants\Timezone;
+use RZP\Models\Currency\Currency;
+use RZP\Models\FundTransfer\Kotak;
+use RZP\Models\Settlement\Holidays;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+
 
 class Core extends Base\Core
 {
     use BatchFundTransferTrait;
 
     const MUTEX_RESOURCE        = 'PAYOUT_PROCESSING';
-
     const MUTEX_LOCK_TIMEOUT    = 900;
+    const MAX_PAYOUT_AMOUNT     = 500000000; // 50 Lakhs
+
+    /**
+     * @var Mutex
+     */
+    protected $mutex;
 
     public function __construct()
     {
@@ -38,15 +49,19 @@ class Core extends Base\Core
      *
      * @param  array           $input
      * @param  Merchant\Entity $merchant
-     * @return Payout\Entity
+     *
+     * @return Entity
      */
     public function directPayout(array $input, Merchant\Entity $merchant): Entity
     {
-        $payout = $this->createPayout($input, $merchant);
+        return $this->repo->transaction(function () use ($input, $merchant)
+        {
+            $payout = $this->createPayout($input, $merchant);
 
-        $this->repo->saveOrFail($payout);
+            $this->repo->saveOrFail($payout);
 
-        return $payout;
+            return $payout;
+        });
     }
 
     /**
@@ -55,10 +70,13 @@ class Core extends Base\Core
      * @param  array           $input
      * @param  Payment\Entity  $payment
      * @param  Merchant\Entity $merchant
-     * @return Payout\Entity
+     *
+     * @return Entity
      */
-    public function paymentPayout(array $input, Payment\Entity $payment, Merchant\Entity $merchant)
+    public function paymentPayout(array $input, Payment\Entity $payment, Merchant\Entity $merchant): Entity
     {
+        (new Validator)->validatePaymentForPayout($input, $payment);
+
         $payout = $this->createPayout($input, $merchant);
 
         $payout->payment()->associate($payment);
@@ -77,6 +95,16 @@ class Core extends Base\Core
      */
     public function initiatePayouts(array $input, string $channel): array
     {
+        // Temporary. Kotak should ideally be processing at least
+        // IMPS payments on holidays as well, but they're currently
+        // not doing that, and we're stopping this till they do.
+        if (($this->mode !== Mode::TEST) and
+            ($this->env !== 'testing') and
+            (Holidays::isWorkingDay(Carbon::today(Timezone::IST)) === false))
+        {
+            return Holidays::HOLIDAY_MESSAGE;
+        }
+
         return $this->mutex->acquireAndRelease(
             self::MUTEX_RESOURCE,
             function() use($input, $channel)
@@ -91,7 +119,9 @@ class Core extends Base\Core
      * Called for cron or API to
      * create a payout for a merchant
      *
-     * @param  array           $input
+     * @param  array          $input
+     * @param Merchant\Entity $merchant
+     *
      * @return array
      */
     public function merchantPayout(array $input, Merchant\Entity $merchant): array
@@ -108,14 +138,32 @@ class Core extends Base\Core
         }
         else
         {
-            $amount = $merchant->balance->getBalance();
+            $merchantBalance = $merchant->balance->getBalance();
+
+            if ((isset($input[Entity::BUFFER_AMOUNT]) === true) and
+                ($merchantBalance < $input[Entity::BUFFER_AMOUNT]))
+            {
+                $this->trace->info(
+                    TraceCode::MERCHANT_PAYOUT_SKIPPED,
+                    [
+                        'message'     => 'merchant balance is less than buffer amount',
+                        'merchant_id' => $merchantId,
+                        'input'       => $input,
+                    ]);
+
+                return ['message' => 'merchant balance is less than the buffer amount ' . $input[Entity::BUFFER_AMOUNT]];
+            }
+
+            $amount = $merchantBalance - ($input[Entity::BUFFER_AMOUNT] ?? 0);
+
+            $amount = ($amount > self::MAX_PAYOUT_AMOUNT) ? self::MAX_PAYOUT_AMOUNT : $amount;
         }
 
         if ((isset($input[Entity::MIN_AMOUNT]) === true) and
             ($amount < $input[Entity::MIN_AMOUNT]))
         {
             $this->trace->info(
-                TraceCode::MERCHANT_PAYOUT_FAILURE,
+                TraceCode::MERCHANT_PAYOUT_SKIPPED,
                 [
                     'message'     => 'amount is less than min amount',
                     'merchant_id' => $merchantId,
@@ -127,8 +175,10 @@ class Core extends Base\Core
 
         }
 
+        //
         // Modulo will convert the amount into multiples
         // of modulo value
+        //
         if (isset($input[Entity::MODULO]) === true)
         {
             $moduloAmount = $amount % $input[Entity::MODULO];
@@ -139,7 +189,7 @@ class Core extends Base\Core
         $payoutInput = [
             Entity::CUSTOMER_ID    => $customerId,
             Entity::AMOUNT         => $amount,
-            Entity::CURRENCY       => 'INR',
+            Entity::CURRENCY       => Currency::INR,
             Entity::METHOD         => Method::FUND_TRANSFER,
             Entity::DESTINATION    => $bankAccountId,
         ];
@@ -153,16 +203,13 @@ class Core extends Base\Core
     {
         $this->validateMerchantStatus($merchant);
 
-        return $this->repo->transaction(function () use ($input, $merchant)
-        {
-            $payout = $this->createPayoutEntity($input, $merchant);
+        $payout = $this->createPayoutEntity($input, $merchant);
 
-            $payoutAttempt = $this->createPayoutAttemptEntity($payout);
+        $payoutAttempt = $this->createPayoutAttemptEntity($payout);
 
-            $this->updatePayoutWithTxn($payout);
+        $this->updatePayoutWithTxn($payout);
 
-            return $payout;
-        });
+        return $payout;
     }
 
     protected function processBankPayouts(array $input, string $channel): array
@@ -318,8 +365,6 @@ class Core extends Base\Core
 
         $payout->setFees($txn->getFee());
 
-        $payout->setServiceTax($txn->getServiceTax());
-
         $payout->setTax($txn->getTax());
 
         $this->validateMerchantBalance($payout);
@@ -345,9 +390,9 @@ class Core extends Base\Core
 
     protected function validateMerchantStatus(Merchant\Entity $merchant)
     {
-        $onHold = $merchant->getHoldFunds();
-
-        if ($onHold === true)
+        // If SKIP_HOLD_FUNDS_ON_PAYOUT feature is enabled for merchant, then we don't check the merchant funds_on_hold and proceed with payout creation
+        if (($merchant->isFeatureEnabled(Features::SKIP_HOLD_FUNDS_ON_PAYOUT) === false) and
+            ($merchant->getHoldFunds() === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);

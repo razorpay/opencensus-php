@@ -2,14 +2,12 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use Config;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
-use Config;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
-use RZP\Models\Merchant\Repository;
-use RZP\Models\Merchant\EsRepository;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Methods\Entity as MerchantMethodEntity;
 
@@ -27,7 +25,12 @@ class Merchant extends Base
     public function createDefaultTestMerchant()
     {
         // Default merchant to be used for tests
-        $this->fixtures->create('merchant', ['id' => '10000000000000', 'email' => 'test@razorpay.com']);
+        $this->fixtures->create('merchant',
+                                [
+                                    'id'            => '10000000000000',
+                                    'email'         => 'test@razorpay.com',
+                                    'billing_label' => 'Test Merchant'
+                                ]);
 
         // Merchant on whom all shared terminals are created
         $this->fixtures->create('merchant', ['id' => '1MercShareTerm']);
@@ -448,6 +451,11 @@ class Merchant extends Base
         return $this->edit($id, ['handle' => $handle]);
     }
 
+    public function setFeeBearer($feebearer, $id = '10000000000000')
+    {
+        return $this->edit($id, ['fee_bearer' => $feebearer]);
+    }
+
     /**
      * Setups up a hierarchy of groups, admins and merchants under the
      * test razorpay's organization. This can be very useful in many tests.
@@ -674,11 +682,27 @@ class Merchant extends Base
 
         if ($esMock === false)
         {
-            Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_test', '--reindex' => true]);
-            Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_live', '--reindex' => true]);
+            Artisan::call(
+                'rzp:index_create',
+                [
+                    'mode'         => 'test',
+                    'entity'       => 'merchant',
+                    'index_prefix' => 'testing_',
+                    'type_prefix'  => 'testing_',
+                    '--reindex'    => true,
+                ]);
+            Artisan::call(
+                'rzp:index_create',
+                [
+                    'mode'         => 'live',
+                    'entity'       => 'merchant',
+                    'index_prefix' => 'testing_',
+                    'type_prefix'  => 'testing_',
+                    '--reindex'    => true,
+                ]);
 
-            Artisan::call('rzp:index', ['--mode' => 'test', '--entity' => 'merchant', '--index' => 'testing_merchant_test']);
-            Artisan::call('rzp:index', ['--mode' => 'live', '--entity' => 'merchant', '--index' => 'testing_merchant_live']);
+            Artisan::call('rzp:index', ['mode' => 'test', 'entity' => 'merchant']);
+            Artisan::call('rzp:index', ['mode' => 'live', 'entity' => 'merchant']);
         }
 
         unset($merchants);

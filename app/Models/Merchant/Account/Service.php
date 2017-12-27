@@ -27,7 +27,7 @@ class Service extends Merchant\Service
      */
     public function fetch(string $id) : array
     {
-        $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
+        $account = $this->repo->account->findByPublicId($id);
         
         return $account->toArrayPublic();
     }
@@ -45,7 +45,7 @@ class Service extends Merchant\Service
         return $accounts->toArrayPublic();
     }
 
-    public function create(array $input)
+    public function create(array $input): array
     {
         $merchant = $this->core->createAccount($input, $this->merchant);
 

@@ -150,4 +150,13 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function addBeneficiary(string $channel)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->addBeneficiary($channel, $input);
+
+        return ApiResponse::json($data);
+    }
 }

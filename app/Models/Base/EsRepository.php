@@ -12,7 +12,10 @@ use RZP\Exception\ServerErrorException;
 
 class EsRepository extends \Razorpay\Spine\Repository
 {
-    use Base\Traits\Es\QueryBuilder;
+    use Base\Traits\Es\QueryBuilder
+    {
+        getSortParameter as public getDefaultSortParameter;
+    }
 
     // Different actions on ES document
     const CREATE           = 'create';
@@ -40,7 +43,6 @@ class EsRepository extends \Razorpay\Spine\Repository
     protected $trace;
     protected $mode;
     protected $entity;
-    protected $indexPrefix;
 
     /**
      * Name of the index to which this repo might correspond to.
@@ -48,6 +50,13 @@ class EsRepository extends \Razorpay\Spine\Repository
      * @var null|string
      */
     protected $indexName = null;
+
+    /**
+     * Name of index's only type
+     *
+     * @var null|string
+     */
+    protected $typeName = null;
 
     /**
      * Fields indexed in ES
@@ -97,23 +106,42 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $this->esDao = new Base\EsDao;
 
-        $this->indexPrefix = $app['config']->get('database.es_entity_index_prefix');
+        $indexPrefix = $app['config']->get('database.es_entity_index_prefix');
+        $typePrefix  = $app['config']->get('database.es_entity_type_prefix');
 
-        //
-        // Sets index name for this repository
-        // Format: <prefix_><entity>_<mode>
-        //
-        $index = "{$this->indexPrefix}{$this->entity}_{$this->mode}";
-
-        $this->setIndexNameByValue($index);
-
+        $this->setIndexAndTypeNameByPrefix($indexPrefix, $typePrefix);
     }
 
-    public function setIndexNameByValue(string $indexName)
+    /**
+     * Sets default index and type name for es
+     * Format: <prefix_><entity>_<mode>
+     *
+     * @param string $indexPrefix
+     * @param string $typePrefix
+     */
+    public function setIndexAndTypeNameByPrefix(
+        string $indexPrefix,
+        string $typePrefix)
     {
-        $this->indexName = $indexName;
+        $suffix = "{$this->entity}_{$this->mode}";
 
-        $this->esDao->setIndexNameByValue($indexName);
+        $this->indexName = $indexPrefix . $suffix;
+        $this->typeName  = $typePrefix . $suffix;
+    }
+
+    /**
+     * Sets index name to a new value with new prefix.
+     *
+     * Called from indexing command where in case of reindexing we might choose
+     * to use new index name (via new prefix).
+     *
+     * @param string $indexPrefix
+     */
+    public function setIndexNameByPrefix(string $indexPrefix)
+    {
+        $suffix = "{$this->entity}_{$this->mode}";
+
+        $this->indexName = $indexPrefix . $suffix;
     }
 
     public function getIndexedFields(): array
@@ -223,7 +251,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         return [
             'index' => $this->indexName,
-            'type'  => $this->indexName,
+            'type'  => $this->typeName,
             'body'  => [
                 '_source' => $source,
                 'from'    => $from,
@@ -236,6 +264,11 @@ class EsRepository extends \Razorpay\Spine\Repository
 
     public function buildQueryAdditional(array & $query, array $params)
     {
+    }
+
+    public function getSortParameter(): array
+    {
+        return $this->getDefaultSortParameter();
     }
 
     /**
@@ -254,7 +287,7 @@ class EsRepository extends \Razorpay\Spine\Repository
             $params['body'][] = [
                 'index' => [
                     '_index' => $this->indexName,
-                    '_type'  => $this->indexName,
+                    '_type'  => $this->typeName,
                     '_id'    => $document['id'],
                 ]
             ];
@@ -291,7 +324,7 @@ class EsRepository extends \Razorpay\Spine\Repository
     {
         $params = [
             'index' => $this->indexName,
-            'type'  => $this->indexName,
+            'type'  => $this->typeName,
             'id'    => $id,
         ];
 

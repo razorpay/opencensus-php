@@ -36,6 +36,11 @@ class ItemTest extends TestCase
         $this->assertResponseWithLastEntity('item', __FUNCTION__);
     }
 
+    public function testCreateItemWithoutCurrency()
+    {
+        $this->startTest();
+    }
+
     public function testCreateItemWithTaxId()
     {
         $this->startTest();

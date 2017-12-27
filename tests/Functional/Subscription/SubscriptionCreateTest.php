@@ -324,6 +324,33 @@ class SubscriptionCreateTest extends TestCase
         $this->assertLessThan(time(), $scheduleTask['next_run_at']);
     }
 
+    public function testCreateSubscriptionWithBlankStartAt()
+    {
+        $this->createSubscriptionPreRequisiteEntities();
+
+        $requestWithNoStartAt = $this->testData[__FUNCTION__]['request'];
+
+        $expectedResponse = $this->testData[__FUNCTION__]['response']['content'];
+
+        $response = $this->makeRequestAndGetContent($requestWithNoStartAt);
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $requestWithEmptyStartAt = $requestWithNoStartAt;
+        $requestWithEmptyStartAt['start_at'] = "";
+
+        $response = $this->makeRequestAndGetContent($requestWithEmptyStartAt);
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $requestWithNullStartAt = $requestWithNoStartAt;
+        $requestWithNullStartAt['start_at'] = null;
+
+        $response = $this->makeRequestAndGetContent($requestWithEmptyStartAt);
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
     public function testCreateSubscriptionWithStartAt()
     {
         $this->createSubscriptionPreRequisiteEntities();

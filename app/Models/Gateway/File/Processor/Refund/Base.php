@@ -4,23 +4,24 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Mail;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
-trait GenerateRefundFile
+class Base extends BaseProcessor
 {
     public function fetchEntities(): PublicCollection
     {
-        $begin = $this->gatewayFile->getbegin();
+        $begin = $this->gatewayFile->getBegin();
         $end = $this->gatewayFile->getEnd();
 
         $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
@@ -45,10 +46,16 @@ trait GenerateRefundFile
 
     /**
      * Fetches all necessary refund related data required for generating the file
+     *
+     * @param  PublicCollection $refunds
+     *
+     * @return array
      */
-    public function generateData(PublicCollection $refunds): array
+    public function generateData(PublicCollection $refunds)
     {
         $gateway = static::GATEWAY;
+
+        $data = [];
 
         foreach ($refunds as $refund)
         {
@@ -59,7 +66,7 @@ trait GenerateRefundFile
             $col['payment'] = $payment->toArray();
             $col['terminal'] = $terminal->toArray();
 
-            $this->data[] = $col;
+            $data[] = $col;
         }
 
         $paymentIds = $refunds->pluck('payment_id')->toArray();
@@ -69,7 +76,7 @@ trait GenerateRefundFile
 
         $gatewayEntities = $gatewayEntities->keyBy('payment_id');
 
-        $this->data = array_map(function($row) use ($gatewayEntities)
+        $data = array_map(function($row) use ($gatewayEntities)
         {
             $paymentId = $row['payment']['id'];
 
@@ -79,26 +86,30 @@ trait GenerateRefundFile
             }
 
             return $row;
-        }, $this->data);
+        }, $data);
 
-        return $this->data;
+        return $data;
     }
 
     /**
      * We create the required file and associate it with the gateway_file entity
      * Any exception during file generation etc is caught and handled accordingly
+     *
+     * @param  $data
+     *
+     * @throws GatewayFileException
      */
-    public function createFile()
+    public function createFile($data)
     {
         // Don't process further if file is already generated
-        if ($this->isRefundFileGenerated() === true)
+        if ($this->isFileGenerated() === true)
         {
             return;
         }
 
         try
         {
-            $fileData = $this->formatDataForFile();
+            $fileData = $this->formatDataForFile($data);
 
             $fileName = $this->getFileToWriteNameWithoutExt();
 
@@ -117,30 +128,25 @@ trait GenerateRefundFile
             $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
-
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException(
-                            $e,
-                            Trace::INFO,
-                            TraceCode::GATEWAY_FILE_ERROR_GENERATING_FILE,
-                            [
-                                'id' => $this->gatewayFile->getId()
-                            ]);
-
             throw new GatewayFileException(
-                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE);
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id'        => $this->gatewayFile->getId(),
+                ],
+                $e);
         }
     }
 
-    public function sendFile()
+    public function sendFile($data)
     {
         try
         {
             $recipients = $this->gatewayFile->getRecipients();
 
-            $mailData = $this->formatDataForMail();
+            $mailData = $this->formatDataForMail($data);
 
             $refundFileMail = new RefundFileMail($mailData, static::GATEWAY, $recipients);
 
@@ -152,16 +158,12 @@ trait GenerateRefundFile
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException(
-                            $e,
-                            Trace::INFO,
-                            TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
-                            [
-                                'id' => $this->gatewayFile->getId()
-                            ]);
-
             throw new GatewayFileException(
-                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE);
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
+                [
+                    'id'        => $this->gatewayFile->getId(),
+                ],
+                $e);
         }
     }
 
@@ -179,37 +181,7 @@ trait GenerateRefundFile
      *
      * @return bool Whether gateway_file entity can be processed again or not
      */
-    protected function canRetry(): bool
-    {
-        if ($this->gatewayFile->isAcknowledged() === true)
-        {
-            return false;
-        }
 
-        if ($this->gatewayFile->isFailed() === true)
-        {
-            $errorCode = $this->gatewayFile->getErrorCode();
-
-            return ($errorCode !== ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
-        }
-
-        return true;
-    }
-
-    protected function isRefundFileGenerated(): bool
-    {
-        if ($this->gatewayFile->isFileGenerated() === true)
-        {
-            $refundFile = $this->gatewayFile
-                               ->files()
-                               ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-                               ->first();
-
-            return $refundFile !== null;
-        }
-
-        return false;
-    }
 
     protected function getFileToWriteNameWithoutExt()
     {

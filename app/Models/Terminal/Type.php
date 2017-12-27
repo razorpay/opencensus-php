@@ -34,6 +34,7 @@ class Type
      * Checks if a particular type of terminal is applicable,
      * by seeing if the corresponding bit position is set.
      * Shift right 'pos' times and check LSB
+     *
      * @param  string  $hexType Hex value of the bit-wise field
      * @param  string  $type    Name of the type to be checked
      * @return boolean          Whether type is applicable
@@ -88,9 +89,9 @@ class Type
      * Takes the hex value and merges it
      * with the hex value of the events passed.
      *
-     * @param  array    $events
-     * @param  integer  $hex
-     * @return integer
+     * @param  array $types
+     * @param  int   $hex
+     * @return int
      */
     public static function getHexValue($types, $hex)
     {

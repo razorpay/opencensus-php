@@ -55,10 +55,6 @@ class CreatePayoutsTable extends Migration
                   ->unsigned()
                   ->default(0);
 
-            $table->integer(Payout::SERVICE_TAX)
-                  ->unsigned()
-                  ->default(0);
-
             $table->integer(Payout::TAX)
                   ->unsigned()
                   ->default(0);
@@ -103,6 +99,8 @@ class CreatePayoutsTable extends Migration
             $table->index(Payout::METHOD);
 
             $table->index(Payout::STATUS);
+
+            $table->index([Payout::MERCHANT_ID, Payout::CREATED_AT]);
 
             $table->foreign(Payout::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

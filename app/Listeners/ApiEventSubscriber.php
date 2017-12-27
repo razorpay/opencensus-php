@@ -6,13 +6,15 @@ use Illuminate\Events\Dispatcher;
 
 use App;
 use RZP\Constants;
-use RZP\Jobs\WebHook;
 use RZP\Models\Base;
+use RZP\Jobs\WebHook;
 use RZP\Models\Event;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Jobs\DispatchRouter;
+use RZP\Models\Customer\Token;
+use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 
 class ApiEventSubscriber extends Base\Core
@@ -194,14 +196,15 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onInvoicePaid($payment)
     {
-        //
-        // Other than firing web hook in this case, we also update invoice's copy
-        // of customer details if that is empty, with payment's attributes.
-        //
-        // Refer $notWebhookOnlyEvents also.
-        //
+        // Pulls customer info from payment and updates invoice's if not set
         (new Invoice\Core)->setCustomerDetailsFromPaymentIfAbsent($payment);
 
+        // Fires a job so in async pdf can be refreshed
+        $job = new InvoiceJob($this->getMode(), InvoiceJob::CAPTURED, $payment->getInvoiceId());
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+
+        // Follows web hook related code conditionally, Refer $notWebhookOnlyEvents
         if ($this->webhookEnabledForEvent === false)
         {
             return;
@@ -303,6 +306,20 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onTokenConfirmed($token)
+    {
+        $payload = $this->getTokenPayload($token);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onTokenRejected($token)
+    {
+        $payload = $this->getTokenPayload($token);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function getP2pPayload($p2p)
     {
         $source = $p2p->source;
@@ -322,6 +339,17 @@ class ApiEventSubscriber extends Base\Core
         ];
 
         return $partialPayload;
+    }
+
+    protected function getTokenPayload(Token\Entity $token)
+    {
+        $payload = [
+            Constants\Entity::TOKEN => [
+                'entity' => $token->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
     }
 
     protected function getSubscriptionPayload($subscription)
@@ -436,6 +464,7 @@ class ApiEventSubscriber extends Base\Core
         $eventFired = $this->event;
 
         $entity = $this->mainEntity;
+
         $webhook = $entity->merchant->webhook;
 
         $attributes = array(

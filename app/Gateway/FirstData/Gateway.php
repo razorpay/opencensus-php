@@ -17,6 +17,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use RZP\Constants\HashAlgo;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
@@ -31,7 +32,10 @@ class Gateway extends Base\Gateway
     const PROCESSING                 = 'PROCESSING';
     const SERVICES                   = 'SERVICES';
 
-    const CHECKSUM_ATTRIBUTE = ConnectResponseFields::RESPONSE_HASH;
+    const CHECKSUM_ATTRIBUTE         = ConnectResponseFields::RESPONSE_HASH;
+
+    const MINIMUM_CARD_NAME_LENGTH   = 3;
+    const CARD_NAME_PADDING          = 'X';
 
     protected $gateway = Constants\Entity::FIRST_DATA;
 
@@ -40,6 +44,16 @@ class Gateway extends Base\Gateway
         Action::CAPTURE   => TraceCode::GATEWAY_CAPTURE_RESPONSE,
         Action::REFUND    => TraceCode::GATEWAY_REFUND_RESPONSE,
         Action::REVERSE   => TraceCode::GATEWAY_REVERSE_RESPONSE,
+    ];
+
+    const OLD_STORE_IDS = [
+        // EMI terminals
+        '3374679283',
+        '3374679291',
+        '3374679309',
+        '3374679333',
+        // Shared FirstData terminal, disabled now
+        '3396093976',
     ];
 
     public function authorize(array $input)
@@ -104,8 +118,6 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA);
         }
 
-        $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
-
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['gateway'][ConnectResponseFields::ORDER_ID],
             Action::AUTHORIZE);
@@ -114,11 +126,18 @@ class Gateway extends Base\Gateway
 
         $this->mockApprovalCodeIfNeeded($input['gateway']);
 
+        $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
+
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = number_format($input['gateway'][ConnectResponseFields::CHARGE_TOTAL], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
+
         $attributes = $this->getCallbackFields($input['gateway']);
 
-        $gatewayPayment->fill($attributes);
+        $this->runCallbackVerify($input, $gatewayPayment);
 
-        $this->runCallbackVerify($input);
+        $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
 
@@ -129,13 +148,13 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    protected function runCallbackVerify(array $input)
+    protected function runCallbackVerify(array $input, Entity $gatewayPayment)
     {
         parent::verify($input);
 
         $verify = new Base\Verify($this->gateway, $input);
 
-        $gatewayPayment = $this->getPaymentToVerify($verify);
+        $verify->payment = $gatewayPayment;
 
         $this->sendPaymentVerifyRequest($verify);
 
@@ -198,14 +217,19 @@ class Gateway extends Base\Gateway
 
         $requestContent = $this->getRefundRequestArray($input, TxnType::REFUND);
 
-        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $requestContent);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST,
+            [
+                'refund_id' => $input['refund']['id'],
+                'request'   => $requestContent,
+            ]);
 
         $response = $this->getSoapResponse($requestContent);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
-                'response' => $response
+                'refund_id' => $input['refund']['id'],
+                'response'  => $response,
             ]
         );
 
@@ -220,18 +244,23 @@ class Gateway extends Base\Gateway
     {
         parent::reverse($input);
 
-        $requestContent = $this->getReverseRequestArray($input, TxnType::REVERSE);
+        $requestContent = $this->getReverseRequestArray($input);
 
-        $this->trace->info(TraceCode::GATEWAY_REVERSE_REQUEST, $requestContent);
+        $this->trace->info(
+            TraceCode::GATEWAY_REVERSE_REQUEST,
+            [
+                'refund_id' => $input['refund']['id'],
+                'request'   => $requestContent,
+            ]);
 
         $response = $this->getSoapResponse($requestContent);
 
         $this->trace->info(
             TraceCode::GATEWAY_REVERSE_RESPONSE,
             [
-                'response' => $response
-            ]
-        );
+                'refund_id' => $input['refund']['id'],
+                'response'  => $response,
+            ]);
 
         $reverseFields = $this->getReverseFields($response, $input['refund']);
 
@@ -265,7 +294,7 @@ class Gateway extends Base\Gateway
         $refundEntity = $refundedEntities->first();
 
         $refundEntityPaymentId = $refundEntity->getPaymentId();
-        $refundEntityRefundAmount = (int) ($refundEntity->getAmount() * 100);
+        $refundEntityRefundAmount = $refundEntity->getAmount();
 
         $this->trace->info(
             TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
@@ -1038,13 +1067,15 @@ class Gateway extends Base\Gateway
 
         $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
 
-        $method = $input['card'][Card\Entity::NETWORK_CODE];
+        $networkCode = $input['card'][Card\Entity::NETWORK_CODE];
 
         $requestHash = $this->getRequestHash($txnDateTime, $chargeTotal, $currencyCode);
 
         $txnType = TxnType::AUTH;
 
-        if (Payment\Gateway::supportsAuthAndCapture($this->gateway, $method) === false)
+        if ((Payment\Gateway::supportsAuthAndCapture($this->gateway, $networkCode) === false) or
+            (($input['card'][Card\Entity::ISSUER] === Card\Issuer::ICIC) and
+             ($input['card'][Card\Entity::TYPE] === Card\Type::DEBIT)))
         {
             $txnType = TxnType::SALE;
         }
@@ -1067,14 +1098,14 @@ class Gateway extends Base\Gateway
             ConnectRequestFields::DYNAMIC_MERCHANT_NAME     => $this->getDynamicMerchantName($input['merchant']),
             ConnectRequestFields::LANGUAGE                  => Codes::ENGLISH_UK_LANG_CODE_CONNECT,
             ConnectRequestFields::CARD_NUMBER               => $input['card'][Card\Entity::NUMBER],
-            ConnectRequestFields::NAME                      => $input['card'][Card\Entity::NAME],
+            ConnectRequestFields::NAME                      => $this->getFormattedCardName($input['card']),
             ConnectRequestFields::EXP_MONTH                 => $input['card'][Card\Entity::EXPIRY_MONTH],
             ConnectRequestFields::EXP_YEAR                  => $input['card'][Card\Entity::EXPIRY_YEAR],
             ConnectRequestFields::CVV                       => $input['card'][Card\Entity::CVV],
             ConnectRequestFields::RESPONSE_SUCCESS_URL      => $input['callbackUrl'],
             ConnectRequestFields::RESPONSE_FAIL_URL         => $input['callbackUrl'],
             ConnectRequestFields::TXN_TYPE                  => $txnType,
-            ConnectRequestFields::PAYMENT_METHOD            => PaymentMethod::METHOD_MAP[$method],
+            ConnectRequestFields::PAYMENT_METHOD            => PaymentMethod::METHOD_MAP[$networkCode],
         ];
 
         if ($this->isFirstRecurringPayment($input) === true)
@@ -1244,13 +1275,123 @@ class Gateway extends Base\Gateway
         {
             $body[ApiRequestFields::V1_PAYMENT] = [
                 ApiRequestFields::V1_HOSTED_DATA_ID  => $input['token']->getId(),
-                ApiRequestFields::V1_HOSTED_STORE_ID => $input['gateway_token']->terminal->getGatewayMerchantId(),
+                ApiRequestFields::V1_HOSTED_STORE_ID => $this->getHostedDataStoreId(),
             ];
         }
 
-        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $input[$amountEntity]['amount'] / 100;
+        $body[ApiRequestFields::V1_PAYMENT]
+            [ApiRequestFields::V1_CHARGE_TOTAL] = $this->getFormattedAmount($input, $amountEntity);
 
         $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY] = $currencyCode;
+    }
+
+    protected function getFormattedAmount(array $input, string $amountEntity)
+    {
+        $amount = $input[$amountEntity]['amount'] / 100;
+
+        $affectedPayments = [
+            '9B7vE1xutqQLJ8',
+            '9B7vRv6NlcqEDR',
+            '9B7dD1YdncnxM7',
+            '9B7tH2RHeWH21V',
+            '9BBP6xtmpSOg92',
+            '9B7scL14DV4fFI',
+            '9B83ERu9GFSnUV',
+            '9BCHs7HepzJ1xQ',
+            '9B7vP8cBETnrHi',
+            '9BAGbC6OXYhbms',
+            '9BDfaydQ8zsHDG',
+            '9B7hmnA3yjlpfp',
+            '9B4uHosyDln6iG',
+            '9B5xYgbgfRABsS',
+            '9B7umAQkBLOBfR',
+            '9B7tOFWAwh2RuY',
+            '9B7sIRxluCNjd2',
+            '9B7t8tCu9lNTOW',
+            '9B7e3pkeMGps94',
+            '9B7rdyxxxMQb3t',
+            '9B6xWQ4zW4DOKh',
+            '9B7lIWWYNbGSAZ',
+            '9B5d6p4OJHjmoS',
+            '9BGFzmaOCHnwzt',
+            '9B5CNwIgW22L6d',
+            '9B7truRGz17Cxs',
+            '9B61rFOLbcbilI',
+            '9B7sTQmwz2b6zx',
+            '9BCNGHrTfAJd1i',
+            '9B5dkKNgKAnb76',
+            '9B8SXCXPf16WQ4',
+            '9BFPwqtpTRLIEB',
+            '9BF3DeUDZDo44h',
+            '9BBVoqJ7xpIUNU',
+            '9B6q1SbzJZ2rY5',
+            '9BAs3ny3bzIQ3P',
+            '9B6bXbrUR9K4mt',
+            '9BAmZIQxfYAk0k',
+            '9B98NEFcfTPR9Q',
+            '9BBXMkqLGZGau5',
+            '9BAb6PmD2fRHG8',
+            '9B7zvax11ylNX4',
+            '9B9Y6HGsik29aV',
+            '9B8SBveHopVJyn',
+            '9B2Q9QSGPqLFpJ',
+            '9B7t8XqkdQgsvA',
+            '9B7052o9hOQzdF',
+            '9BGWtbcrrOb7Qf',
+            '9B5GdXWc9oual5',
+            '9B7xZWa2kbXfDv',
+            '9B7r5Z6DtAt767',
+            '9BJ96cdiwkKUyJ',
+            '9B7wuKjWh4KJFP',
+            '9BAJS5McODeR9Y',
+            '9BKPoVRQiBzudY',
+            '9BHYvwfFaiPAYG',
+            '9B5JCrkPApJKCN',
+            '9BIjxZ5SmiR02y',
+            '9B7Dbz5zo5LCYO',
+            '9BHpsynEz0vuPw',
+            '9B83bdoJk9K1Ya',
+            '9BFzmzOmF6D2wz',
+            '9B8M2gRGUFVoir',
+            '9B9RppkNcdbf7o',
+            '9B9akLYCvAXTvU',
+            '9B7szQraxSEY7W',
+            '9BG4B7EqLtY2Qf',
+            '9BJarwzSIg9WKj',
+            '9B3nbJ5nlfIrwJ',
+            '9B64aLYKKYqMjN',
+            '9BAcw4QRKqrLz6',
+            '9BDHFogmDNym2R',
+            '9B97SpsTJt73Rw',
+            '9BFnq4yoEpg5aL',
+            '9B7xSt4vBDLjmB',
+            '9BCVngQZvLHSDM',
+            '9B7skoiJlKO1Fd',
+            '9B99rtKg0GBK3c',
+            '9B92GnfjfbNzQm',
+            '9BE5q0i4em8wcE',
+            '9BADfW1EcBw8U3',
+            '9B7zS3o5RD0Y6N',
+            '9BJT3Sbg3TIc6L',
+            '9BI7stRNeH603q',
+            '9BEbkFPqM4kmKV',
+            '9B87YPcAKH9QKn',
+            '9BJbeJBjuV9bGt',
+            '9B9dLG2BSdWbzu',
+            '9B7wQ65Wduk9RB',
+            '9BCfsTtjNwQ78B',
+            '9BEBkWpCreeFom',
+        ];
+
+        // The amount should be in the format like 100.00, or 1500.00
+        // Trying it out only for specific payments
+        if ((in_array($input['payment']['id'], $affectedPayments, true) === true) or
+            ($input['merchant']['id'] === Merchant\Account::TEST_ACCOUNT))
+        {
+            $amount = number_format($amount, 2, '.', '');
+        }
+
+        return $amount;
     }
 
     /**
@@ -1368,13 +1509,39 @@ class Gateway extends Base\Gateway
         return $storeId;
     }
 
+    /**
+     * Non-3DS recurring payments require the store id that the original 3DS
+     * payment was made on. This was earlier retrieved through the token used,
+     * but is now simply stored as an extra attribute in terminal entity
+     *
+     * @return string hostedDataStoreId
+     */
+    public function getHostedDataStoreId()
+    {
+        $hostedDataStoreId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+
+        if ($this->isOldStoreId() === true)
+        {
+            throw new Exception\LogicException(
+                'Gateway Merchant ID2 has different meaning for old store ids.',
+                null,
+                [
+                    'payment_id'           => $this->input['payment']['id'],
+                    'gateway_merchant_id'  => $this->getStoreId,
+                    'gateway_merchant_id2' => $hostedDataStoreId,
+                ]);
+        }
+
+        return $hostedDataStoreId;
+    }
+
     protected function getLiveSecret()
     {
-        $liveSecret = $this->input['terminal']['gateway_secure_secret'];
+        $liveSecret = $this->config['live_hash_secret'];
 
-        if ($this->isChildStoreId() === true)
+        if ($this->isOldStoreId() === true)
         {
-            $liveSecret = $this->config['live_hash_secret'];
+            $liveSecret = $this->input['terminal']['gateway_secure_secret'];
         }
 
         return $liveSecret;
@@ -1382,13 +1549,13 @@ class Gateway extends Base\Gateway
 
     protected function getCredentials()
     {
-        $username = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
-        $password = $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE];
+        $username = $this->config['live_user_id'];
+        $password = $this->config['live_password'];
 
-        if ($this->isChildStoreId() === true)
+        if ($this->isOldStoreId() === true)
         {
-            $username = $this->config['live_user_id'];
-            $password = $this->config['live_password'];
+            $username = $this->getUsernameForOldStoreId();
+            $password = $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE];
         }
 
         if ($this->mode === Mode::TEST)
@@ -1398,6 +1565,20 @@ class Gateway extends Base\Gateway
         }
 
         return [$username, $password];
+    }
+
+    /**
+     * Old terminal had a gateway_merchant_id2 that was just f(gateway_merchant_id)
+     *
+     * @return array credentials
+     */
+    protected function getUsernameForOldStoreId()
+    {
+        $gatewayMerchantId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+
+        $username = 'WS'.$gatewayMerchantId.'._.1';
+
+        return $username;
     }
 
     protected function getGatewayCertDirName()
@@ -1414,11 +1595,11 @@ class Gateway extends Base\Gateway
 
     public function getClientCertificateName()
     {
-        $certName = $this->getStoreId() . '.' . self::CERTIFICATE_FORMAT_P12;
+        $certName = $this->config['client_certificate'];
 
-        if ($this->isChildStoreId() === true)
+        if ($this->isOldStoreId() === true)
         {
-            $certName = $this->config['client_certificate'];
+            $certName = $this->getStoreId() . '.' . self::CERTIFICATE_FORMAT_P12;
         }
 
         return $certName;
@@ -1435,11 +1616,11 @@ class Gateway extends Base\Gateway
         {
             $clientCertFile = fopen($clientCertPath, 'w');
 
-            $encodedCert = $this->terminal[Terminal\Entity::GATEWAY_CLIENT_CERTIFICATE];
+            $encodedCert = $this->config['live_client_certificate'];
 
-            if ($this->isChildStoreId() === true)
+            if ($this->isOldStoreId() === true)
             {
-                $encodedCert = $this->config['live_client_certificate'];
+                $encodedCert = $this->terminal[Terminal\Entity::GATEWAY_CLIENT_CERTIFICATE];
             }
 
             if ($this->mode === Mode::TEST)
@@ -1463,11 +1644,11 @@ class Gateway extends Base\Gateway
 
     protected function getClientCertificatePassword()
     {
-        $password = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+        $password = $this->config['live_client_certificate_password'];
 
-        if ($this->isChildStoreId() === true)
+        if ($this->isOldStoreId() === true)
         {
-            $password = $this->config['live_client_certificate_password'];
+            $password = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
         }
 
         if ($this->mode === Mode::TEST)
@@ -1478,14 +1659,16 @@ class Gateway extends Base\Gateway
         return $password;
     }
 
-    protected function isChildStoreId()
+    /**
+     * The oldest FirstData terminals, had several values stored differently
+     *
+     * @return boolean
+     */
+    protected function isOldStoreId()
     {
-        // Older creds needed a separate value to access
-        // FirstData API and web portal.
-        // New FirstData creds are child ids, and do not
-        // have a merchantId2 value of their own.
+        $gatewayMerchantId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
 
-        return ($this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2] === null);
+        return (in_array($gatewayMerchantId, self::OLD_STORE_IDS, true) === true);
     }
 
     protected function getAuthCodeFromCallback($callbackBody)
@@ -1502,5 +1685,23 @@ class Gateway extends Base\Gateway
         }
 
         return $authCode;
+    }
+
+    /**
+     * FirstData has a minimum limit on card name(bname)
+     *
+     * @param array $card
+     * @return string
+     */
+    protected function getFormattedCardName(array $card): string
+    {
+        $name = trim($card[Card\Entity::NAME]);
+
+        if (strlen($name) < self::MINIMUM_CARD_NAME_LENGTH)
+        {
+            $name = str_pad($name, self::MINIMUM_CARD_NAME_LENGTH, self::CARD_NAME_PADDING);
+        }
+
+        return $name;
     }
 }

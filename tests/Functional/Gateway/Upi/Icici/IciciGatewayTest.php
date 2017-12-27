@@ -46,6 +46,85 @@ class IciciGatewayTest extends TestCase
         return $paymentId;
     }
 
+    public function testIntentPayment()
+    {
+        $this->fixtures->merchant->addFeatures(['upi_intent']);
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'crims0n@icici';
+            }
+        });
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi_icici', true);
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNull($payment['vpa']);
+
+        $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals($payment['vpa'], 'crims0n@icici');
+    }
+
+    public function testPaymentWithExpiryPublicAuth()
+    {
+        $payment = $this->payment;
+
+        unset($payment['description']);
+
+        $payment['upi']['expiry_time'] = 10;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+    }
+
+    public function testPaymentWithExpiryPrivateAuth()
+    {
+        $this->fixtures->merchant->addFeatures(['s2supi']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['upi']['expiry_time'] = 10;
+
+        $response = $this->doS2SUpiPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals(10, $upiEntity['expiry_time']);
+    }
+
     public function testPaymentViaRedirection()
     {
         $payment = $this->getDefaultUpiPaymentArray();
@@ -67,9 +146,11 @@ class IciciGatewayTest extends TestCase
 
     public function testPaymentWithXmlResponse()
     {
-        $this->mockServerContentFunction(function (& $content)
+        $this->mockServerContentFunction(function (& $content, $action)
         {
-            $content = <<<EOT
+            if ($action === 'authorize')
+            {
+                $content = <<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
     <soapenv:Body>
@@ -84,6 +165,7 @@ class IciciGatewayTest extends TestCase
     </soapenv:Body>
 </soapenv:Envelope>
 EOT;
+            }
         });
 
         $payment = $this->getDefaultUpiPaymentArray();
@@ -338,6 +420,44 @@ EOT;
         $this->assertEquals($refund['status'], 'processed');
     }
 
+    public function testRetryRefundWithNoTxnFound()
+    {
+        $payment = $this->testPaymentWithS2S();
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $refundAmount = 30000;
+
+        $this->mockServerContentFunction(function(& $content, $action)
+        {
+            if ($action === 'refund')
+            {
+                $content['status'] = 'FAILURE';
+            }
+        });
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->mockServerContentFunction(function(& $content, $action)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = '';
+
+                $content['message'] = 'original record not found';
+            }
+
+            if ($action === 'refund')
+            {
+                $content['status'] = 'SUCCESS';
+            }
+        });
+
+        $refund = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals($refund['status'], 'processed');
+    }
+
     public function testPartialRefund()
     {
         $payment = $this->testPaymentWithS2S();
@@ -495,6 +615,8 @@ EOT;
      */
     public function testVerifyMissingPayment()
     {
+        $data = $this->testData[__FUNCTION__];
+
         $payment = $this->getDefaultUpiPaymentArray();
 
         // TODO: Stop using notes for status
@@ -510,9 +632,15 @@ EOT;
         $upiEntity = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
 
-        $this->payment = $this->verifyPayment($payment['id']);
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->verifyPayment($payment['id']);
+        });
 
-        $this->assertSame($this->payment['payment']['verified'], 1);
+        $payment = $this->getEntityById('payment', $payment['id'], true);
+
+        // This will be updated if ran via cron
+        $this->assertSame($payment['verified'], null);
     }
 
     public function testVerifyPaymentWithEncryptedResponse()
@@ -607,7 +735,7 @@ EOT;
             'method' => 'post',
             'content' => [
                 'method'    => 'upi',
-                'bank'      => 'icici',
+                'bank'      => 'ICIC',
                 'frequency' => 'daily'
             ],
         );

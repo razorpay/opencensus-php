@@ -25,13 +25,21 @@ class Repository extends Base\Repository
         Entity::VERSION                => 'sometimes|string',
     ];
 
-    protected static $createValidators = [
-        Entity::SOURCE_TYPE,
-    ];
-
-    protected function validateSourceType($input)
+    protected function validateSourceType($attribute, $value)
     {
-        return Type::validateType($input[Entity::SOURCE_TYPE]);
+        return Type::validateType($value);
+    }
+
+    protected function addQueryParamSourceId($query, $params)
+    {
+        $id = $params[Entity::SOURCE_ID];
+
+        if (strpos($id, '_') !== false)
+        {
+            list($sign, $id) = explode('_', $id);
+        }
+
+        $query->where(Entity::SOURCE_ID, '=', $id);
     }
 
     public function getFundTransferAttemptsByBatchIdWithRelations(

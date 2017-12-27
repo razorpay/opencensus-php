@@ -13,6 +13,7 @@ class Entity extends Base\PublicEntity
     use Base\Traits\RevisionableTrait;
 
     const MERCHANT_ID             = 'merchant_id';
+    const PARENT_ID               = 'parent_id';
     const PAYMENT_ID              = 'payment_id';
     const TRANSACTION_ID          = 'transaction_id';
     const AMOUNT                  = 'amount';
@@ -33,6 +34,16 @@ class Entity extends Base\PublicEntity
     const CREATED_AT              = 'created_at';
     const UPDATED_AT              = 'updated_at';
     const RESOLVED_AT             = 'resolved_at';
+
+    // For emails
+    const MERCHANT_EMAILS         = 'merchant_emails';
+    const SKIP_EMAIL              = 'skip_email';
+
+    /**
+     *  Field for edit input, when accepted chargeback amount
+     *  is lesser than disputed amount.
+     */
+    const ACCEPTED_AMOUNT = 'accepted_amount';
 
     protected static $sign = 'disp';
 
@@ -66,6 +77,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::PAYMENT_ID,
+        self::PARENT_ID,
         self::REASON_ID,
         self::TRANSACTION_ID,
         self::AMOUNT,
@@ -90,8 +102,10 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::PAYMENT_ID,
+        self::PARENT_ID,
         self::AMOUNT,
         self::CURRENCY,
+        self::GATEWAY_DISPUTE_ID,
         self::REASON_CODE,
         self::REASON_DESCRIPTION,
         self::RAISED_ON,
@@ -173,6 +187,11 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Getters -----------------------------------------
 
+    public function getParentId()
+    {
+        return $this->getAttribute(self::PARENT_ID);
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -198,6 +217,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function getPhase()
+    {
+        return $this->getAttribute(self::PHASE);
+    }
+
     public function getExpiresOn()
     {
         return $this->getAttribute(self::EXPIRES_ON);
@@ -218,6 +242,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DEDUCT_AT_ONSET);
     }
 
+    public function isChildDispute(): bool
+    {
+        return $this->isAttributeNotNull(self::PARENT_ID);
+    }
+
     // ----------------------- Getters Ends-------------------------------------
 
     // Add toArrayAdmin, toArrayReport
@@ -232,6 +261,16 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(Entity::class, self::PARENT_ID, self::ID);
+    }
+
+    public function child()
+    {
+        return $this->hasOne(Entity::class, self::PARENT_ID, self::ID);
     }
 
     public function transaction()
@@ -265,4 +304,12 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getStatus() === Status::WON);
     }
+
+    public function isNonTransactional(): bool
+    {
+        $nonTransactionalPhases = Phase::getNonTransactionalPhases();
+
+        return (in_array($this->getPhase(), $nonTransactionalPhases, true) === true);
+    }
+
 }

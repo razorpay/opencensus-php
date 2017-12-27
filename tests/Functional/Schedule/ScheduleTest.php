@@ -25,6 +25,13 @@ class ScheduleTest extends TestCase
         $this->ba->adminAuth();
     }
 
+    public function testFetchSettlementSchedules()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateSchedule()
     {
         $schedule = $this->createSchedule();
@@ -418,6 +425,10 @@ class ScheduleTest extends TestCase
         ];
 
         $this->fixtures->edit('merchant', $merchantId, $merchantAttributes);
+
+        $this->fixtures->on('live')->edit('merchant_detail', $merchantId, ['submitted' => true]);
+
+        $this->fixtures->on('test')->edit('merchant_detail', $merchantId, ['submitted' => true]);
 
         $activationRequest = [
             'url' => '/merchants/' . $merchantId .  '/activate',

@@ -21,7 +21,7 @@ trait PaymentCreationTrait
         $uri = $form->getUri();
         $ix = strpos($uri, 'v1');
 
-        $uri = substr($uri, $ix+2);
+        $uri = substr($uri, $ix + 2);
 
         $request['method'] = 'POST';
         $request['content'] = $form->getValues();
@@ -187,6 +187,10 @@ trait PaymentCreationTrait
                         {
                             return $response;
                         }
+                        else if ($content['type'] === 'intent')
+                        {
+                            return $response;
+                        }
                     }
                 }
                 else
@@ -221,6 +225,10 @@ trait PaymentCreationTrait
                         $gateway = $content['gateway'];
                     }
                     else if ($content['type'] === 'async')
+                    {
+                        return $this->processAsyncPaymentForm($response);
+                    }
+                    else if ($content['type'] === 'intent')
                     {
                         return $this->processAsyncPaymentForm($response);
                     }
@@ -299,7 +307,7 @@ trait PaymentCreationTrait
         return $this->runPaymentCallbackFlowForGateway($response, $gateway, $callback);
     }
 
-    protected function runPaymentCallbackFlowForGateway($response,  $gateway, &$callback = null)
+    protected function runPaymentCallbackFlowForGateway($response, $gateway, &$callback = null)
     {
         $gateway = $this->decryptGatewayText($gateway);
 

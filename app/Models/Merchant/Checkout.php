@@ -23,6 +23,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Plan\Subscription;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
 
 class Checkout
 {
@@ -63,7 +64,7 @@ class Checkout
 
         $data = $this->getMerchantPreferencesData($merchant, $mode);
 
-        $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
+        $data[Entity::METHODS] = (new Methods\Core)->getFormattedMethods($merchant);
 
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
@@ -96,7 +97,31 @@ class Checkout
 
         $orderId = $input[Payment\Entity::ORDER_ID];
 
-        $data['order'] = (new Order\Core)->getFormattedDataForCheckout($orderId, $merchant);
+        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
+
+        $data['order'] = (new Order\Core)->getFormattedDataForCheckout($order, $merchant);
+
+        $this->resetMethodsIfValidBanksPresent($data, $order);
+    }
+
+    protected function resetMethodsIfValidBanksPresent(
+        array & $data,
+        Order\Entity $order)
+    {
+        if($order->getBank() !== null)
+        {
+            $bankCode = $order->getBank();
+
+            // Order bank should be present in the list of netbanking banks.
+            if (isset($data['methods']['netbanking'][$bankCode]) === true)
+            {
+                $bankName = $data['methods']['netbanking'][$bankCode];
+
+                $data['methods']['netbanking'] = [
+                    $bankCode => $bankName,
+                ];
+            }
+        }
     }
 
     protected function checkAndAddDetailsForInvoice(
@@ -231,13 +256,23 @@ class Checkout
                 return null;
             }
 
-            $savedTokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
+            $tokenCore = (new Customer\Token\Core);
 
-            $custData =  array(
+            $savedTokens = $tokenCore->fetchTokensByCustomer($customer);
+
+            //
+            // TODO: Remove this later when we start handling the below case.
+            // Currently, we do not expose any recurring NB tokens to the customer.
+            // We do not handle the flow where a customer can use an existing token
+            // to subscribe to another product.
+            //
+            $savedTokens = $tokenCore->removeNetbankingRecurringTokens($savedTokens);
+
+            $custData =  [
                 'email'     => $customer->getEmail(),
                 'contact'   => $customer->getContact(),
-                'tokens'    => $savedTokens->toArrayPublic()
-            );
+                'tokens'    => $savedTokens->toArrayPublic(),
+            ];
 
             //
             // This case comes when customer_id is sent in the input (always local customer).
@@ -351,14 +386,19 @@ class Checkout
 
                 if ($response['saved'] === true)
                 {
-                    if (isset($response['email']))
+                    if (isset($response['email']) === true)
                     {
                         $data['customer']['email'] = $response['email'];
                     }
 
-                    if (isset($response['tokens']))
+                    if (isset($response['tokens']) === true)
                     {
-                        $data['customer']['tokens'] = $response['tokens'];
+                        $tokens = $response['tokens'];
+
+                        // TODO: Needs to be fixed later when we allow first recurring on old recurring nb token.
+                        $tokensWithoutNB = (new Customer\Token\Core)->removeNetbankingRecurringTokens($tokens);
+
+                        $data['customer']['tokens'] = $tokensWithoutNB;
                     }
                 }
             }

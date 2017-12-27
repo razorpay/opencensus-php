@@ -13,6 +13,14 @@ class Gateway extends Icici\Gateway
     {
         $request = parent::authorize($input);
 
+        //
+        // Second recurring payment is via a server to server call
+        //
+        if ($this->isSecondRecurringPaymentRequest($input) === true)
+        {
+            return $request;
+        }
+
         $url = $this->route->getUrlWithPublicAuth('mock_netbanking_payment',
                                                   ['bank' => $this->bank]);
 

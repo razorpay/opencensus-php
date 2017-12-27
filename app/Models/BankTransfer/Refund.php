@@ -3,6 +3,8 @@
 namespace RZP\Models\BankTransfer;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Models\BankAccount;
 use RZP\Models\Transaction\Channel;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
@@ -23,9 +25,9 @@ class Refund extends Base\Core
 
         $bankTransfer->getValidator()->validateRefundIsAllowed();
 
-        $this->updatePayerBankAccount($bankTransfer);
+        $bankAccount = $this->createOrUpdateBankAccount($input, $bankTransfer);
 
-        $this->createRefundAttemptEntity($input, $bankTransfer);
+        $this->createRefundAttemptEntity($input, $bankTransfer, $bankAccount);
     }
 
     /**
@@ -49,30 +51,47 @@ class Refund extends Base\Core
      * we create a refund and a corresponding fund transfer attempt, which is later
      * picked up by the payouts cron. Assumes payer bank acc is already created.
      *
-     * @param array  $input
-     * @param Entity $bankTransfer
+     * @param array              $input
+     * @param Entity             $bankTransfer
+     * @param BankAccount\Entity $bankAccount
      *
      * @return FundTransferAttempt\Entity
      */
-    protected function createRefundAttemptEntity(array $input, Entity $bankTransfer)
+    protected function createRefundAttemptEntity(
+        array $input,
+        Entity $bankTransfer,
+        BankAccount\Entity $bankAccount)
     {
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
-        $fundTransferAttempt->fillAndGenerateId([
+        $data = [
             FundTransferAttempt\Entity::CHANNEL   => Channel::KOTAK,
             FundTransferAttempt\Entity::VERSION   => FundTransferAttempt\Version::V3,
             FundTransferAttempt\Entity::STATUS    => FundTransferAttempt\Status::CREATED,
             FundTransferAttempt\Entity::NARRATION => $this->getNarration($bankTransfer),
-        ]);
+        ];
+
+        $fundTransferAttempt->fillAndGenerateId($data);
 
         $fundTransferAttempt->setSourceType(FundTransferAttempt\Type::REFUND);
         $fundTransferAttempt->setSourceId($input['refund']['id']);
+        $fundTransferAttempt->setMode(strtoupper($bankTransfer->getMode()));
 
         $fundTransferAttempt->merchant()->associate($bankTransfer->merchant);
 
-        $fundTransferAttempt->bankAccount()->associate($bankTransfer->payerBankAccount);
+        $fundTransferAttempt->bankAccount()->associate($bankAccount);
 
         $this->repo->saveOrFail($fundTransferAttempt);
+
+        $this->trace->info(
+            TraceCode::FUND_TRANSFER_ATTEMPT_CREATED,
+            [
+                'id'              => $fundTransferAttempt->getId(),
+                'data'            => $data,
+                'source_id'       => $input['refund']['id'],
+                'merchant_id'     => $bankTransfer->merchant->getId(),
+                'bank_account_id' => $bankAccount->getId(),
+            ]);
 
         return $fundTransferAttempt;
     }
@@ -106,23 +125,60 @@ class Refund extends Base\Core
     }
 
     /**
+     * Create:
+     * This is used when we are refunding a payment to a different bank
+     * account, than the one we received it from. Useful for NRE-like cases.
+     *
+     * Update:
      * This exists for older bank transfer payments. For new payments, we
      * create the payer bank account with the mapped IFSC. For older ones,
      * if the bank account has no IFSC, we set it to the mapped IFSC now.
      *
+     * @param array  $input
      * @param Entity $bankTransfer
      */
-    protected function updatePayerBankAccount(Entity $bankTransfer)
+    protected function createOrUpdateBankAccount(array $input, Entity $bankTransfer)
     {
+        if (isset($input['bank_account']) === true)
+        {
+            return $this->createRefundBankAccount($input, $bankTransfer);
+        }
+
         $payerAccount = $bankTransfer->payerBankAccount;
 
         if ($payerAccount->getIfscCode() === null)
         {
-            $ifsc = (new Processor)->getPayerIfsc($bankTransfer);
+            $ifsc = PayerBankAccount::getPayerIfsc($bankTransfer);
 
             $payerAccount->setIfsc($ifsc);
 
             $this->repo->saveOrFail($payerAccount);
         }
+
+        return $payerAccount;
+    }
+
+    protected function createRefundBankAccount(array $input, Entity $bankTransfer)
+    {
+        $bankAccount = new BankAccount\Entity;
+
+        $bankAccount->build($input['bank_account'], 'addVirtualBankAccount');
+
+        if ($bankAccount->getIfscCode() === null)
+        {
+            $this->trace->warning(
+                TraceCode::BANK_TRANSFER_IFSC_CODE_MISSING,
+                [
+                    'imps_ifsc' => $bankTransfer->getPayerIfsc(),
+                ]);
+        }
+
+        $bankAccount->merchant()->associate($bankTransfer->merchant);
+
+        $bankAccount->associateVirtualAccount($bankTransfer->virtualAccount);
+
+        $this->repo->saveOrFail($bankAccount);
+
+        return $bankAccount;
     }
 }
