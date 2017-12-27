@@ -153,9 +153,9 @@ class Server extends Base\Mock\Server
 
         $response = [
             ResponseFields::PSP_REFERENCE_NO       => $paymentId,
-            ResponseFields::UPI_TRANS_REFERENCE_NO => $gatewayPayment->getGatewayPaymentId(),
+            ResponseFields::UPI_TRANS_REFERENCE_NO => 99999,
             ResponseFields::NPCI_TRANSACTION_ID    => 99999999999,
-            ResponseFields::CUSTOMER_REFERENCE_NO  => $gatewayPayment->getGatewayPaymentId(),
+            ResponseFields::CUSTOMER_REFERENCE_NO  => '99999999999',
             ResponseFields::AMOUNT                 => $gatewayPayment->getAmount() / 100,
             ResponseFields::TRANSACTION_AUTH_DATE  => Carbon::now(Timezone::IST)->toDateTimeString(),
             ResponseFields::RESPONSE_CODE          => '00',
@@ -174,9 +174,9 @@ class Server extends Base\Mock\Server
     {
         $response = [
             ResponseFields::PSP_REFERENCE_NO       => $upiEntity[Entity::PAYMENT_ID],
-            ResponseFields::UPI_TRANS_REFERENCE_NO => $upiEntity[Entity::NPCI_REFERENCE_ID],
+            ResponseFields::UPI_TRANS_REFERENCE_NO => 99999,
             ResponseFields::NPCI_TRANSACTION_ID    => 99999999999,
-            ResponseFields::CUSTOMER_REFERENCE_NO  => $upiEntity[Entity::GATEWAY_PAYMENT_ID],
+            ResponseFields::CUSTOMER_REFERENCE_NO  => '99999999999',
             ResponseFields::AMOUNT                 => $upiEntity[Entity::AMOUNT] / 100,
             ResponseFields::TRANSACTION_AUTH_DATE  => Carbon::now(Timezone::IST)->toDateTimeString(),
             ResponseFields::RESPONSE_CODE          => '00',
@@ -203,9 +203,9 @@ class Server extends Base\Mock\Server
 
         $content = [
             ResponseFields::PSP_REFERENCE_NO       => $input[RequestFields::REQUEST_INFO][RequestFields::PSP_REFERENCE_NO],
-            ResponseFields::UPI_TRANS_REFERENCE_NO => random_int(100000, 999999),
+            ResponseFields::UPI_TRANS_REFERENCE_NO => 99999,
             ResponseFields::NPCI_TRANSACTION_ID    => 99999999999,
-            ResponseFields::CUSTOMER_REFERENCE_NO  => random_int(100000000000, 999999999999),
+            ResponseFields::CUSTOMER_REFERENCE_NO  => '99999999999',
             ResponseFields::AMOUNT                 => $input[RequestFields::AMOUNT],
             ResponseFields::TRANSACTION_AUTH_DATE  => Carbon::now(Timezone::IST)->toDateTimeString(),
             ResponseFields::STATUS                 => Status::SUCCESS,
