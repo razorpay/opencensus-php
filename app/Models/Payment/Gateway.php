@@ -462,10 +462,17 @@ class Gateway
         Gateway::NETBANKING_HDFC,
     ];
 
-    public static $eMandateBanks = [
-        IFSC::ICIC,
-        IFSC::UTIB,
-        IFSC::HDFC,
+    public static $emandateBanks = [
+        AuthenticationType::NETBANKING => [
+            IFSC::ICIC,
+            IFSC::UTIB,
+            IFSC::HDFC,
+        ],
+        AuthenticationType::AADHAAR => [
+            IFSC::ICIC,
+            IFSC::UTIB,
+            IFSC::HDFC,
+        ]
     ];
 
     /**
@@ -717,6 +724,18 @@ class Gateway
         $gateway = self::$netbankingToGatewayMap[$bank];
 
         return self::isRecurringGateway($gateway);
+    }
+
+    public static function getAvailableEmandateBanks()
+    {
+        $emandateBanks = [];
+
+        foreach (self::$emandateBanks as $type => $banks)
+        {
+            $emandateBanks = array_merge($emandateBanks, $banks);
+        }
+
+        return array_values(array_unique($emandateBanks));
     }
 
     public static function getChannel($gateway)

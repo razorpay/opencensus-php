@@ -104,6 +104,7 @@ class Entity extends Base\PublicEntity
     const SAVE                  = 'save';
     const LATE_AUTHORIZED       = 'late_authorized';
     const CONVERT_CURRENCY      = 'convert_currency';
+    const AUTHENTICATION_TYPE   = 'authentication_type';
 
     const SUBSCRIPTION_ID       = 'subscription_id';
 
