@@ -17,6 +17,7 @@ import {
   humanReadableIndian,
   humanReadableIndianCurrency,
 } from 'rzp/utils/numerals';
+import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
 import { fetch } from 'merchant/modules/pokedex';
 import { tabsOrder, tabsMeta, getQuery, breakdownVals } from './data';
@@ -50,8 +51,8 @@ const TabContent = ({ name, value, isCurrency, title, isLoading }) => {
   return (
     <a title={formattedTitle}>
       <div>
-        <h1>{!isLoading ? formattedValue : '--'}</h1>
-        {title}
+        <h1>{!isLoading ? formattedValue : <PlaceholderLoader />}</h1>
+        <span>{!isLoading ? title : <PlaceholderLoader />}</span>
       </div>
     </a>
   );

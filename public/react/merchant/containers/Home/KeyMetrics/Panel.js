@@ -17,6 +17,10 @@ import { tabsMeta, breakdownVals } from './data';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
+import GenericPanel, {
+  PanelBody,
+  PanelFooter,
+} from 'merchant/containers/Home/GenericPanel';
 import customToolTip, {
   positioner,
 } from 'merchant/containers/Home/KeyMetrics/customTooltip';
@@ -85,8 +89,8 @@ class Panel extends Component {
     chartOptions.isCurrency = isCurrency;
 
     return (
-      <div className="panel key-metrics-container">
-        <div className="p-all">
+      <GenericPanel className="key-metrics-container" isLoading={data.loading}>
+        <PanelBody className="p-all">
           <div className="clearfix panel-topbar">
             <div className="pull-left">
               <ChangeRange previous={20} current={17} />
@@ -154,22 +158,20 @@ class Panel extends Component {
                 />
               </div>
             )}
-        </div>
-        {!data.loading && (
-          <div className="panel-footer clearfix">
-            <div className="pull-left">
-              <LastUpdated at={lastUpdatedAt} />
-            </div>
-            <div className="pull-right">
-              <Link
-                to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
-              >
-                View all Payments &gt;
-              </Link>
-            </div>
+        </PanelBody>
+        <PanelFooter>
+          <div className="pull-left">
+            <LastUpdated at={lastUpdatedAt} />
           </div>
-        )}
-      </div>
+          <div className="pull-right">
+            <Link
+              to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
+            >
+              View all Payments &gt;
+            </Link>
+          </div>
+        </PanelFooter>
+      </GenericPanel>
     );
   }
 }

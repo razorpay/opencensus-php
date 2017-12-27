@@ -36,7 +36,8 @@
     position: relative;
     box-shadow: 0 2px 7px 0 rgba(0,0,0,0.1);
     padding-bottom: 45px;
-
+    min-height: 300px;
+   
     .panel-footer {
 
       position: absolute;
@@ -54,6 +55,13 @@
 
     select.form-control {
       border-radius: 1px;
+    }
+
+    .panel-body {
+
+      padding: 0;
+      width: 100%;
+      height: 100%;
     }
   }
 
@@ -164,6 +172,11 @@
 
   div.key-metrics-container {
 
+    .PlaceholderLoader {
+
+      height: 1em;
+    }
+
     div.chart-container {
 
       margin-top: 50px;
@@ -173,6 +186,11 @@
     div.panel-topbar {
 
       padding: 14px;
+    }
+
+    &.panel {
+
+      height: 384px;
     }
   }
 
@@ -253,6 +271,11 @@
         margin-bottom: 0;
       }
     }
+  }
+
+  .rzp-overlay {
+
+    background-color: rgba(255, 255, 255, 0.5);
   }
 }
 

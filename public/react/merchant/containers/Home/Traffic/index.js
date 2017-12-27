@@ -11,6 +11,10 @@ import {
   humanReadableIndianCurrency,
   shorte,
 } from 'rzp/utils/numerals';
+import GenericPanel, {
+  PanelBody,
+  PanelFooter,
+} from 'merchant/containers/Home/GenericPanel';
 import { groupValues, groupMeta, getQuery } from './data';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
@@ -139,53 +143,58 @@ class Traffic extends Component {
       { chartData, legendData } = groupState;
 
     return (
-      <div className="panel rzp-traffic p-all">
-        <div className="clearfix panel-actions">
-          <div className="pull-right">
-            <div className="panel-action-item">
-              <select
-                value={selectedGrouping}
-                onChange={this.onGroupChange}
-                className="form-control"
-              >
-                {groupValues.map((value, index) => {
-                  return (
-                    <option value={value} key={index}>
-                      {groupMeta[value].title}
-                    </option>
-                  );
-                })}
-              </select>
+      <GenericPanel
+        className="rzp-traffic p-all"
+        isLoading={loading || groupState.loading}
+      >
+        <PanelBody>
+          <div className="clearfix panel-actions">
+            <div className="pull-right">
+              <div className="panel-action-item">
+                <select
+                  value={selectedGrouping}
+                  onChange={this.onGroupChange}
+                  className="form-control"
+                >
+                  {groupValues.map((value, index) => {
+                    return (
+                      <option value={value} key={index}>
+                        {groupMeta[value].title}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+              <div className="panel-action-item">
+                <MoreOptionsButton csvData={groupState.csvData} />
+              </div>
             </div>
-            <div className="panel-action-item">
-              <MoreOptionsButton csvData={groupState.csvData} />
+          </div>
+          <div className="row">
+            <div className="col-md-5 col-sm-12 column">
+              {!groupState.loading &&
+                chartData && <Pie options={chartOptions} data={chartData} />}
+            </div>
+            <div className="col-md-7 col-sm-12 column">
+              {!groupState.loading &&
+                legendData && (
+                  <Legend
+                    data={groupState.legendData}
+                    alignment="vertical"
+                    valueTransformer={
+                      isCurrency
+                        ? humanReadableIndianCurrency
+                        : humanReadableIndian
+                    }
+                  />
+                )}
             </div>
           </div>
-        </div>
-        <div className="row">
-          <div className="col-md-5 col-sm-12 column">
-            {!groupState.loading &&
-              chartData && <Pie options={chartOptions} data={chartData} />}
-          </div>
-          <div className="col-md-7 col-sm-12 column">
-            {!groupState.loading &&
-              legendData && (
-                <Legend
-                  data={groupState.legendData}
-                  alignment="vertical"
-                  valueTransformer={
-                    isCurrency
-                      ? humanReadableIndianCurrency
-                      : humanReadableIndian
-                  }
-                />
-              )}
-          </div>
-        </div>
-        <div className="panel-footer">
+        </PanelBody>
+        <PanelFooter>
           <LastUpdated at={groupState.lastUpdatedAt} />
-        </div>
-      </div>
+        </PanelFooter>
+      </GenericPanel>
     );
   }
 }
