@@ -7,7 +7,7 @@
 
 namespace RZP\Tests\Functional;
 
-use Cache;
+use Redis;
 use Artisan;
 use RZP\Services\EsClient;
 use RZP\Tests\TestCase as ParentTestCase;
@@ -73,7 +73,7 @@ class TestCase extends ParentTestCase
 
         $this->db->runFixtures($this->fixtures);
 
-        Cache::flush();
+        Redis::connection('query_cache')->flushdb();
     }
 
     public function tearDown()
@@ -83,7 +83,7 @@ class TestCase extends ParentTestCase
             $this->db->tearDown();
         }
 
-        Cache::flush();
+        Redis::connection('query_cache')->flushdb();
 
         parent::tearDown();
     }

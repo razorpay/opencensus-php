@@ -894,6 +894,12 @@ class VerifyTest extends TestCase
 
     protected function setupRedisMock($paymentArray = [])
     {
+        $redis = Redis::getFacadeRoot();
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache')
+            ->andReturn($redis);
+
         Redis::shouldReceive('hGetAll')
             ->andReturn([]);
 
@@ -926,6 +932,12 @@ class VerifyTest extends TestCase
 
     protected function setupRedisMockForBlockedGateway($paymentArray = [])
     {
+        $redis = Redis::getFacadeRoot();
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache')
+            ->andReturn($redis);
+
         Redis::shouldReceive('hGetAll')
             ->andReturn(
                 [],
@@ -961,6 +973,12 @@ class VerifyTest extends TestCase
 
     protected function setupRedisMockForBlockedPayments()
     {
+        $redis = Redis::getFacadeRoot();
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache')
+            ->andReturn($redis);
+
         Redis::shouldReceive('hGetAll')
             ->andReturn(
                 [],
