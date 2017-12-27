@@ -1548,9 +1548,9 @@ class Service extends Base\Service
         return $mailer;
     }
 
-    public function fetchAnalytics($input)
+    public function fetchAnalytics(array $input): array
     {
-        $input = (new Core())->validateFilterAttributesAndAddMerchantId($this->merchant->getId(), $input);
+        $input = (new Core())->validateInputFiltersAndAddMerchantId($this->merchant->getId(), $input);
 
         return $this->app['eventManager']->query($input);
     }

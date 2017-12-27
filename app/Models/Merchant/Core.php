@@ -413,25 +413,33 @@ class Core extends Base\Core
         }
     }
 
-    public function validateFilterAttributesAndAddMerchantId($merchantId, $input): array
+    public function validateInputFiltersAndAddMerchantId(
+        string $merchantId,
+        array $input): array
     {
-        $filters = $input[Entity::FILTERS];
-
         $validator = new AnalyticsValidator();
 
-        foreach ($filters as $key => $filter)
+        /**
+         * Iterates through input filters and
+         * - If one filter is empty, adds one sub filter with merchant id clause
+         * - If there are sub filters, adds merchant id clause in each of them
+         */
+
+        $filters = & $input[Entity::FILTERS];
+
+        foreach ($filters as & $filter)
         {
             if (empty($filter) === true)
             {
-                array_push($input[Entity::FILTERS][$key], [Entity::KEY_MERCHANT_ID => $merchantId]);
+                $filter[] = [Entity::KEY_MERCHANT_ID => $merchantId];
             }
             else
             {
-                foreach ($filter as $subKey => $subFilter)
+                foreach ($filter as & $subFilter)
                 {
                     $validator->validateAnalyticsInputFilter($subFilter);
 
-                    $input[Entity::FILTERS][$key][$subKey][Entity::KEY_MERCHANT_ID] = $merchantId;
+                    $subFilter[Entity::KEY_MERCHANT_ID] = $merchantId;
                 }
             }
         }
