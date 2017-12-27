@@ -222,6 +222,21 @@ class GatewayRuleForm extends Component {
           defaultValue={model.issuer}
           disabled={!!model.id}
         />
+        {model.method === 'card' && (
+          <SelectField
+            name="network"
+            label="Network"
+            defaultValue={model.network}
+            disabled={!!model.id}
+          >
+            <option value="" />
+            {Object.keys(networks).map((n, index) => (
+              <option value={n} key={index}>
+                {networks[n]}
+              </option>
+            ))}
+          </SelectField>
+        )}
         <SelectField
           defaultValue={model.category2}
           name="category2"
@@ -259,19 +274,6 @@ class GatewayRuleForm extends Component {
           <option value="" />
           <option value="0">No</option>
           <option value="1">Yes</option>
-        </SelectField>
-        <SelectField
-          name="network"
-          label="Network"
-          defaultValue={model.network}
-          disabled={!!model.id}
-        >
-          <option value="" />
-          {Object.keys(networks).map((n, index) => (
-            <option value={n} key={index}>
-              {networks[n]}
-            </option>
-          ))}
         </SelectField>
         <TextAreaField
           label="Add Comment:"
