@@ -509,7 +509,7 @@ class Gateway extends Base\Gateway
         if (isset($response[ResponseFields::STATUS_CODE]) === false)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA,
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 '',
                 'Status Code is missing'
             );
