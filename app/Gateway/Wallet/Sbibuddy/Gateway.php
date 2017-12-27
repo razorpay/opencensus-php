@@ -506,10 +506,10 @@ class Gateway extends Base\Gateway
     // Checks if status code is not present in response
     protected function isStatusCodeMissing(array $response)
     {
-        if(isset($response[ResponseFields::STATUS_CODE]) === false)
+        if (isset($response[ResponseFields::STATUS_CODE]) === false)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA,
                 '',
                 'Status Code is missing'
             );
