@@ -42,13 +42,13 @@ class UpiSbiGatewayReconTest extends TestCase
 
     public function testUpiSbiReconciliation()
     {
-        $this->doNUpiSbiPaymentsYesterday();
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->makeUpiSbiPaymentsSince(3, $createdAt);
 
         $fileContents = $this->generateReconFile();
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
-
-        $this->assertUpiEntityNotChanged();
 
         $response = $this->reconcile($uploadedFile, 'UpiSbi');
 
@@ -74,7 +74,9 @@ class UpiSbiGatewayReconTest extends TestCase
 
     public function testFailedUpiSbiReconciliation()
     {
-        $this->doNUpiSbiPaymentsYesterday(1);
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->makeUpiSbiPaymentsSince(1, $createdAt);
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
@@ -85,8 +87,6 @@ class UpiSbiGatewayReconTest extends TestCase
         $fileContents = $this->generateReconFile();
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
-
-        $this->assertUpiEntityNotChanged();
 
         $response = $this->reconcile($uploadedFile, 'UpiSbi');
 
@@ -146,14 +146,12 @@ class UpiSbiGatewayReconTest extends TestCase
         return $uploadedFile;
     }
 
-    private function doNUpiSbiPaymentsYesterday(int $count = 3)
+    private function makeUpiSbiPaymentsSince(int $count = 3, int $createdAt)
     {
         for ($i = 0; $i < $count; $i++)
         {
             $payments[] = $this->doUpiSbiPayment();
         }
-
-        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
         foreach ($payments as $payment)
         {
