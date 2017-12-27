@@ -1287,16 +1287,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.8.5",
+            "version": "8.8.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "a0405e2b3de6497174db4a3fcfa9bfd67f4ef282"
+                "reference": "502d5e5e2fea5f5c58782558d04e664607a3dffd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/a0405e2b3de6497174db4a3fcfa9bfd67f4ef282",
-                "reference": "a0405e2b3de6497174db4a3fcfa9bfd67f4ef282",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/502d5e5e2fea5f5c58782558d04e664607a3dffd",
+                "reference": "502d5e5e2fea5f5c58782558d04e664607a3dffd",
                 "shasum": ""
             },
             "require": {
@@ -1351,7 +1351,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2017-10-30T15:09:43+00:00"
+            "time": "2017-12-06T20:11:38+00:00"
         },
         {
             "name": "giggsey/locale",
@@ -4418,16 +4418,16 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "2.0.6",
+            "version": "2.0.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "34a7699e6f31b1ef4035ee36444407cecf9f56aa"
+                "reference": "c9a3fe35e20eb6eeaca716d6a23cde03f52d1558"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/34a7699e6f31b1ef4035ee36444407cecf9f56aa",
-                "reference": "34a7699e6f31b1ef4035ee36444407cecf9f56aa",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/c9a3fe35e20eb6eeaca716d6a23cde03f52d1558",
+                "reference": "c9a3fe35e20eb6eeaca716d6a23cde03f52d1558",
                 "shasum": ""
             },
             "require": {
@@ -4506,7 +4506,7 @@
                 "x.509",
                 "x509"
             ],
-            "time": "2017-06-05T06:31:10+00:00"
+            "time": "2017-11-29T06:38:08+00:00"
         },
         {
             "name": "predis/predis",

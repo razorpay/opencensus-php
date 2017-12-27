@@ -19,6 +19,15 @@ class DisputeController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchMultiple()
+    {
+        $input = Request::all();
+
+        $disputes = $this->service()->fetchMultiple($input);
+
+        return ApiResponse::json($disputes);
+    }
+
     public function migrateOldAdjustments()
     {
         if (Request::hasFile('file') === false)
