@@ -2,6 +2,7 @@ import {
   titleCase,
   getFormattedAmount,
   paiseToRupees,
+  arrayToCsvDataUrl,
 } from 'rzp/utils/rzp-utils';
 import { humanReadableIndianCurrency } from 'rzp/utils/numerals';
 
@@ -13,6 +14,28 @@ var defaults = {
   width: 500,
   height: 300,
 };
+
+function makeCSVData(data, aggregate = 0, prefix = '', csvData = []) {
+  if (data._children) {
+    data._children.forEach(item => {
+      if (!item.key) {
+        return;
+      }
+
+      aggregate += item.value;
+
+      csvData.push([
+        prefix + item.key.replace(',', ''),
+        item.value,
+        item.percent + '%',
+      ]);
+
+      makeCSVData(item, aggregate, prefix + '      ', csvData);
+    });
+  }
+
+  return { aggregate, csvData };
+}
 
 function main(node, o, data, d3, onTransition, groupTitleMap) {
   var root,
@@ -359,10 +382,19 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
       });
   }
 
+  const csvData = makeCSVData(root),
+    csvBody = csvData.csvData,
+    csvHeader = ['', 'Amount', '%Share'],
+    csvFooter = ['Total', csvData.aggregate];
+
+  csvBody.unshift(csvHeader);
+  csvBody.push(csvFooter);
+
   return {
     transition: globalTransition,
     display,
     reset: () => display(root),
+    csv: arrayToCsvDataUrl(csvBody),
   };
 }
 const getGroupingFactor = groupKey => {

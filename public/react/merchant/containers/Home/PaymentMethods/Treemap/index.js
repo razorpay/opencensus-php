@@ -44,19 +44,27 @@ export default class Treemap extends Component {
   }
 
   renderTreemap(data) {
-    if (data && this.state.scriptsLoaded) {
-      this.treemapApi = renderTreemap(
-        this.node,
-        data,
-        this.d3,
-        this.onTransition
-      );
-    }
+    this.treemapApi = renderTreemap(
+      this.node,
+      data,
+      this.d3,
+      this.onTransition
+    );
+
+    return (
+      typeof this.props.onCSVData === 'function' &&
+      this.props.onCSVData(this.treemapApi.csv)
+    );
   }
 
   componentDidMount() {
     this.componentMounted = true;
-    return this.renderTreemap(this.props.data);
+
+    return (
+      this.props.data &&
+      this.state.scriptsLoaded &&
+      this.renderTreemap(this.props.data)
+    );
   }
 
   componentWillReceiveProps(nextProps) {

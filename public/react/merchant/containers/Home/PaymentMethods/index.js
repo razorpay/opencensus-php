@@ -34,9 +34,11 @@ class PaymentMethods extends Component {
       data: null,
       levels: [],
       currentLevel: null,
+      csvData: null,
     };
 
     this.onLevelChange = ::this.onLevelChange;
+    this.onCSVData = ::this.onCSVData;
   }
 
   fetchData(startDate, endDate) {
@@ -51,6 +53,15 @@ class PaymentMethods extends Component {
         data: agg.result,
         lastUpdatedAt: agg.last_updated_at,
       });
+    });
+  }
+
+  onCSVData(csvUrl) {
+    this.setState({
+      csvData: {
+        name: 'Payment Methods Data.csv',
+        url: csvUrl,
+      },
     });
   }
 
@@ -79,7 +90,7 @@ class PaymentMethods extends Component {
   }
 
   render() {
-    const { levels } = this.state,
+    const { levels, csvData } = this.state,
       { startDate, endDate } = this.props,
       levelsLength = levels.length;
 
@@ -105,7 +116,7 @@ class PaymentMethods extends Component {
           </div>
           <div className="panel-actions p-b pull-right">
             <div className="panel-action-item">
-              <MoreOptionsButton />
+              <MoreOptionsButton csvData={csvData} />
             </div>
           </div>
         </div>
@@ -114,6 +125,7 @@ class PaymentMethods extends Component {
             data={this.state.data}
             onLevelChange={this.onLevelChange}
             currentLevel={this.state.currentLevel}
+            onCSVData={this.onCSVData}
           />
         </div>
         <div className="panel-footer clearfix">
