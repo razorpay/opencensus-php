@@ -8,6 +8,10 @@ import Treemap from 'merchant/containers/Home/PaymentMethods/Treemap';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
 import { fetch } from 'merchant/modules/pokedex';
+import GenericPanel, {
+  PanelBody,
+  PanelFooter,
+} from 'merchant/containers/Home/GenericPanel';
 
 import { getQuery } from './data';
 import './styles.styl';
@@ -35,6 +39,7 @@ class PaymentMethods extends Component {
       levels: [],
       currentLevel: null,
       csvData: null,
+      isLoading: false,
     };
 
     this.onLevelChange = ::this.onLevelChange;
@@ -42,18 +47,31 @@ class PaymentMethods extends Component {
   }
 
   fetchData(startDate, endDate) {
+    this.setState({
+      isLoading: true,
+    });
+
     fetch(
       getQuery({
         merchantId: '10000000000000',
         startTime: startDate.unix(),
         endTime: endDate.unix(),
       })
-    ).then(({ data: { agg } }) => {
-      this.setState({
-        data: agg.result,
-        lastUpdatedAt: agg.last_updated_at,
+    )
+      .then(({ data: { agg } }) => {
+        this.setState({
+          data: agg.result,
+          lastUpdatedAt: agg.last_updated_at,
+        });
+      })
+      .catch(err => {
+        // TODO: Handle Error
+      })
+      .then(() => {
+        this.setState({
+          isLoading: false,
+        });
       });
-    });
   }
 
   onCSVData(csvUrl) {
@@ -90,45 +108,50 @@ class PaymentMethods extends Component {
   }
 
   render() {
-    const { levels, csvData } = this.state,
+    const { levels, csvData, isLoading } = this.state,
       { startDate, endDate } = this.props,
       levelsLength = levels.length;
 
     return (
-      <div className="panel p-all payment-methods-container">
-        <div className="clearfix">
-          <div className="panel-actions p-b pull-left">
-            <span>Showing:</span>
-            {levelsLength > 0 && (
-              <Breadcrumb>
-                {levels.map((level, index) => (
-                  <BreadcrumbItem
-                    key={index}
-                    onClick={() =>
-                      index + 1 !== levelsLength &&
-                      this.onLevelChange(level.data)}
-                  >
-                    {level.name}
-                  </BreadcrumbItem>
-                ))}
-              </Breadcrumb>
-            )}
-          </div>
-          <div className="panel-actions p-b pull-right">
-            <div className="panel-action-item">
-              <MoreOptionsButton csvData={csvData} />
+      <GenericPanel
+        className="p-all payment-methods-container"
+        isLoading={isLoading}
+      >
+        <PanelBody>
+          <div className="clearfix">
+            <div className="panel-actions p-b pull-left">
+              <span>Showing:</span>
+              {levelsLength > 0 && (
+                <Breadcrumb>
+                  {levels.map((level, index) => (
+                    <BreadcrumbItem
+                      key={index}
+                      onClick={() =>
+                        index + 1 !== levelsLength &&
+                        this.onLevelChange(level.data)}
+                    >
+                      {level.name}
+                    </BreadcrumbItem>
+                  ))}
+                </Breadcrumb>
+              )}
+            </div>
+            <div className="panel-actions p-b pull-right">
+              <div className="panel-action-item">
+                <MoreOptionsButton csvData={csvData} />
+              </div>
             </div>
           </div>
-        </div>
-        <div>
-          <Treemap
-            data={this.state.data}
-            onLevelChange={this.onLevelChange}
-            currentLevel={this.state.currentLevel}
-            onCSVData={this.onCSVData}
-          />
-        </div>
-        <div className="panel-footer clearfix">
+          <div>
+            <Treemap
+              data={this.state.data}
+              onLevelChange={this.onLevelChange}
+              currentLevel={this.state.currentLevel}
+              onCSVData={this.onCSVData}
+            />
+          </div>
+        </PanelBody>
+        <PanelFooter className="clearfix">
           <div className="pull-left">
             <LastUpdated at={this.state.lastUpdatedAt} />
           </div>
@@ -139,8 +162,8 @@ class PaymentMethods extends Component {
               View all Payments &gt;
             </Link>
           </div>
-        </div>
-      </div>
+        </PanelFooter>
+      </GenericPanel>
     );
   }
 }

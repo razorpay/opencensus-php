@@ -72,7 +72,7 @@ export default class HomeContainer extends Component {
     const { startDate, endDate } = this.state;
 
     return (
-      <div class="react-root">
+      <div class="react-root dashboard-home">
         <Sticky stickWhen={0} stickAt={50}>
           <Header className="clearfix" title="" showMode={false}>
             <div className="pull-left date-range-container">
