@@ -601,7 +601,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
-     * set payment entity according to row details
+     * Set payment entity according to row details
      * 1. Update ARN if found and was not updated before
      * 2. Update AuthCode if found and was not updated before
      *
