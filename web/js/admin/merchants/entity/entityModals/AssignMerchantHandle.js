@@ -12,7 +12,7 @@ export default ({ merchantId }) => {
   /* Submit button action */
   function onSubmit(body) {
     return adminPut({
-      route_name: '"merchant_edit_config"',
+      route_name: 'merchant_edit_config',
       merchant_id: merchantId,
       body: {
         handle: body.handle,
