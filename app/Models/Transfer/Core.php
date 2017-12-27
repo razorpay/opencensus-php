@@ -324,7 +324,7 @@ class Core extends Base\Core
 
         $to = $this->repo
                    ->merchant
-                   ->fetchByAccountIdAndMerchant($accountId, $merchant);
+                   ->findByAccountIdAndParent($accountId, $merchant);
 
         if (($source instanceof Payment\Entity) === true)
         {

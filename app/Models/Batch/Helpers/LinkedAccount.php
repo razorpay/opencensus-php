@@ -11,13 +11,13 @@ use RZP\Models\Merchant\Detail as MerchantDetail;
 class LinkedAccount
 {
     /**
-     * Returns input for account(actually sub merchant) creation
+     * Returns input for sub merchant (or linked account) creation
      *
      * @param  array  $entry
      *
      * @return array
      */
-    public static function getAccountInput(array $entry): array
+    public static function getSubMerchantInput(array $entry): array
     {
         return [
             Merchant\Entity::ID   => Merchant\Entity::generateUniqueId(),
@@ -26,13 +26,13 @@ class LinkedAccount
     }
 
     /**
-     * Returns input for account details (actually merchant details) creation
+     * Returns input for sub merchant (or linked account) detail entity creation
      *
      * @param  array  $entry
      *
      * @return array
      */
-    public static function getAccountDetailInput(array $entry): array
+    public static function getSubMerchantDetailInput(array $entry): array
     {
         return [
             MerchantDetail\Entity::BANK_ACCOUNT_NAME   => $entry[Header::BANK_ACCOUNT_NAME],
@@ -46,14 +46,14 @@ class LinkedAccount
     }
 
     /**
-     * Returns bank account creation/update input. Used when a file row has
-     * account id and in that case we just need to patch account details.
+     * Returns bank account creation/update input, Used when a file row has
+     * account id, and in that case we just need to patch account details.
      *
      * @param  array  $entry
      *
      * @return array
      */
-    public static function getBankAccountDetailInput(array $entry): array
+    public static function getBankAccountInput(array $entry): array
     {
         return [
             BankAccount\Entity::BENEFICIARY_NAME => $entry[Header::BANK_ACCOUNT_NAME],
