@@ -1262,6 +1262,23 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedAepsIciciTerminal(array $attributes)
+    {
+        $termId = Shared::AEPS_ICICI_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'aeps_icici',
+            'gateway_terminal_id'       => 'aeps_terminal_id',
+            'aeps'                      => true,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedOpenwalletTerminal(array $attributes = [])
     {
         $terminalId = Shared::OPENWALLET_RAZORPAY_TERMINAL;

@@ -303,31 +303,38 @@ class Repository extends Base\Repository
      */
     public function settled($txns, array $values)
     {
-        if ($txns->count() === 0)
+        $txnCount = $txns->count();
+
+        if ($txnCount === 0)
         {
             return;
         }
 
         $ids = $txns->getIds();
 
-        $count = $this->newQuery()
-                      ->whereIn(Transaction\Entity::ID, $ids)
-                      ->update($values);
+        $batchedIds = array_chunk($ids, 20000);
 
-        $expected = count($ids);
-
-        if ($count !== $expected)
+        foreach ($batchedIds as $batch)
         {
-            throw new Exception\LogicException(
-                'Failed to update expected number of rows.',
-                null,
-                [
-                    'expected' => $expected,
-                    'updated'  => $count,
-                ]);
+            $count = $this->newQuery()
+                          ->whereIn(Transaction\Entity::ID, $batch)
+                          ->update($values);
+
+            $expected = count($batch);
+
+            if ($count !== $expected)
+            {
+                throw new Exception\LogicException(
+                    'Failed to update expected number of rows.',
+                    null,
+                    [
+                        'expected' => $expected,
+                        'updated'  => $count,
+                    ]);
+            }
         }
 
-        return $count;
+        return $txnCount;
     }
 
     public function updateSettlementId($txns, $settlementId)
