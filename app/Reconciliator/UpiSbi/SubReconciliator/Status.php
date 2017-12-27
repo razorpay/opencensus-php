@@ -9,7 +9,7 @@ class Status
     const SUCCESS = 'success';
     const FAILED  = 'failed';
 
-    const STATUS_PAYMENT_STATUS_MAP = [
+    const RECON_STATUS_TO_PAYMENT_STATUS_MAP = [
         self::SUCCESS => Payment\Status::AUTHORIZED,
         self::FAILED  => Payment\Status::FAILED
     ];
@@ -18,6 +18,6 @@ class Status
     {
         $rowStatus = strtolower($status);
 
-        return self::STATUS_PAYMENT_STATUS_MAP[$rowStatus] ?? Payment\Status::FAILED;
+        return self::RECON_STATUS_TO_PAYMENT_STATUS_MAP[$rowStatus] ?? Payment\Status::FAILED;
     }
 }

@@ -2,13 +2,13 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
-use Redirect;
+use View;
 use Request;
+use Redirect;
+use ApiResponse;
+use RZP\Gateway\Hdfc;
 use RZP\Constants\Mode;
 use RZP\Gateway\GatewayManager;
-use View;
-use \RZP\Gateway\Hdfc;
 
 class MockGatewayController extends Controller
 {
@@ -289,7 +289,7 @@ class MockGatewayController extends Controller
         return;
     }
 
-    public function generateNetbankingReconciliation(string $gateway)
+    public function generateGatewayReconciliationFile(string $gateway)
     {
         $input = Request::all();
 

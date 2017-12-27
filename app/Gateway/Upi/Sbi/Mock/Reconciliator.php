@@ -20,33 +20,6 @@ class Reconciliator extends Base\Mock\Reconciliator
      */
     protected static $fileToWriteName = 'MerchantReport';
 
-    const HEADERS = [
-        'PG Merchant ID',
-        'Legal Name',
-        'Store Name',
-        'MCC',
-        'Order No',
-        'Trans Ref No.',
-        'Customer Ref No.',
-        'NPCI Response Code',
-        'Trans Type',
-        'DR/CR',
-        'Transaction Status',
-        'Transaction Remarks',
-        'Transaction Date',
-        'Transaction Amount',
-        'Payer A/c No.',
-        'Payer Virtual Address',
-        'Payer A/C Name',
-        'Payer IFSC Code',
-        'Payee A/C No',
-        'Payee Virtual Address',
-        'Payee A/C Name',
-        'Payee IFSC Code',
-        'Pay Type',
-        'Device Type',
-    ];
-
     /**
      * The parent class's method gets only successful payments,
      * but for sbi recon, we need all payments - both successful
@@ -78,8 +51,6 @@ class Reconciliator extends Base\Mock\Reconciliator
     protected function getReconciliationData(array $input)
     {
         $data = [];
-
-//        $data[] = self::HEADERS;
 
         foreach ($input as $row)
         {

@@ -1,14 +1,14 @@
 <?php
 
 use Carbon\Carbon;
+use Illuminate\Http\UploadedFile;
+
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
-use Illuminate\Http\UploadedFile;
-use RZP\Tests\Functional\Gateway\Upi\Sbi\Constants;
-
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Gateway\Upi\Sbi\Constants;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 
@@ -132,7 +132,7 @@ class UpiSbiGatewayReconTest extends TestCase
     {
         $this->assertFileExists($file);
 
-        $mimeType = "text/plain";
+        $mimeType = "application/octet-stream";
 
         $uploadedFile = new UploadedFile(
             $file,

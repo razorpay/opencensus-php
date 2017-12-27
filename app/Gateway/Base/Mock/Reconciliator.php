@@ -65,11 +65,7 @@ class Reconciliator
 
         $file = $creator->get();
 
-        return [
-            'local_file_path' => $file['local_file_path'],
-            'count'           => count($data),
-            'file_name'       => basename($file['local_file_path']),
-        ];
+        return ['local_file_path' => $file['local_file_path']];
     }
 
     protected function getReconciliationData(array $input)

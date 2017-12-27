@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\UpiSbi;
 
+use RZP\Gateway\Upi\Sbi\Action;
 use RZP\Reconciliator\Base;
 use RZP\Models\Base\PublicEntity;
 
@@ -29,9 +30,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getCustomerDetails($row)
     {
-        return [
-            Base\Reconciliate::CUSTOMER_ID => $row[self::CUSTOMER_REF_NUM] ?? null
-        ];
+        if (empty($row[self::CUSTOMER_REF_NUM]) === true)
+        {
+            return parent::getCustomerDetails($row);
+        }
+
+        return [Base\Reconciliate::CUSTOMER_ID => $row[self::CUSTOMER_REF_NUM]];
     }
 
     protected function getReconPaymentStatus(array $row)
@@ -43,16 +47,39 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
-        $reconAmount = (int) ($row[self::TRANSACTION_AMOUNT] * 100);
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'message'         => 'Payment amount mismatch',
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'currency'        => $this->payment->getCurrency(),
+                    'row'             => $row,
+                    'gateway'         => get_called_class()
+                ]);
 
-        $paymentAmount = $this->payment->getAmount();
+            return false;
+        }
 
-        return ($reconAmount === $paymentAmount);
+        return true;
+    }
+
+    protected function getReconPaymentAmount(array $row)
+    {
+        $paymentAmount = floatval($row[self::TRANSACTION_AMOUNT]) * 100;
+
+        // We are converting to int after casting to string as PHP randomly
+        // returns wrong int values due to differing floating point precisions
+        // So something like intval(31946.0) may give 31945 or 31946.
+        // Converting to string using number_format and then converting
+        // is a hack to avoid this issue
+        return intval(number_format($paymentAmount, 2, '.', ''));
     }
 
     protected function getGatewayPayment($paymentId)
     {
-        return $this->repo->upi->findByPaymentId($paymentId)->first();
+        return $this->repo->upi->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
     }
 
     protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
