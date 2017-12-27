@@ -118,6 +118,7 @@ class NodalAccount extends NodalBase\NodalAccount
                 $this->username,
                 $this->password
             ],
+            'idn' => false,
         ];
 
         return $options;
