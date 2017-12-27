@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class Validator extends Base\Validator
 {
     const operationUploadFile = 'upload_file';
+    const operationFilesInput = 'input_files';
 
     protected static $createRules = [
         Entity::DISPUTE_ID         => 'required|string|max:14',
@@ -30,6 +31,10 @@ class Validator extends Base\Validator
 
     ];
 
+    protected static $inputFilesRules = [
+        Entity::FILES             => 'required|array|between:1,'.Entity::MAX_NUM_FILES,
+    ];
+
     protected function validateCategory(string $attribute, string $value)
     {
         if (Category::exists($value) === false)
@@ -44,19 +49,8 @@ class Validator extends Base\Validator
         $this->validateInput(self::operationUploadFile, $file);
     }
 
-    public function validateNumberOfFiles(array $files)
+    public function validateFilesInput(array $files)
     {
-        if (sizeof($files) === 0)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Input does not contain any files to be uploaded',
-                Entity::FILES);
-        }
-        else if (sizeof($files) > Entity::MAX_NUM_FILES)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Input files exceeds maximum allowed number of files : '. Entity::MAX_NUM_FILES,
-                Entity::FILES);
-        }
+        $this->validateInput(self::operationFilesInput, [Entity::FILES => $files]);
     }
 }

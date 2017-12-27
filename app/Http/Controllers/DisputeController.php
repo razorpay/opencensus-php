@@ -21,17 +21,7 @@ class DisputeController extends Controller
     {
         $input = Request::all();
 
-        $response = [];
-
-        if ($this->ba->isAdminAuth())
-        {
-            $response = $this->service()->update($id, $input);
-        }
-        else if (($this->ba->isPrivateAuth() === true) or
-                ($this->ba->isProxyAuth() === true))
-        {
-            $response = $this->service()->updateForMerchant($id, $input);
-        }
+        $response = $this->service()->update($id, $input);
 
         return ApiResponse::json($response);
     }

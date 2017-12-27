@@ -46,25 +46,33 @@ class Core extends Base\Core
         return $file;
     }
 
+    public function checkFileInput(array $files): array
+    {
+        $validator = new Validator();
+
+        $validator->validateFilesInput($files);
+
+        foreach ($files as $fileInput)
+        {
+            $validator->validateFileDetails($fileInput);
+        }
+
+        return $files;
+    }
+
     public function uploadFiles(DisputeEntity $dispute, array $files): array
     {
         $this->trace->info(
             TraceCode::DISPUTE_FILES_UPLOAD,
             [
                 'id'          => $dispute->getId(),
-                'files'       => $files,
+                'files_count' => sizeof($files),
             ]);
-
-        $validator = new Validator();
 
         $disputeFiles = [];
 
-        $validator->validateNumberOfFiles($files);
-
         foreach ($files as $fileInput)
         {
-            $validator->validateFileDetails($fileInput);
-
             $file = $this->uploadAndCreateFile($dispute, $fileInput);
 
             array_push($disputeFiles, $file->toArrayPublic());
