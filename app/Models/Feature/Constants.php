@@ -118,6 +118,7 @@ class Constants
         self::SKIP_HOLD_FUNDS_ON_PAYOUT     => true,
         self::REPORT_V2                     => true,
         self::UPI_INTENT                    => true,
+        self::CORPORATE_BANKS               => true,
     ];
 
     // Keys used in the feature on-boarding workflow
