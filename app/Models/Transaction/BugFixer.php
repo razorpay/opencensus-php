@@ -85,7 +85,7 @@ class BugFixer extends Base\Service
                 $updateEscrow = false;
 
                 $adj = (new Adjustment\Entity)->build($input);
-                $adj->setChannel(Settlement\Channel::KOTAK);
+                $adj->setChannel($merchant->getChannel());
 
                 $newAdjId = $setlId;
 

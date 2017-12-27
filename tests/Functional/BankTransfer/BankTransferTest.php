@@ -956,6 +956,8 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferYesBankRefundsNotAllowed()
     {
+        $this->markTestSkipped("Yesbank refunds temporarily allowed");
+
         $accountNumber = $this->bankAccount['account_number'];
 
         $data =$this->testData[__FUNCTION__];
