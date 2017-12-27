@@ -15,18 +15,11 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
     );
 
-    protected function newQuery()
-    {
-        $query = parent::newQuery();
-
-        return $query->prefix('rememberable:v1');
-    }
-
     public function find($id, $columns = ['*'])
     {
         return $this->newQuery()
                     ->remember(self::CACHE_TTL)
-                    ->cacheTags('keys_' . $id)
+                    ->cacheTags(['v1', 'keys_' . $id])
                     ->find($id, $columns);
     }
 

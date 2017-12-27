@@ -44,11 +44,13 @@ class Entity extends Base\PublicEntity
      */
     const DEFAULT_KEY_EXPIRY_TIME_ON_ROLL = 86400;
 
-    protected $hidden = array(
-        self::SECRET);
+    protected $hidden = [
+        self::SECRET
+    ];
 
-    protected $defaults = array(
-        self::EXPIRED_AT => null);
+    protected $defaults = [
+        self::EXPIRED_AT => null
+    ];
 
     protected static function boot()
     {
