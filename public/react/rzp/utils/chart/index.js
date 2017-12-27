@@ -8,7 +8,7 @@ global.legend.display = false;
 
 // by default straight lines ofr line graph
 global.elements.line.tension = 0;
-global.elements.line.borderColor = 'rgba(0, 0, 0, 0)';
+global.elements.line.borderColor = 'rgba(0, 0, 0, 0.05)';
 
 // by default no gap between each pie
 global.elements.arc.borderWidth = 0;
@@ -21,10 +21,6 @@ tooltips.intersect = false;
 
 global.hover.mode = 'index';
 global.hover.intersect = false;
-
-global.elements.point.radius = 0;
-global.elements.point.hoverRadius = 0;
-global.elements.point.hitRadius = 0;
 
 export const colors = [
   [75, 84, 113],

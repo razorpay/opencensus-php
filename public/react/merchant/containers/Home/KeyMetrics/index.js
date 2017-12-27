@@ -5,9 +5,18 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import moment from 'moment';
 
 import Amount from 'rzp/ui/Amount';
-import { paiseToRupees, titleCase, shortenText } from 'rzp/utils/rzp-utils';
+import {
+  paiseToRupees,
+  titleCase,
+  shortenText,
+  getFormattedAmount,
+  getFormattedNumber,
+} from 'rzp/utils/rzp-utils';
 import { getTimelineData } from 'rzp/utils/chart/transformers';
-import { humanReadableIndian } from 'rzp/utils/numerals';
+import {
+  humanReadableIndian,
+  humanReadableIndianCurrency,
+} from 'rzp/utils/numerals';
 
 import { fetch } from 'merchant/modules/pokedex';
 import { tabsOrder, tabsMeta, getQuery, breakdownVals } from './data';
@@ -21,11 +30,16 @@ const TabContent = ({ name, value, isCurrency, title, isLoading }) => {
    * Component responsible for rendering content in each Tab
    */
 
-  let formattedValue = (value = isCurrency ? paiseToRupees(value) : value);
+  let formattedTitle =
+      '₹ ' +
+      (isCurrency ? getFormattedAmount(value) : getFormattedNumber(value)),
+    formattedValue = (value = isCurrency ? paiseToRupees(value) : value);
 
   if (value >= 1000) {
     // formatting number, eg. 1200 as 1.2 k , decimal part is optional
-    formattedValue = humanReadableIndian(value);
+    formattedValue = (isCurrency
+      ? humanReadableIndianCurrency
+      : humanReadableIndian)(value);
   }
 
   /*
@@ -34,9 +48,9 @@ const TabContent = ({ name, value, isCurrency, title, isLoading }) => {
    *
    */
   return (
-    <a>
+    <a title={formattedTitle}>
       <div>
-        <h1>{!isLoading ? (isCurrency ? '₹ ' : '') + formattedValue : '--'}</h1>
+        <h1>{!isLoading ? formattedValue : '--'}</h1>
         {title}
       </div>
     </a>

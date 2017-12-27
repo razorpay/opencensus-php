@@ -147,7 +147,8 @@ const customToolTip = function(tooltipModel) {
       right: chartRight,
       bottom: chartBottom,
     } = this._chart.canvas.getBoundingClientRect(),
-    crossHairHeight = chartBottom - (tooltipModel.caretY + xAxisHeight);
+    crossHairHeight =
+      chartBottom - (tooltipModel.caretY + xAxisHeight) + caretHeight;
 
   crossHair.style.height = crossHairHeight + 'px';
   crossHair.style.marginLeft = -(crossHairWidth / 2) + 'px';
