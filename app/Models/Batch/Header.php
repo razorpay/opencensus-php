@@ -245,6 +245,7 @@ class Header
                 self::BANK_BRANCH_IFSC,
                 self::BANK_ACCOUNT_NUMBER,
                 self::REFERENCE_ID,
+                self::STATUS,
                 self::ACCOUNT_ID,
             ],
         ],

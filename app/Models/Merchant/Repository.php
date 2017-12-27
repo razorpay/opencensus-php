@@ -363,7 +363,7 @@ class Repository extends Base\Repository
         AccountEntity::verifyIdAndStripSign($accountId);
 
         $query   = $this->newQuery()->where(Entity::PARENT_ID, $marketplace->getId());
-        $account = $fail ? $query->findOrFail($accountId) : $query->find($accountId);
+        $account = $fail ? $query->findOrFailPublic($accountId) : $query->find($accountId);
 
         if ($account !== null)
         {
