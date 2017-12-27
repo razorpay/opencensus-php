@@ -291,6 +291,7 @@ final class Route
         'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}',       'MockGatewayController@walletPayment'                               ],
         'mock_generate_reconciliation'            => ['post',     'gateway/mock/reconciliation/{gateway}',             'MockGatewayController@generateGatewayReconciliationFile'           ],
         'mock_upi_payment'                        => ['post',     'gateway/mock/upi/{bank}',                        'MockGatewayController@postUpiPayment'                              ],
+        'mock_aeps_payment'                       => ['post',     'gateway/mock/aeps/{bank}',                       'MockGatewayController@postAepsPayment'                             ],
         'admin_fetch_all_entities'                => ['get',      'admin/entities/all',                             'AdminController@getEntities'                                       ],
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_terminal_by_id'              => ['get',      'admin/terminal/{id}',                            'AdminController@getTerminalById'                                   ],
@@ -639,6 +640,7 @@ final class Route
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
         'dispute_migrate_adjustments'             => ['post',     'disputes/migrate_old_adjustments',               'DisputeController@migrateOldAdjustments'                           ],
         'dispute_reason_create'                   => ['post',     'disputes/reasons',                               'DisputeController@createReason'                                    ],
+        'dispute_fetch_multiple'                  => ['get',      'disputes',                                       'DisputeController@fetchMultiple'                                   ],
 
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
 
@@ -734,6 +736,7 @@ final class Route
         'mock_wallet_payment',
         'mock_wallet_payment_get',
         'mock_upi_payment',
+        'mock_aeps_payment',
         'mock_wallet_payment_with_paymentid',
         'dummy_return_callback',
         'emi_plans_fetch_multiple',
@@ -886,6 +889,7 @@ final class Route
         'transfer_fetch_reversals',
         'reversal_fetch',
         'reversal_fetch_multiple',
+        'dispute_fetch_multiple',
     ];
 
     public static $internal = [

@@ -10,7 +10,6 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base\Core;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Validator;
-use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
 
 class Base extends Core
@@ -210,7 +209,7 @@ class Base extends Core
         // right password and which file has the wrong password.
         // Hence, we suppress all axis wrong password errors.
         //
-        if (($this->gateway !== Orchestrator::AXIS) and
+        if (($this->gateway !== self::AXIS) and
             (str_contains($ex->getMessage(), 'Wrong password')))
         {
             $this->messenger->raiseReconAlert(
@@ -274,7 +273,7 @@ class Base extends Core
             {
                 $level = Trace::ERROR;
 
-                if ($this->gateway === Orchestrator::AXIS)
+                if ($this->gateway === self::AXIS)
                 {
                     $level = Trace::INFO;
                 }

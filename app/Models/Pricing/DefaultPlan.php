@@ -75,6 +75,19 @@ class DefaultPlan
             ],
 
             [
+                'id'             => '1HvFLd643Fr932',
+                'plan_id'        => '1AXludj60w4pSp',
+                'plan_name'      => 'Full Price',
+                'feature'        => 'payment',
+                'payment_method' => 'aeps',
+                'percent_rate'   => '290',
+                'fixed_rate'     => '0',
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
+
+            [
                 'id'             => '1HvFLd6436r9L3',
                 'plan_id'        => '1AXludj60w4pSp',
                 'plan_name'      => 'Full Price',
