@@ -260,6 +260,18 @@ class GatewayRuleForm extends Component {
           <option value="0">No</option>
           <option value="1">Yes</option>
         </SelectField>
+        <SelectField
+          name="network"
+          label="Network"
+          defaultValue={model.network}
+        >
+          <option value="" />
+          {Object.keys(networks).map((n, index) => (
+            <option value={n} key={index}>
+              {networks[n]}
+            </option>
+          ))}
+        </SelectField>
         <TextAreaField
           label="Add Comment:"
           name="comment"
