@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Batch;
 
+use RZP\Tests\Functional\TestCase;
+
 class LinkedAccountTest extends TestCase
 {
     use BatchTestTrait;
@@ -29,5 +31,7 @@ class LinkedAccountTest extends TestCase
     public function testCreateBatch()
     {
         // TODO
+        // - ^
+        // - Also move testCreateLinkedAccountBatch to this file
     }
 }
