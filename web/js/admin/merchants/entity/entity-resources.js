@@ -363,6 +363,7 @@ export function getDetailsViewMap(model) {
     {
       label: 'Admins',
       class: 'highlight',
+      permission: 'view_all_admin',
       children: () => (
         <div>
           <Table items={details.admins} fields={_getAdminsFields(adminsMap)} />
