@@ -102,6 +102,8 @@ class MerchantDetail extends Base
             "submitted"                     => 0,
             "submitted_at"                  => null,
             "transaction_report_email"      => "test.test3@razorpay.com",
+            "technical_spoc_email"          => "test.test3@razorpay.com",
+            "business_spoc_email"           => "test.test3@razorpay.com",
             "bank_account_number"           => "123456789012345",
             "bank_account_name"             => "test",
             "bank_account_type"             => "saving",

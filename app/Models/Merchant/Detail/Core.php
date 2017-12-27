@@ -424,7 +424,7 @@ class Core extends Base\Core
 
         $merchant = $merchantDetails->merchant;
 
-        if (($merchant instanceof Merchant\Account\Entity) === true)
+        if ($merchant->isLinkedAccount() === true)
         {
             $validationFields = ValidationFields::MARKETPLACE_ACCOUNT_FIELDS;
 
