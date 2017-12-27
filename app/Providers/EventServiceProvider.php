@@ -32,10 +32,6 @@ class EventServiceProvider extends ServiceProvider
             'RZP\Listeners\CacheEventLogger',
         ],
 
-        'Illuminate\Cache\Events\KeyForgotten' => [
-            'RZP\Listeners\CacheEventLogger',
-        ],
-
         'Illuminate\Cache\Events\KeyWritten' => [
             'RZP\Listeners\CacheEventLogger',
         ],
