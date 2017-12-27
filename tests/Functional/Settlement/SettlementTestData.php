@@ -17,8 +17,30 @@ return [
         'status'            => SettlementStatus::CREATED,
     ],
 
+    'fetchAndMatchSettlementYesbank' => [
+        'channel'           => "yesbank",
+        'merchant_id'       => '10000000000000',
+        'amount'            => 4881500,
+        'fees'              => 118000,
+        'tax'               => 18000,
+        'failure_reason'    => null,
+        'attempts'          => 1,
+        'status'            => SettlementStatus::CREATED,
+    ],
+
     'fetchAndMatchBatchDataSettlement' => [
         'channel'           => 'kotak',
+        'amount'            => 4881500,
+        'fees'              => 118000,
+        'tax'               => 18000,
+        'api_fee'           => 0,
+        'gateway_fee'       => 0,
+        'total_count'       => 1,
+        'transaction_count' => 10,
+    ],
+
+    'fetchAndMatchBatchDataSettlementYesbank' => [
+        'channel'           => 'yesbank',
         'amount'            => 4881500,
         'fees'              => 118000,
         'tax'               => 18000,
@@ -40,6 +62,20 @@ return [
         'date_time'         => null,
         'cms_ref_no'        => null
     ],
+
+    'matchSettlementAttemptYesbank' => [
+        'channel'           => 'yesbank',
+        'version'           => 'V3',
+        'merchant_id'       => '10000000000000',
+        'bank_status_code'  => null,
+        'status'            => AttemptStatus::INITIATED,
+        'utr'               => null,
+        'remarks'           => null,
+        'failure_reason'    => null,
+        'date_time'         => null,
+        'cms_ref_no'        => null
+    ],
+
 
     'testSettlementForMultipleMerchants' => [
         'kotak' => [

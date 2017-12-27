@@ -29,7 +29,7 @@ final class FactoryData
             'category'                 => 1100,
             'transaction_report_email' => ['test@razorpay.com'],
             'receipt_email_enabled'    => true,
-            'settlement_schedule'      => 3,
+            'channel'                  => 'kotak',
             'fee_bearer'               => \RZP\Models\Merchant\FeeBearer::PLATFORM,
             'risk_rating'              => 3,
             'invoice_code'             => '123456789011',

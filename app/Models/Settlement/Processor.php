@@ -198,6 +198,7 @@ class Processor extends Base\Core
         $h2h = true)
     {
         $returnData = [
+            'channel'           => $channel,
             'count'             => $settlements->count(),
             'transaction_count' => $txnCount,
         ];
@@ -214,20 +215,21 @@ class Processor extends Base\Core
             $excelUrl = $excelFileEntity->getUrl();
 
             $urls = [
-                'kotak_settlement_txt'   => $txtUrl,
-                'kotak_settlement_excel' => $excelUrl,
+                'txt_file'   => $txtUrl,
+                'excel_file' => $excelUrl,
             ];
 
             $this->updateFileDetailsInBatchFundTransferEntity(
                 [
-                    'urls' => $urls,
-                    'txt_file_id' => $txtFileDetails['id'],
+                    'urls'          => $urls,
+                    'txt_file_id'   => $txtFileDetails['id'],
                     'excel_file_id' => $excelFileDetails['id'],
                 ]);
 
             $slackData = $returnData;
 
             $this->successNotification($slackData, $settlements, TraceCode::SETTLEMENT_INITIATED);
+
             $returnData['settlement_text_file'] = $txtFileDetails;
             $returnData['settlement_excel_file'] = $excelFileDetails;
         }
@@ -263,9 +265,11 @@ class Processor extends Base\Core
     {
         $data = [null, null];
 
-        if ($channel === Channel::KOTAK)
+        $class = '\RZP\Models\FundTransfer\\' . ucfirst($channel) . '\NodalAccount';
+
+        if (class_exists($class) === true)
         {
-            $data = (new Kotak\NodalAccount)->generateSettlementFile($setlAttempts, $h2h);
+            $data = (new $class)->generateSettlementFile($setlAttempts, $h2h);
         }
 
         return $data;

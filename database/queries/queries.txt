@@ -2774,3 +2774,12 @@ ALTER TABLE upi
 
 ALTER TABLE `action_state_reasons`
     ADD INDEX `action_state_reasons_reason_type_index` (`reason_type`);
+
+ALTER TABLE virtual_accounts
+    MODIFY COLUMN amount_received BIGINT UNSIGNED,
+    MODIFY COLUMN amount_paid BIGINT UNSIGNED,
+    MODIFY COLUMN amount_reversed BIGINT UNSIGNED,
+    MODIFY COLUMN amount_expected BIGINT UNSIGNED;
+
+ALTER TABLE `merchants`
+    ADD COLUMN `channel` VARCHAR(32) DEFAULT 'kotak' AFTER `billing_label`;
