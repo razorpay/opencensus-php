@@ -19,11 +19,6 @@ class Repository extends Base\Repository
     {
         $query = parent::newQuery();
 
-        if ($this->app->environment('testing') === false)
-        {
-            $query->cacheDriver('query_cache');
-        }
-
         return $query->prefix('rememberable:v1');
     }
 
