@@ -671,6 +671,7 @@ class ErrorCode
     const BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER                                  = 'BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER';
     const BAD_REQUEST_OFFER_ALREADY_DEACTIVATED                                     = 'BAD_REQUEST_OFFER_ALREADY_DEACTIVATED';
 
+    // Account ErrorCodes
     const BAD_REQUEST_ACCOUNT_LOCKED                                                = 'BAD_REQUEST_ACCOUNT_LOCKED';
 
     const BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED                                   = 'BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED';

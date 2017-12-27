@@ -510,6 +510,7 @@ class PublicErrorDescription
     const BAD_REQUEST_OFFER_ALREADY_DEACTIVATED                                 = 'Offer has already been deactivated';
     const BAD_REQUEST_INVALID_PERMISSIONS_USAGE                                 = 'Combination of permissions used or assigned are invalid. Contact Razorpay Support';
 
+    // Account Error Descriptions
     const BAD_REQUEST_ACCOUNT_LOCKED                                            = 'Request failed because the account is locked';
 
     const BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED                               = 'Error occured while saving fee breakup';

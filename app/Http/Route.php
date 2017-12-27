@@ -701,7 +701,7 @@ final class Route
         'account_edit'                            => ['patch',    'accounts/{id}',                                  'AccountController@update'                                          ],
         'account_edit_details'                    => ['patch',    'accounts/{id}/details',                          'AccountController@patchAccountDetails'                             ],
         'account_fetch_settlement_destinations'   => ['get',      'accounts/{id}/settlement-destinations',          'AccountController@fetchSettlementDestinations'                     ],
-        'account_post_settlement_destinations'    => ['post',     'accounts/{id}/settlement-destinations',          'AccountController@postSettlementDestinations'                      ],
+        'account_post_settlement_destinations'    => ['post',     'accounts/{id}/bank-accounts',                    'AccountController@postBankAccounts'                      ],
     ];
 
     public static $public = [

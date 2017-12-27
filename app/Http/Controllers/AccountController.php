@@ -2,8 +2,9 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use Request;
+use ApiResponse;
+
 use RZP\Models\Merchant;
 
 class AccountController extends Controller
@@ -14,7 +15,7 @@ class AccountController extends Controller
 
     public function postAccountFiles(string $id)
     {
-    	$input = Request::all();
+        $input = Request::all();
 
         $response = $this->service()->uploadFiles($id, $input);
 
@@ -32,14 +33,12 @@ class AccountController extends Controller
 
     public function fetchSettlementDestinations(string $id)
     {
-        $input = Request::all();
-
         $response = $this->service()->getSettlementDestinations($id);
 
         return ApiResponse::json($response);
     }
 
-    public function postSettlementDestinations(string $id)
+    public function postBankAccounts(string $id)
     {
         $input = Request::all();
 

@@ -64,7 +64,7 @@ return [
                 'beneficiary_country'   => 'IN',
                 'beneficiary_pin'       => '123456',
             ],
-            'url' => '/accounts/10000000000000/settlement-destinations',
+            'url' => '/accounts/10000000000000/bank-accounts',
             'method' => 'POST'
         ],
         'response' => [
