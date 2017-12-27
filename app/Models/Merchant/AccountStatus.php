@@ -13,7 +13,8 @@ final class AccountStatus
     const SUSPENDED                   = 'suspended';
     const ARCHIVED                    = 'archived';
     const ACTIVATED                   = 'activated';
-    const PENDING_OLD                 = 'pending_old'; // To be removed, for bc.
+    const PENDING_OLD                 = 'pending_old';  // To be removed; for bc
+    const ARCHIVED_OLD                = 'archived_old'; // To be removed; for bc
     const PENDING                     = 'pending';
     const PENDING_UNDER_REVIEW        = 'pending_under_review';
     const PENDING_NEEDS_CLARIFICATION = 'pending_needs_clarification';
