@@ -87,7 +87,9 @@ export default class HomeContainer extends Component {
                 <span>
                   Current Balance: <Amount value={38760} />
                 </span>
-                <Link to="/settlements">View Settlements &gt;</Link>
+                <Link className="pull-right" to="/settlements">
+                  View Settlements &gt;
+                </Link>
               </Definition>
             </div>
           </Header>
