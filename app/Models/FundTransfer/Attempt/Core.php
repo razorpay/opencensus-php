@@ -18,6 +18,8 @@ class Core extends Base\Core
      */
     public function notifyMerchantViaWebhook(array $reconciledRows)
     {
+        $settlementCore = new Settlement\Core;
+
         foreach ($reconciledRows as $reconciledRow)
         {
             // Entity could be of class Settlement, Refund etc
@@ -36,7 +38,7 @@ class Core extends Base\Core
                 continue;
             }
 
-            (new Settlement\Core)->triggerSettlementWebhook($entity);
+            $settlementCore->triggerSettlementWebhook($entity);
         }
     }
 }

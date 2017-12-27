@@ -578,12 +578,12 @@ return [
 
     'testTransferSettlementWebhook' => [
         'event' => [
-            'entity'    => 'event',
-            'event'     => 'settlement.processed',
-            'contains' => [
+            'entity'     => 'event',
+            'event'      => 'settlement.processed',
+            'contains'   => [
                 'settlement'
             ],
-            'payload' => [
+            'payload'    => [
                 'settlement' => [
                     'entity' => [
                         'entity' => 'settlement',

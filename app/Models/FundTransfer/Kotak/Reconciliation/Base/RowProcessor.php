@@ -53,8 +53,8 @@ class RowProcessor extends BaseCore
      */
     protected $firstFailure = false;
 
-
     /**
+     * @var bool
      * Denotes if the webhook should be fired.
      */
     protected $fireWebhook;

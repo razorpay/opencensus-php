@@ -457,16 +457,16 @@ class ApiEventSubscriber extends Base\Core
     protected function getWebhookData($payload)
     {
         $eventFired = $this->event;
-        $entity = $this->mainEntity;
-        $merchant = $this->getMerchantFromEntity($entity);
-        $webhook = $merchant->webhook;
+        $entity     = $this->mainEntity;
+        $merchant   = $this->getMerchantFromEntity($entity);
+        $webhook    = $merchant->webhook;
 
         // Send the signed account id of the merchant associated with the entity, along with the payload
         // In case of settlements, $entity->merchant is the the merchant to whom the settlement is processed
         $signedAccountId = Merchant\AccountEntity::getSignedId($entity->merchant->getId());
 
         $attributes = array(
-            Event\Entity::EVENT       => $eventFired,
+            Event\Entity::EVENT      => $eventFired,
             //
             // The same event may or may not contain some entities, based on the state.
             // For example, if subscription.pending is fired on an auth failure,
@@ -474,9 +474,9 @@ class ApiEventSubscriber extends Base\Core
             // If it's fired on capture failure, it'll contain both subscription and payment
             // entity. For this reason, we cannot have a static list of contains array.
             //
-            Event\Entity::CONTAINS    => array_keys($payload),
-            Event\Entity::ACCOUNT_ID  => $signedAccountId,
-            Event\Entity::CREATED_AT  => $entity->getUpdatedAt(),
+            Event\Entity::ACCOUNT_ID => $signedAccountId,
+            Event\Entity::CONTAINS   => array_keys($payload),
+            Event\Entity::CREATED_AT => $entity->getUpdatedAt(),
         );
 
         $event = new Event\Entity($attributes);
@@ -486,9 +486,9 @@ class ApiEventSubscriber extends Base\Core
         $event->merchant()->associate($merchant);
 
         $data = array(
-            'mode'          => $this->getMode(),
-            'event'         => json_encode($event->toArrayPublic()),
-            'webhook_id'    => $webhook->getId()
+            'mode'       => $this->getMode(),
+            'event'      => json_encode($event->toArrayPublic()),
+            'webhook_id' => $webhook->getId()
         );
 
         return $data;
@@ -524,7 +524,7 @@ class ApiEventSubscriber extends Base\Core
     }
 
     /**
-     * Returns the settlement entity's merchant.
+     * Returns the entity's merchant.
      * If the merchant is a linked account, returns the parent merchant.
      *
      * @param Base\PublicEntity $entity

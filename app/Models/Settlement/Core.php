@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
+use RZP\Listeners\ApiEventSubscriber;
 
 class Core extends Base\Core
 {
@@ -101,7 +102,7 @@ class Core extends Base\Core
         }
 
         $eventPayload = [
-            Entity::MAIN => $settlement
+            ApiEventSubscriber::MAIN => $settlement
         ];
 
         $this->app['events']->fire('api.settlement.processed', $eventPayload);
