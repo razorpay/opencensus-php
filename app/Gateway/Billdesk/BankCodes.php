@@ -13,7 +13,6 @@ class BankCodes
         IFSC::CIUB => 'CUB',                    // City Union Bank
         IFSC::UTIB => 'UTI',                    // Axis Bank
         IFSC::ICIC => 'ICI',                    // ICICI Bank
-//        Netbanking::ICIC_C => 'ICO',            // ICICI Corporate Banking
         IFSC::ANDB => 'ADB',                    // Andhra Bank
         IFSC::BBKM => 'BBK',                    // Bank of Bahrain and Kuwait
         IFSC::MAHB => 'BOM',                    // Maharashtra Bank
@@ -67,22 +66,13 @@ class BankCodes
         Netbanking::BARB_C => 'BBC',            // Bank of Baroda - Corporate
         Netbanking::PUNB_C => 'CPN',            // Punjab National Bank - Corporate
         Netbanking::LAVB_C => 'LVC',            // Laxmi Vilas Bank - Corporate
-    ];
-
-    public static $corporateBankCodeMap  = [
-        Netbanking::ICIC_C => 'ICO',
+        Netbanking::ICIC_C => 'ICO',            // ICICI Corporate Banking
     ];
 
     // We are not using Deusctche Bank corporate net-banking currently.
-
     public static function getBankCode($ifsc, $corporate = false)
     {
-        $bankId = self::$bankCodeMap[$ifsc] ?? null;
-
-        if ($corporate === true)
-        {
-            $bankId = self::$corporateBankCodeMap[$ifsc] ?? $bankId;
-        }
+        $bankId = self::$bankCodeMap[$ifsc];
 
         return $bankId;
     }

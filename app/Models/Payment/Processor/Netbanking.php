@@ -69,7 +69,7 @@ class Netbanking
         IFSC::UTIB,
         IFSC::FDRL,
         IFSC::RATN,
-        IFSC::INDB,
+        // IFSC::INDB,
     ];
 
     protected static $paytm = array(
