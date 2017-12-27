@@ -391,11 +391,12 @@ class NodalAccount extends NodalBase\NodalAccount
         }
 
         $summary = $this->summary;
+        $channel = 'Kotak';
 
         $today = Carbon::now(Timezone::IST)->format('d-m-Y');
-        $subject = "Kotak Settlement files for $today";
+        $subject = "$channel Settlement files for $today";
 
-        $data = compact('summary', 'subject');
+        $data = compact('summary', 'subject', 'channel');
 
         $excelFileEntity = $excelFileEntity->get();
         $textFileEntity = $textFileEntity->get();
