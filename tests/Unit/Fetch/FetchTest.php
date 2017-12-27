@@ -1,16 +1,16 @@
 <?php
 
-namespace RZP\Tests\Unit\Models\Fetch;
+namespace RZP\Tests\Unit\Fetch;
 
 use RZP\Base\Fetch;
 use RZP\Tests\TestCase;
 use RZP\Base\JitValidator;
 use RZP\Constants\Entity as E;
+use RZP\Tests\Unit\Mock\BasicAuth;
+use RZP\Tests\Unit\MocksAppServices;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Http\BasicAuth\Type as AuthType;
-use RZP\Tests\Unit\Models\Mock\BasicAuth;
-use RZP\Tests\Unit\Models\Mock\MocksAppServices;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class FetchTest extends TestCase
@@ -122,15 +122,15 @@ class FetchTest extends TestCase
      *
      * @param string $entity
      * @param string $type
-     * @param null $exception
+     * @param null|string $exceptionClass
      */
-    protected function runForEntityAndType(string $entity, string $type, $exception = null)
+    protected function runForEntityAndType(string $entity, string $type, string $exceptionClass = null)
     {
         $tests = $this->getTestDataForEntityAndType($entity, $type);
 
         foreach ($tests as $test)
         {
-            if ($exception === null)
+            if ($exceptionClass === null)
             {
                 $this->entityList[$entity]->processFetchParams($test);
 
@@ -144,7 +144,7 @@ class FetchTest extends TestCase
                 }
                 catch (\Exception $e)
                 {
-                    $this->assertInstanceOf($exception, $e, $entity);
+                    $this->assertInstanceOf($exceptionClass, $e, $entity);
 
                     continue;
                 }
@@ -160,13 +160,13 @@ class FetchTest extends TestCase
      * custom types like, <AuthType>+<ExceptionClass>
      *
      * @param $type
-     * @param null $exception
+     * @param null|string $exceptionClass
      */
-    protected function runForType($type, $exception = null)
+    protected function runForType($type, string $exceptionClass = null)
     {
         foreach ($this->entityList as $entity => $fetch)
         {
-            $this->runForEntityAndType($entity, $type, $exception);
+            $this->runForEntityAndType($entity, $type, $exceptionClass);
         }
     }
 
@@ -221,6 +221,13 @@ class FetchTest extends TestCase
         return $entityTests[$type] ?? [];
     }
 
+    /**
+     * Method validates rules defined in fetch class
+     * Rules can only have defined in Fetch::DEFAULT_RULES.
+     * Also it check for valid rules definition.
+     *
+     * @param Fetch $fetch
+     */
     protected function validateRuleTypes(Fetch $fetch)
     {
         $ruleTypes = $fetch::RULES;

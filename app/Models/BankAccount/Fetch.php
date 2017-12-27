@@ -10,7 +10,6 @@ class Fetch extends BaseFetch
     const RULES = [
         self::DEFAULTS => [
             Entity::MERCHANT_ID      => 'sometimes|alpha_num',
-            Repository::WITH_TRASHED => 'sometimes|in:0,1',
             Entity::TYPE             => 'sometimes|in:customer,merchant',
             Entity::ENTITY_ID        => 'sometimes|alpha_num',
         ],
@@ -19,7 +18,6 @@ class Fetch extends BaseFetch
     const ACCESSES = [
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
-            Repository::WITH_TRASHED,
             Entity::TYPE,
             Entity::ENTITY_ID,
         ],

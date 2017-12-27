@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Unit\Models\Mock;
+namespace RZP\Tests\Unit\Mock;
 
 use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth as BaseBasicAuth;
