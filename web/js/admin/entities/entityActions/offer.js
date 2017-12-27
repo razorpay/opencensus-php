@@ -7,6 +7,7 @@ import AsyncButton from 'ui/AsyncButton';
 import BaseModal from 'ui/BaseModal';
 import Form from 'ui/Form';
 import Field from 'ui/Field';
+import { formatDate } from 'common/util';
 
 // Offer Actions
 export default ({ entity, mode, updateEntity }) => {
@@ -122,6 +123,12 @@ const EditOfferForm = ({ entity, handleSubmit }) => {
           name="linked_offer_ids"
           defaultValue={entity.linked_offer_ids}
         />
+        <Field
+          label="From"
+          defaultValue={formatDate(entity.starts_at)}
+          disabled
+        />
+        <Field label="To" defaultValue={formatDate(entity.ends_at)} disabled />
         <Field
           label="Display Text"
           name="display_text"
