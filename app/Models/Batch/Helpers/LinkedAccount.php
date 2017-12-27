@@ -9,12 +9,28 @@ use RZP\Models\Merchant\Detail as MerchantDetail;
 
 class LinkedAccount
 {
-    public static function getCreateAccountInput(array $entry): array
+    public static function getAccountInput(array $entry): array
     {
         return [
-            Merchant\Entity::ID   => Merchant\Entity::generateUniqueId(),
             Merchant\Entity::NAME => $entry[Header::BUSINESS_NAME],
         ];
+    }
+
+    public static function getAccountCreateInput(array $entry): array
+    {
+        $overridden = [
+            Merchant\Entity::ID   => Merchant\Entity::generateUniqueId(),
+        ];
+
+        return array_merge(static::getAccountInput($entry), $overridden);
+    }
+
+    public static function getAccountEditInput(array $entry): array
+    {
+        $overridden = [
+        ];
+
+        return array_merge(static::getAccountInput($entry), $overridden);
     }
 
     public static function getAccountDetailInput(array $entry): array

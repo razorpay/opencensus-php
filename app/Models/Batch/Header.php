@@ -233,6 +233,9 @@ class Header
                 self::BANK_BRANCH_IFSC,
                 self::BANK_ACCOUNT_NUMBER,
                 self::REFERENCE_ID,
+                // If this is passed and account with this id exists then we
+                // patch the account entity with row data.
+                self::ACCOUNT_ID,
             ],
 
             self::OUTPUT => [
