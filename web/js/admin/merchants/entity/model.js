@@ -209,6 +209,7 @@ export default class Model extends BaseModel {
     return this.request('fetchAdmins', this.fetchFn(data)).then(data => {
       const adminsMap = {};
 
+      console.log('data..', data);
       data.items.map(admin => {
         adminsMap[admin.id] = {
           role: admin.roles.length ? admin.roles[0].name : '',

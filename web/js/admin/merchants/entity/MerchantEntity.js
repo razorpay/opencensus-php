@@ -621,7 +621,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
         {typeof merchant.details.suspended_at !== 'undefined' && (
           <ShowWhen
             permission={
-              merchant.details.suspended_at
+              merchant.details.suspended_at === null
                 ? 'edit_merchant_suspend'
                 : 'edit_merchant_unsuspend'
             }
