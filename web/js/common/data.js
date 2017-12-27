@@ -91,6 +91,7 @@ export const gateways = {
     cybersource: 'Cybersource',
     amex: 'Amex',
     sharp: 'Sharp',
+    hitachi: 'Hitachi',
   },
 
   netbanking: {
