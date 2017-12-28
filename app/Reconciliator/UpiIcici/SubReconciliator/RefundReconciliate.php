@@ -7,11 +7,9 @@ use RZP\Trace\TraceCode;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
-    const REFUND_ID = 'merchanttranid';
-
+    const REFUND_ID            = 'merchanttranid';
     const COLUMN_REFUND_AMOUNT = 'refund_amount';
-
-    const ORIGINAL_BANK_RRN = 'original_bank_rrn';
+    const ORIGINAL_BANK_RRN    = 'original_bank_rrn';
 
     protected function getRefundId(array $row)
     {

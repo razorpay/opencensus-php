@@ -7,22 +7,9 @@ use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
-    // TODO: Check this
-    const RECON_FILE_NAME    =    'merchantreport';
-
-    const START_ROW          =    2;
-
-    public function inExcludeList(array $fileDetails)
-    {
-        $fileName = strtolower($fileDetails['file_name']);
-
-        if (strpos($fileName, self::RECON_FILE_NAME) !== false)
-        {
-            return false;
-        }
-
-        return true;
-    }
+    // TODO: Check this - is this the correct file name?
+    const RECON_FILE_NAME    = 'merchantreport';
+    const START_ROW          = 2;
 
     public function getStartRow($fileDetails)
     {

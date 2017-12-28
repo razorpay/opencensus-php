@@ -2,12 +2,10 @@
 
 namespace RZP\Gateway\Upi\Base;
 
-use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Gateway\Upi\Base\Entity;
-use RZP\Constants\Table;
-use RZP\Gateway\Upi\Icici\Action;
 use RZP\Models\Payment;
+use RZP\Constants\Table;
+use RZP\Gateway\Base\Action;
 
 class Repository extends Base\Repository
 {

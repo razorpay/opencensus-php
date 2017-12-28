@@ -133,6 +133,12 @@ class Reconciliator extends Base\Mock\Reconciliator
         );
     }
 
+    protected function addRefundEntityIfNeeded(array & $data, Payment\Entity $payment)
+    {
+        // Since it is via the test flow, it is expected that each payment will have just one refund
+        $data['refund'] = $payment->refunds->first()->toArray();
+    }
+
     private function createFile(
         string $extension,
         array $content,

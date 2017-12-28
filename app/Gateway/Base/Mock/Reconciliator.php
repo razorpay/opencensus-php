@@ -112,10 +112,9 @@ class Reconciliator
         $this->addRefundEntityIfNeeded($data, $payment);
     }
 
-    private function addRefundEntityIfNeeded(array & $data, Payment\Entity $payment)
+    protected function addRefundEntityIfNeeded(array & $data, Payment\Entity $payment)
     {
-        // Since it is via the test flow, it is expected that each payment will have just one refund
-        $data['refund'] = $payment->refunds->first()->toArray();
+        return;
     }
 
     /**

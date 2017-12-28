@@ -126,7 +126,7 @@ class Reconciliator extends Base\Mock\Reconciliator
         return $creator;
     }
 
-    protected function addGatewayEntityIfNeeded(array & $data)
+    protected function addGatewayEntityIfNeeded(array & $data, Payment\Entity $payment)
     {
         return;
     }
