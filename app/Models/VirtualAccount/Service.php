@@ -29,6 +29,8 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CREATE_REQUEST, $input);
 
+        $this->verifyMerchantCategory();
+
         $this->verifyMerchantIsLiveForLiveRequest();
 
         $customer = $this->getCustomerIfGiven($input);
@@ -205,6 +207,15 @@ class Service extends Base\Service
         }
 
         return $customer;
+    }
+
+    protected function verifyMerchantCategory()
+    {
+        if ($this->merchant->isCategory2Cryptocurrency() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ACCOUNT);
+        }
     }
 
     protected function verifyMerchantIsLiveForLiveRequest()

@@ -117,7 +117,7 @@ class Core extends Base\Core
         // Removing the below check for crypto merchants so that they can
         // create new VAs with the same descriptor, using a different provider.
         // Default provider for crypto merchants has already been changed.
-        if ($virtualAccount->merchant->isCategoryCryptocurrency() === true)
+        if ($virtualAccount->merchant->isCategory2Cryptocurrency() === true)
         {
             return;
         }

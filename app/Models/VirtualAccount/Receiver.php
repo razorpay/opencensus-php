@@ -183,7 +183,7 @@ class Receiver extends Base\Core
         $provider = Provider::KOTAK;
 
         // Kotak does not support crypto merchants
-        if ($this->merchant->isCategoryCryptocurrency() === true)
+        if ($this->merchant->isCategory2Cryptocurrency() === true)
         {
             $provider = Provider::YESBANK;
         }
