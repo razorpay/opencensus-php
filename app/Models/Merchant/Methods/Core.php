@@ -190,7 +190,7 @@ class Core extends Base\Core
         {
             if ($this->isTestMode() === true)
             {
-                $banks = Payment\Gateway::getAvailableEmandateBanks();
+                $banks = Payment\Gateway::getAvailableEmandateBanksForAuthType($type);
             }
             else
             {
@@ -217,6 +217,24 @@ class Core extends Base\Core
                 $recurringData['emandate'][$type] = $this->getBankNames($banks);
             }
         }
+
+        $recurringData['emandate'] = $this->restructureEmandateBlock($recurringData['emandate']);
+    }
+
+    protected function restructureEmandateBlock($recurringEmandateData)
+    {
+        $newRecurringEmandateData = [];
+
+        foreach ($recurringEmandateData as $type => $banks)
+        {
+            foreach ($banks as $ifsc => $name)
+            {
+                $newRecurringEmandateData[$ifsc]['auth_types'][] = $type;
+                $newRecurringEmandateData[$ifsc]['name'] = $name;
+            }
+        }
+
+        return $newRecurringEmandateData;
     }
 
     protected function getEmandateBanksEnabledForNetbanking(Merchant\Entity $merchant)
