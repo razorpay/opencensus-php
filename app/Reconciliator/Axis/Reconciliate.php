@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Axis;
 
 use RZP\Reconciliator\Base;
+use RZP\Models\FileStore\Format;
 use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
@@ -90,8 +91,13 @@ class Reconciliate extends Base\Reconciliate
         // We get two different types of files from Axis. For one of the files,
         // the start row is different from `1`.
         //
-        if (($fileDetails[FileProcessor::EXTENSION] === 'xls') and
+        if (($fileDetails[FileProcessor::EXTENSION] === Format::XLS) and
             (strpos('RAZORPAYADD', $fileDetails[FileProcessor::FILE_NAME]) === false))
+        {
+            return self::START_ROW;
+        }
+        else if (($fileDetails[FileProcessor::EXTENSION] === Format::XLSX) and
+                ($fileDetails[FileProcessor::FILE_NAME] === 'razorpay'))
         {
             return self::START_ROW;
         }

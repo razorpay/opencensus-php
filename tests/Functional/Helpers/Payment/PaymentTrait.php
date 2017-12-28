@@ -420,7 +420,7 @@ trait PaymentTrait
         return $this->doAuthPayment($payment);
     }
 
-    protected function doAuthPaymentViaAjaxRoute($payment)
+    protected function doAuthPaymentViaAjaxRoute($payment = null)
     {
         if ($payment === null)
         {
