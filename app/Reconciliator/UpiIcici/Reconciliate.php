@@ -8,7 +8,7 @@ use RZP\Reconciliator\FileProcessor;
 class Reconciliate extends Base\Reconciliate
 {
     // TODO: Check this
-    const RECON_FILE_NAME    =    'upi';
+    const RECON_FILE_NAME    =    'merchantreport';
 
     const START_ROW          =    2;
 
@@ -33,7 +33,6 @@ class Reconciliate extends Base\Reconciliate
     {
         if (strpos(strtolower($fileName), self::RECON_FILE_NAME) !== false)
         {
-            // TODO: Double check if this is only refund
             return self::REFUND;
         }
 

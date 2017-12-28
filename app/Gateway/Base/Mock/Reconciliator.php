@@ -49,7 +49,7 @@ class Reconciliator
         {
             $data['payment'] = $payment->toArray();
 
-            $this->addGatewayEntityIfNeeded($data);
+            $this->addAdditionalEntitiesIfNeeded($data, $payment);
 
             $inputData[] = $data;
         }
@@ -105,6 +105,19 @@ class Reconciliator
         return $txt;
     }
 
+    protected function addAdditionalEntitiesIfNeeded(array & $data, Payment\Entity $payment)
+    {
+        $this->addGatewayEntityIfNeeded($data, $payment);
+
+        $this->addRefundEntityIfNeeded($data, $payment);
+    }
+
+    private function addRefundEntityIfNeeded(array & $data, Payment\Entity $payment)
+    {
+        // Since it is via the test flow, it is expected that each payment will have just one refund
+        $data['refund'] = $payment->refunds->first()->toArray();
+    }
+
     /**
      * Not all methods need the gateway entity to generate the recon file.
      * The purpose of this method is to eliminate n DB calls for n payments.
@@ -112,7 +125,7 @@ class Reconciliator
      *
      * @param array $data
      */
-    protected function addGatewayEntityIfNeeded(array & $data)
+    protected function addGatewayEntityIfNeeded(array & $data, Payment\Entity $payment)
     {
         $gatewayPayment = $this->repo->upi->fetchByPaymentId($data['payment']['id']);
 
