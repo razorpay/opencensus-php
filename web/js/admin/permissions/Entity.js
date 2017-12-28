@@ -61,7 +61,7 @@ export default class EditPerm extends Component {
 
   onSubmit = body => {
     body = { ...body, ...this.state.orgTableData };
-    body.assignable = body.assignable === '1';
+    body.assignable = body.assignable === '1' ? 1 : 0;
     let data = { body };
 
     let promise;
