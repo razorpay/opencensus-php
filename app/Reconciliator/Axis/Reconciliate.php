@@ -18,6 +18,8 @@ class Reconciliate extends Base\Reconciliate
 
     const START_ROW = 3;
 
+    const XLSX_START_ROW = 2;
+
     /**
      * Figures out what kind of reconciliation is it
      * depending on the file name. It should be either
@@ -99,7 +101,7 @@ class Reconciliate extends Base\Reconciliate
         else if (($fileDetails[FileProcessor::EXTENSION] === Format::XLSX) and
                 ($fileDetails[FileProcessor::FILE_NAME] === 'razorpay.xlsx'))
         {
-            return self::START_ROW;
+            return self::XLSX_START_ROW;
         }
 
         return Base\Reconciliate::DEFAULT_START_ROW;
