@@ -10,6 +10,13 @@ $key = $_GET['key'] ?? 'rzp_test_1DP5mmOlF5G5ag';
     <meta charset="utf-8">
 </head>
 <body>
+    <script>
+        var Razorpay = {
+          config: {
+            api: '/'
+          }
+        };
+    </script>
     <form action="merchant/charge.php" method="POST">
       <script
         src="<?= $checkout ?>/v1/checkout.js"

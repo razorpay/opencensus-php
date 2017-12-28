@@ -57,7 +57,7 @@ class Constants
     const SKIP_HOLD_FUNDS_ON_PAYOUT     = 'skip_hold_funds_on_payout';
     const REPORT_V2                     = 'report_v2';
     const UPI_INTENT                    = 'upi_intent';
-
+    const CORPORATE_BANKS               = 'corporate_banks';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -118,6 +118,7 @@ class Constants
         self::SKIP_HOLD_FUNDS_ON_PAYOUT     => true,
         self::REPORT_V2                     => true,
         self::UPI_INTENT                    => true,
+        self::CORPORATE_BANKS               => true,
     ];
 
     // Keys used in the feature on-boarding workflow

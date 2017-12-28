@@ -25,6 +25,7 @@ class MethodsTest extends TestCase
         $this->ba->publicLiveAuth();
 
         $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->addFeatures('corporate_banks');
 
         $attributes = array(
             'merchant_id'               => '10000000000000',
@@ -41,7 +42,7 @@ class MethodsTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(59, $count);
+        $this->assertEquals(61, $count);
 
         $this->assertArrayNotHasKey('recurring', $content);
     }
@@ -62,11 +63,12 @@ class MethodsTest extends TestCase
     {
         $this->ba->publicTestAuth();
 
+        $this->fixtures->merchant->addFeatures('corporate_banks');
         $content = $this->getPaymentMethods();
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(59, $count);
+        $this->assertEquals(61, $count);
     }
 
     public function testBulkMethodUpdate()

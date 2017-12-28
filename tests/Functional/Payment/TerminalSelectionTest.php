@@ -914,20 +914,18 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-           $this->doAuthPayment($payment);
-        });
+        $this->doAuthPayment($payment);
 
         $payment1 = $this->getLastEntity('payment', true);
         $billdesk = $this->getLastEntity('billdesk', true);
 
-        $this->assertEquals('DrctNbBdkTmnl1', $payment1['terminal_id']);
-        $this->assertEquals('ICO', $billdesk['BankID']);
+        $this->assertEquals('SharNbBdkTmnl1', $payment1['terminal_id']);
+        $this->assertEquals('ICI', $billdesk['BankID']);
 
         $this->fixtures->merchant->editCategory2('corporate');
+        $this->fixtures->merchant->addFeatures('corporate_banks');
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
+        $payment = $this->getDefaultNetbankingPaymentArray('ICIC_C');
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
@@ -1162,6 +1160,23 @@ class TerminalSelectionTest extends TestCase
         $payment1 = $this->getLastEntity('payment', true);
 
         $this->assertEquals('ShrdNbBdkHouse', $payment1['terminal_id']);
+    }
+
+    public function testCorporateBankTerminalSelection()
+    {
+        $this->fixtures->create('terminal:billdesk_terminal', ['corporate' => 1]);
+        $this->fixtures->create('terminal:shared_netbanking_icici_corp_terminal', ['merchant_id' => '10000000000000']);
+        $this->fixtures->merchant->addFeatures('corporate_banks');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        // Amount filter should have rejected the housing terminal
+        $payment['bank'] = 'ICIC_C';
+
+        $this->doAuthAndCapturePayment($payment);
+        $payment1 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('100NbIcicCrpTl', $payment1['terminal_id']);
     }
 
     public function testMccFilterWithSharedCategoryTerminal()

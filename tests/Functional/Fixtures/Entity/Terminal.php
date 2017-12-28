@@ -953,6 +953,18 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedNetbankingIciciCorpTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                => Shared::NETBANKING_ICICI_CRP_TERMINAL,
+            'corporate'         => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedNetbankingIciciTerminal($attributes);
+    }
+
     public function createSharedNetbankingIciciRecurringTerminal(array $attributes = [])
     {
         $attributes = [
@@ -1075,6 +1087,16 @@ class Terminal extends Base
             'id'                => Shared::NETBANKING_AXIS_TPV_TERMINAL,
             'network_category'  => 'securities',
             'tpv'               => 1,
+        ];
+
+        return $this->createSharedNetbankingAxisTerminal($attributes);
+    }
+
+    public function createSharedNetbankingAxisCorpTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'                => Shared::NETBANKING_AXIS_CRP_TERMINAL,
+            'corporate'         => 1,
         ];
 
         return $this->createSharedNetbankingAxisTerminal($attributes);

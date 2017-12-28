@@ -205,7 +205,14 @@ class Entity extends Base\PublicEntity
                     // For shared netbanking gateways if issuer is null then set it to ALL
                     $input[Entity::ISSUER] = Entity::ALL;
 
+                    //
                     // If gateway is a direct netbanking gateway we set the issuer
+                    //
+                    // @TODO : For direct corporate netbanking integration, currently
+                    // it will set the issuer as the retail IFSC, as from the downtime
+                    // information, we can't determine whether it was for corporate / retail.
+                    // This needs to be fixed.
+                    //
                     if (Payment\Gateway::isDirectNetbankingGateway($gateway) === true)
                     {
                         $input[Entity::ISSUER] = Payment\Gateway::getBankForDirectNetbankingGateway($gateway);
@@ -457,7 +464,11 @@ class Entity extends Base\PublicEntity
                 return null;
             }
         }
-        // For directly supporteed gateways we always dsiplay the data
+        //
+        // For directly supported gateways we always display the data
+        // @TODO : We can't differentialte between corporate / retail downtimes.
+        // Needs to be fixed
+        //
         else if (Payment\Gateway::isDirectNetbankingGateway($gateway) === true)
         {
             $issuer = Payment\Gateway::getBankForDirectNetbankingGateway($gateway);
