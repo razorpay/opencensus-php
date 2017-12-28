@@ -2698,9 +2698,88 @@ ALTER TABLE settings
     ADD INDEX settings_created_at_index (created_at),
     ADD INDEX settings_updated_at_index (updated_at);
 
+ALTER TABLE axis
+    ADD INDEX axis_vpc_TransactionNo_index (vpc_TransactionNo),
+    ADD INDEX axis_vpc_ShopTransactionNo_index (vpc_ShopTransactionNo),
+    ADD INDEX axis_vpc_TxnResponseCode_index (vpc_TxnResponseCode);
+
+ALTER TABLE emi_plans
+    ADD INDEX emi_plans_bank_index (bank),
+    ADD INDEX emi_plans_network_index (network),
+    ADD INDEX emi_plans_subvention_index (subvention);
+
+ALTER TABLE bank_accounts
+    ADD INDEX bank_accounts_created_at_index (created_at),
+    ADD INDEX bank_accounts_updated_at_index (updated_at);
+
+ALTER TABLE wallet
+    ADD INDEX wallet_gateway_refund_id_index (gateway_refund_id),
+    ADD INDEX wallet_wallet_index (wallet);
+
+ALTER TABLE disputes
+    ADD INDEX disputes_amount_index (amount),
+    ADD INDEX disputes_updated_at_index (updated_at);
+
+ALTER TABLE dispute_reasons
+    ADD INDEX dispute_reasons_network_index (network);
+
+ALTER TABLE orders
+    ADD INDEX orders_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE payments
+    ADD INDEX payments_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE refunds
+    ADD INDEX refunds_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE transactions
+    ADD INDEX transactions_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE payouts
+    ADD INDEX payouts_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE settlements
+    ADD INDEX settlements_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE transfers
+    ADD INDEX transfers_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE reversals
+    ADD INDEX reversals_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE invoices
+    ADD INDEX invoices_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE items
+    ADD INDEX items_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE subscriptions
+    ADD INDEX subscriptions_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE plans
+    ADD INDEX plans_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE addons
+    ADD INDEX addons_merchant_id_created_at_index (merchant_id, created_at);
+
+ALTER TABLE virtual_accounts
+    ADD INDEX virtual_accounts_merchant_id_created_at_index (merchant_id, created_at);
+
 ALTER TABLE settings
     MODIFY COLUMN created_at INT(11) NOT NULL,
     MODIFY COLUMN updated_at INT(11) NOT NULL;
 
 ALTER TABLE upi
     ADD COLUMN type VARCHAR(32) DEFAULT NULL AFTER action;
+
+ALTER TABLE `action_state_reasons`
+    ADD INDEX `action_state_reasons_reason_type_index` (`reason_type`);
+
+ALTER TABLE virtual_accounts
+    MODIFY COLUMN amount_received BIGINT UNSIGNED,
+    MODIFY COLUMN amount_paid BIGINT UNSIGNED,
+    MODIFY COLUMN amount_reversed BIGINT UNSIGNED,
+    MODIFY COLUMN amount_expected BIGINT UNSIGNED;
+
+ALTER TABLE `merchants`
+    ADD COLUMN `channel` VARCHAR(32) DEFAULT 'kotak' AFTER `billing_label`;

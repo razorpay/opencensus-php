@@ -420,7 +420,7 @@ trait PaymentTrait
         return $this->doAuthPayment($payment);
     }
 
-    protected function doAuthPaymentViaAjaxRoute($payment)
+    protected function doAuthPaymentViaAjaxRoute($payment = null)
     {
         if ($payment === null)
         {
@@ -1074,6 +1074,20 @@ trait PaymentTrait
 
         $payment['method'] = 'upi';
         $payment['vpa'] = 'vishnu@icici';
+
+        return $payment;
+    }
+
+    protected function getDefaultAepsPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method']                 = 'aeps';
+        $payment['aadhaar']['fingerprint'] = 'sample fingerprint data';
+        $payment['aadhaar']['session_key'] = str_repeat('abcdefgh', 43);
+        $payment['aadhaar']['hmac']        = str_repeat('smplhmac', 8);
+        $payment['aadhaar']['number']      = '123456789012';
+        $payment['aadhaar']['cert_expiry'] = '20191230';
 
         return $payment;
     }

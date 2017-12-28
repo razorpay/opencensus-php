@@ -60,28 +60,19 @@ class BankCodes
         IFSC::SBTR => 'SBI',                    // State Bank of Travancore - Silent redirect to SBI
         IFSC::DBSS => 'DBS',                    // DBS Bank
         IFSC::IDFB => 'IDN',                    // IDFC Bank
-        Netbanking::BARB_C => 'BBC',            // Bank of Baroda - Corporate
         Netbanking::BARB_R => 'BBR',            // Bank of Baroda - Retail
-        Netbanking::PUNB_C => 'CPN',            // Punjab National Bank - Corporate
         Netbanking::PUNB_R => 'PNB',            // Punjab National Bank - Retail
-        Netbanking::LAVB_C => 'LVC',            // Laxmi Vilas Bank - Corporate
         Netbanking::LAVB_R => 'LVR',            // Laxmi Vilas Bank - Retail
-    ];
-
-    public static $corporateBankCodeMap  = [
-        IFSC::ICIC => 'ICO',
+        Netbanking::BARB_C => 'BBC',            // Bank of Baroda - Corporate
+        Netbanking::PUNB_C => 'CPN',            // Punjab National Bank - Corporate
+        Netbanking::LAVB_C => 'LVC',            // Laxmi Vilas Bank - Corporate
+        Netbanking::ICIC_C => 'ICO',            // ICICI Corporate Banking
     ];
 
     // We are not using Deusctche Bank corporate net-banking currently.
-
     public static function getBankCode($ifsc, $corporate = false)
     {
         $bankId = self::$bankCodeMap[$ifsc];
-
-        if ($corporate === true)
-        {
-            $bankId = self::$corporateBankCodeMap[$ifsc] ?? $bankId;
-        }
 
         return $bankId;
     }

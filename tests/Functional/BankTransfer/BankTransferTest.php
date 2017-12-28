@@ -242,8 +242,6 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
-        $data = $this->testData['bankTransferImpsFailedRefund'];
-
         // IMPS refunds are permitted...
         $this->refundPayment($payment['id'], 4000000);
 
@@ -958,6 +956,8 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferYesBankRefundsNotAllowed()
     {
+        $this->markTestSkipped("Yesbank refunds temporarily allowed");
+
         $accountNumber = $this->bankAccount['account_number'];
 
         $data =$this->testData[__FUNCTION__];

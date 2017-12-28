@@ -89,6 +89,7 @@ class Type
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
     const RECON_BUCKET_CONFIG                   = 'recon_bucket_config';
+    const MOCK_RECONCILIATION_FILE              = 'mock_reconciliation_file';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -134,6 +135,7 @@ class Type
             self::ICICI_EMI_FILE_SFTP,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
+            self::MOCK_RECONCILIATION_FILE,
         ],
 
         Constants\Entity::BATCH => [
@@ -206,6 +208,7 @@ class Type
         self::FUND_TRANSFER_H2H,
         self::PNB_NETBANKING_REFUND,
         self::PNB_NETBANKING_CLAIMS,
+        self::MOCK_RECONCILIATION_FILE
     ];
 
     /**

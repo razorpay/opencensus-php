@@ -46,11 +46,16 @@ class Repository extends Base\Repository
         EsRepository::SEARCH_HITS       => 'filled|boolean',
         EsRepository::QUERY             => 'filled|string|min:2|max:100',
         Entity::ORG_ID                  => 'sometimes|string|size:14',
-        Entity::ACCOUNT_STATUS          => 'filled|string|in:all,suspended,archived,activated,pending,dead',
+        Entity::ACCOUNT_STATUS          => 'filled|custom',
         Entity::SUB_ACCOUNTS            => 'filled|custom',
         Entity::GROUPS                  => 'sometimes|array',
         Entity::ADMINS                  => 'sometimes|array|min:1|max:1',
     ];
+
+    protected function validateAccountStatus($attribute, $value)
+    {
+        AccountStatus::validate($value);
+    }
 
     protected function validateSubAccounts($attribute, $value)
     {
@@ -350,17 +355,19 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function fetchByAccountIdAndMerchant(string $accountId, Entity $marketplace)
+    public function findByAccountIdAndParent(
+        string $accountId,
+        Entity $parent,
+        bool $fail = false)
     {
         AccountEntity::verifyIdAndStripSign($accountId);
 
-        $account =  $this->newQuery()
-                         ->where(Entity::PARENT_ID, $marketplace->getId())
-                         ->find($accountId);
+        $query   = $this->newQuery()->where(Entity::PARENT_ID, $parent->getId());
+        $account = $fail ? $query->findOrFailPublic($accountId) : $query->find($accountId);
 
         if ($account !== null)
         {
-            $account->parent()->associate($marketplace);
+            $account->parent()->associate($parent);
         }
 
         return $account;

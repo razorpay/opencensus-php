@@ -106,9 +106,10 @@ class NetbankingAxisCombinedFileTest extends TestCase
     {
         Mail::fake();
 
-        $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 1]);
+        $this->fixtures->create('terminal:shared_netbanking_axis_corp_terminal');
+        $this->fixtures->merchant->addFeatures('corporate_banks');
 
-        $payment = $this->getDefaultNetbankingPaymentArray('UTIB');
+        $payment = $this->getDefaultNetbankingPaymentArray('UTIB_C');
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
@@ -176,8 +177,6 @@ class NetbankingAxisCombinedFileTest extends TestCase
 
             return true;
         });
-
-        $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 0]);
     }
 
     protected function checkRefundsFile(array $refundFileData)

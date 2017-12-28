@@ -164,7 +164,7 @@ class ErrorCodes
         'N:2013'   => ErrorCode::BAD_REQUEST_PAYMENT_TXN_REJECTED_FROM_NET_BANKING,
         'N:2015'   => ErrorCode::BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT,
         'N:3'      => ErrorCode::BAD_REQUEST_MERCHANT_INVALID,
-        'N:30'     => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_FORMAT,
+        'N:30'     => ErrorCode::GATEWAY_ERROR_INVALID_FORMAT,
         'N:33'     => ErrorCode::BAD_REQUEST_PAYMENT_CARD_EXPIRED,
         'N:400'    => ErrorCode::GATEWAY_ERROR_USER_INACTIVE,
         'N:408'    => ErrorCode::GATEWAY_ERROR_CARD_RUPAY_MAESTRO_NOT_ENABLED,

@@ -49,9 +49,22 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
     }
 
+    /**
+     * Backward compatibility test
+     **/
+    public function testRetailPaymentWithCorpTerminalPresent()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_netbanking_icici_corp_terminal');
+
+        $this->testPayment();
+    }
+
     public function testPaymentCorporate()
     {
-        $this->fixtures->terminal->edit($this->sharedTerminal->getId(), ['corporate' => 1]);
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_netbanking_icici_corp_terminal');
+        $this->fixtures->merchant->addFeatures('corporate_banks');
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray('ICIC_C');
 
         $this->doAuthAndCapturePayment($this->payment);
 
@@ -59,12 +72,18 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $content = $this->verifyPayment($payment['id']);
 
-        $this->assertTestResponse($payment, 'testPayment');
+        $testData = $this->testData['testPayment'];
+        $testData['bank'] = 'ICIC_C';
+        $testData['terminal_id'] = '100NbIcicCrpTl';
+
+        $this->assertArraySelectiveEquals($testData, $payment);
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNetbankingEntity'], $gatewayPayment);
+        $testData = $this->testData['testPaymentNetbankingEntity'];
+        $testData['bank'] = 'ICIC_C';
+
+        $this->assertArraySelectiveEquals($testData, $gatewayPayment);
 
         // Asserts that bank payment id exists in response and is an int
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
