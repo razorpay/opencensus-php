@@ -417,6 +417,13 @@ class Core extends Base\Core
         string $merchantId,
         array $input): array
     {
+        if (isset($input[Entity::FILTERS]) === false)
+        {
+            $input = $this->addDefaultAnalyticsFilter($merchantId, $input);
+
+            return $input;
+        }
+
         $validator = new AnalyticsValidator();
 
         /**
@@ -443,6 +450,21 @@ class Core extends Base\Core
                 }
             }
         }
+
+        return $input;
+    }
+
+    protected function addDefaultAnalyticsFilter(string $merchantId, array $input): array
+    {
+        $input[Entity::FILTERS] = [
+
+            Entity::DEFAULT_FILTER =>
+                [
+                    [
+                        Entity::KEY_MERCHANT_ID => $merchantId,
+                    ],
+                ],
+        ];
 
         return $input;
     }
