@@ -58,9 +58,15 @@ class Raven extends Base\Core
         return $response;
     }
 
-    public function updateSmsStatus($id, $input)
+    public function updateSmsStatus($gateway, $input)
     {
-        $result = $this->raven->smsCallback($id, $input);
+        $this->trace->info(TraceCode::RAVEN_CALLBACK_REQUEST,
+            [
+                'gateway' => $gateway,
+                'input'   => $input,
+            ]);
+
+        $result = $this->raven->smsCallback($gateway, $input);
 
         return $result;
     }

@@ -396,7 +396,7 @@ final class Route
         'otp_post'                                => ['post',     'otp/create',                                     'CustomerController@postOtp'                                        ],
         'otp_verify'                              => ['post',     'otp/verify',                                     'CustomerController@verifyOtp'                                      ],
         'otp_verify_app'                          => ['post',     'otp/verify/app',                                 'CustomerController@verifyOtpApp'                                   ],
-        'sms_callback'                            => ['post',     'sms/{id}/callback',                              'CustomerController@updateSmsStatus'                                ],
+        'sms_callback'                            => ['post',     'sms/{gateway}/callback',                         'CustomerController@updateSmsStatus'                                ],
         'es_debug_get'                            => ['post',     'es/debug/{method}',                              'EsController@debug'                                                ],
         'es_aliases_post'                         => ['post',     'es/aliases',                                     'EsController@postAliases'                                          ],
         'gateway_add_priorities'                  => ['post',     'gateway/priorities/{method}',                    'GatewayController@createGatewayPriority'                           ],
