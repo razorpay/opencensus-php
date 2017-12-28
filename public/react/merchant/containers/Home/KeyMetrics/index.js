@@ -23,6 +23,8 @@ import { fetch } from 'merchant/modules/pokedex';
 import { tabsOrder, tabsMeta, getQuery, breakdownVals } from './data';
 import Panel from './Panel';
 
+import './styles.styl';
+
 const csvDateFormat = 'DD-MM-YYYY';
 
 const TabContent = ({ name, value, isCurrency, title, isLoading }) => {
@@ -67,7 +69,6 @@ class KeyMetricsContainer extends Component {
   constructor(props) {
     super(props);
 
-    // TODO: move state to redux
     this.state = {
       selectedTab: tabsOrder[0],
       tabsState: {},
@@ -272,7 +273,7 @@ class KeyMetricsContainer extends Component {
       { startDate, endDate } = this.props;
 
     return (
-      <Tabs>
+      <Tabs className="keymetrics">
         <TabList
           className="nav nav-tabs nav-justified"
           activeTabClassName="active"

@@ -11,7 +11,7 @@ import { fetch } from 'merchant/modules/pokedex';
 import GenericPanel, {
   PanelBody,
   PanelFooter,
-} from 'merchant/containers/Home/GenericPanel';
+} from 'merchant/components/Home/GenericPanel';
 
 import { getQuery } from './data';
 import './styles.styl';

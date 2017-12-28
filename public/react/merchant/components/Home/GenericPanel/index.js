@@ -1,8 +1,16 @@
+/*
+ * Generic Panel implementation in Home page, that will
+ * handle the appearance, structure and the loading
+ * states
+ */
+
 import React, { Component } from 'react';
 
 import { isChildSameType, checkChildrenType } from 'rzp/utils/rzp-react-utils';
 import Overlay from 'rzp/ui/Overlay';
 import Spinner from 'rzp/ui/Spinner';
+
+import './styles.styl';
 
 class PanelBody extends Component {
   constructor(props) {
@@ -16,11 +24,11 @@ class PanelBody extends Component {
 
     return (
       <div {...otherProps}>
-        {
+        {isLoading && (
           <Overlay>
             <Spinner />
           </Overlay>
-        }
+        )}
         {children}
       </div>
     );
@@ -49,7 +57,9 @@ class Panel extends Component {
   render() {
     const { className, children, isLoading, ...otherProps } = this.props;
 
-    otherProps.className = `panel${className ? ' ' + className : ''}`;
+    otherProps.className = `panel dasboard-home-panel${className
+      ? ' ' + className
+      : ''}`;
 
     let panelBody = null,
       panelFooter = null;

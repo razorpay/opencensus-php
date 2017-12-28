@@ -20,10 +20,8 @@ import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
 import GenericPanel, {
   PanelBody,
   PanelFooter,
-} from 'merchant/containers/Home/GenericPanel';
-import customToolTip, {
-  positioner,
-} from 'merchant/containers/Home/KeyMetrics/customTooltip';
+} from 'merchant/components/Home/GenericPanel';
+import customToolTip, { positioner } from './customTooltip';
 
 Chart.Tooltip.positioners.custom = positioner;
 

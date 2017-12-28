@@ -14,11 +14,13 @@ import {
 import GenericPanel, {
   PanelBody,
   PanelFooter,
-} from 'merchant/containers/Home/GenericPanel';
+} from 'merchant/components/Home/GenericPanel';
 import { groupValues, groupMeta, getQuery } from './data';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
+
+import './styles.styl';
 
 const chartOptions = {
     tooltips: {
