@@ -78,18 +78,23 @@ export default ({ entity, mode, updateEntity }) => {
 
   return (
     <ShowWhen permission="edit_merchant_offer">
-      <button class="label-info" onClick={openEditOffer}>
-        Edit Offer
-      </button>
-      <AsyncButton
-        onClick={() => updateOffer({ active: 0 })}
-        class="btn btn-default text-danger"
-        pendingClass="btn btn-default text-danger btn-pending"
-        confirm="Are you sure you want to deactivate this offer?"
-      >
-        Deactivate Offer
-        <span class="spin-btn" />
-      </AsyncButton>
+      {entity.active && (
+        <button class="label-info" onClick={openEditOffer}>
+          Edit Offer
+        </button>
+      )}
+
+      {entity.active && (
+        <AsyncButton
+          onClick={() => updateOffer({ active: 0 })}
+          class="btn btn-default text-danger"
+          pendingClass="btn btn-default text-danger btn-pending"
+          confirm="Are you sure you want to deactivate this offer?"
+        >
+          Deactivate Offer
+          <span class="spin-btn" />
+        </AsyncButton>
+      )}
     </ShowWhen>
   );
 };
