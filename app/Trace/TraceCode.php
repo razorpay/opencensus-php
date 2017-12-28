@@ -908,7 +908,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_SAME_PARENT_LINKING                   = 'DISPUTE_SAME_PARENT_LINKING';
     const DISPUTE_FILE_CREATE                           = 'DISPUTE_FILE_CREATE';
     const DISPUTE_FILES_UPLOAD                          = 'DISPUTE_FILES_UPLOAD';
-    const DISPUTE_FILE_DETAILS                          = 'DISPUTE_FILE_DETAILS';
 
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
@@ -954,6 +953,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED         = 'FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED';
 
     const MAILCHIMP_JOB_ERROR                           = 'MAILCHIMP_JOB_ERROR';
+
+    const UPLOAD_FILE_DETAILS                           = 'UPLOAD_FILE_DETAILS';
 
     // To log various debugs for a migrate command
     const BATCH_MIGRATE_DEBUG                           = 'BATCH_MIGRATE_DEBUG';

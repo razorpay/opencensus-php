@@ -1,21 +1,27 @@
 <?php
 
-namespace RZP\Models\Dispute\File;
+namespace RZP\Models\Base\Traits;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\StorageClient;
 use RZP\Models\Base\UniqueIdEntity;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait FileHandlerTrait
 {
-    protected function uploadFileAndGetUrl(UploadedFile $file): string
+    protected function uploadFileAndGetUrl(UploadedFile $file, string $localStoragePath, StorageClient $storageClient = null): string
     {
+        if ($storageClient === null)
+        {
+            $storageClient = new StorageClient();
+        }
+
         $extension = $file->getClientOriginalExtension();
 
         $fileName = UniqueIdEntity::generateUniqueId() . '.' . $extension;
 
-        $destinationPath = storage_path(Entity::STORAGE_PATH);
+        $destinationPath = storage_path($localStoragePath);
 
         $mimeType = $file->getMimeType();
 
@@ -28,7 +34,7 @@ trait FileHandlerTrait
         ];
 
         $this->trace->info(
-            TraceCode::DISPUTE_FILE_DETAILS,
+            TraceCode::UPLOAD_FILE_DETAILS,
             $fileDetails
         );
 
@@ -38,7 +44,7 @@ trait FileHandlerTrait
         try
         {
             // Store the file in AWS
-            $fileUrl = (new StorageClient())->saveToStorage($fileDetails);
+            $fileUrl = $storageClient->saveToStorage($fileDetails);
         }
         catch (Exception\BaseException $e)
         {

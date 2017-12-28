@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Dispute\File;
+namespace RZP\Models\Base;
 
 use Config;
 use RZP\Exception;
@@ -11,15 +11,27 @@ use \Aws\S3\Exception\S3Exception as AwsException;
 
 class StorageClient
 {
-    const BASE_FOLDER_PATH = 'dispute_files/';
+    const BASE_FOLDER_PATH = 'default_files_folder/';
 
-    const BUCKET_NAME = 'dispute_files_bucket';
+    const BUCKET_NAME = 'default_files_bucket';
+
+    /**
+     * StorageClient constructor.
+     * @param string $folderPath
+     * @param string $bucketName
+     */
+    public function __construct($folderPath = self::BASE_FOLDER_PATH, $bucketName = self::BUCKET_NAME)
+    {
+        $this->folderPath = $folderPath;
+
+        $this->bucketName = $bucketName;
+    }
 
     public function saveToStorage(array $fileDetails)
     {
         $fileName = $fileDetails['file_name'];
 
-        $awsFileName = self::BASE_FOLDER_PATH . $fileName;
+        $awsFileName = $this->folderPath . $fileName;
 
         $mimeType = $fileDetails['mime_type'];
 
@@ -45,7 +57,7 @@ class StorageClient
         try
         {
             $s3Obj = [
-                'Bucket'        => $config[self::BUCKET_NAME],
+                'Bucket'        => $config[$this->bucketName],
                 'Key'           => $awsFileName,
                 'ContentType'   => $mimeType,
                 'SourceFile'    => $filePath,

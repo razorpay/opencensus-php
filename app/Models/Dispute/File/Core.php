@@ -4,6 +4,8 @@ namespace RZP\Models\Dispute\File;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\StorageClient;
+use RZP\Models\Base\Traits\FileHandlerTrait;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 
 class Core extends Base\Core
@@ -32,7 +34,7 @@ class Core extends Base\Core
 
     protected function uploadAndCreateFile(DisputeEntity $dispute, array $fileInput)
     {
-        $url = $this->uploadFileAndGetUrl($fileInput[Entity::FILE]);
+        $url = $this->uploadFileAndGetUrl($fileInput[Entity::FILE], Entity::STORAGE_PATH, $this->getStorageClient());
 
         $input = [
             Entity::DISPUTE_ID          => $dispute->getId(),
@@ -79,5 +81,10 @@ class Core extends Base\Core
         }
 
         return $disputeFiles;
+    }
+
+    protected function getStorageClient(): StorageClient
+    {
+        return (new StorageClient(Entity::S3_FOLDER_PATH, Entity::S3_BUCKET_NAME));
     }
 }
