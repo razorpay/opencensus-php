@@ -8,6 +8,8 @@ use RZP\Exception;
 
 class DisputeController extends Controller
 {
+    use Traits\HasCrudMethods;
+
     public function create(string $paymentId)
     {
         $input = Request::all();
@@ -15,15 +17,6 @@ class DisputeController extends Controller
         $data = $this->service()->create($input, $paymentId);
 
         return ApiResponse::json($data);
-    }
-
-    public function update(string $id)
-    {
-        $input = Request::all();
-
-        $response = $this->service()->update($id, $input);
-
-        return ApiResponse::json($response);
     }
 
     public function migrateOldAdjustments()

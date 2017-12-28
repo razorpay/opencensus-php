@@ -425,16 +425,13 @@ class Core extends Base\Core
 
     protected function generateInputForMerchantEdit(Entity $dispute, array $input): array
     {
-        if ((isset($input[Entity::ACCEPT_DISPUTE]) === true) and
-            ($input[Entity::ACCEPT_DISPUTE] == true))
+        if (empty($input[Entity::ACCEPT_DISPUTE]) === false)
         {
+            $input[Entity::STATUS] = Status::LOST;
+
             if (in_array($dispute->getPhase(), Phase::getNonTransactionalPhases()))
             {
                 $input[Entity::STATUS] = Status::CLOSED;
-            }
-            else
-            {
-                $input[Entity::STATUS] = Status::LOST;
             }
 
             unset($input[Entity::ACCEPT_DISPUTE]);

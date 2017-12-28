@@ -23,18 +23,18 @@ class Service extends Base\Service
 
     public function update(string $id, array $input): array
     {
+        $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
+
         if ($this->auth->isAdminAuth())
         {
-            $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
-
             $dispute = $this->core()->update($dispute, $input);
 
-            return $dispute->toArrayPublic();
+            return $dispute->toArrayAdmin();
         }
         else if (($this->auth->isPrivateAuth() === true) or
             ($this->auth->isProxyAuth() === true))
         {
-            return $this->updateForMerchant($id, $input);
+            return $this->updateForMerchant($dispute, $input);
         }
     }
 
@@ -50,15 +50,13 @@ class Service extends Base\Service
         return $reason->toArrayPublic();
     }
 
-    protected function updateForMerchant(string $id, array $input): array
+    protected function updateForMerchant(Entity $dispute, array $input): array
     {
         $response = [];
 
         $files = [];
 
         $fileCore = new File\Core();
-
-        $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
 
         if (array_key_exists(DisputeFileEntity::FILES, $input) === true)
         {
@@ -74,7 +72,7 @@ class Service extends Base\Service
             $dispute = $this->core()->updateForMerchant($dispute, $input);
         }
 
-        if ((sizeof($files) > 0) === true )
+        if (empty($files) === false )
         {
             $response['files'] = $fileCore->uploadFiles($dispute, $files);
         }
