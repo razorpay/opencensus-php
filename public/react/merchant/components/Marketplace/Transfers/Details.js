@@ -12,6 +12,7 @@ import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
 import { SingleDatePicker } from 'react-dates';
 import { nextWorkingDay, isHoliday } from 'rzp/utils/bankHolidays';
+import { titleCase } from 'rzp/utils/rzp-utils';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Fee from 'merchant/components/Fee';
@@ -28,8 +29,8 @@ let initialState = {
 };
 
 const SettlementText = ({ data, transfer, onEdit }) => {
-  if (transfer.recipient_settlement && transfer.recipient_settlement.utr) {
-    return <span>Settled</span>;
+  if (transfer.recipient_settlement && transfer.recipient_settlement.status) {
+    return <span>{titleCase(transfer.recipient_settlement.status)}</span>;
   }
 
   return (
@@ -287,8 +288,7 @@ export default class TransferDetails extends Component {
                           onDateChange={this.onDateChange}
                           focused={this.state.focused}
                           onFocusChange={({ focused }) =>
-                            this.setState({ focused })
-                          }
+                            this.setState({ focused })}
                         />
                         {this.state.dateError && (
                           <div className="text-small text-danger text-right">
