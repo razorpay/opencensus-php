@@ -97,7 +97,7 @@ class Reconciliate extends Base\Reconciliate
             return self::START_ROW;
         }
         else if (($fileDetails[FileProcessor::EXTENSION] === Format::XLSX) and
-                ($fileDetails[FileProcessor::FILE_NAME] === 'razorpay'))
+                ($fileDetails[FileProcessor::FILE_NAME] === 'razorpay.xlsx'))
         {
             return self::START_ROW;
         }
