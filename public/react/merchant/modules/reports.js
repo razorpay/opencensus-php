@@ -5,7 +5,7 @@ import poll from 'rzp/utils/poll/longPoll';
 const GENERATE_REPORT = 'GENERATE_REPORT';
 
 const reportErrorMsg = {
-  error: 'Oops!, Unable to generate report!',
+  error: 'Oops!, Unable to generate report',
 };
 
 const handleError = e => {
@@ -72,6 +72,8 @@ export const generateReport = ajaxParams => {
 };
 
 export const generateReportV2 = params => {
+  const startTime = new Date();
+
   return createLog(params)
     .then(resp => {
       if (!resp.success) {
@@ -83,14 +85,30 @@ export const generateReportV2 = params => {
       const logPoll = poll({
         fetchFunc: () => getLog(resp.data.id),
         validator: resp => {
-          return resp.error || resp.data.status !== 'created';
+          /* 
+           * stop poll when
+           * 1) It takes more than 3 minutes to process log
+           * 2) If the api throws an error
+           * 3) If the log is processed/failed
+           */
+          return (
+            new Date() - startTime > 3 * 60 * 1000 ||
+            resp.error ||
+            resp.data.status !== 'created'
+          );
         },
         minWaitTime: 2000,
       });
 
       return logPoll.promise
         .then(resp => {
-          if (resp.error || resp.data.status === 'failed') {
+          // `resp.data.status` will be `created` in
+          // case of timeout
+          if (
+            resp.error ||
+            resp.data.status === 'failed' ||
+            resp.data.status === 'created'
+          ) {
             return reportErrorMsg;
           }
 
