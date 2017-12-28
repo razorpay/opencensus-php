@@ -23,7 +23,7 @@ class FetchTest extends TestCase
     protected $ba;
 
     /**
-     * Allowed types in valid rules
+     * Allowed keys in valid rules (E.g. defaults, private, private_auth etc.)
      *
      * @var array
      */
@@ -35,7 +35,7 @@ class FetchTest extends TestCase
     protected $validator;
 
     /**
-     * Contains entity to entityFetch list we need run tests for.
+     * Contains entity to entityFetch map that we need to run tests for
      *
      * @var array
      */
@@ -52,10 +52,17 @@ class FetchTest extends TestCase
         $this->entityList = $this->getEntitiesToTest();
     }
 
+    /**
+     * Asserts that the Fetch classes are defined correctly semantic wise.
+     * E.g. checks data structure of rules (list / associative array) and valid
+     * keys etc.
+     */
     public function testValidateFetchClasses()
     {
+        //
         // These properties are only required in validateRules and ValidateAccessTypes
         // methods, thus no need to set them from setUp.
+        //
         $this->validRuleTypes = array_keys(Fetch::DEFAULT_RULES);
 
         $this->validator = new JitValidator([]);
@@ -68,12 +75,11 @@ class FetchTest extends TestCase
 
             $this->validateAccessTypes($fetch);
         }
-
     }
 
     public function testForPrivateAuth()
     {
-        $this->ba->appAuth();
+        $this->ba->privateAuth();
 
         $this->runForType(AuthType::PRIVATE_AUTH);
     }
@@ -122,35 +128,31 @@ class FetchTest extends TestCase
      *
      * @param string $entity
      * @param string $type
-     * @param null|string $exceptionClass
+     * @param null|string $expectedException
      */
-    protected function runForEntityAndType(string $entity, string $type, string $exceptionClass = null)
+    protected function runForEntityAndType(
+        string $entity,
+        string $type,
+        string $expectedException = null)
     {
         $tests = $this->getTestDataForEntityAndType($entity, $type);
 
         foreach ($tests as $test)
         {
-            if ($exceptionClass === null)
+            $actualException = null;
+
+            try
             {
                 $this->entityList[$entity]->processFetchParams($test);
 
                 $this->assertArrayHasKey('count', $test, $entity);
             }
-            else
+            catch (\Exception $e)
             {
-                try
-                {
-                    $this->entityList[$entity]->processFetchParams($test);
-                }
-                catch (\Exception $e)
-                {
-                    $this->assertInstanceOf($exceptionClass, $e, $entity);
-
-                    continue;
-                }
-
-                $this->fail('Exception not throw : ' . $entity);
+                $actualException = get_class($e);
             }
+
+            $this->assertSame($expectedException, $actualException, $entity);
         }
     }
 
@@ -159,40 +161,44 @@ class FetchTest extends TestCase
      * Apart from AuthTypes from type here, we can use
      * custom types like, <AuthType>+<ExceptionClass>
      *
-     * @param $type
-     * @param null|string $exceptionClass
+     * @param string      $type
+     * @param null|string $expectedException
      */
-    protected function runForType($type, string $exceptionClass = null)
+    protected function runForType(string $type, string $expectedException = null)
     {
         foreach ($this->entityList as $entity => $fetch)
         {
-            $this->runForEntityAndType($entity, $type, $exceptionClass);
+            $this->runForEntityAndType($entity, $type, $expectedException);
         }
     }
 
     /**
-     * All entities we need to test, Uses reflection class to resolve entities,
-     * Note: Php caches the reflection class, thus time complexity is negligible
+     * All entities we need to test, Uses reflection class against E to get
+     * defined list of entities. For each of them we get corresponding fetch
+     * classes if defined. This way if someone adds new Fetch class basic tests
+     * are done without any change in tests.
+     *
+     * Note: PHP caches the reflection class, thus time complexity is negligible
      *
      * @return array
      */
     protected function getEntitiesToTest()
     {
-        $allEntities = (new \ReflectionClass(E::class))->getConstants();
+        $entities = (new \ReflectionClass(E::class))->getConstants();
 
-        $entityFetchList = [];
+        $fetchs = [];
 
-        foreach ($allEntities as $entity)
+        foreach ($entities as $entity)
         {
             $fetch = E::getEntityFetch($entity);
 
             if (empty($fetch) === false)
             {
-                $entityFetchList[$entity] = $fetch;
+                $fetchs[$entity] = $fetch;
             }
         }
 
-        return $entityFetchList;
+        return $fetchs;
     }
 
     protected function getEntityFetch(string $entity)
@@ -213,7 +219,7 @@ class FetchTest extends TestCase
     {
         if (isset($this->testData[$entity]) === false)
         {
-            $this->fail('Entity needs to decalared in fetch Test Data : '. $entity);
+            $this->fail('Entity needs to declared in fetch Test Data : '. $entity);
         }
 
         $entityTests = $this->testData[$entity];
@@ -222,9 +228,8 @@ class FetchTest extends TestCase
     }
 
     /**
-     * Method validates rules defined in fetch class
-     * Rules can only have defined in Fetch::DEFAULT_RULES.
-     * Also it check for valid rules definition.
+     * Method validates rules defined in Fetch class. Rules can only have keys
+     * from a predefined set (i.e. $this->validRuleTypes).
      *
      * @param Fetch $fetch
      */
@@ -268,19 +273,25 @@ class FetchTest extends TestCase
             }
             catch (BadRequestValidationFailureException $e)
             {
-                continue;
+                //
             }
             catch (BadRequestException $e)
             {
-                continue;
+                //
             }
         }
     }
 
+    /**
+     * Validates ACCESSES defined in Fetch class.
+     *
+     * @param Fetch $fetch
+     */
     protected function validateAccessTypes(Fetch $fetch)
     {
         $accessTypes = $fetch::ACCESSES;
 
+        // Validates keys are valid
         $invalidAccesses = array_diff(array_keys($accessTypes), $this->validRuleTypes);
 
         if (count($invalidAccesses) > 0)
@@ -288,6 +299,8 @@ class FetchTest extends TestCase
             $this->fail('Invalid rule types :' . implode(', ', $invalidAccesses));
         }
 
+        // Iterates through accesses and checks that each of them are valid list
+        // and there is no duplicate across.
         $mergedAccesses = [];
 
         foreach ($accessTypes as $type => $accesses)

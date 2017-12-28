@@ -7,7 +7,7 @@ use RZP\Http\BasicAuth\BasicAuth as BaseBasicAuth;
 
 /**
  * Mocked instance in place of BasicAuth for unit tests. We have
- * overridden definitions of some methods that gets trigerred from Core
+ * overridden definitions of some methods that gets triggered from Core
  * logic in some places. We couldn't use Mockery because that way it becomes
  * difficult (but is possible) to change instance states(e.g. other variables etc.).
  * Mocker is well suited for mocking methods in run time in tests and setting
