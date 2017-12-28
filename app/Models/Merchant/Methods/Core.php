@@ -221,42 +221,6 @@ class Core extends Base\Core
         $recurringData['emandate'] = $this->restructureEmandateBlock($recurringData['emandate']);
     }
 
-    protected function restructureEmandateBlock($recurringEmandateData)
-    {
-        $newRecurringEmandateData = [];
-
-        foreach ($recurringEmandateData as $type => $banks)
-        {
-            foreach ($banks as $ifsc => $name)
-            {
-                $newRecurringEmandateData[$ifsc]['auth_types'][] = $type;
-                $newRecurringEmandateData[$ifsc]['name'] = $name;
-            }
-        }
-
-        return $newRecurringEmandateData;
-    }
-
-    protected function getEmandateBanksEnabledForNetbanking(Merchant\Entity $merchant)
-    {
-        $availableEmandateBanks = [];
-
-        $applicableEmandateTerminals = $this->repo
-                                            ->terminal
-                                            ->getEmandateNetbankingTerminalsForMerchantAndSharedMerchant($merchant);
-
-        $availableGatewaysForMerchant = $applicableEmandateTerminals->pluck(Terminal\Entity::GATEWAY);
-
-        foreach ($availableGatewaysForMerchant as $availableGateway)
-        {
-            $availableEmandateBanks = array_merge(
-                                        $availableEmandateBanks,
-                                        Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
-        }
-
-        return array_values(array_unique($availableEmandateBanks));
-    }
-
     public function getEnabledAndDisabledBanks($merchant)
     {
         $banks = $this->repo->methods->getMethodsForMerchant($merchant);
@@ -443,6 +407,42 @@ class Core extends Base\Core
 
             return $data;
         }
+    }
+
+    protected function restructureEmandateBlock(array $recurringEmandateData): array
+    {
+        $newRecurringEmandateData = [];
+
+        foreach ($recurringEmandateData as $type => $banks)
+        {
+            foreach ($banks as $ifsc => $name)
+            {
+                $newRecurringEmandateData[$ifsc]['auth_types'][] = $type;
+                $newRecurringEmandateData[$ifsc]['name'] = $name;
+            }
+        }
+
+        return $newRecurringEmandateData;
+    }
+
+    protected function getEmandateBanksEnabledForNetbanking(Merchant\Entity $merchant): array
+    {
+        $availableEmandateBanks = [];
+
+        $applicableEmandateTerminals = $this->repo
+                                            ->terminal
+                                            ->getEmandateNetbankingTerminalsForMerchantAndSharedMerchant($merchant);
+
+        $availableGatewaysForMerchant = $applicableEmandateTerminals->pluck(Terminal\Entity::GATEWAY);
+
+        foreach ($availableGatewaysForMerchant as $availableGateway)
+        {
+            $availableEmandateBanks = array_merge(
+                $availableEmandateBanks,
+                Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
+        }
+
+        return array_values(array_unique($availableEmandateBanks));
     }
 
     protected function getBankNames($banks)

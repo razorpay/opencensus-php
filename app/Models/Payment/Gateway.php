@@ -726,7 +726,7 @@ class Gateway
         return self::isRecurringGateway($gateway);
     }
 
-    public static function getAvailableEmandateBanksForAuthType(string $authType)
+    public static function getAvailableEmandateBanksForAuthType(string $authType): array
     {
         return self::$emandateBanks[$authType];
     }

@@ -8,14 +8,13 @@ class AuthenticationType
 {
     const NETBANKING    = 'netbanking';
     const AADHAAR       = 'aadhaar';
-    // const DEBIT_CARD    = 'debit_card';
 
     public static $types = [
         self::NETBANKING,
         self::AADHAAR,
     ];
 
-    public static function isAuthenticationTypeValid($type)
+    public static function isAuthenticationTypeValid($type): bool
     {
         return (in_array($type, self::$types, true));
     }

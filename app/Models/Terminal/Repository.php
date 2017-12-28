@@ -93,7 +93,8 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getEmandateNetbankingTerminalsForMerchantAndSharedMerchant(Merchant\Entity $merchant)
+    public function getEmandateNetbankingTerminalsForMerchantAndSharedMerchant(
+        Merchant\Entity $merchant): PublicCollection
     {
         $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];
 
