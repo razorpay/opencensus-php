@@ -67,11 +67,37 @@ class Repository extends Base\Repository
 
         $transactionMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
         $transactionId = $this->dbColumn(Entity::ID);
-        $transactionData = $this->dbColumn('*');
+
         $transactionChannel = $this->dbColumn(Entity::CHANNEL);
 
+        $transactionBalance     = $this->dbColumn(Entity::BALANCE);
+        $transactionType        = $this->dbColumn(Entity::TYPE);
+        $transactionSourceId    = $this->dbColumn(Entity::ENTITY_ID);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
+        $transactionSettled     = $this->dbColumn(Entity::SETTLED);
+        $transactionAmount      = $this->dbColumn(Entity::AMOUNT);
+        $transactionCredit      = $this->dbColumn(Entity::CREDIT);
+        $transactionDebit       = $this->dbColumn(Entity::DEBIT);
+        $transactionTax         = $this->dbColumn(Entity::TAX);
+        $transactionFee         = $this->dbColumn(Entity::FEE);
+        $transactionFeeCredits  = $this->dbColumn(Entity::FEE_CREDITS);
+
         $txns = $this->newQuery()
-                    ->select($transactionData)
+                    ->select(
+                        $transactionId,
+                        $transactionMerchantId,
+                        $transactionBalance,
+                        $transactionType,
+                        $transactionSourceId,
+                        $transactionSettledAt,
+                        $transactionSettled,
+                        $transactionAmount,
+                        $transactionCredit,
+                        $transactionDebit,
+                        $transactionTax,
+                        $transactionFee,
+                        $transactionFeeCredits
+                    )
                     ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
                     ->where(Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Entity::ON_HOLD, 0)
