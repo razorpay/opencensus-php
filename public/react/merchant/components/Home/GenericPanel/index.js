@@ -12,21 +12,55 @@ import Spinner from 'rzp/ui/Spinner';
 
 import './styles.styl';
 
+/*
+ * Useful to show actionable items on top of 
+ * the panel
+ */
+class PanelTopbar extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    const {
+      children,
+      className,
+      isLoading,
+      hasNoData,
+      ...otherProps
+    } = this.props;
+
+    otherProps.className = `panel-topbar${className ? ' ' + className : ''}`;
+
+    return <div {...otherProps}>{children}</div>;
+  }
+}
+
+/*
+ * The body of the panel, where actual content
+ * goes
+ */
 class PanelBody extends Component {
   constructor(props) {
     super(props);
   }
 
   render() {
-    const { children, className, isLoading, ...otherProps } = this.props;
+    const {
+      children,
+      className,
+      isLoading,
+      hasNoData,
+      ...otherProps
+    } = this.props;
 
     otherProps.className = `panel-body${className ? ' ' + className : ''}`;
 
     return (
       <div {...otherProps}>
-        {isLoading && (
+        {(isLoading || hasNoData) && (
           <Overlay>
-            <Spinner />
+            {isLoading ? <Spinner /> : <span>No Data Found</span>}
           </Overlay>
         )}
         {children}
@@ -35,13 +69,23 @@ class PanelBody extends Component {
   }
 }
 
+/*
+ * Footer of the Panel, useful to show stats and
+ * info
+ */
 class PanelFooter extends Component {
   constructor(props) {
     super(props);
   }
 
   render() {
-    const { children, className, isLoading, ...otherProps } = this.props;
+    const {
+      children,
+      className,
+      isLoading,
+      hasNoData,
+      ...otherProps
+    } = this.props;
 
     otherProps.className = `panel-footer${className ? ' ' + className : ''}`;
 
@@ -49,25 +93,41 @@ class PanelFooter extends Component {
   }
 }
 
+/*
+ * Main Panel component that uses all the ^ components
+ */
 class Panel extends Component {
   constructor(props) {
     super(props);
   }
 
   render() {
-    const { className, children, isLoading, ...otherProps } = this.props;
+    const {
+      className,
+      children,
+      isLoading,
+      hasNoData,
+      ...otherProps
+    } = this.props;
 
     otherProps.className = `panel dasboard-home-panel${className
       ? ' ' + className
       : ''}`;
 
-    let panelBody = null,
+    const commonProps = { isLoading, hasNoData };
+
+    let panelTopbar = null,
+      panelBody = null,
       panelFooter = null;
 
     React.Children.forEach(children, child => {
+      if (!panelTopbar && isChildSameType(child, PanelTopbar)) {
+        panelTopbar = child;
+        return;
+      }
+
       if (!panelBody && isChildSameType(child, PanelBody)) {
         panelBody = child;
-
         return;
       }
 
@@ -76,13 +136,22 @@ class Panel extends Component {
       }
     });
 
+    if (panelTopbar) {
+      otherProps.className += ' has-topbar';
+    }
+
+    if (panelFooter) {
+      otherProps.className += ' has-footer';
+    }
+
     return (
       <div {...otherProps}>
-        {!!panelBody && (
-          <panelBody.type {...panelBody.props} isLoading={isLoading} />
+        {panelTopbar && (
+          <panelTopbar.type {...panelTopbar.props} {...commonProps} />
         )}
-        {!!panelFooter && (
-          <panelFooter.type {...panelFooter.props} isLoading={isLoading} />
+        {panelBody && <panelBody.type {...panelBody.props} {...commonProps} />}
+        {panelFooter && (
+          <panelFooter.type {...panelFooter.props} {...commonProps} />
         )}
       </div>
     );
@@ -91,10 +160,14 @@ class Panel extends Component {
 
 Panel.propTypes = {
   children: props => {
-    return checkChildrenType(props.children, [PanelBody, PanelFooter]);
+    return checkChildrenType(props.children, [
+      PanelTopbar,
+      PanelBody,
+      PanelFooter,
+    ]);
   },
 };
 
-export { PanelBody, PanelFooter };
+export { PanelTopbar, PanelBody, PanelFooter };
 
 export default Panel;

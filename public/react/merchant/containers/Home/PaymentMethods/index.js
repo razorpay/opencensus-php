@@ -9,6 +9,7 @@ import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
 import { fetch } from 'merchant/modules/pokedex';
 import GenericPanel, {
+  PanelTopbar,
   PanelBody,
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
@@ -108,48 +109,43 @@ class PaymentMethods extends Component {
   }
 
   render() {
-    const { levels, csvData, isLoading } = this.state,
+    const { levels, csvData, isLoading, data } = this.state,
       { startDate, endDate } = this.props,
-      levelsLength = levels.length;
+      levelsLength = levels.length,
+      hasNoData = !data || data.length === 0;
 
     return (
       <GenericPanel
-        className="p-all payment-methods-container"
+        className="payment-methods-container"
         isLoading={isLoading}
+        hasNoData={hasNoData}
       >
+        <PanelTopbar className="clearfix">
+          <div className="pull-left">
+            <span>Showing:</span>
+            {levelsLength > 0 && (
+              <Breadcrumb>
+                {levels.map((level, index) => (
+                  <BreadcrumbItem
+                    key={index}
+                    onClick={() =>
+                      index + 1 !== levelsLength &&
+                      this.onLevelChange(level.data)}
+                  >
+                    {level.name}
+                  </BreadcrumbItem>
+                ))}
+              </Breadcrumb>
+            )}
+          </div>
+        </PanelTopbar>
         <PanelBody>
-          <div className="clearfix">
-            <div className="panel-actions p-b pull-left">
-              <span>Showing:</span>
-              {levelsLength > 0 && (
-                <Breadcrumb>
-                  {levels.map((level, index) => (
-                    <BreadcrumbItem
-                      key={index}
-                      onClick={() =>
-                        index + 1 !== levelsLength &&
-                        this.onLevelChange(level.data)}
-                    >
-                      {level.name}
-                    </BreadcrumbItem>
-                  ))}
-                </Breadcrumb>
-              )}
-            </div>
-            <div className="panel-actions p-b pull-right">
-              <div className="panel-action-item">
-                <MoreOptionsButton csvData={csvData} />
-              </div>
-            </div>
-          </div>
-          <div>
-            <Treemap
-              data={this.state.data}
-              onLevelChange={this.onLevelChange}
-              currentLevel={this.state.currentLevel}
-              onCSVData={this.onCSVData}
-            />
-          </div>
+          <Treemap
+            data={this.state.data}
+            onLevelChange={this.onLevelChange}
+            currentLevel={this.state.currentLevel}
+            onCSVData={this.onCSVData}
+          />
         </PanelBody>
         <PanelFooter className="clearfix">
           <div className="pull-left">

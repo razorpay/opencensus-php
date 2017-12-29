@@ -1,20 +1,30 @@
-.recent-activity-cont {
+.panel.recent-activity-cont {
 
-  tabbed-container .row {
+  .panel-body {
 
-    margin-bottom: 0;
+    padding-top: 0;
+  }
 
-    a {
+  tabbed-container {
 
-      line-height: 50px;
-      cursor: pointer;
-      text-align: center;
-      border-bottom: 3px solid transparent;
+    padding-top: 0;
 
-      &.active {
+    .row {
 
-        color: #6a55d1;
-        border-color: #6a55d1;
+      margin-bottom: 0;
+
+      a {
+
+        line-height: 50px;
+        cursor: pointer;
+        text-align: center;
+        border-bottom: 3px solid transparent;
+
+        &.active {
+
+          color: #6a55d1;
+          border-color: #6a55d1;
+        }
       }
     }
   }

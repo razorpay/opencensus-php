@@ -8,6 +8,7 @@ import {
 } from 'rzp/modules/collection';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
+import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import { tabs, tabsMeta } from './data';
 import PaymentsList from 'merchant/components/Payments/PaymentsList';
 
@@ -110,30 +111,35 @@ export default class RecentActivity extends Component {
     }
 
     return (
-      <div className="panel recent-activity-cont">
-        <tabbed-container>
-          <div className="row">
-            {tabs.map((tabName, index) => {
-              const className =
-                (tabName === selectedTab ? 'active ' : '') + 'col-sm-4';
+      <GenericPanel
+        className="recent-activity-cont"
+        isLoading={selectedTabData.loading}
+      >
+        <PanelBody>
+          <tabbed-container>
+            <div className="row">
+              {tabs.map((tabName, index) => {
+                const className =
+                  (tabName === selectedTab ? 'active ' : '') + 'col-sm-4';
 
-              return (
-                <a
-                  className={className}
-                  key={index}
-                  name={tabName}
-                  onClick={this.handleTabClick}
-                >
-                  {titleCase(tabName)}
-                </a>
-              );
-            })}
-          </div>
-        </tabbed-container>
-        <table className="table table-striped">
-          <tbody>{body}</tbody>
-        </table>
-      </div>
+                return (
+                  <a
+                    className={className}
+                    key={index}
+                    name={tabName}
+                    onClick={this.handleTabClick}
+                  >
+                    {titleCase(tabName)}
+                  </a>
+                );
+              })}
+            </div>
+          </tabbed-container>
+          <table className="table table-striped">
+            <tbody>{body}</tbody>
+          </table>
+        </PanelBody>
+      </GenericPanel>
     );
   }
 }

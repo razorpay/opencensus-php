@@ -1,35 +1,49 @@
+$gutter = 21px;
+$panel-topbar-height = 76px;
+$panel-footer-height = 45px;
+$panel-body-height = 300px;
+
 .panel.dasboard-home-panel {
 
   position: relative;
+  padding: $gutter;
   box-shadow: 0 2px 7px 0 rgba(0,0,0,0.1);
-  padding-bottom: 45px;
-  min-height: 300px;
  
   .panel-footer {
 
+    display: none;
     position: absolute;
-    top: 100%;
+    bottom: 0;
     left: 0;
-    margin-top: -45px;
+    margin-top: - $panel-footer-height;
     width: 100%;
     background-color: #FBFCFD;
     padding-top: 0;
     padding-bottom: 0;
     color: #686D87;
-    line-height: 44px;
+    line-height: $panel-footer-height - 1px;
     border-top: 1px solid #F0F1F6;
+  }
+
+  &.has-footer {
+
+    padding-bottom: $panel-footer-height + $gutter;
+
+    .panel-footer {
+
+      display: block;
+    }
   }
 
   .panel-body {
 
-    padding: 0;
-    width: 100%;
-    height: 100%;
     position: relative;
+    min-height: 300px;
+    padding: $gutter 0 0 0;
 
     .rzp-overlay {
 
-      background-color: rgba(255, 255, 255, 0.5);
+      background-color: rgba(255, 255, 255, 1);
     }
   }
 

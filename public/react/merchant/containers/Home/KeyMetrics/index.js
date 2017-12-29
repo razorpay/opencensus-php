@@ -100,7 +100,7 @@ class KeyMetricsContainer extends Component {
         fetchData: true,
 
         // timeline data will be stored here
-        histogram: [],
+        histogram: null,
 
         // main stat of the tab is stored here
         count: 0,
@@ -163,8 +163,9 @@ class KeyMetricsContainer extends Component {
         if (histogram) {
           const { labels, datasets, aggregates, csv } = getTimelineData({
             data: histogram.result,
-            groupByColumnName: tabState.selectedGrouping,
-            groupTitleMap: {},
+            groupByColumnName:
+              tabMeta.groupByColumnName || tabState.selectedGrouping,
+            groupTitleMap: tabMeta.groupTitleMap || {},
             valueTransformer: isCurrency && paiseToRupees,
           });
 
@@ -174,9 +175,9 @@ class KeyMetricsContainer extends Component {
             shortenText(
               `${selectedBreakdown} ${title} \u05C0 ${startDate.format(
                 csvDateFormat
-              )} - ${endDate.format(
-                csvDateFormat
-              )} \u05C0 ${tabMeta.getGroupTitle(tabState.selectedGrouping)}`
+              )} - ${endDate.format(csvDateFormat)} ${tabState.selectedGrouping
+                ? '\u05C0 ' + tabMeta.getGroupTitle(tabState.selectedGrouping)
+                : ''}`
             )
           );
 

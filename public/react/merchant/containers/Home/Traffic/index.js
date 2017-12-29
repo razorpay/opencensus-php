@@ -9,9 +9,9 @@ import { fetch } from 'merchant/modules/pokedex';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
-  shorte,
 } from 'rzp/utils/numerals';
 import GenericPanel, {
+  PanelTopbar,
   PanelBody,
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
@@ -142,36 +142,38 @@ class Traffic extends Component {
     const { loading, selectedGrouping, groupsState } = this.state,
       groupState = groupsState[selectedGrouping],
       { isCurrency } = groupMeta[selectedGrouping],
-      { chartData, legendData } = groupState;
+      { chartData, legendData } = groupState,
+      hasNoData = !chartData || chartData.labels.length === 0;
 
     return (
       <GenericPanel
         className="rzp-traffic p-all"
         isLoading={loading || groupState.loading}
+        hasNoData={hasNoData}
       >
-        <PanelBody>
-          <div className="clearfix panel-actions">
-            <div className="pull-right">
-              <div className="panel-action-item">
-                <select
-                  value={selectedGrouping}
-                  onChange={this.onGroupChange}
-                  className="form-control"
-                >
-                  {groupValues.map((value, index) => {
-                    return (
-                      <option value={value} key={index}>
-                        {groupMeta[value].title}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-              <div className="panel-action-item">
-                <MoreOptionsButton csvData={groupState.csvData} />
-              </div>
+        <PanelTopbar className="clearfix">
+          <div className="panel-actions pull-right">
+            <div className="panel-action-item">
+              <select
+                value={selectedGrouping}
+                onChange={this.onGroupChange}
+                className="form-control"
+              >
+                {groupValues.map((value, index) => {
+                  return (
+                    <option value={value} key={index}>
+                      {groupMeta[value].title}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+            <div className="panel-action-item">
+              <MoreOptionsButton csvData={groupState.csvData} />
             </div>
           </div>
+        </PanelTopbar>
+        <PanelBody>
           <div className="row">
             <div className="col-md-5 col-sm-12 column">
               {!groupState.loading &&

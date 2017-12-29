@@ -38,6 +38,12 @@ tooltipDOM.addEventListener('mouseleave', () => {
   hideTooltip();
 });
 
+window.addEventListener('scroll', () => {
+  isTooltipHovered = false;
+  shouldShowTooltip = false;
+  hideTooltip();
+});
+
 /* function for custom tooltip */
 const customToolTip = function(tooltipModel) {
   // Create element on first render

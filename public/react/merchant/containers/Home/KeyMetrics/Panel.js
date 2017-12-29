@@ -18,6 +18,7 @@ import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
 import GenericPanel, {
+  PanelTopbar,
   PanelBody,
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
@@ -29,8 +30,8 @@ const chartOptions = {
   ...timeScale({}),
   layout: {
     padding: {
-      left: 14,
-      right: 14,
+      left: 0,
+      right: 0,
     },
   },
   tooltips: {
@@ -82,14 +83,20 @@ class Panel extends Component {
       } = this.props,
       dateFormat = 'DD MMM YYYY',
       { grouping, options } = this.meta,
-      { loading } = data;
+      { loading, histogram } = data;
+
+    const hasNoData = !histogram || histogram.datasets.length === 0;
 
     chartOptions.isCurrency = isCurrency;
 
     return (
-      <GenericPanel className="key-metrics-container" isLoading={data.loading}>
-        <PanelBody className="p-all">
-          <div className="clearfix panel-topbar">
+      <GenericPanel
+        className="key-metrics-container"
+        isLoading={data.loading}
+        hasNoData={hasNoData}
+      >
+        <PanelTopbar className="clearfix">
+          {!hasNoData && (
             <div className="pull-left">
               <ChangeRange previous={20} current={17} />
               <Definition>
@@ -101,42 +108,45 @@ class Panel extends Component {
                 </span>
               </Definition>
             </div>
-            <div className="panel-actions pull-right">
-              <div className="panel-action-item">
-                {grouping.length > 0 && (
-                  <select
-                    className="form-control"
-                    value={selectedGrouping}
-                    onChange={this.handleGroupingChange}
-                  >
-                    {grouping.map((item, index) => {
-                      return (
-                        <option value={item.value} key={index}>
-                          {item.text}
-                        </option>
-                      );
-                    })}
-                  </select>
-                )}
-              </div>
-              <BtnGroup
-                className="panel-action-item"
-                value={selectedBreakdown}
-                onChange={this.handleBreakdownChange}
-              >
-                {breakdownVals.map((item, index) => {
-                  return (
-                    <Btn value={item} key={index} className="btn-default">
-                      {titleCase(item)}
-                    </Btn>
-                  );
-                })}
-              </BtnGroup>
-              <div className="panel-action-item">
-                <MoreOptionsButton csvData={data.csv} />
-              </div>
+          )}
+          <div className="panel-actions pull-right">
+            <div className="panel-action-item">
+              {grouping.length > 0 && (
+                <select
+                  className="form-control"
+                  value={selectedGrouping}
+                  onChange={this.handleGroupingChange}
+                >
+                  {grouping.map((item, index) => {
+                    return (
+                      <option value={item.value} key={index}>
+                        {item.text}
+                      </option>
+                    );
+                  })}
+                </select>
+              )}
+            </div>
+            <BtnGroup
+              className="panel-action-item"
+              value={selectedBreakdown}
+              onChange={this.handleBreakdownChange}
+            >
+              {breakdownVals.map((item, index) => {
+                return (
+                  <Btn value={item} key={index} className="btn-default">
+                    {titleCase(item)}
+                  </Btn>
+                );
+              })}
+            </BtnGroup>
+            <div className="panel-action-item">
+              <MoreOptionsButton csvData={data.csv} />
             </div>
           </div>
+        </PanelTopbar>
+
+        <PanelBody>
           <div className="chart-container">
             {!data.loading &&
               data.histogram && (
@@ -157,6 +167,7 @@ class Panel extends Component {
               </div>
             )}
         </PanelBody>
+
         <PanelFooter>
           <div className="pull-left">
             <LastUpdated at={lastUpdatedAt} />

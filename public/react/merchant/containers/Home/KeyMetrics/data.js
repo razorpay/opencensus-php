@@ -130,6 +130,11 @@ export const tabsMeta = {
     grouping: [],
     options: [],
     getGroupTitle,
+    groupByColumnName: 'saved_card',
+    groupTitleMap: {
+      '0': 'New Card',
+      '1': 'Saved Card',
+    },
     getCountQuery: function() {
       return {
         [this.name]: {
@@ -137,6 +142,7 @@ export const tabsMeta = {
           agg_type: 'count',
           details: {
             index: 'payments',
+            mode: 'test',
           },
         },
       };
@@ -147,6 +153,7 @@ export const tabsMeta = {
           agg_type: 'count',
           details: {
             index: 'payments',
+            mode: 'test',
             group_by: ['saved_card', `histogram_${breakdown}`],
           },
         },
