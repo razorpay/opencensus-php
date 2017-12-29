@@ -36,7 +36,7 @@ class UpiIcici extends Base
                 RefundFile::SHTDAT             => $date,
                 RefundFile::ADJAMT             =>  $this->getFormattedAmount($row['refund']['amount']),
                 RefundFile::SHSER              => $row['gateway']['gateway_payment_id'],
-                RefundFile::SHCRD              => $row['gateway']['vpa'],
+                RefundFile::SHCRD              => $row['payment']['vpa'],
                 RefundFile::FILENAME           => self::FILE_NAME,
                 RefundFile::REASON             => 'NA',
                 RefundFile::SPECIFYOTHER       => $row['refund']['id'],
