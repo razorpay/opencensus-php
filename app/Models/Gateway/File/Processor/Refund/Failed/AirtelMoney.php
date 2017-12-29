@@ -41,8 +41,8 @@ class AirtelMoney extends Base
                 self::TRANSACTION_DATE  => $date,
                 self::GATEWAY_REFERENCE => $row['gateway']['gateway_payment_id'],
                 self::ORDER             => $row['payment']['id'],
-                self::REFUND_AMOUNT     => $row['payment']['amount'] / 100,
-                self::REFUND_AMOUNT     => $row['refund']['amount'] / 100,
+                self::REFUND_AMOUNT     => $this->getFormattedAmount($row['payment']['amount']),
+                self::REFUND_AMOUNT     => $this->getFormattedAmount($row['refund']['amount']),
                 self::MERCHANT_CODE     => $row['terminal']['gateway_merchant_id']
             ];
         }
