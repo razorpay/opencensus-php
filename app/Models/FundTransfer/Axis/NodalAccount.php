@@ -62,11 +62,26 @@ class NodalAccount extends NodalBase\NodalAccount
         $this->iv = base64_decode(Config::get('nodal.axis.iv'));
     }
 
+    public function generateSettlementFile($entities, $h2h = true): array
+    {
+        $rows = $this->getSettlementRows($entities);
+
+        list($excelFile, $txtFile) = $this->createFile($rows);
+
+        $fileData = $this->getFileData($excelFile);
+
+        $this->sendAxisTransferMail($fileData);
+
+        return [$txtFile, $excelFile];
+    }
+
     public function initiateTransfer(string $amount): array
     {
         $rows = $this->getRows($amount);
 
-        $fileData = $this->createFile($rows);
+        list($excelFile, $txtFile) = $this->createFile($rows);
+
+        $fileData = $this->getFileData($excelFile);
 
         $this->sendAxisTransferMail($fileData);
 
@@ -96,6 +111,11 @@ class NodalAccount extends NodalBase\NodalAccount
                         ->encode()
                         ->save();
 
+        return [$file, $file];
+    }
+
+    protected function getFileData($file)
+    {
         $fileInstance = $file->get();
 
         $signedFileUrl = $file->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
@@ -122,12 +142,70 @@ class NodalAccount extends NodalBase\NodalAccount
 
     protected function getRows(string $amount): array
     {
+        $formattedAmount = (float) sprintf('%0.2f', $amount);
+
+        $headerValues = $this->getHeaderRow($formattedAmount);
+
+        $transactionValues = $this->getTrasactionRow($amount, 'RZRNAXISCARD');
+
+        $values = [self::HEADINGS, $headerValues, $transactionValues];
+
+        return $values;
+    }
+
+    protected function getSettlementRows($entities): array
+    {
+        $totalAmount = 0;
+
+        foreach ($entities as $entity)
+        {
+            $source = $entity->source;
+
+            $amount = ($source->getAmount() / 100);
+
+            $totalAmount += $amount;
+
+            $beneCode = $entity->bankAccount->getId();
+
+            $rows[] = $this->getTrasactionRow($amount, $beneCode);
+        }
+
+        $formattedAmount = (float) sprintf('%0.2f', $totalAmount);
+
+        $headerValues = $this->getHeaderRow($formattedAmount);
+
+        $values = [self::HEADINGS, $headerValues];
+
+        $values = array_merge($values, $rows);
+
+        return $values;
+    }
+
+    protected function getTrasactionRow($amount, $accountId): array
+    {
         $mode = $this->getTransferMode($amount);
 
-        $this->mode = self::MODE_MAPPING[$mode];
+        $mode = self::MODE_MAPPING[$mode];
 
         $formattedAmount = (float) sprintf('%0.2f', $amount);
 
+        // Mode is set as I for Axis bank always in non-header rows
+        $excelDate = PHPExcel_Shared_Date::PHPToExcel(strtotime($this->date));
+
+        $transactionValues = [
+            $mode,
+            $accountId,
+            $excelDate,
+            $formattedAmount,
+            $excelDate,
+            $excelDate,
+        ];
+
+        return $transactionValues;
+    }
+
+    protected function getHeaderRow($formattedAmount): array
+    {
         // Record Identifier is set as 'D' for Axis bank always in first row
         $headerValues = [
             'D',
@@ -138,21 +216,7 @@ class NodalAccount extends NodalBase\NodalAccount
             '',
         ];
 
-        // Mode is set as I for Axis bank always in non-header rows
-        $excelDate = PHPExcel_Shared_Date::PHPToExcel(strtotime($this->date));
-
-        $transactionValues = [
-            $this->mode,
-            'RZRNAXISCARD',
-            $excelDate,
-            $formattedAmount,
-            $excelDate,
-            $excelDate,
-        ];
-
-        $values = [self::HEADINGS, $headerValues, $transactionValues];
-
-        return $values;
+        return $headerValues;
     }
 
     protected function sendAxisTransferMail(array $fileData)

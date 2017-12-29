@@ -479,6 +479,95 @@ class SettlementTest extends TestCase
         Mail::assertSent(KotakSettlementMail::class);
     }
 
+    public function testMerchantSettlementV2Axis()
+    {
+        Mail::fake();
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => 'axis']);
+
+        $payments = $this->createPaymentEntities();
+
+        foreach ($payments as $payment)
+        {
+            $attrs = ['payment' => $payments[0],
+                      'amount'  => '100'];
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+            $refunds[] = $refund;
+        }
+
+        $input = ['count' => 10];
+        $txns = $this->getEntities('transaction', $input, true);
+
+        $request = [
+            'url' => '/settlements/initiate/axis',
+            'method' => 'POST'
+        ];
+
+        $setlResponse = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($setlResponse['axis']);
+        $this->assertNotNull($setlResponse['axis']['settlement_text_file']);
+        $this->assertNotNull($setlResponse['axis']['settlement_excel_file']);
+
+        $setl = $this->getLastEntity('settlement', true);
+        $this->assertTestResponse($setl, 'fetchAndMatchSettlementAxis');
+
+        // Validate settlement txn entity
+        $setlTxn = $this->getLastEntity('transaction', true);
+        $this->assertEquals('settlement', $setlTxn['type']);
+        $this->assertEquals($setl['id'], $setlTxn['entity_id']);
+        $this->assertNull($setlTxn['reconciled_at']);
+
+        // Validate settlement details entity
+        $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);
+
+        $this->assertArrayHasKey('entity', $content);
+        $this->assertSame('collection', $content['entity']);
+        $this->assertSame($content['count'], 4);
+
+        $totalAmount = 0;
+
+        foreach ($content['items'] as $details)
+        {
+            if ($details['type'] == 'debit')
+            {
+                $totalAmount -= $details['amount'];
+            }
+            else
+            {
+                $totalAmount += $details['amount'];
+            }
+        }
+
+        $this->assertSame($totalAmount, $setl['amount']);
+
+        // Validate batch settlement entity
+        $batchFundTransfer = $this->getLastEntity('batch_fund_transfer', true);
+        $this->assertNotNull($batchFundTransfer['urls']['txt_file']);
+        $this->assertNotNull($batchFundTransfer['urls']['excel_file']);
+        $this->assertTestResponse($batchFundTransfer, 'fetchAndMatchBatchDataSettlementAxis');
+        $this->assertGreaterThanOrEqual($batchFundTransfer['initiated_at'], time());
+        $this->assertNull($batchFundTransfer['reconciled_at']);
+        $this->assertNotNull($batchFundTransfer['txt_file_id']);
+        $this->assertNotNull($batchFundTransfer['excel_file_id']);
+
+        // Validate association of settlement with batch
+        $this->assertEquals($batchFundTransfer['id'], $setl['batch_fund_transfer_id']);
+
+        // Validate fund_transfer_attempt entity
+        $bta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertTestResponse($bta, 'matchSettlementAttemptAxis');
+        $this->assertEquals($batchFundTransfer['id'], $bta['batch_fund_transfer_id']);
+        $this->assertEquals($setl['id'], $bta['source']);
+
+        $content = $this->getEntities('file_store', [], true);
+        $this->assertSame($content['count'], 1);
+
+        Mail::assertSent(AxisSettlementMail::class);
+    }
+
     public function testMerchantSettlementV2()
     {
         Mail::fake();
