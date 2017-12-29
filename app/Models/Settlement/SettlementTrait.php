@@ -31,45 +31,23 @@ trait SettlementTrait
                 continue;
             }
 
-            // skip if txn is refund of authorized txn and update the txn
-            if (($txn->getBalance() === 0) and
-                ($txn->isTypeRefund()))
+            $skipForRefundAuthTxn = $this->skipForRefundAuthTxn($txn);
+
+            if ($skipForRefundAuthTxn === true)
             {
-                $payment = $txn->source->payment;
-
-                if ($payment->hasBeenCaptured() === false)
-                {
-                    $txn[Transaction\Entity::SETTLED_AT] = null;
-
-                    $this->repo->saveOrFail($txn);
-
-                    continue;
-                }
+                continue;
             }
 
-            // DSP wants settlements only between 10 am and 3 pm ¯\_(ツ)_/¯
-            //
-            // TODO : Move this to schedules
-            // https://github.com/razorpay/api/issues/5347
-            //
-            if ($txn->getMerchantId() === '7thBRSDflu7NHL')
+            $skipForDsp = $this->skipForDsp($txn);
+
+            if ($skipForDsp === true)
             {
-                $now = Carbon::now(Timezone::IST)->getTimestamp();
-
-                $tenAm = Carbon::today(Timezone::IST)->hour(10)->getTimestamp();
-
-                $threePm = Carbon::today(Timezone::IST)->hour(15)->minute(10)->getTimestamp();
-
-                if (($now < $tenAm) or
-                    ($now > $threePm))
-                {
-                    continue;
-                }
+                continue;
             }
 
-            $skipForGoalwise = $this->skipForGoalwise($txn);
+            $skipForMutualFundsMarketplace = $this->skipForMutualFundsMarketplace($txn);
 
-            if ($skipForGoalwise === true)
+            if ($skipForMutualFundsMarketplace === true)
             {
                 continue;
             }
@@ -80,28 +58,70 @@ trait SettlementTrait
         return $filteredTxns;
     }
 
-    protected function skipForGoalwise($txn): bool
+    protected function skipForRefundAuthTxn($txn): bool
     {
-        //
-        // Goalwise wants settlement for itself, and its sub-merchants
-        // only between 12pm and 1 pm
-        //
-        $isGoalwise = false;
-
-        $goalwiseMerchantIds = ['7BfRNg10LH7N6T', '8ytYezIThlseJd'];
-
-        if (in_array($txn->merchant->getId(), $goalwiseMerchantIds, true))
+        // skip if txn is refund of authorized txn and update the txn
+        if (($txn->getBalance() === 0) and
+            ($txn->isTypeRefund()))
         {
-            $isGoalwise = true;
+            $payment = $txn->source->payment;
+
+            if ($payment->hasBeenCaptured() === false)
+            {
+                $txn[Transaction\Entity::SETTLED_AT] = null;
+
+                $this->repo->saveOrFail($txn);
+
+                return true;
+            }
         }
-        else if (($txn->isTypePayment() === true) and
+
+        return false;
+    }
+
+    protected function skipForDsp($txn): bool
+    {
+        // DSP wants settlements only between 10 am and 3 pm ¯\_(ツ)_/¯
+        //
+        // TODO : Move this to schedules
+        // https://github.com/razorpay/api/issues/5347
+        //
+        if ($txn->getMerchantId() === '7thBRSDflu7NHL')
+        {
+            $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $tenAm = Carbon::today(Timezone::IST)->hour(10)->getTimestamp();
+
+            $threePm = Carbon::today(Timezone::IST)->hour(15)->minute(10)->getTimestamp();
+
+            if (($now < $tenAm) or
+                ($now > $threePm))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function skipForMutualFundsMarketplace($txn): bool
+    {
+        // Settle only between 12pm and 1 pm
+
+        // Is a submerchant of a mutual fund market place
+        $isSubMerchantOfMf = false;
+
+        // Mutual Fund Marketplace Merchant ids
+        $mfMids = ['7BfRNg10LH7N6T', '8ytYezIThlseJd'];
+
+        if (($txn->isTypePayment() === true) and
             ($txn->merchant->isLinkedAccount() === true) and
-            (in_array($txn->merchant->getParentId(), $goalwiseMerchantIds, true) === true))
+            (in_array($txn->merchant->getParentId(), $mfMids, true) === true))
         {
-            $isGoalwise = true;
+            $isSubMerchantOfMf = true;
         }
 
-        if ($isGoalwise === true)
+        if ($isSubMerchantOfMf === true)
         {
             $now = Carbon::now(Timezone::IST)->getTimestamp();
 
@@ -328,6 +348,7 @@ trait SettlementTrait
             '8ytYezIThlseJd', // Goalwise Non-TPV
             '7BfRNg10LH7N6T', // Goalwise TPV
             '8hXTLsmoM3F6PH', // Moneyview
+            '8lv4idBRY4C9c0', // Wealthy
         ];
 
         if (in_array($merchant->getId(), $skipMerchantIds, true) === true)
