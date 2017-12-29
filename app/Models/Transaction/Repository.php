@@ -412,6 +412,19 @@ class Repository extends Base\Repository
         return $query->update($attributes);
     }
 
+    public function updateChannel($settlementId, $channel)
+    {
+        $values = [Transaction\Entity::CHANNEL => $channel];
+
+        $count = $this->newQuery()
+                      ->where(Transaction\Entity::SETTLEMENT_ID, $settlementId)
+                      ->where(Transaction\Entity::SETTLED, false)
+                      ->whereNull(Transaction\Entity::RECONCILED_AT)
+                      ->update($values);
+
+        return $count;
+    }
+
     public function findByEntityId($entityId, $merchant, $fail = false)
     {
         $txn = $this->newQuery()
