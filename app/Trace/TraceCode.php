@@ -518,6 +518,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
     const SETTLEMENT_RECONCILED                     = 'SETTLEMENT_RECONCILED';
+    const PAYOUT_RECON_SKIPPED                      = 'PAYOUT_RECON_SKIPPED';
     const SETTLEMENT_RETURNED                       = 'SETTLEMENT_RETURNED';
     const SETTLEMENT_INITIATE_FAILED                = 'SETTLEMENT_INITIATE_FAILED';
     const SETTLEMENT_RETRY_FAILED                   = 'SETTLEMENT_RETRY_FAILED';

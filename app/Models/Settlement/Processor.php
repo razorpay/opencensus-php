@@ -334,8 +334,6 @@ class Processor extends Base\Core
      */
     protected function isInvalidSettlementTime(): bool
     {
-        return false;
-
         // Cron runs at 5.01pm.
         $fivePm = Carbon::today(Timezone::IST)->hour(17)->minute(10)->getTimestamp();
 
