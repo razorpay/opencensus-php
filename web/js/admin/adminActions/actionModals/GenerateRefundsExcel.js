@@ -1,4 +1,5 @@
 import React from 'react';
+import user from 'admin/user';
 import {
   DateField,
   SelectField,
@@ -68,6 +69,13 @@ export default function GenerateRefundsExcel() {
           } else {
             body.on = data.on;
           }
+
+          console.log('BODY..', data);
+          if (data.email_self) {
+            data.email_self == 1 && (body.email = user.email);
+            delete data.email_self;
+          }
+
           return adminPost({
             body,
             route_name: 'refund_generate_excel',
