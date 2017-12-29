@@ -109,6 +109,18 @@ class NodalAccount extends NodalBase\NodalAccount
             'F3:F' . $rowCount => 'dd/mm/yy',
         ];
 
+        $rzpFile = $creator->extension(FileStore\Format::XLSX)
+                           ->content($values)
+                           ->name($fileName)
+                           ->store(FileStore\Store::S3)
+                           ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
+                           ->metadata($metadata)
+                           ->headers(false)
+                           ->columnFormat($colFormat)
+                           ->save();
+
+        $creator = new FileStore\Creator;
+
         $file = $creator->extension(FileStore\Format::XLSX)
                         ->content($values)
                         ->name($fileName)
@@ -123,16 +135,6 @@ class NodalAccount extends NodalBase\NodalAccount
                             AESEncryption::SECRET => $this->secret,])
                         ->encode()
                         ->save();
-
-        $rzpFile = $creator->extension(FileStore\Format::XLSX)
-                           ->content($values)
-                           ->name($fileName)
-                           ->store(FileStore\Store::S3)
-                           ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
-                           ->metadata($metadata)
-                           ->headers(false)
-                           ->columnFormat($colFormat)
-                           ->save();
 
         return [$file, $rzpFile];
     }

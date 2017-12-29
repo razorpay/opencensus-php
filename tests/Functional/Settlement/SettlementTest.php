@@ -570,7 +570,7 @@ class SettlementTest extends TestCase
         $this->assertEquals($setl['id'], $bta['source']);
 
         $content = $this->getEntities('file_store', [], true);
-        $this->assertSame($content['count'], 1);
+        $this->assertSame($content['count'], 2);
 
         Mail::assertSent(AxisSettlementMail::class);
     }
