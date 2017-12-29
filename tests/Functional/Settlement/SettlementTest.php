@@ -709,6 +709,8 @@ class SettlementTest extends TestCase
         $this->assertNotNull($setlResponse['kotak']['settlement_excel_file']);
 
         Mail::assertSent(KotakSettlementMail::class);
+
+        Carbon::setTestNow();
     }
 
     public function testSettlementForMultipleMerchants()
