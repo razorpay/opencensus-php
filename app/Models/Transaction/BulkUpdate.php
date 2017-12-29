@@ -32,11 +32,15 @@ class BulkUpdate extends Base\Core
             }
         }
 
+        s($attributes);
+
         $successCount = $failedCount = 0;
 
         $failedIds = [];
 
-        foreach ($merchantIds as $merchant)
+        $txns = [];
+
+        foreach ($merchantIds as $merchantId)
         {
             try
             {
