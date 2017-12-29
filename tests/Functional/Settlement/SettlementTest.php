@@ -115,19 +115,26 @@ class SettlementTest extends TestCase
         $this->assertSame($content['count'], 0);
     }
 
-    protected function createPaymentEntities(int $count = 5)
+    protected function createPaymentEntities(int $count = 5, $merchantId = null)
     {
         $createdAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 5;
         $capturedAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 10;
 
+        $attrs = [
+            'captured_at' => $capturedAt,
+            'method'      => 'card',
+            'created_at'  => $createdAt,
+            'updated_at'  => $createdAt + 10
+        ];
+
+        if ($merchantId !== null)
+        {
+            $attrs['merchant_id'] = $merchantId;
+        }
+
         $payments = $this->fixtures->times($count)->create(
             'payment:captured',
-            [
-                'captured_at' => $capturedAt,
-                'method'      => 'card',
-                'created_at'  => $createdAt,
-                'updated_at'  => $createdAt + 10
-            ]
+            $attrs
         );
 
         return $payments;
@@ -655,6 +662,55 @@ class SettlementTest extends TestCase
         Mail::assertSent(KotakSettlementMail::class);
     }
 
+    public function testMerchantSettlementV2DspSpecific()
+    {
+        Mail::fake();
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->createAccount('7thBRSDflu7NHL');
+
+        $payments = $this->createPaymentEntities(5, '7thBRSDflu7NHL');
+
+        foreach ($payments as $payment)
+        {
+            $attrs = ['payment' => $payments[0],
+                      'amount'  => '100'];
+
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+            $refunds[] = $refund;
+        }
+
+        $input = ['count' => 10];
+        $txns = $this->getEntities('transaction', $input, true);
+
+        $request = [
+            'url' => '/settlements/initiate/kotak',
+            'method' => 'POST'
+        ];
+
+        $dt = Carbon::create(2017, 12, 12, 16, 0, 0, 'Asia/Kolkata');
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($setlResponse['kotak']);
+        $this->assertEquals(0, $setlResponse['kotak']['count']);
+
+        $dt = Carbon::create(2017, 12, 12, 11, 0, 0, 'Asia/Kolkata');
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($setlResponse['kotak']);
+        $this->assertNotNull($setlResponse['kotak']['settlement_text_file']);
+        $this->assertNotNull($setlResponse['kotak']['settlement_excel_file']);
+
+        Mail::assertSent(KotakSettlementMail::class);
+    }
+
     public function testSettlementForMultipleMerchants()
     {
         $this->ba->appAuth();
@@ -923,7 +979,7 @@ class SettlementTest extends TestCase
             'url'     => '/transfers',
             'method'  => 'GET',
             'content' => [
-                'expand'    =>  [
+                'expand'    => [
                     'recipient_settlement'
                 ]
             ]
