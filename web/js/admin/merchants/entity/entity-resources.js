@@ -629,11 +629,13 @@ export function getDetailsViewMap(model) {
           {hasSettlementSchedule ? (
             <Table
               onClick={openSettlementSchedule}
-              items={scheduleTasks.items}
+              items={scheduleTasks}
               fields={_getSettlementScheduleFields()}
             />
-          ) : (
+          ) : hasSettlementSchedule === false ? (
             'No Settlement Schedule Assigned'
+          ) : (
+            <div class="small spinner" />
           )}
         </div>
       ),

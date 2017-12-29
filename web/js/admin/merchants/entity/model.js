@@ -16,7 +16,7 @@ export default class Model extends BaseModel {
     terminals: { items: [], count: 0 },
     offers: [],
     pricingPlans: {},
-    scheduleTasks: {},
+    scheduleTasks: [],
     hasSettlementSchedule: undefined,
     features: {},
     bankDetails: {},
@@ -356,17 +356,16 @@ export default class Model extends BaseModel {
         ...data,
       })
     ).then(data => {
-      if (data) {
-        this.merchant.scheduleTasks = data;
-      }
-
       // Check if merchant has Settlement Schedule
       if (data) {
         for (let key in data.items) {
           if (data.items[key]['type'] === 'settlement') {
+            this.merchant.scheduleTasks.push(data.items[key]);
             this.merchant.hasSettlementSchedule = true;
-            break;
           }
+        }
+        if (this.merchant.hasSettlementSchedule === undefined) {
+          this.merchant.hasSettlementSchedule = false;
         }
       }
     });
