@@ -23,8 +23,6 @@ class Core extends Base\Core
 
         $file = (new Entity)->build($input);
 
-        $file->generateId();
-
         $file->dispute()->associate($dispute);
 
         $this->repo->saveOrFail($file);
@@ -34,7 +32,8 @@ class Core extends Base\Core
 
     protected function uploadAndCreateFile(DisputeEntity $dispute, array $fileInput)
     {
-        $url = $this->uploadFileAndGetUrl($fileInput[Entity::FILE], Entity::STORAGE_PATH, $this->getStorageClient());
+        $url = $this->uploadFileAndGetUrl($fileInput[Entity::FILE],
+                        Entity::STORAGE_PATH, $this->getStorageClient());
 
         $input = [
             Entity::DISPUTE_ID          => $dispute->getId(),

@@ -15,6 +15,10 @@ class StorageClient
 
     const BUCKET_NAME = 'default_files_bucket';
 
+    protected $folderPath;
+
+    protected $bucketName;
+
     /**
      * StorageClient constructor.
      * @param string $folderPath
@@ -85,6 +89,5 @@ class StorageClient
         $s3Url = $result['ObjectURL'];
 
         return $s3Url;
-
     }
 }

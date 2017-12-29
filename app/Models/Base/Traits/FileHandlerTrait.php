@@ -10,8 +10,12 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait FileHandlerTrait
 {
-    protected function uploadFileAndGetUrl(UploadedFile $file, string $localStoragePath, StorageClient $storageClient = null): string
+    protected function uploadFileAndGetUrl(UploadedFile $file,
+                                           string $localStoragePath,
+                                           StorageClient $storageClient = null): string
     {
+        $fileUrl = '';
+
         if ($storageClient === null)
         {
             $storageClient = new StorageClient();
@@ -48,8 +52,6 @@ trait FileHandlerTrait
         }
         catch (Exception\BaseException $e)
         {
-            $fileUrl = '';
-
             $e->setData($fileDetails);
 
             throw $e;

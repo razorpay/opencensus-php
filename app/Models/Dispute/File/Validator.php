@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class Validator extends Base\Validator
 {
     const operationUploadFile = 'upload_file';
-    const operationFilesInput = 'input_files';
+    const operationInputFiles = 'input_files';
 
     protected static $createRules = [
         Entity::DISPUTE_ID         => 'required|string|max:14',
@@ -51,6 +51,6 @@ class Validator extends Base\Validator
 
     public function validateFilesInput(array $files)
     {
-        $this->validateInput(self::operationFilesInput, [Entity::FILES => $files]);
+        $this->validateInput(self::operationInputFiles, [Entity::FILES => $files]);
     }
 }

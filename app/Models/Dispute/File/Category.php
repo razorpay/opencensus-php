@@ -11,7 +11,7 @@ class Category
     const SHIPPING_PROOF                      = 'shipping_proof';
     const PROOF_OF_SERVICES_PRODUCTS          = 'proof_of_services_products';
     const INSTANT_SERVICES                    = 'instant_services';
-    const OTHER_PROOF                         = 'other_proof';
+    const OTHERS                              = 'others';
 
     public static function exists(string $category): bool
     {
