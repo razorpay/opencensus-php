@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use RZP\Models\Transaction;
 use ApiResponse;
 use Request;
 
@@ -52,7 +53,7 @@ class TransactionController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->updateMultipleTransactions($input);
+        $data = (new Transaction\BulkUpdate)->updateMultipleTransactions($input);
 
         return ApiResponse::json($data);
     }
