@@ -45,8 +45,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $retryRules = [
-        'settlement_ids'   => 'required|array',
-        'settlement_ids.*' => 'required|alpha_dash|max:20',
+        'settlement_ids'    => 'required|array',
+        'settlement_ids.*'  => 'required|alpha_dash|max:20',
+        'ignore_time_limit' => 'sometimes',
     ];
 
     protected function validateChannel($attribute, $value)
