@@ -25,7 +25,12 @@ class ReportingServiceTest extends TestCase
         $this->assertEquals($authHeaders[0], 'api');
     }
 
-    protected function getMethod($name)
+    /**
+     * @param  string $name
+     *
+     * @return mixed
+     */
+    protected function getMethod(string $name)
     {
         $class = new \ReflectionClass('\RZP\Services\Reporting');
 

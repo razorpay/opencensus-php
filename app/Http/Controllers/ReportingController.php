@@ -29,7 +29,7 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function updateConfig($id)
+    public function updateConfig(string $id)
     {
         $data = $this->reportingService()->editConfig($id, $this->input);
 

@@ -251,32 +251,30 @@ class Repository extends Base\Repository
         return $refunds;
     }
 
-    public function fetchFailedRefundsForGateway($gateway)
+    public function fetchFailedRefundsForGatewayBetweenTimestamps($from, $to, $gateway)
     {
-        $attrs = $this->dbColumn('*');
+        $refundAttrs = $this->dbColumn('*');
 
-        $query = $this->newQuery();
+        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
 
-        $refunds = $query->select($attrs)->join(
-            $this->repo->payment->getTableName(),
-            function ($join) use ($gateway)
-            {
-                $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
+        $refundStatus = $this->dbColumn(Refund\Entity::STATUS);
 
-                $status    =  $this->dbColumn(Refund\Entity::STATUS);
+        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
 
-                $pRepo = $this->repo->payment;
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
 
-                $pId = $pRepo->dbColumn(Payment\Entity::ID);
+        $refundCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
 
-                $pGateway = $pRepo->dbColumn(Payment\Entity::GATEWAY);
 
-                $join->on($rPaymentId, '=', $pId)
-                     ->where($status, '=',Refund\STATUS::FAILED)
-                     ->where($pGateway, '=', $gateway);
-            })
-            ->with('payment')
-            ->get();
+        return $this->newQuery()
+                    ->select($refundAttrs)
+                    ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                    ->where($refundStatus, '=',Refund\STATUS::FAILED)
+                    ->where($paymentGateway, '=', $gateway)
+                    ->where($refundCreatedAt, '>=', $from)
+                    ->where($refundCreatedAt, '<=', $to)
+                    ->with(['payment'])
+                    ->get();
 
         return $refunds;
     }

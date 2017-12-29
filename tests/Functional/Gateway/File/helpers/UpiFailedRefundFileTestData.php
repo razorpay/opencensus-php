@@ -1,11 +1,18 @@
 <?php
 
+use Carbon\Carbon;
+
+use RZP\Constants\Timezone;
+
 return [
    'testUpiFailedRefundFile' => [
         'request' => [
             'content' => [
                 'type'    => 'refund_failed',
                 'targets' => ['upi_icici'],
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
+                'recipients' => ['test@razorpay.com'],
             ],
             'url' => '/gateway/files',
             'method' => 'POST',
@@ -22,6 +29,7 @@ return [
                         'partially_processed' => false,
                         'attempts'            => 1,
                         'sender'              => 'refunds@razorpay.com',
+                        'recipients'          => ['test@razorpay.com'],
                         'type'                => 'refund_failed',
                         'target'              => 'upi_icici',
                         'entity'              => 'gateway_file',
@@ -37,6 +45,8 @@ return [
             'content' => [
                 'type'    => 'refund_failed',
                 'targets' => ['upi_icici'],
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
