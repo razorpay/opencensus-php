@@ -668,6 +668,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::INITIAL);
     }
 
+    public function isRecurringTypeCardChange()
+    {
+        return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::CARD_CHANGE);
+    }
+
     public function setSigned($signed = true)
     {
         $this->setAttribute(self::SIGNED, $signed);
