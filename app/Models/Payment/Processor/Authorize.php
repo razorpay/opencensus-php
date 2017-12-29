@@ -1496,21 +1496,38 @@ trait Authorize
 
         $payment->setInternational();
 
-        $this->processEmandatePayments($payment);
+        $this->setRecurringType($payment);
     }
 
-    protected function processEmandatePayments(Payment\Entity $payment)
+    protected function setRecurringType(Payment\Entity $payment)
     {
-        $token = $payment->getGlobalOrLocalTokenEntity();
+        $type = null;
 
         if ($payment->isEmandatePayment() === true)
         {
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
             // True => auto, False => initial
             // TODO: Add support for when we allow recurring tokens for first payments
-            $type = ($token->isRecurring() === true) ? Payment\RecurringType::AUTO : Payment\RecurringType::INITIAL;
-
-            $payment->setRecurringType($type);
+            $type = ($token->isRecurring() === true) ?
+                    Payment\RecurringType::AUTO :
+                    Payment\RecurringType::INITIAL;
         }
+
+        if ($payment->hasSubscription() === true)
+        {
+            $subscription = $payment->subscription;
+
+            //
+            // TODO: In case of card change, should it be set as
+            // auto or as initial? Currently, it sets as auto.
+            //
+            $type = ($subscription->isCreated() === true) ?
+                    Payment\RecurringType::INITIAL :
+                    Payment\RecurringType::AUTO;
+        }
+
+        $payment->setRecurringType($type);
     }
 
     protected function addTestSuccessFlagToGatewayInput(array $input, array & $gatewayInput)
