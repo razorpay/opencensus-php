@@ -4,7 +4,7 @@ import Field, { SelectMode } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 
 import { adminPost } from 'common/fetch';
-import { notifySuccess, closeModal } from 'common/modal';
+import { notifySuccess, closeModal, notifyError } from 'common/modal';
 
 RetryRefund.title = 'Retry Refund to Bank Account';
 RetryRefund.permission = 'edit_payment_refund';
@@ -49,6 +49,8 @@ export default function RetryRefund() {
             if (response) {
               notifySuccess('Refund successful');
               closeModal();
+            } else {
+              notifyError('Unexpected error happened');
             }
           });
         }}
