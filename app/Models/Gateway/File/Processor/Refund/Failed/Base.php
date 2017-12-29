@@ -13,7 +13,7 @@ use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\Processor\Refund;
-use RZP\Mail\Gateway\FailedRefundFile\Base as RefundFileMail;
+use RZP\Mail\Gateway\FailedRefund\Base as FailedRefundFileMail;
 
 class Base extends Refund\Base
 {
@@ -44,5 +44,12 @@ class Base extends Refund\Base
         ];
 
         return $mailData;
+    }
+
+    protected function refundMail($mailData, $recipients)
+    {
+        $refundFileMail = new FailedRefundFileMail($mailData, static::GATEWAY, $recipients);
+
+        return $refundFileMail;
     }
 }

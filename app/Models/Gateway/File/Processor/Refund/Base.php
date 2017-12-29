@@ -148,7 +148,7 @@ class Base extends BaseProcessor
 
             $mailData = $this->formatDataForMail($data);
 
-            $refundFileMail = new RefundFileMail($mailData, static::GATEWAY, $recipients);
+            $refundFileMail = $this->refundMail($mailData, $recipients);
 
             Mail::queue($refundFileMail);
 
@@ -188,5 +188,12 @@ class Base extends BaseProcessor
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         return static::FILE_NAME . '_' . $this->mode . '_' . $time;
+    }
+
+    protected function refundMail($mailData, $recipients)
+    {
+        $refundFileMail = new RefundFileMail($mailData, static::GATEWAY, $recipients);
+
+        return $refundFileMail;
     }
 }
