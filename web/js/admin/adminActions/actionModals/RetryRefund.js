@@ -12,14 +12,19 @@ export default function RetryRefund() {
   return (
     <Form class="full-span">
       <Field label="Refund Id" type="text" name="id" required />
-      <Field label="Beneficiary Name" type="text" name="name" required />
+      <Field
+        label="Beneficiary Name"
+        type="text"
+        name="beneficiary_name"
+        required
+      />
       <Field
         label="Account Number"
         type="text"
         name="account_number"
         required
       />
-      <Field label="IFSC" type="text" name="ifsc" required />
+      <Field label="IFSC" type="text" name="ifsc_code" required />
       <SelectMode defaultValue="live" />
       <AsyncButton
         text="Submit"
@@ -33,8 +38,8 @@ export default function RetryRefund() {
             body: {
               bank_account: {
                 account_number: body.account_number,
-                ifsc: body.ifsc,
-                name: body.name,
+                ifsc_code: body.ifsc_code,
+                beneficiary_name: body.beneficiary_name,
               },
             },
             url_params: {
