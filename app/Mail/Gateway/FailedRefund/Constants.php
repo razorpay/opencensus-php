@@ -30,6 +30,7 @@ class Constants extends RefundFile\Constants
     ];
 
     const MAILTAG_MAP = [
-        Gateway::UPI_ICICI              => MailTags::ICICI_UPI_FAILED_REFUNDS_MAIL,
+        Gateway::UPI_ICICI            => MailTags::ICICI_UPI_FAILED_REFUNDS_MAIL,
+        Gateway::WALLET_AIRTELMONEY   => MailTags::AIRTEL_MONEY_FAILED_REFUNDS_MAIL,
     ];
 }
