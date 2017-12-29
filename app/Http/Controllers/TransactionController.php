@@ -47,4 +47,13 @@ class TransactionController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function updateMultipleTransactions()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateMultipleTransactions($input);
+
+        return ApiResponse::json($data);
+    }
 }

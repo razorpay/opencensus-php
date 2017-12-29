@@ -64,4 +64,66 @@ class Service extends Base\Service
 
         return $txn->toArrayPublic();
     }
+
+    public function updateMultipleTransactions(array $input)
+    {
+        (new Validator)->validateInput('update', $input);
+
+        $this->trace->info(
+            TraceCode::TRANSACTIONS_BULK_UPDATE_REQUEST,
+            $input
+        );
+
+        $merchantIds = $input['merchant_ids'];
+        $transactionIds = $input['transaction_ids'] ?? [];
+        $settledAt = $input['old_settled_at'] ?? null;
+
+        unset($input['transaction_ids'], $input['merchant_ids'], $input['old_settled_at']);
+
+        $attributes = [];
+
+        foreach ($input as $key => $value)
+        {
+            $attributes[$key] = $value;
+        }
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchant)
+        {
+            try
+            {
+                $txns[$merchantId] = $this->repo
+                                          ->transactions
+                                          ->updateAttributes($merchantId, $transactionIds, $settledAt);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'total'     => count($merchantIds),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+            'txns'      => $txns,
+        ];
+
+        $this->trace->info(
+            TraceCode::TRANSACTIONS_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
 }
