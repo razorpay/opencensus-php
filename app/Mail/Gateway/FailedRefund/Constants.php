@@ -5,8 +5,9 @@ namespace RZP\Mail\Gateway\FailedRefund;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base;
 use RZP\Models\Payment\Gateway;
+use RZP\Mail\Gateway\RefundFile;
 
-class Constants extends Base\Constants
+class Constants extends RefundFile\Constants
 {
     const HEADER_MAP = [
         Gateway::UPI_ICICI              => 'UPI Icici Failed Refunds',
@@ -22,5 +23,9 @@ class Constants extends Base\Constants
 
     const MAIL_TEMPLATE_MAP = [
         Gateway::UPI_ICICI              => 'emails.message',
+    ];
+
+    const MAILTAG_MAP = [
+        Gateway::UPI_ICICI              => MailTags::ICICI_UPI_FAILED_REFUNDS_MAIL,
     ];
 }
