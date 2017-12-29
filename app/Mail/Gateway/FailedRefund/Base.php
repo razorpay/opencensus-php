@@ -43,6 +43,13 @@ class Base extends RefundFile\Base
         return $this;
     }
 
+    protected function addHtmlView()
+    {
+        $this->view(Constants::MAIL_TEMPLATE_MAP[$this->type]);
+
+        return $this;
+    }
+
     protected function addHeaders()
     {
         $header = Constants::MAILTAG_MAP[$this->type];
