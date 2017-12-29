@@ -6,6 +6,7 @@ use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Transaction;
 use RZP\Models\Report\Types\BasicEntityReport;
@@ -76,15 +77,18 @@ class Service extends Base\Service
 
         $merchantIds = $input['merchant_ids'];
         $transactionIds = $input['transaction_ids'] ?? [];
-        $settledAt = $input['old_settled_at'] ?? null;
-
-        unset($input['transaction_ids'], $input['merchant_ids'], $input['old_settled_at']);
+        $oldSettledAt = $input['old_settled_at'] ?? null;
 
         $attributes = [];
 
-        foreach ($input as $key => $value)
+        $attributesToUpdate = ['settled_at', 'channel'];
+
+        foreach ($attributesToUpdate as $attr)
         {
-            $attributes[$key] = $value;
+            if (empty($input[$attr]) === false)
+            {
+                $attributes[$attr] = $input[$attr];
+            }
         }
 
         $successCount = $failedCount = 0;
@@ -97,7 +101,7 @@ class Service extends Base\Service
             {
                 $txns[$merchantId] = $this->repo
                                           ->transactions
-                                          ->updateAttributes($merchantId, $transactionIds, $settledAt);
+                                          ->updateAttributes($merchantId, $transactionIds, $oldSettledAt);
 
                 $successCount++;
             }

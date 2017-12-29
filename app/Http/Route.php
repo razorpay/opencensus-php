@@ -239,7 +239,7 @@ final class Route
         'transaction_fetch_multiple'              => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'              => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
         'transaction_create_fees_breakup'         => ['post',     'transactions/fees_breakup',                      'TransactionController@postCreateFeeBreakup'                        ],
-        'transaction_bulk_update'                 => ['put',      'transactions/channel/bulk',                      'TransactionController@updateMultipleTransactions'                  ],
+        'transaction_bulk_update'                 => ['put',      'transactions/bulk',                              'TransactionController@updateMultipleTransactions'                  ],
         'setl_fetch_schedule'                     => ['get',      'settlements/schedules',                          'ScheduleController@getSettlementSchedules'                         ],
         'setl_fetch_by_id'                        => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                     => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],

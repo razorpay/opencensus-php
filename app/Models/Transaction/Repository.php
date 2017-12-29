@@ -395,16 +395,18 @@ class Repository extends Base\Repository
         return $count;
     }
 
-    public function updateAttributes($merchantId, $transactionIds, $settledAt, $attributes)
+    public function updateAttributes($merchantId, $transactionIds, $oldSettledAt, $attributes)
     {
         $query = $this->newQuery()
                     ->where(Transaction\Entity::MERCHANT_ID, $merchantId)
                     ->whereIn(Transaction\Entity::ID, $transactionIds)
                     ->whereNull(Transaction\Entity::SETTLEMENT_ID);
 
-        if ($settledAt !== null)
+        if ($oldSettledAt !== null)
         {
-            $query->whereBetween(Transaction\Entity::SETTLED_AT, [$settledAt['start'], $settledAt['end']]);
+            $between = [$oldSettledAt['start'], $oldSettledAt['end']];
+
+            $query->whereBetween(Transaction\Entity::SETTLED_AT, $between);
         }
 
         return $query->update($attributes);
