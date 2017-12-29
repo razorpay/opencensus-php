@@ -67,10 +67,56 @@ trait SettlementTrait
                 }
             }
 
+            $skipForGoalwise = $this->skipForGoalwise($txn);
+
+            if ($skipForGoalwise === true)
+            {
+                continue;
+            }
+
             $filteredTxns->push($txn);
         }
 
         return $filteredTxns;
+    }
+
+    protected function skipForGoalwise($txn): bool
+    {
+        //
+        // Goalwise wants settlement for itself, and its sub-merchants
+        // only between 12pm and 1 pm
+        //
+        $isGoalwise = false;
+
+        $goalwiseMerchantIds = ['7BfRNg10LH7N6T', '8ytYezIThlseJd'];
+
+        if (in_array($txn->merchant->getId(), $goalwiseMerchantIds, true))
+        {
+            $isGoalwise = true;
+        }
+        else if (($txn->isTypePayment() === true) and
+            ($txn->merchant->isLinkedAccount() === true) and
+            (in_array($txn->merchant->getParentId(), $goalwiseMerchantIds, true) === true))
+        {
+            $isGoalwise = true;
+        }
+
+        if ($isGoalwise === true)
+        {
+            $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $twelvePm = Carbon::today(Timezone::IST)->hour(12)->getTimestamp();
+
+            $onePm = Carbon::today(Timezone::IST)->hour(13)->minute(10)->getTimestamp();
+
+            if (($now < $twelvePm) or
+                ($now > $onePm))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function createSettlementsFromTxns($txns, $channel): array
