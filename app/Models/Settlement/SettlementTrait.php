@@ -125,12 +125,19 @@ trait SettlementTrait
         {
             $now = Carbon::now(Timezone::IST)->getTimestamp();
 
-            $twelvePm = Carbon::today(Timezone::IST)->hour(12)->getTimestamp();
+            $onePm = Carbon::today(Timezone::IST)->hour(13)->getTimestamp();
 
-            $onePm = Carbon::today(Timezone::IST)->hour(13)->minute(10)->getTimestamp();
+            $twoPm = Carbon::today(Timezone::IST)->hour(14)->getTimestamp();
 
-            if (($now < $twelvePm) or
-                ($now > $onePm))
+            $twoTenPm = Carbon::today(Timezone::IST)->hour(14)->minute(10)->getTimestamp();
+
+            if (($txn->getSettledAt() <= $twoPm) and ($now > $twoPm))
+            {
+                return false;
+            }
+
+            if (($now < $onePm) or
+                ($now > $twoTenPm))
             {
                 return true;
             }
