@@ -16,7 +16,6 @@ class Validator extends \Razorpay\Spine\Validation\Validator
 
     protected function processValidationFailure($messages, $operation, $input)
     {
-        sd($messages);
         throw new Exception\BadRequestValidationFailureException($messages);
     }
 
