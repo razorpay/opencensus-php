@@ -79,7 +79,13 @@ class EditRole extends Component {
         }
       });
     } else {
-      body.permissions = this.state.selectedPerms;
+      let { selectedPerms } = this.state;
+      body.permissions = [];
+
+      for (let sPerm in selectedPerms) {
+        if (selectedPerms.hasOwnProperty(sPerm)) body.permissions.push(sPerm);
+      }
+
       return adminPost({
         route_name: 'role_create',
         body,

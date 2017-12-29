@@ -28,8 +28,11 @@ export default class RolesForm extends Component {
   render() {
     let { name, description, allPerms, onSubmit } = this.props;
     return (
-      <BaseModal header="Edit Role" customClass="roles-form-container">
-        <Form class="inline" onSubmit={onSubmit}>
+      <BaseModal
+        header={name ? 'Edit Role' : 'Add Role'}
+        customClass="roles-form-container"
+      >
+        <Form class="inline" onSubmit={onSubmit} style={{ minWidth: '700px' }}>
           <Field name="name" label="Name" required defaultValue={name} />
           <Field
             name="description"
