@@ -52,8 +52,6 @@ class Service extends Base\Service
 
     protected function updateForMerchant(Entity $dispute, array $input): array
     {
-        $response = [];
-
         $files = [];
 
         $fileCore = new File\Core();
@@ -67,17 +65,24 @@ class Service extends Base\Service
             unset($input[DisputeFileEntity::FILES]);
         }
 
-        if (empty($input) === false)
+        $response = $this->repo->transaction(function() use ($dispute, $fileCore, $files, $input)
         {
-            $dispute = $this->core()->updateForMerchant($dispute, $input);
-        }
+            $response = [];
 
-        if (empty($files) === false )
-        {
-            $response['files'] = $fileCore->uploadFiles($dispute, $files);
-        }
+            if (empty($input) === false)
+            {
+                $dispute = $this->core()->updateForMerchant($dispute, $input);
+            }
 
-        $response['dispute'] = $dispute->toArrayPublic();
+            if (empty($files) === false )
+            {
+                $response['files'] = $fileCore->uploadFiles($dispute, $files);
+            }
+
+            $response['dispute'] = $dispute->toArrayPublic();
+
+            return $response;
+        });
 
         return $response;
     }
