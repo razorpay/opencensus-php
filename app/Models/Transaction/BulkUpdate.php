@@ -42,7 +42,7 @@ class BulkUpdate extends Base\Core
             {
                 $txns[$merchantId] = $this->repo
                                           ->transactions
-                                          ->updateAttributes($merchantId, $transactionIds, $oldSettledAt);
+                                          ->updateAttributes($merchantId, $transactionIds, $oldSettledAt, $attributes);
 
                 $successCount++;
             }
