@@ -15,8 +15,8 @@ class Constants extends RefundFile\Constants
     ];
 
     const SUBJECT_MAP = [
-        Gateway::UPI_ICICI          => 'UPI Icici Failed refunds file for ',
-        Gateway::WALLET_AIRTELMONEY => 'Airtel Money Failed refunds file for ',
+        Gateway::UPI_ICICI          =>  'UPI Icici Failed refunds file for ',
+        Gateway::WALLET_AIRTELMONEY =>  'Airtel Money Failed refunds file for ',
     ];
 
     const BODY_MAP = [

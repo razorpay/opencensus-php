@@ -46,6 +46,8 @@ class Type
 
     const SBI_UPI_REFUND                    = 'sbi_upi_refund';
 
+    const AMEX_REFUND                       = 'amex_refund';
+
     const PNB_NETBANKING_REFUND             = 'pnb_netbanking_refund';
 
     const PNB_NETBANKING_CLAIMS             = 'pnb_netbanking_claims';
@@ -134,6 +136,7 @@ class Type
             self::ICICI_EMI_FILE_SFTP,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
+            self::AMEX_REFUND,
         ],
 
         Constants\Entity::BATCH => [
@@ -206,6 +209,7 @@ class Type
         self::FUND_TRANSFER_H2H,
         self::PNB_NETBANKING_REFUND,
         self::PNB_NETBANKING_CLAIMS,
+        self::AMEX_REFUND
     ];
 
     /**

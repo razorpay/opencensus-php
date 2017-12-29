@@ -17,6 +17,7 @@ class Constants
     const SCBL            = 'scbl';
     const UPI_ICICI       = 'upi_icici';
     const AIRTEL_MONEY    = 'airtel_money';
+    const AMEX            = 'amex';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -52,6 +53,7 @@ class Constants
         TYPE::REFUND_FAILED => [
             self::UPI_ICICI,
             self::AIRTEL_MONEY,
+            self::AMEX,
         ],
     ];
 
@@ -98,7 +100,8 @@ class Constants
 
         TYPE::REFUND_FAILED => [
             self::UPI_ICICI    => ['supportteam@razorpay.com'],
-            self::AIRTEL_MONEY => ['settlements@razorpay.com'],
+            self::AIRTEL_MONEY => ['supportteam@razorpay.com'],
+            self::AMEX         => ['supportteam@razorpay.com'],
         ],
     ];
 }

@@ -14,6 +14,8 @@ class Base extends RefundFile\Base
     {
         $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
+        s($today);
+
         $subject = Constants::SUBJECT_MAP[$this->type] . $today;
 
         return $subject;
