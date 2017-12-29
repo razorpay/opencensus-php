@@ -16,8 +16,6 @@ class Base extends RefundFile\Base
 
         $subject = Constants::SUBJECT_MAP[$this->type] . $today;
 
-        s($subject);
-
         return $subject;
     }
 
@@ -26,8 +24,6 @@ class Base extends RefundFile\Base
         $fromEmail = Constants::MAIL_ADDRESSES[Constants::REFUNDS];
 
         $fromHeader = Constants::HEADER_MAP[$this->type];
-
-        s($fromHeader);
 
         $this->from($fromEmail, $fromHeader);
 
@@ -50,7 +46,6 @@ class Base extends RefundFile\Base
     protected function addHeaders()
     {
         $header = Constants::MAILTAG_MAP[$this->type];
-        s($header);
 
         $this->withSwiftMessage(function ($message) use ($header)
         {
