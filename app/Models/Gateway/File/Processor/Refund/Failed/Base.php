@@ -13,7 +13,7 @@ use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\Processor\Refund;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Mail\Gateway\FailedRefundFile\Base as RefundFileMail;
 
 class Base extends Refund\Base
 {
