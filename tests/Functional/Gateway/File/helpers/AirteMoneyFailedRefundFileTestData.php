@@ -1,11 +1,17 @@
 <?php
 
+use Carbon\Carbon;
+
+use RZP\Constants\Timezone;
+
 return [
     'testAirtelMoneyFailedRefundFile' => [
         'request' => [
             'content' => [
                 'type'    => 'refund_failed',
                 'targets' => ['airtel_money'],
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
             ],
             'url' => '/gateway/files',
             'method' => 'POST',
