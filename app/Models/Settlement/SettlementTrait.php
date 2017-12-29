@@ -131,6 +131,13 @@ trait SettlementTrait
 
             $twoTenPm = Carbon::today(Timezone::IST)->hour(14)->minute(10)->getTimestamp();
 
+            //
+            // Settle transaction which needed to be settled before 2 pm today
+            // but for whatever reason weren't picked up then.
+            // In this case, the below condition of settlement window of 1-2 PM
+            // is not applicable, because these were due for settlement
+            // before 2 pm, and should have been picked up.
+            //
             if (($txn->getSettledAt() <= $twoPm) and ($now > $twoPm))
             {
                 return false;
