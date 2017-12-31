@@ -22,6 +22,7 @@ class Base extends BaseProcessor
     public function fetchEntities(): PublicCollection
     {
         $begin = $this->gatewayFile->getBegin();
+
         $end = $this->gatewayFile->getEnd();
 
         $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
@@ -102,13 +103,13 @@ class Base extends BaseProcessor
     public function createFile($data)
     {
         // Don't process further if file is already generated
-        // if ($this->isFileGenerated() === true)
-        // {
-        //     return;
-        // }
+        if ($this->isFileGenerated() === true)
+        {
+            return;
+        }
 
-        // try
-        // {
+        try
+        {
             $fileData = $this->formatDataForFile($data);
 
             $fileName = $this->getFileToWriteNameWithoutExt();
@@ -128,22 +129,22 @@ class Base extends BaseProcessor
             $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
-        // }
-        // catch (\Throwable $e)
-        // {
-        //     throw new GatewayFileException(
-        //         ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
-        //         [
-        //             'id'        => $this->gatewayFile->getId(),
-        //         ],
-        //         $e);
-        // }
+        }
+        catch (\Throwable $e)
+        {
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id'        => $this->gatewayFile->getId(),
+                ],
+                $e);
+        }
     }
 
     public function sendFile($data)
     {
-        // try
-        // {
+        try
+        {
             $recipients = $this->gatewayFile->getRecipients();
 
             $mailData = $this->formatDataForMail($data);
@@ -155,16 +156,16 @@ class Base extends BaseProcessor
             $this->gatewayFile->setFileSentAt(time());
 
             $this->gatewayFile->setStatus(Status::FILE_SENT);
-        // }
-        // catch (\Throwable $e)
-        // {
-        //     throw new GatewayFileException(
-        //         ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
-        //         [
-        //             'id'        => $this->gatewayFile->getId(),
-        //         ],
-        //         $e);
-        // }
+        }
+        catch (\Throwable $e)
+        {
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
+                [
+                    'id'        => $this->gatewayFile->getId(),
+                ],
+                $e);
+        }
     }
 
     protected function shouldNotReportFailure(string $code): bool
