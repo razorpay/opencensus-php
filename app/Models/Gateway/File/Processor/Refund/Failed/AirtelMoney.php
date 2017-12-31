@@ -34,18 +34,18 @@ class AirtelMoney extends Base
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], Timezone::IST)->format('d/m/Y');
 
-            $i++;
-
             $formattedData[] = [
                 self::SR_NO             => $i,
                 self::TRANSACTION_DATE  => $date,
                 self::GATEWAY_REFERENCE => $row['gateway']['gateway_payment_id'],
                 self::ORDER             => $row['payment']['id'],
-                self::REFUND_AMOUNT     => $this->getFormattedAmount($row['payment']['amount']),
+                self::ORDER_AMOUNT      => $this->getFormattedAmount($row['payment']['amount']),
                 self::REFUND_AMOUNT     => $this->getFormattedAmount($row['refund']['amount']),
                 self::MERCHANT_CODE     => $row['terminal']['gateway_merchant_id']
             ];
         }
+
+        $i++;
 
         return $formattedData;
 
