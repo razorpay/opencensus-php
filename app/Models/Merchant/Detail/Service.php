@@ -122,11 +122,6 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function processFileCreation(string $type, $value, $merchant, Entity $merchantDetails): string
-    {
-        // TODO: Fix post refactor
-    }
-
     public function editMerchantDetails($id, array $input)
     {
         $slackAction = null;

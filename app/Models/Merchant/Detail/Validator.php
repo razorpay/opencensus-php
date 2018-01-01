@@ -320,18 +320,12 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateIsNotLocked($accountCheck = false)
+    public function validateIsNotLocked()
     {
-        $errorCode = ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED;
-
-        if ($accountCheck === true)
-        {
-            $errorCode = ErrorCode::BAD_REQUEST_ACCOUNT_LOCKED;
-        }
-
         if ($this->entity->isLocked() === true)
         {
-            throw new Exception\BadRequestException($errorCode);
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
         }
     }
 

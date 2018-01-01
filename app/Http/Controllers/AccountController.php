@@ -13,24 +13,6 @@ class AccountController extends Controller
 
 	protected $service = Merchant\Account\Service::class;
 
-    public function postAccountFiles(string $id)
-    {
-        $input = Request::all();
-
-        $response = $this->service()->uploadFiles($id, $input);
-
-        return ApiResponse::json($response);
-    }
-
-    public function patchAccountDetails(string $id)
-    {
-        $input = Request::all();
-
-        $response = $this->service()->updateDetails($id, $input);
-
-        return ApiResponse::json($response);
-    }
-
     public function fetchSettlementDestinations(string $id)
     {
         $response = $this->service()->getSettlementDestinations($id);

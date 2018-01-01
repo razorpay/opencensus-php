@@ -117,11 +117,6 @@ class Entity extends Merchant\Entity
         return $this->bankAccount()->first();
     }
 
-    public function getSchedule()
-    {
-        return $this->schedules()->first();
-    }
-
     public function getActivatedAt()
     {
         return $this->getAttribute(self::ACTIVATED_AT);
@@ -264,18 +259,6 @@ class Entity extends Merchant\Entity
         {
             $settlementDestinationId = BankAccount\Entity::getSignedId($settlementDestination->getId());
         }
-
-        // todo: Add method based schedules here
-        //        $schedule = $this->getSchedule();
-        //
-        //        if ($schedule != null)
-        //        {
-        //            $schedule = $schedule->toArrayPublic();
-        //        }
-        //
-        //        // Unset the keys that are not required
-        //        unset($schedule[Schedule\Entity::MERCHANT_ID]);
-        //        unset($schedule[Schedule\Entity::ID]);
 
         $array[self::FUND_TRANSFER] = [
             self::DESTINATION => $settlementDestinationId,

@@ -697,9 +697,6 @@ final class Route
         'account_create'                          => ['post',     'accounts',                                       'AccountController@create'                                          ],
         'account_fetch'                           => ['get',      'accounts',                                       'AccountController@list'                                            ],
         'account_fetch_multiple'                  => ['get',      'accounts/{id}',                                  'AccountController@get'                                             ],
-        'account_create_files'                    => ['post',     'accounts/{id}/files',                            'AccountController@postAccountFiles'                                ],
-        'account_edit'                            => ['patch',    'accounts/{id}',                                  'AccountController@update'                                          ],
-        'account_edit_details'                    => ['patch',    'accounts/{id}/details',                          'AccountController@patchAccountDetails'                             ],
         'account_fetch_settlement_destinations'   => ['get',      'accounts/{id}/settlement-destinations',          'AccountController@fetchSettlementDestinations'                     ],
         'account_post_settlement_destinations'    => ['post',     'accounts/{id}/bank-accounts',                    'AccountController@postBankAccounts'                      ],
     ];
@@ -900,9 +897,6 @@ final class Route
         'account_fetch',
         'account_fetch_multiple',
         'account_create',
-        'account_create_files',
-        'account_edit',
-        'account_edit_details',
         'account_post_settlement_destinations',
         'account_fetch_settlement_destinations',
     ];

@@ -52,51 +52,6 @@ class Service extends Merchant\Service
         return $merchant->toArrayPublic();
     }
 
-    public function edit(string $id, array $input)
-    {
-        $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
-
-        $this->setSettlementScheduleIdIfNeeded($account, $input);
-
-        $account = $this->core->edit($account, $input);
-
-        return $account->toArrayPublic();
-    }
-
-    /**
-     * Upload activation files for an account
-     *
-     * @param  string       $id
-     * @param  mixed        $input
-     * @return array
-     */
-    public function uploadFiles(string $id, $input) : array
-    {
-        $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
-
-        $this->core->uploadFiles($account, $input);
-
-        return [
-            'success'  => true
-        ];
-    }
-
-    /**
-     * Add or edit account details
-     *
-     * @param  string       $id
-     * @param  array        $input
-     * @return array
-     */
-    public function updateDetails(string $id, array $input) : array
-    {
-        $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
-
-        $accountDetails = $this->core->updateDetails($account, $input);
-
-        return $accountDetails;
-    }
-
     /**
      * Returns the settlement destinations for an account
      *
