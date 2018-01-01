@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Helpers\Payment;
 use Mockery;
 use Requests;
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Models\Merchant\Account;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Payment\Verify\Action;
@@ -1002,7 +1003,7 @@ trait PaymentTrait
             'number'            => '4012001038443335',
             'name'              => 'Harshil',
             'expiry_month'      => '12',
-            'expiry_year'       => '2017',
+            'expiry_year'       =>  Carbon::now()->year,
             'cvv'               => '566',
         );
 
