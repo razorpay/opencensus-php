@@ -28,25 +28,6 @@ class Amex extends Base
     const PAYMENT_AMOUNT       = 'Payment Amount';
     const MERCHANT_CODE        = 'Merchant Code';
 
-
-    public function fetchEntities(): PublicCollection
-    {
-        /**
-         * For Card gateways Only refunds that are failed before
-         *  6 months are processed via file
-        **/
-        $begin = $this->gatewayFile->getBegin() - 15780000;
-
-        $end = $this->gatewayFile->getEnd() - 15780000;
-
-        $refunds = $this->repo->refund->fetchFailedRefundsForGatewayBetweenTimestamps(
-                    $begin,
-                    $end,
-                    static::GATEWAY
-                );
-        return $refunds;
-    }
-
     protected function formatDataForFile(array $data)
     {
         $i = 1;

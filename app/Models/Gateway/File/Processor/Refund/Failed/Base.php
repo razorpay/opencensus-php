@@ -9,6 +9,8 @@ use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
@@ -20,7 +22,21 @@ class Base extends Refund\Base
     public function fetchEntities(): PublicCollection
     {
         $begin = $this->gatewayFile->getBegin();
+
         $end = $this->gatewayFile->getEnd();
+
+        /**
+         * For Card gateways only refunds that are failed before
+         *  6 months are processed via file
+        **/
+
+        if (Gateway::isMethodSupported(Method::CARD,  static::GATEWAY))
+        {
+            $begin = $this->gatewayFile->getBegin() - 15780000;
+
+            $end = $this->gatewayFile->getEnd() - 15780000;
+        }
+
         $refunds = $this->repo->refund->fetchFailedRefundsForGatewayBetweenTimestamps(
                     $begin,
                     $end,
