@@ -13,18 +13,33 @@ class AccountController extends Controller
 
 	protected $service = Merchant\Account\Service::class;
 
-    public function fetchSettlementDestinations(string $id)
+    /**
+     * Returns all types of settlement destinations
+     * Currently, only bank accounts are returned
+     *
+     * @param string $accountId
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function fetchSettlementDestinations(string $accountId)
     {
-        $response = $this->service()->getSettlementDestinations($id);
+        $response = $this->service()->getSettlementDestinations($accountId);
 
         return ApiResponse::json($response);
     }
 
-    public function postBankAccounts(string $id)
+    /**
+     * Adds a new bank account to the merchant account
+     *
+     * @param string $accountId
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function postBankAccounts(string $accountId)
     {
         $input = Request::all();
 
-        $response = $this->service()->addSettlementDestination($id, $input);
+        $response = $this->service()->addSettlementDestination($accountId, $input);
 
         return ApiResponse::json($response);
     }

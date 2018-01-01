@@ -3,7 +3,7 @@
 return [
     'testRetrieveAccount' => [
         'request' => [
-            'url' => '/accounts/acc_10000000000001',
+            'url' => '/beta/accounts/acc_10000000000001',
             'method' => 'get',
         ],
         'response' => [
@@ -15,7 +15,7 @@ return [
 
     'testRetrieveAccounts' => [
         'request' => [
-            'url' => '/accounts',
+            'url' => '/beta/accounts',
             'method' => 'get',
         ],
         'response' => [
@@ -32,7 +32,7 @@ return [
 
     'testCreateLinkedAccount' => [
         'request' => [
-            'url' => '/accounts',
+            'url' => '/beta/accounts',
             'method' => 'post',
             'content' => [
                 'name' => 'Linked Account 1',
@@ -47,7 +47,7 @@ return [
         ],
     ],
 
-    'testAddSettlementDestination' => [
+    'addSettlementDestination' => [
         'request' => [
             'content' => [
                 'ifsc_code'             => 'ICIC0001206',
