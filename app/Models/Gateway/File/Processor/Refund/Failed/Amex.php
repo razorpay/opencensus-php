@@ -31,9 +31,13 @@ class Amex extends Base
 
     public function fetchEntities(): PublicCollection
     {
-        $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->subMonths(6)->timestamp;;
+        /**
+         * For Card gateways Only refunds that are failed before
+         *  6 months are processed via file
+        **/
+        $begin = $this->gatewayFile->getBegin() - 15780000;
 
-        $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(),Timezone::IST)->subMonths(6)->timestamp;;
+        $end = $this->gatewayFile->getEnd() - 15780000;
 
         $refunds = $this->repo->refund->fetchFailedRefundsForGatewayBetweenTimestamps(
                     $begin,
