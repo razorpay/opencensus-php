@@ -695,8 +695,8 @@ final class Route
 
         // Account API routes
         'account_create'                          => ['post',     'beta/accounts',                                  'AccountController@create'                                          ],
-        'account_fetch'                           => ['get',      'beta/accounts',                                  'AccountController@list'                                            ],
-        'account_fetch_multiple'                  => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
+        'account_fetch'                           => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
+        'account_fetch_multiple'                  => ['get',      'beta/accounts',                                  'AccountController@list'                                            ],
         'account_post_bank_accounts'              => ['post',     'beta/accounts/{id}/bank-accounts',               'AccountController@postBankAccounts'                                ],
         'account_fetch_settlement_destinations'   => ['get',      'beta/accounts/{id}/settlement-destinations',     'AccountController@fetchSettlementDestinations'                     ],
     ];

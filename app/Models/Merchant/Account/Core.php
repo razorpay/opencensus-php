@@ -7,6 +7,12 @@ use RZP\Models\Merchant;
 
 class Core extends Merchant\Core
 {
+    /**
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     */
     public function createAccount(array $input, Merchant\Entity $merchant) : Entity
     {
         $account = (new Entity)->build($input);

@@ -22,12 +22,12 @@ class Service extends Merchant\Service
     /**
      * Retrieve a single account entity
      *
-     * @param  string       $id
+     * @param  string       $accountId
      * @return array
      */
-    public function fetch(string $id) : array
+    public function fetch(string $accountId) : array
     {
-        $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
+        $account = $this->repo->account->findByPublicIdAndMerchant($accountId, $this->merchant);
         
         return $account->toArrayPublic();
     }
@@ -45,24 +45,29 @@ class Service extends Merchant\Service
         return $accounts->toArrayPublic();
     }
 
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
     public function create(array $input): array
     {
-        $merchant = $this->core->createAccount($input, $this->merchant);
+        $account = $this->core->createAccount($input, $this->merchant);
 
-        return $merchant->toArrayPublic();
+        return $account->toArrayPublic();
     }
 
     /**
      * Returns the settlement destinations for an account
      *
-     * @param string $id
+     * @param string $accountId
      *
      * @return array
      * @throws Exception\BadRequestException
      */
-    public function getSettlementDestinations(string $id) : array
+    public function getSettlementDestinations(string $accountId) : array
     {
-        $merchant = $this->repo->account->findOrFailPublic($id);
+        $merchant = $this->repo->account->findByPublicIdAndMerchant($accountId, $this->merchant);
 
         # Fetch all settlement destinations, not only the bank accounts
         $bankAccounts = $this->repo->bank_account->getAllBankAccounts($merchant);
@@ -86,12 +91,12 @@ class Service extends Merchant\Service
      */
     public function addSettlementDestination(string $id, array $input) : array
     {
-        $merchant = $this->repo->account->findOrFailPublic($id);
+        $merchant = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
 
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
 
         $this->logActionToSlack($merchant, SlackActions::EDIT_BANK_DETAILS, $input);
 
-        return $ba->toArray();
+        return $ba->toArrayPublic();
     }
 }

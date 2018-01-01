@@ -42,7 +42,7 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_ID, '=', $merchant->getId())
                     ->where(Entity::TYPE, '=', Type::MERCHANT)
                     ->get()
-                    ->toArray();
+                    ->toArrayPublic();
     }
 
     public function getBankAccountsForCustomer($customer, $ifsc = null)
