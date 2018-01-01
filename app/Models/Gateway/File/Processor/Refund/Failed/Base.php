@@ -3,17 +3,11 @@
 namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
 use Mail;
-use Carbon\Carbon;
 
-use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
-use RZP\Constants\Timezone;
-use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
-use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\Processor\Refund;
 use RZP\Mail\Gateway\FailedRefund\Base as FailedRefundFileMail;
 
