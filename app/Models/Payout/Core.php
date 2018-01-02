@@ -220,7 +220,7 @@ class Core extends Base\Core
 
             $attempts = $this->repo
                              ->fund_transfer_attempt
-                             ->getCreatedAttemptsBeforeTimestamp($timestamp, ['source']);
+                             ->getCreatedAttemptsBeforeTimestamp($timestamp, $channel, ['source']);
 
             $method = 'processBankPayoutsFor' . ucfirst($channel);
 
@@ -294,7 +294,7 @@ class Core extends Base\Core
 
         $destination = $this->getPayoutDestination($input, $merchant, $customer);
 
-        $payout->setChannel(Settlement\Channel::KOTAK);
+        $payout->setChannel($merchant->getChannel());
 
         $payout->merchant()->associate($merchant);
 

@@ -5,15 +5,12 @@ namespace RZP\Reconciliator\Base;
 use App;
 
 use RZP\Models\Card;
-use RZP\Models\Batch;
 use RZP\Models\Payment;
 use Rzp\Trace\TraceCode;
 use RZP\Models\Card\IIN;
-use RZP\Gateway\AxisMigs;
 use RZP\Models\Transaction;
 use RZP\Reconciliator\Messenger;
 use RZP\Models\Base\PublicEntity;
-use RZP\Reconciliator\Orchestrator;
 use RZP\Models\Base\PublicCollection;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
@@ -34,6 +31,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::NETBANKING_PNB,
         RequestProcessor\Base::NETBANKING_BOB,
+        RequestProcessor\Base::UPI_SBI
     ];
 
     /*******************
@@ -52,9 +50,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected $paymentIin;
     protected $paymentTransaction;
 
-    protected $app;
-    protected $repo;
-    protected $trace;
     protected $messenger;
 
     public function __construct()
@@ -171,12 +166,49 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function validatePaymentStatus($row)
     {
-        $paymentStatus = $this->payment->getStatus();
+        $reconPaymentStatus = $this->getReconPaymentStatus($row);
 
-        if ($paymentStatus !== Payment\Status::FAILED)
+        //
+        // In some cases the recon file contains failed payments,
+        // too, In this case we do not want to reconcile them
+        //
+        if ($reconPaymentStatus === Payment\Status::FAILED)
+        {
+            $isApiPaymentSuccess = $this->payment->hasBeenAuthorized();
+
+            if ($isApiPaymentSuccess === true)
+            {
+                //
+                // Recon status is failed, and payment has been authorized.
+                // This would be an error, as there's a status mismatch.
+                //
+
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code' => TraceCode::RECON_CRITICAL_ALERT,
+                        'message'    => 'Recon status is failed, but authorized_at is set in API',
+                        'payment_id' => $this->payment->getId(),
+                        'gateway'    => get_called_class()
+                    ]);
+            }
+
+            return false;
+        }
+
+        //
+        // If payment status is authorized, captured or refunded, provided that recon status is not failed,
+        // we can safely return that the payment status is valid for reconciliation of row.
+        //
+
+        if ($this->payment->isFailed() === false)
         {
             return true;
         }
+
+        //
+        // In case the recon row's status field is a success, and api payment status is failed or created,
+        // we would need to run the flow below, where we try to authorize the payment forcefully or via verify.
+        //
 
         $this->trace->info(
             TraceCode::RECON_INFO,
@@ -187,6 +219,20 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             ]);
 
         return $this->tryAuthorizeFailedPayment($row);
+    }
+
+    /**
+     * Override in child class
+     *
+     * @param array $row
+     * @return null
+     */
+    protected function getReconPaymentStatus(array $row)
+    {
+        //
+        // The return value of this method must be mapped to one of the statuses in Payment\Status
+        //
+        return null;
     }
 
     protected function tryAuthorizeFailedPayment($row)
@@ -398,7 +444,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function persistReconciliationData($rowDetails)
     {
-        // If the row is present in MIS file, it means it's captured on the gateway end.
+        //
+        // If the row reaches this part of the code, that means that it is captured on the gateway's end.
+        //
         $this->persistPaymentData($rowDetails);
 
         $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);
@@ -653,7 +701,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistCustomerDetails($rowDetails, $gatewayPayment);
 
-        $gatewayPayment->saveOrFail();
+        $this->repo->saveOrFail($gatewayPayment);
     }
 
     /**

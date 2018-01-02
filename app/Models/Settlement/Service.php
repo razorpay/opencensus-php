@@ -150,6 +150,63 @@ class Service extends Base\Service
         return $report->getReport($input);
     }
 
+    public function updateChannelForMultipleSettlements($input)
+    {
+        (new Validator)->validateInput('updateChannel', $input);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENTS_CHANNEL_BULK_UPDATE_REQUEST,
+            $input
+        );
+
+        $settlementIds = $input['settlement_ids'];
+
+        $channel = $input['channel'];
+
+        $successCount = $failedCount = 0;
+
+        $txns = $failedIds = [];
+
+        foreach ($settlementIds as $settlementId)
+        {
+            try
+            {
+                $this->repo
+                     ->settlement
+                     ->updateChannel($settlementId, $channel);
+
+                $txns[$settlementId] = $this->repo
+                                            ->transaction
+                                            ->updateChannel($settlementId, $channel);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $settlementId;
+            }
+        }
+
+        $response = [
+            'total'        => count($settlementIds),
+            'success'      => $successCount,
+            'failed'       => $failedCount,
+            'failedIds'    => $failedIds,
+            'transactions' => $txns,
+        ];
+
+        $this->trace->info(
+            TraceCode::SETTLEMENTS_CHANNEL_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
     /**
      * Initiates transfer from one Nodal account to another
      */

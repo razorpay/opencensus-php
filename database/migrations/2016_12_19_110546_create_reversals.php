@@ -50,6 +50,8 @@ class CreateReversals extends Migration
 
             $table->index(Entity::ENTITY_ID);
 
+            $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
+
             $table->foreign(Entity::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)

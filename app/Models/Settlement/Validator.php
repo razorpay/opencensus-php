@@ -38,9 +38,16 @@ class Validator extends Base\Validator
         RequestConstants::KYC_DOC_CONTENT => 'required|string',
     ];
 
-    protected static $retryRules = [
+    protected static $updateChannelRules = [
         'settlement_ids'   => 'required|array',
         'settlement_ids.*' => 'required|alpha_dash|max:20',
+        Entity::CHANNEL    => 'required|string|custom',
+    ];
+
+    protected static $retryRules = [
+        'settlement_ids'    => 'required|array',
+        'settlement_ids.*'  => 'required|alpha_dash|max:20',
+        'ignore_time_limit' => 'sometimes',
     ];
 
     protected function validateChannel($attribute, $value)

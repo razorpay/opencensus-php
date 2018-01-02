@@ -14,7 +14,7 @@ class Payment extends Validator
         Entity::BASE_AMOUNT         => 'sometimes|integer',
         Entity::STATUS              => 'required|in:created,authorized,captured,failed,refunded',
         Entity::TWO_FACTOR_AUTH     => 'sometimes|nullable|in:passed,skipped,unknown,failed,not_applicable,unavailable',
-        Entity::METHOD              => 'required|in:card,netbanking,wallet,emi,transfer,bank_transfer',
+        Entity::METHOD              => 'required|in:card,netbanking,wallet,emi,transfer,bank_transfer,aeps',
         Entity::CAPTURED            => 'required|boolean',
         Entity::AMOUNT_REFUNDED     => 'sometimes|',
         Entity::AMOUNT_TRANSFERRED  => 'sometimes|',

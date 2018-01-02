@@ -4,19 +4,12 @@ namespace RZP\Reconciliator\Base;
 
 use App;
 
-use RZP\Models\Card;
-use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Gateway\AxisMigs;
-use RZP\Models\Card\IIN;
-use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Reconciliator\Messenger;
 use RZP\Models\Base\PublicEntity;
-use RZP\Exception\LogicException;
 use RZP\Models\Base\UniqueIdEntity;
-use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
@@ -30,9 +23,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
     // This will need to be overridden in each gateway's refund recon.
     const COLUMN_REFUND_AMOUNT = '';
 
-    protected $repo;
-    protected $trace;
-    protected $app;
     protected $messenger;
 
     /**
@@ -552,6 +542,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
         }
 
         $this->persistGatewayArn($rowDetails, $gatewayRefund);
+
+        $this->repo->saveOrFail($gatewayRefund);
     }
 
     /**
