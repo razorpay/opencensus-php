@@ -48,6 +48,8 @@ class Type
 
     const AMEX_REFUND                       = 'amex_refund';
 
+    const FIRST_DATA_REFUND                 = 'first_data_refund';
+
     const PNB_NETBANKING_REFUND             = 'pnb_netbanking_refund';
 
     const PNB_NETBANKING_CLAIMS             = 'pnb_netbanking_claims';
@@ -137,6 +139,7 @@ class Type
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
             self::AMEX_REFUND,
+            self::FIRST_DATA_REFUND,
         ],
 
         Constants\Entity::BATCH => [
@@ -209,7 +212,8 @@ class Type
         self::FUND_TRANSFER_H2H,
         self::PNB_NETBANKING_REFUND,
         self::PNB_NETBANKING_CLAIMS,
-        self::AMEX_REFUND
+        self::AMEX_REFUND,
+        self::FIRST_DATA_REFUND,
     ];
 
     /**
@@ -242,6 +246,7 @@ class Type
             self::BATCH_OUTPUT,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
+            self::FIRST_DATA_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [

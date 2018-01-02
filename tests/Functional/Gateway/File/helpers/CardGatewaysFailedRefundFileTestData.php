@@ -37,11 +37,11 @@ return [
         ],
     ],
 
-    'testHdfcFailedRefundFile' => [
+    'testFirstDatadRefundFile' => [
         'request' => [
             'content' => [
                 'type'    => 'refund_failed',
-                'targets' => ['hdfc'],
+                'targets' => ['first_data'],
                 'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
             ],
@@ -55,12 +55,12 @@ return [
                 'admin' => true,
                 'items' => [
                     [
-                        'status'              => 'acknowledged',
+                        'status'              => 'file_sent',
                         'scheduled'           => true,
                         'partially_processed' => false,
                         'attempts'            => 1,
                         'type'                => 'refund_failed',
-                        'target'              => 'hdfc',
+                        'target'              => 'first_data',
                         'entity'              => 'gateway_file',
                         'admin'               => true,
                     ],

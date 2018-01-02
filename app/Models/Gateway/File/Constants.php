@@ -18,6 +18,7 @@ class Constants
     const UPI_ICICI       = 'upi_icici';
     const AIRTEL_MONEY    = 'airtel_money';
     const AMEX            = 'amex';
+    const FIRST_DATA      = 'first_data';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -54,6 +55,7 @@ class Constants
             self::UPI_ICICI,
             self::AIRTEL_MONEY,
             self::AMEX,
+            self::FIRST_DATA,
         ],
     ];
 
@@ -102,6 +104,7 @@ class Constants
             self::UPI_ICICI    => ['supportteam@razorpay.com'],
             self::AIRTEL_MONEY => ['supportteam@razorpay.com'],
             self::AMEX         => ['supportteam@razorpay.com'],
+            self::FIRST_DATA   => ['supportteam@razorpay.com'],
         ],
     ];
 }
