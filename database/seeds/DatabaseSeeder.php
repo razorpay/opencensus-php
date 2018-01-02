@@ -14,7 +14,6 @@ class DatabaseSeeder extends Seeder
     {
         Model::unguard();
 
-        $this->call('MerchantSeeder');
-        $this->call('UserSeeder');
+        $this->call('AggregationSeeder');
     }
 }

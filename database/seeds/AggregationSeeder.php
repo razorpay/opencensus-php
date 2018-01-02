@@ -3,7 +3,7 @@
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
 
-class MerchantSeeder extends Seeder
+class AggregationSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -15,83 +15,62 @@ class MerchantSeeder extends Seeder
         $this->seed();
     }
 
-    protected function setupMerchant($merchantId, $name, $email, $attributes = [])
+    protected function setupAggregations($merchantId, $attributes = [])
     {
-        DB::table('merchants')->insert(array(
-            'id'            =>  $merchantId,
-            'name'          =>  $name,
-            'email'         =>  $email,
-            'created_at'    =>  time(),
-            'updated_at'    =>  time()
-            ) + $attributes
-        );
+        DB::table('aggregations')->insert([
+            [
+                'merchant_id'   =>  $merchantId,
+                'total_amount'  =>  239871,
+                'txn_count'     =>  21,
+                'successful_txn_count' => 13,
+                'resource'      => 'payment',
+                'created_at'    =>  time(),
+                'updated_at'    =>  time(),
+                'mode'          =>  'test'
+            ],
+            [
+                'merchant_id'   =>  $merchantId,
+                'total_amount'  =>  12345,
+                'txn_count'     =>  3,
+                'successful_txn_count' => 3,
+                'resource'      => 'refund',
+                'created_at'    =>  time(),
+                'updated_at'    =>  time(),
+                'mode'          =>  'test'
+            ],
+            [
+                'merchant_id'   =>  $merchantId,
+                'total_amount'  =>  12345,
+                'txn_count'     =>  7,
+                'successful_txn_count' => 7,
+                'resource'      => 'settlement',
+                'created_at'    =>  time(),
+                'updated_at'    =>  time(),
+                'mode'          =>  'test'
+            ]
+        ]);
 
-        DB::table('merchant_details')->insert(array(
-            'merchant_id'   => $merchantId,
-            'locked'        => 1,
-            'created_at'    => time(),
-            'updated_at'    => time(),
-            )
-        );
 
-        DB::table('aggregations')->insert(array(
+        DB::table('payment_aggregations')->insert([
             'merchant_id'   =>  $merchantId,
-            'total_amount'  =>  239871,
-            'txn_count'     =>  21,
-            'successful_txn_count' => 13,
-            'resource'      => 'payment',
+            'CARD'          =>  100,
+            'NETBANKING'    =>  21,
+            'VISA'          => 26,
+            'MC'            => 33,
+            'MAES'          =>  30,
+            'RUPAY'         => 11,
             'created_at'    =>  time(),
             'updated_at'    =>  time(),
             'mode'          =>  'test'
-            )
-        );
+        ]);
 
-        DB::table('aggregations')->insert(array(
-            'merchant_id'   =>  $merchantId,
-            'total_amount'  =>  12345,
-            'txn_count'     =>  3,
-            'successful_txn_count' => 3,
-            'resource'      => 'refund',
-            'created_at'    =>  time(),
-            'updated_at'    =>  time(),
-            'mode'          =>  'test'
-            )
-        );
-
-        DB::table('aggregations')->insert(array(
-            'merchant_id'   =>  $merchantId,
-            'total_amount'  =>  12345,
-            'txn_count'     =>  7,
-            'successful_txn_count' => 7,
-            'resource'      => 'settlement',
-            'created_at'    =>  time(),
-            'updated_at'    =>  time(),
-            'mode'          =>  'test'
-            )
-        );
-
-
-        DB::table('payment_aggregations')->insert(array(
-            'merchant_id'   =>  $merchantId,
-            'CARD'  =>  100,
-            'NETBANKING'     =>  21,
-            'VISA' => 26,
-            'MC'      => 33,
-            'MAES'    =>  30,
-            'RUPAY'   => 11,
-            'created_at'    =>  time(),
-            'updated_at'    =>  time(),
-            'mode'          =>  'test'
-            )
-        );
-
-        $types = array('day', 'week', 'month', 'year');
+        $types = ['day', 'week', 'month', 'year'];
 
         foreach($types as $type)
         {
-            $data = array();
+            $data = [];
 
-            $data[] = array(
+            $data[] = [
                 'merchant_id'   =>  $merchantId,
                 'type'  =>  $type,
                 'amount'     =>  5000,
@@ -99,9 +78,9 @@ class MerchantSeeder extends Seeder
                 'mode'      => 'test',
                 'created_at'    =>  time(),
                 'updated_at'    =>  time()
-            );
+            ];
 
-            $data[] = array(
+            $data[] = [
                 'merchant_id'   =>  $merchantId,
                 'type'  =>  $type,
                 'amount'     =>  4500,
@@ -109,9 +88,9 @@ class MerchantSeeder extends Seeder
                 'mode'      => 'test',
                 'created_at'    =>  strtotime('-1 ' . $type, time()),
                 'updated_at'    =>  strtotime('-1 ' . $type, time())
-            );
+            ];
 
-            $data[] = array(
+            $data[] = [
                 'merchant_id'   =>  $merchantId,
                 'type'  =>  $type,
                 'amount'     =>  4200,
@@ -119,9 +98,9 @@ class MerchantSeeder extends Seeder
                 'mode'      => 'test',
                 'created_at'    =>  strtotime('-2 ' . $type, time()),
                 'updated_at'    =>  strtotime('-2 ' . $type, time())
-            );
+            ];
 
-            $data[] = array(
+            $data[] = [
                 'merchant_id'   =>  $merchantId,
                 'type'  =>  $type,
                 'amount'     =>  3600,
@@ -129,9 +108,9 @@ class MerchantSeeder extends Seeder
                 'mode'      => 'test',
                 'created_at'    =>  strtotime('-3 ' . $type, time()),
                 'updated_at'    =>  strtotime('-3 ' . $type, time())
-            );
+            ];
 
-            $data[] = array(
+            $data[] = [
                 'merchant_id'   =>  $merchantId,
                 'type'  =>  $type,
                 'amount'     =>  4500,
@@ -139,9 +118,9 @@ class MerchantSeeder extends Seeder
                 'mode'      => 'test',
                 'created_at'    =>  strtotime('-4 ' . $type, time()),
                 'updated_at'    =>  strtotime('-4 ' . $type, time())
-            );
+            ];
 
-            $data[] = array(
+            $data[] = [
                 'merchant_id'   =>  $merchantId,
                 'type'  =>  $type,
                 'amount'     =>  2500,
@@ -149,9 +128,9 @@ class MerchantSeeder extends Seeder
                 'mode'      => 'test',
                 'created_at'    =>  strtotime('-6 ' . $type, time()),
                 'updated_at'    =>  strtotime('-6 ' . $type, time())
-            );
+            ];
 
-            $data[] = array(
+            $data[] = [
                 'merchant_id'   =>  $merchantId,
                 'type'  =>  $type,
                 'amount'     =>  3300,
@@ -159,9 +138,9 @@ class MerchantSeeder extends Seeder
                 'mode'      => 'test',
                 'created_at'    =>  strtotime('-7 ' . $type, time()),
                 'updated_at'    =>  strtotime('-7 ' . $type, time())
-            );
+            ];
 
-            $data[] = array(
+            $data[] = [
                 'merchant_id'   =>  $merchantId,
                 'type'  =>  $type,
                 'amount'     =>  6500,
@@ -169,9 +148,9 @@ class MerchantSeeder extends Seeder
                 'mode'      => 'test',
                 'created_at'    =>  strtotime('-8 ' . $type, time()),
                 'updated_at'    =>  strtotime('-8 ' . $type, time())
-            );
+            ];
 
-            $data[] = array(
+            $data[] = [
                 'merchant_id'   =>  $merchantId,
                 'type'  =>  $type,
                 'amount'     =>  8000,
@@ -179,10 +158,10 @@ class MerchantSeeder extends Seeder
                 'mode'      => 'test',
                 'created_at'    =>  strtotime('-9 ' . $type, time()),
                 'updated_at'    =>  strtotime('-9 ' . $type, time())
-            );
+            ];
 
 
-            $data[] = array(
+            $data[] = [
                 'merchant_id'   =>  $merchantId,
                 'type'  =>  $type,
                 'amount'     =>  7900,
@@ -190,9 +169,9 @@ class MerchantSeeder extends Seeder
                 'mode'      => 'test',
                 'created_at'    =>  strtotime('-10 ' . $type, time()),
                 'updated_at'    =>  strtotime('-10 ' . $type, time())
-            );
+            ];
 
-            $data[] = array(
+            $data[] = [
                 'merchant_id'   =>  $merchantId,
                 'type'  =>  $type,
                 'amount'     =>  8200,
@@ -200,9 +179,9 @@ class MerchantSeeder extends Seeder
                 'mode'      => 'test',
                 'created_at'    =>  strtotime('-11 ' . $type, time()),
                 'updated_at'    =>  strtotime('-11 ' . $type, time())
-            );
+            ];
 
-            $data[] = array(
+            $data[] = [
                 'merchant_id'   =>  $merchantId,
                 'type'  =>  $type,
                 'amount'     =>  8400,
@@ -210,9 +189,9 @@ class MerchantSeeder extends Seeder
                 'mode'      => 'test',
                 'created_at'    =>  strtotime('-12 ' . $type, time()),
                 'updated_at'    =>  strtotime('-12 ' . $type, time())
-            );
+            ];
 
-            $data[] = array(
+            $data[] = [
                 'merchant_id'   =>  $merchantId,
                 'type'  =>  $type,
                 'amount'     =>  6100,
@@ -220,9 +199,9 @@ class MerchantSeeder extends Seeder
                 'mode'      => 'test',
                 'created_at'    =>  strtotime('-13 ' . $type, time()),
                 'updated_at'    =>  strtotime('-13 ' . $type, time())
-            );
+            ];
 
-            $data[] = array(
+            $data[] = [
                 'merchant_id'   =>  $merchantId,
                 'type'  =>  $type,
                 'amount'     =>  2600,
@@ -230,7 +209,7 @@ class MerchantSeeder extends Seeder
                 'mode'      => 'test',
                 'created_at'    =>  strtotime('-14 ' . $type, time()),
                 'updated_at'    =>  strtotime('-14 ' . $type, time())
-            );
+            ];
 
             foreach($data as $arr)
             {
@@ -251,17 +230,14 @@ class MerchantSeeder extends Seeder
                 }
 
                 DB::table('transactions')->insert($arr);
-
             }
         }
     }
 
     private function seed()
     {
-        $this->setupMerchant('10000000000000', 'Test Merchant Account', 'test@razorpay.com');
-        $this->setupMerchant('100DemoAccount', 'Demo Merchant Account', 'demo@razorpay.com');
-        $this->setupMerchant('100DeadAccount', 'Dead Merchant Account', 'dead@razorpay.com', [
-            'suspended_at' => time()
-        ]);
+        $this->setupAggregations('10000000000000');
+        $this->setupAggregations('100DemoAccount');
+        $this->setupAggregations('100DeadAccount');
     }
 }
