@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Terminal;
+use RZP\Models\Settlement;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
@@ -43,7 +44,7 @@ class Validator extends Base\Validator
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
         Entity::LINKED_ACCOUNT_KYC          => 'sometimes|boolean',
-        Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
+        Entity::CHANNEL                     => 'sometimes|string|max:32|custom',
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
         Entity::RISK_THRESHOLD              => 'sometimes|integer|min:0|max:20',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
@@ -217,6 +218,15 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
                 Feature\Entity::NAMES,
                 ['features' => $uneditableFeatures, 'should_sync' => $shouldSync]);
+        }
+    }
+
+    protected function validateChannel($attribute, $channel)
+    {
+        if (Settlement\Channel::exists($channel) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid channel name: ' . $channel);
         }
     }
 

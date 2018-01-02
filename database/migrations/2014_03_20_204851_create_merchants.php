@@ -68,7 +68,7 @@ class CreateMerchants extends Migration
             $table->string(Merchant::BILLING_LABEL)
                   ->nullable();
 
-            $table->integer(Merchant::SETTLEMENT_SCHEDULE);
+            $table->string(Merchant::CHANNEL, 32);
 
             $table->string(Merchant::TRANSACTION_REPORT_EMAIL)
                   ->nullable();

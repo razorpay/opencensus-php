@@ -239,7 +239,7 @@ class Core extends Base\Core
         $txnData = [
             Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
             Transaction\Entity::CURRENCY        => Currency\Currency::INR,
-            Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK
+            Transaction\Entity::CHANNEL         => $payment->merchant->getChannel(),
         ];
 
         if ($payment->getGateway() === Payment\Gateway::ATOM)
@@ -523,7 +523,7 @@ class Core extends Base\Core
 
         if ($payment->terminal->isShared() === true)
         {
-            $channel = Transaction\Channel::KOTAK;
+            $channel = $payment->merchant->getChannel();
 
             $gatewayFee = (new Pricing\Fee)->getGatewayFeeForAtomSharedTerminal($payment);
             $txnData[Transaction\Entity::GATEWAY_FEE] = $gatewayFee;
@@ -657,7 +657,7 @@ class Core extends Base\Core
             Transaction\Entity::TAX             => 0,
             Transaction\Entity::AMOUNT          => abs($amount),
             Transaction\Entity::TYPE            => Transaction\Type::ADJUSTMENT,
-            Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK,
+            Transaction\Entity::CHANNEL         => $adj->merchant->getChannel(),
         );
 
         $txn->fillAndGenerateId($values);
@@ -729,7 +729,7 @@ class Core extends Base\Core
             Transaction\Entity::SETTLED       => 0,
             Transaction\Entity::SETTLED_AT    => $settledAt,
             Transaction\Entity::TYPE          => Transaction\Type::TRANSFER,
-            Transaction\Entity::CHANNEL       => Transaction\Channel::KOTAK,
+            Transaction\Entity::CHANNEL       => $transfer->merchant->getChannel(),
         ];
 
         $txn->fill($values);
@@ -782,7 +782,7 @@ class Core extends Base\Core
             Transaction\Entity::TAX           => 0,
             Transaction\Entity::AMOUNT        => $amount,
             Transaction\Entity::TYPE          => Transaction\Type::REVERSAL,
-            Transaction\Entity::CHANNEL       => Transaction\Channel::KOTAK,
+            Transaction\Entity::CHANNEL       => $reversal->merchant->getChannel(),
         ];
 
         $txn->fillAndGenerateId($data);
@@ -814,7 +814,7 @@ class Core extends Base\Core
             Entity::TAX           => 0,
             Entity::AMOUNT        => $dispute->getAmountDeducted(),
             Entity::TYPE          => Type::DISPUTE,
-            Entity::CHANNEL       => Channel::KOTAK,
+            Entity::CHANNEL       => $dispute->merchant->getChannel(),
         ];
 
         $txn->fillAndGenerateId($data);
@@ -860,7 +860,7 @@ class Core extends Base\Core
             Transaction\Entity::TAX                 => $tax,
             Transaction\Entity::AMOUNT              => $payoutAmount,
             Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,
-            Transaction\Entity::CHANNEL             => Transaction\Channel::KOTAK,
+            Transaction\Entity::CHANNEL             => $payout->merchant->getChannel(),
         ];
 
         $txn->fill($values);
@@ -1061,7 +1061,7 @@ class Core extends Base\Core
         }
         else
         {
-            $addDays = $merchant->getSettlementSchedule();
+            $addDays = Merchant\Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
 
             $returnTime = $this->calculateSettledAtTimestamp($capturedAt, $addDays);
         }

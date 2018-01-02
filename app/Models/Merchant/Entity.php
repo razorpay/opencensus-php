@@ -16,6 +16,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Invitation;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\State;
+use RZP\Models\Settlement;
 use Conner\Tagging\Taggable;
 use RZP\Exception\LogicException;
 
@@ -41,7 +42,7 @@ class Entity extends Base\PublicEntity
     const BILLING_LABEL             = 'billing_label';
     const TRANSACTION_REPORT_EMAIL  = 'transaction_report_email';
     const RECEIPT_EMAIL_ENABLED     = 'receipt_email_enabled';
-    const SETTLEMENT_SCHEDULE       = 'settlement_schedule';
+    const CHANNEL                   = 'channel';
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const CATEGORY2                 = 'category2';
@@ -155,6 +156,7 @@ class Entity extends Base\PublicEntity
         self::SCOPE,
         self::ORG_ID,
         self::WEBSITE,
+        self::CHANNEL,
         self::CATEGORY,
         self::CATEGORY2,
         self::FEE_MODEL,
@@ -171,7 +173,6 @@ class Entity extends Base\PublicEntity
         self::AUTO_REFUND_DELAY,
         self::MAX_PAYMENT_AMOUNT,
         self::LINKED_ACCOUNT_KYC,
-        self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::AUTO_CAPTURE_LATE_AUTH,
         self::TRANSACTION_REPORT_EMAIL,
@@ -209,7 +210,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
-        self::SETTLEMENT_SCHEDULE,
+        self::CHANNEL,
         self::METHODS,
         self::CONVERT_CURRENCY,
         self::MAX_PAYMENT_AMOUNT,
@@ -238,7 +239,6 @@ class Entity extends Base\PublicEntity
         self::ACTIVATED_AT           => null,
         self::RECEIPT_EMAIL_ENABLED  => true,
         self::HOLD_FUNDS             => false,
-        self::SETTLEMENT_SCHEDULE    => self::SETTLEMENT_SCHEDULE_DEFAULT_DELAY,
         self::FEE_BEARER             => FeeBearer::PLATFORM,
         self::BRAND_COLOR            => null,
         self::HANDLE                 => null,
@@ -251,6 +251,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_REFUND_DELAY      => null,
         self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
+        self::CHANNEL                => Settlement\Channel::KOTAK,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
@@ -271,7 +272,6 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS                => 'bool',
         self::LINKED_ACCOUNT_KYC        => 'bool',
         self::CATEGORY                  => 'int',
-        self::SETTLEMENT_SCHEDULE       => 'int',
         self::RISK_THRESHOLD            => 'int',
         self::CONVERT_CURRENCY          => 'bool',
         self::AUTO_CAPTURE_LATE_AUTH    => 'bool',
@@ -593,11 +593,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PRICING_PLAN_ID, $planId);
     }
 
-    public function setSettlementSchedule($settlementSchedule)
-    {
-        $this->setAttribute(self::SETTLEMENT_SCHEDULE, $settlementSchedule);
-    }
-
     public function setMaxPaymentAmount(int $maxAmount)
     {
         $this->setAttribute(self::MAX_PAYMENT_AMOUNT, $maxAmount);
@@ -633,7 +628,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CATEGORY2);
     }
 
-    public function isCategoryCryptocurrency()
+    public function isCategory2Cryptocurrency()
     {
         return ($this->getCategory2() === Terminal\Category::CRYPTOCURRENCY);
     }
@@ -715,11 +710,6 @@ class Entity extends Base\PublicEntity
         }
 
         return $label;
-    }
-
-    protected function getSettlementScheduleAttribute()
-    {
-        return (int) $this->attributes[self::SETTLEMENT_SCHEDULE];
     }
 
     public function getWebsite()
@@ -806,6 +796,11 @@ class Entity extends Base\PublicEntity
     public function getHandle()
     {
         return $this->getAttribute(self::HANDLE);
+    }
+
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
     }
 
     public function getBrandColorElseDefault()
@@ -997,11 +992,6 @@ class Entity extends Base\PublicEntity
         {
             $array[self::LOGO_URL] = $this->getFullLogoUrlWithSize(self::ORIGINAL_SIZE);
         }
-    }
-
-    public function getSettlementSchedule()
-    {
-        return $this->getAttribute(self::SETTLEMENT_SCHEDULE);
     }
 
     public function getHoldFunds()

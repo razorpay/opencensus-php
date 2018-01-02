@@ -49,6 +49,17 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
+    public function testCreateVirtualAccountCrypto()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['category2' => 'cryptocurrency']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() {
+            $this->createVirtualAccount();
+        });
+    }
+
     public function testCreateVirtualAccountWithBharatQr()
     {
         $response = $this->createVirtualAccount([

@@ -150,17 +150,11 @@ class Gateway extends Base\Gateway
 
     protected function updateGatewayPaymentFromCallbackResponse(
         Entity $gatewayPayment,
-        array $resp)
+        array $response)
     {
-        $gatewayPayment->setXid($resp[PARes::PURCHASE][PARes::XID]);
+        $attributes = $this->getCallbackResponseAttributes($response);
 
-        $gatewayPayment->setCavv($resp[PARes::TX][PARes::CAVV]);
-
-        $gatewayPayment->setCavvAlgorithm($resp[PARes::TX][PARes::CAVVALGORITHM]);
-
-        $gatewayPayment->setStatus($resp[PARes::TX][PARes::STATUS]);
-
-        $gatewayPayment->setEci($resp[PARes::TX][PARes::ECI]);
+        $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
     }
@@ -188,6 +182,19 @@ class Gateway extends Base\Gateway
                 $eci,
                 'Invalid Eci value for network ' . $networkCode);
         }
+    }
+
+    protected function getCallbackResponseAttributes($response)
+    {
+        $attributes = [
+            Entity::XID            => $response[PARes::PURCHASE][PARes::XID] ?? null,
+            Entity::CAVV           => $response[PARes::TX][PARes::CAVV] ?? null,
+            Entity::CAVV_ALGORITHM => $response[PARes::TX][PARes::CAVVALGORITHM] ?? null,
+            Entity::STATUS         => $response[PARes::TX][PARes::STATUS],
+            Entity::ECI            => $response[PARes::TX][PARes::ECI] ?? null,
+        ];
+
+        return $attributes;
     }
 
     protected function validateSignatureAndInflatePares($pares)

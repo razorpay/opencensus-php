@@ -244,7 +244,7 @@ class Core extends Base\Core
     {
         $this->repo->assertTransactionActive();
 
-        $adj->setChannel(Settlement\Channel::KOTAK);
+        $adj->setChannel($merchant->getChannel());
 
         $adj->merchant()->associate($merchant);
 

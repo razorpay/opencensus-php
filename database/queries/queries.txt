@@ -2777,8 +2777,12 @@ ALTER TABLE `action_state_reasons`
 
 ALTER TABLE virtual_accounts
     MODIFY COLUMN amount_received BIGINT UNSIGNED,
-    MODIFY COLUMN amount_paid BIGINT UNSIGNED;
+    MODIFY COLUMN amount_paid BIGINT UNSIGNED,
+    MODIFY COLUMN amount_reversed BIGINT UNSIGNED,
+    MODIFY COLUMN amount_expected BIGINT UNSIGNED;
 
+ALTER TABLE `merchants`
+    ADD COLUMN `channel` VARCHAR(32) DEFAULT 'kotak' AFTER `billing_label`;
 ALTER TABLE merchant_details
     ADD COLUMN technical_spoc_email VARCHAR(255) AFTER transaction_report_email,
     ADD COLUMN business_spoc_email VARCHAR(255) AFTER technical_spoc_email;

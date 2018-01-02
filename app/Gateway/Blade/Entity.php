@@ -39,6 +39,7 @@ class Entity extends Base\Entity
         self::ENROLLED,
         self::ECI,
         self::CAVV,
+        self::CAVV_ALGORITHM,
         self::XID,
         self::STATUS,
         self::RECEIVED,

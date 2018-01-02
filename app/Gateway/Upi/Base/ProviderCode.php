@@ -15,6 +15,10 @@ class ProviderCode
      *
      * These are all the providers we know of
      * This appears after @ in the VPA
+     *
+     * You can run php artisan upi:verify_providers
+     * on the command line to check against
+     * the spreadsheet
      */
     const AIRTEL            = 'airtel';
     const ALLBANK           = 'allbank';
@@ -41,6 +45,7 @@ class ProviderCode
     const INDIANBANK        = 'indianbank';
     const INDUS             = 'indus';
     const IOB               = 'iob';
+    const JSB               = 'jsb';
     const JKB               = 'jkb';
     const KAYPAY            = 'kaypay';
     const KBL               = 'kbl';
@@ -105,6 +110,7 @@ class ProviderCode
         self::INDUS             => IFSC::INDB,
         self::INDIANBANK        => IFSC::IDIB,
         self::IOB               => IFSC::IOBA,
+        self::JSB               => IFSC::JSBP,
         self::JKB               => IFSC::JAKA,
         self::KAYPAY            => IFSC::KKBK,
         self::KBL               => IFSC::KARB,
