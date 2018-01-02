@@ -308,10 +308,12 @@ class Orchestrator extends Base\Core
      */
     protected function getFileContentInArrayAndSet(array $fileDetails)
     {
-        $this->trace->info(TraceCode::RECON_BEGIN_FILE_PARSING, [
-            'gateway'      => $this->gateway,
-            'file_details' => $fileDetails,
-        ]);
+        $this->trace->info(
+            TraceCode::RECON_BEGIN_FILE_PARSING,
+            [
+                'gateway'      => $this->gateway,
+                'file_details' => $fileDetails,
+            ]);
 
         $fileType = $this->gatewayReconciliator->getFileType($fileDetails[FileProcessor::MIME_TYPE]);
 
@@ -366,13 +368,8 @@ class Orchestrator extends Base\Core
 
         $startRow = $this->gatewayReconciliator->getStartRow($fileDetails);
 
-        // this flag enables us to check if spout lib has been used
-        $spoutLib = false;
-
         if ($fileDetails[FileProcessor::EXTENSION] === Format::XLSX)
         {
-            $spoutLib = true;
-
             // getting contents using spout library for xlsx
             $sheetsContents = $this->converter->getRowsFromExcelSheetsSpout($fileDetails, $sheetNames, $startRow);
         }
