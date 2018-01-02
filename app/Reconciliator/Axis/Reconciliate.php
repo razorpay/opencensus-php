@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Axis;
 
 use RZP\Reconciliator\Base;
+use RZP\Models\FileStore\Format;
 use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
@@ -16,6 +17,8 @@ class Reconciliate extends Base\Reconciliate
     ];
 
     const START_ROW = 3;
+
+    const XLSX_START_ROW = 2;
 
     /**
      * Figures out what kind of reconciliation is it
@@ -68,14 +71,20 @@ class Reconciliate extends Base\Reconciliate
 
     public function getReconPassword($fileDetails)
     {
-        // in case of file name is axis account number, use yatra MID for unzip
-        if ($fileDetails[FileProcessor::FILE_NAME] === '917020041206002.zip')
+        switch ($fileDetails[FileProcessor::FILE_NAME])
         {
-            return 'YAONPLRAZP';
-        }
+            // in case of file name is axis account number, use yatra MID for unzip
+            case '917020041206002.zip':
+                return 'YAONPLRAZP';
 
-        // else by default use shared mid name
-        return 'RAZORPAYADD';
+            // password will be account number in this case
+            case 'razorpay.zip':
+                return '917020041206002';
+
+            // default valie is shared mid name
+            default:
+                return 'RAZORPAYADD';
+        }
     }
 
     public function getStartRow($fileDetails)
@@ -84,10 +93,15 @@ class Reconciliate extends Base\Reconciliate
         // We get two different types of files from Axis. For one of the files,
         // the start row is different from `1`.
         //
-        if (($fileDetails[FileProcessor::EXTENSION] === 'xls') and
+        if (($fileDetails[FileProcessor::EXTENSION] === Format::XLS) and
             (strpos('RAZORPAYADD', $fileDetails[FileProcessor::FILE_NAME]) === false))
         {
             return self::START_ROW;
+        }
+        else if (($fileDetails[FileProcessor::EXTENSION] === Format::XLSX) and
+                ($fileDetails[FileProcessor::FILE_NAME] === 'razorpay.xlsx'))
+        {
+            return self::XLSX_START_ROW;
         }
 
         return Base\Reconciliate::DEFAULT_START_ROW;

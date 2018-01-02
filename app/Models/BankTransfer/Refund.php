@@ -65,7 +65,7 @@ class Refund extends Base\Core
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
         $data = [
-            FundTransferAttempt\Entity::CHANNEL   => Channel::KOTAK,
+            FundTransferAttempt\Entity::CHANNEL   => $bankTransfer->merchant->getChannel(),
             FundTransferAttempt\Entity::VERSION   => FundTransferAttempt\Version::V3,
             FundTransferAttempt\Entity::STATUS    => FundTransferAttempt\Status::CREATED,
             FundTransferAttempt\Entity::NARRATION => $this->getNarration($bankTransfer),

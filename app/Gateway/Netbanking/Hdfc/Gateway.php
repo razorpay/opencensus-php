@@ -75,7 +75,7 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * We recieve callback from atom after bank net-banking
+     * We receive callback from atom after bank net-banking
      * transaction is complete
      *
      * @param  array $input

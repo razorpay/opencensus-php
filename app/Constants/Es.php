@@ -14,6 +14,7 @@ final class Es
     const LTE                  = 'lte';
     const GTE                  = 'gte';
     const _ID                  = '_id';
+    const ASC                  = 'asc';
     const HITS                 = 'hits';
     const DESC                 = 'desc';
     const MUST                 = 'must';
