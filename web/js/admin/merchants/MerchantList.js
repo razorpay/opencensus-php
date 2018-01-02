@@ -11,7 +11,7 @@ import Field, { SelectField, SwitchField } from 'ui/Field';
 import Collection from 'model/collection';
 
 const defaultFilters = {
-  account_status: 'pending_old',
+  account_status: 'pending',
 };
 
 export default class MerchantList extends Component {
@@ -59,9 +59,9 @@ export default class MerchantList extends Component {
             >
               <option value="">All</option>
               <option value="activated">Activated</option>
-              <option value="pending_old">Pending Activation</option>
+              <option value="pending">Pending Activation</option>
               <option value="dead">Dead</option>
-              <option value="archived_old">Archived</option>
+              <option value="archived">Archived</option>
               <option value="suspended">Suspended</option>
             </SelectField>
             {this.state.accountStatus === 'pending' && (
