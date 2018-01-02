@@ -316,12 +316,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
   function toggleInternational() {
     let action, successMsg;
-    if (!merchant.details.international) {
-      successMsg = 'Merchant International enabled successfully';
-      action = 'enable_international';
-    } else if (merchant.details.hold_funds == 1) {
-      successMsg = 'Merchant International disabled successfully';
+    if (merchant.details.international) {
       action = 'disable_international';
+      successMsg = 'Merchant International disabled successfully';
+    } else {
+      action = 'enable_international';
+      successMsg = 'Merchant International enabled successfully';
     }
 
     return merchantAction(action, successMsg);
