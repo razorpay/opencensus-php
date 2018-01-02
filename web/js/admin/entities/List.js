@@ -225,6 +225,8 @@ export default class EntityList extends Component {
           value = formatDate(value);
         } else if (value && typeof value === 'object') {
           return <pre>{JSON.stringify(value)}</pre>;
+        } else if (typeof value === 'boolean') {
+          value = JSON.stringify(value);
         }
         return value;
       },
