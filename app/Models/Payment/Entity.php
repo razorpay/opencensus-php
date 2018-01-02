@@ -104,7 +104,7 @@ class Entity extends Base\PublicEntity
     const SAVE                  = 'save';
     const LATE_AUTHORIZED       = 'late_authorized';
     const CONVERT_CURRENCY      = 'convert_currency';
-    const AUTHENTICATION_TYPE   = 'authentication_type';
+    const AUTH_TYPE             = 'auth_type';
 
     const SUBSCRIPTION_ID       = 'subscription_id';
 
@@ -1502,6 +1502,11 @@ class Entity extends Base\PublicEntity
     public function getTerminalId()
     {
         return $this->getAttribute(self::TERMINAL_ID);
+    }
+
+    public function getAuthType()
+    {
+        return $this->getAttribute(self::AUTH_TYPE);
     }
 
     public function getReference1()

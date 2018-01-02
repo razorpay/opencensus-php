@@ -64,6 +64,7 @@ class Validator extends Base\Validator
         'account_number'             => 'filled|alpha_num|between:5,20',
         'upi'                        => 'sometimes_if:method,upi|array',
         'upi.expiry_time'            => 'sometimes_if:method,upi|integer|between:5,30|filled',
+        'auth_type'                  => 'sometimes_if:method,netbanking|string|max:10|filled'
     ];
 
     protected static $editRules = [
@@ -118,6 +119,7 @@ class Validator extends Base\Validator
         'account_number',
         'upi_expiry_time',
         'upi_vpa',
+        'auth_type',
     ];
 
     protected function validateAccountNumber(array $input)
@@ -169,6 +171,18 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException(
                     'The vpa field is required when method is upi.');
             }
+        }
+    }
+
+    protected function validateAuthType(array $input)
+    {
+        if (($input[Entity::METHOD] === Method::NETBANKING) and
+            (isset($input[Entity::RECURRING]) === true) and
+            (boolval($input[Entity::RECURRING]) === true) and
+            (empty($input[Entity::AUTH_TYPE]) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The auth_type field is required.', Entity::AUTH_TYPE);
         }
     }
 

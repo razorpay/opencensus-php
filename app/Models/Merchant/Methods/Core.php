@@ -186,7 +186,7 @@ class Core extends Base\Core
             return;
         }
 
-        foreach (Payment\AuthenticationType::$types as $type)
+        foreach (Payment\AuthType::$types as $type)
         {
             if ($this->isTestMode() === true)
             {

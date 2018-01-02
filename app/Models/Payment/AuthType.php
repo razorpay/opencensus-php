@@ -4,7 +4,7 @@ namespace RZP\Models\Payment;
 
 use RZP\Exception\InvalidArgumentException;
 
-class AuthenticationType
+class AuthType
 {
     const NETBANKING    = 'netbanking';
     const AADHAAR       = 'aadhaar';
@@ -14,20 +14,20 @@ class AuthenticationType
         self::AADHAAR,
     ];
 
-    public static function isAuthenticationTypeValid($type): bool
+    public static function isAuthTypeValid($type): bool
     {
         return (in_array($type, self::$types, true));
     }
 
-    public static function validateAuthenticationType($type)
+    public static function validateAuthType($type)
     {
-        if (self::isAuthenticationTypeValid($type) === false)
+        if (self::isAuthTypeValid($type) === false)
         {
             throw new InvalidArgumentException(
-                'Invalid authentication type',
+                'Invalid auth type',
                 [
-                    'field'                 => Entity::AUTHENTICATION_TYPE,
-                    'authentication_type'   => $type
+                    'field'                 => Entity::AUTH_TYPE,
+                    'auth_type'             => $type
                 ]);
         }
     }

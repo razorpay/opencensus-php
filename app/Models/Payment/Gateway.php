@@ -463,12 +463,12 @@ class Gateway
     ];
 
     public static $emandateBanks = [
-        AuthenticationType::NETBANKING => [
+        AuthType::NETBANKING => [
             IFSC::ICIC,
             IFSC::UTIB,
             IFSC::HDFC,
         ],
-        AuthenticationType::AADHAAR => [
+        AuthType::AADHAAR    => [
             IFSC::ICIC,
             IFSC::UTIB,
             IFSC::HDFC,

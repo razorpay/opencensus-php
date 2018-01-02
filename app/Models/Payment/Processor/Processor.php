@@ -195,7 +195,7 @@ class Processor
         return $this->authorize($payment, $input);
     }
 
-    protected function preProcessPaymentInputs(array $input, $payment)
+    protected function preProcessPaymentInputs(array $input, Payment\Entity $payment)
     {
         $coproto = null;
 
@@ -226,6 +226,22 @@ class Processor
                 $coproto['missing'][] = 'email';
                 unset($coproto['request']['content']['email']);
             }
+        }
+
+        if (($payment->isNetbanking() === true) and
+            ($payment->isRecurring() === true) and
+            ($payment->getAuthType() === null))
+        {
+            $coproto = [
+                'type'      => 'wallet',
+                'request'   => [
+                    'url'       => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                    'method'    => 'POST',
+                    'content'   => $input,
+                ],
+                'version'   => '1',
+                'missing'   =>  [Payment\Entity::AUTH_TYPE]
+            ];
         }
 
         return $coproto;
