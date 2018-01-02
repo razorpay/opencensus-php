@@ -139,6 +139,11 @@ class Entity extends Base\Entity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setReference1(string $value)
+    {
+        $this->setAttribute(self::REFERENCE1, $value);
+    }
+
     public function isTpv()
     {
         $accountNumber = $this->getAccountNumber();

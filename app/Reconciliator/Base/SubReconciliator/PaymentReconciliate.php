@@ -700,6 +700,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistReferenceNumber($rowDetails, $gatewayPayment);
 
+        $this->persistPrn($rowDetails, $gatewayPayment);
+
         $this->persistGatewayPaymentDate($rowDetails, $gatewayPayment);
 
         $this->persistCustomerDetails($rowDetails, $gatewayPayment);
@@ -742,6 +744,24 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $gatewayPaymentDate = $rowDetails[BaseReconciliate::GATEWAY_PAYMENT_DATE];
 
         $this->setGatewayPaymentDateInGateway($gatewayPaymentDate, $gatewayPayment);
+    }
+
+    /**
+     * Updates the netbaking entity with prn from recon file
+     *
+     * @param array        $rowDetails
+     * @param PublicEntity $gatewayPayment
+     */
+    protected function persistPrn(array $rowDetails, PublicEntity $netbankingentity)
+    {
+        if (empty($rowDetails[BaseReconciliate::PRN]) === true)
+        {
+            return;
+        }
+
+        $prn = $rowDetails[BaseReconciliate::PRN];
+
+        $this->setPrnInNetbankingEntity($prn, $netbankingentity);
     }
 
     /**
@@ -1608,5 +1628,15 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected function setGatewayPaymentDateInGateway(string $gatewayPaymentDate, PublicEntity $gatewayPayment)
     {
         $gatewayPayment->setDate($gatewayPaymentDate);
+    }
+
+    /**
+     * Sets the given gateway prn as reference1 in netbanking entity
+     * @param string       $gatewayPaymentDate
+     * @param PublicEntity $gatewayPayment
+     */
+    protected function setPrnInNetbankingEntity(string $prn, PublicEntity $netbankingentity)
+    {
+        $netbankingentity->setReference1($prn);
     }
 }
