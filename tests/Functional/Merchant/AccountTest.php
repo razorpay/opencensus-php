@@ -25,6 +25,19 @@ class AccountTest extends TestCase
         $this->ba->privateAuth();
     }
 
+    public function testCreateLinkedAccount()
+    {
+        $account = $this->startTest();
+
+        $lastAccount = $this->getLastEntity('merchant', true);
+
+        $accountId = Account\Entity::getSignedId($lastAccount['id']);
+
+        $this->assertEquals($account['id'], $accountId);
+
+        $this->assertEquals('10000000000000', $lastAccount['parent_id']);
+    }
+
     public function testRetrieveAccount()
     {
         $merchant = $this->fixtures->create('merchant:marketplace_account');
@@ -51,17 +64,6 @@ class AccountTest extends TestCase
             ]);
 
         $this->startTest();
-    }
-
-    public function testCreateLinkedAccount()
-    {
-        $account = $this->startTest();
-
-        $lastAccount = $this->getLastEntity('merchant', true);
-
-        $this->assertEquals($account['id'], 'acc_' . $lastAccount['id']);
-
-        $this->assertEquals('10000000000000', $lastAccount['parent_id']);
     }
 
     public function testSettlementDestinations()

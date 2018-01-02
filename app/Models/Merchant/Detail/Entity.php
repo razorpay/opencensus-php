@@ -479,6 +479,21 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SUBSCRIPTIONS_ACTIVATION_STATUS, $status);
     }
 
+    public function setTransactionReportEmail($email)
+    {
+        $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $email);
+    }
+
+    public function setTechnicalSpocEmail($email)
+    {
+        $this->setAttribute(self::TECHNICAL_SPOC_EMAIL, $email);
+    }
+
+    public function setBusinessSpocEmail($email)
+    {
+        $this->setAttribute(self::BUSINESS_SPOC_EMAIL, $email);
+    }
+
     public function getMarketplaceActivationStatus()
     {
         return $this->getAttribute(self::MARKETPLACE_ACTIVATION_STATUS);

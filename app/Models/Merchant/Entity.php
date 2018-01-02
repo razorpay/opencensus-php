@@ -6,6 +6,7 @@ use Config;
 
 use RZP\Models\User;
 use RZP\Models\Base;
+use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Emi;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
@@ -24,6 +25,7 @@ use RZP\Exception\LogicException;
 class Entity extends Base\PublicEntity
 {
     use Taggable;
+    use NotesTrait;
 
     const ID                        = 'id';
     const ORG_ID                    = 'org_id';
@@ -60,6 +62,7 @@ class Entity extends Base\PublicEntity
     const CONVERT_CURRENCY          = 'convert_currency';
     const ARCHIVED_AT               = 'archived_at';
     const SUSPENDED_AT              = 'suspended_at';
+    const NOTES                     = 'notes';
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
@@ -172,6 +175,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED,
         self::AUTO_CAPTURE_LATE_AUTH,
         self::TRANSACTION_REPORT_EMAIL,
+        self::NOTES,
     ];
 
     // Requires PHP 5.6
@@ -223,6 +227,7 @@ class Entity extends Base\PublicEntity
         self::ORG_ID,
         self::GROUPS,
         self::ADMINS,
+        self::NOTES,
      ];
 
     protected $defaults = [
@@ -249,6 +254,7 @@ class Entity extends Base\PublicEntity
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
+        self::NOTES                  => [],
     ];
 
     protected $publicSetters = [

@@ -2,8 +2,8 @@
 
 return [
     'testRetrieveAccount' => [
-        'request' => [
-            'url' => '/beta/accounts/acc_10000000000001',
+        'request'  => [
+            'url'    => '/beta/accounts/acc_10000000000001',
             'method' => 'get',
         ],
         'response' => [
@@ -14,8 +14,8 @@ return [
     ],
 
     'testRetrieveAccounts' => [
-        'request' => [
-            'url' => '/beta/accounts',
+        'request'  => [
+            'url'    => '/beta/accounts',
             'method' => 'get',
         ],
         'response' => [
@@ -31,19 +31,83 @@ return [
     ],
 
     'testCreateLinkedAccount' => [
-        'request' => [
-            'url' => '/beta/accounts',
-            'method' => 'post',
+        'request'  => [
+            'url'     => '/beta/accounts',
+            'method'  => 'post',
             'content' => [
-                'name' => 'Linked Account 1',
+                'name'  => 'Linked Account 1',
                 'email' => 'linked1@account.com',
+                'tnc_accepted' => true,
+                'notes' => [
+                    'custom_account_id' => 'Qwerty123',
+                    'custom_attribute' => 'some_value',
+                ]
             ],
         ],
         'response' => [
             'content' => [
-                'name' => 'Linked Account 1',
-                'email' => 'linked1@account.com',
-            ],
+                'name'               => 'Linked Account 1',
+                'email'              => 'linked1@account.com',
+//                'entity'             => 'account',
+//                'live'               => true,
+                'tnc_accepted'       => true,
+                'managed'            => true,
+                'activation_details' => [
+//                    'activated'      => true,
+//                    'activated_at'   => null,
+//                    'status'         => null,
+//                    'can_submit'     => true,
+//                    'fields_pending' => [],
+                ],
+                'secondary_emails'   => [
+                    'transaction_report_email' => 'linked1@account.com',
+                    'technical_spoc_email'     => 'linked1@account.com',
+                    'business_spoc_email'      => 'linked1@account.com'
+                ],
+                'account_details'    => [
+                    'mobile'                   => null,
+                    'landline'                 => null,
+                    'type'                     => null,
+                    'paymentdetails'           => null,
+                    'business_model'           => null,
+                    'registered_address'       => [
+                        'address' => null,
+                        'city'    => null,
+                        'state'   => null,
+                        'pin'     => null
+                    ],
+                    'operational_address'      => [
+                        'address' => null,
+                        'city'    => null,
+                        'state'   => null,
+                        'pin'     => null
+                    ],
+                    'date_established'         => null,
+                    'transaction_volume'       => null,
+                    'average_transaction_size' => null,
+                    'kyc_details'              => [
+                        'cin'                 => null,
+                        'gstin'               => null,
+                        'p_gstin'             => null,
+                        'pan'                 => null,
+                        'pan_name'            => null,
+                        'promoter_pan'        => null,
+                        'promoter_pan_name'   => null,
+                        'business_proof_file' => null,
+                        'address_proof_file'  => null
+                    ]
+                ],
+                'notes'              => [
+                    'custom_account_id' => 'Qwerty123',
+                    'custom_attribute'  => 'some_value',
+                ],
+                'fund_transfer'      => [
+//                    'destination' => null
+                ],
+                'configurations'     => [
+                    'brand_color' => null
+                ]
+            ]
         ],
     ],
 

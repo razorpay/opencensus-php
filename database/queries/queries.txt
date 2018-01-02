@@ -2788,3 +2788,6 @@ UPDATE merchant_details
     SET
         technical_spoc_email=merchants.email,
         business_spoc_email=merchants.email;
+
+ALTER TABLE merchants
+    ADD COLUMN notes TEXT NULL AFTER invoice_code;

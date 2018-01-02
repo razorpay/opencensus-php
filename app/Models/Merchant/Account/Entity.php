@@ -75,6 +75,7 @@ class Entity extends Merchant\Entity
 
     protected $publicSetters = [
         self::ID,
+        self::MANAGED,
         self::NOTES,
         self::TNC_ACCEPTED,
         self::FUND_TRANSFER,
@@ -86,7 +87,6 @@ class Entity extends Merchant\Entity
 
     protected static $generators = [
         self::ID,
-        self::TRANSACTION_REPORT_EMAIL,
         self::INVOICE_CODE,
     ];
 
@@ -125,11 +125,6 @@ class Entity extends Merchant\Entity
     public function getActivationStatus()
     {
         return $this->merchantDetail->getAttribute(self::ACTIVATION_STATUS);
-    }
-
-    public function getNotes()
-    {
-        return $this->getAttribute(self::NOTES);
     }
 
     public function getRegisteredAddress() : array
