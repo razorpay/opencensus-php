@@ -4,6 +4,7 @@ import { toJS } from 'mobx';
 
 import { adminFetch, adminPatch } from 'common/fetch';
 import { closeModal, confirm, notifySuccess } from 'common/modal';
+import { isWorkflow } from 'common/util';
 
 import Model from './model';
 import EntityRow from 'ui/EntityRow';
@@ -75,6 +76,9 @@ export default class MerchantActivationForm extends Component {
         },
       }).then(response => {
         if (response) {
+          if (isWorkflow(response)) {
+            return;
+          }
           details.merchant_details.archived = response.archived;
           notifySuccess(
             `Form ${
