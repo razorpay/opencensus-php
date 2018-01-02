@@ -1,4 +1,5 @@
 import React from 'react';
+import user from 'admin/user';
 import {
   DateField,
   SelectField,
@@ -11,7 +12,7 @@ import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
 import { notifySuccess, closeModal } from 'common/modal';
 
-import { adminPost } from 'util/fetch';
+import { adminPost } from 'common/fetch';
 
 const options = {
   bank: {
@@ -31,7 +32,7 @@ GenerateRefundsExcel.permission = 'create_netbanking_refund';
 GenerateRefundsExcel.title = 'Generate Refunds Excel (Netbanking)';
 export default function GenerateRefundsExcel() {
   return (
-    <Form>
+    <Form style={{ minHeight: '330px', width: '650px' }}>
       <DateField
         label="Date"
         name="on"
@@ -68,6 +69,13 @@ export default function GenerateRefundsExcel() {
           } else {
             body.on = data.on;
           }
+
+          console.log('BODY..', data);
+          if (data.email_self) {
+            data.email_self == 1 && (body.email = user.email);
+            delete data.email_self;
+          }
+
           return adminPost({
             body,
             route_name: 'refund_generate_excel',

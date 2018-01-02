@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import { observable, extendObservable, action } from 'mobx';
 import { observer } from 'mobx-react';
 import { openModal, notifySuccess, notifyDone } from 'common/modal';
-import { adminFetch, adminPut } from 'util/fetch';
+import { adminFetch, adminPut } from 'common/fetch';
 import DiffModal from './DiffModal';
 import Comments from './Comments';
 import RequestForm from './RequestForm';
 import RequestActions from './RequestActions';
-import { formatDate, titleCase } from 'util/index';
+import { formatDate, titleCase } from 'common/util';
 
 @observer
 export default class RequestEntity extends Component {

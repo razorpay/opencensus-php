@@ -6,7 +6,7 @@ import { TextAreaField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
-import { adminPut } from 'util/fetch';
+import { adminPut } from 'common/fetch';
 
 export default ({ props, merchantId }) => {
   function onSubmit(body) {

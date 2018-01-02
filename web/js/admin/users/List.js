@@ -5,12 +5,12 @@ import { PageTable } from 'ui/Table';
 import Field from 'ui/Field';
 import Collection from 'model/collection';
 import CollectionItem from 'model/collectionItem';
-import { adminFetch, adminDelete } from 'util/fetch';
+import { adminFetch, adminDelete } from 'common/fetch';
 import { observer } from 'mobx-react';
 import { showEntity } from './Entity';
 import { bool } from 'ui/Item';
 import { notifyDone } from 'common/modal';
-import { prevent } from 'util/index';
+import { prevent } from 'common/util';
 
 import { removeEntity } from './Entity';
 import AsyncButton from 'ui/AsyncButton';

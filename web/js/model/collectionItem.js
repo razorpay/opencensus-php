@@ -1,6 +1,6 @@
 import { observable, extendShallowObservable } from 'mobx';
 import BaseModel from 'model/base';
-import { deepClone } from 'util/index';
+import { deepClone } from 'common/util';
 
 export default class Item extends BaseModel {
   constructor(collection, props = {}) {

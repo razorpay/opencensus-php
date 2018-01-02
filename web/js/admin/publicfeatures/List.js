@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { PageTable } from 'ui/Table';
 import { SelectField } from 'ui/Field';
 import Collection from 'model/collection';
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 import { featuresAkaMap, showEntity } from './Entity';
 
 const defaultFilters = {

@@ -1,7 +1,7 @@
 import { Component } from 'react';
 
 import { openModal, closeModal, confirm } from 'common/modal';
-import fetch, { adminFetch } from 'util/fetch';
+import fetch, { adminFetch } from 'common/fetch';
 import { notifyError, notifySuccess } from 'common/modal';
 
 import ShowWhen from 'admin/components/ShowWhen';

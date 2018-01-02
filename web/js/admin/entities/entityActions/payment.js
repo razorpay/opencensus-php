@@ -1,6 +1,6 @@
 import { Component, Fragment } from 'react';
 import { openModal, closeModal, confirm } from 'common/modal';
-import { adminFetch, adminPost } from 'util/fetch';
+import { adminFetch, adminPost } from 'common/fetch';
 import { notifyError, notifySuccess, notifyDone } from 'common/modal';
 import { getFields } from '../Entity';
 import user from 'admin/user';
@@ -12,7 +12,7 @@ import Form from 'ui/Form';
 import Field, { CheckField, TextAreaField } from 'ui/Field';
 import Table from 'ui/Table';
 import { DisputeForm } from './dispute';
-import { formatDate } from 'util/index';
+import { formatDate } from 'common/util';
 import Amount from 'ui/Amount';
 
 // Payment Actions
@@ -202,18 +202,17 @@ export default ({ entity, mode, updateEntity }) => {
           </AsyncButton>
         )}
 
-      {(entity.status === 'created' || entity.status === 'failed') &&
-        entity.gateway != null && (
-          <AsyncButton
-            onClick={verifyPayment}
-            class="btn btn-default text-primary"
-            pendingClass="btn btn-default text-primary btn-pending"
-            confirm="Are you sure you want to Verify this payment?"
-          >
-            Verify Payment
-            <span class="spin-btn" />
-          </AsyncButton>
-        )}
+      {entity.gateway != null && (
+        <AsyncButton
+          onClick={verifyPayment}
+          class="btn btn-default text-primary"
+          pendingClass="btn btn-default text-primary btn-pending"
+          confirm="Are you sure you want to Verify this payment?"
+        >
+          Verify Payment
+          <span class="spin-btn" />
+        </AsyncButton>
+      )}
 
       {!entity.disputed && (
         <button

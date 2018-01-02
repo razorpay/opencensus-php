@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { serialize } from 'ui/Form';
 import { confirm } from 'common/modal';
-import { prevent } from 'util/index';
+import { prevent } from 'common/util';
 
 export default class AsyncButton extends Component {
   state = {

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import ShowWhen from 'admin/components/ShowWhen';
-import { adminFetch, adminPut, adminPost } from 'util/fetch';
+import { adminFetch, adminPut, adminPost } from 'common/fetch';
 import {
   openModal,
   closeModal,
@@ -17,7 +17,7 @@ import EntityRow from 'ui/EntityRow';
 import ToggleEntityRow from 'ui/ToggleEntityRow';
 import Model from './model';
 import AsyncButton from 'ui/AsyncButton';
-import { isWorkflow } from 'util/index';
+import { isWorkflow } from 'common/util';
 
 let parentProps, merchantId;
 const actions = {};
@@ -301,11 +301,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
     )
       .then(response => {
         if (response) {
-          if (isWorkflow(reponse)) {
-            return;
-          }
           notifySuccess('Merchant is successfully updated');
-          model.updateDetails(response);
+          if (isWorkflow(response)) {
+            return;
+          } else {
+            model.updateDetails(response);
+          }
         }
       })
       .catch(err => {
@@ -315,12 +316,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
   function toggleInternational() {
     let action, successMsg;
-    if (!merchant.details.international) {
-      successMsg = 'Merchant International enabled successfully';
-      action = 'enable_international';
-    } else if (merchant.details.hold_funds == 1) {
-      successMsg = 'Merchant International disabled successfully';
+    if (merchant.details.international) {
       action = 'disable_international';
+      successMsg = 'Merchant International disabled successfully';
+    } else {
+      action = 'enable_international';
+      successMsg = 'Merchant International enabled successfully';
     }
 
     return merchantAction(action, successMsg);
@@ -584,7 +585,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
         {typeof merchant.details.suspended_at !== 'undefined' && (
           <ShowWhen
             permission={
-              merchant.details.suspended_at
+              merchant.details.suspended_at === null
                 ? 'edit_merchant_suspend'
                 : 'edit_merchant_unsuspend'
             }

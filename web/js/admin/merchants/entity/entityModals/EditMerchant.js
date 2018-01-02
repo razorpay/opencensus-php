@@ -3,7 +3,7 @@ import BaseModal from 'ui/BaseModal';
 import { toJS, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
-import { adminFetch, adminPost } from 'util/fetch';
+import { adminFetch, adminPost } from 'common/fetch';
 import { getRiskRating } from '../entity-resources';
 import ShowWhen from 'admin/components/ShowWhen';
 import Form from 'ui/Form';
@@ -54,7 +54,6 @@ export default class EditMerchant extends Component {
           // If array of objects (eg- admins/groups)
           tempBaseVal = valInBase.map(item => item.id);
         }
-
         isSame =
           tempBaseVal.sort().join(',') === requestData[key].sort().join(',');
 
@@ -69,13 +68,17 @@ export default class EditMerchant extends Component {
 
   handleConfirm = body => {
     body.groups = this.selectedGroups.keys();
-    if (body.admin) {
+    if (body.admins) {
       body.admins = body.admins.split(',');
     }
     body.max_payment_amount *= 100;
     body.transaction_report_email = body.transaction_report_email.split(',');
 
     this.dropUnchangedFields(body);
+
+    if (body.transaction_report_email) {
+      body.transaction_report_email = body.transaction_report_email.join(',');
+    }
 
     if (!Object.keys(body).length) {
       notifyError('Edit something before clicking Save');

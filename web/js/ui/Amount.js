@@ -1,5 +1,5 @@
 import React from 'react';
-import { getFormattedAmount } from 'util/index';
+import { getFormattedAmount } from 'common/util';
 
 const currencies = {
   INR: '₹',

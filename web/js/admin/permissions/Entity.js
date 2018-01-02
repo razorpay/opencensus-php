@@ -5,8 +5,8 @@ import Field, { CheckField } from 'ui/Field';
 import OrgTable from './OrgTable';
 import BaseModal from 'ui/BaseModal';
 import Table from 'ui/Table';
-import { adminFetch, adminPut, adminPost, adminDelete } from 'util/fetch';
-import { prevent } from 'util/index';
+import { adminFetch, adminPut, adminPost, adminDelete } from 'common/fetch';
+import { prevent } from 'common/util';
 
 export default class EditPerm extends Component {
   state = {
@@ -61,7 +61,7 @@ export default class EditPerm extends Component {
 
   onSubmit = body => {
     body = { ...body, ...this.state.orgTableData };
-    body.assignable = body.assignable === '1';
+    body.assignable = body.assignable === '1' ? 1 : 0;
     let data = { body };
 
     let promise;

@@ -1,11 +1,11 @@
 import { toJS, extendObservable, computed } from 'mobx';
 import Collection from 'model/collection';
 import CollectionItem from 'model/collectionItem';
-import { adminDelete, adminFetch, adminPost } from 'util/fetch';
-import { methods } from 'util/data';
+import { adminDelete, adminFetch, adminPost } from 'common/fetch';
+import { methods } from 'common/data';
 import { notifySuccess, notifyError } from 'common/modal';
-import { deepClone } from 'util/index';
-import { cardTypes } from 'util/data';
+import { deepClone } from 'common/util';
+import { cardTypes } from 'common/data';
 import { SwitchField } from 'ui/Field';
 
 export default class Plan extends Collection {

@@ -3,9 +3,9 @@ import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import Field, { SelectField } from 'ui/Field';
 import Collection from 'model/collection';
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 import { observer } from 'mobx-react';
-import { formatDate } from 'util/index';
+import { formatDate } from 'common/util';
 import { isSuperAdmin } from 'admin/user';
 
 @observer
@@ -74,7 +74,7 @@ export default class RequestList extends Component {
 const fields = [
   ['Action', item => item.permission_description],
   ['Title', item => item.title],
-  ['Created By', item => item.admin.name],
+  ['Created By', item => (item.admin ? item.admin.name : '--')],
   ['Created At', item => formatDate(item.created_at)],
   [
     'State',

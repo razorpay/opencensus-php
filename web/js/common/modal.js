@@ -5,7 +5,7 @@ import CSSTransition from 'react-transition-group/CSSTransition';
 
 import { observe, observable } from 'mobx';
 import { observer } from 'mobx-react';
-import { animObj } from 'util/index';
+import { animObj } from 'common/util';
 
 class ModalStore {
   @observable.shallow modals = [];

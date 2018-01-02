@@ -3,8 +3,8 @@ import { Link, withRouter } from 'react-router-dom';
 import { extendObservable } from 'mobx';
 import { observer } from 'mobx-react';
 
-import { adminFetch } from 'util/fetch';
-import { formatDate } from 'util/index';
+import { adminFetch } from 'common/fetch';
+import { formatDate } from 'common/util';
 
 import Form, { serialize } from 'ui/Form';
 import Field, {
@@ -16,7 +16,7 @@ import Field, {
 } from 'ui/Field';
 import { PageTable } from 'ui/Table';
 import Collection, { defaultFilters } from 'model/collection';
-import { statusPill } from 'util/data';
+import { statusPill } from 'common/data';
 
 // fetch entity columns
 var sharedData;
@@ -225,6 +225,8 @@ export default class EntityList extends Component {
           value = formatDate(value);
         } else if (value && typeof value === 'object') {
           return <pre>{JSON.stringify(value)}</pre>;
+        } else if (typeof value === 'boolean') {
+          value = JSON.stringify(value);
         }
         return value;
       },

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { adminPost, adminPut } from 'util/fetch';
+import { adminPost, adminPut } from 'common/fetch';
 import { confirm, closeModal, notifyError } from 'common/modal';
 import { notifyDone } from '../../common/modal';
 import AsyncButton from 'ui/AsyncButton';

@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import BaseModal from 'ui/BaseModal';
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
 import { beneficiaryStateMap } from '../entity-resources';
-import { isWorkflow } from 'util/index';
+import { isWorkflow } from 'common/util';
 import Form from 'ui/Form';
 import Field, { SelectField } from 'ui/Field';
-import { adminFetch, adminPost } from 'util/fetch';
+import { adminFetch, adminPost } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
 
 export default class EditBankAccountDetails extends Component {

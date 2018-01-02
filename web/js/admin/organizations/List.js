@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { observer } from 'mobx-react';
 
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 import { removeEntity } from './Entity';
 import Collection from 'model/collection';
 

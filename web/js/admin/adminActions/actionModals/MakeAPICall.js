@@ -15,7 +15,7 @@ import {
   notifyError,
 } from 'common/modal';
 
-import { adminFormUpload } from 'util/fetch';
+import { adminFormUpload } from 'common/fetch';
 
 export default class MakeAPICall extends Component {
   constructor() {

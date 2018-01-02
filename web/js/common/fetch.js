@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { deepClone } from 'util/index';
+import { deepClone } from 'common/util';
 import { notifyError } from 'common/modal';
 
 export default function fetch(options, suppressError) {

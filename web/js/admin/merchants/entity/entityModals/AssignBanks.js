@@ -5,9 +5,9 @@ import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
 import { SwitchField } from 'ui/Field';
-import { adminFetch, adminPost } from 'util/fetch';
+import { adminFetch, adminPost } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
-import { isWorkflow } from 'util/index';
+import { isWorkflow } from 'common/util';
 
 export default class PricingPlanModal extends Component {
   state = { merchantBanksMapping: {} };

@@ -7,7 +7,7 @@ import MultiSelectField from 'ui//MultiSelectField';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
-import { adminPost } from 'util/fetch';
+import { adminPost } from 'common/fetch';
 
 export default class EditFeatures extends Component {
   state = { mode: 'test' };

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Table from 'ui/Table';
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 import { openModal } from 'common/modal';
 import BaseModal from 'ui/BaseModal';
 

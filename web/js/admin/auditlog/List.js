@@ -3,7 +3,7 @@ import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import Field, { SelectField, CheckField } from 'ui/Field';
 import Collection from 'model/collection';
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 
 export default class AuditLogList extends Component {
   collection = new Collection({

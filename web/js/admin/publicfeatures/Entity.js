@@ -10,7 +10,7 @@ import {
 import Form from 'ui/Form';
 import BaseModal from 'ui/BaseModal';
 import Field, { SelectField, TextAreaField, FileField } from 'ui/Field';
-import { adminFetch, adminPost, adminPut, adminFormUpload } from 'util/fetch';
+import { adminFetch, adminPost, adminPut, adminFormUpload } from 'common/fetch';
 
 @observer
 export default class EditPublicFeatures extends Component {

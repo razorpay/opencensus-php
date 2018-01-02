@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
-import { adminFetch, adminPatch } from 'util/fetch';
+
+import { adminFetch, adminPatch } from 'common/fetch';
 import { closeModal, confirm, notifySuccess } from 'common/modal';
 
 import Model from './model';
@@ -16,7 +17,7 @@ import ProductOnboarding from './merchantActivationForms/ProductOnboarding';
 import BusinessDetails from './merchantActivationForms/BusinessDetails';
 import ActivationDetails from './merchantActivationForms/ActivationDetails';
 
-import { statusPill } from 'util/data';
+import { statusPill } from 'common/data';
 
 import { Link } from 'react-router-dom';
 

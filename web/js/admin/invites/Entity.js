@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Field from 'ui/Field';
 import { openModal, closeModal, notifySuccess } from 'common/modal';
-import { adminFetch, adminPost } from 'util/fetch';
+import { adminFetch, adminPost } from 'common/fetch';
 
 import InviteForm from './InviteForm';
 import DetailsModal from './DetailsModal';

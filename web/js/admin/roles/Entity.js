@@ -7,11 +7,11 @@ import {
   closeModal,
   notifyDone,
 } from 'common/modal';
-import { fetch, adminFetch, adminPost, adminDelete } from 'util/fetch';
-import { isWorkflow } from 'util/index';
+import fetch, { adminFetch, adminPost, adminDelete } from 'common/fetch';
+import { isWorkflow } from 'common/util';
 import RolesForm from './RolesForm';
 
-import { prevent } from 'util/index';
+import { prevent } from 'common/util';
 
 @observer
 class EditRole extends Component {
@@ -79,7 +79,13 @@ class EditRole extends Component {
         }
       });
     } else {
-      body.permissions = this.state.selectedPerms;
+      let { selectedPerms } = this.state;
+      body.permissions = [];
+
+      for (let sPerm in selectedPerms) {
+        if (selectedPerms.hasOwnProperty(sPerm)) body.permissions.push(sPerm);
+      }
+
       return adminPost({
         route_name: 'role_create',
         body,

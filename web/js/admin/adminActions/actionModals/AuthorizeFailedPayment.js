@@ -4,7 +4,7 @@ import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
 import { notifySuccess, closeModal } from 'common/modal';
 
-import { adminPost } from 'util/fetch';
+import { adminPost } from 'common/fetch';
 
 AuthorizeFailedPayment.permission = 'edit_authorized_failed_payment';
 AuthorizeFailedPayment.title = 'Authorize Failed Payment';

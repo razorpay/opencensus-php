@@ -3,7 +3,7 @@ import Form from 'ui/Form';
 import Field from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 
-import { adminPut } from 'util/fetch';
+import { adminPut } from 'common/fetch';
 import { notifySuccess, closeModal } from 'common/modal';
 
 ConfirmUser.permission = 'edit_merchant_confirm';

@@ -1,7 +1,7 @@
 import { extendObservable } from 'mobx';
-import { prevent } from 'util/index';
+import { prevent } from 'common/util';
 import CollectionItem from 'model/collectionItem';
-import fetch, { adminPost, adminDelete } from 'util/fetch';
+import fetch, { adminPost, adminDelete } from 'common/fetch';
 import { closeModal, notifyError, notifySuccess, confirm } from 'common/modal';
 
 const defaultProps = {
@@ -81,7 +81,7 @@ export default class GatewayRule extends CollectionItem {
 
     return this.request(
       fetch({
-        url: 'admin/generic',
+        url: '/admin/generic',
         method: 'patch',
         params: {
           route_name: 'gateway_update_rule',

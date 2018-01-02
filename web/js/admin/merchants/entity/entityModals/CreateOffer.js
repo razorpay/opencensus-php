@@ -14,7 +14,7 @@ import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
 import { getMappingFor } from '../entity-resources';
 
-import { adminPost } from 'util/fetch';
+import { adminPost } from 'common/fetch';
 
 const WALLET_MAP = getMappingFor('wallet');
 const CARD_NETWORK_MAP = getMappingFor('network');
@@ -62,12 +62,12 @@ export default class CreateOffer extends Component {
     if (offer.starts_at) {
       offer.starts_at =
         new Date(moment(offer.starts_at, 'DD/MM/YYYY')).getTime() / 1000 +
-        offsetStart * 1000;
+        offsetStart;
     }
     if (offer.ends_at) {
       offer.ends_at =
-        new Date(moment(offer.ends_at, 'DD/MM/YYYY')).getTime() /
-        (1000 + offsetEnd * 1000);
+        new Date(moment(offer.ends_at, 'DD/MM/YYYY')).getTime() / 1000 +
+        offsetEnd;
     }
 
     delete offer.starts_at_time;

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import Collection from 'model/collection';
 import CollectionItem from 'model/collectionItem';
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 import { PageTable } from 'ui/Table';
 import { showEntity, showDetails } from './Entity';
 

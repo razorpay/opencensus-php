@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { SelectField, SelectMethod } from 'ui/Field';
 import { openModal, closeModal } from 'common/modal';
-import { adminPost, adminFetch, adminPut, adminDelete } from 'util/fetch';
+import { adminPost, adminFetch, adminPut, adminDelete } from 'common/fetch';
 import { notifyError, notifySuccess, notifyDone } from 'common/modal';
-import { prevent } from 'util/index';
+import { prevent } from 'common/util';
 
 import GroupForm from './GroupForm';
 

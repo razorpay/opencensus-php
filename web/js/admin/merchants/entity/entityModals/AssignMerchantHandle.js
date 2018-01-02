@@ -6,13 +6,13 @@ import Field from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
-import { adminPut } from 'util/fetch';
+import { adminPut } from 'common/fetch';
 
 export default ({ merchantId }) => {
   /* Submit button action */
   function onSubmit(body) {
     return adminPut({
-      route_name: '"merchant_edit_config"',
+      route_name: 'merchant_edit_config',
       merchant_id: merchantId,
       body: {
         handle: body.handle,

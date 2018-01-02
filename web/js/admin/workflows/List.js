@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { PageTable } from 'ui/Table';
 import Collection from 'model/collection';
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 import { observer } from 'mobx-react';
 import { Link } from 'react-router-dom';
-import { formatDate } from 'util/index';
+import { formatDate } from 'common/util';
 import AsyncButton from 'ui/AsyncButton';
 
 @observer

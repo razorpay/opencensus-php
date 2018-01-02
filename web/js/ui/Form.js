@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { adminFetch as fetch } from 'util/fetch';
+import { adminFetch as fetch } from 'common/fetch';
 import { notifyError } from 'common/modal';
 
 export default class Form extends Component {

@@ -1,5 +1,5 @@
 import { openModal, closeModal, confirm } from 'common/modal';
-import fetch from 'util/fetch';
+import fetch from 'common/fetch';
 import { notifyError, notifySuccess } from 'common/modal';
 
 import ShowWhen from 'admin/components/ShowWhen';
@@ -7,6 +7,7 @@ import AsyncButton from 'ui/AsyncButton';
 import BaseModal from 'ui/BaseModal';
 import Form from 'ui/Form';
 import Field from 'ui/Field';
+import { formatDate } from 'common/util';
 
 // Offer Actions
 export default ({ entity, mode, updateEntity }) => {
@@ -77,18 +78,23 @@ export default ({ entity, mode, updateEntity }) => {
 
   return (
     <ShowWhen permission="edit_merchant_offer">
-      <button class="label-info" onClick={openEditOffer}>
-        Edit Offer
-      </button>
-      <AsyncButton
-        onClick={() => updateOffer({ active: 0 })}
-        class="btn btn-default text-danger"
-        pendingClass="btn btn-default text-danger btn-pending"
-        confirm="Are you sure you want to deactivate this offer?"
-      >
-        Deactivate Offer
-        <span class="spin-btn" />
-      </AsyncButton>
+      {entity.active && (
+        <button class="label-info" onClick={openEditOffer}>
+          Edit Offer
+        </button>
+      )}
+
+      {entity.active && (
+        <AsyncButton
+          onClick={() => updateOffer({ active: 0 })}
+          class="btn btn-default text-danger"
+          pendingClass="btn btn-default text-danger btn-pending"
+          confirm="Are you sure you want to deactivate this offer?"
+        >
+          Deactivate Offer
+          <span class="spin-btn" />
+        </AsyncButton>
+      )}
     </ShowWhen>
   );
 };
@@ -122,6 +128,12 @@ const EditOfferForm = ({ entity, handleSubmit }) => {
           name="linked_offer_ids"
           defaultValue={entity.linked_offer_ids}
         />
+        <Field
+          label="From"
+          defaultValue={formatDate(entity.starts_at)}
+          disabled
+        />
+        <Field label="To" defaultValue={formatDate(entity.ends_at)} disabled />
         <Field
           label="Display Text"
           name="display_text"

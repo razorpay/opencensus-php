@@ -3,7 +3,7 @@ import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import Field, { SelectField, CheckField } from 'ui/Field';
 import Collection from 'model/collection';
-import fetch from 'util/fetch';
+import fetch from 'common/fetch';
 
 const emailFetch = ({ query_params }) => {
   if (!query_params.event) {

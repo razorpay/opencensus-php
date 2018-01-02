@@ -3,7 +3,7 @@ import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import Field from 'ui/Field';
 import Collection from 'model/collection';
-import { adminFetch } from 'util/fetch';
+import { adminFetch } from 'common/fetch';
 import { openPricingEntity } from './Entity';
 import Plan from './plan';
 

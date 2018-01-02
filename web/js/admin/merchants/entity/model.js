@@ -3,9 +3,9 @@ import { notifySuccess } from 'common/modal';
 import BaseModel from 'model/base';
 
 import user from 'admin/user';
-import { adminDelete } from 'util/fetch';
-import { titleCase, removeFromArray } from 'util/index';
-import { isWorkflow } from 'util/index';
+import { adminDelete } from 'common/fetch';
+import { titleCase, removeFromArray } from 'common/util';
+import { isWorkflow } from 'common/util';
 
 export default class Model extends BaseModel {
   @observable
@@ -16,7 +16,7 @@ export default class Model extends BaseModel {
     terminals: { items: [], count: 0 },
     offers: [],
     pricingPlans: {},
-    scheduleTasks: {},
+    scheduleTasks: [],
     hasSettlementSchedule: undefined,
     features: {},
     bankDetails: {},
@@ -61,7 +61,9 @@ export default class Model extends BaseModel {
         this.fetchScheduleTasks();
         this.fetchGatewayRules();
 
-        this.fetchAdmins();
+        if (user.permissions.find(perm => perm === 'view_all_admin')) {
+          this.fetchAdmins();
+        }
 
         this.fetchTerminals('live');
         // this.fetchTerminals('test');
@@ -354,17 +356,16 @@ export default class Model extends BaseModel {
         ...data,
       })
     ).then(data => {
-      if (data) {
-        this.merchant.scheduleTasks = data;
-      }
-
       // Check if merchant has Settlement Schedule
       if (data) {
         for (let key in data.items) {
           if (data.items[key]['type'] === 'settlement') {
+            this.merchant.scheduleTasks.push(data.items[key]);
             this.merchant.hasSettlementSchedule = true;
-            break;
           }
+        }
+        if (this.merchant.hasSettlementSchedule === undefined) {
+          this.merchant.hasSettlementSchedule = false;
         }
       }
     });

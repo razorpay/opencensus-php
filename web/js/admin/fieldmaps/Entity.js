@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 
 import { openModal, closeModal, notifySuccess } from 'common/modal';
 
-import { adminPost, adminPut, adminDelete } from 'util/fetch';
+import { adminPost, adminPut, adminDelete } from 'common/fetch';
 
 import FieldMapForm from './FieldMapForm';
-import { prevent } from 'util/index';
+import { prevent } from 'common/util';
 
 export default class EditFieldMaps extends Component {
   save = data => {

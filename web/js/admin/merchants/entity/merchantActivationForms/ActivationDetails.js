@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 
-import { snakeToTitleCase } from 'util/index';
-
 import Form from 'ui/Form';
 import { SelectField } from 'ui/Field';
-import { adminPatch } from 'util/fetch';
-import { isWorkflow } from 'util/index';
+import { adminPatch } from 'common/fetch';
+import { isWorkflow, snakeToTitleCase } from 'common/util';
 import {
   openModal,
   closeModal,

@@ -1,6 +1,7 @@
 import React from 'react';
-import { titleCase, snakeToTitleCase, formatDate } from 'util/index';
-import { statusPill } from 'util/data';
+
+import { titleCase, snakeToTitleCase, formatDate } from 'common/util';
+import { statusPill } from 'common/data';
 
 import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';
@@ -375,6 +376,7 @@ export function getDetailsViewMap(model) {
     {
       label: 'Admins',
       class: 'highlight',
+      permission: 'view_all_admin',
       children: () => (
         <div>
           <Table items={details.admins} fields={_getAdminsFields(adminsMap)} />
@@ -636,11 +638,13 @@ export function getDetailsViewMap(model) {
           {hasSettlementSchedule ? (
             <Table
               onClick={openSettlementSchedule}
-              items={scheduleTasks.items}
+              items={scheduleTasks}
               fields={_getSettlementScheduleFields()}
             />
-          ) : (
+          ) : hasSettlementSchedule === false ? (
             'No Settlement Schedule Assigned'
+          ) : (
+            <div class="small spinner" />
           )}
         </div>
       ),

@@ -4,7 +4,7 @@ import { withRouter } from 'react-router-dom';
 import { openModal, notifySuccess, notifyError, notify } from 'common/modal';
 import { observable, action, extendObservable, toJS } from 'mobx';
 import { observer } from 'mobx-react';
-import { adminFetch, adminPost, adminPut } from 'util/fetch';
+import { adminFetch, adminPost, adminPut } from 'common/fetch';
 
 import Form from 'ui/Form';
 import Field, { SelectField, Switch } from 'ui/Field';

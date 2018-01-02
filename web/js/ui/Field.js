@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { methods } from 'util/data';
-import { prevent } from 'util/index';
+import { methods } from 'common/data';
+import { prevent } from 'common/util';
 import { Input as DayPickerInput } from 'react-day-picker';
 import moment from 'moment';
 
@@ -12,6 +12,8 @@ function toggleChecked(e) {
   var sib = e.target.parentNode.querySelector('input');
   sib.checked = !sib.checked;
 }
+
+const setDay = (date, timeOfDay) => moment(date)[timeOfDay]('day');
 
 export default function Field({
   tag = 'input',
@@ -50,6 +52,8 @@ const DateInput = ({
   onDayChange,
   dayPickerProps,
   format = 'DD/MM/YYYY',
+  formatDate = (date, format) => moment(date).format(format),
+  parseDate = (input, format) => moment(input, format).toDate(),
   hideOnDayClick,
   value,
   ...props
@@ -57,8 +61,8 @@ const DateInput = ({
   return (
     <DayPickerInput
       format={format}
-      formatDate={date => moment(date).format(format)}
-      parseDate={input => moment(input, format).toDate()}
+      formatDate={formatDate}
+      parseDate={parseDate}
       onDayChange={onDayChange}
       placeholder={format}
       value={value}
@@ -72,11 +76,26 @@ export const DateField = _ => (
 export const TimeField = _ => <Field {..._} type="time" />;
 export const DataListField = _ => <Field {..._} tag="datalist" />;
 
-export const FromField = _ => (
-  <DateField {..._} name="from" label="From" placeholder="" />
+export const FromField = ({ onDayChange = () => {}, ..._ }) => (
+  <DateField
+    name="from"
+    label="From"
+    placeholder=""
+    formatDate={(date, format) => setDay(date, 'startOf').format(format)}
+    onDayChange={day => onDayChange(setDay(day, 'startOf').toDate())}
+    {..._}
+  />
 );
-export const ToField = _ => (
-  <DateField {..._} name="to" label="To" placeholder="" />
+
+export const ToField = ({ onDayChange = () => {}, ..._ }) => (
+  <DateField
+    name="to"
+    label="To"
+    placeholder=""
+    formatDate={(date, format) => setDay(date, 'endOf').format(format)}
+    onDayChange={day => onDayChange(setDay(day, 'endOf').toDate())}
+    {..._}
+  />
 );
 
 export function RadioField({ label, value, defaultValue, ...props }) {

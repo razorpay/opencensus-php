@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 
 import BaseModal from 'ui/BaseModal';
-import fetch, { adminFetch } from 'util/fetch';
+import fetch, { adminFetch } from 'common/fetch';
 import { SelectField, SwitchField } from 'ui/Field';
 import Form from 'ui/Form';
 import Table from 'ui/Table';

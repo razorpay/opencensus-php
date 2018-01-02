@@ -2,7 +2,7 @@ import React from 'react';
 import BaseModal from 'ui/BaseModal';
 
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
-import { adminFormUpload } from 'util/fetch';
+import { adminFormUpload } from 'common/fetch';
 
 import Form from 'ui/Form';
 import { FileField, SelectMode } from 'ui/Field';

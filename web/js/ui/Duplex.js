@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Amount from 'ui/Amount';
-import { snakeToTitleCase, formatDate } from 'util/index';
-import { statusPill, prefixEntityValue } from 'util/data';
+import { snakeToTitleCase, formatDate } from 'common/util';
+import { statusPill, prefixEntityValue } from 'common/data';
 
 const defaultClass = 'table table-striped';
 
@@ -52,8 +52,10 @@ function copyValue(e) {
 function getValue(result, mode, attributes) {
   let [key, value] = result;
 
-  if (!value) {
-    // do nothing
+  if (!value && typeof value !== 'undefined') {
+    value = (
+      <span class="square-pills label-pending">{JSON.stringify(value)}</span>
+    );
   } else if (typeof value === 'boolean') {
     value = (
       <span>
@@ -84,20 +86,18 @@ function getValue(result, mode, attributes) {
         {value}
       </a>
     );
-  } else if (key.endsWith('_id') && key !== 'public_id') {
+  } else if (
+    key.endsWith('_id') &&
+    ['public_id', 'gateway_merchant_id', 'gateway_terminal_id'].indexOf(key) ===
+      -1
+  ) {
     // remove _id from tail
     let entityName = key.slice(0, -3);
     let id = prefixEntityValue(entityName, value);
-    if (id) {
-      value = (
-        <a class="link" href={`/admin/entity/${entityName}/${mode}/${id}`}>
-          {id}
-        </a>
-      );
-    }
-  } else if (!value && typeof value !== 'undefined') {
     value = (
-      <span class="square-pills label-pending">{JSON.stringify(value)}</span>
+      <a class="link" href={`/admin/entity/${entityName}/${mode}/${id}`}>
+        {id}
+      </a>
     );
   }
 

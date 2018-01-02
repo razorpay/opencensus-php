@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Field, { SelectField, FromField, ToField } from 'ui/Field';
-import { adminPost } from 'util/fetch';
+import { adminPost } from 'common/fetch';
 import StatsModel from './model';
 import { observer } from 'mobx-react';
 

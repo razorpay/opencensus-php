@@ -17,7 +17,7 @@ import {
   networks,
   categories,
   gatewayAcquirers,
-} from 'util/data';
+} from 'common/data';
 
 import { merchantId } from 'ui/Item';
 import Duplex from 'ui/Duplex';
@@ -222,6 +222,21 @@ class GatewayRuleForm extends Component {
           defaultValue={model.issuer}
           disabled={!!model.id}
         />
+        {model.method === 'card' && (
+          <SelectField
+            name="network"
+            label="Network"
+            defaultValue={model.network}
+            disabled={!!model.id}
+          >
+            <option value="" />
+            {Object.keys(networks).map((n, index) => (
+              <option value={n} key={index}>
+                {networks[n]}
+              </option>
+            ))}
+          </SelectField>
+        )}
         <SelectField
           defaultValue={model.category2}
           name="category2"
