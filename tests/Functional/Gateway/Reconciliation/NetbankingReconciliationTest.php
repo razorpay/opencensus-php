@@ -152,6 +152,11 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getLastEntity('transaction', true);
 
         $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+        $netbankingentity = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($netbankingentity['bank_payment_id'], 99999);
+
     }
 
     public function testPnbFailedPaymentReconciliation()
