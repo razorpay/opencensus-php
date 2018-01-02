@@ -18,11 +18,6 @@ class UpiSbiGatewayReconTest extends TestCase
     use ReconTrait;
 
     /**
-     * @var string
-     */
-    protected $gateway = Payment\Gateway::UPI_SBI;
-
-    /**
      * @var array
      */
     private $payment;
@@ -34,6 +29,8 @@ class UpiSbiGatewayReconTest extends TestCase
         $this->ba->appAuth();
 
         $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $this->gateway = Payment\Gateway::UPI_SBI;
 
         $this->fixtures->create('terminal:shared_upi_mindgate_sbi_terminal');
 
