@@ -66,22 +66,22 @@ class NodalAccount extends NodalBase\NodalAccount
     {
         $rows = $this->getSettlementRows($entities);
 
-        list($excelFile, $txtFile) = $this->createFile($rows);
+        list($excelFile, $rzpFile) = $this->createFile($rows);
 
-        $fileData = $this->getFileData($excelFile);
+        $fileData = $this->getFileData($rzpFile);
 
         $this->sendAxisTransferMail($fileData);
 
-        return [$txtFile, $excelFile];
+        return [$rzpFile, $excelFile];
     }
 
     public function initiateTransfer(string $amount): array
     {
         $rows = $this->getRows($amount);
 
-        list($excelFile, $txtFile) = $this->createFile($rows);
+        list($excelFile, $rzpFile) = $this->createFile($rows);
 
-        $fileData = $this->getFileData($excelFile);
+        $fileData = $this->getFileData($rzpFile);
 
         $this->sendAxisTransferMail($fileData);
 
@@ -96,6 +96,31 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $creator = new FileStore\Creator;
 
+        $rowCount = count($values);
+
+        //
+        // We need to set column format of columns C, E and F
+        // from 3rd row onwards – these rows represent
+        // transaction details
+        //
+        $colFormat = [
+            'C3:C' . $rowCount => 'dd/mm/yy',
+            'E3:E' . $rowCount => 'dd/mm/yy',
+            'F3:F' . $rowCount => 'dd/mm/yy',
+        ];
+
+        $rzpFile = $creator->extension(FileStore\Format::XLSX)
+                           ->content($values)
+                           ->name($fileName)
+                           ->store(FileStore\Store::S3)
+                           ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
+                           ->metadata($metadata)
+                           ->headers(false)
+                           ->columnFormat($colFormat)
+                           ->save();
+
+        $creator = new FileStore\Creator;
+
         $file = $creator->extension(FileStore\Format::XLSX)
                         ->content($values)
                         ->name($fileName)
@@ -103,7 +128,7 @@ class NodalAccount extends NodalBase\NodalAccount
                         ->type(FileStore\Type::FUND_TRANSFER_H2H)
                         ->metadata($metadata)
                         ->headers(false)
-                        ->columnFormat(['C3' => 'dd/mm/yy', 'E3' => 'dd/mm/yy', 'F3' => 'dd/mm/yy'])
+                        ->columnFormat($colFormat)
                         ->encrypt(Type::AES_ENCRYPTION, [
                             AESEncryption::MODE   => AES::MODE_CBC,
                             AESEncryption::IV     => $this->iv,
@@ -111,7 +136,7 @@ class NodalAccount extends NodalBase\NodalAccount
                         ->encode()
                         ->save();
 
-        return [$file, $file];
+        return [$file, $rzpFile];
     }
 
     protected function getFileData($file)
