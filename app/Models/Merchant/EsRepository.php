@@ -147,9 +147,17 @@ class EsRepository extends Base\EsRepository
 
                 break;
 
-            case AccountStatus::ARCHIVED:
+            // To be removed; for backward compatibility
+            case AccountStatus::ARCHIVED_OLD:
 
                 $this->addNotNullFilterForField($query, Entity::ARCHIVED_AT);
+
+                break;
+
+            case AccountStatus::ARCHIVED:
+
+                $archivedAtAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::ARCHIVED_AT;
+                $this->addNotNullFilterForField($query, $archivedAtAttr);
 
                 break;
 
@@ -162,7 +170,7 @@ class EsRepository extends Base\EsRepository
 
                 break;
 
-            // To be removed, for backward compatibility
+            // To be removed; for backward compatibility
             case AccountStatus::PENDING_OLD:
 
                 $submittedAtAttr = E::MERCHANT_DETAIL . '.' . DetailEntity::SUBMITTED_AT;

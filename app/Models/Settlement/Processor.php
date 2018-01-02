@@ -49,7 +49,7 @@ class Processor extends Base\Core
 
         $this->preSettlementProcessing($input);
 
-        list($shouldProcess, $data) = $this->shouldProcessSettlements();
+        list($shouldProcess, $data) = $this->shouldProcessSettlements($input);
 
         if ($shouldProcess === true)
         {
@@ -72,7 +72,7 @@ class Processor extends Base\Core
     {
         $this->preSettlementProcessing($input);
 
-        list($shouldProcess, $data) = $this->shouldProcessSettlements();
+        list($shouldProcess, $data) = $this->shouldProcessSettlements($input);
 
         if ($shouldProcess === true)
         {
@@ -303,7 +303,7 @@ class Processor extends Base\Core
         $this->input = $input;
     }
 
-    protected function shouldProcessSettlements()
+    protected function shouldProcessSettlements($input)
     {
         if (($this->mode === Mode::TEST) and
             ($this->env === 'testing'))
@@ -316,6 +316,16 @@ class Processor extends Base\Core
         if (Holidays::isWorkingDay($today) === false)
         {
             return [false, Holidays::HOLIDAY_MESSAGE];
+        }
+
+        //
+        // If the force flag is set,
+        // let the settlements go
+        //
+        if ((isset($input['ignore_time_limit']) === true) and
+            ($input['ignore_time_limit'] === '1'))
+        {
+            return [true, null];
         }
 
         if ($this->isInvalidSettlementTime() === true)

@@ -50,6 +50,7 @@ class Base extends Core
     const NETBANKING_BOB         = 'NetbankingBob';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const JIOMONEY               = 'Jiomoney';
+    const UPI_SBI                = 'UpiSbi';
     const EBS                    = 'Ebs';
     const FIRST_DATA             = 'FirstData';
     const ADMIN                  = 'admin';
@@ -80,6 +81,7 @@ class Base extends Core
         self::EBS                 => [],
         self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],
         self::VIRTUAL_ACC_KOTAK   => ['kmb.reports@kotak.com'],
+        self::UPI_SBI             => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN               => ['saurav.chowdhury@razorpay.com'],

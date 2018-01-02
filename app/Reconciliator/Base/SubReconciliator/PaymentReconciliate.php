@@ -31,6 +31,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::NETBANKING_PNB,
         RequestProcessor\Base::NETBANKING_BOB,
+        RequestProcessor\Base::UPI_SBI
     ];
 
     /*******************
@@ -443,7 +444,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function persistReconciliationData($rowDetails)
     {
-        // If the row is present in MIS file, it means it's captured on the gateway end.
+        //
+        // If the row reaches this part of the code, that means that it is captured on the gateway's end.
+        //
         $this->persistPaymentData($rowDetails);
 
         $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);
