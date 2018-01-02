@@ -46,7 +46,8 @@ class Channel
     {
         return [
             self::KOTAK,
-            self::YESBANK
+            self::YESBANK,
+            self::AXIS,
         ];
     }
 

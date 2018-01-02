@@ -8,24 +8,33 @@ use RZP\Models\Bank\Name;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Terminal\Category;
+use RZP\Models\Feature\Constants;
 
 class Netbanking
 {
     const BARB_C = 'BARB_C';
-    const BARB_R = 'BARB_R';
     const PUNB_C = 'PUNB_C';
-    const PUNB_R = 'PUNB_R';
     const LAVB_C = 'LAVB_C';
+    const ICIC_C = 'ICIC_C';
+    const UTIB_C = 'UTIB_C';
+
+    // These are the IFSC's that are to be used for these
+    // banks even if we integrate them directly.
+    const BARB_R = 'BARB_R';
+    const PUNB_R = 'PUNB_R';
     const LAVB_R = 'LAVB_R';
 
-    protected static $names = array(
-        self::BARB_C => 'Bank of Baroda - Corporate Banking',
+    protected static $names = [
         self::BARB_R => 'Bank of Baroda - Retail Banking',
-        self::PUNB_C => 'Punjab National Bank - Corporate Banking',
         self::PUNB_R => 'Punjab National Bank - Retail Banking',
-        self::LAVB_C => 'Lakshmi Vilas Bank - Corporate Banking',
         self::LAVB_R => 'Lakshmi Vilas Bank - Retail Banking',
-    );
+
+        self::BARB_C => 'Bank of Baroda - Corporate Banking',
+        self::PUNB_C => 'Punjab National Bank - Corporate Banking',
+        self::LAVB_C => 'Lakshmi Vilas Bank - Corporate Banking',
+        self::ICIC_C => 'ICICI Bank - Corporate Banking',
+        self::UTIB_C => 'Axis Bank - Corporate Banking',
+    ];
 
     const ACCOUNT_NUMBER_LENGTHS = [
         IFSC::UTIB => 15,
@@ -35,8 +44,8 @@ class Netbanking
     protected static $self = [
         IFSC::ICIC,
         IFSC::HDFC,
-        IFSC::BARB,
         IFSC::CORP,
+        IFSC::BARB,
         IFSC::UTIB,
         IFSC::KKBK,
         IFSC::AIRP,
@@ -44,6 +53,13 @@ class Netbanking
         IFSC::RATN,
         IFSC::INDB,
         IFSC::PUNB,
+
+        // self::BARB_R,
+    ];
+
+    protected static $selfCorp = [
+        self::ICIC_C,
+        self::UTIB_C
     ];
 
     protected static $selfTPV = [
@@ -53,7 +69,7 @@ class Netbanking
         IFSC::UTIB,
         IFSC::FDRL,
         IFSC::RATN,
-     // IFSC::INDB,
+        // IFSC::INDB,
     ];
 
     protected static $paytm = array(
@@ -78,7 +94,7 @@ class Netbanking
 
     protected static $paytmTPV = [];
 
-    protected static $billdesk = array(
+    protected static $billdesk = [
         IFSC::ALLA,
         IFSC::ANDB,
         IFSC::BBKM,
@@ -132,15 +148,19 @@ class Netbanking
         IFSC::UTIB,
         IFSC::VIJB,
         IFSC::YESB,
-        Netbanking::BARB_C,
-        Netbanking::BARB_R,
-        Netbanking::PUNB_C,
-        Netbanking::PUNB_R,
-        Netbanking::LAVB_C,
-        Netbanking::LAVB_R,
-    );
+        self::BARB_R,
+        self::PUNB_R,
+        self::LAVB_R,
+        self::BARB_C,
+        self::PUNB_C,
+        self::LAVB_C,
+    ];
 
-    protected static $billdeskTPV = array(
+    protected static $billdeskCorp = [
+        self::ICIC_C,
+    ];
+
+    protected static $billdeskTPV = [
         IFSC::ALLA,
         IFSC::ANDB,
         IFSC::CIUB,
@@ -148,7 +168,7 @@ class Netbanking
         IFSC::IBKL,
         IFSC::INDB,
         IFSC::KVBL,
-        Netbanking::LAVB_R,
+        self::LAVB_R,
         IFSC::ICIC,
         IFSC::UTIB,
         IFSC::BKID,
@@ -158,9 +178,9 @@ class Netbanking
         IFSC::SBMY,
         IFSC::STBP,
         IFSC::SBTR,
-    );
+    ];
 
-    protected static $atom = array(
+    protected static $atom = [
         IFSC::UTIB,
         IFSC::BKID,
         IFSC::MAHB,
@@ -184,7 +204,7 @@ class Netbanking
         IFSC::KARB,
         IFSC::KVBL,
         IFSC::KKBK,
-        IFSC::LAVB,
+        self::LAVB_R,
         IFSC::SIBL,
         // IFSC::SBBJ,
         IFSC::SBHY,
@@ -196,11 +216,11 @@ class Netbanking
         IFSC::UBIN,
         IFSC::VIJB,
         IFSC::YESB,
-    );
+    ];
 
     protected static $atomTPV = [];
 
-    protected static $ebs = array(
+    protected static $ebs = [
         IFSC::ANDB,
         IFSC::CBIN,
         IFSC::CNRB,
@@ -223,9 +243,8 @@ class Netbanking
         IFSC::UTBI,
         IFSC::VIJB,
         IFSC::YESB,
-        Netbanking::LAVB_R,
-        Netbanking::PUNB_R,
-
+        self::LAVB_R,
+        self::PUNB_R,
         IFSC::UTIB,
         IFSC::BKID,
         IFSC::CIUB,
@@ -240,7 +259,7 @@ class Netbanking
         IFSC::SBTR,
         IFSC::HDFC,
         */
-    );
+    ];
 
     protected static $defaultDisabled = [
         IFSC::AIRP,
@@ -265,13 +284,19 @@ class Netbanking
         return array_diff($banks, self::getAllBanks());
     }
 
-    public static function getAllBanks()
+    public static function getAllBanks(): array
     {
         //
         // Merge paytm and billdesk supported banks and remove
         // duplicate values
         //
-        return array_unique(array_merge(self::$paytm, self::$billdesk, self::$ebs, self::$self));
+        return array_values(array_unique(array_merge(
+                                            self::$paytm,
+                                            self::$billdesk,
+                                            self::$billdeskCorp,
+                                            self::$ebs,
+                                            self::$self,
+                                            self::$selfCorp)));
     }
 
     public static function enableDefaultBanks(array $banks)
@@ -328,7 +353,7 @@ class Netbanking
 
     public static function getBilldeskSupportedBanks()
     {
-        return self::$billdesk;
+        return array_merge(self::$billdesk, self::$billdeskCorp);
     }
 
     public static function getEbsSupportedBanks()
@@ -336,9 +361,14 @@ class Netbanking
         return self::$ebs;
     }
 
+    public static function getAtomSupportedBanks()
+    {
+        return self::$atom;
+    }
+
     public static function getDirectlyNetbankingBanks()
     {
-        return self::$self;
+        return array_merge(self::$self, self::$selfCorp);
     }
 
     /**
@@ -349,13 +379,20 @@ class Netbanking
     {
         $banks = self::getSupportedBanksInLiveMode();
 
+        // Remove corporate banks if feature is not enabled.
+        if ((isset($merchant) === true) and
+            ($merchant->isFeatureEnabled(Constants::CORPORATE_BANKS) === false))
+        {
+            $banks = array_diff($banks, self::$billdeskCorp, self::$selfCorp);
+        }
+
         if ((isset($merchant) === true) and
             ($merchant->isTPVRequired() === true))
         {
             $banks = self::getSupportedBanksForTPV();
         }
 
-        return array_unique($banks);
+        return array_values(array_unique($banks));
     }
 
     public static function removeDefaultDisableBanks(array $banks)
@@ -365,12 +402,17 @@ class Netbanking
 
     public static function getSupportedBanksInLiveMode()
     {
-        return array_unique(array_merge(self::$billdesk, self::$ebs, self::$self));
+        return array_values(array_unique(array_merge(
+                                            self::$billdesk,
+                                            self::$billdeskCorp,
+                                            self::$ebs,
+                                            self::$self,
+                                            self::$selfCorp)));
     }
 
     public static function getSupportedBanksForTPV()
     {
-        return array_unique(array_merge(self::$billdeskTPV, self::$selfTPV));
+        return array_values(array_unique(array_merge(self::$billdeskTPV, self::$selfTPV)));
     }
 
     public static function isBankSupportedByGateway($bank, $gateway, $isTPV = false)
@@ -380,28 +422,40 @@ class Netbanking
             return self::isBankSupportedByGatewayForTPV($bank, $gateway);
         }
 
-        return in_array($bank, self::$$gateway);
+        $functionName = 'is'. title_case($gateway) . 'SupportedBank';
+
+        return self::$functionName($bank);
     }
 
     public static function isBankSupportedByGatewayForTPV($bank, $gateway)
     {
         // Direct gateways are handled seperately
-        return in_array($bank, self::${$gateway.'TPV'});
+        return in_array($bank, self::${$gateway . 'TPV'}, true) === true;
     }
 
     public static function isPaytmSupportedBank($bank)
     {
-        return in_array($bank, self::$paytm);
+        return in_array($bank, self::getPaytmSupportedBanks(), true) === true;
     }
 
     public static function isEbsSupportedBank($bank)
     {
-        return in_array($bank, self::$ebs);
+        return in_array($bank, self::getEbsSupportedBanks(), true) === true;
     }
 
     public static function isBilldeskSupportedBank($bank)
     {
-        return in_array($bank, self::$billdesk);
+        return in_array($bank, self::getBilldeskSupportedBanks(), true) === true;
+    }
+
+    public static function isAtomSupportedBank($bank)
+    {
+        return in_array($bank, self::getAtomSupportedBanks(), true) === true;
+    }
+
+    public static function isNetbankingBankDirectlySupported($bank)
+    {
+        return in_array($bank, self::getDirectlyNetbankingBanks(), true) === true;
     }
 
     public static function getAccountNumberLengths()
@@ -432,6 +486,13 @@ class Netbanking
     {
         $gatewayExclusiveBanks = self::getExclusiveIssuersForGateway($gateway);
 
-        return in_array($issuer, $gatewayExclusiveBanks, true);
+        return in_array($issuer, $gatewayExclusiveBanks, true) === true;
+    }
+
+    public static function isCorporateTerminalRequired($bank)
+    {
+        $corpExclusiveBank = array_merge(self::$selfCorp, self::$billdeskCorp);
+
+        return in_array($bank, $corpExclusiveBank, true) === true;
     }
 }

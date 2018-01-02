@@ -292,8 +292,10 @@ class NetbankingReconciliationTest extends TestCase
 
     protected function generateFile($bank, $input)
     {
+        $gateway = 'netbanking_' . $bank;
+
         $request = [
-            'url'     => '/gateway/mock/reconciliation/' . $bank,
+            'url'     => '/gateway/mock/reconciliation/' . $gateway,
             'content' => $input,
             'method'  => 'POST'
         ];

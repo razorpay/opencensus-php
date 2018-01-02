@@ -57,7 +57,7 @@ class KotakSettlement extends Base
     {
         $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
-        $subject = $this->data['channel'] . "settlement files for $today";
+        $subject = $this->data['channel'] . " settlement files for $today";
 
         return $subject;
     }

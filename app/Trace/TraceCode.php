@@ -519,6 +519,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
     const SETTLEMENT_RECONCILED                     = 'SETTLEMENT_RECONCILED';
+    const PAYOUT_RECON_SKIPPED                      = 'PAYOUT_RECON_SKIPPED';
     const SETTLEMENT_RETURNED                       = 'SETTLEMENT_RETURNED';
     const SETTLEMENT_INITIATE_FAILED                = 'SETTLEMENT_INITIATE_FAILED';
     const SETTLEMENT_RETRY_FAILED                   = 'SETTLEMENT_RETRY_FAILED';
@@ -536,6 +537,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_DAILY_REPORT_RESULT            = 'SETTLEMENT_DAILY_REPORT_RESULT';
     const SETTLEMENT_DAILY_REPORT_FAILURE           = 'SETTLEMENT_DAILY_REPORT_FAILURE';
     const SETTLEMENT_RETRY_REQUEST                  = 'SETTLEMENT_RETRY_REQUEST';
+    const SETTLEMENTS_CHANNEL_BULK_UPDATE_REQUEST   = 'SETTLEMENTS_CHANNEL_BULK_UPDATE_REQUEST';
+    const SETTLEMENTS_CHANNEL_BULK_UPDATE_RESPONSE  = 'SETTLEMENTS_CHANNEL_BULK_UPDATE_RESPONSE';
     const CLIENT_CERTIFICATE_FILE_GENERATED         = 'CLIENT_CERTIFICATE_FILE_GENERATED';
     const EMI_FILE_SENT                             = 'EMI_FILE_SENT';
 
@@ -672,6 +675,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKENEX_RETRY                             = 'TOKENEX_RETRY';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
+    const RAVEN_CALLBACK_REQUEST                    = 'RAVEN_CALLBACK_REQUEST';
     const RAVEN_ASYNC_REQUEST_FAILED                = 'RAVEN_ASYNC_REQUEST_FAILED';
     const LUMBERJACK_ASYNC_REQUEST_FAILED           = 'LUMBERJACK_ASYNC_REQUEST_FAILED';
 
@@ -724,6 +728,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH           = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';
     const TRANSACTION_MIGRATION_FEE_MISTMATCH           = 'TRANSACTION_MIGRATION_FEE_MISTMATCH';
+    const TRANSACTIONS_BULK_UPDATE_REQUEST              = 'TRANSACTIONS_BULK_UPDATE_REQUEST';
+    const TRANSACTIONS_BULK_UPDATE_RESPONSE             = 'TRANSACTIONS_BULK_UPDATE_RESPONSE';
     const PRICING_RULE_MISTMATCH                        = 'PRICING_RULE_MISTMATCH';
     const PRICING_RULE_DOES_NOT_EXISTS                  = 'PRICING_RULE_DOES_NOT_EXISTS';
 

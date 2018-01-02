@@ -45,10 +45,14 @@ class BeneficiaryFile extends Base\Core
 
         foreach ($list as $ba)
         {
+            $beneName = $ba->getAttribute(BankAccount\Entity::BENEFICIARY_NAME) ?: '';
+
+            $beneName = substr($beneName, 0, 40);
+
             $array = [
                 'Client_Code'           => 'RAZORNODAL',
                 'Bene_Code'             => $ba->getBeneficiaryCode(),
-                'Bene_Name'             => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_NAME),
+                'Bene_Name'             => $beneName,
                 'Bene_Add_1'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS1),
                 'Bene_Add_2'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS2),
                 'Bene_Add_3'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS3),
