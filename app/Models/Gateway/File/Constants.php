@@ -19,6 +19,7 @@ class Constants
     const AIRTEL_MONEY    = 'airtel_money';
     const AMEX            = 'amex';
     const FIRST_DATA      = 'first_data';
+    const CYBERSOURCE     = 'cybersource';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -56,6 +57,7 @@ class Constants
             self::AIRTEL_MONEY,
             self::AMEX,
             self::FIRST_DATA,
+            self::CYBERSOURCE,
         ],
     ];
 
@@ -105,6 +107,7 @@ class Constants
             self::AIRTEL_MONEY => ['supportteam@razorpay.com'],
             self::AMEX         => ['supportteam@razorpay.com'],
             self::FIRST_DATA   => ['supportteam@razorpay.com'],
+            self::CYBERSOURCE  => ['supportteam@razorpay.com'],
         ],
     ];
 }

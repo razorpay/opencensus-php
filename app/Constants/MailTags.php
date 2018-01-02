@@ -32,6 +32,7 @@ class MailTags
     const INDUSIND_NETBANKING_REFUNDS_MAIL      = 'indusind_netbanking_refunds_mail';
     const AMEX_FAILED_REFUNDS_MAIL              = 'amex failed refunds mail';
     const FIRST_DATA_FAILED_REFUNDS_MAIL        = 'firstdata failed refunds mail';
+    const CYBERSOURCE_FAILED_REFUNDS_MAIL       = 'cybersource failed refunds mail';
 
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL           = 'icici_upi_refunds_mail';
