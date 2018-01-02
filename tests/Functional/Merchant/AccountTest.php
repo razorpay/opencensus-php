@@ -83,13 +83,13 @@ class AccountTest extends TestCase
 
         $testData = $this->testData['addSettlementDestination'];
 
-        $testData['request']['url'] = '/beta/accounts/' . $accountId . '/bank-accounts';
+        $testData['request']['url'] = '/beta/accounts/' . $accountId . '/bank_accounts';
 
         $this->startTest($testData);
 
         $testData = $this->testData['fetchSettlementDestinations'];
 
-        $testData['request']['url'] = '/beta/accounts/' . $accountId . '/settlement-destinations';
+        $testData['request']['url'] = '/beta/accounts/' . $accountId . '/settlement_destinations';
 
         $this->startTest($testData);
     }

@@ -70,7 +70,19 @@ class Core extends Base\Core
         return $merchant;
     }
 
-    public function createSubMerchant($input, $aggregatorMerchant, $linkedAccount = true): Entity
+    /**
+     * @param      $input
+     * @param      $aggregatorMerchant
+     * @param bool $accountEntity
+     * @param bool $linkedAccount
+     *
+     * @return Merchant\Entity|Account\Entity
+     */
+    public function createSubMerchant(
+        $input,
+        $aggregatorMerchant,
+        $accountEntity = false,
+        $linkedAccount = true)
     {
         // We only check for email uniqueness if the email
         // address is provided
@@ -89,7 +101,16 @@ class Core extends Base\Core
 
         (new Validator)->validateInput('edit_name', $merchantData);
 
-        $subMerchant = (new Merchant\Entity)->build($input);
+        if ($accountEntity === true)
+        {
+            $entity = new Account\Entity;
+        }
+        else
+        {
+            $entity = new Merchant\Entity;
+        }
+
+        $subMerchant = $entity->build($input);
 
         $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 

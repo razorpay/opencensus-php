@@ -65,12 +65,14 @@ class Service extends Merchant\Service
      * @return array
      * @throws Exception\BadRequestException
      */
-    public function getSettlementDestinations(string $accountId) : array
+    public function fetchSettlementDestinations(string $accountId) : array
     {
         $merchant = $this->repo->account->findByPublicIdAndMerchant($accountId, $this->merchant);
 
         # Fetch all settlement destinations, not only the bank accounts
         $bankAccounts = $this->repo->bank_account->getAllBankAccounts($merchant);
+
+        $bankAccounts = $bankAccounts->toArrayPublic();
 
         if (count($bankAccounts) === 0)
         {
@@ -82,14 +84,14 @@ class Service extends Merchant\Service
     }
 
     /**
-     * Adds a new settlement destination
+     * Adds a new settlement destination - Bank account
      *
      * @param string $id
      * @param array  $input
      *
      * @return array
      */
-    public function addSettlementDestination(string $id, array $input) : array
+    public function postBankAccounts(string $id, array $input) : array
     {
         $merchant = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
 

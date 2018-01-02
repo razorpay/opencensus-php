@@ -11,7 +11,7 @@ class AccountController extends Controller
 {
     use Traits\HasCrudMethods;
 
-	protected $service = Merchant\Account\Service::class;
+    protected $service = Merchant\Account\Service::class;
 
     /**
      * Returns all types of settlement destinations
@@ -23,7 +23,7 @@ class AccountController extends Controller
      */
     public function fetchSettlementDestinations(string $accountId)
     {
-        $response = $this->service()->getSettlementDestinations($accountId);
+        $response = $this->service()->fetchSettlementDestinations($accountId);
 
         return ApiResponse::json($response);
     }
@@ -39,7 +39,7 @@ class AccountController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->addSettlementDestination($accountId, $input);
+        $response = $this->service()->postBankAccounts($accountId, $input);
 
         return ApiResponse::json($response);
     }

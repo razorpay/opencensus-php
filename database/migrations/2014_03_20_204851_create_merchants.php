@@ -120,7 +120,7 @@ class CreateMerchants extends Migration
 
             $table->char(Merchant::INVOICE_CODE, 12);
 
-            $table->text(MerchantDetail::NOTES)
+            $table->text(Merchant::NOTES)
                   ->nullable();
 
             $table->integer(Merchant::CREATED_AT);
