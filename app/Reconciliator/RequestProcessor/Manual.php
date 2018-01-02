@@ -3,7 +3,6 @@
 namespace RZP\Reconciliator\RequestProcessor;
 
 use RZP\Exception;
-use RZP\Reconciliator\Validator;
 
 class Manual extends Base
 {
@@ -69,15 +68,6 @@ class Manual extends Base
     {
         // In manual, the input params should contain what gateway is it.
         $this->gateway = $inputDetails[self::GATEWAY];
-
-        // This is a validation for the value of the gateway input received.
-        if (array_key_exists($this->gateway, self::GATEWAY_SENDER_MAPPING) === false)
-        {
-            throw new Exception\ReconciliationException(
-                'Invalid gateway param. Not in the allowed list of gateway params.',
-                ['gateway' => $this->gateway]
-            );
-        }
 
         // Sets the gateway reconciliator object for the orchestrator.
         $this->setGatewayReconciliatorObject();

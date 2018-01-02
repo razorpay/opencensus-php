@@ -133,6 +133,7 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = [
         self::DESCRIPTION,
+        self::PAYEE_ACCOUNT,
     ];
 
     protected $defaults = [
@@ -242,6 +243,20 @@ class Entity extends Base\PublicEntity
         if (isset($input[self::DESCRIPTION]) === true)
         {
             $input[self::DESCRIPTION] = substr($input[self::DESCRIPTION], 0, self::MAX_DESCRIPTION_LENGTH);
+        }
+    }
+
+    public function modifyPayeeAccount(array & $input)
+    {
+        //
+        // Removing spaces, since Kotak credits us even when
+        // customer enters R A Z O R P A Y 1 2 3. Can change to
+        // remove all whitespaces later, if required to do so.
+        //
+
+        if (isset($input[self::PAYEE_ACCOUNT]) === true)
+        {
+            $input[self::PAYEE_ACCOUNT] = str_replace(' ', '', $input[self::PAYEE_ACCOUNT]);
         }
     }
 

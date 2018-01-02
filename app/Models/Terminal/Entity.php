@@ -760,6 +760,8 @@ class Entity extends Base\PublicEntity
      * an individual terminal entity, we want to do it
      *
      * @param  boolean $subMerchantFlag Flag ti indicate if sub_merchants should be included
+     *
+     * @return array
      */
     public function toArrayPublic($subMerchantFlag = false)
     {

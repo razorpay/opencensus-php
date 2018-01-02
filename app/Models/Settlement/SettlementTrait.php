@@ -31,46 +31,126 @@ trait SettlementTrait
                 continue;
             }
 
-            // skip if txn is refund of authorized txn and update the txn
-            if (($txn->getBalance() === 0) and
-                ($txn->isTypeRefund()))
+            $skipForRefundAuthTxn = $this->skipForRefundAuthTxn($txn);
+
+            if ($skipForRefundAuthTxn === true)
             {
-                $payment = $txn->source->payment;
-
-                if ($payment->hasBeenCaptured() === false)
-                {
-                    $txn[Transaction\Entity::SETTLED_AT] = null;
-
-                    $this->repo->saveOrFail($txn);
-
-                    continue;
-                }
+                continue;
             }
 
-            // DSP wants settlements only between 10 am and 3 pm ¯\_(ツ)_/¯
-            //
-            // TODO : Move this to schedules
-            // https://github.com/razorpay/api/issues/5347
-            //
-            if ($txn->getMerchantId() === '7thBRSDflu7NHL')
+            $skipForDsp = $this->skipForDsp($txn);
+
+            if ($skipForDsp === true)
             {
-                $now = Carbon::now(Timezone::IST)->getTimestamp();
+                continue;
+            }
 
-                $tenAm = Carbon::today(Timezone::IST)->hour(10)->getTimestamp();
+            $skipForMutualFundsMarketplace = $this->skipForMutualFundsMarketplace($txn);
 
-                $threePm = Carbon::today(Timezone::IST)->hour(15)->minute(10)->getTimestamp();
-
-                if (($now < $tenAm) or
-                    ($now > $threePm))
-                {
-                    continue;
-                }
+            if ($skipForMutualFundsMarketplace === true)
+            {
+                continue;
             }
 
             $filteredTxns->push($txn);
         }
 
         return $filteredTxns;
+    }
+
+    protected function skipForRefundAuthTxn($txn): bool
+    {
+        // skip if txn is refund of authorized txn and update the txn
+        if (($txn->getBalance() === 0) and
+            ($txn->isTypeRefund()))
+        {
+            $payment = $txn->source->payment;
+
+            if ($payment->hasBeenCaptured() === false)
+            {
+                $txn[Transaction\Entity::SETTLED_AT] = null;
+
+                $this->repo->saveOrFail($txn);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function skipForDsp($txn): bool
+    {
+        // DSP wants settlements only between 10 am and 3 pm ¯\_(ツ)_/¯
+        //
+        // TODO : Move this to schedules
+        // https://github.com/razorpay/api/issues/5347
+        //
+        if ($txn->getMerchantId() === '7thBRSDflu7NHL')
+        {
+            $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $tenAm = Carbon::today(Timezone::IST)->hour(10)->getTimestamp();
+
+            $threePm = Carbon::today(Timezone::IST)->hour(15)->minute(10)->getTimestamp();
+
+            if (($now < $tenAm) or
+                ($now > $threePm))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function skipForMutualFundsMarketplace($txn): bool
+    {
+        // Settle only between 12pm and 1 pm
+
+        // Is a submerchant of a mutual fund market place
+        $isSubMerchantOfMf = false;
+
+        // Mutual Fund Marketplace Merchant ids
+        $mfMids = ['7BfRNg10LH7N6T', '8ytYezIThlseJd'];
+
+        if (($txn->isTypePayment() === true) and
+            ($txn->merchant->isLinkedAccount() === true) and
+            (in_array($txn->merchant->getParentId(), $mfMids, true) === true))
+        {
+            $isSubMerchantOfMf = true;
+        }
+
+        if ($isSubMerchantOfMf === true)
+        {
+            $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+            $onePm = Carbon::today(Timezone::IST)->hour(13)->getTimestamp();
+
+            $twoPm = Carbon::today(Timezone::IST)->hour(14)->getTimestamp();
+
+            $twoTenPm = Carbon::today(Timezone::IST)->hour(14)->minute(10)->getTimestamp();
+
+            //
+            // Settle transaction which needed to be settled before 2 pm today
+            // but for whatever reason weren't picked up then.
+            // In this case, the below condition of settlement window of 1-2 PM
+            // is not applicable, because these were due for settlement
+            // before 2 pm, and should have been picked up.
+            //
+            if (($txn->getSettledAt() <= $twoPm) and ($now > $twoPm))
+            {
+                return false;
+            }
+
+            if (($now < $onePm) or
+                ($now > $twoTenPm))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function createSettlementsFromTxns($txns, $channel): array
@@ -282,6 +362,7 @@ trait SettlementTrait
             '8ytYezIThlseJd', // Goalwise Non-TPV
             '7BfRNg10LH7N6T', // Goalwise TPV
             '8hXTLsmoM3F6PH', // Moneyview
+            '8lv4idBRY4C9c0', // Wealthy
         ];
 
         if (in_array($merchant->getId(), $skipMerchantIds, true) === true)
@@ -338,9 +419,7 @@ trait SettlementTrait
     {
         $e = new SettlementFailureException($channel, $e->getMessage(), null, $e);
 
-        $this->failureNotification($e);
-
-        $this->trace->critical($traceCode);
+//        $this->failureNotification($e);
 
         throw $e;
     }

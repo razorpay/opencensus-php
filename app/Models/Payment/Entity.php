@@ -905,7 +905,9 @@ class Entity extends Base\PublicEntity
         {
             case Method::CARD:
 
-                $acquirerData = [];
+                $acquirerData = [
+                    'auth_code' => $this->getAttribute(self::REFERENCE2),
+                ];
                 break;
 
             case Method::NETBANKING:
@@ -2306,16 +2308,22 @@ class Entity extends Base\PublicEntity
 
     public function shouldRunFraudChecks()
     {
-        if ($this->isCard() === true)
+        if ($this->isCard() === false)
         {
-            if (($this->card->isInternational() === true) or
-                ($this->card->isAmex() === true))
-            {
-                return true;
-            }
+            return false;
         }
 
-        return false;
+        //
+        // Since the first auth transaction would have already been
+        // done, we don't need to do any MaxMind risk checks for this.
+        //
+        if ($this->isSecondRecurring() === true)
+        {
+            return false;
+        }
+
+        return (($this->card->isInternational() === true) or
+                ($this->card->isAmex() === true));
     }
 
     public static function getFilteredDescription(string $description = null)

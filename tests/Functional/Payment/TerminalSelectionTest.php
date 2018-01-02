@@ -2,11 +2,15 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use RZP\Models\Card;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Terminal\Options;
 use RZP\Models\Terminal\Category;
+use RZP\Models\Terminal\Selector;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
 use RZP\Models\Merchant\Preferences;
@@ -910,20 +914,18 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-           $this->doAuthPayment($payment);
-        });
+        $this->doAuthPayment($payment);
 
         $payment1 = $this->getLastEntity('payment', true);
         $billdesk = $this->getLastEntity('billdesk', true);
 
-        $this->assertEquals('DrctNbBdkTmnl1', $payment1['terminal_id']);
-        $this->assertEquals('ICO', $billdesk['BankID']);
+        $this->assertEquals('SharNbBdkTmnl1', $payment1['terminal_id']);
+        $this->assertEquals('ICI', $billdesk['BankID']);
 
         $this->fixtures->merchant->editCategory2('corporate');
+        $this->fixtures->merchant->addFeatures('corporate_banks');
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
+        $payment = $this->getDefaultNetbankingPaymentArray('ICIC_C');
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
@@ -1158,6 +1160,91 @@ class TerminalSelectionTest extends TestCase
         $payment1 = $this->getLastEntity('payment', true);
 
         $this->assertEquals('ShrdNbBdkHouse', $payment1['terminal_id']);
+    }
+
+    public function testCorporateBankTerminalSelection()
+    {
+        $this->fixtures->create('terminal:billdesk_terminal', ['corporate' => 1]);
+        $this->fixtures->create('terminal:shared_netbanking_icici_corp_terminal', ['merchant_id' => '10000000000000']);
+        $this->fixtures->merchant->addFeatures('corporate_banks');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        // Amount filter should have rejected the housing terminal
+        $payment['bank'] = 'ICIC_C';
+
+        $this->doAuthAndCapturePayment($payment);
+        $payment1 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('100NbIcicCrpTl', $payment1['terminal_id']);
+    }
+
+    public function testMccFilterWithSharedCategoryTerminal()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:multiple_category_terminals');
+
+        $expectedTerminalIds = ['SharedTrmnl124'];
+
+        $this->runTestCase($expectedTerminalIds);
+    }
+
+    public function testMccFilterWithSharedCategoryTerminalAndDirectTerminal()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->create('terminal:multiple_category_terminals');
+
+        $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'id'          => '1000HdfcDirect',
+            'merchant_id' => '10000000000000'
+        ]);
+
+        $expectedTerminalIds = ['1000HdfcDirect', 'SharedTrmnl124'];
+
+        $this->runTestCase($expectedTerminalIds);
+    }
+
+    protected function runTestCase(array $expectedTerminalIds)
+    {
+        $this->fixtures->merchant->setCategory(124);
+
+        $cardArray = [
+            'number'        => '4012001036275556',
+            'expiry_month'  => '1',
+            'expiry_year'   => '2035',
+            'cvv'           => '123',
+            'network'       => 'Visa',
+            'issuer'        => 'HDFC',
+            'name'          => 'Test',
+            'international' => false,
+        ];
+
+        $card = (new Card\Entity)->fill($cardArray);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']);
+        $paymentArray['status'] = 'created';
+        $paymentArray['method'] = 'card';
+
+        $payment = (new Payment\Entity)->fill($paymentArray);
+        $payment->card = $card;
+
+        $merchant = Merchant\Entity::find('10000000000000');
+        $payment->merchant()->associate($merchant);
+
+        $input = [
+            'payment' => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+        $selectedTerminals = $selector->select();
+        $selectedTerminalIds = array_pluck($selectedTerminals, 'id');
+
+        $this->assertArraySelectiveEquals($expectedTerminalIds, $selectedTerminalIds);
     }
 
     public function testGatewayFilterRejectsCyberSource()

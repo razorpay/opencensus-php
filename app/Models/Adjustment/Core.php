@@ -91,6 +91,8 @@ class Core extends Base\Core
                 'merchant_id' => $dispute->getMerchantId()
             ]);
 
+        (new Validator)->validateMerchantBalance($dispute->merchant, $dispute, $input);
+
         $adjustment = $this->createAdjustment($input, $dispute->merchant);
 
         $adjustment->entity()->associate($dispute);
@@ -242,7 +244,7 @@ class Core extends Base\Core
     {
         $this->repo->assertTransactionActive();
 
-        $adj->setChannel(Settlement\Channel::KOTAK);
+        $adj->setChannel($merchant->getChannel());
 
         $adj->merchant()->associate($merchant);
 

@@ -4,6 +4,7 @@ namespace RZP\Models\Feature;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Base\Fetch;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class Validator extends Base\Validator
         Entity::NAME        => 'required|string|max:25|custom'
     ];
 
-    protected static $onboardingRules = [
+    protected static $onboardingSubmissionsUpsertRules = [
         Constants::MARKETPLACE                                     => 'filled|array|max:3',
         Constants::MARKETPLACE . "." . Constants::USE_CASE         => 'filled|string',
         Constants::MARKETPLACE . "." . Constants::SETTLING_TO      => 'filled|string',
@@ -33,6 +34,19 @@ class Validator extends Base\Validator
         Constants::VIRTUAL_ACCOUNTS . "." . Constants::EXPECTED_MONTHLY_REVENUE => 'filled|string',
     ];
 
+    protected static $onboardingQuestionsRules = [
+        Constants::FEATURES     => "required|array"
+    ];
+
+    protected static $onboardingSubmissionsFetchRules = [
+        Fetch::TO           => 'sometimes|epoch',
+        Fetch::FROM         => 'sometimes|epoch',
+        Fetch::COUNT        => 'sometimes|integer',
+        Fetch::SKIP         => 'sometimes|integer',
+        Constants::STATUS   => 'sometimes|string|custom',
+        Constants::PRODUCT  => 'sometimes|string|custom',
+    ];
+
     protected function validateName($attribute, $value)
     {
         $allFeatures = array_keys(Constants::$featureValueMap);
@@ -44,7 +58,7 @@ class Validator extends Base\Validator
                 $attribute,
                 $value);
         }
-   }
+    }
 
    public function validateZoho(Request $request)
    {
@@ -81,5 +95,29 @@ class Validator extends Base\Validator
                     PublicEntity::MERCHANT_ID => $feature->getMerchantId(),
                 ]);
         }
+   }
+
+   public function validateStatus($attribute, $value)
+   {
+       $onboardingStatuses = Constants::ONBOARDING_STATUSES;
+
+       if (in_array($value, $onboardingStatuses, true) === false)
+       {
+           throw new Exception\BadRequestValidationFailureException(
+              "Invalid status: $value",
+              $attribute);
+       }
+   }
+
+   public function validateProduct($attribute, $value)
+   {
+       $productFeatures = Constants::PRODUCT_FEATURES;
+
+       if (in_array($value, $productFeatures, true) === false)
+       {
+           throw new Exception\BadRequestValidationFailureException(
+              "Invalid product: $value",
+              $attribute);
+       }
    }
 }

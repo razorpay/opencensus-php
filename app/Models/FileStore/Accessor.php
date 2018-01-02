@@ -5,9 +5,6 @@ namespace RZP\Models\FileStore;
 use App;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
-use RZP\Models\Base\Collection;
 use RZP\Models\FileStore\Store;
 use RZP\Models\Merchant\Account;
 
@@ -93,9 +90,7 @@ class Accessor extends Base\Core
     }
 
     /**
-     * Returns Collection/Entity of File Store Values
-     *
-     * @return Collection/File store Entity
+     * @return Base\PublicCollection|Base\PublicEntity
      */
     public function get()
     {

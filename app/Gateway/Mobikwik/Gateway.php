@@ -199,47 +199,16 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        // Hardcoding these refunds for processing
-        $unprocessedRefunds = [
-            '8kCTeAbGDl6p9n',
-            '8kLhiRoC11hN1O',
-            '8kLhob7N0FWJbi',
-            '8kLj3BaQROYqCQ',
-            '8kLj6QZEnpFWdt',
-            '8kcHepgF56OFIg',
-            '8kcHew1bai4T82',
-            '8kcHeqnG0KKmsH',
-            '8kcHepgsigC0Rk',
-            '8lndKN337I94y7',
-            '8mCAohxGnKzC2D',
-            '8lnlIbrYBhpLAw',
-            '8lnkSwwEeDjdrH',
-            '8klGvfEHyCZJlD',
-            '8mCAXTVgykE8U5',
-            '8lnoztZgBvBMQk',
-            '8lnvreepzsLvrE',
-        ];
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
 
-        $processedRefund = [
-            '8O4eS8fqTjgQe0',
-            '8iDpHKfBa2wbvn',
-            '8iDpIpC0eFL8qM',
-            '8kmJ4p7waF0TW1',
-            '8mBP3dVhrRQFNY',
-            '8mCJpwUBjab0mF',
-            '8lo5PB1fy0RyYx',
-            '8mCKZcO95P4RtT',
-            '8O4eS8fqTjgQe0',
-            '8iDpHKfBa2wbvn',
-            '8lum6teVgFIC9U',
-        ];
+        $processedRefunds = $this->getProcessedRefunds();
 
         if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
         {
             return false;
         }
 
-        if (in_array($input['refund']['id'], $processedRefund) === true)
+        if (in_array($input['refund']['id'], $processedRefunds) === true)
         {
             return true;
         }

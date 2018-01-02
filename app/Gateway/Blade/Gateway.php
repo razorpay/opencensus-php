@@ -150,17 +150,11 @@ class Gateway extends Base\Gateway
 
     protected function updateGatewayPaymentFromCallbackResponse(
         Entity $gatewayPayment,
-        array $resp)
+        array $response)
     {
-        $gatewayPayment->setXid($resp[PARes::PURCHASE][PARes::XID]);
+        $attributes = $this->getCallbackResponseAttributes($response);
 
-        $gatewayPayment->setCavv($resp[PARes::TX][PARes::CAVV]);
-
-        $gatewayPayment->setCavvAlgorithm($resp[PARes::TX][PARes::CAVVALGORITHM]);
-
-        $gatewayPayment->setStatus($resp[PARes::TX][PARes::STATUS]);
-
-        $gatewayPayment->setEci($resp[PARes::TX][PARes::ECI]);
+        $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
     }
@@ -180,14 +174,27 @@ class Gateway extends Base\Gateway
 
     protected function validateEci(string $eci = null, string $networkCode)
     {
-        if ((($networkCode === Card\Network::VISA) and ($eci !== '05')) or
-            (($networkCode === Card\Network::MC) and ($eci !== '02')))
+        if ((($networkCode === Card\Network::VISA) and ($eci === '07')) or
+            (($networkCode === Card\Network::MC) and ($eci === '00')))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
                 $eci,
                 'Invalid Eci value for network ' . $networkCode);
         }
+    }
+
+    protected function getCallbackResponseAttributes($response)
+    {
+        $attributes = [
+            Entity::XID            => $response[PARes::PURCHASE][PARes::XID] ?? null,
+            Entity::CAVV           => $response[PARes::TX][PARes::CAVV] ?? null,
+            Entity::CAVV_ALGORITHM => $response[PARes::TX][PARes::CAVVALGORITHM] ?? null,
+            Entity::STATUS         => $response[PARes::TX][PARes::STATUS],
+            Entity::ECI            => $response[PARes::TX][PARes::ECI] ?? null,
+        ];
+
+        return $attributes;
     }
 
     protected function validateSignatureAndInflatePares($pares)

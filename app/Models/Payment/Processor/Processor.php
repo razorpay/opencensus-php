@@ -82,6 +82,11 @@ class Processor
     const ASYNC_PAYMENT_TIMEOUT = 300;
 
     /**
+     * Default UPI collect request expiry time in minutes.
+     */
+    const UPI_COLLECT_EXPIRY = 5;
+
+    /**
      * @var Merchant\Entity
      */
     protected $merchant;
@@ -728,7 +733,7 @@ class Processor
         {
             $notifier = new Notify($this->payment);
 
-            $notifier = $notifier->trigger(Payment\Event::FAILED);
+            $notifier->trigger(Payment\Event::FAILED);
         }
     }
 
@@ -1678,7 +1683,17 @@ class Processor
         return $merchant->methods;
     }
 
-    protected function shouldHitGateway(Payment\Entity $payment)
+    protected function shouldHitGatewayForRefund(Payment\Entity $payment): bool
+    {
+        if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function shouldHitGatewayForPayment(Payment\Entity $payment): bool
     {
         if ($payment->isFileBasedEmandateDebitPayment() === true)
         {

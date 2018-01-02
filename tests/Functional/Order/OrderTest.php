@@ -51,6 +51,11 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateOrderWithoutReceipt()
+    {
+        $this->startTest();
+    }
+
     public function testCreateAutoCaptureOrder()
     {
         $order = $this->startTest();
@@ -426,6 +431,12 @@ class OrderTest extends TestCase
 
     public function testPaymentWithFailedOfferCheck()
     {
+        //
+        // Mobikwik MID was unexpectedly disabled
+        // https://github.com/razorpay/incidents/issues/157
+        //
+        $this->markTestSkipped('Mobikwik temporarily disabled.');
+
         $this->fixtures->merchant->enableMobikwik();
 
         $this->testCreateOrderWithOffer();

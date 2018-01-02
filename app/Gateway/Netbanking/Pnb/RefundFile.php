@@ -11,7 +11,7 @@ use RZP\Constants\Timezone;
 
 class RefundFile extends Base\RefundFile
 {
-    protected static $fileToWriteName = 'PNB_Netbanking_Refunds';
+    protected static $fileToWriteName = 'refund_PNB_NB';
 
     public function generate($input)
     {
@@ -44,16 +44,13 @@ class RefundFile extends Base\RefundFile
         return $fileData;
     }
 
-    protected function getTextData(array $data)
+    protected function getTextData($data, $prependLine = '')
     {
-        $txt = '';
+        $ignoreLastNewline = true;
 
-        foreach ($data as $row)
-        {
-            $txt .= join($row , '');
+        $txt = $this->generateText($data, '|', $ignoreLastNewline);
 
-            $txt .= "\r\n";
-        }
+        $txt = $prependLine . $txt;
 
         return $txt;
     }
@@ -66,46 +63,40 @@ class RefundFile extends Base\RefundFile
         {
             $date = Carbon::createFromTimestamp(
                     $row['payment']['created_at'], Timezone::IST)
-                    ->format('d/m/Y');
+                    ->format('Ymd');
 
-            $amount = number_format($row['refund']['amount'] / 100, 2, '.', '');
+            $refundAmount = number_format($row['refund']['amount'] / 100, 2, '.', '');
 
-            $data[] = [
-                $row['gateway']['account_number'],
-                $row['payment']['currency'],
-                Constants::SERVICE_OUTLET,
-                str_pad(Constants::CREDIT, 2, ' ', STR_PAD_LEFT),
-                str_pad($amount, 17, ' ', STR_PAD_LEFT),
-                Constants::REFUND,
-                str_pad($row['payment']['id'], 2, ' ', STR_PAD_LEFT),
-                str_pad($date, 2, ' ', STR_PAD_LEFT),
+            $txnAmount = number_format($row['payment']['amount'], 2, '.', '');
+
+             // This field is left blank currently
+            $cancellationTransactionId = '';
+
+            $data[] =[
+                $row['refund']['id'],
+                Constants::S_FLAG,
+                $refundAmount,
+                $row['gateway']['bank_payment_id'],
+                $date,
+                $txnAmount,
+                $cancellationTransactionId
             ];
 
-            $totalAmount += $amount;
+            $totalAmount += $refundAmount;
         }
-
-        // adds row for total amount of refunds. Requested by bank.
-        $data[] = [
-            'RazorPay Pool A/c',
-            'INR',
-            '0120000',
-            str_pad(Constants::DEBIT, 2, ' ', STR_PAD_LEFT),
-            str_pad($totalAmount, 17, ' ', STR_PAD_LEFT),
-            Constants::REFUND,
-        ];
 
         return [$totalAmount, $data];
     }
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now(Timezone::IST)->format('dmY');
+        $time = Carbon::now(Timezone::IST)->format('Ymd');
 
         if ($this->mode === Mode::TEST)
         {
-            return static::$fileToWriteName . $time . $this->mode;
+            return join('_', [static::$fileToWriteName, $time,  'V1',  $this->mode]);
         }
 
-        return static::$fileToWriteName . $time;
+        return join('_', [static::$fileToWriteName, $time,  'V1']);
     }
 }

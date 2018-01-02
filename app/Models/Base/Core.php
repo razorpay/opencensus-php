@@ -6,6 +6,7 @@ use App;
 use Illuminate\Foundation\Application;
 use RZP\Base\RepositoryManager;
 use RZP\Constants\Mode;
+use Razorpay\Trace\Logger as Trace;
 
 class Core
 {

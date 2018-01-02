@@ -39,6 +39,7 @@ return [
         'wallet_olamoney',
         'upi_icici',
         'upi_mindgate',
+        'upi_sbi',
         'upi_npci',
         'aeps_icici',
         'wallet_payzapp',
@@ -83,6 +84,7 @@ return [
     'mock_wallet_jiomoney'        => env('JIOMONEY_MOCK'),
     'mock_wallet_sbibuddy'        => env('SBIBUDDY_MOCK'),
     'mock_upi_mindgate'           => env('UPI_MINDGATE_MOCK'),
+    'mock_upi_sbi'                => env('UPI_SBI_MOCK'),
     'mock_upi_icici'              => env('UPI_ICICI_MOCK'),
     'mock_upi_npci'               => env('UPI_NPCI_MOCK'),
     'mock_aeps_icici'             => env('AEPS_ICICI_MOCK'),
@@ -106,6 +108,7 @@ return [
 
     'hitachi' => [
         'test_merchant_id'  => env('HITACHI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_terminal_id'  => env('HITACHI_GATEWAY_TEST_TERMINAL_ID'),
         'test_hash_secret'  => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
         'test_hash_secret2' => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
     ],
@@ -211,7 +214,26 @@ return [
     ],
 
     'aeps_icici' => [
-        'terminal_id'           => env('AEPS_TERMINAL_ID'),
+        'terminal_id'                  => env('AEPS_TERMINAL_ID'),
+        'channel_code'                 => env('AEPS_ICICI_CHANNEL_CODE'),
+        'refund_mcc_test'              => env('AEPS_ICICI_REFUND_MCC_TEST'),
+        'refund_mcc_live'              => env('AEPS_ICICI_REFUND_MCC_LIVE'),
+        'refund_payer_mobile_live'     => env('AEPS_ICICI_REFUND_PAYER_MOBILE_LIVE'),
+        'refund_payer_mobile_test'     => env('AEPS_ICICI_REFUND_PAYER_MOBILE_TEST'),
+        'refund_device_id_live'        => env('AEPS_ICICI_REFUND_DEVICE_ID_LIVE'),
+        'refund_device_id_test'        => env('AEPS_ICICI_REFUND_DEVICE_ID_TEST'),
+        'refund_profile_id_live'       => env('AEPS_ICICI_REFUND_PROFILE_ID_LIVE'),
+        'refund_profile_id_test'       => env('AEPS_ICICI_REFUND_PROFILE_ID_TEST'),
+        'refund_payer_vpa_live'        => env('AEPS_ICICI_REFUND_PAYER_VPA_LIVE'),
+        'refund_payer_vpa_test'        => env('AEPS_ICICI_REFUND_PAYER_VPA_TEST'),
+        'refund_account_provider_live' => env('AEPS_ICICI_REFUND_ACCOUNT_PROVIDER_LIVE'),
+        'refund_account_provider_test' => env('AEPS_ICICI_REFUND_ACCOUNT_PROVIDER_TEST'),
+        'refund_api_key_test'          => env('AEPS_ICICI_REFUND_API_KEY_TEST'),
+        'refund_api_key_live'          => env('AEPS_ICICI_REFUND_API_KEY_LIVE'),
+        'refund_test_private_key'      => env('AEPS_ICICI_REFUND_TEST_PRIVATE_KEY'),
+        'refund_live_private_key'      => env('AEPS_ICICI_REFUND_LIVE_PRIVATE_KEY'),
+        'refund_test_public_key'       => env('AEPS_ICICI_REFUND_TEST_PUBLIC_KEY'),
+        'refund_live_public_key'       => env('AEPS_ICICI_REFUND_LIVE_PUBLIC_KEY'),
     ],
 
     'upi_npci' => [
@@ -223,6 +245,11 @@ return [
     'upi_mindgate' => [
         'test_merchant_id'       => env('UPI_MINDGATE_TEST_MERCHANT_ID'),
         'test_merchant_key'      => env('UPI_MINDGATE_TEST_MERCHANT_KEY'),
+    ],
+
+    'upi_sbi' => [
+        'merchant_id'       => env('UPI_MINDGATE_SBI_MERCHANT_ID'),
+        'hash_secret'       => env('UPI_MINDGATE_SBI_HASH_SECRET'),
     ],
 
     'wallet_payzapp' => [
@@ -350,12 +377,12 @@ return [
         'live_hash_secret_corporate' => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_CORPORATE'),
         'test_hash_secret_corporate' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_CORPORATE'),
         'test_merchant_id_corporate' => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_CORPORATE'),
-        
+
         // recurring
         'test_hash_secret_rec'       => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_REC'),
         'test_hash_secret_encrec'    => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_ENCREC'),
         'test_merchant_id_rec'       => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_REC'),
-        
+
     ],
 
     'netbanking_airtel' => [

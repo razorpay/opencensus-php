@@ -65,7 +65,7 @@ class Refund extends Base\Core
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
         $data = [
-            FundTransferAttempt\Entity::CHANNEL   => Channel::KOTAK,
+            FundTransferAttempt\Entity::CHANNEL   => $bankTransfer->merchant->getChannel(),
             FundTransferAttempt\Entity::VERSION   => FundTransferAttempt\Version::V3,
             FundTransferAttempt\Entity::STATUS    => FundTransferAttempt\Status::CREATED,
             FundTransferAttempt\Entity::NARRATION => $this->getNarration($bankTransfer),
@@ -148,7 +148,7 @@ class Refund extends Base\Core
 
         if ($payerAccount->getIfscCode() === null)
         {
-            $ifsc = (new Processor)->getPayerIfsc($bankTransfer);
+            $ifsc = PayerBankAccount::getPayerIfsc($bankTransfer);
 
             $payerAccount->setIfsc($ifsc);
 
@@ -162,7 +162,16 @@ class Refund extends Base\Core
     {
         $bankAccount = new BankAccount\Entity;
 
-        $bankAccount = $bankAccount->build($input['bank_account'], 'addVirtualBankAccount');
+        $bankAccount->build($input['bank_account'], 'addVirtualBankAccount');
+
+        if ($bankAccount->getIfscCode() === null)
+        {
+            $this->trace->warning(
+                TraceCode::BANK_TRANSFER_IFSC_CODE_MISSING,
+                [
+                    'imps_ifsc' => $bankTransfer->getPayerIfsc(),
+                ]);
+        }
 
         $bankAccount->merchant()->associate($bankTransfer->merchant);
 

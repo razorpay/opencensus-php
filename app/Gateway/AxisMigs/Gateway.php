@@ -391,18 +391,16 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        // We have confirmed with acquirer banks that these refunds have
-        // not been processed.
-        $unprocessedRefundIds = ['87eT5BJpNL8uPb'];
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
 
-        if (in_array($input['refund']['id'], $unprocessedRefundIds) === true)
+        $processedRefunds = $this->getProcessedRefunds();
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
         {
             return false;
         }
 
-        $processedRefundIds = ['8COZiOoXPgf2cI'];
-
-        if (in_array($input['refund']['id'], $processedRefundIds) === true)
+        if (in_array($input['refund']['id'], $processedRefunds) === true)
         {
             return true;
         }

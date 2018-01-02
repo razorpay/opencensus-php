@@ -265,6 +265,34 @@ return [
         ],
     ],
 
+    'testMerchantFormArchive' => [
+        'request' => [
+            'content' => [
+                'archive' => 1,
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'archived' => 1,
+            ],
+        ],
+    ],
+
+    'testMerchantActivationStatus' => [
+        'request' => [
+            'content' => [
+                'activation_status'  => 'under_review',
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status'  => 'under_review',
+            ],
+        ],
+    ],
+
     'testCommentMerchant' => [
         'request' => [
             'content' => [

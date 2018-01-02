@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Terminal;
 
+use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Exception;
+use RZP\Models\Terminal;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
 {
@@ -79,16 +81,34 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getTerminalsForMerchantAndSharedMerchant($mid)
+    public function getTerminalsForMerchantAndSharedMerchant(Merchant\Entity $merchant, bool $emandate = false)
     {
-        $merchantIds = [$mid, Merchant\Account::SHARED_ACCOUNT];
+        $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];
 
         $query = $this->newQuery()
                       ->enabled();
 
+        if ($emandate === true)
+        {
+            $this->addEmandateQueryFilters($query);
+        }
+
         $this->addMerchantWhereCondition($query, $merchantIds);
 
         return $query->get();
+    }
+
+    protected function addEmandateQueryFilters($query)
+    {
+        //
+        // Emandate terminals have type 6 (recurring 3ds + recurring non 3ds)
+        // This is because we don't have different terminals for the first
+        // auth transaction and then subsequent recurring transactions.
+        //
+
+        $query->where(Entity::NETBANKING, true)
+              ->where(Entity::TYPE, 6)
+              ->whereIn(Entity::GATEWAY, Payment\Gateway::$recurringGateways);
     }
 
     protected function addMerchantWhereCondition($query, array $merchantIds)
@@ -97,7 +117,7 @@ class Repository extends Base\Repository
             function ($query) use ($merchantIds)
             {
                 // Condition for the merchant id being directly in the terminal
-                $query->whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds);
+                $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
 
                 //
                 // Condition for getting terminals where merchant id is
@@ -108,7 +128,7 @@ class Repository extends Base\Repository
                     'merchants',
                     function ($query) use ($merchantIds)
                     {
-                        $query->whereIn(Terminal\Entity::MERCHANT_ID, $merchantIds);
+                        $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
                     });
             });
     }
@@ -117,9 +137,9 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->withTrashed()
-                    ->where(Terminal\Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
-                    ->where(Terminal\Entity::GATEWAY, '=', $gateway)
-                    ->whereNotNull(Terminal\Entity::GATEWAY_RECON_PASSWORD)
+                    ->where(Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->whereNotNull(Entity::GATEWAY_RECON_PASSWORD)
                     ->first();
     }
 
@@ -136,7 +156,7 @@ class Repository extends Base\Repository
     public function getByMerchantIdAndGateway($mid, $gateway)
     {
         $query = $this->newQuery()
-                      ->where(Terminal\Entity::GATEWAY, '=', $gateway);
+                      ->where(Entity::GATEWAY, '=', $gateway);
 
         $this->addMerchantWhereCondition($query, [$mid]);
 
@@ -146,7 +166,7 @@ class Repository extends Base\Repository
     public function getSharedTerminalForGateway($gateway)
     {
         return $this->newQuery()
-                    ->where(Terminal\Entity::GATEWAY, '=', $gateway)
+                    ->where(Entity::GATEWAY, '=', $gateway)
                     ->shared()
                     ->enabled()
                     ->get();
@@ -155,9 +175,9 @@ class Repository extends Base\Repository
     public function getSharedTerminalForGatewayWithCategory($gateway, $category)
     {
         return $this->newQuery()
-                    ->where(Terminal\Entity::GATEWAY, '=', $gateway)
+                    ->where(Entity::GATEWAY, '=', $gateway)
                     ->shared()
-                    ->where(Terminal\Entity::CATEGORY, '=', $category)
+                    ->where(Entity::CATEGORY, '=', $category)
                     ->enabled()
                     ->first();
     }
@@ -165,10 +185,10 @@ class Repository extends Base\Repository
     public function getEmiTerminal($mId, $gateway, $duration)
     {
         $query = $this->newQuery()
-                    ->where(Terminal\Entity::GATEWAY, '=', $gateway)
+                    ->where(Entity::GATEWAY, '=', $gateway)
                     ->shared()
-                    ->where(Terminal\Entity::EMI, '=', '1')
-                    ->where(Terminal\Entity::EMI_DURATION, '=', $duration)
+                    ->where(Entity::EMI, '=', '1')
+                    ->where(Entity::EMI_DURATION, '=', $duration)
                     ->enabled();
 
         $this->addMerchantWhereCondition($query, [$mId]);
@@ -191,7 +211,7 @@ class Repository extends Base\Repository
         $sharedTerminalIds = array_keys($map);
 
         return $this->newQuery()
-                    ->whereIn(Terminal\Entity::ID, $sharedTerminalIds)
+                    ->whereIn(Entity::ID, $sharedTerminalIds)
                     ->enabled()
                     ->get();
     }
@@ -201,8 +221,8 @@ class Repository extends Base\Repository
         $tpvCategories = Category::getTPVCategories();
 
         return $this->newQuery()
-                    ->where(Terminal\Entity::GATEWAY, $gateway)
-                    ->whereIn(Terminal\Entity::NETWORK_CATEGORY, $tpvCategories)
+                    ->where(Entity::GATEWAY, $gateway)
+                    ->whereIn(Entity::NETWORK_CATEGORY, $tpvCategories)
                     ->enabled()
                     ->get([Entity::ID]);
     }
@@ -210,10 +230,19 @@ class Repository extends Base\Repository
     public function getTerminalIdsForGateway($gateway, $exclude = [])
     {
         return $this->newQuery()
-                    ->where(Terminal\Entity::GATEWAY, $gateway)
-                    ->whereNotIn(Terminal\Entity::ID, $exclude)
+                    ->where(Entity::GATEWAY, $gateway)
+                    ->whereNotIn(Entity::ID, $exclude)
                     ->enabled()
                     ->get([Entity::ID]);
+    }
+
+    public function getDirectTerminalsForGateway(string $gateway): PublicCollection
+    {
+        return $this->newQuery()
+                    ->where(Entity::GATEWAY, $gateway)
+                    ->where(Entity::MERCHANT_ID, '!=', Account::SHARED_ACCOUNT)
+                    ->enabled()
+                    ->get();
     }
 
     public function deleteOrFail($entity)

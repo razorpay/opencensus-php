@@ -242,8 +242,6 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
-        $data = $this->testData['bankTransferImpsFailedRefund'];
-
         // IMPS refunds are permitted...
         $this->refundPayment($payment['id'], 4000000);
 
@@ -318,12 +316,20 @@ class BankTransferTest extends TestCase
 
         $this->ba->appAuth();
 
+        $this->fixtures->base->editEntity(
+            'bank_account',
+            $bankAccount['id'],
+            [
+                'ifsc_code'=>'RAZR0000001'
+            ]);
+
         $response = $this->makeRequestAndGetContent([
             'method'  => 'POST',
             'url'     => '/bank_transfers/refunds/retry',
         ]);
 
-        // Refund is now marked created again
+        // Refund is now marked created again,
+        // because payer bank acc now has an IFSC
         $refund =  $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
         $this->assertEquals('created', $refund['status']);
@@ -536,6 +542,22 @@ class BankTransferTest extends TestCase
         $this->assertEquals('initiated', $attempt['status']);
     }
 
+    public function testBankTransferRemoveSpaces()
+    {
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['payee_ifsc'] = $ifsc;
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals('RAZORPAY123', $bankTransfer['payee_account']);
+    }
+
     public function testBankTransferImpsFromRogueBankNullAccount()
     {
         $accountNumber = $this->bankAccount['account_number'];
@@ -577,6 +599,26 @@ class BankTransferTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->refundPayment($payment['id'], 4000000);
         });
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/bank_transfers/'.$bankTransfer['id'].'/payer_bank_account',
+            'content' => [
+                'account_number' => '123456',
+                'ifsc_code'      => 'HDFC0000002',
+            ],
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertEquals('HDFC0000002', $bankAccount['ifsc']);
+        $this->assertEquals('123456', $bankAccount['account_number']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$bankTransfer['payer_bank_account_id']);
     }
 
     public function testBankTransferImpsFromRogueBankInvalidAccount()
@@ -825,6 +867,101 @@ class BankTransferTest extends TestCase
         $oldBankTransferId = $bankTransfer['id'];
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($oldBankTransferId, $bankTransfer['id']);
+
+        $differentAccountNumber = $this->createVirtualAccount()['account_number'];
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['payee_account'] = $differentAccountNumber;
+        $request['content']['payee_ifsc'] = $ifsc;
+        $request['content']['payer_ifsc'] = $ifsc;
+        $request['content']['transaction_id'] = $utr;
+        $this->ba->appAuth();
+        // Another payment, same UTR, made to a different account, from a different account
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // New entity created, as this is not a duplicate payment
+        $oldBankTransferId = $bankTransfer['id'];
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertNotEquals($oldBankTransferId, $bankTransfer['id']);
+        $this->assertEquals($differentAccountNumber, $bankTransfer['payee_account']);
+    }
+
+    public function testBankTransferProcessCryptoBlock()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $this->fixtures->merchant->edit('10000000000000', ['category2' => 'cryptocurrency']);
+
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'block_bank_transfers_for_crypto' => '1',
+            ],
+        ]);
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // Customer bank account created
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
+        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+        $this->assertEquals('HDFC Bank', $bankAccount['bank_name']);
+
+        // Created bank transfer is an unexpected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$bankTransfer['payer_bank_account_id']);
+        $this->assertEquals(false, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Invalid account forced creation of a temp acc for default merchant
+        $virtualAccount =  $this->getLastEntity('virtual_account', true);
+        $this->assertEquals('10000000000000', $virtualAccount['merchant_id']);
+        $this->assertEquals(5000000, $virtualAccount['amount_paid']);
+        $this->assertEquals(5000000, $virtualAccount['amount_received']);
+        $this->assertEquals(5000000, $virtualAccount['amount_expected']);
+        $this->assertEquals('paid', $virtualAccount['status']);
+
+        // Payment is not captured, but left in authorized state for auto-refund
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        $this->refundAuthorizedPayment($payment['id']);
+
+        // Payment is refunded
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+
+        // Refund is created
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals(5000000, $refund['amount']);
+
+        // Transaction is created for refund
+        $transaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals('refund', $transaction['type']);
+        $this->assertEquals($refund['id'], $transaction['entity_id']);
+
+        // Fund transfer attempt created for refund
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('created', $attempt['status']);
+        $this->assertEquals($refund['id'], $attempt['source']);
+        $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
+        $this->assertEquals('ACC DOESNT EXIST-'.$bankTransfer['utr'], $attempt['narration']);
     }
 
     public function testBankTransferProcessInvalidAccount()
@@ -894,6 +1031,8 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferYesBankRefundsNotAllowed()
     {
+        $this->markTestSkipped("Yesbank refunds temporarily allowed");
+
         $accountNumber = $this->bankAccount['account_number'];
 
         $data =$this->testData[__FUNCTION__];

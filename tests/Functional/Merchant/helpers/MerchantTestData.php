@@ -1,6 +1,5 @@
 <?php
 
-use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -1032,6 +1031,63 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithSharedMerchantOffer' => [
+        'request' => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'offers' => [
+                    [
+                        'name'            => 'Test Offer',
+                        'payment_method'  => 'wallet',
+                        'issuer'          => 'olamoney',
+                        'display_text'    => 'Merchant specific offer',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithFreechargeOfferOnMerchantWithDirectFreechargeTerminal' => [
+        'request' => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'offers' => [
+                    [
+                        'name'            => 'Test Offer',
+                        'payment_method'  => 'wallet',
+                        'issuer'          => 'olamoney',
+                        'display_text'    => 'Shared olamoney offer',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithMerchantSpecificAndSharedOffers' => [
+        'request' => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'offers' => [
+                    [
+                        'name'            => 'Test Offer',
+                        'payment_method'  => 'wallet',
+                        'issuer'          => 'olamoney',
+                        'display_text'    => 'Merchant specific offer',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithOrderRelatedOffer' => [
         'request' => [
             'url'    => null,
@@ -1382,14 +1438,14 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'BARB_C',
+                            'issuer' => 'BARB_R',
                         ],
                     ],
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'BARB_R',
+                            'issuer' => 'BARB_C',
                         ],
                     ],
                     [
@@ -1614,14 +1670,14 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'BARB_C',
+                            'issuer' => 'BARB_R',
                         ],
                     ],
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'BARB_R',
+                            'issuer' => 'BARB_C',
                         ],
                     ],
                     [
@@ -1857,8 +1913,8 @@ return [
                                 'SYNB',
                                 'TMBL',
                                 'TNSC',
-                                'BARB_C',
                                 'BARB_R',
+                                'BARB_C',
                                 'PUNB_C',
                                 'LAVB_C'
                             ],

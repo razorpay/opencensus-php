@@ -20,4 +20,5 @@ class Category
     const WALLET_CONFIG   = 'wallet_config';
     const GENERAL         = 'general';
     const DISPUTE         = 'dispute';
+    const BATCH           = 'batch';
 }

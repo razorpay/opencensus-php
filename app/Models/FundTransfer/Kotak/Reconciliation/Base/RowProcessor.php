@@ -16,6 +16,7 @@ use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\FundTransfer\Kotak\Headings;
 use RZP\Models\FundTransfer\Kotak\Reconciliation\Status;
+use RZP\Trace\TraceCode;
 
 class RowProcessor extends BaseCore
 {
@@ -86,6 +87,17 @@ class RowProcessor extends BaseCore
     public function process($reconciledAt): array
     {
         $this->reconciledAt = $reconciledAt;
+
+        if (($this->row['Payment_Ref_No.'] === '9J73yH9DaC7s2x') or
+            ($this->row['Credit_Narration'] === 'RAZORPAY AXIS'))
+        {
+            $this->trace->info(TraceCode::PAYOUT_RECON_SKIPPED,
+                [
+                    'row' => $this->row,
+                ]);
+
+            return null;
+        }
 
         $this->parseRow();
 

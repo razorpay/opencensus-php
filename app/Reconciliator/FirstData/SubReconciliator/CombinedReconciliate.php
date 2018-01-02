@@ -32,6 +32,16 @@ class CombinedReconciliate extends Base\CombinedReconciliate
      */
     protected function getReconciliationTypeForRow($row)
     {
+        //
+        // If the "transaction_type" columnheader is not present
+        // in the parsed row, we return null, as this is an invalid
+        // or wrongly formatted row.
+        //
+        if (isset($row[self::COLUMN_TXN_TYPE]) === false)
+        {
+            return null;
+        }
+
         $txnType = $row[self::COLUMN_TXN_TYPE];
 
         return self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txnType] ?? self::NA;
