@@ -787,6 +787,8 @@ class Gateway extends Base\Gateway
      */
     protected function parseResponseStatus(array & $attributes)
     {
+        $this->sanitizeStatus($attributes[Entity::STATUS]);
+
         $status = $attributes[Entity::STATUS];
 
         if (empty($status) === false and
@@ -802,6 +804,20 @@ class Gateway extends Base\Gateway
         }
     }
 
+    /**
+     * Sanitizing status because in fss gateway, if we have any errors in
+     * the response we will get the result with error + description as twice.
+     * <result>GW00-somerandomerror</result><result>GW00-somerandomerror</result>
+     *
+     * @param $status
+     */
+    private function sanitizeStatus(& $status)
+    {
+        if (empty($status) === false and is_array($status))
+        {
+            $status = current($status);
+        }
+    }
     /**
      * @param array $requestContent
      *
