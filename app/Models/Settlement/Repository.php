@@ -112,4 +112,27 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::ID, $setlIds2)
                     ->get();
     }
+
+    public function updateChannel($settlementId, $channel)
+    {
+        $values = [Entity::CHANNEL => $channel];
+
+        $count = $this->newQuery()
+                      ->where(Entity::ID, $settlementId)
+                      ->where(Entity::STATUS, false)
+                      ->update($values);
+
+        if ($count === 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed to update expected number to row',
+                null,
+                [
+                    'settlement_id' => $settlementId,
+                    'channel'       => $channel,
+                ]);
+        }
+
+        return $count;
+    }
 }
