@@ -455,7 +455,6 @@ class Gateway extends Base\Gateway
         ];
 
         $mandatoryFields = [
-            Entity::GATEWAY_PAYMENT_ID,
             Entity::GATEWAY_TRANSACTION_ID,
             Entity::STATUS,
         ];
@@ -762,7 +761,7 @@ class Gateway extends Base\Gateway
                 $requestContent[Fields::TRANSACTION_ID] = $input['payment']['id'];
                 $requestContent[Fields::ACTION]         = Constants::ACTION_REFUND;
                 $requestContent[Fields::TRACK_ID]       = $input[E::REFUND][Entity::ID];
-                $requestContent[Fields::AMOUNT]         = 100;
+                $requestContent[Fields::AMOUNT]         = $input[E::REFUND][Entity::AMOUNT] / 100;
 
                 $traceCode = TraceCode::GATEWAY_REFUND_REQUEST;
                 break;
