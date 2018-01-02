@@ -502,6 +502,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $arn = $this->getArn($row);
 
+        $prn = $this->getPrn($row);
+
         $rowDetails = [
             BaseReconciliate::PAYMENT_ID           => $paymentId,
             BaseReconciliate::GATEWAY_SERVICE_TAX  => $serviceTax,
@@ -511,6 +513,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             BaseReconciliate::GATEWAY_PAYMENT_DATE => $gatewayPaymentDate,
             BaseReconciliate::AUTH_CODE            => $authCode,
             BaseReconciliate::ARN                  => $arn,
+            BaseReconciliate::PRN                  => $prn,
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.
@@ -1493,6 +1496,16 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @return null
      */
     protected function getArn($row)
+    {
+        return null;
+    }
+
+    /**
+     * PNB provides as PRN
+     * @param $row
+     * @return null
+    */
+    protected function getPrn($row)
     {
         return null;
     }

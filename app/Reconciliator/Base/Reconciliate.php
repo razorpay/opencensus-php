@@ -58,6 +58,7 @@ class Reconciliate extends Base\Core
     const ACCOUNT_BRANCHCODE    = 'account_branchcode';
     const CREDIT_ACCOUNT_NUMBER = 'credit_account_number';
     const AUTH_CODE             = 'auth_code';
+    const PRN                   = 'prn';
 
     /*************************
      * Card types
