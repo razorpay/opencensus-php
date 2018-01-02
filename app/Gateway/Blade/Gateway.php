@@ -483,14 +483,14 @@ class Gateway extends Base\Gateway
     {
         $networkName = $this->getNetworkName();
 
-        return $networkName . '_v1.crt';
+        return $networkName . '_v2.crt';
     }
 
     public function getClientSslKeyName()
     {
         $networkName = $this->getNetworkName();
 
-        return $networkName . '_v1.key';
+        return $networkName . '_v2.key';
     }
 
     public function getNetworkName()
