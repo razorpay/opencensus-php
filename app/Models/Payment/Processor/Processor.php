@@ -48,7 +48,7 @@ class Processor
 
     /**
      * Callback urls can be hit multiple times by customers.
-     * WIthin certain duration x minutes, we will return payment
+     * Within certain duration x minutes, we will return payment
      * success or failed when the url is hit again.
      * After that duration, we will simply throw
      * BAD_REQUEST_PAYMENT_ALREADY_PROCESSED payment_processed error.
@@ -342,7 +342,8 @@ class Processor
 
             $input[Payment\Entity::METHOD] = $tokenMethod;
 
-            if ($tokenMethod === Payment\Method::NETBANKING)
+            if (($tokenMethod === Payment\Method::NETBANKING) or
+                ($tokenMethod === Payment\Method::EMANDATE))
             {
                 $input[Payment\Entity::BANK] = $token->getBank();
             }
@@ -1046,6 +1047,14 @@ class Processor
         $payment->merchant()->associate($this->merchant);
 
         $payment->build($input);
+
+        //
+        // Temporary only. To be removed later.
+        //
+        if ($payment->getMethod() === Payment\Method::EMANDATE)
+        {
+            $payment->setMethod(Payment\Method::NETBANKING);
+        }
 
         $this->payment = $payment;
 

@@ -468,7 +468,7 @@ class Gateway
             IFSC::UTIB,
             IFSC::HDFC,
         ],
-        AuthType::AADHAAR    => [
+        AuthType::AADHAAR => [
             IFSC::ICIC,
             IFSC::UTIB,
             IFSC::HDFC,

@@ -2783,3 +2783,9 @@ ALTER TABLE virtual_accounts
 
 ALTER TABLE `merchants`
     ADD COLUMN `channel` VARCHAR(32) DEFAULT 'kotak' AFTER `billing_label`;
+
+ALTER TABLE payments
+    ADD COLUMN auth_type VARCHAR(255) DEFAULT NULL AFTER updated_at;
+
+ALTER TABLE payments
+    ADD INDEX `payments_auth_type_index` (`auth_type`);
