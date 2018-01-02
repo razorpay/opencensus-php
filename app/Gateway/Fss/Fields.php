@@ -60,6 +60,8 @@ class Fields
     // Response Fields
     const ERROR_TEXT                    = 'error_text';
 
+    const ERROR                         = 'error';
+
     const GATEWAY_ERROR_TEXT            = 'ErrorText';
 
     const ACTIONVPAS                    = 'actionVPAS';

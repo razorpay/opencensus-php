@@ -275,7 +275,7 @@ class Gateway extends Base\Gateway
             Fields::LANGUAGE_ID   => Constants::LANGUAGE_USA,
         ];
 
-        $this->modifyPurchaseRequestContentArray($requestContent, $input);
+        $this->modifyGatewayRequestContentArray($requestContent, $input);
 
         // Trace the payment request after removing the sensitive fields.
         $traceData = $this->removeSensitiveRequestFields($requestContent);
@@ -296,7 +296,7 @@ class Gateway extends Base\Gateway
      * @param array $requestContent
      * @param array $input
      */
-    protected function modifyPurchaseRequestContentArray(array & $requestContent, array $input)
+    protected function modifyGatewayRequestContentArray(array & $requestContent, array $input)
     {
         $gatewayAquirer = $input[E::TERMINAL]->getGatewayAcquirer();
 
@@ -304,6 +304,7 @@ class Gateway extends Base\Gateway
         {
             case Acquirer::FSS:
                 $requestContent[Fields::BANK_CODE] = $input[E::TERMINAL][Terminal\Entity::GATEWAY_ACCESS_CODE];
+                $requestContent[Fields::UDF5]      = strtolower(Constants::TRACK_ID);
 
                 if ($this->mode === Mode::TEST)
                 {
@@ -314,6 +315,7 @@ class Gateway extends Base\Gateway
                 break;
             case Acquirer::BOB:
                 $requestContent[Fields::PASSWORD] = $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+                $requestContent[Fields::UDF5]     = Constants::TRACK_ID;
 
                 if ($this->mode === Mode::TEST)
                 {
@@ -468,6 +470,7 @@ class Gateway extends Base\Gateway
             Entity::STATUS                 => Fields::RESULT,
             Entity::AUTH_RES_CODE          => Fields::AUTH_RES_CODE,
             Entity::ERROR_MESSAGE          => Fields::ERROR_TEXT,
+            Entity::ERROR_MESSAGE          => Fields::ERROR,
         ];
 
         $missingCallbackFields = [];
@@ -732,12 +735,8 @@ class Gateway extends Base\Gateway
         $requestContent = [
             Fields::CURRENCY_CODE  => Currency::getIsoCode(Currency::INR),
             Fields::TYPE           => $this->getCardType($input[E::CARD][Card\Entity::TYPE]),
-
-            Fields::UDF5           => 'trackid',
             Fields::LANGUAGE_ID    => Constants::LANGUAGE_USA,
-
             Fields::ID             => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
-            Fields::PASSWORD       => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD],
         ];
 
         switch ($this->action)
@@ -768,6 +767,8 @@ class Gateway extends Base\Gateway
                 $traceCode = TraceCode::GATEWAY_REFUND_REQUEST;
                 break;
         }
+
+        $this->modifyGatewayRequestContentArray($requestContent, $input);
 
         $traceData = $this->removeSensitiveRequestFields($requestContent);
 
@@ -811,8 +812,6 @@ class Gateway extends Base\Gateway
     {
         // Entire request content is wrapped in xml.
         $requestBuffer = Utility::createRequestXml($requestContent);
-
-//        $requestBuffer = $this->getEncryptedRequestContent($requestBuffer, $this->input);
 
         return $requestBuffer;
     }
@@ -867,7 +866,9 @@ class Gateway extends Base\Gateway
      */
     protected function checkErrorMessage($gatewayPayment, $gatewayContent)
     {
-        if (empty($gatewayPayment->getErrorMessage()) === false)
+        // FSS sends just cancelled in the error instead of error code + desc.
+        if (empty($gatewayPayment->getErrorMessage()) === false and
+            $gatewayPayment->getErrorMessage() !== Constants::CANCELLED)
         {
             $gatewayCode = $this->getErrorCode($gatewayPayment->getErrorMessage());
 

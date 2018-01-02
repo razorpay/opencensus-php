@@ -32,4 +32,6 @@ class Constants
     const TRACK_ID              = 'TrackID';
 
     const ERROR_MESSAGE_START   = 'IPAY';
+
+    const CANCELLED             = 'CANCELLED';
 }

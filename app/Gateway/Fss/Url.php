@@ -14,8 +14,8 @@ class Url
             self::LIVE_DOMAIN => "",
 
             Action::PURCHASE  => "PGAggregator/MerchaggrPayment.htm?param=paymentInit&",
-            Action::REFUND    => "PGAggregator/MerchaggrPayment.htm?param=supportInit",
-            Action::VERIFY    => "PGAggregator/MerchaggrPayment.htm?param=supportInit",
+            Action::REFUND    => "PGAggregator/MerchaggrPayment.htm?param=supportInitTCPIP",
+            Action::VERIFY    => "PGAggregator/MerchaggrPayment.htm?param=supportInitTCPIP",
         ],
         Acquirer::BOB   => [
             self::TEST_DOMAIN => "https://ipg.bobgateway.com/IPG",
