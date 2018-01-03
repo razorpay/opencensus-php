@@ -7,7 +7,7 @@ use Mail;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Mail\Gateway\FailedRefund\Base as FailedRefundMail;
 
 class CardGatewaysFailedRefundFileTest extends TestCase
 {
@@ -71,7 +71,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         ];
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(RefundFileMail::class);
+        Mail::assertSent(FailedRefundMail::class);
     }
 
     public function testFirstDatadRefundFile()
@@ -119,7 +119,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         ];
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(RefundFileMail::class);
+        Mail::assertSent(FailedRefundMail::class);
     }
 
     public function testCybersourcedRefundFile()
@@ -169,7 +169,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         ];
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(RefundFileMail::class);
+        Mail::assertSent(FailedRefundMail::class);
     }
 
     public function testHdfcFaileddRefundFile()
@@ -215,7 +215,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         ];
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(RefundFileMail::class);
+        Mail::assertSent(FailedRefundMail::class);
     }
 
 

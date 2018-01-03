@@ -7,7 +7,7 @@ use Mail;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Mail\Gateway\FailedRefund\Base as FailedRefundMail;
 
 class AirtelMoneyFailedRefundFileTest extends TestCase
 {
@@ -68,7 +68,7 @@ class AirtelMoneyFailedRefundFileTest extends TestCase
         ];
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(RefundFileMail::class);
+        Mail::assertSent(FailedRefundMail::class);
     }
 
 }
