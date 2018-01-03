@@ -47,7 +47,6 @@ class Gateway extends Base\Gateway
         Entity::RECEIVED                  => Entity::RECEIVED,
         ResponseFields::PAYER_VA          => Entity::VPA,
         ResponseFields::PAYER_NAME        => Entity::NAME,
-        ResponseFields::VPA_STATUS        => Entity::STATUS_CODE,
         ResponseFields::STATUS            => Entity::STATUS_CODE,
         // This is a 5 digit number that is the reference ID on the HDFC side
         ResponseFields::UPI_TXN_ID        => Entity::GATEWAY_PAYMENT_ID,
@@ -69,7 +68,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
-        $this->validateVpa($input, $gatewayPayment);
+        $this->validateVpa($input);
 
         parent::action($input, Action::AUTHORIZE);
 
@@ -97,9 +96,8 @@ class Gateway extends Base\Gateway
     /**
      * We need to validate that the user's VPA is valid before proceeding with the payment
      * @param array $input
-     * @param Entity $gatewayPayment
      */
-    private function validateVpa(array $input, Entity $gatewayPayment)
+    private function validateVpa(array $input)
     {
         parent::action($input, Action::VALIDATE_VPA);
 
@@ -108,10 +106,6 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $response = $this->parseGatewayResponse($response->body, Action::VALIDATE_VPA);
-
-        $response[Entity::RECEIVED] = 1;
-
-        $this->updateGatewayPaymentEntity($gatewayPayment, $response);
 
         $this->checkResponseStatus($response[ResponseFields::VPA_STATUS], Status::VPA_AVAILABLE);
     }

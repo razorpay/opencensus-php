@@ -106,7 +106,6 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals(Status::FAILED, $payment['status']);
 
         $this->assertEquals('invalidvpa@hdfcbank', $upiEntity[Entity::VPA]);
-        $this->assertEquals('Mayank Amencherla', $upiEntity[Entity::NAME]);
         $this->assertNull($upiEntity[Entity::GATEWAY_PAYMENT_ID]);
         $this->assertNull($upiEntity[Entity::NPCI_REFERENCE_ID]);
     }
