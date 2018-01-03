@@ -14,8 +14,9 @@ class AccountController extends Controller
     protected $service = Merchant\Account\Service::class;
 
     /**
-     * Returns all types of settlement destinations
-     * Currently, only bank accounts are returned
+     * Return all settlement destinations.
+     * Currently, bank accounts are the only settlement destinations, later,
+     * more types (e.g. wallet, upi etc) can come.
      *
      * @param string $accountId
      *
@@ -35,11 +36,9 @@ class AccountController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function postBankAccounts(string $accountId)
+    public function postBankAccount(string $accountId)
     {
-        $input = Request::all();
-
-        $response = $this->service()->postBankAccounts($accountId, $input);
+        $response = $this->service()->postBankAccount($accountId, $this->input);
 
         return ApiResponse::json($response);
     }

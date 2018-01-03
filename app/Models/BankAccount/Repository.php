@@ -3,10 +3,11 @@
 namespace RZP\Models\BankAccount;
 
 use RZP\Exception;
-use RZP\Models\BankAccount;
 use RZP\Models\Base;
-use RZP\Models\VirtualAccount;
 use RZP\Constants\Table;
+use RZP\Models\BankAccount;
+use RZP\Models\VirtualAccount;
+use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
 {
@@ -34,9 +35,9 @@ class Repository extends Base\Repository
      *
      * @param $merchant
      *
-     * @return array
+     * @return PublicCollection
      */
-    public function getAllBankAccounts($merchant)
+    public function getAllBankAccounts($merchant) : PublicCollection
     {
         return $this->newQuery()
                     ->where(Entity::ENTITY_ID, '=', $merchant->getId())

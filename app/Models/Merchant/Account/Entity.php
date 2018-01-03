@@ -90,12 +90,6 @@ class Entity extends Merchant\Entity
         self::INVOICE_CODE,
     ];
 
-    protected $embeddedRelations = [
-        self::SETTLEMENT_SCHEDULES
-    ];
-
-    protected static $morphMap = [];
-
     public function settlementSchedules()
     {
         return $this->morphOne(ScheduleTask\Entity::class, 'entity');
@@ -112,9 +106,10 @@ class Entity extends Merchant\Entity
     }
 
     // ----------------------- Getters --------------------------------------------
+
     public function getSettlementDestination()
     {
-        return $this->bankAccount()->first();
+        return $this->bankAccount()->getResults();
     }
 
     public function getActivatedAt()
@@ -173,9 +168,11 @@ class Entity extends Merchant\Entity
 
         return $array;
     }
+
     // ----------------------- End of getters -------------------------------------
 
     // ----------------------- Setters --------------------------------------------
+
     public function setPublicIdAttribute(array & $array)
     {
         $array[self::ID] = self::getSignedId($this->getId());
@@ -248,11 +245,11 @@ class Entity extends Merchant\Entity
     {
         $settlementDestinationId = null;
 
-        $settlementDestination = $this->getSettlementDestination();
+        $settlementDestination = $this->getSettlementDestination()->toArrayPublic();
 
         if ($settlementDestination !== null)
         {
-            $settlementDestinationId = BankAccount\Entity::getSignedId($settlementDestination->getId());
+            $settlementDestinationId = $settlementDestination[BankAccount\Entity::ID];
         }
 
         $array[self::FUND_TRANSFER] = [
@@ -263,9 +260,10 @@ class Entity extends Merchant\Entity
     public function setPublicConfigurationsAttribute(array & $array)
     {
         $array[self::CONFIGURATIONS] = [
-            self::BRAND_COLOR           => $this->getBrandColor()
+            self::BRAND_COLOR => $this->getBrandColor()
         ];
     }
+
     // ----------------------- End of setters -------------------------------------
 
     public function scopeMerchantId($query, $merchantId)
@@ -275,15 +273,13 @@ class Entity extends Merchant\Entity
         $query->where($merchantIdColumn, '=', $merchantId);
     }
 
+    /**
+     * Managed accounts currently include only linked accounts
+     *
+     * @return bool
+     */
     public function isManaged() : bool
     {
-        $parentId = $this->getAttribute(self::PARENT_ID);
-
-        if ($parentId === null)
-        {
-            return false;
-        }
-
-        return true;
+        return ($this->isLinkedAccount() === true);
     }
 }

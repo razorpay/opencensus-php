@@ -698,11 +698,11 @@ final class Route
         'ufh_get_file_signed_url'                 => ['get',      'ufh/file/{fileId}/get-signed-url',               'UfhController@getSignedUrl'                                        ],
 
         // Account API routes
-        'account_create'                          => ['post',     'beta/accounts',                                  'AccountController@create'                                          ],
-        'account_fetch'                           => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
-        'account_fetch_multiple'                  => ['get',      'beta/accounts',                                  'AccountController@list'                                            ],
-        'account_post_bank_accounts'              => ['post',     'beta/accounts/{id}/bank_accounts',               'AccountController@postBankAccounts'                                ],
-        'account_fetch_settlement_destinations'   => ['get',      'beta/accounts/{id}/settlement_destinations',     'AccountController@fetchSettlementDestinations'                     ],
+        'beta_account_create'                     => ['post',     'beta/accounts',                                  'AccountController@create'                                          ],
+        'beta_account_fetch'                      => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
+        'beta_account_fetch_multiple'             => ['get',      'beta/accounts',                                  'AccountController@list'                                            ],
+        'beta_account_post_bank_account'          => ['post',     'beta/accounts/{id}/bank_accounts',               'AccountController@postBankAccount'                                 ],
+        'beta_account_fetch_setl_destinations'    => ['get',      'beta/accounts/{id}/settlement_destinations',     'AccountController@fetchSettlementDestinations'                     ],
     ];
 
     public static $public = [
@@ -900,11 +900,11 @@ final class Route
         'reversal_fetch',
         'reversal_fetch_multiple',
         'dispute_fetch_multiple',
-        'account_create',
-        'account_fetch',
-        'account_fetch_multiple',
-        'account_post_bank_accounts',
-        'account_fetch_settlement_destinations',
+        'beta_account_create',
+        'beta_account_fetch',
+        'beta_account_fetch_multiple',
+        'beta_account_post_bank_account',
+        'beta_account_fetch_setl_destinations',
     ];
 
     public static $internal = [

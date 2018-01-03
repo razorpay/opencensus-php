@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Merchant\Account;
 
-use RZP\Models\Pricing;
+use RZP\Models\Base;
 use RZP\Models\Merchant;
 
-class Core extends Merchant\Core
+class Core extends Base\Core
 {
     /**
      * @param array           $input

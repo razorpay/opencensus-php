@@ -36,6 +36,8 @@ class AccountTest extends TestCase
         $this->assertEquals($account['id'], $accountId);
 
         $this->assertEquals('10000000000000', $lastAccount['parent_id']);
+
+        $this->assertNotNull($account['fund_transfer']['destination']);
     }
 
     public function testRetrieveAccount()

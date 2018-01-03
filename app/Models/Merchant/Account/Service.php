@@ -3,21 +3,16 @@
 namespace RZP\Models\Merchant\Account;
 
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
+use RZP\Models\Merchant\Notify;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 
-class Service extends Merchant\Service
+class Service extends Base\Service
 {
-    protected $core;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->core = new Core;
-    }
+    use Notify;
 
     /**
      * Retrieve a single account entity
@@ -28,7 +23,7 @@ class Service extends Merchant\Service
     public function fetch(string $accountId) : array
     {
         $account = $this->repo->account->findByPublicIdAndMerchant($accountId, $this->merchant);
-        
+
         return $account->toArrayPublic();
     }
 
@@ -52,7 +47,7 @@ class Service extends Merchant\Service
      */
     public function create(array $input): array
     {
-        $account = $this->core->createAccount($input, $this->merchant);
+        $account = $this->core()->createAccount($input, $this->merchant);
 
         return $account->toArrayPublic();
     }
@@ -67,18 +62,12 @@ class Service extends Merchant\Service
      */
     public function fetchSettlementDestinations(string $accountId) : array
     {
-        $merchant = $this->repo->account->findByPublicIdAndMerchant($accountId, $this->merchant);
+        $account = $this->repo->account->findByPublicIdAndMerchant($accountId, $this->merchant);
 
-        # Fetch all settlement destinations, not only the bank accounts
-        $bankAccounts = $this->repo->bank_account->getAllBankAccounts($merchant);
+        // Fetch all settlement destinations, not only the bank accounts
+        $bankAccounts = $this->repo->bank_account->getAllBankAccounts($account);
 
         $bankAccounts = $bankAccounts->toArrayPublic();
-
-        if (count($bankAccounts) === 0)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
-        }
 
         return $bankAccounts;
     }
@@ -91,13 +80,13 @@ class Service extends Merchant\Service
      *
      * @return array
      */
-    public function postBankAccounts(string $id, array $input) : array
+    public function postBankAccount(string $id, array $input) : array
     {
-        $merchant = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
+        $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
+        $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $account);
 
-        $this->logActionToSlack($merchant, SlackActions::EDIT_BANK_DETAILS, $input);
+        $this->logActionToSlack($account, SlackActions::EDIT_BANK_DETAILS, $input);
 
         return $ba->toArrayPublic();
     }

@@ -101,9 +101,7 @@ return [
                     'custom_account_id' => 'Qwerty123',
                     'custom_attribute'  => 'some_value',
                 ],
-                'fund_transfer'      => [
-//                    'destination' => null
-                ],
+                'fund_transfer'      => [ ],
                 'configurations'     => [
                     'brand_color' => null
                 ]

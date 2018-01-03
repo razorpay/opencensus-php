@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Merchant\Account;
 
-use RZP\Models\Merchant;
+use RZP\Models\Base;
 
-class Repository extends Merchant\Repository
+class Repository extends Base\Repository
 {
     protected $entity = 'account';
 
@@ -13,7 +13,7 @@ class Repository extends Merchant\Repository
     ];
 
     protected $entityFetchParamRules = [
-        Entity::PARENT_ID               => 'sometimes|string|max:14',
+        Entity::PARENT_ID => 'sometimes|string|max:14',
     ];
 
     public function isMerchantIdRequiredForFetch()
