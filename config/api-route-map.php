@@ -705,6 +705,9 @@ return [
         'admin_get_app_auth'                => 'current_admin',
 
         'user_merchant_upgrade'             => 'users/upgrade-merchant',
+
+        // edit the bank account of the payers for bank transfer
+        'bank_transfers_edit_payer_account' => 'bank_transfers/{id}/payer_bank_account',
     ],
 
     // auth
