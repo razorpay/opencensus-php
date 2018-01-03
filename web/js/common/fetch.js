@@ -74,6 +74,15 @@ export function adminDelete(params) {
   });
 }
 
+export function adminPatch(params) {
+  const data = parseParams(params);
+  return fetch({
+    url: '/admin/generic',
+    method: 'patch',
+    data,
+  });
+}
+
 function parseParams(origParams) {
   let params = deepClone(origParams);
 

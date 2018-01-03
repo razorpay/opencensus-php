@@ -1,5 +1,7 @@
 import React from 'react';
-import { titleCase, formatDate } from 'common/util';
+
+import { titleCase, snakeToTitleCase, formatDate } from 'common/util';
+import { statusPill } from 'common/data';
 
 import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';
@@ -185,6 +187,17 @@ function _getFeaturesFields(deleteFeature) {
       ],
     ];
   };
+}
+
+function _getRejectedReasonsFields() {
+  return [
+    ['Category', item => snakeToTitleCase(item.reason_category)],
+    [
+      'Reason',
+      item =>
+        item.reason_description ? item.reason_description : item.reason_code,
+    ],
+  ];
 }
 
 // mapping used in multiple files
@@ -567,26 +580,22 @@ export function getDetailsViewMap(model) {
         : null,
     },
     {
-      label: 'Activation Form Submitted',
-      value: details.merchant_details
-        ? _getBoolIcon(details.merchant_details.submitted)
-        : null,
-    },
-    {
       label: 'Activation Form Status',
       value: details.merchant_details
-        ? () => (
-            <i
-              class={`i i-${
-                details.merchant_details.locked ? 'lock' : 'unlock'
-              }`}
-            />
-          )
-        : null,
+        ? () => statusPill(details.merchant_details.activation_status)
+        : '--',
     },
     {
-      label: 'Activated',
-      value: _getBoolIcon(details.activated),
+      label: 'Rejection Reason',
+      children:
+        details.merchant_details && details.merchant_details.rejection_reasons
+          ? () => (
+              <Table
+                items={details.merchant_details.rejection_reasons.items}
+                fields={_getRejectedReasonsFields()}
+              />
+            )
+          : null,
     },
     {
       label: 'Live',
@@ -652,10 +661,6 @@ export function getDetailsViewMap(model) {
             }
           />
         )),
-    },
-    {
-      label: 'Archived',
-      value: _getBoolIcon(details.archived_at),
     },
     {
       label: 'Suspended',

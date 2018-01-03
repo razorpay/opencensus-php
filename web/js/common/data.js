@@ -1,4 +1,5 @@
 export const testMerchantId = '10000000000000';
+import { snakeToTitleCase } from './util';
 
 export const entity2Prefix = {
   balance_account: 'ba',
@@ -203,6 +204,9 @@ const statusPillClasses = {
   won: 'label-success',
   lost: 'label-danger',
 
+  // activation form status
+  needs_clarification: 'label-pending',
+  activated: 'label-success',
   // public features
   approved: 'label-success',
   rejected: 'label-danger',
@@ -210,8 +214,12 @@ const statusPillClasses = {
   closed: 'label-danger',
 };
 
-export const statusPill = status => (
-  <span class={`pill ${statusPillClasses[status] || 'label-semi-muted'}`}>
-    {status}
-  </span>
-);
+export const statusPill = status => {
+  return status ? (
+    <span class={`pill ${statusPillClasses[status] || 'label-semi-muted'}`}>
+      {snakeToTitleCase(status)}
+    </span>
+  ) : (
+    '--'
+  );
+};

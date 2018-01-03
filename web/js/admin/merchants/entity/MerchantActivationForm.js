@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
-import { adminFetch } from 'common/fetch';
-import { openModal, confirm } from 'common/modal';
+
+import { adminFetch, adminPatch } from 'common/fetch';
+import { closeModal, confirm, notifySuccess } from 'common/modal';
+import { isWorkflow } from 'common/util';
 
 import Model from './model';
 import EntityRow from 'ui/EntityRow';
@@ -14,6 +16,9 @@ import BankAccountDetails from './merchantActivationForms/BankAccountDetails';
 import DocumentDetails from './merchantActivationForms/DocumentDetails';
 import ProductOnboarding from './merchantActivationForms/ProductOnboarding';
 import BusinessDetails from './merchantActivationForms/BusinessDetails';
+import ActivationDetails from './merchantActivationForms/ActivationDetails';
+
+import { statusPill } from 'common/data';
 
 import { Link } from 'react-router-dom';
 
@@ -53,6 +58,48 @@ export default class MerchantActivationForm extends Component {
     });
   }
 
+  handleArchive = () => {
+    const { details } = this.model.merchant;
+
+    confirm(
+      `Are you sure that you want to ${
+        details.merchant_details.archived ? 'Unarchive' : 'Archive'
+      } this form?`
+    ).then(() => {
+      adminPatch({
+        route_name: 'merchant_activation_archive',
+        url_params: {
+          id: details.id,
+        },
+        body: {
+          archive: details.merchant_details.archived ? 0 : 1,
+        },
+      }).then(response => {
+        if (response) {
+          if (isWorkflow(response)) {
+            return;
+          }
+          details.merchant_details.archived = response.archived;
+          notifySuccess(
+            `Form ${
+              response.archived ? 'archived' : 'unarchived'
+            } successfully.`
+          );
+          closeModal();
+        }
+      });
+    });
+  };
+
+  handleActivationStatusChange = status => {
+    const { details } = this.model.merchant;
+
+    details.merchant_details = {
+      ...details.merchant_details,
+      activation_status: status,
+    };
+  };
+
   getOverview() {
     const { details } = this.model.merchant;
 
@@ -67,14 +114,16 @@ export default class MerchantActivationForm extends Component {
         {!Object.keys(details).length ? (
           <div class="spinner center" />
         ) : (
-          _getOverviewFields(details).map(row => (
-            <EntityRow
-              key={row.label}
-              label={row.label}
-              value={row.value}
-              className="separate"
-            />
-          ))
+          _getOverviewFields
+            .call(this, details)
+            .map(row => (
+              <EntityRow
+                key={row.label}
+                label={row.label}
+                value={row.value}
+                className="separate"
+              />
+            ))
         )}
       </div>
     );
@@ -134,36 +183,32 @@ function _getOverviewFields(details) {
       value: details.email,
     },
     {
-      label: 'Activation Form Submitted',
-      value: () => (
-        <i
-          class={`i ${
-            details.merchant_details.submitted == 1
-              ? 'i-yes text-success'
-              : 'i-no text-danger'
-          }`}
-        />
-      ),
+      label: details.merchant_details.archived
+        ? 'Form is Archived'
+        : 'Form is Unarchived',
+      value: () =>
+        details.merchant_details.activation_status ===
+          'needs_clarification' && (
+          <button onClick={this.handleArchive}>
+            {details.merchant_details.archived ? 'Unarchive' : 'Archive'}
+          </button>
+        ),
     },
     {
       label: 'Activation Form Status',
-      value: () => (
-        <i
-          class={`i i-${
-            details.merchant_details.locked == 1 ? 'lock' : 'unlock'
-          }`}
-        />
-      ),
-    },
-    {
-      label: 'Activated',
-      value: () => (
-        <i
-          class={`i ${
-            details.activated == 1 ? 'i-yes text-success' : 'i-no text-danger'
-          }`}
-        />
-      ),
+      value: () =>
+        details.merchant_details.allowed_next_activation_statuses.length ? (
+          <ActivationDetails
+            status={details.merchant_details.activation_status}
+            allowedStatuses={toJS(
+              details.merchant_details.allowed_next_activation_statuses
+            )}
+            onStatusChange={this.handleActivationStatusChange}
+            merchantId={this.merchantId}
+          />
+        ) : (
+          statusPill(details.merchant_details.activation_status) || '--'
+        ),
     },
   ];
 }
