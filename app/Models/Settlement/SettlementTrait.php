@@ -191,11 +191,15 @@ trait SettlementTrait
             list($setl, $bankTransferAtpt) = $this->settleForMerchant(
                 $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax);
 
-            $txnsSettledCount += $setlTxns->count();
+            if (($setl !== null) and
+                ($bankTransferAtpt !== null))
+            {
+                $txnsSettledCount += $setlTxns->count();
 
-            $settlements->push($setl);
+                $settlements->push($setl);
 
-            $setlAttempts->push($bankTransferAtpt);
+                $setlAttempts->push($bankTransferAtpt);
+            }
         }
 
         $this->updateSettlementIdInTransfer($txns);
@@ -291,42 +295,54 @@ trait SettlementTrait
     protected function settleForMerchant(
         $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax): array
     {
-        // create settlement and update batch settlement entity in transaction
-        $merchantSettler = new Merchant($merchant, $channel, $this->repo);
+        try
+        {
+            // create settlement and update batch settlement entity in transaction
+            $merchantSettler = new Merchant($merchant, $channel, $this->repo);
 
-        $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
+            $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
 
-        list($setl, $bankTransferAtpt) = $this->repo->transaction(
-            function() use (
-                $merchantSettler,
-                $setlTxns,
-                $setlAmount,
-                $setlFee,
-                $setlApiFee,
-                $tax,
-                $setlDetailAmounts)
+            $settlement = $merchantSettler->settle(
+                                $setlTxns,
+                                $setlAmount,
+                                $setlFee,
+                                $setlApiFee,
+                                $tax,
+                                $this->setlTime,
+                                $setlDetailAmounts);
+
+            $merchantSettler->createTransaction($settlement);
+
+            $bankTransferAtpt = $this->repo->transaction( function() use ($settlement, $setlTxns, $merchantSettler)
             {
-                list($setl, $bankTransferAtpt) = $merchantSettler->settle(
-                                                    $setlTxns,
-                                                    $setlAmount,
-                                                    $setlFee,
-                                                    $setlApiFee,
-                                                    $tax,
-                                                    $this->setlTime,
-                                                    $setlDetailAmounts);
+                $bankTransferAtpt = $merchantSettler->createSettlementAttempt();
 
-                list($setl, $bankTransferAtpt) = $this->createAndupdateBatchEntities(
-                                                    $setl,
-                                                    $setlTxns->count(),
-                                                    $bankTransferAtpt);
+                $this->createAndupdateBatchEntities(
+                    $settlement,
+                    $setlTxns->count(),
+                    $bankTransferAtpt);
 
-                return [$setl, $bankTransferAtpt];
+                return $bankTransferAtpt;
             });
 
-        return [$setl, $bankTransferAtpt];
+            return [$settlement, $bankTransferAtpt];
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_SKIPPED,
+                [
+                    'merchant'   => $merchant->getId(),
+                    'setlAmount' => $setlAmount,
+                ]);
+        }
+
+        return [null, null];
     }
 
-    protected function createAndupdateBatchEntities($setl, int $setlTxnsCount, $bankTransferAtpt): array
+    protected function createAndupdateBatchEntities($setl, int $setlTxnsCount, $bankTransferAtpt)
     {
         $this->createOrUpdateBatchFundTransferForEntity($setl, $setlTxnsCount);
 
