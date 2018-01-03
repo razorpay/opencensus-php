@@ -81,15 +81,21 @@ class NodalAccount extends NodalBase\NodalAccount
     {
         $txt = '';
 
-        foreach ($rows as $row)
+        $totalElements = count($rows);
+
+        foreach ($rows as $index => $row)
         {
             $txt .= implode(',', $row);
 
-            //
-            // Double quote is required to suggest new line
-            // Single quote will NOT work
-            //
-            $txt .= "\r\n";
+            // Don't add newline for the last line
+            if ($index < $totalElements - 1)
+            {
+                //
+                // Double quote is required to suggest new line
+                // Single quote will NOT work
+                //
+                $txt .= "\r\n";
+            }
         }
 
         return $txt;

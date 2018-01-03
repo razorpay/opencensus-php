@@ -72,6 +72,6 @@ class Channel
 
     public static function exists($channel)
     {
-        return defined(get_class() . '::' . strtolower($channel));
+        return defined(get_class() . '::' . strtoupper($channel));
     }
 }

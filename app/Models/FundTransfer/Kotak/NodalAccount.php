@@ -100,31 +100,17 @@ class NodalAccount extends NodalBase\NodalAccount
 
             $type = $this->getPaymentType($ba, $amount, $entity);
 
-            $this->updateSummary($type, $amount);
-
-            // For Hike retry settlement
-            if ((count($entities) === 1) and
+            // For Hike retry settlement, remove this once we can handle VA's better
+            if ((in_array($merchant->getId(), ['7I5sCUbi0P7eiL', '7C9vkxnJlNC6bY'], true) === true) and
                 ($ba->getAccountNumber() === '44449773833987'))
             {
-                $mid = $merchant->getId();
-
-                if ($mid === '7I5sCUbi0P7eiL')
-                {
-                    $ifsc = 'KKBK000VRTL';
-                }
-                else if ($mid === '7C9vkxnJlNC6bY')
-                {
-                    $ifsc = 'KKBK0000958';
-                }
-                else
-                {
-                    continue;
-                }
+                $ifsc = 'KKBK000VRTL';
+                $type = 'NEFT';
 
                 $array = [
                     Headings::CLIENT_CODE             => 'RAZORNODAL',
                     Headings::PRODUCT_CODE            => 'REFUND',
-                    Headings::PAYMENT_TYPE            => 'NEFT',
+                    Headings::PAYMENT_TYPE            => $type,
                     Headings::PAYMENT_REF_NO          => $paymentRefNo,
                     Headings::PAYMENT_DATE            => $this->date,
                     Headings::INSTRUMENT_DATE         => $this->date,
@@ -160,6 +146,9 @@ class NodalAccount extends NodalBase\NodalAccount
                     Headings::PAYMENT_DETAILS_4       => $entity->getBatchFundTransferId(),
                 ];
             }
+
+            // moving below since we are updating type later
+            $this->updateSummary($type, $amount);
 
             $array = $this->getAllFields($array);
 
